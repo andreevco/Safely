@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "Yet Another Wallet",
+    "slug": "andreevco-wallet",
+    "version": "1.0.0",
+    "orientation": "default",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "scheme": "andreevco-wallet",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.andreevco.wallet"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.andreevco.wallet"
+    },
+    "plugins": [
+      "expo-asset",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#ffffff",
+          "image": "./assets/icon.png"
+        }
+      ]
+    ]
+  }
+}

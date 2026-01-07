@@ -1,0 +1,26 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "baseUrl": ".",
+    "paths": {
+      "@andreev/sync": ["../../packages/sync/src"],
+      "@andreev/core": ["../../packages/core/src"],
+      "@andreev/core/api/*": ["../../packages/core/src/api/*"],
+      "@andreev/ux": ["../../packages/ux/src"],
+      "@andreev/ux/shared/assets/*": ["../../packages/ux/src/shared/assets/*"],
+      "@mobile/shared": ["./src/shared"],
+      "@mobile/shared/*": ["./src/shared/*"],
+      "@mobile/app": ["./src/app"],
+      "@mobile/app/*": ["./src/app/*"],
+      "@mobile/screens": ["./src/screens"],
+      "@mobile/screens/*": ["./src/screens/*"],
+      "@mobile/entities": ["./src/entities"],
+      "@mobile/entities/*": ["./src/entities/*"],
+      "@mobile/features": ["./src/features"],
+      "@mobile/features/*": ["./src/features/*"],
+    }
+  },
+  "include": ["src/**/*", "index.tsx"],
+  "exclude": ["node_modules"]
+}
