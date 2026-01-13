@@ -3,7 +3,13 @@
   "type": "module",
   "version": "1.0.0",
   "description": "Yet Another Cross-Platform Wallet",
-  "scripts": {},
+  "scripts": {
+    "corepack": "corepack enable",
+    "preinstall": "npx only-allow pnpm",
+    "compile": "pnpm -r run compile",
+    "test": "pnpm -r run test",
+    "lint": "pnpm -r run lint"
+  },
   "packageManager": "pnpm@10.27.0",
   "devDependencies": {
     "@eslint/js": "^9.39.2",
