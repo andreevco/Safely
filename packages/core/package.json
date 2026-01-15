@@ -1,0 +1,24 @@
+{
+  "name": "@safely/core",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "compile": "tsc --noEmit",
+    "dev": "tsc --watch",
+    "lint": "eslint ./src"
+  },
+  "dependencies": {
+    "@noble/hashes": "^2.0.1",
+    "@scure/bip32": "^2.0.1",
+    "@scure/bip39": "^2.0.1",
+    "big.js": "^7.0.1",
+    "bitcoinjs-lib": "^7.0.1",
+    "ecpair": "^3.0.0",
+    "@bitcoinerlab/secp256k1": "^1.2.0",
+    "tweetnacl": "^1.0.3",
+    "zod": "^4.3.5"
+  },
+  "devDependencies": {
+    "@types/big.js": "^6.2.2"
+  }
+}

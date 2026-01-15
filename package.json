@@ -1,8 +1,9 @@
 {
-  "name": "yet-another-wallet",
+  "name": "safely",
   "type": "module",
   "version": "1.0.0",
-  "description": "Yet Another Cross-Platform Wallet",
+  "description": "Safely cross-platform wallet",
+  "private": true,
   "scripts": {
     "corepack": "corepack enable",
     "preinstall": "npx only-allow pnpm",
