@@ -5,6 +5,7 @@
     "build": "tsc",
     "compile": "tsc --noEmit",
     "dev": "tsc --watch",
+    "test": "vitest",
     "lint": "eslint ./src"
   },
   "dependencies": {
@@ -15,7 +16,8 @@
     "zod": "^4.3.5"
   },
   "devDependencies": {
-    "@types/big.js": "^6.2.2"
+    "@types/big.js": "^6.2.2",
+    "vitest": "^4.0.16"
   },
   "peerDependencies": {
     "@tanstack/react-query": "^5.90.5",
