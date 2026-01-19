@@ -1,0 +1,19 @@
+{
+  "name": "@safely/sync",
+  "version": "0.0.1",
+  "scripts": {
+    "compile": "tsc --noEmit",
+    "dev": "tsc --watch",
+    "lint": "eslint ./src"
+  },
+  "dependencies": {
+    "@noble/ciphers": "^2.0.1",
+    "@noble/curves": "^2.0.1",
+    "@noble/hashes": "^2.0.1",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {},
+  "exports": {
+    ".": "./src/index"
+  }
+}
