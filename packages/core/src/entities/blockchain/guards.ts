@@ -1,11 +1,6 @@
-import { TonContract } from './ton';
-import { BtcWallet } from '../portfolio';
-import { BLOCKCHAIN } from './blockchain';
+import { BtcWallet } from '../derivation';
+import { BLOCKCHAIN_NAME } from './blockchain-name';
 
-export function isTonContract(wallet: TonContract | BtcWallet): wallet is TonContract {
-    return wallet.id.blockchain === BLOCKCHAIN.TON;
-}
-
-export function isBtcWallet(wallet: TonContract | BtcWallet): wallet is BtcWallet {
-    return wallet.id.blockchain === BLOCKCHAIN.BTC;
+export function isBtcWallet(wallet: BtcWallet): wallet is BtcWallet {
+    return wallet.id.blockchain === BLOCKCHAIN_NAME.BTC;
 }

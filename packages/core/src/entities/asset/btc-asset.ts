@@ -22,7 +22,7 @@ export class BtcAssetId extends Id implements ICryptoAssetId {
     public readonly blockchain = BLOCKCHAIN_NAME.BTC;
 
     public toString(): string {
-        return `${ASSET_ID_DOMAIN}:${this.type}:${this.blockchain}:${NATIVE_CRYPTO_ASSET_ID_DOMAIN}`;
+        return this.of(ASSET_ID_DOMAIN, this.type, this.blockchain, NATIVE_CRYPTO_ASSET_ID_DOMAIN);
     }
 
     public toJSON(): z.input<typeof sBtcAssetId> {

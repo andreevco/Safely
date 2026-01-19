@@ -17,7 +17,7 @@ export class FiatAssetId extends Id {
     }
 
     public toString() {
-        return `${ASSET_ID_DOMAIN}:${this.type}:${this.symbol}`;
+        return this.of(ASSET_ID_DOMAIN, this.type, this.symbol);
     }
 
     public toJSON(): z.input<typeof sFiatAssetId> {

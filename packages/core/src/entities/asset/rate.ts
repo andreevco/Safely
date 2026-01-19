@@ -8,19 +8,19 @@ import { IAsset } from './I-asset';
 interface IRate<Base extends IAsset, Quote extends IAsset> {
     /**
      * The base asset — the one being valued.
-     * @example Example: TON in the pair TON/USD.
+     * @example Example: BTC in the pair BTC/USD.
      */
     base: Base;
 
     /**
      * The quote asset — the currency or token in which the base asset is priced.
-     * @example: USD in the pair TON/USD.
+     * @example: USD in the pair BTC/USD.
      */
     quote: Quote;
 
     /**
      * The price of one unit of `base` expressed in `quote`.
-     * @example: 1 TON = 2.5 USD → value = 2.5
+     * @example: 1 BTC = 50000 USD → value = 50000
      */
     value: Big;
 
