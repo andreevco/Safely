@@ -1,0 +1,14 @@
+{
+    "name": "@safely/ux",
+    "version": "1.0.0",
+    "scripts": {
+      "build": "tsc",
+      "compile": "tsc --noEmit",
+      "dev": "tsc --watch",
+      "lint": "eslint ./src"
+    },
+    "dependencies": {},
+    "devDependencies": {
+    },
+    "peerDependencies": {}
+  }
