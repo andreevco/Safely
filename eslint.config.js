@@ -106,7 +106,7 @@ export default [
                     groups: [['builtin', 'external'], ['internal'], ['parent', 'sibling', 'index']],
                     pathGroups: [
                         {
-                            pattern: '@tonkeeper/**',
+                            pattern: '@safely/**',
                             group: 'internal',
                             position: 'before'
                         }
