@@ -1,6 +1,7 @@
 import { DarkTheme, Theme } from '@react-navigation/native';
 import * as SplashScreen from 'expo-splash-screen';
 import { useMemo } from 'react';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useUnistyles } from 'react-native-unistyles';
 
@@ -25,8 +26,10 @@ export const App = () => {
     );
 
     return (
-        <SafeAreaProvider>
-            <Navigation onReady={() => SplashScreen.hideAsync()} theme={NavigationTheme} />
-        </SafeAreaProvider>
+        <GestureHandlerRootView>
+            <SafeAreaProvider>
+                <Navigation onReady={() => SplashScreen.hideAsync()} theme={NavigationTheme} />
+            </SafeAreaProvider>
+        </GestureHandlerRootView>
     );
 };

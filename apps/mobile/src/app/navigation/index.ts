@@ -1,4 +1,5 @@
 import { HomeScreen } from '@mobile/screens/HomeScreen';
+import { HomeSheet } from '@mobile/screens/HomeScreen/screens';
 import { createStaticNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
@@ -22,10 +23,15 @@ export const RootStack = createNativeStackNavigator({
         },
         Sheets: {
             screens: {
-                HomeSheet: HomeScreen
+                HomeSheet: HomeSheet
             },
             screenOptions: {
-                presentation: 'formSheet'
+                animationDuration: 0,
+                presentation: 'transparentModal',
+                animation: 'none',
+                contentStyle: {
+                    backgroundColor: 'transparent'
+                }
             }
         }
     },

@@ -16,8 +16,6 @@ export function ScreenContainer({ children, background }: PropsWithChildren<Scre
 
     styles.useVariants({ background: resolvedBackground });
 
-    console.log('screenName', screenName, resolveLayoutByScreenName(screenName));
-
     return (
         <ScreenContext.Provider
             value={{
