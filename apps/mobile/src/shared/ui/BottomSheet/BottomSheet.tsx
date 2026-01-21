@@ -9,18 +9,21 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useUnistyles } from 'react-native-unistyles';
 
+import { Screen } from '../Screen';
 import { styles } from './BottomSheet.styles';
 
 type ModalSheetProps = {
     children: React.ReactNode;
     containerStyle?: ViewStyle;
     closeOnBackdropPress?: boolean;
+    headerTitle: string;
 };
 
 export function BottomSheet({
     children,
     containerStyle,
-    closeOnBackdropPress = true
+    closeOnBackdropPress = true,
+    headerTitle
 }: ModalSheetProps) {
     const nav = useNavigation();
     const ref = useRef<GHBottomSheet>(null);
@@ -67,7 +70,15 @@ export function BottomSheet({
                 handleComponent={null}
                 animatedIndex={index}
             >
-                <BottomSheetView style={containerStyle}>{children}</BottomSheetView>
+                <BottomSheetView style={containerStyle}>
+                    <Screen background="transparent">
+                        <Screen.Header variant="left">
+                            <Screen.Header.Title>{headerTitle}</Screen.Header.Title>
+                            <Screen.Header.CloseButton />
+                        </Screen.Header>
+                        <Screen.Content>{children}</Screen.Content>
+                    </Screen>
+                </BottomSheetView>
             </GHBottomSheet>
         </Animated.View>
     );

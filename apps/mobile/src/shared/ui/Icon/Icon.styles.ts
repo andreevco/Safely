@@ -9,11 +9,11 @@ export const styles = StyleSheet.create(theme => ({
                 primary: {
                     tintColor: theme.colors.icon.primary
                 },
+                secondary: {
+                    tintColor: theme.colors.icon.secondary
+                },
                 tertiary: {
                     tintColor: theme.colors.icon.tertiary
-                },
-                color: {
-                    tintColor: theme.colors.icon.color
                 }
             }
         }

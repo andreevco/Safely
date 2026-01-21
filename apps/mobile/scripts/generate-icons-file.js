@@ -83,7 +83,7 @@ function buildTsFile(svgRelPaths) {
     const importId = `${iconName}Svg`;
 
     imports.push(
-      `import ${importId} from '@andreev/ux/shared/assets/icons/${rel}';`
+      `import ${importId} from '@safely/ux/shared/assets/icons/${rel}';`
     );
 
     const size = inferDefaultSize(rel);

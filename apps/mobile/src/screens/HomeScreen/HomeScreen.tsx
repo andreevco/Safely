@@ -1,21 +1,28 @@
-import type { RootStackNavigationProp } from '@mobile/app/navigation/types';
-import { Button, Screen } from '@mobile/shared/ui';
-import { useNavigation } from '@react-navigation/native';
-import { useTranslation } from 'react-i18next';
+import { HomeActions } from '@mobile/features/home';
+import { Cell, Screen } from '@mobile/shared/ui';
+import { ArrowDown28 } from '@mobile/shared/ui/Icon';
 
 export const HomeScreen = () => {
-    const navigation = useNavigation<RootStackNavigationProp<'TabsNavigator'>>();
-
-    const { t } = useTranslation();
-
     return (
         <Screen>
-            <Screen.Header variant="left">
-                <Screen.Header.Title>{t('home')}</Screen.Header.Title>
+            <Screen.Header variant="center">
+                <Screen.Header.Title>Title</Screen.Header.Title>
             </Screen.Header>
             <Screen.Scrollable>
-                <Button onPress={() => navigation.navigate('HomeSheet')}>Go to sheet</Button>
-                <Button onPress={() => navigation.navigate('HomeModal')}>Go to modal</Button>
+                <HomeActions />
+                <Cell>
+                    <Cell.Image type="icon" icon={ArrowDown28} />
+                    <Cell.Content>
+                        <Cell.Row>
+                            <Cell.Title>Bitcoin</Cell.Title>
+                            <Cell.Value>$125,693</Cell.Value>
+                        </Cell.Row>
+                        <Cell.Row>
+                            <Cell.Subtitle>$93,274</Cell.Subtitle>
+                            <Cell.Subvalue>0.7421 BTC</Cell.Subvalue>
+                        </Cell.Row>
+                    </Cell.Content>
+                </Cell>
             </Screen.Scrollable>
         </Screen>
     );

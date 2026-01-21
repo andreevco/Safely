@@ -28,6 +28,9 @@ export const styles = StyleSheet.create((theme, rt) => ({
                 },
                 overlay: {
                     backgroundColor: theme.colors.background.overlay
+                },
+                transparent: {
+                    backgroundColor: 'transparent'
                 }
             }
         }

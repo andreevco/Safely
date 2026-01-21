@@ -11,7 +11,7 @@ export const darkTheme = {
         },
         icon: {
             primary: 'rgba(237, 237, 237, 1)',
-            color: 'rgba(160, 160, 166, 1)',
+            secondary: 'rgba(160, 160, 166, 1)',
             tertiary: 'rgba(110, 110, 115, 1)'
         },
         background: {
