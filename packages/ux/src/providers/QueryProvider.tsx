@@ -1,0 +1,68 @@
+import { QueryCache, QueryClient } from '@tanstack/react-query';
+import { Persister, PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import React, { FC, PropsWithChildren, ReactNode, Suspense, useEffect, useState } from 'react';
+
+import { QueryHydrationProvider } from './QueryHydrationContext';
+import { QUERIES_STALE_TIME, BUSTER_VERSION, CACHE_LIVE_TIME } from '../query-core';
+
+const queryClient = new QueryClient({
+    queryCache: new QueryCache({
+        onError: (error, query) => {
+            console.error('Query error:', error, 'in', query.queryKey);
+        }
+    }),
+    defaultOptions: {
+        queries: {
+            gcTime: CACHE_LIVE_TIME,
+            staleTime: QUERIES_STALE_TIME.DEFAULT,
+            experimental_prefetchInRender: true
+        }
+    }
+});
+
+export const QueryProvider: FC<PropsWithChildren<{ loader?: ReactNode; persister: Persister }>> = ({
+    children,
+    loader,
+    persister
+}) => {
+    const [hydratedAt, setHydratedAt] = useState<number | null>(null);
+    const isReady = hydratedAt !== null;
+
+    useEffect(() => {
+        if (!isReady) return;
+
+        void queryClient.invalidateQueries({
+            predicate: q => Boolean(q.meta?.persist)
+        });
+    }, [isReady]);
+
+    return (
+        <PersistQueryClientProvider
+            client={queryClient}
+            persistOptions={{
+                persister,
+                maxAge: CACHE_LIVE_TIME,
+                buster: BUSTER_VERSION,
+                dehydrateOptions: {
+                    shouldDehydrateQuery: query => {
+                        if (!query.options.meta?.persist) {
+                            return false;
+                        }
+
+                        return query.state.status === 'success' || query.state.dataUpdatedAt > 0;
+                    }
+                }
+            }}
+            onError={() => setHydratedAt(Date.now())}
+            onSuccess={() => setHydratedAt(Date.now())}
+        >
+            <QueryHydrationProvider value={{ hydratedAt }}>
+                {isReady ? (
+                    <Suspense fallback={loader ?? null}>{children}</Suspense>
+                ) : (
+                    (loader ?? null)
+                )}
+            </QueryHydrationProvider>
+        </PersistQueryClientProvider>
+    );
+};
