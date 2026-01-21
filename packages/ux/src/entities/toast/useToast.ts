@@ -1,16 +1,7 @@
 import { useCallback } from 'react';
 
-import { useAppContext } from '../providers';
-
-export interface ToastOptions {
-    message: string;
-    type?: 'success' | 'error';
-    duration?: number;
-}
-
-export interface ToastService {
-    show(this: void, options: ToastOptions): void;
-}
+import { ToastOptions } from './types';
+import { useAppContext } from '../../shared';
 
 export function useToast() {
     const { toast } = useAppContext();

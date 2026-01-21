@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react';
 
-import type { ToastService } from '../hooks';
+import { ToastService } from '../../entities';
 
 export interface IAppContext {
     version: string; // x.y.z
