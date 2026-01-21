@@ -1,0 +1,9 @@
+{
+    "home": {
+        "actions": {
+            "send": "Send",
+            "receive": "Receive",
+            "scan": "Scan"
+        }
+    }
+}
