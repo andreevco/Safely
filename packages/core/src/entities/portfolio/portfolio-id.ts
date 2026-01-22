@@ -5,7 +5,7 @@ import { allowedPortfolioMetaEmojis, PortfolioMetaIconEmoji } from './portfolio-
 import { PortfolioNetworkType } from './portfolio-network-type';
 import { xorFold16 } from '../../utils/crypto';
 import { Id } from '../../utils/id';
-import { IMnemonicAccessor } from '../secret-vault';
+import { IMnemonicAccessor } from '../mnemonic';
 import { PortfolioType } from './I-portfolio';
 
 export interface IPortfolioId extends Id {

@@ -8,10 +8,10 @@ import { Id } from '../../utils/id';
 import { BtcWalletType } from '../blockchain';
 import { SDerivation } from '../derivation/derivation.stored';
 import {
-    ClosableMnemonicAccessorVault,
+    MnemonicResource,
     IMnemonicVaultEncryptedSecretStored,
     MnemonicVault
-} from '../secret-vault';
+} from '../mnemonic';
 import { BtcBip39SeedProducer } from '../seed';
 
 export class PortfolioBip39 implements IPortfolioDerivable {
@@ -93,30 +93,26 @@ export class PortfolioBip39 implements IPortfolioDerivable {
 
     public async addDerivation(index: number) {
         const mnemonic = await this.mnemonicVault.getMnemonic();
-        const limitedAccessVault = new ClosableMnemonicAccessorVault(mnemonic);
+        using mnemonicResource = new MnemonicResource(mnemonic);
 
-        const seedProducer = new BtcBip39SeedProducer(this.mnemonicVault);
+        const seedProducer = new BtcBip39SeedProducer(mnemonicResource);
 
-        try {
-            const xpub = await DerivationChainItemBtcSeed.getXpub({
+        const xpub = await DerivationChainItemBtcSeed.getXpub({
+            seedProducer,
+            network: this.networkType,
+            derivationIndex: index,
+            walletType: BtcWalletType.NATIVE_SEGWIT
+        });
+        const derivation = new Derivation(this, index, derivationRef => ({
+            btc: DerivationChainItemBtcSeed.generate({
+                xpub,
                 seedProducer,
-                network: this.networkType,
                 derivationIndex: index,
-                walletType: BtcWalletType.NATIVE_SEGWIT
-            });
-            const derivation = new Derivation(this, index, derivationRef => ({
-                btc: DerivationChainItemBtcSeed.generate({
-                    xpub,
-                    seedProducer,
-                    derivationIndex: index,
-                    derivationRef
-                })
-            }));
+                derivationRef
+            })
+        }));
 
-            this.derivations = [...this.derivations, derivation].sort((a, b) => a.index - b.index);
-        } finally {
-            limitedAccessVault.close();
-        }
+        this.derivations = [...this.derivations, derivation].sort((a, b) => a.index - b.index);
     }
 
     public getDerivation(id: Id): IDerivation | undefined {

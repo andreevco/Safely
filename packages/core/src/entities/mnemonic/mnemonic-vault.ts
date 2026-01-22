@@ -1,4 +1,4 @@
-import { IMnemonic } from './mnemonic';
+import { IMnemonic, IMnemonicAccessor } from './mnemonic';
 import { ISecretEncryptor } from '../../di';
 import type { SSecretEncrypted } from '../../di/I-secret-encryptor';
 
@@ -41,45 +41,5 @@ export class MnemonicVault implements IMnemonicVaultEncryptedSecretStored {
     public async getMnemonic(): Promise<IMnemonic> {
         const decrypted = await this.bridge.decryptSecret(this.encryptedSecret);
         return MnemonicVault.mnemonicFromString(decrypted);
-    }
-}
-
-export interface IMnemonicAccessor {
-    value: IMnemonic;
-}
-
-export class ClosableMnemonicAccessorVault implements IMnemonicAccessor, IMnemonicVault {
-    #value: IMnemonic | undefined;
-
-    public get value(): IMnemonic {
-        if (this.#value === undefined) {
-            throw new Error('Secret is no more available');
-        }
-
-        return this.#value;
-    }
-
-    constructor(secret: IMnemonic) {
-        this.#value = secret;
-    }
-
-    public async getMnemonic(): Promise<IMnemonic> {
-        return this.value;
-    }
-
-    public close() {
-        this.#value = undefined;
-    }
-
-    public [Symbol.dispose]() {
-        this.close();
-    }
-}
-
-export class ImmediateAccessMnemonicVault implements IMnemonicVault {
-    constructor(private readonly mnemonicAccessor: IMnemonicAccessor) {}
-
-    public async getMnemonic(): Promise<IMnemonic> {
-        return this.mnemonicAccessor.value;
     }
 }

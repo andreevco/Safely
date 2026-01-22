@@ -1,6 +1,6 @@
 import { mnemonicToSeed } from '@scure/bip39';
 
-import { IMnemonicVault } from '../secret-vault';
+import { IMnemonicVault } from '../mnemonic';
 import { ISeedProducer } from './I-seed-producer';
 
 export class BtcBip39SeedProducer implements ISeedProducer {

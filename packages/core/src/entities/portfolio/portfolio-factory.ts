@@ -7,8 +7,8 @@ import { ISecretEncryptor } from '../../di';
 import { assertUnreachable } from '../../utils/types';
 import { BtcWalletType } from '../blockchain';
 import { DerivationChainItemBtcSeed, Derivation } from '../derivation';
-import { MNEMONIC_TYPE, validateMnemonic } from '../secret-vault';
-import { ImmediateAccessMnemonicVault, IMnemonicAccessor, MnemonicVault } from '../secret-vault';
+import { MNEMONIC_TYPE, MnemonicResource, validateMnemonic } from '../mnemonic';
+import { IMnemonicAccessor, MnemonicVault } from '../mnemonic';
 import { BtcBip39SeedProducer } from '../seed';
 
 export class PortfolioFactory {
@@ -50,10 +50,10 @@ export class PortfolioFactory {
 
             const derivationIndex = 0;
 
-            const immediateVault = new ImmediateAccessMnemonicVault(mnemonicAccessor);
+            using mnemonicResource = new MnemonicResource(mnemonicAccessor);
 
             const xpub = await DerivationChainItemBtcSeed.getXpub({
-                seedProducer: new BtcBip39SeedProducer(immediateVault),
+                seedProducer: new BtcBip39SeedProducer(mnemonicResource),
                 walletType: BtcWalletType.NATIVE_SEGWIT,
                 network: options.network,
                 derivationIndex
