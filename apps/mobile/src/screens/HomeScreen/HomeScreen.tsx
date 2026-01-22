@@ -1,5 +1,5 @@
 import { HomeActions } from '@mobile/features/home';
-import { Cell, Screen } from '@mobile/shared/ui';
+import { Cell, List, Screen } from '@mobile/shared/ui';
 import { ArrowDown28 } from '@mobile/shared/ui/Icon';
 
 export const HomeScreen = () => {
@@ -10,19 +10,36 @@ export const HomeScreen = () => {
             </Screen.Header>
             <Screen.Scrollable>
                 <HomeActions />
-                <Cell>
-                    <Cell.Image type="icon" icon={ArrowDown28} />
-                    <Cell.Content>
-                        <Cell.Row>
-                            <Cell.Title>Bitcoin</Cell.Title>
-                            <Cell.Value>$125,693</Cell.Value>
-                        </Cell.Row>
-                        <Cell.Row>
-                            <Cell.Subtitle>$93,274</Cell.Subtitle>
-                            <Cell.Subvalue>0.7421 BTC</Cell.Subvalue>
-                        </Cell.Row>
-                    </Cell.Content>
-                </Cell>
+                <List>
+                    <List.Group>
+                        <Cell>
+                            <Cell.Image type="icon" icon={ArrowDown28} />
+                            <Cell.Content>
+                                <Cell.Row>
+                                    <Cell.Title>Bitcoin</Cell.Title>
+                                    <Cell.Value>$125,693</Cell.Value>
+                                </Cell.Row>
+                                <Cell.Row>
+                                    <Cell.Subtitle>$93,274</Cell.Subtitle>
+                                    <Cell.Subvalue>0.7421 BTC</Cell.Subvalue>
+                                </Cell.Row>
+                            </Cell.Content>
+                        </Cell>
+                        <Cell>
+                            <Cell.Image type="icon" icon={ArrowDown28} />
+                            <Cell.Content>
+                                <Cell.Row>
+                                    <Cell.Title>Bitcoin</Cell.Title>
+                                    <Cell.Value>$125,693</Cell.Value>
+                                </Cell.Row>
+                                <Cell.Row>
+                                    <Cell.Subtitle>$93,274</Cell.Subtitle>
+                                    <Cell.Subvalue>0.7421 BTC</Cell.Subvalue>
+                                </Cell.Row>
+                            </Cell.Content>
+                        </Cell>
+                    </List.Group>
+                </List>
             </Screen.Scrollable>
         </Screen>
     );
