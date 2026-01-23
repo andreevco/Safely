@@ -12,7 +12,7 @@ const tokenStandardEnum = z.enum([
 ]);
 
 /** Human-readable error message describing the issue. */
-export const APIErrorSchema = z.object({
+export const APIErrorSchema = z.looseObject({
     /** Human-readable error message describing the issue. */
     Text: z.string(),
     /** Whether the error message can safely be shown to the end user. */
@@ -20,7 +20,7 @@ export const APIErrorSchema = z.object({
 });
 
 /** Type of alias, e.g., user-defined name or contract name. */
-const AddressAliasSchema = z.object({
+const AddressAliasSchema = z.looseObject({
     /** Type of alias, e.g., user-defined name or contract name. */
     Type: z.string(),
     /** Alias string for the address. */
@@ -28,7 +28,7 @@ const AddressAliasSchema = z.object({
 });
 
 /** Token ID (for ERC1155). */
-const MultiTokenValueSchema = z.object({
+const MultiTokenValueSchema = z.looseObject({
     /** Token ID (for ERC1155). */
     id: z.string().optional(),
     /** Amount of that specific token ID. */
@@ -36,7 +36,7 @@ const MultiTokenValueSchema = z.object({
 });
 
 /** @deprecated: Use standard instead. */
-const TokenTransferSchema = z.object({
+const TokenTransferSchema = z.looseObject({
     /** @deprecated: Use standard instead. */
     type: tokenStandardEnum,
     standard: tokenStandardEnum,
@@ -59,7 +59,7 @@ const TokenTransferSchema = z.object({
 });
 
 /** Amount (in satoshi or base units) of the output. */
-const VoutSchema = z.object({
+const VoutSchema = z.looseObject({
     /** Amount (in satoshi or base units) of the output. */
     value: z.string().optional(),
     /** Relative index of this output within the transaction. */
@@ -87,7 +87,7 @@ const VoutSchema = z.object({
 });
 
 /** ID/hash of the originating transaction (where the UTXO comes from). */
-const VinSchema = z.object({
+const VinSchema = z.looseObject({
     /** ID/hash of the originating transaction (where the UTXO comes from). */
     txid: z.string().optional(),
     /** Index of the output in the referenced transaction. */
@@ -113,7 +113,7 @@ const VinSchema = z.object({
 });
 
 /** Transaction ID (hash). */
-const TxSchema = z.object({
+const TxSchema = z.looseObject({
     /** Transaction ID (hash). */
     txid: z.string(),
     /** Version of the transaction (if applicable). */
@@ -159,7 +159,7 @@ const TxSchema = z.object({
 });
 
 /** Staking pool contract address on-chain. */
-const StakingPoolSchema = z.object({
+const StakingPoolSchema = z.looseObject({
     /** Staking pool contract address on-chain. */
     contract: z.string(),
     /** Name of the staking pool contract. */
@@ -181,7 +181,7 @@ const StakingPoolSchema = z.object({
 });
 
 /** @deprecated: Use standard instead. */
-const ContractInfoSchema = z.object({
+const ContractInfoSchema = z.looseObject({
     /** @deprecated: Use standard instead. */
     type: tokenStandardEnum,
     standard: tokenStandardEnum,
@@ -200,7 +200,7 @@ const ContractInfoSchema = z.object({
 });
 
 /** @deprecated: Use standard instead. */
-const TokenSchema = z.object({
+const TokenSchema = z.looseObject({
     /** @deprecated: Use standard instead. */
     type: tokenStandardEnum,
     standard: tokenStandardEnum,
@@ -233,7 +233,7 @@ const TokenSchema = z.object({
 });
 
 /** Current page index. */
-export const AddressSchema = z.object({
+export const AddressSchema = z.looseObject({
     /** Current page index. */
     page: z.number().optional(),
     /** Total number of pages available. */
@@ -295,7 +295,7 @@ export const AddressSchema = z.object({
 });
 
 /** Transaction ID in which this UTXO was created. */
-export const UtxoSchema = z.object({
+export const UtxoSchema = z.looseObject({
     /** Transaction ID in which this UTXO was created. */
     txid: z.string(),
     /** Index of the output in that transaction. */
