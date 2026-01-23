@@ -11,7 +11,7 @@ export const Text = (props: TextProps) => {
     styles.useVariants({ variant, textAlign, color, capitalize });
 
     return (
-        <RNText {...rest} style={[styles.text, rest.style]}>
+        <RNText allowFontScaling={false} {...rest} style={[styles.text, rest.style]}>
             {children}
         </RNText>
     );

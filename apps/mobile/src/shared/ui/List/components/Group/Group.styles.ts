@@ -4,7 +4,7 @@ export const styles = StyleSheet.create(theme => ({
     group: {
         borderRadius: theme.radius.md,
         overflow: 'hidden',
-        paddingBottom: theme.spacing[8],
+        marginBottom: theme.spacing[8],
         variants: {
             variant: {
                 separated: {
@@ -16,7 +16,12 @@ export const styles = StyleSheet.create(theme => ({
     },
     divider: {
         height: theme.border.hairline,
-        backgroundColor: theme.colors.other.transparentElement,
+        // TODO: Fix for divider inside Cell
+        backgroundColor: 'rgba(40, 40, 43, 1)',
         width: '100%'
+    },
+    separatedContainer: {
+        borderRadius: theme.radius.md,
+        overflow: 'hidden'
     }
 }));

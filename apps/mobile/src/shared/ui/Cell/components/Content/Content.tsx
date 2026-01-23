@@ -1,8 +1,8 @@
 import { View, ViewProps } from 'react-native';
 
-import { styles } from './CellContent.styles';
+import { styles } from './Content.styles';
 
-export const CellContent = (props: ViewProps) => {
+export const Content = (props: ViewProps) => {
     const { children, style, ...rest } = props;
 
     return (

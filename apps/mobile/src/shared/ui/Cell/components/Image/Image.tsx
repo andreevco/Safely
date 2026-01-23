@@ -1,30 +1,34 @@
 import { Icon, IconProps } from '@mobile/shared/ui/Icon';
-import { Image, ImageSource, ImageProps } from 'expo-image';
+import {
+    Image as ImageComponent,
+    ImageSource,
+    ImageProps as ImageComponentProps
+} from 'expo-image';
 import { View, ViewStyle } from 'react-native';
 
-import { styles } from './CellImage.styles';
+import { styles } from './Image.styles';
 
 export type CellImageType = 'icon' | 'image';
 
-export type CellImageCommon = {
+export type ImageCommon = {
     containerStyle?: ViewStyle;
 };
 
-export type CellImageIcon = {
+export type IconType = {
     type: 'icon';
     icon: IconProps['icon'];
     style?: IconProps['style'];
 };
 
-export type CellImageImage = {
+export type ImageType = {
     type: 'image';
     image: ImageSource;
-    style?: ImageProps['style'];
+    style?: ImageComponentProps['style'];
 };
 
-export type CellImageProps = CellImageCommon & (CellImageIcon | CellImageImage);
+export type ImageProps = ImageCommon & (IconType | ImageType);
 
-export const CellImage = (props: CellImageProps) => {
+export const Image = (props: ImageProps) => {
     const { containerStyle } = props;
 
     switch (props.type) {
@@ -37,7 +41,7 @@ export const CellImage = (props: CellImageProps) => {
         case 'image':
             return (
                 <View style={[styles.container, containerStyle]}>
-                    <Image style={[styles.content, props.style]} source={props.image} />
+                    <ImageComponent style={[styles.content, props.style]} source={props.image} />
                 </View>
             );
         default:

@@ -14,17 +14,26 @@ export const Group = (props: GroupProps) => {
     const content = useMemo(() => {
         const items = Children.toArray(children);
 
-        if (variant !== 'separated') {
-            return items;
+        switch (variant) {
+            case 'divided':
+                return items.reduce<ReactNode[]>((acc, child, index) => {
+                    acc.push(child);
+                    if (index < items.length - 1) {
+                        acc.push(<View key={`divider-${index}`} style={styles.divider} />);
+                    }
+                    return acc;
+                }, []);
+            case 'separated':
+                return items.map((child, index) => {
+                    return (
+                        <View style={styles.separatedContainer} key={`item-${index}`}>
+                            {child}
+                        </View>
+                    );
+                });
+            default:
+                return items;
         }
-
-        return items.reduce<ReactNode[]>((acc, child, index) => {
-            acc.push(child);
-            if (index < items.length - 1) {
-                acc.push(<View key={`divider-${index}`} style={styles.divider} />);
-            }
-            return acc;
-        }, []);
     }, [children, variant]);
 
     return (
