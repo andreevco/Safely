@@ -1,25 +1,44 @@
 {
   "expo": {
-    "name": "Yet Another Wallet",
-    "slug": "andreevco-wallet",
+    "name": "Safely",
+    "slug": "andreevco-safely",
     "version": "1.0.0",
     "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "scheme": "andreevco-wallet",
+    "scheme": "andreevco-safely",
     "ios": {
+      "infoPlist": {
+        "UIDesignRequiresCompatibility": true
+      },
       "supportsTablet": true,
-      "bundleIdentifier": "com.andreevco.wallet"
+      "bundleIdentifier": "com.andreevco.safely"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.andreevco.wallet"
+      "package": "com.andreevco.safely"
     },
     "plugins": [
+      [
+        "expo-localization",
+        {
+          "supportedLocales": {
+            "ios": [
+              "en",
+              "ru"
+            ],
+            "android": [
+              "en",
+              "ru"
+            ]
+          }
+        }
+      ],
+      "react-native-bottom-tabs",
       "expo-asset",
       [
         "expo-splash-screen",

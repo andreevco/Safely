@@ -1,0 +1,25 @@
+import { Icon, IconProps } from '@mobile/shared/ui/Icon';
+import { Text } from '@mobile/shared/ui/Text';
+import { TouchableOpacity } from '@mobile/shared/ui/TouchableOpacity';
+import { View } from 'react-native';
+
+import { styles } from './ActionsButton.styles';
+
+export type ActionsButtonProps = {
+    title: string;
+    icon: IconProps['icon'];
+    onPress: () => void;
+};
+
+export const ActionsButton = (props: ActionsButtonProps) => {
+    const { title, icon, onPress } = props;
+
+    return (
+        <TouchableOpacity onPress={onPress} style={styles.container}>
+            <View style={styles.iconContainer}>
+                <Icon icon={icon} size={28} />
+            </View>
+            <Text variant="bodyM">{title}</Text>
+        </TouchableOpacity>
+    );
+};
