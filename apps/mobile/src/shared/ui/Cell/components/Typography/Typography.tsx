@@ -1,6 +1,6 @@
 import { Text, TextProps } from '@mobile/shared/ui/Text';
 
-export const CellTitle = (props: TextProps) => {
+export const Title = (props: TextProps) => {
     const { children, ...rest } = props;
 
     return (
@@ -10,7 +10,7 @@ export const CellTitle = (props: TextProps) => {
     );
 };
 
-export const CellSubtitle = (props: TextProps) => {
+export const Subtitle = (props: TextProps) => {
     const { children, ...rest } = props;
 
     return (
@@ -20,7 +20,7 @@ export const CellSubtitle = (props: TextProps) => {
     );
 };
 
-export const CellValue = (props: TextProps) => {
+export const Value = (props: TextProps) => {
     const { children, ...rest } = props;
 
     return (
@@ -30,7 +30,7 @@ export const CellValue = (props: TextProps) => {
     );
 };
 
-export const CellSubvalue = (props: TextProps) => {
+export const Subvalue = (props: TextProps) => {
     const { children, ...rest } = props;
 
     return (

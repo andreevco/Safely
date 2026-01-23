@@ -81,6 +81,11 @@ export const styles = StyleSheet.create(theme => ({
                 right: {
                     textAlign: 'right'
                 }
+            },
+            capitalize: {
+                true: {
+                    textTransform: 'capitalize'
+                }
             }
         }
     }
