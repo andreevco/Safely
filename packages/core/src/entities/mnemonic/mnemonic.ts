@@ -22,3 +22,7 @@ export async function validateMnemonic(type: MNEMONIC_TYPE, secret: IMnemonic) {
         assertUnreachable(type);
     }
 }
+
+export interface IMnemonicAccessor {
+    value: IMnemonic;
+}
