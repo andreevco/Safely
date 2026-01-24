@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { defineQueryKeys, finalKey, mappedParams } from '../src/shared';
+import { defineQueryKeys, finalKey, mappedParams } from '../src';
 
 describe('defineQueryKeys', () => {
     describe('Simple nested structure', () => {

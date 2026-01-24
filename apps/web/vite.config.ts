@@ -7,7 +7,8 @@ export default defineConfig({
     plugins: [tailwindcss(), react()],
     resolve: {
         alias: {
-            '@safely/ux': path.resolve(__dirname, '../../packages/ux/src')
+            '@safely/ux': path.resolve(__dirname, '../../packages/ux/src'),
+            '@safely/core': path.resolve(__dirname, '../../packages/core/src')
         }
     }
 });
