@@ -1,11 +1,10 @@
-import Big from 'big.js';
-
 import { FiatAsset, FiatAssetAmount, RatedCryptoAssetAmount } from '@safely/core/entities';
+import { toBig } from '@safely/core/utils';
 
 export function getSortedAssets(assets: RatedCryptoAssetAmount[]): RatedCryptoAssetAmount[] {
     return [...assets].sort((a, b) => {
-        const aFiat = a.price ? a.amount.convert(a.price).amount : Big(0);
-        const bFiat = b.price ? b.amount.convert(b.price).amount : Big(0);
+        const aFiat = a.price ? a.amount.convert(a.price).amount : toBig(0);
+        const bFiat = b.price ? b.amount.convert(b.price).amount : toBig(0);
 
         return bFiat.gt(aFiat) ? 1 : -1;
     });
@@ -20,7 +19,7 @@ export function calculateTotalBalance(
             return acc.plus(amount.convert(price).amount);
         }
         return acc;
-    }, Big(0));
+    }, toBig(0));
 
     return new FiatAssetAmount({ asset: fiat, amount: sum });
 }

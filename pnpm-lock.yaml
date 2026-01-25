@@ -241,9 +241,6 @@ importers:
       '@types/react':
         specifier: ^19.1.0
         version: 19.1.17
-      big.js:
-        specifier: ^7.0.1
-        version: 7.0.1
       react:
         specifier: ^19.1.0
         version: 19.1.0
