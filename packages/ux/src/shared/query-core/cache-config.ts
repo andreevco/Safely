@@ -1,12 +1,22 @@
 import { z } from 'zod';
 
-// TODO Get schemas from the core level
+import { bootConfigSchema } from '@safely/core/api/boot/models';
+import { sRatedCryptoAssetAmountArray } from '@safely/core/entities';
+
+const sInfiniteActivityData = z.object({
+    pages: z.array(
+        z.object({
+            items: z.array(z.unknown()),
+            hasNextPage: z.boolean()
+        })
+    ),
+    pageParams: z.array(z.unknown())
+});
+
 export const cacheSchemas = {
-    // sRatedCryptoAssetAmountArray,
-    // sInfiniteActivityData,
-    // sInfiniteTokenActivityData,
-    // bootConfigSchema
-    _placeholder: z.unknown() // TODO Remove it afterwards
+    sRatedCryptoAssetAmountArray,
+    bootConfig: bootConfigSchema,
+    infiniteActivityData: sInfiniteActivityData
 } satisfies Record<string, z.ZodType>;
 
 export type CacheSchemaKey = keyof typeof cacheSchemas;

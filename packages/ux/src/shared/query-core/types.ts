@@ -17,7 +17,7 @@ export type DerivedQueryResult<TData = unknown, TError = unknown> = {
     isFetching: boolean;
     error: TError | null;
     dataUpdatedAt: number;
-    isActualised: boolean;
-    refetch: () => Promise<unknown[]>;
-    promise: Promise<TData>;
+    isActualised?: boolean;
+    refetch: () => Promise<unknown>;
+    promise?: Promise<TData>;
 };
