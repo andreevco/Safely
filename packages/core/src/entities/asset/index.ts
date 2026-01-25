@@ -1,6 +1,8 @@
 export {
     CryptoAssetAmount,
     FiatAssetAmount,
+    isCryptoAssetAmount,
+    isFiatAssetAmount,
     type RatedCryptoAssetAmount,
     type RatedCryptoAssetAmountArray,
     sRatedCryptoAssetAmount,
