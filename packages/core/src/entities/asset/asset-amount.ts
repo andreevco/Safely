@@ -5,7 +5,14 @@ import { CryptoAsset, isCryptoAsset, sCryptoAsset } from './crypto-asset';
 import { FiatAsset, isFiatAsset, sFiatAsset } from './fiat-asset';
 import { IAsset } from './I-asset';
 import { Rate, sCryptoFiatRate } from './rate';
-import { isZero, toBig, toBigInt } from '../../utils/number';
+import {
+    CryptoCurrencyDisplay,
+    FiatCurrencyDisplay,
+    NumberFormatter,
+    isZero,
+    toBig,
+    toBigInt
+} from '../../utils';
 
 type AssetAmountByAsset<T extends IAsset> = T extends CryptoAsset
     ? CryptoAssetAmount<T>
@@ -159,9 +166,15 @@ export const sFiatAssetAmount = z
 export class FiatAssetAmount<T extends FiatAsset = FiatAsset> extends AssetAmount<T> {
     declare public readonly asset: T;
 
-    public format(): string {
-        // TODO
-        return '';
+    public format(
+        formatter: NumberFormatter,
+        options?: {
+            fullPrecision?: boolean;
+            showPositiveSign?: boolean;
+            currencyDisplay?: FiatCurrencyDisplay;
+        }
+    ): string {
+        return formatter.formatAssetAmount(this, options);
     }
 
     public amountMul(operand: BigSource): FiatAssetAmount<T> {
@@ -266,9 +279,11 @@ export class CryptoAssetAmount<T extends CryptoAsset = CryptoAsset> extends Base
         this.weiAmount = weiAmount;
     }
 
-    public format(): string {
-        // TODO
-        return '';
+    public format(
+        formatter: NumberFormatter,
+        options?: { fullPrecision?: boolean; currencyDisplay?: CryptoCurrencyDisplay }
+    ): string {
+        return formatter.formatAssetAmount(this, options);
     }
 
     public amountMul(operand: BigSource | bigint): CryptoAssetAmount<T> {
@@ -345,6 +360,14 @@ export class CryptoAssetAmount<T extends CryptoAsset = CryptoAsset> extends Base
             weiAmount: this.weiAmount.toString()
         };
     }
+}
+
+export function isFiatAssetAmount(amount: unknown): amount is FiatAssetAmount {
+    return amount instanceof FiatAssetAmount;
+}
+
+export function isCryptoAssetAmount(amount: unknown): amount is CryptoAssetAmount {
+    return amount instanceof CryptoAssetAmount;
 }
 
 export const sRatedCryptoAssetAmount = z.object({

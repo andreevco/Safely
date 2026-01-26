@@ -46,6 +46,10 @@ export function toBigSoft(val: BigSource | bigint | undefined): Big | null {
     }
 }
 
+export function toBigOrZero(val: BigSource | bigint | undefined): Big {
+    return toBigSoft(val) ?? Big(0);
+}
+
 export function isZero(value: BigSource | bigint): boolean {
     return toBig(value).eq(0);
 }
