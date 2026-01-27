@@ -1,4 +1,3 @@
-import Big from 'big.js';
 import { z } from 'zod';
 
 import { AddressSchema, GasPriceSchema, UtxoSchema } from './models';
@@ -57,18 +56,7 @@ export class BtcApi extends ApiClient implements IIdentifiable {
      * float sat/vByte
      */
     public async getFeePrice() {
-        const parsed = await this.getJson('/api/gasprice', GasPriceSchema);
-        const keys = Object.keys(parsed)
-            .map(Number)
-            .filter(isFinite)
-            .filter(k => k >= 0);
-
-        if (keys.length === 0) {
-            throw new Error('Cannot fetch gasprice');
-        }
-
-        const minKey = Math.min(...keys);
-        return new Big(parsed[minKey]);
+        return this.getJson('/api/gasprice', GasPriceSchema);
     }
 
     public async sendTransaction(hex: string): Promise<{ txid: string }> {
