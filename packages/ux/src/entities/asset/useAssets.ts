@@ -1,10 +1,12 @@
-import { BTC_ASSET, CryptoAssetAmount, RatedCryptoAssetAmount } from '@safely/core/entities';
+import { BTC_ASSET, CryptoAssetAmount, RatedCryptoAssetAmount, Rate } from '@safely/core/entities';
+import { toBig } from '@safely/core/utils';
 
 import {
     QUERIES_STALE_TIME,
     QUERIES_REFETCH_INTERVAL,
     usePersistQuery,
-    useBtcApi
+    useBtcApi,
+    usePriceApi
 } from '../../shared';
 import { useActiveFiat } from '../fiat';
 import { useActiveBtcWallet } from '../portfolio';
@@ -14,6 +16,7 @@ import { getSortedAssets } from './utils';
 export function useAssets() {
     const btcApi = useBtcApi();
     const fiat = useActiveFiat();
+    const priceApi = usePriceApi();
     const wallet = useActiveBtcWallet();
 
     return usePersistQuery<RatedCryptoAssetAmount[]>({
@@ -21,19 +24,36 @@ export function useAssets() {
         queryFn: async () => {
             const fiatSymbol = fiat.id.symbol;
 
-            const addressInfo = await btcApi.getXpub(wallet, {
-                secondaryCurrency: fiatSymbol
-            });
+            const [addressInfo, priceResponse] = await Promise.all([
+                btcApi.getXpub(wallet, {
+                    secondaryCurrency: fiatSymbol
+                }),
+                priceApi.getCurrentPrice({
+                    token: 'native',
+                    currency: fiatSymbol,
+                    blockchain: 'bitcoin'
+                })
+            ]);
 
             const btcAmount = new CryptoAssetAmount({
                 asset: BTC_ASSET,
                 weiAmount: addressInfo.balance
             });
 
-            // TODO: Waiting for RateApi
+            const btcPrice = priceResponse
+                ? new Rate(
+                      BTC_ASSET,
+                      fiat,
+                      toBig(priceResponse.price),
+                      undefined,
+                      String(priceResponse.diff_24h),
+                      undefined
+                  )
+                : null;
+
             const btcItem: RatedCryptoAssetAmount = {
                 amount: btcAmount,
-                price: null
+                price: btcPrice
             };
 
             return getSortedAssets([btcItem]);

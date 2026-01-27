@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { BtcApiError } from '../api/btc/client';
+import { BtcApiError } from '../api/btc/errors';
 import { APIErrorSchema } from '../api/btc/models';
 
 export class ApiClient {
