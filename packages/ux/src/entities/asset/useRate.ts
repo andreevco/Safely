@@ -1,18 +1,33 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { CryptoAsset, CryptoFiatRate } from '@safely/core/entities';
+import { CryptoAsset, CryptoFiatRate, Rate } from '@safely/core/entities';
+import { toBig } from '@safely/core/utils';
 
 import { assetKeys } from './keys';
+import { usePriceApi } from '../../shared';
 import { useActiveFiat } from '../fiat';
 
 export function useRate(asset: CryptoAsset) {
     const fiat = useActiveFiat();
+    const priceApi = usePriceApi();
 
     const query = useQuery<CryptoFiatRate | null>({
         queryKey: assetKeys.rate(asset.id.toString()).fiat(fiat.id.toString()).toKey(),
         queryFn: async () => {
-            // TODO: We need rateAPI first
-            return null;
+            const response = await priceApi.getCurrentPrice({
+                token: 'native',
+                blockchain: 'bitcoin',
+                currency: fiat.id.symbol
+            });
+
+            return new Rate(
+                asset,
+                fiat,
+                toBig(response.price),
+                undefined,
+                String(response.diff_24h),
+                undefined
+            );
         }
     });
 
