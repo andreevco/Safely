@@ -1,5 +1,4 @@
-import { HomeScreen } from '@mobile/screens/HomeScreen';
-import { HomeSheet } from '@mobile/screens/HomeScreen/screens';
+import { QRScanModal } from '@mobile/screens/QRScanModal';
 import { createStaticNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
@@ -15,16 +14,14 @@ export const RootStack = createNativeStackNavigator({
         },
         Modals: {
             screens: {
-                HomeModal: HomeScreen
+                QRScanModal: QRScanModal
             },
             screenOptions: {
                 presentation: 'modal'
             }
         },
         Sheets: {
-            screens: {
-                HomeSheet: HomeSheet
-            },
+            screens: {},
             screenOptions: {
                 animationDuration: 0,
                 presentation: 'transparentModal',

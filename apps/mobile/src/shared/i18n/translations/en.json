@@ -5,5 +5,16 @@
             "receive": "Receive",
             "scan": "Scan"
         }
+    },
+    "camera": {
+        "permissionRequest": {
+            "title": "Camera access required",
+            "description": "Turn on camera access to scan QR codes and connect services.",
+            "button": "Open Settings"
+        },
+        "noCameraFound": {
+            "title": "No camera found",
+            "description": "Please check your camera settings and try again."
+        }
     }
 }

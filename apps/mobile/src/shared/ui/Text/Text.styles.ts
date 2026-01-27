@@ -23,6 +23,12 @@ export const styles = StyleSheet.create(theme => ({
                     letterSpacing: 0.35
                 },
                 titleL: {
+                    fontSize: 32,
+                    lineHeight: 40,
+                    fontWeight: '600',
+                    letterSpacing: 0.42
+                },
+                titleM: {
                     fontSize: 24,
                     lineHeight: 32,
                     fontWeight: '600',

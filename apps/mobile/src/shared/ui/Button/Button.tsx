@@ -13,7 +13,7 @@ export const Button = (props: ButtonProps) => {
     styles.useVariants({ type, size });
 
     return (
-        <TouchableOpacity {...rest}>
+        <TouchableOpacity style={styles.container} {...rest}>
             {typeof children === 'string' ? (
                 <Text variant={size === 'small' ? 'labelM' : 'labelL'}>{children}</Text>
             ) : (

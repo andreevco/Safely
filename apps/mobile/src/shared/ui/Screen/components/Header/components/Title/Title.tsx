@@ -5,7 +5,7 @@ import { styles } from './Title.styles';
 import { useHeaderVariant } from '../../Header.context';
 
 interface TitleProps {
-    children: React.ReactNode;
+    children?: React.ReactNode;
 }
 
 export const Title = (props: TitleProps) => {

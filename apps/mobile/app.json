@@ -10,10 +10,15 @@
     "scheme": "andreevco-safely",
     "ios": {
       "infoPlist": {
-        "UIDesignRequiresCompatibility": true
+        "UIDesignRequiresCompatibility": true,
+        "CFBundleLocalizations": [
+          "en",
+          "ru"
+        ]
       },
       "supportsTablet": true,
-      "bundleIdentifier": "com.andreevco.safely"
+      "bundleIdentifier": "com.andreevco.safely",
+      "appleTeamId": "7SJ59D8JGU"
     },
     "android": {
       "adaptiveIcon": {

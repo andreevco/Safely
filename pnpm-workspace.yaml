@@ -1,6 +1,9 @@
 packages:
-  - 'packages/*'
-  - 'apps/web/*'
-  - 'apps/mobile'
+  - packages/*
+  - apps/web/*
+  - apps/mobile
 
 minimumReleaseAge: 10080
+
+patchedDependencies:
+  react-native-vision-camera: patches/react-native-vision-camera.patch
