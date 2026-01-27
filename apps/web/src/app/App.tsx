@@ -32,7 +32,7 @@ function AppContent() {
             },
             sdk: {}, // TODO Implement
             version: packageJson.version,
-            build: 'browser',
+            build: 'web',
             toast: toastService
         };
     }, [toastService]);
