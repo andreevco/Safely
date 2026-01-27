@@ -2,7 +2,7 @@ import { QueryCache, QueryClient } from '@tanstack/react-query';
 import { Persister, PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import React, { FC, PropsWithChildren, ReactNode, Suspense, useEffect, useState } from 'react';
 
-import { QueryHydrationProvider } from './QueryHydrationContext';
+import { QueryHydrationProvider } from '../contexts';
 import { QUERIES_STALE_TIME, BUSTER_VERSION, CACHE_LIVE_TIME } from '../query-core';
 
 const queryClient = new QueryClient({

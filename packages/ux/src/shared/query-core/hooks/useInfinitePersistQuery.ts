@@ -5,7 +5,7 @@ import {
     UseInfiniteQueryResult
 } from '@tanstack/react-query';
 
-import { useHydratedAt } from '../../providers';
+import { useHydratedAt } from '../../contexts';
 import { useIsActualised } from '../persist-helpers';
 import type { WithIsActualised, WithPersistMeta } from '../types';
 
