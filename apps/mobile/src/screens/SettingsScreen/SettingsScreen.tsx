@@ -49,6 +49,10 @@ export const SettingsScreen = () => {
         if (key === 'notifications') {
             navigation.navigate('NotificationsModal');
         }
+
+        if (key === 'security') {
+            navigation.navigate('SecurityModal');
+        }
     };
 
     return (

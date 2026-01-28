@@ -26,6 +26,38 @@
             "subtitle": "Get notifications when you receive BTC."
         }
     },
+    "security": {
+        "title": "Security",
+        "groups": {
+            "account": {
+                "title": "Account",
+                "protect": {
+                    "title": "Protect your account",
+                    "subtitle": "Link another device to protect your account. Without it, your access can't be restored if this phone is lost."
+                }
+            },
+            "application": {
+                "title": "Application",
+                "faceId": {
+                    "title": "Face ID",
+                    "subtitle": "Unlock securely with a glance. No password needed."
+                },
+                "lockScreen": {
+                    "title": "Lock screen",
+                    "subtitle": "Require passcode to view wallet contents."
+                },
+                "changePasscode": "Change passcode"
+            },
+            "wallet": {
+                "title": "Wallet",
+                "main": "Main",
+                "recovery": {
+                    "title": "Recovery phrase",
+                    "subtitle": "Keep it private. View only if necessary. This phrase has never been viewed."
+                }
+            }
+        }
+    },
     "settings": {
         "title": "Settings",
         "groups": {
