@@ -17,8 +17,5 @@ export const styles = StyleSheet.create((theme, rt) => ({
     headerPlaceholder: {
         width: 40,
         padding: theme.spacing[12]
-    },
-    backIcon: {
-        transform: [{ rotate: '180deg' }]
     }
 }));
