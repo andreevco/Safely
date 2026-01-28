@@ -36,6 +36,11 @@
             "cancel": "Cancel",
             "reveal": "Reveal"
         },
+        "phraseSheet": {
+            "title": "Recovery phrase",
+            "warning": "Do not share this phrase. Anyone with it can access your\u00A0wallet.",
+            "copy": "Copy"
+        },
         "groups": {
             "account": {
                 "title": "Account",

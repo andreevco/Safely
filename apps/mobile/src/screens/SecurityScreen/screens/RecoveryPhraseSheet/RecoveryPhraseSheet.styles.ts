@@ -1,57 +1,45 @@
+import Color from 'color';
 import { StyleSheet } from 'react-native-unistyles';
 
-export const styles = StyleSheet.create((theme, rt) => ({
+export const styles = StyleSheet.create(theme => ({
     content: {
+        paddingHorizontal: theme.spacing[16],
+        gap: theme.spacing[8]
+    },
+    banner: {
+        flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: theme.spacing[24]
+        justifyContent: 'space-between',
+        gap: theme.spacing[16],
+        borderRadius: theme.radius.md,
+        paddingVertical: theme.spacing[12],
+        paddingHorizontal: theme.spacing[16],
+        backgroundColor: Color(theme.colors.accent.orange).alpha(0.16).toString()
     },
-    titleBox: {
-        alignItems: 'center',
-        marginVertical: theme.spacing[16],
-        marginHorizontal: theme.spacing[8]
+    bannerText: {
+        flex: 1,
+        color: theme.colors.accent.red
     },
-    description: {
-        textAlign: 'center'
+    bannerIcon: {
+        tintColor: theme.colors.accent.red
     },
-    warningBox: {
-        width: '100%',
+    wordsContainer: {
+        flexDirection: 'row',
         borderRadius: theme.radius.md,
         borderWidth: theme.border.hairline,
         borderColor: theme.colors.other.transparentElement,
-        backgroundColor: theme.colors.background.tertiary,
-        padding: theme.spacing[16],
-        marginVertical: theme.spacing[16],
-        gap: theme.spacing[4]
+        backgroundColor: theme.colors.background.secondary,
+        overflow: 'hidden'
     },
-    bulletRow: {
-        flexDirection: 'row',
-        alignItems: 'flex-start',
-        gap: theme.spacing[12]
-    },
-    bulletDot: {
-        width: 6,
-        height: 6,
-        borderRadius: theme.radius.full,
-        backgroundColor: theme.colors.icon.tertiary,
-        marginTop: 7
-    },
-    bulletText: {
+    column: {
         flex: 1
     },
-    buttons: {
-        flexDirection: 'row',
-        gap: theme.spacing[8],
-        marginVertical: theme.spacing[24]
-    },
-    button: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingVertical: theme.spacing[16],
+    copyButton: {
+        marginHorizontal: 'auto',
+        paddingVertical: theme.spacing[8],
+        paddingHorizontal: theme.spacing[16],
+        backgroundColor: theme.colors.button.secondary.background,
         borderRadius: theme.radius.full,
-        backgroundColor: theme.colors.button.secondary.background
-    },
-    buttonPrimary: {
-        backgroundColor: theme.colors.button.primary.background
+        marginBottom: theme.spacing[24]
     }
 }));

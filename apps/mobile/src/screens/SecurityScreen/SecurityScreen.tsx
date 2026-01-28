@@ -19,7 +19,7 @@ export const SecurityScreen = () => {
     const [lockScreenEnabled, setLockScreenEnabled] = useState(false);
 
     const handleRecoveryPress = () => {
-        rootNavigation.navigate('RecoveryPhraseSheet');
+        rootNavigation.navigate('RecoveryConfirmSheet');
     };
 
     return (

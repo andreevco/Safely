@@ -1,0 +1,68 @@
+import { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import { BottomSheet, Button, Text, useBottomSheet } from '@mobile/shared/ui';
+import { Icon, ListKey96 } from '@mobile/shared/ui/Icon';
+import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
+import { View } from 'react-native';
+
+import { styles } from './RecoveryConfirmSheet.styles';
+
+const RecoveryConfirmContent = () => {
+    const { t } = useTranslation();
+    const { close } = useBottomSheet();
+    const navigation = useNavigation<RootStackNavigationProp>();
+
+    const handleReveal = () => {
+        navigation.navigate('RecoveryPhraseModal');
+    };
+
+    return (
+        <View style={styles.content}>
+            <Icon icon={ListKey96} />
+
+            <View style={styles.titleBox}>
+                <Text variant="titleL">{t('security.recoverySheet.title')}</Text>
+                <Text variant="bodyL" color="secondary" style={styles.description}>
+                    {t('security.recoverySheet.description')}
+                </Text>
+            </View>
+
+            <View style={styles.warningBox}>
+                <View style={styles.bulletRow}>
+                    <View style={styles.bulletDot} />
+                    <Text variant="bodyM" color="secondary" style={styles.bulletText}>
+                        {t('security.recoverySheet.warning1')}
+                    </Text>
+                </View>
+                <View style={styles.bulletRow}>
+                    <View style={styles.bulletDot} />
+                    <Text variant="bodyM" color="secondary" style={styles.bulletText}>
+                        {t('security.recoverySheet.warning2')}
+                    </Text>
+                </View>
+            </View>
+
+            <View style={styles.buttons}>
+                <Button type="secondary" size="large" style={styles.button} onPress={close}>
+                    {t('security.recoverySheet.cancel')}
+                </Button>
+                <Button
+                    type="primary"
+                    size="large"
+                    style={[styles.button, styles.buttonPrimary]}
+                    onPress={handleReveal}
+                >
+                    {t('security.recoverySheet.reveal')}
+                </Button>
+            </View>
+        </View>
+    );
+};
+
+export const RecoveryConfirmSheet = () => {
+    return (
+        <BottomSheet headerTitle=" ">
+            <RecoveryConfirmContent />
+        </BottomSheet>
+    );
+};

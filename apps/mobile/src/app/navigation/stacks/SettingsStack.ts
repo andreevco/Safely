@@ -5,9 +5,9 @@ import { SettingsScreen } from '@mobile/screens/SettingsScreen';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 export const SettingsStack = createNativeStackNavigator({
-    initialRouteName: 'SettingsModal',
+    initialRouteName: 'SettingsRootModal',
     screens: {
-        SettingsModal: SettingsScreen,
+        SettingsRootModal: SettingsScreen,
         LanguageModal: LanguageScreen,
         NotificationsModal: NotificationsScreen,
         SecurityModal: SecurityScreen
