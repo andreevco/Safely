@@ -4,3 +4,4 @@ export * from './blockchain';
 export * from './derivation';
 export * from './mnemonic';
 export * from './portfolio';
+export * from './recipient';
