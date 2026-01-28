@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { AddressSchema, GasPriceSchema, UtxoSchema } from './models';
+import {AddressSchema, GasPriceSchema, GasPricesSchema, TxSchema, UtxoSchema} from './models';
 import { BtcWalletType } from '../../entities/blockchain/btc';
 import { ApiClient } from '../../utils/fetch';
 import { IIdentifiable } from '../../utils/types';
@@ -52,11 +52,15 @@ export class BtcApi extends ApiClient implements IIdentifiable {
         return await this.getJson(`/api/v2/utxo/${serialized}`, z.array(UtxoSchema));
     }
 
+    public async getTransaction(txid: string) {
+        return await this.getJson(`/api/v2/tx/${txid}`, TxSchema);
+    }
+
     /**
      * float sat/vByte
      */
     public async getFeePrice() {
-        return this.getJson('/api/gasprice', GasPriceSchema);
+        return this.getJson('/api/gasprice', GasPricesSchema);
     }
 
     public async sendTransaction(hex: string): Promise<{ txid: string }> {
