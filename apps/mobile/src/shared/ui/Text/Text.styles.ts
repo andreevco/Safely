@@ -97,8 +97,14 @@ export const styles = StyleSheet.create(theme => ({
                     textAlign: 'right'
                 }
             },
-            capitalize: {
-                true: {
+            textTransform: {
+                uppercase: {
+                    textTransform: 'uppercase'
+                },
+                lowercase: {
+                    textTransform: 'lowercase'
+                },
+                capitalize: {
                     textTransform: 'capitalize'
                 }
             },
