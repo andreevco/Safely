@@ -17,6 +17,15 @@
             "ru": "Russian"
         }
     },
+    "notifications": {
+        "title": "Notifications",
+        "warning": "Notifications are disabled. You turned off notifications in your phone's settings. To activate notifications, go to Settings on this device.",
+        "openSettings": "Open Settings",
+        "push": {
+            "title": "Push notifications",
+            "subtitle": "Get notifications when you receive BTC."
+        }
+    },
     "settings": {
         "title": "Settings",
         "groups": {

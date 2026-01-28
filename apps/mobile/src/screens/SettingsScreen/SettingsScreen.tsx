@@ -45,6 +45,10 @@ export const SettingsScreen = () => {
         if (key === 'language') {
             navigation.navigate('LanguageModal');
         }
+
+        if (key === 'notifications') {
+            navigation.navigate('NotificationsModal');
+        }
     };
 
     return (
