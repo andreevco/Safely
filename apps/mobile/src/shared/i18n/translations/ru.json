@@ -1,9 +1,42 @@
 {
+    "currentLanguageName": "Русский",
+    "currency": {
+        "title": "Валюта"
+    },
     "home": {
         "actions": {
             "send": "Отправить",
             "receive": "Получить",
             "scan": "Сканировать"
+        }
+    },
+    "language": {
+        "title": "Язык",
+        "languages": {
+            "en": "Английский",
+            "ru": "Русский"
+        }
+    },
+    "settings": {
+        "title": "Настройки",
+        "groups": {
+            "account": {
+                "title": "Аккаунт",
+                "options": {
+                    "notifications": "Уведомления",
+                    "security": "Безопасность",
+                    "language": "Язык"
+                }
+            },
+            "info": {
+                "title": "Инфо",
+                "options": {
+                    "support": "Поддержка",
+                    "faq": "FAQ",
+                    "rate": "Оценить",
+                    "legal": "Правовая информация"
+                }
+            }
         }
     }
 }

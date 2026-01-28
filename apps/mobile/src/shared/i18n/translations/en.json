@@ -1,4 +1,5 @@
 {
+    "currentLanguageName": "English",
     "currency": {
         "title": "Currency"
     },
@@ -7,6 +8,13 @@
             "send": "Send",
             "receive": "Receive",
             "scan": "Scan"
+        }
+    },
+    "language": {
+        "title": "Language",
+        "languages": {
+            "en": "English",
+            "ru": "Russian"
         }
     },
     "settings": {
