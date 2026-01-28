@@ -2,7 +2,7 @@ import { Text } from '@mobile/shared/ui/Text';
 import { View } from 'react-native';
 
 import { styles } from './Title.styles';
-import { useHeaderVariant } from '../../Header.context';
+import { useHeaderHasSides, useHeaderVariant } from '../../Header.context';
 
 interface TitleProps {
     children?: React.ReactNode;
@@ -11,9 +11,12 @@ interface TitleProps {
 export const Title = (props: TitleProps) => {
     const { children } = props;
     const variant = useHeaderVariant();
+    const hasSides = useHeaderHasSides();
+
+    styles.useVariants({ variant });
 
     return (
-        <View style={styles.container(variant === 'left')}>
+        <View style={styles.container(hasSides)}>
             <Text textAlign={variant} variant="titleS" numberOfLines={1}>
                 {children}
             </Text>

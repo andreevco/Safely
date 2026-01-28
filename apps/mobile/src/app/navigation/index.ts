@@ -1,4 +1,7 @@
+import { AddWalletModal } from '@mobile/screens/AddWalletModal';
 import { QRScanModal } from '@mobile/screens/QRScanModal';
+import { ReceiveAssetModal } from '@mobile/screens/ReceiveAssetModal';
+import { SelectAccountModal } from '@mobile/screens/SelectAccountModal';
 import { createStaticNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
@@ -14,7 +17,10 @@ export const RootStack = createNativeStackNavigator({
         },
         Modals: {
             screens: {
-                QRScanModal: QRScanModal
+                QRScanModal: QRScanModal,
+                AddWalletModal: AddWalletModal,
+                SelectAccountModal: SelectAccountModal,
+                ReceiveAssetModal: ReceiveAssetModal
             },
             screenOptions: {
                 presentation: 'modal'

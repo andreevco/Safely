@@ -6,6 +6,12 @@
             "scan": "Scan"
         }
     },
+    "accounts": {
+        "title": "Wallets"
+    },
+    "actions": {
+        "edit": "Edit"
+    },
     "camera": {
         "permissionRequest": {
             "title": "Camera access required",
@@ -16,5 +22,9 @@
             "title": "No camera found",
             "description": "Please check your camera settings and try again."
         }
+    },
+    "receiveAsset": {
+        "title": "Receive {{symbol}}",
+        "description": "Use this address to receive {{name}}."
     }
 }

@@ -3,7 +3,8 @@ import { StyleSheet } from 'react-native-unistyles';
 export const styles = StyleSheet.create(theme => ({
     container: {
         alignItems: 'center',
-        gap: theme.spacing[8]
+        gap: theme.spacing[8],
+        paddingHorizontal: theme.spacing[4]
     },
     iconContainer: {
         backgroundColor: theme.colors.background.tertiary,

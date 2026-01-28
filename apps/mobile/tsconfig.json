@@ -5,9 +5,9 @@
     "baseUrl": ".",
     "paths": {
       "@safely/core": ["../../packages/core/src"],
-      "@safely/core/api/*": ["../../packages/core/src/api/*"],
+      "@safely/core/*": ["../../packages/core/src/*"],
       "@safely/ux": ["../../packages/ux/src"],
-      "@safely/ux/shared/assets/*": ["../../packages/ux/src/shared/assets/*"],
+      "@safely/ux/*": ["../../packages/ux/src/*"],
       "@mobile/shared": ["./src/shared"],
       "@mobile/shared/*": ["./src/shared/*"],
       "@mobile/app": ["./src/app"],

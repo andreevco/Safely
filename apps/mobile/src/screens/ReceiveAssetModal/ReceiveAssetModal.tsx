@@ -1,0 +1,42 @@
+import { Screen, Text } from '@mobile/shared/ui';
+import { StaticScreenProps } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
+import { View } from 'react-native';
+
+import { ICryptoAsset } from '@safely/core/entities/asset/I-crypto-asset';
+
+import { QRCodeBlock } from './components/QRCodeBlock/QRCodeBlock';
+import { styles } from './ReceiveAssetModal.styles';
+
+type ReceiveAssetModalProps = StaticScreenProps<{
+    asset: ICryptoAsset;
+}>;
+
+export const ReceiveAssetModal = (props: ReceiveAssetModalProps) => {
+    const {
+        route: {
+            params: { asset }
+        }
+    } = props;
+    const { t } = useTranslation();
+
+    return (
+        <Screen>
+            <Screen.Header>
+                <Screen.Header.Title />
+                <Screen.Header.CloseButton />
+            </Screen.Header>
+            <Screen.Content>
+                <View style={styles.textContainer}>
+                    <Text textAlign="center" variant="titleM">
+                        {t('receiveAsset.title', { symbol: asset.symbol })}
+                    </Text>
+                    <Text textAlign="center" variant="bodyL" color="secondary">
+                        {t('receiveAsset.description', { name: asset.name })}
+                    </Text>
+                </View>
+                <QRCodeBlock address={'1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa'} />
+            </Screen.Content>
+        </Screen>
+    );
+};

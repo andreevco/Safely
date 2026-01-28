@@ -1,8 +1,11 @@
+import { Platform } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
 export const styles = StyleSheet.create(theme => ({
     text: {
+        includeFontPadding: false,
         color: theme.colors.text.primary,
+        textAlignVertical: 'center',
         variants: {
             color: {
                 primary: {
@@ -13,6 +16,12 @@ export const styles = StyleSheet.create(theme => ({
                 },
                 tertiary: {
                     color: theme.colors.text.tertiary
+                },
+                constantBlack: {
+                    color: theme.colors.other.constant.black
+                },
+                constantWhite: {
+                    color: theme.colors.other.constant.white
                 }
             },
             variant: {
@@ -91,6 +100,11 @@ export const styles = StyleSheet.create(theme => ({
             capitalize: {
                 true: {
                     textTransform: 'capitalize'
+                }
+            },
+            monospace: {
+                true: {
+                    fontFamily: Platform.OS === 'ios' ? 'ui-monospace' : 'monospace'
                 }
             }
         }

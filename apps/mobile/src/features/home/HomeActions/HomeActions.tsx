@@ -5,6 +5,8 @@ import { useNavigation } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { BTC_ASSET } from '@safely/core/entities/asset';
+
 import { styles } from './HomeActions.styles';
 
 export const HomeActions = () => {
@@ -13,7 +15,7 @@ export const HomeActions = () => {
 
     const handleQRScan = useCallback(() => {
         navigation.navigate('QRScanModal', {
-            onSuccess: value => {
+            onSuccess: (value: string) => {
                 console.log(value);
             },
             onClose: () => {},
@@ -21,13 +23,19 @@ export const HomeActions = () => {
         });
     }, [navigation, t]);
 
+    const handleNavigateToReceiveAsset = useCallback(() => {
+        navigation.navigate('ReceiveAssetModal', {
+            asset: BTC_ASSET
+        });
+    }, [navigation]);
+
     return (
         <Actions style={styles.container}>
             <Actions.Button title={t('home.actions.send')} icon={ArrowTop28} onPress={() => {}} />
             <Actions.Button
                 title={t('home.actions.receive')}
                 icon={ArrowDown28}
-                onPress={() => {}}
+                onPress={handleNavigateToReceiveAsset}
             />
             <Actions.Button
                 title={t('home.actions.scan')}
