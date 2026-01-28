@@ -1,5 +1,7 @@
+import { SettingsStackNavigationProp } from '@mobile/app/navigation/types';
 import { Cell, List, Screen } from '@mobile/shared/ui';
 import { TouchableOpacity } from '@mobile/shared/ui/TouchableOpacity';
+import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
@@ -8,7 +10,6 @@ import { styles } from './SettingsScreen.styles';
 interface SettingsItem {
     key: string;
     titleKey: string;
-    onPress?: () => void;
 }
 
 interface SettingsGroup {
@@ -38,6 +39,13 @@ const groups: SettingsGroup[] = [
 
 export const SettingsScreen = () => {
     const { t } = useTranslation();
+    const navigation = useNavigation<SettingsStackNavigationProp>();
+
+    const handleItemPress = (key: string) => {
+        if (key === 'language') {
+            navigation.navigate('LanguageModal');
+        }
+    };
 
     return (
         <Screen>
@@ -52,14 +60,21 @@ export const SettingsScreen = () => {
                         <List.Title>{t(group.titleKey)}</List.Title>
                         <List.Group variant="divided">
                             {group.items.map(item => (
-                                <TouchableOpacity key={item.key} onPress={item.onPress}>
+                                <TouchableOpacity
+                                    key={item.key}
+                                    onPress={() => handleItemPress(item.key)}
+                                >
                                     <Cell>
                                         <Cell.Content>
                                             <Cell.Row>
                                                 <Cell.Title>{t(item.titleKey)}</Cell.Title>
+                                                {item.key === 'language' && (
+                                                    <Cell.Value color="secondary">
+                                                        {t('currentLanguageName')}
+                                                    </Cell.Value>
+                                                )}
                                             </Cell.Row>
                                         </Cell.Content>
-                                        <Cell.Chevron />
                                     </Cell>
                                 </TouchableOpacity>
                             ))}

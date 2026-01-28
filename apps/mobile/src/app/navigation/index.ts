@@ -1,10 +1,10 @@
 import { CurrencyScreen } from '@mobile/screens/CurrencyScreen';
 import { HomeScreen } from '@mobile/screens/HomeScreen';
 import { HomeSheet } from '@mobile/screens/HomeScreen/screens';
-import { SettingsScreen } from '@mobile/screens/SettingsScreen';
 import { createStaticNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
+import { SettingsStack } from './stacks/SettingsStack';
 import { TabsNavigator } from './tabs';
 
 export const RootStack = createNativeStackNavigator({
@@ -18,7 +18,7 @@ export const RootStack = createNativeStackNavigator({
         Modals: {
             screens: {
                 HomeModal: HomeScreen,
-                SettingsModal: SettingsScreen,
+                SettingsModal: SettingsStack,
                 CurrencyModal: CurrencyScreen
             },
             screenOptions: {
