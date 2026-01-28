@@ -25,13 +25,11 @@ export const LanguageScreen = () => {
 
     const handlePress = useCallback(
         (code: string) => () => {
-            if (i18n.language !== code) {
-                i18n.changeLanguage(code);
-            }
+            if (i18n.language === code) return;
 
-            navigation.goBack();
+            i18n.changeLanguage(code);
         },
-        [i18n, navigation]
+        [i18n]
     );
 
     return (
