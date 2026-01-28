@@ -28,6 +28,14 @@
     },
     "security": {
         "title": "Security",
+        "recoverySheet": {
+            "title": "Recovery phrase",
+            "description": "The recovery phrase is used to back up your\u00A0wallet.",
+            "warning1": "Sharing it gives full control over your wallet.",
+            "warning2": "Anyone with it can use your wallet without your account.",
+            "cancel": "Cancel",
+            "reveal": "Reveal"
+        },
         "groups": {
             "account": {
                 "title": "Account",

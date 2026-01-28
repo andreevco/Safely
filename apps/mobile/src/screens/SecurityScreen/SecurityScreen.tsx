@@ -1,4 +1,4 @@
-import { SettingsStackNavigationProp } from '@mobile/app/navigation/types';
+import { RootStackNavigationProp, SettingsStackNavigationProp } from '@mobile/app/navigation/types';
 import { Cell, List, Screen, Switch } from '@mobile/shared/ui';
 import { ArrowLeft16, Icon } from '@mobile/shared/ui/Icon';
 import { TouchableOpacity } from '@mobile/shared/ui/TouchableOpacity';
@@ -12,10 +12,15 @@ import { styles } from './SecurityScreen.styles';
 export const SecurityScreen = () => {
     const { t } = useTranslation();
     const navigation = useNavigation<SettingsStackNavigationProp>();
+    const rootNavigation = useNavigation<RootStackNavigationProp>();
 
     // TODO: Real logic
     const [faceIdEnabled, setFaceIdEnabled] = useState(false);
     const [lockScreenEnabled, setLockScreenEnabled] = useState(false);
+
+    const handleRecoveryPress = () => {
+        rootNavigation.navigate('RecoveryPhraseSheet');
+    };
 
     return (
         <Screen>
@@ -122,7 +127,7 @@ export const SecurityScreen = () => {
                             </TouchableOpacity>
                         </List.Group>
                         <List.Group>
-                            <TouchableOpacity>
+                            <TouchableOpacity onPress={handleRecoveryPress}>
                                 <Cell>
                                     <Cell.Content>
                                         <Cell.Row>

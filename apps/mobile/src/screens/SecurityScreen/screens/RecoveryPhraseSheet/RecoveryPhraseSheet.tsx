@@ -1,0 +1,66 @@
+import { BottomSheet, Button, Text, useBottomSheet } from '@mobile/shared/ui';
+import { Icon, ListKey96 } from '@mobile/shared/ui/Icon';
+import { useTranslation } from 'react-i18next';
+import { Alert, View } from 'react-native';
+
+import { styles } from './RecoveryPhraseSheet.styles';
+
+const RecoveryPhraseContent = () => {
+    const { t } = useTranslation();
+    const { close } = useBottomSheet();
+
+    const handleReveal = () => {
+        // TODO: Implement reveal logic
+        Alert.alert('Not implemented yet!');
+    };
+
+    return (
+        <View style={styles.content}>
+            <Icon icon={ListKey96} />
+
+            <View style={styles.titleBox}>
+                <Text variant="titleL">{t('security.recoverySheet.title')}</Text>
+                <Text variant="bodyL" color="secondary" style={styles.description}>
+                    {t('security.recoverySheet.description')}
+                </Text>
+            </View>
+
+            <View style={styles.warningBox}>
+                <View style={styles.bulletRow}>
+                    <View style={styles.bulletDot} />
+                    <Text variant="bodyM" color="secondary" style={styles.bulletText}>
+                        {t('security.recoverySheet.warning1')}
+                    </Text>
+                </View>
+                <View style={styles.bulletRow}>
+                    <View style={styles.bulletDot} />
+                    <Text variant="bodyM" color="secondary" style={styles.bulletText}>
+                        {t('security.recoverySheet.warning2')}
+                    </Text>
+                </View>
+            </View>
+
+            <View style={styles.buttons}>
+                <Button type="secondary" size="large" style={styles.button} onPress={close}>
+                    {t('security.recoverySheet.cancel')}
+                </Button>
+                <Button
+                    type="primary"
+                    size="large"
+                    style={[styles.button, styles.buttonPrimary]}
+                    onPress={handleReveal}
+                >
+                    {t('security.recoverySheet.reveal')}
+                </Button>
+            </View>
+        </View>
+    );
+};
+
+export const RecoveryPhraseSheet = () => {
+    return (
+        <BottomSheet headerTitle=" ">
+            <RecoveryPhraseContent />
+        </BottomSheet>
+    );
+};

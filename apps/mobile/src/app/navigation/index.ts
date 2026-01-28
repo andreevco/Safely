@@ -1,6 +1,7 @@
 import { CurrencyScreen } from '@mobile/screens/CurrencyScreen';
 import { HomeScreen } from '@mobile/screens/HomeScreen';
 import { HomeSheet } from '@mobile/screens/HomeScreen/screens';
+import { RecoveryPhraseSheet } from '@mobile/screens/SecurityScreen/screens';
 import { createStaticNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
@@ -27,7 +28,8 @@ export const RootStack = createNativeStackNavigator({
         },
         Sheets: {
             screens: {
-                HomeSheet: HomeSheet
+                HomeSheet: HomeSheet,
+                RecoveryPhraseSheet: RecoveryPhraseSheet
             },
             screenOptions: {
                 animationDuration: 0,
