@@ -14,6 +14,9 @@ export const styles = StyleSheet.create(theme => ({
                 },
                 tertiary: {
                     tintColor: theme.colors.icon.tertiary
+                },
+                accent: {
+                    tintColor: theme.colors.accent.accent
                 }
             }
         }

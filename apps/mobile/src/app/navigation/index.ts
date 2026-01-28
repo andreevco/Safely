@@ -1,5 +1,7 @@
+import { CurrencyScreen } from '@mobile/screens/CurrencyScreen';
 import { HomeScreen } from '@mobile/screens/HomeScreen';
 import { HomeSheet } from '@mobile/screens/HomeScreen/screens';
+import { SettingsScreen } from '@mobile/screens/SettingsScreen';
 import { createStaticNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
@@ -15,7 +17,9 @@ export const RootStack = createNativeStackNavigator({
         },
         Modals: {
             screens: {
-                HomeModal: HomeScreen
+                HomeModal: HomeScreen,
+                SettingsModal: SettingsScreen,
+                CurrencyModal: CurrencyScreen
             },
             screenOptions: {
                 presentation: 'modal'

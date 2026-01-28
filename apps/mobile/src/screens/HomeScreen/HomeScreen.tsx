@@ -1,21 +1,38 @@
-import { HomeActions } from '@mobile/features/home';
+import { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import { CurrencyButton, HomeActions, SettingsButton } from '@mobile/features/home';
 import { Banner, Cell, List, Screen, Switch } from '@mobile/shared/ui';
 import { ArrowDown28 } from '@mobile/shared/ui/Icon';
+import { useNavigation } from '@react-navigation/native';
 import { useState } from 'react';
 
 import { styles } from './HomeScreen.styles';
 
 export const HomeScreen = () => {
+    const navigation = useNavigation<RootStackNavigationProp>();
     const [isOn, setIsOn] = useState(false);
 
     const handlePress = () => {
         setIsOn(!isOn);
     };
 
+    const handleSettingsPress = () => {
+        navigation.navigate('SettingsModal');
+    };
+
+    const handleCurrencyPress = () => {
+        navigation.navigate('CurrencyModal');
+    };
+
     return (
         <Screen>
             <Screen.Header variant="center">
-                <Screen.Header.Title>Title</Screen.Header.Title>
+                <Screen.Header.Button style={styles.button} onPress={handleSettingsPress}>
+                    <SettingsButton />
+                </Screen.Header.Button>
+                <Screen.Header.Title>title</Screen.Header.Title>
+                <Screen.Header.Button style={styles.button} onPress={handleCurrencyPress}>
+                    <CurrencyButton />
+                </Screen.Header.Button>
             </Screen.Header>
             <Screen.Scrollable contentContainerStyle={styles.container}>
                 <HomeActions />

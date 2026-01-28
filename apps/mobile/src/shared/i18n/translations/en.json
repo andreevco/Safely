@@ -1,9 +1,34 @@
 {
+    "currency": {
+        "title": "Currency"
+    },
     "home": {
         "actions": {
             "send": "Send",
             "receive": "Receive",
             "scan": "Scan"
+        }
+    },
+    "settings": {
+        "title": "Settings",
+        "groups": {
+            "account": {
+                "title": "Account",
+                "options": {
+                    "notifications": "Notifications",
+                    "security": "Security",
+                    "language": "Language"
+                }
+            },
+            "info": {
+                "title": "Info",
+                "options": {
+                    "support": "Support",
+                    "faq": "FAQ",
+                    "rate": "Rate",
+                    "legal": "Legal"
+                }
+            }
         }
     }
 }
