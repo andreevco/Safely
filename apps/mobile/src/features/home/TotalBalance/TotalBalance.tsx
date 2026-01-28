@@ -6,7 +6,7 @@ import { styles } from './TotalBalance.styles';
 export const TotalBalance = () => {
     return (
         <View style={styles.container}>
-            <Text textAlign="center" variant="displayL" monospace>
+            <Text textAlign="center" variant="displayL">
                 $ 93,274
             </Text>
             <Text textAlign="center" variant="bodyL" color="secondary">
