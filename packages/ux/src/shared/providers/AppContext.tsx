@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react';
 
-import { Build, UserCountryInfo } from '@safely/core/entities';
+import { Build, UserCountryInfo } from '@safely/core';
 
 import { ToastService } from '../../entities';
 import { TranslateFn } from '../i18n';

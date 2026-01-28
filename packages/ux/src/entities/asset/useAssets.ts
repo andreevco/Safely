@@ -1,5 +1,5 @@
-import { BTC_ASSET, CryptoAssetAmount, RatedCryptoAssetAmount, Rate } from '@safely/core/entities';
-import { toBig } from '@safely/core/utils';
+import { BTC_ASSET, CryptoAssetAmount, RatedCryptoAssetAmount, Rate } from '@safely/core';
+import { toBig } from '@safely/core';
 
 import {
     QUERIES_STALE_TIME,

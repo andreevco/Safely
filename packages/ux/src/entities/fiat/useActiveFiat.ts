@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { FiatAsset } from '@safely/core/entities';
+import { FiatAsset } from '@safely/core';
 
 import { fiatKeys } from './keys';
 import { useSuspenseQuery } from '../../shared';
@@ -26,11 +26,9 @@ export function useSetActiveFiat() {
     const client = useQueryClient();
 
     return useMutation<void, Error, { fiat: FiatAsset }>({
-        async mutationFn() {
-            // TODO: Waiting for sync
-            await client.invalidateQueries({
-                queryKey: fiatKeys.active().toKey()
-            });
+        mutationFn: async ({ fiat }) => {
+            // TODO: Waiting for sync - persist to storage
+            client.setQueryData(fiatKeys.active().toKey(), fiat);
         }
     });
 }

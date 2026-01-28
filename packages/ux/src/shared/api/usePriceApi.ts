@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { PriceApi } from '@safely/core/api/price';
+import { PriceApi } from '@safely/core';
 
 import { useBootConfig } from './useBootConfig';
 

@@ -1,7 +1,7 @@
 import { InfiniteData } from '@tanstack/react-query';
 
-import { BtcApiTx } from '@safely/core/api/btc';
-import { CryptoAssetAmount } from '@safely/core/entities';
+import { BtcApiTx } from '@safely/core';
+import { CryptoAssetAmount } from '@safely/core';
 
 export interface IActivityFilters {
     isInitiator?: boolean;

@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
-import { BootApi } from '@safely/core/api/boot/client';
-import { BootConfig } from '@safely/core/api/boot/models';
+import { BootApi } from '@safely/core';
+import { BootConfig } from '@safely/core';
 
 import { apiKeys } from './keys';
 import { useAppContext } from '../providers';
