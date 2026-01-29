@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { FiatAsset } from '@safely/core/entities';
+import { FiatAsset } from '@safely/core';
 
 import { useBootConfig } from './useBootConfig';
 

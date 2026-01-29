@@ -1,6 +1,6 @@
 import { keepPreviousData } from '@tanstack/react-query';
 
-import { Portfolio } from '@safely/core/entities';
+import { Portfolio } from '@safely/core';
 
 import { portfolioKeys } from './keys';
 import { useSuspenseQuery } from '../../shared';

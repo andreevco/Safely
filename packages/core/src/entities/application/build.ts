@@ -1,12 +1,12 @@
 import { assertUnreachable } from '../../utils';
 
 export type Platform = 'mobile' | 'web';
-export type Build = 'mobile_ios' | 'mobile_android' | 'web';
+export type Build = 'ios' | 'android' | 'web';
 
 export function buildPlatform(build: Build): Platform {
     switch (build) {
-        case 'mobile_ios':
-        case 'mobile_android':
+        case 'ios':
+        case 'android':
             return 'mobile';
         case 'web':
             return 'web';

@@ -1,12 +1,12 @@
 import { useMemo } from 'react';
 
-import { CryptoAssetAmount, FiatAssetAmount, isFiatAssetAmount } from '@safely/core/entities';
+import { CryptoAssetAmount, FiatAssetAmount, isFiatAssetAmount } from '@safely/core';
 import {
     CryptoCurrencyDisplay,
     FiatCurrencyDisplay,
     NumberFormatter,
     WebNumberFormatLocale
-} from '@safely/core/utils';
+} from '@safely/core';
 
 import { useAppContext } from '../providers';
 

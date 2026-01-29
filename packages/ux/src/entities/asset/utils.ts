@@ -1,5 +1,5 @@
-import { FiatAsset, FiatAssetAmount, RatedCryptoAssetAmount } from '@safely/core/entities';
-import { toBig } from '@safely/core/utils';
+import { FiatAsset, FiatAssetAmount, RatedCryptoAssetAmount } from '@safely/core';
+import { toBig } from '@safely/core';
 
 export function getSortedAssets(assets: RatedCryptoAssetAmount[]): RatedCryptoAssetAmount[] {
     return [...assets].sort((a, b) => {

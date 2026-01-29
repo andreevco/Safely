@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { CryptoAsset, CryptoFiatRate, Rate } from '@safely/core/entities';
-import { toBig } from '@safely/core/utils';
+import { CryptoAsset, CryptoFiatRate, Rate } from '@safely/core';
+import { toBig } from '@safely/core';
 
 import { assetKeys } from './keys';
 import { usePriceApi } from '../../shared';
