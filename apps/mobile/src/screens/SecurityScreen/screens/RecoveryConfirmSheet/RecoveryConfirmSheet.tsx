@@ -61,7 +61,7 @@ const RecoveryConfirmContent = () => {
 
 export const RecoveryConfirmSheet = () => {
     return (
-        <BottomSheet headerTitle=" ">
+        <BottomSheet>
             <RecoveryConfirmContent />
         </BottomSheet>
     );

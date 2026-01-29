@@ -1,7 +1,7 @@
 import GHBottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import { useNavigation } from '@react-navigation/native';
 import React, { createContext, useCallback, useContext, useMemo, useRef } from 'react';
-import { Pressable, StyleSheet, ViewStyle } from 'react-native';
+import { Pressable, StyleSheet, View, ViewStyle } from 'react-native';
 import Animated, {
     interpolateColor,
     useAnimatedStyle,
@@ -34,7 +34,7 @@ type ModalSheetProps = {
     children: React.ReactNode;
     containerStyle?: ViewStyle;
     closeOnBackdropPress?: boolean;
-    headerTitle: string;
+    headerTitle?: string;
 };
 
 export function BottomSheet({
@@ -94,7 +94,11 @@ export function BottomSheet({
                     <BottomSheetView style={containerStyle}>
                         <Screen background="transparent">
                             <Screen.Header variant="left">
-                                <Screen.Header.Title>{headerTitle}</Screen.Header.Title>
+                                {headerTitle ? (
+                                    <Screen.Header.Title>{headerTitle}</Screen.Header.Title>
+                                ) : (
+                                    <View style={{ flex: 1 }} />
+                                )}
                                 <Screen.Header.CloseButton />
                             </Screen.Header>
                             <Screen.Content>{children}</Screen.Content>
