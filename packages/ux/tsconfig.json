@@ -7,6 +7,7 @@
         "rootDir": "../",
         "paths": {
             "@safely/core": ["../../core/src"],
+            "@safely/core/api/*": ["../../core/src/api/*"],
             "@safely/core/*": ["../../core/src/*"]
         }
     },

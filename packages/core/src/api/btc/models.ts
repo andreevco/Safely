@@ -316,9 +316,17 @@ export const UtxoSchema = z.looseObject({
     coinbase: z.boolean().optional()
 });
 
-export const GasPriceSchema = z.record(z.string(), z.number());
+export const GasPriceSchema = z.object({
+    fee: z.number(),
+    target_block: z.number().int()
+});
 
-export type BtcApiAddress = typeof AddressSchema;
-export type BtcApiUtxo = typeof UtxoSchema;
-export type BtcApiGasPrice = typeof GasPriceSchema;
-export type BtcApiTx = z.output<typeof TxSchema>;
+export const GasPricesSchema = z.object({
+    fast_send: GasPriceSchema,
+    normal_send: GasPriceSchema
+});
+
+export type BtcApiAddress = z.infer<typeof AddressSchema>;
+export type BtcApiUtxo = z.infer<typeof UtxoSchema>;
+export type BtcApiGasPrice = z.infer<typeof GasPriceSchema>;
+export type BtcApiTx = z.infer<typeof TxSchema>;
