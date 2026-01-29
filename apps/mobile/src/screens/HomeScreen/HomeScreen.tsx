@@ -1,6 +1,6 @@
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { CurrencyButton, HomeActions, SettingsButton } from '@mobile/features/home';
-import { Banner, Cell, List, Screen, Switch } from '@mobile/shared/ui';
+import { Banner, Button, Cell, List, Screen, Switch } from '@mobile/shared/ui';
 import { ArrowDown28 } from '@mobile/shared/ui/Icon';
 import { useNavigation } from '@react-navigation/native';
 import { useState } from 'react';
@@ -23,6 +23,10 @@ export const HomeScreen = () => {
         navigation.navigate('CurrencyModal');
     };
 
+    const handleCustomizePress = () => {
+        navigation.navigate('CustomizeWalletModal');
+    };
+
     return (
         <Screen>
             <Screen.Header variant="center">
@@ -36,6 +40,9 @@ export const HomeScreen = () => {
             </Screen.Header>
             <Screen.Scrollable contentContainerStyle={styles.container}>
                 <HomeActions />
+                <Button type="secondary" size="large" onPress={handleCustomizePress}>
+                    Show Customize Wallet Modal
+                </Button>
                 <Banner variant="warning" text="Warning" actionText="Action" onPress={() => {}} />
                 <List>
                     <List.Group variant="divided">

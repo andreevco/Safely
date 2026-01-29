@@ -1,4 +1,5 @@
 import { CurrencyScreen } from '@mobile/screens/CurrencyScreen';
+import { CustomizeWalletModal } from '@mobile/screens/CustomizeWalletModal';
 import { HomeScreen } from '@mobile/screens/HomeScreen';
 import { HomeSheet } from '@mobile/screens/HomeScreen/screens';
 import { RecoveryConfirmSheet, RecoveryPhraseSheet } from '@mobile/screens/SecurityScreen/screens';
@@ -21,7 +22,8 @@ export const RootStack = createNativeStackNavigator({
                 HomeModal: HomeScreen,
                 SettingsModal: SettingsStack,
                 CurrencyModal: CurrencyScreen,
-                RecoveryPhraseModal: RecoveryPhraseSheet
+                RecoveryPhraseModal: RecoveryPhraseSheet,
+                CustomizeWalletModal: CustomizeWalletModal
             },
             screenOptions: {
                 presentation: 'modal'
