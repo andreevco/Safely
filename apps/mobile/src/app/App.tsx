@@ -4,7 +4,6 @@ import * as SplashScreen from 'expo-splash-screen';
 import i18next from 'i18next';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useUnistyles } from 'react-native-unistyles';
@@ -14,12 +13,6 @@ import { AppContext, createPersister, IAppContext, QueryProvider } from '@safely
 import Navigation from './navigation';
 
 const persister = createPersister(mmkvStorage);
-
-const Loader = () => (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" />
-    </View>
-);
 
 export const App = () => {
     const { theme } = useUnistyles();
@@ -61,7 +54,7 @@ export const App = () => {
     return (
         <GestureHandlerRootView>
             <SafeAreaProvider>
-                <QueryProvider persister={persister} loader={<Loader />}>
+                <QueryProvider persister={persister}>
                     <AppContext value={appContext}>
                         <Navigation
                             onReady={() => SplashScreen.hideAsync()}
