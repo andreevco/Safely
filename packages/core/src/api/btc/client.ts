@@ -6,6 +6,8 @@ import { BtcWalletType } from '../../entities/blockchain/btc';
 import { ApiClient } from '../../utils/fetch';
 import { IIdentifiable } from '../../utils/types';
 
+export { BtcApiError } from './errors';
+
 export interface GetAddressParams {
     details?: 'basic' | 'tokens' | 'tokenBalances' | 'txids' | 'txslight' | 'txs';
     tokens?: 'derived' | 'used' | 'nonzero';
@@ -25,20 +27,6 @@ export interface BtcDescriptor {
         change: number;
         addressIndex: number | '*';
     };
-}
-
-export class BtcApiError extends Error {
-    public readonly name = 'BtcApiError';
-
-    public readonly status: number;
-
-    public readonly payload?: unknown;
-
-    constructor(message: string, status: number, payload?: unknown) {
-        super(message);
-        this.status = status;
-        this.payload = payload;
-    }
 }
 
 const btcWalletTypeToDescriptor: Record<BtcWalletType, 'wpkh' | 'pkh' | 'tr' | 'sh-wpkh'> = {

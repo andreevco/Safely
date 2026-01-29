@@ -113,7 +113,7 @@ const VinSchema = z.looseObject({
 });
 
 /** Transaction ID (hash). */
-const TxSchema = z.looseObject({
+export const TxSchema = z.looseObject({
     /** Transaction ID (hash). */
     txid: z.string(),
     /** Version of the transaction (if applicable). */
@@ -321,3 +321,4 @@ export const GasPriceSchema = z.record(z.string(), z.number());
 export type BtcApiAddress = typeof AddressSchema;
 export type BtcApiUtxo = typeof UtxoSchema;
 export type BtcApiGasPrice = typeof GasPriceSchema;
+export type BtcApiTx = z.output<typeof TxSchema>;

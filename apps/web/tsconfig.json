@@ -5,7 +5,8 @@
         "jsx": "react-jsx",
         "baseUrl": ".",
         "paths": {
-            "@safely/ux": ["../../packages/ux/src"],
+            "@safely/core/*": ["../../packages/core/src/*"],
+            "@safely/ux": ["../../packages/ux/src"]
         }
     },
     "include": ["src/**/*"],

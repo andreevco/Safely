@@ -1,4 +1,4 @@
-import { wordlist } from '@safely/core/entities/mnemonic';
+import { wordlist } from '@safely/core/entities';
 
 const wordSet = new Set(wordlist);
 
