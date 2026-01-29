@@ -1,9 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { assertUnreachable, TransactionTemplate } from '@safely/core';
-import { BtcEstimator } from '@safely/core/blockchain-api';
-import { BtcFeeType } from '@safely/core/blockchain-api/btc/types';
-import { BLOCKCHAIN_NAME } from '@safely/core/entities';
+import {
+    assertUnreachable,
+    BLOCKCHAIN_NAME,
+    BtcEstimator,
+    BtcFeeType,
+    TransactionTemplate
+} from '@safely/core';
 
 import { defineQueryKeys, finalKey, mappedParams, QUERIES_REFETCH_INTERVAL } from '../../../shared';
 import { SendFormResult } from '../../forms';
