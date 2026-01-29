@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { bootConfigSchema } from '@safely/core/api/boot/models';
-import { sRatedCryptoAssetAmountArray } from '@safely/core/entities';
+import { bootConfigSchema } from '@safely/core';
+import { sRatedCryptoAssetAmountArray } from '@safely/core';
 
 const sInfiniteActivityData = z.object({
     pages: z.array(

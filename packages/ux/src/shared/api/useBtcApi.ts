@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { BtcApi } from '@safely/core/api/btc';
+import { BtcApi } from '@safely/core';
 
 import { useBootConfig } from './useBootConfig';
 

@@ -1,3 +1,5 @@
+import './global-polyfills';
+
 import '@mobile/shared/i18n';
 import '@mobile/shared/unistyles';
 

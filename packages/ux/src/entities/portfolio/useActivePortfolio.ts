@@ -1,6 +1,6 @@
 import { keepPreviousData } from '@tanstack/react-query';
 
-import { BtcWallet, IDerivation, Portfolio } from '@safely/core/entities';
+import { BtcWallet, IDerivation, Portfolio } from '@safely/core';
 
 import { portfolioKeys } from './keys';
 import { usePortfoliosQuery } from './usePortfolios';
