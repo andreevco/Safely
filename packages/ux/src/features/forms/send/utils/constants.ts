@@ -1,4 +1,4 @@
-import { BLOCKCHAIN_NAME, BTC_ASSET, CryptoAsset } from '@safely/core/entities';
+import { BLOCKCHAIN_NAME, BTC_ASSET, CryptoAsset } from '@safely/core';
 
 export const BTC_ADDRESS_PATTERN = /^(1|3|bc1|tb1)[a-zA-Z0-9]{14,}$/i;
 

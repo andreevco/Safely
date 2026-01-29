@@ -1,4 +1,4 @@
-import { BLOCKCHAIN_NAME, BtcRecipient, Recipient } from '@safely/core/entities';
+import { BLOCKCHAIN_NAME, BtcRecipient, Recipient } from '@safely/core';
 
 import { SendFormError } from '../errors';
 import { BTC_ADDRESS_PATTERN } from './constants';
