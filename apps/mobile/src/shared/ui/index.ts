@@ -1,4 +1,5 @@
 export { Text, TextProps } from './Text';
+export { Toast } from './Toast';
 export { TouchableOpacity } from './TouchableOpacity';
 export { Screen } from './Screen';
 export { Button } from './Button';

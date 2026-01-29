@@ -1,5 +1,6 @@
 import { Icon, Placeholder96, Text } from '@mobile/shared/ui';
-import { View } from 'react-native';
+import { setStringAsync } from 'expo-clipboard';
+import { TouchableOpacity, View } from 'react-native';
 import QRCode from 'react-native-qrcode-skia';
 
 import { styles } from './QRCodeBlock.styles';
@@ -10,6 +11,11 @@ type QRCodeBlockProps = {
 
 export const QRCodeBlock = (props: QRCodeBlockProps) => {
     const { address } = props;
+
+    const handleCopyAddress = () => {
+        setStringAsync(address);
+        console.log('Address copied to clipboard');
+    };
 
     return (
         <View style={styles.content}>
@@ -26,15 +32,17 @@ export const QRCodeBlock = (props: QRCodeBlockProps) => {
                     size={198}
                 />
             </View>
-            <Text
-                textAlign="center"
-                style={styles.address}
-                monospace
-                variant="bodyL"
-                color="constantBlack"
-            >
-                {address}
-            </Text>
+            <TouchableOpacity onPress={handleCopyAddress}>
+                <Text
+                    textAlign="center"
+                    style={styles.address}
+                    monospace
+                    variant="bodyL"
+                    color="constantBlack"
+                >
+                    {address}
+                </Text>
+            </TouchableOpacity>
         </View>
     );
 };

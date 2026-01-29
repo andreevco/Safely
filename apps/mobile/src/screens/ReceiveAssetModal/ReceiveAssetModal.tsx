@@ -6,6 +6,7 @@ import { View } from 'react-native';
 import { ICryptoAsset } from '@safely/core/entities/asset/I-crypto-asset';
 
 import { QRCodeBlock } from './components/QRCodeBlock/QRCodeBlock';
+import { ReceiveActions } from './components/ReceiveActions';
 import { styles } from './ReceiveAssetModal.styles';
 
 type ReceiveAssetModalProps = StaticScreenProps<{
@@ -19,6 +20,9 @@ export const ReceiveAssetModal = (props: ReceiveAssetModalProps) => {
         }
     } = props;
     const { t } = useTranslation();
+
+    // TODO: Replace with real account address
+    const address = '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa';
 
     return (
         <Screen>
@@ -35,7 +39,8 @@ export const ReceiveAssetModal = (props: ReceiveAssetModalProps) => {
                         {t('receiveAsset.description', { name: asset.name })}
                     </Text>
                 </View>
-                <QRCodeBlock address={'1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa'} />
+                <QRCodeBlock address={address} />
+                <ReceiveActions address={address} />
             </Screen.Content>
         </Screen>
     );
