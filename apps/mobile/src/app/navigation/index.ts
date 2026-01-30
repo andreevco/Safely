@@ -1,11 +1,10 @@
+import { AddWalletModal } from '@mobile/screens/AddWalletModal';
 import { CurrencyScreen } from '@mobile/screens/CurrencyScreen';
 import { CustomizeWalletModal } from '@mobile/screens/CustomizeWalletModal';
-import { HomeScreen } from '@mobile/screens/HomeScreen';
 import { PasscodeModal } from '@mobile/screens/PasscodeModal';
-import { RecoveryConfirmSheet, RecoveryPhraseSheet } from '@mobile/screens/SecurityScreen/screens';
-import { AddWalletModal } from '@mobile/screens/AddWalletModal';
 import { QRScanModal } from '@mobile/screens/QRScanModal';
 import { ReceiveAssetModal } from '@mobile/screens/ReceiveAssetModal';
+import { RecoveryConfirmSheet, RecoveryPhraseSheet } from '@mobile/screens/SecurityScreen/screens';
 import { SelectAccountModal } from '@mobile/screens/SelectAccountModal';
 import { createStaticNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -27,7 +26,7 @@ export const RootStack = createNativeStackNavigator({
                 CurrencyModal: CurrencyScreen,
                 RecoveryPhraseModal: RecoveryPhraseSheet,
                 CustomizeWalletModal: CustomizeWalletModal,
-                PasscodeModal: PasscodeModal
+                PasscodeModal: PasscodeModal,
                 QRScanModal: QRScanModal,
                 AddWalletModal: AddWalletModal,
                 SelectAccountModal: SelectAccountModal,

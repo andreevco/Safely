@@ -18,17 +18,13 @@ export const HomeScreen = () => {
         navigation.navigate('CurrencyModal');
     };
 
-    const handlePasscodePress = () => {
-        navigation.navigate('PasscodeModal');
-    };
-
-    const handleCustomizePress = () => {
-        navigation.navigate('CustomizeWalletModal');
-    };
-
     return (
         <Screen>
-            <HomeHeader onNavigateToSelectAccount={handleNavigateToSelectAccount} />
+            <HomeHeader
+                onCurrencyPress={handleCurrencyPress}
+                onSettingsPress={handleSettingsPress}
+                onSelectAccountPress={handleNavigateToSelectAccount}
+            />
             <Screen.Scrollable>
                 <TotalBalance />
                 <HomeActions />

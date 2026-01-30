@@ -1,24 +1,25 @@
-import { Screen, Text } from '@mobile/shared/ui';
-import { View } from 'react-native';
+import { Screen } from '@mobile/shared/ui';
 
-import { AccountSelector } from './components';
+import { AccountSelector, CurrencyButton, SettingsButton } from './components';
 
 type HomeHeaderProps = {
-    onNavigateToSelectAccount: () => void;
+    onSelectAccountPress: () => void;
+    onSettingsPress: () => void;
+    onCurrencyPress: () => void;
 };
 
 export const HomeHeader = (props: HomeHeaderProps) => {
-    const { onNavigateToSelectAccount } = props;
+    const { onSelectAccountPress, onSettingsPress, onCurrencyPress } = props;
 
     return (
         <Screen.Header>
-            <View>
-                <Text>after merge</Text>
-            </View>
-            <AccountSelector onNavigateToSelectAccount={onNavigateToSelectAccount} />
-            <View>
-                <Text>after merge</Text>
-            </View>
+            <Screen.Header.Button onPress={onSettingsPress}>
+                <SettingsButton />
+            </Screen.Header.Button>
+            <AccountSelector onSelectAccountPress={onSelectAccountPress} />
+            <Screen.Header.Button onPress={onCurrencyPress}>
+                <CurrencyButton />
+            </Screen.Header.Button>
         </Screen.Header>
     );
 };

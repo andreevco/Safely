@@ -1,23 +1,22 @@
+import { ToastProvider, ToastServiceProvider } from '@mobile/shared/providers/toast';
 import { mmkvStorage } from '@mobile/shared/storage/mmkv';
 import { DarkTheme, Theme } from '@react-navigation/native';
 import * as SplashScreen from 'expo-splash-screen';
-import i18next from 'i18next';
 import { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useUnistyles } from 'react-native-unistyles';
 
-import { AppContext, createPersister, IAppContext, QueryProvider } from '@safely/ux';
+import { createPersister, QueryProvider } from '@safely/ux';
 
+import { AppContextProvider } from './AppContext';
 import Navigation from './navigation';
 
 const persister = createPersister(mmkvStorage);
 
 export const App = () => {
     const { theme } = useUnistyles();
-    const { t } = useTranslation();
 
     const NavigationTheme: Theme = useMemo(
         () => ({
@@ -34,35 +33,20 @@ export const App = () => {
         [theme]
     );
 
-    const appContext = useMemo<IAppContext>(
-        () => ({
-            i18n: {
-                language: i18next.language,
-                t
-            },
-            sdk: {}, // TODO: Implement IAppSdk
-            version: '1.0.0',
-            build: 'ios',
-            toast: {
-                // TODO: Implement toast service
-                show: () => {},
-                hide: () => {}
-            }
-        }),
-        [t]
-    );
-
     return (
         <GestureHandlerRootView>
             <SafeAreaProvider>
                 <KeyboardProvider>
                     <QueryProvider persister={persister}>
-                        <AppContext value={appContext}>
-                            <Navigation
-                                onReady={() => SplashScreen.hideAsync()}
-                                theme={NavigationTheme}
-                            />
-                        </AppContext>
+                        <ToastServiceProvider>
+                            <AppContextProvider>
+                                <Navigation
+                                    onReady={() => SplashScreen.hideAsync()}
+                                    theme={NavigationTheme}
+                                />
+                                <ToastProvider />
+                            </AppContextProvider>
+                        </ToastServiceProvider>
                     </QueryProvider>
                 </KeyboardProvider>
             </SafeAreaProvider>
