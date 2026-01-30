@@ -5,6 +5,7 @@ import i18next from 'i18next';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useUnistyles } from 'react-native-unistyles';
 
@@ -54,14 +55,16 @@ export const App = () => {
     return (
         <GestureHandlerRootView>
             <SafeAreaProvider>
-                <QueryProvider persister={persister}>
-                    <AppContext value={appContext}>
-                        <Navigation
-                            onReady={() => SplashScreen.hideAsync()}
-                            theme={NavigationTheme}
-                        />
-                    </AppContext>
-                </QueryProvider>
+                <KeyboardProvider>
+                    <QueryProvider persister={persister}>
+                        <AppContext value={appContext}>
+                            <Navigation
+                                onReady={() => SplashScreen.hideAsync()}
+                                theme={NavigationTheme}
+                            />
+                        </AppContext>
+                    </QueryProvider>
+                </KeyboardProvider>
             </SafeAreaProvider>
         </GestureHandlerRootView>
     );
