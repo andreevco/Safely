@@ -1,0 +1,27 @@
+import { BtcApiUtxo } from '../../api/btc';
+import { BtcAssetAmount } from '../../entities';
+import { isInteger } from '../../utils';
+
+export function getUtxoTotal(utxos: BtcApiUtxo[]) {
+    return BtcAssetAmount.fromWeiAmount(utxos.reduce((sum, u) => sum + BigInt(u.value), 0n));
+}
+
+export function utxoPathToStruct(utxo: BtcApiUtxo) {
+    const [_, __, ___, ____, changeS, addressIndexS] = utxo.path!.split('/');
+
+    if (!isInteger(changeS) || !isInteger(addressIndexS)) {
+        throw new Error('Unexpected derivation path');
+    }
+
+    const change = parseInt(changeS);
+    const addressIndex = parseInt(addressIndexS);
+
+    if (change < 0 || addressIndex < 0) {
+        throw new Error('Unexpected derivation path');
+    }
+
+    return {
+        change,
+        addressIndex
+    };
+}

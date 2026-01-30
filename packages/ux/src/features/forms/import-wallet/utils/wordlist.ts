@@ -1,4 +1,4 @@
-import { wordlist } from '@safely/core/entities';
+import { wordlist } from '@safely/core';
 
 const wordSet = new Set(wordlist);
 

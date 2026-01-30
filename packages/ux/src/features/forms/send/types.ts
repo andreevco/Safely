@@ -6,7 +6,7 @@ import {
     FiatAssetAmount,
     RatedCryptoAssetAmount,
     Recipient
-} from '@safely/core/entities';
+} from '@safely/core';
 
 export type AmountInputType = 'crypto' | 'fiat';
 

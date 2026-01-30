@@ -13,3 +13,4 @@ export { type CryptoAsset, type CryptoAssetId, isCryptoAsset } from './crypto-as
 export { FiatAsset, isFiatAsset, FiatAssetId, sFiatAssetId, sFiatAsset } from './fiat-asset';
 export { Rate, type CryptoFiatRate, sCryptoFiatRate } from './rate';
 export type { Asset, AssetId } from './asset';
+export { BtcAssetAmount } from './exact-crypto-assets-amounts';

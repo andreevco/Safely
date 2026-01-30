@@ -10,6 +10,22 @@ export const HomeScreen = () => {
         navigation.navigate('SelectAccountModal');
     };
 
+    const handleSettingsPress = () => {
+        navigation.navigate('SettingsModal');
+    };
+
+    const handleCurrencyPress = () => {
+        navigation.navigate('CurrencyModal');
+    };
+
+    const handlePasscodePress = () => {
+        navigation.navigate('PasscodeModal');
+    };
+
+    const handleCustomizePress = () => {
+        navigation.navigate('CustomizeWalletModal');
+    };
+
     return (
         <Screen>
             <HomeHeader onNavigateToSelectAccount={handleNavigateToSelectAccount} />

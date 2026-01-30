@@ -1,4 +1,14 @@
 {
+    "currentLanguageName": "English",
+    "passcode": {
+        "title": "Create passcode",
+        "description": "Enter a passcode to protect your wallet",
+        "switchToSix": "Use 6-digit passcode",
+        "switchToFour": "Use 4-digit passcode"
+    },
+    "currency": {
+        "title": "Currency"
+    },
     "home": {
         "actions": {
             "send": "Send",
@@ -30,6 +40,95 @@
         "actions": {
             "copy": "Copy",
             "share": "Share"
+        }
+    },
+    "language": {
+        "title": "Language",
+        "languages": {
+            "en": "English",
+            "ru": "Russian"
+        }
+    },
+    "notifications": {
+        "title": "Notifications",
+        "warning": "Notifications are disabled. You turned off notifications in your phone's settings. To activate notifications, go to Settings on this device.",
+        "openSettings": "Open Settings",
+        "push": {
+            "title": "Push notifications",
+            "subtitle": "Get notifications when you receive BTC."
+        }
+    },
+    "security": {
+        "title": "Security",
+        "recoverySheet": {
+            "title": "Recovery phrase",
+            "description": "The recovery phrase is used to back up your\u00A0wallet.",
+            "warning1": "Sharing it gives full control over your wallet.",
+            "warning2": "Anyone with it can use your wallet without your account.",
+            "cancel": "Cancel",
+            "reveal": "Reveal"
+        },
+        "phraseSheet": {
+            "title": "Recovery phrase",
+            "warning": "Do not share this phrase. Anyone with it can access your\u00A0wallet.",
+            "copy": "Copy"
+        },
+        "groups": {
+            "account": {
+                "title": "Account",
+                "protect": {
+                    "title": "Protect your account",
+                    "subtitle": "Link another device to protect your account. Without it, your access can't be restored if this phone is lost."
+                }
+            },
+            "application": {
+                "title": "Application",
+                "faceId": {
+                    "title": "Face ID",
+                    "subtitle": "Unlock securely with a glance. No password needed."
+                },
+                "lockScreen": {
+                    "title": "Lock screen",
+                    "subtitle": "Require passcode to view wallet contents."
+                },
+                "changePasscode": "Change passcode"
+            },
+            "wallet": {
+                "title": "Wallet",
+                "main": "Main",
+                "recovery": {
+                    "title": "Recovery phrase",
+                    "subtitle": "Keep it private. View only if necessary. This phrase has never been viewed."
+                }
+            }
+        }
+    },
+    "customizeWallet": {
+        "title": "Customize your wallet",
+        "description": "Choose a name and icon for your wallet to make it easy to recognize.",
+        "namePlaceholder": "Wallet name",
+        "save": "Save"
+    },
+    "settings": {
+        "title": "Settings",
+        "groups": {
+            "account": {
+                "title": "Account",
+                "options": {
+                    "notifications": "Notifications",
+                    "security": "Security",
+                    "language": "Language"
+                }
+            },
+            "info": {
+                "title": "Info",
+                "options": {
+                    "support": "Support",
+                    "faq": "FAQ",
+                    "rate": "Rate",
+                    "legal": "Legal"
+                }
+            }
         }
     }
 }

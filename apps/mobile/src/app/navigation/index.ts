@@ -1,3 +1,8 @@
+import { CurrencyScreen } from '@mobile/screens/CurrencyScreen';
+import { CustomizeWalletModal } from '@mobile/screens/CustomizeWalletModal';
+import { HomeScreen } from '@mobile/screens/HomeScreen';
+import { PasscodeModal } from '@mobile/screens/PasscodeModal';
+import { RecoveryConfirmSheet, RecoveryPhraseSheet } from '@mobile/screens/SecurityScreen/screens';
 import { AddWalletModal } from '@mobile/screens/AddWalletModal';
 import { QRScanModal } from '@mobile/screens/QRScanModal';
 import { ReceiveAssetModal } from '@mobile/screens/ReceiveAssetModal';
@@ -5,6 +10,7 @@ import { SelectAccountModal } from '@mobile/screens/SelectAccountModal';
 import { createStaticNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
+import { SettingsStack } from './stacks/SettingsStack';
 import { TabsNavigator } from './tabs';
 
 export const RootStack = createNativeStackNavigator({
@@ -17,6 +23,11 @@ export const RootStack = createNativeStackNavigator({
         },
         Modals: {
             screens: {
+                SettingsModal: SettingsStack,
+                CurrencyModal: CurrencyScreen,
+                RecoveryPhraseModal: RecoveryPhraseSheet,
+                CustomizeWalletModal: CustomizeWalletModal,
+                PasscodeModal: PasscodeModal
                 QRScanModal: QRScanModal,
                 AddWalletModal: AddWalletModal,
                 SelectAccountModal: SelectAccountModal,
@@ -27,7 +38,9 @@ export const RootStack = createNativeStackNavigator({
             }
         },
         Sheets: {
-            screens: {},
+            screens: {
+                RecoveryConfirmSheet: RecoveryConfirmSheet
+            },
             screenOptions: {
                 animationDuration: 0,
                 presentation: 'transparentModal',

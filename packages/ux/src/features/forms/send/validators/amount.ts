@@ -2,9 +2,9 @@ import {
     CryptoAsset,
     CryptoAssetAmount,
     FiatAssetAmount,
+    NumberFormatter,
     RatedCryptoAssetAmount
-} from '@safely/core/entities';
-import { NumberFormatter } from '@safely/core/utils';
+} from '@safely/core';
 
 import { SendFormError } from '../errors';
 import {

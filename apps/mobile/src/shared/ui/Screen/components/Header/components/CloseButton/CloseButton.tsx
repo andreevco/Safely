@@ -1,12 +1,16 @@
+import { useBottomSheetContext } from '@mobile/shared/ui/BottomSheet';
 import { Icon, Xmark16 } from '@mobile/shared/ui/Icon';
 import { Button } from '@mobile/shared/ui/Screen/components/Header/components/Button';
 import { useNavigation } from '@react-navigation/native';
 
 export const CloseButton = () => {
     const navigation = useNavigation();
+    const bottomSheet = useBottomSheetContext();
+
+    const handleClose = bottomSheet?.close ?? navigation.goBack;
 
     return (
-        <Button onPress={navigation.goBack}>
+        <Button onPress={handleClose}>
             <Icon icon={Xmark16} />
         </Button>
     );

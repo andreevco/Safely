@@ -1,6 +1,6 @@
-import { BtcApi } from '@safely/core/api/btc';
-import { BTC_ASSET, BtcWallet, CryptoAssetAmount } from '@safely/core/entities';
-import { toBig, toBigOrZero } from '@safely/core/utils';
+import { BtcApi } from '@safely/core';
+import { BTC_ASSET, BtcWallet, CryptoAssetAmount } from '@safely/core';
+import { toBig, toBigOrZero } from '@safely/core';
 
 import { ActivityPage, BtcActivityItem, IActivityFilters } from './types';
 

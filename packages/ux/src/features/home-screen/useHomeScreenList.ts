@@ -1,5 +1,5 @@
-import { FiatAssetAmount } from '@safely/core/entities';
-import { toBig } from '@safely/core/utils';
+import { FiatAssetAmount } from '@safely/core';
+import { toBig } from '@safely/core';
 
 import { useAssets, useActiveFiat } from '../../entities';
 import { useDerivedQuery } from '../../shared';

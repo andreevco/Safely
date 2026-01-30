@@ -23,6 +23,13 @@ module.exports = function (api) {
                     allowDeclareFields: true
                 }
             ],
+            [
+                '@babel/plugin-transform-runtime',
+                {
+                    helpers: true
+                }
+            ],
+            '@babel/plugin-transform-explicit-resource-management'
         ]
     };
 };

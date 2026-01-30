@@ -20,6 +20,9 @@ export const styles = StyleSheet.create(theme => ({
                 },
                 constantWhite: {
                     tintColor: theme.colors.other.constant.white
+                },
+                accent: {
+                    tintColor: theme.colors.accent.accent
                 }
             }
         }

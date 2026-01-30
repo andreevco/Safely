@@ -1,7 +1,6 @@
-import Big from 'big.js';
 import { z } from 'zod';
 
-import { AddressSchema, GasPriceSchema, UtxoSchema } from './models';
+import {AddressSchema, GasPriceSchema, GasPricesSchema, TxSchema, UtxoSchema} from './models';
 import { BtcWalletType } from '../../entities/blockchain/btc';
 import { ApiClient } from '../../utils/fetch';
 import { IIdentifiable } from '../../utils/types';
@@ -53,22 +52,15 @@ export class BtcApi extends ApiClient implements IIdentifiable {
         return await this.getJson(`/api/v2/utxo/${serialized}`, z.array(UtxoSchema));
     }
 
+    public async getTransaction(txid: string) {
+        return await this.getJson(`/api/v2/tx/${txid}`, TxSchema);
+    }
+
     /**
      * float sat/vByte
      */
     public async getFeePrice() {
-        const parsed = await this.getJson('/api/gasprice', GasPriceSchema);
-        const keys = Object.keys(parsed)
-            .map(Number)
-            .filter(isFinite)
-            .filter(k => k >= 0);
-
-        if (keys.length === 0) {
-            throw new Error('Cannot fetch gasprice');
-        }
-
-        const minKey = Math.min(...keys);
-        return new Big(parsed[minKey]);
+        return this.getJson('/api/gasprice', GasPricesSchema);
     }
 
     public async sendTransaction(hex: string): Promise<{ txid: string }> {
