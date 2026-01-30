@@ -23,6 +23,10 @@ export const HomeScreen = () => {
         navigation.navigate('CurrencyModal');
     };
 
+    const handlePasscodePress = () => {
+        navigation.navigate('PasscodeModal');
+    };
+
     const handleCustomizePress = () => {
         navigation.navigate('CustomizeWalletModal');
     };
@@ -42,6 +46,9 @@ export const HomeScreen = () => {
                 <HomeActions />
                 <Button type="secondary" size="large" onPress={handleCustomizePress}>
                     Show Customize Wallet Modal
+                </Button>
+                <Button type="secondary" size="small" onPress={handlePasscodePress}>
+                    Passcode
                 </Button>
                 <Banner variant="warning" text="Warning" actionText="Action" onPress={() => {}} />
                 <List>

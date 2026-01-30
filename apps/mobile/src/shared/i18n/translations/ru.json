@@ -1,5 +1,11 @@
 {
     "currentLanguageName": "Русский",
+    "passcode": {
+        "title": "Создать код-пароль",
+        "description": "Введите код-пароль для защиты кошелька",
+        "switchToSix": "Использовать 6-значный код",
+        "switchToFour": "Использовать 4-значный код"
+    },
     "currency": {
         "title": "Валюта"
     },

@@ -1,5 +1,11 @@
 {
     "currentLanguageName": "English",
+    "passcode": {
+        "title": "Create passcode",
+        "description": "Enter a passcode to protect your wallet",
+        "switchToSix": "Use 6-digit passcode",
+        "switchToFour": "Use 4-digit passcode"
+    },
     "currency": {
         "title": "Currency"
     },
