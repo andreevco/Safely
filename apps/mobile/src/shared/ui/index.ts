@@ -9,3 +9,4 @@ export * from './List';
 export * from './Banner';
 export * from './Switch';
 export * from './WordCell';
+export * from './PasscodeInput';
