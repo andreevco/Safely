@@ -4,3 +4,9 @@ packages:
   - 'apps/mobile'
 
 minimumReleaseAge: 10080
+
+onlyBuiltDependencies:
+  - '@shopify/react-native-skia'
+
+patchedDependencies:
+  react-native-vision-camera: patches/react-native-vision-camera.patch

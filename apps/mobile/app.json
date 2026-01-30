@@ -10,10 +10,16 @@
     "scheme": "andreevco-safely",
     "ios": {
       "infoPlist": {
-        "UIDesignRequiresCompatibility": true
+        "UIDesignRequiresCompatibility": true,
+        "NSCameraUsageDescription": "We need access to your camera to scan QR codes.",
+        "CFBundleLocalizations": [
+          "en",
+          "ru"
+        ]
       },
       "supportsTablet": true,
-      "bundleIdentifier": "com.andreevco.safely"
+      "bundleIdentifier": "com.andreevco.safely",
+      "appleTeamId": "7SJ59D8JGU"
     },
     "android": {
       "adaptiveIcon": {

@@ -6,9 +6,9 @@ import { styles } from './Text.styles';
 export type TextProps = RNTextProps & UnistylesVariants<typeof styles>;
 
 export const Text = (props: TextProps) => {
-    const { children, variant, textAlign, color, capitalize, ...rest } = props;
+    const { children, variant, textAlign, color, monospace, textTransform, ...rest } = props;
 
-    styles.useVariants({ variant, textAlign, color, capitalize });
+    styles.useVariants({ variant, textAlign, color, monospace, textTransform });
 
     return (
         <RNText allowFontScaling={false} {...rest} style={[styles.text, rest.style]}>

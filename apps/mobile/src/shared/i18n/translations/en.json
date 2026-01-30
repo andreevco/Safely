@@ -16,6 +16,32 @@
             "scan": "Scan"
         }
     },
+    "accounts": {
+        "title": "Wallets"
+    },
+    "actions": {
+        "edit": "Edit",
+        "copied": "Copied"
+    },
+    "camera": {
+        "permissionRequest": {
+            "title": "Camera access required",
+            "description": "Turn on camera access to scan QR codes and connect services.",
+            "button": "Open Settings"
+        },
+        "noCameraFound": {
+            "title": "No camera found",
+            "description": "Please check your camera settings and try again."
+        }
+    },
+    "receiveAsset": {
+        "title": "Receive {{symbol}}",
+        "description": "Use this address to receive {{name}}.",
+        "actions": {
+            "copy": "Copy",
+            "share": "Share"
+        }
+    },
     "language": {
         "title": "Language",
         "languages": {

@@ -77,7 +77,7 @@ export const SettingsScreen = () => {
                                             <Cell.Row>
                                                 <Cell.Title>{t(item.titleKey)}</Cell.Title>
                                                 {item.key === 'language' && (
-                                                    <Cell.Value color="secondary">
+                                                    <Cell.Value variant="bodyL" color="tertiary">
                                                         {t('currentLanguageName')}
                                                     </Cell.Value>
                                                 )}

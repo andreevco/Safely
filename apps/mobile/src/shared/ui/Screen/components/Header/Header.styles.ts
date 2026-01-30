@@ -31,11 +31,21 @@ export const styles = StyleSheet.create((theme, rt) => ({
                 },
                 transparent: {
                     backgroundColor: 'transparent'
+                },
+                constantBlack: {
+                    backgroundColor: theme.colors.other.constant.black
                 }
             }
         }
     }),
     compensateHeaderHeight: ({ shouldInsetTop }: { shouldInsetTop: boolean }) => ({
         height: shouldInsetTop ? rt.insets.top + HEADER_HEIGHT : HEADER_HEIGHT
-    })
+    }),
+    side: {
+        flexDirection: 'row',
+        alignItems: 'center'
+    },
+    sideRight: {
+        justifyContent: 'flex-end'
+    }
 }));

@@ -6,6 +6,9 @@ export const styles = StyleSheet.create(theme => ({
         backgroundColor: theme.colors.background.primary,
         variants: {
             background: {
+                constantBlack: {
+                    backgroundColor: theme.colors.other.constant.black
+                },
                 transparent: {
                     backgroundColor: 'transparent'
                 },

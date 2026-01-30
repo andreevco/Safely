@@ -9,6 +9,18 @@ export const styles = StyleSheet.create(theme => ({
         alignItems: 'center',
         backgroundColor: theme.colors.button.secondary.background,
         borderRadius: theme.radius.full,
-        padding: theme.spacing[12]
+        padding: theme.spacing[12],
+        variants: {
+            type: {
+                rounded: {
+                    borderRadius: theme.radius.full
+                },
+                small: {
+                    paddingVertical: 10,
+                    paddingHorizontal: theme.spacing[16],
+                    borderRadius: theme.radius.full
+                }
+            }
+        }
     }
 }));
