@@ -71,6 +71,12 @@
             }
         }
     },
+    "customizeWallet": {
+        "title": "Customize your wallet",
+        "description": "Choose a name and icon for your wallet to make it easy to recognize.",
+        "namePlaceholder": "Wallet name",
+        "save": "Save"
+    },
     "settings": {
         "title": "Settings",
         "groups": {
