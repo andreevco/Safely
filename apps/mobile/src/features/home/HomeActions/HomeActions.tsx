@@ -5,7 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { BTC_ASSET } from '@safely/core/entities/asset';
+import { BTC_ASSET } from '@safely/core';
 
 import { styles } from './HomeActions.styles';
 
@@ -29,9 +29,17 @@ export const HomeActions = () => {
         });
     }, [navigation]);
 
+    const handleNavigateToSendAsset = useCallback(() => {
+        navigation.navigate('SendAssetModal');
+    }, [navigation]);
+
     return (
         <Actions style={styles.container}>
-            <Actions.Button title={t('home.actions.send')} icon={ArrowTop28} onPress={() => {}} />
+            <Actions.Button
+                title={t('home.actions.send')}
+                icon={ArrowTop28}
+                onPress={handleNavigateToSendAsset}
+            />
             <Actions.Button
                 title={t('home.actions.receive')}
                 icon={ArrowDown28}
