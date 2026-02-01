@@ -23,6 +23,12 @@ export const styles = StyleSheet.create(theme => ({
                 },
                 accent: {
                     tintColor: theme.colors.accent.accent
+                },
+                accentGreen: {
+                    tintColor: theme.colors.accent.green
+                },
+                accentRed: {
+                    tintColor: theme.colors.accent.red
                 }
             }
         }
