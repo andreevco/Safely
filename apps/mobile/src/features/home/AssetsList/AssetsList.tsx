@@ -1,7 +1,7 @@
 import { AssetCell } from '@mobile/entities/asset';
 import { List } from '@mobile/shared/ui';
 
-import { BTC_ASSET } from '@safely/core/entities/asset';
+import { BTC_ASSET } from '@safely/core';
 
 import { styles } from './AssetsList.styles';
 
