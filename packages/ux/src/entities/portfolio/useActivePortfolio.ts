@@ -1,6 +1,7 @@
 import { keepPreviousData } from '@tanstack/react-query';
 
-import { BtcWallet, IDerivation, Portfolio } from '@safely/core';
+import { BtcNetwork, BtcWallet, BtcWalletType, IDerivation, Portfolio } from '@safely/core';
+import { Id } from '@safely/core';
 
 import { portfolioKeys } from './keys';
 import { usePortfoliosQuery } from './usePortfolios';
@@ -54,8 +55,26 @@ export function useActiveDerivation() {
     return useActivePortfolioEntities().derivation;
 }
 
+class MockBtcWalletId extends Id {
+    toString() {
+        return 'mock-btc-wallet-id';
+    }
+}
+
+const MOCK_BTC_WALLET: BtcWallet = {
+    type: BtcWalletType.NATIVE_SEGWIT,
+    id: new MockBtcWalletId() as unknown as BtcWallet['id'],
+    address: 'bc1qmock1234567890abcdefghijklmnop',
+    network: BtcNetwork.MAINNET,
+    xpub: 'xpub6mock1234567890',
+    derivationRef: null as unknown as BtcWallet['derivationRef'],
+    sign: async () => Buffer.from('')
+};
+
 export function useActiveBtcWallet() {
-    return useActivePortfolioEntities().btcWallet;
+    // TODO: Temp
+    return MOCK_BTC_WALLET;
+    // return useActivePortfolioEntities().btcWallet;
 }
 
 export function useHasPortfolio() {
