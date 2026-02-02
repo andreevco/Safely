@@ -71,11 +71,13 @@ export function formatAmountForDisplay(
 ): string {
     return inputType === 'fiat'
         ? formatter.formatAssetAmount(fiatAssetAmount, {
-              currencyDisplay: 'none'
+              currencyDisplay: 'none',
+              useGrouping: false
           })
         : formatter.formatAssetAmount(cryptoAssetAmount, {
               currencyDisplay: 'none',
-              fullPrecision: true
+              fullPrecision: true,
+              useGrouping: false
           });
 }
 
