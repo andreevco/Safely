@@ -1,23 +1,19 @@
 import { useMemo } from 'react';
 
-import { CryptoAssetAmount, FiatAssetAmount, isFiatAssetAmount } from '@safely/core';
 import {
+    CryptoAssetAmount,
+    FiatAssetAmount,
+    isFiatAssetAmount,
     CryptoCurrencyDisplay,
     FiatCurrencyDisplay,
-    NumberFormatter,
-    WebNumberFormatLocale
+    NumberFormatter
 } from '@safely/core';
 
-import { useAppContext } from '../providers';
+import { useAppSdk } from '../providers';
 
-function useNumberFormatLocale(): WebNumberFormatLocale {
-    const { i18n } = useAppContext();
-    return useMemo(() => new WebNumberFormatLocale(i18n.language), [i18n.language]);
-}
-
-export function useNumberFormatter(): NumberFormatter {
-    const locale = useNumberFormatLocale();
-    return useMemo(() => new NumberFormatter(locale), [locale]);
+export function useNumberFormatter() {
+    const { numberFormatLocale } = useAppSdk();
+    return useMemo(() => new NumberFormatter(numberFormatLocale), [numberFormatLocale]);
 }
 
 export function useFormattedAmount(

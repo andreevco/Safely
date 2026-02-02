@@ -3,5 +3,6 @@ export * from './api/boot/models';
 export * from './api/btc';
 export * from './api/price';
 export * from './blockchain-api';
+export * from './di';
 export * from './entities';
 export * from './utils';
