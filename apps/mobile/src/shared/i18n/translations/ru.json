@@ -1,5 +1,21 @@
 {
     "currentLanguageName": "Русский",
+    "common": {
+        "next": "Далее",
+        "cancel": "Отмена",
+        "continue": "Продолжить"
+    },
+    "send": {
+        "title": "Отправить",
+        "recipient": {
+            "label": "Получатель",
+            "placeholder": "Адрес или имя"
+        },
+        "amount": "Сумма",
+        "max": "Отправить всё",
+        "remaining": "Остаток: {{amount}}{{symbol}}",
+        "insufficientBalance": "Недостаточно средств"
+    },
     "passcode": {
         "title": "Создать код-пароль",
         "description": "Введите код-пароль для защиты кошелька",
@@ -82,6 +98,31 @@
         "description": "Выберите имя и иконку для кошелька, чтобы его было легко узнать.",
         "namePlaceholder": "Название кошелька",
         "save": "Сохранить"
+    },
+    "confirmation": {
+        "title": "Отправить {{symbol}}",
+        "success": "Успешно отправлено",
+        "to": "Кому",
+        "amount": "Сумма",
+        "networkFee": "Комиссия сети",
+        "slider": {
+            "confirm": "Подтвердить",
+            "slideToSend": "Сдвиньте для отправки",
+            "backToWallet": "Вернуться в кошелёк"
+        }
+    },
+    "sendForm": {
+        "errors": {
+            "enterRecipientAddress": "Введите адрес получателя",
+            "invalidAddressFormat": "Неверный формат адреса",
+            "invalidRecipientAddress": "Неверный адрес получателя",
+            "unsupportedBlockchain": "Неподдерживаемый блокчейн",
+            "selectToken": "Выберите токен",
+            "selectTokenFirst": "Сначала выберите токен",
+            "unableToValidateToken": "Не удалось проверить токен",
+            "invalidAmount": "Неверная сумма",
+            "insufficientBalance": "Недостаточно средств"
+        }
     },
     "settings": {
         "title": "Настройки",
