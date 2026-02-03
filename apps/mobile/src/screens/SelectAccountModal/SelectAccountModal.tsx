@@ -19,7 +19,9 @@ export const SelectAccountModal = () => {
                 <Screen.Header.Title>{t('accounts.title')}</Screen.Header.Title>
                 <Screen.Header.CloseButton />
             </Screen.Header>
-            <PortfoliosList portfolios={portfolios} />
+            <Screen.Scrollable>
+                <PortfoliosList portfolios={portfolios} />
+            </Screen.Scrollable>
         </Screen>
     );
 };
