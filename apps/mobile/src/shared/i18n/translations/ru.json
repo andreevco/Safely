@@ -101,7 +101,8 @@
     },
     "confirmation": {
         "title": "Отправить {{symbol}}",
-        "success": "Успешно отправлено",
+        "success": "Отправлено",
+        "from": "От",
         "to": "Кому",
         "amount": "Сумма",
         "networkFee": "Комиссия сети",
