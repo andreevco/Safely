@@ -1,5 +1,15 @@
 import { CellContainer } from './Cell';
-import { Content, Image, Row, Title, Subtitle, Value, Subvalue, Chevron } from './components';
+import {
+    Content,
+    Image,
+    Row,
+    Title,
+    Subtitle,
+    Value,
+    Subvalue,
+    Chevron,
+    Checkmark
+} from './components';
 
 export const Cell = Object.assign(CellContainer, {
     Image,
@@ -9,5 +19,6 @@ export const Cell = Object.assign(CellContainer, {
     Subtitle,
     Value,
     Subvalue,
-    Chevron
+    Chevron,
+    Checkmark
 });

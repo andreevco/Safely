@@ -1,5 +1,6 @@
-export * from './Image';
-export * from './Content';
-export * from './Row';
-export * from './Typography';
-export * from './Chevron';
+export { Image } from './Image';
+export { Content } from './Content';
+export { Row } from './Row';
+export { Title, Subtitle, Value, Subvalue } from './Typography';
+export { Chevron } from './Chevron';
+export { Checkmark } from './Checkmark';

@@ -1,5 +1,7 @@
-import { AccountName } from '@mobile/entities/account';
+import { PortfolioName } from '@mobile/entities/portfolio';
 import { ChevronDown16, Icon, TouchableOpacity } from '@mobile/shared/ui';
+
+import { useActivePortfolio } from '@safely/ux';
 
 import { styles } from './AccountSelector.styles';
 
@@ -9,10 +11,11 @@ type AccountSelectorProps = {
 
 export const AccountSelector = (props: AccountSelectorProps) => {
     const { onSelectAccountPress } = props;
+    const portfolio = useActivePortfolio();
 
     return (
         <TouchableOpacity onPress={onSelectAccountPress} style={styles.container}>
-            <AccountName name="Wallet" color="rgba(1, 120, 255, 1)" />
+            <PortfolioName meta={portfolio.meta} />
             <Icon icon={ChevronDown16} color="tertiary" />
         </TouchableOpacity>
     );
