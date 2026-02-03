@@ -1,17 +1,21 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import type { LayoutChangeEvent, ViewProps } from 'react-native';
 import { View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
+    Easing,
     Extrapolation,
     interpolate,
     runOnJS,
     useAnimatedStyle,
     useSharedValue,
-    withSpring
+    withRepeat,
+    withSpring,
+    withTiming
 } from 'react-native-reanimated';
+import { useUnistyles } from 'react-native-unistyles';
 
-import { ArrowRight28, Icon } from '../Icon';
+import { ArrowRight28, Icon, Loader28 } from '../Icon';
 import { Text } from '../Text';
 import { COMPLETE_THRESHOLD, KNOB_WIDTH, SPRING_CONFIG, TRACK_HORIZONTAL_PADDING } from './config';
 import { styles } from './SlideButton.styles';
@@ -20,15 +24,33 @@ type SlideButtonProps = ViewProps & {
     label: string;
     description: string;
     disabled?: boolean;
+    loading?: boolean;
     onSlideComplete?: () => void;
 };
 
 export const SlideButton = (props: SlideButtonProps) => {
-    const { label, description, style, disabled, onSlideComplete, ...rest } = props;
+    const { label, description, style, disabled, loading, onSlideComplete, ...rest } = props;
+    const { theme } = useUnistyles();
 
     const translateX = useSharedValue(0);
     const maxTranslateX = useSharedValue(0);
     const startX = useSharedValue(0);
+    const rotation = useSharedValue(0);
+
+    useEffect(() => {
+        if (loading) {
+            if (maxTranslateX.value > 0) {
+                translateX.value = withSpring(maxTranslateX.value, SPRING_CONFIG);
+            }
+            rotation.value = withRepeat(
+                withTiming(360, { duration: 1000, easing: Easing.linear }),
+                -1,
+                false
+            );
+        } else {
+            rotation.value = 0;
+        }
+    }, [loading, maxTranslateX, translateX, rotation]);
 
     const handleComplete = useCallback(() => {
         onSlideComplete?.();
@@ -48,7 +70,7 @@ export const SlideButton = (props: SlideButtonProps) => {
 
     const panGesture = useMemo(() => {
         return Gesture.Pan()
-            .enabled(!disabled)
+            .enabled(!disabled && !loading)
             .onBegin(() => {
                 'worklet';
                 startX.value = translateX.value;
@@ -72,10 +94,14 @@ export const SlideButton = (props: SlideButtonProps) => {
                     translateX.value = withSpring(0, SPRING_CONFIG);
                 }
             });
-    }, [disabled, handleComplete, maxTranslateX, startX, translateX]);
+    }, [disabled, loading, handleComplete, maxTranslateX, startX, translateX]);
 
     const knobStyle = useAnimatedStyle(() => ({
         transform: [{ translateX: translateX.value }]
+    }));
+
+    const loaderStyle = useAnimatedStyle(() => ({
+        transform: [{ rotate: `${rotation.value}deg` }]
     }));
 
     const textAnimatedStyle = useAnimatedStyle(() => {
@@ -94,7 +120,7 @@ export const SlideButton = (props: SlideButtonProps) => {
     });
 
     styles.useVariants({
-        disabled: !!disabled
+        disabled
     });
 
     return (
@@ -112,8 +138,20 @@ export const SlideButton = (props: SlideButtonProps) => {
 
             <GestureDetector gesture={panGesture}>
                 <Animated.View style={styles.knobWrapper}>
-                    <Animated.View style={[styles.knob, knobStyle]}>
-                        <Icon icon={ArrowRight28} color="primary" />
+                    <Animated.View
+                        style={[
+                            styles.knob,
+                            knobStyle,
+                            loading && { backgroundColor: theme.colors.button.tertiary.background }
+                        ]}
+                    >
+                        {loading ? (
+                            <Animated.View style={loaderStyle}>
+                                <Icon icon={Loader28} color="primary" />
+                            </Animated.View>
+                        ) : (
+                            <Icon icon={ArrowRight28} color="primary" />
+                        )}
                     </Animated.View>
                 </Animated.View>
             </GestureDetector>

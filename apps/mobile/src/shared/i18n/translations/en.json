@@ -127,7 +127,8 @@
     },
     "confirmation": {
         "title": "Send {{symbol}}",
-        "success": "Sent successfully",
+        "success": "Sent",
+        "from": "From",
         "to": "To",
         "amount": "Amount",
         "networkFee": "Network Fee",
