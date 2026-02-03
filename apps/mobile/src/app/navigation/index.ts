@@ -9,6 +9,7 @@ import { SelectAccountModal } from '@mobile/screens/SelectAccountModal';
 import { createStaticNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
+import { SendStack } from './stacks/SendStack';
 import { SettingsStack } from './stacks/SettingsStack';
 import { TabsNavigator } from './tabs';
 
@@ -30,7 +31,8 @@ export const RootStack = createNativeStackNavigator({
                 QRScanModal: QRScanModal,
                 AddWalletModal: AddWalletModal,
                 SelectAccountModal: SelectAccountModal,
-                ReceiveAssetModal: ReceiveAssetModal
+                ReceiveAssetModal: ReceiveAssetModal,
+                SendAssetModal: SendStack
             },
             screenOptions: {
                 presentation: 'modal'
