@@ -6,9 +6,9 @@ index 10b0f3399c220fd1ab6de286bba6a5b641d5bf30..0e1d6fd4154a996fd3f1805c4225220e
 --- a/ios/Core/CameraSession.swift
 +++ b/ios/Core/CameraSession.swift
 @@ -113,8 +113,22 @@ final class CameraSession: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
-
+ 
      VisionLogger.log(level: .info, message: "configure { ... }: Waiting for lock...")
-
+ 
 +    let slowConfigurationWarning = DispatchWorkItem {
 +      VisionLogger.log(level: .warning, message: "configure { ... }: is still running after 2 seconds.")
 +    }
@@ -29,7 +29,7 @@ index 10b0f3399c220fd1ab6de286bba6a5b641d5bf30..0e1d6fd4154a996fd3f1805c4225220e
        let config = CameraConfiguration(copyOf: self.configuration)
        do {
 @@ -215,7 +229,9 @@ final class CameraSession: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
-
+ 
        // Set up Audio Capture Session (on audio queue)
        if difference.audioSessionChanged {
 +        completionGroup.enter()
@@ -39,7 +39,7 @@ index 10b0f3399c220fd1ab6de286bba6a5b641d5bf30..0e1d6fd4154a996fd3f1805c4225220e
              // Lock Capture Session for configuration
              VisionLogger.log(level: .info, message: "Beginning AudioSession configuration...")
 @@ -234,7 +250,9 @@ final class CameraSession: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
-
+ 
        // Set up Location streaming (on location queue)
        if difference.locationChanged {
 +        completionGroup.enter()
@@ -51,21 +51,21 @@ index 10b0f3399c220fd1ab6de286bba6a5b641d5bf30..0e1d6fd4154a996fd3f1805c4225220e
 @@ -265,7 +283,7 @@ final class CameraSession: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
      }
    }
-
+ 
 -  public final func captureOutput(_ captureOutput: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
 +  final func captureOutput(_ captureOutput: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
      switch captureOutput {
      case is AVCaptureVideoDataOutput:
        onVideoFrame(sampleBuffer: sampleBuffer, orientation: connection.orientation, isMirrored: connection.isVideoMirrored)
-diff --git a/ios/Core/Utils/VisionCounter.swift b/ios/Core/Utils/VisionCounter.swift
+diff --git a/ios/Core/Utils/Counter.swift b/ios/Core/Utils/Counter.swift
 new file mode 100644
 index 0000000000000000000000000000000000000000..b2d4378a19a07eace8ce52040808892fbe8da357
 --- /dev/null
-+++ b/ios/Core/Utils/VisionCounter.swift
++++ b/ios/Core/Utils/Counter.swift
 @@ -0,0 +1,34 @@
 +import os.lock
 +
-+final class VisionCounter {
++final class Counter {
 +  /**
 +    * https://forums.swift.org/t/atomic-property-wrapper-for-standard-library/30468/18
 +  */
@@ -105,16 +105,58 @@ diff --git a/ios/React/CameraView.swift b/ios/React/CameraView.swift
 index c773975353865c548e6ae7aef63d8575b6c395ad..8c8ef4fd9289ad4a0ef640a645b4f9213228d13c 100644
 --- a/ios/React/CameraView.swift
 +++ b/ios/React/CameraView.swift
-@@ -101,7 +101,7 @@ public final class CameraView: UIView, CameraSessionDelegate, PreviewViewDelegat
+@@ -10,6 +10,41 @@ import AVFoundation
+ import Foundation
+ import UIKit
+ 
++import os.lock
++
++final class Counter {
++  /**
++    * https://forums.swift.org/t/atomic-property-wrapper-for-standard-library/30468/18
++  */
++  private var unfair_lock: os_unfair_lock_t
++  private var count = 1
++  init() {
++    unfair_lock = .allocate(capacity: 1)
++    unfair_lock.initialize(to: os_unfair_lock())
++  }
++  deinit {
++    unfair_lock.deinitialize(count: 1)
++    unfair_lock.deallocate()
++  }
++  private func lock() {
++    os_unfair_lock_lock(unfair_lock)
++  }
++  private func unlock() {
++    os_unfair_lock_unlock(unfair_lock)
++  }
++  func increment() -> Int {
++    lock()
++    defer { unlock() }
++    count &+= 1
++    return count
++  }
++  func check(_ count: Int) -> Bool {
++    lock()
++    defer { unlock() }
++    return self.count == count
++  }
++}
++
+ // TODOs for the CameraView which are currently too hard to implement either because of AVFoundation's limitations, or my brain capacity
+ //
+ // CameraView+RecordVideo
+@@ -101,7 +136,7 @@ public final class CameraView: UIView, CameraSessionDelegate, PreviewViewDelegat
    var cameraSession = CameraSession()
    var previewView: PreviewView?
    var isMounted = false
 -  private var currentConfigureCall: DispatchTime?
-+  private let currentConfigureCall: VisionCounter = .init()
++  private let currentConfigureCall: Counter = .init()
    private let fpsSampleCollector = FpsSampleCollector()
-
+ 
    // CameraView+Zoom
-@@ -135,6 +135,7 @@ public final class CameraView: UIView, CameraSessionDelegate, PreviewViewDelegat
+@@ -135,6 +170,7 @@ public final class CameraView: UIView, CameraSessionDelegate, PreviewViewDelegat
          onViewReadyEvent?(nil)
        }
      } else {
@@ -122,7 +164,7 @@ index c773975353865c548e6ae7aef63d8575b6c395ad..8c8ef4fd9289ad4a0ef640a645b4f921
        fpsSampleCollector.stop()
      }
    }
-@@ -181,12 +182,12 @@ public final class CameraView: UIView, CameraSessionDelegate, PreviewViewDelegat
+@@ -181,12 +217,12 @@ public final class CameraView: UIView, CameraSessionDelegate, PreviewViewDelegat
    // pragma MARK: Props updating
    override public final func didSetProps(_ changedProps: [String]!) {
      VisionLogger.log(level: .info, message: "Updating \(changedProps.count) props: [\(changedProps.joined(separator: ", "))]")
@@ -130,7 +172,7 @@ index c773975353865c548e6ae7aef63d8575b6c395ad..8c8ef4fd9289ad4a0ef640a645b4f921
 -    currentConfigureCall = now
 +    let currentConfigureCall = self.currentConfigureCall
 +    let now = currentConfigureCall.increment()
-
+ 
      cameraSession.configure { [self] config in
        // Check if we're still the latest call to configure { ... }
 -      guard currentConfigureCall == now else {
@@ -138,10 +180,10 @@ index c773975353865c548e6ae7aef63d8575b6c395ad..8c8ef4fd9289ad4a0ef640a645b4f921
          // configure waits for a lock, and if a new call to update() happens in the meantime we can drop this one.
          // this works similar to how React implemented concurrent rendering, the newer call to update() has higher priority.
          VisionLogger.log(level: .info, message: "A new configure { ... } call arrived, aborting this one...")
-@@ -283,6 +284,33 @@ public final class CameraView: UIView, CameraSessionDelegate, PreviewViewDelegat
+@@ -283,6 +319,33 @@ public final class CameraView: UIView, CameraSessionDelegate, PreviewViewDelegat
      UIApplication.shared.isIdleTimerDisabled = isActive
    }
-
+ 
 +    private func deactivateCameraSession() {
 +    UIApplication.shared.isIdleTimerDisabled = false
 +
