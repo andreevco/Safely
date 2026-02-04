@@ -26,6 +26,7 @@
     "@safely/ux": "workspace:*",
     "@shopify/flash-list": "2.0.2",
     "@shopify/react-native-skia": "^2.4.14",
+    "big.js": "^7.0.1",
     "color": "^5.0.3",
     "expo": "^54.0.7",
     "expo-asset": "~12.0.8",
