@@ -13,9 +13,8 @@ export type {
     AmountWithInputType,
     AmountCryptoFirst,
     AmountFiatFirst,
-    SendStepId,
-    FormStepNames
+    SendStepId
 } from './types';
-export { SEND_STEPS } from './types';
+export { SEND_STEPS, FormStepNames } from './types';
 export * from './utils';
 export * from './validators';

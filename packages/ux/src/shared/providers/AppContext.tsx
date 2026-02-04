@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react';
 
-import { Build, UserCountryInfo } from '@safely/core';
+import { Build, IAppSdk, UserCountryInfo } from '@safely/core';
 
 import { ToastService } from '../../entities';
 import { TranslateFn } from '../i18n';
@@ -9,7 +9,7 @@ export interface IAppContext {
     version: string; // x.y.z
     build: Build;
     userCountryInfo?: UserCountryInfo;
-    sdk: unknown; // TODO Implement IAppSdk
+    sdk: IAppSdk;
     toast: ToastService;
     i18n: {
         language: string;
@@ -19,7 +19,7 @@ export interface IAppContext {
 
 export const AppContext = createContext<IAppContext | null>(null);
 
-export const useAppSdk = () => {
+export const useAppSdk = (): IAppSdk => {
     const context = useContext(AppContext);
     if (!context) {
         throw new Error('useAppSdk must be used within AppContext provider');

@@ -1,5 +1,21 @@
 {
     "currentLanguageName": "English",
+    "common": {
+        "next": "Next",
+        "cancel": "Cancel",
+        "continue": "Continue"
+    },
+    "send": {
+        "title": "Send",
+        "recipient": {
+            "label": "Recipient",
+            "placeholder": "Address or name"
+        },
+        "amount": "Amount",
+        "max": "Send all",
+        "remaining": "Remaining: {{amount}}{{symbol}}",
+        "insufficientBalance": "Insufficient balance"
+    },
     "passcode": {
         "title": "Create passcode",
         "description": "Enter a passcode to protect your wallet",
@@ -108,6 +124,32 @@
         "description": "Choose a name and icon for your wallet to make it easy to recognize.",
         "namePlaceholder": "Wallet name",
         "save": "Save"
+    },
+    "confirmation": {
+        "title": "Send {{symbol}}",
+        "success": "Sent",
+        "from": "From",
+        "to": "To",
+        "amount": "Amount",
+        "networkFee": "Network Fee",
+        "slider": {
+            "confirm": "Confirm",
+            "slideToSend": "Slide to send",
+            "backToWallet": "Back to Wallet"
+        }
+    },
+    "sendForm": {
+        "errors": {
+            "enterRecipientAddress": "Enter recipient address",
+            "invalidAddressFormat": "Invalid address format",
+            "invalidRecipientAddress": "Invalid recipient address",
+            "unsupportedBlockchain": "Unsupported blockchain",
+            "selectToken": "Select token",
+            "selectTokenFirst": "Select token first",
+            "unableToValidateToken": "Unable to validate token",
+            "invalidAmount": "Invalid amount",
+            "insufficientBalance": "Insufficient balance"
+        }
     },
     "settings": {
         "title": "Settings",

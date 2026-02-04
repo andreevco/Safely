@@ -9,18 +9,21 @@ import { CryptoCurrencyDisplay, FiatCurrencyDisplay } from './types';
 interface FormatCryptoOptions {
     fullPrecision?: boolean;
     currencyDisplay?: CryptoCurrencyDisplay;
+    useGrouping?: boolean;
     symbol: string;
 }
 
 interface FormatCryptoOptionsNoSymbol {
     fullPrecision?: boolean;
     currencyDisplay: 'none';
+    useGrouping?: boolean;
 }
 
 interface FormatFiatOptions {
     fullPrecision?: boolean;
     currencyDisplay?: FiatCurrencyDisplay;
     showPositiveSign?: boolean;
+    useGrouping?: boolean;
     currency: string;
 }
 
@@ -28,6 +31,7 @@ interface FormatFiatOptionsNoSymbol {
     fullPrecision?: boolean;
     currencyDisplay: 'none';
     showPositiveSign?: boolean;
+    useGrouping?: boolean;
 }
 
 export class NumberFormatter {
@@ -68,7 +72,11 @@ export class NumberFormatter {
 
     public formatAssetAmount(
         value: CryptoAssetAmount,
-        options?: { fullPrecision?: boolean; currencyDisplay?: CryptoCurrencyDisplay }
+        options?: {
+            fullPrecision?: boolean;
+            currencyDisplay?: CryptoCurrencyDisplay;
+            useGrouping?: boolean;
+        }
     ): string;
     public formatAssetAmount(
         value: FiatAssetAmount,
@@ -76,6 +84,7 @@ export class NumberFormatter {
             fullPrecision?: boolean;
             showPositiveSign?: boolean;
             currencyDisplay?: FiatCurrencyDisplay;
+            useGrouping?: boolean;
         }
     ): string;
     public formatAssetAmount(
@@ -84,6 +93,7 @@ export class NumberFormatter {
             fullPrecision?: boolean;
             showPositiveSign?: boolean;
             currencyDisplay?: FiatCurrencyDisplay | CryptoCurrencyDisplay;
+            useGrouping?: boolean;
         }
     ): string {
         try {
@@ -93,6 +103,7 @@ export class NumberFormatter {
                     currencyDisplay: options?.currencyDisplay as FiatCurrencyDisplay,
                     fullPrecision: options?.fullPrecision,
                     showPositiveSign: options?.showPositiveSign,
+                    useGrouping: options?.useGrouping,
                     currency: fiatAmount.asset.id.symbol
                 });
             } else if (isCryptoAsset(value.asset)) {
@@ -100,6 +111,7 @@ export class NumberFormatter {
                 return this.formatCrypto(cryptoAmount.relativeAmount, {
                     currencyDisplay: options?.currencyDisplay as CryptoCurrencyDisplay,
                     fullPrecision: options?.fullPrecision,
+                    useGrouping: options?.useGrouping,
                     symbol: cryptoAmount.asset.symbol
                 });
             } else {
@@ -117,7 +129,10 @@ export class NumberFormatter {
         value: BigSource,
         options: FormatCryptoOptions | FormatCryptoOptionsNoSymbol
     ): string {
-        const formatted = this.formatNumber(value, { fullPrecision: options.fullPrecision });
+        const formatted = this.formatNumber(value, {
+            fullPrecision: options.fullPrecision,
+            useGrouping: options.useGrouping
+        });
 
         if (options.currencyDisplay === 'none') {
             return formatted;
@@ -133,12 +148,18 @@ export class NumberFormatter {
         options: FormatFiatOptions | FormatFiatOptionsNoSymbol
     ): string {
         if (options.currencyDisplay === 'none') {
-            return this.formatNumber(value, { fullPrecision: options.fullPrecision });
+            return this.formatNumber(value, {
+                fullPrecision: options.fullPrecision,
+                useGrouping: options.useGrouping
+            });
         }
 
         const opts = options;
         const bigValue = Big(value);
-        const formatted = this.formatNumber(bigValue.abs(), { fullPrecision: opts.fullPrecision });
+        const formatted = this.formatNumber(bigValue.abs(), {
+            fullPrecision: opts.fullPrecision,
+            useGrouping: opts.useGrouping
+        });
 
         const display = opts.currencyDisplay ?? 'symbol';
         const affixes = this.locale.getCurrencyAffixes(
@@ -156,17 +177,21 @@ export class NumberFormatter {
         return `${sign}${prefix}${formatted}${suffix}`;
     }
 
-    private formatNumber(value: BigSource, options?: { fullPrecision?: boolean }): string {
+    private formatNumber(
+        value: BigSource,
+        options?: { fullPrecision?: boolean; useGrouping?: boolean }
+    ): string {
         const bigValue = Big(value);
+        const useGrouping = options?.useGrouping ?? true;
 
         return options?.fullPrecision
-            ? this.formatFullPrecision(bigValue)
-            : this.formatDynamicPrecision(bigValue);
+            ? this.formatFullPrecision(bigValue, useGrouping)
+            : this.formatDynamicPrecision(bigValue, useGrouping);
     }
 
-    private formatDynamicPrecision(value: Big): string {
+    private formatDynamicPrecision(value: Big, useGrouping = true): string {
         const truncated = this.truncateForDisplay(value);
-        return truncated.eq(0) ? '0' : this.formatFullPrecision(truncated);
+        return truncated.eq(0) ? '0' : this.formatFullPrecision(truncated, useGrouping);
     }
 
     private truncateForDisplay(value: Big): Big {
@@ -183,15 +208,15 @@ export class NumberFormatter {
         return Big(0);
     }
 
-    private formatFullPrecision(value: Big): string {
+    private formatFullPrecision(value: Big, useGrouping = true): string {
         const isNegative = value.lt(0);
         const absStr = value.abs().toFixed();
         const [intPart, fracPart = ''] = absStr.split('.');
 
-        const groupedInt = this.addGroupSeparators(intPart);
+        const formattedInt = useGrouping ? this.addGroupSeparators(intPart) : intPart;
         const result = fracPart
-            ? `${groupedInt}${this.locale.decimalSeparator}${fracPart}`
-            : groupedInt;
+            ? `${formattedInt}${this.locale.decimalSeparator}${fracPart}`
+            : formattedInt;
 
         return isNegative ? `-${result}` : result;
     }

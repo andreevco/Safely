@@ -17,6 +17,12 @@ export const styles = StyleSheet.create(theme => ({
                 tertiary: {
                     color: theme.colors.text.tertiary
                 },
+                link: {
+                    color: theme.colors.text.link
+                },
+                accentRed: {
+                    color: theme.colors.accent.red
+                },
                 constantBlack: {
                     color: theme.colors.other.constant.black
                 },
