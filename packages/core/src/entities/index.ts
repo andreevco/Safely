@@ -5,3 +5,4 @@ export * from './derivation';
 export * from './mnemonic';
 export * from './portfolio';
 export * from './recipient';
+export * from './errors';

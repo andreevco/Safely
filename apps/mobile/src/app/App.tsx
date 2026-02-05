@@ -1,5 +1,5 @@
 import { ToastProvider, ToastServiceProvider } from '@mobile/shared/providers/toast';
-import { mmkvStorage } from '@mobile/shared/storage/mmkv';
+import { createMMKVTreeStorage } from '@mobile/shared/storage/mmkv';
 import { DarkTheme, Theme } from '@react-navigation/native';
 import * as SplashScreen from 'expo-splash-screen';
 import { useMemo } from 'react';
@@ -13,7 +13,7 @@ import { createPersister, QueryProvider } from '@safely/ux';
 import { AppContextProvider } from './AppContext';
 import Navigation from './navigation';
 
-const persister = createPersister(mmkvStorage);
+const persister = createPersister(createMMKVTreeStorage('persister').storage);
 
 export const App = () => {
     const { theme } = useUnistyles();

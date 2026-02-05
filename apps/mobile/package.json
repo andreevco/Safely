@@ -7,7 +7,8 @@
     "web": "expo start --web",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "icons": "node scripts/generate-icons-file.js"
+    "icons": "node scripts/generate-icons-file.js",
+    "compile": "tsc --noEmit"
   },
   "dependencies": {
     "@bottom-tabs/react-navigation": "^1.1.0",
