@@ -1,7 +1,7 @@
 import { PortfolioName } from '@mobile/entities/portfolio';
 import { ChevronDown16, Icon, TouchableOpacity } from '@mobile/shared/ui';
 
-import { activePortfolio } from '@safely/ux';
+import { useActivePortfolio } from '@safely/ux';
 
 import { styles } from './AccountSelector.styles';
 
@@ -11,7 +11,7 @@ type AccountSelectorProps = {
 
 export const AccountSelector = (props: AccountSelectorProps) => {
     const { onSelectAccountPress } = props;
-    const portfolio = activePortfolio();
+    const portfolio = useActivePortfolio();
 
     return (
         <TouchableOpacity onPress={onSelectAccountPress} style={styles.container}>
