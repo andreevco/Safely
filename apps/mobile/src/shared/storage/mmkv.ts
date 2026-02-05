@@ -1,12 +1,23 @@
 import { createMMKV } from 'react-native-mmkv';
 
-const mmkv = createMMKV({ id: 'safely-app' });
+import { IEnumerableStorage, TreeStorage } from '@safely/core';
 
-/**
- * MMKV storage adapter compatible with createPersister from @safely/ux
- */
-export const mmkvStorage = {
-    getItem: (key: string) => mmkv.getString(key) ?? null,
-    setItem: (key: string, value: string) => mmkv.set(key, value),
-    removeItem: (key: string) => mmkv.delete(key)
-};
+export function createMMKVTreeStorage(id: string) {
+    const mmkv = createMMKV({ id });
+    const enumerableStorage: IEnumerableStorage = {
+        getItem: async (key: string) => mmkv.getString(key) ?? null,
+        setItem: async (key: string, value: string) => mmkv.set(key, value),
+        removeItem: async (key: string) => {
+            mmkv.remove(key);
+        },
+        clear: async () => mmkv.clearAll(),
+        getAllKeys: async () => mmkv.getAllKeys()
+    };
+
+    const storage = TreeStorage.root(enumerableStorage);
+
+    return {
+        storage,
+        mmkv
+    };
+}

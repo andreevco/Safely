@@ -1,4 +1,5 @@
 import { useToastServiceContext } from '@mobile/shared/providers/toast';
+import { createMMKVTreeStorage } from '@mobile/shared/storage/mmkv';
 import { MobileNumberFormatLocale } from '@mobile/shared/utils';
 import { getLocales } from 'expo-localization';
 import i18next from 'i18next';
@@ -12,7 +13,7 @@ const numberFormatLocale = new MobileNumberFormatLocale(getLocales()[0]);
 
 const sdk: IAppSdk = {
     numberFormatLocale,
-    // TODO: Implement later
+    storage: createMMKVTreeStorage('app').storage,
     secretEncryptor: {
         decryptSecret: async () => {
             throw new Error('Not implemented');

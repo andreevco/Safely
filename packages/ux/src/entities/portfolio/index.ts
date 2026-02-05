@@ -1,5 +1,5 @@
 export { portfolioKeys } from './keys';
-export { usePortfoliosQuery } from './portfolios';
+export * from './portfolios';
 export {
     useActivePortfolioEntitiesQuery,
     useActivePortfolioEntities,

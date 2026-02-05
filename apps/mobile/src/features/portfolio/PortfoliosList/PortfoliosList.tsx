@@ -3,7 +3,7 @@ import { Cell } from '@mobile/shared/ui';
 import { List } from '@mobile/shared/ui';
 
 import { Portfolio } from '@safely/core';
-import { activePortfolio } from '@safely/ux';
+import { useActivePortfolio } from '@safely/ux';
 
 import { styles } from './PortfoliosList.styles';
 
@@ -13,7 +13,7 @@ interface PortfoliosListProps {
 
 export const PortfoliosList = (props: PortfoliosListProps) => {
     const { portfolios } = props;
-    const activePortfolio = activePortfolio();
+    const activePortfolio = useActivePortfolio();
 
     return (
         <List>
