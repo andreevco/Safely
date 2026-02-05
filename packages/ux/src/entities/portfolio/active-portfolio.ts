@@ -3,7 +3,7 @@ import { keepPreviousData } from '@tanstack/react-query';
 import { BtcWallet, IDerivation, Portfolio } from '@safely/core';
 
 import { portfolioKeys } from './keys';
-import { usePortfoliosQuery } from './usePortfolios';
+import { usePortfoliosQuery } from './portfolios';
 import { useSuspenseQuery } from '../../shared';
 
 export type ActivePortfolioEntities = {
@@ -46,7 +46,7 @@ export function useActivePortfolioEntities() {
     return data;
 }
 
-export function useActivePortfolio() {
+export function activePortfolio() {
     return useActivePortfolioEntities().portfolio;
 }
 

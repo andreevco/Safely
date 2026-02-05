@@ -1,6 +1,7 @@
 import { createContext, useContext } from 'react';
 
 import { Build, UserCountryInfo } from '@safely/core';
+import { IAppSdk } from '@safely/core/di';
 
 import { ToastService } from '../../entities';
 import { TranslateFn } from '../i18n';
@@ -9,7 +10,7 @@ export interface IAppContext {
     version: string; // x.y.z
     build: Build;
     userCountryInfo?: UserCountryInfo;
-    sdk: unknown; // TODO Implement IAppSdk
+    sdk: IAppSdk;
     toast: ToastService;
     i18n: {
         language: string;

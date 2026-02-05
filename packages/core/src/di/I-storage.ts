@@ -4,3 +4,11 @@ export interface IStorage {
     removeItem(key: string): Promise<void>;
     clear(): Promise<void>;
 }
+
+export interface IEnumerableStorage extends IStorage {
+    getAllKeys(): Promise<string[]>;
+}
+
+export interface ITreeStorage extends IEnumerableStorage {
+    child(path: string[] | string): ITreeStorage;
+}

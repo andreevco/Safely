@@ -1,11 +1,11 @@
 export { portfolioKeys } from './keys';
-export { usePortfoliosQuery, usePortfolios } from './usePortfolios';
+export { usePortfoliosQuery } from './portfolios';
 export {
     useActivePortfolioEntitiesQuery,
     useActivePortfolioEntities,
-    useActivePortfolio,
+    activePortfolio,
     useActiveDerivation,
     useActiveBtcWallet,
     useHasPortfolio,
     type ActivePortfolioEntities
-} from './useActivePortfolio';
+} from './active-portfolio';

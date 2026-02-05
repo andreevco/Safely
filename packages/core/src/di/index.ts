@@ -4,4 +4,4 @@ export {
     type SSecretDecrypted,
     type SSecretEncrypted
 } from './I-secret-encryptor';
-export { type IStorage } from './I-storage';
+export * from './I-storage';
