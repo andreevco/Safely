@@ -14,5 +14,8 @@ declare module 'react-native-unistyles' {
 StyleSheet.configure({
     themes: {
         dark: darkTheme
+    },
+    settings: {
+        initialTheme: 'dark'
     }
 });

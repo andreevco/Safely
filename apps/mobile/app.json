@@ -1,13 +1,13 @@
 {
   "expo": {
-    "name": "Safely",
-    "slug": "andreevco-safely",
+    "name": "Swallet",
+    "slug": "aco-swalet",
     "version": "1.0.0",
     "orientation": "default",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "scheme": "andreevco-safely",
+    "scheme": "aco-swalet",
     "ios": {
       "infoPlist": {
         "UIDesignRequiresCompatibility": true,
@@ -18,15 +18,15 @@
         ]
       },
       "supportsTablet": true,
-      "bundleIdentifier": "com.andreevco.safely",
-      "appleTeamId": "7SJ59D8JGU"
+      "bundleIdentifier": "com.aco.swallet",
+      "appleTeamId": "9N49283836"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.andreevco.safely"
+      "package": "com.aco.swallet"
     },
     "plugins": [
       [
