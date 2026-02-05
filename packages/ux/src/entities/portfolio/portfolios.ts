@@ -89,7 +89,7 @@ function useNewPortfolioFallbackName() {
     return portfolios?.length ? `Wallet ${portfolios.length + 1}` : 'Wallet';
 }
 
-export function useGenerateAccount() {
+export function useGeneratePortfolio() {
     const sdk = useAppSdk();
     const { mutateAsync: setActivePortfolio } = useSetActivePortfolio();
     const { mutateAsync: addAccount } = useAddPortfolio();
@@ -104,20 +104,20 @@ export function useGenerateAccount() {
             const factory = new PortfolioFactory(sdk.secretEncryptor);
             using accessorVault = generateBip39Accessor();
 
-            const account = await factory.generatePortfolioBip39(accessorVault, {
+            const portfolio = await factory.generatePortfolioBip39(accessorVault, {
                 network: PortfolioNetworkType.MAINNET,
                 name
             });
 
-            if (!account) {
+            if (!portfolio) {
                 throw new PortfolioGenerationFailedError();
             }
 
-            await addAccount(account);
+            await addAccount(portfolio);
 
-            await setActivePortfolio(account);
+            await setActivePortfolio(portfolio);
 
-            return account;
+            return portfolio;
         },
         onError: errorToast
     });
@@ -308,6 +308,10 @@ export function useActivePortfolioEntitiesQuery() {
     });
 }
 
+export function useHasPortfolio() {
+    return !!useActivePortfolioEntitiesQuery().data?.portfolio;
+}
+
 export function useSetActiveDerivation() {
     const { set } = useAccountLocalStorage('activePortfolio');
     const client = useQueryClient();
@@ -393,7 +397,7 @@ export function useHasAccount() {
 export function useActivePortfolioEntities() {
     const { data } = useActivePortfolioEntitiesQuery();
     if (data === null) {
-        throw new Error('No active account');
+        throw new Error('No active portfolio');
     }
 
     return data;

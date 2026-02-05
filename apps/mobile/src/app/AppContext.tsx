@@ -15,11 +15,11 @@ const sdk: IAppSdk = {
     numberFormatLocale,
     storage: createMMKVTreeStorage('app').storage,
     secretEncryptor: {
-        decryptSecret: async () => {
-            throw new Error('Not implemented');
+        decryptSecret: async (val: string) => {
+            return val; // TODO implement
         },
-        encryptSecret: async () => {
-            throw new Error('Not implemented');
+        encryptSecret: async (val: string) => {
+            return val; // TODO implement
         }
     },
     qrScanner: {
