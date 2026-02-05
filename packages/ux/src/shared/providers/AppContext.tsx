@@ -1,7 +1,6 @@
 import { createContext, useContext } from 'react';
 
-import { Build, UserCountryInfo } from '@safely/core';
-import { IAppSdk } from '@safely/core/di';
+import { Build, IAppSdk, UserCountryInfo } from '@safely/core';
 
 import { ToastService } from '../../entities';
 import { TranslateFn } from '../i18n';
@@ -20,7 +19,7 @@ export interface IAppContext {
 
 export const AppContext = createContext<IAppContext | null>(null);
 
-export const useAppSdk = () => {
+export const useAppSdk = (): IAppSdk => {
     const context = useContext(AppContext);
     if (!context) {
         throw new Error('useAppSdk must be used within AppContext provider');

@@ -2,7 +2,7 @@
 
 import { Cell } from '@mobile/shared/ui';
 
-import { type CryptoAsset } from '@safely/core/entities/asset';
+import { type CryptoAsset } from '@safely/core';
 
 type AssetCellProps = {
     asset: CryptoAsset;

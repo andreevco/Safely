@@ -3,14 +3,14 @@ import { StaticScreenProps } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { ICryptoAsset } from '@safely/core/entities/asset/I-crypto-asset';
+import { type CryptoAsset } from '@safely/core';
 
 import { QRCodeBlock } from './components/QRCodeBlock/QRCodeBlock';
 import { ReceiveActions } from './components/ReceiveActions';
 import { styles } from './ReceiveAssetModal.styles';
 
 type ReceiveAssetModalProps = StaticScreenProps<{
-    asset: ICryptoAsset;
+    asset: CryptoAsset;
 }>;
 
 export const ReceiveAssetModal = (props: ReceiveAssetModalProps) => {

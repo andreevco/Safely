@@ -2,6 +2,7 @@ import { ISecretEncryptor } from './I-secret-encryptor';
 import { ITreeStorage } from './I-storage';
 import { QrScanner } from './qr-scanner';
 import { Security } from './security';
+import { NumberFormatLocale } from '../utils';
 
 export interface IAppSdk {
     storage: ITreeStorage;
@@ -11,4 +12,6 @@ export interface IAppSdk {
     qrScanner: QrScanner;
 
     security: Security;
+
+    numberFormatLocale: NumberFormatLocale;
 }

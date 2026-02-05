@@ -24,10 +24,10 @@ export const PortfoliosList = (props: PortfoliosListProps) => {
                             <Cell.Row>
                                 <PortfolioName meta={portfolio.meta} gap={12} size={16} />
                             </Cell.Row>
-                            {activePortfolio.id.toString() === portfolio.id.toString() && (
-                                <Cell.Checkmark />
-                            )}
                         </Cell.Content>
+                        {activePortfolio.id.toString() === portfolio.id.toString() && (
+                            <Cell.Checkmark />
+                        )}
                     </Cell>
                 ))}
             </List.Group>
