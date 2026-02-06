@@ -12,6 +12,7 @@
       "infoPlist": {
         "UIDesignRequiresCompatibility": true,
         "NSCameraUsageDescription": "We need access to your camera to scan QR codes.",
+        "NSFaceIDUsageDescription": "We use Face ID to unlock your wallet securely.",
         "CFBundleLocalizations": [
           "en",
           "ru"
@@ -51,6 +52,12 @@
         {
           "backgroundColor": "#ffffff",
           "image": "./assets/icon.png"
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png"
         }
       ]
     ]
