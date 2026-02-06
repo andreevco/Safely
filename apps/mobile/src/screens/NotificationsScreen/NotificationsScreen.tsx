@@ -1,8 +1,8 @@
 import { SettingsStackNavigationProp } from '@mobile/app/navigation/types';
+import { useNotifications } from '@mobile/features/notifications';
 import { Banner, Cell, List, Screen, Switch } from '@mobile/shared/ui';
 import { ArrowLeft16, Icon } from '@mobile/shared/ui/Icon';
 import { useNavigation } from '@react-navigation/native';
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Linking, View } from 'react-native';
 
@@ -10,10 +10,16 @@ import { styles } from './NotificationsScreen.styles';
 
 export const NotificationsScreen = () => {
     const { t } = useTranslation();
-
-    // TODO Real logic
-    const [pushEnabled, setPushEnabled] = useState(false);
     const navigation = useNavigation<SettingsStackNavigationProp>();
+    const { isEnabled, isDenied, requestPermission } = useNotifications();
+
+    const handleToggle = async () => {
+        if (isEnabled) {
+            void Linking.openSettings();
+        } else {
+            await requestPermission?.();
+        }
+    };
 
     const handleOpenSettings = () => {
         void Linking.openSettings();
@@ -29,14 +35,16 @@ export const NotificationsScreen = () => {
                 <View style={styles.headerPlaceholder} />
             </Screen.Header>
             <Screen.Scrollable contentContainerStyle={styles.listContent}>
-                <View style={styles.container}>
-                    <Banner
-                        variant="warning"
-                        text={t('notifications.warning')}
-                        actionText={t('notifications.openSettings')}
-                        onPress={handleOpenSettings}
-                    />
-                </View>
+                {isDenied && (
+                    <View style={styles.container}>
+                        <Banner
+                            variant="warning"
+                            text={t('notifications.warning')}
+                            actionText={t('notifications.openSettings')}
+                            onPress={handleOpenSettings}
+                        />
+                    </View>
+                )}
                 <List style={styles.container}>
                     <List.Group>
                         <Cell>
@@ -50,10 +58,7 @@ export const NotificationsScreen = () => {
                                     </Cell.Subtitle>
                                 </Cell.Row>
                             </Cell.Content>
-                            <Switch
-                                value={pushEnabled}
-                                onPress={() => setPushEnabled(!pushEnabled)}
-                            />
+                            <Switch value={isEnabled} disabled={isDenied} onPress={handleToggle} />
                         </Cell>
                     </List.Group>
                 </List>
