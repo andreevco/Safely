@@ -15,3 +15,4 @@ export * from './WordCell';
 export * from './ColorPicker';
 export * from './EmojiPicker';
 export * from './PasscodeInput';
+export * from './PasscodeSetup';

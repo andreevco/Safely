@@ -11,5 +11,8 @@ export const styles = StyleSheet.create((theme, rt) => ({
     headerPlaceholder: {
         width: 40,
         padding: theme.spacing[12]
+    },
+    listGroupMargin: {
+        marginBottom: theme.spacing[2]
     }
 }));

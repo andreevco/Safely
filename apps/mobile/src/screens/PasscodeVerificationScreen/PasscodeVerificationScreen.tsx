@@ -21,10 +21,11 @@ import { styles } from './PasscodeVerificationScreen.styles';
 type PasscodeVerificationScreenProps = StaticScreenProps<{
     onSuccess: () => void;
     onClose?: () => void;
+    title?: string;
 }>;
 
 export const PasscodeVerificationScreen = (props: PasscodeVerificationScreenProps) => {
-    const { onSuccess, onClose } = props.route.params;
+    const { onSuccess, onClose, title } = props.route.params;
 
     const { t } = useTranslation();
     const navigation = useNavigation();
@@ -106,7 +107,7 @@ export const PasscodeVerificationScreen = (props: PasscodeVerificationScreenProp
             <Animated.View style={[styles.content, contentAnimatedStyle]}>
                 <Animated.View style={styles.textContainer}>
                     <Text textAlign="center" variant="titleM">
-                        {t('passcode.verify.title')}
+                        {title ?? t('passcode.verify.title')}
                     </Text>
                 </Animated.View>
 

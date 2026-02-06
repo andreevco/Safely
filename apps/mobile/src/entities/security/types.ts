@@ -1,3 +1,7 @@
+export type PromptAndCheckOptions = {
+    title?: string;
+};
+
 export type UsePasscodeResult =
     | {
           isLoading: false;
@@ -6,7 +10,7 @@ export type UsePasscodeResult =
           set: (passcode: string) => Promise<void>;
           validate: (passcode: string) => Promise<boolean>;
           remove: () => Promise<void>;
-          promptAndCheck: () => Promise<void>;
+          promptAndCheck: (options?: PromptAndCheckOptions) => Promise<void>;
       }
     | {
           isLoading: false;
