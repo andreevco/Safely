@@ -21,7 +21,10 @@ const sdk: IAppSdk = {
     storage: createMMKVTreeStorage('app').storage,
     secretEncryptor: {
         decryptSecret: async (val: string) => {
-            await sdk.security.check();
+            const passed = await sdk.security.check();
+            if (!passed) {
+                throw new Error('Security check failed');
+            }
             return val; // TODO implement
         },
         encryptSecret: async (val: string) => {
