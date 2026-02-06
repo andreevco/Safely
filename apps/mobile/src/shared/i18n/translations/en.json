@@ -26,6 +26,18 @@
             "title": "Enter passcode"
         }
     },
+    "changePasscode": {
+        "title": "Change passcode",
+        "verify": {
+            "title": "Enter current passcode"
+        },
+        "new": {
+            "title": "Enter new passcode"
+        },
+        "reenter": {
+            "title": "Confirm new passcode"
+        }
+    },
     "currency": {
         "title": "Currency"
     },
@@ -90,7 +102,7 @@
         },
         "phraseSheet": {
             "title": "Recovery phrase",
-            "warning": "Do not share this phrase. Anyone with it can access your\u00A0wallet.",
+            "warning": "Do not share this phrase.\nAnyone with it can access your\u00A0wallet.",
             "copy": "Copy"
         },
         "groups": {

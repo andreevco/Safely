@@ -1,20 +1,27 @@
+import { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import { BottomSheet, Button, Text, useBottomSheet } from '@mobile/shared/ui';
+import { Icon, ListKey96 } from '@mobile/shared/ui/Icon';
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
-import { BottomSheet, Button, Text, useBottomSheet } from '@mobile/shared/ui';
-import { Icon, ListKey96 } from '@mobile/shared/ui/Icon';
+import { useActivePortfolio } from '@safely/ux';
 
 import { styles } from './RecoveryConfirmSheet.styles';
 
 const RecoveryConfirmContent = () => {
     const { t } = useTranslation();
     const { close } = useBottomSheet();
+    const portfolio = useActivePortfolio();
     const navigation = useNavigation<RootStackNavigationProp>();
 
-    const handleReveal = () => {
-        navigation.navigate('RecoveryPhraseModal');
+    const handleReveal = async () => {
+        try {
+            const mnemonic = await portfolio.getMnemonic();
+            navigation.navigate('RecoveryPhraseModal', { mnemonic });
+        } catch {
+            // Security check failed
+        }
     };
 
     return (

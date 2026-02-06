@@ -2,7 +2,7 @@ import { navigationRef } from '@mobile/app/navigation/navigationRef';
 import * as SecureStore from 'expo-secure-store';
 import { useCallback, useEffect, useState } from 'react';
 
-import { UsePasscodeResult } from './types';
+import { PromptAndCheckOptions, UsePasscodeResult } from './types';
 
 export const PASSCODE_KEY = 'passcode';
 
@@ -41,12 +41,13 @@ export function usePasscode(): UsePasscodeResult {
     }, []);
 
     const promptAndCheck = useCallback(
-        () =>
+        (options?: PromptAndCheckOptions) =>
             new Promise<void>((resolve, reject) => {
                 if (navigationRef.current) {
                     navigationRef.current.navigate('PasscodeVerificationModal', {
                         onSuccess: resolve,
-                        onClose: reject
+                        onClose: reject,
+                        title: options?.title
                     });
                 } else {
                     reject(new Error('Navigation not ready'));

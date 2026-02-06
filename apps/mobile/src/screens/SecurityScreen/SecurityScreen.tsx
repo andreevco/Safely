@@ -1,11 +1,14 @@
+import { RootStackNavigationProp, SettingsStackNavigationProp } from '@mobile/app/navigation/types';
+import { PortfolioName } from '@mobile/entities/portfolio';
+import { useSecurityCheck } from '@mobile/entities/security';
+import { Cell, List, Screen, Switch } from '@mobile/shared/ui';
+import { ArrowLeft16, Icon, Switch16 } from '@mobile/shared/ui/Icon';
 import { useNavigation } from '@react-navigation/native';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { RootStackNavigationProp, SettingsStackNavigationProp } from '@mobile/app/navigation/types';
-import { Cell, List, Screen, Switch } from '@mobile/shared/ui';
-import { ArrowLeft16, Icon } from '@mobile/shared/ui/Icon';
+import { useActivePortfolio } from '@safely/ux';
 
 import { styles } from './SecurityScreen.styles';
 
@@ -13,10 +16,23 @@ export const SecurityScreen = () => {
     const { t } = useTranslation();
     const navigation = useNavigation<SettingsStackNavigationProp>();
     const rootNavigation = useNavigation<RootStackNavigationProp>();
+    const portfolio = useActivePortfolio();
+    const { check } = useSecurityCheck();
 
     // TODO: Real logic
     const [faceIdEnabled, setFaceIdEnabled] = useState(false);
     const [lockScreenEnabled, setLockScreenEnabled] = useState(false);
+
+    const handleSelectWallet = () => {
+        rootNavigation.navigate('SelectAccountModal');
+    };
+
+    const handleChangePasscode = async () => {
+        const passed = await check({ title: t('changePasscode.verify.title') });
+        if (!passed) return;
+
+        rootNavigation.navigate('ChangePasscodeModal');
+    };
 
     const handleRecoveryPress = () => {
         rootNavigation.navigate('RecoveryConfirmSheet');
@@ -93,7 +109,7 @@ export const SecurityScreen = () => {
                                     onPress={() => setLockScreenEnabled(!lockScreenEnabled)}
                                 />
                             </Cell>
-                            <Cell>
+                            <Cell onPress={handleChangePasscode}>
                                 <Cell.Content>
                                     <Cell.Row>
                                         <Cell.Title>
@@ -108,14 +124,14 @@ export const SecurityScreen = () => {
 
                     <List>
                         <List.Title>{t('security.groups.wallet.title')}</List.Title>
-                        <List.Group>
-                            <Cell>
+                        <List.Group style={styles.listGroupMargin}>
+                            <Cell onPress={handleSelectWallet}>
                                 <Cell.Content>
                                     <Cell.Row>
-                                        <Cell.Title>{t('security.groups.wallet.main')}</Cell.Title>
+                                        <PortfolioName meta={portfolio.meta} />
                                     </Cell.Row>
                                 </Cell.Content>
-                                <Cell.Chevron />
+                                <Icon icon={Switch16} color="tertiary" />
                             </Cell>
                         </List.Group>
                         <List.Group>

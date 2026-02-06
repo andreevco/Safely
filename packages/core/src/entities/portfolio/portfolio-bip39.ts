@@ -4,7 +4,7 @@ import { PortfolioIdMnemonicBased } from './portfolio-id';
 import { PortfolioMeta } from './portfolio-meta';
 import { SPortfolioBip39In, SPortfolioBip39Out } from './portfolio.stored';
 import { ISecretEncryptor } from '../../di';
-import { Id } from '../../utils/id';
+import { Id } from '../../utils';
 import { BtcWalletType } from '../blockchain';
 import { SDerivation } from '../derivation/derivation.stored';
 import { MnemonicResource, IMnemonicVaultEncryptedSecretStored, MnemonicVault } from '../mnemonic';
@@ -121,6 +121,10 @@ export class PortfolioBip39 implements IPortfolioDerivable {
 
     public updateMeta(meta: Partial<PortfolioMeta>) {
         this.meta = { ...this.meta, ...meta };
+    }
+
+    public getMnemonic(): Promise<string[]> {
+        return this.mnemonicVault.getMnemonic();
     }
 
     public toJSON(): SPortfolioBip39In {
