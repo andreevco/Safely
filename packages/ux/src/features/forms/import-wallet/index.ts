@@ -1,5 +1,4 @@
-export { useImportWords, useImportSeedPhrase } from './hooks';
-export type { WordsNumber, IHandlePasscodeConfig } from './types';
+export { useImportSeedPhrase } from './hooks';
 export type {
     UseImportSeedPhraseParams,
     UseImportSeedPhraseResult
