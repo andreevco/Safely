@@ -1,6 +1,7 @@
 import { RootStackNavigationProp, SettingsStackNavigationProp } from '@mobile/app/navigation/types';
 import { PortfolioName } from '@mobile/entities/portfolio';
 import { useSecurityCheck } from '@mobile/entities/security';
+import { getBiometryTranslationKey, useBiometry } from '@mobile/features/biometry';
 import { Cell, List, Screen, Switch } from '@mobile/shared/ui';
 import { ArrowLeft16, Icon, Switch16 } from '@mobile/shared/ui/Icon';
 import { TouchableOpacity } from '@mobile/shared/ui/TouchableOpacity';
@@ -15,14 +16,19 @@ import { styles } from './SecurityScreen.styles';
 
 export const SecurityScreen = () => {
     const { t } = useTranslation();
+    const biometry = useBiometry();
+    const { check } = useSecurityCheck();
+    const portfolio = useActivePortfolio();
     const navigation = useNavigation<SettingsStackNavigationProp>();
     const rootNavigation = useNavigation<RootStackNavigationProp>();
-    const portfolio = useActivePortfolio();
-    const { check } = useSecurityCheck();
 
-    // TODO: Real logic
-    const [faceIdEnabled, setFaceIdEnabled] = useState(false);
     const [lockScreenEnabled, setLockScreenEnabled] = useState(false);
+
+    const handleBiometryToggle = async () => {
+        if (biometry.setEnabled) {
+            await biometry.setEnabled(!biometry.isEnabled);
+        }
+    };
 
     const handleSelectWallet = () => {
         rootNavigation.navigate('SelectAccountModal');
@@ -76,24 +82,30 @@ export const SecurityScreen = () => {
                     <List>
                         <List.Title>{t('security.groups.application.title')}</List.Title>
                         <List.Group variant="divided">
-                            <Cell>
-                                <Cell.Content>
-                                    <Cell.Row>
-                                        <Cell.Title>
-                                            {t('security.groups.application.faceId.title')}
-                                        </Cell.Title>
-                                    </Cell.Row>
-                                    <Cell.Row>
-                                        <Cell.Subtitle numberOfLines={0}>
-                                            {t('security.groups.application.faceId.subtitle')}
-                                        </Cell.Subtitle>
-                                    </Cell.Row>
-                                </Cell.Content>
-                                <Switch
-                                    value={faceIdEnabled}
-                                    onPress={() => setFaceIdEnabled(!faceIdEnabled)}
-                                />
-                            </Cell>
+                            {biometry.availableType && (
+                                <Cell>
+                                    <Cell.Content>
+                                        <Cell.Row>
+                                            <Cell.Title>
+                                                {t(
+                                                    `${getBiometryTranslationKey(biometry.availableType)}.title`
+                                                )}
+                                            </Cell.Title>
+                                        </Cell.Row>
+                                        <Cell.Row>
+                                            <Cell.Subtitle numberOfLines={0}>
+                                                {t(
+                                                    `${getBiometryTranslationKey(biometry.availableType)}.description`
+                                                )}
+                                            </Cell.Subtitle>
+                                        </Cell.Row>
+                                    </Cell.Content>
+                                    <Switch
+                                        value={biometry.isEnabled}
+                                        onPress={handleBiometryToggle}
+                                    />
+                                </Cell>
+                            )}
                             <Cell>
                                 <Cell.Content>
                                     <Cell.Row>
