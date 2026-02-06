@@ -1,0 +1,1 @@
+export { AccountCreatedScreen } from './AccountCreatedScreen';
