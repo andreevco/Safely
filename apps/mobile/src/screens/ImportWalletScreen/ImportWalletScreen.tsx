@@ -16,7 +16,7 @@ export const ImportWalletScreen = () => {
 
     const { value, error, isDirty, onChange, handleSubmit } = useImportSeedPhrase({
         onSubmit: mnemonic => {
-            onMnemonicReady(mnemonic);
+            void onMnemonicReady(mnemonic);
         }
     });
 
