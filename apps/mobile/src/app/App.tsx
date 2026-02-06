@@ -13,11 +13,14 @@ import { createPersister, QueryProvider } from '@safely/ux';
 
 import { AppContextProvider } from './AppContext';
 import Navigation from './navigation';
+import { navigationRef } from './navigation/navigationRef';
+import { useInitialNavigationState } from './navigation/useInitialNavigationState';
 
 const persister = createPersister(createMMKVTreeStorage('persister').storage);
 
 export const App = () => {
     const { theme } = useUnistyles();
+    const initialState = useInitialNavigationState();
 
     const NavigationTheme: Theme = useMemo(
         () => ({
@@ -43,10 +46,11 @@ export const App = () => {
                             <AppContextProvider>
                                 <LoaderProvider>
                                     <Navigation
+                                        ref={navigationRef}
+                                        initialState={initialState}
                                         onReady={() => SplashScreen.hideAsync()}
                                         theme={NavigationTheme}
                                     />
-
                                     <ToastProvider />
                                 </LoaderProvider>
                             </AppContextProvider>
