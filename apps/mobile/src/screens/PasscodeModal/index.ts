@@ -1,2 +1,2 @@
-export { PasscodeModal } from './PasscodeModal';
-export type { PasscodeModalProps } from './PasscodeModal';
+export { usePasscodeState } from './hooks';
+export type { PasscodeState } from './hooks';
