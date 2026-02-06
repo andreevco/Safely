@@ -5,6 +5,7 @@ import ChevronDown16Svg from '@safely/ux/shared/assets/icons/16/chevron-down-16.
 import ChevronRight16Svg from '@safely/ux/shared/assets/icons/16/chevron-right-16.svg';
 import ExclamationmarkCircle16Svg from '@safely/ux/shared/assets/icons/16/exclamationmark-circle-16.svg';
 import Sliders16Svg from '@safely/ux/shared/assets/icons/16/sliders-16.svg';
+import Switch16Svg from '@safely/ux/shared/assets/icons/16/switch-16.svg';
 import Xmark16Svg from '@safely/ux/shared/assets/icons/16/xmark-16.svg';
 import XmarkCircle16Svg from '@safely/ux/shared/assets/icons/16/xmark-circle-16.svg';
 import SwapVertical20Svg from '@safely/ux/shared/assets/icons/20/swap-vertical-20.svg';
@@ -33,6 +34,7 @@ export const ChevronDown16 = { image: ChevronDown16Svg, size: 16 } as const;
 export const ChevronRight16 = { image: ChevronRight16Svg, size: 16 } as const;
 export const ExclamationmarkCircle16 = { image: ExclamationmarkCircle16Svg, size: 16 } as const;
 export const Sliders16 = { image: Sliders16Svg, size: 16 } as const;
+export const Switch16 = { image: Switch16Svg, size: 16 } as const;
 export const Xmark16 = { image: Xmark16Svg, size: 16 } as const;
 export const XmarkCircle16 = { image: XmarkCircle16Svg, size: 16 } as const;
 export const SwapVertical20 = { image: SwapVertical20Svg, size: 20 } as const;
