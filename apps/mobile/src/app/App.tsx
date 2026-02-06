@@ -1,4 +1,4 @@
-import { MockTempWalletProvider } from '@mobile/app/MockTempWalletProvider';
+import { LoaderProvider } from '@mobile/shared/providers/loader';
 import { ToastProvider, ToastServiceProvider } from '@mobile/shared/providers/toast';
 import { createMMKVTreeStorage } from '@mobile/shared/storage/mmkv';
 import { DarkTheme, Theme } from '@react-navigation/native';
@@ -41,14 +41,14 @@ export const App = () => {
                     <QueryProvider persister={persister}>
                         <ToastServiceProvider>
                             <AppContextProvider>
-                                <MockTempWalletProvider>
+                                <LoaderProvider>
                                     <Navigation
                                         onReady={() => SplashScreen.hideAsync()}
                                         theme={NavigationTheme}
                                     />
 
                                     <ToastProvider />
-                                </MockTempWalletProvider>
+                                </LoaderProvider>
                             </AppContextProvider>
                         </ToastServiceProvider>
                     </QueryProvider>
