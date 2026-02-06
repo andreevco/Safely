@@ -19,9 +19,14 @@ import Flashlight28Svg from '@safely/ux/shared/assets/icons/28/flashlight-28.svg
 import Loader28Svg from '@safely/ux/shared/assets/icons/28/loader-28.svg';
 import QrCodeScan28Svg from '@safely/ux/shared/assets/icons/28/qr-code-scan-28.svg';
 import FrameCorner48Svg from '@safely/ux/shared/assets/icons/48/frame-corner-48.svg';
+import Loader56Svg from '@safely/ux/shared/assets/icons/56/loader-56.svg';
 import CameraLock96Svg from '@safely/ux/shared/assets/icons/96/camera-lock-96.svg';
 import Checkmark96Svg from '@safely/ux/shared/assets/icons/96/checkmark-96.svg';
+import FaceidAndroid96Svg from '@safely/ux/shared/assets/icons/96/faceid-android-96.svg';
+import FaceidIos96Svg from '@safely/ux/shared/assets/icons/96/faceid-ios-96.svg';
+import Fingerprint96Svg from '@safely/ux/shared/assets/icons/96/fingerprint-96.svg';
 import ListKey96Svg from '@safely/ux/shared/assets/icons/96/list-key-96.svg';
+import Notifications96Svg from '@safely/ux/shared/assets/icons/96/notifications-96.svg';
 import Placeholder96Svg from '@safely/ux/shared/assets/icons/96/placeholder-96.svg';
 
 export const ArrowLeft16 = { image: ArrowLeft16Svg, size: 16 } as const;
@@ -43,7 +48,12 @@ export const Flashlight28 = { image: Flashlight28Svg, size: 28 } as const;
 export const Loader28 = { image: Loader28Svg, size: 28 } as const;
 export const QrCodeScan28 = { image: QrCodeScan28Svg, size: 28 } as const;
 export const FrameCorner48 = { image: FrameCorner48Svg, size: 48 } as const;
+export const Loader56 = { image: Loader56Svg, size: 56 } as const;
 export const CameraLock96 = { image: CameraLock96Svg, size: 96 } as const;
 export const Checkmark96 = { image: Checkmark96Svg, size: 96 } as const;
+export const FaceidAndroid96 = { image: FaceidAndroid96Svg, size: 96 } as const;
+export const FaceidIos96 = { image: FaceidIos96Svg, size: 96 } as const;
+export const Fingerprint96 = { image: Fingerprint96Svg, size: 96 } as const;
 export const ListKey96 = { image: ListKey96Svg, size: 96 } as const;
+export const Notifications96 = { image: Notifications96Svg, size: 96 } as const;
 export const Placeholder96 = { image: Placeholder96Svg, size: 96 } as const;
