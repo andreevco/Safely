@@ -1,16 +1,19 @@
-import { createStaticNavigation } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-
-import { AddWalletModal } from '@mobile/screens/AddWalletModal';
+import { AccountCreatedScreen } from '@mobile/screens/AccountCreatedScreen';
+import { BiometryScreen } from '@mobile/screens/BiometryScreen';
 import { CurrencyScreen } from '@mobile/screens/CurrencyScreen';
-import { CustomizeWalletModal } from '@mobile/screens/CustomizeWalletModal';
-import { PasscodeModal } from '@mobile/screens/PasscodeModal';
+import { OnboardingNotificationsScreen } from '@mobile/screens/OnboardingNotificationsScreen';
+import { OnboardingPasscodeScreen } from '@mobile/screens/OnboardingPasscodeScreen';
+import { PasscodeVerificationScreen } from '@mobile/screens/PasscodeVerificationScreen';
 import { QRScanModal } from '@mobile/screens/QRScanModal';
 import { ReceiveAssetModal } from '@mobile/screens/ReceiveAssetModal';
 import { RecoveryConfirmSheet, RecoveryPhraseSheet } from '@mobile/screens/SecurityScreen/screens';
 import { SelectAccountModal } from '@mobile/screens/SelectAccountModal';
 import { TransactionScreen } from '@mobile/screens/TransactionScreen';
+import { WelcomeScreen } from '@mobile/screens/WelcomeScreen';
+import { createStaticNavigation } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
+import { AddWalletStack } from './stacks/AddWalletStack';
 import { SendStack } from './stacks/SendStack';
 import { SettingsStack } from './stacks/SettingsStack';
 import { TabsNavigator } from './tabs';
@@ -18,6 +21,15 @@ import { TabsNavigator } from './tabs';
 export const RootStack = createNativeStackNavigator({
     initialRouteName: 'TabsNavigator',
     groups: {
+        Onboarding: {
+            screens: {
+                WelcomeScreen: WelcomeScreen,
+                OnboardingPasscodeScreen: OnboardingPasscodeScreen,
+                BiometryScreen: BiometryScreen,
+                OnboardingNotificationsScreen: OnboardingNotificationsScreen,
+                AccountCreatedScreen: AccountCreatedScreen
+            }
+        },
         Screens: {
             screens: {
                 TabsNavigator: TabsNavigator,
@@ -29,10 +41,9 @@ export const RootStack = createNativeStackNavigator({
                 SettingsModal: SettingsStack,
                 CurrencyModal: CurrencyScreen,
                 RecoveryPhraseModal: RecoveryPhraseSheet,
-                CustomizeWalletModal: CustomizeWalletModal,
-                PasscodeModal: PasscodeModal,
+                PasscodeVerificationModal: PasscodeVerificationScreen,
                 QRScanModal: QRScanModal,
-                AddWalletModal: AddWalletModal,
+                AddWalletModal: AddWalletStack,
                 SelectAccountModal: SelectAccountModal,
                 ReceiveAssetModal: ReceiveAssetModal,
                 SendAssetModal: SendStack

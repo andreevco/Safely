@@ -207,17 +207,18 @@
     },
     "addWallet": {
         "title": "Add Wallet",
+        "subtitle": "Choose how you want to add a wallet.",
         "createNew": {
-            "title": "Create new wallet",
-            "subtitle": "Generate a new recovery phrase"
+            "title": "Create new",
+            "subtitle": "Start with a fresh wallet"
         },
         "importExisting": {
-            "title": "Import existing wallet",
-            "subtitle": "Enter your recovery phrase"
+            "title": "Import existing",
+            "subtitle": "Restore using a recovery phrase"
         },
         "watchAccount": {
             "title": "Watch account",
-            "subtitle": "Monitor an address without signing"
+            "subtitle": "Track by wallet address"
         }
     },
     "biometry": {

@@ -28,6 +28,7 @@ import Fingerprint96Svg from '@safely/ux/shared/assets/icons/96/fingerprint-96.s
 import ListKey96Svg from '@safely/ux/shared/assets/icons/96/list-key-96.svg';
 import Notifications96Svg from '@safely/ux/shared/assets/icons/96/notifications-96.svg';
 import Placeholder96Svg from '@safely/ux/shared/assets/icons/96/placeholder-96.svg';
+import WalletPlus96Svg from '@safely/ux/shared/assets/icons/96/wallet-plus-96.svg';
 
 export const ArrowLeft16 = { image: ArrowLeft16Svg, size: 16 } as const;
 export const ChevronDown16 = { image: ChevronDown16Svg, size: 16 } as const;
@@ -57,3 +58,4 @@ export const Fingerprint96 = { image: Fingerprint96Svg, size: 96 } as const;
 export const ListKey96 = { image: ListKey96Svg, size: 96 } as const;
 export const Notifications96 = { image: Notifications96Svg, size: 96 } as const;
 export const Placeholder96 = { image: Placeholder96Svg, size: 96 } as const;
+export const WalletPlus96 = { image: WalletPlus96Svg, size: 96 } as const;
