@@ -8,12 +8,12 @@ import { styles } from './Button.styles';
 type ButtonProps = TouchableOpacityProps & UnistylesVariants<typeof styles>;
 
 export const Button = (props: ButtonProps) => {
-    const { children, type = 'primary', size = 'medium', ...rest } = props;
+    const { children, type = 'primary', size = 'medium', disabled, style, ...rest } = props;
 
-    styles.useVariants({ type, size });
+    styles.useVariants({ type, size, disabled: disabled ? 'true' : 'false' });
 
     return (
-        <TouchableOpacity style={styles.container} {...rest}>
+        <TouchableOpacity style={[styles.container, style]} disabled={disabled} {...rest}>
             {typeof children === 'string' ? (
                 <Text variant={size === 'small' ? 'labelM' : 'labelL'}>{children}</Text>
             ) : (
