@@ -23,6 +23,9 @@ export const styles = StyleSheet.create(theme => ({
                 accentRed: {
                     color: theme.colors.accent.red
                 },
+                accentGreen: {
+                    color: theme.colors.accent.green
+                },
                 constantBlack: {
                     color: theme.colors.other.constant.black
                 },

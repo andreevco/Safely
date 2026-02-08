@@ -1,9 +1,5 @@
 import { Icon, IconProps } from '@mobile/shared/ui/Icon';
-import {
-    Image as ImageComponent,
-    ImageSource,
-    ImageProps as ImageComponentProps
-} from 'expo-image';
+import { Image as ImageComponent, ImageProps as ImageComponentProps } from 'expo-image';
 import { View, ViewStyle } from 'react-native';
 
 import { styles } from './Image.styles';
@@ -22,7 +18,7 @@ export type IconType = {
 
 export type ImageType = {
     type: 'image';
-    image: ImageSource;
+    image: ImageComponentProps['source'];
     style?: ImageComponentProps['style'];
 };
 

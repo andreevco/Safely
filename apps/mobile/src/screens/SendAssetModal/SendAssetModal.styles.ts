@@ -5,20 +5,6 @@ export const styles = StyleSheet.create(theme => ({
         flex: 1
     },
     nextButton: {
-        margin: theme.spacing[12],
-        paddingVertical: theme.spacing[12],
-        paddingHorizontal: theme.spacing[16],
-        borderRadius: theme.radius.full,
-        backgroundColor: theme.colors.button.primary.background,
-        variants: {
-            disabled: {
-                true: {
-                    opacity: 0.5
-                },
-                false: {
-                    opacity: 1
-                }
-            }
-        }
+        margin: theme.spacing[12]
     }
 }));

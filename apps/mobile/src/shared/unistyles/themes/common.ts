@@ -15,8 +15,10 @@ export const commonTheme = {
         full: 1000
     },
     spacing: {
+        0: 0,
         2: 2,
         4: 4,
+        6: 6,
         8: 8,
         12: 12,
         16: 16,
