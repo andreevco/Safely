@@ -7,11 +7,7 @@ import { ISecretEncryptor } from '../../di';
 import { Id } from '../../utils/id';
 import { BtcWalletType } from '../blockchain';
 import { SDerivation } from '../derivation/derivation.stored';
-import {
-    MnemonicResource,
-    IMnemonicVaultEncryptedSecretStored,
-    MnemonicVault
-} from '../mnemonic';
+import { MnemonicResource, IMnemonicVaultEncryptedSecretStored, MnemonicVault } from '../mnemonic';
 import { BtcBip39SeedProducer } from '../seed';
 
 export class PortfolioBip39 implements IPortfolioDerivable {

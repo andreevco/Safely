@@ -7,6 +7,7 @@ export const MockTempWalletProvider: FC<PropsWithChildren> = ({ children }) => {
     const { mutateAsync: generatePortfolio } = useGeneratePortfolio();
 
     if (!hasPortfolio) {
+        // eslint-disable-next-line @typescript-eslint/only-throw-error
         throw generatePortfolio();
     }
 
