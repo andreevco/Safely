@@ -11,10 +11,7 @@ import {
 import { useActiveFiat } from '../fiat';
 import { useActiveBtcWallet } from '../portfolio';
 import { assetKeys } from './keys';
-// import { getSortedAssets } from './utils';
-
-const MOCK_BTC_BALANCE_SATOSHIS = 234500n; // 0.002345 BTC
-const MOCK_BTC_PRICE = 97500;
+import { getSortedAssets } from './utils';
 
 export function useAssets() {
     const btcApi = useBtcApi();
@@ -25,57 +22,41 @@ export function useAssets() {
     return usePersistQuery<RatedCryptoAssetAmount[]>({
         queryKey: assetKeys.all(wallet.id.toString()).fiat(fiat.id.toString()).toKey(),
         queryFn: async () => {
+            const fiatSymbol = fiat.id.symbol;
+
+            const [addressInfo, priceResponse] = await Promise.all([
+                btcApi.getXpub(wallet, {
+                    secondaryCurrency: fiatSymbol
+                }),
+                priceApi.getCurrentPrice({
+                    token: 'native',
+                    currency: fiatSymbol,
+                    blockchain: 'bitcoin'
+                })
+            ]);
+
             const btcAmount = new CryptoAssetAmount({
                 asset: BTC_ASSET,
-                weiAmount: MOCK_BTC_BALANCE_SATOSHIS
+                weiAmount: addressInfo.balance
             });
-            const btcPrice = new Rate(
-                BTC_ASSET,
-                fiat,
-                toBig(MOCK_BTC_PRICE),
-                undefined,
-                '2.5',
-                undefined
-            );
 
-            return [{ amount: btcAmount, price: btcPrice }];
+            const btcPrice = priceResponse
+                ? new Rate(
+                      BTC_ASSET,
+                      fiat,
+                      toBig(priceResponse.price),
+                      undefined,
+                      String(priceResponse.diff_24h),
+                      undefined
+                  )
+                : null;
 
-            // TODO Uncomment after portfolio implementation
-            // const fiatSymbol = fiat.id.symbol;
-            //
-            // const [addressInfo, priceResponse] = await Promise.all([
-            //     btcApi.getXpub(wallet, {
-            //         secondaryCurrency: fiatSymbol
-            //     }),
-            //     priceApi.getCurrentPrice({
-            //         token: 'native',
-            //         currency: fiatSymbol,
-            //         blockchain: 'bitcoin'
-            //     })
-            // ]);
-            //
-            // const btcAmount = new CryptoAssetAmount({
-            //     asset: BTC_ASSET,
-            //     weiAmount: addressInfo.balance
-            // });
-            //
-            // const btcPrice = priceResponse
-            //     ? new Rate(
-            //           BTC_ASSET,
-            //           fiat,
-            //           toBig(priceResponse.price),
-            //           undefined,
-            //           String(priceResponse.diff_24h),
-            //           undefined
-            //       )
-            //     : null;
-            //
-            // const btcItem: RatedCryptoAssetAmount = {
-            //     amount: btcAmount,
-            //     price: btcPrice
-            // };
-            //
-            // return getSortedAssets([btcItem]);
+            const btcItem: RatedCryptoAssetAmount = {
+                amount: btcAmount,
+                price: btcPrice
+            };
+
+            return getSortedAssets([btcItem]);
         },
         staleTime: QUERIES_STALE_TIME.ASSETS,
         refetchInterval: QUERIES_REFETCH_INTERVAL.DEFAULT,

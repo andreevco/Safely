@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import {AddressSchema, GasPriceSchema, GasPricesSchema, TxSchema, UtxoSchema} from './models';
+import { AddressSchema, GasPricesSchema, TxSchema, UtxoSchema } from './models';
 import { BtcWalletType } from '../../entities/blockchain/btc';
 import { ApiClient } from '../../utils/fetch';
 import { IIdentifiable } from '../../utils/types';
