@@ -1,8 +1,7 @@
-import { SettingsStackNavigationProp } from '@mobile/app/navigation/types';
-import { Cell, List, Screen } from '@mobile/shared/ui';
 import { RootStackNavigationProp, SettingsStackNavigationProp } from '@mobile/app/navigation/types';
 import { PASSCODE_KEY, useSecurityCheck } from '@mobile/entities/security';
 import { clearAllAppData } from '@mobile/shared/storage/mmkv';
+import { Cell, List, Screen, Text } from '@mobile/shared/ui';
 import { useNavigation } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
 import * as SecureStore from 'expo-secure-store';

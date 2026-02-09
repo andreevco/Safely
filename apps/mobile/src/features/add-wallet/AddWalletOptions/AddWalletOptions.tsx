@@ -1,4 +1,4 @@
-import { Cell, List, TouchableOpacity } from '@mobile/shared/ui';
+import { Cell, List } from '@mobile/shared/ui';
 import { useTranslation } from 'react-i18next';
 import { Alert } from 'react-native';
 
@@ -12,49 +12,39 @@ export const AddWalletOptions = () => {
     return (
         <List style={styles.list}>
             <List.Group variant="separated">
-                <TouchableOpacity onPress={startCreateFlow}>
-                    <Cell>
-                        <Cell.Content>
-                            <Cell.Row>
-                                <Cell.Title>{t('addWallet.createNew.title')}</Cell.Title>
-                            </Cell.Row>
-                            <Cell.Row>
-                                <Cell.Subtitle>{t('addWallet.createNew.subtitle')}</Cell.Subtitle>
-                            </Cell.Row>
-                        </Cell.Content>
-                        <Cell.Chevron />
-                    </Cell>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={startImportFlow}>
-                    <Cell>
-                        <Cell.Content>
-                            <Cell.Row>
-                                <Cell.Title>{t('addWallet.importExisting.title')}</Cell.Title>
-                            </Cell.Row>
-                            <Cell.Row>
-                                <Cell.Subtitle>
-                                    {t('addWallet.importExisting.subtitle')}
-                                </Cell.Subtitle>
-                            </Cell.Row>
-                        </Cell.Content>
-                        <Cell.Chevron />
-                    </Cell>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => Alert.alert('Coming soon')}>
-                    <Cell>
-                        <Cell.Content>
-                            <Cell.Row>
-                                <Cell.Title>{t('addWallet.watchAccount.title')}</Cell.Title>
-                            </Cell.Row>
-                            <Cell.Row>
-                                <Cell.Subtitle>
-                                    {t('addWallet.watchAccount.subtitle')}
-                                </Cell.Subtitle>
-                            </Cell.Row>
-                        </Cell.Content>
-                        <Cell.Chevron />
-                    </Cell>
-                </TouchableOpacity>
+                <Cell onPress={startCreateFlow}>
+                    <Cell.Content>
+                        <Cell.Row>
+                            <Cell.Title>{t('addWallet.createNew.title')}</Cell.Title>
+                        </Cell.Row>
+                        <Cell.Row>
+                            <Cell.Subtitle>{t('addWallet.createNew.subtitle')}</Cell.Subtitle>
+                        </Cell.Row>
+                    </Cell.Content>
+                    <Cell.Chevron />
+                </Cell>
+                <Cell onPress={startImportFlow}>
+                    <Cell.Content>
+                        <Cell.Row>
+                            <Cell.Title>{t('addWallet.importExisting.title')}</Cell.Title>
+                        </Cell.Row>
+                        <Cell.Row>
+                            <Cell.Subtitle>{t('addWallet.importExisting.subtitle')}</Cell.Subtitle>
+                        </Cell.Row>
+                    </Cell.Content>
+                    <Cell.Chevron />
+                </Cell>
+                <Cell onPress={() => Alert.alert('Coming soon')}>
+                    <Cell.Content>
+                        <Cell.Row>
+                            <Cell.Title>{t('addWallet.watchAccount.title')}</Cell.Title>
+                        </Cell.Row>
+                        <Cell.Row>
+                            <Cell.Subtitle>{t('addWallet.watchAccount.subtitle')}</Cell.Subtitle>
+                        </Cell.Row>
+                    </Cell.Content>
+                    <Cell.Chevron />
+                </Cell>
             </List.Group>
         </List>
     );
