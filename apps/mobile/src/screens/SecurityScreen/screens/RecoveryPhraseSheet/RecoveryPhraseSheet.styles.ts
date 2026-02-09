@@ -14,7 +14,7 @@ export const styles = StyleSheet.create(theme => ({
         borderRadius: theme.radius.md,
         paddingVertical: theme.spacing[12],
         paddingHorizontal: theme.spacing[16],
-        backgroundColor: Color(theme.colors.accent.orange).alpha(0.16).toString()
+        backgroundColor: Color(theme.colors.accent.red).alpha(0.16).toString()
     },
     bannerText: {
         flex: 1,

@@ -1,7 +1,6 @@
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { Cell, List, Screen, Text } from '@mobile/shared/ui';
 import { Checkmark28, Icon } from '@mobile/shared/ui/Icon';
-import { TouchableOpacity } from '@mobile/shared/ui/TouchableOpacity';
 import { useNavigation } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -52,27 +51,25 @@ export const CurrencyScreen = () => {
                             const isSelected = activeFiat.id.symbol === fiat.id.symbol;
 
                             return (
-                                <TouchableOpacity key={fiat.id.symbol} onPress={handlePress(fiat)}>
-                                    <Cell>
-                                        <Cell.Content>
-                                            <Cell.Row>
-                                                <View style={styles.cellContent}>
-                                                    <Text
-                                                        variant="labelL"
-                                                        color="primary"
-                                                        style={styles.cellSymbol}
-                                                    >
-                                                        {fiat.id.symbol}
-                                                    </Text>
-                                                    <Text variant="bodyL" color="tertiary">
-                                                        {fiat.name}
-                                                    </Text>
-                                                </View>
-                                            </Cell.Row>
-                                        </Cell.Content>
-                                        {isSelected && <Icon icon={Checkmark28} color="accent" />}
-                                    </Cell>
-                                </TouchableOpacity>
+                                <Cell key={fiat.id.symbol} onPress={handlePress(fiat)}>
+                                    <Cell.Content>
+                                        <Cell.Row>
+                                            <View style={styles.cellContent}>
+                                                <Text
+                                                    variant="labelL"
+                                                    color="primary"
+                                                    style={styles.cellSymbol}
+                                                >
+                                                    {fiat.id.symbol}
+                                                </Text>
+                                                <Text variant="bodyL" color="tertiary">
+                                                    {fiat.name}
+                                                </Text>
+                                            </View>
+                                        </Cell.Row>
+                                    </Cell.Content>
+                                    {isSelected && <Icon icon={Checkmark28} color="accent" />}
+                                </Cell>
                             );
                         })}
                     </List.Group>

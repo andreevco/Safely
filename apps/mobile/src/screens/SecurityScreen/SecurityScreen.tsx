@@ -1,7 +1,6 @@
 import { RootStackNavigationProp, SettingsStackNavigationProp } from '@mobile/app/navigation/types';
 import { Cell, List, Screen, Switch } from '@mobile/shared/ui';
 import { ArrowLeft16, Icon } from '@mobile/shared/ui/Icon';
-import { TouchableOpacity } from '@mobile/shared/ui/TouchableOpacity';
 import { useNavigation } from '@react-navigation/native';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -36,23 +35,21 @@ export const SecurityScreen = () => {
                     <List>
                         <List.Title>{t('security.groups.account.title')}</List.Title>
                         <List.Group>
-                            <TouchableOpacity>
-                                <Cell>
-                                    <Cell.Content>
-                                        <Cell.Row>
-                                            <Cell.Title>
-                                                {t('security.groups.account.protect.title')}
-                                            </Cell.Title>
-                                        </Cell.Row>
-                                        <Cell.Row>
-                                            <Cell.Subtitle numberOfLines={0}>
-                                                {t('security.groups.account.protect.subtitle')}
-                                            </Cell.Subtitle>
-                                        </Cell.Row>
-                                    </Cell.Content>
-                                    <Cell.Chevron />
-                                </Cell>
-                            </TouchableOpacity>
+                            <Cell>
+                                <Cell.Content>
+                                    <Cell.Row>
+                                        <Cell.Title>
+                                            {t('security.groups.account.protect.title')}
+                                        </Cell.Title>
+                                    </Cell.Row>
+                                    <Cell.Row>
+                                        <Cell.Subtitle numberOfLines={0}>
+                                            {t('security.groups.account.protect.subtitle')}
+                                        </Cell.Subtitle>
+                                    </Cell.Row>
+                                </Cell.Content>
+                                <Cell.Chevron />
+                            </Cell>
                         </List.Group>
                     </List>
 
@@ -95,55 +92,47 @@ export const SecurityScreen = () => {
                                     onPress={() => setLockScreenEnabled(!lockScreenEnabled)}
                                 />
                             </Cell>
-                            <TouchableOpacity>
-                                <Cell>
-                                    <Cell.Content>
-                                        <Cell.Row>
-                                            <Cell.Title>
-                                                {t('security.groups.application.changePasscode')}
-                                            </Cell.Title>
-                                        </Cell.Row>
-                                    </Cell.Content>
-                                    <Cell.Chevron />
-                                </Cell>
-                            </TouchableOpacity>
+                            <Cell>
+                                <Cell.Content>
+                                    <Cell.Row>
+                                        <Cell.Title>
+                                            {t('security.groups.application.changePasscode')}
+                                        </Cell.Title>
+                                    </Cell.Row>
+                                </Cell.Content>
+                                <Cell.Chevron />
+                            </Cell>
                         </List.Group>
                     </List>
 
                     <List>
                         <List.Title>{t('security.groups.wallet.title')}</List.Title>
                         <List.Group>
-                            <TouchableOpacity>
-                                <Cell>
-                                    <Cell.Content>
-                                        <Cell.Row>
-                                            <Cell.Title>
-                                                {t('security.groups.wallet.main')}
-                                            </Cell.Title>
-                                        </Cell.Row>
-                                    </Cell.Content>
-                                    <Cell.Chevron />
-                                </Cell>
-                            </TouchableOpacity>
+                            <Cell>
+                                <Cell.Content>
+                                    <Cell.Row>
+                                        <Cell.Title>{t('security.groups.wallet.main')}</Cell.Title>
+                                    </Cell.Row>
+                                </Cell.Content>
+                                <Cell.Chevron />
+                            </Cell>
                         </List.Group>
                         <List.Group>
-                            <TouchableOpacity onPress={handleRecoveryPress}>
-                                <Cell>
-                                    <Cell.Content>
-                                        <Cell.Row>
-                                            <Cell.Title>
-                                                {t('security.groups.wallet.recovery.title')}
-                                            </Cell.Title>
-                                        </Cell.Row>
-                                        <Cell.Row>
-                                            <Cell.Subtitle numberOfLines={0}>
-                                                {t('security.groups.wallet.recovery.subtitle')}
-                                            </Cell.Subtitle>
-                                        </Cell.Row>
-                                    </Cell.Content>
-                                    <Cell.Chevron />
-                                </Cell>
-                            </TouchableOpacity>
+                            <Cell onPress={handleRecoveryPress}>
+                                <Cell.Content>
+                                    <Cell.Row>
+                                        <Cell.Title>
+                                            {t('security.groups.wallet.recovery.title')}
+                                        </Cell.Title>
+                                    </Cell.Row>
+                                    <Cell.Row>
+                                        <Cell.Subtitle numberOfLines={0}>
+                                            {t('security.groups.wallet.recovery.subtitle')}
+                                        </Cell.Subtitle>
+                                    </Cell.Row>
+                                </Cell.Content>
+                                <Cell.Chevron />
+                            </Cell>
                         </List.Group>
                     </List>
                 </View>

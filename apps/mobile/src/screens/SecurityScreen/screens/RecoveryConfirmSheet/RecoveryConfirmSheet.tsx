@@ -21,8 +21,10 @@ const RecoveryConfirmContent = () => {
             <Icon icon={ListKey96} />
 
             <View style={styles.titleBox}>
-                <Text variant="titleL">{t('security.recoverySheet.title')}</Text>
-                <Text variant="bodyL" color="secondary" style={styles.description}>
+                <Text textAlign="center" variant="titleL">
+                    {t('security.recoverySheet.title')}
+                </Text>
+                <Text textAlign="center" variant="bodyL" color="secondary">
                     {t('security.recoverySheet.description')}
                 </Text>
             </View>
