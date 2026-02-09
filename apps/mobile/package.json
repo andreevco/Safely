@@ -11,7 +11,7 @@
     "compile": "tsc --noEmit",
     "build:ios": "pnpm dlx eas-cli build --platform ios --profile production --non-interactive --no-wait --auto-submit",
     "build:android": "pnpm dlx eas-cli build --platform android --profile production --non-interactive --no-wait",
-    "build": "pnpm dlx eas-cli build --platform all --profile production --non-interactive --no-wait --auto-submit"
+    "build": "pnpm build:ios && pnpm build:android"
   },
   "dependencies": {
     "@bottom-tabs/react-navigation": "^1.1.0",
