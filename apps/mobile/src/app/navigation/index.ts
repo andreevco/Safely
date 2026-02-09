@@ -6,6 +6,7 @@ import { QRScanModal } from '@mobile/screens/QRScanModal';
 import { ReceiveAssetModal } from '@mobile/screens/ReceiveAssetModal';
 import { RecoveryConfirmSheet, RecoveryPhraseSheet } from '@mobile/screens/SecurityScreen/screens';
 import { SelectAccountModal } from '@mobile/screens/SelectAccountModal';
+import { TransactionScreen } from '@mobile/screens/TransactionScreen';
 import { createStaticNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
@@ -18,7 +19,8 @@ export const RootStack = createNativeStackNavigator({
     groups: {
         Screens: {
             screens: {
-                TabsNavigator: TabsNavigator
+                TabsNavigator: TabsNavigator,
+                TransactionScreen: TransactionScreen
             }
         },
         Modals: {

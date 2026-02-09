@@ -2,7 +2,7 @@ import React from 'react';
 import { Platform, View } from 'react-native';
 
 import { Title } from './components/Title';
-import { HeaderVariantContext, HeaderVariant } from './Header.context';
+import { HeaderVariant, HeaderContext } from './Header.context';
 import { styles } from './Header.styles';
 import { useScreenContext } from '../../Screen.context';
 
@@ -40,7 +40,7 @@ export const HeaderContainer = (props: HeaderProps) => {
     styles.useVariants({ background });
 
     return (
-        <HeaderVariantContext.Provider value={{ variant, hasSides }}>
+        <HeaderContext.Provider value={{ variant, hasSides, shouldInsetTop }}>
             <View
                 style={styles.container({
                     shouldInsetTop
@@ -57,6 +57,6 @@ export const HeaderContainer = (props: HeaderProps) => {
                 )}
             </View>
             <View style={styles.compensateHeaderHeight({ shouldInsetTop })} />
-        </HeaderVariantContext.Provider>
+        </HeaderContext.Provider>
     );
 };

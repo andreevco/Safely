@@ -1,8 +1,8 @@
 import { Actions, ArrowTop28, Copy28 } from '@mobile/shared/ui';
 import { useCopy } from '@mobile/shared/utils/copy';
-import { shareAsync } from 'expo-sharing';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Share } from 'react-native';
 
 import { styles } from './ReceiveActions.styles';
 
@@ -22,7 +22,9 @@ export const ReceiveActions = (props: ReceiveActionsProps) => {
     }, [copy, address]);
 
     const handleShareAddress = useCallback(() => {
-        shareAsync(address);
+        Share.share({
+            message: address
+        });
     }, [address]);
 
     return (

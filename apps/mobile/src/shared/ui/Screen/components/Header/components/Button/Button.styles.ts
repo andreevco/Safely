@@ -2,7 +2,14 @@ import { StyleSheet } from 'react-native-unistyles';
 
 export const styles = StyleSheet.create(theme => ({
     container: {
-        padding: theme.spacing[12]
+        padding: theme.spacing[12],
+        variants: {
+            type: {
+                transparent: {
+                    padding: theme.spacing[16]
+                }
+            }
+        }
     },
     button: {
         justifyContent: 'center',
@@ -14,6 +21,14 @@ export const styles = StyleSheet.create(theme => ({
             type: {
                 rounded: {
                     borderRadius: theme.radius.full
+                },
+                transparent: {
+                    backgroundColor: 'transparent',
+                    paddingVertical: theme.spacing[6],
+                    paddingHorizontal: theme.spacing[8],
+                    borderColor: theme.colors.other.transparentElement,
+                    borderRadius: theme.radius.xs,
+                    borderWidth: theme.border.hairline
                 },
                 small: {
                     paddingVertical: 10,

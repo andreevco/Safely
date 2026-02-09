@@ -1,9 +1,10 @@
 import { SendConfirmationParams } from '@mobile/screens/ConfirmationScreen';
-import { Screen, Text } from '@mobile/shared/ui';
+import { Button, Screen } from '@mobile/shared/ui';
 import { ArrowLeft16, Icon } from '@mobile/shared/ui/Icon';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { useRef, useCallback, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { View } from 'react-native';
 import PagerView from 'react-native-pager-view';
 
 import {
@@ -118,8 +119,6 @@ export const SendAssetModal = () => {
         pagerRef.current?.setPage(step.index);
     }, [step.index]);
 
-    styles.useVariants({ disabled: !step.canGoNext });
-
     return (
         <Screen>
             <Screen.Header>
@@ -131,14 +130,16 @@ export const SendAssetModal = () => {
                     </Screen.Header.Button>
                 )}
                 <Screen.Header.Title>{t('send.title')}</Screen.Header.Title>
-                <Text
-                    variant="labelM"
-                    style={styles.nextButton}
-                    color="primary"
-                    onPress={step.canGoNext ? step.next : undefined}
-                >
-                    {t('common.next')}
-                </Text>
+                <View style={styles.nextButton}>
+                    <Button
+                        size="small"
+                        type="primary"
+                        disabled={!step.canGoNext}
+                        onPress={step.canGoNext ? step.next : undefined}
+                    >
+                        {t('common.next')}
+                    </Button>
+                </View>
             </Screen.Header>
             <PagerView
                 ref={pagerRef}

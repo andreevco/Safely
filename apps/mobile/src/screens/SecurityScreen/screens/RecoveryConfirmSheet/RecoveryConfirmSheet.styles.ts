@@ -10,9 +10,6 @@ export const styles = StyleSheet.create(theme => ({
         marginVertical: theme.spacing[16],
         marginHorizontal: theme.spacing[8]
     },
-    description: {
-        textAlign: 'center'
-    },
     warningBox: {
         width: '100%',
         borderRadius: theme.radius.md,

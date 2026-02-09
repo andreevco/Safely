@@ -9,6 +9,7 @@ export { List } from './List';
 export { Banner } from './Banner';
 export { Switch } from './Switch';
 export { SlideButton } from './SlideButton';
+export { TableCell } from './TableCell';
 export * from './Icon';
 export * from './BottomSheet';
 export * from './WordCell';

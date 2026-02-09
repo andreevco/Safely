@@ -20,5 +20,10 @@ export const styles = StyleSheet.create(theme => ({
         lineHeight: 20,
         fontWeight: '500',
         letterSpacing: 0
+    },
+    logo: {
+        height: 48,
+        width: 48,
+        borderRadius: theme.radius.full
     }
 }));

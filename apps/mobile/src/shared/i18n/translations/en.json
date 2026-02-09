@@ -172,5 +172,18 @@
                 }
             }
         }
+    },
+    "history": {
+        "title": "History"
+    },
+    "transaction": {
+        "sent": "Sent",
+        "received": "Received",
+        "recipient": "Recipient",
+        "sender": "Sender",
+        "fee": "Network fee",
+        "hash": "Transaction",
+        "status": "Status",
+        "confirmed": "Confirmed at {{timestamp}}"
     }
 }

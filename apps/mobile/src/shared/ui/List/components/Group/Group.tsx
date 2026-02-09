@@ -4,12 +4,15 @@ import { UnistylesVariants } from 'react-native-unistyles';
 
 import { styles } from './Group.styles';
 
-export type GroupProps = ViewProps & UnistylesVariants<typeof styles>;
+export type GroupProps = ViewProps &
+    UnistylesVariants<typeof styles> & {
+        withoutBottomMargin?: boolean;
+    };
 
 export const Group = (props: GroupProps) => {
-    const { children, style, variant = 'divided', ...rest } = props;
+    const { children, style, variant = 'divided', withoutBottomMargin, ...rest } = props;
 
-    styles.useVariants({ variant });
+    styles.useVariants({ variant, withoutBottomMargin });
 
     const content = useMemo(() => {
         const items = Children.toArray(children);

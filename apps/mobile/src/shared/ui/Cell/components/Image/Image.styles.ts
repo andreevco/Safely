@@ -1,10 +1,10 @@
 import { StyleSheet } from 'react-native-unistyles';
 
 export const styles = StyleSheet.create(theme => ({
-    container: {
-        paddingRight: theme.spacing[12]
-    },
+    container: {},
     content: {
-        borderRadius: theme.radius.full
+        borderRadius: theme.radius.full,
+        height: 32,
+        width: 32
     }
 }));

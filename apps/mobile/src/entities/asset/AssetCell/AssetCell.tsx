@@ -1,27 +1,49 @@
-/* eslint-disable no-irregular-whitespace */
-
+import { resources } from '@mobile/shared/resources';
 import { Cell } from '@mobile/shared/ui';
+import { View } from 'react-native';
 
-import { type CryptoAsset } from '@safely/core';
+import { type CryptoAssetAmount, type CryptoFiatRate } from '@safely/core';
+import { useActiveFiat, useNumberFormatter } from '@safely/ux';
 
 type AssetCellProps = {
-    asset: CryptoAsset;
+    cryptoAssetAmount: CryptoAssetAmount;
+    price: CryptoFiatRate | null;
 };
 
 export const AssetCell = (props: AssetCellProps) => {
-    const { asset } = props;
+    const { cryptoAssetAmount, price } = props;
+    const formatter = useNumberFormatter();
+
+    const activeFiat = useActiveFiat();
+
+    const priceFormatted =
+        price &&
+        new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: activeFiat.id.symbol,
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        }).format(price.value.toNumber());
 
     return (
         <Cell>
-            <Cell.Image type="image" image={{ uri: asset.image }} />
+            <Cell.Image type="image" image={resources.btcLogo} />
             <Cell.Content>
                 <Cell.Row>
-                    <Cell.Title>{asset.name}</Cell.Title>
-                    <Cell.Value>$ 93,274</Cell.Value>
+                    <Cell.Title color="primary">{cryptoAssetAmount.asset.name}</Cell.Title>
+                    <Cell.Value color="primary">
+                        {price ? cryptoAssetAmount.convert(price).format(formatter) : '–'}
+                    </Cell.Value>
                 </Cell.Row>
                 <Cell.Row>
-                    <Cell.Subtitle>$ 125,693</Cell.Subtitle>
-                    <Cell.Subvalue>0.7421 BTC</Cell.Subvalue>
+                    {priceFormatted ? (
+                        <Cell.Subtitle color="secondary">{priceFormatted}</Cell.Subtitle>
+                    ) : (
+                        <View />
+                    )}
+                    <Cell.Subvalue color="secondary">
+                        {cryptoAssetAmount.format(formatter)}
+                    </Cell.Subvalue>
                 </Cell.Row>
             </Cell.Content>
         </Cell>

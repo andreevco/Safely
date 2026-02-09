@@ -11,6 +11,11 @@ export const styles = StyleSheet.create(theme => ({
                     gap: theme.spacing[2]
                 },
                 divided: {}
+            },
+            withoutBottomMargin: {
+                true: {
+                    marginBottom: 0
+                }
             }
         }
     },

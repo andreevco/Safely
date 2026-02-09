@@ -1,6 +1,5 @@
 import { SettingsStackNavigationProp } from '@mobile/app/navigation/types';
 import { Cell, List, Screen } from '@mobile/shared/ui';
-import { TouchableOpacity } from '@mobile/shared/ui/TouchableOpacity';
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
@@ -68,23 +67,18 @@ export const SettingsScreen = () => {
                         <List.Title>{t(group.titleKey)}</List.Title>
                         <List.Group variant="divided">
                             {group.items.map(item => (
-                                <TouchableOpacity
-                                    key={item.key}
-                                    onPress={() => handleItemPress(item.key)}
-                                >
-                                    <Cell>
-                                        <Cell.Content>
-                                            <Cell.Row>
-                                                <Cell.Title>{t(item.titleKey)}</Cell.Title>
-                                                {item.key === 'language' && (
-                                                    <Cell.Value variant="bodyL" color="tertiary">
-                                                        {t('currentLanguageName')}
-                                                    </Cell.Value>
-                                                )}
-                                            </Cell.Row>
-                                        </Cell.Content>
-                                    </Cell>
-                                </TouchableOpacity>
+                                <Cell key={item.key} onPress={() => handleItemPress(item.key)}>
+                                    <Cell.Content>
+                                        <Cell.Row>
+                                            <Cell.Title>{t(item.titleKey)}</Cell.Title>
+                                            {item.key === 'language' && (
+                                                <Cell.Value variant="bodyL" color="tertiary">
+                                                    {t('currentLanguageName')}
+                                                </Cell.Value>
+                                            )}
+                                        </Cell.Row>
+                                    </Cell.Content>
+                                </Cell>
                             ))}
                         </List.Group>
                     </List>

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import { type CryptoAsset } from '@safely/core';
+import { useReceiveInfo } from '@safely/ux';
 
 import { QRCodeBlock } from './components/QRCodeBlock/QRCodeBlock';
 import { ReceiveActions } from './components/ReceiveActions';
@@ -21,8 +22,7 @@ export const ReceiveAssetModal = (props: ReceiveAssetModalProps) => {
     } = props;
     const { t } = useTranslation();
 
-    // TODO: Replace with real account address
-    const address = '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa';
+    const receiveInfo = useReceiveInfo();
 
     return (
         <Screen>
@@ -39,8 +39,8 @@ export const ReceiveAssetModal = (props: ReceiveAssetModalProps) => {
                         {t('receiveAsset.description', { name: asset.name })}
                     </Text>
                 </View>
-                <QRCodeBlock address={address} />
-                <ReceiveActions address={address} />
+                <QRCodeBlock address={receiveInfo.displayAddress} />
+                <ReceiveActions address={receiveInfo.displayAddress} />
             </Screen.Content>
         </Screen>
     );

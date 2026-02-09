@@ -2,7 +2,6 @@ import { SettingsStackNavigationProp } from '@mobile/app/navigation/types';
 import { availableLanguages, LanguageCode } from '@mobile/shared/i18n';
 import { Cell, List, Screen, Text } from '@mobile/shared/ui';
 import { ArrowLeft16, Checkmark28, Icon } from '@mobile/shared/ui/Icon';
-import { TouchableOpacity } from '@mobile/shared/ui/TouchableOpacity';
 import { useNavigation } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -39,28 +38,23 @@ export const LanguageScreen = () => {
                             const isSelected = i18n.language === language.code;
 
                             return (
-                                <TouchableOpacity
-                                    key={language.code}
-                                    onPress={handlePress(language.code)}
-                                >
-                                    <Cell>
-                                        <Cell.Content style={styles.cellContent}>
-                                            <Cell.Row>
-                                                <Cell.Title>
-                                                    {t(`language.languages.${language.code}`)}
-                                                </Cell.Title>
-                                            </Cell.Row>
-                                            <Text
-                                                variant="bodyM"
-                                                color="secondary"
-                                                style={styles.nativeName}
-                                            >
-                                                {language.nativeName}
-                                            </Text>
-                                        </Cell.Content>
-                                        {isSelected && <Icon icon={Checkmark28} color="accent" />}
-                                    </Cell>
-                                </TouchableOpacity>
+                                <Cell key={language.code} onPress={handlePress(language.code)}>
+                                    <Cell.Content style={styles.cellContent}>
+                                        <Cell.Row>
+                                            <Cell.Title>
+                                                {t(`language.languages.${language.code}`)}
+                                            </Cell.Title>
+                                        </Cell.Row>
+                                        <Text
+                                            variant="bodyM"
+                                            color="secondary"
+                                            style={styles.nativeName}
+                                        >
+                                            {language.nativeName}
+                                        </Text>
+                                    </Cell.Content>
+                                    {isSelected && <Icon icon={Checkmark28} color="accent" />}
+                                </Cell>
                             );
                         })}
                     </List.Group>

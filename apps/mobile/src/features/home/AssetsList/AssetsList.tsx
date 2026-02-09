@@ -1,15 +1,26 @@
 import { AssetCell } from '@mobile/entities/asset';
 import { List } from '@mobile/shared/ui';
 
-import { BTC_ASSET } from '@safely/core';
+import { useHomeScreenList } from '@safely/ux';
 
 import { styles } from './AssetsList.styles';
 
 export const AssetsList = () => {
+    const { data } = useHomeScreenList() ?? [];
+
+    if (!data) return null;
+    const { topTokens } = data;
+
     return (
         <List>
             <List.Group style={styles.list}>
-                <AssetCell asset={BTC_ASSET} />
+                {topTokens.map(token => (
+                    <AssetCell
+                        key={token.amount.asset.id.toString()}
+                        cryptoAssetAmount={token.amount}
+                        price={token.price ?? null}
+                    />
+                ))}
             </List.Group>
         </List>
     );

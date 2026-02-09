@@ -13,7 +13,7 @@ export const Button = (props: ButtonProps) => {
 
     return (
         <View style={styles.container}>
-            <TouchableOpacity style={styles.button} {...rest}>
+            <TouchableOpacity hitSlop={12} style={styles.button} {...rest}>
                 {children}
             </TouchableOpacity>
         </View>

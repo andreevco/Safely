@@ -72,22 +72,20 @@ export const AddressInput = ({
                 </View>
             )}
             <View style={styles.container}>
-                <View style={styles.inputWrapper}>
-                    <TextInput
-                        value={value}
-                        onChangeText={onChangeText}
-                        onFocus={handleFocus}
-                        onBlur={handleBlur}
-                        style={styles.input}
-                        placeholder={placeholder}
-                        placeholderTextColor={theme.colors.text.tertiary}
-                        autoCapitalize="none"
-                        autoCorrect={false}
-                        spellCheck={false}
-                        autoFocus={autoFocus}
-                        multiline
-                    />
-                </View>
+                <TextInput
+                    value={value}
+                    onChangeText={onChangeText}
+                    onFocus={handleFocus}
+                    onBlur={handleBlur}
+                    style={styles.input}
+                    placeholder={placeholder}
+                    placeholderTextColor={theme.colors.text.tertiary}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    spellCheck={false}
+                    autoFocus={autoFocus}
+                    multiline
+                />
 
                 <TouchableOpacity
                     style={styles.iconButton}

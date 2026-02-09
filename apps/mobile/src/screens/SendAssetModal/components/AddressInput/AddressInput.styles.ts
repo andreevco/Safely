@@ -31,16 +31,14 @@ export const styles = StyleSheet.create(theme => ({
             }
         }
     },
-    inputWrapper: {
-        flex: 1,
-        justifyContent: 'center'
-    },
     input: {
-        fontSize: 16,
+        fontSize: 17,
+        lineHeight: 24,
         fontWeight: '500',
         color: theme.colors.text.primary,
-        paddingVertical: theme.spacing[12],
-        minHeight: 44
+        paddingTop: 0,
+        paddingBottom: 0,
+        includeFontPadding: false
     },
     iconButton: {
         position: 'absolute',

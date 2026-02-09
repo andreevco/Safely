@@ -1,7 +1,8 @@
 import { Button, Screen, Text, WordCell } from '@mobile/shared/ui';
 import { ExclamationmarkCircle16, Icon } from '@mobile/shared/ui/Icon';
+import { useCopy } from '@mobile/shared/utils/copy';
 import { useTranslation } from 'react-i18next';
-import { Alert, View } from 'react-native';
+import { View } from 'react-native';
 
 import { styles } from './RecoveryPhraseSheet.styles';
 
@@ -23,14 +24,14 @@ const MOCK_PHRASE = [
 
 const RecoveryPhraseContent = () => {
     const { t } = useTranslation();
+    const copy = useCopy();
 
     const halfLength = Math.ceil(MOCK_PHRASE.length / 2);
     const leftColumn = MOCK_PHRASE.slice(0, halfLength);
     const rightColumn = MOCK_PHRASE.slice(halfLength);
 
     const handleCopy = () => {
-        // TODO: Implement copy to clipboard with toast notification
-        Alert.alert('Not implemented yet!');
+        copy(MOCK_PHRASE.join(' '));
     };
 
     return (
