@@ -11,6 +11,7 @@ export const List = <TItem,>(props: FlashListProps<TItem>) => {
     return (
         <FlashList
             style={StyleSheet.flatten([styles.container, style])}
+            showsVerticalScrollIndicator={false}
             contentContainerStyle={StyleSheet.flatten([
                 styles.contentContainer({ shouldAddBottomInsets: !isInsideTabBar }),
                 contentContainerStyle
