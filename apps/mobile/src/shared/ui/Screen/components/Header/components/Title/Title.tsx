@@ -16,9 +16,13 @@ export const Title = (props: TitleProps) => {
 
     return (
         <View style={styles.container({ hasSides, shouldInsetTop })}>
-            <Text textAlign={variant} variant="titleS" numberOfLines={1}>
-                {children}
-            </Text>
+            {typeof children === 'string' ? (
+                <Text textAlign={variant} variant="titleS" numberOfLines={1}>
+                    {children}
+                </Text>
+            ) : (
+                children
+            )}
         </View>
     );
 };

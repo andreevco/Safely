@@ -1,14 +1,14 @@
 import { TouchableHighlight, View, ViewStyle } from 'react-native';
 
-import { styles } from './Cell.styles';
+import { styles } from './TableCell.styles';
 
-export type CellContainerProps = {
+export type TableCellContainerProps = {
     children: React.ReactNode;
     style?: ViewStyle;
     onPress?: () => void;
 };
 
-export const CellContainer = (props: CellContainerProps) => {
+export const TableCellContainer = (props: TableCellContainerProps) => {
     const { children, style, onPress } = props;
 
     return (
