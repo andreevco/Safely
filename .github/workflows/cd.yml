@@ -1,15 +1,15 @@
-name: CI
+name: CD
 
 on:
-  pull_request:
+  push:
     branches:
       - main
 
 jobs:
-  build-and-test:
+  build-mobile:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -32,11 +32,7 @@ jobs:
       - name: Install dependencies
         run: pnpm i
 
-      - name: Compile
-        run: pnpm compile
-
-      - name: Lint
-        run: pnpm lint
-
-      - name: Test
-        run: pnpm test
+      - name: Build mobile
+        run: pnpm -C apps/mobile run build
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}

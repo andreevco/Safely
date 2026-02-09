@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Swallet",
-    "slug": "aco-swalet",
+    "slug": "swallet",
     "version": "1.0.0",
     "orientation": "default",
     "icon": "./assets/icon.png",
@@ -15,7 +15,8 @@
         "CFBundleLocalizations": [
           "en",
           "ru"
-        ]
+        ],
+        "ITSAppUsesNonExemptEncryption": false
       },
       "supportsTablet": true,
       "bundleIdentifier": "com.aco.swallet",
@@ -53,6 +54,12 @@
           "image": "./assets/icon.png"
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "2987418a-1c20-4389-9796-485f4e37c78a"
+      }
+    },
+    "owner": "acom"
   }
 }
