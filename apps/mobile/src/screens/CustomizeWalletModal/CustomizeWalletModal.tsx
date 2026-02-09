@@ -1,9 +1,10 @@
-import { Button, ColorPicker, EmojiPicker, Screen, Text } from '@mobile/shared/ui';
 import { useNavigation } from '@react-navigation/native';
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TextInput, View } from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';
+
+import { Button, ColorPicker, EmojiPicker, Screen, Text } from '@mobile/shared/ui';
 
 import { WALLET_COLORS, WALLET_EMOJIS, WalletIcon } from './constants';
 import { styles } from './CustomizeWalletModal.styles';

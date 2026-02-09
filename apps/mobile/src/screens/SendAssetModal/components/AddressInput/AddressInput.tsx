@@ -1,12 +1,13 @@
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
-import { Icon, QrCodeScan28, XmarkCircle16 } from '@mobile/shared/ui/Icon';
-import { Text } from '@mobile/shared/ui/Text';
-import { TouchableOpacity } from '@mobile/shared/ui/TouchableOpacity';
 import { useNavigation } from '@react-navigation/native';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TextInput, View } from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';
+
+import { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import { Icon, QrCodeScan28, XmarkCircle16 } from '@mobile/shared/ui/Icon';
+import { Text } from '@mobile/shared/ui/Text';
+import { TouchableOpacity } from '@mobile/shared/ui/TouchableOpacity';
 
 import { styles } from './AddressInput.styles';
 

@@ -1,8 +1,9 @@
-import { SettingsStackNavigationProp } from '@mobile/app/navigation/types';
-import { Cell, List, Screen } from '@mobile/shared/ui';
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
+
+import { SettingsStackNavigationProp } from '@mobile/app/navigation/types';
+import { Cell, List, Screen } from '@mobile/shared/ui';
 
 import { styles } from './SettingsScreen.styles';
 

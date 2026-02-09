@@ -1,8 +1,9 @@
-import { Text } from '@mobile/shared/ui';
 import { View } from 'react-native';
 
 import { BTC_ASSET } from '@safely/core';
 import { useAssets, useNumberFormatter, useTotalBalance } from '@safely/ux';
+
+import { Text } from '@mobile/shared/ui';
 
 import { styles } from './TotalBalance.styles';
 

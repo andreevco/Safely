@@ -1,6 +1,4 @@
 /* eslint-disable no-irregular-whitespace */
-import { Copy16, Globe16, Icon, List, Screen, TableCell, Text } from '@mobile/shared/ui';
-import { useCopy } from '@mobile/shared/utils/copy';
 import { StaticScreenProps } from '@react-navigation/native';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -8,6 +6,9 @@ import { TouchableOpacity, View } from 'react-native';
 
 import { BTC_ASSET, ellipsisMiddle } from '@safely/core';
 import { type BtcActivityItem, useNumberFormatter, useRate } from '@safely/ux';
+
+import { Copy16, Globe16, Icon, List, Screen, TableCell, Text } from '@mobile/shared/ui';
+import { useCopy } from '@mobile/shared/utils/copy';
 
 import { styles } from './TransactionScreen.styles';
 

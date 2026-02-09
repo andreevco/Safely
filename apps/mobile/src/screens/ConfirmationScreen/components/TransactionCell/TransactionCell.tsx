@@ -1,4 +1,3 @@
-import { Text, TextProps } from '@mobile/shared/ui';
 import {
     StyleProp,
     TextStyle,
@@ -7,6 +6,8 @@ import {
     View
 } from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';
+
+import { Text, TextProps } from '@mobile/shared/ui';
 
 import { styles } from './TransactionCell.styles';
 

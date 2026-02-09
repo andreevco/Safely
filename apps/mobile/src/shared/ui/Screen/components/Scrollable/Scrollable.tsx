@@ -1,5 +1,6 @@
-import { useBottomTabBarHeightSafely } from '@mobile/shared/utils';
 import { ScrollView, ScrollViewProps } from 'react-native';
+
+import { useBottomTabBarHeightSafely } from '@mobile/shared/utils';
 
 import { styles } from './Scrollable.styles';
 

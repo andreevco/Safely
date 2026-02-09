@@ -1,6 +1,7 @@
-import { useBottomTabBarHeightSafely } from '@mobile/shared/utils';
 import { FlashList, FlashListProps } from '@shopify/flash-list';
 import { StyleSheet } from 'react-native-unistyles';
+
+import { useBottomTabBarHeightSafely } from '@mobile/shared/utils';
 
 import { styles } from './List.styles';
 

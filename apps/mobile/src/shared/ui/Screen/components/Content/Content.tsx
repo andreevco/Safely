@@ -1,5 +1,6 @@
-import { useBottomTabBarHeightSafely } from '@mobile/shared/utils';
 import { View, ViewStyle } from 'react-native';
+
+import { useBottomTabBarHeightSafely } from '@mobile/shared/utils';
 
 import { styles } from './Content.styles';
 

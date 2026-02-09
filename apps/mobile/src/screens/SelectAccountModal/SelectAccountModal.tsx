@@ -1,8 +1,9 @@
-import { PortfoliosList } from '@mobile/features/portfolio';
-import { Screen, Text } from '@mobile/shared/ui';
 import { useTranslation } from 'react-i18next';
 
 import { usePortfolios } from '@safely/ux';
+
+import { PortfoliosList } from '@mobile/features/portfolio';
+import { Screen, Text } from '@mobile/shared/ui';
 
 export const SelectAccountModal = () => {
     const { t } = useTranslation();

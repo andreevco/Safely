@@ -1,5 +1,3 @@
-import { resources } from '@mobile/shared/resources';
-import { Checkmark96, Icon, List, Screen, Text } from '@mobile/shared/ui';
 import { StaticScreenProps, useNavigation } from '@react-navigation/native';
 import { notificationAsync, NotificationFeedbackType } from 'expo-haptics';
 import { Image } from 'expo-image';
@@ -10,6 +8,9 @@ import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
 import { ellipsisMiddle } from '@safely/core';
 import { useActiveBtcWallet } from '@safely/ux';
+
+import { resources } from '@mobile/shared/resources';
+import { Checkmark96, Icon, List, Screen, Text } from '@mobile/shared/ui';
 
 import { Amount, ConfirmationFooter, TransactionCell } from './components';
 import { styles } from './ConfirmationScreen.styles';

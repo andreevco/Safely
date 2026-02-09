@@ -1,9 +1,10 @@
-import { ActivityItem } from '@mobile/entities/activity';
-import { Screen } from '@mobile/shared/ui';
 import { useMemo } from 'react';
 import { View } from 'react-native';
 
 import { type BtcActivityItem, useHistory } from '@safely/ux';
+
+import { ActivityItem } from '@mobile/entities/activity';
+import { Screen } from '@mobile/shared/ui';
 
 import { styles } from './HistoryList.styles';
 

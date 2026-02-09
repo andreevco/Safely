@@ -1,7 +1,8 @@
-import { Screen, Text } from '@mobile/shared/ui';
-import { CameraLock96, Icon } from '@mobile/shared/ui/Icon';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
+
+import { Screen, Text } from '@mobile/shared/ui';
+import { CameraLock96, Icon } from '@mobile/shared/ui/Icon';
 
 import { styles } from './NoCameraFound.styles';
 

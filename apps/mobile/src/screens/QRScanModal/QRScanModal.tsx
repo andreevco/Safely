@@ -1,5 +1,3 @@
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
-import { Screen, Text } from '@mobile/shared/ui';
 import {
     StaticScreenProps,
     useFocusEffect,
@@ -19,6 +17,9 @@ import {
     useCameraPermission,
     useCodeScanner
 } from 'react-native-vision-camera';
+
+import { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import { Screen, Text } from '@mobile/shared/ui';
 
 import { CameraMask, FlashlightToggle } from './components';
 import { NoCameraFound } from './components/NoCameraFound';

@@ -1,6 +1,3 @@
-import { SendConfirmationParams } from '@mobile/screens/ConfirmationScreen';
-import { Button, Screen } from '@mobile/shared/ui';
-import { ArrowLeft16, Icon } from '@mobile/shared/ui/Icon';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { useRef, useCallback, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -15,6 +12,10 @@ import {
     useAppSdk,
     useActiveFiat
 } from '@safely/ux';
+
+import { SendConfirmationParams } from '@mobile/screens/ConfirmationScreen';
+import { Button, Screen } from '@mobile/shared/ui';
+import { ArrowLeft16, Icon } from '@mobile/shared/ui/Icon';
 
 import { styles } from './SendAssetModal.styles';
 import { AmountStep, RecipientStep } from './steps';

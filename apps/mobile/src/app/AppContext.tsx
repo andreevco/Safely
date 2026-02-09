@@ -1,6 +1,3 @@
-import { useToastServiceContext } from '@mobile/shared/providers/toast';
-import { createMMKVTreeStorage } from '@mobile/shared/storage/mmkv';
-import { MobileNumberFormatLocale } from '@mobile/shared/utils';
 import { getLocales } from 'expo-localization';
 import i18next from 'i18next';
 import { FC, PropsWithChildren, useMemo } from 'react';
@@ -8,6 +5,10 @@ import { useTranslation } from 'react-i18next';
 
 import { IAppSdk } from '@safely/core';
 import { AppContext, IAppContext } from '@safely/ux';
+
+import { useToastServiceContext } from '@mobile/shared/providers/toast';
+import { createMMKVTreeStorage } from '@mobile/shared/storage/mmkv';
+import { MobileNumberFormatLocale } from '@mobile/shared/utils';
 
 const numberFormatLocale = new MobileNumberFormatLocale(getLocales()[0]);
 

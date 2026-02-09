@@ -1,7 +1,7 @@
+import { useActivePortfolio } from '@safely/ux';
+
 import { PortfolioName } from '@mobile/entities/portfolio';
 import { ChevronDown16, Icon, TouchableOpacity } from '@mobile/shared/ui';
-
-import { useActivePortfolio } from '@safely/ux';
 
 import { styles } from './AccountSelector.styles';
 

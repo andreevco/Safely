@@ -1,11 +1,12 @@
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
-import { Actions } from '@mobile/shared/ui';
-import { ArrowDown28, ArrowTop28, QrCodeScan28 } from '@mobile/shared/ui/Icon';
 import { useNavigation } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { BTC_ASSET } from '@safely/core';
+
+import { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import { Actions } from '@mobile/shared/ui';
+import { ArrowDown28, ArrowTop28, QrCodeScan28 } from '@mobile/shared/ui/Icon';
 
 import { styles } from './HomeActions.styles';
 

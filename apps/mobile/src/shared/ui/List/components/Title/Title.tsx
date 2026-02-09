@@ -1,5 +1,6 @@
-import { Text } from '@mobile/shared/ui/Text';
 import { View } from 'react-native';
+
+import { Text } from '@mobile/shared/ui/Text';
 
 import { styles } from './Title.styles';
 

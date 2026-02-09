@@ -1,10 +1,11 @@
 /* eslint-disable no-irregular-whitespace */
-import { Cell, Text } from '@mobile/shared/ui';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import { BTC_ASSET, ellipsisMiddle } from '@safely/core';
 import { type BtcActivityItem, useNumberFormatter, useRate } from '@safely/ux';
+
+import { Cell, Text } from '@mobile/shared/ui';
 
 import { styles } from './ActivityItem.styles';
 

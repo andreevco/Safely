@@ -1,8 +1,9 @@
+import { View } from 'react-native';
+import { UnistylesVariants } from 'react-native-unistyles';
+
 import { ChevronRight16, Icon } from '@mobile/shared/ui/Icon';
 import { Text } from '@mobile/shared/ui/Text';
 import { TouchableOpacity } from '@mobile/shared/ui/TouchableOpacity';
-import { View } from 'react-native';
-import { UnistylesVariants } from 'react-native-unistyles';
 
 import { styles } from './Banner.styles';
 

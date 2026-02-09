@@ -1,8 +1,9 @@
-import { resolveLayoutByScreenName } from '@mobile/shared/utils';
 import { useNavigationState } from '@react-navigation/native';
 import { PropsWithChildren } from 'react';
 import { View } from 'react-native';
 import { UnistylesVariants } from 'react-native-unistyles';
+
+import { resolveLayoutByScreenName } from '@mobile/shared/utils';
 
 import { ScreenContext } from './Screen.context';
 import { styles } from './Screen.styles';

@@ -1,9 +1,10 @@
-import { resources } from '@mobile/shared/resources';
-import { Cell } from '@mobile/shared/ui';
 import { View } from 'react-native';
 
 import { type CryptoAssetAmount, type CryptoFiatRate } from '@safely/core';
 import { useActiveFiat, useNumberFormatter } from '@safely/ux';
+
+import { resources } from '@mobile/shared/resources';
+import { Cell } from '@mobile/shared/ui';
 
 type AssetCellProps = {
     cryptoAssetAmount: CryptoAssetAmount;

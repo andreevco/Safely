@@ -1,7 +1,8 @@
-import { resources } from '@mobile/shared/resources';
-import { Text } from '@mobile/shared/ui/Text';
 import { Image } from 'expo-image';
 import { View } from 'react-native';
+
+import { resources } from '@mobile/shared/resources';
+import { Text } from '@mobile/shared/ui/Text';
 
 import { styles } from './AssetSelector.styles';
 

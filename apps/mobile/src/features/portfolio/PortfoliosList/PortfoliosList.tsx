@@ -1,9 +1,9 @@
+import { Portfolio } from '@safely/core';
+import { useActivePortfolio } from '@safely/ux';
+
 import { PortfolioName } from '@mobile/entities/portfolio/PortfolioName/PortfolioName';
 import { Cell } from '@mobile/shared/ui';
 import { List } from '@mobile/shared/ui';
-
-import { Portfolio } from '@safely/core';
-import { useActivePortfolio } from '@safely/ux';
 
 import { styles } from './PortfoliosList.styles';
 

@@ -1,7 +1,8 @@
-import { Text } from '@mobile/shared/ui/Text';
 import { useTranslation } from 'react-i18next';
 import { TouchableOpacity, View } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
+
+import { Text } from '@mobile/shared/ui/Text';
 
 import { AmountInput, AssetSelector } from '../components';
 import { styles } from './AmountStep.styles';

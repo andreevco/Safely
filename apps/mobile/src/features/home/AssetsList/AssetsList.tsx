@@ -1,7 +1,7 @@
+import { useHomeScreenList } from '@safely/ux';
+
 import { AssetCell } from '@mobile/entities/asset';
 import { List } from '@mobile/shared/ui';
-
-import { useHomeScreenList } from '@safely/ux';
 
 import { styles } from './AssetsList.styles';
 

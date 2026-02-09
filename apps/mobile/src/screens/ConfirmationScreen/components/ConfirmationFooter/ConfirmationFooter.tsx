@@ -1,7 +1,8 @@
-import { Button, SlideButton } from '@mobile/shared/ui';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
+
+import { Button, SlideButton } from '@mobile/shared/ui';
 
 import { styles } from './ConfirmationFooter.styles';
 import { ConfirmationState } from '../../ConfirmationScreen.types';

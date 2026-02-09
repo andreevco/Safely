@@ -1,11 +1,12 @@
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
-import { HistoryList } from '@mobile/features/history';
-import { Screen } from '@mobile/shared/ui';
 import { useNavigation } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { BtcActivityItem } from '@safely/ux';
+
+import { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import { HistoryList } from '@mobile/features/history';
+import { Screen } from '@mobile/shared/ui';
 
 export const HistoryScreen = () => {
     const { t } = useTranslation();

@@ -1,10 +1,11 @@
-import { Icon, SwapVertical20 } from '@mobile/shared/ui/Icon';
-import { Text } from '@mobile/shared/ui/Text';
 import { forwardRef, useCallback, useImperativeHandle, useRef } from 'react';
 import { TextInputProps, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { MaskedTextInput, MaskedTextInputRef } from 'react-native-advanced-input-mask';
 import Animated, { useSharedValue } from 'react-native-reanimated';
 import { useUnistyles } from 'react-native-unistyles';
+
+import { Icon, SwapVertical20 } from '@mobile/shared/ui/Icon';
+import { Text } from '@mobile/shared/ui/Text';
 
 import { styles, useInputAnimatedStyle } from './AmountInput.styles';
 

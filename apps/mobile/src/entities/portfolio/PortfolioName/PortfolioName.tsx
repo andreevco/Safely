@@ -1,7 +1,8 @@
-import { Text, TextProps } from '@mobile/shared/ui';
 import { View } from 'react-native';
 
 import { PortfolioMeta } from '@safely/core';
+
+import { Text, TextProps } from '@mobile/shared/ui';
 
 import { styles } from './PortfolioName.styles';
 

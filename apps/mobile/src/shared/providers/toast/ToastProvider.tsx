@@ -1,4 +1,3 @@
-import { Toast } from '@mobile/shared/ui';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Platform, View } from 'react-native';
 import Animated from 'react-native-reanimated';
@@ -6,6 +5,8 @@ import { FullWindowOverlay } from 'react-native-screens';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { ToastOptions } from '@safely/ux';
+
+import { Toast } from '@mobile/shared/ui';
 
 import { styles, ShowInAnimation, ShowOutAnimation } from './ToastProvider.styles';
 import { useToastServiceContext } from './ToastServiceProvider';

@@ -1,11 +1,12 @@
-import { SettingsStackNavigationProp } from '@mobile/app/navigation/types';
-import { availableLanguages, LanguageCode } from '@mobile/shared/i18n';
-import { Cell, List, Screen, Text } from '@mobile/shared/ui';
-import { ArrowLeft16, Checkmark28, Icon } from '@mobile/shared/ui/Icon';
 import { useNavigation } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
+
+import { SettingsStackNavigationProp } from '@mobile/app/navigation/types';
+import { availableLanguages, LanguageCode } from '@mobile/shared/i18n';
+import { Cell, List, Screen, Text } from '@mobile/shared/ui';
+import { ArrowLeft16, Checkmark28, Icon } from '@mobile/shared/ui/Icon';
 
 import { styles } from './LanguageScreen.styles';
 

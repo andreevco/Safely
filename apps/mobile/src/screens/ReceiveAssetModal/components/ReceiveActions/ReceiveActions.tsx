@@ -1,8 +1,9 @@
-import { Actions, ArrowTop28, Copy28 } from '@mobile/shared/ui';
-import { useCopy } from '@mobile/shared/utils/copy';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Share } from 'react-native';
+
+import { Actions, ArrowTop28, Copy28 } from '@mobile/shared/ui';
+import { useCopy } from '@mobile/shared/utils/copy';
 
 import { styles } from './ReceiveActions.styles';
 

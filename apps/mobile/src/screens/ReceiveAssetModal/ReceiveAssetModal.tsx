@@ -1,10 +1,11 @@
-import { Screen, Text } from '@mobile/shared/ui';
 import { StaticScreenProps } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import { type CryptoAsset } from '@safely/core';
 import { useReceiveInfo } from '@safely/ux';
+
+import { Screen, Text } from '@mobile/shared/ui';
 
 import { QRCodeBlock } from './components/QRCodeBlock/QRCodeBlock';
 import { ReceiveActions } from './components/ReceiveActions';

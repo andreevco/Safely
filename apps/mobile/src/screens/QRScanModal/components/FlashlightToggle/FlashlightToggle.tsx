@@ -1,8 +1,9 @@
-import { TouchableOpacity } from '@mobile/shared/ui';
-import { Flashlight28, Icon } from '@mobile/shared/ui/Icon';
 import { selectionAsync } from 'expo-haptics';
 import { useCallback } from 'react';
 import { View } from 'react-native';
+
+import { TouchableOpacity } from '@mobile/shared/ui';
+import { Flashlight28, Icon } from '@mobile/shared/ui/Icon';
 
 import { styles } from './FlashlightToggle.styles';
 

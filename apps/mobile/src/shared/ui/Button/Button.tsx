@@ -1,7 +1,8 @@
-import { Text } from '@mobile/shared/ui/Text';
-import { TouchableOpacity } from '@mobile/shared/ui/TouchableOpacity';
 import { TouchableOpacityProps } from 'react-native';
 import { UnistylesVariants } from 'react-native-unistyles';
+
+import { Text } from '@mobile/shared/ui/Text';
+import { TouchableOpacity } from '@mobile/shared/ui/TouchableOpacity';
 
 import { styles } from './Button.styles';
 

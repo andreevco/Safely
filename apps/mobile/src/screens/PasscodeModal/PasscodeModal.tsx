@@ -1,5 +1,3 @@
-import { PASSCODE_DIGITS } from '@mobile/shared/constants';
-import { Button, PasscodeInput, Screen, Text } from '@mobile/shared/ui';
 import { useNavigation } from '@react-navigation/native';
 import { notificationAsync, NotificationFeedbackType } from 'expo-haptics';
 import { useCallback, useEffect, useRef } from 'react';
@@ -7,6 +5,9 @@ import { useTranslation } from 'react-i18next';
 import { TextInput } from 'react-native';
 import { useReanimatedKeyboardAnimation } from 'react-native-keyboard-controller';
 import Animated, { useAnimatedStyle } from 'react-native-reanimated';
+
+import { PASSCODE_DIGITS } from '@mobile/shared/constants';
+import { Button, PasscodeInput, Screen, Text } from '@mobile/shared/ui';
 
 import { usePasscodeState } from './hooks';
 import { styles } from './PasscodeModal.styles';
