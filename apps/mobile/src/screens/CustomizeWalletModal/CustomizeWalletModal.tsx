@@ -1,26 +1,41 @@
-import { useNavigation } from '@react-navigation/native';
+import { StaticScreenProps, useNavigation } from '@react-navigation/native';
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TextInput, View } from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';
 
+import { Portfolio } from '@safely/core';
+import { useChangePortfolioMeta } from '@safely/ux';
+
+import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { Button, ColorPicker, EmojiPicker, Screen, Text } from '@mobile/shared/ui';
 
 import { WALLET_COLORS, WALLET_EMOJIS, WalletIcon } from './constants';
 import { styles } from './CustomizeWalletModal.styles';
 
-export const CustomizeWalletModal = () => {
+type CustomizeWalletModalProps = StaticScreenProps<{
+    portfolio: Portfolio;
+    onSaveEnd?: () => void;
+}>;
+
+export const CustomizeWalletModal = (props: CustomizeWalletModalProps) => {
+    const { portfolio, onSaveEnd } = props.route.params;
     const { t } = useTranslation();
     const { theme } = useUnistyles();
-    const navigation = useNavigation();
+    const navigation = useNavigation<RootStackNavigationProp<'CustomizeWalletModal'>>();
+    const { mutate: changePortfolioMeta } = useChangePortfolioMeta();
 
-    const [walletName, setWalletName] = useState('');
-    const [selectedIcon, setSelectedIcon] = useState<WalletIcon>({ type: 'emoji', value: '🙂' });
+    const [walletName, setWalletName] = useState(portfolio.meta.name);
+    const [selectedIcon, setSelectedIcon] = useState<WalletIcon>(portfolio.meta.icon);
 
     const handleSave = useCallback(() => {
-        // TODO: Implement save logic
+        changePortfolioMeta({
+            portfolio: { id: portfolio.id },
+            meta: { name: walletName, icon: selectedIcon }
+        });
+        onSaveEnd?.();
         navigation.goBack();
-    }, [navigation]);
+    }, [navigation, changePortfolioMeta, portfolio, walletName, selectedIcon, onSaveEnd]);
 
     const isNameValid = walletName.trim().length > 0;
 

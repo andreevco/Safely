@@ -179,6 +179,16 @@ export function useDeletePortfolio() {
     });
 }
 
+export function useReorderPortfolios() {
+    const { mutateAsync } = useSetPortfolios();
+
+    return useMutation<void, Error, Portfolio[]>({
+        async mutationFn(nextPortfoliosOrder) {
+            await mutateAsync(nextPortfoliosOrder);
+        }
+    });
+}
+
 export function useAddBip39Derivation() {
     const portfolio = useActivePortfolio();
     const portfolios = usePortfolios();

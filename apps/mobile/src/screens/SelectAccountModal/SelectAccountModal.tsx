@@ -1,3 +1,4 @@
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { usePortfolios } from '@safely/ux';
@@ -8,20 +9,33 @@ import { Screen, Text } from '@mobile/shared/ui';
 export const SelectAccountModal = () => {
     const { t } = useTranslation();
     const portfolios = usePortfolios();
+    const [isEditing, setIsEditing] = useState(false);
+
+    const handleIsEditingChange = useCallback(() => {
+        setIsEditing(prev => !prev);
+    }, [setIsEditing]);
+
+    const handleEditEnd = useCallback(() => {
+        setIsEditing(false);
+    }, [setIsEditing]);
 
     return (
         <Screen>
             <Screen.Header>
-                <Screen.Header.Button disabled type="small">
+                <Screen.Header.Button onPress={handleIsEditingChange} type="small">
                     <Text textAlign="center" variant="labelM">
-                        {t('actions.edit')}
+                        {isEditing ? t('actions.done') : t('actions.edit')}
                     </Text>
                 </Screen.Header.Button>
                 <Screen.Header.Title>{t('accounts.title')}</Screen.Header.Title>
                 <Screen.Header.CloseButton />
             </Screen.Header>
             <Screen.Scrollable>
-                <PortfoliosList portfolios={portfolios} />
+                <PortfoliosList
+                    portfolios={portfolios}
+                    isEditing={isEditing}
+                    onEditEnd={handleEditEnd}
+                />
             </Screen.Scrollable>
         </Screen>
     );

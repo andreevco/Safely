@@ -37,6 +37,7 @@
     },
     "actions": {
         "edit": "Edit",
+        "done": "Done",
         "copied": "Copied"
     },
     "camera": {
