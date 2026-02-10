@@ -3,7 +3,7 @@ import { useRemovePasscode, useSecurityCheck } from '@mobile/entities/security';
 import { clearAllAppData } from '@mobile/shared/storage/mmkv';
 import { Cell, List, Screen, Text } from '@mobile/shared/ui';
 import { useNavigation } from '@react-navigation/native';
-import { useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Alert, View } from 'react-native';
 
@@ -61,28 +61,28 @@ export const SettingsScreen = () => {
         }
     };
 
+    const { mutate: signOut } = useMutation({
+        async mutationFn() {
+            await check();
+
+            rootNavigation.reset({
+                index: 0,
+                routes: [{ name: 'WelcomeScreen' }]
+            });
+            await new Promise(resolve => setTimeout(resolve, 100));
+            clearAllAppData();
+            await removePasscode();
+            queryClient.clear();
+        }
+    });
+
     const handleSignOut = () => {
         Alert.alert(t('settings.signOut.confirm.title'), t('settings.signOut.confirm.message'), [
             { text: t('settings.signOut.confirm.cancel'), style: 'cancel' },
             {
                 text: t('settings.signOut.confirm.confirm'),
                 style: 'destructive',
-                onPress: async () => {
-                    try {
-                        await check();
-                    } catch {
-                        return;
-                    }
-
-                    rootNavigation.reset({
-                        index: 0,
-                        routes: [{ name: 'WelcomeScreen' }]
-                    });
-                    await new Promise(resolve => setTimeout(resolve, 100));
-                    clearAllAppData();
-                    await removePasscode();
-                    queryClient.clear();
-                }
+                onPress: () => signOut()
             }
         ]);
     };

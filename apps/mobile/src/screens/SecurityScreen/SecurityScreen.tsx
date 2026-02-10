@@ -39,12 +39,7 @@ export const SecurityScreen = () => {
     };
 
     const handleChangePasscode = async () => {
-        try {
-            await check({ title: t('changePasscode.verify.title') });
-        } catch {
-            return;
-        }
-
+        await check({ title: t('changePasscode.verify.title') });
         rootNavigation.navigate('ChangePasscodeModal');
     };
 
