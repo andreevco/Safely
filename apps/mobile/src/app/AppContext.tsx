@@ -12,7 +12,7 @@ import { AppContext, IAppContext } from '@safely/ux';
 
 const numberFormatLocale = new MobileNumberFormatLocale(getLocales()[0]);
 
-let securityCheck: () => Promise<boolean> = () => {
+let securityCheck: () => Promise<void> = () => {
     throw new Error('Security check not initialized');
 };
 
@@ -21,10 +21,7 @@ const sdk: IAppSdk = {
     storage: createMMKVTreeStorage('app').storage,
     secretEncryptor: {
         decryptSecret: async (val: string) => {
-            const passed = await sdk.security.check();
-            if (!passed) {
-                throw new Error('Security check failed');
-            }
+            await sdk.security.check();
             return val; // TODO implement
         },
         encryptSecret: async (val: string) => {

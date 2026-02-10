@@ -1,3 +1,3 @@
 export interface Security {
-    check(): Promise<boolean>;
+    check(): Promise<void>;
 }

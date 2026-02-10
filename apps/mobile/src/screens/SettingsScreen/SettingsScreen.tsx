@@ -68,8 +68,11 @@ export const SettingsScreen = () => {
                 text: t('settings.signOut.confirm.confirm'),
                 style: 'destructive',
                 onPress: async () => {
-                    const passed = await check();
-                    if (!passed) return;
+                    try {
+                        await check();
+                    } catch {
+                        return;
+                    }
 
                     rootNavigation.reset({
                         index: 0,

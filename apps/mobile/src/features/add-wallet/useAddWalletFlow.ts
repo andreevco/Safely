@@ -20,8 +20,11 @@ export function useAddWalletFlow() {
     const { mutateAsync: changePortfolioMeta } = useChangePortfolioMeta();
 
     const startCreateFlow = useCallback(async () => {
-        const passed = await check();
-        if (!passed) return;
+        try {
+            await check();
+        } catch {
+            return;
+        }
 
         navigation.dispatch(CommonActions.navigate(routes.customize));
     }, [navigation, check]);
@@ -32,8 +35,11 @@ export function useAddWalletFlow() {
 
     const onMnemonicReady = useCallback(
         async (mnemonic: string[]) => {
-            const passed = await check();
-            if (!passed) return;
+            try {
+                await check();
+            } catch {
+                return;
+            }
 
             await withLoader(async () => {
                 using accessor = new MnemonicResource(mnemonic);

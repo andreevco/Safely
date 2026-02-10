@@ -14,7 +14,7 @@ export function useSecurityCheck() {
     }, [passcode]);
 
     const check = useCallback(
-        async (options?: PromptAndCheckOptions): Promise<boolean> => {
+        async (options?: PromptAndCheckOptions): Promise<void> => {
             let currentPasscode = passcodeRef.current;
             while (currentPasscode.isLoading) {
                 await new Promise(resolve => setTimeout(resolve, 50));
@@ -22,22 +22,17 @@ export function useSecurityCheck() {
             }
 
             if (!currentPasscode.isSet) {
-                return false;
+                throw new Error('Passcode is not set');
             }
 
             if (biometry.isEnabled && biometry.authenticate) {
                 const result = await biometry.authenticate();
                 if (result.success) {
-                    return true;
+                    return;
                 }
             }
 
-            try {
-                await currentPasscode.promptAndCheck(options);
-                return true;
-            } catch {
-                return false;
-            }
+            await currentPasscode.promptAndCheck(options);
         },
         [biometry.isEnabled, biometry.authenticate]
     );
