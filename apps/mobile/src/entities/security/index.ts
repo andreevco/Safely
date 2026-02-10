@@ -1,3 +1,8 @@
-export { usePasscode, PASSCODE_KEY } from './usePasscode';
+export {
+    usePasscodeQuery,
+    useSetPasscode,
+    useRemovePasscode,
+    validatePasscode
+} from './usePasscode';
 export { useSecurityCheck } from './useSecurityCheck';
-export type { UsePasscodeResult } from './types';
+export type { PromptAndCheckOptions } from './types';

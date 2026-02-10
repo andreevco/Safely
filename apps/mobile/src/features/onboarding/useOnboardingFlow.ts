@@ -1,7 +1,6 @@
-import { PASSCODE_KEY } from '@mobile/entities/security';
+import { useSetPasscode } from '@mobile/entities/security';
 import { useLoader } from '@mobile/shared/providers/loader';
 import { CommonActions, useNavigation } from '@react-navigation/native';
-import * as SecureStore from 'expo-secure-store';
 import { useCallback } from 'react';
 
 import { useGeneratePortfolio } from '@safely/ux';
@@ -16,6 +15,7 @@ const routes = {
 export function useOnboardingFlow() {
     const navigation = useNavigation();
     const { mutateAsync: generatePortfolio } = useGeneratePortfolio();
+    const { mutateAsync: setPasscode } = useSetPasscode();
     const { withLoader } = useLoader();
 
     const onStartCreate = useCallback(() => {
@@ -24,10 +24,10 @@ export function useOnboardingFlow() {
 
     const onPasscodeReady = useCallback(
         async (passcode: string) => {
-            await SecureStore.setItemAsync(PASSCODE_KEY, passcode);
+            await setPasscode(passcode);
             navigation.dispatch(CommonActions.navigate(routes.biometry));
         },
-        [navigation]
+        [navigation, setPasscode]
     );
 
     const onBiometryFinished = useCallback(() => {

@@ -1,4 +1,4 @@
-import { usePasscode } from '@mobile/entities/security';
+import { useSetPasscode } from '@mobile/entities/security';
 import { PasscodeSetup } from '@mobile/shared/ui';
 import { useNavigation } from '@react-navigation/native';
 import { useCallback } from 'react';
@@ -7,16 +7,14 @@ import { useTranslation } from 'react-i18next';
 export const ChangePasscodeScreen = () => {
     const { t } = useTranslation();
     const navigation = useNavigation();
-    const passcode = usePasscode();
+    const { mutateAsync: setPasscode } = useSetPasscode();
 
     const handleComplete = useCallback(
         async (newPasscode: string) => {
-            if (passcode.isSet) {
-                await passcode.set(newPasscode);
-            }
+            await setPasscode(newPasscode);
             navigation.goBack();
         },
-        [passcode, navigation]
+        [setPasscode, navigation]
     );
 
     return (

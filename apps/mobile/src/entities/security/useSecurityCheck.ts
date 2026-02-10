@@ -1,27 +1,19 @@
 import { authenticateBiometry, useBiometryQuery } from '@mobile/features/biometry';
-import { useCallback, useRef, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { useCallback } from 'react';
 
 import { PromptAndCheckOptions } from './types';
-import { usePasscode } from './usePasscode';
+import { passcodeQueryConfig, promptAndCheck } from './usePasscode';
 
 export function useSecurityCheck() {
-    const passcode = usePasscode();
     const { data: biometry } = useBiometryQuery();
-
-    const passcodeRef = useRef(passcode);
-    useEffect(() => {
-        passcodeRef.current = passcode;
-    }, [passcode]);
+    const queryClient = useQueryClient();
 
     const check = useCallback(
         async (options?: PromptAndCheckOptions): Promise<void> => {
-            let currentPasscode = passcodeRef.current;
-            while (currentPasscode.isLoading) {
-                await new Promise(resolve => setTimeout(resolve, 50));
-                currentPasscode = passcodeRef.current;
-            }
+            const passcodeLength = await queryClient.ensureQueryData(passcodeQueryConfig);
 
-            if (!currentPasscode.isSet) {
+            if (passcodeLength === null) {
                 throw new Error('Passcode is not set');
             }
 
@@ -32,10 +24,10 @@ export function useSecurityCheck() {
                 }
             }
 
-            await currentPasscode.promptAndCheck(options);
+            await promptAndCheck(options);
         },
-        [biometry?.isEnabled]
+        [biometry?.isEnabled, queryClient]
     );
 
-    return { check, passcode, biometry };
+    return { check };
 }

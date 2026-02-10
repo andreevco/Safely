@@ -1,4 +1,5 @@
-import { usePasscode } from '@mobile/entities/security';
+import { usePasscodeQuery, validatePasscode } from '@mobile/entities/security';
+import { PASSCODE_DIGITS } from '@mobile/shared/constants';
 import { PasscodeInput, Screen, Text } from '@mobile/shared/ui';
 import { StaticScreenProps, useNavigation } from '@react-navigation/native';
 import {
@@ -29,7 +30,7 @@ export const PasscodeVerificationScreen = (props: PasscodeVerificationScreenProp
 
     const { t } = useTranslation();
     const navigation = useNavigation();
-    const passcode = usePasscode();
+    const { data: passcodeLength } = usePasscodeQuery();
     const successCalled = useRef(false);
     const { height } = useReanimatedKeyboardAnimation();
     const maxHeight = useSharedValue(0);
@@ -48,7 +49,7 @@ export const PasscodeVerificationScreen = (props: PasscodeVerificationScreenProp
         [maxHeight, height]
     );
 
-    const digitsAmount = passcode.isSet ? passcode.passcodeLength : 4;
+    const digitsAmount = passcodeLength ?? PASSCODE_DIGITS.SHORT;
     const pinFullyEntered = inputValue.length === digitsAmount;
 
     const handleInputChange = useCallback((value: string) => {
@@ -65,9 +66,9 @@ export const PasscodeVerificationScreen = (props: PasscodeVerificationScreenProp
     }, [onClose]);
 
     const handleComplete = useCallback(async () => {
-        if (isSuccess.value || !passcode.isSet || !passcode.validate) return;
+        if (isSuccess.value) return;
 
-        const isValid = await passcode.validate(inputValue);
+        const isValid = await validatePasscode(inputValue);
         if (isValid) {
             await notificationAsync(NotificationFeedbackType.Success);
             isSuccess.value = true;
@@ -86,7 +87,7 @@ export const PasscodeVerificationScreen = (props: PasscodeVerificationScreenProp
                 isError.value = false;
             }, 300);
         }
-    }, [inputValue, passcode, isSuccess, isError, navigation, onSuccess]);
+    }, [inputValue, isSuccess, isError, navigation, onSuccess]);
 
     useEffect(() => {
         if (pinFullyEntered) {

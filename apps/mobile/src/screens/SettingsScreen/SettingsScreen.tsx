@@ -1,10 +1,9 @@
 import { RootStackNavigationProp, SettingsStackNavigationProp } from '@mobile/app/navigation/types';
-import { PASSCODE_KEY, useSecurityCheck } from '@mobile/entities/security';
+import { useRemovePasscode, useSecurityCheck } from '@mobile/entities/security';
 import { clearAllAppData } from '@mobile/shared/storage/mmkv';
 import { Cell, List, Screen, Text } from '@mobile/shared/ui';
 import { useNavigation } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
-import * as SecureStore from 'expo-secure-store';
 import { useTranslation } from 'react-i18next';
 import { Alert, View } from 'react-native';
 
@@ -46,6 +45,7 @@ export const SettingsScreen = () => {
     const navigation = useNavigation<SettingsStackNavigationProp>();
     const rootNavigation = useNavigation<RootStackNavigationProp>();
     const { check } = useSecurityCheck();
+    const { mutateAsync: removePasscode } = useRemovePasscode();
 
     const handleItemPress = (key: string) => {
         if (key === 'language') {
@@ -80,7 +80,7 @@ export const SettingsScreen = () => {
                     });
                     await new Promise(resolve => setTimeout(resolve, 100));
                     clearAllAppData();
-                    await SecureStore.deleteItemAsync(PASSCODE_KEY);
+                    await removePasscode();
                     queryClient.clear();
                 }
             }
