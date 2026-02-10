@@ -1,7 +1,8 @@
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
 import { AddWalletScreen } from '@mobile/screens/AddWalletModal';
 import { CustomizeWalletModal } from '@mobile/screens/CustomizeWalletModal';
 import { ImportWalletScreen } from '@mobile/screens/ImportWalletScreen';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 export const AddWalletStack = createNativeStackNavigator({
     initialRouteName: 'AddWalletRootModal',

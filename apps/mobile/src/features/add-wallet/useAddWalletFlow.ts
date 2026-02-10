@@ -1,10 +1,11 @@
-import { useSecurityCheck } from '@mobile/entities/security';
-import { useLoader } from '@mobile/shared/providers/loader';
 import { CommonActions, useNavigation } from '@react-navigation/native';
 import { useCallback } from 'react';
 
 import { MnemonicResource, PortfolioMeta } from '@safely/core';
 import { useChangePortfolioMeta, useGeneratePortfolio, useImportPortfolio } from '@safely/ux';
+
+import { useSecurityCheck } from '@mobile/entities/security';
+import { useLoader } from '@mobile/shared/providers/loader';
 
 const routes = {
     importWallet: 'ImportWalletModal',

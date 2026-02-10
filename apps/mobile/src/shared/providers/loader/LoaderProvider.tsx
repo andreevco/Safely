@@ -1,4 +1,3 @@
-import { FullScreenLoader } from '@mobile/shared/ui/FullScreenLoader';
 import React, {
     createContext,
     FC,
@@ -10,6 +9,8 @@ import React, {
 } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 import { FullWindowOverlay } from 'react-native-screens';
+
+import { FullScreenLoader } from '@mobile/shared/ui/FullScreenLoader';
 
 const Overlay = Platform.OS === 'ios' ? FullWindowOverlay : View;
 

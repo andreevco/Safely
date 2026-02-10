@@ -1,7 +1,8 @@
-import { AddWalletOptions } from '@mobile/features/add-wallet';
-import { Icon, Screen, Text, WalletPlus96 } from '@mobile/shared/ui';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
+
+import { AddWalletOptions } from '@mobile/features/add-wallet';
+import { Icon, Screen, Text, WalletPlus96 } from '@mobile/shared/ui';
 
 import { styles } from './AddWalletModal.styles';
 

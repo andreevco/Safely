@@ -1,3 +1,7 @@
+import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
+import { Linking, View } from 'react-native';
+
 import { SettingsStackNavigationProp } from '@mobile/app/navigation/types';
 import {
     useNotificationsQuery,
@@ -5,9 +9,6 @@ import {
 } from '@mobile/features/notifications';
 import { Banner, Cell, List, Screen, Switch } from '@mobile/shared/ui';
 import { ArrowLeft16, Icon } from '@mobile/shared/ui/Icon';
-import { useNavigation } from '@react-navigation/native';
-import { useTranslation } from 'react-i18next';
-import { Linking, View } from 'react-native';
 
 import { styles } from './NotificationsScreen.styles';
 

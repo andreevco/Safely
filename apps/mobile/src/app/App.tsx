@@ -1,6 +1,3 @@
-import { LoaderProvider } from '@mobile/shared/providers/loader';
-import { ToastProvider, ToastServiceProvider } from '@mobile/shared/providers/toast';
-import { createMMKVTreeStorage } from '@mobile/shared/storage/mmkv';
 import { DarkTheme, Theme } from '@react-navigation/native';
 import * as SplashScreen from 'expo-splash-screen';
 import { useMemo } from 'react';
@@ -10,6 +7,10 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useUnistyles } from 'react-native-unistyles';
 
 import { createPersister, QueryProvider } from '@safely/ux';
+
+import { LoaderProvider } from '@mobile/shared/providers/loader';
+import { ToastProvider, ToastServiceProvider } from '@mobile/shared/providers/toast';
+import { createMMKVTreeStorage } from '@mobile/shared/storage/mmkv';
 
 import { AppContextProvider } from './AppContext';
 import Navigation from './navigation';

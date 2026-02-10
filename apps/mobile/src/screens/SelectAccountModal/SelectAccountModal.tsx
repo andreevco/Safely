@@ -1,10 +1,11 @@
-import type { RootStackNavigationProp } from '@mobile/app/navigation/types';
-import { PortfoliosList } from '@mobile/features/portfolio';
-import { Button, Screen, Text } from '@mobile/shared/ui';
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 
 import { usePortfolios } from '@safely/ux';
+
+import type { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import { PortfoliosList } from '@mobile/features/portfolio';
+import { Button, Screen, Text } from '@mobile/shared/ui';
 
 import { styles } from './SelectAccountModal.styles';
 

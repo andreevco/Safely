@@ -1,8 +1,9 @@
-import { useOnboardingFlow } from '@mobile/features/onboarding';
-import { Button, Icon, Checkmark96, Screen, Text } from '@mobile/shared/ui';
 import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
+
+import { useOnboardingFlow } from '@mobile/features/onboarding';
+import { Button, Icon, Checkmark96, Screen, Text } from '@mobile/shared/ui';
 
 import { styles } from './AccountCreatedScreen.styles';
 

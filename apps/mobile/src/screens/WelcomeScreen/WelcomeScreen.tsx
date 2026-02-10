@@ -1,7 +1,8 @@
-import { useOnboardingFlow } from '@mobile/features/onboarding';
-import { Button, Screen, Text } from '@mobile/shared/ui';
 import { Trans, useTranslation } from 'react-i18next';
 import { Alert, Linking, View } from 'react-native';
+
+import { useOnboardingFlow } from '@mobile/features/onboarding';
+import { Button, Screen, Text } from '@mobile/shared/ui';
 
 import { styles } from './WelcomeScreen.styles';
 

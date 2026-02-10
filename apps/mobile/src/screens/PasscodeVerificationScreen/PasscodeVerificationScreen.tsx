@@ -1,6 +1,3 @@
-import { usePasscodeQuery, validatePasscode } from '@mobile/entities/security';
-import { PASSCODE_DIGITS } from '@mobile/shared/constants';
-import { PasscodeInput, Screen, Text } from '@mobile/shared/ui';
 import { StaticScreenProps, useNavigation } from '@react-navigation/native';
 import {
     impactAsync,
@@ -16,6 +13,10 @@ import Animated, {
     useAnimatedStyle,
     useSharedValue
 } from 'react-native-reanimated';
+
+import { usePasscodeQuery, validatePasscode } from '@mobile/entities/security';
+import { PASSCODE_DIGITS } from '@mobile/shared/constants';
+import { PasscodeInput, Screen, Text } from '@mobile/shared/ui';
 
 import { styles } from './PasscodeVerificationScreen.styles';
 

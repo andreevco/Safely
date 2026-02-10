@@ -1,7 +1,8 @@
-import { useOnboardingFlow } from '@mobile/features/onboarding';
-import { PasscodeSetup } from '@mobile/shared/ui';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+
+import { useOnboardingFlow } from '@mobile/features/onboarding';
+import { PasscodeSetup } from '@mobile/shared/ui';
 
 export const OnboardingPasscodeScreen = () => {
     const { t } = useTranslation();

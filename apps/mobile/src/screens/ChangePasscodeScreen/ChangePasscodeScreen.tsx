@@ -1,8 +1,9 @@
-import { useSetPasscode } from '@mobile/entities/security';
-import { PasscodeSetup } from '@mobile/shared/ui';
 import { useNavigation } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+
+import { useSetPasscode } from '@mobile/entities/security';
+import { PasscodeSetup } from '@mobile/shared/ui';
 
 export const ChangePasscodeScreen = () => {
     const { t } = useTranslation();

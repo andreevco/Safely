@@ -110,6 +110,11 @@ export default [
                             pattern: '@safely/**',
                             group: 'internal',
                             position: 'before'
+                        },
+                        {
+                            pattern: '@mobile/**',
+                            group: 'internal',
+                            position: 'after'
                         }
                     ],
                     pathGroupsExcludedImportTypes: ['builtin'],
