@@ -1,2 +1,1 @@
-export { useNotifications } from './useNotifications';
-export type { UseNotificationsResult } from './useNotifications';
+export { useNotificationsQuery, useRequestNotificationPermission } from './useNotifications';

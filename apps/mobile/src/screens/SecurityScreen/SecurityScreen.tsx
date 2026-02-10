@@ -1,7 +1,11 @@
 import { RootStackNavigationProp, SettingsStackNavigationProp } from '@mobile/app/navigation/types';
 import { PortfolioName } from '@mobile/entities/portfolio';
 import { useSecurityCheck } from '@mobile/entities/security';
-import { getBiometryTranslationKey, useBiometry } from '@mobile/features/biometry';
+import {
+    getBiometryTranslationKey,
+    useBiometryQuery,
+    useSetBiometryEnabled
+} from '@mobile/features/biometry';
 import { Cell, List, Screen, Switch } from '@mobile/shared/ui';
 import { ArrowLeft16, Icon, Switch16 } from '@mobile/shared/ui/Icon';
 import { useNavigation } from '@react-navigation/native';
@@ -15,7 +19,8 @@ import { styles } from './SecurityScreen.styles';
 
 export const SecurityScreen = () => {
     const { t } = useTranslation();
-    const biometry = useBiometry();
+    const { data: biometry } = useBiometryQuery();
+    const { mutateAsync: setBiometryEnabled } = useSetBiometryEnabled();
     const { check } = useSecurityCheck();
     const portfolio = useActivePortfolio();
     const navigation = useNavigation<SettingsStackNavigationProp>();
@@ -24,8 +29,8 @@ export const SecurityScreen = () => {
     const [lockScreenEnabled, setLockScreenEnabled] = useState(false);
 
     const handleBiometryToggle = async () => {
-        if (biometry.setEnabled) {
-            await biometry.setEnabled(!biometry.isEnabled);
+        if (biometry) {
+            await setBiometryEnabled(!biometry.isEnabled);
         }
     };
 
@@ -82,7 +87,7 @@ export const SecurityScreen = () => {
                     <List>
                         <List.Title>{t('security.groups.application.title')}</List.Title>
                         <List.Group variant="divided">
-                            {biometry.availableType && (
+                            {biometry && biometry.availableType && (
                                 <Cell>
                                     <Cell.Content>
                                         <Cell.Row>

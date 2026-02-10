@@ -1,12 +1,12 @@
-import { useBiometry } from '@mobile/features/biometry';
+import { authenticateBiometry, useBiometryQuery } from '@mobile/features/biometry';
 import { useCallback, useRef, useEffect } from 'react';
 
 import { PromptAndCheckOptions } from './types';
 import { usePasscode } from './usePasscode';
 
 export function useSecurityCheck() {
-    const biometry = useBiometry();
     const passcode = usePasscode();
+    const { data: biometry } = useBiometryQuery();
 
     const passcodeRef = useRef(passcode);
     useEffect(() => {
@@ -25,8 +25,8 @@ export function useSecurityCheck() {
                 throw new Error('Passcode is not set');
             }
 
-            if (biometry.isEnabled && biometry.authenticate) {
-                const result = await biometry.authenticate();
+            if (biometry?.isEnabled) {
+                const result = await authenticateBiometry();
                 if (result.success) {
                     return;
                 }
@@ -34,7 +34,7 @@ export function useSecurityCheck() {
 
             await currentPasscode.promptAndCheck(options);
         },
-        [biometry.isEnabled, biometry.authenticate]
+        [biometry?.isEnabled]
     );
 
     return { check, passcode, biometry };

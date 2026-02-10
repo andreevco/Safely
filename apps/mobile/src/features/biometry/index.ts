@@ -1,7 +1,7 @@
-export { useBiometry, BiometryType } from './useBiometry';
-export { getBiometryTranslationKey } from './getBiometryTranslationKey';
-export type {
-    UseBiometryResult,
-    UseBiometryResultSupported,
-    UseBiometryResultNotSupported
+export {
+    useBiometryQuery,
+    useSetBiometryEnabled,
+    authenticateBiometry,
+    BiometryType
 } from './useBiometry';
+export { getBiometryTranslationKey } from './getBiometryTranslationKey';

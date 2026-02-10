@@ -1,6 +1,8 @@
 import { mmkvStorage } from '@mobile/shared/storage/mmkv';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as LocalAuthentication from 'expo-local-authentication';
-import { useCallback, useEffect, useState } from 'react';
+
+import { biometryKeys } from './keys';
 
 const BIOMETRY_ENABLED_KEY = 'biometry_enabled';
 
@@ -9,38 +11,6 @@ export enum BiometryType {
     FINGERPRINT = 'fingerprint',
     IRIS = 'iris'
 }
-
-export type UseBiometryResultSupported =
-    | {
-          availableType: BiometryType;
-          isEnabled: true;
-          setEnabled: (value: boolean) => Promise<void>;
-          authenticate: () => Promise<{ success: true } | { success: false; error: string }>;
-      }
-    | {
-          availableType: BiometryType;
-          isEnabled: false;
-          setEnabled: (value: boolean) => Promise<void>;
-          authenticate?: undefined;
-      };
-
-export type UseBiometryResultNotSupported = {
-    availableType: null;
-    isEnabled: false;
-    setEnabled?: undefined;
-    authenticate?: undefined;
-};
-
-export type UseBiometryResult =
-    | (UseBiometryResultSupported & { isLoading: false })
-    | (UseBiometryResultNotSupported & { isLoading: false })
-    | {
-          isLoading: true;
-          availableType: null;
-          isEnabled: false;
-          setEnabled?: undefined;
-          authenticate?: undefined;
-      };
 
 function resolveType(types: LocalAuthentication.AuthenticationType[]): BiometryType | null {
     if (types.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION))
@@ -76,72 +46,45 @@ function getStoredEnabled(): boolean {
     }
 }
 
-export function useBiometry(): UseBiometryResult {
-    const [isLoading, setIsLoading] = useState(true);
-    const [availableType, setAvailableType] = useState<BiometryType | null>(null);
-    const [isEnabled, setIsEnabled] = useState(false);
+export function useBiometryQuery() {
+    return useQuery({
+        queryKey: biometryKeys.state.toKey(),
+        queryFn: async () => {
+            const availableType = await getAvailableBiometryType();
+            const isEnabled = availableType !== null ? getStoredEnabled() : false;
+            return { availableType, isEnabled };
+        },
+        staleTime: Infinity
+    });
+}
 
-    useEffect(() => {
-        let cancelled = false;
-        getAvailableBiometryType().then(type => {
-            if (cancelled) return;
-            setAvailableType(type);
-            if (type !== null) {
-                setIsEnabled(getStoredEnabled());
-            }
-            setIsLoading(false);
-        });
-        return () => {
-            cancelled = true;
-        };
-    }, []);
-
-    const authenticate = useCallback(async () => {
-        try {
+export function useSetBiometryEnabled() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (enabled: boolean) => {
             const result = await LocalAuthentication.authenticateAsync();
-            if (result.success) {
-                return { success: true } as const;
-            } else {
-                return { success: false, error: result.error } as const;
+            if (!result.success) {
+                throw new Error('Authentication failed');
             }
-        } catch (error) {
-            return {
-                success: false,
-                error: error instanceof Error ? error.message : 'Unknown error'
-            } as const;
+            mmkvStorage.setItem(BIOMETRY_ENABLED_KEY, JSON.stringify(enabled));
+        },
+        async onSuccess() {
+            await queryClient.invalidateQueries({ queryKey: biometryKeys.state.toKey() });
         }
-    }, []);
+    });
+}
 
-    const setEnabledValue = useCallback(async (enabled: boolean) => {
+export async function authenticateBiometry() {
+    try {
         const result = await LocalAuthentication.authenticateAsync();
         if (result.success) {
-            mmkvStorage.setItem(BIOMETRY_ENABLED_KEY, JSON.stringify(enabled));
-            setIsEnabled(enabled);
+            return { success: true } as const;
         }
-    }, []);
-
-    if (isLoading) {
-        return { isLoading: true, availableType: null, isEnabled: false };
-    }
-
-    if (availableType === null) {
-        return { isLoading: false, availableType: null, isEnabled: false };
-    }
-
-    if (!isEnabled) {
+        return { success: false, error: result.error } as const;
+    } catch (error) {
         return {
-            isLoading: false,
-            availableType,
-            isEnabled: false,
-            setEnabled: setEnabledValue
-        };
+            success: false,
+            error: error instanceof Error ? error.message : 'Unknown error'
+        } as const;
     }
-
-    return {
-        isLoading: false,
-        availableType,
-        isEnabled: true,
-        setEnabled: setEnabledValue,
-        authenticate
-    };
 }

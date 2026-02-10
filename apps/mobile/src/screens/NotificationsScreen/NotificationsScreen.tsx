@@ -1,5 +1,8 @@
 import { SettingsStackNavigationProp } from '@mobile/app/navigation/types';
-import { useNotifications } from '@mobile/features/notifications';
+import {
+    useNotificationsQuery,
+    useRequestNotificationPermission
+} from '@mobile/features/notifications';
 import { Banner, Cell, List, Screen, Switch } from '@mobile/shared/ui';
 import { ArrowLeft16, Icon } from '@mobile/shared/ui/Icon';
 import { useNavigation } from '@react-navigation/native';
@@ -11,13 +14,16 @@ import { styles } from './NotificationsScreen.styles';
 export const NotificationsScreen = () => {
     const { t } = useTranslation();
     const navigation = useNavigation<SettingsStackNavigationProp>();
-    const { isEnabled, isDenied, requestPermission } = useNotifications();
+    const { data: notifications } = useNotificationsQuery();
+    const { mutateAsync: requestPermission } = useRequestNotificationPermission();
+
+    const { isEnabled = false, isDenied = false } = notifications ?? {};
 
     const handleToggle = async () => {
         if (isEnabled) {
             void Linking.openSettings();
         } else {
-            await requestPermission?.();
+            await requestPermission();
         }
     };
 

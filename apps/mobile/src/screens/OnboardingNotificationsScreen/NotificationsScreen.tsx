@@ -1,4 +1,4 @@
-import { useNotifications } from '@mobile/features/notifications';
+import { useRequestNotificationPermission } from '@mobile/features/notifications';
 import { useOnboardingFlow } from '@mobile/features/onboarding';
 import { Button, Icon, Notifications96, Screen, Text } from '@mobile/shared/ui';
 import React, { useCallback } from 'react';
@@ -9,11 +9,11 @@ import { styles } from './NotificationsScreen.styles';
 
 export const OnboardingNotificationsScreen = () => {
     const { t } = useTranslation();
-    const { requestPermission } = useNotifications();
+    const { mutateAsync: requestPermission } = useRequestNotificationPermission();
     const { onNotificationsFinished } = useOnboardingFlow();
 
     const handleEnable = useCallback(async () => {
-        await requestPermission?.();
+        await requestPermission();
         onNotificationsFinished();
     }, [requestPermission, onNotificationsFinished]);
 

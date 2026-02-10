@@ -1,5 +1,4 @@
-import { useBiometry, BiometryType } from '@mobile/features/biometry';
-import type { UseBiometryResultSupported } from '@mobile/features/biometry';
+import { useBiometryQuery, useSetBiometryEnabled, BiometryType } from '@mobile/features/biometry';
 import { useOnboardingFlow } from '@mobile/features/onboarding';
 import {
     Button,
@@ -18,9 +17,10 @@ import { styles } from './BiometryScreen.styles';
 
 export const BiometryScreen = () => {
     const { onBiometryFinished } = useOnboardingFlow();
-    const biometry = useBiometry();
+    const { data: biometry, isLoading } = useBiometryQuery();
+    const { mutateAsync: setBiometryEnabled } = useSetBiometryEnabled();
 
-    if (biometry.isLoading) {
+    if (isLoading || !biometry) {
         return (
             <Screen>
                 <Screen.Header variant="left">
@@ -37,17 +37,25 @@ export const BiometryScreen = () => {
         return null;
     }
 
-    return <BiometrySupportedScreen onFinish={onBiometryFinished} biometry={biometry} />;
+    return (
+        <BiometrySupportedScreen
+            availableType={biometry.availableType}
+            setBiometryEnabled={setBiometryEnabled}
+            onFinish={onBiometryFinished}
+        />
+    );
 };
 
 const BiometrySupportedScreen: FC<{
-    biometry: UseBiometryResultSupported;
+    availableType: BiometryType;
+    setBiometryEnabled: (enabled: boolean) => Promise<void>;
     onFinish: () => void;
-}> = ({ biometry, onFinish }) => {
+}> = props => {
+    const { availableType, setBiometryEnabled, onFinish } = props;
     const { t } = useTranslation();
 
     const { title, description, picture } = useMemo(() => {
-        switch (biometry.availableType) {
+        switch (availableType) {
             case BiometryType.FACE:
                 return {
                     title: t(`biometry.face.${Platform.OS}.title`),
@@ -67,12 +75,12 @@ const BiometrySupportedScreen: FC<{
                     picture: <Icon icon={Fingerprint96} />
                 };
         }
-    }, [biometry.availableType, t]);
+    }, [availableType, t]);
 
     const handleEnable = useCallback(async () => {
-        await biometry.setEnabled(true);
+        await setBiometryEnabled(true);
         onFinish();
-    }, [biometry, onFinish]);
+    }, [setBiometryEnabled, onFinish]);
 
     const handleSkip = useCallback(() => {
         onFinish();
