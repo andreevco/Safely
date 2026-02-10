@@ -1,8 +1,9 @@
-import { useAddWalletFlow } from '@mobile/features/add-wallet';
-import { Button, Screen } from '@mobile/shared/ui';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Keyboard } from 'react-native';
+
+import { useAddWalletFlow } from '@mobile/features/add-wallet';
+import { Button, Screen } from '@mobile/shared/ui';
 
 import { WalletIcon } from './constants';
 import { CustomizeWalletContent } from './CustomizeWalletContent';

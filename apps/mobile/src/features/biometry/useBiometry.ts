@@ -1,6 +1,7 @@
-import { mmkvStorage } from '@mobile/shared/storage/mmkv';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as LocalAuthentication from 'expo-local-authentication';
+
+import { mmkvStorage } from '@mobile/shared/storage/mmkv';
 
 import { biometryKeys } from './keys';
 

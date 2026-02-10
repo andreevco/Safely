@@ -1,8 +1,9 @@
-import { ColorPicker, EmojiPicker, Text } from '@mobile/shared/ui';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TextInput, View } from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';
+
+import { ColorPicker, EmojiPicker, Text } from '@mobile/shared/ui';
 
 import { WALLET_COLORS, WALLET_EMOJIS, WalletIcon } from './constants';
 import { styles } from './CustomizeWalletContent.styles';

@@ -1,10 +1,11 @@
-import { Button, Screen, Text, WordCell } from '@mobile/shared/ui';
-import { ExclamationmarkCircle16, Icon } from '@mobile/shared/ui/Icon';
-import { useCopy } from '@mobile/shared/utils/copy';
 import { StaticScreenProps } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
+
+import { Button, Screen, Text, WordCell } from '@mobile/shared/ui';
+import { ExclamationmarkCircle16, Icon } from '@mobile/shared/ui/Icon';
+import { useCopy } from '@mobile/shared/utils/copy';
 
 import { styles } from './RecoveryPhraseSheet.styles';
 

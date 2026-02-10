@@ -1,9 +1,10 @@
-import { useRequestNotificationPermission } from '@mobile/features/notifications';
-import { useOnboardingFlow } from '@mobile/features/onboarding';
-import { Button, Icon, Notifications96, Screen, Text } from '@mobile/shared/ui';
 import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
+
+import { useRequestNotificationPermission } from '@mobile/features/notifications';
+import { useOnboardingFlow } from '@mobile/features/onboarding';
+import { Button, Icon, Notifications96, Screen, Text } from '@mobile/shared/ui';
 
 import { styles } from './NotificationsScreen.styles';
 

@@ -1,11 +1,12 @@
-import { useAddWalletFlow } from '@mobile/features/add-wallet';
-import { Button, Screen, Text } from '@mobile/shared/ui';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Keyboard, TextInput, View } from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';
 
 import { useImportSeedPhrase } from '@safely/ux';
+
+import { useAddWalletFlow } from '@mobile/features/add-wallet';
+import { Button, Screen, Text } from '@mobile/shared/ui';
 
 import { styles } from './ImportWalletScreen.styles';
 

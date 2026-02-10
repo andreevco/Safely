@@ -1,6 +1,7 @@
-import { navigationRef } from '@mobile/app/navigation/navigationRef';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as SecureStore from 'expo-secure-store';
+
+import { navigationRef } from '@mobile/app/navigation/navigationRef';
 
 import { passcodeKeys } from './keys';
 import { PromptAndCheckOptions } from './types';

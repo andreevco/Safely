@@ -1,11 +1,12 @@
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
-import { BottomSheet, Button, Text, useBottomSheet } from '@mobile/shared/ui';
-import { Icon, ListKey96 } from '@mobile/shared/ui/Icon';
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import { useActivePortfolio } from '@safely/ux';
+
+import { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import { BottomSheet, Button, Text, useBottomSheet } from '@mobile/shared/ui';
+import { Icon, ListKey96 } from '@mobile/shared/ui/Icon';
 
 import { styles } from './RecoveryConfirmSheet.styles';
 
