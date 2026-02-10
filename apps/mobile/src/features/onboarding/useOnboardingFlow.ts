@@ -4,9 +4,7 @@ import { CommonActions, useNavigation } from '@react-navigation/native';
 import * as SecureStore from 'expo-secure-store';
 import { useCallback } from 'react';
 
-import { generateBip39Accessor } from '@safely/core/entities/seed';
-
-import { useCreatePortfolio } from './useCreatePortfolio';
+import { useGeneratePortfolio } from '@safely/ux';
 
 const routes = {
     passcode: 'OnboardingPasscodeScreen',
@@ -17,7 +15,7 @@ const routes = {
 
 export function useOnboardingFlow() {
     const navigation = useNavigation();
-    const createPortfolio = useCreatePortfolio();
+    const { mutateAsync: generatePortfolio } = useGeneratePortfolio();
     const { withLoader } = useLoader();
 
     const onStartCreate = useCallback(() => {
@@ -42,15 +40,7 @@ export function useOnboardingFlow() {
 
     const onAccountCreatedFinished = useCallback(async () => {
         await withLoader(async () => {
-            using accessor = generateBip39Accessor();
-            const mnemonic = [...accessor.value];
-
-            const defaultMeta = {
-                name: 'Wallet 1',
-                icon: { type: 'emoji' as const, value: '🙂' }
-            };
-
-            await createPortfolio(mnemonic, defaultMeta);
+            await generatePortfolio();
         });
 
         navigation.dispatch(
@@ -59,7 +49,7 @@ export function useOnboardingFlow() {
                 routes: [{ name: 'TabsNavigator' }]
             })
         );
-    }, [navigation, createPortfolio, withLoader]);
+    }, [navigation, generatePortfolio, withLoader]);
 
     return {
         onStartCreate,

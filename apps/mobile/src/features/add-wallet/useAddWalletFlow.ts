@@ -1,11 +1,10 @@
 import { useSecurityCheck } from '@mobile/entities/security';
-import { useCreatePortfolio } from '@mobile/features/onboarding';
 import { useLoader } from '@mobile/shared/providers/loader';
 import { CommonActions, useNavigation } from '@react-navigation/native';
 import { useCallback } from 'react';
 
-import { PortfolioMeta } from '@safely/core';
-import { generateBip39Accessor } from '@safely/core/entities/seed';
+import { MnemonicResource, PortfolioMeta } from '@safely/core';
+import { useChangePortfolioMeta, useGeneratePortfolio, useImportPortfolio } from '@safely/ux';
 
 const routes = {
     importWallet: 'ImportWalletModal',
@@ -14,9 +13,11 @@ const routes = {
 
 export function useAddWalletFlow() {
     const navigation = useNavigation();
-    const createPortfolio = useCreatePortfolio();
     const { withLoader } = useLoader();
     const { check } = useSecurityCheck();
+    const { mutateAsync: importPortfolio } = useImportPortfolio();
+    const { mutateAsync: generatePortfolio } = useGeneratePortfolio();
+    const { mutateAsync: changePortfolioMeta } = useChangePortfolioMeta();
 
     const startCreateFlow = useCallback(async () => {
         const passed = await check();
@@ -34,30 +35,9 @@ export function useAddWalletFlow() {
             const passed = await check();
             if (!passed) return;
 
-            const defaultMeta = {
-                name: 'Wallet 1',
-                icon: { type: 'emoji' as const, value: '🙂' }
-            };
-
-            await withLoader(() => createPortfolio(mnemonic, defaultMeta));
-
-            navigation.dispatch(
-                CommonActions.reset({
-                    index: 0,
-                    routes: [{ name: 'TabsNavigator' }]
-                })
-            );
-        },
-        [navigation, check, createPortfolio, withLoader]
-    );
-
-    const onFinishCustomize = useCallback(
-        async (meta: PortfolioMeta) => {
             await withLoader(async () => {
-                using accessor = generateBip39Accessor();
-                const mnemonic = [...accessor.value];
-
-                await createPortfolio(mnemonic, meta);
+                using accessor = new MnemonicResource(mnemonic);
+                await importPortfolio(accessor);
             });
 
             navigation.dispatch(
@@ -67,7 +47,25 @@ export function useAddWalletFlow() {
                 })
             );
         },
-        [createPortfolio, navigation, withLoader]
+        [navigation, check, importPortfolio, withLoader]
+    );
+
+    const onFinishCustomize = useCallback(
+        async (meta: PortfolioMeta) => {
+            await withLoader(async () => {
+                const portfolio = await generatePortfolio();
+
+                await changePortfolioMeta({ portfolio, meta });
+            });
+
+            navigation.dispatch(
+                CommonActions.reset({
+                    index: 0,
+                    routes: [{ name: 'TabsNavigator' }]
+                })
+            );
+        },
+        [generatePortfolio, changePortfolioMeta, navigation, withLoader]
     );
 
     return {
