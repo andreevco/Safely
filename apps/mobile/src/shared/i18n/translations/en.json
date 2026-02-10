@@ -244,7 +244,7 @@
                 "title": "Face ID",
                 "description": "Unlock securely with a glance. No\u00a0password\u00a0needed."
             },
-            "android": {
+            "other": {
                 "title": "Face recognition",
                 "description": "Use face recognition to unlock your wallet quickly and securely."
             }
@@ -254,7 +254,7 @@
                 "title": "Touch ID",
                 "description": "Unlock securely with your fingerprint. No\u00a0password\u00a0needed."
             },
-            "android": {
+            "other": {
                 "title": "Fingerprint unlock",
                 "description": "Use your fingerprint to unlock your wallet quickly and securely."
             }

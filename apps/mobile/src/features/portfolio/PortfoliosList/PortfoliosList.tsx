@@ -17,10 +17,11 @@ export const PortfoliosList = (props: PortfoliosListProps) => {
     const { mutate: setActivePortfolio } = useSetActivePortfolio();
 
     const handleSelect = (portfolio: Portfolio) => {
-        if (portfolio.id.toString() === activePortfolio.id.toString()) {
+        if (portfolio.id.isEq(activePortfolio.id)) {
             onSelect();
             return;
         }
+
         setActivePortfolio({ id: portfolio.id }, { onSuccess: onSelect });
     };
 
@@ -34,9 +35,7 @@ export const PortfoliosList = (props: PortfoliosListProps) => {
                                 <PortfolioName meta={portfolio.meta} gap={12} size={16} />
                             </Cell.Row>
                         </Cell.Content>
-                        {activePortfolio.id.toString() === portfolio.id.toString() && (
-                            <Cell.Checkmark />
-                        )}
+                        {activePortfolio.id.isEq(portfolio.id) && <Cell.Checkmark />}
                     </Cell>
                 ))}
             </List.Group>

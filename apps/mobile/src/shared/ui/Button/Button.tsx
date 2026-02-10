@@ -11,7 +11,7 @@ type ButtonProps = TouchableOpacityProps & UnistylesVariants<typeof styles>;
 export const Button = (props: ButtonProps) => {
     const { children, type = 'primary', size = 'medium', disabled, style, ...rest } = props;
 
-    styles.useVariants({ type, size, disabled: disabled ? 'true' : 'false' });
+    styles.useVariants({ type, size, disabled });
 
     return (
         <TouchableOpacity style={[styles.container, style]} disabled={disabled} {...rest}>

@@ -3,7 +3,7 @@ import { Platform } from 'react-native';
 import { BiometryType } from './useBiometry';
 
 export function getBiometryTranslationKey(type: BiometryType): string {
-    const platform = Platform.OS === 'ios' ? 'ios' : 'android';
+    const platform = Platform.OS === 'ios' ? 'ios' : 'other';
 
     if (type === BiometryType.FACE) {
         return `biometry.face.${platform}`;
