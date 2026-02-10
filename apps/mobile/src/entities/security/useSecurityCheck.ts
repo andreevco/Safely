@@ -1,6 +1,7 @@
-import { authenticateBiometry, useBiometryQuery } from '@mobile/features/biometry';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
+
+import { authenticateBiometry, useBiometryQuery } from '@mobile/features/biometry';
 
 import { PromptAndCheckOptions } from './types';
 import { passcodeQueryConfig, promptAndCheck } from './usePasscode';

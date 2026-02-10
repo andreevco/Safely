@@ -1,3 +1,10 @@
+import { useNavigation } from '@react-navigation/native';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { View } from 'react-native';
+
+import { useActivePortfolio } from '@safely/ux';
+
 import { RootStackNavigationProp, SettingsStackNavigationProp } from '@mobile/app/navigation/types';
 import { PortfolioName } from '@mobile/entities/portfolio';
 import { useSecurityCheck } from '@mobile/entities/security';
@@ -8,12 +15,6 @@ import {
 } from '@mobile/features/biometry';
 import { Cell, List, Screen, Switch } from '@mobile/shared/ui';
 import { ArrowLeft16, Icon, Switch16 } from '@mobile/shared/ui/Icon';
-import { useNavigation } from '@react-navigation/native';
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
-
-import { useActivePortfolio } from '@safely/ux';
 
 import { styles } from './SecurityScreen.styles';
 

@@ -4,9 +4,9 @@ import { toBig } from '@safely/core';
 import {
     QUERIES_STALE_TIME,
     QUERIES_REFETCH_INTERVAL,
-    usePersistQuery,
-    useBtcApi,
-    usePriceApi
+    usePersistQuery
+    // useBtcApi,
+    // usePriceApi
 } from '../../shared';
 import { useActiveFiat } from '../fiat';
 import { useActiveBtcWallet } from '../portfolio';
@@ -14,9 +14,9 @@ import { assetKeys } from './keys';
 import { getSortedAssets } from './utils';
 
 export function useAssets() {
-    const btcApi = useBtcApi();
+    // const btcApi = useBtcApi();
     const fiat = useActiveFiat();
-    const priceApi = usePriceApi();
+    // const priceApi = usePriceApi();
     const wallet = useActiveBtcWallet();
 
     return usePersistQuery<RatedCryptoAssetAmount[]>({

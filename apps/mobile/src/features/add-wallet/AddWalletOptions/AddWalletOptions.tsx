@@ -1,6 +1,7 @@
-import { Cell, List } from '@mobile/shared/ui';
 import { useTranslation } from 'react-i18next';
 import { Alert } from 'react-native';
+
+import { Cell, List } from '@mobile/shared/ui';
 
 import { useAddWalletFlow } from '../useAddWalletFlow';
 import { styles } from './AddWalletOptions.styles';

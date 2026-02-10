@@ -1,6 +1,3 @@
-import { usePasscodeState } from '@mobile/screens/PasscodeModal/hooks';
-import { PASSCODE_DIGITS } from '@mobile/shared/constants';
-import { Button, PasscodeInput, Screen, Text } from '@mobile/shared/ui';
 import { notificationAsync, NotificationFeedbackType } from 'expo-haptics';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -11,6 +8,10 @@ import Animated, {
     useAnimatedStyle,
     useSharedValue
 } from 'react-native-reanimated';
+
+import { usePasscodeState } from '@mobile/screens/PasscodeModal/hooks';
+import { PASSCODE_DIGITS } from '@mobile/shared/constants';
+import { Button, PasscodeInput, Screen, Text } from '@mobile/shared/ui';
 
 import { styles } from './PasscodeSetup.styles';
 

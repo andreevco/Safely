@@ -1,4 +1,3 @@
-import { Icon, Loader56 } from '@mobile/shared/ui/Icon';
 import { useEffect } from 'react';
 import { View } from 'react-native';
 import Animated, {
@@ -8,6 +7,8 @@ import Animated, {
     withRepeat,
     withTiming
 } from 'react-native-reanimated';
+
+import { Icon, Loader56 } from '@mobile/shared/ui/Icon';
 
 import { styles } from './CircularSpinner.styles';
 

@@ -1,3 +1,6 @@
+import { createStaticNavigation } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
 import { AccountCreatedScreen } from '@mobile/screens/AccountCreatedScreen';
 import { BiometryScreen } from '@mobile/screens/BiometryScreen';
 import { ChangePasscodeScreen } from '@mobile/screens/ChangePasscodeScreen';
@@ -11,8 +14,6 @@ import { RecoveryConfirmSheet, RecoveryPhraseSheet } from '@mobile/screens/Secur
 import { SelectAccountModal } from '@mobile/screens/SelectAccountModal';
 import { TransactionScreen } from '@mobile/screens/TransactionScreen';
 import { WelcomeScreen } from '@mobile/screens/WelcomeScreen';
-import { createStaticNavigation } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { AddWalletStack } from './stacks/AddWalletStack';
 import { SendStack } from './stacks/SendStack';

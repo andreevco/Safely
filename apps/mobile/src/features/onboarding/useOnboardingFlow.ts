@@ -1,9 +1,10 @@
-import { useSetPasscode } from '@mobile/entities/security';
-import { useLoader } from '@mobile/shared/providers/loader';
 import { CommonActions, useNavigation } from '@react-navigation/native';
 import { useCallback } from 'react';
 
 import { useGeneratePortfolio } from '@safely/ux';
+
+import { useSetPasscode } from '@mobile/entities/security';
+import { useLoader } from '@mobile/shared/providers/loader';
 
 const routes = {
     passcode: 'OnboardingPasscodeScreen',

@@ -1,3 +1,7 @@
+import React, { FC, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Platform, View } from 'react-native';
+
 import { useBiometryQuery, useSetBiometryEnabled, BiometryType } from '@mobile/features/biometry';
 import { useOnboardingFlow } from '@mobile/features/onboarding';
 import {
@@ -9,9 +13,6 @@ import {
     Screen,
     Text
 } from '@mobile/shared/ui';
-import React, { FC, useCallback, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Platform, View } from 'react-native';
 
 import { styles } from './BiometryScreen.styles';
 
