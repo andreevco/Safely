@@ -260,5 +260,14 @@
                 "cancel": "Отмена"
             }
         }
+    },
+    "importWalletScreen": {
+        "toastMessages": {
+            "importedWallet": "Кошелёк импортирован"
+        },
+        "errors": {
+            "alreadyExists": "Кошелёк уже существует",
+            "failedToGenerate": "Не удалось создать кошелёк"
+        }
     }
 }

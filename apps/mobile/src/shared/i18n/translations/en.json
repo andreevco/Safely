@@ -294,6 +294,15 @@
     "history": {
         "title": "History"
     },
+    "importWalletScreen": {
+        "toastMessages": {
+            "importedWallet": "Wallet imported"
+        },
+        "errors": {
+            "alreadyExists": "Wallet already exists",
+            "failedToGenerate": "Failed to generate wallet"
+        }
+    },
     "transaction": {
         "sent": "Sent",
         "received": "Received",
