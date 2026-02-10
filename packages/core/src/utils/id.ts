@@ -13,6 +13,7 @@ export abstract class Id {
     public abstract toString(): string;
 
     public isEq(id: Id): boolean {
+        // eslint-disable-next-line iseq/no-strict-eq-when-isEq
         return this.toString() === id.toString();
     }
 
