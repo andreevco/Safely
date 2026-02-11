@@ -15,7 +15,7 @@ const routes = {
 export function useAddWalletFlow() {
     const navigation = useNavigation();
     const { withLoader } = useLoader();
-    const { check } = useSecurityCheck();
+    const check = useSecurityCheck();
     const { mutateAsync: importPortfolio } = useImportPortfolio();
     const { mutateAsync: generatePortfolio } = useGeneratePortfolio();
     const { mutateAsync: changePortfolioMeta } = useChangePortfolioMeta();

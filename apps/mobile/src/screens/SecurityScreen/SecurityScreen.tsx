@@ -22,7 +22,7 @@ export const SecurityScreen = () => {
     const { t } = useTranslation();
     const { data: biometry } = useBiometryQuery();
     const { mutateAsync: setBiometryEnabled } = useSetBiometryEnabled();
-    const { check } = useSecurityCheck();
+    const check = useSecurityCheck();
     const portfolio = useActivePortfolio();
     const navigation = useNavigation<SettingsStackNavigationProp>();
     const rootNavigation = useNavigation<RootStackNavigationProp>();

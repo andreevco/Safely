@@ -2,13 +2,13 @@ import { useNavigation } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { useSetPasscode } from '@mobile/entities/security';
+import { usePasscode } from '@mobile/entities/security';
 import { PasscodeSetup } from '@mobile/shared/ui';
 
 export const ChangePasscodeScreen = () => {
     const { t } = useTranslation();
     const navigation = useNavigation();
-    const { mutateAsync: setPasscode } = useSetPasscode();
+    const { set: setPasscode } = usePasscode();
 
     const handleComplete = useCallback(
         async (newPasscode: string) => {

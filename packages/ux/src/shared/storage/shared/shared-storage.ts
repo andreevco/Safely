@@ -4,6 +4,7 @@ import z, { ZodType } from 'zod';
 import { IStorage } from '@safely/core';
 
 import { sharedStorageStructure, SharedStorageStructure } from './schemas';
+import { useAppSdk } from '../../providers';
 import { useStorageFactory } from '../storage-factory';
 
 export function useSharedStructuredStorage<K extends keyof SharedStorageStructure>(key: K) {
@@ -37,6 +38,13 @@ export function useSharedUnstructuredStorage<T extends ZodType>(key: string, sch
     const sharedStorage = storageFactory.shared.child('unstructured');
 
     return _useSharedUnstructuredStorage(key, scheme, sharedStorage);
+}
+
+export function useSharedUnstructuredKeychainStorage<T extends ZodType>(key: string, scheme: T) {
+    const sdk = useAppSdk();
+    const keychainStorage = sdk.keychain.child('unstructured');
+
+    return _useSharedUnstructuredStorage(key, scheme, keychainStorage);
 }
 
 function _useSharedUnstructuredStorage<T extends ZodType>(

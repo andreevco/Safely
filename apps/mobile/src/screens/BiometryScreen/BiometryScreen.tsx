@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useMemo } from 'react';
+import React, { FC, useCallback, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Platform, View } from 'react-native';
 
@@ -21,6 +21,12 @@ export const BiometryScreen = () => {
     const { data: biometry, isLoading } = useBiometryQuery();
     const { mutateAsync: setBiometryEnabled } = useSetBiometryEnabled();
 
+    useEffect(() => {
+        if (biometry?.availableType === null) {
+            onBiometryFinished();
+        }
+    }, [biometry?.availableType, onBiometryFinished]);
+
     if (isLoading || !biometry) {
         return (
             <Screen>
@@ -33,8 +39,6 @@ export const BiometryScreen = () => {
     }
 
     if (biometry.availableType === null) {
-        onBiometryFinished();
-
         return null;
     }
 

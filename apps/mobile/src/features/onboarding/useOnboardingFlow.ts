@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 
 import { useGeneratePortfolio } from '@safely/ux';
 
-import { useSetPasscode } from '@mobile/entities/security';
+import { usePasscode } from '@mobile/entities/security';
 import { useLoader } from '@mobile/shared/providers/loader';
 
 const routes = {
@@ -16,7 +16,7 @@ const routes = {
 export function useOnboardingFlow() {
     const navigation = useNavigation();
     const { mutateAsync: generatePortfolio } = useGeneratePortfolio();
-    const { mutateAsync: setPasscode } = useSetPasscode();
+    const { set: setPasscode } = usePasscode();
     const { withLoader } = useLoader();
 
     const onStartCreate = useCallback(() => {

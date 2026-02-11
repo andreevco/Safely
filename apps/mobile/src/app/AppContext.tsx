@@ -1,6 +1,6 @@
 import { getLocales } from 'expo-localization';
 import i18next from 'i18next';
-import { FC, PropsWithChildren, useEffect, useMemo } from 'react';
+import { FC, PropsWithChildren, Suspense, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { IAppSdk } from '@safely/core';
@@ -20,6 +20,7 @@ let securityCheck: () => Promise<void> = () => {
 const sdk: IAppSdk = {
     numberFormatLocale,
     storage: createMMKVTreeStorage('app').storage,
+    keychain: createMMKVTreeStorage('keychain').storage,
     secretEncryptor: {
         decryptSecret: async (val: string) => {
             await sdk.security.check();
@@ -61,17 +62,20 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
 
     return (
         <AppContext value={appContext}>
-            <SecurityCheckProvider>{children}</SecurityCheckProvider>
+            <Suspense fallback={null}>
+                <SecurityCheckInitializer />
+            </Suspense>
+            {children}
         </AppContext>
     );
 };
 
-const SecurityCheckProvider: FC<PropsWithChildren> = ({ children }) => {
+const SecurityCheckInitializer: FC = () => {
     const check = useSecurityCheck();
 
     useEffect(() => {
-        securityCheck = check.check;
-    }, [check.check]);
+        securityCheck = check;
+    }, [check]);
 
-    return children;
+    return null;
 };

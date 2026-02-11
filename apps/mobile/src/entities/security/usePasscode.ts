@@ -1,68 +1,114 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import * as SecureStore from 'expo-secure-store';
+import { useQueryClient } from '@tanstack/react-query';
+import { useCallback } from 'react';
+import z from 'zod';
+
+import { useSharedUnstructuredKeychainStorage, useSuspenseQuery } from '@safely/ux';
 
 import { navigationRef } from '@mobile/app/navigation/navigationRef';
 
 import { passcodeKeys } from './keys';
 import { PromptAndCheckOptions } from './types';
 
-const PASSCODE_KEY = 'passcode';
+export type UsePasscodeResult =
+    | {
+          isSet: true;
+          passcodeLength: number;
+          set: (passcode: string) => Promise<void>;
+          remove: () => Promise<void>;
+          validate: (input: string) => Promise<boolean>;
+          promptAndCheck: (options?: PromptAndCheckOptions) => Promise<void>;
+      }
+    | {
+          isSet: false;
+          passcodeLength?: undefined;
+          validate?: undefined;
+          remove?: undefined;
+          promptAndCheck?: undefined;
+          set: (input: string) => Promise<void>;
+      };
 
-export const passcodeQueryConfig = {
-    queryKey: passcodeKeys.state.toKey(),
-    queryFn: async () => {
-        const stored = await SecureStore.getItemAsync(PASSCODE_KEY);
-        return stored?.length ?? null;
-    },
-    staleTime: Infinity
-};
+const sPasscode = z.string();
 
-export function usePasscodeQuery() {
-    return useQuery(passcodeQueryConfig);
-}
+export function usePasscode(): UsePasscodeResult {
+    const client = useQueryClient();
+    const {
+        get: storageGet,
+        set: storageSet,
+        remove: storageRemove
+    } = useSharedUnstructuredKeychainStorage('passcode', sPasscode);
 
-export function useSetPasscode() {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: async (passcode: string) => {
-            await SecureStore.setItemAsync(PASSCODE_KEY, passcode);
-        },
-        async onSuccess() {
-            await queryClient.invalidateQueries({ queryKey: passcodeKeys.state.toKey() });
+    const passcodeQuery = useSuspenseQuery({
+        queryKey: passcodeKeys.state.toKey(),
+        async queryFn() {
+            const passcode = await storageGet();
+
+            if (passcode === null) {
+                return {
+                    isSet: false
+                } as const;
+            } else {
+                return {
+                    isSet: true,
+                    passcodeLength: passcode.length
+                } as const;
+            }
         }
     });
-}
 
-export function useRemovePasscode() {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: async () => {
-            await SecureStore.deleteItemAsync(PASSCODE_KEY);
+    const validate = useCallback(
+        async (input: string) => {
+            const passcode = await storageGet();
+
+            if (passcode === null) {
+                throw new Error('Can not validate passcode that is not set.');
+            }
+
+            return passcode === input;
         },
-        async onSuccess() {
-            await queryClient.invalidateQueries({ queryKey: passcodeKeys.state.toKey() });
-        }
-    });
-}
+        [storageGet]
+    );
 
-export async function validatePasscode(passcode: string): Promise<boolean> {
-    const stored = await SecureStore.getItemAsync(PASSCODE_KEY);
-    if (stored === null) {
-        throw new Error('Cannot validate passcode that is not set');
-    }
-    return stored === passcode;
-}
+    const promptAndCheck = useCallback(
+        (options?: PromptAndCheckOptions): Promise<void> =>
+            new Promise<void>((resolve, reject) => {
+                navigationRef.current?.navigate('PasscodeVerificationModal', {
+                    onSuccess: resolve,
+                    onClose: reject,
+                    title: options?.title
+                });
+            }),
+        []
+    );
 
-export function promptAndCheck(options?: PromptAndCheckOptions): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
-        if (navigationRef.current) {
-            navigationRef.current.navigate('PasscodeVerificationModal', {
-                onSuccess: resolve,
-                onClose: reject,
-                title: options?.title
+    const set = useCallback(
+        async (input: string) => {
+            await storageSet(input);
+            await client.invalidateQueries({
+                queryKey: passcodeKeys.state.toKey()
             });
-        } else {
-            reject(new Error('Navigation not ready'));
-        }
-    });
+        },
+        [client, storageSet]
+    );
+
+    const remove = useCallback(async () => {
+        await storageRemove();
+        await client.invalidateQueries({
+            queryKey: passcodeKeys.state.toKey()
+        });
+    }, [client, storageRemove]);
+
+    if (passcodeQuery.data.isSet) {
+        return {
+            set,
+            remove,
+            validate,
+            promptAndCheck,
+            ...passcodeQuery.data
+        };
+    } else {
+        return {
+            set,
+            isSet: false
+        };
+    }
 }

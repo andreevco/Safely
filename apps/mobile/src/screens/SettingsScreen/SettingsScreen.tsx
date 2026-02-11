@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Alert, View } from 'react-native';
 
 import { RootStackNavigationProp, SettingsStackNavigationProp } from '@mobile/app/navigation/types';
-import { useRemovePasscode, useSecurityCheck } from '@mobile/entities/security';
+import { usePasscode, useSecurityCheck } from '@mobile/entities/security';
 import { clearAllAppData } from '@mobile/shared/storage/mmkv';
 import { Cell, List, Screen, Text } from '@mobile/shared/ui';
 
@@ -45,8 +45,8 @@ export const SettingsScreen = () => {
     const queryClient = useQueryClient();
     const navigation = useNavigation<SettingsStackNavigationProp>();
     const rootNavigation = useNavigation<RootStackNavigationProp>();
-    const { check } = useSecurityCheck();
-    const { mutateAsync: removePasscode } = useRemovePasscode();
+    const check = useSecurityCheck();
+    const passcode = usePasscode();
 
     const handleItemPress = (key: string) => {
         if (key === 'language') {
@@ -72,7 +72,11 @@ export const SettingsScreen = () => {
             });
             await new Promise(resolve => setTimeout(resolve, 100));
             clearAllAppData();
-            await removePasscode();
+
+            if (passcode.isSet) {
+                await passcode.remove();
+            }
+
             queryClient.clear();
         }
     });
