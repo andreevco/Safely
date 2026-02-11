@@ -1,11 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as LocalAuthentication from 'expo-local-authentication';
+import z from 'zod';
 
-import { mmkvStorage } from '@mobile/shared/storage/mmkv';
+import { useSharedUnstructuredStorage } from '@safely/ux';
 
 import { biometryKeys } from './keys';
 
-const BIOMETRY_ENABLED_KEY = 'biometry_enabled';
+const sBiometryEnabled = z.boolean();
 
 export enum BiometryType {
     FACE = 'face',
@@ -37,22 +38,14 @@ async function getAvailableBiometryType(): Promise<BiometryType | null> {
     }
 }
 
-function getStoredEnabled(): boolean {
-    const raw = mmkvStorage.getItem(BIOMETRY_ENABLED_KEY);
-    if (raw === null) return false;
-    try {
-        return JSON.parse(raw) === true;
-    } catch {
-        return false;
-    }
-}
-
 export function useBiometryQuery() {
+    const { get: storageGet } = useSharedUnstructuredStorage('biometry_enabled', sBiometryEnabled);
+
     return useQuery({
         queryKey: biometryKeys.state.toKey(),
         queryFn: async () => {
             const availableType = await getAvailableBiometryType();
-            const isEnabled = availableType !== null ? getStoredEnabled() : false;
+            const isEnabled = availableType !== null ? Boolean(await storageGet()) : false;
             return { availableType, isEnabled };
         },
         staleTime: Infinity
@@ -61,13 +54,15 @@ export function useBiometryQuery() {
 
 export function useSetBiometryEnabled() {
     const queryClient = useQueryClient();
+    const { set: storageSet } = useSharedUnstructuredStorage('biometry_enabled', sBiometryEnabled);
+
     return useMutation({
         mutationFn: async (enabled: boolean) => {
             const result = await LocalAuthentication.authenticateAsync();
             if (!result.success) {
                 throw new Error('Authentication failed');
             }
-            mmkvStorage.setItem(BIOMETRY_ENABLED_KEY, JSON.stringify(enabled));
+            await storageSet(enabled);
         },
         async onSuccess() {
             await queryClient.invalidateQueries({ queryKey: biometryKeys.state.toKey() });
