@@ -1,3 +1,4 @@
+import { StaticScreenProps } from '@react-navigation/native';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Keyboard } from 'react-native';
@@ -9,7 +10,12 @@ import { WalletIcon } from './constants';
 import { CustomizeWalletContent } from './CustomizeWalletContent';
 import { styles } from './CustomizeWalletModal.styles';
 
-export const CustomizeWalletModal = () => {
+type CustomizeWalletModalProps = StaticScreenProps<{
+    isImport: boolean;
+}>;
+
+export const CustomizeWalletModal = (props: CustomizeWalletModalProps) => {
+    const { isImport } = props.route.params;
     const { t } = useTranslation();
     const { onFinishCustomize } = useAddWalletFlow();
 
@@ -18,11 +24,14 @@ export const CustomizeWalletModal = () => {
 
     const handleSave = useCallback(() => {
         Keyboard.dismiss();
-        onFinishCustomize({
-            name: walletName.trim(),
-            icon: selectedIcon
-        });
-    }, [walletName, selectedIcon, onFinishCustomize]);
+        void onFinishCustomize(
+            {
+                name: walletName.trim(),
+                icon: selectedIcon
+            },
+            isImport
+        );
+    }, [walletName, selectedIcon, onFinishCustomize, isImport]);
 
     const isNameValid = walletName.trim().length > 0;
 

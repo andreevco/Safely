@@ -203,7 +203,7 @@ const ContractInfoSchema = z.looseObject({
 const TokenSchema = z.looseObject({
     /** @deprecated: Use standard instead. */
     type: tokenStandardEnum,
-    standard: tokenStandardEnum,
+    standard: tokenStandardEnum.optional(),
     /** Readable name of the token. */
     name: z.string(),
     /** Derivation path if this token is derived from an XPUB-based address. */
