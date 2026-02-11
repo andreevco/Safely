@@ -317,7 +317,7 @@ describe('Extended tests for portfolio operations (Bitcoin)', () => {
         const mnemonic =
             'ivory trouble wheat next depart dove choice easily enroll suffer lawsuit lend'.split(
                 ' '
-            )
+            );
         const portfolioName = 'BTC Testnet Portfolio';
 
         const portfolio = await portfolioFactory.generatePortfolio(
@@ -418,7 +418,8 @@ describe('Negative scenarios (Bitcoin)', () => {
     });
 
     it('rejects shortened mnemonic and produces no portfolio', async () => {
-        const invalidMnemonic = 'wonder enlist rival minute truck melody area person regret foam whip night'.split(' ');
+        const invalidMnemonic =
+            'wonder enlist rival minute truck melody area person regret foam whip night'.split(' ');
         const portfolioName = 'Short mnemonic';
         const portfolio = await portfolioFactory.generatePortfolio(
             new ClosableMnemonicAccessorVault(invalidMnemonic),
