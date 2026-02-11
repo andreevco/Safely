@@ -38,6 +38,16 @@ export const hasPortfolioInStorage = (): boolean => {
     return value !== undefined && value !== null;
 };
 
+export const getStoredLocale = (): string | null => {
+    const value = createMMKV({ id: 'app' }).getString('_data..app..shared..unstructured..locale');
+
+    if (value === undefined || value === null) {
+        return null;
+    }
+
+    return JSON.parse(value) as string;
+};
+
 export function clearAllAppData() {
     createMMKV({ id: 'app' }).clearAll();
     createMMKV({ id: 'persister' }).clearAll();
