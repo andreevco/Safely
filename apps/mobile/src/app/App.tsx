@@ -8,17 +8,20 @@ import { useUnistyles } from 'react-native-unistyles';
 
 import { createPersister, QueryProvider } from '@safely/ux';
 
-import { MockTempWalletProvider } from '@mobile/app/MockTempWalletProvider';
+import { LoaderProvider } from '@mobile/shared/providers/loader';
 import { ToastProvider, ToastServiceProvider } from '@mobile/shared/providers/toast';
 import { createMMKVTreeStorage } from '@mobile/shared/storage/mmkv';
 
 import { AppContextProvider } from './AppContext';
 import Navigation from './navigation';
+import { navigationRef } from './navigation/navigationRef';
+import { useInitialNavigationState } from './navigation/useInitialNavigationState';
 
 const persister = createPersister(createMMKVTreeStorage('persister').storage);
 
 export const App = () => {
     const { theme } = useUnistyles();
+    const initialState = useInitialNavigationState();
 
     const NavigationTheme: Theme = useMemo(
         () => ({
@@ -42,14 +45,15 @@ export const App = () => {
                     <QueryProvider persister={persister}>
                         <ToastServiceProvider>
                             <AppContextProvider>
-                                <MockTempWalletProvider>
+                                <LoaderProvider>
                                     <Navigation
+                                        ref={navigationRef}
+                                        initialState={initialState}
                                         onReady={() => SplashScreen.hideAsync()}
                                         theme={NavigationTheme}
                                     />
-
                                     <ToastProvider />
-                                </MockTempWalletProvider>
+                                </LoaderProvider>
                             </AppContextProvider>
                         </ToastServiceProvider>
                     </QueryProvider>

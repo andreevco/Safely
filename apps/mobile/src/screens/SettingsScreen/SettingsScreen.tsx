@@ -1,9 +1,12 @@
 import { useNavigation } from '@react-navigation/native';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
+import { Alert, View } from 'react-native';
 
-import { SettingsStackNavigationProp } from '@mobile/app/navigation/types';
-import { Cell, List, Screen } from '@mobile/shared/ui';
+import { RootStackNavigationProp, SettingsStackNavigationProp } from '@mobile/app/navigation/types';
+import { usePasscode, useSecurityCheck } from '@mobile/entities/security';
+import { clearAllAppData } from '@mobile/shared/storage/mmkv';
+import { Cell, List, Screen, Text } from '@mobile/shared/ui';
 
 import { styles } from './SettingsScreen.styles';
 
@@ -39,7 +42,11 @@ const groups: SettingsGroup[] = [
 
 export const SettingsScreen = () => {
     const { t } = useTranslation();
+    const queryClient = useQueryClient();
     const navigation = useNavigation<SettingsStackNavigationProp>();
+    const rootNavigation = useNavigation<RootStackNavigationProp>();
+    const check = useSecurityCheck();
+    const passcode = usePasscode();
 
     const handleItemPress = (key: string) => {
         if (key === 'language') {
@@ -53,6 +60,36 @@ export const SettingsScreen = () => {
         if (key === 'security') {
             navigation.navigate('SecurityModal');
         }
+    };
+
+    const { mutate: signOut } = useMutation({
+        async mutationFn() {
+            await check();
+
+            rootNavigation.reset({
+                index: 0,
+                routes: [{ name: 'WelcomeScreen' }]
+            });
+            await new Promise(resolve => setTimeout(resolve, 100));
+            clearAllAppData();
+
+            if (passcode.isSet) {
+                await passcode.remove();
+            }
+
+            queryClient.clear();
+        }
+    });
+
+    const handleSignOut = () => {
+        Alert.alert(t('settings.signOut.confirm.title'), t('settings.signOut.confirm.message'), [
+            { text: t('settings.signOut.confirm.cancel'), style: 'cancel' },
+            {
+                text: t('settings.signOut.confirm.confirm'),
+                style: 'destructive',
+                onPress: () => signOut()
+            }
+        ]);
     };
 
     return (
@@ -84,6 +121,19 @@ export const SettingsScreen = () => {
                         </List.Group>
                     </List>
                 ))}
+                <List>
+                    <List.Group variant="divided" style={styles.signOutGroup}>
+                        <Cell style={styles.signOutCell} onPress={handleSignOut}>
+                            <Cell.Content>
+                                <Cell.Row>
+                                    <Text variant="labelL" style={styles.signOutText}>
+                                        {t('settings.signOut.title')}
+                                    </Text>
+                                </Cell.Row>
+                            </Cell.Content>
+                        </Cell>
+                    </List.Group>
+                </List>
             </Screen.Scrollable>
         </Screen>
     );

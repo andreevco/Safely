@@ -1,12 +1,24 @@
 import { z } from 'zod';
 
-import { bootConfigSchema } from '@safely/core';
+import { bootConfigSchema, sCryptoAssetAmount } from '@safely/core';
 import { sRatedCryptoAssetAmountArray } from '@safely/core';
+
+const sActivityItem = z.object({
+    timestamp: z.number(),
+    key: z.string(),
+    transaction: z.object({
+        isInitiator: z.boolean(),
+        fromAddress: z.string(),
+        toAddress: z.string(),
+        value: sCryptoAssetAmount,
+        raw: z.unknown()
+    })
+});
 
 const sInfiniteActivityData = z.object({
     pages: z.array(
         z.object({
-            items: z.array(z.unknown()),
+            items: z.array(sActivityItem),
             hasNextPage: z.boolean()
         })
     ),

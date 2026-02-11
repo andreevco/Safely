@@ -367,7 +367,8 @@ export function useSetActivePortfolio() {
 }
 
 export function useChangePortfolioMeta() {
-    const portfolios = usePortfolios();
+    const client = useQueryClient();
+    const portfoliosQuery = usePortfoliosQueryConfig();
     const { mutateAsync } = useSetPortfolios();
 
     return useMutation<
@@ -376,6 +377,7 @@ export function useChangePortfolioMeta() {
         { portfolio: { id: IPortfolioId }; meta: Partial<PortfolioMeta> }
     >({
         async mutationFn({ portfolio: { id }, meta }) {
+            const portfolios: Portfolio[] = await client.ensureQueryData(portfoliosQuery);
             const portfolio = portfolios.find(p => p.id.isEq(id));
             if (!portfolio) {
                 throw new Error('Portfolio not found');

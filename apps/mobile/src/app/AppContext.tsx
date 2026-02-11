@@ -1,22 +1,29 @@
 import { getLocales } from 'expo-localization';
 import i18next from 'i18next';
-import { FC, PropsWithChildren, useMemo } from 'react';
+import { FC, PropsWithChildren, Suspense, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { IAppSdk } from '@safely/core';
 import { AppContext, IAppContext } from '@safely/ux';
 
+import { useSecurityCheck } from '@mobile/entities/security';
 import { useToastServiceContext } from '@mobile/shared/providers/toast';
 import { createMMKVTreeStorage } from '@mobile/shared/storage/mmkv';
 import { MobileNumberFormatLocale } from '@mobile/shared/utils';
 
 const numberFormatLocale = new MobileNumberFormatLocale(getLocales()[0]);
 
+let securityCheck: () => Promise<void> = () => {
+    throw new Error('Security check not initialized');
+};
+
 const sdk: IAppSdk = {
     numberFormatLocale,
     storage: createMMKVTreeStorage('app').storage,
+    keychain: createMMKVTreeStorage('keychain').storage,
     secretEncryptor: {
         decryptSecret: async (val: string) => {
+            await sdk.security.check();
             return val; // TODO implement
         },
         encryptSecret: async (val: string) => {
@@ -29,9 +36,7 @@ const sdk: IAppSdk = {
         }
     },
     security: {
-        check: async () => {
-            throw new Error('Not implemented');
-        }
+        check: () => securityCheck()
     }
 };
 
@@ -55,5 +60,22 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
         [t, service]
     );
 
-    return <AppContext value={appContext}>{children}</AppContext>;
+    return (
+        <AppContext value={appContext}>
+            <Suspense fallback={null}>
+                <SecurityCheckInitializer />
+            </Suspense>
+            {children}
+        </AppContext>
+    );
+};
+
+const SecurityCheckInitializer: FC = () => {
+    const check = useSecurityCheck();
+
+    useEffect(() => {
+        securityCheck = check;
+    }, [check]);
+
+    return null;
 };

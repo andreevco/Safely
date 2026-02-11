@@ -5,6 +5,7 @@ export {
     isFiatAssetAmount,
     type RatedCryptoAssetAmount,
     type RatedCryptoAssetAmountArray,
+    sCryptoAssetAmount,
     sRatedCryptoAssetAmount,
     sRatedCryptoAssetAmountArray
 } from './asset-amount';

@@ -1,45 +1,35 @@
-import { useNavigation } from '@react-navigation/native';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { TextInput, View } from 'react-native';
-import { useUnistyles } from 'react-native-unistyles';
+import { Keyboard } from 'react-native';
 
-import { Button, ColorPicker, EmojiPicker, Screen, Text } from '@mobile/shared/ui';
+import { useAddWalletFlow } from '@mobile/features/add-wallet';
+import { Button, Screen } from '@mobile/shared/ui';
 
-import { WALLET_COLORS, WALLET_EMOJIS, WalletIcon } from './constants';
+import { WalletIcon } from './constants';
+import { CustomizeWalletContent } from './CustomizeWalletContent';
 import { styles } from './CustomizeWalletModal.styles';
 
 export const CustomizeWalletModal = () => {
     const { t } = useTranslation();
-    const { theme } = useUnistyles();
-    const navigation = useNavigation();
+    const { onFinishCustomize } = useAddWalletFlow();
 
     const [walletName, setWalletName] = useState('');
     const [selectedIcon, setSelectedIcon] = useState<WalletIcon>({ type: 'emoji', value: '🙂' });
 
     const handleSave = useCallback(() => {
-        // TODO: Implement save logic
-        navigation.goBack();
-    }, [navigation]);
+        Keyboard.dismiss();
+        onFinishCustomize({
+            name: walletName.trim(),
+            icon: selectedIcon
+        });
+    }, [walletName, selectedIcon, onFinishCustomize]);
 
     const isNameValid = walletName.trim().length > 0;
-
-    const iconDisplay = useMemo(() => {
-        if (selectedIcon.type === 'emoji') {
-            return <Text style={styles.inputEmoji}>{selectedIcon.value}</Text>;
-        }
-
-        if (selectedIcon.type === 'color') {
-            return <View style={[styles.colorDot, { backgroundColor: selectedIcon.value }]} />;
-        }
-
-        return null;
-    }, [selectedIcon]);
 
     return (
         <Screen>
             <Screen.Header variant="left">
-                <Screen.Header.CloseButton />
+                <Screen.Header.BackButton />
                 <Button
                     type="primary"
                     size="small"
@@ -51,42 +41,14 @@ export const CustomizeWalletModal = () => {
                 </Button>
             </Screen.Header>
             <Screen.Content>
-                <View style={styles.content}>
-                    <View style={styles.textContainer}>
-                        <Text textAlign="center" variant="titleL">
-                            {t('customizeWallet.title')}
-                        </Text>
-                        <Text textAlign="center" variant="bodyL" color="secondary">
-                            {t('customizeWallet.description')}
-                        </Text>
-                    </View>
-
-                    <View style={styles.inputContainer}>
-                        <View style={styles.inputWrapper}>
-                            <TextInput
-                                value={walletName}
-                                onChangeText={setWalletName}
-                                placeholder={t('customizeWallet.namePlaceholder')}
-                                placeholderTextColor={theme.colors.text.tertiary}
-                                style={[styles.input, { color: theme.colors.text.primary }]}
-                            />
-                            {iconDisplay && <View style={styles.iconContainer}>{iconDisplay}</View>}
-                        </View>
-                    </View>
-
-                    <ColorPicker
-                        colors={WALLET_COLORS}
-                        selectedColor={
-                            selectedIcon.type === 'color' ? selectedIcon.value : undefined
-                        }
-                        onColorSelect={color => setSelectedIcon({ type: 'color', value: color })}
-                    />
-
-                    <EmojiPicker
-                        emojis={WALLET_EMOJIS}
-                        onEmojiSelect={emoji => setSelectedIcon({ type: 'emoji', value: emoji })}
-                    />
-                </View>
+                <CustomizeWalletContent
+                    title={t('customizeWallet.title')}
+                    description={t('customizeWallet.description')}
+                    walletName={walletName}
+                    onWalletNameChange={setWalletName}
+                    selectedIcon={selectedIcon}
+                    onIconChange={setSelectedIcon}
+                />
             </Screen.Content>
         </Screen>
     );

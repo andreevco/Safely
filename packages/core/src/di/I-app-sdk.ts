@@ -7,6 +7,8 @@ import { NumberFormatLocale } from '../utils';
 export interface IAppSdk {
     storage: ITreeStorage;
 
+    keychain: ITreeStorage;
+
     secretEncryptor: ISecretEncryptor;
 
     qrScanner: QrScanner;

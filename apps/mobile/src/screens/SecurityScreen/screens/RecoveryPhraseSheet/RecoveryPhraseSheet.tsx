@@ -1,3 +1,5 @@
+import { StaticScreenProps } from '@react-navigation/native';
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
@@ -7,81 +9,22 @@ import { useCopy } from '@mobile/shared/utils/copy';
 
 import { styles } from './RecoveryPhraseSheet.styles';
 
-// TODO: Replace with actual phrase from wallet
-const MOCK_PHRASE = [
-    'abandon',
-    'ability',
-    'able',
-    'about',
-    'above',
-    'absent',
-    'absorb',
-    'abstract',
-    'absurd',
-    'abuse',
-    'access',
-    'accident'
-];
+type RecoveryPhraseSheetProps = StaticScreenProps<{
+    mnemonic: string[];
+}>;
 
-const RecoveryPhraseContent = () => {
+export const RecoveryPhraseSheet = (props: RecoveryPhraseSheetProps) => {
     const { t } = useTranslation();
     const copy = useCopy();
+    const phrase = props.route.params.mnemonic;
 
-    const halfLength = Math.ceil(MOCK_PHRASE.length / 2);
-    const leftColumn = MOCK_PHRASE.slice(0, halfLength);
-    const rightColumn = MOCK_PHRASE.slice(halfLength);
+    const halfLength = Math.ceil(phrase.length / 2);
+    const leftColumn = phrase.slice(0, halfLength);
+    const rightColumn = phrase.slice(halfLength);
 
-    const handleCopy = () => {
-        copy(MOCK_PHRASE.join(' '));
-    };
-
-    return (
-        <View style={styles.content}>
-            <View style={styles.banner}>
-                <Text variant="bodyM" style={styles.bannerText}>
-                    {t('security.phraseSheet.warning')}
-                </Text>
-                <Icon icon={ExclamationmarkCircle16} style={styles.bannerIcon} />
-            </View>
-
-            <View style={styles.wordsContainer}>
-                <View style={styles.column}>
-                    {leftColumn.map((word, i) => (
-                        <WordCell
-                            key={i}
-                            index={i + 1}
-                            word={word}
-                            params={{
-                                isLast: i === leftColumn.length - 1,
-                                isRightColumn: false
-                            }}
-                        />
-                    ))}
-                </View>
-                <View style={styles.column}>
-                    {rightColumn.map((word, i) => (
-                        <WordCell
-                            key={i}
-                            index={halfLength + i + 1}
-                            word={word}
-                            params={{
-                                isLast: i === rightColumn.length - 1,
-                                isRightColumn: true
-                            }}
-                        />
-                    ))}
-                </View>
-            </View>
-
-            <Button type="secondary" size="small" style={styles.copyButton} onPress={handleCopy}>
-                {t('security.phraseSheet.copy')}
-            </Button>
-        </View>
-    );
-};
-
-export const RecoveryPhraseSheet = () => {
-    const { t } = useTranslation();
+    const handleCopy = useCallback(() => {
+        copy(phrase.join(' '));
+    }, [copy, phrase]);
 
     return (
         <Screen>
@@ -90,7 +33,52 @@ export const RecoveryPhraseSheet = () => {
                 <Screen.Header.CloseButton />
             </Screen.Header>
             <Screen.Content>
-                <RecoveryPhraseContent />
+                <View style={styles.content}>
+                    <View style={styles.banner}>
+                        <Text variant="bodyM" style={styles.bannerText}>
+                            {t('security.phraseSheet.warning')}
+                        </Text>
+                        <Icon icon={ExclamationmarkCircle16} style={styles.bannerIcon} />
+                    </View>
+
+                    <View style={styles.wordsContainer}>
+                        <View style={styles.column}>
+                            {leftColumn.map((word, i) => (
+                                <WordCell
+                                    key={i}
+                                    index={i + 1}
+                                    word={word}
+                                    params={{
+                                        isLast: i === leftColumn.length - 1,
+                                        isRightColumn: false
+                                    }}
+                                />
+                            ))}
+                        </View>
+                        <View style={styles.column}>
+                            {rightColumn.map((word, i) => (
+                                <WordCell
+                                    key={i}
+                                    index={halfLength + i + 1}
+                                    word={word}
+                                    params={{
+                                        isLast: i === rightColumn.length - 1,
+                                        isRightColumn: true
+                                    }}
+                                />
+                            ))}
+                        </View>
+                    </View>
+
+                    <Button
+                        type="secondary"
+                        size="small"
+                        style={styles.copyButton}
+                        onPress={handleCopy}
+                    >
+                        {t('security.phraseSheet.copy')}
+                    </Button>
+                </View>
             </Screen.Content>
         </Screen>
     );
