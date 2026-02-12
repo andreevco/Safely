@@ -22,24 +22,9 @@ export function createMMKVTreeStorage(id: string) {
     };
 }
 
-const mmkv = createMMKV({ id: 'default' });
-
-export const mmkvStorage = {
-    getItem: (key: string) => mmkv.getString(key) ?? null,
-    setItem: (key: string, value: string) => mmkv.set(key, value),
-    removeItem: (key: string) => {
-        mmkv.remove(key);
-    }
-};
-
-export const hasPortfolioInStorage = (): boolean => {
-    const value = createMMKV({ id: 'app' }).getString('_data..mock-accounts..portfolios');
-
-    return value !== undefined && value !== null;
-};
-
 export const getStoredLocale = (): string | null => {
-    const value = createMMKV({ id: 'app' }).getString('_data..app..shared..unstructured..locale');
+    const key = TreeStorage.buildKey(['app', 'shared', 'unstructured'], 'locale');
+    const value = createMMKV({ id: 'app' }).getString(key);
 
     if (value === undefined || value === null) {
         return null;
@@ -51,5 +36,4 @@ export const getStoredLocale = (): string | null => {
 export function clearAllAppData() {
     createMMKV({ id: 'app' }).clearAll();
     createMMKV({ id: 'persister' }).clearAll();
-    mmkv.clearAll();
 }

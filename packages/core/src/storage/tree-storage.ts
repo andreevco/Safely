@@ -1,8 +1,19 @@
-import { IEnumerableStorage, ITreeStorage } from '../di/I-storage';
+import { IEnumerableStorage, ITreeStorage } from '../di';
+
+const SEPARATOR = '..';
 
 export class TreeStorage implements ITreeStorage {
+    private readonly separator = SEPARATOR;
+
     public static root(storage: IEnumerableStorage) {
         return new TreeStorage([], storage);
+    }
+
+    public static buildKey(path: string[], key: string): string {
+        const fullPath = [...path, key];
+        const serialized = fullPath.map(i => i.replaceAll(SEPARATOR, '_')).join(SEPARATOR);
+
+        return `_data${SEPARATOR}${serialized}`;
     }
 
     constructor(
@@ -10,8 +21,6 @@ export class TreeStorage implements ITreeStorage {
         private readonly storage: IEnumerableStorage,
         public parent: TreeStorage | null = null
     ) {}
-
-    private readonly separator = '..';
 
     private dataKey(key?: string): string {
         const path = key === undefined ? this.path : [...this.path, key];
