@@ -1,25 +1,24 @@
 import { NavigationContainerProps } from '@react-navigation/native';
-import { useRef } from 'react';
+import { createMMKV } from 'react-native-mmkv';
 
-import { useHasAccount } from '@safely/ux';
-
-import { usePasscode } from '@mobile/entities/security';
+import { TreeStorage } from '@safely/core';
 
 export function useInitialNavigationState(): NavigationContainerProps['initialState'] {
-    const passcode = usePasscode();
-    const hasAccount = useHasAccount();
+    const hasPortfolio =
+        createMMKV({ id: 'app' }).getString(
+            TreeStorage.buildKey(['mock-accounts'], 'portfolios')
+        ) !== undefined;
 
-    const ref = useRef(
-        (() => {
-            if (!passcode.isSet || !hasAccount) {
-                return {
-                    routes: [{ name: 'WelcomeScreen' as const }]
-                };
-            }
+    const hasPasscode =
+        createMMKV({ id: 'keychain' }).getString(
+            TreeStorage.buildKey(['unstructured'], 'passcode')
+        ) !== undefined;
 
-            return undefined;
-        })()
-    );
+    if (!hasPasscode || !hasPortfolio) {
+        return {
+            routes: [{ name: 'WelcomeScreen' as const }]
+        };
+    }
 
-    return ref.current;
+    return undefined;
 }
