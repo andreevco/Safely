@@ -43,6 +43,12 @@ export const styles = StyleSheet.create(theme => ({
                 overlay: {
                     backgroundColor: theme.colors.other.constant.white
                 }
+            },
+            disabled: {
+                true: {
+                    opacity: 0.64
+                },
+                false: {}
             }
         },
         text: {

@@ -18,8 +18,13 @@ import {
 import { IPortfolioId } from '@safely/core/entities/portfolio/portfolio-id';
 import { generateBip39Accessor } from '@safely/core/entities/seed';
 
-import { useAppSdk, useErrorToast, useSuspenseQuery, useTranslate } from '../../shared';
-import { useAccountLocalStorage } from '../../shared/storage/account/local';
+import {
+    useAppSdk,
+    useTranslate,
+    useErrorToast,
+    useSuspenseQuery,
+    useAccountLocalStorage
+} from '../../shared';
 import { useActiveAccountSyncedStorage } from '../../shared/storage/account/synced';
 import { useActiveAccountQueryKey } from '../account';
 import { useToast } from '../toast';
@@ -132,7 +137,7 @@ export function useImportPortfolio() {
     const toast = useToast();
     const t = useTranslate();
     const errorToast = useErrorToast({
-        AccountAlreadyExistsError: 'importWalletScreen.errors.alreadyExists'
+        PortfolioAlreadyExistsError: 'importWalletScreen.errors.alreadyExists'
     });
 
     return useMutation<Portfolio, Error, IMnemonicAccessor>({
@@ -377,7 +382,8 @@ export function useSetActivePortfolio() {
 }
 
 export function useChangePortfolioMeta() {
-    const portfolios = usePortfolios();
+    const client = useQueryClient();
+    const portfoliosQuery = usePortfoliosQueryConfig();
     const { mutateAsync } = useSetPortfolios();
 
     return useMutation<
@@ -386,6 +392,7 @@ export function useChangePortfolioMeta() {
         { portfolio: { id: IPortfolioId }; meta: Partial<PortfolioMeta> }
     >({
         async mutationFn({ portfolio: { id }, meta }) {
+            const portfolios: Portfolio[] = await client.ensureQueryData(portfoliosQuery);
             const portfolio = portfolios.find(p => p.id.isEq(id));
             if (!portfolio) {
                 throw new Error('Portfolio not found');

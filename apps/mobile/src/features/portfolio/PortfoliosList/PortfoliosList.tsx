@@ -17,10 +17,11 @@ interface PortfoliosListProps {
     portfolios: Portfolio[];
     isEditing: boolean;
     onEditEnd?: () => void;
+    Footer?: () => React.ReactNode;
 }
 
 export const PortfoliosList = (props: PortfoliosListProps) => {
-    const { portfolios, isEditing, onEditEnd } = props;
+    const { portfolios, isEditing, onEditEnd, Footer } = props;
     const activePortfolio = useActivePortfolio();
     const { mutate: reorderPortfolios } = useReorderPortfolios();
     const navigation = useNavigation<RootStackNavigationProp<'SelectAccountModal'>>();
@@ -30,7 +31,13 @@ export const PortfoliosList = (props: PortfoliosListProps) => {
 
     const handleCustomizeWallet = useCallback(
         (portfolio: Portfolio) => {
-            navigation.navigate('CustomizeWalletModal', { portfolio, onSaveEnd: onEditEnd });
+            navigation.navigate('CustomizeWalletModal', {
+                portfolio,
+                onSuccess: () => {
+                    navigation.goBack();
+                    onEditEnd?.();
+                }
+            });
         },
         [navigation, onEditEnd]
     );
@@ -55,7 +62,6 @@ export const PortfoliosList = (props: PortfoliosListProps) => {
 
     return (
         <ScrollView
-            style={styles.list}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.listContentContainer}
         >
@@ -104,6 +110,7 @@ export const PortfoliosList = (props: PortfoliosListProps) => {
                     )}
                 </Draggable>
             ))}
+            {Footer && <Footer />}
         </ScrollView>
     );
 };

@@ -3,7 +3,8 @@
     "common": {
         "next": "Next",
         "cancel": "Cancel",
-        "continue": "Continue"
+        "continue": "Continue",
+        "later": "Later"
     },
     "send": {
         "title": "Send",
@@ -20,7 +21,22 @@
         "title": "Create passcode",
         "description": "Enter a passcode to protect your wallet",
         "switchToSix": "Use 6-digit passcode",
-        "switchToFour": "Use 4-digit passcode"
+        "switchToFour": "Use 4-digit passcode",
+        "verify": {
+            "title": "Enter passcode"
+        }
+    },
+    "changePasscode": {
+        "title": "Change passcode",
+        "verify": {
+            "title": "Enter current passcode"
+        },
+        "new": {
+            "title": "Enter new passcode"
+        },
+        "reenter": {
+            "title": "Confirm new passcode"
+        }
     },
     "currency": {
         "title": "Currency"
@@ -87,7 +103,7 @@
         },
         "phraseSheet": {
             "title": "Recovery phrase",
-            "warning": "Do not share this phrase. Anyone with it can access your\u00A0wallet.",
+            "warning": "Do not share this phrase.\nAnyone with it can access your\u00A0wallet.",
             "copy": "Copy"
         },
         "groups": {
@@ -102,7 +118,7 @@
                 "title": "Application",
                 "faceId": {
                     "title": "Face ID",
-                    "subtitle": "Unlock securely with a glance. No password needed."
+                    "subtitle": "Unlock securely with a glance. No\u00a0password\u00a0needed."
                 },
                 "lockScreen": {
                     "title": "Lock screen",
@@ -122,7 +138,7 @@
     },
     "customizeWallet": {
         "title": "Customize your wallet",
-        "description": "Choose a name and icon for your wallet to make it easy to recognize.",
+        "description": "Set a name and icon to tell this wallet apart here. Sync across your devices.",
         "namePlaceholder": "Wallet name",
         "save": "Save"
     },
@@ -152,6 +168,99 @@
             "insufficientBalance": "Insufficient balance"
         }
     },
+    "welcome": {
+        "title": "Safely",
+        "subtitle": "Your personal wallet. Receive, buy\u00a0and\u00a0spend\u00a0crypto\u00a0with\u00a0ease.",
+        "createNew": "Create new account",
+        "importExisting": "Sign in",
+        "legal": "By using Safely, you agree to accept our\u00a0<terms>Terms\u00a0of\u00a0Use</terms>\u00a0and\u00a0<privacy>Privacy\u00a0Policy</privacy>."
+    },
+    "onboarding": {
+        "recoveryPhrase": {
+            "title": "Recovery phrase",
+            "description": "Write down these 12 words in order and store them in a safe place. You'll need them to recover your wallet.",
+            "warning": "Never share your recovery phrase with anyone. Anyone with it can access your wallet.",
+            "continue": "I've saved the phrase"
+        },
+        "importWallet": {
+            "title": "Enter recovery phrase",
+            "description": "Restore your wallet using 12 or 24 words.",
+            "placeholder": "Enter or paste your recovery phrase",
+            "continue": "Continue",
+            "paste": "Paste"
+        },
+        "passcode": {
+            "title": "Passcode",
+            "description": "Set a passcode to protect your account.\nIt will be required to unlock the app.",
+            "reenter": {
+                "title": "Re-enter passcode",
+                "description": "Set a passcode to protect your account.\nIt will be required to unlock the app."
+            }
+        },
+        "customize": {
+            "title": "Customize your wallet",
+            "description": "Set a name and icon to tell this wallet apart here. Sync across your devices."
+        },
+        "notifications": {
+            "title": "Notifications",
+            "description": "Get alerts when funds arrive.\nNo\u00a0need\u00a0to\u00a0check\u00a0manually.",
+            "enable": "Enable notifications"
+        },
+        "accountCreated": {
+            "title": "Account created",
+            "subtitle": "Link another device to protect your account. Without it, your access can't be restored if this phone is lost.",
+            "steps": {
+                "step1": "Install Safely on another device.",
+                "step2": "Tap \"Sign in\" to show a QR code.",
+                "step3": "Tap \"Add device\" below and scan that code — camera access will be required."
+            },
+            "addDevice": "Add device",
+            "protectLater": "Protect account later"
+        }
+    },
+    "addWallet": {
+        "title": "Add Wallet",
+        "subtitle": "Choose how you want to add a wallet.",
+        "createNew": {
+            "title": "Create new",
+            "subtitle": "Start with a fresh wallet"
+        },
+        "importExisting": {
+            "title": "Import existing",
+            "subtitle": "Restore using a recovery phrase"
+        },
+        "watchAccount": {
+            "title": "Watch account",
+            "subtitle": "Track by wallet address"
+        }
+    },
+    "biometry": {
+        "enable": "Enable {{name}}",
+        "default": {
+            "title": "Biometric Authentication",
+            "description": "Use biometric authentication to unlock your wallet quickly and securely."
+        },
+        "face": {
+            "ios": {
+                "title": "Face ID",
+                "description": "Unlock securely with a glance. No\u00a0password\u00a0needed."
+            },
+            "other": {
+                "title": "Face recognition",
+                "description": "Use face recognition to unlock your wallet quickly and securely."
+            }
+        },
+        "fingerprint": {
+            "ios": {
+                "title": "Touch ID",
+                "description": "Unlock securely with your fingerprint. No\u00a0password\u00a0needed."
+            },
+            "other": {
+                "title": "Fingerprint unlock",
+                "description": "Use your fingerprint to unlock your wallet quickly and securely."
+            }
+        }
+    },
     "settings": {
         "title": "Settings",
         "groups": {
@@ -172,10 +281,28 @@
                     "legal": "Legal"
                 }
             }
+        },
+        "signOut": {
+            "title": "Sign out account",
+            "confirm": {
+                "title": "Sign out?",
+                "message": "This will remove all wallets and reset the app. This action cannot be undone.",
+                "confirm": "Sign out",
+                "cancel": "Cancel"
+            }
         }
     },
     "history": {
         "title": "History"
+    },
+    "importWalletScreen": {
+        "toastMessages": {
+            "importedWallet": "Wallet imported"
+        },
+        "errors": {
+            "alreadyExists": "Wallet already exists",
+            "failedToGenerate": "Failed to generate wallet"
+        }
     },
     "transaction": {
         "sent": "Sent",

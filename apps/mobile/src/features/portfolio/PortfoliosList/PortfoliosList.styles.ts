@@ -1,10 +1,8 @@
 import { StyleSheet } from 'react-native-unistyles';
 
 export const styles = StyleSheet.create(theme => ({
-    list: {
-        flex: 1
-    },
     listContentContainer: {
+        flex: 1,
         gap: theme.spacing[2],
         marginHorizontal: theme.spacing[8],
         marginBottom: theme.spacing[8]
