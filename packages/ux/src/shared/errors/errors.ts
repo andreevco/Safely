@@ -10,8 +10,8 @@ export interface ParseErrorOptions {
 }
 
 function getErrorName(error: unknown): string | null {
-    if (error instanceof Error && error.name) {
-        return error.name;
+    if (error instanceof Error) {
+        return error.constructor.name || error.name || null;
     }
     return null;
 }

@@ -2,7 +2,12 @@ import { CommonActions, useNavigation } from '@react-navigation/native';
 import { useCallback } from 'react';
 
 import { MnemonicResource, PortfolioMeta } from '@safely/core';
-import { useChangePortfolioMeta, useGeneratePortfolio, useImportPortfolio } from '@safely/ux';
+import {
+    useActivePortfolio,
+    useChangePortfolioMeta,
+    useGeneratePortfolio,
+    useImportPortfolio
+} from '@safely/ux';
 
 import { useSecurityCheck } from '@mobile/entities/security';
 import { useLoader } from '@mobile/shared/providers/loader';
@@ -16,13 +21,14 @@ export function useAddWalletFlow() {
     const navigation = useNavigation();
     const { withLoader } = useLoader();
     const check = useSecurityCheck();
+    const activePortfolio = useActivePortfolio();
     const { mutateAsync: importPortfolio } = useImportPortfolio();
     const { mutateAsync: generatePortfolio } = useGeneratePortfolio();
     const { mutateAsync: changePortfolioMeta } = useChangePortfolioMeta();
 
     const startCreateFlow = useCallback(async () => {
         await check();
-        navigation.dispatch(CommonActions.navigate(routes.customize));
+        navigation.dispatch(CommonActions.navigate(routes.customize, { isImport: false }));
     }, [navigation, check]);
 
     const startImportFlow = useCallback(() => {
@@ -38,9 +44,8 @@ export function useAddWalletFlow() {
             });
 
             navigation.dispatch(
-                CommonActions.reset({
-                    index: 0,
-                    routes: [{ name: 'TabsNavigator' }]
+                CommonActions.navigate(routes.customize, {
+                    isImport: true
                 })
             );
         },
@@ -48,11 +53,14 @@ export function useAddWalletFlow() {
     );
 
     const onFinishCustomize = useCallback(
-        async (meta: PortfolioMeta) => {
+        async (meta: PortfolioMeta, isImport: boolean) => {
             await withLoader(async () => {
-                const portfolio = await generatePortfolio();
-
-                await changePortfolioMeta({ portfolio, meta });
+                if (isImport) {
+                    await changePortfolioMeta({ portfolio: activePortfolio, meta });
+                } else {
+                    const portfolio = await generatePortfolio();
+                    await changePortfolioMeta({ portfolio, meta });
+                }
             });
 
             navigation.dispatch(
@@ -62,7 +70,7 @@ export function useAddWalletFlow() {
                 })
             );
         },
-        [generatePortfolio, changePortfolioMeta, navigation, withLoader]
+        [activePortfolio, generatePortfolio, changePortfolioMeta, navigation, withLoader]
     );
 
     return {
