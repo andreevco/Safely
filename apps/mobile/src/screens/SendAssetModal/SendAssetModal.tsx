@@ -34,23 +34,12 @@ export const SendAssetModal = () => {
     const activeFiat = useActiveFiat();
 
     const handleSubmit = useCallback(
-        (result: SendFormResult) => {
-            const { amount, recipient } = result;
-            const cryptoAmount = amount.cryptoAssetAmount;
-            const fiatAmount = amount.fiatAssetAmount;
-            const symbol = cryptoAmount.asset.symbol;
-
-            // TODO Temp mock
+        (confirmationResult: SendFormResult) => {
             navigation.navigate('ConfirmationModal', {
-                recipientAddress: recipient.address,
-                cryptoAmount: cryptoAmount.format(formatter),
-                fiatAmount: fiatAmount ? fiatAmount.format(formatter) : '',
-                assetSymbol: symbol,
-                networkFee: '0.00001 BTC',
-                networkFeeFiat: '$0.98'
+                confirmationResult
             });
         },
-        [navigation, formatter]
+        [navigation]
     );
 
     const { state, actions, step, meta } = useSendForm({
