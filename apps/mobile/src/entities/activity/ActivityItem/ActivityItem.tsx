@@ -32,13 +32,10 @@ export const ActivityItem = (props: ActivityItemProps) => {
                                 {isInitiator ? t('transaction.sent') : t('transaction.received')}
                             </Cell.Title>
                             <Text color="secondary" style={styles.timestamp}>
-                                {new Date(activity.timestamp * 1000).toLocaleTimeString(
-                                    i18n.language,
-                                    {
-                                        hour: 'numeric',
-                                        minute: 'numeric'
-                                    }
-                                )}
+                                {new Date(activity.timestamp).toLocaleTimeString(i18n.language, {
+                                    hour: 'numeric',
+                                    minute: 'numeric'
+                                })}
                             </Text>
                         </View>
                         <Cell.Value color={isInitiator ? 'primary' : 'accentGreen'}>

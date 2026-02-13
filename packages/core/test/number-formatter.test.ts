@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { NumberFormatter, WebNumberFormatLocale } from '../../../src/utils';
+import { NumberFormatter, WebNumberFormatLocale } from '../src/utils';
 
 const NBSP = '\u00A0';
 
