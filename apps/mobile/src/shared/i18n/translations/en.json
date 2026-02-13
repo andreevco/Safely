@@ -291,6 +291,10 @@
             }
         }
     },
+    "tabs": {
+        "home": "Home",
+        "history": "History"
+    },
     "history": {
         "title": "History",
         "empty": {
@@ -298,6 +302,10 @@
             "subtitle": "Your transactions will appear here.",
             "receive": "Receive BTC",
             "send": "Send"
+        },
+        "dateHeaders": {
+          "today": "Today",
+          "yesterday": "Yesterday"
         }
     },
     "importWalletScreen": {
