@@ -1,7 +1,7 @@
 import { vi } from 'vitest';
 
-import type { ISecretEncryptor, SSecretDecrypted, SSecretEncrypted } from '../../../src';
-import type { IMnemonicAccessor } from '../../../src/entities/mnemonic/mnemonic';
+import type { ISecretEncryptor, SSecretDecrypted, SSecretEncrypted } from '../../src';
+import type { IMnemonicAccessor } from '../../src/entities/mnemonic/mnemonic';
 
 export class MockSecretEncryptor implements ISecretEncryptor {
     decryptSecret = vi.fn().mockImplementation(async (s: SSecretEncrypted): Promise<SSecretDecrypted> => s);
