@@ -1,7 +1,8 @@
 import { type TFunction } from 'i18next';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
+import { RefreshControl, View } from 'react-native';
+import { useUnistyles } from 'react-native-unistyles';
 
 import { type BtcActivityItem, useHistory } from '@safely/ux';
 
@@ -41,6 +42,8 @@ export const HistoryList = (props: HistoryListProps) => {
     const { onNavigateToTransaction } = props;
     const history = useHistory();
     const { t, i18n } = useTranslation();
+
+    const { theme } = useUnistyles();
 
     const items = useMemo(
         () => history.data?.pages.flatMap(page => page.items) ?? [],
@@ -113,8 +116,13 @@ export const HistoryList = (props: HistoryListProps) => {
     return (
         <Screen.List
             contentContainerStyle={styles.contentContainer}
-            onRefresh={history.refetch}
-            refreshing={history.isRefetching}
+            refreshControl={
+                <RefreshControl
+                    refreshing={history.isRefetching}
+                    onRefresh={history.refetch}
+                    tintColor={theme.colors.text.secondary}
+                />
+            }
             data={rows}
             keyExtractor={item => item.key}
             onEndReached={history.fetchNextPage}
