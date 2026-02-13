@@ -56,6 +56,10 @@
         "done": "Done",
         "copied": "Copied"
     },
+    "qrScan": {
+        "title": "Scan QR code",
+        "subtitle": "Scan BTC address to continue."
+    },
     "camera": {
         "permissionRequest": {
             "title": "Camera access required",

@@ -198,7 +198,7 @@ export const QRScanModal = (props: QRScanModalProps) => {
                         {title}
                     </Text>
                     {subtitle ? (
-                        <Text textAlign="center" variant="bodyL" color="secondary">
+                        <Text textAlign="center" variant="bodyL" color="tertiary">
                             {subtitle}
                         </Text>
                     ) : null}
