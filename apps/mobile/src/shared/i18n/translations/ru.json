@@ -261,6 +261,10 @@
             }
         }
     },
+    "tabs": {
+        "home": "Главная",
+        "history": "История"
+    },
     "importWalletScreen": {
         "toastMessages": {
             "importedWallet": "Кошелёк импортирован"

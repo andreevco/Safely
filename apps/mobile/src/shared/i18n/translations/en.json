@@ -291,6 +291,10 @@
             }
         }
     },
+    "tabs": {
+        "home": "Home",
+        "history": "History"
+    },
     "history": {
         "title": "History"
     },
