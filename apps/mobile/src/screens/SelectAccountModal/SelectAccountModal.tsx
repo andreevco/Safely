@@ -1,4 +1,5 @@
 import { useNavigation } from '@react-navigation/native';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { usePortfolios } from '@safely/ux';
@@ -12,34 +13,45 @@ import { styles } from './SelectAccountModal.styles';
 export const SelectAccountModal = () => {
     const { t } = useTranslation();
     const portfolios = usePortfolios();
-    const navigation = useNavigation<RootStackNavigationProp>();
+    const [isEditing, setIsEditing] = useState(false);
 
-    const handleSelect = () => {
-        navigation.goBack();
-    };
+    const handleIsEditingChange = useCallback(() => {
+        setIsEditing(prev => !prev);
+    }, [setIsEditing]);
+
+    const handleEditEnd = useCallback(() => {
+        setIsEditing(false);
+    }, [setIsEditing]);
+    const navigation = useNavigation<RootStackNavigationProp>();
 
     return (
         <Screen>
             <Screen.Header>
-                <Screen.Header.Button disabled type="small">
+                <Screen.Header.Button onPress={handleIsEditingChange} type="small">
                     <Text textAlign="center" variant="labelM">
-                        {t('actions.edit')}
+                        {isEditing ? t('actions.done') : t('actions.edit')}
                     </Text>
                 </Screen.Header.Button>
                 <Screen.Header.Title>{t('accounts.title')}</Screen.Header.Title>
                 <Screen.Header.CloseButton />
             </Screen.Header>
-            <Screen.Scrollable>
-                <PortfoliosList portfolios={portfolios} onSelect={handleSelect} />
-                <Button
-                    type="secondary"
-                    size="medium"
-                    style={styles.addButton}
-                    onPress={() => navigation.navigate('AddWalletModal')}
-                >
-                    {t('addWallet.title')}
-                </Button>
-            </Screen.Scrollable>
+            <Screen.Content>
+                <PortfoliosList
+                    portfolios={portfolios}
+                    isEditing={isEditing}
+                    onEditEnd={handleEditEnd}
+                    Footer={() => (
+                        <Button
+                            type="secondary"
+                            size="medium"
+                            style={styles.addButton}
+                            onPress={() => navigation.navigate('AddWalletModal')}
+                        >
+                            {t('addWallet.title')}
+                        </Button>
+                    )}
+                />
+            </Screen.Content>
         </Screen>
     );
 };

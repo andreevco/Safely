@@ -3,6 +3,8 @@ import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Keyboard } from 'react-native';
 
+import { Portfolio } from '@safely/core';
+
 import { useAddWalletFlow } from '@mobile/features/add-wallet';
 import { Button, Screen } from '@mobile/shared/ui';
 
@@ -11,16 +13,19 @@ import { CustomizeWalletContent } from './CustomizeWalletContent';
 import { styles } from './CustomizeWalletModal.styles';
 
 type CustomizeWalletModalProps = StaticScreenProps<{
-    isImport: boolean;
+    portfolio?: Portfolio;
+    onSuccess?: () => void;
 }>;
 
 export const CustomizeWalletModal = (props: CustomizeWalletModalProps) => {
-    const { isImport } = props.route.params;
+    const { portfolio, onSuccess } = props.route?.params ?? {};
     const { t } = useTranslation();
     const { onFinishCustomize } = useAddWalletFlow();
 
-    const [walletName, setWalletName] = useState('');
-    const [selectedIcon, setSelectedIcon] = useState<WalletIcon>({ type: 'emoji', value: '🙂' });
+    const [walletName, setWalletName] = useState(portfolio?.meta.name ?? '');
+    const [selectedIcon, setSelectedIcon] = useState<WalletIcon>(
+        portfolio?.meta.icon ?? { type: 'emoji', value: '🙂' }
+    );
 
     const handleSave = useCallback(() => {
         Keyboard.dismiss();
@@ -29,9 +34,10 @@ export const CustomizeWalletModal = (props: CustomizeWalletModalProps) => {
                 name: walletName.trim(),
                 icon: selectedIcon
             },
-            isImport
+            portfolio,
+            onSuccess
         );
-    }, [walletName, selectedIcon, onFinishCustomize, isImport]);
+    }, [onFinishCustomize, walletName, selectedIcon, portfolio, onSuccess]);
 
     const isNameValid = walletName.trim().length > 0;
 
