@@ -6,6 +6,7 @@ import { type BtcActivityItem, useHistory } from '@safely/ux';
 import { ActivityItem } from '@mobile/entities/activity';
 import { Screen } from '@mobile/shared/ui';
 
+import { HistoryEmptyPlaceholder } from '../HistoryEmptyPlaceholder';
 import { styles } from './HistoryList.styles';
 
 type HistoryListProps = {
@@ -22,6 +23,10 @@ export const HistoryList = (props: HistoryListProps) => {
 
     if (!history.data) {
         return null;
+    }
+
+    if (items.length === 0) {
+        return <HistoryEmptyPlaceholder />;
     }
 
     return (
