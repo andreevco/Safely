@@ -29,7 +29,7 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
     const handleCopy = useCopy();
 
     const confirmedAt = useMemo(() => {
-        return new Date(activity.timestamp * 1000).toLocaleDateString(i18n.language, {
+        return new Date(activity.timestamp).toLocaleDateString(i18n.language, {
             day: 'numeric',
             month: 'short',
             hour: '2-digit',
