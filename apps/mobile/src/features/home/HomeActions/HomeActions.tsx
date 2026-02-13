@@ -16,8 +16,11 @@ export const HomeActions = () => {
 
     const handleQRScan = useCallback(() => {
         navigation.navigate('QRScanModal', {
-            onSuccess: (value: string) => {
-                console.log(value);
+            onSuccess: (address: string) => {
+                navigation.navigate('SendAssetModal', {
+                    screen: 'SendAssetModal',
+                    params: { address }
+                });
             },
             onClose: () => {},
             title: t('home.actions.scan')
