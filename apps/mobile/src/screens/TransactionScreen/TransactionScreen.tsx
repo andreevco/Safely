@@ -2,12 +2,21 @@
 import { StaticScreenProps } from '@react-navigation/native';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { TouchableOpacity, View } from 'react-native';
+import { View } from 'react-native';
 
-import { BTC_ASSET, ellipsisMiddle } from '@safely/core';
+import { BTC_ASSET, CryptoAssetAmount, ellipsisMiddle } from '@safely/core';
 import { type BtcActivityItem, useNumberFormatter, useRate } from '@safely/ux';
 
-import { Copy16, Globe16, Icon, List, Screen, TableCell, Text } from '@mobile/shared/ui';
+import {
+    Copy16,
+    Globe16,
+    Icon,
+    List,
+    Screen,
+    TableCell,
+    Text,
+    TouchableOpacity
+} from '@mobile/shared/ui';
 import { useCopy } from '@mobile/shared/utils/copy';
 
 import { styles } from './TransactionScreen.styles';
@@ -45,6 +54,20 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
             label: isInitiator ? t('transaction.recipient') : t('transaction.sender')
         };
     }, [isInitiator, activity.transaction.toAddress, activity.transaction.fromAddress, t]);
+
+    const networkFee = useMemo(() => {
+        const feeCryptoAmount = new CryptoAssetAmount({
+            asset: BTC_ASSET,
+            weiAmount: activity.transaction.raw?.fees ?? 0n
+        });
+
+        return {
+            cryptoFormatted: feeCryptoAmount.format(formatter),
+            fiatFormatted: rate.data ? feeCryptoAmount.convert(rate.data).format(formatter) : '-'
+        };
+    }, [activity.transaction.raw?.fees, formatter, rate.data]);
+
+    console.log(activity.transaction.raw);
 
     return (
         <Screen>
@@ -101,7 +124,12 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
                                 <TableCell.Label>{t('transaction.fee')}</TableCell.Label>
                             </TableCell.Column>
                             <TableCell.Column>
-                                <TableCell.Value>{activity.transaction.raw?.fees}</TableCell.Value>
+                                <TableCell.Value>
+                                    {networkFee.fiatFormatted}{' '}
+                                    <TableCell.Value color="secondary">
+                                        {networkFee.cryptoFormatted}
+                                    </TableCell.Value>
+                                </TableCell.Value>
                             </TableCell.Column>
                         </TableCell>
                         <TableCell>
@@ -110,7 +138,7 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
                             </TableCell.Column>
                             <TableCell.Column>
                                 <TableCell.Value>
-                                    {ellipsisMiddle(activity.transaction.raw?.hex, 6)}
+                                    {ellipsisMiddle(activity.transaction.raw?.txid, 6)}
                                 </TableCell.Value>
                             </TableCell.Column>
                             <View style={styles.iconsContainer}>
@@ -118,7 +146,7 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
                                     <Icon icon={Globe16} color="secondary" />
                                 </TouchableOpacity>
                                 <TouchableOpacity
-                                    onPress={() => handleCopy(activity.transaction.raw?.hex ?? '')}
+                                    onPress={() => handleCopy(activity.transaction.raw?.txid ?? '')}
                                     hitSlop={12}
                                 >
                                     <Icon icon={Copy16} color="secondary" />
