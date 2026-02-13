@@ -10,6 +10,7 @@ import { ActivityItem } from '@mobile/entities/activity';
 import { Screen, Text } from '@mobile/shared/ui';
 import { diffInDays } from '@mobile/shared/utils';
 
+import { HistoryEmptyPlaceholder } from '../HistoryEmptyPlaceholder';
 import { styles } from './HistoryList.styles';
 
 type HistoryRowItem =
@@ -80,6 +81,10 @@ export const HistoryList = (props: HistoryListProps) => {
 
     if (!history.data) {
         return null;
+    }
+
+    if (items.length === 0) {
+        return <HistoryEmptyPlaceholder />;
     }
 
     const renderSeparator = () => {
