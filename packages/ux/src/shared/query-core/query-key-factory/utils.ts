@@ -1,6 +1,6 @@
 import type { JsonObject, JsonValue, KeyPart, KeyResult } from './types';
 
-export function normalizeJson(value: JsonValue): JsonValue {
+export function normalizeJson(value: JsonValue | bigint): JsonValue {
     if (Array.isArray(value)) {
         return value.map(normalizeJson);
     }
@@ -16,6 +16,10 @@ export function normalizeJson(value: JsonValue): JsonValue {
         return result;
     }
 
+    if (typeof value === 'bigint') {
+        return value.toString();
+    }
+
     return value;
 }
 
@@ -26,6 +30,10 @@ export function toKeyPart(value: unknown): KeyPart {
 
     if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
         return value;
+    }
+
+    if (typeof value === 'bigint') {
+        return value.toString();
     }
 
     return JSON.stringify(normalizeJson(value as JsonValue));

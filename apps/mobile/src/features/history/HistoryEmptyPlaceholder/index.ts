@@ -1,0 +1,1 @@
+export { HistoryEmptyPlaceholder } from './HistoryEmptyPlaceholder';

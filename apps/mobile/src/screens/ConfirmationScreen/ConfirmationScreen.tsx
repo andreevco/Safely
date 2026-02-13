@@ -7,9 +7,15 @@ import { View } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
 import { ellipsisMiddle } from '@safely/core';
-import { useActiveBtcWallet } from '@safely/ux';
+import {
+    SendFormResult,
+    useActiveBtcWallet,
+    useEstimateAssetTransfer,
+    useNumberFormatter,
+    useSendAssetTransfer
+} from '@safely/ux';
 
-import { resources } from '@mobile/shared/resources';
+import { TransactionFee } from '@mobile/screens/ConfirmationScreen/components/TransactionFee';
 import { Checkmark96, Icon, List, Screen, Text } from '@mobile/shared/ui';
 
 import { Amount, ConfirmationFooter, TransactionCell } from './components';
@@ -17,21 +23,14 @@ import { styles } from './ConfirmationScreen.styles';
 import { ConfirmationState } from './ConfirmationScreen.types';
 
 export type SendConfirmationParams = {
-    recipientAddress: string;
-    recipientLabel?: string;
-    cryptoAmount: string;
-    fiatAmount?: string;
-    assetSymbol: string;
-    assetImage?: string;
-    networkFee?: string;
-    networkFeeFiat?: string;
+    confirmationResult: SendFormResult;
 };
 
 export type ConfirmationScreenProps = StaticScreenProps<SendConfirmationParams>;
 
 export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
     const { route } = props;
-    const params = route.params;
+    const { confirmationResult } = route.params;
     const navigation = useNavigation();
     const { t } = useTranslation();
     const btcWallet = useActiveBtcWallet();
@@ -40,10 +39,14 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
         ConfirmationState.SIGNING
     );
 
+    const { data: txTemplate } = useEstimateAssetTransfer(confirmationResult);
+    const { mutateAsync: send } = useSendAssetTransfer(txTemplate);
+    const formatter = useNumberFormatter();
+
     const onSend = useCallback(async () => {
         try {
             setConfirmationState(ConfirmationState.SENDING);
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            await send();
             notificationAsync(NotificationFeedbackType.Success);
             setConfirmationState(ConfirmationState.SUCCESS);
         } catch {
@@ -53,19 +56,13 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
                 setConfirmationState(ConfirmationState.SIGNING);
             }, 1000);
         }
-    }, []);
+    }, [send]);
 
     const onGoBack = useCallback(() => {
         navigation.getParent()?.goBack();
     }, [navigation]);
 
-    const assetImage = useMemo(() => {
-        if (params.assetSymbol === 'BTC') {
-            return resources.btcLogo;
-        }
-
-        return params.assetImage ? { uri: params.assetImage } : null;
-    }, [params.assetSymbol, params.assetImage]);
+    const asset = confirmationResult.amount.cryptoAssetAmount.asset;
 
     const TitleComponent = useMemo(() => {
         switch (confirmationState) {
@@ -79,10 +76,12 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
                         style={styles.titleWithLogoContainer}
                     >
                         <View style={styles.assetLogoContainer}>
-                            {assetImage && <Image source={assetImage} style={styles.assetLogo} />}
+                            {asset.image && <Image source={asset.image} style={styles.assetLogo} />}
                         </View>
                         <Text style={styles.title} variant="titleM">
-                            {t('confirmation.title', { symbol: params.assetSymbol })}
+                            {t('confirmation.title', {
+                                symbol: asset.symbol
+                            })}
                         </Text>
                     </Animated.View>
                 );
@@ -105,7 +104,7 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
             default:
                 return null;
         }
-    }, [confirmationState, assetImage, params.assetSymbol, t]);
+    }, [confirmationState, asset, t]);
 
     return (
         <Screen background="constantBlack">
@@ -123,18 +122,21 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
                         />
                         <TransactionCell
                             title={t('confirmation.to')}
-                            value={ellipsisMiddle(params.recipientAddress)}
+                            value={ellipsisMiddle(
+                                confirmationResult.recipient.getDisplayData().address
+                            )}
                         />
                     </List.Group>
                     <List.Group style={styles.listGroup}>
-                        <Amount fiatAmount={params.fiatAmount} cryptoAmount={params.cryptoAmount} />
-                        {params.networkFee && (
-                            <TransactionCell
-                                title={t('confirmation.networkFee')}
-                                value={params.networkFee}
-                                subvalue={params.networkFeeFiat}
-                            />
-                        )}
+                        <Amount
+                            fiatAmount={confirmationResult.amount.fiatAssetAmount?.format(
+                                formatter
+                            )}
+                            cryptoAmount={confirmationResult.amount.cryptoAssetAmount?.format(
+                                formatter
+                            )}
+                        />
+                        {txTemplate && <TransactionFee fee={txTemplate.estimation.fee} />}
                     </List.Group>
                 </List>
                 <ConfirmationFooter onSend={onSend} onGoBack={onGoBack} state={confirmationState} />

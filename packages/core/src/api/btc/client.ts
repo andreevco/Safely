@@ -60,7 +60,7 @@ export class BtcApi extends ApiClient implements IIdentifiable {
      * float sat/vByte
      */
     public async getFeePrice() {
-        return this.getJson('/api/gasprice', GasPricesSchema);
+        return this.getJson('/extensions/v1/fees/estimate', GasPricesSchema);
     }
 
     public async sendTransaction(hex: string): Promise<{ txid: string }> {

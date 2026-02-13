@@ -53,6 +53,7 @@
     },
     "actions": {
         "edit": "Edit",
+        "done": "Done",
         "copied": "Copied"
     },
     "camera": {
@@ -291,8 +292,22 @@
             }
         }
     },
+    "tabs": {
+        "home": "Home",
+        "history": "History"
+    },
     "history": {
-        "title": "History"
+        "title": "History",
+        "empty": {
+            "title": "Transaction history",
+            "subtitle": "Your transactions will appear here.",
+            "receive": "Receive BTC",
+            "send": "Send"
+        },
+        "dateHeaders": {
+          "today": "Today",
+          "yesterday": "Yesterday"
+        }
     },
     "importWalletScreen": {
         "toastMessages": {

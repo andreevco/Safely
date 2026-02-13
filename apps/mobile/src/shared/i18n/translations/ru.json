@@ -261,6 +261,23 @@
             }
         }
     },
+    "history": {
+        "title": "История",
+        "empty": {
+            "title": "История транзакций",
+            "subtitle": "Ваши транзакции появятся здесь.",
+            "receive": "Получить BTC",
+            "send": "Отправить"
+        },
+        "dateHeaders": {
+            "today": "Сегодня",
+            "yesterday": "Вчера"
+        }
+    },
+    "tabs": {
+      "home": "Главная",
+      "history": "История"
+    },
     "importWalletScreen": {
         "toastMessages": {
             "importedWallet": "Кошелёк импортирован"
