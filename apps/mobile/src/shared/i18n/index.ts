@@ -4,10 +4,11 @@ import { initReactI18next } from 'react-i18next';
 
 import en from './translations/en.json';
 import ru from './translations/ru.json';
-import { getStoredLocale } from '../storage/mmkv';
+import { MobileLocaleStorage } from '../storage/mmkv';
 
 const FALLBACK_LANGUAGE = 'en';
-const detectedLanguage = getStoredLocale() ?? getLocales()[0].languageCode ?? FALLBACK_LANGUAGE;
+const detectedLanguage =
+    MobileLocaleStorage.get() ?? getLocales()[0].languageCode ?? FALLBACK_LANGUAGE;
 
 const resources = {
     en: { translation: en },

@@ -2,12 +2,10 @@ import { useNavigation } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
-import { z } from 'zod';
-
-import { useSharedUnstructuredStorage } from '@safely/ux/shared/storage';
 
 import { SettingsStackNavigationProp } from '@mobile/app/navigation/types';
 import { availableLanguages, LanguageCode } from '@mobile/shared/i18n';
+import { MobileLocaleStorage } from '@mobile/shared/storage/mmkv';
 import { Cell, List, Screen, Text } from '@mobile/shared/ui';
 import { ArrowLeft16, Checkmark28, Icon } from '@mobile/shared/ui/Icon';
 
@@ -16,15 +14,13 @@ import { styles } from './LanguageScreen.styles';
 export const LanguageScreen = () => {
     const { t, i18n } = useTranslation();
     const navigation = useNavigation<SettingsStackNavigationProp>();
-    const { set } = useSharedUnstructuredStorage('locale', z.string());
-
     const handlePress = useCallback(
         (code: LanguageCode) => () => {
             if (i18n.language === code) return;
 
-            void i18n.changeLanguage(code).then(() => set(code));
+            void i18n.changeLanguage(code).then(() => MobileLocaleStorage.set(code));
         },
-        [i18n, set]
+        [i18n]
     );
 
     return (

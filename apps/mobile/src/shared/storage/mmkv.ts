@@ -22,16 +22,17 @@ export function createMMKVTreeStorage(id: string) {
     };
 }
 
-export const getStoredLocale = (): string | null => {
-    const key = TreeStorage.buildKey(['app', 'shared', 'unstructured'], 'locale');
-    const value = createMMKV({ id: 'app' }).getString(key);
+export class MobileLocaleStorage {
+    private static readonly mmkv = createMMKV({ id: 'locale' });
 
-    if (value === undefined || value === null) {
-        return null;
+    public static get(): string | null {
+        return this.mmkv.getString('locale') ?? null;
     }
 
-    return JSON.parse(value) as string;
-};
+    public static set(locale: string): void {
+        this.mmkv.set('locale', locale);
+    }
+}
 
 export function clearAllAppData() {
     createMMKV({ id: 'app' }).clearAll();
