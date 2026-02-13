@@ -296,7 +296,11 @@
         "history": "History"
     },
     "history": {
-        "title": "History"
+        "title": "History",
+        "dateHeaders": {
+            "today": "Today",
+            "yesterday": "Yesterday"
+        }
     },
     "importWalletScreen": {
         "toastMessages": {
