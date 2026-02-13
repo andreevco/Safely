@@ -39,6 +39,7 @@ export const SelectAccountModal = () => {
                 <PortfoliosList
                     portfolios={portfolios}
                     isEditing={isEditing}
+                    onSelect={navigation.goBack}
                     onEditEnd={handleEditEnd}
                     Footer={() => (
                         <Button
