@@ -261,6 +261,13 @@
             }
         }
     },
+    "history": {
+        "title": "История",
+        "dateHeaders": {
+            "today": "Сегодня",
+            "yesterday": "Вчера"
+        }
+    },
     "importWalletScreen": {
         "toastMessages": {
             "importedWallet": "Кошелёк импортирован"
