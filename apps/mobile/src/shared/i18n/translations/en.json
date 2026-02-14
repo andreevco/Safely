@@ -318,6 +318,17 @@
             "failedToGenerate": "Failed to generate wallet"
         }
     },
+    "devTools": {
+        "title": "Dev Tools",
+        "appInfo": "App Info",
+        "version": "Version",
+        "cache": "Cache",
+        "clearCache": "Clear cache",
+        "cacheCleared": "Cache cleared",
+        "logs": "Logs",
+        "clearLogs": "Clear logs",
+        "noLogs": "No logs captured"
+    },
     "transaction": {
         "sent": "Sent",
         "received": "Received",

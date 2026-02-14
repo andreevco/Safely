@@ -9,6 +9,7 @@ import { clearAllAppData } from '@mobile/shared/storage/mmkv';
 import { Cell, List, Screen, Text } from '@mobile/shared/ui';
 
 import { styles } from './SettingsScreen.styles';
+import { VersionButton } from './VersionButton';
 
 interface SettingsItem {
     key: string;
@@ -134,6 +135,7 @@ export const SettingsScreen = () => {
                         </Cell>
                     </List.Group>
                 </List>
+                <VersionButton />
             </Screen.Scrollable>
         </Screen>
     );

@@ -278,6 +278,17 @@
       "home": "Главная",
       "history": "История"
     },
+    "devTools": {
+        "title": "Инструменты разработчика",
+        "appInfo": "О приложении",
+        "version": "Версия",
+        "cache": "Кэш",
+        "clearCache": "Очистить кэш",
+        "cacheCleared": "Кэш очищен",
+        "logs": "Логи",
+        "clearLogs": "Очистить логи",
+        "noLogs": "Логи отсутствуют"
+    },
     "importWalletScreen": {
         "toastMessages": {
             "importedWallet": "Кошелёк импортирован"

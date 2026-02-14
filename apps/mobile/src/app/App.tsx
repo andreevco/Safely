@@ -11,11 +11,14 @@ import { createPersister, QueryProvider } from '@safely/ux';
 import { LoaderProvider } from '@mobile/shared/providers/loader';
 import { ToastProvider, ToastServiceProvider } from '@mobile/shared/providers/toast';
 import { createMMKVTreeStorage } from '@mobile/shared/storage/mmkv';
+import { initDevLogger } from '@mobile/shared/utils/devLogger';
 
 import { AppContextProvider } from './AppContext';
 import Navigation from './navigation';
 import { navigationRef } from './navigation/navigationRef';
 import { useInitialNavigationState } from './navigation/useInitialNavigationState';
+
+initDevLogger();
 
 const persister = createPersister(createMMKVTreeStorage('persister').storage);
 

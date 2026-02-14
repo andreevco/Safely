@@ -20,5 +20,9 @@ export const styles = StyleSheet.create(theme => ({
     },
     signOutText: {
         color: theme.colors.accent.red
+    },
+    versionText: {
+        textAlign: 'center',
+        paddingVertical: theme.spacing[16]
     }
 }));
