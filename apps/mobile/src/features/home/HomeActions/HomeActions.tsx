@@ -20,7 +20,8 @@ export const HomeActions = () => {
                 console.log(value);
             },
             onClose: () => {},
-            title: t('home.actions.scan')
+            title: t('qrScan.title'),
+            subtitle: t('qrScan.subtitle')
         });
     }, [navigation, t]);
 
