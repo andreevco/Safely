@@ -11,6 +11,7 @@ export { Switch } from './Switch';
 export { SlideButton } from './SlideButton';
 export { TableCell } from './TableCell';
 export { Draggable } from './Draggable';
+export { Image } from './Image';
 export * from './Icon';
 export * from './BottomSheet';
 export * from './WordCell';

@@ -40,7 +40,7 @@ export const ReceiveAssetModal = (props: ReceiveAssetModalProps) => {
                         {t('receiveAsset.description', { name: asset.name })}
                     </Text>
                 </View>
-                <QRCodeBlock address={receiveInfo.displayAddress} />
+                <QRCodeBlock address={receiveInfo.displayAddress} asset={asset} />
                 <ReceiveActions address={receiveInfo.displayAddress} />
             </Screen.Content>
         </Screen>

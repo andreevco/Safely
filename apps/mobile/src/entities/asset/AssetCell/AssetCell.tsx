@@ -3,7 +3,6 @@ import { View } from 'react-native';
 import { type CryptoAssetAmount, type CryptoFiatRate } from '@safely/core';
 import { useActiveFiat, useNumberFormatter } from '@safely/ux';
 
-import { resources } from '@mobile/shared/resources';
 import { Cell } from '@mobile/shared/ui';
 
 type AssetCellProps = {
@@ -28,7 +27,7 @@ export const AssetCell = (props: AssetCellProps) => {
 
     return (
         <Cell>
-            <Cell.Image type="image" image={resources.btcLogo} />
+            <Cell.Image type="image" image={cryptoAssetAmount.asset.image} />
             <Cell.Content>
                 <Cell.Row>
                     <Cell.Title color="primary">{cryptoAssetAmount.asset.name}</Cell.Title>
