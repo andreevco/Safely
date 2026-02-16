@@ -22,24 +22,19 @@ export function createMMKVTreeStorage(id: string) {
     };
 }
 
-const mmkv = createMMKV({ id: 'default' });
+export class MobileLocaleStorage {
+    private static readonly mmkv = createMMKV({ id: 'locale' });
 
-export const mmkvStorage = {
-    getItem: (key: string) => mmkv.getString(key) ?? null,
-    setItem: (key: string, value: string) => mmkv.set(key, value),
-    removeItem: (key: string) => {
-        mmkv.remove(key);
+    public static get(): string | null {
+        return this.mmkv.getString('locale') ?? null;
     }
-};
 
-export const hasPortfolioInStorage = (): boolean => {
-    const value = createMMKV({ id: 'app' }).getString('_data..mock-accounts..portfolios');
-
-    return value !== undefined && value !== null;
-};
+    public static set(locale: string): void {
+        this.mmkv.set('locale', locale);
+    }
+}
 
 export function clearAllAppData() {
     createMMKV({ id: 'app' }).clearAll();
     createMMKV({ id: 'persister' }).clearAll();
-    mmkv.clearAll();
 }
