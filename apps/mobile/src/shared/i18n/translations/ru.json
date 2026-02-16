@@ -121,7 +121,23 @@
         "from": "От",
         "to": "Кому",
         "amount": "Сумма",
-        "networkFee": "Комиссия сети",
+        "networkFee": {
+            "title": "Комиссия сети",
+            "timeMinutes_one": "~{{count}} минута",
+            "timeMinutes_few": "~{{count}} минуты",
+            "timeMinutes_many": "~{{count}} минут",
+            "timeMinutes_other": "~{{count}} минут"
+        },
+        "sendResult": {
+            "status": {
+                "title": "Статус",
+                "created": {
+                    "value": "Создана",
+                    "description": "Еще не добавлена в блок"
+                }
+            },
+            "transaction": "Транзакция"
+        },
         "slider": {
             "confirm": "Подтвердить",
             "slideToSend": "Сдвиньте для отправки",

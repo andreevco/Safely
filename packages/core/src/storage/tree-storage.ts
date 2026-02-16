@@ -1,4 +1,4 @@
-import { IEnumerableStorage, ITreeStorage } from '../di/I-storage';
+import { IEnumerableStorage, ITreeStorage } from '../di';
 
 export class TreeStorage implements ITreeStorage {
     public static root(storage: IEnumerableStorage) {

@@ -1,11 +1,11 @@
 /* eslint-disable no-irregular-whitespace */
 import { StaticScreenProps } from '@react-navigation/native';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
+import { Linking, View } from 'react-native';
 
-import { BTC_ASSET, CryptoAssetAmount, ellipsisMiddle } from '@safely/core';
-import { type BtcActivityItem, useNumberFormatter, useRate } from '@safely/ux';
+import { BLOCKCHAIN_NAME, BTC_ASSET, CryptoAssetAmount, ellipsisMiddle } from '@safely/core';
+import { type BtcActivityItem, useExplorer, useNumberFormatter, useRate } from '@safely/ux';
 
 import {
     Copy16,
@@ -35,7 +35,13 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
     const isInitiator = activity.transaction.isInitiator;
     const formatter = useNumberFormatter();
     const rate = useRate(BTC_ASSET);
+    const explorer = useExplorer(BLOCKCHAIN_NAME.BTC);
+
     const handleCopy = useCopy();
+    const handleOpen = useCallback(() => {
+        const url = explorer.transaction(activity.transaction.raw.txid);
+        void Linking.openURL(url);
+    }, [activity.transaction.raw.txid, explorer]);
 
     const confirmedAt = useMemo(() => {
         return new Date(activity.timestamp).toLocaleDateString(i18n.language, {
@@ -142,7 +148,7 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
                                 </TableCell.Value>
                             </TableCell.Column>
                             <View style={styles.iconsContainer}>
-                                <TouchableOpacity hitSlop={12}>
+                                <TouchableOpacity hitSlop={12} onPress={handleOpen}>
                                     <Icon icon={Globe16} color="secondary" />
                                 </TouchableOpacity>
                                 <TouchableOpacity

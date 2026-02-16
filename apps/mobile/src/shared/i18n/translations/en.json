@@ -56,6 +56,10 @@
         "done": "Done",
         "copied": "Copied"
     },
+    "qrScan": {
+        "title": "Scan QR code",
+        "subtitle": "Scan BTC address to continue."
+    },
     "camera": {
         "permissionRequest": {
             "title": "Camera access required",
@@ -148,7 +152,21 @@
         "from": "From",
         "to": "To",
         "amount": "Amount",
-        "networkFee": "Network Fee",
+        "networkFee": {
+            "title": "Network Fee",
+            "timeMinutes_one": "~{{count}} minute",
+            "timeMinutes_other": "~{{count}} minutes"
+        },
+        "sendResult": {
+            "status": {
+                "title": "Status",
+                "created": {
+                    "value": "Created",
+                    "description": "Not broadcast yet"
+                }
+            },
+            "transaction": "Transaction"
+        },
         "slider": {
             "confirm": "Confirm",
             "slideToSend": "Slide to send",

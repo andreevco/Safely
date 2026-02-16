@@ -6,3 +6,4 @@ export * from './mnemonic';
 export * from './portfolio';
 export * from './recipient';
 export * from './errors';
+export * from './explorer';

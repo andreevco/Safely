@@ -5,7 +5,7 @@ import { GestureDetector } from 'react-native-gesture-handler';
 import Animated, { FadeIn, FadeOut, useSharedValue } from 'react-native-reanimated';
 
 import { Portfolio } from '@safely/core';
-import { useActivePortfolio, useReorderPortfolios } from '@safely/ux';
+import { useActivePortfolio, useReorderPortfolios, useSetActivePortfolio } from '@safely/ux';
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { PortfolioName } from '@mobile/entities/portfolio/PortfolioName/PortfolioName';
@@ -16,18 +16,27 @@ import { styles } from './PortfoliosList.styles';
 interface PortfoliosListProps {
     portfolios: Portfolio[];
     isEditing: boolean;
+    onSelect: () => void;
     onEditEnd?: () => void;
     Footer?: () => React.ReactNode;
 }
 
 export const PortfoliosList = (props: PortfoliosListProps) => {
-    const { portfolios, isEditing, onEditEnd, Footer } = props;
+    const { portfolios, isEditing, onSelect, onEditEnd, Footer } = props;
     const activePortfolio = useActivePortfolio();
     const { mutate: reorderPortfolios } = useReorderPortfolios();
+    const { mutate: setActivePortfolio } = useSetActivePortfolio();
     const navigation = useNavigation<RootStackNavigationProp<'SelectAccountModal'>>();
 
     const draggedIndex = useSharedValue<number | null>(null);
     const offsetY = useSharedValue(0);
+
+    const handleSelect = useCallback(
+        (portfolio: Portfolio) => {
+            setActivePortfolio({ id: portfolio.id }, { onSuccess: onSelect });
+        },
+        [setActivePortfolio, onSelect]
+    );
 
     const handleCustomizeWallet = useCallback(
         (portfolio: Portfolio) => {
@@ -65,51 +74,62 @@ export const PortfoliosList = (props: PortfoliosListProps) => {
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.listContentContainer}
         >
-            {portfolios.map((portfolio, index) => (
-                <Draggable
-                    gap={2}
-                    key={portfolio.id.toString()}
-                    index={index}
-                    draggedIndex={draggedIndex}
-                    offsetY={offsetY}
-                    moveItem={moveItem}
-                >
-                    {({ panGesture }) => (
-                        <Cell style={styles.portfolioItem}>
-                            <Cell.Content>
-                                <Cell.Row>
-                                    <PortfolioName meta={portfolio.meta} gap={12} size={16} />
-                                </Cell.Row>
-                            </Cell.Content>
-                            {!isEditing ? (
-                                <Animated.View
-                                    key="checkmark"
-                                    entering={FadeIn.duration(100).delay(100)}
-                                    exiting={FadeOut.duration(100)}
-                                >
-                                    {activePortfolio.id.isEq(portfolio.id) && <Cell.Checkmark />}
-                                </Animated.View>
-                            ) : (
-                                <Animated.View
-                                    key="right-actions"
-                                    entering={FadeIn.duration(100).delay(100)}
-                                    exiting={FadeOut.duration(100)}
-                                    style={styles.rightIconsContainer}
-                                >
-                                    <TouchableOpacity
-                                        onPress={() => handleCustomizeWallet(portfolio)}
+            {portfolios.map((portfolio, index) => {
+                const isActive = activePortfolio.id.isEq(portfolio.id);
+                const handlePress = isActive ? undefined : () => handleSelect(portfolio);
+
+                return (
+                    <Draggable
+                        gap={2}
+                        key={portfolio.id.toString()}
+                        index={index}
+                        draggedIndex={draggedIndex}
+                        offsetY={offsetY}
+                        moveItem={moveItem}
+                    >
+                        {({ panGesture }) => (
+                            <Cell
+                                style={styles.portfolioItem}
+                                onPress={handlePress}
+                                disabled={isEditing}
+                            >
+                                <Cell.Content>
+                                    <Cell.Row>
+                                        <PortfolioName meta={portfolio.meta} gap={12} size={16} />
+                                    </Cell.Row>
+                                </Cell.Content>
+                                {!isEditing ? (
+                                    <Animated.View
+                                        key="checkmark"
+                                        entering={FadeIn.duration(100).delay(100)}
+                                        exiting={FadeOut.duration(100)}
                                     >
-                                        <Icon icon={More16} color="tertiary" />
-                                    </TouchableOpacity>
-                                    <GestureDetector gesture={panGesture}>
-                                        <Icon icon={Reorder16} />
-                                    </GestureDetector>
-                                </Animated.View>
-                            )}
-                        </Cell>
-                    )}
-                </Draggable>
-            ))}
+                                        {activePortfolio.id.isEq(portfolio.id) && (
+                                            <Cell.Checkmark />
+                                        )}
+                                    </Animated.View>
+                                ) : (
+                                    <Animated.View
+                                        key="right-actions"
+                                        entering={FadeIn.duration(100).delay(100)}
+                                        exiting={FadeOut.duration(100)}
+                                        style={styles.rightIconsContainer}
+                                    >
+                                        <TouchableOpacity
+                                            onPress={() => handleCustomizeWallet(portfolio)}
+                                        >
+                                            <Icon icon={More16} color="tertiary" />
+                                        </TouchableOpacity>
+                                        <GestureDetector gesture={panGesture}>
+                                            <Icon icon={Reorder16} />
+                                        </GestureDetector>
+                                    </Animated.View>
+                                )}
+                            </Cell>
+                        )}
+                    </Draggable>
+                );
+            })}
             {Footer && <Footer />}
         </ScrollView>
     );

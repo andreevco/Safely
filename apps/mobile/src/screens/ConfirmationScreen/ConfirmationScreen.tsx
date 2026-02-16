@@ -6,7 +6,6 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
-import { ellipsisMiddle } from '@safely/core';
 import {
     SendFormResult,
     useActiveBtcWallet,
@@ -16,9 +15,10 @@ import {
 } from '@safely/ux';
 
 import { TransactionFee } from '@mobile/screens/ConfirmationScreen/components/TransactionFee';
+import { TransactionSendResult } from '@mobile/screens/ConfirmationScreen/components/TransactionSendResult';
 import { Checkmark96, Icon, List, Screen, Text } from '@mobile/shared/ui';
 
-import { Amount, ConfirmationFooter, TransactionCell } from './components';
+import { Amount, ConfirmationFooter, Wallet, TransactionCell } from './components';
 import { styles } from './ConfirmationScreen.styles';
 import { ConfirmationState } from './ConfirmationScreen.types';
 
@@ -40,7 +40,7 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
     );
 
     const { data: txTemplate } = useEstimateAssetTransfer(confirmationResult);
-    const { mutateAsync: send } = useSendAssetTransfer(txTemplate);
+    const { mutateAsync: send, data: sendResult } = useSendAssetTransfer(txTemplate);
     const formatter = useNumberFormatter();
 
     const onSend = useCallback(async () => {
@@ -118,13 +118,11 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
                     <List.Group style={styles.listGroup}>
                         <TransactionCell
                             title={t('confirmation.from')}
-                            value={ellipsisMiddle(btcWallet.address)}
+                            value={<Wallet address={btcWallet.address} />}
                         />
                         <TransactionCell
                             title={t('confirmation.to')}
-                            value={ellipsisMiddle(
-                                confirmationResult.recipient.getDisplayData().address
-                            )}
+                            value={<Wallet recipient={confirmationResult.recipient} />}
                         />
                     </List.Group>
                     <List.Group style={styles.listGroup}>
@@ -136,8 +134,13 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
                                 formatter
                             )}
                         />
-                        {txTemplate && <TransactionFee fee={txTemplate.estimation.fee} />}
+                        {!!txTemplate && <TransactionFee estimation={txTemplate.estimation} />}
                     </List.Group>
+                    {!!sendResult && (
+                        <List.Group style={styles.listGroup}>
+                            <TransactionSendResult sendResult={sendResult} />
+                        </List.Group>
+                    )}
                 </List>
                 <ConfirmationFooter onSend={onSend} onGoBack={onGoBack} state={confirmationState} />
             </View>
