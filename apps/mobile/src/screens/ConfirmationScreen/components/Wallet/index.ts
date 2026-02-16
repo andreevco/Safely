@@ -1,1 +1,1 @@
-export { Wallet, type ReceiverProps } from './Wallet';
+export { Wallet } from './Wallet';
