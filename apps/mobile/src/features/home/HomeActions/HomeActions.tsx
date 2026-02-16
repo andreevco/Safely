@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { BTC_ASSET } from '@safely/core';
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import { useQrScan } from '@mobile/features/qr-scan';
 import { Actions } from '@mobile/shared/ui';
 import { ArrowDown28, ArrowTop28, QrCodeScan28 } from '@mobile/shared/ui/Icon';
 
@@ -14,18 +15,17 @@ export const HomeActions = () => {
     const { t } = useTranslation();
     const navigation = useNavigation<RootStackNavigationProp<'TabsNavigator'>>();
 
-    const handleQRScan = useCallback(() => {
-        navigation.navigate('QRScanModal', {
-            onSuccess: (address: string) => {
+    const handleQRScan = useQrScan({
+        onSuccess: useCallback(
+            (address: string) => {
                 navigation.navigate('SendAssetModal', {
                     screen: 'SendAssetModal',
                     params: { address }
                 });
             },
-            onClose: () => {},
-            title: t('home.actions.scan')
-        });
-    }, [navigation, t]);
+            [navigation]
+        )
+    });
 
     const handleNavigateToReceiveAsset = useCallback(() => {
         navigation.navigate('ReceiveAssetModal', {

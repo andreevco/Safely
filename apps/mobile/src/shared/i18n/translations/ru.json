@@ -278,6 +278,11 @@
       "home": "Главная",
       "history": "История"
     },
+    "scan": {
+        "errors": {
+            "invalidAddress": "Недействительный QR-код"
+        }
+    },
     "importWalletScreen": {
         "toastMessages": {
             "importedWallet": "Кошелёк импортирован"

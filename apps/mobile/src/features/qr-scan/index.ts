@@ -1,0 +1,1 @@
+export { useQrScan } from './useQrScan';

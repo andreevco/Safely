@@ -318,6 +318,11 @@
             "failedToGenerate": "Failed to generate wallet"
         }
     },
+    "scan": {
+        "errors": {
+            "invalidAddress": "Invalid QR code"
+        }
+    },
     "transaction": {
         "sent": "Sent",
         "received": "Received",
