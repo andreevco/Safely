@@ -2,17 +2,17 @@ import { generateMnemonic } from '@scure/bip39';
 import { wordlist } from '@scure/bip39/wordlists/english.js';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import {
-    PortfolioNetworkType,
-    PortfolioFactory,
-    PortfolioType,
-    BtcWalletType,
-    BtcNetwork,
-    sPortfolio,
-    InvalidMnemonicError
-} from '../src';
 import type { SPortfolioBip39In } from '../src';
-import { MockSecretEncryptor, ClosableMnemonicAccessorVault } from './utils/mocks';
+import {
+    BtcNetwork,
+    BtcWalletType,
+    InvalidMnemonicError,
+    PortfolioFactory,
+    PortfolioNetworkType,
+    PortfolioType,
+    sPortfolio
+} from '../src';
+import { ClosableMnemonicAccessorVault, MockSecretEncryptor } from './utils/mocks';
 import { BtcAddress } from '../src/blockchain-api/btc/btc-address';
 
 describe('Test portfolio generation (Bitcoin)', () => {
@@ -622,8 +622,7 @@ describe('Negative scenarios (Bitcoin)', () => {
         });
 
         it('should accept valid watch-only Bitcoin address (SegWit) for future watch-only flow', () => {
-            const WATCH_ONLY_TEST_ADDRESS = 'bc1qcleg3jtmvlar6cgm24vpq6n8ew3d0hame0av83';
-            const address = WATCH_ONLY_TEST_ADDRESS;
+            const address = 'bc1qcleg3jtmvlar6cgm24vpq6n8ew3d0hame0av83';
 
             // Тип адреса — P2WPKH (Pay to Witness Public Key Hash)
             const type = BtcAddress.type(address);
