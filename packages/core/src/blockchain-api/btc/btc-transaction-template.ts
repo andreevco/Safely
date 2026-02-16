@@ -2,13 +2,8 @@ import { BtcPsbtBulder } from './btc-psbt-bulder';
 import { BtcEstimation, BtcTransferRequest } from './types';
 import { getUtxoTotal, utxoPathToStruct } from './utils';
 import { BtcApi, BtcApiUtxo } from '../../api/btc';
-import { BLOCKCHAIN_NAME, btcNetworkConfig, BtcWallet } from '../../entities';
-
-export interface ExplorerFactory {
-    createExplorer(blockchain: BLOCKCHAIN_NAME): {
-        transactionUrl(txid: string): string;
-    };
-}
+import { BLOCKCHAIN_NAME, btcNetworkConfig, BtcWallet, ExplorerFactory } from '../../entities';
+import { ellipsisMiddle } from '../../utils';
 
 export class BtcTransactionTemplate {
     public readonly blockchain = BLOCKCHAIN_NAME.BTC;
@@ -57,12 +52,10 @@ export class BtcTransactionTemplate {
             blockchain: BLOCKCHAIN_NAME.BTC,
             txId: result.txid,
             toString() {
-                return result.txid;
+                return ellipsisMiddle(result.txid);
             },
             toExplorerUrl(explorerFactory: ExplorerFactory): string {
-                return explorerFactory
-                    .createExplorer(BLOCKCHAIN_NAME.BTC)
-                    .transactionUrl(result.txid);
+                return explorerFactory.createExplorer(BLOCKCHAIN_NAME.BTC).transaction(result.txid);
             }
         };
 
