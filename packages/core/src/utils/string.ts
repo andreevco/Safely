@@ -1,3 +1,5 @@
+export function ellipsisMiddle(string: string, sideChars?: number): string;
+export function ellipsisMiddle(string: undefined, sideChar?: number): undefined;
 export function ellipsisMiddle(string: string | undefined, sideChars = 4) {
     if (!string) {
         return;

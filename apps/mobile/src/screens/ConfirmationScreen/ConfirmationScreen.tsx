@@ -16,6 +16,7 @@ import {
 } from '@safely/ux';
 
 import { TransactionFee } from '@mobile/screens/ConfirmationScreen/components/TransactionFee';
+import { TransactionSendResult } from '@mobile/screens/ConfirmationScreen/components/TransactionSendResult';
 import { Checkmark96, Icon, List, Screen, Text } from '@mobile/shared/ui';
 
 import { Amount, ConfirmationFooter, TransactionCell } from './components';
@@ -40,7 +41,7 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
     );
 
     const { data: txTemplate } = useEstimateAssetTransfer(confirmationResult);
-    const { mutateAsync: send } = useSendAssetTransfer(txTemplate);
+    const { mutateAsync: send, data: sendResult } = useSendAssetTransfer(txTemplate);
     const formatter = useNumberFormatter();
 
     const onSend = useCallback(async () => {
@@ -136,8 +137,13 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
                                 formatter
                             )}
                         />
-                        {txTemplate && <TransactionFee fee={txTemplate.estimation.fee} />}
+                        {!!txTemplate && <TransactionFee estimation={txTemplate.estimation} />}
                     </List.Group>
+                    {!!sendResult && (
+                        <List.Group style={styles.listGroup}>
+                            <TransactionSendResult sendResult={sendResult} />
+                        </List.Group>
+                    )}
                 </List>
                 <ConfirmationFooter onSend={onSend} onGoBack={onGoBack} state={confirmationState} />
             </View>
