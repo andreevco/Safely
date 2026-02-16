@@ -4,7 +4,10 @@
         "next": "Next",
         "cancel": "Cancel",
         "continue": "Continue",
-        "later": "Later"
+        "later": "Later",
+        "errors": {
+            "unknown": "Something went wrong"
+        }
     },
     "send": {
         "title": "Send",
@@ -333,6 +336,7 @@
         },
         "errors": {
             "alreadyExists": "Wallet already exists",
+            "invalidMnemonic": "Invalid recovery phrase",
             "failedToGenerate": "Failed to generate wallet"
         }
     },

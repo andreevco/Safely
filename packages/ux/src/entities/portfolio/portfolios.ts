@@ -10,7 +10,6 @@ import {
     PortfolioAlreadyExistsError,
     PortfolioBip39,
     PortfolioFactory,
-    PortfolioGenerationFailedError,
     PortfolioMeta,
     PortfolioNetworkType,
     PortfolioType
@@ -114,10 +113,6 @@ export function useGeneratePortfolio() {
                 name
             });
 
-            if (!portfolio) {
-                throw new PortfolioGenerationFailedError();
-            }
-
             await addAccount(portfolio);
 
             await setActivePortfolio(portfolio);
@@ -137,6 +132,7 @@ export function useImportPortfolio() {
     const toast = useToast();
     const t = useTranslate();
     const errorToast = useErrorToast({
+        InvalidMnemonicError: 'importWalletScreen.errors.invalidMnemonic',
         PortfolioAlreadyExistsError: 'importWalletScreen.errors.alreadyExists'
     });
 
@@ -150,11 +146,7 @@ export function useImportPortfolio() {
                 name
             });
 
-            if (!portfolio) {
-                throw new Error('Failed to import wallet');
-            }
-
-            if (existingPortfolios?.some(p => p.id.isEq(portfolio?.id))) {
+            if (existingPortfolios?.some(p => p.id.isEq(portfolio.id))) {
                 throw new PortfolioAlreadyExistsError();
             }
 

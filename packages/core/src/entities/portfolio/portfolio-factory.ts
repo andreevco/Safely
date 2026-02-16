@@ -4,11 +4,17 @@ import { PortfolioIdMnemonicBased } from './portfolio-id';
 import { PortfolioNetworkType } from './portfolio-network-type';
 import type { SPortfolioOut } from './portfolio.stored';
 import { ISecretEncryptor } from '../../di';
-import { assertUnreachable } from '../../utils/types';
+import { assertUnreachable } from '../../utils';
 import { BtcWalletType } from '../blockchain';
 import { DerivationChainItemBtcSeed, Derivation } from '../derivation';
-import { MNEMONIC_TYPE, MnemonicResource, validateMnemonic } from '../mnemonic';
-import { IMnemonicAccessor, MnemonicVault } from '../mnemonic';
+import { InvalidMnemonicError, PortfolioGenerationFailedError } from '../errors';
+import {
+    MNEMONIC_TYPE,
+    MnemonicResource,
+    validateMnemonic,
+    IMnemonicAccessor,
+    MnemonicVault
+} from '../mnemonic';
 import { BtcBip39SeedProducer } from '../seed';
 
 export class PortfolioFactory {
@@ -28,7 +34,7 @@ export class PortfolioFactory {
             network: PortfolioNetworkType;
             name: string;
         }
-    ): Promise<PortfolioBip39 | null> {
+    ): Promise<PortfolioBip39> {
         return await this.generatePortfolioBip39(secret, options);
     }
 
@@ -38,7 +44,7 @@ export class PortfolioFactory {
             network: PortfolioNetworkType;
             name: string;
         }
-    ): Promise<PortfolioBip39 | null> {
+    ): Promise<PortfolioBip39> {
         try {
             await validateMnemonic(MNEMONIC_TYPE.BIP39, mnemonicAccessor.value);
 
@@ -81,8 +87,11 @@ export class PortfolioFactory {
                 mnemonicVault
             });
         } catch (error) {
-            console.warn(error);
-            return null;
+            if (error instanceof InvalidMnemonicError) {
+                throw error;
+            }
+
+            throw new PortfolioGenerationFailedError();
         }
     }
 
