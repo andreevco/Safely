@@ -88,10 +88,12 @@ export function useAddPortfolio() {
     });
 }
 
-function useNewPortfolioFallbackName() {
+export function useNewPortfolioFallbackName() {
     const { data: portfolios } = usePortfoliosQuery();
 
-    return portfolios?.length ? `Wallet ${portfolios.length + 1}` : 'Wallet';
+    const portfoliosCount = portfolios?.length ?? 0;
+
+    return `Wallet ${portfoliosCount + 1}`;
 }
 
 export function useGeneratePortfolio() {

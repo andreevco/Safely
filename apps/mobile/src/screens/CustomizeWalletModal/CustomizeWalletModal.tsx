@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Keyboard } from 'react-native';
 
 import { Portfolio } from '@safely/core';
+import { useNewPortfolioFallbackName } from '@safely/ux';
 
 import { useAddWalletFlow } from '@mobile/features/add-wallet';
 import { Button, Screen } from '@mobile/shared/ui';
@@ -19,10 +20,11 @@ type CustomizeWalletModalProps = StaticScreenProps<{
 
 export const CustomizeWalletModal = (props: CustomizeWalletModalProps) => {
     const { portfolio, onSuccess } = props.route?.params ?? {};
+    const fallbackName = useNewPortfolioFallbackName();
     const { t } = useTranslation();
     const { onFinishCustomize } = useAddWalletFlow();
 
-    const [walletName, setWalletName] = useState(portfolio?.meta.name ?? '');
+    const [walletName, setWalletName] = useState(portfolio?.meta.name ?? fallbackName);
     const [selectedIcon, setSelectedIcon] = useState<WalletIcon>(
         portfolio?.meta.icon ?? { type: 'emoji', value: '🙂' }
     );
