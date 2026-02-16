@@ -88,7 +88,7 @@ export function useAddPortfolio() {
     });
 }
 
-export function useNewPortfolioFallbackName() {
+function useNewPortfolioFallbackName() {
     const { data: portfolios } = usePortfoliosQuery();
 
     const portfoliosCount = portfolios?.length ?? 0;
