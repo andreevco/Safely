@@ -1,4 +1,4 @@
 export { usePasscode } from './usePasscode';
 export type { UsePasscodeResult } from './usePasscode';
-export { useSecurityCheck } from './useSecurityCheck';
+export { useMobileSecurityCheck } from './useMobileSecurityCheck';
 export type { PromptAndCheckOptions } from './types';

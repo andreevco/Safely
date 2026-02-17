@@ -6,12 +6,12 @@ import { createPersister, QueryProvider } from '@safely/ux';
 
 import { LoaderProvider } from '@mobile/shared/providers/loader';
 import { ToastProvider, ToastServiceProvider } from '@mobile/shared/providers/toast';
-import { createMMKVTreeStorage } from '@mobile/shared/storage/mmkv';
+import { mobileStorages } from '@mobile/shared/storage';
 
 import { AppContextProvider } from './AppContext';
 import { AppNavigation } from './AppNavigation';
 
-const persister = createPersister(createMMKVTreeStorage('persister').storage);
+const persister = createPersister(mobileStorages.persister.storage);
 
 export const App = () => {
     return (

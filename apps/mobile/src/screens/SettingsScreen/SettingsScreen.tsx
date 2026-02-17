@@ -1,11 +1,11 @@
 import { useNavigation } from '@react-navigation/native';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Alert, View } from 'react-native';
 
+import { useActivePortfolio, useDeletePortfolio, useLogOutFromAllAccounts } from '@safely/ux';
+
 import { RootStackNavigationProp, SettingsStackNavigationProp } from '@mobile/app/navigation/types';
-import { usePasscode, useSecurityCheck } from '@mobile/entities/security';
-import { clearAllAppData } from '@mobile/shared/storage/mmkv';
 import { Cell, List, Screen, Text } from '@mobile/shared/ui';
 
 import { styles } from './SettingsScreen.styles';
@@ -42,11 +42,8 @@ const groups: SettingsGroup[] = [
 
 export const SettingsScreen = () => {
     const { t } = useTranslation();
-    const queryClient = useQueryClient();
     const navigation = useNavigation<SettingsStackNavigationProp>();
     const rootNavigation = useNavigation<RootStackNavigationProp>();
-    const check = useSecurityCheck();
-    const passcode = usePasscode();
 
     const handleItemPress = (key: string) => {
         if (key === 'language') {
@@ -62,34 +59,60 @@ export const SettingsScreen = () => {
         }
     };
 
-    const { mutate: signOut } = useMutation({
+    const { mutateAsync: logOutFromAllAccounts } = useLogOutFromAllAccounts();
+    const { mutate: signOutAllAccounts } = useMutation({
         async mutationFn() {
-            await check();
-
+            await logOutFromAllAccounts();
             rootNavigation.reset({
                 index: 0,
                 routes: [{ name: 'WelcomeScreen' }]
             });
-            await new Promise(resolve => setTimeout(resolve, 100));
-            clearAllAppData();
-
-            if (passcode.isSet) {
-                await passcode.remove();
-            }
-
-            queryClient.clear();
         }
     });
-
     const handleSignOut = () => {
-        Alert.alert(t('settings.signOut.confirm.title'), t('settings.signOut.confirm.message'), [
-            { text: t('settings.signOut.confirm.cancel'), style: 'cancel' },
-            {
-                text: t('settings.signOut.confirm.confirm'),
-                style: 'destructive',
-                onPress: () => signOut()
-            }
-        ]);
+        Alert.alert(
+            t('settings.signOutAllAccounts.confirm.title'),
+            t('settings.signOutAllAccounts.confirm.message'),
+            [
+                { text: t('settings.signOutAllAccounts.confirm.cancel'), style: 'cancel' },
+                {
+                    text: t('settings.signOutAllAccounts.confirm.confirm'),
+                    style: 'destructive',
+                    onPress: () => signOutAllAccounts()
+                }
+            ]
+        );
+    };
+
+    const activePortfolio = useActivePortfolio();
+    const { mutateAsync: deletePortfolio } = useDeletePortfolio();
+    const { mutate: signOutPortfolio } = useMutation({
+        async mutationFn() {
+            await deletePortfolio(activePortfolio);
+
+            rootNavigation.reset({
+                index: 0,
+                routes: [{ name: 'TabsNavigator' }]
+            });
+        },
+        onError: error => {
+            console.error(error);
+            rootNavigation.goBack();
+        }
+    });
+    const handleDeletePortfolio = () => {
+        Alert.alert(
+            t('settings.removePortfolio.confirm.title'),
+            t('settings.removePortfolio.confirm.message'),
+            [
+                { text: t('settings.removePortfolio.confirm.cancel'), style: 'cancel' },
+                {
+                    text: t('settings.removePortfolio.confirm.confirm'),
+                    style: 'destructive',
+                    onPress: () => signOutPortfolio()
+                }
+            ]
+        );
     };
 
     return (
@@ -123,11 +146,22 @@ export const SettingsScreen = () => {
                 ))}
                 <List>
                     <List.Group variant="divided" style={styles.signOutGroup}>
+                        <Cell style={styles.signOutCell} onPress={handleDeletePortfolio}>
+                            <Cell.Content>
+                                <Cell.Row>
+                                    <Text variant="labelL" style={styles.signOutText}>
+                                        {t('settings.removePortfolio.title')}
+                                    </Text>
+                                </Cell.Row>
+                            </Cell.Content>
+                        </Cell>
+                    </List.Group>
+                    <List.Group>
                         <Cell style={styles.signOutCell} onPress={handleSignOut}>
                             <Cell.Content>
                                 <Cell.Row>
                                     <Text variant="labelL" style={styles.signOutText}>
-                                        {t('settings.signOut.title')}
+                                        {t('settings.signOutAllAccounts.title')}
                                     </Text>
                                 </Cell.Row>
                             </Cell.Content>

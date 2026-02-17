@@ -5,7 +5,7 @@ import { View } from 'react-native';
 
 import { SettingsStackNavigationProp } from '@mobile/app/navigation/types';
 import { availableLanguages, LanguageCode } from '@mobile/shared/i18n';
-import { MobileLocaleStorage } from '@mobile/shared/storage/mmkv';
+import { mobileStorages } from '@mobile/shared/storage';
 import { Cell, List, Screen, Text } from '@mobile/shared/ui';
 import { ArrowLeft16, Checkmark28, Icon } from '@mobile/shared/ui/Icon';
 
@@ -18,7 +18,7 @@ export const LanguageScreen = () => {
         (code: LanguageCode) => () => {
             if (i18n.language === code) return;
 
-            void i18n.changeLanguage(code).then(() => MobileLocaleStorage.set(code));
+            void i18n.changeLanguage(code).then(() => mobileStorages.locale.storage.set(code));
         },
         [i18n]
     );
