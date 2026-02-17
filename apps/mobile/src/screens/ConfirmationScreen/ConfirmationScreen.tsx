@@ -1,6 +1,5 @@
 import { StaticScreenProps, useNavigation } from '@react-navigation/native';
 import { notificationAsync, NotificationFeedbackType } from 'expo-haptics';
-import { Image } from 'expo-image';
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
@@ -16,7 +15,7 @@ import {
 } from '@safely/ux';
 
 import { TransactionFee } from '@mobile/screens/ConfirmationScreen/components/TransactionFee';
-import { Checkmark96, Icon, List, Screen, Text } from '@mobile/shared/ui';
+import { Checkmark96, Icon, List, Screen, Text, Image } from '@mobile/shared/ui';
 
 import { Amount, ConfirmationFooter, TransactionCell } from './components';
 import { styles } from './ConfirmationScreen.styles';
