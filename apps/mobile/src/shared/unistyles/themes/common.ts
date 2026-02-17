@@ -24,6 +24,7 @@ export const commonTheme = {
         16: 16,
         24: 24,
         32: 32,
+        48: 48,
         64: 64
     }
 };
