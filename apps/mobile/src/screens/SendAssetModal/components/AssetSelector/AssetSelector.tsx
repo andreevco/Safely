@@ -1,20 +1,20 @@
-import { Image } from 'expo-image';
 import { View } from 'react-native';
 
-import { resources } from '@mobile/shared/resources';
-import { Text } from '@mobile/shared/ui/Text';
+import { BTC_ASSET } from '@safely/core';
+
+import { Text, Image } from '@mobile/shared/ui';
 
 import { styles } from './AssetSelector.styles';
 
 export const AssetSelector = () => (
     <View style={styles.imageWithText}>
-        <Image source={resources.btcLogo} style={styles.image} />
+        <Image source={BTC_ASSET.image} style={styles.image} />
         <View>
             <Text style={styles.label} variant="labelM">
-                BTC
+                {BTC_ASSET.name}
             </Text>
             <Text variant="bodyM" color="secondary">
-                Bitcoin
+                {BTC_ASSET.symbol}
             </Text>
         </View>
     </View>
