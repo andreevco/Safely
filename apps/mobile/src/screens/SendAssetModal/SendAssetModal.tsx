@@ -23,6 +23,7 @@ import { AmountStep, RecipientStep } from './steps';
 type SendStackParamList = {
     SendAssetModal: {
         address?: string;
+        amount?: string;
     };
     ConfirmationModal: SendConfirmationParams;
 };
@@ -30,10 +31,9 @@ type SendStackParamList = {
 type SendAssetModalProps = StaticScreenProps<SendStackParamList['SendAssetModal']>;
 
 export const SendAssetModal = (props: SendAssetModalProps) => {
-    const { address: initialAddress } = props.route.params ?? {};
+    const { address, amount } = props.route.params ?? {};
     const { t } = useTranslation();
     const navigation = useNavigation<NavigationProp<SendStackParamList>>();
-    const didSetAddress = useRef(false);
     const pagerRef = useRef<PagerView>(null);
     const formatter = useNumberFormatter();
     const { numberFormatLocale } = useAppSdk();
@@ -50,15 +50,9 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
 
     const { state, actions, step, meta } = useSendForm({
         onSubmit: handleSubmit,
-        shouldResetForm: false
+        shouldResetForm: false,
+        initialValues: { recipient: address, amount }
     });
-
-    useEffect(() => {
-        if (initialAddress && !didSetAddress.current) {
-            didSetAddress.current = true;
-            actions.setRecipient(initialAddress);
-        }
-    }, [initialAddress, actions]);
 
     const amountInputType = state.values.amountInputType;
     const asset = state.parsed.asset;
