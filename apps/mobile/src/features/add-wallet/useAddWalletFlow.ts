@@ -1,9 +1,8 @@
 import { CommonActions, useNavigation } from '@react-navigation/native';
 import { useCallback } from 'react';
 
-import { MnemonicResource, Portfolio, PortfolioMeta } from '@safely/core';
-import { useChangePortfolioMeta, useGeneratePortfolio, useImportPortfolio } from '@safely/ux';
-import { useSecurityCheck } from '@safely/ux/shared/security';
+import { MnemonicResource } from '@safely/core';
+import { useGeneratePortfolio, useImportPortfolio, useSecurityCheck } from '@safely/ux';
 
 import { useLoader } from '@mobile/shared/providers/loader';
 
@@ -17,23 +16,27 @@ export function useAddWalletFlow() {
     const { withLoader } = useLoader();
     const { mutateAsync: importPortfolio } = useImportPortfolio();
     const { mutateAsync: generatePortfolio } = useGeneratePortfolio();
-    const { mutateAsync: changePortfolioMeta } = useChangePortfolioMeta();
     const check = useSecurityCheck();
 
     const startCreateFlow = useCallback(async () => {
-        navigation.dispatch(
-            CommonActions.navigate(routes.customize, {
-                onSuccess: () => {
-                    navigation.dispatch(
-                        CommonActions.reset({
-                            index: 0,
-                            routes: [{ name: 'TabsNavigator' }]
-                        })
-                    );
-                }
-            })
-        );
-    }, [navigation]);
+        await withLoader(async () => {
+            const portfolio = await generatePortfolio();
+
+            navigation.dispatch(
+                CommonActions.navigate(routes.customize, {
+                    portfolio,
+                    onCompleteCustomize: () => {
+                        navigation.dispatch(
+                            CommonActions.reset({
+                                index: 0,
+                                routes: [{ name: 'TabsNavigator' }]
+                            })
+                        );
+                    }
+                })
+            );
+        });
+    }, [navigation, check]);
 
     const startImportFlow = useCallback(() => {
         navigation.dispatch(CommonActions.navigate(routes.importWallet));
@@ -49,7 +52,7 @@ export function useAddWalletFlow() {
                 navigation.dispatch(
                     CommonActions.navigate(routes.customize, {
                         portfolio,
-                        onSuccess: () => {
+                        onCompleteCustomize: () => {
                             navigation.dispatch(
                                 CommonActions.reset({
                                     index: 0,
@@ -64,26 +67,9 @@ export function useAddWalletFlow() {
         [navigation, importPortfolio, withLoader]
     );
 
-    const onFinishCustomize = useCallback(
-        async (meta: PortfolioMeta, portfolio?: Portfolio, onSuccess?: () => void) => {
-            await withLoader(async () => {
-                if (portfolio) {
-                    await changePortfolioMeta({ portfolio, meta });
-                } else {
-                    const generatedPortfolio = await generatePortfolio();
-                    await changePortfolioMeta({ portfolio: generatedPortfolio, meta });
-                }
-            });
-
-            onSuccess?.();
-        },
-        [generatePortfolio, changePortfolioMeta, navigation, withLoader]
-    );
-
     return {
         startCreateFlow,
         startImportFlow,
-        onMnemonicReady,
-        onFinishCustomize
+        onMnemonicReady
     };
 }

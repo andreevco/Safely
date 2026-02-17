@@ -1,4 +1,5 @@
-import { useMemo } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TextInput, View } from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';
@@ -29,6 +30,13 @@ export const CustomizeWalletContent = ({
 }: CustomizeWalletContentProps) => {
     const { t } = useTranslation();
     const { theme } = useUnistyles();
+    const inputRef = useRef<TextInput>(null);
+
+    useFocusEffect(
+        useCallback(() => {
+            inputRef.current?.focus();
+        }, [])
+    );
 
     const iconDisplay = useMemo(() => {
         if (selectedIcon.type === 'emoji') {
@@ -56,6 +64,7 @@ export const CustomizeWalletContent = ({
             <View style={styles.inputContainer}>
                 <View style={styles.inputWrapper}>
                     <TextInput
+                        ref={inputRef}
                         value={walletName}
                         onChangeText={onWalletNameChange}
                         placeholder={t('customizeWallet.namePlaceholder')}

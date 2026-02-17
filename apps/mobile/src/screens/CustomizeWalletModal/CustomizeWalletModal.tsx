@@ -4,47 +4,45 @@ import { useTranslation } from 'react-i18next';
 import { Keyboard } from 'react-native';
 
 import { Portfolio } from '@safely/core';
+import { useChangePortfolioMeta } from '@safely/ux';
 
-import { useAddWalletFlow } from '@mobile/features/add-wallet';
-import { Button, Screen } from '@mobile/shared/ui';
+import { Button, Icon, Screen, Xmark16 } from '@mobile/shared/ui';
 
 import { WalletIcon } from './constants';
 import { CustomizeWalletContent } from './CustomizeWalletContent';
 import { styles } from './CustomizeWalletModal.styles';
 
 type CustomizeWalletModalProps = StaticScreenProps<{
-    portfolio?: Portfolio;
-    onSuccess?: () => void;
+    portfolio: Portfolio;
+    // NOTE: this callback is for navigation actions only and calling in cases when user don't save changes
+    onCompleteCustomize?: () => void;
 }>;
 
 export const CustomizeWalletModal = (props: CustomizeWalletModalProps) => {
-    const { portfolio, onSuccess } = props.route?.params ?? {};
+    const { portfolio, onCompleteCustomize } = props.route?.params ?? {};
     const { t } = useTranslation();
-    const { onFinishCustomize } = useAddWalletFlow();
+    const { mutateAsync: changePortfolioMeta } = useChangePortfolioMeta();
 
-    const [walletName, setWalletName] = useState(portfolio?.meta.name ?? '');
-    const [selectedIcon, setSelectedIcon] = useState<WalletIcon>(
-        portfolio?.meta.icon ?? { type: 'emoji', value: '🙂' }
-    );
+    const [walletName, setWalletName] = useState(portfolio?.meta.name);
+    const [selectedIcon, setSelectedIcon] = useState<WalletIcon>(portfolio?.meta.icon);
 
-    const handleSave = useCallback(() => {
+    const handleSave = useCallback(async () => {
         Keyboard.dismiss();
-        void onFinishCustomize(
-            {
-                name: walletName.trim(),
-                icon: selectedIcon
-            },
+        await changePortfolioMeta({
             portfolio,
-            onSuccess
-        );
-    }, [onFinishCustomize, walletName, selectedIcon, portfolio, onSuccess]);
+            meta: { name: walletName.trim(), icon: selectedIcon }
+        });
+        onCompleteCustomize?.();
+    }, [onCompleteCustomize, changePortfolioMeta, portfolio, walletName, selectedIcon]);
 
     const isNameValid = walletName.trim().length > 0;
 
     return (
         <Screen>
             <Screen.Header variant="left">
-                <Screen.Header.BackButton />
+                <Screen.Header.Button onPress={onCompleteCustomize}>
+                    <Icon icon={Xmark16} />
+                </Screen.Header.Button>
                 <Button
                     type="primary"
                     size="small"
