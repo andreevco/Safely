@@ -1,5 +1,7 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+
 import { accountStorageKey } from './keys';
-import { useAppSdk } from '../../shared';
+import { useAppContext, useAppSdk } from '../../shared';
 
 export function useActiveAccount(): { id: string } | undefined {
     return {
@@ -16,6 +18,19 @@ export function useAccounts() {
             syncProvider: storage.child('mock-accounts')
         }
     ];
+}
+
+export function useLogOutFromAllAccounts() {
+    const { clearAllData } = useAppContext();
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        async mutationFn() {
+            await clearAllData();
+
+            queryClient.clear();
+        }
+    });
 }
 
 export function useActiveAccountQueryKey() {

@@ -5,6 +5,7 @@ import { View } from 'react-native';
 
 import { SettingsStackNavigationProp } from '@mobile/app/navigation/types';
 import { availableLanguages, LanguageCode } from '@mobile/shared/i18n';
+import { mobileStorages } from '@mobile/shared/storage';
 import { Cell, List, Screen, Text } from '@mobile/shared/ui';
 import { ArrowLeft16, Checkmark28, Icon } from '@mobile/shared/ui/Icon';
 
@@ -13,12 +14,11 @@ import { styles } from './LanguageScreen.styles';
 export const LanguageScreen = () => {
     const { t, i18n } = useTranslation();
     const navigation = useNavigation<SettingsStackNavigationProp>();
-
     const handlePress = useCallback(
         (code: LanguageCode) => () => {
             if (i18n.language === code) return;
 
-            void i18n.changeLanguage(code);
+            void i18n.changeLanguage(code).then(() => mobileStorages.locale.storage.set(code));
         },
         [i18n]
     );

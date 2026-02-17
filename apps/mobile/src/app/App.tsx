@@ -1,43 +1,19 @@
-import { DarkTheme, Theme } from '@react-navigation/native';
-import * as SplashScreen from 'expo-splash-screen';
-import { useMemo } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { useUnistyles } from 'react-native-unistyles';
 
 import { createPersister, QueryProvider } from '@safely/ux';
 
 import { LoaderProvider } from '@mobile/shared/providers/loader';
 import { ToastProvider, ToastServiceProvider } from '@mobile/shared/providers/toast';
-import { createMMKVTreeStorage } from '@mobile/shared/storage/mmkv';
+import { mobileStorages } from '@mobile/shared/storage';
 
 import { AppContextProvider } from './AppContext';
-import Navigation from './navigation';
-import { navigationRef } from './navigation/navigationRef';
-import { useInitialNavigationState } from './navigation/useInitialNavigationState';
+import { AppNavigation } from './AppNavigation';
 
-const persister = createPersister(createMMKVTreeStorage('persister').storage);
+const persister = createPersister(mobileStorages.persister.storage);
 
 export const App = () => {
-    const { theme } = useUnistyles();
-    const initialState = useInitialNavigationState();
-
-    const NavigationTheme: Theme = useMemo(
-        () => ({
-            ...DarkTheme,
-            colors: {
-                primary: theme.colors.accent.accent,
-                background: theme.colors.background.primary,
-                card: theme.colors.background.primary,
-                text: theme.colors.text.primary,
-                border: theme.colors.other.hover,
-                notification: theme.colors.accent.accent
-            }
-        }),
-        [theme]
-    );
-
     return (
         <GestureHandlerRootView>
             <SafeAreaProvider>
@@ -46,12 +22,7 @@ export const App = () => {
                         <ToastServiceProvider>
                             <AppContextProvider>
                                 <LoaderProvider>
-                                    <Navigation
-                                        ref={navigationRef}
-                                        initialState={initialState}
-                                        onReady={() => SplashScreen.hideAsync()}
-                                        theme={NavigationTheme}
-                                    />
+                                    <AppNavigation />
                                     <ToastProvider />
                                 </LoaderProvider>
                             </AppContextProvider>

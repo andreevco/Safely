@@ -1,10 +1,9 @@
 import { CommonActions, useNavigation } from '@react-navigation/native';
 import { useCallback } from 'react';
 
-import { MnemonicResource, Portfolio, PortfolioMeta } from '@safely/core';
-import { useChangePortfolioMeta, useGeneratePortfolio, useImportPortfolio } from '@safely/ux';
+import { MnemonicResource } from '@safely/core';
+import { useGeneratePortfolio, useImportPortfolio, useSecurityCheck } from '@safely/ux';
 
-import { useSecurityCheck } from '@mobile/entities/security';
 import { useLoader } from '@mobile/shared/providers/loader';
 
 const routes = {
@@ -15,25 +14,28 @@ const routes = {
 export function useAddWalletFlow() {
     const navigation = useNavigation();
     const { withLoader } = useLoader();
-    const check = useSecurityCheck();
     const { mutateAsync: importPortfolio } = useImportPortfolio();
     const { mutateAsync: generatePortfolio } = useGeneratePortfolio();
-    const { mutateAsync: changePortfolioMeta } = useChangePortfolioMeta();
+    const check = useSecurityCheck();
 
     const startCreateFlow = useCallback(async () => {
-        await check();
-        navigation.dispatch(
-            CommonActions.navigate(routes.customize, {
-                onSuccess: () => {
-                    navigation.dispatch(
-                        CommonActions.reset({
-                            index: 0,
-                            routes: [{ name: 'TabsNavigator' }]
-                        })
-                    );
-                }
-            })
-        );
+        await withLoader(async () => {
+            const portfolio = await generatePortfolio();
+
+            navigation.dispatch(
+                CommonActions.navigate(routes.customize, {
+                    portfolio,
+                    onCompleteCustomize: () => {
+                        navigation.dispatch(
+                            CommonActions.reset({
+                                index: 0,
+                                routes: [{ name: 'TabsNavigator' }]
+                            })
+                        );
+                    }
+                })
+            );
+        });
     }, [navigation, check]);
 
     const startImportFlow = useCallback(() => {
@@ -50,7 +52,7 @@ export function useAddWalletFlow() {
                 navigation.dispatch(
                     CommonActions.navigate(routes.customize, {
                         portfolio,
-                        onSuccess: () => {
+                        onCompleteCustomize: () => {
                             navigation.dispatch(
                                 CommonActions.reset({
                                     index: 0,
@@ -62,29 +64,12 @@ export function useAddWalletFlow() {
                 );
             });
         },
-        [navigation, check, importPortfolio, withLoader]
-    );
-
-    const onFinishCustomize = useCallback(
-        async (meta: PortfolioMeta, portfolio?: Portfolio, onSuccess?: () => void) => {
-            await withLoader(async () => {
-                if (portfolio) {
-                    await changePortfolioMeta({ portfolio, meta });
-                } else {
-                    const generatedPortfolio = await generatePortfolio();
-                    await changePortfolioMeta({ portfolio: generatedPortfolio, meta });
-                }
-            });
-
-            onSuccess?.();
-        },
-        [generatePortfolio, changePortfolioMeta, navigation, withLoader]
+        [navigation, importPortfolio, withLoader]
     );
 
     return {
         startCreateFlow,
         startImportFlow,
-        onMnemonicReady,
-        onFinishCustomize
+        onMnemonicReady
     };
 }

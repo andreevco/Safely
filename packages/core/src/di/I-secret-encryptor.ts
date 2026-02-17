@@ -14,4 +14,6 @@ export interface ISecretEncryptor {
     decryptSecret(encryptedSecret: SSecretEncrypted): Promise<SSecretDecrypted>;
 
     encryptSecret(decryptedSecret: SSecretDecrypted): Promise<SSecretEncrypted>;
+
+    removeSecretCache(encryptedSecret: SSecretEncrypted): Promise<void>;
 }
