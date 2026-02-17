@@ -2,7 +2,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { useQrResult, useToast } from '@safely/ux';
+import { useQrResult } from '@safely/ux';
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 
@@ -20,17 +20,12 @@ interface IProps {
 export function useQrScan(props: IProps) {
     const { onSuccess, onError, headerData } = props;
 
-    const toast = useToast();
     const { t } = useTranslation();
     const navigation = useNavigation<RootStackNavigationProp>();
 
-    const defaultOnError = useCallback(() => {
-        toast({ message: t('scan.errors.invalidAddress'), type: 'error' });
-    }, [toast, t]);
-
     const handleResult = useQrResult({
         onSuccess,
-        onError: onError ?? defaultOnError
+        onError
     });
 
     const title = headerData?.title ?? t('qrScan.title');

@@ -2,6 +2,9 @@ import { useCallback } from 'react';
 
 import { BtcAddress } from '@safely/core';
 
+import { useToast } from '../../entities';
+import { useTranslate } from '../../shared';
+
 export function parseQrValue(raw: string): string {
     const btcPrefix = 'bitcoin:';
 
@@ -15,10 +18,24 @@ export function parseQrValue(raw: string): string {
 
 interface IProps {
     onSuccess: (address: string) => void;
-    onError: () => void;
+    onError?: () => void;
 }
 
-export function useQrResult({ onSuccess, onError }: IProps) {
+export function useQrResult(props: IProps) {
+    const { onSuccess, onError } = props;
+
+    const toast = useToast();
+    const t = useTranslate();
+
+    const defaultOnError = useCallback(() => {
+        toast({
+            message: t('scan.errors.invalidAddress'),
+            type: 'error'
+        });
+    }, [toast, t]);
+
+    const errorHandler = onError ?? defaultOnError;
+
     return useCallback(
         (scannedValue: string) => {
             const address = parseQrValue(scannedValue);
@@ -26,9 +43,9 @@ export function useQrResult({ onSuccess, onError }: IProps) {
             if (BtcAddress.validate(address)) {
                 onSuccess(address);
             } else {
-                onError();
+                errorHandler();
             }
         },
-        [onSuccess, onError]
+        [onSuccess, errorHandler]
     );
 }
