@@ -114,6 +114,13 @@ export function validateAmount(
             };
         }
 
+        if (result.parsed.cryptoAssetAmount.relativeAmount.eq(0)) {
+            return {
+                ...result,
+                error: SendFormError.INVALID_AMOUNT
+            };
+        }
+
         if (result.parsed.cryptoAssetAmount.gt(asset.amount)) {
             return {
                 ...result,
