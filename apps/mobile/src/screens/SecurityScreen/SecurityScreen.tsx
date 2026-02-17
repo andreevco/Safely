@@ -4,10 +4,10 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import { useActivePortfolio } from '@safely/ux';
+import { useSecurityCheck } from '@safely/ux/shared/security';
 
 import { RootStackNavigationProp, SettingsStackNavigationProp } from '@mobile/app/navigation/types';
 import { PortfolioName } from '@mobile/entities/portfolio';
-import { useSecurityCheck } from '@mobile/entities/security';
 import {
     getBiometryTranslationKey,
     useBiometryQuery,

@@ -25,6 +25,7 @@ import {
     useSuspenseQuery,
     useAccountLocalStorage
 } from '../../shared';
+import { useSecurityCheck } from '../../shared/security';
 import { useActiveAccountSyncedStorage } from '../../shared/storage/account/synced';
 import { useActiveAccountQueryKey } from '../account';
 import { useToast } from '../toast';
@@ -172,13 +173,13 @@ export function useImportPortfolio() {
 }
 
 export function useDeletePortfolio() {
-    const sdk = useAppSdk();
     const portfolios = usePortfolios();
     const { mutateAsync } = useSetPortfolios();
+    const check = useSecurityCheck();
 
     return useMutation<void, Error, { id: IPortfolioId }>({
         async mutationFn({ id }) {
-            await sdk.security.check();
+            await check();
             await mutateAsync(portfolios.filter(p => !p.id.isEq(id)));
         }
     });
@@ -254,7 +255,7 @@ export function useActivePortfolioEntitiesQuery() {
         queryKey: accountQueryKey.portfolios.active.toKey(),
         async queryFn() {
             const portfolios: ReturnType<typeof usePortfoliosQuery>['data'] =
-                await client.ensureQueryData(portfoliosQuery);
+                await client.fetchQuery(portfoliosQuery);
             if (!portfolios?.length) {
                 return null;
             }
@@ -335,7 +336,7 @@ export function useSetActiveDerivation() {
 
     return useMutation<Portfolio, Error, Pick<IDerivation, 'id'>>({
         async mutationFn({ id }) {
-            const portfolios: Portfolio[] = await client.ensureQueryData(portfoliosQuery);
+            const portfolios: Portfolio[] = await client.fetchQuery(portfoliosQuery);
             const portfolioToSet = portfolios.find(a => a.id.isEq(id.portfolioId));
             const derivationToSet = portfolioToSet?.getDerivation(id);
 
@@ -366,7 +367,7 @@ export function useSetActivePortfolio() {
 
     return useMutation<Portfolio, Error, Pick<Portfolio, 'id'>>({
         async mutationFn({ id }) {
-            const portfolios: Portfolio[] = await client.ensureQueryData(portfoliosQuery);
+            const portfolios: Portfolio[] = await client.fetchQuery(portfoliosQuery);
             const portfolioToSet = portfolios.find(a => a.id.isEq(id));
             const derivationToSet = portfolioToSet?.getDerivations()[0];
 
@@ -392,7 +393,7 @@ export function useChangePortfolioMeta() {
         { portfolio: { id: IPortfolioId }; meta: Partial<PortfolioMeta> }
     >({
         async mutationFn({ portfolio: { id }, meta }) {
-            const portfolios: Portfolio[] = await client.ensureQueryData(portfoliosQuery);
+            const portfolios: Portfolio[] = await client.fetchQuery(portfoliosQuery);
             const portfolio = portfolios.find(p => p.id.isEq(id));
             if (!portfolio) {
                 throw new Error('Portfolio not found');
