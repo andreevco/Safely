@@ -3,7 +3,6 @@ import { useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Alert, View } from 'react-native';
 
-import { delay } from '@safely/core';
 import { useActivePortfolio, useDeletePortfolio, useLogOutFromAllAccounts } from '@safely/ux';
 
 import { RootStackNavigationProp, SettingsStackNavigationProp } from '@mobile/app/navigation/types';
