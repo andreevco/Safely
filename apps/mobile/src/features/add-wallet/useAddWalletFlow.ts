@@ -25,7 +25,7 @@ export function useAddWalletFlow() {
             navigation.dispatch(
                 CommonActions.navigate(routes.customize, {
                     portfolio,
-                    onSuccess: () => {
+                    onCompleteCustomize: () => {
                         navigation.dispatch(
                             CommonActions.reset({
                                 index: 0,
@@ -52,7 +52,7 @@ export function useAddWalletFlow() {
                 navigation.dispatch(
                     CommonActions.navigate(routes.customize, {
                         portfolio,
-                        onSuccess: () => {
+                        onCompleteCustomize: () => {
                             navigation.dispatch(
                                 CommonActions.reset({
                                     index: 0,

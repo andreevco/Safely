@@ -6,8 +6,7 @@ import { Keyboard } from 'react-native';
 import { Portfolio } from '@safely/core';
 import { useChangePortfolioMeta } from '@safely/ux';
 
-import { useLoader } from '@mobile/shared/providers/loader';
-import { Button, Screen } from '@mobile/shared/ui';
+import { Button, Icon, Screen, Xmark16 } from '@mobile/shared/ui';
 
 import { WalletIcon } from './constants';
 import { CustomizeWalletContent } from './CustomizeWalletContent';
@@ -15,13 +14,13 @@ import { styles } from './CustomizeWalletModal.styles';
 
 type CustomizeWalletModalProps = StaticScreenProps<{
     portfolio: Portfolio;
-    onSuccess?: () => void;
+    // NOTE: this callback is for navigation actions only and calling in cases when user don't save changes
+    onCompleteCustomize?: () => void;
 }>;
 
 export const CustomizeWalletModal = (props: CustomizeWalletModalProps) => {
-    const { portfolio, onSuccess } = props.route?.params ?? {};
+    const { portfolio, onCompleteCustomize } = props.route?.params ?? {};
     const { t } = useTranslation();
-    const { withLoader } = useLoader();
     const { mutateAsync: changePortfolioMeta } = useChangePortfolioMeta();
 
     const [walletName, setWalletName] = useState(portfolio?.meta.name);
@@ -29,22 +28,21 @@ export const CustomizeWalletModal = (props: CustomizeWalletModalProps) => {
 
     const handleSave = useCallback(async () => {
         Keyboard.dismiss();
-        await withLoader(
-            async () =>
-                await changePortfolioMeta({
-                    portfolio,
-                    meta: { name: walletName.trim(), icon: selectedIcon }
-                })
-        );
-        onSuccess?.();
-    }, [withLoader, onSuccess, changePortfolioMeta, portfolio, walletName, selectedIcon]);
+        await changePortfolioMeta({
+            portfolio,
+            meta: { name: walletName.trim(), icon: selectedIcon }
+        });
+        onCompleteCustomize?.();
+    }, [onCompleteCustomize, changePortfolioMeta, portfolio, walletName, selectedIcon]);
 
     const isNameValid = walletName.trim().length > 0;
 
     return (
         <Screen>
             <Screen.Header variant="left">
-                <Screen.Header.BackButton />
+                <Screen.Header.Button onPress={onCompleteCustomize}>
+                    <Icon icon={Xmark16} />
+                </Screen.Header.Button>
                 <Button
                     type="primary"
                     size="small"
