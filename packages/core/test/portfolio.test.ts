@@ -408,7 +408,7 @@ describe('Negative scenarios (Bitcoin)', () => {
         ];
         const portfolioName = 'Invalid Portfolio';
 
-        expect(
+        await expect(
             portfolioFactory.generatePortfolio(new ClosableMnemonicAccessorVault(invalidMnemonic), {
                 network: PortfolioNetworkType.MAINNET,
                 name: portfolioName
@@ -422,7 +422,7 @@ describe('Negative scenarios (Bitcoin)', () => {
             'wonder enlist rival minute truck melody area person regret foam whip night'.split(' ');
         const portfolioName = 'Short mnemonic';
 
-        expect(
+        await expect(
             portfolioFactory.generatePortfolio(new ClosableMnemonicAccessorVault(invalidMnemonic), {
                 network: PortfolioNetworkType.MAINNET,
                 name: portfolioName
@@ -441,7 +441,7 @@ describe('Negative scenarios (Bitcoin)', () => {
 
         const portfolioName = 'Checksum mismatch';
 
-        expect(
+        await expect(
             portfolioFactory.generatePortfolio(new ClosableMnemonicAccessorVault(invalidMnemonic), {
                 network: PortfolioNetworkType.MAINNET,
                 name: portfolioName
@@ -454,7 +454,7 @@ describe('Negative scenarios (Bitcoin)', () => {
         const invalidMnemonic: string[] = [];
         const portfolioName = 'Empty Mnemonic';
 
-        expect(
+        await expect(
             portfolioFactory.generatePortfolio(new ClosableMnemonicAccessorVault(invalidMnemonic), {
                 network: PortfolioNetworkType.MAINNET,
                 name: portfolioName
@@ -467,7 +467,7 @@ describe('Negative scenarios (Bitcoin)', () => {
         const invalidMnemonic = 'apple banana cherry date elder'.split(' ');
         const portfolioName = 'Short mnemonic';
 
-        expect(
+        await expect(
             portfolioFactory.generatePortfolio(new ClosableMnemonicAccessorVault(invalidMnemonic), {
                 network: PortfolioNetworkType.MAINNET,
                 name: portfolioName
@@ -480,7 +480,7 @@ describe('Negative scenarios (Bitcoin)', () => {
         const invalidMnemonic = Array(30).fill('word') as string[];
         const portfolioName = 'Too long mnemonic';
 
-        expect(
+        await expect(
             portfolioFactory.generatePortfolio(new ClosableMnemonicAccessorVault(invalidMnemonic), {
                 network: PortfolioNetworkType.MAINNET,
                 name: portfolioName
@@ -494,7 +494,7 @@ describe('Negative scenarios (Bitcoin)', () => {
             'apple apple apple apple apple apple apple apple apple apple apple apple'.split(' ');
         const portfolioName = 'Duplicates';
 
-        expect(
+        await expect(
             portfolioFactory.generatePortfolio(new ClosableMnemonicAccessorVault(invalidMnemonic), {
                 network: PortfolioNetworkType.MAINNET,
                 name: portfolioName
