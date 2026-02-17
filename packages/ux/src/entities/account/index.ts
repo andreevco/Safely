@@ -3,9 +3,10 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { accountStorageKey } from './keys';
 import { useAppContext, useAppSdk } from '../../shared';
 
-export function useActiveAccount(): { id: string } | undefined {
+export function useActiveAccount(): { id: string; name: string } | undefined {
     return {
-        id: 'mock'
+        id: 'mock',
+        name: 'Main'
     };
 }
 
@@ -20,7 +21,20 @@ export function useAccounts() {
     ];
 }
 
-export function useLogOutFromAllAccounts() {
+export function useSignOutFromAccount() {
+    const { clearAllData } = useAppContext();
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        async mutationFn() {
+            await clearAllData(); // TODO
+
+            queryClient.clear();
+        }
+    });
+}
+
+export function useSignOutFromAllAccounts() {
     const { clearAllData } = useAppContext();
     const queryClient = useQueryClient();
 

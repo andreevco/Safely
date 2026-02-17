@@ -64,7 +64,7 @@ export function useAddWalletFlow() {
                 );
             });
         },
-        [navigation, importPortfolio, withLoader]
+        [navigation, importPortfolio, withLoader, check]
     );
 
     return {
