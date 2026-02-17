@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { TextInput, View } from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';
 
-import { useQrScan } from '@mobile/features/qr-scan';
+import { useQrScan } from '@safely/ux';
+
 import { Icon, QrCodeScan28, XmarkCircle16 } from '@mobile/shared/ui/Icon';
 import { Text } from '@mobile/shared/ui/Text';
 import { TouchableOpacity } from '@mobile/shared/ui/TouchableOpacity';
@@ -26,9 +27,10 @@ export const AddressInput = (props: AddressInputProps) => {
     const { theme } = useUnistyles();
 
     const handleScan = useQrScan({
-        onSuccess: useCallback(
-            (address: string) => {
-                onChangeText(address);
+        allowedSchemes: ['btc-transfer'] as const,
+        onResult: useCallback(
+            scheme => {
+                onChangeText(scheme.parsed.address);
             },
             [onChangeText]
         )

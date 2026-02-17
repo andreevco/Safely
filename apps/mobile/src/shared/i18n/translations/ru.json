@@ -298,9 +298,10 @@
       "home": "Главная",
       "history": "История"
     },
-    "scan": {
+    "externalInput": {
         "errors": {
-            "invalidAddress": "Недействительный QR-код"
+            "unrecognized": "Нераспознанный ввод",
+            "unsupportedScheme": "Неподдерживаемый тип ввода"
         }
     },
     "importWalletScreen": {

@@ -1,5 +1,5 @@
 export * from './forms';
 export * from './home-screen';
-export * from './qr-scan';
+export * from './external-input';
 export * from './receive';
 export * from './blockchain-send';

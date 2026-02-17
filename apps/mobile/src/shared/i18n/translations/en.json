@@ -336,9 +336,10 @@
             "failedToGenerate": "Failed to generate wallet"
         }
     },
-    "scan": {
+    "externalInput": {
         "errors": {
-            "invalidAddress": "Invalid QR code"
+            "unrecognized": "Unrecognized input",
+            "unsupportedScheme": "Unsupported input type"
         }
     },
     "transaction": {

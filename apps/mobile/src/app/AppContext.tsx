@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { IAppSdk } from '@safely/core';
 import { AppContext, IAppContext } from '@safely/ux';
 
+import { navigationRef } from '@mobile/app/navigation/navigationRef';
 import { useSecurityCheck } from '@mobile/entities/security';
 import { useToastServiceContext } from '@mobile/shared/providers/toast';
 import { createMMKVTreeStorage } from '@mobile/shared/storage/mmkv';
@@ -31,9 +32,16 @@ const sdk: IAppSdk = {
         }
     },
     qrScanner: {
-        scan: async () => {
-            throw new Error('Not implemented');
-        }
+        scan: options =>
+            new Promise<string>(resolve => {
+                const t = i18next.t.bind(i18next);
+
+                navigationRef.navigate('QRScanModal', {
+                    onSuccess: resolve,
+                    title: t(options?.titleTranslationKey ?? 'qrScan.title'),
+                    subtitle: t(options?.subTranslationKey ?? 'qrScan.subtitle')
+                });
+            })
     },
     security: {
         check: () => securityCheck()
