@@ -1,11 +1,17 @@
 import { useNavigation } from '@react-navigation/native';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Alert, View } from 'react-native';
 
+import {
+    useActiveAccount,
+    useActivePortfolio,
+    useDeletePortfolio,
+    usePortfolios,
+    useSignOutFromAccount
+} from '@safely/ux';
+
 import { RootStackNavigationProp, SettingsStackNavigationProp } from '@mobile/app/navigation/types';
-import { usePasscode, useSecurityCheck } from '@mobile/entities/security';
-import { clearAllAppData } from '@mobile/shared/storage/mmkv';
 import { Cell, List, Screen, Text } from '@mobile/shared/ui';
 
 import { styles } from './SettingsScreen.styles';
@@ -42,11 +48,11 @@ const groups: SettingsGroup[] = [
 
 export const SettingsScreen = () => {
     const { t } = useTranslation();
-    const queryClient = useQueryClient();
     const navigation = useNavigation<SettingsStackNavigationProp>();
     const rootNavigation = useNavigation<RootStackNavigationProp>();
-    const check = useSecurityCheck();
-    const passcode = usePasscode();
+    const accountName = useActiveAccount()!.name;
+    const portfolio = useActivePortfolio();
+    const portfolios = usePortfolios();
 
     const handleItemPress = (key: string) => {
         if (key === 'language') {
@@ -62,34 +68,56 @@ export const SettingsScreen = () => {
         }
     };
 
-    const { mutate: signOut } = useMutation({
+    const { mutateAsync: _signOutAccount } = useSignOutFromAccount();
+    const { mutate: signOutAccount } = useMutation({
         async mutationFn() {
-            await check();
-
+            await _signOutAccount();
             rootNavigation.reset({
                 index: 0,
                 routes: [{ name: 'WelcomeScreen' }]
             });
-            await new Promise(resolve => setTimeout(resolve, 100));
-            clearAllAppData();
-
-            if (passcode.isSet) {
-                await passcode.remove();
-            }
-
-            queryClient.clear();
         }
     });
-
     const handleSignOut = () => {
-        Alert.alert(t('settings.signOut.confirm.title'), t('settings.signOut.confirm.message'), [
-            { text: t('settings.signOut.confirm.cancel'), style: 'cancel' },
-            {
-                text: t('settings.signOut.confirm.confirm'),
-                style: 'destructive',
-                onPress: () => signOut()
-            }
-        ]);
+        Alert.alert(
+            t('settings.signOutAccount.confirm.title', { name: accountName }),
+            t('settings.signOutAccount.confirm.message', { name: accountName }),
+            [
+                { text: t('settings.signOutAccount.confirm.cancel'), style: 'cancel' },
+                {
+                    text: t('settings.signOutAccount.confirm.confirm'),
+                    style: 'destructive',
+                    onPress: () => signOutAccount()
+                }
+            ]
+        );
+    };
+
+    const activePortfolio = useActivePortfolio();
+    const { mutateAsync: deletePortfolio } = useDeletePortfolio();
+    const { mutate: signOutPortfolio } = useMutation({
+        async mutationFn() {
+            await deletePortfolio(activePortfolio);
+
+            rootNavigation.reset({
+                index: 0,
+                routes: [{ name: 'TabsNavigator' }]
+            });
+        }
+    });
+    const handleDeletePortfolio = () => {
+        Alert.alert(
+            t('settings.removePortfolio.confirm.title', { name: portfolio.meta.name }),
+            t('settings.removePortfolio.confirm.message', { name: portfolio.meta.name }),
+            [
+                { text: t('settings.removePortfolio.confirm.cancel'), style: 'cancel' },
+                {
+                    text: t('settings.removePortfolio.confirm.confirm'),
+                    style: 'destructive',
+                    onPress: () => signOutPortfolio()
+                }
+            ]
+        );
     };
 
     return (
@@ -122,12 +150,27 @@ export const SettingsScreen = () => {
                     </List>
                 ))}
                 <List>
-                    <List.Group variant="divided" style={styles.signOutGroup}>
+                    {portfolios.length > 1 && (
+                        <List.Group variant="divided" style={styles.signOutGroup}>
+                            <Cell style={styles.signOutCell} onPress={handleDeletePortfolio}>
+                                <Cell.Content>
+                                    <Cell.Row>
+                                        <Text variant="labelL" style={styles.signOutText}>
+                                            {t('settings.removePortfolio.title', {
+                                                name: portfolio.meta.name
+                                            })}
+                                        </Text>
+                                    </Cell.Row>
+                                </Cell.Content>
+                            </Cell>
+                        </List.Group>
+                    )}
+                    <List.Group>
                         <Cell style={styles.signOutCell} onPress={handleSignOut}>
                             <Cell.Content>
                                 <Cell.Row>
                                     <Text variant="labelL" style={styles.signOutText}>
-                                        {t('settings.signOut.title')}
+                                        {t('settings.signOutAccount.title', { name: accountName })}
                                     </Text>
                                 </Cell.Row>
                             </Cell.Content>

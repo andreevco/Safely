@@ -12,3 +12,9 @@ export interface IEnumerableStorage extends IStorage {
 export interface ITreeStorage extends IEnumerableStorage {
     child(path: string[] | string): ITreeStorage;
 }
+
+export interface ISyncSingleStorage {
+    set(value: string): void;
+    get(): string | null;
+    clear(): void;
+}

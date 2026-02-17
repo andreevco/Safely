@@ -23,7 +23,7 @@ export const Dot = (props: DotProps) => {
     const scale = useSharedValue(1);
 
     const animatedStyle = useAnimatedStyle(() => {
-        let backgroundColor = theme.colors.accent.accent;
+        let backgroundColor = theme.colors.other.constant.white;
 
         if (isSuccess?.value) {
             backgroundColor = theme.colors.accent.green;

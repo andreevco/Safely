@@ -2,6 +2,8 @@ import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persi
 import { DehydratedState, InfiniteData } from '@tanstack/react-query';
 import { Persister } from '@tanstack/react-query-persist-client';
 
+import { IStorage } from '@safely/core';
+
 import { cacheSchemas, isValidSchemaKey } from './cache-config';
 import { serialize, deserialize } from './serialization';
 
@@ -13,14 +15,6 @@ function clearQueryState(query: DehydratedQuery) {
     query.state.data = undefined;
     query.state.status = 'pending';
     query.state.fetchStatus = 'idle';
-}
-
-type MaybePromise<T> = T | Promise<T>;
-interface AsyncStorage<TStorageValue = string> {
-    getItem: (key: string) => MaybePromise<TStorageValue | undefined | null>;
-    setItem: (key: string, value: TStorageValue) => MaybePromise<unknown>;
-    removeItem: (key: string) => MaybePromise<void>;
-    entries?: () => MaybePromise<Array<[key: string, value: TStorageValue]>>;
 }
 
 function isInfiniteData(data: unknown): data is InfiniteData<unknown, unknown> {
@@ -72,7 +66,7 @@ function keepOnlyFirstInfinityPage(queries: DehydratedQuery[]) {
     }
 }
 
-export function createPersister(storage: AsyncStorage): Persister {
+export function createPersister(storage: IStorage): Persister {
     const basePersister = createAsyncStoragePersister({
         storage,
         serialize,

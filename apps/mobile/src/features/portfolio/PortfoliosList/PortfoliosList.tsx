@@ -42,7 +42,7 @@ export const PortfoliosList = (props: PortfoliosListProps) => {
         (portfolio: Portfolio) => {
             navigation.navigate('CustomizeWalletModal', {
                 portfolio,
-                onSuccess: () => {
+                onCompleteCustomize: () => {
                     navigation.goBack();
                     onEditEnd?.();
                 }

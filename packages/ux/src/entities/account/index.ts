@@ -1,9 +1,12 @@
-import { accountStorageKey } from './keys';
-import { useAppSdk } from '../../shared';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-export function useActiveAccount(): { id: string } | undefined {
+import { accountStorageKey } from './keys';
+import { useAppContext, useAppSdk } from '../../shared';
+
+export function useActiveAccount(): { id: string; name: string } | undefined {
     return {
-        id: 'mock'
+        id: 'mock',
+        name: 'Main'
     };
 }
 
@@ -16,6 +19,32 @@ export function useAccounts() {
             syncProvider: storage.child('mock-accounts')
         }
     ];
+}
+
+export function useSignOutFromAccount() {
+    const { clearAllData } = useAppContext();
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        async mutationFn() {
+            await clearAllData(); // TODO
+
+            queryClient.clear();
+        }
+    });
+}
+
+export function useSignOutFromAllAccounts() {
+    const { clearAllData } = useAppContext();
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        async mutationFn() {
+            await clearAllData();
+
+            queryClient.clear();
+        }
+    });
 }
 
 export function useActiveAccountQueryKey() {

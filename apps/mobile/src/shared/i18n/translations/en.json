@@ -4,7 +4,10 @@
         "next": "Next",
         "cancel": "Cancel",
         "continue": "Continue",
-        "later": "Later"
+        "later": "Later",
+        "errors": {
+            "unknown": "Something went wrong"
+        }
     },
     "send": {
         "title": "Send",
@@ -300,12 +303,21 @@
                 }
             }
         },
-        "signOut": {
-            "title": "Sign out account",
+        "signOutAccount": {
+            "title": "Sign out account “{{name}}”",
             "confirm": {
-                "title": "Sign out?",
-                "message": "This will remove all wallets and reset the app. This action cannot be undone.",
+                "title": "Sign out account “{{name}}”?",
+                "message": "This will remove account “{{name}}”. This action cannot be undone.",
                 "confirm": "Sign out",
+                "cancel": "Cancel"
+            }
+        },
+        "removePortfolio": {
+            "title": "Remove wallet “{{name}}”",
+            "confirm": {
+                "title": "Remove wallet “{{name}}”?",
+                "message": "This will remove wallet “{{name}}”. This action cannot be undone.",
+                "confirm": "Remove",
                 "cancel": "Cancel"
             }
         }
@@ -333,6 +345,7 @@
         },
         "errors": {
             "alreadyExists": "Wallet already exists",
+            "invalidMnemonic": "Invalid recovery phrase",
             "failedToGenerate": "Failed to generate wallet"
         }
     },

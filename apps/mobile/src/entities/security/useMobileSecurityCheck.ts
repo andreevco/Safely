@@ -5,7 +5,7 @@ import { authenticateBiometry, useBiometryQuery } from '@mobile/features/biometr
 import { PromptAndCheckOptions } from './types';
 import { usePasscode } from './usePasscode';
 
-export function useSecurityCheck() {
+export function useMobileSecurityCheck() {
     const { data: biometry } = useBiometryQuery();
     const passcode = usePasscode();
 
