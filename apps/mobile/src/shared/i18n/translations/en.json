@@ -303,20 +303,20 @@
                 }
             }
         },
-        "signOutAllAccounts": {
-            "title": "Sign out all accounts",
+        "signOutAccount": {
+            "title": "Sign out account “{{name}}”",
             "confirm": {
-                "title": "Sign out?",
-                "message": "This will remove all accounts and reset the app. This action cannot be undone.",
+                "title": "Sign out account “{{name}}”?",
+                "message": "This will remove account “{{name}}”. This action cannot be undone.",
                 "confirm": "Sign out",
                 "cancel": "Cancel"
             }
         },
         "removePortfolio": {
-            "title": "Remove current wallet",
+            "title": "Remove wallet “{{name}}”",
             "confirm": {
-                "title": "Remove current wallet?",
-                "message": "This will remove current wallet. This action cannot be undone.",
+                "title": "Remove wallet “{{name}}”?",
+                "message": "This will remove wallet “{{name}}”. This action cannot be undone.",
                 "confirm": "Remove",
                 "cancel": "Cancel"
             }
