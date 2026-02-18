@@ -1,6 +1,5 @@
 import { StaticScreenProps, useNavigation } from '@react-navigation/native';
 import { notificationAsync, NotificationFeedbackType } from 'expo-haptics';
-import { Image } from 'expo-image';
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
@@ -16,7 +15,7 @@ import {
 
 import { TransactionFee } from '@mobile/screens/ConfirmationScreen/components/TransactionFee';
 import { TransactionSendResult } from '@mobile/screens/ConfirmationScreen/components/TransactionSendResult';
-import { Checkmark96, Icon, List, Screen, Text } from '@mobile/shared/ui';
+import { Checkmark96, Icon, List, Screen, Text, Image } from '@mobile/shared/ui';
 
 import { Amount, ConfirmationFooter, Wallet, TransactionCell } from './components';
 import { styles } from './ConfirmationScreen.styles';
@@ -35,9 +34,7 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
     const { t } = useTranslation();
     const btcWallet = useActiveBtcWallet();
 
-    const [confirmationState, setConfirmationState] = useState<ConfirmationState>(
-        ConfirmationState.SIGNING
-    );
+    const [confirmationState, setConfirmationState] = useState<ConfirmationState>({ type: 'idle' });
 
     const { data: txTemplate } = useEstimateAssetTransfer(confirmationResult);
     const { mutateAsync: send, data: sendResult } = useSendAssetTransfer(txTemplate);
@@ -45,16 +42,13 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
 
     const onSend = useCallback(async () => {
         try {
-            setConfirmationState(ConfirmationState.SENDING);
+            setConfirmationState({ type: 'sending' });
             await send();
             notificationAsync(NotificationFeedbackType.Success);
-            setConfirmationState(ConfirmationState.SUCCESS);
-        } catch {
+            setConfirmationState({ type: 'success' });
+        } catch (error) {
             notificationAsync(NotificationFeedbackType.Error);
-            setConfirmationState(ConfirmationState.ERROR);
-            setTimeout(() => {
-                setConfirmationState(ConfirmationState.SIGNING);
-            }, 1000);
+            setConfirmationState({ type: 'error', error });
         }
     }, [send]);
 
@@ -65,13 +59,13 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
     const asset = confirmationResult.amount.cryptoAssetAmount.asset;
 
     const TitleComponent = useMemo(() => {
-        switch (confirmationState) {
-            case ConfirmationState.SIGNING:
-            case ConfirmationState.SENDING:
-            case ConfirmationState.ERROR:
+        switch (confirmationState.type) {
+            case 'idle':
+            case 'sending':
+            case 'error':
                 return (
                     <Animated.View
-                        key={confirmationState}
+                        key={confirmationState.type}
                         exiting={FadeOut.duration(150)}
                         style={styles.titleWithLogoContainer}
                     >
@@ -85,10 +79,10 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
                         </Text>
                     </Animated.View>
                 );
-            case ConfirmationState.SUCCESS:
+            case 'success':
                 return (
                     <Animated.View
-                        key={confirmationState}
+                        key={confirmationState.type}
                         entering={FadeIn.duration(150).delay(150)}
                         exiting={FadeOut.duration(150)}
                         style={styles.titleWithLogoContainer}
@@ -104,12 +98,12 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
             default:
                 return null;
         }
-    }, [confirmationState, asset, t]);
+    }, [confirmationState.type, asset, t]);
 
     return (
         <Screen background="constantBlack">
             <Screen.Header>
-                {confirmationState !== ConfirmationState.SUCCESS && <Screen.Header.BackButton />}
+                {confirmationState.type !== 'success' && <Screen.Header.BackButton />}
                 <Screen.Header.Title />
             </Screen.Header>
             <View style={styles.container}>

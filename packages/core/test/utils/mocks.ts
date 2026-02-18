@@ -10,6 +10,9 @@ export class MockSecretEncryptor implements ISecretEncryptor {
     public encryptSecret = vi
         .fn()
         .mockImplementation(async (s: SSecretDecrypted): Promise<SSecretEncrypted> => s);
+    public removeSecretCache = vi
+        .fn()
+        .mockImplementation(async (_: SSecretEncrypted): Promise<void> => {});
 }
 
 export class ClosableMnemonicAccessorVault implements IMnemonicAccessor {

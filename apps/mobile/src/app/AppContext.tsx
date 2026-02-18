@@ -2,15 +2,18 @@ import { getLocales } from 'expo-localization';
 import i18next from 'i18next';
 import { FC, PropsWithChildren, Suspense, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Platform } from 'react-native';
 
-import { IAppSdk } from '@safely/core';
+import { Build, IAppSdk, SSecretEncrypted } from '@safely/core';
 import { AppContext, IAppContext } from '@safely/ux';
 
 import { navigationRef } from '@mobile/app/navigation/navigationRef';
-import { useSecurityCheck } from '@mobile/entities/security';
+import { useMobileSecurityCheck } from '@mobile/entities/security';
 import { useToastServiceContext } from '@mobile/shared/providers/toast';
-import { createMMKVTreeStorage } from '@mobile/shared/storage/mmkv';
+import { mobileStorages } from '@mobile/shared/storage';
 import { MobileNumberFormatLocale } from '@mobile/shared/utils';
+
+import packageJson from '../../package.json';
 
 const numberFormatLocale = new MobileNumberFormatLocale(getLocales()[0]);
 
@@ -20,15 +23,18 @@ let securityCheck: () => Promise<void> = () => {
 
 const sdk: IAppSdk = {
     numberFormatLocale,
-    storage: createMMKVTreeStorage('app').storage,
-    keychain: createMMKVTreeStorage('keychain').storage,
+    storage: mobileStorages.app.storage,
+    keychain: mobileStorages.keychain.storage,
     secretEncryptor: {
         decryptSecret: async (val: string) => {
-            await sdk.security.check();
+            await securityCheck();
             return val; // TODO implement
         },
         encryptSecret: async (val: string) => {
             return val; // TODO implement
+        },
+        async removeSecretCache(_: SSecretEncrypted): Promise<void> {
+            return;
         }
     },
     qrScanner: {
@@ -42,11 +48,15 @@ const sdk: IAppSdk = {
                     subtitle: t(options?.subTranslationKey ?? 'qrScan.subtitle')
                 });
             })
-    },
-    security: {
-        check: () => securityCheck()
     }
 };
+
+const build: Build =
+    Platform.select({
+        ios: 'ios' as const,
+        android: 'android' as const,
+        web: 'web' as const
+    }) ?? ('web' as const);
 
 export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
     const { t } = useTranslation();
@@ -59,10 +69,21 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
                 t
             },
             sdk,
-            version: '1.0.0',
-            build: 'ios',
+            version: packageJson.version,
+            build,
             toast: {
                 show: service.show
+            },
+            security: {
+                check: () => securityCheck()
+            },
+            async clearAllData() {
+                await securityCheck();
+
+                const storages = Object.values(mobileStorages);
+                for (const storageConfig of storages) {
+                    await storageConfig.storage.clear();
+                }
             }
         }),
         [t, service]
@@ -79,7 +100,7 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
 };
 
 const SecurityCheckInitializer: FC = () => {
-    const check = useSecurityCheck();
+    const check = useMobileSecurityCheck();
 
     useEffect(() => {
         securityCheck = check;

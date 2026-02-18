@@ -10,41 +10,46 @@ export type TranslatableErrorsConfig = {
         | string;
 } & { UnknownError?: ((err: unknown) => string) | string };
 
-export type ParseErrorOptions = {
+export type GetErrorTextOptions = {
     displayUnknownErrors?: boolean;
 };
 
-export const getErrorText = (
+export function getExternalErrorText(error: unknown) {
+    return getErrorText(error, undefined, { displayUnknownErrors: true });
+}
+
+export function getErrorText(
     error: unknown,
-    config: ErrorsConfig,
-    options?: ParseErrorOptions
-): string => {
+    config?: ErrorsConfig,
+    options?: GetErrorTextOptions
+): string {
+    const unknownError = config?.UnknownError(error) || 'Unknown Error';
     if (!isCustomError(error)) {
         if (options?.displayUnknownErrors) {
             if (typeof error === 'string') {
-                return error || config.UnknownError(error);
+                return error || unknownError;
             }
 
             if (!error || typeof error !== 'object') {
-                return config.UnknownError(error);
+                return unknownError;
             }
 
             if (error instanceof Error) {
-                return error.message || config.UnknownError(error);
+                return error.message || unknownError;
             }
         }
 
-        return config.UnknownError(error);
+        return unknownError;
     }
 
-    const handler = config[error.constructor.name as keyof typeof customErrors];
+    const handler = config?.[error.constructor.name as keyof typeof customErrors];
     if (handler) {
         return handler(error);
     }
 
     if (options?.displayUnknownErrors) {
-        return error.message || config.UnknownError(error);
+        return error.message || unknownError;
     }
 
-    return config.UnknownError(error);
-};
+    return unknownError;
+}

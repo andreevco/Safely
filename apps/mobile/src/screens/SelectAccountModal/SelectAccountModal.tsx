@@ -35,24 +35,22 @@ export const SelectAccountModal = () => {
                 <Screen.Header.Title>{t('accounts.title')}</Screen.Header.Title>
                 <Screen.Header.CloseButton />
             </Screen.Header>
-            <Screen.Content>
-                <PortfoliosList
-                    portfolios={portfolios}
-                    isEditing={isEditing}
-                    onSelect={navigation.goBack}
-                    onEditEnd={handleEditEnd}
-                    Footer={() => (
-                        <Button
-                            type="secondary"
-                            size="medium"
-                            style={styles.addButton}
-                            onPress={() => navigation.navigate('AddWalletModal')}
-                        >
-                            {t('addWallet.title')}
-                        </Button>
-                    )}
-                />
-            </Screen.Content>
+            <PortfoliosList
+                portfolios={portfolios}
+                isEditing={isEditing}
+                onSelect={navigation.goBack}
+                onEditEnd={handleEditEnd}
+                Footer={() => (
+                    <Button
+                        type="secondary"
+                        size="medium"
+                        style={styles.addButton}
+                        onPress={() => navigation.navigate('AddWalletModal')}
+                    >
+                        {t('addWallet.title')}
+                    </Button>
+                )}
+            />
         </Screen>
     );
 };

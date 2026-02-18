@@ -88,7 +88,7 @@ export class ApiClient {
         if (!response.ok) {
             const errorResult = APIErrorSchema.safeParse(parsed);
             const message = errorResult.success
-                ? errorResult.data.Text
+                ? errorResult.data.error
                 : response.statusText || 'Request failed';
             throw new BtcApiError(message, response.status, parsed);
         }

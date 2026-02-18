@@ -2,13 +2,14 @@ import { getLocales } from 'expo-localization';
 import i18next from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
+import { mobileStorages } from '@mobile/shared/storage';
+
 import en from './translations/en.json';
 import ru from './translations/ru.json';
-import { MobileLocaleStorage } from '../storage/mmkv';
 
 const FALLBACK_LANGUAGE = 'en';
 const detectedLanguage =
-    MobileLocaleStorage.get() ?? getLocales()[0].languageCode ?? FALLBACK_LANGUAGE;
+    mobileStorages.locale.storage.get() ?? getLocales()[0].languageCode ?? FALLBACK_LANGUAGE;
 
 const resources = {
     en: { translation: en },

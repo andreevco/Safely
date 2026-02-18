@@ -2,7 +2,7 @@ import { createContext, useContext } from 'react';
 
 import { Build, IAppSdk, UserCountryInfo } from '@safely/core';
 
-import { ToastService } from '../../entities';
+import { Security, ToastService } from '../../entities';
 import { TranslateFn } from '../i18n';
 
 export interface IAppContext {
@@ -15,6 +15,8 @@ export interface IAppContext {
         language: string;
         t: TranslateFn;
     };
+    clearAllData: () => Promise<void>;
+    security: Security;
 }
 
 export const AppContext = createContext<IAppContext | null>(null);
