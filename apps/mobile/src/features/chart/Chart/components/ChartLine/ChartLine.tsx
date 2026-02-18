@@ -42,10 +42,14 @@ export const ChartLine = (props: ChartLineProps) => {
         const splitPoint = Date.now() - CHART_CONFIG[selectedPeriod].fullPeriodLength;
         const splitIndex = chartPoints.findIndex(point => point.timestamp >= splitPoint);
 
+        const last = chartPoints[chartPoints.length - 1];
+
+        if (splitIndex === -1) {
+            return [null, buildChartPath(chartPoints), last];
+        }
+
         const fadedPoints = chartPoints.slice(0, splitIndex + 1);
         const mainPoints = chartPoints.slice(splitIndex);
-
-        const last = mainPoints[mainPoints.length - 1];
 
         return [
             buildChartPath(fadedPoints),
@@ -58,12 +62,14 @@ export const ChartLine = (props: ChartLineProps) => {
         <View style={styles.container}>
             <View style={styles.canvasContainer} onLayout={onLayout}>
                 <Canvas style={styles.canvas}>
-                    <Path
-                        path={fadedPath}
-                        color={new Color(LINE_COLOR).alpha(0.48).toString()}
-                        strokeWidth={LINE_STROKE_WIDTH}
-                        style="stroke"
-                    />
+                    {fadedPath && (
+                        <Path
+                            path={fadedPath}
+                            color={new Color(LINE_COLOR).alpha(0.48).toString()}
+                            strokeWidth={LINE_STROKE_WIDTH}
+                            style="stroke"
+                        />
+                    )}
                     <Path
                         path={mainPath}
                         color={LINE_COLOR}
