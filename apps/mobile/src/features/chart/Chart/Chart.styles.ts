@@ -1,8 +1,9 @@
 import { StyleSheet } from 'react-native-unistyles';
 
 export const styles = StyleSheet.create(theme => ({
-    list: {
+    container: {
+        backgroundColor: theme.colors.background.secondary,
         marginHorizontal: theme.spacing[8],
-        marginBottom: theme.spacing[2]
+        borderRadius: theme.radius.md
     }
 }));

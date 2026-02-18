@@ -6,5 +6,8 @@ export const assetKeys = defineQueryKeys('assets', {
     }),
     rate: (_assetId: string) => ({
         fiat: (_fiatId: string) => finalKey
+    }),
+    chart: (_assetId: string) => ({
+        fiat: (_fiatId: string, _cachingKey: string) => finalKey
     })
 });
