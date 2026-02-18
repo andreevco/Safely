@@ -74,6 +74,12 @@ export const styles = StyleSheet.create(theme => ({
                     lineHeight: 24,
                     fontWeight: '400'
                 },
+                bodyLMono: {
+                    fontSize: 17,
+                    lineHeight: 24,
+                    fontWeight: '400',
+                    fontFamily: Platform.OS === 'ios' ? 'ui-monospace' : 'monospace'
+                },
                 bodyM: {
                     fontSize: 14,
                     lineHeight: 20,
@@ -109,7 +115,7 @@ export const styles = StyleSheet.create(theme => ({
             },
             monospace: {
                 true: {
-                    fontFamily: Platform.OS === 'ios' ? 'ui-monospace' : 'monospace'
+                    fontVariant: ['tabular-nums', 'lining-nums']
                 }
             }
         }
