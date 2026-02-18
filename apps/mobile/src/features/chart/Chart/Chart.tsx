@@ -20,7 +20,11 @@ export const Chart = () => {
 
     return (
         <View style={styles.container}>
-            <ChartHeader prices={chart.data?.prices ?? []} asset={asset} />
+            <ChartHeader
+                prices={chart.data?.prices ?? []}
+                asset={asset}
+                selectedPeriod={selectedPeriod}
+            />
             <ChartPeriods selectedPeriod={selectedPeriod} onSelectPeriod={setSelectedPeriod} />
             <ChartLine
                 startDate={stickyStartDate}

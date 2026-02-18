@@ -10,14 +10,16 @@ import { Text } from '@mobile/shared/ui';
 
 import { styles } from './ChartHeader.styles';
 import { PriceDiff } from './PriceDiff';
+import { CHART_CONFIG, ChartPeriod } from '../../config';
 
 type ChartHeaderProps = {
     asset: CryptoAsset;
     prices: [number, number][];
+    selectedPeriod: ChartPeriod;
 };
 
 export const ChartHeader = (props: ChartHeaderProps) => {
-    const { prices, asset } = props;
+    const { prices, asset, selectedPeriod } = props;
     const rate = useRate(asset);
     const fiat = useActiveFiat();
 
@@ -28,8 +30,22 @@ export const ChartHeader = (props: ChartHeaderProps) => {
             return 0;
         }
 
-        return ((prices[prices.length - 1][1] - prices[0][1]) / prices[prices.length - 1][1]) * 100;
-    }, [prices]);
+        const startPoint = Date.now() - CHART_CONFIG[selectedPeriod].fullPeriodLength;
+        const periodStartPoint = prices.find(price => price[0] * 1000 >= startPoint);
+
+        if (!periodStartPoint) {
+            return 0;
+        }
+
+        const startPrice = periodStartPoint[1];
+        const endPrice = prices[prices.length - 1][1];
+
+        if (startPrice === 0) {
+            return 0;
+        }
+
+        return ((endPrice - startPrice) / startPrice) * 100;
+    }, [prices, selectedPeriod]);
 
     const formattedRate =
         rate.data &&
@@ -49,7 +65,7 @@ export const ChartHeader = (props: ChartHeaderProps) => {
                     {asset.symbol} / {fiat.id.symbol}
                 </Text>
             </View>
-            <PriceDiff diff={diffInPercent} />
+            {diffInPercent !== 0 && <PriceDiff diff={diffInPercent} />}
         </View>
     );
 };
