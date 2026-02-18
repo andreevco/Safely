@@ -15,7 +15,7 @@ type ChartLineProps = {
 };
 
 const LINE_COLOR = 'rgba(247, 147, 26, 1)';
-const LINE_STROKE_WIDTH = 1.5;
+const LINE_STROKE_WIDTH = 3;
 const LAST_POINT_RADIUS = 4;
 
 export const ChartLine = (props: ChartLineProps) => {
