@@ -1,7 +1,7 @@
 export {
     getErrorText,
     type ErrorsConfig,
-    type ParseErrorOptions,
+    type GetErrorTextOptions,
     type TranslatableErrorsConfig
 } from './errors.service';
 export * from './invalid-mnemonic.error';

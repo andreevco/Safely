@@ -12,5 +12,11 @@ export const styles = StyleSheet.create((theme, rt) => ({
         alignItems: 'center',
         justifyContent: 'center',
         alignSelf: 'center'
+    },
+    errorTextBlock: {
+        alignItems: 'center'
+    },
+    errorText: {
+        textAlign: 'center'
     }
 }));
