@@ -23,7 +23,8 @@ export function useChart(asset: CryptoAsset, startDate: number, config: IChartCo
     const query = useQuery<HistoricalPrice | null>({
         queryKey: assetKeys
             .chart(asset.id.toString())
-            .fiat(fiat.id.toString(), config.cachingKey)
+            .fiat(fiat.id.toString())
+            .cachingKey(config.cachingKey)
             .toKey(),
         queryFn: async () => {
             const response = await priceApi.getHistoricalPrice({
