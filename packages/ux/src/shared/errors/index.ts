@@ -1,6 +1,1 @@
-export {
-    useParseError,
-    useErrorToast,
-    type TranslatableErrorsConfig,
-    type ParseErrorOptions
-} from './errors';
+export { useParseError, useErrorToast, type ParseErrorOptions } from './errors';

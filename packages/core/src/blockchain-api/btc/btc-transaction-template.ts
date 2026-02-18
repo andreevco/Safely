@@ -1,8 +1,10 @@
 import { BtcPsbtBulder } from './btc-psbt-bulder';
+import { BtcSendDustError } from './errors';
 import { BtcEstimation, BtcTransferRequest } from './types';
 import { getUtxoTotal, utxoPathToStruct } from './utils';
 import { BtcApi, BtcApiUtxo } from '../../api/btc';
 import { BLOCKCHAIN_NAME, btcNetworkConfig, BtcWallet, ExplorerFactory } from '../../entities';
+import { getExternalErrorText } from '../../entities/errors/errors.service';
 import { ellipsisMiddle } from '../../utils';
 
 export class BtcTransactionTemplate {
@@ -46,7 +48,15 @@ export class BtcTransactionTemplate {
             }))
         });
 
-        const result = await this.btcApi.sendTransaction(signed.toString('hex'));
+        let result;
+        try {
+            result = await this.btcApi.sendTransaction(signed.toString('hex'));
+        } catch (error) {
+            if (getExternalErrorText(error).trim().startsWith('-26')) {
+                throw new BtcSendDustError();
+            }
+            throw error;
+        }
 
         this.sendResult = {
             blockchain: BLOCKCHAIN_NAME.BTC,
