@@ -1,6 +1,5 @@
-export enum ConfirmationState {
-    SIGNING = 'signing',
-    SENDING = 'sending',
-    SUCCESS = 'success',
-    ERROR = 'error'
-}
+export type ConfirmationState =
+    | { type: 'idle' }
+    | { type: 'sending' }
+    | { type: 'success' }
+    | { type: 'error'; error: unknown };

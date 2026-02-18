@@ -1,37 +1,12 @@
 import { useCallback, useMemo } from 'react';
 
+import { getErrorText, TranslatableErrorsConfig } from '@safely/core';
+
 import { useToast } from '../../entities';
 import { useTranslate } from '../i18n';
 
-export type TranslatableErrorsConfig = Record<string, string | (() => string)>;
-
 export interface ParseErrorOptions {
     fallback?: string;
-}
-
-function getErrorName(error: unknown): string | null {
-    if (error instanceof Error) {
-        return error.constructor.name || error.name || null;
-    }
-    return null;
-}
-
-function getErrorText(
-    error: unknown,
-    config: Record<string, () => string>,
-    options?: ParseErrorOptions
-): string {
-    const errorName = getErrorName(error);
-
-    if (errorName && config[errorName]) {
-        return config[errorName]();
-    }
-
-    if (config.UnknownError) {
-        return config.UnknownError();
-    }
-
-    return options?.fallback ?? 'Unknown error';
 }
 
 export function useParseError(config: TranslatableErrorsConfig, options?: ParseErrorOptions) {
@@ -39,7 +14,7 @@ export function useParseError(config: TranslatableErrorsConfig, options?: ParseE
 
     const translatedConfig = useMemo(() => {
         return {
-            UnknownError: () => t('common.errors.unknown'),
+            UnknownError: () => t(options?.fallback ?? 'common.errors.unknown'),
             ...Object.fromEntries(
                 Object.entries(config).map(([k, v]) => {
                     if (typeof v === 'string') {
@@ -50,12 +25,21 @@ export function useParseError(config: TranslatableErrorsConfig, options?: ParseE
                 })
             )
         };
-    }, [config, t]);
+    }, [config, t, options?.fallback]);
 
     return useCallback(
-        (error: unknown) => getErrorText(error, translatedConfig, options),
+        (error: unknown) => getErrorText(error, translatedConfig),
         [translatedConfig, options]
     );
+}
+
+export function useParsedError(
+    error: unknown,
+    config: TranslatableErrorsConfig,
+    options?: ParseErrorOptions
+) {
+    const parseError = useParseError(config, options);
+    return useMemo(() => parseError(error), [parseError, error]);
 }
 
 export function useErrorToast(config: TranslatableErrorsConfig, options?: ParseErrorOptions) {

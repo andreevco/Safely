@@ -13,10 +13,7 @@ const tokenStandardEnum = z.enum([
 
 /** Human-readable error message describing the issue. */
 export const APIErrorSchema = z.looseObject({
-    /** Human-readable error message describing the issue. */
-    Text: z.string(),
-    /** Whether the error message can safely be shown to the end user. */
-    Public: z.boolean()
+    error: z.string()
 });
 
 /** Type of alias, e.g., user-defined name or contract name. */
