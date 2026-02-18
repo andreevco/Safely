@@ -50,7 +50,7 @@ export const ChartLine = (props: ChartLineProps) => {
         return [
             buildChartPath(fadedPoints),
             buildChartPath(mainPoints),
-            { x: last.x, y: last.y }
+            last ? { x: last.x, y: last.y } : null
         ] as const;
     }, [prices, size.height, size.width, startDate, selectedPeriod]);
 
