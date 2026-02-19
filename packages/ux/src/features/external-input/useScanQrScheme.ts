@@ -1,19 +1,17 @@
 import { useCallback } from 'react';
 
-import { ExternalInputSchemeName, SchemeByName } from '@safely/core';
+import { ExternalInputScheme, ExternalInputSchemeName } from '@safely/core';
 
 import { useExternalInputParser } from './useExternalInputParser';
 import { useAppSdk } from '../../shared';
 
-interface UseScanQrSchemeOptions<SName extends ExternalInputSchemeName = ExternalInputSchemeName> {
-    onResult: (scheme: SchemeByName<SName>) => void;
-    allowedSchemes?: readonly SName[];
+interface UseScanQrSchemeOptions {
+    onResult: (scheme: ExternalInputScheme) => void;
+    allowedSchemes?: readonly ExternalInputSchemeName[];
     scannerOptions?: { titleTranslationKey?: string; subTranslationKey?: string };
 }
 
-export function useScanQrScheme<SName extends ExternalInputSchemeName = ExternalInputSchemeName>(
-    options: UseScanQrSchemeOptions<SName>
-): () => void {
+export function useScanQrScheme(options: UseScanQrSchemeOptions): () => void {
     const { onResult, allowedSchemes, scannerOptions } = options;
 
     const sdk = useAppSdk();
