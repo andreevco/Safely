@@ -89,9 +89,7 @@ export function sendFormReducer(state: SendFormState, action: SendFormAction): S
                 : state;
 
         case 'PREV_STEP':
-            return state.stepIndex > 0
-                ? { ...state, stepIndex: state.stepIndex - 1, errors: INITIAL_STATE.errors }
-                : state;
+            return state.stepIndex > 0 ? { ...state, stepIndex: state.stepIndex - 1 } : state;
 
         case 'RESET':
             return INITIAL_STATE;
