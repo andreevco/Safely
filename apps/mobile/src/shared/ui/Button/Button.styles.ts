@@ -7,6 +7,11 @@ export const styles = StyleSheet.create(theme => ({
         alignItems: 'center',
         flexDirection: 'row',
         variants: {
+            disabled: {
+                true: {
+                    opacity: 0.64
+                }
+            },
             size: {
                 small: {
                     paddingHorizontal: theme.spacing[16],
@@ -43,12 +48,6 @@ export const styles = StyleSheet.create(theme => ({
                 overlay: {
                     backgroundColor: theme.colors.other.constant.white
                 }
-            },
-            disabled: {
-                true: {
-                    opacity: 0.64
-                },
-                false: {}
             }
         },
         text: {
