@@ -4,86 +4,110 @@ import { useTranslation } from 'react-i18next';
 import { RefreshControl, View } from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';
 
-import { type BtcActivityItem, useHistory } from '@safely/ux';
+import { type BtcActivityItem } from '@safely/ux';
+import {
+    ACTIVITY_GROUP_LABEL,
+    ActivityItemsDatedGroupMeta
+} from '@safely/ux/entities/activity/types';
+import { useGroupedHistory } from '@safely/ux/entities/activity/useGroupedHistory';
 
 import { ActivityItem } from '@mobile/entities/activity';
+import { ActivityItemTimeFormatDetails } from '@mobile/entities/activity/ActivityItem/ActivityItem';
 import { Screen, Text } from '@mobile/shared/ui';
-import { diffInDays } from '@mobile/shared/utils';
 
 import { HistoryEmptyPlaceholder } from '../HistoryEmptyPlaceholder';
 import { styles } from './HistoryList.styles';
 
 type HistoryRowItem =
     | { key: string; type: 'header'; title: string }
-    | { key: string; type: 'activity'; activity: BtcActivityItem };
+    | {
+          key: string;
+          type: 'activity';
+          activity: BtcActivityItem;
+          timeFormatDetails: ActivityItemTimeFormatDetails;
+      };
 
-const getGroupKey = (date: Date, baseDate: Date) => {
-    const diff = diffInDays(date, baseDate);
-    if (diff === 0) return 'today';
-    if (diff === 1) return 'yesterday';
-    return `${date.getFullYear()}-${date.getMonth()}`;
+const getGroupKey = (meta: ActivityItemsDatedGroupMeta) => {
+    return JSON.stringify(meta);
 };
 
 const getGroupTitle = (
-    groupKey: string,
-    date: Date,
+    meta: ActivityItemsDatedGroupMeta,
     t: TFunction,
-    formatter: Intl.DateTimeFormat
+    language: string
 ): string => {
-    if (groupKey === 'today') return t('history.dateHeaders.today');
-    if (groupKey === 'yesterday') return t('history.dateHeaders.yesterday');
-    return formatter.format(date);
+    switch (meta.label) {
+        case ACTIVITY_GROUP_LABEL.TODAY:
+            return t('history.dateHeaders.today');
+        case ACTIVITY_GROUP_LABEL.YESTERDAY:
+            return t('history.dateHeaders.yesterday');
+        case ACTIVITY_GROUP_LABEL.THIS_YEAR: {
+            const date = new Date(2000, meta.month, 1);
+
+            const formatter = new Intl.DateTimeFormat(language, {
+                month: 'long'
+            });
+
+            return formatter.format(date);
+        }
+        case ACTIVITY_GROUP_LABEL.PAST_YEAR: {
+            const date = new Date(meta.year, meta.month, 1);
+
+            const formatter = new Intl.DateTimeFormat(language, {
+                month: 'long',
+                year: 'numeric'
+            });
+
+            return formatter.format(date);
+        }
+    }
 };
 
 type HistoryListProps = {
     onNavigateToTransaction: (activity: BtcActivityItem) => void;
 };
 
+const timeFormatDetailsMap: Record<ACTIVITY_GROUP_LABEL, ActivityItemTimeFormatDetails> = {
+    [ACTIVITY_GROUP_LABEL.TODAY]: 'time',
+    [ACTIVITY_GROUP_LABEL.YESTERDAY]: 'time',
+    [ACTIVITY_GROUP_LABEL.THIS_YEAR]: 'time-month',
+    [ACTIVITY_GROUP_LABEL.PAST_YEAR]: 'time-month-year'
+};
+
 export const HistoryList = (props: HistoryListProps) => {
     const { onNavigateToTransaction } = props;
-    const history = useHistory();
     const { t, i18n } = useTranslation();
 
     const { theme } = useUnistyles();
 
-    const items = useMemo(
-        () => history.data?.pages.flatMap(page => page.items) ?? [],
-        [history.data]
-    );
-    const rows = useMemo<HistoryRowItem[]>(() => {
-        const baseDate = new Date();
-        const formatter = new Intl.DateTimeFormat(i18n.language, { month: 'long' });
-        const result: HistoryRowItem[] = [];
-        let previousGroupKey: string | null = null;
+    const { data: historyGroups, isRefetching, refetch, fetchNextPage } = useGroupedHistory();
 
-        items.forEach(item => {
-            const itemDate = new Date(item.timestamp);
-            const groupKey = getGroupKey(itemDate, baseDate);
+    const rows = useMemo<HistoryRowItem[] | undefined>(() => {
+        return historyGroups?.flatMap(item => {
+            const { items: groupActivity, ...meta } = item;
+            const groupKey = getGroupKey(meta);
 
-            if (groupKey !== previousGroupKey) {
-                result.push({
-                    key: `header-${groupKey}`,
-                    type: 'header',
-                    title: getGroupTitle(groupKey, itemDate, t, formatter)
-                });
-                previousGroupKey = groupKey;
-            }
+            const header = {
+                key: `header-${groupKey}`,
+                type: 'header' as const,
+                title: getGroupTitle(meta, t, i18n.language)
+            };
 
-            result.push({
-                key: item.key,
-                type: 'activity',
-                activity: item
-            });
+            const activity = groupActivity.map(a => ({
+                type: 'activity' as const,
+                key: `activity-${groupKey}-${a.key}`,
+                activity: a,
+                timeFormatDetails: timeFormatDetailsMap[meta.label]
+            }));
+            return [header, ...activity];
         });
+    }, [i18n.language, historyGroups, t]);
 
-        return result;
-    }, [i18n.language, items, t]);
-
-    if (!history.data) {
+    if (!rows) {
         return null;
     }
 
-    if (items.length === 0) {
+    if (rows.length === 0) {
         return <HistoryEmptyPlaceholder />;
     }
 
@@ -109,6 +133,7 @@ export const HistoryList = (props: HistoryListProps) => {
             case 'activity':
                 return (
                     <ActivityItem
+                        timeFormatDetails={item.timeFormatDetails}
                         activity={item.activity}
                         onNavigateToTransaction={onNavigateToTransaction}
                     />
@@ -123,14 +148,14 @@ export const HistoryList = (props: HistoryListProps) => {
             contentContainerStyle={styles.contentContainer}
             refreshControl={
                 <RefreshControl
-                    refreshing={history.isRefetching}
-                    onRefresh={history.refetch}
+                    refreshing={isRefetching}
+                    onRefresh={refetch}
                     tintColor={theme.colors.text.secondary}
                 />
             }
             data={rows}
             keyExtractor={item => item.key}
-            onEndReached={history.fetchNextPage}
+            onEndReached={fetchNextPage}
             onEndReachedThreshold={0.5}
             ItemSeparatorComponent={renderSeparator}
             renderItem={renderItem}

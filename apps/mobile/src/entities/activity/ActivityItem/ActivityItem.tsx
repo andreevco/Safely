@@ -9,13 +9,16 @@ import { Cell, Text } from '@mobile/shared/ui';
 
 import { styles } from './ActivityItem.styles';
 
+export type ActivityItemTimeFormatDetails = 'time' | 'time-month' | 'time-month-year';
+
 type ActivityItemProps = {
     activity: BtcActivityItem;
+    timeFormatDetails: ActivityItemTimeFormatDetails;
     onNavigateToTransaction: (activity: BtcActivityItem) => void;
 };
 
 export const ActivityItem = (props: ActivityItemProps) => {
-    const { activity, onNavigateToTransaction } = props;
+    const { activity, onNavigateToTransaction, timeFormatDetails } = props;
     const formatter = useNumberFormatter();
     const rate = useRate(BTC_ASSET);
     const { t, i18n } = useTranslation();
@@ -34,7 +37,12 @@ export const ActivityItem = (props: ActivityItemProps) => {
                             <Text color="secondary" style={styles.timestamp}>
                                 {new Date(activity.timestamp).toLocaleTimeString(i18n.language, {
                                     hour: 'numeric',
-                                    minute: 'numeric'
+                                    minute: 'numeric',
+                                    ...(timeFormatDetails === 'time-month' && { month: 'short' }),
+                                    ...(timeFormatDetails === 'time-month-year' && {
+                                        month: 'short',
+                                        year: 'numeric'
+                                    })
                                 })}
                             </Text>
                         </View>

@@ -4,7 +4,7 @@ import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Linking, View } from 'react-native';
 
-import { BLOCKCHAIN_NAME, BTC_ASSET, CryptoAssetAmount, ellipsisMiddle } from '@safely/core';
+import { BLOCKCHAIN_NAME, BTC_ASSET, ellipsisMiddle } from '@safely/core';
 import { type BtcActivityItem, useExplorer, useNumberFormatter, useRate } from '@safely/ux';
 
 import {
@@ -34,7 +34,7 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
     const { t, i18n } = useTranslation();
     const isInitiator = activity.transaction.isInitiator;
     const formatter = useNumberFormatter();
-    const rate = useRate(BTC_ASSET);
+    const { data: rate } = useRate(BTC_ASSET);
     const explorer = useExplorer(BLOCKCHAIN_NAME.BTC);
 
     const handleCopy = useCopy();
@@ -61,20 +61,6 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
         };
     }, [isInitiator, activity.transaction.toAddress, activity.transaction.fromAddress, t]);
 
-    const networkFee = useMemo(() => {
-        const feeCryptoAmount = new CryptoAssetAmount({
-            asset: BTC_ASSET,
-            weiAmount: activity.transaction.raw?.fees ?? 0n
-        });
-
-        return {
-            cryptoFormatted: feeCryptoAmount.format(formatter),
-            fiatFormatted: rate.data ? feeCryptoAmount.convert(rate.data).format(formatter) : '-'
-        };
-    }, [activity.transaction.raw?.fees, formatter, rate.data]);
-
-    console.log(activity.transaction.raw);
-
     return (
         <Screen>
             <Screen.Header>
@@ -93,9 +79,9 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
                     <Text variant="titleL" color="primary">
                         {isInitiator ? '−' : '+'} {activity.transaction.value.format(formatter)}
                     </Text>
-                    {rate.data && (
+                    {rate && (
                         <Text variant="bodyL" color="secondary">
-                            ≈ {activity.transaction.value.convert(rate.data).format(formatter)}
+                            ≈ {activity.transaction.value.convert(rate).format(formatter)}
                         </Text>
                     )}
                 </View>
@@ -131,10 +117,18 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
                             </TableCell.Column>
                             <TableCell.Column>
                                 <TableCell.Value>
-                                    {networkFee.fiatFormatted}{' '}
-                                    <TableCell.Value color="secondary">
-                                        {networkFee.cryptoFormatted}
-                                    </TableCell.Value>
+                                    {!rate || !activity.transaction.fee ? (
+                                        '-'
+                                    ) : (
+                                        <>
+                                            {activity.transaction.fee.amount
+                                                .convert(rate)
+                                                .format(formatter)}{' '}
+                                            <TableCell.Value color="secondary">
+                                                {activity.transaction.fee.amount.format(formatter)}
+                                            </TableCell.Value>
+                                        </>
+                                    )}
                                 </TableCell.Value>
                             </TableCell.Column>
                         </TableCell>
