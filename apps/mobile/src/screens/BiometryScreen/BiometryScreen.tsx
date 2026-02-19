@@ -59,18 +59,20 @@ const BiometrySupportedScreen: FC<{
     const { availableType, setBiometryEnabled, onFinish } = props;
     const { t } = useTranslation();
 
+    const platformKey = Platform.OS === 'ios' ? 'ios' : 'other';
+
     const { title, description, picture } = useMemo(() => {
         switch (availableType) {
             case BiometryType.FACE:
                 return {
-                    title: t(`biometry.face.${Platform.OS}.title`),
-                    description: t(`biometry.face.${Platform.OS}.description`),
+                    title: t(`biometry.face.${platformKey}.title`),
+                    description: t(`biometry.face.${platformKey}.description`),
                     picture: <Icon icon={Platform.OS === 'ios' ? FaceidIos96 : FaceidAndroid96} />
                 };
             case BiometryType.FINGERPRINT:
                 return {
-                    title: t(`biometry.fingerprint.${Platform.OS}.title`),
-                    description: t(`biometry.fingerprint.${Platform.OS}.description`),
+                    title: t(`biometry.fingerprint.${platformKey}.title`),
+                    description: t(`biometry.fingerprint.${platformKey}.description`),
                     picture: <Icon icon={Fingerprint96} />
                 };
             default:
@@ -80,7 +82,7 @@ const BiometrySupportedScreen: FC<{
                     picture: <Icon icon={Fingerprint96} />
                 };
         }
-    }, [availableType, t]);
+    }, [availableType, platformKey, t]);
 
     const handleEnable = useCallback(async () => {
         await setBiometryEnabled(true);
