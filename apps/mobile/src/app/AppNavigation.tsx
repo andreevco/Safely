@@ -1,6 +1,7 @@
 import { DarkTheme, Theme } from '@react-navigation/native';
 import * as SplashScreen from 'expo-splash-screen';
-import { useMemo } from 'react';
+import * as SystemUI from 'expo-system-ui';
+import { useEffect, useMemo } from 'react';
 import { useUnistyles } from 'react-native-unistyles';
 
 import Navigation from './navigation';
@@ -25,6 +26,11 @@ export function AppNavigation() {
         }),
         [theme]
     );
+
+    useEffect(() => {
+        // It fixes animation white flickering on Android when animating between screens
+        SystemUI.setBackgroundColorAsync(theme.colors.background.primary);
+    }, [theme.colors.background.primary]);
 
     return (
         <Navigation
