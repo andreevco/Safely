@@ -5,13 +5,13 @@ import { ExternalInputScheme, ExternalInputSchemeName } from '@safely/core';
 import { useExternalInputParser } from './useExternalInputParser';
 import { useAppSdk } from '../../shared';
 
-interface UseQrScanOptions {
+interface UseScanQrSchemeOptions {
     onResult: (scheme: ExternalInputScheme) => void;
     allowedSchemes?: readonly ExternalInputSchemeName[];
     scannerOptions?: { titleTranslationKey?: string; subTranslationKey?: string };
 }
 
-export function useQrScan(options: UseQrScanOptions): () => void {
+export function useScanQrScheme(options: UseScanQrSchemeOptions): () => void {
     const { onResult, allowedSchemes, scannerOptions } = options;
 
     const sdk = useAppSdk();

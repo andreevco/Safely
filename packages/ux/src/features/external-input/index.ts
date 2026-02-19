@@ -6,4 +6,4 @@ export {
     type ExternalInputResult
 } from '@safely/core';
 export { useExternalInputParser } from './useExternalInputParser';
-export { useQrScan } from './useQrScan';
+export { useScanQrScheme } from './useScanQrScheme';

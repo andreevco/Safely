@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { BTC_ASSET } from '@safely/core';
-import { useQrScan } from '@safely/ux';
+import { useScanQrScheme } from '@safely/ux';
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { Actions } from '@mobile/shared/ui';
@@ -15,7 +15,7 @@ export const HomeActions = () => {
     const { t } = useTranslation();
     const navigation = useNavigation<RootStackNavigationProp<'TabsNavigator'>>();
 
-    const handleQRScan = useQrScan({
+    const handleQRScan = useScanQrScheme({
         onResult: useCallback(
             scheme => {
                 switch (scheme.name) {
