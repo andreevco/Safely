@@ -1,5 +1,7 @@
+import { Ref } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TouchableOpacity, View } from 'react-native';
+import { MaskedTextInputRef } from 'react-native-advanced-input-mask';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
 import { Text } from '@mobile/shared/ui/Text';
@@ -19,6 +21,7 @@ interface AmountStepProps {
     onSwitchFiatMode?: () => void;
     currencySymbol?: string;
     mask: string;
+    inputRef?: Ref<MaskedTextInputRef>;
 }
 
 export const AmountStep = (props: AmountStepProps) => {
@@ -33,13 +36,16 @@ export const AmountStep = (props: AmountStepProps) => {
         formattedAlternativeAmount,
         onSwitchFiatMode,
         currencySymbol,
-        mask
+        mask,
+        inputRef
     } = props;
+
     const { t } = useTranslation();
 
     return (
         <View style={styles.container}>
             <AmountInput
+                ref={inputRef}
                 mask={mask}
                 value={value}
                 onChangeText={onChangeText}

@@ -1,7 +1,8 @@
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { useRef, useCallback, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
+import { TextInput, View } from 'react-native';
+import { MaskedTextInputRef } from 'react-native-advanced-input-mask';
 import PagerView from 'react-native-pager-view';
 
 import {
@@ -41,6 +42,9 @@ export const SendAssetModal = () => {
         },
         [navigation]
     );
+
+    const recipientInputRef = useRef<TextInput>(null);
+    const amountInputRef = useRef<MaskedTextInputRef>(null);
 
     const { state, actions, step, meta } = useSendForm({
         onSubmit: handleSubmit,
@@ -107,6 +111,10 @@ export const SendAssetModal = () => {
 
     useEffect(() => {
         pagerRef.current?.setPage(step.index);
+        const refs = [recipientInputRef, amountInputRef];
+        const timer = setTimeout(() => refs[step.index]?.current?.focus(), 50);
+
+        return () => clearTimeout(timer);
     }, [step.index]);
 
     return (
@@ -139,12 +147,14 @@ export const SendAssetModal = () => {
             >
                 <RecipientStep
                     key="recipient"
+                    inputRef={recipientInputRef}
                     value={state.values.recipient}
                     error={state.errors.recipient}
                     onChangeText={actions.setRecipient}
                 />
                 <AmountStep
                     key="amount"
+                    inputRef={amountInputRef}
                     mask={mask}
                     value={state.values.amount}
                     onChangeText={actions.setAmount}

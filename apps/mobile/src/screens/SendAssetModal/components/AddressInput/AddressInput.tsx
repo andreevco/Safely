@@ -1,5 +1,5 @@
 import { useNavigation } from '@react-navigation/native';
-import { useCallback, useState } from 'react';
+import { Ref, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TextInput, View } from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';
@@ -17,17 +17,12 @@ interface AddressInputProps {
     error?: string;
     label?: string;
     placeholder?: string;
-    autoFocus?: boolean;
+    inputRef?: Ref<TextInput>;
 }
 
-export const AddressInput = ({
-    value,
-    onChangeText,
-    error,
-    label,
-    placeholder,
-    autoFocus
-}: AddressInputProps) => {
+export const AddressInput = (props: AddressInputProps) => {
+    const { value, onChangeText, error, label, placeholder, inputRef } = props;
+
     const { t } = useTranslation();
     const { theme } = useUnistyles();
     const navigation = useNavigation<RootStackNavigationProp>();
@@ -74,6 +69,7 @@ export const AddressInput = ({
             )}
             <View style={styles.container}>
                 <TextInput
+                    ref={inputRef}
                     value={value}
                     onChangeText={onChangeText}
                     onFocus={handleFocus}
@@ -84,7 +80,6 @@ export const AddressInput = ({
                     autoCapitalize="none"
                     autoCorrect={false}
                     spellCheck={false}
-                    autoFocus={autoFocus}
                     multiline
                 />
 
