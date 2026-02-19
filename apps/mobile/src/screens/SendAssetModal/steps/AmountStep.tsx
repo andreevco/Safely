@@ -63,7 +63,7 @@ export const AmountStep = (props: AmountStepProps) => {
                         {t('send.insufficientBalance')}
                     </Text>
                 ) : (
-                    <Text variant="bodyM" color="tertiary" monospace>
+                    <Text variant="bodyM" color="tertiary" style={styles.tabularNums}>
                         {remainingBalance
                             ? t('send.remaining', { amount: remainingBalance, symbol: '' })
                             : ' '}
