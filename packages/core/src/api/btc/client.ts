@@ -56,6 +56,10 @@ export class BtcApi extends ApiClient implements IIdentifiable {
         return await this.getJson(`/api/v2/tx/${txid}`, TxSchema);
     }
 
+    public async getBlockTipHeight(): Promise<number> {
+        return this.getJson('/blocks/tip/height', z.coerce.number());
+    }
+
     /**
      * float sat/vByte
      */
