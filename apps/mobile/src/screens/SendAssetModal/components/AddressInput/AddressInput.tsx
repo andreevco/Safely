@@ -90,7 +90,7 @@ export const AddressInput = (props: AddressInputProps) => {
                     {hasValue ? (
                         <Icon icon={XmarkCircle16} color="tertiary" />
                     ) : (
-                        <Icon icon={QrCodeScan28} size={24} color="accent" />
+                        <Icon icon={QrCodeScan28} color="accent" />
                     )}
                 </TouchableOpacity>
             </View>
