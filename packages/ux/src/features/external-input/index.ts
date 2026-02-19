@@ -3,6 +3,7 @@ export {
     type BtcTransferScheme,
     type ExternalInputScheme,
     type ExternalInputSchemeName,
+    type SchemeByName,
     type ExternalInputResult
 } from '@safely/core';
 export { useExternalInputParser } from './useExternalInputParser';
