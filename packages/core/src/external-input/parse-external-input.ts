@@ -1,11 +1,10 @@
-import { BtcAddress } from '@safely/core';
-
 import {
     BtcTransferScheme,
     ExternalInputResult,
     ExternalInputScheme,
     ExternalInputSchemeName
 } from './schemes';
+import { BtcAddress } from '../blockchain-api';
 
 type Parser = (raw: string) => ExternalInputScheme | null;
 

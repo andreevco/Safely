@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 
-import { parseExternalInput } from './parse-external-input';
-import { ExternalInputResult, ExternalInputSchemeName } from './schemes';
+import { parseExternalInput, ExternalInputResult, ExternalInputSchemeName } from '@safely/core';
+
 import { useToast } from '../../entities';
 import { useTranslate } from '../../shared';
 
