@@ -13,7 +13,7 @@ import { useToastServiceContext } from './ToastServiceProvider';
 
 // On Android, we don't need to use the FullWindowOverlay component
 const OverlayComponent = Platform.OS === 'ios' ? FullWindowOverlay : View;
-const SHOW_DURATION_MS = 2500;
+const SHOW_DURATION_MS = 1750;
 
 type ToastState = {
     message: string;
