@@ -40,7 +40,6 @@ const groups: SettingsGroup[] = [
                 titleKey: 'settings.groups.info.options.support',
                 hasValue: true
             },
-            { key: 'faq', titleKey: 'settings.groups.info.options.faq' },
             { key: 'rate', titleKey: 'settings.groups.info.options.rate' },
             { key: 'legal', titleKey: 'settings.groups.info.options.legal' }
         ]
