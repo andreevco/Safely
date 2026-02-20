@@ -5,7 +5,13 @@ import { useTranslation } from 'react-i18next';
 import { Linking, View } from 'react-native';
 
 import { BLOCKCHAIN_NAME, BTC_ASSET, ellipsisMiddle } from '@safely/core';
-import { type BtcActivityItem, useExplorer, useNumberFormatter, useRate } from '@safely/ux';
+import {
+    type BtcActivityItem,
+    useDateFormatter,
+    useExplorer,
+    useNumberFormatter,
+    useRate
+} from '@safely/ux';
 
 import {
     Copy16,
@@ -31,11 +37,17 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
             params: { activity }
         }
     } = props;
-    const { t, i18n } = useTranslation();
+    const { t } = useTranslation();
     const isInitiator = activity.transaction.isInitiator;
     const formatter = useNumberFormatter();
     const { data: rate } = useRate(BTC_ASSET);
     const explorer = useExplorer(BLOCKCHAIN_NAME.BTC);
+    const dateFormatter = useDateFormatter({
+        day: 'numeric',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
 
     const handleCopy = useCopy();
     const handleOpen = useCallback(() => {
@@ -43,14 +55,10 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
         void Linking.openURL(url);
     }, [activity.transaction.raw.txid, explorer]);
 
-    const confirmedAt = useMemo(() => {
-        return new Date(activity.timestamp).toLocaleDateString(i18n.language, {
-            day: 'numeric',
-            month: 'short',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    }, [activity.timestamp, i18n.language]);
+    const confirmedAt = useMemo(
+        () => dateFormatter.format(activity.timestamp),
+        [dateFormatter, activity.timestamp]
+    );
 
     const addressCell = useMemo(() => {
         return {

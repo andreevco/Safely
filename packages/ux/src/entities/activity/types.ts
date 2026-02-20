@@ -25,6 +25,7 @@ export type ActivityItem = BtcActivityItem;
 export enum ACTIVITY_GROUP_LABEL {
     TODAY = 'TODAY',
     YESTERDAY = 'YESTERDAY',
+    THIS_MONTH = 'THIS_MONTH',
     THIS_YEAR = 'THIS_YEAR',
     PAST_YEAR = 'PAST_YEAR'
 }
@@ -32,6 +33,7 @@ export enum ACTIVITY_GROUP_LABEL {
 export type ActivityItemsDatedGroupMeta =
     | { label: ACTIVITY_GROUP_LABEL.TODAY }
     | { label: ACTIVITY_GROUP_LABEL.YESTERDAY }
+    | { label: ACTIVITY_GROUP_LABEL.THIS_MONTH; day: number }
     | { label: ACTIVITY_GROUP_LABEL.THIS_YEAR; month: number }
     | { label: ACTIVITY_GROUP_LABEL.PAST_YEAR; year: number; month: number };
 

@@ -32,11 +32,15 @@ function getEventGroupMeta(
         return { label: ACTIVITY_GROUP_LABEL.TODAY };
     }
 
-    if (yesterday.toDateString() === date.toDateString() && today.getMonth() === date.getMonth()) {
+    if (yesterday.toDateString() === date.toDateString()) {
         return { label: ACTIVITY_GROUP_LABEL.YESTERDAY };
     }
 
     if (today.getMonth() === date.getMonth() && today.getFullYear() === date.getFullYear()) {
+        return { label: ACTIVITY_GROUP_LABEL.THIS_MONTH, day: date.getDate() };
+    }
+
+    if (today.getFullYear() === date.getFullYear()) {
         return { label: ACTIVITY_GROUP_LABEL.THIS_YEAR, month: date.getMonth() };
     }
 
@@ -74,11 +78,11 @@ export function groupActivityItems(items: ActivityItem[]): ActivityItemsDatedGro
         {} as Record<string, ActivityItem[]>
     );
 
-    return Object.entries(grouped).map(([key, items]) => {
+    return Object.entries(grouped).map(([key, value]) => {
         const meta = JSON.parse(key) as ActivityItemsDatedGroupMeta;
         return {
             ...meta,
-            items
+            items: value
         };
     });
 }

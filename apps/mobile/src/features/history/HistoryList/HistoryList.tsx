@@ -4,12 +4,13 @@ import { useTranslation } from 'react-i18next';
 import { RefreshControl, View } from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';
 
-import { type BtcActivityItem } from '@safely/ux';
+import { type BtcActivityItem, useDateFormatter } from '@safely/ux';
 import {
     ACTIVITY_GROUP_LABEL,
     ActivityItemsDatedGroupMeta
 } from '@safely/ux/entities/activity/types';
 import { useGroupedHistory } from '@safely/ux/entities/activity/useGroupedHistory';
+import { DateFormatter } from '@safely/ux/shared/format/date';
 
 import { ActivityItem } from '@mobile/entities/activity';
 import { ActivityItemTimeFormatDetails } from '@mobile/entities/activity/ActivityItem/ActivityItem';
@@ -34,31 +35,36 @@ const getGroupKey = (meta: ActivityItemsDatedGroupMeta) => {
 const getGroupTitle = (
     meta: ActivityItemsDatedGroupMeta,
     t: TFunction,
-    language: string
+    formatter: DateFormatter
 ): string => {
+    const today = new Date();
     switch (meta.label) {
         case ACTIVITY_GROUP_LABEL.TODAY:
             return t('history.dateHeaders.today');
         case ACTIVITY_GROUP_LABEL.YESTERDAY:
             return t('history.dateHeaders.yesterday');
+        case ACTIVITY_GROUP_LABEL.THIS_MONTH: {
+            const date = new Date(today.getFullYear(), today.getMonth(), meta.day);
+
+            return formatter({
+                month: 'long',
+                day: 'numeric'
+            }).format(date);
+        }
         case ACTIVITY_GROUP_LABEL.THIS_YEAR: {
             const date = new Date(2000, meta.month, 1);
 
-            const formatter = new Intl.DateTimeFormat(language, {
+            return formatter({
                 month: 'long'
-            });
-
-            return formatter.format(date);
+            }).format(date);
         }
         case ACTIVITY_GROUP_LABEL.PAST_YEAR: {
             const date = new Date(meta.year, meta.month, 1);
 
-            const formatter = new Intl.DateTimeFormat(language, {
+            return formatter({
                 month: 'long',
                 year: 'numeric'
-            });
-
-            return formatter.format(date);
+            }).format(date);
         }
     }
 };
@@ -70,15 +76,17 @@ type HistoryListProps = {
 const timeFormatDetailsMap: Record<ACTIVITY_GROUP_LABEL, ActivityItemTimeFormatDetails> = {
     [ACTIVITY_GROUP_LABEL.TODAY]: 'time',
     [ACTIVITY_GROUP_LABEL.YESTERDAY]: 'time',
-    [ACTIVITY_GROUP_LABEL.THIS_YEAR]: 'time-month',
-    [ACTIVITY_GROUP_LABEL.PAST_YEAR]: 'time-month-year'
+    [ACTIVITY_GROUP_LABEL.THIS_MONTH]: 'time',
+    [ACTIVITY_GROUP_LABEL.THIS_YEAR]: 'day-month-time',
+    [ACTIVITY_GROUP_LABEL.PAST_YEAR]: 'day-month-time'
 };
 
 export const HistoryList = (props: HistoryListProps) => {
     const { onNavigateToTransaction } = props;
-    const { t, i18n } = useTranslation();
+    const { t } = useTranslation();
 
     const { theme } = useUnistyles();
+    const formatter = useDateFormatter();
 
     const { data: historyGroups, isRefetching, refetch, fetchNextPage } = useGroupedHistory();
 
@@ -90,7 +98,7 @@ export const HistoryList = (props: HistoryListProps) => {
             const header = {
                 key: `header-${groupKey}`,
                 type: 'header' as const,
-                title: getGroupTitle(meta, t, i18n.language)
+                title: getGroupTitle(meta, t, formatter)
             };
 
             const activity = groupActivity.map(a => ({
@@ -101,7 +109,7 @@ export const HistoryList = (props: HistoryListProps) => {
             }));
             return [header, ...activity];
         });
-    }, [i18n.language, historyGroups, t]);
+    }, [formatter, historyGroups, t]);
 
     if (!rows) {
         return null;

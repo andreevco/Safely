@@ -3,13 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import { BTC_ASSET, ellipsisMiddle } from '@safely/core';
-import { type BtcActivityItem, useNumberFormatter, useRate } from '@safely/ux';
+import { type BtcActivityItem, useDateFormatter, useNumberFormatter, useRate } from '@safely/ux';
 
 import { Cell, Text } from '@mobile/shared/ui';
 
 import { styles } from './ActivityItem.styles';
 
-export type ActivityItemTimeFormatDetails = 'time' | 'time-month' | 'time-month-year';
+export type ActivityItemTimeFormatDetails = 'time' | 'day-month-time';
 
 type ActivityItemProps = {
     activity: BtcActivityItem;
@@ -21,9 +21,10 @@ export const ActivityItem = (props: ActivityItemProps) => {
     const { activity, onNavigateToTransaction, timeFormatDetails } = props;
     const formatter = useNumberFormatter();
     const rate = useRate(BTC_ASSET);
-    const { t, i18n } = useTranslation();
+    const { t } = useTranslation();
 
     const isInitiator = activity.transaction.isInitiator;
+    const dateFormatter = useDateFormatter({ hour: 'numeric', minute: 'numeric' });
 
     return (
         <View style={styles.border}>
@@ -35,15 +36,11 @@ export const ActivityItem = (props: ActivityItemProps) => {
                                 {isInitiator ? t('transaction.sent') : t('transaction.received')}
                             </Cell.Title>
                             <Text color="secondary" style={styles.timestamp}>
-                                {new Date(activity.timestamp).toLocaleTimeString(i18n.language, {
-                                    hour: 'numeric',
-                                    minute: 'numeric',
-                                    ...(timeFormatDetails === 'time-month' && { month: 'short' }),
-                                    ...(timeFormatDetails === 'time-month-year' && {
-                                        month: 'short',
-                                        year: 'numeric'
-                                    })
-                                })}
+                                {timeFormatDetails === 'time'
+                                    ? dateFormatter.format(activity.timestamp)
+                                    : dateFormatter({ day: 'numeric', month: 'short' }).format(
+                                          activity.timestamp
+                                      )}
                             </Text>
                         </View>
                         <Cell.Value color={isInitiator ? 'primary' : 'accentGreen'}>
