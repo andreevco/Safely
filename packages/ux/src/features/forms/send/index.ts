@@ -1,5 +1,5 @@
 export { useSendForm, type UseSendFormOptions } from './hooks/useSendForm';
-export { sendFormReducer, INITIAL_STATE } from './reducer';
+export { sendFormReducer, INITIAL_STATE, createInitialState } from './reducer';
 export { SendFormError } from './errors';
 export type {
     SendFormResult,
@@ -13,7 +13,8 @@ export type {
     AmountWithInputType,
     AmountCryptoFirst,
     AmountFiatFirst,
-    SendStepId
+    SendStepId,
+    SendFormInitialValues
 } from './types';
 export { SEND_STEPS, FormStepNames } from './types';
 export * from './utils';

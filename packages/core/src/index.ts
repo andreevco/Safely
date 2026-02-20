@@ -7,4 +7,5 @@ export * from './di';
 export * from './entities';
 export * from './utils';
 export * from './storage';
+export * from './external-input';
 export * from './di';
