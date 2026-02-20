@@ -51,6 +51,10 @@
             "scan": "Сканировать"
         }
     },
+    "qrScan": {
+        "title": "Сканировать QR-код",
+        "subtitle": "Отсканируйте адрес BTC для продолжения."
+    },
     "language": {
         "title": "Язык",
         "languages": {
@@ -313,6 +317,12 @@
     "tabs": {
       "home": "Главная",
       "history": "История"
+    },
+    "externalInput": {
+        "errors": {
+            "unrecognized": "Нераспознанный ввод",
+            "unsupportedScheme": "Неподдерживаемый тип ввода"
+        }
     },
     "importWalletScreen": {
         "toastMessages": {

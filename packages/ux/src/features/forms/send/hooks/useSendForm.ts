@@ -1,10 +1,16 @@
-import { useCallback, useMemo, useReducer, useRef } from 'react';
+import {useCallback, useEffect, useMemo, useReducer, useRef} from 'react';
 
 import { useAssets } from '../../../../entities';
 import { useNumberFormatter } from '../../../../shared';
 import { SendFormError } from '../errors';
-import { sendFormReducer, INITIAL_STATE } from '../reducer';
-import { AmountInputType, FormStepNames, SendFormResult, SEND_STEPS } from '../types';
+import { sendFormReducer, createInitialState } from '../reducer';
+import {
+    AmountInputType,
+    FormStepNames,
+    SendFormInitialValues,
+    SendFormResult,
+    SEND_STEPS
+} from '../types';
 import {
     parseRecipient,
     BLOCKCHAIN_DEFAULT_TOKENS,
@@ -18,10 +24,13 @@ const LAST_STEP_INDEX = SEND_STEPS.length - 1;
 export interface UseSendFormOptions {
     onSubmit: (result: SendFormResult) => void;
     shouldResetForm?: boolean;
+    initialValues?: SendFormInitialValues;
 }
 
-export function useSendForm({ onSubmit, shouldResetForm = true }: UseSendFormOptions) {
-    const [state, dispatch] = useReducer(sendFormReducer, INITIAL_STATE);
+export function useSendForm(props: UseSendFormOptions) {
+    const { onSubmit, shouldResetForm = true, initialValues } = props;
+
+    const [state, dispatch] = useReducer(sendFormReducer, initialValues, createInitialState);
 
     const formatter = useNumberFormatter();
     const { data: assetsData } = useAssets();
@@ -264,6 +273,18 @@ export function useSendForm({ onSubmit, shouldResetForm = true }: UseSendFormOpt
             dispatch({ type: 'RESET' });
         }
     }, [state, onSubmit, shouldResetForm]);
+
+    useEffect(() => {
+        if (initialValues?.recipient) {
+            setRecipient(initialValues.recipient);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (initialValues?.amount && state.parsed.asset && !state.parsed.amount) {
+            setAmount(initialValues.amount);
+        }
+    }, [state.parsed.asset]);
 
     return {
         state,

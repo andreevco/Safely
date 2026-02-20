@@ -4,8 +4,14 @@ import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Linking, View } from 'react-native';
 
-import { BLOCKCHAIN_NAME, BTC_ASSET, CryptoAssetAmount, ellipsisMiddle } from '@safely/core';
-import { type BtcActivityItem, useExplorer, useNumberFormatter, useRate } from '@safely/ux';
+import { BLOCKCHAIN_NAME, BTC_ASSET, ellipsisMiddle } from '@safely/core';
+import {
+    type BtcActivityItem,
+    useDateFormatter,
+    useExplorer,
+    useNumberFormatter,
+    useRate
+} from '@safely/ux';
 
 import {
     Copy16,
@@ -31,11 +37,17 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
             params: { activity }
         }
     } = props;
-    const { t, i18n } = useTranslation();
+    const { t } = useTranslation();
     const isInitiator = activity.transaction.isInitiator;
     const formatter = useNumberFormatter();
-    const rate = useRate(BTC_ASSET);
+    const { data: rate } = useRate(BTC_ASSET);
     const explorer = useExplorer(BLOCKCHAIN_NAME.BTC);
+    const dateFormatter = useDateFormatter({
+        day: 'numeric',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
 
     const handleCopy = useCopy();
     const handleOpen = useCallback(() => {
@@ -43,14 +55,10 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
         void Linking.openURL(url);
     }, [activity.transaction.raw.txid, explorer]);
 
-    const confirmedAt = useMemo(() => {
-        return new Date(activity.timestamp).toLocaleDateString(i18n.language, {
-            day: 'numeric',
-            month: 'short',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    }, [activity.timestamp, i18n.language]);
+    const confirmedAt = useMemo(
+        () => dateFormatter.format(activity.timestamp),
+        [dateFormatter, activity.timestamp]
+    );
 
     const addressCell = useMemo(() => {
         return {
@@ -60,20 +68,6 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
             label: isInitiator ? t('transaction.recipient') : t('transaction.sender')
         };
     }, [isInitiator, activity.transaction.toAddress, activity.transaction.fromAddress, t]);
-
-    const networkFee = useMemo(() => {
-        const feeCryptoAmount = new CryptoAssetAmount({
-            asset: BTC_ASSET,
-            weiAmount: activity.transaction.raw?.fees ?? 0n
-        });
-
-        return {
-            cryptoFormatted: feeCryptoAmount.format(formatter),
-            fiatFormatted: rate.data ? feeCryptoAmount.convert(rate.data).format(formatter) : '-'
-        };
-    }, [activity.transaction.raw?.fees, formatter, rate.data]);
-
-    console.log(activity.transaction.raw);
 
     return (
         <Screen>
@@ -93,9 +87,9 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
                     <Text variant="titleL" color="primary">
                         {isInitiator ? '−' : '+'} {activity.transaction.value.format(formatter)}
                     </Text>
-                    {rate.data && (
+                    {rate && (
                         <Text variant="bodyL" color="secondary">
-                            ≈ {activity.transaction.value.convert(rate.data).format(formatter)}
+                            ≈ {activity.transaction.value.convert(rate).format(formatter)}
                         </Text>
                     )}
                 </View>
@@ -131,10 +125,18 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
                             </TableCell.Column>
                             <TableCell.Column>
                                 <TableCell.Value>
-                                    {networkFee.fiatFormatted}{' '}
-                                    <TableCell.Value color="secondary">
-                                        {networkFee.cryptoFormatted}
-                                    </TableCell.Value>
+                                    {!rate || !activity.transaction.fee ? (
+                                        '-'
+                                    ) : (
+                                        <>
+                                            {activity.transaction.fee.amount
+                                                .convert(rate)
+                                                .format(formatter)}{' '}
+                                            <TableCell.Value color="secondary">
+                                                {activity.transaction.fee.amount.format(formatter)}
+                                            </TableCell.Value>
+                                        </>
+                                    )}
                                 </TableCell.Value>
                             </TableCell.Column>
                         </TableCell>

@@ -1,4 +1,10 @@
-import { SendFormAction, SendFormState, SendFormValues, SEND_STEPS } from './types';
+import {
+    SendFormAction,
+    SendFormInitialValues,
+    SendFormState,
+    SendFormValues,
+    SEND_STEPS
+} from './types';
 
 const LAST_STEP_INDEX = SEND_STEPS.length - 1;
 
@@ -25,6 +31,18 @@ export const INITIAL_STATE: SendFormState = {
     },
     stepIndex: 0
 };
+
+export function createInitialState(initialValues?: SendFormInitialValues): SendFormState {
+    if (!initialValues?.recipient) return INITIAL_STATE;
+
+    return {
+        ...INITIAL_STATE,
+        values: {
+            ...DEFAULT_VALUES,
+            recipient: initialValues.recipient
+        }
+    };
+}
 
 export function sendFormReducer(state: SendFormState, action: SendFormAction): SendFormState {
     switch (action.type) {

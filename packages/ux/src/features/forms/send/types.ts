@@ -52,6 +52,11 @@ export enum FormStepNames {
 export const SEND_STEPS = [FormStepNames.RECIPIENT, FormStepNames.ASSET_AMOUNT] as const;
 export type SendStepId = (typeof SEND_STEPS)[number];
 
+export interface SendFormInitialValues {
+    recipient?: string;
+    amount?: string;
+}
+
 export interface SendFormValues {
     recipient: string;
     amount: string;
