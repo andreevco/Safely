@@ -4,13 +4,13 @@ import { useTranslation } from 'react-i18next';
 import { RefreshControl, View } from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';
 
-import { type BtcActivityItem, useDateFormatter } from '@safely/ux';
 import {
-    ACTIVITY_GROUP_LABEL,
-    ActivityItemsDatedGroupMeta
-} from '@safely/ux/entities/activity/types';
-import { useGroupedHistory } from '@safely/ux/entities/activity/useGroupedHistory';
-import { DateFormatter } from '@safely/ux/shared/format/date';
+    type BtcActivityItem,
+    useDateFormatter,
+    DateFormatter,
+    useGroupedHistory
+} from '@safely/ux';
+import { ACTIVITY_GROUP_LABEL, ActivityItemsDatedGroupMeta } from '@safely/ux';
 
 import { ActivityItem } from '@mobile/entities/activity';
 import { ActivityItemTimeFormatDetails } from '@mobile/entities/activity/ActivityItem/ActivityItem';
