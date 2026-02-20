@@ -1,8 +1,7 @@
 import { type TFunction } from 'i18next';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { RefreshControl, View } from 'react-native';
-import { useUnistyles } from 'react-native-unistyles';
+import { View } from 'react-native';
 
 import {
     type BtcActivityItem,
@@ -85,7 +84,6 @@ export const HistoryList = (props: HistoryListProps) => {
     const { onNavigateToTransaction } = props;
     const { t } = useTranslation();
 
-    const { theme } = useUnistyles();
     const formatter = useDateFormatter();
 
     const { data: historyGroups, isRefetching, refetch, fetchNextPage } = useGroupedHistory();
@@ -154,13 +152,8 @@ export const HistoryList = (props: HistoryListProps) => {
     return (
         <Screen.List
             contentContainerStyle={styles.contentContainer}
-            refreshControl={
-                <RefreshControl
-                    refreshing={isRefetching}
-                    onRefresh={refetch}
-                    tintColor={theme.colors.text.secondary}
-                />
-            }
+            refreshing={isRefetching}
+            onRefresh={refetch}
             data={rows}
             keyExtractor={item => item.key}
             onEndReached={fetchNextPage}
