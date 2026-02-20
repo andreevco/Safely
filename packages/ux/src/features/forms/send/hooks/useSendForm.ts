@@ -15,8 +15,7 @@ import {
     parseRecipient,
     BLOCKCHAIN_DEFAULT_TOKENS,
     recipientSchema,
-    assetIdSchema,
-    RECIPIENT_DEBOUNCE_MS
+    assetIdSchema
 } from '../utils';
 import { validateAmount, calculateMaxAmount, reformatForInputType } from '../validators';
 
@@ -36,7 +35,6 @@ export function useSendForm(props: UseSendFormOptions) {
     const formatter = useNumberFormatter();
     const { data: assetsData } = useAssets();
 
-    const recipientDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const skipNextAmountValidation = useRef(false);
 
     const ratedAssets = assetsData ?? [];
@@ -60,8 +58,6 @@ export function useSendForm(props: UseSendFormOptions) {
     const currentStepId = SEND_STEPS[state.stepIndex];
 
     const canGoToNextStep = useMemo(() => {
-        if (state.isValidating) return false;
-
         if (currentStepId === FormStepNames.RECIPIENT) {
             return !!state.parsed.recipient && !state.errors.recipient;
         }
@@ -79,57 +75,49 @@ export function useSendForm(props: UseSendFormOptions) {
     }, [state, currentStepId]);
 
     const validateRecipient = useCallback((value: string) => {
-        if (recipientDebounceRef.current) {
-            clearTimeout(recipientDebounceRef.current);
-        }
+        dispatch({ type: 'RESET_DEPENDENT_FIELDS' });
 
-        recipientDebounceRef.current = setTimeout(() => {
-            dispatch({ type: 'RESET_DEPENDENT_FIELDS' });
-
-            const zodResult = recipientSchema.safeParse(value);
-            if (!zodResult.success) {
-                dispatch({
-                    type: 'SET_RECIPIENT_VALIDATED',
-                    recipient: undefined,
-                    error:
-                        zodResult.error.issues[0]?.message ??
-                        SendFormError.INVALID_RECIPIENT_ADDRESS
-                });
-                return;
-            }
-
-            const input = zodResult.data;
-            const parsedRecipient = parseRecipient(input);
-
-            if (typeof parsedRecipient === 'string') {
-                dispatch({
-                    type: 'SET_RECIPIENT_VALIDATED',
-                    recipient: undefined,
-                    error: parsedRecipient
-                });
-                return;
-            }
-
+        const zodResult = recipientSchema.safeParse(value);
+        if (!zodResult.success) {
             dispatch({
                 type: 'SET_RECIPIENT_VALIDATED',
-                recipient: parsedRecipient,
+                recipient: undefined,
+                error: zodResult.error.issues[0]?.message ?? SendFormError.INVALID_RECIPIENT_ADDRESS
+            });
+            return;
+        }
+
+        const input = zodResult.data;
+        const parsedRecipient = parseRecipient(input);
+
+        if (typeof parsedRecipient === 'string') {
+            dispatch({
+                type: 'SET_RECIPIENT_VALIDATED',
+                recipient: undefined,
+                error: parsedRecipient
+            });
+            return;
+        }
+
+        dispatch({
+            type: 'SET_RECIPIENT_VALIDATED',
+            recipient: parsedRecipient,
+            error: undefined
+        });
+
+        const defaultAsset = BLOCKCHAIN_DEFAULT_TOKENS[parsedRecipient.blockchain];
+        const parsedAsset = ratedAssetsRef.current.find(({ amount }) =>
+            amount.asset.id.isEq(defaultAsset.id)
+        );
+
+        if (parsedAsset) {
+            dispatch({
+                type: 'SET_ASSET',
+                assetId: defaultAsset.id.toString(),
+                asset: parsedAsset,
                 error: undefined
             });
-
-            const defaultAsset = BLOCKCHAIN_DEFAULT_TOKENS[parsedRecipient.blockchain];
-            const parsedAsset = ratedAssetsRef.current.find(({ amount }) =>
-                amount.asset.id.isEq(defaultAsset.id)
-            );
-
-            if (parsedAsset) {
-                dispatch({
-                    type: 'SET_ASSET',
-                    assetId: defaultAsset.id.toString(),
-                    asset: parsedAsset,
-                    error: undefined
-                });
-            }
-        }, RECIPIENT_DEBOUNCE_MS);
+        }
     }, []);
 
     const setRecipient = useCallback(
@@ -297,14 +285,6 @@ export function useSendForm(props: UseSendFormOptions) {
             setAmount(initialValues.amount);
         }
     }, [state.parsed.asset]);
-
-    useEffect(() => {
-        return () => {
-            if (!recipientDebounceRef.current) return;
-
-            clearTimeout(recipientDebounceRef.current);
-        };
-    }, []);
 
     return {
         state,

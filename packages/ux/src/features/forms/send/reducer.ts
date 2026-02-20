@@ -29,7 +29,6 @@ export const INITIAL_STATE: SendFormState = {
         amount: undefined,
         asset: undefined
     },
-    isValidating: false,
     stepIndex: 0
 };
 
@@ -50,16 +49,14 @@ export function sendFormReducer(state: SendFormState, action: SendFormAction): S
         case 'SET_RECIPIENT':
             return {
                 ...state,
-                values: { ...state.values, recipient: action.value },
-                isValidating: true
+                values: { ...state.values, recipient: action.value }
             };
 
         case 'SET_RECIPIENT_VALIDATED':
             return {
                 ...state,
                 parsed: { ...state.parsed, recipient: action.recipient },
-                errors: { ...state.errors, recipient: action.error },
-                isValidating: false
+                errors: { ...state.errors, recipient: action.error }
             };
 
         case 'SET_AMOUNT':
@@ -97,9 +94,6 @@ export function sendFormReducer(state: SendFormState, action: SendFormAction): S
                 parsed: { ...state.parsed, asset: action.asset },
                 errors: { ...state.errors, asset: action.error }
             };
-
-        case 'SET_VALIDATING':
-            return { ...state, isValidating: action.isValidating };
 
         case 'NEXT_STEP':
             return state.stepIndex < LAST_STEP_INDEX

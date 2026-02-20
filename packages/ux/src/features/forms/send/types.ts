@@ -82,7 +82,6 @@ export interface SendFormState {
     values: SendFormValues;
     parsed: SendFormParsed;
     errors: SendFormErrors;
-    isValidating: boolean;
     stepIndex: number;
 }
 
@@ -108,7 +107,6 @@ export type SendFormAction =
           asset: RatedCryptoAssetAmount | undefined;
           error: string | undefined;
       }
-    | { type: 'SET_VALIDATING'; isValidating: boolean }
     | { type: 'NEXT_STEP' }
     | { type: 'PREV_STEP' }
     | { type: 'RESET' }
