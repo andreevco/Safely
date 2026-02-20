@@ -1,7 +1,6 @@
-import { BLOCKCHAIN_NAME, BtcRecipient, Recipient } from '@safely/core';
+import { BLOCKCHAIN_NAME, BtcAddress, BtcRecipient, Recipient } from '@safely/core';
 
 import { SendFormError } from '../errors';
-import { BTC_ADDRESS_PATTERN } from './constants';
 
 export interface DetectedAddressType {
     blockchain: BLOCKCHAIN_NAME;
@@ -10,7 +9,7 @@ export interface DetectedAddressType {
 export function detectAddressType(input: string): DetectedAddressType | null {
     if (!input) return null;
 
-    if (BTC_ADDRESS_PATTERN.test(input)) {
+    if (BtcAddress.validate(input)) {
         return { blockchain: BLOCKCHAIN_NAME.BTC };
     }
 
