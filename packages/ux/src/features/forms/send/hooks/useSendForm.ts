@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useMemo, useReducer, useRef} from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react';
 
 import { useAssets } from '../../../../entities';
 import { useNumberFormatter } from '../../../../shared';
