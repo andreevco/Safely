@@ -1,3 +1,9 @@
+import {
+    impactAsync,
+    ImpactFeedbackStyle,
+    notificationAsync,
+    NotificationFeedbackType
+} from 'expo-haptics';
 import { useCallback, useEffect, useMemo } from 'react';
 import type { LayoutChangeEvent, ViewProps } from 'react-native';
 import { View } from 'react-native';
@@ -6,7 +12,6 @@ import Animated, {
     Easing,
     Extrapolation,
     interpolate,
-    runOnJS,
     useAnimatedStyle,
     useSharedValue,
     withRepeat,
@@ -14,6 +19,7 @@ import Animated, {
     withTiming
 } from 'react-native-reanimated';
 import { useUnistyles } from 'react-native-unistyles';
+import { runOnJS } from 'react-native-worklets';
 
 import { ArrowRight28, Icon, Loader28 } from '../Icon';
 import { Text } from '../Text';
@@ -53,8 +59,17 @@ export const SlideButton = (props: SlideButtonProps) => {
     }, [loading, maxTranslateX, translateX, rotation]);
 
     const handleComplete = useCallback(() => {
+        void notificationAsync(NotificationFeedbackType.Success);
         onSlideComplete?.();
     }, [onSlideComplete]);
+
+    const hapticGrab = useCallback(() => {
+        void impactAsync(ImpactFeedbackStyle.Light);
+    }, []);
+
+    const hapticDrop = useCallback(() => {
+        void notificationAsync(NotificationFeedbackType.Warning);
+    }, []);
 
     const onTrackLayout = useCallback(
         (event: LayoutChangeEvent) => {
@@ -74,6 +89,7 @@ export const SlideButton = (props: SlideButtonProps) => {
             .onBegin(() => {
                 'worklet';
                 startX.value = translateX.value;
+                runOnJS(hapticGrab)();
             })
             .onUpdate(event => {
                 'worklet';
@@ -92,9 +108,19 @@ export const SlideButton = (props: SlideButtonProps) => {
                     runOnJS(handleComplete)();
                 } else {
                     translateX.value = withSpring(0, SPRING_CONFIG);
+                    runOnJS(hapticDrop)();
                 }
             });
-    }, [disabled, loading, handleComplete, maxTranslateX, startX, translateX]);
+    }, [
+        disabled,
+        loading,
+        handleComplete,
+        hapticGrab,
+        hapticDrop,
+        maxTranslateX,
+        startX,
+        translateX
+    ]);
 
     const knobStyle = useAnimatedStyle(() => ({
         transform: [{ translateX: translateX.value }]
