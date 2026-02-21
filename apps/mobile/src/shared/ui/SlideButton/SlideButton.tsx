@@ -32,10 +32,24 @@ type SlideButtonProps = ViewProps & {
     disabled?: boolean;
     loading?: boolean;
     onSlideComplete?: () => void;
+    trackColor?: string;
+    knobColor?: string;
+    textColor?: string;
 };
 
 export const SlideButton = (props: SlideButtonProps) => {
-    const { label, description, style, disabled, loading, onSlideComplete, ...rest } = props;
+    const {
+        label,
+        description,
+        style,
+        disabled,
+        loading,
+        onSlideComplete,
+        trackColor,
+        knobColor,
+        textColor,
+        ...rest
+    } = props;
     const { theme } = useUnistyles();
 
     const translateX = useSharedValue(0);
@@ -150,13 +164,26 @@ export const SlideButton = (props: SlideButtonProps) => {
     });
 
     return (
-        <View style={[styles.container, style]} onLayout={onTrackLayout} {...rest}>
+        <View
+            style={[styles.container, trackColor && { backgroundColor: trackColor }, style]}
+            onLayout={onTrackLayout}
+            {...rest}
+        >
             <Animated.View style={[styles.textContainer, textAnimatedStyle]} pointerEvents="none">
-                <Text variant="labelL" textAlign="center">
+                <Text
+                    variant="labelL"
+                    textAlign="center"
+                    style={textColor ? { color: textColor } : undefined}
+                >
                     {label}
                 </Text>
                 {!!description && (
-                    <Text variant="bodyM" color="tertiary" textAlign="center">
+                    <Text
+                        variant="bodyM"
+                        color="tertiary"
+                        textAlign="center"
+                        style={textColor ? { color: textColor } : undefined}
+                    >
                         {description}
                     </Text>
                 )}
@@ -168,6 +195,7 @@ export const SlideButton = (props: SlideButtonProps) => {
                         style={[
                             styles.knob,
                             knobStyle,
+                            knobColor && { backgroundColor: knobColor },
                             loading && { backgroundColor: theme.colors.button.tertiary.background }
                         ]}
                     >
