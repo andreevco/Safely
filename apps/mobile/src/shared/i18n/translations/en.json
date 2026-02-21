@@ -102,7 +102,7 @@
         "title": "Security",
         "recoverySheet": {
             "title": "Recovery phrase",
-            "description": "The recovery phrase is used to back up your\u00A0wallet.",
+            "description": "The recovery phrase is used to back up your wallet.",
             "warning1": "Sharing it gives full control over your wallet.",
             "warning2": "Anyone with it can use your wallet without your account.",
             "cancel": "Cancel",
@@ -110,7 +110,7 @@
         },
         "phraseSheet": {
             "title": "Recovery phrase",
-            "warning": "Do not share this phrase.\nAnyone with it can access your\u00A0wallet.",
+            "warning": "Do not share this phrase.\nAnyone with it can access your wallet.",
             "copy": "Copy"
         },
         "groups": {
@@ -125,7 +125,7 @@
                 "title": "Application",
                 "faceId": {
                     "title": "Face ID",
-                    "subtitle": "Unlock securely with a glance. No\u00a0password\u00a0needed."
+                    "subtitle": "Unlock securely with a glance. No password needed."
                 },
                 "lockScreen": {
                     "title": "Lock screen",
@@ -198,10 +198,10 @@
     },
     "welcome": {
         "title": "Safely",
-        "subtitle": "Your personal wallet. Receive, buy\u00a0and\u00a0spend\u00a0crypto\u00a0with\u00a0ease.",
+        "subtitle": "Your personal wallet. Receive, buy and spend crypto with ease.",
         "createNew": "Create new account",
         "importExisting": "Sign in",
-        "legal": "By using Safely, you agree to accept our\u00a0<terms>Terms\u00a0of\u00a0Use</terms>\u00a0and\u00a0<privacy>Privacy\u00a0Policy</privacy>."
+        "legal": "By using Safely, you agree to accept our <terms>Terms of Use</terms> and <privacy>Privacy Policy</privacy>."
     },
     "onboarding": {
         "recoveryPhrase": {
@@ -231,7 +231,7 @@
         },
         "notifications": {
             "title": "Notifications",
-            "description": "Get alerts when funds arrive.\nNo\u00a0need\u00a0to\u00a0check\u00a0manually.",
+            "description": "Get alerts when funds arrive.\nNo need to check manually.",
             "enable": "Enable notifications"
         },
         "accountCreated": {
@@ -271,7 +271,7 @@
         "face": {
             "ios": {
                 "title": "Face ID",
-                "description": "Unlock securely with a glance. No\u00a0password\u00a0needed."
+                "description": "Unlock securely with a glance. No password needed."
             },
             "other": {
                 "title": "Face recognition",
@@ -281,7 +281,7 @@
         "fingerprint": {
             "ios": {
                 "title": "Touch ID",
-                "description": "Unlock securely with your fingerprint. No\u00a0password\u00a0needed."
+                "description": "Unlock securely with your fingerprint. No password needed."
             },
             "other": {
                 "title": "Fingerprint unlock",
@@ -312,18 +312,24 @@
         "signOutAccount": {
             "title": "Sign out account “{{name}}”",
             "confirm": {
-                "title": "Sign out account “{{name}}”?",
-                "message": "This will remove account “{{name}}”. This action cannot be undone.",
-                "confirm": "Sign out",
+                "title": "Erase this device?",
+                "message": "All accounts and data will be permanently removed from this device. Only accounts with a backup can be restored.",
+                "slider": {
+                    "label": "Erase device",
+                    "description": "Slide to erase"
+                },
                 "cancel": "Cancel"
             }
         },
         "removePortfolio": {
             "title": "Remove wallet “{{name}}”",
             "confirm": {
-                "title": "Remove wallet “{{name}}”?",
+                "title": "Remove this wallet?",
                 "message": "This will remove wallet “{{name}}”. This action cannot be undone.",
-                "confirm": "Remove",
+                "slider": {
+                    "label": "Remove wallet",
+                    "description": "Slide to remove"
+                },
                 "cancel": "Cancel"
             }
         }
@@ -341,8 +347,8 @@
             "send": "Send"
         },
         "dateHeaders": {
-          "today": "Today",
-          "yesterday": "Yesterday"
+            "today": "Today",
+            "yesterday": "Yesterday"
         }
     },
     "importWalletScreen": {
