@@ -62,7 +62,7 @@ export class BtcTransactionTemplate {
             blockchain: BLOCKCHAIN_NAME.BTC,
             txId: result.txid,
             toString() {
-                return ellipsisMiddle(result.txid);
+                return ellipsisMiddle(result.txid, 6);
             },
             toExplorerUrl(explorerFactory: ExplorerFactory): string {
                 return explorerFactory.createExplorer(BLOCKCHAIN_NAME.BTC).transaction(result.txid);
