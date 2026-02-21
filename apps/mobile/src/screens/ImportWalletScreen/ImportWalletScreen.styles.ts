@@ -22,11 +22,21 @@ export const styles = StyleSheet.create(theme => ({
         backgroundColor: theme.colors.background.secondary,
         borderRadius: theme.radius.md,
         padding: theme.spacing[16],
-        minHeight: 160
-    },
-    inputContainerError: {
+        minHeight: 166,
         borderWidth: 1,
-        borderColor: theme.colors.accent.red
+        borderColor: 'transparent',
+        variants: {
+            focused: {
+                true: {
+                    borderColor: theme.colors.accent.blue
+                }
+            },
+            error: {
+                true: {
+                    borderColor: theme.colors.accent.red
+                }
+            }
+        }
     },
     textArea: {
         flex: 1,
