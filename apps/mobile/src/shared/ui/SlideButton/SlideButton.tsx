@@ -68,6 +68,7 @@ export const SlideButton = (props: SlideButtonProps) => {
                 false
             );
         } else {
+            translateX.value = withSpring(0, SPRING_CONFIG);
             rotation.value = 0;
         }
     }, [loading, maxTranslateX, translateX, rotation]);

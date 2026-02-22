@@ -1,24 +1,13 @@
 import { StaticScreenProps, useNavigation } from '@react-navigation/native';
-import {
-    impactAsync,
-    ImpactFeedbackStyle,
-    notificationAsync,
-    NotificationFeedbackType
-} from 'expo-haptics';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useReanimatedKeyboardAnimation } from 'react-native-keyboard-controller';
-import Animated, {
-    useAnimatedReaction,
-    useAnimatedStyle,
-    useSharedValue
-} from 'react-native-reanimated';
+import { useCallback } from 'react';
 
-import { usePasscode } from '@mobile/entities/security';
-import { PASSCODE_DIGITS } from '@mobile/shared/constants';
-import { PasscodeInput, Screen, Text } from '@mobile/shared/ui';
+import { useSignOutFromAccount } from '@safely/ux';
 
-import { styles } from './PasscodeVerificationScreen.styles';
+import { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import { usePasscodeLockout } from '@mobile/entities/security';
+
+import { LockoutContent } from './components/LockoutContent';
+import { PasscodeContent } from './components/PasscodeContent';
 
 type PasscodeVerificationScreenProps = StaticScreenProps<{
     onSuccess: () => void;
@@ -29,98 +18,29 @@ type PasscodeVerificationScreenProps = StaticScreenProps<{
 export const PasscodeVerificationScreen = (props: PasscodeVerificationScreenProps) => {
     const { onSuccess, onClose, title } = props.route.params;
 
-    const { t } = useTranslation();
-    const navigation = useNavigation();
-    const passcode = usePasscode();
-    const successCalled = useRef(false);
-    const { height } = useReanimatedKeyboardAnimation();
-    const maxHeight = useSharedValue(0);
+    const navigation = useNavigation<RootStackNavigationProp>();
+    const { isLocked, remainingMs, recordFailedAttempt, resetAttempts } = usePasscodeLockout();
+    const { mutateAsync: signOutAccount } = useSignOutFromAccount();
 
-    const [inputValue, setInputValue] = useState('');
-    const isSuccess = useSharedValue(false);
-    const isError = useSharedValue(false);
+    const handleSignOut = useCallback(async () => {
+        await signOutAccount();
+        navigation.reset({
+            index: 0,
+            routes: [{ name: 'WelcomeScreen' }]
+        });
+    }, [signOutAccount, navigation]);
 
-    useAnimatedReaction(
-        () => Math.abs(Math.floor(height.value)),
-        value => {
-            if (value > maxHeight.value) {
-                maxHeight.value = value;
-            }
-        },
-        [maxHeight, height]
-    );
-
-    const digitsAmount = passcode.isSet ? passcode.passcodeLength : PASSCODE_DIGITS.SHORT;
-    const pinFullyEntered = inputValue.length === digitsAmount;
-
-    const handleInputChange = useCallback((value: string) => {
-        void impactAsync(ImpactFeedbackStyle.Light);
-        setInputValue(value);
-    }, []);
-
-    useEffect(() => {
-        return () => {
-            if (!successCalled.current) {
-                onClose?.();
-            }
-        };
-    }, [onClose]);
-
-    const handleComplete = useCallback(async () => {
-        if (isSuccess.value) return;
-
-        const isValid = passcode.isSet ? await passcode.validate(inputValue) : false;
-        if (isValid) {
-            await notificationAsync(NotificationFeedbackType.Success);
-            isSuccess.value = true;
-            successCalled.current = true;
-
-            setTimeout(() => {
-                navigation.goBack();
-                onSuccess();
-            }, 300);
-        } else {
-            await notificationAsync(NotificationFeedbackType.Error);
-            isError.value = true;
-
-            setTimeout(() => {
-                setInputValue('');
-                isError.value = false;
-            }, 300);
-        }
-    }, [inputValue, isSuccess, isError, navigation, onSuccess, passcode]);
-
-    useEffect(() => {
-        if (pinFullyEntered) {
-            void handleComplete();
-        }
-    }, [pinFullyEntered, handleComplete]);
-
-    const contentAnimatedStyle = useAnimatedStyle(() => ({
-        paddingBottom: maxHeight.value
-    }));
+    if (isLocked) {
+        return <LockoutContent remainingMs={remainingMs} onSignOut={handleSignOut} />;
+    }
 
     return (
-        <Screen>
-            <Screen.Header variant="left">
-                <Screen.Header.CloseButton />
-            </Screen.Header>
-
-            <Animated.View style={[styles.content, contentAnimatedStyle]}>
-                <Animated.View style={styles.textContainer}>
-                    <Text textAlign="center" variant="titleM">
-                        {title ?? t('passcode.verify.title')}
-                    </Text>
-                </Animated.View>
-
-                <PasscodeInput
-                    numberOfDigits={digitsAmount}
-                    value={inputValue}
-                    onChange={handleInputChange}
-                    isSuccess={isSuccess}
-                    isError={isError}
-                />
-            </Animated.View>
-        </Screen>
+        <PasscodeContent
+            onSuccess={onSuccess}
+            onClose={onClose}
+            title={title}
+            recordFailedAttempt={recordFailedAttempt}
+            resetAttempts={resetAttempts}
+        />
     );
 };

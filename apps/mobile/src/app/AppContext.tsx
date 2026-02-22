@@ -78,8 +78,6 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
                 check: () => securityCheck()
             },
             async clearAllData() {
-                await securityCheck();
-
                 const storages = Object.values(mobileStorages);
                 for (const storageConfig of storages) {
                     await storageConfig.storage.clear();
