@@ -27,6 +27,14 @@
         "switchToFour": "Use 4-digit passcode",
         "verify": {
             "title": "Enter passcode"
+        },
+        "lockout": {
+            "title": "Too many attempts",
+            "subtitleHours_one": "Try again in {{count}} hour",
+            "subtitleHours_other": "Try again in {{count}} hours",
+            "subtitleMinutes_one": "Try again in {{count}} minute",
+            "subtitleMinutes_other": "Try again in {{count}} minutes",
+            "signOut": "Log out"
         }
     },
     "changePasscode": {

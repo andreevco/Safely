@@ -27,6 +27,18 @@
         "switchToFour": "Использовать 4-значный код",
         "verify": {
             "title": "Введите код-пароль"
+        },
+        "lockout": {
+            "title": "Слишком много попыток",
+            "subtitleHours_one": "Попробуйте через {{count}} час",
+            "subtitleHours_few": "Попробуйте через {{count}} часа",
+            "subtitleHours_many": "Попробуйте через {{count}} часов",
+            "subtitleHours_other": "Попробуйте через {{count}} часов",
+            "subtitleMinutes_one": "Попробуйте через {{count}} минуту",
+            "subtitleMinutes_few": "Попробуйте через {{count}} минуты",
+            "subtitleMinutes_many": "Попробуйте через {{count}} минут",
+            "subtitleMinutes_other": "Попробуйте через {{count}} минут",
+            "signOut": "Выйти"
         }
     },
     "changePasscode": {
