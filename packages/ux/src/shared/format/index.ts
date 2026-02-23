@@ -1,1 +1,1 @@
-export { useNumberFormatter, useFormattedAmount } from './format';
+export { useNumberFormatter, useFormattedAmount, useDateFormatter } from './format';

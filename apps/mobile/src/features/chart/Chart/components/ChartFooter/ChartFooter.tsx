@@ -1,5 +1,7 @@
 import { View } from 'react-native';
 
+import { useDateFormatter } from '@safely/ux';
+
 import { Text } from '@mobile/shared/ui';
 
 import { styles } from './ChartFooter.styles';
@@ -27,31 +29,31 @@ export const Ticks = (props: TicksProps) => {
     );
 };
 
-const formatDate = (date: number, period: ChartPeriod): string => {
+const getConfigByPeriod = (period: ChartPeriod): Intl.DateTimeFormatOptions => {
     switch (period) {
         case ChartPeriod.ONE_HOUR:
-            return new Date(date).toLocaleTimeString('en-US', {
+            return {
                 hour: '2-digit',
                 minute: '2-digit'
-            });
+            };
         case ChartPeriod.ONE_MONTH:
-            return new Date(date).toLocaleDateString('en-US', {
+            return {
                 month: 'short'
-            });
+            };
         case ChartPeriod.NINETY_DAYS:
-            return new Date(date).toLocaleDateString('en-US', {
+            return {
                 month: 'short',
                 year: 'numeric'
-            });
+            };
         case ChartPeriod.ONE_YEAR:
-            return new Date(date).toLocaleDateString('en-US', {
+            return {
                 year: 'numeric'
-            });
+            };
         default:
-            return new Date(date).toLocaleDateString('en-US', {
+            return {
                 month: 'short',
                 day: 'numeric'
-            });
+            };
     }
 };
 
@@ -62,6 +64,7 @@ type ChartFooterProps = {
 
 export const ChartFooter = (props: ChartFooterProps) => {
     const { selectedPeriod, startDate } = props;
+    const dateFormatter = useDateFormatter();
 
     return (
         <View style={styles.container}>
@@ -73,7 +76,10 @@ export const ChartFooter = (props: ChartFooterProps) => {
                     .map((date, index) => (
                         <View style={styles.dateContainer} key={index}>
                             <Text variant="bodyS" color="tertiary">
-                                {formatDate(date, selectedPeriod)}
+                                {dateFormatter.formatDate(
+                                    new Date(date),
+                                    getConfigByPeriod(selectedPeriod)
+                                )}
                             </Text>
                         </View>
                     ))}

@@ -9,7 +9,7 @@ export const assetKeys = defineQueryKeys('assets', {
     }),
     chart: (_assetId: string) => ({
         fiat: (_fiatId: string) => ({
-            cachingKey: (_cachingKey: string) => finalKey
+            startDate: (_startDate: string) => finalKey
         })
     })
 });

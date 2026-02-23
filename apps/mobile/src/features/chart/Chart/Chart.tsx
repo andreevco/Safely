@@ -16,7 +16,7 @@ export const Chart = () => {
         const periodConfig = CHART_CONFIG[selectedPeriod];
         return periodConfig.startOfPeriod(new Date(Date.now() - periodConfig.fullPeriodLength));
     }, [selectedPeriod]);
-    const chart = useChart(asset, stickyStartDate, { cachingKey: selectedPeriod });
+    const chart = useChart(asset, stickyStartDate);
 
     return (
         <View style={styles.container}>

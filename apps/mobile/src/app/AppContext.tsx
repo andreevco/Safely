@@ -22,6 +22,7 @@ let securityCheck: () => Promise<void> = () => {
 
 const sdk: IAppSdk = {
     numberFormatLocale,
+    dateFormatLanguage: i18next.language,
     storage: mobileStorages.app.storage,
     keychain: mobileStorages.keychain.storage,
     secretEncryptor: {
