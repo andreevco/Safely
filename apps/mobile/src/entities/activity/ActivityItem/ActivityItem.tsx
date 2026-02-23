@@ -33,7 +33,9 @@ export const ActivityItem = (props: ActivityItemProps) => {
                     <Cell.Row>
                         <View style={styles.titleWithTimestamp}>
                             <Cell.Title>
-                                {isInitiator ? t('transaction.sent') : t('transaction.received')}
+                                {isInitiator
+                                    ? t('history.transactionInfo.sent')
+                                    : t('history.transactionInfo.received')}
                             </Cell.Title>
                             <Text color="secondary" style={styles.timestamp}>
                                 {timeFormatDetails === 'time'

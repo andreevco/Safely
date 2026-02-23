@@ -344,6 +344,30 @@
         "dateHeaders": {
           "today": "Today",
           "yesterday": "Yesterday"
+        },
+        "transactionInfo": {
+            "sent": "Sent",
+            "received": "Received",
+            "recipient": "Recipient",
+            "sender": "Sender",
+            "fee": "Network fee",
+            "hash": "Transaction",
+            "status": {
+                "title": "Status",
+                "pending": {
+                    "title": "Pending",
+                    "description": "~ 10 minutes processing time"
+                },
+                "confirmed-recently": {
+                    "title": "Confirmed at {{date}}",
+                    "confirmations_one": "{{count}} confirmation",
+                    "confirmations_other": "{{count}} confirmations"
+                },
+                "confirmed-long-ago": {
+                    "title": "Confirmed at {{date}}",
+                    "description": "More than 6 confirmations"
+                }
+            }
         }
     },
     "importWalletScreen": {
@@ -361,15 +385,5 @@
             "unrecognized": "Unrecognized input",
             "unsupportedScheme": "Unsupported input type"
         }
-    },
-    "transaction": {
-        "sent": "Sent",
-        "received": "Received",
-        "recipient": "Recipient",
-        "sender": "Sender",
-        "fee": "Network fee",
-        "hash": "Transaction",
-        "status": "Status",
-        "confirmed": "Confirmed at {{timestamp}}"
     }
 }

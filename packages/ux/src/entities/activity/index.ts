@@ -14,3 +14,4 @@ export type {
     ActivityItemsDatedGroupMeta
 } from './types';
 export { ACTIVITY_GROUP_LABEL } from './types';
+export * from './blockchain-specific';
