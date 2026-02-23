@@ -6,8 +6,7 @@ import {
     isFiatAssetAmount,
     CryptoCurrencyDisplay,
     FiatCurrencyDisplay,
-    NumberFormatter,
-    DateFormatter
+    NumberFormatter
 } from '@safely/core';
 
 import { useAppSdk } from '../providers';
@@ -50,8 +49,3 @@ export function useFormattedAmount(
         options as { fullPrecision?: boolean; currencyDisplay?: CryptoCurrencyDisplay }
     );
 }
-
-export const useDateFormatter = () => {
-    const { dateFormatLanguage } = useAppSdk();
-    return useMemo(() => new DateFormatter(dateFormatLanguage), [dateFormatLanguage]);
-};

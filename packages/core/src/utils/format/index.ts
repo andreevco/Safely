@@ -1,7 +1,6 @@
 export { NumberFormatter } from './number-formatter';
 export { WebNumberFormatLocale } from './locale-adapter';
 export type { NumberFormatLocale } from './locale-adapter';
-export { DateFormatter } from './date-formatter';
 export type {
     FiatCurrencyDisplay,
     CryptoCurrencyDisplay,

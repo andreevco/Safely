@@ -76,9 +76,8 @@ export const ChartFooter = (props: ChartFooterProps) => {
                     .map((date, index) => (
                         <View style={styles.dateContainer} key={index}>
                             <Text variant="bodyS" color="tertiary">
-                                {dateFormatter.formatDate(
-                                    new Date(date),
-                                    getConfigByPeriod(selectedPeriod)
+                                {dateFormatter(getConfigByPeriod(selectedPeriod)).format(
+                                    new Date(date)
                                 )}
                             </Text>
                         </View>

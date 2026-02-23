@@ -13,6 +13,4 @@ export interface IAppSdk {
     qrScanner: QrScanner;
 
     numberFormatLocale: NumberFormatLocale;
-
-    dateFormatLanguage: string;
 }
