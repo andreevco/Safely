@@ -176,8 +176,8 @@
             "backToWallet": "Back to Wallet"
         },
         "sendError": {
-            "title": "Send error",
-            "default": "Failed to send the transaction. Please try again.",
+            "title": "Can't send transaction",
+            "default": "Check details and try again",
             "btc": {
                 "dust": "Transaction value is too small."
             }
