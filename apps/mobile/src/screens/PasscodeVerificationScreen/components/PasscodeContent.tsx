@@ -5,7 +5,7 @@ import {
     notificationAsync,
     NotificationFeedbackType
 } from 'expo-haptics';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { RefObject, useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useReanimatedKeyboardAnimation } from 'react-native-keyboard-controller';
 import Animated, {
@@ -23,19 +23,18 @@ import { styles } from '../PasscodeVerificationScreen.styles';
 
 interface PasscodeContentProps {
     onSuccess: () => void;
-    onClose?: () => void;
+    successCalled: RefObject<boolean>;
     title?: string;
     recordFailedAttempt: () => Promise<void>;
     resetAttempts: () => Promise<void>;
 }
 
 export const PasscodeContent = (props: PasscodeContentProps) => {
-    const { onSuccess, onClose, title, recordFailedAttempt, resetAttempts } = props;
+    const { onSuccess, successCalled, title, recordFailedAttempt, resetAttempts } = props;
 
     const { t } = useTranslation();
     const navigation = useNavigation<RootStackNavigationProp>();
     const passcode = usePasscode();
-    const successCalled = useRef(false);
     const processingRef = useRef(false);
     const { height } = useReanimatedKeyboardAnimation();
     const maxHeight = useSharedValue(0);
@@ -61,14 +60,6 @@ export const PasscodeContent = (props: PasscodeContentProps) => {
         void impactAsync(ImpactFeedbackStyle.Light);
         setInputValue(value);
     }, []);
-
-    useEffect(() => {
-        return () => {
-            if (!successCalled.current) {
-                onClose?.();
-            }
-        };
-    }, [onClose]);
 
     const handleComplete = useCallback(async () => {
         if (isSuccess.value || processingRef.current) return;
@@ -97,14 +88,15 @@ export const PasscodeContent = (props: PasscodeContentProps) => {
             }, 300);
         }
     }, [
-        inputValue,
         isSuccess,
-        isError,
+        passcode,
+        inputValue,
+        resetAttempts,
+        successCalled,
         navigation,
         onSuccess,
-        passcode,
         recordFailedAttempt,
-        resetAttempts
+        isError
     ]);
 
     useEffect(() => {
