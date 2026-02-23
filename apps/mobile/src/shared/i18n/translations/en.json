@@ -165,7 +165,7 @@
                 "title": "Status",
                 "created": {
                     "value": "Created",
-                    "description": "Not broadcast yet"
+                    "description": "Not yet confirmed"
                 }
             },
             "transaction": "Transaction"

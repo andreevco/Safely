@@ -140,7 +140,7 @@
                 "title": "Статус",
                 "created": {
                     "value": "Создана",
-                    "description": "Еще не добавлена в блок"
+                    "description": "Ещё не подтверждена"
                 }
             },
             "transaction": "Транзакция"
