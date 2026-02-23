@@ -52,6 +52,11 @@ export enum FormStepNames {
 export const SEND_STEPS = [FormStepNames.RECIPIENT, FormStepNames.ASSET_AMOUNT] as const;
 export type SendStepId = (typeof SEND_STEPS)[number];
 
+export interface SendFormInitialValues {
+    recipient?: string;
+    amount?: string;
+}
+
 export interface SendFormValues {
     recipient: string;
     amount: string;
@@ -77,7 +82,6 @@ export interface SendFormState {
     values: SendFormValues;
     parsed: SendFormParsed;
     errors: SendFormErrors;
-    isValidating: boolean;
     stepIndex: number;
 }
 
@@ -103,7 +107,6 @@ export type SendFormAction =
           asset: RatedCryptoAssetAmount | undefined;
           error: string | undefined;
       }
-    | { type: 'SET_VALIDATING'; isValidating: boolean }
     | { type: 'NEXT_STEP' }
     | { type: 'PREV_STEP' }
     | { type: 'RESET' }

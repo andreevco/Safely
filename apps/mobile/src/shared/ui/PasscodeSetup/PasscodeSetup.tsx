@@ -11,7 +11,10 @@ import Animated, {
 
 import { usePasscodeState } from '@mobile/screens/PasscodeModal/hooks';
 import { PASSCODE_DIGITS } from '@mobile/shared/constants';
-import { Button, PasscodeInput, Screen, Text } from '@mobile/shared/ui';
+import { Button } from '@mobile/shared/ui/Button';
+import { PasscodeInput } from '@mobile/shared/ui/PasscodeInput';
+import { Screen } from '@mobile/shared/ui/Screen';
+import { Text } from '@mobile/shared/ui/Text';
 
 import { styles } from './PasscodeSetup.styles';
 

@@ -1,5 +1,7 @@
 export { activityKeys } from './keys';
 export { useHistory } from './useHistory';
+export { useHasHistory } from './useHasHistory';
+export { useGroupedHistory } from './useGroupedHistory';
 export { fetchBtcActivity } from './api';
 export type {
     IActivityFilters,
@@ -7,5 +9,8 @@ export type {
     ActivityItemsDatedGroup,
     IActivityPageParam,
     ActivityPage,
-    IHistoryOptions
+    IHistoryOptions,
+    ActivityItem,
+    ActivityItemsDatedGroupMeta
 } from './types';
+export { ACTIVITY_GROUP_LABEL } from './types';
