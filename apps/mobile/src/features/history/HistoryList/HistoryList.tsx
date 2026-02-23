@@ -1,19 +1,26 @@
+import { useIsFocused } from '@react-navigation/native';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { type TFunction } from 'i18next';
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import {
+    type ActivityItemsDatedGroup,
     type BtcActivityItem,
     useDateFormatter,
     DateFormatter,
-    useGroupedHistory
+    useGroupedHistory,
+    useInterval,
+    assetKeys
 } from '@safely/ux';
 import { ACTIVITY_GROUP_LABEL, ActivityItemsDatedGroupMeta } from '@safely/ux';
 
 import { ActivityItem } from '@mobile/entities/activity';
 import { ActivityItemTimeFormatDetails } from '@mobile/entities/activity/ActivityItem/ActivityItem';
 import { Screen, Text } from '@mobile/shared/ui';
+import { ListRef } from '@mobile/shared/ui/Screen/components/List';
+import { useScrollPosition } from '@mobile/shared/utils';
 
 import { HistoryEmptyPlaceholder } from '../HistoryEmptyPlaceholder';
 import { styles } from './HistoryList.styles';
@@ -30,6 +37,9 @@ type HistoryRowItem =
 const getGroupKey = (meta: ActivityItemsDatedGroupMeta) => {
     return JSON.stringify(meta);
 };
+
+const getFirstActivityKey = (groups: ActivityItemsDatedGroup[] | undefined): string | undefined =>
+    groups?.[0]?.items?.[0]?.key;
 
 const getGroupTitle = (
     meta: ActivityItemsDatedGroupMeta,
@@ -86,7 +96,31 @@ export const HistoryList = (props: HistoryListProps) => {
 
     const formatter = useDateFormatter();
 
-    const { data: historyGroups, isRefetching, refetch, fetchNextPage } = useGroupedHistory();
+    const isFocused = useIsFocused();
+    const listRef = useRef<ListRef<HistoryRowItem> | null>(null);
+    const { data: historyGroups, refetch, fetchNextPage } = useGroupedHistory();
+    const { atTop, onScroll } = useScrollPosition({ threshold: 100 });
+    const client = useQueryClient();
+
+    const { mutate: runIntervalRefetch } = useMutation({
+        async mutationFn() {
+            const currentFirstKey = getFirstActivityKey(historyGroups);
+            const result = await refetch();
+            const newFirstKey = getFirstActivityKey(result.data);
+            if (currentFirstKey !== newFirstKey) {
+                listRef.current?.scrollToOffset({ offset: 0, animated: true });
+                client.invalidateQueries({ queryKey: assetKeys.all.toKey() });
+            }
+        }
+    });
+
+    useInterval(() => runIntervalRefetch(), atTop && isFocused ? 2000 : null);
+
+    const { mutateAsync: manuallyRefetch, isPending: isRefetching } = useMutation({
+        async mutationFn() {
+            await refetch();
+        }
+    });
 
     const rows = useMemo<HistoryRowItem[] | undefined>(() => {
         return historyGroups?.flatMap(item => {
@@ -151,9 +185,11 @@ export const HistoryList = (props: HistoryListProps) => {
 
     return (
         <Screen.List
+            ref={listRef}
             contentContainerStyle={styles.contentContainer}
             refreshing={isRefetching}
-            onRefresh={refetch}
+            onRefresh={manuallyRefetch}
+            onScroll={onScroll}
             data={rows}
             keyExtractor={item => item.key}
             onEndReached={fetchNextPage}
