@@ -1,0 +1,91 @@
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback, useMemo, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
+import { TextInput, View } from 'react-native';
+import { useUnistyles } from 'react-native-unistyles';
+
+import { ColorPicker, EmojiPicker, Text } from '@mobile/shared/ui';
+
+import { WALLET_COLORS, WALLET_EMOJIS, WalletIcon } from './constants';
+import { styles } from './CustomizeWalletContent.styles';
+
+interface CustomizeWalletContentProps {
+    title: string;
+    description: string;
+    walletName: string;
+    onWalletNameChange: (value: string) => void;
+    selectedIcon: WalletIcon;
+    onIconChange: (icon: WalletIcon) => void;
+    disabled?: boolean;
+}
+
+export const CustomizeWalletContent = ({
+    title,
+    description,
+    walletName,
+    onWalletNameChange,
+    selectedIcon,
+    onIconChange,
+    disabled = false
+}: CustomizeWalletContentProps) => {
+    const { t } = useTranslation();
+    const { theme } = useUnistyles();
+    const inputRef = useRef<TextInput>(null);
+
+    useFocusEffect(
+        useCallback(() => {
+            inputRef.current?.focus();
+        }, [])
+    );
+
+    const iconDisplay = useMemo(() => {
+        if (selectedIcon.type === 'emoji') {
+            return <Text style={styles.inputEmoji}>{selectedIcon.value}</Text>;
+        }
+
+        if (selectedIcon.type === 'color') {
+            return <View style={[styles.colorDot, { backgroundColor: selectedIcon.value }]} />;
+        }
+
+        return null;
+    }, [selectedIcon]);
+
+    return (
+        <View style={styles.content} pointerEvents={disabled ? 'none' : 'auto'}>
+            <View style={styles.textContainer}>
+                <Text textAlign="center" variant="titleM">
+                    {title}
+                </Text>
+                <Text textAlign="center" variant="bodyL" color="secondary">
+                    {description}
+                </Text>
+            </View>
+
+            <View style={styles.inputContainer}>
+                <View style={styles.inputWrapper}>
+                    <TextInput
+                        ref={inputRef}
+                        value={walletName}
+                        onChangeText={onWalletNameChange}
+                        placeholder={t('customizeWallet.namePlaceholder')}
+                        placeholderTextColor={theme.colors.text.tertiary}
+                        style={[styles.input, { color: theme.colors.text.primary }]}
+                        editable={!disabled}
+                    />
+                    {iconDisplay && <View style={styles.iconContainer}>{iconDisplay}</View>}
+                </View>
+            </View>
+
+            <ColorPicker
+                colors={WALLET_COLORS}
+                selectedColor={selectedIcon.type === 'color' ? selectedIcon.value : undefined}
+                onColorSelect={color => onIconChange({ type: 'color', value: color })}
+            />
+
+            <EmojiPicker
+                emojis={WALLET_EMOJIS}
+                onEmojiSelect={emoji => onIconChange({ type: 'emoji', value: emoji })}
+            />
+        </View>
+    );
+};

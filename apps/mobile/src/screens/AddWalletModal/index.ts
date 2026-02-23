@@ -1,0 +1,1 @@
+export { AddWalletScreen } from './AddWalletModal';

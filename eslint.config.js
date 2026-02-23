@@ -6,6 +6,7 @@ import importPlugin from 'eslint-plugin-import';
 import unusedImports from 'eslint-plugin-unused-imports';
 import eslintConfigPrettier from 'eslint-config-prettier';
 import prettierPlugin from 'eslint-plugin-prettier';
+import pluginQuery from '@tanstack/eslint-plugin-query';
 import boundaries from 'eslint-plugin-boundaries';
 import isEqPlugin from './eslint-rules/isEqPlugin.js';
 
@@ -109,6 +110,11 @@ export default [
                             pattern: '@safely/**',
                             group: 'internal',
                             position: 'before'
+                        },
+                        {
+                            pattern: '@mobile/**',
+                            group: 'internal',
+                            position: 'after'
                         }
                     ],
                     pathGroupsExcludedImportTypes: ['builtin'],
@@ -188,6 +194,17 @@ export default [
             'react/prop-types': 'off'
         }
     },
+
+    /* React Query */
+    {
+        plugins: {
+            '@tanstack/query': pluginQuery
+        },
+        rules: {
+            '@tanstack/query/exhaustive-deps': 'off'
+        }
+    },
+
     /* prettier */
     {
         files: ['**/*.{js,jsx,ts,tsx}'],

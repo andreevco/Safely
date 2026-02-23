@@ -1,0 +1,375 @@
+{
+    "currentLanguageName": "English",
+    "common": {
+        "next": "Next",
+        "cancel": "Cancel",
+        "continue": "Continue",
+        "later": "Later",
+        "errors": {
+            "unknown": "Something went wrong"
+        }
+    },
+    "send": {
+        "title": "Send",
+        "recipient": {
+            "label": "Recipient",
+            "placeholder": "Address or name"
+        },
+        "amount": "Amount",
+        "max": "Send all",
+        "remaining": "Remaining: {{amount}}{{symbol}}",
+        "insufficientBalance": "Insufficient balance"
+    },
+    "passcode": {
+        "title": "Create passcode",
+        "description": "Enter a passcode to protect your wallet",
+        "switchToSix": "Use 6-digit passcode",
+        "switchToFour": "Use 4-digit passcode",
+        "verify": {
+            "title": "Enter passcode"
+        }
+    },
+    "changePasscode": {
+        "title": "Change passcode",
+        "verify": {
+            "title": "Enter current passcode"
+        },
+        "new": {
+            "title": "Enter new passcode"
+        },
+        "reenter": {
+            "title": "Confirm new passcode"
+        }
+    },
+    "currency": {
+        "title": "Currency"
+    },
+    "home": {
+        "actions": {
+            "send": "Send",
+            "receive": "Receive",
+            "scan": "Scan"
+        }
+    },
+    "accounts": {
+        "title": "Wallets"
+    },
+    "actions": {
+        "edit": "Edit",
+        "done": "Done",
+        "copied": "Copied"
+    },
+    "qrScan": {
+        "title": "Scan QR code",
+        "subtitle": "Scan BTC address to continue."
+    },
+    "camera": {
+        "permissionRequest": {
+            "title": "Camera access required",
+            "description": "Turn on camera access to scan QR codes and connect services.",
+            "button": "Open Settings"
+        },
+        "noCameraFound": {
+            "title": "No camera found",
+            "description": "Please check your camera settings and try again."
+        }
+    },
+    "receiveAsset": {
+        "title": "Receive {{symbol}}",
+        "description": "Use this address to receive {{name}}.",
+        "actions": {
+            "copy": "Copy",
+            "share": "Share"
+        }
+    },
+    "language": {
+        "title": "Language",
+        "languages": {
+            "en": "English",
+            "ru": "Russian"
+        }
+    },
+    "notifications": {
+        "title": "Notifications",
+        "warning": "Notifications are disabled. You turned off notifications in your phone's settings. To activate notifications, go to Settings on this device.",
+        "openSettings": "Open Settings",
+        "push": {
+            "title": "Push notifications",
+            "subtitle": "Get notifications when you receive BTC."
+        }
+    },
+    "security": {
+        "title": "Security",
+        "recoverySheet": {
+            "title": "Recovery phrase",
+            "description": "The recovery phrase is used to back up your\u00A0wallet.",
+            "warning1": "Sharing it gives full control over your wallet.",
+            "warning2": "Anyone with it can use your wallet without your account.",
+            "cancel": "Cancel",
+            "reveal": "Reveal"
+        },
+        "phraseSheet": {
+            "title": "Recovery phrase",
+            "warning": "Do not share this phrase.\nAnyone with it can access your\u00A0wallet.",
+            "copy": "Copy"
+        },
+        "groups": {
+            "account": {
+                "title": "Account",
+                "protect": {
+                    "title": "Protect your account",
+                    "subtitle": "Link another device to protect your account. Without it, your access can't be restored if this phone is lost."
+                }
+            },
+            "application": {
+                "title": "Application",
+                "faceId": {
+                    "title": "Face ID",
+                    "subtitle": "Unlock securely with a glance. No\u00a0password\u00a0needed."
+                },
+                "lockScreen": {
+                    "title": "Lock screen",
+                    "subtitle": "Require passcode to view wallet contents."
+                },
+                "changePasscode": "Change passcode"
+            },
+            "wallet": {
+                "title": "Wallet",
+                "main": "Main",
+                "recovery": {
+                    "title": "Recovery phrase",
+                    "subtitle": "Keep it private. View only if necessary. This phrase has never been viewed."
+                }
+            }
+        }
+    },
+    "customizeWallet": {
+        "title": "Customize your wallet",
+        "description": "Set a name and icon to tell this wallet apart here. Sync across your devices.",
+        "namePlaceholder": "Wallet name",
+        "save": "Save"
+    },
+    "confirmation": {
+        "title": "Send {{symbol}}",
+        "success": "Sent",
+        "from": "From",
+        "to": "To",
+        "amount": "Amount",
+        "networkFee": {
+            "title": "Network Fee",
+            "timeMinutes_one": "~{{count}} minute",
+            "timeMinutes_other": "~{{count}} minutes"
+        },
+        "sendResult": {
+            "status": {
+                "title": "Status",
+                "created": {
+                    "value": "Created",
+                    "description": "Not broadcast yet"
+                }
+            },
+            "transaction": "Transaction"
+        },
+        "slider": {
+            "confirm": "Confirm",
+            "slideToSend": "Slide to send",
+            "backToWallet": "Back to Wallet"
+        },
+        "sendError": {
+            "title": "Send error",
+            "default": "Failed to send the transaction. Please try again.",
+            "btc": {
+                "dust": "Transaction value is too small."
+            }
+        }
+    },
+    "sendForm": {
+        "errors": {
+            "enterRecipientAddress": "Enter recipient address",
+            "invalidAddressFormat": "Invalid address format",
+            "invalidRecipientAddress": "Invalid recipient address",
+            "unsupportedBlockchain": "Unsupported blockchain",
+            "selectToken": "Select token",
+            "selectTokenFirst": "Select token first",
+            "unableToValidateToken": "Unable to validate token",
+            "invalidAmount": "Invalid amount",
+            "insufficientBalance": "Insufficient balance"
+        }
+    },
+    "welcome": {
+        "title": "Safely",
+        "subtitle": "Your personal wallet. Receive, buy\u00a0and\u00a0spend\u00a0crypto\u00a0with\u00a0ease.",
+        "createNew": "Create new account",
+        "importExisting": "Sign in",
+        "legal": "By using Safely, you agree to accept our\u00a0<terms>Terms\u00a0of\u00a0Use</terms>\u00a0and\u00a0<privacy>Privacy\u00a0Policy</privacy>."
+    },
+    "onboarding": {
+        "recoveryPhrase": {
+            "title": "Recovery phrase",
+            "description": "Write down these 12 words in order and store them in a safe place. You'll need them to recover your wallet.",
+            "warning": "Never share your recovery phrase with anyone. Anyone with it can access your wallet.",
+            "continue": "I've saved the phrase"
+        },
+        "importWallet": {
+            "title": "Enter recovery phrase",
+            "description": "Restore your wallet using 12 or 24 words.",
+            "placeholder": "Enter or paste your recovery phrase",
+            "continue": "Continue",
+            "paste": "Paste"
+        },
+        "passcode": {
+            "title": "Passcode",
+            "description": "Set a passcode to protect your account.\nIt will be required to unlock the app.",
+            "reenter": {
+                "title": "Re-enter passcode",
+                "description": "Set a passcode to protect your account.\nIt will be required to unlock the app."
+            }
+        },
+        "customize": {
+            "title": "Customize your wallet",
+            "description": "Set a name and icon to tell this wallet apart here. Sync across your devices."
+        },
+        "notifications": {
+            "title": "Notifications",
+            "description": "Get alerts when funds arrive.\nNo\u00a0need\u00a0to\u00a0check\u00a0manually.",
+            "enable": "Enable notifications"
+        },
+        "accountCreated": {
+            "title": "Account created",
+            "subtitle": "Link another device to protect your account. Without it, your access can't be restored if this phone is lost.",
+            "steps": {
+                "step1": "Install Safely on another device.",
+                "step2": "Tap \"Sign in\" to show a QR code.",
+                "step3": "Tap \"Add device\" below and scan that code — camera access will be required."
+            },
+            "addDevice": "Add device",
+            "protectLater": "Protect account later"
+        }
+    },
+    "addWallet": {
+        "title": "Add Wallet",
+        "subtitle": "Choose how you want to add a wallet.",
+        "createNew": {
+            "title": "Create new",
+            "subtitle": "Start with a fresh wallet"
+        },
+        "importExisting": {
+            "title": "Import existing",
+            "subtitle": "Restore using a recovery phrase"
+        },
+        "watchAccount": {
+            "title": "Watch account",
+            "subtitle": "Track by wallet address"
+        }
+    },
+    "biometry": {
+        "enable": "Enable {{name}}",
+        "default": {
+            "title": "Biometric Authentication",
+            "description": "Use biometric authentication to unlock your wallet quickly and securely."
+        },
+        "face": {
+            "ios": {
+                "title": "Face ID",
+                "description": "Unlock securely with a glance. No\u00a0password\u00a0needed."
+            },
+            "other": {
+                "title": "Face recognition",
+                "description": "Use face recognition to unlock your wallet quickly and securely."
+            }
+        },
+        "fingerprint": {
+            "ios": {
+                "title": "Touch ID",
+                "description": "Unlock securely with your fingerprint. No\u00a0password\u00a0needed."
+            },
+            "other": {
+                "title": "Fingerprint unlock",
+                "description": "Use your fingerprint to unlock your wallet quickly and securely."
+            }
+        }
+    },
+    "settings": {
+        "title": "Settings",
+        "groups": {
+            "account": {
+                "title": "Account",
+                "options": {
+                    "notifications": "Notifications",
+                    "security": "Security",
+                    "language": "Language"
+                }
+            },
+            "info": {
+                "title": "Info",
+                "options": {
+                    "support": "Support",
+                    "faq": "FAQ",
+                    "rate": "Rate",
+                    "legal": "Legal"
+                }
+            }
+        },
+        "signOutAccount": {
+            "title": "Sign out account “{{name}}”",
+            "confirm": {
+                "title": "Sign out account “{{name}}”?",
+                "message": "This will remove account “{{name}}”. This action cannot be undone.",
+                "confirm": "Sign out",
+                "cancel": "Cancel"
+            }
+        },
+        "removePortfolio": {
+            "title": "Remove wallet “{{name}}”",
+            "confirm": {
+                "title": "Remove wallet “{{name}}”?",
+                "message": "This will remove wallet “{{name}}”. This action cannot be undone.",
+                "confirm": "Remove",
+                "cancel": "Cancel"
+            }
+        }
+    },
+    "tabs": {
+        "home": "Home",
+        "history": "History"
+    },
+    "history": {
+        "title": "History",
+        "empty": {
+            "title": "Transaction history",
+            "subtitle": "Your transactions will appear here.",
+            "receive": "Receive BTC",
+            "send": "Send"
+        },
+        "dateHeaders": {
+          "today": "Today",
+          "yesterday": "Yesterday"
+        }
+    },
+    "importWalletScreen": {
+        "toastMessages": {
+            "importedWallet": "Wallet imported"
+        },
+        "errors": {
+            "alreadyExists": "Wallet already exists",
+            "invalidMnemonic": "Invalid recovery phrase",
+            "failedToGenerate": "Failed to generate wallet"
+        }
+    },
+    "externalInput": {
+        "errors": {
+            "unrecognized": "Unrecognized input",
+            "unsupportedScheme": "Unsupported input type"
+        }
+    },
+    "transaction": {
+        "sent": "Sent",
+        "received": "Received",
+        "recipient": "Recipient",
+        "sender": "Sender",
+        "fee": "Network fee",
+        "hash": "Transaction",
+        "status": "Status",
+        "confirmed": "Confirmed at {{timestamp}}"
+    }
+}

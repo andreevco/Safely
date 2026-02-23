@@ -1,25 +1,58 @@
 {
   "expo": {
-    "name": "Yet Another Wallet",
-    "slug": "andreevco-wallet",
+    "name": "Swallet",
+    "slug": "swallet",
     "version": "1.0.0",
     "orientation": "default",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "dark",
     "newArchEnabled": true,
-    "scheme": "andreevco-wallet",
+    "scheme": "aco-swalet",
     "ios": {
+      "infoPlist": {
+        "UIDesignRequiresCompatibility": true,
+        "NSFaceIDUsageDescription": "We use Face ID to unlock your wallet securely.",
+        "CFBundleLocalizations": [
+          "en",
+          "ru"
+        ],
+        "ITSAppUsesNonExemptEncryption": false
+      },
       "supportsTablet": true,
-      "bundleIdentifier": "com.andreevco.wallet"
+      "bundleIdentifier": "com.aco.swallet",
+      "appleTeamId": "9N49283836"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#1A1A1A"
       },
-      "package": "com.andreevco.wallet"
+      "package": "com.aco.swallet"
     },
     "plugins": [
+      [
+        "react-native-vision-camera",
+        {
+          "cameraPermissionText": "$(PRODUCT_NAME) needs access to your Camera.",
+          "enableLocation": false
+        }
+      ],
+      [
+        "expo-localization",
+        {
+          "supportedLocales": {
+            "ios": [
+              "en",
+              "ru"
+            ],
+            "android": [
+              "en",
+              "ru"
+            ]
+          }
+        }
+      ],
+      "react-native-bottom-tabs",
       "expo-asset",
       [
         "expo-splash-screen",
@@ -27,7 +60,19 @@
           "backgroundColor": "#ffffff",
           "image": "./assets/icon.png"
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png"
+        }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "2987418a-1c20-4389-9796-485f4e37c78a"
+      }
+    },
+    "owner": "acom"
   }
 }

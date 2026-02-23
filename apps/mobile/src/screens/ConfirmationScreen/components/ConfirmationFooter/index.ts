@@ -1,0 +1,1 @@
+export { ConfirmationFooter } from './ConfirmationFooter';

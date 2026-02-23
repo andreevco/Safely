@@ -1,0 +1,102 @@
+import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
+import { DehydratedState, InfiniteData } from '@tanstack/react-query';
+import { Persister } from '@tanstack/react-query-persist-client';
+
+import { IStorage } from '@safely/core';
+
+import { cacheSchemas, isValidSchemaKey } from './cache-config';
+import { serialize, deserialize } from './serialization';
+
+type DehydratedQuery = DehydratedState['queries'][number];
+
+function clearQueryState(query: DehydratedQuery) {
+    if (!query.state) return;
+
+    query.state.data = undefined;
+    query.state.status = 'pending';
+    query.state.fetchStatus = 'idle';
+}
+
+function isInfiniteData(data: unknown): data is InfiniteData<unknown, unknown> {
+    return (
+        data !== null &&
+        typeof data === 'object' &&
+        'pages' in data &&
+        'pageParams' in data &&
+        Array.isArray((data as InfiniteData<unknown, unknown>).pages)
+    );
+}
+
+function validateQuery(query: DehydratedQuery): void {
+    const schemaKey = query.meta?.schemaKey;
+
+    if (!query.state?.data) return;
+    if (!schemaKey || typeof schemaKey !== 'string') return;
+
+    if (!isValidSchemaKey(schemaKey)) {
+        console.warn('Unknown schema key: ', schemaKey);
+        clearQueryState(query);
+
+        return;
+    }
+
+    const schema = cacheSchemas[schemaKey];
+    const result = schema.safeParse(query.state.data);
+
+    if (result.success) {
+        query.state.data = result.data;
+    } else {
+        console.warn('Cache validation failed for', query.queryKey, result.error);
+        clearQueryState(query);
+    }
+}
+
+function keepOnlyFirstInfinityPage(queries: DehydratedQuery[]) {
+    for (const query of queries) {
+        const data = query.state?.data;
+        if (!isInfiniteData(data) || data.pages.length < 2) continue;
+
+        query.state = {
+            ...query.state,
+            data: {
+                pages: [data.pages[0]],
+                pageParams: [data.pageParams[0]]
+            }
+        };
+    }
+}
+
+export function createPersister(storage: IStorage): Persister {
+    const basePersister = createAsyncStoragePersister({
+        storage,
+        serialize,
+        deserialize
+    });
+
+    return {
+        ...basePersister,
+        persistClient: async client => {
+            const queries = client.clientState?.queries;
+
+            if (queries?.length) {
+                keepOnlyFirstInfinityPage(queries);
+            }
+
+            return basePersister.persistClient(client);
+        },
+        restoreClient: async () => {
+            const restored = await basePersister.restoreClient();
+            if (!restored) return undefined;
+
+            const queries = restored.clientState?.queries;
+
+            if (queries?.length) {
+                queries.forEach(query => {
+                    validateQuery(query);
+                });
+            }
+
+            return restored;
+        }
+    };
+}

@@ -13,6 +13,17 @@ function isNullOrUndefined(node) {
     return false;
 }
 
+/** Returns the object on which .toString() is called, or null if not a toString() call. */
+function getBaseOfToStringCall(node) {
+    if (!node || node.type !== 'CallExpression') return null;
+    const callee = node.callee;
+    if (callee.type !== 'MemberExpression') return null;
+    const prop = callee.property;
+    const name = prop.type === 'Identifier' ? prop.name : prop.type === 'Literal' ? prop.value : null;
+    if (name === 'toString') return callee.object;
+    return null;
+}
+
 function hasIsEqProperty(type, checker) {
     if (!type || !checker) return false;
     const equalityMethodNames = ['isEq', 'isEqual', 'eq', 'equals'];
@@ -83,7 +94,9 @@ const ruleNoStrictEqWhenIsEq = {
         schema: [],
         messages: {
             preferIsEq:
-                "Type appears to implement an equality method (isEq, isEqual, eq, equals). Use that instead of '{{operator}}'."
+                "Type appears to implement an equality method (isEq, isEqual, eq, equals). Use that instead of '{{operator}}'.",
+            preferIsEqOverToString:
+                "Both operands have an equality method (isEq, isEqual, eq, equals). Use that instead of comparing via toString()."
         }
     },
     create(context) {
@@ -99,6 +112,27 @@ const ruleNoStrictEqWhenIsEq = {
                 // Still register the visitor to avoid silently disabling the rule.
                 if (!program || !esTreeNodeToTSNodeMap || !checker) return;
                 if (node.operator !== '===' && node.operator !== '!==') return;
+
+                // Check for a.toString() === b.toString() when both a and b have an isEq-like method
+                const leftBase = getBaseOfToStringCall(node.left);
+                const rightBase = getBaseOfToStringCall(node.right);
+                if (leftBase && rightBase) {
+                    const tsLeftBase = esTreeNodeToTSNodeMap.get(leftBase);
+                    const tsRightBase = esTreeNodeToTSNodeMap.get(rightBase);
+                    if (tsLeftBase && tsRightBase) {
+                        const leftBaseType = checker.getTypeAtLocation(tsLeftBase);
+                        const rightBaseType = checker.getTypeAtLocation(tsRightBase);
+                        const leftHas = hasIsEqProperty(leftBaseType, checker);
+                        const rightHas = hasIsEqProperty(rightBaseType, checker);
+                        if (leftHas && rightHas) {
+                            context.report({
+                                node,
+                                messageId: 'preferIsEqOverToString'
+                            });
+                            return;
+                        }
+                    }
+                }
 
                 // Allow null/undefined comparisons
                 if (isNullOrUndefined(node.left) || isNullOrUndefined(node.right)) return;

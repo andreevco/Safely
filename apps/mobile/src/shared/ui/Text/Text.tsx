@@ -1,0 +1,18 @@
+import { Text as RNText, TextProps as RNTextProps } from 'react-native';
+import { UnistylesVariants } from 'react-native-unistyles';
+
+import { styles } from './Text.styles';
+
+export type TextProps = RNTextProps & UnistylesVariants<typeof styles>;
+
+export const Text = (props: TextProps) => {
+    const { children, variant, textAlign, color, monospace, textTransform, ...rest } = props;
+
+    styles.useVariants({ variant, textAlign, color, monospace, textTransform });
+
+    return (
+        <RNText allowFontScaling={false} {...rest} style={[styles.text, rest.style]}>
+            {children}
+        </RNText>
+    );
+};
