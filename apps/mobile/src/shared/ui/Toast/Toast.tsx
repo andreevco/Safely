@@ -15,7 +15,7 @@ export const Toast = (props: ToastProps) => {
     return (
         <Pressable {...rest}>
             <View style={[styles.container, style]}>
-                <Text variant="labelM" textAlign="center">
+                <Text variant="labelM" textAlign="center" numberOfLines={1}>
                     {message}
                 </Text>
             </View>

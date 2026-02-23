@@ -1,7 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 
-import { useActivePortfolio } from '@safely/ux';
+import { useActivePortfolio, useDeletePortfolio } from '@safely/ux';
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { Cell, List, Text } from '@mobile/shared/ui';
@@ -12,10 +12,22 @@ export const RemovePortfolioButton = () => {
     const { t } = useTranslation();
     const rootNavigation = useNavigation<RootStackNavigationProp>();
     const portfolio = useActivePortfolio();
+    const { mutateAsync: deletePortfolio } = useDeletePortfolio();
 
     const handleDeletePortfolio = () => {
         rootNavigation.navigate('DestructiveConfirmSheet', {
-            action: 'removePortfolio'
+            title: t('settings.removePortfolio.confirm.title'),
+            message: t('settings.removePortfolio.confirm.message'),
+            sliderLabel: t('settings.removePortfolio.confirm.slider.label'),
+            sliderDescription: t('settings.removePortfolio.confirm.slider.description'),
+            cancelLabel: t('settings.removePortfolio.confirm.cancel'),
+            onConfirm: async () => {
+                await deletePortfolio(portfolio);
+                rootNavigation.reset({
+                    index: 0,
+                    routes: [{ name: 'TabsNavigator' }]
+                });
+            }
         });
     };
 
