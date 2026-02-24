@@ -1,10 +1,15 @@
-import { BtcApi, BtcAsset, BtcAssetAmount, TransactionFeeCrypto } from '@safely/core';
+import { BtcApi, BtcApiTx, BtcAsset, BtcAssetAmount, TransactionFeeCrypto } from '@safely/core';
 import { BtcWallet } from '@safely/core';
 import { toBig, toBigOrZero } from '@safely/core';
 
 import { ActivityPage, BtcActivityItem, IActivityFilters } from './types';
 
 const ON_PAGE_ELEMENTS_LIMIT = 25;
+
+function getBiggestIOAddress(io: BtcApiTx['vin' | 'vout']) {
+    return io.slice().sort((a, b) => toBigOrZero(b.value).cmp(toBigOrZero(a.value)))[0]
+        ?.addresses?.[0];
+}
 
 export async function fetchBtcActivity(
     btcApi: BtcApi,
@@ -36,15 +41,14 @@ export async function fetchBtcActivity(
     const items: BtcActivityItem[] = addressData.transactions
         .map(tx => {
             const isInitiator = !!tx.vin?.some(input => input.isOwn);
-            const fromAddress = tx.vin
-                .filter(v => Boolean(v.isOwn) === isInitiator)
-                .slice()
-                .sort((a, b) => toBigOrZero(b.value).cmp(toBigOrZero(a.value)))[0]?.addresses?.[0];
 
-            const toAddress = tx.vout
-                .filter(v => Boolean(v.isOwn) === !isInitiator)
-                .slice()
-                .sort((a, b) => toBigOrZero(b.value).cmp(toBigOrZero(a.value)))[0]?.addresses[0];
+            const fromAddress = getBiggestIOAddress(
+                tx.vin.filter(v => Boolean(v.isOwn) === isInitiator)
+            );
+
+            const toAddress =
+                getBiggestIOAddress(tx.vout.filter(v => Boolean(v.isOwn) === !isInitiator)) ??
+                getBiggestIOAddress(tx.vout);
 
             if (!fromAddress || !toAddress) {
                 return null;
