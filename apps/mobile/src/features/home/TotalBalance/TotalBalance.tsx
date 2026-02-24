@@ -1,30 +1,37 @@
 import { View } from 'react-native';
 
-import { BTC_ASSET } from '@safely/core';
-import { useAssets, useNumberFormatter, useTotalBalance } from '@safely/ux';
+import { ellipsisMiddle } from '@safely/core';
+import { useActiveBtcWallet, useNumberFormatter, useTotalBalance } from '@safely/ux';
 
-import { Text } from '@mobile/shared/ui';
+import { Skeleton, Text } from '@mobile/shared/ui';
+import { useCopy } from '@mobile/shared/utils/copy';
 
 import { styles } from './TotalBalance.styles';
 
 export const TotalBalance = () => {
     const totalBalance = useTotalBalance();
     const formatter = useNumberFormatter();
-    const assets = useAssets();
-
-    if (!totalBalance.data || !assets.data) {
-        return null;
-    }
+    const activeWallet = useActiveBtcWallet();
+    const handleCopy = useCopy();
 
     return (
         <View style={styles.container}>
-            <Text textAlign="center" variant="displayL">
-                {totalBalance.data.format(formatter)}
-            </Text>
-            <Text textAlign="center" variant="bodyL" color="tertiary">
-                {assets.data
-                    .find(asset => asset.amount.asset.id.isEq(BTC_ASSET.id))
-                    ?.amount.format(formatter)}
+            {totalBalance.data ? (
+                <Text textAlign="center" variant="displayL">
+                    {totalBalance.data.format(formatter)}
+                </Text>
+            ) : (
+                <View style={styles.skeletonContainer}>
+                    <Skeleton width={96} height={32} borderRadius={8} />
+                </View>
+            )}
+            <Text
+                onPress={() => handleCopy(activeWallet.address)}
+                textAlign="center"
+                variant="bodyL"
+                color="tertiary"
+            >
+                {ellipsisMiddle(activeWallet.address, 4)}
             </Text>
         </View>
     );
