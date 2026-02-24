@@ -108,7 +108,9 @@ export const HistoryList = (props: HistoryListProps) => {
             const result = await refetch();
             const newFirstKey = getFirstActivityKey(result.data);
             if (currentFirstKey !== newFirstKey) {
-                listRef.current?.scrollToOffset({ offset: 0, animated: true });
+                setTimeout(() => {
+                    listRef.current?.scrollToOffset({ offset: 0, animated: true });
+                }, 50);
                 client.invalidateQueries({ queryKey: assetKeys.all.toKey() });
             }
         }
