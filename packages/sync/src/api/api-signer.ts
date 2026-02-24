@@ -16,6 +16,7 @@ export class ApiSigner {
     public async sign(method: HTTPMethod, path_with_query: string, body: string): Promise<string> {
         const timestamp = Math.floor(Date.now() / 1000);
         const nonce = this.getNonce();
+        console.log(path_with_query);
 
         const toSign = Buffer.concat([
             utf8('safely/sync/v1/http-auth'),
@@ -28,6 +29,8 @@ export class ApiSigner {
             u64be(timestamp),
             u32be(nonce)
         ]);
+
+        console.log(toSign.toString('hex'));
 
         const signature = await this.ikService.sign(toSign);
 

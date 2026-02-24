@@ -161,10 +161,16 @@ export class BaseAPI {
 
     // MARK - written by hand
     private async signRequest(context: RequestOpts): Promise<void> {
+        let url = context.path;
+        let query = context.query
+            ? '?' + this.configuration.queryParamsStringify(context.query)
+            : '';
+        if (query !== '?') {
+            url += query;
+        }
         context.headers['Authorization'] = await this.apiSigner.sign(
             context.method,
-            context.path +
-                (context.query ? '?' + this.configuration.queryParamsStringify(context.query) : ''),
+            url,
             context.body
                 ? typeof context.body === 'string'
                     ? context.body
