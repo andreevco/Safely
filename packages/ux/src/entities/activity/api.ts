@@ -41,17 +41,14 @@ export async function fetchBtcActivity(
     const items: BtcActivityItem[] = addressData.transactions
         .map(tx => {
             const isInitiator = !!tx.vin?.some(input => input.isOwn);
+
             const fromAddress = getBiggestIOAddress(
                 tx.vin.filter(v => Boolean(v.isOwn) === isInitiator)
             );
 
-            let toAddress = getBiggestIOAddress(
-                tx.vout.filter(v => Boolean(v.isOwn) === !isInitiator)
-            );
-
-            if (!toAddress) {
-                toAddress = getBiggestIOAddress(tx.vout);
-            }
+            const toAddress =
+                getBiggestIOAddress(tx.vout.filter(v => Boolean(v.isOwn) === !isInitiator)) ??
+                getBiggestIOAddress(tx.vout);
 
             if (!fromAddress || !toAddress) {
                 return null;
