@@ -1,11 +1,17 @@
-import { BtcPsbtBulder } from './btc-psbt-bulder';
+import { BtcPsbtBulder, PsbtRequest } from './btc-psbt-bulder';
 import { BtcSendDustError } from './errors';
 import { BtcEstimation, BtcTransferRequest } from './types';
 import { getUtxoTotal, utxoPathToStruct } from './utils';
 import { BtcApi, BtcApiUtxo } from '../../api/btc';
-import { BLOCKCHAIN_NAME, btcNetworkConfig, BtcWallet, ExplorerFactory } from '../../entities';
+import {
+    BLOCKCHAIN_NAME,
+    BtcAssetAmount,
+    btcNetworkConfig,
+    BtcWallet,
+    ExplorerFactory
+} from '../../entities';
 import { getExternalErrorText } from '../../entities/errors/errors.service';
-import { ellipsisMiddle } from '../../utils';
+import { assertUnreachable, ellipsisMiddle } from '../../utils';
 
 export class BtcTransactionTemplate {
     public readonly blockchain = BLOCKCHAIN_NAME.BTC;
@@ -17,7 +23,7 @@ export class BtcTransactionTemplate {
     constructor(
         private readonly btcApi: BtcApi,
         private readonly wallet: BtcWallet,
-        public readonly request: BtcTransferRequest,
+        public readonly request: BtcTransferRequest & { amount: BtcAssetAmount },
         private readonly utxos: BtcApiUtxo[],
         public readonly estimation: BtcEstimation
     ) {
@@ -29,16 +35,33 @@ export class BtcTransactionTemplate {
             throw new Error(`Tx is already published, ${this.sendResult.txId}`);
         }
         const total = getUtxoTotal(this.utxos);
+        const recipientOutput = {
+            address: this.request.recipientAddress,
+            value: this.request.amount.weiAmount
+        };
+
+        let outputs: PsbtRequest['outputs'];
+        switch (this.request.type) {
+            case 'max':
+                outputs = [recipientOutput];
+                break;
+            case 'not-max':
+                outputs = [
+                    recipientOutput,
+                    {
+                        address: this.wallet.address,
+                        value: total.sub(this.request.amount).sub(this.estimation.fee.amount)
+                            .weiAmount
+                    }
+                ];
+                break;
+            default:
+                assertUnreachable(this.request);
+        }
 
         const psbt = await this.psbtBuilder.buildPsbt({
             inputs: this.utxos,
-            outputs: [
-                { address: this.request.recipientAddress, value: this.request.amount.weiAmount },
-                {
-                    address: this.wallet.address,
-                    value: total.sub(this.request.amount).sub(this.estimation.fee.amount).weiAmount
-                }
-            ]
+            outputs
         });
 
         const signed = await this.wallet.sign({

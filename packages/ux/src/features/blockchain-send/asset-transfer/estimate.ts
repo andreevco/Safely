@@ -23,6 +23,17 @@ export const estimationKey = defineQueryKeys('estimation', {
     }
 });
 
+export const maxSendKey = defineQueryKeys('maxSendKey', {
+    form(__: Pick<SendFormResult, 'blockchain' | 'recipient'>) {
+        return {
+            services: mappedParams(
+                (_: { btcEstimator: BtcEstimator }) => finalKey,
+                p => [p.btcEstimator.id]
+            )
+        };
+    }
+});
+
 export function useEstimateAssetTransfer(form: SendFormResult) {
     const btcEstimator = useBtcEstimator();
 
@@ -31,8 +42,30 @@ export function useEstimateAssetTransfer(form: SendFormResult) {
         async queryFn() {
             if (form.blockchain === BLOCKCHAIN_NAME.BTC) {
                 return btcEstimator.estimate({
+                    type: form.isMax ? 'max' : 'not-max',
                     recipientAddress: form.recipient.address,
                     amount: form.amount.cryptoAssetAmount,
+                    feeType: BtcFeeType.FAST
+                });
+            }
+
+            assertUnreachable(form.blockchain);
+        },
+        refetchInterval: QUERIES_REFETCH_INTERVAL.TRANSACTION,
+        refetchOnMount: 'always',
+        retry: 2
+    });
+}
+
+export function useMaxSendAssetTransfer(form: Pick<SendFormResult, 'blockchain' | 'recipient'>) {
+    const btcEstimator = useBtcEstimator();
+
+    return useQuery({
+        queryKey: maxSendKey.form(form).services({ btcEstimator }).toKey(),
+        async queryFn() {
+            if (form.blockchain === BLOCKCHAIN_NAME.BTC) {
+                return btcEstimator.getMaxSendValue({
+                    recipientAddress: form.recipient.address,
                     feeType: BtcFeeType.FAST
                 });
             }

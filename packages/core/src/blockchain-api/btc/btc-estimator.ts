@@ -2,7 +2,12 @@ import Big from 'big.js';
 
 import { BtcPsbtBulder } from './btc-psbt-bulder';
 import { BtcTransactionTemplate } from './btc-transaction-template';
-import { BtcFeeType, BtcTransferRequest } from './types';
+import {
+    BtcFeeType,
+    BtcTransferRequest,
+    BtcTransferRequestMax,
+    BtcTransferRequestNotMax
+} from './types';
 import { getUtxoTotal } from './utils';
 import { BtcApi, BtcApiGasPrice } from '../../api/btc';
 import { BtcAssetAmount, btcNetworkConfig, BtcWallet } from '../../entities';
@@ -41,7 +46,27 @@ export class BtcEstimator implements IIdentifiable {
         }
     }
 
+    public async getMaxSendValue(
+        request: Omit<BtcTransferRequestMax, 'type'>
+    ): Promise<BtcAssetAmount> {
+        const template = await this.estimateMax({ ...request, type: 'max' });
+        return template.estimation.fee.amount;
+    }
+
     public async estimate(request: BtcTransferRequest): Promise<BtcTransactionTemplate> {
+        switch (request.type) {
+            case 'max':
+                return this.estimateMax(request);
+            case 'not-max':
+                return this.estimateNotMax(request);
+            default:
+                assertUnreachable(request);
+        }
+    }
+
+    private async estimateNotMax(
+        request: BtcTransferRequestNotMax
+    ): Promise<BtcTransactionTemplate> {
         if (request.amount.weiAmount <= 0n) {
             throw new Error('Amount must be greater than zero');
         }
@@ -75,5 +100,40 @@ export class BtcEstimator implements IIdentifiable {
             feeType: request.feeType,
             txTargetBlock: targetBlock
         });
+    }
+
+    private async estimateMax(request: BtcTransferRequestMax): Promise<BtcTransactionTemplate> {
+        const { feeSatVb, targetBlock } = await this.getFeeValue(request.feeType);
+
+        const utxos = await this.btcApi.getAccountUtxo(this.wallet);
+        if (!utxos.length) {
+            throw new Error('No UTXOs available');
+        }
+
+        const totalBalance = getUtxoTotal(utxos);
+
+        const vSize = await this.psbtBulder.calculateTransactionVSize({
+            inputs: utxos,
+            outputs: [{ address: request.recipientAddress, value: 1n }]
+        });
+
+        const feeSat = feeSatVb.mul(toBig(vSize)).round(0, Big.roundUp);
+        const fee = BtcAssetAmount.fromWeiAmount(feeSat);
+
+        if (totalBalance.lt(fee)) {
+            throw new Error('Total balance is not enough to cover transaction fee');
+        }
+
+        return new BtcTransactionTemplate(
+            this.btcApi,
+            this.wallet,
+            { amount: totalBalance.sub(fee), ...request },
+            utxos,
+            {
+                fee: { amount: fee, type: 'crypto' },
+                feeType: request.feeType,
+                txTargetBlock: targetBlock
+            }
+        );
     }
 }
