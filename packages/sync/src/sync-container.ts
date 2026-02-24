@@ -16,6 +16,8 @@ import { UpdateDecryptorService } from './update-encryptor/update-decryptor-serv
 import { UpdateEncryptorService } from './update-encryptor/update-encryptor-service';
 import { UpdateHandler } from './update-handler/handler';
 import { SyncStateRepository } from './update-handler/sync-state-repository';
+import { SecretEncryptor } from './secret-encryptor';
+import { VaultKeyService } from './crypto/service/vault-key-service';
 
 export type SyncContainer = {
     storage: IStorage;
@@ -30,6 +32,7 @@ export type SyncContainer = {
     dmkService: DmkService;
     syncKeyService: SyncKeyService;
     masterKeyService: MasterKeyService;
+    vaultKeyService: VaultKeyService;
 
     storageVerifierService: StorageVerifierService;
 
@@ -44,6 +47,8 @@ export type SyncContainer = {
     accountsApi: AccountsApi;
     snapshotApi: SnapshotsApi;
     snapshotSse: SnapshotsSse;
+
+    secretEncryptor: SecretEncryptor;
 };
 
 export async function createSyncContainer(opts: {
@@ -60,6 +65,7 @@ export async function createSyncContainer(opts: {
     const dmkService = new DmkService(keyRepository);
     const syncKeyService = new SyncKeyService(keyRepository);
     const masterKeyService = new MasterKeyService(keyRepository);
+    const vaultKeyService = new VaultKeyService(keyRepository);
 
     const apiSigner = new ApiSigner(ikService);
     const accountsApi = new AccountsApi(apiSigner, opts.apiConfiguration);
@@ -86,6 +92,8 @@ export async function createSyncContainer(opts: {
         snapshotApi
     );
 
+    const secretEncryptor = new SecretEncryptor(vaultKeyService);
+
     return {
         storage: opts.storage,
         keychainStorage: opts.keychainStorage,
@@ -106,6 +114,8 @@ export async function createSyncContainer(opts: {
         apiSigner,
         accountsApi,
         snapshotApi,
-        snapshotSse
+        snapshotSse,
+        vaultKeyService,
+        secretEncryptor
     };
 }

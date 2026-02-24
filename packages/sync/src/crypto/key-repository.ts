@@ -51,6 +51,14 @@ export class KeyRepository {
         return Buffer.from(key, 'hex');
     }
 
+    public async getVaultKey(): Promise<Buffer> {
+        const key = await this.storage.getItem('vault_key');
+        if (!key) {
+            throw new Error('Vault key not found');
+        }
+        return Buffer.from(key, 'hex');
+    }
+
     public async initialize(opts: {
         masterKey: Buffer;
         syncKey: Buffer;

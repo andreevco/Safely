@@ -2,13 +2,22 @@ import { ZodType } from 'zod';
 
 import { Device } from '../device-manager/device-repository';
 import { ISyncProvider } from '../sync-provider/I-sync-provider';
+import { ISecretEncryptor } from '../secret-encryptor';
 
 export interface ISyncAccount<S extends Record<string, ZodType>> {
     /**
      * The unique identifier of the sync account.
      */
     readonly accountId: string;
+    /**
+     * The sync provider associated with this account, used to update storage.
+     */
     readonly syncProvider: ISyncProvider<S>;
+    /**
+     * The secret encryptor associated with this account, used to encrypt and decrypt secrets
+     * before putting them into storage.
+     */
+    readonly secretEncryptor: ISecretEncryptor;
 
     /**
      * Connects a new device to the sync account using the provided onboarding data.

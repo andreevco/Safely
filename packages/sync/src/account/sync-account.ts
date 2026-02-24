@@ -5,13 +5,18 @@ import { Device } from '../device-manager/device-repository';
 import { PrimaryDeviceOnboarding } from '../onboarding/primary-device-onboarding';
 import { SyncContainer } from '../sync-container';
 import { ISyncProvider } from '../sync-provider/I-sync-provider';
+import { ISecretEncryptor } from '../secret-encryptor';
 
 export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAccount<S> {
+    public readonly secretEncryptor: ISecretEncryptor;
+
     constructor(
         public readonly accountId: string,
         public readonly syncProvider: ISyncProvider<S>,
         private readonly container: SyncContainer
-    ) {}
+    ) {
+        this.secretEncryptor = container.secretEncryptor;
+    }
 
     public async connectToNewDevice(data: Buffer): Promise<void> {
         const onboarding = new PrimaryDeviceOnboarding(
