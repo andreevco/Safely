@@ -101,7 +101,7 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
     }, [confirmationState.type, asset, t]);
 
     return (
-        <Screen background="constantBlack">
+        <Screen background="primary">
             <Screen.Header>
                 {confirmationState.type !== 'success' && <Screen.Header.BackButton />}
                 <Screen.Header.Title />
