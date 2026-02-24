@@ -173,7 +173,7 @@
                 "title": "Status",
                 "created": {
                     "value": "Created",
-                    "description": "Not broadcast yet"
+                    "description": "Not yet confirmed"
                 }
             },
             "transaction": "Transaction"
@@ -184,8 +184,8 @@
             "backToWallet": "Back to Wallet"
         },
         "sendError": {
-            "title": "Send error",
-            "default": "Failed to send the transaction. Please try again.",
+            "title": "Can't send transaction",
+            "default": "Check details and try again",
             "btc": {
                 "dust": "Transaction value is too small."
             }
@@ -355,8 +355,32 @@
             "send": "Send"
         },
         "dateHeaders": {
-            "today": "Today",
-            "yesterday": "Yesterday"
+          "today": "Today",
+          "yesterday": "Yesterday"
+        },
+        "transactionInfo": {
+            "sent": "Sent",
+            "received": "Received",
+            "recipient": "Recipient",
+            "sender": "Sender",
+            "fee": "Network fee",
+            "hash": "Transaction",
+            "status": {
+                "title": "Status",
+                "pending": {
+                    "title": "Pending",
+                    "description": "~ 10 minutes processing time"
+                },
+                "confirmed-recently": {
+                    "title": "Confirmed at {{date}}",
+                    "confirmations_one": "{{count}} confirmation",
+                    "confirmations_other": "{{count}} confirmations"
+                },
+                "confirmed-long-ago": {
+                    "title": "Confirmed at {{date}}",
+                    "description": "More than 6 confirmations"
+                }
+            }
         }
     },
     "importWalletScreen": {
@@ -374,15 +398,5 @@
             "unrecognized": "Unrecognized input",
             "unsupportedScheme": "Unsupported input type"
         }
-    },
-    "transaction": {
-        "sent": "Sent",
-        "received": "Received",
-        "recipient": "Recipient",
-        "sender": "Sender",
-        "fee": "Network fee",
-        "hash": "Transaction",
-        "status": "Status",
-        "confirmed": "Confirmed at {{timestamp}}"
     }
 }

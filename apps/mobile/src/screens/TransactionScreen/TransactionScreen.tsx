@@ -13,6 +13,7 @@ import {
     useRate
 } from '@safely/ux';
 
+import { TransactionConfirmationStatusBtc } from '@mobile/screens/TransactionScreen/TransactionConfirmationStatusBtc';
 import {
     Copy16,
     Globe16,
@@ -65,7 +66,9 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
             address: isInitiator
                 ? activity.transaction.toAddress
                 : activity.transaction.fromAddress,
-            label: isInitiator ? t('transaction.recipient') : t('transaction.sender')
+            label: isInitiator
+                ? t('history.transactionInfo.recipient')
+                : t('history.transactionInfo.sender')
         };
     }, [isInitiator, activity.transaction.toAddress, activity.transaction.fromAddress, t]);
 
@@ -75,7 +78,9 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
                 <Screen.Header.BackButton />
                 <Screen.Header.Title>
                     <Text variant="titleS" color="primary" textAlign="center">
-                        {isInitiator ? t('transaction.sent') : t('transaction.received')}
+                        {isInitiator
+                            ? t('history.transactionInfo.sent')
+                            : t('history.transactionInfo.received')}
                     </Text>
                     <Text variant="bodyM" color="secondary" textAlign="center">
                         {confirmedAt}
@@ -106,22 +111,15 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
                             </TableCell.Column>
                         </TableCell>
                         <TableCell>
-                            <TableCell.Column leading>
-                                <TableCell.Label>{t('transaction.status')}</TableCell.Label>
-                            </TableCell.Column>
-                            <TableCell.Column>
-                                <TableCell.Value>
-                                    {t('transaction.confirmed', {
-                                        timestamp: confirmedAt
-                                    })}
-                                </TableCell.Value>
-                            </TableCell.Column>
+                            <TransactionConfirmationStatusBtc tx={activity.transaction.raw} />
                         </TableCell>
                     </List.Group>
                     <List.Group withoutBottomMargin>
                         <TableCell>
                             <TableCell.Column leading>
-                                <TableCell.Label>{t('transaction.fee')}</TableCell.Label>
+                                <TableCell.Label>
+                                    {t('history.transactionInfo.fee')}
+                                </TableCell.Label>
                             </TableCell.Column>
                             <TableCell.Column>
                                 <TableCell.Value>
@@ -142,7 +140,9 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
                         </TableCell>
                         <TableCell>
                             <TableCell.Column leading>
-                                <TableCell.Label>{t('transaction.hash')}</TableCell.Label>
+                                <TableCell.Label>
+                                    {t('history.transactionInfo.hash')}
+                                </TableCell.Label>
                             </TableCell.Column>
                             <TableCell.Column>
                                 <TableCell.Value>
