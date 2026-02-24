@@ -1,8 +1,8 @@
 import { ZodType } from 'zod';
 
 import { Device } from '../device-manager/device-repository';
-import { ISyncProvider } from '../sync-provider/I-sync-provider';
 import { ISecretEncryptor } from '../secret-encryptor';
+import { ISyncProvider } from '../sync-provider/I-sync-provider';
 
 export interface ISyncAccount<S extends Record<string, ZodType>> {
     /**

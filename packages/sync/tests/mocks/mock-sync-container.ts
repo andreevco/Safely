@@ -9,16 +9,16 @@ import { DmkService } from '../../src/crypto/service/dmk-service';
 import { IkService } from '../../src/crypto/service/ik-service';
 import { MasterKeyService } from '../../src/crypto/service/master-key-service';
 import { SyncKeyService } from '../../src/crypto/service/sync-key-service';
+import { VaultKeyService } from '../../src/crypto/service/vault-key-service';
 import { DeviceManagementService } from '../../src/device-manager/device-management-service';
 import { DeviceRepository } from '../../src/device-manager/device-repository';
 import { IStorage } from '../../src/I-storage';
+import { SecretEncryptor } from '../../src/secret-encryptor';
 import { SyncContainer } from '../../src/sync-container';
 import { UpdateDecryptorService } from '../../src/update-encryptor/update-decryptor-service';
 import { UpdateEncryptorService } from '../../src/update-encryptor/update-encryptor-service';
 import { UpdateHandler } from '../../src/update-handler/handler';
 import { SyncStateRepository } from '../../src/update-handler/sync-state-repository';
-import { VaultKeyService } from '../../src/crypto/service/vault-key-service';
-import { SecretEncryptor } from '../../src/secret-encryptor';
 
 export type MockSyncContainer = Omit<SyncContainer, 'snapshotApi' | 'snapshotSse'> & {
     snapshotApi: MockSnapshotsApi;

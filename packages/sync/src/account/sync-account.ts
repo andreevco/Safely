@@ -3,9 +3,9 @@ import { ZodType } from 'zod';
 import { ISyncAccount } from './I-sync-account';
 import { Device } from '../device-manager/device-repository';
 import { PrimaryDeviceOnboarding } from '../onboarding/primary-device-onboarding';
+import { ISecretEncryptor } from '../secret-encryptor';
 import { SyncContainer } from '../sync-container';
 import { ISyncProvider } from '../sync-provider/I-sync-provider';
-import { ISecretEncryptor } from '../secret-encryptor';
 
 export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAccount<S> {
     public readonly secretEncryptor: ISecretEncryptor;

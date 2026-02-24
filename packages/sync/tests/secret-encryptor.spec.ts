@@ -1,19 +1,11 @@
+import { randomBytes } from '@noble/ciphers/utils.js';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { createActor } from 'xstate';
 
 import { InMemStorage } from './impl/storage';
-import { MockSnapshotsServer } from './mocks/mock-snapshots-api';
-import { createMockSyncContainer, MockSyncContainer } from './mocks/mock-sync-container';
-import { SnapshotsApi } from '../src/api/generated';
-import { SnapshotsSse } from '../src/api/snapshots-sse';
-import { initializeKeys, initializeSyncAccount } from '../src/initialize';
-import { createSyncMachine, SyncMachine } from '../src/sync-machine/machine';
-import { SecretEncryptor } from '../src/secret-encryptor';
 import { KeyRepository } from '../src/crypto/key-repository';
 import { VaultKeyService } from '../src/crypto/service/vault-key-service';
-import { randomBytes } from '@noble/ciphers/utils.js';
-
-const DATA_KEY = 'value';
+import { initializeKeys } from '../src/initialize';
+import { SecretEncryptor } from '../src/secret-encryptor';
 
 describe('sync machine', () => {
     let secretEncryptor: SecretEncryptor;

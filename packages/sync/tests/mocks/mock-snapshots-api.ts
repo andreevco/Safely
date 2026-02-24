@@ -45,9 +45,7 @@ export class MockSnapshotsServer {
 
         return {
             snapshot: latest.snapshot,
-            proofChain: proofChainEntries.length
-                ? { proofChain: proofChainEntries }
-                : undefined
+            proofChain: proofChainEntries.length ? { proofChain: proofChainEntries } : undefined
         };
     }
 
@@ -89,7 +87,9 @@ export class MockSnapshotsServer {
         }
 
         const targetProof = withProofChainTo ?? '';
-        const startIndex = this.snapshots.findIndex(record => record.snapshot.snapshotProof === targetProof);
+        const startIndex = this.snapshots.findIndex(
+            record => record.snapshot.snapshotProof === targetProof
+        );
         const fromIndex = startIndex >= 0 ? startIndex : -1;
 
         const proofChain: string[] = [];
@@ -115,7 +115,9 @@ export class MockSnapshotsApi {
         this.configuration = new Configuration({ basePath: 'mock://snapshots' });
     }
 
-    public async getActualSnapshot(request: GetActualSnapshotRequest = {}): Promise<SnapshotWithProofs> {
+    public async getActualSnapshot(
+        request: GetActualSnapshotRequest = {}
+    ): Promise<SnapshotWithProofs> {
         return await this.server.getActualSnapshot(request);
     }
 

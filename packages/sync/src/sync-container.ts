@@ -9,15 +9,15 @@ import { DmkService } from './crypto/service/dmk-service';
 import { IkService } from './crypto/service/ik-service';
 import { MasterKeyService } from './crypto/service/master-key-service';
 import { SyncKeyService } from './crypto/service/sync-key-service';
+import { VaultKeyService } from './crypto/service/vault-key-service';
 import { DeviceManagementService } from './device-manager/device-management-service';
 import { DeviceRepository } from './device-manager/device-repository';
 import { IStorage } from './I-storage';
+import { SecretEncryptor } from './secret-encryptor';
 import { UpdateDecryptorService } from './update-encryptor/update-decryptor-service';
 import { UpdateEncryptorService } from './update-encryptor/update-encryptor-service';
 import { UpdateHandler } from './update-handler/handler';
 import { SyncStateRepository } from './update-handler/sync-state-repository';
-import { SecretEncryptor } from './secret-encryptor';
-import { VaultKeyService } from './crypto/service/vault-key-service';
 
 export type SyncContainer = {
     storage: IStorage;

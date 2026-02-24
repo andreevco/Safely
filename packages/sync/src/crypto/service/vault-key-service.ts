@@ -1,5 +1,6 @@
-import { KeyRepository } from '../key-repository';
 import { xchacha20poly1305 } from '@noble/ciphers/chacha.js';
+
+import { KeyRepository } from '../key-repository';
 
 export class VaultKeyService {
     constructor(private readonly keyRepository: KeyRepository) {}

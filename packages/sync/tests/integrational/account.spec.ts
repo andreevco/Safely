@@ -2,7 +2,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 
 import { SyncAccountFactory } from '../../src/account/sync-account-factory';
-import { Configuration } from '../../src/api/generated';
 import { InMemStorage } from '../impl/storage';
 
 const SchemaTestWallet = z.object({
