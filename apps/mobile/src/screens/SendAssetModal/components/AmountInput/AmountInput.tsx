@@ -78,11 +78,7 @@ export const AmountInput = forwardRef<MaskedTextInputRef, AmountInputProps>((pro
                             </View>
                             <TouchableOpacity activeOpacity={0.8} onPress={onSwitchFiatMode}>
                                 <Animated.View style={styles.secondaryCurrencyContainer}>
-                                    <Text
-                                        style={styles.tabularNums}
-                                        variant="bodyM"
-                                        color="tertiary"
-                                    >
+                                    <Text variant="bodyM" color="tertiary" monospace>
                                         {formattedAlternativeAmount ?? '0'}
                                     </Text>
                                     <Icon icon={SwapVertical20} color="secondary" />

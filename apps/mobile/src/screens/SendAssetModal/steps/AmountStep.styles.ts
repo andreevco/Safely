@@ -11,8 +11,5 @@ export const styles = StyleSheet.create(theme => ({
         paddingHorizontal: theme.spacing[16],
         paddingVertical: theme.spacing[4],
         gap: theme.spacing[8]
-    },
-    tabularNums: {
-        fontVariant: ['tabular-nums', 'lining-nums']
     }
 }));

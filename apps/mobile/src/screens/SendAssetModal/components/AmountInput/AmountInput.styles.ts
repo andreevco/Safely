@@ -50,9 +50,6 @@ export const styles = StyleSheet.create(theme => ({
         alignItems: 'center',
         gap: theme.spacing[4]
     },
-    tabularNums: {
-        fontVariant: ['tabular-nums', 'lining-nums']
-    },
     textInputWithCurrencySymbolContainer: {
         flexDirection: 'row',
         alignItems: 'flex-end'
