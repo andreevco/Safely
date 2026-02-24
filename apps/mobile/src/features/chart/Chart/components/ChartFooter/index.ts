@@ -1,0 +1,1 @@
+export { ChartFooter } from './ChartFooter';

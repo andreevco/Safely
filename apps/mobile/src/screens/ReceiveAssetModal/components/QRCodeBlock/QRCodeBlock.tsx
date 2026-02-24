@@ -40,8 +40,7 @@ export const QRCodeBlock = (props: QRCodeBlockProps) => {
                 <Text
                     textAlign="center"
                     style={styles.address}
-                    monospace
-                    variant="bodyL"
+                    variant="bodyLMono"
                     color="constantBlack"
                 >
                     {address}

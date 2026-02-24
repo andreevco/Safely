@@ -1,0 +1,36 @@
+import { StyleSheet } from 'react-native-unistyles';
+
+const TICK_HEIGHT_BY_VARIANT = {
+    small: 4,
+    medium: 8,
+    large: 12
+} as const;
+
+export const styles = StyleSheet.create(theme => ({
+    container: {
+        paddingHorizontal: theme.spacing[16],
+        paddingTop: theme.spacing[4],
+        paddingBottom: theme.spacing[12],
+        gap: theme.spacing[12]
+    },
+    ticksContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-end',
+        height: 16
+    },
+    tick: (variant: 'small' | 'medium' | 'large') => ({
+        height: TICK_HEIGHT_BY_VARIANT[variant],
+        width: 1,
+        backgroundColor:
+            variant === 'small' ? theme.colors.icon.tertiary : theme.colors.icon.secondary
+    }),
+    dates: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+    },
+    dateContainer: {
+        flex: 1
+    }
+}));

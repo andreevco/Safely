@@ -1,6 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import { Chart } from '@mobile/features/chart';
 import { AssetsList, HomeActions, HomeHeader, TotalBalance } from '@mobile/features/home';
 import { Screen } from '@mobile/shared/ui';
 
@@ -30,6 +31,7 @@ export const HomeScreen = () => {
                 <TotalBalance />
                 <HomeActions />
                 <AssetsList />
+                <Chart />
             </Screen.Scrollable>
         </Screen>
     );

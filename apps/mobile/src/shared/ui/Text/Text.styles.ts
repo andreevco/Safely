@@ -37,62 +37,58 @@ export const styles = StyleSheet.create(theme => ({
                 displayL: {
                     fontSize: 44,
                     lineHeight: 56,
-                    fontWeight: '600',
-                    letterSpacing: 0.35
+                    fontWeight: '600'
                 },
                 titleL: {
                     fontSize: 32,
                     lineHeight: 40,
-                    fontWeight: '600',
-                    letterSpacing: 0.42
+                    fontWeight: '600'
                 },
                 titleM: {
                     fontSize: 24,
                     lineHeight: 32,
-                    fontWeight: '600',
-                    letterSpacing: 0.07
+                    fontWeight: '600'
                 },
                 titleS: {
                     fontSize: 20,
                     lineHeight: 28,
-                    fontWeight: '600',
-                    letterSpacing: -0.46
+                    fontWeight: '600'
                 },
                 labelL: {
                     fontSize: 17,
                     lineHeight: 24,
-                    fontWeight: '600',
-                    letterSpacing: -0.44
+                    fontWeight: '600'
                 },
                 labelM: {
                     fontSize: 14,
                     lineHeight: 20,
-                    fontWeight: '600',
-                    letterSpacing: -0.15
+                    fontWeight: '600'
                 },
                 labelS: {
                     fontSize: 11,
                     lineHeight: 16,
-                    fontWeight: '600',
-                    letterSpacing: 0.07
+                    fontWeight: '600'
                 },
                 bodyL: {
                     fontSize: 17,
                     lineHeight: 24,
+                    fontWeight: '400'
+                },
+                bodyLMono: {
+                    fontSize: 17,
+                    lineHeight: 24,
                     fontWeight: '400',
-                    letterSpacing: -0.44
+                    fontFamily: Platform.OS === 'ios' ? 'ui-monospace' : 'monospace'
                 },
                 bodyM: {
                     fontSize: 14,
                     lineHeight: 20,
-                    fontWeight: '400',
-                    letterSpacing: -0.15
+                    fontWeight: '400'
                 },
                 bodyS: {
                     fontSize: 11,
                     lineHeight: 16,
-                    fontWeight: '400',
-                    letterSpacing: 0.07
+                    fontWeight: '400'
                 }
             },
             textAlign: {
@@ -119,7 +115,7 @@ export const styles = StyleSheet.create(theme => ({
             },
             monospace: {
                 true: {
-                    fontFamily: Platform.OS === 'ios' ? 'ui-monospace' : 'monospace'
+                    fontVariant: ['tabular-nums', 'lining-nums']
                 }
             }
         }
