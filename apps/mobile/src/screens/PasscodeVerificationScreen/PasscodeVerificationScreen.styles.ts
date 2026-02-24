@@ -7,9 +7,8 @@ export const styles = StyleSheet.create(theme => ({
         alignItems: 'center'
     },
     textContainer: {
-        gap: theme.spacing[8],
+        gap: theme.spacing[4],
         paddingVertical: theme.spacing[16],
-        paddingHorizontal: theme.spacing[32],
-        marginBottom: theme.spacing[12]
+        paddingHorizontal: theme.spacing[32]
     }
 }));

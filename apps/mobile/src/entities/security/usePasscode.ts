@@ -5,6 +5,7 @@ import z from 'zod';
 import { useSharedUnstructuredKeychainStorage, useSuspenseQuery } from '@safely/ux';
 
 import { navigationRef } from '@mobile/app/navigation/navigationRef';
+import { StorageKey } from '@mobile/shared/constants';
 
 import { passcodeKeys } from './keys';
 import { PromptAndCheckOptions } from './types';
@@ -35,7 +36,7 @@ export function usePasscode(): UsePasscodeResult {
         get: storageGet,
         set: storageSet,
         remove: storageRemove
-    } = useSharedUnstructuredKeychainStorage('passcode', sPasscode);
+    } = useSharedUnstructuredKeychainStorage(StorageKey.PASSCODE, sPasscode);
 
     const passcodeQuery = useSuspenseQuery({
         queryKey: passcodeKeys.state.toKey(),
