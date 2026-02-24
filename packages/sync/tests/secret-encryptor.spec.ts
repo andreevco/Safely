@@ -19,8 +19,9 @@ describe('sync machine', () => {
     let secretEncryptor: SecretEncryptor;
 
     beforeEach(() => {
-        const storage = new InMemStorage();
-        const keyRepository = new KeyRepository(storage);
+        const encryptedStorage = new InMemStorage();
+        const secureEncryptedStorage = new InMemStorage();
+        const keyRepository = new KeyRepository(encryptedStorage, secureEncryptedStorage);
         initializeKeys(keyRepository, Buffer.from(randomBytes(24)));
         const vaultKeyService = new VaultKeyService(keyRepository);
         secretEncryptor = new SecretEncryptor(vaultKeyService);

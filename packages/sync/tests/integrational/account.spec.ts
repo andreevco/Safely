@@ -16,11 +16,18 @@ export const Schema = {
 
 function makeFactory() {
     const storage = new InMemStorage();
-    const keychainStorage = new InMemStorage();
-    const configuration = new Configuration({
+    const encryptedStorage = new InMemStorage();
+    const secureEncryptedStorage = new InMemStorage();
+    const apiConfiguration = {
         basePath: 'https://dev-sync.safely.app'
+    };
+    return new SyncAccountFactory({
+        storage,
+        encryptedStorage,
+        secureEncryptedStorage,
+        structure: Schema,
+        apiConfiguration
     });
-    return new SyncAccountFactory(storage, keychainStorage, Schema, configuration);
 }
 
 describe('Account', () => {

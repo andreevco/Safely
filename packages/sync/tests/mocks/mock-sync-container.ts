@@ -17,6 +17,8 @@ import { UpdateDecryptorService } from '../../src/update-encryptor/update-decryp
 import { UpdateEncryptorService } from '../../src/update-encryptor/update-encryptor-service';
 import { UpdateHandler } from '../../src/update-handler/handler';
 import { SyncStateRepository } from '../../src/update-handler/sync-state-repository';
+import { VaultKeyService } from '../../src/crypto/service/vault-key-service';
+import { SecretEncryptor } from '../../src/secret-encryptor';
 
 export type MockSyncContainer = Omit<SyncContainer, 'snapshotApi' | 'snapshotSse'> & {
     snapshotApi: MockSnapshotsApi;
@@ -25,11 +27,12 @@ export type MockSyncContainer = Omit<SyncContainer, 'snapshotApi' | 'snapshotSse
 
 export async function createMockSyncContainer(
     storage: IStorage,
-    keychainStorage: IStorage,
+    encryptedStorage: IStorage,
+    secureEncryptedStorage: IStorage,
     server: MockSnapshotsServer,
     apiConfiguration?: Configuration
 ): Promise<MockSyncContainer> {
-    const keyRepository = new KeyRepository(keychainStorage);
+    const keyRepository = new KeyRepository(encryptedStorage, secureEncryptedStorage);
     const syncStateRepository = new SyncStateRepository(storage);
     const crdtRepository = new YCRDTRepository(storage);
     const deviceRepository = new DeviceRepository(storage);
@@ -38,6 +41,7 @@ export async function createMockSyncContainer(
     const dmkService = new DmkService(keyRepository);
     const syncKeyService = new SyncKeyService(keyRepository);
     const masterKeyService = new MasterKeyService(keyRepository);
+    const vaultKeyService = new VaultKeyService(keyRepository);
 
     const apiSigner = new ApiSigner(ikService);
     const accountsApi = new AccountsApi(apiSigner, apiConfiguration);
@@ -64,7 +68,12 @@ export async function createMockSyncContainer(
         snapshotApi as unknown as SnapshotsApi
     );
 
+    const secretEncryptor = new SecretEncryptor(vaultKeyService);
+
     return {
+        storage,
+        encryptedStorage,
+        secureEncryptedStorage,
         storageVerifierService,
         keyRepository,
         syncStateRepository,
@@ -82,6 +91,8 @@ export async function createMockSyncContainer(
         apiSigner,
         accountsApi,
         snapshotApi,
-        snapshotSse
+        snapshotSse,
+        vaultKeyService,
+        secretEncryptor
     };
 }

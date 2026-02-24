@@ -21,7 +21,8 @@ import { VaultKeyService } from './crypto/service/vault-key-service';
 
 export type SyncContainer = {
     storage: IStorage;
-    keychainStorage: IStorage;
+    encryptedStorage: IStorage;
+    secureEncryptedStorage: IStorage;
 
     keyRepository: KeyRepository;
     crdtRepository: YCRDTRepository;
@@ -53,10 +54,11 @@ export type SyncContainer = {
 
 export async function createSyncContainer(opts: {
     storage: IStorage;
-    keychainStorage: IStorage;
+    encryptedStorage: IStorage;
+    secureEncryptedStorage: IStorage;
     apiConfiguration?: Configuration;
 }): Promise<SyncContainer> {
-    const keyRepository = new KeyRepository(opts.keychainStorage);
+    const keyRepository = new KeyRepository(opts.encryptedStorage, opts.secureEncryptedStorage);
     const syncStateRepository = new SyncStateRepository(opts.storage);
     const crdtRepository = new YCRDTRepository(opts.storage);
     const deviceRepository = new DeviceRepository(opts.storage);
@@ -96,7 +98,8 @@ export async function createSyncContainer(opts: {
 
     return {
         storage: opts.storage,
-        keychainStorage: opts.keychainStorage,
+        encryptedStorage: opts.encryptedStorage,
+        secureEncryptedStorage: opts.secureEncryptedStorage,
         storageVerifierService,
         keyRepository,
         syncStateRepository,

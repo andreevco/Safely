@@ -19,38 +19,40 @@ export class SyncAccountFactory<
     private readonly syncAccountIdRepository: SyncAccountRepository;
     private readonly accountManager: AccountManager<S>;
     private readonly apiConfiguration: Configuration;
+    private readonly storage: ITreeStorage;
+    private readonly encryptedStorage: ITreeStorage;
+    private readonly secureEncryptedStorage: ITreeStorage;
 
-    /**
-     * Creates a new instance of SyncAccountFactory.
-     * @param storage - The storage instance used for storing account data.
-     * @param keychainStorage - The storage instance used for storing keychain data.
-     * @param structure - The structure defining the schema of the synchronized data.
-     * @param apiConfiguration - The configuration parameters for the Sync API.
-     */
-    constructor(
-        private readonly storage: ITreeStorage,
-        private readonly keychainStorage: ITreeStorage,
-        private readonly structure: S,
-        apiConfiguration: ConfigurationParameters
-    ) {
-        this.syncAccountIdRepository = new SyncAccountRepository(storage);
-        this.apiConfiguration = new Configuration(apiConfiguration);
+    constructor(opts: {
+        storage: ITreeStorage;
+        encryptedStorage: ITreeStorage;
+        secureEncryptedStorage: ITreeStorage;
+        structure: S;
+        apiConfiguration?: ConfigurationParameters;
+    }) {
+        this.syncAccountIdRepository = new SyncAccountRepository(opts.storage);
+        this.apiConfiguration = new Configuration(opts.apiConfiguration);
 
         const createAccountService = new CreateAccountService(
-            storage,
-            keychainStorage,
+            opts.storage,
+            opts.encryptedStorage,
+            opts.secureEncryptedStorage,
             this.syncAccountIdRepository,
-            structure,
+            opts.structure,
             this.apiConfiguration
         );
         this.accountManager = new AccountManager(
-            storage,
-            keychainStorage,
+            opts.storage,
+            opts.encryptedStorage,
+            opts.secureEncryptedStorage,
             this.syncAccountIdRepository,
-            structure,
+            opts.structure,
             this.apiConfiguration,
             createAccountService
         );
+        this.storage = opts.storage;
+        this.encryptedStorage = opts.encryptedStorage;
+        this.secureEncryptedStorage = opts.secureEncryptedStorage;
     }
 
     /**
@@ -94,7 +96,8 @@ export class SyncAccountFactory<
 
         const container = await createSyncContainer({
             storage: getSyncAccountStorage(this.storage, accountId),
-            keychainStorage: getSyncAccountStorage(this.keychainStorage, accountId),
+            encryptedStorage: getSyncAccountStorage(this.encryptedStorage, accountId),
+            secureEncryptedStorage: getSyncAccountStorage(this.secureEncryptedStorage, accountId),
             apiConfiguration: this.apiConfiguration
         });
 

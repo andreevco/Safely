@@ -124,9 +124,20 @@ async function createMachineContext(
     expectedSubscriberIncrease = 1
 ): Promise<MachineContext> {
     const storage = new InMemStorage();
-    const keychainStorage = new InMemStorage();
-    await initializeSyncAccount(storage, keychainStorage, masterKey);
-    const container = await createMockSyncContainer(storage, keychainStorage, server);
+    const encryptedStorage = new InMemStorage();
+    const secureEncryptedStorage = new InMemStorage();
+    await initializeSyncAccount({
+        storage,
+        encryptedStorage,
+        secureEncryptedStorage,
+        masterKey
+    });
+    const container = await createMockSyncContainer(
+        storage,
+        encryptedStorage,
+        secureEncryptedStorage,
+        server
+    );
 
     if (!server.hasSnapshot()) {
         const encrypted = await container.updateEncryptor.encryptAndSign(

@@ -13,7 +13,8 @@ import { OnlineSyncProvider } from '../sync-provider/online-sync-provider';
 export class CreateAccountService<S extends Record<string, ZodType>> {
     constructor(
         private readonly storage: ITreeStorage,
-        private readonly keychainStorage: ITreeStorage,
+        private readonly encryptedStorage: ITreeStorage,
+        private readonly secureEncryptedStorage: ITreeStorage,
         private readonly syncAccountIDRepository: SyncAccountRepository,
         private readonly structure: S,
         private readonly apiConfiguration: Configuration
@@ -24,15 +25,25 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
         const accountID = await generateAccountID(masterKey);
 
         const storage = getSyncAccountStorage(this.storage, accountID);
-        const keychainStorage = getSyncAccountStorage(this.keychainStorage, accountID);
-        await initializeSyncAccount(storage, keychainStorage, masterKey);
+        const encryptedStorage = getSyncAccountStorage(this.encryptedStorage, accountID);
+        const secureEncryptedStorage = getSyncAccountStorage(
+            this.secureEncryptedStorage,
+            accountID
+        );
+        await initializeSyncAccount({
+            storage,
+            encryptedStorage,
+            secureEncryptedStorage,
+            masterKey
+        });
         masterKey.fill(0);
 
         await this.syncAccountIDRepository.addAccount(accountID);
 
         const container = await createSyncContainer({
             storage,
-            keychainStorage,
+            encryptedStorage,
+            secureEncryptedStorage,
             apiConfiguration: this.apiConfiguration
         });
 
@@ -54,15 +65,26 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
         const accountID = await generateAccountID(masterKey);
 
         const storage = getSyncAccountStorage(this.storage, accountID);
-        const keychainStorage = getSyncAccountStorage(this.keychainStorage, accountID);
-        await initializeSyncAccount(storage, keychainStorage, masterKey, ik);
+        const encryptedStorage = getSyncAccountStorage(this.encryptedStorage, accountID);
+        const secureEncryptedStorage = getSyncAccountStorage(
+            this.secureEncryptedStorage,
+            accountID
+        );
+        await initializeSyncAccount({
+            storage,
+            encryptedStorage: encryptedStorage,
+            secureEncryptedStorage: secureEncryptedStorage,
+            masterKey,
+            ik
+        });
         masterKey.fill(0);
 
         await this.syncAccountIDRepository.addAccount(accountID, true);
 
         const container = await createSyncContainer({
             storage,
-            keychainStorage,
+            encryptedStorage,
+            secureEncryptedStorage,
             apiConfiguration: this.apiConfiguration
         });
 

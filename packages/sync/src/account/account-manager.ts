@@ -16,7 +16,8 @@ export class AccountManager<S extends Record<string, ZodType>> {
 
     constructor(
         private readonly storage: ITreeStorage,
-        private readonly keychainStorage: ITreeStorage,
+        private readonly encryptedStorage: ITreeStorage,
+        private readonly secureEncryptedStorage: ITreeStorage,
         private readonly syncAccountIdRepository: SyncAccountRepository,
         private readonly structure: S,
         private readonly apiConfiguration: Configuration,
@@ -43,10 +44,18 @@ export class AccountManager<S extends Record<string, ZodType>> {
         const accountInfo = await this.syncAccountIdRepository.getSyncAccount(accountId);
 
         const storage = getSyncAccountStorage(this.storage, accountInfo.accountId);
-        const keychainStorage = getSyncAccountStorage(this.keychainStorage, accountInfo.accountId);
+        const encryptedStorage = getSyncAccountStorage(
+            this.encryptedStorage,
+            accountInfo.accountId
+        );
+        const secureEncryptedStorage = getSyncAccountStorage(
+            this.secureEncryptedStorage,
+            accountInfo.accountId
+        );
         const container = await createSyncContainer({
             storage,
-            keychainStorage,
+            encryptedStorage,
+            secureEncryptedStorage,
             apiConfiguration: this.apiConfiguration
         });
 
@@ -92,9 +101,11 @@ export class AccountManager<S extends Record<string, ZodType>> {
         }
 
         const storage = getSyncAccountStorage(this.storage, accountId);
-        const keychainStorage = getSyncAccountStorage(this.keychainStorage, accountId);
+        const encryptedStorage = getSyncAccountStorage(this.encryptedStorage, accountId);
+        const secureKeychainStorage = getSyncAccountStorage(this.secureEncryptedStorage, accountId);
         await storage.clear();
-        await keychainStorage.clear();
+        await encryptedStorage.clear();
+        await secureKeychainStorage.clear();
         await this.syncAccountIdRepository.removeAccount(accountId);
 
         this.accounts = this.accounts.filter(acc => acc.accountId !== accountId);

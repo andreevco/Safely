@@ -52,17 +52,18 @@ export async function initializeCrdt(repo: YCRDTRepository): Promise<void> {
     await repo.saveCRDT(new YCRDT(new Y.Doc()));
 }
 
-export async function initializeSyncAccount(
-    storage: IStorage,
-    keychainStorage: IStorage,
-    masterKey: Buffer,
-    ik?: { secretKey: Buffer; publicKey: Buffer }
-): Promise<void> {
-    const keyRepository = new KeyRepository(keychainStorage);
-    const syncStateRepository = new SyncStateRepository(storage);
-    const ycrdtRepository = new YCRDTRepository(storage);
+export async function initializeSyncAccount(opts: {
+    storage: IStorage;
+    encryptedStorage: IStorage;
+    secureEncryptedStorage: IStorage;
+    masterKey: Buffer;
+    ik?: { secretKey: Buffer; publicKey: Buffer };
+}): Promise<void> {
+    const keyRepository = new KeyRepository(opts.encryptedStorage, opts.secureEncryptedStorage);
+    const syncStateRepository = new SyncStateRepository(opts.storage);
+    const ycrdtRepository = new YCRDTRepository(opts.storage);
 
-    await initializeKeys(keyRepository, masterKey, ik);
+    await initializeKeys(keyRepository, opts.masterKey, opts.ik);
     await initializeSyncState(syncStateRepository);
     await initializeCrdt(ycrdtRepository);
 }
