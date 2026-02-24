@@ -3,6 +3,8 @@ import { useCallback } from 'react';
 
 import { useCountdown, useSharedUnstructuredKeychainStorage, useSuspenseQuery } from '@safely/ux';
 
+import { StorageKey } from '@mobile/shared/constants';
+
 import { lockoutKeys } from './keys';
 import { getLockoutDuration, LockoutState, sLockoutState } from './lockout';
 
@@ -12,7 +14,7 @@ export function usePasscodeLockout() {
         get: storageGet,
         set: storageSet,
         remove: storageRemove
-    } = useSharedUnstructuredKeychainStorage('passcode_lockout', sLockoutState);
+    } = useSharedUnstructuredKeychainStorage(StorageKey.PASSCODE_LOCKOUT, sLockoutState);
 
     const { data } = useSuspenseQuery({
         queryKey: lockoutKeys.state.toKey(),
