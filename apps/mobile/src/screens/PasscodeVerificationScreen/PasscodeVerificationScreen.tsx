@@ -19,7 +19,7 @@ export const PasscodeVerificationScreen = (props: PasscodeVerificationScreenProp
     const { onSuccess, onClose, title } = props.route.params;
 
     const navigation = useNavigation<RootStackNavigationProp>();
-    const { isLocked, remainingMs, recordFailedAttempt, resetAttempts } = usePasscodeLockout();
+    const { isLocked, remainingSeconds, recordFailedAttempt, resetAttempts } = usePasscodeLockout();
     const { mutateAsync: signOutAccount } = useSignOutFromAccount();
     const successCalled = useRef(false);
 
@@ -42,7 +42,7 @@ export const PasscodeVerificationScreen = (props: PasscodeVerificationScreenProp
     }, [signOutAccount, navigation]);
 
     if (isLocked) {
-        return <LockoutContent remainingMs={remainingMs} onSignOut={handleSignOut} />;
+        return <LockoutContent remainingSeconds={remainingSeconds} onSignOut={handleSignOut} />;
     }
 
     return (

@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback } from 'react';
 
-import { useSharedUnstructuredKeychainStorage, useSuspenseQuery } from '@safely/ux';
+import { useCountdown, useSharedUnstructuredKeychainStorage, useSuspenseQuery } from '@safely/ux';
 
 import { lockoutKeys } from './keys';
 import { getLockoutDuration, LockoutState, sLockoutState } from './lockout';
@@ -29,40 +29,10 @@ export function usePasscodeLockout() {
     });
 
     const lockedUntil = data.lockedUntil;
+    const initialSeconds = lockedUntil ? Math.ceil((lockedUntil - Date.now()) / 1000) : 0;
+    const remainingSeconds = useCountdown(initialSeconds);
 
-    const [remainingMs, setRemainingMs] = useState(() => {
-        if (lockedUntil) {
-            const remaining = lockedUntil - Date.now();
-
-            return remaining > 0 ? remaining : 0;
-        }
-
-        return 0;
-    });
-
-    useEffect(() => {
-        if (!lockedUntil || lockedUntil <= Date.now()) {
-            setRemainingMs(0);
-            return;
-        }
-
-        setRemainingMs(lockedUntil - Date.now());
-
-        const interval = setInterval(() => {
-            const ms = lockedUntil - Date.now();
-
-            if (ms <= 0) {
-                setRemainingMs(0);
-                clearInterval(interval);
-            } else {
-                setRemainingMs(ms);
-            }
-        }, 1000);
-
-        return () => clearInterval(interval);
-    }, [lockedUntil]);
-
-    const isLocked = remainingMs > 0;
+    const isLocked = remainingSeconds > 0;
 
     const recordFailedAttempt = useCallback(async () => {
         const current = await storageGet();
@@ -89,7 +59,7 @@ export function usePasscodeLockout() {
 
     return {
         isLocked,
-        remainingMs,
+        remainingSeconds,
         recordFailedAttempt,
         resetAttempts
     };

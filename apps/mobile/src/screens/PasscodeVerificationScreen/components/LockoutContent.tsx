@@ -7,12 +7,12 @@ import { styles } from '../PasscodeVerificationScreen.styles';
 import { formatLockoutTime } from '../utils';
 
 interface LockoutContentProps {
-    remainingMs: number;
+    remainingSeconds: number;
     onSignOut: () => void;
 }
 
 export const LockoutContent = (props: LockoutContentProps) => {
-    const { remainingMs, onSignOut } = props;
+    const { remainingSeconds, onSignOut } = props;
 
     const { t } = useTranslation();
 
@@ -35,7 +35,7 @@ export const LockoutContent = (props: LockoutContentProps) => {
                         {t('passcode.lockout.title')}
                     </Text>
                     <Text textAlign="center" variant="bodyL" color="secondary">
-                        {formatLockoutTime(remainingMs, t)}
+                        {formatLockoutTime(remainingSeconds, t)}
                     </Text>
                 </View>
             </View>
