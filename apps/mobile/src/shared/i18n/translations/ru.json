@@ -51,6 +51,10 @@
             "scan": "Сканировать"
         }
     },
+    "qrScan": {
+        "title": "Сканировать QR-код",
+        "subtitle": "Отсканируйте адрес BTC для продолжения."
+    },
     "language": {
         "title": "Язык",
         "languages": {
@@ -136,7 +140,7 @@
                 "title": "Статус",
                 "created": {
                     "value": "Создана",
-                    "description": "Еще не добавлена в блок"
+                    "description": "Ещё не подтверждена"
                 }
             },
             "transaction": "Транзакция"
@@ -147,8 +151,8 @@
             "backToWallet": "Вернуться в кошелёк"
         },
         "sendError": {
-            "title": "Ошибка отправки",
-            "default": "Не удалось отправить транзакцию. Попробуйте ещё раз.",
+            "title": "Не удалось отправить транзакцию",
+            "default": "Проверьте данные и попробуйте снова",
             "btc": {
                 "dust": "Сумма перевода слишком мала."
             }
@@ -308,11 +312,41 @@
         "dateHeaders": {
             "today": "Сегодня",
             "yesterday": "Вчера"
+        },
+        "transactionInfo": {
+            "sent": "Отправлено",
+            "received": "Получено",
+            "recipient": "Получатель",
+            "sender": "Отправитель",
+            "fee": "Комиссия сети",
+            "hash": "Транзакция",
+            "status": {
+                "title": "Статус",
+                "pending": {
+                    "title": "В обработке",
+                    "description": "~ 10 минут на обработку"
+                },
+                "confirmed-recently": {
+                    "title": "Подтверждено {{date}}",
+                    "confirmations_one": "{{count}} подтверждение",
+                    "confirmations_other": "{{count}} подтверждений"
+                },
+                "confirmed-long-ago": {
+                    "title": "Подтверждено {{date}}",
+                    "description": "Более 6 подтверждений"
+                }
+            }
         }
     },
     "tabs": {
       "home": "Главная",
       "history": "История"
+    },
+    "externalInput": {
+        "errors": {
+            "unrecognized": "Нераспознанный ввод",
+            "unsupportedScheme": "Неподдерживаемый тип ввода"
+        }
     },
     "importWalletScreen": {
         "toastMessages": {

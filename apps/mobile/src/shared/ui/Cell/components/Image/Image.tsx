@@ -1,7 +1,8 @@
 import { ImageProps as ImageComponentProps } from 'expo-image';
 import { View, ViewStyle } from 'react-native';
 
-import { Image as ImageComponent, Icon, type IconProps } from '@mobile/shared/ui';
+import { Icon, type IconProps } from '@mobile/shared/ui/Icon';
+import { Image as ImageComponent } from '@mobile/shared/ui/Image';
 
 import { styles } from './Image.styles';
 

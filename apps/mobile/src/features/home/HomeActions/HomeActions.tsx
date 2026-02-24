@@ -3,6 +3,7 @@ import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { BTC_ASSET } from '@safely/core';
+import { useScanQrScheme } from '@safely/ux';
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { Actions } from '@mobile/shared/ui';
@@ -14,16 +15,24 @@ export const HomeActions = () => {
     const { t } = useTranslation();
     const navigation = useNavigation<RootStackNavigationProp<'TabsNavigator'>>();
 
-    const handleQRScan = useCallback(() => {
-        navigation.navigate('QRScanModal', {
-            onSuccess: (value: string) => {
-                console.log(value);
+    const handleQRScan = useScanQrScheme({
+        onResult: useCallback(
+            scheme => {
+                switch (scheme.name) {
+                    case 'btc-transfer':
+                        navigation.navigate('SendAssetModal', {
+                            screen: 'SendAssetModal',
+                            params: {
+                                address: scheme.parsed.address,
+                                amount: scheme.parsed.amount
+                            }
+                        });
+                        break;
+                }
             },
-            onClose: () => {},
-            title: t('qrScan.title'),
-            subtitle: t('qrScan.subtitle')
-        });
-    }, [navigation, t]);
+            [navigation]
+        )
+    });
 
     const handleNavigateToReceiveAsset = useCallback(() => {
         navigation.navigate('ReceiveAssetModal', {

@@ -1,10 +1,10 @@
-import { useNavigation } from '@react-navigation/native';
 import { Ref, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TextInput, View } from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import { useScanQrScheme } from '@safely/ux';
+
 import { Icon, QrCodeScan28, XmarkCircle16 } from '@mobile/shared/ui/Icon';
 import { Text } from '@mobile/shared/ui/Text';
 import { TouchableOpacity } from '@mobile/shared/ui/TouchableOpacity';
@@ -25,7 +25,17 @@ export const AddressInput = (props: AddressInputProps) => {
 
     const { t } = useTranslation();
     const { theme } = useUnistyles();
-    const navigation = useNavigation<RootStackNavigationProp>();
+
+    const handleScan = useScanQrScheme({
+        allowedSchemes: ['btc-transfer'] as const,
+        onResult: useCallback(
+            scheme => {
+                onChangeText(scheme.parsed.address);
+            },
+            [onChangeText]
+        )
+    });
+
     const [isFocused, setIsFocused] = useState(false);
 
     const hasValue = value.length > 0;
@@ -47,16 +57,6 @@ export const AddressInput = (props: AddressInputProps) => {
     const handleClear = useCallback(() => {
         onChangeText('');
     }, [onChangeText]);
-
-    const handleScan = useCallback(() => {
-        navigation.navigate('QRScanModal', {
-            onSuccess: (scannedValue: string) => {
-                onChangeText(scannedValue);
-            },
-            onClose: () => {},
-            title: t('home.actions.scan')
-        });
-    }, [navigation, onChangeText, t]);
 
     return (
         <View>

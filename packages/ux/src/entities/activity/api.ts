@@ -1,5 +1,5 @@
-import { BtcApi } from '@safely/core';
-import { BTC_ASSET, BtcWallet, CryptoAssetAmount } from '@safely/core';
+import { BtcApi, BtcAsset, BtcAssetAmount, TransactionFeeCrypto } from '@safely/core';
+import { BtcWallet } from '@safely/core';
 import { toBig, toBigOrZero } from '@safely/core';
 
 import { ActivityPage, BtcActivityItem, IActivityFilters } from './types';
@@ -54,6 +54,18 @@ export async function fetchBtcActivity(
                 .filter(v => Boolean(v.isOwn) === !isInitiator)
                 .reduce((acc, v) => acc.plus(toBigOrZero(v.value)), toBig(0));
 
+            let fee: TransactionFeeCrypto<BtcAsset> | undefined;
+            try {
+                if (tx.fees) {
+                    fee = {
+                        type: 'crypto',
+                        amount: BtcAssetAmount.fromWeiAmount(tx.fees)
+                    };
+                }
+            } catch {
+                //
+            }
+
             return {
                 timestamp: (tx.blockTime || 0) * 1000,
                 key: tx.txid,
@@ -61,7 +73,8 @@ export async function fetchBtcActivity(
                     isInitiator,
                     fromAddress,
                     toAddress,
-                    value: new CryptoAssetAmount({ asset: BTC_ASSET, weiAmount }),
+                    value: BtcAssetAmount.fromWeiAmount(weiAmount),
+                    fee,
                     raw: tx
                 }
             };

@@ -1,6 +1,17 @@
+import * as bitcoin from 'bitcoinjs-lib';
+
 export type BitcoinAddressType = 'P2PKH' | 'P2SH' | 'P2WPKH' | 'P2WSH' | 'P2TR';
 
 export class BtcAddress {
+    public static validate(address: string, network = bitcoin.networks.bitcoin): boolean {
+        try {
+            bitcoin.address.toOutputScript(address, network);
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
     public static type(address: string): BitcoinAddressType {
         if (address.startsWith('1')) return 'P2PKH';
         if (address.startsWith('3')) return 'P2SH';

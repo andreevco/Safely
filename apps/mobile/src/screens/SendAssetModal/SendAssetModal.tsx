@@ -1,4 +1,4 @@
-import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { useNavigation, NavigationProp, StaticScreenProps } from '@react-navigation/native';
 import { useRef, useCallback, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TextInput, View } from 'react-native';
@@ -22,11 +22,17 @@ import { styles } from './SendAssetModal.styles';
 import { AmountStep, RecipientStep } from './steps';
 
 type SendStackParamList = {
-    SendAssetModal: undefined;
+    SendAssetModal: {
+        address?: string;
+        amount?: string;
+    };
     ConfirmationModal: SendConfirmationParams;
 };
 
-export const SendAssetModal = () => {
+type SendAssetModalProps = StaticScreenProps<SendStackParamList['SendAssetModal']>;
+
+export const SendAssetModal = (props: SendAssetModalProps) => {
+    const { address, amount } = props.route.params ?? {};
     const { t } = useTranslation();
     const navigation = useNavigation<NavigationProp<SendStackParamList>>();
     const pagerRef = useRef<PagerView>(null);
@@ -48,7 +54,8 @@ export const SendAssetModal = () => {
 
     const { state, actions, step, meta } = useSendForm({
         onSubmit: handleSubmit,
-        shouldResetForm: false
+        shouldResetForm: false,
+        initialValues: { recipient: address, amount }
     });
 
     const amountInputType = state.values.amountInputType;
