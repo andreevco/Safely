@@ -13,6 +13,7 @@ export type BtcTransferRequestNotMax = {
 export type BtcTransferRequestMax = {
     type: 'max';
     recipientAddress: string;
+    estimatedAmount: BtcAssetAmount;
     feeType: BtcFeeType;
 };
 

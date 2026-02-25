@@ -41,12 +41,24 @@ export function useEstimateAssetTransfer(form: SendFormResult) {
         queryKey: estimationKey.form(form).services({ btcEstimator }).toKey(),
         async queryFn() {
             if (form.blockchain === BLOCKCHAIN_NAME.BTC) {
-                return btcEstimator.estimate({
-                    type: form.isMax ? 'max' : 'not-max',
-                    recipientAddress: form.recipient.address,
-                    amount: form.amount.cryptoAssetAmount,
-                    feeType: BtcFeeType.FAST
-                });
+                const recipientAddress = form.recipient.address;
+                const feeType = BtcFeeType.FAST;
+
+                return btcEstimator.estimate(
+                    form.isMax
+                        ? {
+                              type: 'max',
+                              recipientAddress,
+                              estimatedAmount: form.amount.cryptoAssetAmount,
+                              feeType
+                          }
+                        : {
+                              type: 'not-max',
+                              recipientAddress,
+                              feeType,
+                              amount: form.amount.cryptoAssetAmount
+                          }
+                );
             }
 
             assertUnreachable(form.blockchain);

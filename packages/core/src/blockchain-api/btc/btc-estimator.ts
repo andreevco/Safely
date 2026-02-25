@@ -11,7 +11,7 @@ import {
 import { getUtxoTotal } from './utils';
 import { BtcApi, BtcApiGasPrice } from '../../api/btc';
 import { BtcAssetAmount, btcNetworkConfig, BtcWallet } from '../../entities';
-import { assertUnreachable, IIdentifiable, toBig } from '../../utils';
+import { abs, assertUnreachable, IIdentifiable, toBig } from '../../utils';
 
 export class BtcEstimator implements IIdentifiable {
     public readonly id: string;
@@ -47,10 +47,10 @@ export class BtcEstimator implements IIdentifiable {
     }
 
     public async getMaxSendValue(
-        request: Omit<BtcTransferRequestMax, 'type'>
+        request: Omit<BtcTransferRequestMax, 'type' | 'estimatedAmount'>
     ): Promise<BtcAssetAmount> {
-        const template = await this.estimateMax({ ...request, type: 'max' });
-        return template.estimation.fee.amount;
+        const { fee } = await this.estimateSendMaxFee(request);
+        return fee;
     }
 
     public async estimate(request: BtcTransferRequest): Promise<BtcTransactionTemplate> {
@@ -102,7 +102,9 @@ export class BtcEstimator implements IIdentifiable {
         });
     }
 
-    private async estimateMax(request: BtcTransferRequestMax): Promise<BtcTransactionTemplate> {
+    private async estimateSendMaxFee(
+        request: Omit<BtcTransferRequestMax, 'type' | 'estimatedAmount'>
+    ) {
         const { feeSatVb, targetBlock } = await this.getFeeValue(request.feeType);
 
         const utxos = await this.btcApi.getAccountUtxo(this.wallet);
@@ -122,6 +124,20 @@ export class BtcEstimator implements IIdentifiable {
 
         if (totalBalance.lt(fee)) {
             throw new Error('Total balance is not enough to cover transaction fee');
+        }
+
+        return { fee, targetBlock, utxos };
+    }
+
+    private async estimateMax(request: BtcTransferRequestMax): Promise<BtcTransactionTemplate> {
+        const { fee, targetBlock, utxos } = await this.estimateSendMaxFee(request);
+        const totalBalance = getUtxoTotal(utxos);
+
+        const amount = totalBalance.sub(fee);
+        if (
+            abs(request.estimatedAmount.weiAmount - amount.weiAmount) > fee.amountMul(0.5).weiAmount
+        ) {
+            throw new Error('Amount changed since it was estimated');
         }
 
         return new BtcTransactionTemplate(
