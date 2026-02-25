@@ -18,7 +18,7 @@ export function useBtcTransactionDisplayStatus(
         const timestamp = new Date(tx.blockTime * 1000);
         const confirmations =
             currentBlockNumber !== undefined
-                ? currentBlockNumber - tx.blockHeight
+                ? currentBlockNumber - tx.blockHeight + 1
                 : tx.confirmations;
         const confirmedAgoConfirmationsNumber = 6;
 
