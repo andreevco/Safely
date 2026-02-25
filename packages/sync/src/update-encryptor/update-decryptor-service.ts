@@ -9,12 +9,11 @@ export class UpdateDecryptorService {
     ) {}
 
     public async verifyAndDecrypt(state: EncryptedState): Promise<Buffer> {
-        // TODO: verify signature
-        // await this.deviceManager.verifyDeviceIKSig({
-        //     kid: state.kid,
-        //     sig: state.signature,
-        //     data: Buffer.concat([state.nonce, state.ciphertext, state.snapshotProof])
-        // });
+        await this.deviceManager.verifyDeviceIKSig({
+            kid: state.kid,
+            sig: state.signature,
+            data: Buffer.concat([state.nonce, state.ciphertext, state.snapshotProof])
+        });
 
         return await this.syncKeyService.decrypt(state.ciphertext, state.nonce);
     }

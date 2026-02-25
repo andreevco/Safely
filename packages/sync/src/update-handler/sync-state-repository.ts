@@ -2,7 +2,6 @@ import { IStorage } from '../I-storage';
 import { SyncState, SyncStateSchema, syncStateToJson } from './sync-state';
 
 export class SyncStateRepository {
-    // TODO: mutex
     constructor(private readonly storage: IStorage) {}
 
     public async getState(): Promise<SyncState> {

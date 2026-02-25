@@ -1,6 +1,6 @@
 import * as Y from 'yjs';
 
-import { getSnapshotProof } from './snapshot-proof';
+import { getSnapshotProof, getSnapshotProofFromCiphertextHash } from './snapshot-proof';
 import { SyncState } from './sync-state';
 import { SyncStateRepository } from './sync-state-repository';
 import { SnapshotsApi } from '../api/generated';
@@ -32,11 +32,14 @@ export class UpdateHandler {
         if (syncState.snapshotProof.length !== 0) {
             let proof = syncState.snapshotProof;
             for (const proofItem of upd.snapshotProofChain) {
-                proof = getSnapshotProof(proof, proofItem);
+                proof = getSnapshotProofFromCiphertextHash(proof, proofItem);
             }
             const expectedProof = getSnapshotProof(proof, upd.ciphertext);
 
             if (!upd.snapshotProof.equals(expectedProof)) {
+                console.info(
+                    'Snapshot proof does not match expected proof, fetching proof chain to verify'
+                );
                 const isProofCorrect = await this.fetchProofChainAndVerify(
                     syncState,
                     upd.snapshotProof
@@ -77,7 +80,10 @@ export class UpdateHandler {
         });
         let tempProof = syncState.snapshotProof;
         for (const proofItem of proofChain.proofChain) {
-            tempProof = getSnapshotProof(tempProof, Buffer.from(proofItem, 'hex'));
+            tempProof = getSnapshotProofFromCiphertextHash(
+                tempProof,
+                Buffer.from(proofItem, 'hex')
+            );
             if (tempProof.equals(actualSnapshotProof)) {
                 return true;
             }

@@ -47,7 +47,6 @@ export class SnapshotsSse {
             parsers: {
                 snapshot: data => {
                     return {
-                        kid: Buffer.from([]), // TODO: kid
                         ...snapshotSchema.parse(data)
                     };
                 }
@@ -75,6 +74,7 @@ export class SnapshotsSse {
 }
 
 const snapshotSchema = z.object({
+    kid: BufferHexSchema,
     ciphertext: BufferHexSchema,
     nonce: BufferHexSchema,
     signature: BufferHexSchema,

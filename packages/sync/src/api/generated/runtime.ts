@@ -297,7 +297,7 @@ export class BaseAPI {
      */
     private clone<T extends BaseAPI>(this: T): T {
         const constructor = this.constructor as any;
-        const next = new constructor(this.configuration);
+        const next = new constructor(this.apiSigner, this.configuration);
         next.middleware = this.middleware.slice();
         return next;
     }

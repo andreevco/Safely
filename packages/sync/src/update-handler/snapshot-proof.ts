@@ -5,12 +5,11 @@ export type SnapshotProofEntry = {
     ciphertextHash: Buffer;
 };
 
-export function getSnapshotProof(parentSnapshotProof: Buffer, ciphertext: Buffer) {
-    const ciphertextHash = sha256(ciphertext);
-    if (parentSnapshotProof.length === 0) {
-        return Buffer.from(ciphertextHash); // genesis proof
-    }
+export function getSnapshotProofFromCiphertextHash(parent: Buffer, ciphertextHash: Buffer): Buffer {
+    if (parent.length === 0) return Buffer.from(ciphertextHash);
+    return Buffer.from(sha256(Buffer.concat([parent, ciphertextHash])));
+}
 
-    const combined = Buffer.concat([parentSnapshotProof, Buffer.from(ciphertextHash)]);
-    return Buffer.from(sha256(combined));
+export function getSnapshotProof(parent: Buffer, ciphertext: Buffer): Buffer {
+    return getSnapshotProofFromCiphertextHash(parent, Buffer.from(sha256(ciphertext)));
 }

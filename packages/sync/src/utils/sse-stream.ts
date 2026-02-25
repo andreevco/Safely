@@ -95,7 +95,6 @@ export class SSEStream<T> implements AsyncIterable<SSEStreamItem<T>> {
                 try {
                     const parsed = parser(JSON.parse(event.data));
                     if (parsed) this.push({ value: parsed, eventId: event.lastEventId });
-                    // TODO: handle unparsed case
                 } catch (e) {
                     console.error(`Error parsing SSE event '${eventType}':`, e);
                 }

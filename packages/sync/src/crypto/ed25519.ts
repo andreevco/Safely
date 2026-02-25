@@ -13,6 +13,6 @@ export function ed25519_sign(message: Buffer, secretKey: Buffer): Buffer {
     return Buffer.from(sig);
 }
 
-export function ed25519_verify(message: Buffer, sig: Buffer, publicKey: Buffer): boolean {
+export function ed25519_verify(sig: Buffer, message: Buffer, publicKey: Buffer): boolean {
     return ed25519.verify(sig, message, publicKey);
 }

@@ -80,13 +80,16 @@ export class DeviceManagementService {
         }
     }
 
-    // TODO: consider moving this method to a separate class, e.g. DeviceVerifier
-    // TODO: optimize this method by caching the KID to ikPub mapping
     public async verifyDeviceIKSig(opts: {
         kid: Buffer;
         sig: Buffer;
         data: Buffer;
     }): Promise<boolean> {
+        const devices = await this.getDevices();
+        if (devices.length === 0) {
+            return true; // first sync
+        }
+
         for (const device of await this.getDevices()) {
             const kid = generateKID(device.ikPub);
             if (kid.equals(opts.kid)) {
@@ -105,7 +108,7 @@ export class DeviceManagementService {
         ]);
 
         const dmkPub = await this.keyRepository.getDMKPub();
-        const isValid = ed25519_verify(dataToVerify, op.sig, dmkPub);
+        const isValid = ed25519_verify(op.sig, dataToVerify, dmkPub);
         if (!isValid) {
             throw new InvalidDMKSignatureError('Invalid device operation signature.');
         }
@@ -124,7 +127,9 @@ export class DeviceManagementService {
         ]);
 
         const dmkKey = await this.keyRepository.getDMKPrv();
-        return ed25519_sign(dataToSign, dmkKey);
+        const sig = ed25519_sign(dataToSign, dmkKey);
+        dmkKey.fill(0);
+        return sig;
     }
 }
 

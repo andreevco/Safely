@@ -35,7 +35,7 @@ export class OfflineSyncProvider<S extends Record<string, ZodType>> implements I
     public onChange<K extends keyof S>(k: K, observer: (v: z.output<S[K]>) => void): () => void {
         return this.container.yManager.onChange(() => {
             const schema = this.structure[k];
-            const valueString = this.container.yManager.get(JSON.stringify(k));
+            const valueString = this.container.yManager.get(k.toString());
             const value = schema.parse(JSON.parse(valueString));
             observer(value);
         });
