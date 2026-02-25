@@ -6,7 +6,7 @@ type ChartPoint = {
     timestamp: number;
 };
 
-const MAX_POINTS = 200;
+const MAX_POINTS = 300;
 
 const normalizePoints = (points: ChartPoint[]): ChartPoint[] => {
     if (points.length <= MAX_POINTS) {
