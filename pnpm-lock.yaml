@@ -345,6 +345,9 @@ importers:
       '@noble/hashes':
         specifier: ^2.0.1
         version: 2.0.1
+      '@safely/sync':
+        specifier: workspace:*
+        version: link:../sync
       '@scure/bip32':
         specifier: ^2.0.1
         version: 2.0.1
