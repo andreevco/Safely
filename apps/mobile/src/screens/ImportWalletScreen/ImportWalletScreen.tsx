@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Keyboard, TextInput, View } from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';
@@ -19,6 +19,13 @@ export const ImportWalletScreen = () => {
         onSubmit: mnemonic => {
             void onMnemonicReady(mnemonic);
         }
+    });
+
+    const [isFocused, setIsFocused] = useState(false);
+
+    styles.useVariants({
+        focused: isFocused && !error,
+        error: !!error
     });
 
     const handleContinue = useCallback(() => {
@@ -51,12 +58,15 @@ export const ImportWalletScreen = () => {
                         </Text>
                     </View>
 
-                    <View style={[styles.inputContainer, error && styles.inputContainerError]}>
+                    <View style={styles.inputContainer}>
                         <TextInput
                             value={value}
                             onChangeText={onChange}
+                            onFocus={() => setIsFocused(true)}
+                            onBlur={() => setIsFocused(false)}
                             style={[styles.textArea, { color: theme.colors.text.primary }]}
                             multiline
+                            autoFocus
                             autoCapitalize="none"
                             autoCorrect={false}
                             spellCheck={false}

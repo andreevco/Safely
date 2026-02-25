@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { Ref, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TextInput, View } from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';
@@ -17,11 +17,11 @@ interface AddressInputProps {
     error?: string;
     label?: string;
     placeholder?: string;
-    autoFocus?: boolean;
+    inputRef?: Ref<TextInput>;
 }
 
 export const AddressInput = (props: AddressInputProps) => {
-    const { value, onChangeText, error, label, placeholder, autoFocus } = props;
+    const { value, onChangeText, error, label, placeholder, inputRef } = props;
 
     const { t } = useTranslation();
     const { theme } = useUnistyles();
@@ -69,6 +69,7 @@ export const AddressInput = (props: AddressInputProps) => {
             )}
             <View style={styles.container}>
                 <TextInput
+                    ref={inputRef}
                     value={value}
                     onChangeText={onChangeText}
                     onFocus={handleFocus}
@@ -79,7 +80,6 @@ export const AddressInput = (props: AddressInputProps) => {
                     autoCapitalize="none"
                     autoCorrect={false}
                     spellCheck={false}
-                    autoFocus={autoFocus}
                     multiline
                 />
 
@@ -90,7 +90,7 @@ export const AddressInput = (props: AddressInputProps) => {
                     {hasValue ? (
                         <Icon icon={XmarkCircle16} color="tertiary" />
                     ) : (
-                        <Icon icon={QrCodeScan28} size={24} color="accent" />
+                        <Icon icon={QrCodeScan28} color="accent" />
                     )}
                 </TouchableOpacity>
             </View>

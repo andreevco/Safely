@@ -146,7 +146,7 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
                             </TableCell.Column>
                             <TableCell.Column>
                                 <TableCell.Value>
-                                    {ellipsisMiddle(activity.transaction.raw?.txid, 6)}
+                                    {ellipsisMiddle(activity.transaction.raw?.txid, 8)}
                                 </TableCell.Value>
                             </TableCell.Column>
                             <View style={styles.iconsContainer}>

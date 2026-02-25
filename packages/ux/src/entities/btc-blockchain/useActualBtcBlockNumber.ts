@@ -8,7 +8,7 @@ export function useActualBtcBlockNumber() {
 
     return useQuery<number>({
         queryKey: btcBlockchain.blockNumber(btcApi).toKey(),
-        queryFn: () => btcApi.getBlockBestHeight(),
+        queryFn: () => btcApi.getBlockTipHeight(),
         refetchInterval: 1000 * 30,
         staleTime: 1000 * 30
     });

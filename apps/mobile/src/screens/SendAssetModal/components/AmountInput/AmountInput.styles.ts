@@ -20,17 +20,18 @@ export const styles = StyleSheet.create(theme => ({
     leftContentContainer: {
         paddingLeft: theme.spacing[16],
         paddingRight: theme.spacing[8],
-        paddingTop: theme.spacing[8],
-        paddingBottom: 11,
+        paddingTop: theme.spacing[8] - theme.border.border,
+        paddingBottom: 11 - theme.border.border,
         flex: 1
     },
     input: {
         fontSize: 32,
-        fontWeight: '600',
-        fontFamily: Platform.OS === 'ios' ? 'ui-monospace' : 'monospace',
+        fontWeight: 600,
+        fontVariant: ['tabular-nums', 'lining-nums'],
         color: theme.colors.text.primary,
         flex: 1,
         height: 40,
+        letterSpacing: 0.42,
         ...(Platform.OS === 'android'
             ? {
                   paddingBottom: 0,

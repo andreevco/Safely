@@ -5,10 +5,12 @@ export const styles = StyleSheet.create(theme => ({
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: theme.spacing[16],
-        paddingVertical: theme.spacing[12],
+        paddingVertical: theme.spacing[8],
         gap: theme.spacing[8],
-        borderRadius: theme.radius.md,
-        backgroundColor: theme.colors.background.tertiary,
+        borderWidth: StyleSheet.hairlineWidth,
+        borderColor: theme.colors.other.transparentElement,
+        borderRadius: theme.radius.full,
+        backgroundColor: theme.colors.button.tertiary.background,
         maxWidth: '80%'
     }
 }));

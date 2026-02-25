@@ -6,13 +6,12 @@ export const styles = StyleSheet.create(theme => ({
         paddingHorizontal: theme.spacing[16]
     },
     container: {
-        minHeight: 64,
         borderRadius: theme.radius.md,
         backgroundColor: theme.colors.input.background,
         borderWidth: theme.border.border,
         borderColor: 'transparent',
         margin: theme.spacing[8],
-        padding: theme.spacing[16],
+        padding: theme.spacing[16] - theme.border.border,
         paddingRight: 56,
         justifyContent: 'center',
         position: 'relative',
@@ -34,7 +33,8 @@ export const styles = StyleSheet.create(theme => ({
     input: {
         fontSize: 17,
         lineHeight: 24,
-        fontWeight: '500',
+        letterSpacing: -0.44,
+        fontWeight: 400,
         color: theme.colors.text.primary,
         paddingTop: 0,
         paddingBottom: 0,
@@ -42,12 +42,11 @@ export const styles = StyleSheet.create(theme => ({
     },
     iconButton: {
         position: 'absolute',
-        right: theme.spacing[16],
+        right: theme.spacing[16] - 2,
         top: 0,
         bottom: 0,
         justifyContent: 'center',
-        alignItems: 'center',
-        width: 24
+        alignItems: 'center'
     },
     errorText: {
         marginBottom: theme.spacing[12],

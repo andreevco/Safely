@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { AddressSchema, GasPricesSchema, StatusScheme, TxSchema, UtxoSchema } from './models';
+import { AddressSchema, BlockHeightScheme, GasPricesSchema, TxSchema, UtxoSchema } from './models';
 import { BtcWalletType } from '../../entities/blockchain/btc';
 import { ApiClient } from '../../utils/fetch';
 import { IIdentifiable } from '../../utils/types';
@@ -56,13 +56,9 @@ export class BtcApi extends ApiClient implements IIdentifiable {
         return await this.getJson(`/api/v2/tx/${txid}`, TxSchema);
     }
 
-    public async getStatus() {
-        return this.getJson('/api/status', StatusScheme);
-    }
-
-    public async getBlockBestHeight(): Promise<number> {
-        const status = await this.getStatus();
-        return status.blockbook.bestHeight;
+    public async getBlockTipHeight(): Promise<number> {
+        const response = await this.getJson(`/extensions/v1/blocks/tip/height`, BlockHeightScheme);
+        return response.height;
     }
 
     /**

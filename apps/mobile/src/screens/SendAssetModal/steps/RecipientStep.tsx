@@ -1,5 +1,6 @@
+import { Ref } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
+import { TextInput, View } from 'react-native';
 
 import { AddressInput } from '../components';
 
@@ -7,10 +8,12 @@ interface RecipientStepProps {
     value: string;
     error: string | undefined;
     onChangeText: (value: string) => void;
+    inputRef?: Ref<TextInput>;
 }
 
 export const RecipientStep = (props: RecipientStepProps) => {
-    const { value, error, onChangeText } = props;
+    const { value, error, onChangeText, inputRef } = props;
+
     const { t } = useTranslation();
 
     return (
@@ -19,7 +22,7 @@ export const RecipientStep = (props: RecipientStepProps) => {
                 value={value}
                 onChangeText={onChangeText}
                 error={error}
-                autoFocus
+                inputRef={inputRef}
                 label={t('send.recipient.label')}
                 placeholder={t('send.recipient.placeholder')}
             />
