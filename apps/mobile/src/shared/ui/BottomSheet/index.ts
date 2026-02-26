@@ -1,1 +1,2 @@
-export { BottomSheet, useBottomSheet, useBottomSheetContext } from './BottomSheet';
+export { BottomSheet } from './BottomSheet';
+export { useBottomSheet, useBottomSheetContext } from './context';

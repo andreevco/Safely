@@ -1,1 +1,1 @@
-export { AssetCell } from './AssetCell';
+export { AssetCell, AssetCellSkeleton } from './AssetCell';
