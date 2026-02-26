@@ -26,10 +26,11 @@ export const Text = (props: TextProps) => {
         ...rest
     } = props;
     const { theme } = useUnistyles();
+    const hasSkeleton = skeleton || skeletonWidth !== undefined || skeletonColor !== undefined;
 
     styles.useVariants({ variant, textAlign, color, monospace, textTransform });
 
-    if (skeleton && !children) {
+    if (hasSkeleton && children === undefined) {
         // TODO: should add config for other variants
         const { height, width } =
             SKELETON_CONFIG[variant as keyof typeof SKELETON_CONFIG] ?? SKELETON_CONFIG.displayL;
