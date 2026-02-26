@@ -2,14 +2,14 @@ import { VaultKeyService } from './crypto/service/vault-key-service';
 import { hex } from './utils/buffer';
 
 export interface ISecretEncryptor {
-    encrypt(plaintext: string): Promise<{ encryptedPayload: string }>;
-    decrypt(encryptedPayload: string): Promise<{ plaintext: string }>;
+    encrypt(plaintext: string): Promise<string>;
+    decrypt(encryptedPayload: string): Promise<string>;
 }
 
 export class SecretEncryptor implements ISecretEncryptor {
     constructor(private readonly vaultKeyService: VaultKeyService) {}
 
-    public async encrypt(plaintext: string): Promise<{ encryptedPayload: string }> {
+    public async encrypt(plaintext: string): Promise<string> {
         const { ciphertext, nonce } = await this.vaultKeyService.encrypt(
             Buffer.from(plaintext, 'utf8')
         );
@@ -18,12 +18,10 @@ export class SecretEncryptor implements ISecretEncryptor {
             nonce,
             ciphertext
         ]);
-        return {
-            encryptedPayload: result.toString('hex')
-        };
+        return result.toString('hex');
     }
 
-    public async decrypt(encryptedPayload: string): Promise<{ plaintext: string }> {
+    public async decrypt(encryptedPayload: string): Promise<string> {
         const data = hex(encryptedPayload);
         const version = data[0];
         if (version !== 0x01) {
@@ -33,8 +31,6 @@ export class SecretEncryptor implements ISecretEncryptor {
         const ciphertext = data.slice(25);
 
         const plaintext = await this.vaultKeyService.decrypt(ciphertext, nonce);
-        return {
-            plaintext: plaintext.toString('utf8')
-        };
+        return plaintext.toString('utf8');
     }
 }

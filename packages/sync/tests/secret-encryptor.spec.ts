@@ -20,14 +20,14 @@ describe('sync machine', () => {
     });
 
     it('should encrypt and decrypt the same message', async () => {
-        const { encryptedPayload } = await secretEncryptor.encrypt('hello world');
+        const encryptedPayload = await secretEncryptor.encrypt('hello world');
         expect(encryptedPayload).not.toEqual('hello world');
-        const { plaintext } = await secretEncryptor.decrypt(encryptedPayload);
+        const plaintext = await secretEncryptor.decrypt(encryptedPayload);
         expect(plaintext).toBe('hello world');
     });
 
     it('should fail on wrong version', async () => {
-        const { encryptedPayload } = await secretEncryptor.encrypt('hello world');
+        const encryptedPayload = await secretEncryptor.encrypt('hello world');
         const data = Buffer.from(encryptedPayload, 'hex');
         data[0] = 0x02; // change version to unsupported one
         const tamperedPayload = data.toString('hex');

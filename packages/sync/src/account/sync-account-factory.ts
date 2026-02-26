@@ -7,7 +7,8 @@ import { ITreeStorage } from '../I-storage';
 import { CreateAccountService } from './create-account-service';
 import { AccountID, SyncAccountRepository } from './sync-account-repository';
 import { getSyncAccountStorage } from './sync-account-storage';
-import { Configuration, ConfigurationParameters } from '../api/generated';
+import { Configuration } from '../api/generated';
+import { SyncApiConfiguration } from '../api/sync-api-configuration';
 import { ed25519_keygen } from '../crypto/ed25519';
 import { OnboardingConnector } from '../onboarding/connector';
 import { accountsApiForOnboarding, NewDeviceOnboarding } from '../onboarding/new-device-onboarding';
@@ -28,7 +29,7 @@ export class SyncAccountFactory<
         encryptedStorage: ITreeStorage;
         secureEncryptedStorage: ITreeStorage;
         structure: S;
-        apiConfiguration?: ConfigurationParameters;
+        apiConfiguration?: SyncApiConfiguration;
     }) {
         this.syncAccountIdRepository = new SyncAccountRepository(opts.storage);
         this.apiConfiguration = new Configuration(opts.apiConfiguration);
