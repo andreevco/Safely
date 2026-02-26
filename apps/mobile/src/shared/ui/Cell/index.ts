@@ -8,8 +8,7 @@ import {
     Value,
     Subvalue,
     Chevron,
-    Checkmark,
-    Skeleton
+    Checkmark
 } from './components';
 
 export const Cell = Object.assign(CellContainer, {
@@ -21,6 +20,5 @@ export const Cell = Object.assign(CellContainer, {
     Value,
     Subvalue,
     Chevron,
-    Checkmark,
-    Skeleton
+    Checkmark
 });

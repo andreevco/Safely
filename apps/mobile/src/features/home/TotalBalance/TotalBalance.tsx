@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import { ellipsisMiddle } from '@safely/core';
 import { useActiveBtcWallet, useNumberFormatter, useTotalBalance } from '@safely/ux';
 
-import { Skeleton, Text } from '@mobile/shared/ui';
+import { Text } from '@mobile/shared/ui';
 import { useCopy } from '@mobile/shared/utils/copy';
 
 import { styles } from './TotalBalance.styles';
@@ -16,15 +16,9 @@ export const TotalBalance = () => {
 
     return (
         <View style={styles.container}>
-            {totalBalance.data ? (
-                <Text textAlign="center" variant="displayL">
-                    {totalBalance.data.format(formatter)}
-                </Text>
-            ) : (
-                <View style={styles.skeletonContainer}>
-                    <Skeleton width={96} height={32} borderRadius={8} />
-                </View>
-            )}
+            <Text textAlign="center" variant="displayL" skeleton>
+                {totalBalance.data?.format(formatter)}
+            </Text>
             <Text
                 onPress={() => handleCopy(activeWallet.address)}
                 textAlign="center"
