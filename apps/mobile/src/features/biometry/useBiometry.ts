@@ -1,8 +1,8 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as LocalAuthentication from 'expo-local-authentication';
 import z from 'zod';
 
-import { useSharedUnstructuredStorage, useSuspenseQuery } from '@safely/ux';
+import { useSharedUnstructuredStorage } from '@safely/ux';
 
 import { StorageKey } from '@mobile/shared/constants';
 
@@ -40,13 +40,13 @@ async function getAvailableBiometryType(): Promise<BiometryType | null> {
     }
 }
 
-export function useBiometry() {
+export function useBiometryQuery() {
     const { get: storageGet } = useSharedUnstructuredStorage(
         StorageKey.BIOMETRY_ENABLED,
         sBiometryEnabled
     );
 
-    return useSuspenseQuery({
+    return useQuery({
         queryKey: biometryKeys.state.toKey(),
         queryFn: async () => {
             const availableType = await getAvailableBiometryType();
@@ -54,7 +54,7 @@ export function useBiometry() {
             return { availableType, isEnabled };
         },
         staleTime: Infinity
-    }).data;
+    });
 }
 
 export function useSetBiometryEnabled() {
