@@ -74,7 +74,7 @@ export const PasscodeContent = (props: PasscodeContentProps) => {
 
             setTimeout(() => {
                 navigation.goBack();
-                onSuccess();
+                setTimeout(onSuccess, 100);
             }, 300);
         } else {
             await recordFailedAttempt();
