@@ -148,12 +148,12 @@ export const SlideButton = (props: SlideButtonProps) => {
         translateX
     ]);
 
-    const primaryBg = theme.colors.button.primary.background;
-    const tertiaryBg = theme.colors.button.tertiary.background;
+    const activeBg = knobColor ?? theme.colors.button.primary.background;
+    const inactiveBg = theme.colors.button.tertiary.background;
 
     const knobStyle = useAnimatedStyle(() => ({
         transform: [{ translateX: translateX.value }],
-        backgroundColor: interpolateColor(inactiveProgress.value, [0, 1], [primaryBg, tertiaryBg])
+        backgroundColor: interpolateColor(inactiveProgress.value, [0, 1], [activeBg, inactiveBg])
     }));
 
     const iconPrimaryOpacityStyle = useAnimatedStyle(() => ({
@@ -219,19 +219,13 @@ export const SlideButton = (props: SlideButtonProps) => {
 
             <GestureDetector gesture={panGesture}>
                 <Animated.View style={styles.knobWrapper}>
-                    <Animated.View
-                        style={[
-                            styles.knob,
-                            knobStyle,
-                            knobColor != null ? { backgroundColor: knobColor } : null
-                        ]}
-                    >
+                    <Animated.View style={[styles.knob, knobStyle]}>
                         {loading ? (
                             <Animated.View style={loaderStyle}>
                                 <Icon icon={Loader28} color="primary" />
                             </Animated.View>
                         ) : (
-                            <>
+                            <View>
                                 <Animated.View
                                     style={[
                                         StyleSheet.absoluteFillObject,
@@ -250,7 +244,7 @@ export const SlideButton = (props: SlideButtonProps) => {
                                 >
                                     <Icon icon={ArrowRight28} color="secondary" />
                                 </Animated.View>
-                            </>
+                            </View>
                         )}
                     </Animated.View>
                 </Animated.View>
