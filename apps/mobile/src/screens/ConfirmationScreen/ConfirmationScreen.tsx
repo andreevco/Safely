@@ -128,7 +128,7 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
                                 formatter
                             )}
                         />
-                        {!!txTemplate && <TransactionFee estimation={txTemplate.estimation} />}
+                        <TransactionFee estimation={txTemplate?.estimation} />
                     </List.Group>
                     {!!sendResult && (
                         <List.Group style={styles.listGroup}>

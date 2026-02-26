@@ -16,7 +16,7 @@ export type TransactionCellProps = TouchableHighlightProps & {
     value?: React.ReactNode;
     valueStyle?: StyleProp<TextStyle>;
     valueProps?: TextProps;
-    subvalue?: string;
+    subvalue?: React.ReactNode;
     subvalueProps?: TextProps;
     onPress?: () => void;
 };
@@ -58,26 +58,16 @@ export const TransactionCell = (props: TransactionCellProps) => {
                     {(value !== undefined || subvalue !== undefined) && (
                         <View style={styles.valueContainer}>
                             {typeof value === 'string' ? (
-                                <Text
-                                    numberOfLines={1}
-                                    variant="bodyM"
-                                    style={valueStyle}
-                                    {...valueProps}
-                                >
+                                <TransactionCell.Value style={valueStyle} {...valueProps}>
                                     {value}
-                                </Text>
+                                </TransactionCell.Value>
                             ) : (
                                 value
                             )}
                             {typeof subvalue === 'string' ? (
-                                <Text
-                                    numberOfLines={1}
-                                    variant="bodyM"
-                                    color="tertiary"
-                                    {...subvalueProps}
-                                >
+                                <TransactionCell.Subvalue {...subvalueProps}>
                                     {subvalue}
-                                </Text>
+                                </TransactionCell.Subvalue>
                             ) : (
                                 subvalue
                             )}
@@ -88,3 +78,9 @@ export const TransactionCell = (props: TransactionCellProps) => {
         </TouchableHighlight>
     );
 };
+
+TransactionCell.Subvalue = (props: TextProps) => (
+    <Text numberOfLines={1} variant="bodyM" color="tertiary" {...props} />
+);
+
+TransactionCell.Value = (props: TextProps) => <Text numberOfLines={1} variant="bodyM" {...props} />;
