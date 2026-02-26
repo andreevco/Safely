@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 
+import { ISyncAccount } from '../../src/account/I-sync-account';
 import { SyncAccountFactory } from '../../src/account/sync-account-factory';
 import { InMemStorage } from '../impl/storage';
 
@@ -29,6 +30,17 @@ function makeFactory() {
     });
 }
 
+async function onboardDevice(
+    existingAccount: ISyncAccount<typeof Schema>
+): Promise<ISyncAccount<typeof Schema>> {
+    const factoryDevice2 = makeFactory();
+    const onboardingConnector = await factoryDevice2.connectToExistingSyncAccount();
+    const promise1 = existingAccount.connectToNewDevice(onboardingConnector.data);
+    const promise2 = onboardingConnector.waitForCompletion();
+    const [_, newAccount] = await Promise.all([promise1, promise2]);
+    return newAccount;
+}
+
 describe('Account', () => {
     let factory: SyncAccountFactory<typeof Schema>;
 
@@ -37,22 +49,23 @@ describe('Account', () => {
     });
 
     it('create account', async () => {
-        const account = await factory.createOfflineSyncAccount();
+        const account = await factory.createSyncAccount();
 
         const devices = await account.getDevices();
         expect(devices).toHaveLength(1);
     });
 
     it('makes account online', async () => {
-        const account = await factory.createOfflineSyncAccount();
-        await factory.makeOfflineAccountOnline(account.accountId);
+        const account = await factory.createSyncAccount();
+        await onboardDevice(account);
+        expect(account.syncProvider.type).toBe('online');
     });
 
     it('should sync data with server', async () => {
-        const account = await factory.createOfflineSyncAccount();
-        const onlineAccount = await factory.makeOfflineAccountOnline(account.accountId);
+        const account = await factory.createSyncAccount();
+        await onboardDevice(account);
 
-        await onlineAccount.syncProvider.set('wallets', [
+        await account.syncProvider.set('wallets', [
             {
                 name: 'My Wallet',
                 mnemonic: 'test'
@@ -63,16 +76,10 @@ describe('Account', () => {
     });
 
     it('should onboard new device', async () => {
-        const account = await factory.createOfflineSyncAccount();
-        const onlineAccount = await factory.makeOfflineAccountOnline(account.accountId);
+        const account = await factory.createSyncAccount();
+        const onlineAccount2 = await onboardDevice(account);
 
-        const factoryDevice2 = makeFactory();
-        const onboardingConnector = await factoryDevice2.connectToExistingSyncAccount();
-        const promise1 = onlineAccount.connectToNewDevice(onboardingConnector.data);
-        const promise2 = onboardingConnector.waitForCompletion();
-        const [_, onlineAccount2] = await Promise.all([promise1, promise2]);
-
-        await onlineAccount.syncProvider.set('wallets', [
+        await account.syncProvider.set('wallets', [
             {
                 name: 'My Wallet',
                 mnemonic: 'test'
@@ -91,7 +98,7 @@ describe('Account', () => {
     });
 
     it('should delete offline account', async () => {
-        const account = await factory.createOfflineSyncAccount();
+        const account = await factory.createSyncAccount();
         await factory.deleteLocalAccount(account.accountId);
 
         const accounts = await factory.getSyncAccounts();
@@ -100,8 +107,8 @@ describe('Account', () => {
 
     // TODO: this test emits error
     it('should delete online account', async () => {
-        const account = await factory.createOfflineSyncAccount();
-        await factory.makeOfflineAccountOnline(account.accountId);
+        const account = await factory.createSyncAccount();
+        await onboardDevice(account);
         await new Promise(resolve => setTimeout(resolve, 200));
 
         await factory.deleteLocalAccount(account.accountId);

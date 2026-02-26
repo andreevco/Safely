@@ -59,19 +59,18 @@ export class AccountManager<S extends Record<string, ZodType>> {
             apiConfiguration: this.apiConfiguration
         });
 
-        if (accountInfo.online) {
-            return new SyncAccount(
-                accountInfo.accountId,
-                await OnlineSyncProvider.create(this.structure, container),
-                container
-            );
-        } else {
-            return new SyncAccount(
-                accountInfo.accountId,
-                new OfflineSyncProvider(this.structure, container),
-                container
-            );
-        }
+        const syncProvider = accountInfo.online
+            ? await OnlineSyncProvider.create(this.structure, container)
+            : new OfflineSyncProvider(this.structure, container);
+
+        return new SyncAccount({
+            accountId: accountInfo.accountId,
+            structure: this.structure,
+            syncProvider,
+            container,
+            syncAccountRepository: this.syncAccountIdRepository,
+            online: accountInfo.online
+        });
     }
 
     public async createOfflineAccount(): Promise<ISyncAccount<S>> {

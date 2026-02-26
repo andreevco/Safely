@@ -51,11 +51,14 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
             ikPub: await container.ikService.getPub()
         });
 
-        return new SyncAccount(
-            accountID,
-            new OfflineSyncProvider(this.structure, container),
-            container
-        );
+        return new SyncAccount({
+            accountId: accountID,
+            structure: this.structure,
+            syncProvider: new OfflineSyncProvider(this.structure, container),
+            container,
+            syncAccountRepository: this.syncAccountIDRepository,
+            online: false
+        });
     }
 
     public async createOnlineAccountFromMasterKey(
@@ -88,10 +91,13 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
             apiConfiguration: this.apiConfiguration
         });
 
-        return new SyncAccount(
-            accountID,
-            await OnlineSyncProvider.create(this.structure, container),
-            container
-        );
+        return new SyncAccount({
+            accountId: accountID,
+            structure: this.structure,
+            syncProvider: await OnlineSyncProvider.create(this.structure, container),
+            container,
+            syncAccountRepository: this.syncAccountIDRepository,
+            online: true
+        });
     }
 }
