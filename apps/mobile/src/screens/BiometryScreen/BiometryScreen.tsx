@@ -2,7 +2,7 @@ import React, { FC, useCallback, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Platform, View } from 'react-native';
 
-import { useBiometry, useSetBiometryEnabled, BiometryType } from '@mobile/features/biometry';
+import { useBiometryQuery, useSetBiometryEnabled, BiometryType } from '@mobile/features/biometry';
 import { useOnboardingFlow } from '@mobile/features/onboarding';
 import {
     Button,
@@ -18,16 +18,16 @@ import { styles } from './BiometryScreen.styles';
 
 export const BiometryScreen = () => {
     const { onBiometryFinished } = useOnboardingFlow();
-    const biometry = useBiometry();
+    const { data: biometry, isLoading } = useBiometryQuery();
     const { mutateAsync: setBiometryEnabled } = useSetBiometryEnabled();
 
     useEffect(() => {
-        if (biometry.availableType === null) {
+        if (biometry?.availableType === null) {
             onBiometryFinished();
         }
     }, [biometry?.availableType, onBiometryFinished]);
 
-    if (!biometry) {
+    if (isLoading || !biometry) {
         return (
             <Screen>
                 <Screen.Header variant="left">

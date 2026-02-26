@@ -1,5 +1,5 @@
 export {
-    useBiometry,
+    useBiometryQuery,
     useSetBiometryEnabled,
     authenticateBiometry,
     BiometryType

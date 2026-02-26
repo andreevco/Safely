@@ -10,7 +10,7 @@ import { RootStackNavigationProp, SettingsStackNavigationProp } from '@mobile/ap
 import { PortfolioName } from '@mobile/entities/portfolio';
 import {
     getBiometryTranslationKey,
-    useBiometry,
+    useBiometryQuery,
     useSetBiometryEnabled
 } from '@mobile/features/biometry';
 import { Cell, List, Screen, Switch } from '@mobile/shared/ui';
@@ -20,7 +20,7 @@ import { styles } from './SecurityScreen.styles';
 
 export const SecurityScreen = () => {
     const { t } = useTranslation();
-    const biometry = useBiometry();
+    const { data: biometry } = useBiometryQuery();
     const { mutateAsync: setBiometryEnabled } = useSetBiometryEnabled();
     const check = useSecurityCheck();
     const portfolio = useActivePortfolio();
@@ -30,7 +30,9 @@ export const SecurityScreen = () => {
     const [lockScreenEnabled, setLockScreenEnabled] = useState(false);
 
     const handleBiometryToggle = async () => {
-        await setBiometryEnabled(!biometry.isEnabled);
+        if (biometry) {
+            await setBiometryEnabled(!biometry.isEnabled);
+        }
     };
 
     const handleSelectWallet = () => {
