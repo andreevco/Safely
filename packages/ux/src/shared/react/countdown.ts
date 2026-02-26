@@ -28,7 +28,7 @@ export function useCountdown(initial: number, options?: UseCountdownOptions): nu
     return useReactiveCountdown(initialRef.current, options);
 }
 
-export function useCountdownTo(timestamp: number | null): number {
+export function useCountdownToTimestamp(timestamp: number | null): number {
     const cache = useRef({
         timestamp,
         seconds: timestamp ? Math.ceil((timestamp - Date.now()) / 1000) : 0
