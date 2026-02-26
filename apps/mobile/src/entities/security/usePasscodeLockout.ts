@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import {
     useReactiveCountdown,
@@ -35,7 +35,10 @@ export function usePasscodeLockout() {
     });
 
     const lockedUntil = data.lockedUntil;
-    const initialSeconds = lockedUntil ? Math.ceil((lockedUntil - Date.now()) / 1000) : 0;
+    const initialSeconds = useMemo(
+        () => (lockedUntil ? Math.ceil((lockedUntil - Date.now()) / 1000) : 0),
+        [lockedUntil]
+    );
     const remainingSeconds = useReactiveCountdown(initialSeconds);
 
     const isLocked = remainingSeconds > 0;
