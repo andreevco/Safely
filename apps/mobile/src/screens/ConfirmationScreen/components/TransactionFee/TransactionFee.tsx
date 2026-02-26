@@ -1,7 +1,6 @@
 import { FC } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
-import { useUnistyles } from 'react-native-unistyles';
 
 import { Estimation } from '@safely/core';
 import { useFiatEquivalent, useNumberFormatter } from '@safely/ux';
@@ -15,7 +14,6 @@ const btcBlockWaitingTimeMinutes = 10;
 
 export const TransactionFee: FC<{ estimation: Estimation | undefined }> = ({ estimation }) => {
     const { t } = useTranslation();
-    const { theme } = useUnistyles();
 
     const targetBlock = estimation ? Math.max(estimation.txTargetBlock, 1) : undefined;
 
@@ -28,16 +26,13 @@ export const TransactionFee: FC<{ estimation: Estimation | undefined }> = ({ est
                 ) : (
                     <Text
                         variant="bodyM"
-                        skeletonColor={theme.colors.other.transparentElement}
+                        skeletonVariant="transparentElement"
                         skeletonWidth={100}
                     />
                 )
             }
             subvalue={
-                <TransactionCell.Subvalue
-                    skeletonColor={theme.colors.other.transparentElement}
-                    skeletonWidth={64}
-                >
+                <TransactionCell.Subvalue skeletonVariant="transparentElement" skeletonWidth={64}>
                     {targetBlock !== undefined
                         ? t('confirmation.networkFee.timeMinutes', {
                               count: targetBlock * btcBlockWaitingTimeMinutes

@@ -1,5 +1,3 @@
-import { useUnistyles } from 'react-native-unistyles';
-
 import { Text, TextProps } from '@mobile/shared/ui/Text';
 
 import { useCellContext } from '../../CellContext';
@@ -7,14 +5,13 @@ import { useCellContext } from '../../CellContext';
 export const Title = (props: TextProps) => {
     const { children, ...rest } = props;
     const cellContext = useCellContext();
-    const { theme } = useUnistyles();
 
     return (
         <Text
             numberOfLines={1}
             variant="labelL"
             color="primary"
-            skeletonColor={theme.colors.other.transparentElement}
+            skeletonVariant="transparentElement"
             skeleton={cellContext.skeleton}
             {...rest}
         >
@@ -26,14 +23,13 @@ export const Title = (props: TextProps) => {
 export const Subtitle = (props: TextProps) => {
     const { children, ...rest } = props;
     const cellContext = useCellContext();
-    const { theme } = useUnistyles();
 
     return (
         <Text
             numberOfLines={1}
             variant="bodyM"
             color="secondary"
-            skeletonColor={theme.colors.other.transparentElement}
+            skeletonVariant="transparentElement"
             skeleton={cellContext.skeleton}
             {...rest}
         >
@@ -45,14 +41,13 @@ export const Subtitle = (props: TextProps) => {
 export const Value = (props: TextProps) => {
     const { children, ...rest } = props;
     const cellContext = useCellContext();
-    const { theme } = useUnistyles();
 
     return (
         <Text
             numberOfLines={1}
             variant="labelL"
             color="primary"
-            skeletonColor={theme.colors.other.transparentElement}
+            skeletonVariant="transparentElement"
             skeleton={cellContext.skeleton}
             {...rest}
         >
@@ -64,14 +59,13 @@ export const Value = (props: TextProps) => {
 export const Subvalue = (props: TextProps) => {
     const { children, ...rest } = props;
     const cellContext = useCellContext();
-    const { theme } = useUnistyles();
 
     return (
         <Text
             numberOfLines={1}
             variant="bodyM"
             color="tertiary"
-            skeletonColor={theme.colors.other.transparentElement}
+            skeletonVariant="transparentElement"
             skeleton={cellContext.skeleton}
             {...rest}
         >
