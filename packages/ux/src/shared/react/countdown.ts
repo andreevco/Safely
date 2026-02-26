@@ -27,3 +27,19 @@ export function useCountdown(initial: number, options?: UseCountdownOptions): nu
     const initialRef = useRef(initial);
     return useReactiveCountdown(initialRef.current, options);
 }
+
+export function useCountdownToTimestamp(timestamp: number | null): number {
+    const cache = useRef({
+        timestamp,
+        seconds: timestamp ? Math.ceil((timestamp - Date.now()) / 1000) : 0
+    });
+
+    if (cache.current.timestamp !== timestamp) {
+        cache.current = {
+            timestamp,
+            seconds: timestamp ? Math.ceil((timestamp - Date.now()) / 1000) : 0
+        };
+    }
+
+    return useReactiveCountdown(cache.current.seconds);
+}
