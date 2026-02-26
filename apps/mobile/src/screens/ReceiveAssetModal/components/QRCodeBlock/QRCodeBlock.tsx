@@ -1,10 +1,10 @@
 import { useCallback } from 'react';
-import { TouchableOpacity, View } from 'react-native';
+import { View } from 'react-native';
 import QRCode from 'react-native-qrcode-skia';
 
 import { type CryptoAsset } from '@safely/core';
 
-import { Text, Image } from '@mobile/shared/ui';
+import { Text, Image, TouchableOpacity } from '@mobile/shared/ui';
 import { useCopy } from '@mobile/shared/utils/copy';
 
 import { styles } from './QRCodeBlock.styles';

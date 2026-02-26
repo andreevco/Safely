@@ -15,7 +15,7 @@ export const Group = (props: GroupProps) => {
     styles.useVariants({ variant, withoutBottomMargin });
 
     const content = useMemo(() => {
-        const items = Children.toArray(children);
+        const items = Children.toArray(children).filter(child => !!child);
 
         switch (variant) {
             case 'divided':

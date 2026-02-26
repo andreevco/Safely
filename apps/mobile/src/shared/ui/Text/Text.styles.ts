@@ -119,5 +119,42 @@ export const styles = StyleSheet.create(theme => ({
                 }
             }
         }
+    },
+    skeletonContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        variants: {
+            // TODO: boring, maybe it's better to split complex styles with tons of variants into separate Stylesheet.create
+            monospace: {},
+            textTransform: {},
+            textAlign: {},
+            color: {},
+            variant: {
+                displayL: {
+                    height: 56
+                },
+                labelL: {
+                    height: 24
+                },
+                bodyM: {
+                    height: 20
+                }
+            }
+        }
     }
 }));
+
+export const SKELETON_CONFIG = {
+    displayL: {
+        height: 32,
+        width: 96
+    },
+    labelL: {
+        height: 16,
+        width: 64
+    },
+    bodyM: {
+        height: 14,
+        width: 48
+    }
+};
