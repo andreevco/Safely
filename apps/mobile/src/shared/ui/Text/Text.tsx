@@ -9,6 +9,7 @@ export type TextProps = RNTextProps &
     UnistylesVariants<typeof styles> & {
         skeleton?: boolean;
         skeletonColor?: string;
+        skeletonWidth?: number;
     };
 
 export const Text = (props: TextProps) => {
@@ -21,6 +22,7 @@ export const Text = (props: TextProps) => {
         textTransform,
         skeleton,
         skeletonColor,
+        skeletonWidth,
         ...rest
     } = props;
     const { theme } = useUnistyles();
@@ -34,7 +36,7 @@ export const Text = (props: TextProps) => {
         return (
             <View style={styles.skeletonContainer}>
                 <Skeleton
-                    width={width}
+                    width={skeletonWidth ?? width}
                     height={height}
                     borderRadius={theme.radius.sm}
                     color={skeletonColor}
