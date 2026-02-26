@@ -1,12 +1,12 @@
 import { useCallback } from 'react';
 
-import { authenticateBiometry, useBiometryQuery } from '@mobile/features/biometry';
+import { authenticateBiometry, useBiometry } from '@mobile/features/biometry';
 
 import { PromptAndCheckOptions } from './types';
 import { usePasscode } from './usePasscode';
 
 export function useMobileSecurityCheck() {
-    const { data: biometry } = useBiometryQuery();
+    const biometry = useBiometry();
     const passcode = usePasscode();
 
     return useCallback(
@@ -14,7 +14,7 @@ export function useMobileSecurityCheck() {
             if (!passcode.isSet) {
                 throw new Error('Passcode is not set');
             }
-            if (biometry?.isEnabled) {
+            if (biometry.isEnabled) {
                 const result = await authenticateBiometry();
                 if (result.success) {
                     return;
@@ -22,6 +22,6 @@ export function useMobileSecurityCheck() {
             }
             await passcode.promptAndCheck(options);
         },
-        [biometry?.isEnabled, passcode.isSet, passcode.promptAndCheck]
+        [biometry.isEnabled, passcode.isSet, passcode.promptAndCheck]
     );
 }

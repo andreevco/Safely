@@ -13,10 +13,11 @@ interface Props {
     onSend: () => void;
     onGoBack: () => void;
     state: ConfirmationState;
+    isEstimating: boolean;
 }
 
 export const ConfirmationFooter = (props: Props) => {
-    const { onSend, onGoBack, state } = props;
+    const { onSend, onGoBack, state, isEstimating } = props;
     const { t } = useTranslation();
 
     const parseError = useParseError(
@@ -32,7 +33,12 @@ export const ConfirmationFooter = (props: Props) => {
                 <Animated.View exiting={FadeOut.duration(150)}>
                     <SlideButton
                         label={t('confirmation.slider.confirm')}
-                        description={t('confirmation.slider.slideToSend')}
+                        description={
+                            isEstimating
+                                ? t('confirmation.slider.estimatingFee')
+                                : t('confirmation.slider.slideToSend')
+                        }
+                        disabled={isEstimating}
                         loading={state.type === 'sending'}
                         onSlideComplete={onSend}
                     />
