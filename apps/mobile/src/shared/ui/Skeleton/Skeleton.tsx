@@ -1,12 +1,12 @@
-import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect } from 'react';
-import { View, ViewStyle } from 'react-native';
+import { ViewStyle } from 'react-native';
 import Animated, {
     useSharedValue,
     useAnimatedStyle,
     withRepeat,
     withTiming,
-    Easing
+    Easing,
+    interpolateColor
 } from 'react-native-reanimated';
 import { useUnistyles } from 'react-native-unistyles';
 
@@ -15,54 +15,56 @@ import { styles } from './Skeleton.styles';
 type SkeletonProps = {
     width: number;
     height: number;
-    color?: string;
     borderRadius?: number;
     style?: ViewStyle;
+    variant?: 'transparentElement' | 'secondary';
 };
 
-const SHIMMER_DURATION = 2000;
+const PULSE_DURATION = 600;
 
-export const Skeleton = ({ width, height, color, borderRadius, style }: SkeletonProps) => {
+export const Skeleton = ({
+    width,
+    height,
+    borderRadius,
+    variant = 'secondary',
+    style
+}: SkeletonProps) => {
     const { theme } = useUnistyles();
-    const translateX = useSharedValue(-width);
+    const progress = useSharedValue(0);
 
-    // TODO: ask Alexey, is it okay to mix tranparentElement and transparentElement colors?
-    const shimmerColor = theme.colors.other.transparentElement;
+    const colors = {
+        transparentElement: {
+            start: theme.colors.other.transparentElement,
+            end: 'rgba(255, 255, 255, 0.12)'
+        },
+        secondary: {
+            start: theme.colors.background.secondary,
+            end: theme.colors.background.tertiary
+        }
+    };
 
     useEffect(() => {
-        translateX.value = withRepeat(
-            withTiming(width, {
-                duration: SHIMMER_DURATION,
+        progress.value = withRepeat(
+            withTiming(1, {
+                duration: PULSE_DURATION,
                 easing: Easing.inOut(Easing.ease)
             }),
-            Infinity
+            Infinity,
+            true
         );
-    }, [translateX, width]);
+    }, [progress]);
 
-    const shimmerStyle = useAnimatedStyle(() => ({
-        transform: [{ translateX: translateX.value }]
+    const animatedStyle = useAnimatedStyle(() => ({
+        backgroundColor: interpolateColor(
+            progress.value,
+            [0, 1],
+            [colors[variant].start, colors[variant].end]
+        )
     }));
 
     return (
-        <View
-            style={[
-                styles.skeleton({
-                    width,
-                    height,
-                    borderRadius,
-                    backgroundColor: color
-                }),
-                style
-            ]}
-        >
-            <Animated.View style={[{ width, height, position: 'absolute' }, shimmerStyle]}>
-                <LinearGradient
-                    colors={['transparent', shimmerColor, 'transparent']}
-                    start={{ x: 0, y: 0.5 }}
-                    end={{ x: 1, y: 0.5 }}
-                    style={{ width, height }}
-                />
-            </Animated.View>
-        </View>
+        <Animated.View
+            style={[styles.skeleton({ width, height, borderRadius }), animatedStyle, style]}
+        />
     );
 };

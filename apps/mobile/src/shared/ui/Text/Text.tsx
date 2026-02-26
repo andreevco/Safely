@@ -8,7 +8,7 @@ import { SKELETON_CONFIG } from './Text.styles';
 export type TextProps = RNTextProps &
     UnistylesVariants<typeof styles> & {
         skeleton?: boolean;
-        skeletonColor?: string;
+        skeletonVariant?: 'transparentElement' | 'secondary';
         skeletonWidth?: number;
     };
 
@@ -21,12 +21,12 @@ export const Text = (props: TextProps) => {
         monospace,
         textTransform,
         skeleton,
-        skeletonColor,
+        skeletonVariant,
         skeletonWidth,
         ...rest
     } = props;
     const { theme } = useUnistyles();
-    const hasSkeleton = skeleton || skeletonWidth !== undefined || skeletonColor !== undefined;
+    const hasSkeleton = skeleton || skeletonWidth !== undefined || skeletonVariant !== undefined;
 
     styles.useVariants({ variant, textAlign, color, monospace, textTransform });
 
@@ -40,7 +40,7 @@ export const Text = (props: TextProps) => {
                     width={skeletonWidth ?? width}
                     height={height}
                     borderRadius={theme.radius.sm}
-                    color={skeletonColor}
+                    variant={skeletonVariant ?? 'secondary'}
                 />
             </View>
         );
