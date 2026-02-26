@@ -136,7 +136,12 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
                         </List.Group>
                     )}
                 </List>
-                <ConfirmationFooter onSend={onSend} onGoBack={onGoBack} state={confirmationState} />
+                <ConfirmationFooter
+                    onSend={onSend}
+                    onGoBack={onGoBack}
+                    state={confirmationState}
+                    isEstimating={!txTemplate}
+                />
             </View>
         </Screen>
     );
