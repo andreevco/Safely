@@ -21,7 +21,7 @@ export interface ISyncAccount<S extends Record<string, ZodType>> {
 
     /**
      * Connects a new device to the sync account using the provided onboarding data.
-     * Account must be 'online' when calling this method, otherwise it will throw an error.
+     * If the account is offline, it will be promoted to online automatically.
      * @param data
      */
     connectToNewDevice(data: Buffer): Promise<void>;
