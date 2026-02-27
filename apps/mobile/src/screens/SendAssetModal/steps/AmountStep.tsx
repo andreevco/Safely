@@ -1,10 +1,12 @@
+import { Ref, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { TouchableOpacity, View } from 'react-native';
+import { Keyboard, TouchableOpacity, View } from 'react-native';
+import { MaskedTextInputRef } from 'react-native-advanced-input-mask';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
 import { Text } from '@mobile/shared/ui/Text';
 
-import { AmountInput, AssetSelector } from '../components';
+import { AmountInput, AmountStatus, AssetSelector } from '../components';
 import { styles } from './AmountStep.styles';
 
 interface AmountStepProps {
@@ -12,6 +14,7 @@ interface AmountStepProps {
     onChangeText: (value: string) => void;
     isMax: boolean;
     onMaxPress: () => void;
+    onMaxReset: () => void;
     isMaxAvailable?: boolean;
     remainingBalance?: string;
     hasInsufficientBalance?: boolean;
@@ -19,6 +22,7 @@ interface AmountStepProps {
     onSwitchFiatMode?: () => void;
     currencySymbol?: string;
     mask: string;
+    inputRef?: Ref<MaskedTextInputRef>;
 }
 
 export const AmountStep = (props: AmountStepProps) => {
@@ -27,23 +31,40 @@ export const AmountStep = (props: AmountStepProps) => {
         onChangeText,
         isMax,
         onMaxPress,
+        onMaxReset,
         isMaxAvailable = true,
         remainingBalance,
         hasInsufficientBalance,
         formattedAlternativeAmount,
         onSwitchFiatMode,
         currencySymbol,
-        mask
+        mask,
+        inputRef
     } = props;
+
     const { t } = useTranslation();
+
+    const handleMaxPress = useCallback(() => {
+        Keyboard.dismiss();
+        onMaxPress();
+    }, [onMaxPress]);
+
+    const handleFocus = useCallback(() => {
+        if (isMax) {
+            onMaxReset();
+        }
+    }, [isMax, onMaxReset]);
 
     return (
         <View style={styles.container}>
             <AmountInput
+                ref={inputRef}
                 mask={mask}
                 value={value}
                 onChangeText={onChangeText}
+                onFocus={handleFocus}
                 placeholder="0"
+                isMax={isMax}
                 label={t('send.amount')}
                 errored={hasInsufficientBalance}
                 formattedAlternativeAmount={formattedAlternativeAmount}
@@ -52,21 +73,15 @@ export const AmountStep = (props: AmountStepProps) => {
                 RightComponent={<AssetSelector />}
             />
             <View style={styles.remainingContainer}>
-                {hasInsufficientBalance ? (
-                    <Text variant="bodyM" color="accentRed">
-                        {t('send.insufficientBalance')}
-                    </Text>
-                ) : (
-                    <Text variant="bodyM" color="tertiary" monospace>
-                        {remainingBalance
-                            ? t('send.remaining', { amount: remainingBalance, symbol: '' })
-                            : ' '}
-                    </Text>
-                )}
+                <AmountStatus
+                    isMax={isMax}
+                    hasInsufficientBalance={hasInsufficientBalance}
+                    remainingBalance={remainingBalance}
+                />
                 {!isMax && isMaxAvailable && (
                     <Animated.View entering={FadeIn.duration(100)} exiting={FadeOut.duration(100)}>
-                        <TouchableOpacity onPress={onMaxPress}>
-                            <Text variant="bodyM" color="tertiary">
+                        <TouchableOpacity onPress={handleMaxPress}>
+                            <Text variant="bodyM" color="secondary">
                                 {t('send.max')}
                             </Text>
                         </TouchableOpacity>

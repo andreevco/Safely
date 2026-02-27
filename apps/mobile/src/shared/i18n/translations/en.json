@@ -17,6 +17,7 @@
         },
         "amount": "Amount",
         "max": "Send all",
+        "maxHint": "All available balance will be sent. Fee included.",
         "remaining": "Remaining: {{amount}}{{symbol}}",
         "insufficientBalance": "Insufficient balance"
     },
@@ -27,6 +28,14 @@
         "switchToFour": "Use 4-digit passcode",
         "verify": {
             "title": "Enter passcode"
+        },
+        "lockout": {
+            "title": "Too many attempts",
+            "subtitleHours_one": "Try again in {{count}} hour",
+            "subtitleHours_other": "Try again in {{count}} hours",
+            "subtitleMinutes_one": "Try again in {{count}} minute",
+            "subtitleMinutes_other": "Try again in {{count}} minutes",
+            "signOut": "Log out"
         }
     },
     "changePasscode": {
@@ -102,7 +111,7 @@
         "title": "Security",
         "recoverySheet": {
             "title": "Recovery phrase",
-            "description": "The recovery phrase is used to back up your\u00A0wallet.",
+            "description": "The recovery phrase is used to back up your wallet.",
             "warning1": "Sharing it gives full control over your wallet.",
             "warning2": "Anyone with it can use your wallet without your account.",
             "cancel": "Cancel",
@@ -110,7 +119,7 @@
         },
         "phraseSheet": {
             "title": "Recovery phrase",
-            "warning": "Do not share this phrase.\nAnyone with it can access your\u00A0wallet.",
+            "warning": "Do not share this phrase.\nAnyone with it can access your wallet.",
             "copy": "Copy"
         },
         "groups": {
@@ -125,7 +134,7 @@
                 "title": "Application",
                 "faceId": {
                     "title": "Face ID",
-                    "subtitle": "Unlock securely with a glance. No\u00a0password\u00a0needed."
+                    "subtitle": "Unlock securely with a glance. No password needed."
                 },
                 "lockScreen": {
                     "title": "Lock screen",
@@ -165,7 +174,7 @@
                 "title": "Status",
                 "created": {
                     "value": "Created",
-                    "description": "Not broadcast yet"
+                    "description": "Not yet confirmed"
                 }
             },
             "transaction": "Transaction"
@@ -173,11 +182,12 @@
         "slider": {
             "confirm": "Confirm",
             "slideToSend": "Slide to send",
+            "estimatingFee": "Estimating fee…",
             "backToWallet": "Back to Wallet"
         },
         "sendError": {
-            "title": "Send error",
-            "default": "Failed to send the transaction. Please try again.",
+            "title": "Can't send transaction",
+            "default": "Check details and try again",
             "btc": {
                 "dust": "Transaction value is too small."
             }
@@ -198,10 +208,10 @@
     },
     "welcome": {
         "title": "Safely",
-        "subtitle": "Your personal wallet. Receive, buy\u00a0and\u00a0spend\u00a0crypto\u00a0with\u00a0ease.",
+        "subtitle": "Your personal wallet. Receive, buy and spend crypto with ease.",
         "createNew": "Create new account",
         "importExisting": "Sign in",
-        "legal": "By using Safely, you agree to accept our\u00a0<terms>Terms\u00a0of\u00a0Use</terms>\u00a0and\u00a0<privacy>Privacy\u00a0Policy</privacy>."
+        "legal": "By using Safely, you agree to accept our <terms>Terms of Use</terms> and <privacy>Privacy Policy</privacy>."
     },
     "onboarding": {
         "recoveryPhrase": {
@@ -231,7 +241,7 @@
         },
         "notifications": {
             "title": "Notifications",
-            "description": "Get alerts when funds arrive.\nNo\u00a0need\u00a0to\u00a0check\u00a0manually.",
+            "description": "Get alerts when funds arrive.\nNo need to check manually.",
             "enable": "Enable notifications"
         },
         "accountCreated": {
@@ -245,6 +255,9 @@
             "addDevice": "Add device",
             "protectLater": "Protect account later"
         }
+    },
+    "compactAccountSelector": {
+        "addOrEdit": "Add or Edit"
     },
     "addWallet": {
         "title": "Add Wallet",
@@ -271,7 +284,7 @@
         "face": {
             "ios": {
                 "title": "Face ID",
-                "description": "Unlock securely with a glance. No\u00a0password\u00a0needed."
+                "description": "Unlock securely with a glance. No password needed."
             },
             "other": {
                 "title": "Face recognition",
@@ -281,7 +294,7 @@
         "fingerprint": {
             "ios": {
                 "title": "Touch ID",
-                "description": "Unlock securely with your fingerprint. No\u00a0password\u00a0needed."
+                "description": "Unlock securely with your fingerprint. No password needed."
             },
             "other": {
                 "title": "Fingerprint unlock",
@@ -304,7 +317,6 @@
                 "title": "Info",
                 "options": {
                     "support": "Support",
-                    "faq": "FAQ",
                     "rate": "Rate",
                     "legal": "Legal"
                 }
@@ -313,18 +325,24 @@
         "signOutAccount": {
             "title": "Sign out account “{{name}}”",
             "confirm": {
-                "title": "Sign out account “{{name}}”?",
-                "message": "This will remove account “{{name}}”. This action cannot be undone.",
-                "confirm": "Sign out",
+                "title": "Erase this device?",
+                "message": "All accounts and data will be permanently removed from this device. Only accounts with a backup can be restored.",
+                "slider": {
+                    "label": "Erase device",
+                    "description": "Slide to erase"
+                },
                 "cancel": "Cancel"
             }
         },
         "removePortfolio": {
             "title": "Remove wallet “{{name}}”",
             "confirm": {
-                "title": "Remove wallet “{{name}}”?",
+                "title": "Remove this wallet?",
                 "message": "This will remove wallet “{{name}}”. This action cannot be undone.",
-                "confirm": "Remove",
+                "slider": {
+                    "label": "Remove wallet",
+                    "description": "Slide to remove"
+                },
                 "cancel": "Cancel"
             }
         }
@@ -344,6 +362,41 @@
         "dateHeaders": {
           "today": "Today",
           "yesterday": "Yesterday"
+        },
+        "transactionInfo": {
+            "sent": "Sent",
+            "received": "Received",
+            "recipient": "Recipient",
+            "sender": "Sender",
+            "fee": "Network fee",
+            "hash": "Transaction",
+            "status": {
+                "title": "Status",
+                "pending": {
+                    "title": "Pending",
+                    "description": "~ 10 minutes processing time"
+                },
+                "confirmed-recently": {
+                    "title": "Confirmed at {{date}}",
+                    "confirmations_one": "{{count}} confirmation",
+                    "confirmations_other": "{{count}} confirmations"
+                },
+                "confirmed-long-ago": {
+                    "title": "Confirmed at {{date}}",
+                    "description": "More than 6 confirmations"
+                }
+            }
+        }
+    },
+    "chart": {
+        "periods": {
+            "1h": "1h",
+            "24h": "24h",
+            "7d": "7d",
+            "30d": "30d",
+            "90d": "90d",
+            "12m": "12m",
+            "all": "All"
         }
     },
     "importWalletScreen": {
@@ -361,15 +414,5 @@
             "unrecognized": "Unrecognized input",
             "unsupportedScheme": "Unsupported input type"
         }
-    },
-    "transaction": {
-        "sent": "Sent",
-        "received": "Received",
-        "recipient": "Recipient",
-        "sender": "Sender",
-        "fee": "Network fee",
-        "hash": "Transaction",
-        "status": "Status",
-        "confirmed": "Confirmed at {{timestamp}}"
     }
 }

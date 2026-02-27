@@ -4,6 +4,8 @@ import z from 'zod';
 
 import { useSharedUnstructuredStorage } from '@safely/ux';
 
+import { StorageKey } from '@mobile/shared/constants';
+
 import { biometryKeys } from './keys';
 
 const sBiometryEnabled = z.boolean();
@@ -39,7 +41,10 @@ async function getAvailableBiometryType(): Promise<BiometryType | null> {
 }
 
 export function useBiometryQuery() {
-    const { get: storageGet } = useSharedUnstructuredStorage('biometry_enabled', sBiometryEnabled);
+    const { get: storageGet } = useSharedUnstructuredStorage(
+        StorageKey.BIOMETRY_ENABLED,
+        sBiometryEnabled
+    );
 
     return useQuery({
         queryKey: biometryKeys.state.toKey(),
@@ -54,7 +59,10 @@ export function useBiometryQuery() {
 
 export function useSetBiometryEnabled() {
     const queryClient = useQueryClient();
-    const { set: storageSet } = useSharedUnstructuredStorage('biometry_enabled', sBiometryEnabled);
+    const { set: storageSet } = useSharedUnstructuredStorage(
+        StorageKey.BIOMETRY_ENABLED,
+        sBiometryEnabled
+    );
 
     return useMutation({
         mutationFn: async (enabled: boolean) => {

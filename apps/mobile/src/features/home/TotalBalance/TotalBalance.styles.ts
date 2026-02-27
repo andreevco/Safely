@@ -8,5 +8,8 @@ export const styles = StyleSheet.create(theme => ({
         alignItems: 'center',
         justifyContent: 'center',
         gap: theme.spacing[4]
+    },
+    skeletonContainer: {
+        paddingVertical: theme.spacing[12]
     }
 }));

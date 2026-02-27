@@ -313,6 +313,10 @@ export const UtxoSchema = z.looseObject({
     coinbase: z.boolean().optional()
 });
 
+export const BlockHeightScheme = z.looseObject({
+    height: z.number()
+});
+
 export const GasPriceSchema = z.object({
     fee: z.number(),
     target_block: z.number().int()

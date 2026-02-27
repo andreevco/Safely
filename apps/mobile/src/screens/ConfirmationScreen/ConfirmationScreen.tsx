@@ -101,7 +101,7 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
     }, [confirmationState.type, asset, t]);
 
     return (
-        <Screen background="constantBlack">
+        <Screen background="primary">
             <Screen.Header>
                 {confirmationState.type !== 'success' && <Screen.Header.BackButton />}
                 <Screen.Header.Title />
@@ -128,7 +128,7 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
                                 formatter
                             )}
                         />
-                        {!!txTemplate && <TransactionFee estimation={txTemplate.estimation} />}
+                        <TransactionFee estimation={txTemplate?.estimation} />
                     </List.Group>
                     {!!sendResult && (
                         <List.Group style={styles.listGroup}>
@@ -136,7 +136,12 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
                         </List.Group>
                     )}
                 </List>
-                <ConfirmationFooter onSend={onSend} onGoBack={onGoBack} state={confirmationState} />
+                <ConfirmationFooter
+                    onSend={onSend}
+                    onGoBack={onGoBack}
+                    state={confirmationState}
+                    isEstimating={!txTemplate}
+                />
             </View>
         </Screen>
     );

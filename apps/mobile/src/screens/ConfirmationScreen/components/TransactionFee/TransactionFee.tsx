@@ -12,27 +12,48 @@ import { styles } from './TransactionFee.styles';
 
 const btcBlockWaitingTimeMinutes = 10;
 
-export const TransactionFee: FC<{ estimation: Estimation }> = ({ estimation }) => {
+export const TransactionFee: FC<{ estimation: Estimation | undefined }> = ({ estimation }) => {
     const { t } = useTranslation();
-    const formatter = useNumberFormatter();
-    const { data: fiat } = useFiatEquivalent(estimation.fee.amount);
 
-    const targetBlock = Math.max(estimation.txTargetBlock, 1);
+    const targetBlock = estimation ? Math.max(estimation.txTargetBlock, 1) : undefined;
 
     return (
         <TransactionCell
             title={t('confirmation.networkFee.title')}
             value={
-                <View style={styles.feeContainer}>
-                    {!!fiat && <Text variant="bodyM">{fiat.format(formatter)} </Text>}
-                    <Text color="secondary" variant="bodyM">
-                        {estimation.fee.amount.format(formatter)}
-                    </Text>
-                </View>
+                estimation ? (
+                    <FeeValue estimation={estimation} />
+                ) : (
+                    <Text
+                        variant="bodyM"
+                        skeletonVariant="transparentElement"
+                        skeletonWidth={100}
+                    />
+                )
             }
-            subvalue={t('confirmation.networkFee.timeMinutes', {
-                count: targetBlock * btcBlockWaitingTimeMinutes
-            })}
+            subvalue={
+                <TransactionCell.Subvalue skeletonVariant="transparentElement" skeletonWidth={64}>
+                    {targetBlock !== undefined
+                        ? t('confirmation.networkFee.timeMinutes', {
+                              count: targetBlock * btcBlockWaitingTimeMinutes
+                          })
+                        : undefined}
+                </TransactionCell.Subvalue>
+            }
         />
+    );
+};
+
+const FeeValue: FC<{ estimation: Estimation }> = ({ estimation }) => {
+    const formatter = useNumberFormatter();
+    const { data: fiat } = useFiatEquivalent(estimation.fee.amount);
+
+    return (
+        <View style={styles.feeContainer}>
+            {!!fiat && <Text variant="bodyM">{fiat.format(formatter)} </Text>}
+            <Text color="secondary" variant="bodyM" skeleton>
+                {estimation?.fee.amount.format(formatter)}
+            </Text>
+        </View>
     );
 };

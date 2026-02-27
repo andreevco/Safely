@@ -3,6 +3,10 @@ import { z } from 'zod';
 import { bootConfigSchema, sCryptoAssetAmount } from '@safely/core';
 import { sRatedCryptoAssetAmountArray } from '@safely/core';
 
+const sHistoricalPrice = z.object({
+    prices: z.array(z.tuple([z.number(), z.number()])).describe('[timestamp, price] pair')
+});
+
 const sActivityItem = z.object({
     timestamp: z.number(),
     key: z.string(),
@@ -11,6 +15,7 @@ const sActivityItem = z.object({
         fromAddress: z.string(),
         toAddress: z.string(),
         value: sCryptoAssetAmount,
+        fee: sCryptoAssetAmount,
         raw: z.unknown()
     })
 });
@@ -28,7 +33,8 @@ const sInfiniteActivityData = z.object({
 export const cacheSchemas = {
     sRatedCryptoAssetAmountArray,
     bootConfig: bootConfigSchema,
-    infiniteActivityData: sInfiniteActivityData
+    infiniteActivityData: sInfiniteActivityData,
+    sHistoricalPrice: sHistoricalPrice
 } satisfies Record<string, z.ZodType>;
 
 export type CacheSchemaKey = keyof typeof cacheSchemas;

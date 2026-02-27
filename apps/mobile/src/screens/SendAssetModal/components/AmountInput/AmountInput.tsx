@@ -1,4 +1,5 @@
 import { forwardRef, useCallback, useImperativeHandle, useRef } from 'react';
+import type { FocusEvent } from 'react-native';
 import { TextInputProps, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import { MaskedTextInput, MaskedTextInputRef } from 'react-native-advanced-input-mask';
 import Animated, { useSharedValue } from 'react-native-reanimated';
@@ -16,6 +17,7 @@ export type AmountInputProps = TextInputProps & {
     formattedAlternativeAmount?: string;
     errored?: boolean;
     currencySymbol?: string;
+    isMax?: boolean;
     mask: string;
 };
 
@@ -29,6 +31,8 @@ export const AmountInput = forwardRef<MaskedTextInputRef, AmountInputProps>((pro
         mask,
         formattedAlternativeAmount,
         currencySymbol,
+        isMax,
+        onFocus,
         ...rest
     } = props;
     const { theme } = useUnistyles();
@@ -37,12 +41,17 @@ export const AmountInput = forwardRef<MaskedTextInputRef, AmountInputProps>((pro
 
     const inputStyle = useInputAnimatedStyle(focused, errored ?? false);
 
-    const updateFocused = useCallback(
-        (value: boolean) => () => {
-            focused.value = value;
+    const handleFocus = useCallback(
+        (e: FocusEvent) => {
+            focused.value = true;
+            onFocus?.(e);
         },
-        [focused]
+        [focused, onFocus]
     );
+
+    const handleBlur = useCallback(() => {
+        focused.value = false;
+    }, [focused]);
 
     useImperativeHandle(ref, () => inputRef.current as MaskedTextInputRef, []);
 
@@ -60,13 +69,18 @@ export const AmountInput = forwardRef<MaskedTextInputRef, AmountInputProps>((pro
                     <Animated.View style={[styles.inputContainer, inputStyle]}>
                         <View style={styles.leftContentContainer}>
                             <View style={styles.textInputWithCurrencySymbolContainer}>
+                                {isMax && (
+                                    <Text variant="titleS" color="tertiary">
+                                        ~{' '}
+                                    </Text>
+                                )}
                                 <MaskedTextInput
                                     mask={mask}
                                     ref={inputRef}
                                     placeholderTextColor={theme.colors.text.tertiary}
                                     keyboardType="numeric"
-                                    onFocus={updateFocused(true)}
-                                    onBlur={updateFocused(false)}
+                                    onFocus={handleFocus}
+                                    onBlur={handleBlur}
                                     style={[styles.input, style]}
                                     {...rest}
                                 />
@@ -76,7 +90,11 @@ export const AmountInput = forwardRef<MaskedTextInputRef, AmountInputProps>((pro
                                     </Text>
                                 )}
                             </View>
-                            <TouchableOpacity activeOpacity={0.8} onPress={onSwitchFiatMode}>
+                            <TouchableOpacity
+                                activeOpacity={0.8}
+                                onPress={onSwitchFiatMode}
+                                style={styles.switchButton}
+                            >
                                 <Animated.View style={styles.secondaryCurrencyContainer}>
                                     <Text variant="bodyM" color="tertiary" monospace>
                                         {formattedAlternativeAmount ?? '0'}

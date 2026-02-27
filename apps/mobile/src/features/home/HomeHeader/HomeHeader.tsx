@@ -1,22 +1,34 @@
+import { useNavigation } from '@react-navigation/native';
+
+import { usePortfolios } from '@safely/ux';
+
+import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { Screen } from '@mobile/shared/ui';
 
-import { AccountSelector, CurrencyButton, SettingsButton } from './components';
+import {
+    AccountSelector,
+    CompactAccountSelector,
+    CurrencyButton,
+    SettingsButton
+} from './components';
 
-type HomeHeaderProps = {
-    onSelectAccountPress: () => void;
-    onSettingsPress: () => void;
-    onCurrencyPress: () => void;
-};
+export const HomeHeader = () => {
+    const navigation = useNavigation<RootStackNavigationProp<'TabsNavigator'>>();
+    const portfolios = usePortfolios();
 
-export const HomeHeader = (props: HomeHeaderProps) => {
-    const { onSelectAccountPress, onSettingsPress, onCurrencyPress } = props;
     return (
         <Screen.Header>
-            <Screen.Header.Button type="transparent" onPress={onSettingsPress}>
+            <Screen.Header.Button
+                type="transparent"
+                onPress={() => navigation.navigate('SettingsModal')}
+            >
                 <SettingsButton />
             </Screen.Header.Button>
-            <AccountSelector onSelectAccountPress={onSelectAccountPress} />
-            <Screen.Header.Button type="transparent" onPress={onCurrencyPress}>
+            {portfolios.length <= 5 ? <CompactAccountSelector /> : <AccountSelector />}
+            <Screen.Header.Button
+                type="transparent"
+                onPress={() => navigation.navigate('CurrencyModal')}
+            >
                 <CurrencyButton />
             </Screen.Header.Button>
         </Screen.Header>

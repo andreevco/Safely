@@ -6,3 +6,4 @@ export * from './toast';
 export * from './account';
 export * from './explorer';
 export * from './security';
+export * from './btc-blockchain';

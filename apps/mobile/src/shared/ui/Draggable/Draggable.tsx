@@ -17,13 +17,21 @@ type DraggableRenderProps = {
 
 type DraggableProps = {
     index: number;
+    itemCount: number;
     draggedIndex: SharedValue<number | null>;
     offsetY: SharedValue<number>;
     moveItem: (fromIndex: number, toIndex: number) => void;
     children?: (props: DraggableRenderProps) => React.ReactNode;
     gap?: number;
 };
-const useDraggable = ({ index, draggedIndex, offsetY, moveItem, gap = 0 }: DraggableProps) => {
+const useDraggable = ({
+    index,
+    itemCount,
+    draggedIndex,
+    offsetY,
+    moveItem,
+    gap = 0
+}: DraggableProps) => {
     const itemHeight = useSharedValue(0);
     const startY = useSharedValue(0);
 
@@ -31,9 +39,12 @@ const useDraggable = ({ index, draggedIndex, offsetY, moveItem, gap = 0 }: Dragg
         (translationY: number) => {
             'worklet';
 
-            return Math.max(-index * (itemHeight.value + gap), translationY + startY.value);
+            const minOffset = -index * (itemHeight.value + gap);
+            const maxOffset = (itemCount - 1 - index) * (itemHeight.value + gap);
+
+            return Math.min(maxOffset, Math.max(minOffset, translationY + startY.value));
         },
-        [index, itemHeight, startY, gap]
+        [index, itemCount, itemHeight, startY, gap]
     );
 
     const movingDirection = useDerivedValue(() => {
@@ -132,6 +143,7 @@ const useDraggable = ({ index, draggedIndex, offsetY, moveItem, gap = 0 }: Dragg
 
 export const Draggable = ({
     index,
+    itemCount,
     draggedIndex,
     offsetY,
     moveItem,
@@ -140,6 +152,7 @@ export const Draggable = ({
 }: DraggableProps) => {
     const { animatedStyle, onLayout, panGesture } = useDraggable({
         index,
+        itemCount,
         draggedIndex,
         offsetY,
         moveItem,
