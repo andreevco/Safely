@@ -6,12 +6,15 @@ import {
 } from 'expo-haptics';
 import { useCallback, useEffect, useMemo } from 'react';
 import type { LayoutChangeEvent, ViewProps } from 'react-native';
-import { View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
     Easing,
     Extrapolation,
+    FadeIn,
+    FadeOut,
     interpolate,
+    interpolateColor,
     useAnimatedStyle,
     useSharedValue,
     withRepeat,
@@ -56,6 +59,14 @@ export const SlideButton = (props: SlideButtonProps) => {
     const maxTranslateX = useSharedValue(0);
     const startX = useSharedValue(0);
     const rotation = useSharedValue(0);
+    const inactiveProgress = useSharedValue(disabled || loading ? 1 : 0);
+
+    useEffect(() => {
+        inactiveProgress.value = withTiming(disabled || loading ? 1 : 0, {
+            duration: 200,
+            easing: Easing.out(Easing.ease)
+        });
+    }, [disabled, loading, inactiveProgress]);
 
     useEffect(() => {
         if (loading) {
@@ -137,8 +148,20 @@ export const SlideButton = (props: SlideButtonProps) => {
         translateX
     ]);
 
+    const activeBg = knobColor ?? theme.colors.button.primary.background;
+    const inactiveBg = theme.colors.button.tertiary.background;
+
     const knobStyle = useAnimatedStyle(() => ({
-        transform: [{ translateX: translateX.value }]
+        transform: [{ translateX: translateX.value }],
+        backgroundColor: interpolateColor(inactiveProgress.value, [0, 1], [activeBg, inactiveBg])
+    }));
+
+    const iconPrimaryOpacityStyle = useAnimatedStyle(() => ({
+        opacity: interpolate(inactiveProgress.value, [0, 1], [1, 0])
+    }));
+
+    const iconSecondaryOpacityStyle = useAnimatedStyle(() => ({
+        opacity: inactiveProgress.value
     }));
 
     const loaderStyle = useAnimatedStyle(() => ({
@@ -160,10 +183,6 @@ export const SlideButton = (props: SlideButtonProps) => {
         return { opacity };
     });
 
-    styles.useVariants({
-        disabled
-    });
-
     return (
         <View
             style={[styles.container, trackColor && { backgroundColor: trackColor }, style]}
@@ -173,39 +192,59 @@ export const SlideButton = (props: SlideButtonProps) => {
             <Animated.View style={[styles.textContainer, textAnimatedStyle]} pointerEvents="none">
                 <Text
                     variant="labelL"
+                    color={disabled ? 'secondary' : undefined}
                     textAlign="center"
                     style={textColor ? { color: textColor } : undefined}
                 >
                     {label}
                 </Text>
                 {!!description && (
-                    <Text
-                        variant="bodyM"
-                        color="tertiary"
-                        textAlign="center"
-                        style={textColor ? { color: textColor } : undefined}
+                    <Animated.View
+                        key={description}
+                        style={styles.descriptionWrapper}
+                        entering={FadeIn.duration(150)}
+                        exiting={FadeOut.duration(150)}
                     >
-                        {description}
-                    </Text>
+                        <Text
+                            variant="bodyM"
+                            color="tertiary"
+                            textAlign="center"
+                            style={textColor ? { color: textColor } : undefined}
+                        >
+                            {description}
+                        </Text>
+                    </Animated.View>
                 )}
             </Animated.View>
 
             <GestureDetector gesture={panGesture}>
                 <Animated.View style={styles.knobWrapper}>
-                    <Animated.View
-                        style={[
-                            styles.knob,
-                            knobStyle,
-                            knobColor && { backgroundColor: knobColor },
-                            loading && { backgroundColor: theme.colors.button.tertiary.background }
-                        ]}
-                    >
+                    <Animated.View style={[styles.knob, knobStyle]}>
                         {loading ? (
                             <Animated.View style={loaderStyle}>
                                 <Icon icon={Loader28} color="primary" />
                             </Animated.View>
                         ) : (
-                            <Icon icon={ArrowRight28} color="primary" />
+                            <View>
+                                <Animated.View
+                                    style={[
+                                        StyleSheet.absoluteFillObject,
+                                        styles.iconOverlay,
+                                        iconPrimaryOpacityStyle
+                                    ]}
+                                >
+                                    <Icon icon={ArrowRight28} color="primary" />
+                                </Animated.View>
+                                <Animated.View
+                                    style={[
+                                        StyleSheet.absoluteFillObject,
+                                        styles.iconOverlay,
+                                        iconSecondaryOpacityStyle
+                                    ]}
+                                >
+                                    <Icon icon={ArrowRight28} color="secondary" />
+                                </Animated.View>
+                            </View>
                         )}
                     </Animated.View>
                 </Animated.View>

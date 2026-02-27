@@ -1,6 +1,6 @@
 import GHBottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import { useNavigation } from '@react-navigation/native';
-import React, { createContext, useCallback, useContext, useMemo, useRef } from 'react';
+import React, { useCallback, useMemo, useRef } from 'react';
 import { Pressable, StyleSheet, View, ViewStyle } from 'react-native';
 import Animated, {
     interpolateColor,
@@ -11,24 +11,9 @@ import { useUnistyles } from 'react-native-unistyles';
 
 import { Screen } from '../Screen';
 import { styles } from './BottomSheet.styles';
+import { BottomSheetContext } from './context';
 
-type BottomSheetContextType = {
-    close: () => void;
-};
-
-const BottomSheetContext = createContext<BottomSheetContextType | null>(null);
-
-export function useBottomSheet() {
-    const context = useContext(BottomSheetContext);
-    if (!context) {
-        throw new Error('useBottomSheet must be used within a BottomSheet');
-    }
-    return context;
-}
-
-export function useBottomSheetContext() {
-    return useContext(BottomSheetContext);
-}
+export { useBottomSheet, useBottomSheetContext } from './context';
 
 type ModalSheetProps = {
     children: React.ReactNode;

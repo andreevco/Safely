@@ -181,6 +181,7 @@
         "slider": {
             "confirm": "Confirm",
             "slideToSend": "Slide to send",
+            "estimatingFee": "Estimating fee…",
             "backToWallet": "Back to Wallet"
         },
         "sendError": {
@@ -381,6 +382,17 @@
                     "description": "More than 6 confirmations"
                 }
             }
+        }
+    },
+    "chart": {
+        "periods": {
+            "1h": "1h",
+            "24h": "24h",
+            "7d": "7d",
+            "30d": "30d",
+            "90d": "90d",
+            "12m": "12m",
+            "all": "All"
         }
     },
     "importWalletScreen": {

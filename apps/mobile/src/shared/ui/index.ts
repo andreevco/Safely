@@ -12,6 +12,7 @@ export { SlideButton } from './SlideButton';
 export { TableCell } from './TableCell';
 export { Draggable } from './Draggable';
 export { Image } from './Image';
+export { Skeleton } from './Skeleton';
 export * from './Icon';
 export * from './BottomSheet';
 export * from './WordCell';

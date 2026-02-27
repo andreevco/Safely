@@ -8,17 +8,7 @@ export const styles = StyleSheet.create(theme => ({
         borderRadius: theme.radius.full,
         backgroundColor: theme.colors.background.secondary,
         justifyContent: 'center',
-        overflow: 'hidden',
-        variants: {
-            disabled: {
-                true: {
-                    opacity: 0.5
-                },
-                false: {
-                    opacity: 1
-                }
-            }
-        }
+        overflow: 'hidden'
     },
     textContainer: {
         position: 'absolute',
@@ -38,6 +28,14 @@ export const styles = StyleSheet.create(theme => ({
         height: '100%',
         borderRadius: theme.radius.full,
         backgroundColor: theme.colors.button.primary.background,
+        alignItems: 'center',
+        justifyContent: 'center'
+    },
+    iconOverlay: {
+        alignItems: 'center',
+        justifyContent: 'center'
+    },
+    descriptionWrapper: {
         alignItems: 'center',
         justifyContent: 'center'
     }
