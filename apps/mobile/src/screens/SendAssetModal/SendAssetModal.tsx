@@ -167,6 +167,10 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
                     onChangeText={actions.setAmount}
                     isMax={state.parsed.isMax}
                     onMaxPress={() => actions.setIsMax(true)}
+                    onMaxReset={() => {
+                        actions.setIsMax(false);
+                        actions.setAmount('');
+                    }}
                     isMaxAvailable={meta.isMaxAvailable}
                     formattedAlternativeAmount={alternativeAmount}
                     onSwitchFiatMode={hasPrice ? handleSwitchFiatMode : undefined}

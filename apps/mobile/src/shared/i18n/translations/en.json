@@ -17,6 +17,7 @@
         },
         "amount": "Amount",
         "max": "Send all",
+        "maxHint": "All available balance will be sent. Fee included.",
         "remaining": "Remaining: {{amount}}{{symbol}}",
         "insufficientBalance": "Insufficient balance"
     },
