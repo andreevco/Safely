@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { accountStorageKey } from './keys';
-import { useAppContext, useAppSdk } from '../../shared';
+import { useAppContext } from '../../shared';
 
 export function useActiveAccount(): { id: string; name: string } | undefined {
     return {
@@ -11,7 +11,7 @@ export function useActiveAccount(): { id: string; name: string } | undefined {
 }
 
 export function useAccounts() {
-    const { storage } = useAppSdk();
+    const { storage } = useAppContext();
 
     return [
         {

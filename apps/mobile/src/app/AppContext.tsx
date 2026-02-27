@@ -1,10 +1,9 @@
 import { getLocales } from 'expo-localization';
-import i18next from 'i18next';
 import { FC, PropsWithChildren, Suspense, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Platform } from 'react-native';
 
-import { Build, IAppSdk, SSecretEncrypted } from '@safely/core';
+import { Build, ITreeStorage, TreeStorage } from '@safely/core';
 import { AppContext, IAppContext } from '@safely/ux';
 
 import { navigationRef } from '@mobile/app/navigation/navigationRef';
@@ -15,41 +14,32 @@ import { MobileNumberFormatLocale } from '@mobile/shared/utils';
 
 import packageJson from '../../package.json';
 
-const numberFormatLocale = new MobileNumberFormatLocale(getLocales()[0]);
-
 let securityCheck: () => Promise<void> = () => {
     throw new Error('Security check not initialized');
 };
 
-const sdk: IAppSdk = {
-    numberFormatLocale,
-    storage: mobileStorages.app.storage,
-    keychain: mobileStorages.keychain.storage,
-    secretEncryptor: {
-        decryptSecret: async (val: string) => {
-            await securityCheck();
-            return val; // TODO implement
-        },
-        encryptSecret: async (val: string) => {
-            return val; // TODO implement
-        },
-        async removeSecretCache(_: SSecretEncrypted): Promise<void> {
-            return;
-        }
+const secureEncryptedStorage: ITreeStorage = TreeStorage.root({
+    getItem: async (key: string) => {
+        await securityCheck();
+        return mobileStorages.secureEncrypted.storage.getItem(key);
     },
-    qrScanner: {
-        scan: options =>
-            new Promise<string>(resolve => {
-                const t = i18next.t.bind(i18next);
-
-                navigationRef.navigate('QRScanModal', {
-                    onSuccess: resolve,
-                    title: t(options?.titleTranslationKey ?? 'qrScan.title'),
-                    subtitle: t(options?.subTranslationKey ?? 'qrScan.subtitle')
-                });
-            })
+    setItem: async (key: string, value: string) => {
+        await securityCheck();
+        return mobileStorages.secureEncrypted.storage.setItem(key, value);
+    },
+    removeItem: async (key: string) => {
+        await securityCheck();
+        return mobileStorages.secureEncrypted.storage.removeItem(key);
+    },
+    clear: async () => {
+        await securityCheck();
+        return mobileStorages.secureEncrypted.storage.clear();
+    },
+    getAllKeys: async () => {
+        await securityCheck();
+        return mobileStorages.secureEncrypted.storage.getAllKeys();
     }
-};
+});
 
 const build: Build =
     Platform.select({
@@ -59,20 +49,36 @@ const build: Build =
     }) ?? ('web' as const);
 
 export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
-    const { t } = useTranslation();
-    const { service } = useToastServiceContext();
+    const {
+        t,
+        i18n: { language }
+    } = useTranslation();
+    const { service: toastService } = useToastServiceContext();
 
     const appContext = useMemo<IAppContext>(
         () => ({
             i18n: {
-                language: i18next.language,
+                language,
                 t
             },
-            sdk,
             version: packageJson.version,
             build,
+            numberFormatLocale: new MobileNumberFormatLocale(getLocales()[0]),
+            storage: mobileStorages.app.storage,
+            encryptedStorage: mobileStorages.encrypted.storage,
+            secureEncryptedStorage,
+            qrScanner: {
+                scan: options =>
+                    new Promise<string>(resolve => {
+                        navigationRef.navigate('QRScanModal', {
+                            onSuccess: resolve,
+                            title: t(options?.titleTranslationKey ?? 'qrScan.title'),
+                            subtitle: t(options?.subTranslationKey ?? 'qrScan.subtitle')
+                        });
+                    })
+            },
             toast: {
-                show: service.show
+                show: toastService.show
             },
             security: {
                 check: () => securityCheck()
@@ -84,7 +90,7 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
                 }
             }
         }),
-        [t, service]
+        [t, toastService, language]
     );
 
     return (

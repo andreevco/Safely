@@ -10,8 +10,8 @@ import {
     SendFormResult,
     SendFormError,
     useNumberFormatter,
-    useAppSdk,
-    useActiveFiat
+    useActiveFiat,
+    useAppContext
 } from '@safely/ux';
 
 import { SendConfirmationParams } from '@mobile/screens/ConfirmationScreen';
@@ -37,7 +37,7 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
     const navigation = useNavigation<NavigationProp<SendStackParamList>>();
     const pagerRef = useRef<PagerView>(null);
     const formatter = useNumberFormatter();
-    const { numberFormatLocale } = useAppSdk();
+    const { numberFormatLocale } = useAppContext();
     const activeFiat = useActiveFiat();
 
     const handleSubmit = useCallback(

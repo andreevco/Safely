@@ -51,7 +51,7 @@ describe('Test portfolio generation (Bitcoin)', () => {
             'tb1q4tvt7x6veyr96kj3deph5av03czytyw5ssalr6'
         );
 
-        expect(encryptor.decryptSecret).toHaveBeenCalledTimes(0);
+        expect(encryptor.decrypt).toHaveBeenCalledTimes(0);
     });
 
     it('Should serialize and deserialize portfolio bip39', async () => {
@@ -164,7 +164,7 @@ describe('Test portfolio generation (Bitcoin)', () => {
         expect(portfolio.derivations[0].chains.btc.xpub).toMatch(/^xpub/);
         expect(portfolio.derivations[0].chains.btc.xpub.length).toBeGreaterThan(100);
 
-        expect(encryptor.decryptSecret).toHaveBeenCalledTimes(0);
+        expect(encryptor.decrypt).toHaveBeenCalledTimes(0);
     });
 });
 
@@ -286,7 +286,7 @@ describe('Extended tests for portfolio operations (Bitcoin)', () => {
                 portfolio2.derivations[0].chains.btc.xpub
             );
 
-            expect(encryptor.decryptSecret).toHaveBeenCalledTimes(0);
+            expect(encryptor.decrypt).toHaveBeenCalledTimes(0);
         });
     });
 
@@ -378,7 +378,7 @@ describe('Extended tests for portfolio operations (Bitcoin)', () => {
             portfolio.derivations[0].chains.btc.wallets[0].type
         );
 
-        expect(encryptor.decryptSecret).toHaveBeenCalledTimes(0);
+        expect(encryptor.decrypt).toHaveBeenCalledTimes(0);
     });
 });
 
@@ -414,7 +414,7 @@ describe('Negative scenarios (Bitcoin)', () => {
                 name: portfolioName
             })
         ).rejects.toThrow(InvalidMnemonicError);
-        expect(encryptor.decryptSecret).toHaveBeenCalledTimes(0);
+        expect(encryptor.decrypt).toHaveBeenCalledTimes(0);
     });
 
     it('rejects shortened mnemonic and produces no portfolio', async () => {
@@ -428,7 +428,7 @@ describe('Negative scenarios (Bitcoin)', () => {
                 name: portfolioName
             })
         ).rejects.toThrow(InvalidMnemonicError);
-        expect(encryptor.decryptSecret).toHaveBeenCalledTimes(0);
+        expect(encryptor.decrypt).toHaveBeenCalledTimes(0);
     });
 
     it('rejects BIP39 mnemonic with wrong checksum', async () => {
@@ -447,7 +447,7 @@ describe('Negative scenarios (Bitcoin)', () => {
                 name: portfolioName
             })
         ).rejects.toThrow(InvalidMnemonicError);
-        expect(encryptor.decryptSecret).toHaveBeenCalledTimes(0);
+        expect(encryptor.decrypt).toHaveBeenCalledTimes(0);
     });
 
     it('Should fail with empty mnemonic', async () => {
@@ -460,7 +460,7 @@ describe('Negative scenarios (Bitcoin)', () => {
                 name: portfolioName
             })
         ).rejects.toThrow(InvalidMnemonicError);
-        expect(encryptor.decryptSecret).toHaveBeenCalledTimes(0);
+        expect(encryptor.decrypt).toHaveBeenCalledTimes(0);
     });
 
     it('Should fail with too short mnemonic (5 words)', async () => {
@@ -473,7 +473,7 @@ describe('Negative scenarios (Bitcoin)', () => {
                 name: portfolioName
             })
         ).rejects.toThrow(InvalidMnemonicError);
-        expect(encryptor.decryptSecret).toHaveBeenCalledTimes(0);
+        expect(encryptor.decrypt).toHaveBeenCalledTimes(0);
     });
 
     it('Should fail with too long mnemonic (30 words)', async () => {
@@ -486,7 +486,7 @@ describe('Negative scenarios (Bitcoin)', () => {
                 name: portfolioName
             })
         ).rejects.toThrow(InvalidMnemonicError);
-        expect(encryptor.decryptSecret).toHaveBeenCalledTimes(0);
+        expect(encryptor.decrypt).toHaveBeenCalledTimes(0);
     });
 
     it('Should fail when mnemonic has duplicate words beyond allowed entropy', async () => {
@@ -500,7 +500,7 @@ describe('Negative scenarios (Bitcoin)', () => {
                 name: portfolioName
             })
         ).rejects.toThrow(InvalidMnemonicError);
-        expect(encryptor.decryptSecret).toHaveBeenCalledTimes(0);
+        expect(encryptor.decrypt).toHaveBeenCalledTimes(0);
     });
 
     it('Should handle valid mnemonic and derive BTC address', async () => {

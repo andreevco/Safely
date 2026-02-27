@@ -9,10 +9,10 @@ import {
     NumberFormatter
 } from '@safely/core';
 
-import { useAppSdk } from '../providers';
+import { useAppContext } from '../providers';
 
 export function useNumberFormatter() {
-    const { numberFormatLocale } = useAppSdk();
+    const { numberFormatLocale } = useAppContext();
     return useMemo(() => new NumberFormatter(numberFormatLocale), [numberFormatLocale]);
 }
 

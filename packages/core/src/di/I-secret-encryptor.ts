@@ -1,1 +1,7 @@
-export { ISecretEncryptor } from '@safely/sync';
+export {
+    type ISecretEncryptor,
+    type SSecretDecrypted,
+    type SSecretEncrypted,
+    sSecretDecrypted,
+    sSecretEncrypted
+} from '@safely/sync';

@@ -1,9 +1,17 @@
+import { z } from 'zod';
+
 import { VaultKeyService } from './crypto/service/vault-key-service';
 import { hex } from './utils/buffer';
 
+export const sSecretEncrypted = z.string();
+export type SSecretEncrypted = z.infer<typeof sSecretEncrypted>;
+
+export const sSecretDecrypted = z.string();
+export type SSecretDecrypted = z.infer<typeof sSecretDecrypted>;
+
 export interface ISecretEncryptor {
-    encrypt(plaintext: string): Promise<string>;
-    decrypt(encryptedPayload: string): Promise<string>;
+    encrypt(decryptedSecret: SSecretDecrypted): Promise<SSecretEncrypted>;
+    decrypt(encryptedSecret: SSecretEncrypted): Promise<SSecretDecrypted>;
 }
 
 export class SecretEncryptor implements ISecretEncryptor {

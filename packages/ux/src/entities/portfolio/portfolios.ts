@@ -18,7 +18,6 @@ import { IPortfolioId } from '@safely/core/entities/portfolio/portfolio-id';
 import { generateBip39Accessor } from '@safely/core/entities/seed';
 
 import {
-    useAppSdk,
     useTranslate,
     useErrorToast,
     useSuspenseQuery,
@@ -36,7 +35,6 @@ export function usePortfoliosQuery() {
 }
 
 function usePortfoliosQueryConfig() {
-    const sdk = useAppSdk();
     const accountQueryKey = useActiveAccountQueryKey();
     const { get } = useActiveAccountSyncedStorage('portfolios');
 
@@ -97,7 +95,6 @@ function useNewPortfolioFallbackName() {
 }
 
 export function useGeneratePortfolio() {
-    const sdk = useAppSdk();
     const { mutateAsync: setActivePortfolio } = useSetActivePortfolio();
     const { mutateAsync: addAccount } = useAddPortfolio();
     const name = useNewPortfolioFallbackName();
@@ -127,7 +124,6 @@ export function useGeneratePortfolio() {
 }
 
 export function useImportPortfolio() {
-    const sdk = useAppSdk();
     const { data: existingPortfolios } = usePortfoliosQuery();
     const name = useNewPortfolioFallbackName();
     const { mutateAsync: addPortfolio } = useAddPortfolio();

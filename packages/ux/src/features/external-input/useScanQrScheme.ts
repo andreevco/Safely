@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import { ExternalInputScheme, ExternalInputSchemeName } from '@safely/core';
 
 import { useExternalInputParser } from './useExternalInputParser';
-import { useAppSdk } from '../../shared';
+import { useAppContext } from '../../shared';
 
 interface UseScanQrSchemeOptions {
     onResult: (scheme: ExternalInputScheme) => void;
@@ -14,16 +14,16 @@ interface UseScanQrSchemeOptions {
 export function useScanQrScheme(options: UseScanQrSchemeOptions): () => void {
     const { onResult, allowedSchemes, scannerOptions } = options;
 
-    const sdk = useAppSdk();
+    const { qrScanner } = useAppContext();
     const parse = useExternalInputParser({ allowedSchemes });
 
     return useCallback(() => {
-        sdk.qrScanner.scan(scannerOptions).then(raw => {
+        qrScanner.scan(scannerOptions).then(raw => {
             const result = parse(raw);
 
             if (result.ok) {
                 onResult(result.scheme);
             }
         });
-    }, [sdk.qrScanner, scannerOptions, parse, onResult]);
+    }, [qrScanner, scannerOptions, parse, onResult]);
 }

@@ -10,4 +10,5 @@ export type { ISyncProvider } from './sync-provider/I-sync-provider';
 
 export { SyncError } from './sync-error';
 
-export type { ISecretEncryptor } from './secret-encryptor';
+export type { ISecretEncryptor, SSecretDecrypted, SSecretEncrypted } from './secret-encryptor';
+export { sSecretEncrypted, sSecretDecrypted } from './secret-encryptor';
