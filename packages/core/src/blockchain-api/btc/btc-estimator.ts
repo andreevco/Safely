@@ -49,8 +49,8 @@ export class BtcEstimator implements IIdentifiable {
     public async getMaxSendValue(
         request: Omit<BtcTransferRequestMax, 'type' | 'estimatedAmount'>
     ): Promise<BtcAssetAmount> {
-        const { fee } = await this.estimateSendMaxFee(request);
-        return fee;
+        const { fee, utxos } = await this.estimateSendMaxFee(request);
+        return getUtxoTotal(utxos).amountSub(fee);
     }
 
     public async estimate(request: BtcTransferRequest): Promise<BtcTransactionTemplate> {
@@ -134,9 +134,7 @@ export class BtcEstimator implements IIdentifiable {
         const totalBalance = getUtxoTotal(utxos);
 
         const amount = totalBalance.sub(fee);
-        if (
-            abs(request.estimatedAmount.weiAmount - amount.weiAmount) > fee.amountMul(0.5).weiAmount
-        ) {
+        if (abs(request.estimatedAmount.weiAmount - amount.weiAmount) * 2n > fee.weiAmount) {
             throw new Error('Amount changed since it was estimated');
         }
 

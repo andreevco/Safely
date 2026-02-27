@@ -125,7 +125,8 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
                                 formatter
                             )}
                             cryptoAmount={confirmationResult.amount.cryptoAssetAmount?.format(
-                                formatter
+                                formatter,
+                                { fullPrecision: true }
                             )}
                         />
                         <TransactionFee estimation={txTemplate?.estimation} />

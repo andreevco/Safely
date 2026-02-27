@@ -2,22 +2,23 @@ import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react';
 
 import { useAssets } from '../../../../entities';
 import { useNumberFormatter } from '../../../../shared';
+import { useMaxSendAssetTransfer } from '../../../blockchain-send';
 import { SendFormError } from '../errors';
-import { sendFormReducer, createInitialState } from '../reducer';
+import { createInitialState, sendFormReducer } from '../reducer';
 import {
     AmountInputType,
     FormStepNames,
+    SEND_STEPS,
     SendFormInitialValues,
-    SendFormResult,
-    SEND_STEPS
+    SendFormResult
 } from '../types';
 import {
-    parseRecipient,
+    assetIdSchema,
     BLOCKCHAIN_DEFAULT_TOKENS,
-    recipientSchema,
-    assetIdSchema
+    parseRecipient,
+    recipientSchema
 } from '../utils';
-import { validateAmount, calculateMaxAmount, reformatForInputType } from '../validators';
+import { calculateMaxAmount, reformatForInputType, validateAmount } from '../validators';
 
 const LAST_STEP_INDEX = SEND_STEPS.length - 1;
 
@@ -31,6 +32,14 @@ export function useSendForm(props: UseSendFormOptions) {
     const { onSubmit, shouldResetForm = true, initialValues } = props;
 
     const [state, dispatch] = useReducer(sendFormReducer, initialValues, createInitialState);
+    const { data: maxSendValue, promise: maxSendValuePromise } = useMaxSendAssetTransfer(
+        state.parsed.recipient
+            ? {
+                  recipient: state.parsed.recipient,
+                  blockchain: state.parsed.recipient.blockchain
+              }
+            : undefined
+    );
 
     const formatter = useNumberFormatter();
     const { data: assetsData } = useAssets();
@@ -169,7 +178,7 @@ export function useSendForm(props: UseSendFormOptions) {
     );
 
     const setIsMax = useCallback(
-        (isMax: boolean): string | void => {
+        async (isMax: boolean): Promise<string | void> => {
             dispatch({ type: 'SET_IS_MAX', value: isMax });
 
             if (!isMax) {
@@ -180,7 +189,11 @@ export function useSendForm(props: UseSendFormOptions) {
             const asset = state.parsed.asset;
             if (!asset) return;
 
-            const result = calculateMaxAmount(asset, state.values.amountInputType, formatter);
+            const result = calculateMaxAmount(
+                { amount: maxSendValue ?? (await maxSendValuePromise), price: asset.price },
+                state.values.amountInputType,
+                formatter
+            );
             if (!result) return;
 
             dispatch({
@@ -194,7 +207,13 @@ export function useSendForm(props: UseSendFormOptions) {
 
             return result.formatted;
         },
-        [state.parsed.asset, state.values.amountInputType, formatter]
+        [
+            state.parsed.asset,
+            state.values.amountInputType,
+            formatter,
+            maxSendValue,
+            maxSendValuePromise
+        ]
     );
 
     const setAsset = useCallback(
