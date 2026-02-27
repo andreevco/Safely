@@ -17,6 +17,7 @@ export type AmountInputProps = TextInputProps & {
     formattedAlternativeAmount?: string;
     errored?: boolean;
     currencySymbol?: string;
+    isMax?: boolean;
     mask: string;
 };
 
@@ -30,6 +31,7 @@ export const AmountInput = forwardRef<MaskedTextInputRef, AmountInputProps>((pro
         mask,
         formattedAlternativeAmount,
         currencySymbol,
+        isMax,
         onFocus,
         ...rest
     } = props;
@@ -67,6 +69,11 @@ export const AmountInput = forwardRef<MaskedTextInputRef, AmountInputProps>((pro
                     <Animated.View style={[styles.inputContainer, inputStyle]}>
                         <View style={styles.leftContentContainer}>
                             <View style={styles.textInputWithCurrencySymbolContainer}>
+                                {isMax && (
+                                    <Text variant="titleS" color="tertiary">
+                                        ~{' '}
+                                    </Text>
+                                )}
                                 <MaskedTextInput
                                     mask={mask}
                                     ref={inputRef}

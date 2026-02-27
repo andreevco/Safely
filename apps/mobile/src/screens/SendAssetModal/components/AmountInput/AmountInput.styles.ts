@@ -55,7 +55,7 @@ export const styles = StyleSheet.create(theme => ({
     },
     textInputWithCurrencySymbolContainer: {
         flexDirection: 'row',
-        alignItems: 'flex-end'
+        alignItems: 'center'
     }
 }));
 

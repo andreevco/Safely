@@ -64,6 +64,7 @@ export const AmountStep = (props: AmountStepProps) => {
                 onChangeText={onChangeText}
                 onFocus={handleFocus}
                 placeholder="0"
+                isMax={isMax}
                 label={t('send.amount')}
                 errored={hasInsufficientBalance}
                 formattedAlternativeAmount={formattedAlternativeAmount}
