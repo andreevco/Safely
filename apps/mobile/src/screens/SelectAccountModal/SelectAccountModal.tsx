@@ -19,6 +19,10 @@ export const SelectAccountModal = () => {
         setIsEditing(prev => !prev);
     }, [setIsEditing]);
 
+    const handleEditStart = useCallback(() => {
+        setIsEditing(true);
+    }, [setIsEditing]);
+
     const handleEditEnd = useCallback(() => {
         setIsEditing(false);
     }, [setIsEditing]);
@@ -39,6 +43,7 @@ export const SelectAccountModal = () => {
                 portfolios={portfolios}
                 isEditing={isEditing}
                 onSelect={navigation.goBack}
+                onEditStart={handleEditStart}
                 onEditEnd={handleEditEnd}
                 Footer={() => (
                     <Button

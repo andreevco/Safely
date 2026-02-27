@@ -9,7 +9,7 @@ import { useActivePortfolio, useReorderPortfolios, useSetActivePortfolio } from 
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { PortfolioName } from '@mobile/entities/portfolio/PortfolioName/PortfolioName';
-import { Cell, Draggable, Icon, More16, Reorder16, TouchableOpacity } from '@mobile/shared/ui';
+import { Cell, Draggable, Icon, Pencil16, Reorder16, TouchableOpacity } from '@mobile/shared/ui';
 
 import { styles } from './PortfoliosList.styles';
 
@@ -17,12 +17,13 @@ interface PortfoliosListProps {
     portfolios: Portfolio[];
     isEditing: boolean;
     onSelect: () => void;
+    onEditStart?: () => void;
     onEditEnd?: () => void;
     Footer?: () => React.ReactNode;
 }
 
 export const PortfoliosList = (props: PortfoliosListProps) => {
-    const { portfolios, isEditing, onSelect, onEditEnd, Footer } = props;
+    const { portfolios, isEditing, onSelect, onEditStart, onEditEnd, Footer } = props;
     const activePortfolio = useActivePortfolio();
     const { mutate: reorderPortfolios } = useReorderPortfolios();
     const { mutate: setActivePortfolio } = useSetActivePortfolio();
@@ -64,9 +65,8 @@ export const PortfoliosList = (props: PortfoliosListProps) => {
             });
 
             reorderPortfolios(newPortfolios);
-            onEditEnd?.();
         },
-        [portfolios, draggedIndex, offsetY, reorderPortfolios, onEditEnd]
+        [portfolios, draggedIndex, offsetY, reorderPortfolios]
     );
 
     return (
@@ -83,6 +83,7 @@ export const PortfoliosList = (props: PortfoliosListProps) => {
                         gap={2}
                         key={portfolio.id.toString()}
                         index={index}
+                        itemCount={portfolios.length}
                         draggedIndex={draggedIndex}
                         offsetY={offsetY}
                         moveItem={moveItem}
@@ -90,7 +91,9 @@ export const PortfoliosList = (props: PortfoliosListProps) => {
                         {({ panGesture }) => (
                             <Cell
                                 style={styles.portfolioItem}
-                                onPress={handlePress}
+                                containerStyle={styles.portfolioItemContainer}
+                                onPress={isEditing ? undefined : handlePress}
+                                onLongPress={isEditing ? undefined : onEditStart}
                                 disabled={isEditing}
                             >
                                 <Cell.Content>
@@ -116,12 +119,15 @@ export const PortfoliosList = (props: PortfoliosListProps) => {
                                         style={styles.rightIconsContainer}
                                     >
                                         <TouchableOpacity
+                                            hitSlop={{ left: 16, right: 8, top: 16, bottom: 16 }}
                                             onPress={() => handleCustomizeWallet(portfolio)}
                                         >
-                                            <Icon icon={More16} color="tertiary" />
+                                            <Icon icon={Pencil16} color="tertiary" />
                                         </TouchableOpacity>
                                         <GestureDetector gesture={panGesture}>
-                                            <Icon icon={Reorder16} />
+                                            <Animated.View style={styles.reorderHandle}>
+                                                <Icon icon={Reorder16} />
+                                            </Animated.View>
                                         </GestureDetector>
                                     </Animated.View>
                                 )}
