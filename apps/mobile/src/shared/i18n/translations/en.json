@@ -256,6 +256,9 @@
             "protectLater": "Protect account later"
         }
     },
+    "compactAccountSelector": {
+        "addOrEdit": "Add or Edit"
+    },
     "addWallet": {
         "title": "Add Wallet",
         "subtitle": "Choose how you want to add a wallet.",

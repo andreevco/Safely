@@ -1,14 +1,15 @@
-import { TouchableOpacity as RNTouchableOpacity, TouchableOpacityProps } from 'react-native';
+import { forwardRef } from 'react';
+import { TouchableOpacity as RNTouchableOpacity, TouchableOpacityProps, View } from 'react-native';
 
 /**
  * TouchableOpacity with configured active opacity
  */
-export const TouchableOpacity = (props: TouchableOpacityProps) => {
+export const TouchableOpacity = forwardRef<View, TouchableOpacityProps>((props, ref) => {
     const { children, ...rest } = props;
 
     return (
-        <RNTouchableOpacity activeOpacity={0.8} {...rest}>
+        <RNTouchableOpacity ref={ref} activeOpacity={0.8} {...rest}>
             {children}
         </RNTouchableOpacity>
     );
-};
+});

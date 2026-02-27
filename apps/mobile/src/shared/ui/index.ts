@@ -6,6 +6,7 @@ export { Button } from './Button';
 export { Actions } from './Actions';
 export { Cell } from './Cell';
 export { List } from './List';
+export { PopupMenu } from './PopupMenu';
 export { Banner } from './Banner';
 export { Switch } from './Switch';
 export { SlideButton } from './SlideButton';
