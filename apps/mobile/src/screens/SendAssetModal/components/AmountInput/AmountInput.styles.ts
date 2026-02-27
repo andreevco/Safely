@@ -45,6 +45,9 @@ export const styles = StyleSheet.create(theme => ({
         justifyContent: 'center',
         alignItems: 'center'
     },
+    switchButton: {
+        alignSelf: 'flex-start'
+    },
     secondaryCurrencyContainer: {
         flexDirection: 'row',
         alignItems: 'center',
