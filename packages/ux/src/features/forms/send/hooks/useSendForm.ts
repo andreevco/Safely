@@ -172,7 +172,10 @@ export function useSendForm(props: UseSendFormOptions) {
         (isMax: boolean): string | void => {
             dispatch({ type: 'SET_IS_MAX', value: isMax });
 
-            if (!isMax) return;
+            if (!isMax) {
+                skipNextAmountValidation.current = false;
+                return;
+            }
 
             const asset = state.parsed.asset;
             if (!asset) return;

@@ -1,11 +1,21 @@
-import { BtcAsset, CryptoAssetAmount } from '../../entities';
+import { BtcAsset, BtcAssetAmount } from '../../entities';
 import { TransactionFeeCrypto } from '../shared';
 
-export interface BtcTransferRequest {
+export type BtcTransferRequest = BtcTransferRequestNotMax | BtcTransferRequestMax;
+
+export type BtcTransferRequestNotMax = {
+    type: 'not-max';
     recipientAddress: string;
-    amount: CryptoAssetAmount<BtcAsset>;
+    amount: BtcAssetAmount;
     feeType: BtcFeeType;
-}
+};
+
+export type BtcTransferRequestMax = {
+    type: 'max';
+    recipientAddress: string;
+    estimatedAmount: BtcAssetAmount;
+    feeType: BtcFeeType;
+};
 
 export type BtcEstimation = {
     fee: TransactionFeeCrypto<BtcAsset>;
