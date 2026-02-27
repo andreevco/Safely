@@ -1,4 +1,4 @@
-import { Children, type ReactNode, useMemo } from 'react';
+import { Children, cloneElement, isValidElement, useMemo } from 'react';
 import { View, ViewProps } from 'react-native';
 import { UnistylesVariants } from 'react-native-unistyles';
 
@@ -18,14 +18,15 @@ export const Group = (props: GroupProps) => {
         const items = Children.toArray(children).filter(child => !!child);
 
         switch (variant) {
-            case 'divided':
-                return items.reduce<ReactNode[]>((acc, child, index) => {
-                    acc.push(child);
-                    if (index < items.length - 1) {
-                        acc.push(<View key={`divider-${index}`} style={styles.divider} />);
-                    }
-                    return acc;
-                }, []);
+            case 'divided': {
+                const last = items[items.length - 1];
+                if (isValidElement(last)) {
+                    items[items.length - 1] = cloneElement(last, {
+                        showDivider: false
+                    } as Record<string, unknown>);
+                }
+                return items;
+            }
             case 'separated':
                 return items.map((child, index) => {
                     return (

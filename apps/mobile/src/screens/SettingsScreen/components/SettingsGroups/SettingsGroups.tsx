@@ -6,7 +6,6 @@ import { useBootConfig } from '@safely/ux';
 
 import { SettingsStackNavigationProp } from '@mobile/app/navigation/types';
 import { Cell, List } from '@mobile/shared/ui';
-import { Chevron } from '@mobile/shared/ui/Cell/components';
 
 interface SettingsItem {
     key: string;
@@ -85,15 +84,14 @@ export const SettingsGroups = () => {
                                 <Cell.Content>
                                     <Cell.Row>
                                         <Cell.Title>{t(item.titleKey)}</Cell.Title>
-                                        {item.hasValue ? (
+                                        {item.hasValue && (
                                             <Cell.Value variant="bodyL" color="tertiary">
                                                 {getItemValue(item.key)}
                                             </Cell.Value>
-                                        ) : (
-                                            <Chevron />
                                         )}
                                     </Cell.Row>
                                 </Cell.Content>
+                                {!item.hasValue && <Cell.Chevron />}
                             </Cell>
                         ))}
                     </List.Group>
