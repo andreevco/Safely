@@ -103,6 +103,9 @@ importers:
       '@safely/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@safely/sync':
+        specifier: workspace:*
+        version: link:../../packages/sync
       '@safely/ux':
         specifier: workspace:*
         version: link:../../packages/ux
@@ -413,6 +416,9 @@ importers:
       '@safely/core':
         specifier: workspace:*
         version: link:../core
+      '@safely/sync':
+        specifier: workspace:*
+        version: link:../sync
       '@tanstack/query-async-storage-persister':
         specifier: ^5.90.18
         version: 5.90.18

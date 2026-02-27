@@ -1,4 +1,5 @@
 import { keepPreviousData, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMemo } from 'react';
 
 import {
     BtcWallet,
@@ -12,20 +13,20 @@ import {
     PortfolioFactory,
     PortfolioMeta,
     PortfolioNetworkType,
-    PortfolioType
+    PortfolioType,
+    IPortfolioId,
+    generateBip39Accessor
 } from '@safely/core';
-import { IPortfolioId } from '@safely/core/entities/portfolio/portfolio-id';
-import { generateBip39Accessor } from '@safely/core/entities/seed';
 
 import {
     useTranslate,
     useErrorToast,
     useSuspenseQuery,
-    useAccountLocalStorage
+    useAccountLocalStorage,
+    useSecurityCheck
 } from '../../shared';
-import { useSecurityCheck } from '../../shared/security';
 import { useActiveAccountSyncedStorage } from '../../shared/storage/account/synced';
-import { useActiveAccountQueryKey } from '../account';
+import { useActiveAccount, useActiveAccountQueryKey } from '../account';
 import { useToast } from '../toast';
 
 export function usePortfoliosQuery() {
@@ -34,9 +35,15 @@ export function usePortfoliosQuery() {
     return useSuspenseQuery(config);
 }
 
+export function usePortfoliosFactory() {
+    const account = useActiveAccount();
+    return useMemo(() => new PortfolioFactory(account.secretEncryptor), [account.secretEncryptor]);
+}
+
 function usePortfoliosQueryConfig() {
     const accountQueryKey = useActiveAccountQueryKey();
     const { get } = useActiveAccountSyncedStorage('portfolios');
+    const account = useActiveAccount();
 
     return {
         queryKey: accountQueryKey.portfolios.toKey(),
@@ -46,7 +53,7 @@ function usePortfoliosQueryConfig() {
                 return null;
             }
 
-            return data.map(a => PortfolioFactory.restorePortfolio(sdk.secretEncryptor, a));
+            return data.map(a => PortfolioFactory.restorePortfolio(account.secretEncryptor, a));
         },
         staleTime: Infinity,
         placeholderData: keepPreviousData
@@ -54,12 +61,12 @@ function usePortfoliosQueryConfig() {
 }
 
 export function usePortfolios() {
-    const accounts = usePortfoliosQuery().data;
-    if (!accounts) {
-        throw new Error('Unexpected accounts query');
+    const portfolios = usePortfoliosQuery().data;
+    if (!portfolios) {
+        throw new Error('Unexpected portfolios query');
     }
 
-    return accounts;
+    return portfolios;
 }
 
 function useSetPortfolios() {
@@ -101,11 +108,11 @@ export function useGeneratePortfolio() {
     const errorToast = useErrorToast({
         PortfolioGenerationFailedError: 'importWalletScreen.errors.failedToGenerate'
     });
+    const factory = usePortfoliosFactory();
 
     return useMutation<PortfolioBip39, Error, void>({
         async mutationFn() {
             await delay();
-            const factory = new PortfolioFactory(sdk.secretEncryptor);
             using accessorVault = generateBip39Accessor();
 
             const portfolio = await factory.generatePortfolioBip39(accessorVault, {
@@ -134,11 +141,11 @@ export function useImportPortfolio() {
         InvalidMnemonicError: 'importWalletScreen.errors.invalidMnemonic',
         PortfolioAlreadyExistsError: 'importWalletScreen.errors.alreadyExists'
     });
+    const factory = usePortfoliosFactory();
 
     return useMutation<Portfolio, Error, IMnemonicAccessor>({
         async mutationFn(accessor) {
             await delay();
-            const factory = new PortfolioFactory(sdk.secretEncryptor);
 
             const portfolio = await factory.generatePortfolio(accessor, {
                 network: PortfolioNetworkType.MAINNET,
@@ -397,12 +404,6 @@ export function useChangePortfolioMeta() {
             return portfolio;
         }
     });
-}
-
-export function useHasAccount() {
-    const { data: activePortfolio } = useActivePortfolioEntitiesQuery();
-    const { data: portfolios } = usePortfoliosQuery();
-    return activePortfolio !== null && portfolios !== null;
 }
 
 export function useActivePortfolioEntities() {

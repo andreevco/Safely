@@ -1,7 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 
-import { useActiveAccount, useSignOutFromAccount } from '@safely/ux';
+import { useActiveAccount, useDeleteAccount } from '@safely/ux';
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { Cell, List, Text } from '@mobile/shared/ui';
@@ -11,8 +11,8 @@ import { styles } from './SignOutAccountButton.styles';
 export const SignOutAccountButton = () => {
     const { t } = useTranslation();
     const rootNavigation = useNavigation<RootStackNavigationProp>();
-    const accountName = useActiveAccount()!.name;
-    const { mutateAsync: signOutAccount } = useSignOutFromAccount();
+    const accountName = useActiveAccount().meta.name;
+    const { mutateAsync: signOutAccount } = useDeleteAccount();
 
     const handleSignOut = () => {
         rootNavigation.navigate('DestructiveConfirmSheet', {

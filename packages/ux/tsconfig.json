@@ -6,6 +6,7 @@
         "baseUrl": "./src",
         "rootDir": "../",
         "paths": {
+            "@safely/sync": ["../../sync/src"],
             "@safely/core": ["../../core/src"],
             "@safely/core/api/*": ["../../core/src/api/*"],
             "@safely/core/*": ["../../core/src/*"]

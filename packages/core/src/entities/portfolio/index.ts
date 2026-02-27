@@ -1,6 +1,7 @@
 import { PortfolioBip39 } from './portfolio-bip39';
 
 export * from './I-portfolio';
+export * from './portfolio-id';
 export * from './portfolio-bip39';
 export * from './portfolio-factory';
 export * from './portfolio-meta';

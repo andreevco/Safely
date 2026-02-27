@@ -10,14 +10,11 @@ export const sAccountMetaIconColor = z.object({
     value: z.string()
 });
 
-export const sAccountMeta = z.object({
-    name: z.string(),
-    icon: z.union([sAccountMetaIconEmoji, sAccountMetaIconColor])
-});
-
-export const sAccountDataSchema = z.union([
+export type AccountMeta = Exclude<z.infer<typeof sAccountMeta>, null>;
+export const sAccountMeta = z.union([
     z.object({
-        meta: sAccountMeta
+        name: z.string(),
+        icon: z.union([sAccountMetaIconEmoji, sAccountMetaIconColor])
     }),
     z.null()
 ]);

@@ -7,3 +7,4 @@ export * from './portfolio';
 export * from './recipient';
 export * from './errors';
 export * from './explorer';
+export * from './seed';
