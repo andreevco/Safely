@@ -90,10 +90,10 @@ export const PortfoliosList = (props: PortfoliosListProps) => {
                     >
                         {({ panGesture }) => (
                             <Cell
-                                style={styles.portfolioItem}
-                                containerStyle={styles.portfolioItemContainer}
                                 onPress={isEditing ? undefined : handlePress}
                                 onLongPress={isEditing ? undefined : onEditStart}
+                                style={styles.portfolioItemContent}
+                                containerStyle={styles.portfolioItem}
                                 disabled={isEditing}
                             >
                                 <Cell.Content>

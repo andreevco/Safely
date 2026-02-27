@@ -51,7 +51,7 @@ export const PopupMenu = forwardRef<PopupMenuRef, PopupMenuProps>((props, ref) =
 
     const close = useCallback(() => {
         opacity.value = withTiming(0, { duration: 120 });
-        scale.value = withTiming(0.35, { duration: 150 }, finished => {
+        scale.value = withTiming(0.35, { duration: 120 }, finished => {
             if (finished) scheduleOnRN(toggleVisible);
         });
     }, [opacity, scale, toggleVisible]);
@@ -61,8 +61,8 @@ export const PopupMenu = forwardRef<PopupMenuRef, PopupMenuProps>((props, ref) =
     const onMenuLayout = useCallback(
         (e: LayoutChangeEvent) => {
             menuHeight.value = e.nativeEvent.layout.height;
-            opacity.value = withTiming(1, { duration: 180 });
-            scale.value = withSpring(1, { damping: 22, stiffness: 380, mass: 0.7 });
+            opacity.value = withTiming(1, { duration: 120 });
+            scale.value = withSpring(1, { damping: 19, stiffness: 650, mass: 0.27 });
         },
         [menuHeight, opacity, scale]
     );
