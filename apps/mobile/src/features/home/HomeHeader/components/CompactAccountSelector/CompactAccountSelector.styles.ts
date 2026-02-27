@@ -1,4 +1,3 @@
-import Color from 'color';
 import { StyleSheet } from 'react-native-unistyles';
 
 export const styles = StyleSheet.create(theme => ({
@@ -17,10 +16,10 @@ export const styles = StyleSheet.create(theme => ({
         minHeight: 48
     },
     list: {
-        shadowColor: new Color(theme.colors.other.constant.black).alpha(0.8).toString(),
-        shadowOffset: { width: 0, height: 16 },
+        shadowColor: '#0C0C0D',
+        shadowOffset: { width: 0, height: 12 },
         shadowOpacity: 1,
-        shadowRadius: 16,
-        elevation: 16
+        shadowRadius: 24,
+        elevation: 24
     }
 }));
