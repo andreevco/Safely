@@ -159,8 +159,8 @@
             "transaction": "Транзакция"
         },
         "slider": {
-            "confirm": "Подтвердить",
-            "slideToSend": "Сдвиньте для отправки",
+            "send": "Отправить",
+            "slideToConfirm": "Сдвиньте для подтверждения",
             "estimatingFee": "Оценка комиссии…",
             "backToWallet": "Вернуться в кошелёк"
         },
