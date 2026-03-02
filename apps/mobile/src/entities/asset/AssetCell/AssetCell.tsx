@@ -8,10 +8,11 @@ import { Cell } from '@mobile/shared/ui';
 type AssetCellProps = {
     cryptoAssetAmount: CryptoAssetAmount;
     price: CryptoFiatRate | null;
+    showDivider?: boolean;
 };
 
 export const AssetCell = (props: AssetCellProps) => {
-    const { cryptoAssetAmount, price } = props;
+    const { cryptoAssetAmount, price, showDivider = true } = props;
     const formatter = useNumberFormatter();
 
     const activeFiat = useActiveFiat();
@@ -26,7 +27,7 @@ export const AssetCell = (props: AssetCellProps) => {
         }).format(price.value.toNumber());
 
     return (
-        <Cell>
+        <Cell showDivider={showDivider}>
             <Cell.Image type="image" image={cryptoAssetAmount.asset.image} />
             <Cell.Content>
                 <Cell.Row>

@@ -28,11 +28,13 @@ export function useAssets() {
                 btcApi.getXpub(wallet, {
                     secondaryCurrency: fiatSymbol
                 }),
-                priceApi.getCurrentPrice({
-                    token: 'native',
-                    currency: fiatSymbol,
-                    blockchain: 'bitcoin'
-                })
+                priceApi
+                    .getCurrentPrice({
+                        token: 'native',
+                        currency: fiatSymbol,
+                        blockchain: 'bitcoin'
+                    })
+                    .catch(() => null)
             ]);
 
             const btcAmount = new CryptoAssetAmount({
