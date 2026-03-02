@@ -23,5 +23,8 @@ export const styles = StyleSheet.create((theme, rt) => ({
         margin: -16,
         paddingLeft: 8,
         marginLeft: -8
+    },
+    editingBackdrop: {
+        flex: 1
     }
 }));

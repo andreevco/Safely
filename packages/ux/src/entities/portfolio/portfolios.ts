@@ -184,8 +184,13 @@ export function useDeletePortfolio() {
 
 export function useReorderPortfolios() {
     const { mutateAsync } = useSetPortfolios();
+    const client = useQueryClient();
+    const accountQueryKey = useActiveAccountQueryKey();
 
     return useMutation<void, Error, Portfolio[]>({
+        onMutate(nextPortfoliosOrder) {
+            client.setQueryData(accountQueryKey.portfolios.toKey(), nextPortfoliosOrder);
+        },
         async mutationFn(nextPortfoliosOrder) {
             await mutateAsync(nextPortfoliosOrder);
         }

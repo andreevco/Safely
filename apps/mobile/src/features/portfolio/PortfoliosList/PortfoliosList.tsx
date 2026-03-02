@@ -1,6 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
-import { useCallback } from 'react';
-import { ScrollView } from 'react-native';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { Pressable, ScrollView } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
 import Animated, { FadeIn, FadeOut, useSharedValue } from 'react-native-reanimated';
 
@@ -32,6 +32,21 @@ export const PortfoliosList = (props: PortfoliosListProps) => {
     const draggedIndex = useSharedValue<number | null>(null);
     const offsetY = useSharedValue(0);
 
+    const [orderedPortfolios, setOrderedPortfolios] = useState(portfolios);
+    const pendingDragReset = useRef(false);
+
+    useEffect(() => {
+        setOrderedPortfolios(portfolios);
+    }, [portfolios]);
+
+    useLayoutEffect(() => {
+        if (pendingDragReset.current) {
+            pendingDragReset.current = false;
+            draggedIndex.value = null;
+            offsetY.value = 0;
+        }
+    }, [orderedPortfolios, draggedIndex, offsetY]);
+
     const handleSelect = useCallback(
         (portfolio: Portfolio) => {
             setActivePortfolio({ id: portfolio.id }, { onSuccess: onSelect });
@@ -54,19 +69,16 @@ export const PortfoliosList = (props: PortfoliosListProps) => {
 
     const moveItem = useCallback(
         (fromIndex: number, toIndex: number) => {
-            const newPortfolios = [...portfolios];
+            const newPortfolios = [...orderedPortfolios];
             const clampedToIndex = Math.max(0, Math.min(toIndex, newPortfolios.length - 1));
 
             newPortfolios.splice(clampedToIndex, 0, newPortfolios.splice(fromIndex, 1)[0]);
 
-            requestAnimationFrame(() => {
-                draggedIndex.value = null;
-                offsetY.value = 0;
-            });
-
+            pendingDragReset.current = true;
+            setOrderedPortfolios(newPortfolios);
             reorderPortfolios(newPortfolios);
         },
-        [portfolios, draggedIndex, offsetY, reorderPortfolios]
+        [orderedPortfolios, reorderPortfolios]
     );
 
     return (
@@ -74,7 +86,7 @@ export const PortfoliosList = (props: PortfoliosListProps) => {
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.listContentContainer}
         >
-            {portfolios.map((portfolio, index) => {
+            {orderedPortfolios.map((portfolio, index) => {
                 const isActive = activePortfolio.id.isEq(portfolio.id);
                 const handlePress = isActive ? undefined : () => handleSelect(portfolio);
 
@@ -83,7 +95,7 @@ export const PortfoliosList = (props: PortfoliosListProps) => {
                         gap={2}
                         key={portfolio.id.toString()}
                         index={index}
-                        itemCount={portfolios.length}
+                        itemCount={orderedPortfolios.length}
                         draggedIndex={draggedIndex}
                         offsetY={offsetY}
                         moveItem={moveItem}
@@ -137,6 +149,7 @@ export const PortfoliosList = (props: PortfoliosListProps) => {
                 );
             })}
             {Footer && <Footer />}
+            {isEditing && <Pressable style={styles.editingBackdrop} onPress={onEditEnd} />}
         </ScrollView>
     );
 };
