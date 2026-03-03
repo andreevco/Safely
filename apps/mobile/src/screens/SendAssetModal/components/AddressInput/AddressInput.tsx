@@ -1,6 +1,6 @@
 import { Ref, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { TextInput, View } from 'react-native';
+import { Keyboard, TextInput, View } from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';
 
 import { useScanQrScheme } from '@safely/ux';
@@ -26,7 +26,7 @@ export const AddressInput = (props: AddressInputProps) => {
     const { t } = useTranslation();
     const { theme } = useUnistyles();
 
-    const handleScan = useScanQrScheme({
+    const scan = useScanQrScheme({
         allowedSchemes: ['btc-transfer'] as const,
         onResult: useCallback(
             scheme => {
@@ -35,6 +35,11 @@ export const AddressInput = (props: AddressInputProps) => {
             [onChangeText]
         )
     });
+
+    const handleScan = useCallback(() => {
+        Keyboard.dismiss();
+        scan();
+    }, [scan]);
 
     const [isFocused, setIsFocused] = useState(false);
 

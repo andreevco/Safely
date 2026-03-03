@@ -23,13 +23,14 @@ import { ConfirmationState } from './ConfirmationScreen.types';
 
 export type SendConfirmationParams = {
     confirmationResult: SendFormResult;
+    onSuccess?: () => void;
 };
 
 export type ConfirmationScreenProps = StaticScreenProps<SendConfirmationParams>;
 
 export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
     const { route } = props;
-    const { confirmationResult } = route.params;
+    const { confirmationResult, onSuccess } = route.params;
     const navigation = useNavigation();
     const { t } = useTranslation();
     const btcWallet = useActiveBtcWallet();
@@ -44,13 +45,14 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
         try {
             setConfirmationState({ type: 'sending' });
             await send();
+            onSuccess?.();
             notificationAsync(NotificationFeedbackType.Success);
             setConfirmationState({ type: 'success' });
         } catch (error) {
             notificationAsync(NotificationFeedbackType.Error);
             setConfirmationState({ type: 'error', error });
         }
-    }, [send]);
+    }, [send, onSuccess]);
 
     const onGoBack = useCallback(() => {
         navigation.getParent()?.goBack();
@@ -125,7 +127,8 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
                                 formatter
                             )}
                             cryptoAmount={confirmationResult.amount.cryptoAssetAmount?.format(
-                                formatter
+                                formatter,
+                                { fullPrecision: true }
                             )}
                         />
                         <TransactionFee estimation={txTemplate?.estimation} />

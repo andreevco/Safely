@@ -180,9 +180,9 @@
             "transaction": "Transaction"
         },
         "slider": {
-            "confirm": "Confirm",
-            "slideToSend": "Slide to send",
-            "estimatingFee": "Estimating fee…",
+            "send": "Send",
+            "slideToConfirm": "slide to confirm",
+            "estimatingFee": "estimating fee…",
             "backToWallet": "Back to Wallet"
         },
         "sendError": {

@@ -32,11 +32,11 @@ export const ConfirmationFooter = (props: Props) => {
             {(state.type === 'idle' || state.type === 'sending') && (
                 <Animated.View exiting={FadeOut.duration(150)}>
                     <SlideButton
-                        label={t('confirmation.slider.confirm')}
+                        label={t('confirmation.slider.send')}
                         description={
                             isEstimating
                                 ? t('confirmation.slider.estimatingFee')
-                                : t('confirmation.slider.slideToSend')
+                                : t('confirmation.slider.slideToConfirm')
                         }
                         disabled={isEstimating}
                         loading={state.type === 'sending'}

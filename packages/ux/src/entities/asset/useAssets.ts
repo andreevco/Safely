@@ -28,11 +28,14 @@ export function useAssets() {
                 btcApi.getXpub(wallet, {
                     secondaryCurrency: fiatSymbol
                 }),
-                priceApi.getCurrentPrice({
-                    token: 'native',
-                    currency: fiatSymbol,
-                    blockchain: 'bitcoin'
-                })
+                priceApi
+                    .getCurrentPrice({
+                        token: 'native',
+                        currency: fiatSymbol,
+                        blockchain: 'bitcoin'
+                    })
+                    // TODO Think again, maybe detach useBalances in separate query
+                    .catch(() => null)
             ]);
 
             const btcAmount = new CryptoAssetAmount({

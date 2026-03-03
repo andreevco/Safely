@@ -25,8 +25,8 @@ export function useChart(asset: CryptoAsset, startDate: number) {
                 token: 'native',
                 blockchain: 'bitcoin',
                 currency: fiat.id.symbol,
-                start_date: startDate,
-                end_date: Date.now()
+                start_date: Math.floor(startDate / 1000),
+                end_date: Math.floor(Date.now() / 1000)
             });
 
             return response;

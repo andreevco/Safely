@@ -2,21 +2,13 @@ import { notificationAsync, NotificationFeedbackType } from 'expo-haptics';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TextInput } from 'react-native';
-import { useReanimatedKeyboardAnimation } from 'react-native-keyboard-controller';
-import Animated, {
-    useAnimatedReaction,
-    useAnimatedStyle,
-    useSharedValue
-} from 'react-native-reanimated';
 
 import { usePasscodeState } from '@mobile/screens/PasscodeModal/hooks';
 import { PASSCODE_DIGITS } from '@mobile/shared/constants';
-import { Button } from '@mobile/shared/ui/Button';
 import { PasscodeInput } from '@mobile/shared/ui/PasscodeInput';
+import { PasscodeLayout } from '@mobile/shared/ui/PasscodeLayout';
 import { Screen } from '@mobile/shared/ui/Screen';
 import { Text } from '@mobile/shared/ui/Text';
-
-import { styles } from './PasscodeSetup.styles';
 
 type PasscodeSetupProps = {
     headerType: 'back' | 'close';
@@ -36,22 +28,10 @@ export const PasscodeSetup = ({
     onComplete
 }: PasscodeSetupProps) => {
     const { t } = useTranslation();
-    const { height, progress } = useReanimatedKeyboardAnimation();
     const inputRef = useRef<TextInput>(null);
-    const maxHeight = useSharedValue(0);
 
     const passcodeState = usePasscodeState();
     const [firstPasscode, setFirstPasscode] = useState<string | null>(null);
-
-    useAnimatedReaction(
-        () => Math.abs(Math.floor(height.value)),
-        value => {
-            if (value > maxHeight.value) {
-                maxHeight.value = value;
-            }
-        },
-        [maxHeight, height]
-    );
 
     const isReenterStep = firstPasscode !== null;
     const pinFullyEntered = passcodeState.inputValue.length === passcodeState.digitsAmount;
@@ -92,15 +72,6 @@ export const PasscodeSetup = ({
         }
     }, [pinFullyEntered, handlePasscodeComplete]);
 
-    const contentAnimatedStyle = useAnimatedStyle(() => ({
-        paddingBottom: maxHeight.value
-    }));
-
-    const switchButtonAnimatedStyle = useAnimatedStyle(() => ({
-        opacity: progress.value,
-        transform: [{ translateY: height.value }]
-    }));
-
     const currentTitle = isReenterStep ? reenterTitle : title;
     const currentDescription = isReenterStep ? reenterDescription : description;
 
@@ -112,20 +83,19 @@ export const PasscodeSetup = ({
                 ) : (
                     <Screen.Header.CloseButton />
                 )}
+
+                {!isReenterStep && (
+                    <Screen.Header.Button type="small" onPress={passcodeState.switchDigitsAmount}>
+                        <Text variant="labelM" color="primary">
+                            {passcodeState.digitsAmount === PASSCODE_DIGITS.SHORT
+                                ? t('passcode.switchToSix')
+                                : t('passcode.switchToFour')}
+                        </Text>
+                    </Screen.Header.Button>
+                )}
             </Screen.Header>
 
-            <Animated.View style={[styles.content, contentAnimatedStyle]}>
-                <Animated.View style={[styles.textContainer]}>
-                    <Text textAlign="center" variant="titleM">
-                        {currentTitle}
-                    </Text>
-                    {currentDescription && (
-                        <Text textAlign="center" variant="bodyL" color="secondary">
-                            {currentDescription}
-                        </Text>
-                    )}
-                </Animated.View>
-
+            <PasscodeLayout title={currentTitle} description={currentDescription}>
                 <PasscodeInput
                     ref={inputRef}
                     numberOfDigits={passcodeState.digitsAmount}
@@ -134,22 +104,7 @@ export const PasscodeSetup = ({
                     isSuccess={passcodeState.isSuccess}
                     isError={passcodeState.isError}
                 />
-            </Animated.View>
-
-            {!isReenterStep && (
-                <Animated.View style={[styles.stickyButtonContainer, switchButtonAnimatedStyle]}>
-                    <Button
-                        size="small"
-                        type="secondary"
-                        style={styles.stickyButton}
-                        onPress={passcodeState.switchDigitsAmount}
-                    >
-                        {passcodeState.digitsAmount === PASSCODE_DIGITS.SHORT
-                            ? t('passcode.switchToSix')
-                            : t('passcode.switchToFour')}
-                    </Button>
-                </Animated.View>
-            )}
+            </PasscodeLayout>
         </Screen>
     );
 };

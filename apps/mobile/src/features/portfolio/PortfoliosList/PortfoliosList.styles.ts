@@ -8,11 +8,11 @@ export const styles = StyleSheet.create((theme, rt) => ({
         paddingBottom: rt.insets.bottom + theme.spacing[8]
     },
     portfolioItem: {
-        height: 48
-    },
-    portfolioItemContainer: {
         borderRadius: theme.radius.md,
         overflow: 'hidden'
+    },
+    portfolioItemContent: {
+        height: 48
     },
     rightIconsContainer: {
         flexDirection: 'row',

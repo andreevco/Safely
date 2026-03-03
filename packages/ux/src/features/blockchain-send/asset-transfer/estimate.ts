@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { skipToken, useQuery } from '@tanstack/react-query';
 
 import {
     assertUnreachable,
@@ -24,7 +24,7 @@ export const estimationKey = defineQueryKeys('estimation', {
 });
 
 export const maxSendKey = defineQueryKeys('maxSendKey', {
-    form(__: Pick<SendFormResult, 'blockchain' | 'recipient'>) {
+    form(__: Pick<SendFormResult, 'blockchain' | 'recipient'> | undefined) {
         return {
             services: mappedParams(
                 (_: { btcEstimator: BtcEstimator }) => finalKey,
@@ -69,21 +69,25 @@ export function useEstimateAssetTransfer(form: SendFormResult) {
     });
 }
 
-export function useMaxSendAssetTransfer(form: Pick<SendFormResult, 'blockchain' | 'recipient'>) {
+export function useMaxSendAssetTransfer(
+    form: Pick<SendFormResult, 'blockchain' | 'recipient'> | undefined
+) {
     const btcEstimator = useBtcEstimator();
 
     return useQuery({
         queryKey: maxSendKey.form(form).services({ btcEstimator }).toKey(),
-        async queryFn() {
-            if (form.blockchain === BLOCKCHAIN_NAME.BTC) {
-                return btcEstimator.getMaxSendValue({
-                    recipientAddress: form.recipient.address,
-                    feeType: BtcFeeType.FAST
-                });
-            }
+        queryFn: form
+            ? async () => {
+                  if (form.blockchain === BLOCKCHAIN_NAME.BTC) {
+                      return btcEstimator.getMaxSendValue({
+                          recipientAddress: form.recipient.address,
+                          feeType: BtcFeeType.FAST
+                      });
+                  }
 
-            assertUnreachable(form.blockchain);
-        },
+                  assertUnreachable(form.blockchain);
+              }
+            : skipToken,
         refetchInterval: QUERIES_REFETCH_INTERVAL.TRANSACTION,
         refetchOnMount: 'always',
         retry: 2

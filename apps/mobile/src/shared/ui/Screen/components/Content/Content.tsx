@@ -7,14 +7,20 @@ import { styles } from './Content.styles';
 interface ContentProps {
     children: React.ReactNode;
     style?: ViewStyle;
+    bottomInset?: boolean;
 }
 
 export const Content = (props: ContentProps) => {
-    const { children, style } = props;
+    const { children, style, bottomInset = true } = props;
     const isInsideTabBar = !!useBottomTabBarHeightSafely();
 
     return (
-        <View style={[styles.container({ shouldAddBottomInsets: !isInsideTabBar }), style]}>
+        <View
+            style={[
+                styles.container({ shouldAddBottomInsets: bottomInset && !isInsideTabBar }),
+                style
+            ]}
+        >
             {children}
         </View>
     );

@@ -4,7 +4,9 @@ import { useTranslation } from 'react-i18next';
 import { TextInput, View } from 'react-native';
 import { MaskedTextInputRef } from 'react-native-advanced-input-mask';
 import PagerView from 'react-native-pager-view';
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
+import { ellipsisMiddle } from '@safely/core';
 import {
     useSendForm,
     SendFormResult,
@@ -15,7 +17,7 @@ import {
 } from '@safely/ux';
 
 import { SendConfirmationParams } from '@mobile/screens/ConfirmationScreen';
-import { Button, Screen } from '@mobile/shared/ui';
+import { Button, Screen, Text } from '@mobile/shared/ui';
 import { ArrowLeft16, Icon } from '@mobile/shared/ui/Icon';
 
 import { styles } from './SendAssetModal.styles';
@@ -39,11 +41,11 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
     const formatter = useNumberFormatter();
     const { numberFormatLocale } = useAppContext();
     const activeFiat = useActiveFiat();
-
     const handleSubmit = useCallback(
-        (confirmationResult: SendFormResult) => {
+        (confirmationResult: SendFormResult, onSuccess: () => void) => {
             navigation.navigate('ConfirmationModal', {
-                confirmationResult
+                confirmationResult,
+                onSuccess
             });
         },
         [navigation]
@@ -134,7 +136,19 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
                         <Icon icon={ArrowLeft16} />
                     </Screen.Header.Button>
                 )}
-                <Screen.Header.Title>{t('send.title')}</Screen.Header.Title>
+                <Screen.Header.Title>
+                    <Text variant="titleS">{t('send.title')}</Text>
+                    {state.parsed.recipient && (
+                        <Animated.View
+                            entering={FadeIn.duration(150)}
+                            exiting={FadeOut.duration(150)}
+                        >
+                            <Text variant="bodyM" color="tertiary">
+                                {ellipsisMiddle(state.parsed.recipient.address)}
+                            </Text>
+                        </Animated.View>
+                    )}
+                </Screen.Header.Title>
                 <View style={styles.nextButton}>
                     <Button
                         size="small"
