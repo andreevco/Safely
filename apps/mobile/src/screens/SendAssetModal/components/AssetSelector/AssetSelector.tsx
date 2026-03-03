@@ -11,10 +11,10 @@ export const AssetSelector = () => (
         <Image source={BTC_ASSET.image} style={styles.image} />
         <View>
             <Text style={styles.label} variant="labelM">
-                {BTC_ASSET.name}
+                {BTC_ASSET.symbol}
             </Text>
             <Text variant="bodyM" color="secondary">
-                {BTC_ASSET.symbol}
+                {BTC_ASSET.name}
             </Text>
         </View>
     </View>
