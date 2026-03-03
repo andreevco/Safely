@@ -1,5 +1,3 @@
-/* eslint-disable no-irregular-whitespace */
-
 import { useMemo } from 'react';
 import { View } from 'react-native';
 
@@ -77,9 +75,7 @@ export const ChartHeader = (props: ChartHeaderProps) => {
                     {asset.symbol} / {fiat.id.symbol}
                 </Text>
             </View>
-            {activePrice === undefined && diffInPercent !== 0 && (
-                <PriceDiff diff={diffInPercent} />
-            )}
+            {activePrice === undefined && diffInPercent !== 0 && <PriceDiff diff={diffInPercent} />}
         </View>
     );
 };
