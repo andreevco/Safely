@@ -34,6 +34,7 @@ export function useAssets() {
                         currency: fiatSymbol,
                         blockchain: 'bitcoin'
                     })
+                    // TODO Think again, maybe detach useBalances in separate query
                     .catch(() => null)
             ]);
 
