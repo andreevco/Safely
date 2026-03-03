@@ -55,6 +55,8 @@ export type SendStepId = (typeof SEND_STEPS)[number];
 export interface SendFormInitialValues {
     recipient?: string;
     amount?: string;
+    amountInputType?: AmountInputType;
+    stepIndex?: number;
 }
 
 export interface SendFormValues {
