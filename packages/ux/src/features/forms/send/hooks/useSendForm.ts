@@ -19,11 +19,12 @@ import {
     recipientSchema
 } from '../utils';
 import { calculateMaxAmount, reformatForInputType, validateAmount } from '../validators';
+import { useSendFormDraft } from './useSendFormDraft';
 
 const LAST_STEP_INDEX = SEND_STEPS.length - 1;
 
 export interface UseSendFormOptions {
-    onSubmit: (result: SendFormResult) => void;
+    onSubmit: (result: SendFormResult, onSuccess: () => void) => void;
     shouldResetForm?: boolean;
     initialValues?: SendFormInitialValues;
 }
@@ -31,7 +32,19 @@ export interface UseSendFormOptions {
 export function useSendForm(props: UseSendFormOptions) {
     const { onSubmit, shouldResetForm = true, initialValues } = props;
 
-    const [state, dispatch] = useReducer(sendFormReducer, initialValues, createInitialState);
+    const { initialDraft, saveDraft, clearDraft } = useSendFormDraft();
+
+    const resolvedInitialValues = useMemo(() => {
+        if (initialValues?.recipient) return initialValues;
+
+        return initialDraft ?? initialValues;
+    }, []);
+
+    const [state, dispatch] = useReducer(
+        sendFormReducer,
+        resolvedInitialValues,
+        createInitialState
+    );
     const { data: maxSendValue, promise: maxSendValuePromise } = useMaxSendAssetTransfer(
         state.parsed.recipient
             ? {
@@ -49,6 +62,24 @@ export function useSendForm(props: UseSendFormOptions) {
     const ratedAssets = assetsData ?? [];
     const ratedAssetsRef = useRef(ratedAssets);
     ratedAssetsRef.current = ratedAssets;
+
+    useEffect(() => {
+        if (state.values.recipient) {
+            saveDraft({
+                recipient: state.values.recipient,
+                amount: state.values.amount || undefined,
+                amountInputType: state.values.amountInputType,
+                stepIndex: state.stepIndex
+            });
+        } else {
+            clearDraft();
+        }
+    }, [
+        state.values.recipient,
+        state.values.amount,
+        state.values.amountInputType,
+        state.stepIndex
+    ]);
 
     const blockchain = state.parsed.recipient?.blockchain;
 
@@ -261,7 +292,8 @@ export function useSendForm(props: UseSendFormOptions) {
 
     const reset = useCallback(() => {
         dispatch({ type: 'RESET' });
-    }, []);
+        clearDraft();
+    }, [clearDraft]);
 
     const goPrev = useCallback(() => {
         dispatch({ type: 'PREV_STEP' });
@@ -289,22 +321,22 @@ export function useSendForm(props: UseSendFormOptions) {
             isMax: state.parsed.isMax
         };
 
-        onSubmit(result);
+        onSubmit(result, clearDraft);
 
         if (shouldResetForm) {
             dispatch({ type: 'RESET' });
         }
-    }, [state, onSubmit, shouldResetForm]);
+    }, [state, onSubmit, shouldResetForm, clearDraft]);
 
     useEffect(() => {
-        if (initialValues?.recipient) {
-            setRecipient(initialValues.recipient);
+        if (resolvedInitialValues?.recipient) {
+            setRecipient(resolvedInitialValues.recipient);
         }
     }, []);
 
     useEffect(() => {
-        if (initialValues?.amount && state.parsed.asset && !state.parsed.amount) {
-            setAmount(initialValues.amount);
+        if (resolvedInitialValues?.amount && state.parsed.asset && !state.parsed.amount) {
+            setAmount(resolvedInitialValues.amount);
         }
     }, [state.parsed.asset]);
 

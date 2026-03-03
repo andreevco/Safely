@@ -39,8 +39,10 @@ export function createInitialState(initialValues?: SendFormInitialValues): SendF
         ...INITIAL_STATE,
         values: {
             ...DEFAULT_VALUES,
-            recipient: initialValues.recipient
-        }
+            recipient: initialValues.recipient,
+            amountInputType: initialValues.amountInputType ?? 'crypto'
+        },
+        stepIndex: initialValues.stepIndex ?? 0
     };
 }
 

@@ -41,9 +41,10 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
     const activeFiat = useActiveFiat();
 
     const handleSubmit = useCallback(
-        (confirmationResult: SendFormResult) => {
+        (confirmationResult: SendFormResult, onSuccess: () => void) => {
             navigation.navigate('ConfirmationModal', {
-                confirmationResult
+                confirmationResult,
+                onSuccess
             });
         },
         [navigation]
