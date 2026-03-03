@@ -138,7 +138,10 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
                 <Screen.Header.Title>
                     <Text variant="titleS">{t('send.title')}</Text>
                     {state.parsed.recipient && (
-                        <Animated.View entering={FadeIn.duration(150)} exiting={FadeOut.duration(150)}>
+                        <Animated.View
+                            entering={FadeIn.duration(150)}
+                            exiting={FadeOut.duration(150)}
+                        >
                             <Text variant="bodyM" color="tertiary">
                                 {ellipsisMiddle(state.parsed.recipient.address)}
                             </Text>
