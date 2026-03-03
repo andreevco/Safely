@@ -161,7 +161,7 @@
         "slider": {
             "send": "Отправить",
             "slideToConfirm": "Сдвиньте для подтверждения",
-            "estimatingFee": "Оценка комиссии…",
+            "estimatingFee": "оценка комиссии…",
             "backToWallet": "Вернуться в кошелёк"
         },
         "sendError": {

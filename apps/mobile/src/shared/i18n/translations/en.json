@@ -182,7 +182,7 @@
         "slider": {
             "send": "Send",
             "slideToConfirm": "Slide to confirm",
-            "estimatingFee": "Estimating fee…",
+            "estimatingFee": "estimating fee…",
             "backToWallet": "Back to Wallet"
         },
         "sendError": {
