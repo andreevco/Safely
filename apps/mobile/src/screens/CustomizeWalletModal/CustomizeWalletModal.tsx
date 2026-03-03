@@ -53,7 +53,7 @@ export const CustomizeWalletModal = (props: CustomizeWalletModalProps) => {
                     {t('customizeWallet.save')}
                 </Button>
             </Screen.Header>
-            <Screen.Content>
+            <Screen.Content bottomInset={false}>
                 <CustomizeWalletContent
                     title={t('customizeWallet.title')}
                     description={t('customizeWallet.description')}
