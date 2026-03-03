@@ -16,10 +16,11 @@ type ChartHeaderProps = {
     asset: CryptoAsset;
     prices: [number, number][];
     selectedPeriod: ChartPeriod;
+    activePrice?: number;
 };
 
 export const ChartHeader = (props: ChartHeaderProps) => {
-    const { prices, asset, selectedPeriod } = props;
+    const { prices, asset, selectedPeriod, activePrice } = props;
     const rate = useRate(asset);
     const fiat = useActiveFiat();
 
@@ -55,17 +56,30 @@ export const ChartHeader = (props: ChartHeaderProps) => {
             useGrouping: true
         });
 
+    const formattedActivePrice =
+        activePrice !== undefined
+            ? formatter.formatFiat(activePrice, {
+                  currencyDisplay: 'symbol',
+                  currency: fiat.id.symbol,
+                  useGrouping: true
+              })
+            : null;
+
+    const displayPrice = formattedActivePrice ?? formattedRate;
+
     return (
         <View style={styles.container}>
             <View style={styles.titleContainer}>
                 <Text monospace variant="titleM">
-                    {formattedRate ?? '-'}
+                    {displayPrice ?? '-'}
                 </Text>
                 <Text style={styles.description} variant="bodyM" color="tertiary">
-                    {asset.symbol} / {fiat.id.symbol}
+                    {asset.symbol} / {fiat.id.symbol}
                 </Text>
             </View>
-            {diffInPercent !== 0 && <PriceDiff diff={diffInPercent} />}
+            {activePrice === undefined && diffInPercent !== 0 && (
+                <PriceDiff diff={diffInPercent} />
+            )}
         </View>
     );
 };
