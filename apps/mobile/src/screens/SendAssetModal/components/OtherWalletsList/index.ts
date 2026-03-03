@@ -1,0 +1,1 @@
+export { OtherWalletsList } from './OtherWalletsList';

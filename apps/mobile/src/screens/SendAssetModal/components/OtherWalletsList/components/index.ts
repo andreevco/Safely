@@ -1,0 +1,1 @@
+export { WalletCell } from './WalletCell';
