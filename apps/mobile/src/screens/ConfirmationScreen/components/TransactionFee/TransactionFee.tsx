@@ -24,15 +24,11 @@ export const TransactionFee: FC<{ estimation: Estimation | undefined }> = ({ est
                 estimation ? (
                     <FeeValue estimation={estimation} />
                 ) : (
-                    <Text
-                        variant="bodyM"
-                        skeletonVariant="transparentElement"
-                        skeletonWidth={100}
-                    />
+                    <Text variant="bodyM" skeletonVariant="transparentElement" skeletonWidth={64} />
                 )
             }
             subvalue={
-                <TransactionCell.Subvalue skeletonVariant="transparentElement" skeletonWidth={64}>
+                <TransactionCell.Subvalue skeletonVariant="transparentElement" skeletonWidth={40}>
                     {targetBlock !== undefined
                         ? t('confirmation.networkFee.timeMinutes', {
                               count: targetBlock * btcBlockWaitingTimeMinutes

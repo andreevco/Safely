@@ -160,8 +160,8 @@
         },
         "slider": {
             "send": "Отправить",
-            "slideToConfirm": "Сдвиньте для подтверждения",
-            "estimatingFee": "Оценка комиссии…",
+            "slideToConfirm": "сдвиньте для подтверждения",
+            "estimatingFee": "оценка комиссии…",
             "backToWallet": "Вернуться в кошелёк"
         },
         "sendError": {
