@@ -58,6 +58,11 @@
             "send": "Send",
             "receive": "Receive",
             "scan": "Scan"
+        },
+        "status": {
+            "addressCopied": "Address copied",
+            "updating": "Updating...",
+            "noInternet": "No internet connection"
         }
     },
     "accounts": {
