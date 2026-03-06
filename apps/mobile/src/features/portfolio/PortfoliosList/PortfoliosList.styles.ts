@@ -15,6 +15,9 @@ export const styles = StyleSheet.create((theme, rt) => ({
         borderRadius: theme.radius.md,
         overflow: 'hidden'
     },
+    portfolioItemContent: {
+        height: 48
+    },
     rightIconsContainer: {
         flexDirection: 'row',
         gap: theme.spacing[12]

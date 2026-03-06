@@ -1,0 +1,36 @@
+import { useQueryClient } from '@tanstack/react-query';
+import { useCallback, useMemo } from 'react';
+
+import { useActiveBtcWallet } from '../../../../entities';
+import { sendFormKeys } from '../keys';
+import { SendFormInitialValues } from '../types';
+
+type SendFormDraft = Required<Pick<SendFormInitialValues, 'recipient'>> &
+    Omit<SendFormInitialValues, 'recipient'>;
+
+export function useSendFormDraft() {
+    const wallet = useActiveBtcWallet();
+    const queryClient = useQueryClient();
+    const draftKey = sendFormKeys.draft(wallet.id.toString()).toKey();
+
+    const initialDraft = useMemo(() => queryClient.getQueryData<SendFormDraft>(draftKey), []);
+
+    const saveDraft = useCallback(
+        (data: SendFormDraft) => {
+            queryClient.setQueryData<SendFormDraft>(draftKey, data);
+        },
+        [queryClient, draftKey]
+    );
+
+    const clearDraft = useCallback(() => {
+        queryClient.removeQueries({
+            queryKey: draftKey
+        });
+    }, [queryClient, draftKey]);
+
+    return {
+        saveDraft,
+        clearDraft,
+        initialDraft
+    };
+}

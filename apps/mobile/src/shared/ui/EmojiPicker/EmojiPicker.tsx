@@ -1,5 +1,7 @@
+import { selectionAsync } from 'expo-haptics';
 import { useMemo } from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
 import { styles } from './EmojiPicker.styles';
 
@@ -23,10 +25,11 @@ export const EmojiPicker = (props: EmojiPickerProps) => {
     }, [emojis, emojisPerRow]);
 
     return (
-        <ScrollView
+        <KeyboardAwareScrollView
             style={styles.scrollContainer}
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
         >
             {emojiRows.map((row, rowIndex) => (
                 <View key={rowIndex} style={styles.row}>
@@ -34,7 +37,10 @@ export const EmojiPicker = (props: EmojiPickerProps) => {
                         <TouchableOpacity
                             key={emoji}
                             activeOpacity={0.8}
-                            onPress={() => onEmojiSelect(emoji)}
+                            onPress={() => {
+                                selectionAsync();
+                                onEmojiSelect(emoji);
+                            }}
                             style={styles.emojiButton}
                         >
                             <Text style={styles.emoji}>{emoji}</Text>
@@ -42,6 +48,6 @@ export const EmojiPicker = (props: EmojiPickerProps) => {
                     ))}
                 </View>
             ))}
-        </ScrollView>
+        </KeyboardAwareScrollView>
     );
 };

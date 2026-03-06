@@ -2,7 +2,7 @@ import { Cell } from '@mobile/shared/ui';
 
 export const AssetCellSkeleton = () => {
     return (
-        <Cell skeleton>
+        <Cell skeleton showDivider={false}>
             <Cell.Image type="image" image={null} />
             <Cell.Content>
                 <Cell.Row>

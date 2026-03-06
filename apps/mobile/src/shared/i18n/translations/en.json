@@ -17,6 +17,7 @@
         },
         "amount": "Amount",
         "max": "Send all",
+        "maxHint": "All available balance will be sent. Fee included.",
         "remaining": "Remaining: {{amount}}{{symbol}}",
         "insufficientBalance": "Insufficient balance"
     },
@@ -179,9 +180,9 @@
             "transaction": "Transaction"
         },
         "slider": {
-            "confirm": "Confirm",
-            "slideToSend": "Slide to send",
-            "estimatingFee": "Estimating fee…",
+            "send": "Send",
+            "slideToConfirm": "slide to confirm",
+            "estimatingFee": "estimating fee…",
             "backToWallet": "Back to Wallet"
         },
         "sendError": {
@@ -254,6 +255,9 @@
             "addDevice": "Add device",
             "protectLater": "Protect account later"
         }
+    },
+    "compactAccountSelector": {
+        "addOrEdit": "Add or Edit"
     },
     "addWallet": {
         "title": "Add Wallet",

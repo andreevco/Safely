@@ -1,20 +1,22 @@
+import { useNavigation } from '@react-navigation/native';
+
 import { useActivePortfolio } from '@safely/ux';
 
+import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { PortfolioName } from '@mobile/entities/portfolio';
 import { ChevronDown16, Icon, TouchableOpacity } from '@mobile/shared/ui';
 
 import { styles } from './AccountSelector.styles';
 
-type AccountSelectorProps = {
-    onSelectAccountPress: () => void;
-};
-
-export const AccountSelector = (props: AccountSelectorProps) => {
-    const { onSelectAccountPress } = props;
+export const AccountSelector = () => {
+    const navigation = useNavigation<RootStackNavigationProp<'TabsNavigator'>>();
     const portfolio = useActivePortfolio();
 
     return (
-        <TouchableOpacity onPress={onSelectAccountPress} style={styles.container}>
+        <TouchableOpacity
+            onPress={() => navigation.navigate('SelectAccountModal')}
+            style={styles.container}
+        >
             <PortfolioName meta={portfolio.meta} />
             <Icon icon={ChevronDown16} color="tertiary" />
         </TouchableOpacity>

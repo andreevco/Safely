@@ -1,3 +1,4 @@
+import { selectionAsync } from 'expo-haptics';
 import { TouchableOpacity, View } from 'react-native';
 
 import { styles } from './ColorPicker.styles';
@@ -20,7 +21,10 @@ export const ColorPicker = (props: ColorPickerProps) => {
                     <TouchableOpacity
                         key={color}
                         activeOpacity={0.8}
-                        onPress={() => onColorSelect(color)}
+                        onPress={() => {
+                            selectionAsync();
+                            onColorSelect(color);
+                        }}
                     >
                         <View style={[styles.colorCircle, { backgroundColor: color }]}>
                             {isSelected && (
