@@ -8,7 +8,8 @@ export const styles = StyleSheet.create((theme, rt) => ({
         paddingBottom: rt.insets.bottom + theme.spacing[8]
     },
     portfolioItem: {
-        height: 48
+        height: 48,
+        paddingRight: theme.spacing[8]
     },
     portfolioItemContainer: {
         borderRadius: theme.radius.md,
@@ -26,5 +27,10 @@ export const styles = StyleSheet.create((theme, rt) => ({
     },
     editingBackdrop: {
         flex: 1
+    },
+    // At this moment icons with different height and width are not supported and we have to hardcode styles :(
+    dotsIcon: {
+        height: 14,
+        width: 2
     }
 }));

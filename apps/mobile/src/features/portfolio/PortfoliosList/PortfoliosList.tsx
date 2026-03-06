@@ -1,6 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { Pressable, ScrollView } from 'react-native';
+import { ScrollView } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
 import Animated, { FadeIn, FadeOut, useSharedValue } from 'react-native-reanimated';
 
@@ -9,21 +9,18 @@ import { useActivePortfolio, useReorderPortfolios, useSetActivePortfolio } from 
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { PortfolioName } from '@mobile/entities/portfolio/PortfolioName/PortfolioName';
-import { Cell, Draggable, Icon, Pencil16, Reorder16, TouchableOpacity } from '@mobile/shared/ui';
+import { Cell, Dots14, Draggable, Icon } from '@mobile/shared/ui';
 
 import { styles } from './PortfoliosList.styles';
 
 interface PortfoliosListProps {
     portfolios: Portfolio[];
-    isEditing: boolean;
     onSelect: () => void;
-    onEditStart?: () => void;
-    onEditEnd?: () => void;
     Footer?: () => React.ReactNode;
 }
 
 export const PortfoliosList = (props: PortfoliosListProps) => {
-    const { portfolios, isEditing, onSelect, onEditStart, onEditEnd, Footer } = props;
+    const { portfolios, onSelect, Footer } = props;
     const activePortfolio = useActivePortfolio();
     const { mutate: reorderPortfolios } = useReorderPortfolios();
     const { mutate: setActivePortfolio } = useSetActivePortfolio();
@@ -60,11 +57,10 @@ export const PortfoliosList = (props: PortfoliosListProps) => {
                 portfolio,
                 onCompleteCustomize: () => {
                     navigation.goBack();
-                    onEditEnd?.();
                 }
             });
         },
-        [navigation, onEditEnd]
+        [navigation]
     );
 
     const moveItem = useCallback(
@@ -101,19 +97,23 @@ export const PortfoliosList = (props: PortfoliosListProps) => {
                         moveItem={moveItem}
                     >
                         {({ panGesture }) => (
-                            <Cell
-                                style={styles.portfolioItem}
-                                containerStyle={styles.portfolioItemContainer}
-                                onPress={isEditing ? undefined : handlePress}
-                                onLongPress={isEditing ? undefined : onEditStart}
-                                disabled={isEditing}
-                            >
-                                <Cell.Content>
-                                    <Cell.Row>
-                                        <PortfolioName meta={portfolio.meta} gap={12} size={16} />
-                                    </Cell.Row>
-                                </Cell.Content>
-                                {!isEditing ? (
+                            <GestureDetector gesture={panGesture}>
+                                <Cell
+                                    style={styles.portfolioItem}
+                                    containerStyle={styles.portfolioItemContainer}
+                                    onPress={handlePress}
+                                    showDivider={false}
+                                    onLongPress={() => handleCustomizeWallet(portfolio)}
+                                >
+                                    <Cell.Content>
+                                        <Cell.Row>
+                                            <PortfolioName
+                                                meta={portfolio.meta}
+                                                gap={12}
+                                                size={16}
+                                            />
+                                        </Cell.Row>
+                                    </Cell.Content>
                                     <Animated.View
                                         key="checkmark"
                                         entering={FadeIn.duration(100).delay(100)}
@@ -123,33 +123,14 @@ export const PortfoliosList = (props: PortfoliosListProps) => {
                                             <Cell.Checkmark />
                                         )}
                                     </Animated.View>
-                                ) : (
-                                    <Animated.View
-                                        key="right-actions"
-                                        entering={FadeIn.duration(100).delay(100)}
-                                        exiting={FadeOut.duration(100)}
-                                        style={styles.rightIconsContainer}
-                                    >
-                                        <TouchableOpacity
-                                            hitSlop={{ left: 16, right: 8, top: 16, bottom: 16 }}
-                                            onPress={() => handleCustomizeWallet(portfolio)}
-                                        >
-                                            <Icon icon={Pencil16} color="tertiary" />
-                                        </TouchableOpacity>
-                                        <GestureDetector gesture={panGesture}>
-                                            <Animated.View style={styles.reorderHandle}>
-                                                <Icon icon={Reorder16} />
-                                            </Animated.View>
-                                        </GestureDetector>
-                                    </Animated.View>
-                                )}
-                            </Cell>
+                                    <Icon icon={Dots14} style={styles.dotsIcon} color="tertiary" />
+                                </Cell>
+                            </GestureDetector>
                         )}
                     </Draggable>
                 );
             })}
             {Footer && <Footer />}
-            {isEditing && <Pressable style={styles.editingBackdrop} onPress={onEditEnd} />}
         </ScrollView>
     );
 };
