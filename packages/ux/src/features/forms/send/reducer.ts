@@ -10,6 +10,7 @@ const LAST_STEP_INDEX = SEND_STEPS.length - 1;
 
 const DEFAULT_VALUES: SendFormValues = {
     recipient: '',
+    recipientLabel: undefined,
     amount: '',
     amountInputType: 'crypto',
     isMax: false,
@@ -49,7 +50,11 @@ export function sendFormReducer(state: SendFormState, action: SendFormAction): S
         case 'SET_RECIPIENT':
             return {
                 ...state,
-                values: { ...state.values, recipient: action.value }
+                values: {
+                    ...state.values,
+                    recipient: action.value,
+                    recipientLabel: action.label
+                }
             };
 
         case 'SET_RECIPIENT_VALIDATED':

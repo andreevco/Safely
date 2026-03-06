@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react';
 
-import { useAssets } from '../../../../entities';
-import { useNumberFormatter } from '../../../../shared';
+import { useActivePortfolio, useAssets, usePortfolios } from '../../../../entities';
+import { fuzzySearch, useNumberFormatter } from '../../../../shared';
 import { useMaxSendAssetTransfer } from '../../../blockchain-send';
 import { SendFormError } from '../errors';
 import { createInitialState, sendFormReducer } from '../reducer';
@@ -51,6 +51,14 @@ export function useSendForm(props: UseSendFormOptions) {
     ratedAssetsRef.current = ratedAssets;
 
     const blockchain = state.parsed.recipient?.blockchain;
+
+    const portfolios = usePortfolios();
+    const activePortfolio = useActivePortfolio();
+
+    const suggestions = useMemo(() => {
+        const others = portfolios.filter(p => !p.id.isEq(activePortfolio.id));
+        return fuzzySearch(others, state.values.recipient, p => p.meta.name).slice(0, 8);
+    }, [portfolios, activePortfolio, state.values.recipient]);
 
     const isMaxAvailable = useMemo(() => {
         const asset = state.parsed.asset;
@@ -130,8 +138,8 @@ export function useSendForm(props: UseSendFormOptions) {
     }, []);
 
     const setRecipient = useCallback(
-        (value: string) => {
-            dispatch({ type: 'SET_RECIPIENT', value });
+        (value: string, label?: string) => {
+            dispatch({ type: 'SET_RECIPIENT', value, label });
             validateRecipient(value);
         },
         [validateRecipient]
@@ -327,7 +335,8 @@ export function useSendForm(props: UseSendFormOptions) {
         },
         meta: {
             isMaxAvailable,
-            availableAssets
+            availableAssets,
+            suggestions
         }
     };
 }
