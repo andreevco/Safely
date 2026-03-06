@@ -1,8 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { ScrollView } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
-import Animated, { FadeIn, FadeOut, useSharedValue } from 'react-native-reanimated';
+import Animated, { useSharedValue } from 'react-native-reanimated';
 
 import { Portfolio } from '@safely/core';
 import { useActivePortfolio, useReorderPortfolios, useSetActivePortfolio } from '@safely/ux';
@@ -16,11 +15,11 @@ import { styles } from './PortfoliosList.styles';
 interface PortfoliosListProps {
     portfolios: Portfolio[];
     onSelect: () => void;
-    Footer?: () => React.ReactNode;
+    variant?: 'compact';
 }
 
 export const PortfoliosList = (props: PortfoliosListProps) => {
-    const { portfolios, onSelect, Footer } = props;
+    const { portfolios, onSelect, variant } = props;
     const activePortfolio = useActivePortfolio();
     const { mutate: reorderPortfolios } = useReorderPortfolios();
     const { mutate: setActivePortfolio } = useSetActivePortfolio();
@@ -31,6 +30,8 @@ export const PortfoliosList = (props: PortfoliosListProps) => {
 
     const [orderedPortfolios, setOrderedPortfolios] = useState(portfolios);
     const pendingDragReset = useRef(false);
+
+    styles.useVariants({ variant });
 
     useEffect(() => {
         setOrderedPortfolios(portfolios);
@@ -77,60 +78,46 @@ export const PortfoliosList = (props: PortfoliosListProps) => {
         [orderedPortfolios, reorderPortfolios]
     );
 
-    return (
-        <ScrollView
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.listContentContainer}
-        >
-            {orderedPortfolios.map((portfolio, index) => {
-                const isActive = activePortfolio.id.isEq(portfolio.id);
-                const handlePress = isActive ? undefined : () => handleSelect(portfolio);
+    return orderedPortfolios.map((portfolio, index) => {
+        const isActive = activePortfolio.id.isEq(portfolio.id);
+        const handlePress = isActive ? undefined : () => handleSelect(portfolio);
 
-                return (
-                    <Draggable
-                        gap={2}
-                        key={portfolio.id.toString()}
-                        index={index}
-                        itemCount={orderedPortfolios.length}
-                        draggedIndex={draggedIndex}
-                        offsetY={offsetY}
-                        moveItem={moveItem}
-                    >
-                        {({ panGesture }) => (
-                            <GestureDetector gesture={panGesture}>
-                                <Cell
-                                    style={styles.portfolioItem}
-                                    containerStyle={styles.portfolioItemContainer}
-                                    onPress={handlePress}
-                                    showDivider={false}
-                                    onLongPress={() => handleCustomizeWallet(portfolio)}
-                                >
-                                    <Cell.Content>
-                                        <Cell.Row>
-                                            <PortfolioName
-                                                meta={portfolio.meta}
-                                                gap={12}
-                                                size={16}
-                                            />
-                                        </Cell.Row>
-                                    </Cell.Content>
-                                    <Animated.View
-                                        key="checkmark"
-                                        entering={FadeIn.duration(100).delay(100)}
-                                        exiting={FadeOut.duration(100)}
-                                    >
-                                        {activePortfolio.id.isEq(portfolio.id) && (
-                                            <Cell.Checkmark />
-                                        )}
-                                    </Animated.View>
-                                    <Icon icon={Dots14} style={styles.dotsIcon} color="tertiary" />
-                                </Cell>
-                            </GestureDetector>
-                        )}
-                    </Draggable>
-                );
-            })}
-            {Footer && <Footer />}
-        </ScrollView>
-    );
+        return (
+            <Draggable
+                gap={variant === 'compact' ? 0 : 2}
+                key={portfolio.id.toString()}
+                index={index}
+                itemCount={orderedPortfolios.length}
+                draggedIndex={draggedIndex}
+                offsetY={offsetY}
+                moveItem={moveItem}
+            >
+                {({ panGesture }) => (
+                    <GestureDetector gesture={panGesture}>
+                        <Cell
+                            style={styles.portfolioItem}
+                            containerStyle={styles.portfolioItemContainer}
+                            onPress={handlePress}
+                            showDivider={
+                                variant === 'compact'
+                                    ? index !== orderedPortfolios.length - 1
+                                    : false
+                            }
+                            onLongPress={() => handleCustomizeWallet(portfolio)}
+                        >
+                            <Cell.Content>
+                                <Cell.Row>
+                                    <PortfolioName meta={portfolio.meta} gap={12} size={16} />
+                                </Cell.Row>
+                            </Cell.Content>
+                            <Animated.View key="checkmark">
+                                {activePortfolio.id.isEq(portfolio.id) && <Cell.Checkmark />}
+                            </Animated.View>
+                            <Icon icon={Dots14} style={styles.dotsIcon} color="tertiary" />
+                        </Cell>
+                    </GestureDetector>
+                )}
+            </Draggable>
+        );
+    });
 };

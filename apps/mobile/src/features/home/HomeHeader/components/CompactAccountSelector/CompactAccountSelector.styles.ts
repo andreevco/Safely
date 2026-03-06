@@ -10,16 +10,15 @@ export const styles = StyleSheet.create(theme => ({
         paddingRight: theme.spacing[16],
         borderWidth: theme.border.hairline,
         borderColor: theme.colors.other.transparentElement,
-        borderRadius: theme.radius.full
+        borderRadius: theme.radius.full,
+        backgroundColor: theme.colors.background.primary
     },
-    cell: {
-        minHeight: 48
+    addButton: {
+        zIndex: 10000,
+        alignSelf: 'center'
     },
-    list: {
-        shadowColor: '#0C0C0D',
-        shadowOffset: { width: 0, height: 12 },
-        shadowOpacity: 1,
-        shadowRadius: 24,
-        elevation: 24
+    listContainer: {
+        borderRadius: theme.radius.md,
+        overflow: 'hidden'
     }
 }));

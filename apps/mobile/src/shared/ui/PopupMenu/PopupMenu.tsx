@@ -1,6 +1,8 @@
+import { BlurView } from 'expo-blur';
 import { forwardRef, useCallback, useImperativeHandle, useRef, useState } from 'react';
 import { LayoutChangeEvent, Platform, Pressable, useWindowDimensions, View } from 'react-native';
 import Animated, {
+    useAnimatedProps,
     useAnimatedStyle,
     useSharedValue,
     withSpring,
@@ -13,6 +15,7 @@ import { scheduleOnRN } from 'react-native-worklets';
 import { TouchableOpacity } from '../TouchableOpacity';
 import { styles } from './PopupMenu.styles';
 
+const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 const OverlayComponent = Platform.OS === 'ios' ? FullWindowOverlay : View;
 const MENU_MARGIN = 8;
 
@@ -29,6 +32,7 @@ export const PopupMenu = forwardRef<PopupMenuRef, PopupMenuProps>((props, ref) =
     const { children, touchable } = props;
 
     const triggerRef = useRef<View>(null);
+    const triggerFrame = useRef({ x: 0, y: 0, width: 0, height: 0 });
     const [visible, setVisible] = useState(false);
 
     const triggerY = useSharedValue(0);
@@ -38,9 +42,10 @@ export const PopupMenu = forwardRef<PopupMenuRef, PopupMenuProps>((props, ref) =
     const opacity = useSharedValue(0);
 
     const open = useCallback(() => {
-        triggerRef.current?.measureInWindow((_x, y, _w, h) => {
+        triggerRef.current?.measureInWindow((x, y, w, h) => {
             triggerY.value = y;
             triggerHeight.value = h;
+            triggerFrame.current = { x, y, width: w, height: h };
             setVisible(true);
         });
     }, [triggerY, triggerHeight]);
@@ -69,6 +74,10 @@ export const PopupMenu = forwardRef<PopupMenuRef, PopupMenuProps>((props, ref) =
 
     const height = useWindowDimensions().height;
 
+    const blurAnimatedProps = useAnimatedProps(() => ({
+        intensity: opacity.value * 200
+    }));
+
     const menuAnimatedStyle = useAnimatedStyle(() => {
         const spaceBelow = height - (triggerY.value + triggerHeight.value + MENU_MARGIN);
         const showBelow =
@@ -89,10 +98,27 @@ export const PopupMenu = forwardRef<PopupMenuRef, PopupMenuProps>((props, ref) =
             <TouchableOpacity ref={triggerRef} onPress={open}>
                 {touchable}
             </TouchableOpacity>
-
             {visible && (
                 <OverlayComponent style={StyleSheet.absoluteFill}>
+                    <AnimatedBlurView
+                        tint="dark"
+                        animatedProps={blurAnimatedProps}
+                        style={StyleSheet.absoluteFill}
+                        pointerEvents="none"
+                    />
                     <Pressable style={StyleSheet.absoluteFill} onPress={close} />
+                    <View
+                        style={{
+                            position: 'absolute',
+                            top: triggerFrame.current.y,
+                            left: triggerFrame.current.x,
+                            width: triggerFrame.current.width,
+                            height: triggerFrame.current.height
+                        }}
+                        pointerEvents="none"
+                    >
+                        {touchable}
+                    </View>
                     <Animated.View
                         style={[styles.menu, menuAnimatedStyle]}
                         onLayout={onMenuLayout}

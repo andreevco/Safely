@@ -9,7 +9,7 @@ export const styles = StyleSheet.create(theme => ({
         position: 'absolute',
         left: theme.spacing[48],
         right: theme.spacing[48],
-        borderRadius: theme.radius.md,
-        gap: theme.spacing[2]
+        gap: theme.spacing[8],
+        zIndex: 1000
     }
 }));

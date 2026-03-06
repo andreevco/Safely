@@ -1,19 +1,20 @@
 import { StyleSheet } from 'react-native-unistyles';
 
-export const styles = StyleSheet.create((theme, rt) => ({
-    listContentContainer: {
-        flexGrow: 1,
-        gap: theme.spacing[2],
-        marginHorizontal: theme.spacing[8],
-        paddingBottom: rt.insets.bottom + theme.spacing[8]
-    },
+export const styles = StyleSheet.create(theme => ({
     portfolioItem: {
         height: 48,
         paddingRight: theme.spacing[8]
     },
     portfolioItemContainer: {
         borderRadius: theme.radius.md,
-        overflow: 'hidden'
+        overflow: 'hidden',
+        variants: {
+            variant: {
+                compact: {
+                    borderRadius: 0
+                }
+            }
+        }
     },
     portfolioItemContent: {
         height: 48

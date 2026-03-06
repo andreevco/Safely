@@ -1,5 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
+import { ScrollView } from 'react-native-gesture-handler';
 
 import { usePortfolios } from '@safely/ux';
 
@@ -20,20 +21,20 @@ export const SelectAccountModal = () => {
                 <Screen.Header.Title>{t('accounts.title')}</Screen.Header.Title>
                 <Screen.Header.CloseButton />
             </Screen.Header>
-            <PortfoliosList
-                portfolios={portfolios}
-                onSelect={navigation.goBack}
-                Footer={() => (
-                    <Button
-                        type="secondary"
-                        size="medium"
-                        style={styles.addButton}
-                        onPress={() => navigation.navigate('AddWalletModal')}
-                    >
-                        {t('addWallet.title')}
-                    </Button>
-                )}
-            />
+            <ScrollView
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.contentContainer}
+            >
+                <PortfoliosList portfolios={portfolios} onSelect={navigation.goBack} />
+                <Button
+                    type="secondary"
+                    size="medium"
+                    style={styles.addButton}
+                    onPress={() => navigation.navigate('AddWalletModal')}
+                >
+                    {t('addWallet.title')}
+                </Button>
+            </ScrollView>
         </Screen>
     );
 };
