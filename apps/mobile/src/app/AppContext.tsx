@@ -3,7 +3,7 @@ import { FC, PropsWithChildren, Suspense, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Platform } from 'react-native';
 
-import { Build, ITreeStorage, TreeStorage } from '@safely/core';
+import { Build } from '@safely/core';
 import { AppContext, IAppContext } from '@safely/ux';
 
 import { navigationRef } from '@mobile/app/navigation/navigationRef';
@@ -17,29 +17,6 @@ import packageJson from '../../package.json';
 let securityCheck: () => Promise<void> = () => {
     throw new Error('Security check not initialized');
 };
-
-const secureEncryptedStorage: ITreeStorage = TreeStorage.root({
-    getItem: async (key: string) => {
-        await securityCheck();
-        return mobileStorages.secureEncrypted.storage.getItem(key);
-    },
-    setItem: async (key: string, value: string) => {
-        await securityCheck();
-        return mobileStorages.secureEncrypted.storage.setItem(key, value);
-    },
-    removeItem: async (key: string) => {
-        await securityCheck();
-        return mobileStorages.secureEncrypted.storage.removeItem(key);
-    },
-    clear: async () => {
-        await securityCheck();
-        return mobileStorages.secureEncrypted.storage.clear();
-    },
-    getAllKeys: async () => {
-        await securityCheck();
-        return mobileStorages.secureEncrypted.storage.getAllKeys();
-    }
-});
 
 const build: Build =
     Platform.select({
@@ -66,7 +43,8 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
             numberFormatLocale: new MobileNumberFormatLocale(getLocales()[0]),
             storage: mobileStorages.app.storage,
             encryptedStorage: mobileStorages.encrypted.storage,
-            secureEncryptedStorage,
+            // TODO Discuss with Sergey
+            secureEncryptedStorage: mobileStorages.secureEncrypted.storage,
             qrScanner: {
                 scan: options =>
                     new Promise<string>(resolve => {
