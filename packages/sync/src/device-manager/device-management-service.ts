@@ -69,12 +69,12 @@ export class DeviceManagementService {
         const devices = await this.getDevices();
         if (op.type === 'add') {
             if (devices.some(d => d.ikPub.equals(op.ikPub))) {
-                throw new Error('Device with the same ikPub already exists.');
+                return;
             }
             await this.deviceRepository.setDevices([...devices, { ikPub: op.ikPub }]);
         } else if (op.type === 'revoke') {
             if (!devices.some(d => d.ikPub.equals(op.ikPub))) {
-                throw new Error('Device not found.');
+                return;
             }
             await this.deviceRepository.setDevices(devices.filter(d => !d.ikPub.equals(op.ikPub)));
         }
