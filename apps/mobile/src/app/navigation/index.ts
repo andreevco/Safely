@@ -14,6 +14,8 @@ import { QRScanModal } from '@mobile/screens/QRScanModal';
 import { ReceiveAssetModal } from '@mobile/screens/ReceiveAssetModal';
 import { RecoveryConfirmSheet, RecoveryPhraseSheet } from '@mobile/screens/SecurityScreen/screens';
 import { SelectAccountModal } from '@mobile/screens/SelectAccountModal';
+import { SignInScreen } from '@mobile/screens/SignInScreen';
+import { SignInSuccessScreen } from '@mobile/screens/SignInSuccessScreen';
 import { TransactionScreen } from '@mobile/screens/TransactionScreen';
 import { WelcomeScreen } from '@mobile/screens/WelcomeScreen';
 
@@ -31,7 +33,9 @@ export const RootStack = createNativeStackNavigator({
                 OnboardingPasscodeScreen: OnboardingPasscodeScreen,
                 BiometryScreen: BiometryScreen,
                 OnboardingNotificationsScreen: OnboardingNotificationsScreen,
-                AccountCreatedScreen: AccountCreatedScreen
+                AccountCreatedScreen: AccountCreatedScreen,
+                SignInScreen: SignInScreen,
+                SignInSuccessScreen: SignInSuccessScreen
             }
         },
         Screens: {
