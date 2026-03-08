@@ -2,7 +2,10 @@ import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
+import { useActiveAccountQuery, useAppContext, useToast } from '@safely/ux';
+
 import { useOnboardingFlow } from '@mobile/features/onboarding';
+import { useLoader } from '@mobile/shared/providers/loader';
 import { Button, Icon, Checkmark96, Screen, Text } from '@mobile/shared/ui';
 
 import { styles } from './AccountCreatedScreen.styles';
@@ -14,12 +17,29 @@ const steps = [
 ] as const;
 
 export const AccountCreatedScreen = () => {
+    const toast = useToast();
     const { t } = useTranslation();
+    const { qrScanner } = useAppContext();
+    const { showLoader, hideLoader } = useLoader();
+    const { data: activeAccount } = useActiveAccountQuery();
     const { onAccountCreatedFinished } = useOnboardingFlow();
 
-    const handleAddDevice = useCallback(() => {
-        // TODO: Implement add device flow
-    }, []);
+    const handleAddDevice = useCallback(async () => {
+        if (!activeAccount) return;
+
+        try {
+            const connectionString = await qrScanner.scan();
+
+            showLoader();
+
+            await activeAccount.connectToNewDevice(Buffer.from(connectionString, 'base64url'));
+            onAccountCreatedFinished();
+        } catch {
+            toast(t('onboarding.accountCreated.deviceNotAdded'));
+        } finally {
+            hideLoader();
+        }
+    }, [activeAccount, qrScanner, showLoader, hideLoader, onAccountCreatedFinished, toast, t]);
 
     const handleProtectLater = useCallback(() => {
         onAccountCreatedFinished();

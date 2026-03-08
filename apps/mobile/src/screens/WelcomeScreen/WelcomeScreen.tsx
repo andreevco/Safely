@@ -1,7 +1,12 @@
+import { useNavigation } from '@react-navigation/native';
 import { Image } from 'expo-image';
+import { useCallback } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
-import { Alert, ImageBackground, Linking, View } from 'react-native';
+import { ImageBackground, Linking, View } from 'react-native';
 
+import { setActiveConnector, useCreateExistingAccountConnector } from '@safely/ux';
+
+import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { useOnboardingFlow } from '@mobile/features/onboarding';
 import { resources } from '@mobile/shared/resources';
 import { Button, Screen, Text } from '@mobile/shared/ui';
@@ -14,10 +19,16 @@ const PRIVACY_URL = 'https://google.com';
 export const WelcomeScreen = () => {
     const { t } = useTranslation();
     const { onStartCreate } = useOnboardingFlow();
+    const signIn = useCreateExistingAccountConnector();
+    const navigation = useNavigation<RootStackNavigationProp>();
 
-    const handleSignIn = () => {
-        Alert.alert('Not implemented yet');
-    };
+    const handleSignIn = useCallback(async () => {
+        signIn.reset();
+
+        const connector = await signIn.mutateAsync();
+        setActiveConnector(connector);
+        navigation.navigate('SignInScreen', { connectionString: connector.connectionString });
+    }, [signIn, navigation]);
 
     return (
         <Screen background="transparent">
