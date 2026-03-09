@@ -1,6 +1,6 @@
 import { setStringAsync } from 'expo-clipboard';
 import { notificationAsync, NotificationFeedbackType } from 'expo-haptics';
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import Animated, {
     Easing,
@@ -66,6 +66,14 @@ export const Subtitle = ({ address, isFetching, lastUpdatedAt }: SubtitleProps) 
 
     const { status, onCopyAddress } = useSubtitleStatus({ isFetching, lastUpdatedAt });
 
+    const hasChangedRef = useRef(false);
+
+    useEffect(() => {
+        return () => {
+            hasChangedRef.current = true;
+        };
+    }, [status]);
+
     const handleCopyAddress = useCallback(() => {
         setStringAsync(address);
         notificationAsync(NotificationFeedbackType.Success);
@@ -115,7 +123,7 @@ export const Subtitle = ({ address, isFetching, lastUpdatedAt }: SubtitleProps) 
     return (
         <Animated.View
             key={status}
-            entering={FadeIn.duration(200).delay(220)}
+            entering={hasChangedRef.current ? FadeIn.duration(200).delay(220) : undefined}
             exiting={FadeOut.duration(180)}
         >
             {content}
