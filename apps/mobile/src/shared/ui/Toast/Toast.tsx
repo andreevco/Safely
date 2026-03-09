@@ -1,24 +1,20 @@
 import React from 'react';
-import { Pressable, PressableProps, StyleProp, View, ViewStyle } from 'react-native';
+import { Pressable, type PressableProps, type StyleProp, View, type ViewStyle } from 'react-native';
 
 import { Text } from '../Text';
 import { styles } from './Toast.styles';
 
-export type ToastProps = Omit<PressableProps, 'style'> & {
+export type ToastProps = {
     message: string;
     style?: StyleProp<ViewStyle>;
-};
+} & Omit<PressableProps, 'style'>;
 
-export const Toast = (props: ToastProps) => {
-    const { message, style, ...rest } = props;
-
-    return (
-        <Pressable {...rest}>
-            <View style={[styles.container, style]}>
-                <Text variant="labelM" textAlign="center" numberOfLines={1}>
-                    {message}
-                </Text>
-            </View>
-        </Pressable>
-    );
-};
+export const Toast = ({ message, style, ...pressableProps }: ToastProps) => (
+    <Pressable {...pressableProps}>
+        <View style={[styles.container, style]}>
+            <Text variant="labelM" textAlign="center" numberOfLines={1}>
+                {message}
+            </Text>
+        </View>
+    </Pressable>
+);
