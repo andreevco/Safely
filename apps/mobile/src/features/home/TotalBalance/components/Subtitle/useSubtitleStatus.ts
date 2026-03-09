@@ -2,6 +2,7 @@ import { useNetworkState } from 'expo-network';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 export enum SubtitleStatus {
+    LAST_UPDATED = 'lastUpdated',
     ADDRESS = 'address',
     ADDRESS_COPIED = 'addressCopied',
     UPDATING = 'updating',
@@ -12,10 +13,6 @@ type Timer = ReturnType<typeof setTimeout> | null;
 
 const STATUS_DEBOUNCE_MS = 300;
 const COPY_FEEDBACK_MS = 1500;
-
-interface UseSubtitleStatusParams {
-    isFetching: boolean;
-}
 
 function clearTimer(ref: { current: Timer }) {
     if (ref.current !== null) {
@@ -42,7 +39,12 @@ function useDebouncedStatus(value: boolean, delayMs: number): boolean {
     return deferred;
 }
 
-export function useSubtitleStatus({ isFetching }: UseSubtitleStatusParams) {
+interface UseSubtitleStatusParams {
+    isFetching: boolean;
+    lastUpdatedAt: number;
+}
+
+export function useSubtitleStatus({ isFetching, lastUpdatedAt }: UseSubtitleStatusParams) {
     const networkState = useNetworkState();
     const [isCopied, setIsCopied] = useState(false);
     const copyTimerRef = useRef<Timer>(null);
@@ -56,6 +58,8 @@ export function useSubtitleStatus({ isFetching }: UseSubtitleStatusParams) {
     useEffect(() => () => clearTimer(copyTimerRef), []);
 
     const status: SubtitleStatus = useMemo(() => {
+        if (showNoInternet && lastUpdatedAt > Date.now() - 1000 * 60 * 60 * 24)
+            return SubtitleStatus.LAST_UPDATED;
         if (isCopied) return SubtitleStatus.ADDRESS_COPIED;
         if (showNoInternet) return SubtitleStatus.NO_INTERNET;
         if (showUpdating) return SubtitleStatus.UPDATING;

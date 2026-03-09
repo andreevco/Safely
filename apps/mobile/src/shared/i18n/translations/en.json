@@ -60,6 +60,7 @@
             "scan": "Scan"
         },
         "status": {
+            "lastUpdated": "Updated {{lastUpdatedAt}}",
             "addressCopied": "Address copied",
             "updating": "Updating...",
             "noInternet": "No internet connection"

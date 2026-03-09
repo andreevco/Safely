@@ -1,24 +1,70 @@
 import { setStringAsync } from 'expo-clipboard';
 import { notificationAsync, NotificationFeedbackType } from 'expo-haptics';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
+import Animated, {
+    Easing,
+    FadeIn,
+    FadeOut,
+    interpolateColor,
+    useAnimatedStyle,
+    useSharedValue,
+    withRepeat,
+    withSequence,
+    withTiming
+} from 'react-native-reanimated';
+import { useUnistyles } from 'react-native-unistyles';
 
 import { ellipsisMiddle } from '@safely/core';
 
-import { Text } from '@mobile/shared/ui';
+import { Text, TextProps } from '@mobile/shared/ui';
 
 import { SubtitleStatus, useSubtitleStatus } from './useSubtitleStatus';
 
 interface SubtitleProps {
     address: string;
     isFetching: boolean;
+    lastUpdatedAt: number;
 }
 
-export const Subtitle = ({ address, isFetching }: SubtitleProps) => {
+const AnimatedText = Animated.createAnimatedComponent(Text);
+
+export const SubtitleAnimatedText = ({ children, ...props }: TextProps) => {
+    const { theme } = useUnistyles();
+    const progress = useSharedValue(0);
+
+    useEffect(() => {
+        progress.value = withRepeat(
+            withSequence(
+                withTiming(1, { duration: 350, easing: Easing.out(Easing.ease) }),
+                withTiming(0, { duration: 650, easing: Easing.inOut(Easing.ease) })
+            ),
+            -1,
+            false
+        );
+    }, [progress]);
+
+    const animatedStyle = useAnimatedStyle(() => {
+        return {
+            color: interpolateColor(
+                progress.value,
+                [0, 1],
+                [theme.colors.text.tertiary, theme.colors.text.secondary]
+            )
+        };
+    });
+
+    return (
+        <AnimatedText style={animatedStyle} {...props}>
+            {children}
+        </AnimatedText>
+    );
+};
+
+export const Subtitle = ({ address, isFetching, lastUpdatedAt }: SubtitleProps) => {
     const { t } = useTranslation();
 
-    const { status, onCopyAddress } = useSubtitleStatus({ isFetching });
+    const { status, onCopyAddress } = useSubtitleStatus({ isFetching, lastUpdatedAt });
 
     const handleCopyAddress = useCallback(() => {
         setStringAsync(address);
@@ -28,6 +74,12 @@ export const Subtitle = ({ address, isFetching }: SubtitleProps) => {
 
     const content = useMemo(() => {
         switch (status) {
+            case SubtitleStatus.LAST_UPDATED:
+                return (
+                    <Text variant="bodyL" textAlign="center" color="secondary">
+                        {t('home.status.lastUpdated', { lastUpdatedAt })}
+                    </Text>
+                );
             case SubtitleStatus.ADDRESS:
                 return (
                     <Text
@@ -47,9 +99,9 @@ export const Subtitle = ({ address, isFetching }: SubtitleProps) => {
                 );
             case SubtitleStatus.UPDATING:
                 return (
-                    <Text variant="bodyL" textAlign="center" color="secondary">
+                    <SubtitleAnimatedText variant="bodyL" textAlign="center">
                         {t('home.status.updating')}
-                    </Text>
+                    </SubtitleAnimatedText>
                 );
             case SubtitleStatus.NO_INTERNET:
                 return (
@@ -58,7 +110,7 @@ export const Subtitle = ({ address, isFetching }: SubtitleProps) => {
                     </Text>
                 );
         }
-    }, [status, t, handleCopyAddress, address]);
+    }, [status, t, handleCopyAddress, address, lastUpdatedAt]);
 
     return (
         <Animated.View

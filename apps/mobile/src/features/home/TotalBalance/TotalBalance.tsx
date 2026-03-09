@@ -17,7 +17,11 @@ export const TotalBalance = () => {
             <Text textAlign="center" variant="displayL" skeleton>
                 {totalBalance.data?.format(formatter)}
             </Text>
-            <Subtitle address={activeWallet.address} isFetching={totalBalance.isFetching} />
+            <Subtitle
+                address={activeWallet.address}
+                isFetching={totalBalance.isFetching}
+                lastUpdatedAt={totalBalance.dataUpdatedAt}
+            />
         </View>
     );
 };
