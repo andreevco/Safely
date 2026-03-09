@@ -37,8 +37,8 @@ export class ApiSigner {
     }
 
     private getNonce(): number {
-        const b = new Buffer(4);
-        crypto.getRandomValues(b);
-        return b.readUint32BE();
+        const arr = new Uint8Array(4);
+        crypto.getRandomValues(arr);
+        return Buffer.from(arr).readUint32BE();
     }
 }

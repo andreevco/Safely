@@ -23,16 +23,13 @@ export class YCRDT implements ICRDT<Buffer> {
     }
 
     public onUpdate(observer: (update: Buffer, origin: string) => void): () => void {
-        const f = this.doc.on('updateV2', (update: Uint8Array, origin: unknown) => {
-            if (typeof origin === 'string') {
-                observer(Buffer.from(update), origin);
-            } else {
-                console.error(`[ycrdt.onUpdate] unknown origin type: ${typeof origin}`);
-            }
-        });
+        const handler = (update: Uint8Array, origin: unknown) => {
+            observer(Buffer.from(update), typeof origin === 'string' ? origin : 'local');
+        };
+        this.doc.on('updateV2', handler);
 
         return () => {
-            this.doc.off('updateV2', f);
+            this.doc.off('updateV2', handler);
         };
     }
 
