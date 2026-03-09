@@ -2,14 +2,14 @@ import { useNavigation } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { useSignOutFromAccount } from '@safely/ux';
+import { useDeleteAccount } from '@safely/ux';
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 
 export function useSignOutConfirmation() {
     const { t } = useTranslation();
     const navigation = useNavigation<RootStackNavigationProp>();
-    const { mutateAsync: signOutAccount } = useSignOutFromAccount();
+    const { mutateAsync: signOutAccount } = useDeleteAccount();
 
     return useCallback(() => {
         navigation.navigate('DestructiveConfirmSheet', {

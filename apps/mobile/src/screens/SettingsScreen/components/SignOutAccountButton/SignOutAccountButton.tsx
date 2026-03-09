@@ -9,7 +9,7 @@ import { styles } from './SignOutAccountButton.styles';
 
 export const SignOutAccountButton = () => {
     const { t } = useTranslation();
-    const accountName = useActiveAccount()!.name;
+    const accountName = useActiveAccount().meta.name;
     const handleSignOut = useSignOutConfirmation();
 
     return (
