@@ -62,6 +62,12 @@
             "send": "Отправить",
             "receive": "Получить",
             "scan": "Сканировать"
+        },
+        "status": {
+            "lastUpdated": "Обновлено {{lastUpdatedAt}}",
+            "addressCopied": "Адрес скопирован",
+            "updating": "Обновление...",
+            "noInternet": "Нет подключения к интернету"
         }
     },
     "qrScan": {

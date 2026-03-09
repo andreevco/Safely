@@ -28,7 +28,7 @@ export const CircularSpinner = () => {
     }));
 
     return (
-        <View style={styles.container}>
+        <View style={styles.wrapper}>
             <Animated.View style={animatedStyle}>
                 <Icon icon={Loader56} />
             </Animated.View>

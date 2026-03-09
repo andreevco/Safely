@@ -44,9 +44,9 @@ export const TransactionCell = (props: TransactionCellProps) => {
             disabled={!onPress}
             {...rest}
         >
-            <View style={[styles.container, style]}>
-                <View style={[styles.contentContainer, style]}>
-                    <View style={styles.titleContainer}>
+            <View style={[styles.wrapper, style]}>
+                <View style={[styles.row, style]}>
+                    <View style={styles.label}>
                         {title !== undefined && typeof title === 'string' ? (
                             <Text numberOfLines={1} variant="bodyM" color="secondary">
                                 {title}
@@ -56,7 +56,7 @@ export const TransactionCell = (props: TransactionCellProps) => {
                         )}
                     </View>
                     {(value !== undefined || subvalue !== undefined) && (
-                        <View style={styles.valueContainer}>
+                        <View style={styles.value}>
                             {typeof value === 'string' ? (
                                 <TransactionCell.Value style={valueStyle} {...valueProps}>
                                     {value}

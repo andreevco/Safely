@@ -1,24 +1,23 @@
 import { StyleSheet } from 'react-native-unistyles';
 
 export const styles = StyleSheet.create(theme => ({
-    container: {
-        paddingHorizontal: theme.spacing[16],
+    wrapper: {
         paddingVertical: theme.spacing[12],
+        paddingHorizontal: theme.spacing[16],
         backgroundColor: theme.colors.background.secondary
     },
-    contentContainer: {
+    row: {
         flexDirection: 'row',
-        alignItems: 'flex-start',
         justifyContent: 'space-between',
+        alignItems: 'flex-start',
         gap: theme.spacing[8]
     },
-    titleContainer: {
+    label: {
         width: 120
     },
-    valueContainer: {
+    value: {
+        flex: 1,
         alignItems: 'flex-start',
-        alignSelf: 'flex-start',
-        justifyContent: 'center',
-        flex: 1
+        justifyContent: 'center'
     }
 }));
