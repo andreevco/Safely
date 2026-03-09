@@ -44,6 +44,22 @@ export class OnlineSyncProvider<S extends Record<string, ZodType>>
         return new OnlineSyncProvider(structure, container, machine);
     }
 
+    public async waitForInitialSync(): Promise<void> {
+        const snapshot = this.syncMachine.getSnapshot();
+        if (snapshot.matches('connectionSession')) {
+            return;
+        }
+
+        return new Promise<void>(resolve => {
+            const sub = this.syncMachine.subscribe(state => {
+                if (state.matches('connectionSession')) {
+                    sub.unsubscribe();
+                    resolve();
+                }
+            });
+        });
+    }
+
     public dispose(): void {
         super.dispose();
         this.syncMachine.stop();

@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo } from 'react';
 
 import { delay, notNullish, PortfolioFactory, PortfolioNetworkType } from '@safely/core';
 import { generateBip39Accessor } from '@safely/core/entities/seed';
-import { ISyncAccount, SyncAccountFactory } from '@safely/sync';
+import { ISyncAccount, OnboardingAbortedError, SyncAccountFactory } from '@safely/sync';
 
 import { accountKey } from './keys';
 import {
@@ -16,14 +16,32 @@ import {
     useSuspenseQuery,
     useTranslate
 } from '../../shared';
-import { useActiveAccountSyncedStorage } from '../../shared/storage/account/synced';
+import { useActiveAccountSyncedStorage } from '../../shared';
 import { useToast } from '../toast';
 
 export type SyncAccount = ISyncAccount<SyncedStorageStructure> & {
     meta: AccountMeta;
 };
 
-export type OnboardingConnector = { accountPromise: Promise<SyncAccount> };
+export type OnboardingConnector = {
+    connectionString: string;
+    accountPromise: Promise<ISyncAccount<SyncedStorageStructure>>;
+    abort: () => void;
+};
+
+let _activeConnector: OnboardingConnector | null = null;
+
+export function setActiveConnector(connector: OnboardingConnector | null) {
+    _activeConnector = connector;
+}
+
+export function getActiveConnector(): OnboardingConnector {
+    if (!_activeConnector) {
+        throw new Error('No active connector');
+    }
+
+    return _activeConnector;
+}
 
 async function withMeta(account: ISyncAccount<SyncedStorageStructure>): Promise<SyncAccount> {
     let meta = await account.syncProvider.get('meta');
@@ -35,9 +53,9 @@ async function withMeta(account: ISyncAccount<SyncedStorageStructure>): Promise<
     return account as SyncAccount;
 }
 
-function generateAccountMeta(accountId: string) {
+function generateAccountMeta(accountId: string, name?: string) {
     return {
-        name: `Account ${accountId.slice(-6)}`,
+        name: name ?? `Account ${accountId.slice(-6)}`,
         icon: {
             type: 'color' as const,
             value:
@@ -60,7 +78,7 @@ export function useAccountsFactory() {
             secureEncryptedStorage,
             structure: syncedStorageStructure,
             apiConfiguration: {
-                basePath: '' // TODO config.
+                basePath: config.sync.api_url
             }
         });
     }, [config, storage, encryptedStorage, secureEncryptedStorage]);
@@ -156,10 +174,12 @@ export function useCreateExistingAccountConnector() {
         async mutationFn() {
             await delay();
             const connector = await factory.connectToExistingSyncAccount();
+
             return {
+                connectionString: connector.data.toString('base64url'),
                 accountPromise: connector.waitForCompletion(),
                 abort() {
-                    /* TODO */
+                    connector.abort();
                 }
             };
         }
@@ -181,28 +201,45 @@ export function useCreateExistingAccountConnector() {
 export function useAccountConnectedCallback(
     connector: OnboardingConnector,
     callback: (account: SyncAccount) => void,
-    options?: { setAsActive: boolean }
+    options?: { setAsActive: boolean; onError?: (e: Error) => void }
 ) {
     const client = useQueryClient();
     const { mutateAsync: setActive } = useSetActiveAccount();
+    const setAsActive = options?.setAsActive ?? false;
 
     useEffect(() => {
         let isReset = false;
-        connector.accountPromise.then(async account => {
-            if (isReset) {
-                return;
-            }
-            await client.invalidateQueries({ queryKey: accountKey.list.toKey() });
-            if (options?.setAsActive) {
-                await setActive(account.accountId);
-            }
+        connector.accountPromise
+            .then(async account => {
+                if (isReset) {
+                    return;
+                }
 
-            callback(await withMeta(account));
-        });
+                await account.syncProvider.waitForInitialSync();
+
+                if (isReset) {
+                    return;
+                }
+
+                await client.invalidateQueries({ queryKey: accountKey.list.toKey() });
+                if (setAsActive) {
+                    await setActive(account.accountId);
+                }
+
+                callback(await withMeta(account));
+            })
+            .catch(e => {
+                if (isReset || e instanceof OnboardingAbortedError) {
+                    return;
+                }
+
+                console.error('[useAccountConnectedCallback]', e);
+                options?.onError?.(e instanceof Error ? e : new Error(String(e)));
+            });
         return () => {
             isReset = true;
         };
-    }, [connector.accountPromise, callback, client]);
+    }, [connector.accountPromise, callback, client, setAsActive]);
 }
 
 export function useHasAccount() {
@@ -274,11 +311,13 @@ export function useDeleteAccount() {
     const account = useActiveAccount();
     const accountFactory = useAccountsFactory();
     const client = useQueryClient();
+    const { remove: removeActiveAccount } = useSharedStructuredStorage('activeAccount');
 
     return useMutation({
         async mutationFn() {
             await accountFactory.deleteLocalAccount(account.accountId);
-            await client.invalidateQueries({ queryKey: accountKey.toKey() });
+            await removeActiveAccount();
+            client.removeQueries({ queryKey: accountKey.toKey() });
         }
     });
 }

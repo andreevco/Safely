@@ -39,7 +39,7 @@ export function useGetSyncProvider(
 
 export function useActiveAccountSyncedStorage<K extends keyof SyncedStorageStructure>(key: K) {
     const account = useActiveAccount();
-    return useAccountSyncedStorage(account?.accountId ?? null, key);
+    return useAccountSyncedStorage(account.accountId, key);
 }
 
 export function useAccountSyncedStorage<K extends keyof SyncedStorageStructure>(
@@ -50,18 +50,18 @@ export function useAccountSyncedStorage<K extends keyof SyncedStorageStructure>(
 
     const get = useCallback(() => {
         return getSyncProvider().get(key);
-    }, [getSyncProvider]);
+    }, [getSyncProvider, key]);
 
     const set = useCallback<(val: z.input<SyncedStorageStructure[K]>) => Promise<void>>(
         val => {
             return getSyncProvider().set(key, val);
         },
-        [getSyncProvider]
+        [getSyncProvider, key]
     );
 
     const remove = useCallback<() => Promise<void>>(() => {
         return getSyncProvider().remove(key);
-    }, [getSyncProvider]);
+    }, [getSyncProvider, key]);
 
     return { get, set, remove };
 }

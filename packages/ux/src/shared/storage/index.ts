@@ -1,5 +1,9 @@
 export { useAccountLocalStorage } from './account/local';
-export { useAccountSyncedStorage } from './account/synced';
+export {
+    useAccountSyncedStorage,
+    useActiveAccountSyncedStorage,
+    useGetSyncProvider
+} from './account/synced';
 export {
     type SyncedStorageStructure,
     syncedStorageStructure,

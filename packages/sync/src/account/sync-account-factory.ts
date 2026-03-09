@@ -61,10 +61,14 @@ export class SyncAccountFactory<
             this.accountManager
         );
         const data = onboarding.generateOnboardingData();
+        const abortController = new AbortController();
         return {
             data,
             waitForCompletion: async () => {
-                return await onboarding.waitForOnboarding();
+                return await onboarding.waitForOnboarding(abortController.signal);
+            },
+            abort: () => {
+                abortController.abort();
             }
         };
     }

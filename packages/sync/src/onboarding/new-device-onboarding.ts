@@ -4,8 +4,10 @@ import { ZodType } from 'zod';
 import { decryptMasterKey, deriveOnboardingKey } from './crypto';
 import { OnboardingInvitationCodec } from './onboarding-codec';
 import { AccountManager } from '../account/account-manager';
+import { ISyncAccount } from '../account/I-sync-account';
 import { ApiSigner } from '../api/api-signer';
 import { AccountsApi, Configuration, OnboardingMessage } from '../api/generated';
+import { OnboardingAbortedError } from '../sync-error';
 
 export class NewDeviceOnboarding<S extends Record<string, ZodType>> {
     private ephemeralKeyPair: { publicKey: Buffer; secretKey: Buffer } | null = null;
@@ -29,16 +31,40 @@ export class NewDeviceOnboarding<S extends Record<string, ZodType>> {
         });
     }
 
-    public async waitForOnboarding() {
+    public async waitForOnboarding(signal?: AbortSignal): Promise<ISyncAccount<S>> {
         for (let i = 0; i < 30; i++) {
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            if (signal?.aborted) {
+                throw new OnboardingAbortedError();
+            }
+
+            await new Promise<void>((resolve, reject) => {
+                const timer = setTimeout(resolve, 1000);
+                signal?.addEventListener(
+                    'abort',
+                    () => {
+                        clearTimeout(timer);
+                        reject(new OnboardingAbortedError());
+                    },
+                    { once: true }
+                );
+            });
 
             let message: OnboardingMessage;
             try {
-                message = await this.accountsApi.acceptOnboarding();
+                message = await this.accountsApi.acceptOnboarding({
+                    signal
+                });
             } catch (err) {
+                if (signal?.aborted) {
+                    throw new OnboardingAbortedError();
+                }
+
                 console.log('No onboarding message yet, retrying...', err);
                 continue;
+            }
+
+            if (signal?.aborted) {
+                throw new OnboardingAbortedError();
             }
 
             return await this.handleOnboardingMessage(message);

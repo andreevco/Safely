@@ -1,6 +1,7 @@
 import { z, ZodType } from 'zod';
 
 import { ISyncProvider } from './I-sync-provider';
+import { StorageError } from '../crdt/y-manager';
 import { SyncContainer } from '../sync-container';
 import { SyncError } from '../sync-error';
 
@@ -18,9 +19,18 @@ export class OfflineSyncProvider<S extends Record<string, ZodType>> implements I
     }
 
     public async get<K extends keyof S>(k: K): Promise<z.output<S[K]>> {
-        const v = this.container.yManager.get(k.toString());
+        let v: string | null;
+        try {
+            v = this.container.yManager.get(k.toString());
+        } catch (e) {
+            if (e instanceof StorageError) {
+                v = null;
+            } else {
+                throw e;
+            }
+        }
         const schema = this.structure[k];
-        return schema.parse(JSON.parse(v));
+        return schema.parse(v !== null ? JSON.parse(v) : null);
     }
 
     public async remove(k: keyof S): Promise<void> {
@@ -34,9 +44,22 @@ export class OfflineSyncProvider<S extends Record<string, ZodType>> implements I
 
     public onChange<K extends keyof S>(k: K, observer: (v: z.output<S[K]>) => void): () => void {
         return this.container.yManager.onChange(() => {
+            let valueString: string;
+            try {
+                valueString = this.container.yManager.get(k.toString());
+            } catch (e) {
+                if (e instanceof StorageError) {
+                    return;
+                }
+                throw e;
+            }
             const schema = this.structure[k];
-            const valueString = this.container.yManager.get(k.toString());
-            const value = schema.parse(JSON.parse(valueString));
+            let value: z.output<S[K]>;
+            try {
+                value = schema.parse(JSON.parse(valueString));
+            } catch {
+                return;
+            }
             observer(value);
         });
     }
@@ -46,6 +69,10 @@ export class OfflineSyncProvider<S extends Record<string, ZodType>> implements I
         return () => {
             this.onErrorObservers.delete(obs);
         };
+    }
+
+    public async waitForInitialSync(): Promise<void> {
+        // in offline mode, data is always available locally
     }
 
     public async triggerSync(): Promise<void> {
