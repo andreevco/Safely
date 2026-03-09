@@ -95,10 +95,11 @@ export function useAddPortfolio() {
 
 function useNewPortfolioFallbackName() {
     const { data: portfolios } = usePortfoliosQuery();
+    const t = useTranslate();
 
     const portfoliosCount = portfolios?.length ?? 0;
 
-    return `Wallet ${portfoliosCount + 1}`;
+    return t('settings.wallet.defaultName', { number: portfoliosCount + 1 });
 }
 
 export function useGeneratePortfolio() {

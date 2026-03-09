@@ -145,6 +145,7 @@
             "wallet": {
                 "title": "Wallet",
                 "main": "Main",
+                "defaultName": "Wallet {{number}}",
                 "recovery": {
                     "title": "Recovery phrase",
                     "subtitle": "Keep it private. View only if necessary. This phrase has never been viewed."
@@ -206,6 +207,17 @@
             "insufficientBalance": "Insufficient balance"
         }
     },
+    "signIn": {
+        "title": "Scan QR to sign in",
+        "description": "Scan it with your other device to add this device to your account.",
+        "banner": "This device will have full access to your account. It can be used if your other device is lost.",
+        "timeout": "Connection timed out. Please try again.",
+        "success": {
+            "title": "Signed in",
+            "subtitle": "This device now has full access\nto your account.",
+            "continue": "Continue"
+        }
+    },
     "welcome": {
         "title": "Safely",
         "subtitle": "Your personal wallet. Receive, buy and spend crypto with ease.",
@@ -253,7 +265,8 @@
                 "step3": "Tap \"Add device\" below and scan that code — camera access will be required."
             },
             "addDevice": "Add device",
-            "protectLater": "Protect account later"
+            "protectLater": "Protect account later",
+            "deviceNotAdded": "Device was not added. Please try again."
         }
     },
     "compactAccountSelector": {
@@ -304,6 +317,7 @@
     },
     "settings": {
         "title": "Settings",
+        "deviceConnected": "New device connected",
         "groups": {
             "account": {
                 "title": "Account",

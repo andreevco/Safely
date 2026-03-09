@@ -13,7 +13,8 @@ import {
     useAppContext,
     useBootConfig,
     useSharedStructuredStorage,
-    useSuspenseQuery
+    useSuspenseQuery,
+    useTranslate
 } from '../../shared';
 import { useActiveAccountSyncedStorage } from '../../shared/storage/account/synced';
 import { useToast } from '../toast';
@@ -112,6 +113,7 @@ export function useActiveAccountQuery() {
 }
 
 export function useCreateAccount(options?: { createWallet?: boolean; setActive?: boolean }) {
+    const t = useTranslate();
     const client = useQueryClient();
     const factory = useAccountsFactory();
     const { mutateAsync: setActive } = useSetActiveAccount();
@@ -120,14 +122,17 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
         async mutationFn() {
             await delay();
             const account = await factory.createSyncAccount();
-            await account.syncProvider.set('meta', generateAccountMeta(account.accountId));
+            await account.syncProvider.set(
+                'meta',
+                generateAccountMeta(account.accountId, t('settings.wallet.main'))
+            );
 
             if (options?.createWallet || options?.setActive) {
                 const portfolioFactory = new PortfolioFactory(account.secretEncryptor);
                 using accessorVault = generateBip39Accessor();
                 const portfolio = await portfolioFactory.generatePortfolioBip39(accessorVault, {
                     network: PortfolioNetworkType.MAINNET,
-                    name: 'Wallet 1'
+                    name: t('settings.wallet.defaultName', { number: 1 })
                 });
 
                 await account.syncProvider.set('portfolios', [portfolio.toJSON()]);
@@ -220,6 +225,7 @@ export function useActiveAccountQueryKey() {
 }
 
 export function useConnectAccountToNewDevice() {
+    const t = useTranslate();
     const activeKeeperId = useActiveAccount();
     const toast = useToast();
     const { qrScanner } = useAppContext();
@@ -230,7 +236,7 @@ export function useConnectAccountToNewDevice() {
             await activeKeeperId.connectToNewDevice(Buffer.from(connectionString, 'base64url'));
         },
         onSuccess() {
-            toast('New device connected'); // TODO i18n
+            toast(t('settings.deviceConnected'));
         }
     });
 }
