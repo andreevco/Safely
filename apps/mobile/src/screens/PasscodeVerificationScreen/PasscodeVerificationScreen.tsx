@@ -1,10 +1,8 @@
-import { StaticScreenProps, useNavigation } from '@react-navigation/native';
-import { useCallback, useEffect, useRef } from 'react';
+import { StaticScreenProps } from '@react-navigation/native';
+import { useEffect, useRef } from 'react';
 
-import { useEraseAllData } from '@safely/ux';
-
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { usePasscodeLockout } from '@mobile/entities/security';
+import { useSignOutConfirmation } from '@mobile/features/settings/useSignOutConfirmation';
 
 import { LockoutContent } from './components/LockoutContent';
 import { PasscodeContent } from './components/PasscodeContent';
@@ -18,9 +16,8 @@ type PasscodeVerificationScreenProps = StaticScreenProps<{
 export const PasscodeVerificationScreen = (props: PasscodeVerificationScreenProps) => {
     const { onSuccess, onClose, title } = props.route.params;
 
-    const navigation = useNavigation<RootStackNavigationProp>();
     const { isLocked, remainingSeconds, recordFailedAttempt, resetAttempts } = usePasscodeLockout();
-    const { mutateAsync: eraseAllData } = useEraseAllData();
+    const handleSignOut = useSignOutConfirmation();
     const successCalled = useRef(false);
 
     useEffect(() => {
@@ -32,14 +29,6 @@ export const PasscodeVerificationScreen = (props: PasscodeVerificationScreenProp
             }
         };
     }, [onClose]);
-
-    const handleSignOut = useCallback(async () => {
-        await eraseAllData();
-        navigation.reset({
-            index: 0,
-            routes: [{ name: 'WelcomeScreen' }]
-        });
-    }, [eraseAllData, navigation]);
 
     if (isLocked) {
         return <LockoutContent remainingSeconds={remainingSeconds} onSignOut={handleSignOut} />;
