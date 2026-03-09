@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native-unistyles';
 export const styles = StyleSheet.create(theme => ({
     backdrop: {
         ...StyleSheet.absoluteFillObject,
-        backgroundColor: theme.colors.background.overlay
+        backgroundColor: '#000000A3'
     },
     menu: {
         position: 'absolute',

@@ -113,7 +113,9 @@ export const PortfoliosList = (props: PortfoliosListProps) => {
                             <Animated.View key="checkmark">
                                 {activePortfolio.id.isEq(portfolio.id) && <Cell.Checkmark />}
                             </Animated.View>
-                            <Icon icon={Dots14} style={styles.dotsIcon} color="tertiary" />
+                            {orderedPortfolios.length > 1 && (
+                                <Icon icon={Dots14} style={styles.dotsIcon} color="tertiary" />
+                            )}
                         </Cell>
                     </GestureDetector>
                 )}

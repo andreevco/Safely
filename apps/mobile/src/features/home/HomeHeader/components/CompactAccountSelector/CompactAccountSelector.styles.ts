@@ -1,10 +1,7 @@
 import { StyleSheet } from 'react-native-unistyles';
 
 export const styles = StyleSheet.create(theme => ({
-    container: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: theme.spacing[4],
+    touchableContainer: {
         paddingVertical: theme.spacing[8],
         paddingLeft: 14,
         paddingRight: theme.spacing[16],
@@ -12,6 +9,11 @@ export const styles = StyleSheet.create(theme => ({
         borderColor: theme.colors.other.transparentElement,
         borderRadius: theme.radius.full,
         backgroundColor: theme.colors.background.primary
+    },
+    innerTouchableContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: theme.spacing[4]
     },
     addButton: {
         zIndex: 10000,
