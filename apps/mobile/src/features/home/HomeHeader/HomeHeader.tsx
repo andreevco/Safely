@@ -24,7 +24,7 @@ export const HomeHeader = () => {
             >
                 <SettingsButton />
             </Screen.Header.Button>
-            {portfolios.length <= 5 ? <CompactAccountSelector /> : <AccountSelector />}
+            {portfolios.length <= 10 ? <CompactAccountSelector /> : <AccountSelector />}
             <Screen.Header.Button
                 type="transparent"
                 onPress={() => navigation.navigate('CurrencyModal')}

@@ -28,7 +28,7 @@ export const ActivityItem = (props: ActivityItemProps) => {
 
     return (
         <View style={styles.border}>
-            <Cell onPress={() => onNavigateToTransaction(activity)}>
+            <Cell showDivider={false} onPress={() => onNavigateToTransaction(activity)}>
                 <Cell.Content>
                     <Cell.Row>
                         <View style={styles.titleWithTimestamp}>

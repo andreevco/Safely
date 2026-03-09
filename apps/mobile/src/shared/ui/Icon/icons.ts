@@ -1,5 +1,6 @@
 // Generated file. Do not edit by hand.
 
+import Dots14Svg from '@safely/ux/shared/assets/icons/14/dots-14.svg';
 import ArrowLeft16Svg from '@safely/ux/shared/assets/icons/16/arrow-left-16.svg';
 import ChevronDown16Svg from '@safely/ux/shared/assets/icons/16/chevron-down-16.svg';
 import ChevronRight16Svg from '@safely/ux/shared/assets/icons/16/chevron-right-16.svg';
@@ -37,6 +38,7 @@ import Notifications96Svg from '@safely/ux/shared/assets/icons/96/notifications-
 import Placeholder96Svg from '@safely/ux/shared/assets/icons/96/placeholder-96.svg';
 import WalletPlus96Svg from '@safely/ux/shared/assets/icons/96/wallet-plus-96.svg';
 
+export const Dots14 = { image: Dots14Svg, size: 14 } as const;
 export const ArrowLeft16 = { image: ArrowLeft16Svg, size: 16 } as const;
 export const ChevronDown16 = { image: ChevronDown16Svg, size: 16 } as const;
 export const ChevronRight16 = { image: ChevronRight16Svg, size: 16 } as const;
