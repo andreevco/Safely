@@ -1,4 +1,5 @@
 import { useFocusEffect } from '@react-navigation/native';
+import { selectionAsync } from 'expo-haptics';
 import { useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TextInput, View } from 'react-native';
@@ -37,6 +38,14 @@ export const CustomizeWalletContent = ({
         useCallback(() => {
             inputRef.current?.focus();
         }, [])
+    );
+
+    const handleIconChange = useCallback(
+        (icon: WalletIcon) => {
+            selectionAsync();
+            onIconChange(icon);
+        },
+        [onIconChange]
     );
 
     const iconDisplay = useMemo(() => {
@@ -86,12 +95,12 @@ export const CustomizeWalletContent = ({
                 <ColorPicker
                     colors={WALLET_COLORS}
                     selectedColor={selectedIcon.type === 'color' ? selectedIcon.value : undefined}
-                    onColorSelect={color => onIconChange({ type: 'color', value: color })}
+                    onColorSelect={color => handleIconChange({ type: 'color', value: color })}
                 />
 
                 <EmojiPicker
                     emojis={WALLET_EMOJIS}
-                    onEmojiSelect={emoji => onIconChange({ type: 'emoji', value: emoji })}
+                    onEmojiSelect={emoji => handleIconChange({ type: 'emoji', value: emoji })}
                 />
             </KeyboardAwareScrollView>
         </View>
