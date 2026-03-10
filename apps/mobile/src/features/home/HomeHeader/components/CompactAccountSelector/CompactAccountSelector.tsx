@@ -54,6 +54,9 @@ export const CompactAccountSelector = () => {
                 <PortfoliosList
                     portfolios={portfolios}
                     variant="compact"
+                    onCustomize={() => {
+                        popupMenuRef.current?.close();
+                    }}
                     onSelect={() => {
                         popupMenuRef.current?.close();
                         impactAsync(ImpactFeedbackStyle.Medium);

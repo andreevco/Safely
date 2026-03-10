@@ -3,6 +3,7 @@ import { forwardRef, useCallback, useImperativeHandle, useRef, useState } from '
 import { LayoutChangeEvent, Platform, Pressable, useWindowDimensions, View } from 'react-native';
 import Animated, {
     SharedValue,
+    interpolateColor,
     useAnimatedProps,
     useAnimatedStyle,
     useSharedValue,
@@ -81,6 +82,13 @@ export const PopupMenu = forwardRef<PopupMenuRef, PopupMenuProps>((props, ref) =
         intensity: progress.value * 45
     }));
 
+    const blurAnimatedStyle = useAnimatedStyle(
+        () => ({
+            backgroundColor: interpolateColor(progress.value, [0, 1], ['transparent', '#000000A3'])
+        }),
+        [progress]
+    );
+
     const menuAnimatedStyle = useAnimatedStyle(() => {
         const spaceBelow = height - (triggerY.value + triggerHeight.value + MENU_MARGIN);
         const showBelow =
@@ -106,7 +114,7 @@ export const PopupMenu = forwardRef<PopupMenuRef, PopupMenuProps>((props, ref) =
                     <AnimatedBlurView
                         tint="dark"
                         animatedProps={blurAnimatedProps}
-                        style={styles.backdrop}
+                        style={[styles.backdrop, blurAnimatedStyle]}
                         pointerEvents="none"
                     />
                     <Pressable style={StyleSheet.absoluteFill} onPress={close} />
