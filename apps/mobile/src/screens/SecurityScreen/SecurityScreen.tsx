@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { useActivePortfolio, useConnectAccountToNewDevice } from '@safely/ux';
+import { useActivePortfolio } from '@safely/ux';
 import { useSecurityCheck } from '@safely/ux/shared/security';
 
 import { RootStackNavigationProp, SettingsStackNavigationProp } from '@mobile/app/navigation/types';
@@ -24,7 +24,6 @@ export const SecurityScreen = () => {
     const { mutateAsync: setBiometryEnabled } = useSetBiometryEnabled();
     const check = useSecurityCheck();
     const portfolio = useActivePortfolio();
-    const { mutate: connectToNewDevice } = useConnectAccountToNewDevice();
     const navigation = useNavigation<SettingsStackNavigationProp>();
     const rootNavigation = useNavigation<RootStackNavigationProp>();
 
@@ -63,7 +62,7 @@ export const SecurityScreen = () => {
                     <List>
                         <List.Title>{t('security.groups.account.title')}</List.Title>
                         <List.Group>
-                            <Cell onPress={() => connectToNewDevice()}>
+                            <Cell onPress={() => navigation.navigate('ProtectAccountModal')}>
                                 <Cell.Content>
                                     <Cell.Row>
                                         <Cell.Title>
