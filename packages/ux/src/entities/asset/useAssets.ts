@@ -15,6 +15,7 @@ import { assetKeys } from './keys';
 import { fetchRateQuery } from './rateQuery';
 import { getSortedAssets } from './utils';
 
+// TODO Think again, maybe detach useBalances in separate query
 export function useAssets() {
     const btcApi = useBtcApi();
     const fiat = useActiveFiat();
