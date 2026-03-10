@@ -3,37 +3,50 @@ import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Keyboard } from 'react-native';
 
-import { Portfolio } from '@safely/core';
-import { useChangePortfolioMeta } from '@safely/ux';
+import { Portfolio, PortfolioMeta } from '@safely/core';
+import { useChangePortfolioMeta, useNewPortfolioFallbackName } from '@safely/ux';
 
 import { Button, Icon, Screen, Xmark16 } from '@mobile/shared/ui';
 
-import { WalletIcon } from './constants';
+import { WALLET_COLORS, WalletIcon } from './constants';
 import { CustomizeWalletContent } from './CustomizeWalletContent';
 import { styles } from './CustomizeWalletModal.styles';
 
+const DEFAULT_ICON: WalletIcon = {
+    type: 'color',
+    value: WALLET_COLORS[0]
+};
+
 type CustomizeWalletModalProps = StaticScreenProps<{
-    portfolio: Portfolio;
+    portfolio?: Portfolio;
+    onSave?: (meta: PortfolioMeta) => Promise<void>;
     // NOTE: this callback is for navigation actions only and calling in cases when user don't save changes
     onCompleteCustomize?: () => void;
 }>;
 
 export const CustomizeWalletModal = (props: CustomizeWalletModalProps) => {
-    const { portfolio, onCompleteCustomize } = props.route?.params ?? {};
+    const { portfolio, onSave, onCompleteCustomize } = props.route?.params ?? {};
     const { t } = useTranslation();
+    const fallbackName = useNewPortfolioFallbackName();
     const { mutateAsync: changePortfolioMeta } = useChangePortfolioMeta();
 
-    const [walletName, setWalletName] = useState(portfolio?.meta.name);
-    const [selectedIcon, setSelectedIcon] = useState<WalletIcon>(portfolio?.meta.icon);
+    const [walletName, setWalletName] = useState(portfolio?.meta.name ?? fallbackName);
+    const [selectedIcon, setSelectedIcon] = useState<WalletIcon>(
+        portfolio?.meta.icon ?? DEFAULT_ICON
+    );
 
     const handleSave = useCallback(async () => {
         Keyboard.dismiss();
-        await changePortfolioMeta({
-            portfolio,
-            meta: { name: walletName.trim(), icon: selectedIcon }
-        });
-        onCompleteCustomize?.();
-    }, [onCompleteCustomize, changePortfolioMeta, portfolio, walletName, selectedIcon]);
+        if (portfolio) {
+            await changePortfolioMeta({
+                portfolio,
+                meta: { name: walletName.trim(), icon: selectedIcon }
+            });
+            onCompleteCustomize?.();
+        } else {
+            await onSave?.({ name: walletName.trim(), icon: selectedIcon });
+        }
+    }, [onCompleteCustomize, onSave, changePortfolioMeta, portfolio, walletName, selectedIcon]);
 
     const isNameValid = walletName.trim().length > 0;
 

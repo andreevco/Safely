@@ -1,7 +1,7 @@
 import { CommonActions, useNavigation } from '@react-navigation/native';
 import { useCallback } from 'react';
 
-import { MnemonicResource } from '@safely/core';
+import { MnemonicResource, PortfolioMeta } from '@safely/core';
 import { useGeneratePortfolio, useImportPortfolio, useSecurityCheck } from '@safely/ux';
 
 import { useLoader } from '@mobile/shared/providers/loader';
@@ -18,25 +18,27 @@ export function useAddWalletFlow() {
     const { mutateAsync: generatePortfolio } = useGeneratePortfolio();
     const check = useSecurityCheck();
 
-    const startCreateFlow = useCallback(async () => {
-        await withLoader(async () => {
-            const portfolio = await generatePortfolio();
+    const startCreateFlow = useCallback(() => {
+        navigation.dispatch(
+            CommonActions.navigate(routes.customize, {
+                onSave: async (meta: PortfolioMeta) => {
+                    await withLoader(async () => {
+                        await generatePortfolio(meta);
+                    });
 
-            navigation.dispatch(
-                CommonActions.navigate(routes.customize, {
-                    portfolio,
-                    onCompleteCustomize: () => {
-                        navigation.dispatch(
-                            CommonActions.reset({
-                                index: 0,
-                                routes: [{ name: 'TabsNavigator' }]
-                            })
-                        );
-                    }
-                })
-            );
-        });
-    }, [navigation, check]);
+                    navigation.dispatch(
+                        CommonActions.reset({
+                            index: 0,
+                            routes: [{ name: 'TabsNavigator' }]
+                        })
+                    );
+                },
+                onCompleteCustomize: () => {
+                    navigation.goBack();
+                }
+            })
+        );
+    }, [navigation, generatePortfolio, withLoader]);
 
     const startImportFlow = useCallback(() => {
         navigation.dispatch(CommonActions.navigate(routes.importWallet));
