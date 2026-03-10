@@ -13,6 +13,13 @@ export function useSendFormDraft() {
     const queryClient = useQueryClient();
     const draftKey = sendFormKeys.draft(wallet.id.toString()).toKey();
 
+    queryClient.setQueryDefaults(draftKey, {
+        meta: {
+            persist: true,
+            schemaKey: 'sendFormDraft'
+        }
+    });
+
     const initialDraft = useMemo(() => queryClient.getQueryData<SendFormDraft>(draftKey), []);
 
     const saveDraft = useCallback(
