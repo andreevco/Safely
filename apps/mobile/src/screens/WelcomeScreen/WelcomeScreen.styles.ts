@@ -10,8 +10,8 @@ export const styles = StyleSheet.create(theme => ({
         alignItems: 'center'
     },
     logo: {
-        width: 160,
-        height: 160
+        width: 100,
+        height: 100
     },
     spacer: {
         flex: 1
