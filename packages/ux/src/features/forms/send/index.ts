@@ -2,6 +2,7 @@ export { useSendForm, type UseSendFormOptions } from './hooks/useSendForm';
 export { sendFormReducer, INITIAL_STATE, createInitialState } from './reducer';
 export { SendFormError } from './errors';
 export type {
+    SendSuggestion,
     SendFormResult,
     SendFormResultBtc,
     SendFormState,

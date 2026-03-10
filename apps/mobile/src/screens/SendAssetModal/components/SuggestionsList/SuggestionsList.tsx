@@ -1,18 +1,18 @@
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
-import { Portfolio } from '@safely/core';
+import { SendSuggestion } from '@safely/ux';
 
 import { List } from '@mobile/shared/ui';
 
-import { WalletCell } from './components';
-import { styles } from './OtherWalletsList.styles';
+import { SuggestionCell } from './components';
+import { styles } from './SuggestionsList.styles';
 
-interface OtherWalletsListProps {
-    suggestions: Portfolio[];
+interface SuggestionsListProps {
+    suggestions: SendSuggestion[];
     onSelect: (address: string, label: string) => void;
 }
 
-export const OtherWalletsList = (props: OtherWalletsListProps) => {
+export const SuggestionsList = (props: SuggestionsListProps) => {
     const { suggestions, onSelect } = props;
 
     if (suggestions.length === 0) {
@@ -23,10 +23,11 @@ export const OtherWalletsList = (props: OtherWalletsListProps) => {
         <Animated.View entering={FadeIn.duration(100)} exiting={FadeOut.duration(100)}>
             <List style={styles.container}>
                 <List.Group>
-                    {suggestions.map(portfolio => (
-                        <WalletCell
-                            key={portfolio.id.toString()}
-                            portfolio={portfolio}
+                    {suggestions.map((suggestion, idx) => (
+                        <SuggestionCell
+                            key={suggestion.address}
+                            suggestion={suggestion}
+                            showDivider={idx < suggestions.length - 1}
                             onSelect={onSelect}
                         />
                     ))}

@@ -4,9 +4,16 @@ import {
     CryptoAsset,
     CryptoAssetAmount,
     FiatAssetAmount,
+    PortfolioMeta,
     RatedCryptoAssetAmount,
     Recipient
 } from '@safely/core';
+
+export interface SendSuggestion {
+    address: string;
+    meta: PortfolioMeta;
+    tag?: number;
+}
 
 export type AmountInputType = 'crypto' | 'fiat';
 
