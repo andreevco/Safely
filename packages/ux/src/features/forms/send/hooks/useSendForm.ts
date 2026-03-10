@@ -137,6 +137,15 @@ export function useSendForm(props: UseSendFormOptions) {
     const validateRecipient = useCallback((value: string) => {
         dispatch({ type: 'RESET_DEPENDENT_FIELDS' });
 
+        if (!value.trim()) {
+            dispatch({
+                type: 'SET_RECIPIENT_VALIDATED',
+                recipient: undefined,
+                error: undefined
+            });
+            return;
+        }
+
         const zodResult = recipientSchema.safeParse(value);
         if (!zodResult.success) {
             dispatch({
