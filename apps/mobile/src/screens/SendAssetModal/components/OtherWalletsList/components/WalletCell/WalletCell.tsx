@@ -16,15 +16,13 @@ export const WalletCell = (props: WalletCellProps) => {
 
     const derivations = portfolio.getDerivations();
 
-    // TODO: I really don't know how I should better handle cases when btc wallets > 1 ¯\_(ツ)_/¯.
-    // Kinda complex logic, need to be discussed.
-    const address = derivations[0]?.chains.btc.wallets[0]?.address;
-
     return derivations.map((derivation, idx, arr) => (
         <Fragment key={derivation.id.toString()}>
             <Cell
                 showDivider={idx === arr.length - 1 ? showDivider : true}
-                onPress={() => onSelect(address, portfolio.meta.name)}
+                onPress={() =>
+                    onSelect(derivation.chains.btc.wallets[0]?.address, portfolio.meta.name)
+                }
             >
                 <Cell.Content>
                     <Cell.Row>
