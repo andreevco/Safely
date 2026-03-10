@@ -2,6 +2,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TextInput, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useUnistyles } from 'react-native-unistyles';
 
 import { ColorPicker, EmojiPicker, Text } from '@mobile/shared/ui';
@@ -76,16 +77,23 @@ export const CustomizeWalletContent = ({
                 </View>
             </View>
 
-            <ColorPicker
-                colors={WALLET_COLORS}
-                selectedColor={selectedIcon.type === 'color' ? selectedIcon.value : undefined}
-                onColorSelect={color => onIconChange({ type: 'color', value: color })}
-            />
+            <KeyboardAwareScrollView
+                style={styles.scrollContainer}
+                contentContainerStyle={styles.scrollContent}
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+            >
+                <ColorPicker
+                    colors={WALLET_COLORS}
+                    selectedColor={selectedIcon.type === 'color' ? selectedIcon.value : undefined}
+                    onColorSelect={color => onIconChange({ type: 'color', value: color })}
+                />
 
-            <EmojiPicker
-                emojis={WALLET_EMOJIS}
-                onEmojiSelect={emoji => onIconChange({ type: 'emoji', value: emoji })}
-            />
+                <EmojiPicker
+                    emojis={WALLET_EMOJIS}
+                    onEmojiSelect={emoji => onIconChange({ type: 'emoji', value: emoji })}
+                />
+            </KeyboardAwareScrollView>
         </View>
     );
 };
