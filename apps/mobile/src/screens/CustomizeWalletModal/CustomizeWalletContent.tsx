@@ -1,12 +1,14 @@
 import { useFocusEffect } from '@react-navigation/native';
 import { selectionAsync } from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TextInput, View } from 'react-native';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
+import { KeyboardAwareScrollView, KeyboardStickyView } from 'react-native-keyboard-controller';
 import { useUnistyles } from 'react-native-unistyles';
 
 import { ColorPicker, EmojiPicker, Text } from '@mobile/shared/ui';
+import { smoothstepGradient } from '@mobile/shared/utils';
 
 import { WALLET_COLORS, WALLET_EMOJIS, WalletIcon } from './constants';
 import { styles } from './CustomizeWalletContent.styles';
@@ -61,48 +63,58 @@ export const CustomizeWalletContent = ({
     }, [selectedIcon]);
 
     return (
-        <View style={styles.content} pointerEvents={disabled ? 'none' : 'auto'}>
-            <View style={styles.textContainer}>
-                <Text textAlign="center" variant="titleM">
-                    {title}
-                </Text>
-                <Text textAlign="center" variant="bodyL" color="secondary">
-                    {description}
-                </Text>
-            </View>
-
-            <View style={styles.inputContainer}>
-                <View style={styles.inputWrapper}>
-                    <TextInput
-                        ref={inputRef}
-                        value={walletName}
-                        onChangeText={onWalletNameChange}
-                        placeholder={t('customizeWallet.namePlaceholder')}
-                        placeholderTextColor={theme.colors.text.tertiary}
-                        style={[styles.input, { color: theme.colors.text.primary }]}
-                        editable={!disabled}
-                    />
-                    {iconDisplay && <View style={styles.iconContainer}>{iconDisplay}</View>}
+        <>
+            <View style={styles.content} pointerEvents={disabled ? 'none' : 'auto'}>
+                <View style={styles.textContainer}>
+                    <Text textAlign="center" variant="titleM">
+                        {title}
+                    </Text>
+                    <Text textAlign="center" variant="bodyL" color="secondary">
+                        {description}
+                    </Text>
                 </View>
+
+                <View style={styles.inputContainer}>
+                    <View style={styles.inputWrapper}>
+                        <TextInput
+                            ref={inputRef}
+                            value={walletName}
+                            onChangeText={onWalletNameChange}
+                            placeholder={t('customizeWallet.namePlaceholder')}
+                            placeholderTextColor={theme.colors.text.tertiary}
+                            style={[styles.input, { color: theme.colors.text.primary }]}
+                            editable={!disabled}
+                        />
+                        {iconDisplay && <View style={styles.iconContainer}>{iconDisplay}</View>}
+                    </View>
+                </View>
+
+                <KeyboardAwareScrollView
+                    style={styles.scrollContainer}
+                    contentContainerStyle={styles.scrollContent}
+                    showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
+                >
+                    <ColorPicker
+                        colors={WALLET_COLORS}
+                        selectedColor={
+                            selectedIcon.type === 'color' ? selectedIcon.value : undefined
+                        }
+                        onColorSelect={color => handleIconChange({ type: 'color', value: color })}
+                    />
+
+                    <EmojiPicker
+                        emojis={WALLET_EMOJIS}
+                        onEmojiSelect={emoji => handleIconChange({ type: 'emoji', value: emoji })}
+                    />
+                </KeyboardAwareScrollView>
             </View>
-
-            <KeyboardAwareScrollView
-                style={styles.scrollContainer}
-                contentContainerStyle={styles.scrollContent}
-                showsVerticalScrollIndicator={false}
-                keyboardShouldPersistTaps="handled"
-            >
-                <ColorPicker
-                    colors={WALLET_COLORS}
-                    selectedColor={selectedIcon.type === 'color' ? selectedIcon.value : undefined}
-                    onColorSelect={color => handleIconChange({ type: 'color', value: color })}
+            <KeyboardStickyView pointerEvents="none">
+                <LinearGradient
+                    style={styles.gradient}
+                    colors={smoothstepGradient(theme.colors.background.primary)}
                 />
-
-                <EmojiPicker
-                    emojis={WALLET_EMOJIS}
-                    onEmojiSelect={emoji => handleIconChange({ type: 'emoji', value: emoji })}
-                />
-            </KeyboardAwareScrollView>
-        </View>
+            </KeyboardStickyView>
+        </>
     );
 };

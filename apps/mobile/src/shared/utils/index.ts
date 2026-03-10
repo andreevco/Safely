@@ -4,3 +4,4 @@ export type { UseScrollPositionOptions, UseScrollPositionResult } from './useScr
 export { resolveLayoutByScreenName } from './navigation';
 export { MobileNumberFormatLocale } from './mobile-number-format-locale';
 export { startOfDay, diffInDays } from './dates';
+export { smoothstepGradient } from './gradient';

@@ -48,5 +48,12 @@ export const styles = StyleSheet.create(theme => ({
         width: 20,
         height: 20,
         borderRadius: theme.radius.full
+    },
+    gradient: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        bottom: 0,
+        height: theme.spacing[24]
     }
 }));
