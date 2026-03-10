@@ -15,11 +15,12 @@ import { styles } from './PortfoliosList.styles';
 interface PortfoliosListProps {
     portfolios: Portfolio[];
     onSelect: () => void;
+    onCustomize?: () => void;
     variant?: 'compact';
 }
 
 export const PortfoliosList = (props: PortfoliosListProps) => {
-    const { portfolios, onSelect, variant } = props;
+    const { portfolios, onSelect, onCustomize, variant } = props;
     const activePortfolio = useActivePortfolio();
     const { mutate: reorderPortfolios } = useReorderPortfolios();
     const { mutate: setActivePortfolio } = useSetActivePortfolio();
@@ -54,6 +55,7 @@ export const PortfoliosList = (props: PortfoliosListProps) => {
 
     const handleCustomizeWallet = useCallback(
         (portfolio: Portfolio) => {
+            onCustomize?.();
             navigation.navigate('CustomizeWalletModal', {
                 portfolio,
                 onCompleteCustomize: () => {
@@ -61,7 +63,7 @@ export const PortfoliosList = (props: PortfoliosListProps) => {
                 }
             });
         },
-        [navigation]
+        [navigation, onCustomize]
     );
 
     const moveItem = useCallback(
