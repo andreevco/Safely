@@ -1,0 +1,1 @@
+export { SuggestionCell } from './SuggestionCell';

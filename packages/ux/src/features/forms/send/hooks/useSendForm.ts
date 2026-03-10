@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react';
 
-import { useAssets } from '../../../../entities';
-import { useNumberFormatter } from '../../../../shared';
+import { useActiveDerivation, useAssets, usePortfolios } from '../../../../entities';
+import { fuzzySearch, useNumberFormatter } from '../../../../shared';
 import { useMaxSendAssetTransfer } from '../../../blockchain-send';
 import { SendFormError } from '../errors';
 import { createInitialState, sendFormReducer } from '../reducer';
@@ -83,6 +83,26 @@ export function useSendForm(props: UseSendFormOptions) {
 
     const blockchain = state.parsed.recipient?.blockchain;
 
+    const portfolios = usePortfolios();
+    const activeDerivation = useActiveDerivation();
+
+    const suggestions = useMemo(() => {
+        const matched = fuzzySearch(portfolios, state.values.recipient, p => p.meta.name);
+
+        return matched
+            .flatMap(portfolio => {
+                const derivations = portfolio.getDerivations();
+                return derivations
+                    .filter(d => !d.id.isEq(activeDerivation.id))
+                    .map(derivation => ({
+                        address: derivation.chains.btc.wallets[0]?.address,
+                        meta: portfolio.meta,
+                        tag: derivations.length > 1 ? derivation.index + 1 : undefined
+                    }));
+            })
+            .slice(0, 8);
+    }, [portfolios, activeDerivation, state.values.recipient]);
+
     const isMaxAvailable = useMemo(() => {
         const asset = state.parsed.asset;
         return asset ? !asset.amount.relativeAmount.eq(0) : false;
@@ -161,8 +181,8 @@ export function useSendForm(props: UseSendFormOptions) {
     }, []);
 
     const setRecipient = useCallback(
-        (value: string) => {
-            dispatch({ type: 'SET_RECIPIENT', value });
+        (value: string, label?: string) => {
+            dispatch({ type: 'SET_RECIPIENT', value, label });
             validateRecipient(value);
         },
         [validateRecipient]
@@ -359,7 +379,8 @@ export function useSendForm(props: UseSendFormOptions) {
         },
         meta: {
             isMaxAvailable,
-            availableAssets
+            availableAssets,
+            suggestions
         }
     };
 }

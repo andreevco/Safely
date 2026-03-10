@@ -143,9 +143,18 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
                             entering={FadeIn.duration(150)}
                             exiting={FadeOut.duration(150)}
                         >
-                            <Text variant="bodyM" color="tertiary">
-                                {ellipsisMiddle(state.parsed.recipient.address)}
-                            </Text>
+                            {state.values.recipientLabel ? (
+                                <Text variant="bodyM" color="tertiary" numberOfLines={1}>
+                                    <Text variant="bodyM" color="secondary">
+                                        {state.values.recipientLabel}
+                                    </Text>{' '}
+                                    {ellipsisMiddle(state.parsed.recipient.address)}
+                                </Text>
+                            ) : (
+                                <Text variant="bodyM" color="secondary" numberOfLines={1}>
+                                    {ellipsisMiddle(state.parsed.recipient.address)}
+                                </Text>
+                            )}
                         </Animated.View>
                     )}
                 </Screen.Header.Title>
@@ -172,6 +181,7 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
                     value={state.values.recipient}
                     error={state.errors.recipient}
                     onChangeText={actions.setRecipient}
+                    suggestions={meta.suggestions}
                 />
                 <AmountStep
                     key="amount"

@@ -13,7 +13,8 @@
         "title": "Отправить",
         "recipient": {
             "label": "Получатель",
-            "placeholder": "Адрес или имя"
+            "placeholder": "Адрес или имя",
+            "myWallets": "Мои кошельки"
         },
         "amount": "Сумма",
         "max": "Отправить всё",
