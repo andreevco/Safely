@@ -1,5 +1,6 @@
-import { BTC_ASSET, CryptoAssetAmount, RatedCryptoAssetAmount, Rate } from '@safely/core';
-import { toBig } from '@safely/core';
+import { useQueryClient } from '@tanstack/react-query';
+
+import { BTC_ASSET, CryptoAssetAmount, RatedCryptoAssetAmount } from '@safely/core';
 
 import {
     QUERIES_STALE_TIME,
@@ -11,6 +12,7 @@ import {
 import { useActiveFiat } from '../fiat';
 import { useActiveBtcWallet } from '../portfolio';
 import { assetKeys } from './keys';
+import { fetchRateQuery } from './rateQuery';
 import { getSortedAssets } from './utils';
 
 export function useAssets() {
@@ -18,41 +20,24 @@ export function useAssets() {
     const fiat = useActiveFiat();
     const priceApi = usePriceApi();
     const wallet = useActiveBtcWallet();
+    const queryClient = useQueryClient();
 
     return usePersistQuery<RatedCryptoAssetAmount[]>({
         queryKey: assetKeys.all(wallet.id.toString()).fiat(fiat.id.toString()).toKey(),
         queryFn: async () => {
             const fiatSymbol = fiat.id.symbol;
 
-            const [addressInfo, priceResponse] = await Promise.all([
+            const [addressInfo, btcPrice] = await Promise.all([
                 btcApi.getXpub(wallet, {
                     secondaryCurrency: fiatSymbol
                 }),
-                priceApi
-                    .getCurrentPrice({
-                        token: 'native',
-                        currency: fiatSymbol,
-                        blockchain: 'bitcoin'
-                    })
-                    // TODO Think again, maybe detach useBalances in separate query
-                    .catch(() => null)
+                fetchRateQuery(queryClient, priceApi, BTC_ASSET, fiat)
             ]);
 
             const btcAmount = new CryptoAssetAmount({
                 asset: BTC_ASSET,
                 weiAmount: addressInfo.balance
             });
-
-            const btcPrice = priceResponse
-                ? new Rate(
-                      BTC_ASSET,
-                      fiat,
-                      toBig(priceResponse.price),
-                      undefined,
-                      String(priceResponse.diff_24h),
-                      undefined
-                  )
-                : null;
 
             const btcItem: RatedCryptoAssetAmount = {
                 amount: btcAmount,
