@@ -2,7 +2,10 @@ import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { useRequestNotificationPermission } from '@mobile/features/notifications';
+import {
+    useRequestNotificationPermission,
+    useToggleNotifications
+} from '@mobile/features/notifications';
 import { useOnboardingFlow } from '@mobile/features/onboarding';
 import { Button, Icon, Notifications96, Screen, Text } from '@mobile/shared/ui';
 
@@ -10,6 +13,7 @@ import { styles } from './NotificationsScreen.styles';
 
 export const OnboardingNotificationsScreen = () => {
     const { t } = useTranslation();
+    const { mutateAsync: toggleNotifications } = useToggleNotifications();
     const { mutateAsync: requestPermission } = useRequestNotificationPermission();
     const { onNotificationsFinished } = useOnboardingFlow();
 
@@ -18,9 +22,10 @@ export const OnboardingNotificationsScreen = () => {
         onNotificationsFinished();
     }, [requestPermission, onNotificationsFinished]);
 
-    const handleSkip = useCallback(() => {
+    const handleSkip = useCallback(async () => {
+        await toggleNotifications(false);
         onNotificationsFinished();
-    }, [onNotificationsFinished]);
+    }, [toggleNotifications, onNotificationsFinished]);
 
     return (
         <Screen>
