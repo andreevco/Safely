@@ -87,7 +87,7 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
                     </Text>
                 </Screen.Header.Title>
             </Screen.Header>
-            <Screen.Content>
+            <Screen.Scrollable>
                 <View style={styles.amountContainer}>
                     <Text variant="titleL" color="primary">
                         {isInitiator ? '−' : '+'} {activity.transaction.value.format(formatter)}
@@ -163,7 +163,7 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
                         </TableCell>
                     </List.Group>
                 </List>
-            </Screen.Content>
+            </Screen.Scrollable>
         </Screen>
     );
 };
