@@ -11,7 +11,7 @@ export enum SubtitleStatus {
 
 type Timer = ReturnType<typeof setTimeout> | null;
 
-const STATUS_DEBOUNCE_MS = 300;
+const STATUS_DEBOUNCE_MS = 2000;
 const COPY_FEEDBACK_MS = 1500;
 
 function clearTimer(ref: { current: Timer }) {
