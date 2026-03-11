@@ -116,7 +116,7 @@ export function useSendForm(props: UseSendFormOptions) {
         }
 
         return findPortfolioMetaByAddress(portfolios, state.parsed.recipient.address);
-    }, [portfolios]);
+    }, [portfolios, state.parsed.recipient]);
 
     const isMaxAvailable = useMemo(() => {
         const asset = state.parsed.asset;
