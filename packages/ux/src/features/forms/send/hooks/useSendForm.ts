@@ -50,7 +50,7 @@ export function useSendForm(props: UseSendFormOptions) {
         resolvedInitialValues,
         createInitialState
     );
-    const { data: maxSendValue, promise: maxSendValuePromise } = useMaxSendAssetTransfer(
+    const { data: maxSendValue } = useMaxSendAssetTransfer(
         state.parsed.recipient
             ? {
                   recipient: state.parsed.recipient,
@@ -74,6 +74,7 @@ export function useSendForm(props: UseSendFormOptions) {
                 recipient: state.values.recipient,
                 amount: state.values.amount || undefined,
                 amountInputType: state.values.amountInputType,
+                isMax: state.values.isMax || undefined,
                 stepIndex: state.stepIndex
             });
         } else {
@@ -83,6 +84,7 @@ export function useSendForm(props: UseSendFormOptions) {
         state.values.recipient,
         state.values.amount,
         state.values.amountInputType,
+        state.values.isMax,
         state.stepIndex
     ]);
 
@@ -253,7 +255,7 @@ export function useSendForm(props: UseSendFormOptions) {
     );
 
     const setIsMax = useCallback(
-        async (isMax: boolean): Promise<string | void> => {
+        (isMax: boolean) => {
             dispatch({ type: 'SET_IS_MAX', value: isMax });
 
             if (!isMax) {
@@ -262,10 +264,10 @@ export function useSendForm(props: UseSendFormOptions) {
             }
 
             const asset = state.parsed.asset;
-            if (!asset) return;
+            if (!asset || !maxSendValue) return;
 
             const result = calculateMaxAmount(
-                { amount: maxSendValue ?? (await maxSendValuePromise), price: asset.price },
+                { amount: maxSendValue, price: asset.price },
                 state.values.amountInputType,
                 formatter
             );
@@ -279,16 +281,8 @@ export function useSendForm(props: UseSendFormOptions) {
             });
 
             skipNextAmountValidation.current = true;
-
-            return result.formatted;
         },
-        [
-            state.parsed.asset,
-            state.values.amountInputType,
-            formatter,
-            maxSendValue,
-            maxSendValuePromise
-        ]
+        [state.parsed.asset, state.values.amountInputType, formatter, maxSendValue]
     );
 
     const setAsset = useCallback(
@@ -373,13 +367,64 @@ export function useSendForm(props: UseSendFormOptions) {
     }, [state, onSubmit, shouldResetForm, clearDraft]);
 
     useEffect(() => {
-        if (resolvedInitialValues?.recipient) {
-            setRecipient(resolvedInitialValues.recipient);
+        if (!resolvedInitialValues?.recipient) return;
+
+        if (resolvedInitialValues.isMax) {
+            const zodResult = recipientSchema.safeParse(resolvedInitialValues.recipient);
+            if (!zodResult.success) return;
+
+            const parsedRecipient = parseRecipient(zodResult.data);
+            if (typeof parsedRecipient === 'string') return;
+
+            const defaultAsset = BLOCKCHAIN_DEFAULT_TOKENS[parsedRecipient.blockchain];
+            const parsedAsset = ratedAssetsRef.current.find(({ amount }) =>
+                amount.asset.id.isEq(defaultAsset.id)
+            );
+
+            if (parsedAsset) {
+                dispatch({
+                    type: 'RESTORE_DRAFT',
+                    recipient: parsedRecipient,
+                    asset: parsedAsset,
+                    assetId: defaultAsset.id.toString(),
+                    amountInputType: resolvedInitialValues.amountInputType ?? 'crypto',
+                    isMax: true,
+                    stepIndex: resolvedInitialValues.stepIndex ?? 0
+                });
+                return;
+            }
         }
+
+        setRecipient(resolvedInitialValues.recipient);
     }, []);
 
     useEffect(() => {
-        if (resolvedInitialValues?.amount && state.parsed.asset && !state.parsed.amount) {
+        if (!state.parsed.isMax) return;
+        if (state.parsed.amount) return;
+        if (!state.parsed.asset || !maxSendValue) return;
+
+        const result = calculateMaxAmount(
+            { amount: maxSendValue, price: state.parsed.asset.price },
+            state.values.amountInputType,
+            formatter
+        );
+        if (!result) return;
+
+        dispatch({
+            type: 'SET_AMOUNT_VALIDATED',
+            parsed: result.parsed,
+            formatted: result.formatted,
+            error: undefined
+        });
+        skipNextAmountValidation.current = true;
+    }, [state.parsed.isMax, state.parsed.amount, state.parsed.asset, maxSendValue]);
+
+    useEffect(() => {
+        if (!state.parsed.asset) return;
+        if (state.parsed.amount) return;
+        if (state.parsed.isMax) return;
+
+        if (resolvedInitialValues?.amount) {
             setAmount(resolvedInitialValues.amount);
         }
     }, [state.parsed.asset]);

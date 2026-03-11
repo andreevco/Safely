@@ -1,7 +1,7 @@
 import { useNavigation, NavigationProp, StaticScreenProps } from '@react-navigation/native';
 import { useRef, useCallback, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { TextInput, View } from 'react-native';
+import { Keyboard, TextInput, View } from 'react-native';
 import { MaskedTextInputRef } from 'react-native-advanced-input-mask';
 import PagerView from 'react-native-pager-view';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
@@ -120,11 +120,17 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
 
     useEffect(() => {
         pagerRef.current?.setPage(step.index);
-        const refs = [recipientInputRef, amountInputRef];
-        const timer = setTimeout(() => refs[step.index]?.current?.focus(), 50);
+
+        const timer =
+            state.parsed.isMax && step.index === 1
+                ? setTimeout(() => Keyboard.dismiss(), 250)
+                : setTimeout(
+                      () => [recipientInputRef, amountInputRef][step.index]?.current?.focus(),
+                      250
+                  );
 
         return () => clearTimeout(timer);
-    }, [step.index]);
+    }, [step.index, state.parsed.isMax]);
 
     return (
         <Screen>
