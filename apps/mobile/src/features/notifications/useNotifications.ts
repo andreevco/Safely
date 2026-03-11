@@ -2,15 +2,23 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as Notifications from 'expo-notifications';
 
+import { useSharedStructuredStorage } from '@safely/ux';
+
 import { notificationsKeys } from './keys';
 
 export function useNotificationsQuery() {
+    const { get } = useSharedStructuredStorage('notificationsEnabled');
+
     return useQuery({
         queryKey: notificationsKeys.permissions.toKey(),
         queryFn: async () => {
-            const { status } = await Notifications.getPermissionsAsync();
+            const [{ status }, preference] = await Promise.all([
+                Notifications.getPermissionsAsync(),
+                get()
+            ]);
+
             return {
-                isEnabled: status === 'granted',
+                isEnabled: preference ?? false,
                 isDenied: status === 'denied'
             };
         },
@@ -18,13 +26,36 @@ export function useNotificationsQuery() {
     });
 }
 
+export function useToggleNotifications() {
+    const queryClient = useQueryClient();
+    const { set } = useSharedStructuredStorage('notificationsEnabled');
+
+    return useMutation({
+        mutationFn: async (isEnabled: boolean) => {
+            if (isEnabled) {
+                await Notifications.requestPermissionsAsync();
+            }
+            await set(isEnabled);
+        },
+        async onSuccess() {
+            await queryClient.invalidateQueries({
+                queryKey: notificationsKeys.permissions.toKey()
+            });
+        }
+    });
+}
+
 export function useRequestNotificationPermission() {
     const queryClient = useQueryClient();
+    const { set } = useSharedStructuredStorage('notificationsEnabled');
 
     return useMutation({
         mutationFn: async () => {
             const { status } = await Notifications.requestPermissionsAsync();
-            return status === 'granted';
+            const isGranted = status === 'granted';
+            await set(isGranted);
+
+            return isGranted;
         },
         async onSuccess() {
             await queryClient.invalidateQueries({
