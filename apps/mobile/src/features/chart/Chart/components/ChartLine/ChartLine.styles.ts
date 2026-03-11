@@ -10,5 +10,13 @@ export const styles = StyleSheet.create(theme => ({
     },
     canvas: {
         flex: 1
+    },
+    timeLabelContainer: {
+        position: 'absolute',
+        top: -24,
+        alignItems: 'center'
+    },
+    timeLabelText: {
+        color: theme.colors.text.primary
     }
 }));
