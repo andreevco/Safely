@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react';
 
-import { useActiveDerivation, useAssets, usePortfolios } from '../../../../entities';
+import {
+    findPortfolioMetaByAddress,
+    useActiveDerivation,
+    useAssets,
+    usePortfolios
+} from '../../../../entities';
 import { fuzzySearch, useNumberFormatter } from '../../../../shared';
 import { useMaxSendAssetTransfer } from '../../../blockchain-send';
 import { SendFormError } from '../errors';
@@ -87,9 +92,9 @@ export function useSendForm(props: UseSendFormOptions) {
     const activeDerivation = useActiveDerivation();
 
     const suggestions = useMemo(() => {
-        const matched = fuzzySearch(portfolios, state.values.recipient, p => p.meta.name);
+        const query = state.values.recipient;
 
-        return matched
+        const allAddresses = fuzzySearch(portfolios, query, s => s.meta.name)
             .flatMap(portfolio => {
                 const derivations = portfolio.getDerivations();
                 return derivations
@@ -101,7 +106,17 @@ export function useSendForm(props: UseSendFormOptions) {
                     }));
             })
             .slice(0, 8);
-    }, [portfolios, activeDerivation, state.values.recipient]);
+
+        return allAddresses;
+    }, [portfolios, activeDerivation, state.values.recipient, state.parsed.recipient]);
+
+    const portfolioMetaByAddress = useMemo(() => {
+        if (!state.parsed.recipient) {
+            return;
+        }
+
+        return findPortfolioMetaByAddress(portfolios, state.parsed.recipient.address);
+    }, [portfolios]);
 
     const isMaxAvailable = useMemo(() => {
         const asset = state.parsed.asset;
@@ -181,8 +196,8 @@ export function useSendForm(props: UseSendFormOptions) {
     }, []);
 
     const setRecipient = useCallback(
-        (value: string, label?: string) => {
-            dispatch({ type: 'SET_RECIPIENT', value, label });
+        (value: string) => {
+            dispatch({ type: 'SET_RECIPIENT', value });
             validateRecipient(value);
         },
         [validateRecipient]
@@ -380,7 +395,8 @@ export function useSendForm(props: UseSendFormOptions) {
         meta: {
             isMaxAvailable,
             availableAssets,
-            suggestions
+            suggestions,
+            portfolioMetaByAddress
         }
     };
 }

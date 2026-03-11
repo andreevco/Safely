@@ -434,3 +434,12 @@ export function useActiveDerivation() {
 export function useActiveBtcWallet() {
     return useActivePortfolioEntities().chains.btc;
 }
+
+export function findPortfolioMetaByAddress(
+    portfolios: ReturnType<typeof usePortfolios>,
+    address: string
+): PortfolioMeta | undefined {
+    return portfolios?.find(p =>
+        p.getDerivations().some(d => d.chains.btc.wallets[0]?.address === address)
+    )?.meta;
+}

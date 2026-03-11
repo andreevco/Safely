@@ -3,6 +3,8 @@ import { SendSuggestion } from '@safely/ux';
 import { PortfolioName } from '@mobile/entities/portfolio';
 import { Cell } from '@mobile/shared/ui';
 
+import { styles } from './SuggestionCell.styles';
+
 interface SuggestionCellProps {
     suggestion: SendSuggestion;
     showDivider?: boolean;
@@ -14,6 +16,7 @@ export const SuggestionCell = (props: SuggestionCellProps) => {
 
     return (
         <Cell
+            style={styles.cell}
             showDivider={showDivider}
             onPress={() => onSelect(suggestion.address, suggestion.meta.name)}
         >

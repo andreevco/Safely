@@ -1,6 +1,14 @@
 import { StyleSheet } from 'react-native-unistyles';
 
 export const styles = StyleSheet.create(theme => ({
+    scrollContainer: {
+        flex: 1,
+        marginTop: theme.spacing[12]
+    },
+    scrollContent: {
+        paddingHorizontal: theme.spacing[4],
+        paddingBottom: theme.spacing[16]
+    },
     content: {
         flex: 1,
         paddingHorizontal: theme.spacing[16]
@@ -40,5 +48,12 @@ export const styles = StyleSheet.create(theme => ({
         width: 20,
         height: 20,
         borderRadius: theme.radius.full
+    },
+    gradient: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        bottom: 0,
+        height: theme.spacing[24]
     }
 }));

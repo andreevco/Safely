@@ -1,6 +1,7 @@
 {
     "currentLanguageName": "English",
     "common": {
+        "edit": "Edit",
         "next": "Next",
         "cancel": "Cancel",
         "continue": "Continue",
@@ -312,6 +313,12 @@
     "settings": {
         "title": "Settings",
         "groups": {
+            "currentWallet": {
+                "title": "Current wallet",
+                "options": {
+                    "wallet": "Wallet"
+                }
+            },
             "account": {
                 "title": "Account",
                 "options": {
