@@ -150,10 +150,10 @@
         "amount": "Сумма",
         "networkFee": {
             "title": "Комиссия сети",
-            "timeMinutes_one": "~{{count}} минута",
-            "timeMinutes_few": "~{{count}} минуты",
-            "timeMinutes_many": "~{{count}} минут",
-            "timeMinutes_other": "~{{count}} минут"
+            "timeMinutes_one": "≈ {{count}} минута",
+            "timeMinutes_few": "≈ {{count}} минуты",
+            "timeMinutes_many": "≈ {{count}} минут",
+            "timeMinutes_other": "≈ {{count}} минут"
         },
         "sendResult": {
             "status": {
@@ -350,7 +350,7 @@
                 "title": "Статус",
                 "pending": {
                     "title": "В обработке",
-                    "description": "~ 10 минут на обработку"
+                    "description": "≈ 10 минут на обработку"
                 },
                 "confirmed-recently": {
                     "title": "Подтверждено {{date}}",

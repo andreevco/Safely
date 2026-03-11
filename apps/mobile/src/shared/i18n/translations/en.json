@@ -174,8 +174,8 @@
         "amount": "Amount",
         "networkFee": {
             "title": "Network Fee",
-            "timeMinutes_one": "~{{count}} minute",
-            "timeMinutes_other": "~{{count}} minutes"
+            "timeMinutes_one": "≈ {{count}} minute",
+            "timeMinutes_other": "≈ {{count}} minutes"
         },
         "sendResult": {
             "status": {
@@ -388,7 +388,7 @@
                 "title": "Status",
                 "pending": {
                     "title": "Pending",
-                    "description": "~ 10 minutes processing time"
+                    "description": "≈ 10 minutes processing time"
                 },
                 "confirmed-recently": {
                     "title": "Confirmed at {{date}}",
