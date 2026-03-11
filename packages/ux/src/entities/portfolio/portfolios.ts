@@ -88,7 +88,7 @@ export function useAddPortfolio() {
     });
 }
 
-function useNewPortfolioFallbackName() {
+export function useNewPortfolioFallbackName() {
     const { data: portfolios } = usePortfoliosQuery();
 
     const portfoliosCount = portfolios?.length ?? 0;
@@ -100,21 +100,25 @@ export function useGeneratePortfolio() {
     const sdk = useAppSdk();
     const { mutateAsync: setActivePortfolio } = useSetActivePortfolio();
     const { mutateAsync: addAccount } = useAddPortfolio();
-    const name = useNewPortfolioFallbackName();
+    const fallbackName = useNewPortfolioFallbackName();
     const errorToast = useErrorToast({
         PortfolioGenerationFailedError: 'importWalletScreen.errors.failedToGenerate'
     });
 
-    return useMutation<PortfolioBip39, Error, void>({
-        async mutationFn() {
+    return useMutation<PortfolioBip39, Error, Partial<PortfolioMeta> | void>({
+        async mutationFn(params) {
             await delay();
             const factory = new PortfolioFactory(sdk.secretEncryptor);
             using accessorVault = generateBip39Accessor();
 
             const portfolio = await factory.generatePortfolioBip39(accessorVault, {
                 network: PortfolioNetworkType.MAINNET,
-                name
+                name: params?.name ?? fallbackName
             });
+
+            if (params?.icon) {
+                portfolio.updateMeta({ icon: params.icon });
+            }
 
             await addAccount(portfolio);
 
