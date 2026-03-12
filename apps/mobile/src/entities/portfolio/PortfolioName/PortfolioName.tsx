@@ -23,7 +23,9 @@ export const PortfolioName = (props: PortfolioNameProps) => {
                 <View style={styles.contentWithTag}>
                     <View style={styles.container(gap)}>
                         <View style={styles.dot(meta.icon.value, size)} />
-                        <Text variant={fontVariant}>{meta.name}</Text>
+                        <Text variant={fontVariant} numberOfLines={1} style={styles.name}>
+                            {meta.name}
+                        </Text>
                     </View>
                     {tag && (
                         <View style={styles.tag}>
@@ -39,7 +41,9 @@ export const PortfolioName = (props: PortfolioNameProps) => {
                 <View style={styles.contentWithTag}>
                     <View style={styles.container(gap)}>
                         <Text>{meta.icon.value}</Text>
-                        <Text variant={fontVariant}>{meta.name}</Text>
+                        <Text variant={fontVariant} numberOfLines={1} style={styles.name}>
+                            {meta.name}
+                        </Text>
                     </View>
                     {tag && (
                         <View style={styles.tag}>

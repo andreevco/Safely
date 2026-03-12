@@ -1,4 +1,5 @@
 /* eslint-disable no-irregular-whitespace */
+
 import Color from 'color';
 import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
@@ -6,18 +7,19 @@ import { StyleSheet } from 'react-native-unistyles';
 import { Text } from '@mobile/shared/ui';
 
 type PriceDiffProps = {
-    diff: number;
+    formatted: string;
+    isPositive: boolean;
 };
 
 export const PriceDiff = (props: PriceDiffProps) => {
-    const { diff } = props;
+    const { formatted, isPositive } = props;
 
-    styles.useVariants({ type: diff > 0 ? 'positive' : 'negative' });
+    styles.useVariants({ type: isPositive ? 'positive' : 'negative' });
 
     return (
         <View style={styles.diff}>
-            <Text variant="bodyM" monospace color={diff > 0 ? 'accentGreen' : 'accentRed'}>
-                {diff > 0 ? '+' : '−'} {Math.abs(diff).toFixed(2)} %
+            <Text variant="bodyM" monospace color={isPositive ? 'accentGreen' : 'accentRed'}>
+                {isPositive ? '+' : '−'} {formatted} %
             </Text>
         </View>
     );

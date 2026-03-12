@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useRef } from 'react';
 import { View } from 'react-native';
 import Animated from 'react-native-reanimated';
 
@@ -10,11 +10,12 @@ import type { ChartPoint } from '@mobile/shared/utils/chart';
 import { styles } from './Chart.styles';
 import { ChartHeader, ChartLine, ChartPeriods, ChartFooter } from './components';
 import { CHART_CONFIG, ChartPeriod } from './config';
-import { useCrosshair } from './hooks';
+import { useChartPeriodQuery, useSetChartPeriod, useCrosshair } from './hooks';
 
 export const Chart = () => {
     const asset = BTC_ASSET;
-    const [selectedPeriod, setSelectedPeriod] = useState<ChartPeriod>(ChartPeriod.ONE_DAY);
+    const { data: selectedPeriod = ChartPeriod.ONE_MONTH } = useChartPeriodQuery();
+    const { mutate: setSelectedPeriod } = useSetChartPeriod();
     const chartPointsRef = useRef<ChartPoint[]>([]);
 
     const stickyStartDate = useMemo(() => {

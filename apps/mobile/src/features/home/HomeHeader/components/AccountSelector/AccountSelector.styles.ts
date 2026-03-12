@@ -2,6 +2,7 @@ import { StyleSheet } from 'react-native-unistyles';
 
 export const styles = StyleSheet.create(theme => ({
     container: {
+        flexShrink: 1,
         flexDirection: 'row',
         alignItems: 'center',
         gap: theme.spacing[4],
