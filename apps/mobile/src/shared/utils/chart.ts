@@ -67,7 +67,7 @@ export const buildChartPoints = (
 
         return {
             x: clampedX * width,
-            y: height - clamped * (height - 12),
+            y: (height - 8) - clamped * (height - 20),
             timestamp,
             price: value.price
         };
