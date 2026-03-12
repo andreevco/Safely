@@ -63,6 +63,7 @@ export interface SendFormInitialValues {
     recipient?: string;
     amount?: string;
     amountInputType?: AmountInputType;
+    isMax?: boolean;
     stepIndex?: number;
 }
 
@@ -120,4 +121,13 @@ export type SendFormAction =
     | { type: 'NEXT_STEP' }
     | { type: 'PREV_STEP' }
     | { type: 'RESET' }
-    | { type: 'RESET_DEPENDENT_FIELDS' };
+    | { type: 'RESET_DEPENDENT_FIELDS' }
+    | {
+          type: 'RESTORE_DRAFT';
+          recipient: Recipient;
+          asset: RatedCryptoAssetAmount;
+          assetId: string;
+          amountInputType: AmountInputType;
+          isMax: boolean;
+          stepIndex: number;
+      };

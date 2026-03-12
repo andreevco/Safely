@@ -11,6 +11,7 @@ const sSendFormDraft = z.object({
     recipient: z.string(),
     amount: z.string().optional(),
     amountInputType: z.enum(['crypto', 'fiat']).optional(),
+    isMax: z.boolean().optional(),
     stepIndex: z.number().optional()
 });
 

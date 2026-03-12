@@ -174,8 +174,8 @@
         "amount": "Amount",
         "networkFee": {
             "title": "Network Fee",
-            "timeMinutes_one": "~{{count}} minute",
-            "timeMinutes_other": "~{{count}} minutes"
+            "timeMinutes_one": "≈ {{count}} minute",
+            "timeMinutes_other": "≈ {{count}} minutes"
         },
         "sendResult": {
             "status": {
@@ -219,7 +219,8 @@
         "subtitle": "Your personal wallet. Receive, buy and spend crypto with ease.",
         "createNew": "Create new account",
         "importExisting": "Sign in",
-        "legal": "By using Safely, you agree to accept our <terms>Terms of Use</terms> and <privacy>Privacy Policy</privacy>."
+        "legalLine1": "By using Safely, you agree to accept",
+        "legalLine2": "our <terms>Terms of Use</terms> and <privacy>Privacy Policy</privacy>."
     },
     "onboarding": {
         "recoveryPhrase": {
@@ -388,7 +389,7 @@
                 "title": "Status",
                 "pending": {
                     "title": "Pending",
-                    "description": "~ 10 minutes processing time"
+                    "description": "≈ 10 minutes processing time"
                 },
                 "confirmed-recently": {
                     "title": "Confirmed at {{date}}",
