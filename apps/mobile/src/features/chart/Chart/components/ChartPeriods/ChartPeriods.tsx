@@ -46,7 +46,7 @@ export const ChartPeriods = (props: ChartPeriodsProps) => {
     return (
         <View style={styles.container}>
             {Object.values(ChartPeriod)
-                .slice(0, -2)
+                .slice(0, -1)
                 .map(period => (
                     <Tab
                         key={period}
