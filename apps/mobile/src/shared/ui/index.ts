@@ -1,3 +1,4 @@
+export { Badge } from './Badge';
 export { Text, TextProps } from './Text';
 export { Toast } from './Toast';
 export { TouchableOpacity } from './TouchableOpacity';
