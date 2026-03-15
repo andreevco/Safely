@@ -2,6 +2,7 @@
 
 import Dots14Svg from '@safely/ux/shared/assets/icons/14/dots-14.svg';
 import ArrowLeft16Svg from '@safely/ux/shared/assets/icons/16/arrow-left-16.svg';
+import Block16Svg from '@safely/ux/shared/assets/icons/16/block-16.svg';
 import ChevronDown16Svg from '@safely/ux/shared/assets/icons/16/chevron-down-16.svg';
 import ChevronRight16Svg from '@safely/ux/shared/assets/icons/16/chevron-right-16.svg';
 import Copy16Svg from '@safely/ux/shared/assets/icons/16/copy-16.svg';
@@ -24,6 +25,7 @@ import Copy28Svg from '@safely/ux/shared/assets/icons/28/copy-28.svg';
 import Flashlight28Svg from '@safely/ux/shared/assets/icons/28/flashlight-28.svg';
 import Home28Svg from '@safely/ux/shared/assets/icons/28/home-28.svg';
 import Loader28Svg from '@safely/ux/shared/assets/icons/28/loader-28.svg';
+import More28Svg from '@safely/ux/shared/assets/icons/28/more-28.svg';
 import QrCodeScan28Svg from '@safely/ux/shared/assets/icons/28/qr-code-scan-28.svg';
 import FrameCorner48Svg from '@safely/ux/shared/assets/icons/48/frame-corner-48.svg';
 import DeviceLinkSvg from '@safely/ux/shared/assets/icons/56/device-link.svg';
@@ -43,6 +45,7 @@ import WalletPlus96Svg from '@safely/ux/shared/assets/icons/96/wallet-plus-96.sv
 
 export const Dots14 = { image: Dots14Svg, size: 14 } as const;
 export const ArrowLeft16 = { image: ArrowLeft16Svg, size: 16 } as const;
+export const Block16 = { image: Block16Svg, size: 16 } as const;
 export const ChevronDown16 = { image: ChevronDown16Svg, size: 16 } as const;
 export const ChevronRight16 = { image: ChevronRight16Svg, size: 16 } as const;
 export const Copy16 = { image: Copy16Svg, size: 16 } as const;
@@ -65,6 +68,7 @@ export const Copy28 = { image: Copy28Svg, size: 28 } as const;
 export const Flashlight28 = { image: Flashlight28Svg, size: 28 } as const;
 export const Home28 = { image: Home28Svg, size: 28 } as const;
 export const Loader28 = { image: Loader28Svg, size: 28 } as const;
+export const More28 = { image: More28Svg, size: 28 } as const;
 export const QrCodeScan28 = { image: QrCodeScan28Svg, size: 28 } as const;
 export const FrameCorner48 = { image: FrameCorner48Svg, size: 48 } as const;
 export const DeviceLink = { image: DeviceLinkSvg, size: 56 } as const;
