@@ -71,6 +71,10 @@ export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAcco
         await this.container.deviceManager.revokeDevice(ikPub);
     }
 
+    public async getMyDeviceIkPub(): Promise<Buffer> {
+        return this.container.ikService.getPub();
+    }
+
     public async deleteThisDevice(): Promise<void> {
         this.syncProvider.dispose();
 

@@ -7,7 +7,8 @@ export {
 export {
     type SyncedStorageStructure,
     syncedStorageStructure,
-    type AccountMeta
+    type AccountMeta,
+    type DeviceMeta
 } from './account/synced/schemas';
 export {
     useSharedStructuredStorage,

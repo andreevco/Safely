@@ -20,7 +20,9 @@ export const accountKey = defineQueryKeys('account', {
             },
             portfolios: {
                 active: finalKey
-            }
+            },
+            devicesMeta: finalKey,
+            lastSeedRevealedAt: finalKey
         };
     }
 });

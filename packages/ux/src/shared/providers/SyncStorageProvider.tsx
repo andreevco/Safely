@@ -20,7 +20,9 @@ function useSyncChangeObserver() {
         const queryKeysToInvalidate: Record<keyof SyncedStorageStructure, readonly unknown[]> = {
             portfolios: accountQueryKey.portfolios.toKey(),
             preferredFiat: fiatKeys.active.toKey(),
-            meta: accountKey.list.toKey()
+            meta: accountKey.list.toKey(),
+            devicesMeta: accountQueryKey.devicesMeta.toKey(),
+            lastSeedRevealedAt: accountQueryKey.lastSeedRevealedAt.toKey()
         };
 
         const unsubscribes = syncedStorageKeys.map(field =>

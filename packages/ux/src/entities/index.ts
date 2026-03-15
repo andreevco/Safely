@@ -4,6 +4,8 @@ export * from './fiat';
 export * from './portfolio';
 export * from './toast';
 export * from './account';
+export * from './device';
 export * from './explorer';
 export * from './security';
+export * from './security/seed-reveal';
 export * from './btc-blockchain';
