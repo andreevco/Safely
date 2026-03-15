@@ -71,7 +71,7 @@ export const AmountInput = forwardRef<MaskedTextInputRef, AmountInputProps>((pro
                             <View style={styles.textInputWithCurrencySymbolContainer}>
                                 {isMax && (
                                     <Text variant="titleS" color="tertiary">
-                                        ~{' '}
+                                        ≈{' '}
                                     </Text>
                                 )}
                                 <MaskedTextInput

@@ -2,8 +2,7 @@ import { StyleSheet } from 'react-native-unistyles';
 
 export const styles = StyleSheet.create(theme => ({
     backdrop: {
-        ...StyleSheet.absoluteFillObject,
-        backgroundColor: '#000000A3'
+        ...StyleSheet.absoluteFillObject
     },
     menu: {
         position: 'absolute',

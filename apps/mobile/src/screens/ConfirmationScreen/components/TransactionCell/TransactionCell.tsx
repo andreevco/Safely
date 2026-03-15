@@ -19,6 +19,7 @@ export type TransactionCellProps = TouchableHighlightProps & {
     subvalue?: React.ReactNode;
     subvalueProps?: TextProps;
     onPress?: () => void;
+    showDivider?: boolean;
 };
 
 export const TransactionCell = (props: TransactionCellProps) => {
@@ -31,15 +32,19 @@ export const TransactionCell = (props: TransactionCellProps) => {
         valueStyle,
         valueProps = {},
         subvalueProps = {},
+        showDivider = true,
         ...rest
     } = props;
 
     const theme = useUnistyles().theme;
 
+    styles.useVariants({ showDivider });
+
     return (
         <TouchableHighlight
             delayPressIn={20}
             underlayColor={theme.colors.other.hover}
+            style={styles.hover}
             onPress={onPress}
             disabled={!onPress}
             {...rest}

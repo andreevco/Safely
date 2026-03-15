@@ -3,10 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Linking, View } from 'react-native';
 
 import { SettingsStackNavigationProp } from '@mobile/app/navigation/types';
-import {
-    useNotificationsQuery,
-    useRequestNotificationPermission
-} from '@mobile/features/notifications';
+import { useNotificationsQuery, useToggleNotifications } from '@mobile/features/notifications';
 import { Banner, Cell, List, Screen, Switch } from '@mobile/shared/ui';
 import { ArrowLeft16, Icon } from '@mobile/shared/ui/Icon';
 
@@ -16,16 +13,12 @@ export const NotificationsScreen = () => {
     const { t } = useTranslation();
     const navigation = useNavigation<SettingsStackNavigationProp>();
     const { data: notifications } = useNotificationsQuery();
-    const { mutateAsync: requestPermission } = useRequestNotificationPermission();
+    const { mutateAsync: toggleNotifications } = useToggleNotifications();
 
     const { isEnabled = false, isDenied = false } = notifications ?? {};
 
     const handleToggle = async () => {
-        if (isEnabled) {
-            void Linking.openSettings();
-        } else {
-            await requestPermission();
-        }
+        await toggleNotifications(!isEnabled);
     };
 
     const handleOpenSettings = () => {
@@ -65,7 +58,7 @@ export const NotificationsScreen = () => {
                                     </Cell.Subtitle>
                                 </Cell.Row>
                             </Cell.Content>
-                            <Switch value={isEnabled} disabled={isDenied} onPress={handleToggle} />
+                            <Switch value={isEnabled} onPress={handleToggle} />
                         </Cell>
                     </List.Group>
                 </List>

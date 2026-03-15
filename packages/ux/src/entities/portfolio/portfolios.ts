@@ -93,7 +93,7 @@ export function useAddPortfolio() {
     });
 }
 
-function useNewPortfolioFallbackName() {
+export function useNewPortfolioFallbackName() {
     const { data: portfolios } = usePortfoliosQuery();
     const t = useTranslate();
 
@@ -105,21 +105,25 @@ function useNewPortfolioFallbackName() {
 export function useGeneratePortfolio() {
     const { mutateAsync: setActivePortfolio } = useSetActivePortfolio();
     const { mutateAsync: addAccount } = useAddPortfolio();
-    const name = useNewPortfolioFallbackName();
+    const fallbackName = useNewPortfolioFallbackName();
     const errorToast = useErrorToast({
         PortfolioGenerationFailedError: 'importWalletScreen.errors.failedToGenerate'
     });
     const factory = usePortfoliosFactory();
 
-    return useMutation<PortfolioBip39, Error, void>({
-        async mutationFn() {
+    return useMutation<PortfolioBip39, Error, Partial<PortfolioMeta> | void>({
+        async mutationFn(params) {
             await delay();
             using accessorVault = generateBip39Accessor();
 
             const portfolio = await factory.generatePortfolioBip39(accessorVault, {
                 network: PortfolioNetworkType.MAINNET,
-                name
+                name: params?.name ?? fallbackName
             });
+
+            if (params?.icon) {
+                portfolio.updateMeta({ icon: params.icon });
+            }
 
             await addAccount(portfolio);
 
@@ -431,4 +435,13 @@ export function useActiveDerivation() {
 
 export function useActiveBtcWallet() {
     return useActivePortfolioEntities().chains.btc;
+}
+
+export function findPortfolioMetaByAddress(
+    portfolios: ReturnType<typeof usePortfolios>,
+    address: string
+): PortfolioMeta | undefined {
+    return portfolios?.find(p =>
+        p.getDerivations().some(d => d.chains.btc.wallets[0]?.address === address)
+    )?.meta;
 }

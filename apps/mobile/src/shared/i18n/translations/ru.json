@@ -13,7 +13,8 @@
         "title": "Отправить",
         "recipient": {
             "label": "Получатель",
-            "placeholder": "Адрес или имя"
+            "placeholder": "Адрес или имя",
+            "myWallets": "Мои кошельки"
         },
         "amount": "Сумма",
         "max": "Отправить всё",
@@ -154,10 +155,10 @@
         "amount": "Сумма",
         "networkFee": {
             "title": "Комиссия сети",
-            "timeMinutes_one": "~{{count}} минута",
-            "timeMinutes_few": "~{{count}} минуты",
-            "timeMinutes_many": "~{{count}} минут",
-            "timeMinutes_other": "~{{count}} минут"
+            "timeMinutes_one": "≈ {{count}} минута",
+            "timeMinutes_few": "≈ {{count}} минуты",
+            "timeMinutes_many": "≈ {{count}} минут",
+            "timeMinutes_other": "≈ {{count}} минут"
         },
         "sendResult": {
             "status": {
@@ -211,8 +212,9 @@
         "title": "Safely",
         "subtitle": "Ваш личный кошелек. Получайте, покупайте и тратьте крипту с легкостью.",
         "createNew": "Создать новый кошелёк",
-        "importExisting": "Войти",
-        "legal": "Используя safely,вы соглашаетесь и принимаете наши <terms>Условия использования</terms> и <privacy>Политику приватности</privacy>."
+        "importExisting": "Импортировать кошелёк",
+        "legalLine1": "Используя Safely, вы соглашаетесь и принимаете",
+        "legalLine2": "наши <terms>Условия использования</terms> и <privacy>Политику приватности</privacy>."
     },
     "onboarding": {
         "recoveryPhrase": {
@@ -367,7 +369,7 @@
                 "title": "Статус",
                 "pending": {
                     "title": "В обработке",
-                    "description": "~ 10 минут на обработку"
+                    "description": "≈ 10 минут на обработку"
                 },
                 "confirmed-recently": {
                     "title": "Подтверждено {{date}}",

@@ -16,9 +16,6 @@ export const styles = StyleSheet.create(theme => ({
             }
         }
     },
-    portfolioItemContent: {
-        height: 48
-    },
     rightIconsContainer: {
         flexDirection: 'row',
         gap: theme.spacing[12]

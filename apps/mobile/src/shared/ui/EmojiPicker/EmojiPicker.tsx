@@ -1,7 +1,6 @@
 import { selectionAsync } from 'expo-haptics';
 import { useMemo } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
 import { styles } from './EmojiPicker.styles';
 
@@ -25,12 +24,7 @@ export const EmojiPicker = (props: EmojiPickerProps) => {
     }, [emojis, emojisPerRow]);
 
     return (
-        <KeyboardAwareScrollView
-            style={styles.scrollContainer}
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-        >
+        <View>
             {emojiRows.map((row, rowIndex) => (
                 <View key={rowIndex} style={styles.row}>
                     {row.map(emoji => (
@@ -48,6 +42,6 @@ export const EmojiPicker = (props: EmojiPickerProps) => {
                     ))}
                 </View>
             ))}
-        </KeyboardAwareScrollView>
+        </View>
     );
 };

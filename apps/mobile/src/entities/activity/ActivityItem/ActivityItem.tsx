@@ -37,7 +37,7 @@ export const ActivityItem = (props: ActivityItemProps) => {
                                     ? t('history.transactionInfo.sent')
                                     : t('history.transactionInfo.received')}
                             </Cell.Title>
-                            <Text color="secondary" style={styles.timestamp}>
+                            <Text color="tertiary" style={styles.timestamp}>
                                 {timeFormatDetails === 'time'
                                     ? dateFormatter.format(activity.timestamp)
                                     : dateFormatter({ day: 'numeric', month: 'short' }).format(

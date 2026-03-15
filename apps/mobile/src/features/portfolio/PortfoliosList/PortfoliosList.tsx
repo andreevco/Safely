@@ -1,4 +1,3 @@
-import { useNavigation } from '@react-navigation/native';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { GestureDetector } from 'react-native-gesture-handler';
 import Animated, { useSharedValue } from 'react-native-reanimated';
@@ -6,7 +5,6 @@ import Animated, { useSharedValue } from 'react-native-reanimated';
 import { Portfolio } from '@safely/core';
 import { useActivePortfolio, useReorderPortfolios, useSetActivePortfolio } from '@safely/ux';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { PortfolioName } from '@mobile/entities/portfolio/PortfolioName/PortfolioName';
 import { Cell, Dots14, Draggable, Icon } from '@mobile/shared/ui';
 
@@ -15,6 +13,7 @@ import { styles } from './PortfoliosList.styles';
 interface PortfoliosListProps {
     portfolios: Portfolio[];
     onSelect: () => void;
+    onCustomize?: () => void;
     variant?: 'compact';
 }
 
@@ -23,7 +22,6 @@ export const PortfoliosList = (props: PortfoliosListProps) => {
     const activePortfolio = useActivePortfolio();
     const { mutate: reorderPortfolios } = useReorderPortfolios();
     const { mutate: setActivePortfolio } = useSetActivePortfolio();
-    const navigation = useNavigation<RootStackNavigationProp<'SelectAccountModal'>>();
 
     const draggedIndex = useSharedValue<number | null>(null);
     const offsetY = useSharedValue(0);
@@ -50,18 +48,6 @@ export const PortfoliosList = (props: PortfoliosListProps) => {
             setActivePortfolio({ id: portfolio.id }, { onSuccess: onSelect });
         },
         [setActivePortfolio, onSelect]
-    );
-
-    const handleCustomizeWallet = useCallback(
-        (portfolio: Portfolio) => {
-            navigation.navigate('CustomizeWalletModal', {
-                portfolio,
-                onCompleteCustomize: () => {
-                    navigation.goBack();
-                }
-            });
-        },
-        [navigation]
     );
 
     const moveItem = useCallback(
@@ -103,7 +89,6 @@ export const PortfoliosList = (props: PortfoliosListProps) => {
                                     ? index !== orderedPortfolios.length - 1
                                     : false
                             }
-                            onLongPress={() => handleCustomizeWallet(portfolio)}
                         >
                             <Cell.Content>
                                 <Cell.Row>

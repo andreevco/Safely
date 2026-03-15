@@ -1,9 +1,10 @@
 import { Skia, type SkPath } from '@shopify/react-native-skia';
 
-type ChartPoint = {
+export type ChartPoint = {
     x: number;
     y: number;
     timestamp: number;
+    price: number;
 };
 
 const MAX_POINTS = 300;
@@ -33,7 +34,7 @@ export const buildChartPoints = (
     }
 ): ChartPoint[] => {
     const points = normalizePoints(
-        prices.map(([timestamp, price]) => ({ x: timestamp, y: price, timestamp }))
+        prices.map(([timestamp, price]) => ({ x: timestamp, y: price, timestamp, price }))
     );
 
     const count = points.length;
@@ -66,8 +67,9 @@ export const buildChartPoints = (
 
         return {
             x: clampedX * width,
-            y: height - clamped * (height - 12),
-            timestamp
+            y: height - 8 - clamped * (height - 20),
+            timestamp,
+            price: value.price
         };
     });
 };

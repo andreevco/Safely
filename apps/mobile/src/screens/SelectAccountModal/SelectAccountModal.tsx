@@ -28,7 +28,7 @@ export const SelectAccountModal = () => {
                 <PortfoliosList portfolios={portfolios} onSelect={navigation.goBack} />
                 <Button
                     type="secondary"
-                    size="medium"
+                    size="small"
                     style={styles.addButton}
                     onPress={() => navigation.navigate('AddWalletModal')}
                 >

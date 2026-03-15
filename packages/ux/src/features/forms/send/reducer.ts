@@ -10,6 +10,7 @@ const LAST_STEP_INDEX = SEND_STEPS.length - 1;
 
 const DEFAULT_VALUES: SendFormValues = {
     recipient: '',
+    recipientLabel: undefined,
     amount: '',
     amountInputType: 'crypto',
     isMax: false,
@@ -40,7 +41,12 @@ export function createInitialState(initialValues?: SendFormInitialValues): SendF
         values: {
             ...DEFAULT_VALUES,
             recipient: initialValues.recipient,
-            amountInputType: initialValues.amountInputType ?? 'crypto'
+            amountInputType: initialValues.amountInputType ?? 'crypto',
+            isMax: initialValues.isMax ?? false
+        },
+        parsed: {
+            ...INITIAL_STATE.parsed,
+            isMax: initialValues.isMax ?? false
         },
         stepIndex: initialValues.stepIndex ?? 0
     };
@@ -51,7 +57,11 @@ export function sendFormReducer(state: SendFormState, action: SendFormAction): S
         case 'SET_RECIPIENT':
             return {
                 ...state,
-                values: { ...state.values, recipient: action.value }
+                values: {
+                    ...state.values,
+                    recipient: action.value,
+                    recipientLabel: action.label
+                }
             };
 
         case 'SET_RECIPIENT_VALIDATED':
@@ -119,6 +129,29 @@ export function sendFormReducer(state: SendFormState, action: SendFormAction): S
                     isMax: false
                 },
                 errors: { ...state.errors, amount: undefined, asset: undefined }
+            };
+
+        case 'RESTORE_DRAFT':
+            return {
+                values: {
+                    ...state.values,
+                    amountInputType: action.amountInputType,
+                    assetId: action.assetId,
+                    isMax: action.isMax,
+                    amount: ''
+                },
+                parsed: {
+                    recipient: action.recipient,
+                    asset: action.asset,
+                    amount: undefined,
+                    isMax: action.isMax
+                },
+                errors: {
+                    recipient: undefined,
+                    amount: undefined,
+                    asset: undefined
+                },
+                stepIndex: action.stepIndex
             };
 
         default:

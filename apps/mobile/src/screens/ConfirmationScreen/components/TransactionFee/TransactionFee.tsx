@@ -12,7 +12,10 @@ import { styles } from './TransactionFee.styles';
 
 const btcBlockWaitingTimeMinutes = 10;
 
-export const TransactionFee: FC<{ estimation: Estimation | undefined }> = ({ estimation }) => {
+export const TransactionFee: FC<{ estimation: Estimation | undefined; showDivider?: boolean }> = ({
+    estimation,
+    showDivider = true
+}) => {
     const { t } = useTranslation();
 
     const targetBlock = estimation ? Math.max(estimation.txTargetBlock, 1) : undefined;
@@ -36,6 +39,7 @@ export const TransactionFee: FC<{ estimation: Estimation | undefined }> = ({ est
                         : undefined}
                 </TransactionCell.Subvalue>
             }
+            showDivider={showDivider}
         />
     );
 };

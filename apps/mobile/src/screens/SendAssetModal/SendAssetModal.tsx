@@ -1,7 +1,7 @@
 import { useNavigation, NavigationProp, StaticScreenProps } from '@react-navigation/native';
 import { useRef, useCallback, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { TextInput, View } from 'react-native';
+import { Keyboard, TextInput, View } from 'react-native';
 import { MaskedTextInputRef } from 'react-native-advanced-input-mask';
 import PagerView from 'react-native-pager-view';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
@@ -120,11 +120,17 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
 
     useEffect(() => {
         pagerRef.current?.setPage(step.index);
-        const refs = [recipientInputRef, amountInputRef];
-        const timer = setTimeout(() => refs[step.index]?.current?.focus(), 50);
+
+        const timer =
+            state.parsed.isMax && step.index === 1
+                ? setTimeout(() => Keyboard.dismiss(), 250)
+                : setTimeout(
+                      () => [recipientInputRef, amountInputRef][step.index]?.current?.focus(),
+                      250
+                  );
 
         return () => clearTimeout(timer);
-    }, [step.index]);
+    }, [step.index, state.parsed.isMax]);
 
     return (
         <Screen>
@@ -143,9 +149,18 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
                             entering={FadeIn.duration(150)}
                             exiting={FadeOut.duration(150)}
                         >
-                            <Text variant="bodyM" color="tertiary">
-                                {ellipsisMiddle(state.parsed.recipient.address)}
-                            </Text>
+                            {meta.portfolioMetaByAddress ? (
+                                <Text variant="bodyM" color="tertiary" numberOfLines={1}>
+                                    <Text variant="bodyM" color="secondary">
+                                        {meta.portfolioMetaByAddress.name}
+                                    </Text>{' '}
+                                    {ellipsisMiddle(state.parsed.recipient.address)}
+                                </Text>
+                            ) : (
+                                <Text variant="bodyM" color="secondary" numberOfLines={1}>
+                                    {ellipsisMiddle(state.parsed.recipient.address)}
+                                </Text>
+                            )}
                         </Animated.View>
                     )}
                 </Screen.Header.Title>
@@ -172,6 +187,7 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
                     value={state.values.recipient}
                     error={state.errors.recipient}
                     onChangeText={actions.setRecipient}
+                    suggestions={meta.suggestions}
                 />
                 <AmountStep
                     key="amount"

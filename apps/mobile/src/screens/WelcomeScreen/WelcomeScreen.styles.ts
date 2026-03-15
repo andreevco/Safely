@@ -4,31 +4,22 @@ export const styles = StyleSheet.create(theme => ({
     background: {
         flex: 1
     },
-    logoSection: {
-        ...StyleSheet.absoluteFillObject,
-        justifyContent: 'center',
-        alignItems: 'center'
-    },
     logo: {
-        width: 160,
-        height: 160
-    },
-    spacer: {
-        flex: 1
-    },
-    bottomSection: {
-        paddingHorizontal: theme.spacing[24],
-        paddingBottom: theme.spacing[16]
+        margin: 'auto',
+        marginBottom: theme.spacing[16]
     },
     textContainer: {
         alignItems: 'center',
-        marginBottom: theme.spacing[32]
+        marginVertical: theme.spacing[16],
+        marginHorizontal: theme.spacing[32]
     },
     buttonsContainer: {
         gap: theme.spacing[8],
-        marginBottom: theme.spacing[24]
+        margin: theme.spacing[24]
     },
-    legalText: {
-        marginHorizontal: theme.spacing[8]
+    legalContainer: {
+        alignItems: 'center',
+        paddingBottom: theme.spacing[16],
+        paddingHorizontal: theme.spacing[16]
     }
 }));

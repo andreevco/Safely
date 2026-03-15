@@ -1,5 +1,3 @@
-/* eslint-disable no-irregular-whitespace */
-
 import { useMemo } from 'react';
 import { View } from 'react-native';
 
@@ -16,10 +14,11 @@ type ChartHeaderProps = {
     asset: CryptoAsset;
     prices: [number, number][];
     selectedPeriod: ChartPeriod;
+    activePrice?: number;
 };
 
 export const ChartHeader = (props: ChartHeaderProps) => {
-    const { prices, asset, selectedPeriod } = props;
+    const { prices, asset, selectedPeriod, activePrice } = props;
     const rate = useRate(asset);
     const fiat = useActiveFiat();
 
@@ -27,24 +26,37 @@ export const ChartHeader = (props: ChartHeaderProps) => {
 
     const diffInPercent = useMemo(() => {
         if (prices.length < 2) {
-            return 0;
+            return null;
         }
 
         const startPoint = Date.now() - CHART_CONFIG[selectedPeriod].fullPeriodLength;
         const periodStartPoint = prices.find(price => price[0] * 1000 >= startPoint);
 
         if (!periodStartPoint) {
-            return 0;
+            return null;
         }
 
         const startPrice = periodStartPoint[1];
         const endPrice = prices[prices.length - 1][1];
 
         if (startPrice === 0) {
-            return 0;
+            return null;
         }
 
-        return ((endPrice - startPrice) / startPrice) * 100;
+        const diff = ((endPrice - startPrice) / startPrice) * 100;
+        const abs = Math.abs(diff);
+
+        let formatted: string;
+        if (abs >= 1) {
+            formatted = parseFloat(abs.toFixed(1)).toString();
+        } else if (abs === 0) {
+            return null;
+        } else {
+            const decimals = -Math.floor(Math.log10(abs));
+            formatted = abs.toFixed(decimals);
+        }
+
+        return { formatted, isPositive: diff > 0 };
     }, [prices, selectedPeriod]);
 
     const formattedRate =
@@ -55,17 +67,33 @@ export const ChartHeader = (props: ChartHeaderProps) => {
             useGrouping: true
         });
 
+    const formattedActivePrice =
+        activePrice !== undefined
+            ? formatter.formatFiat(activePrice, {
+                  currencyDisplay: 'symbol',
+                  currency: fiat.id.symbol,
+                  useGrouping: true
+              })
+            : null;
+
+    const displayPrice = formattedActivePrice ?? formattedRate;
+
     return (
         <View style={styles.container}>
             <View style={styles.titleContainer}>
                 <Text monospace variant="titleM">
-                    {formattedRate ?? '-'}
+                    {displayPrice ?? '-'}
                 </Text>
                 <Text style={styles.description} variant="bodyM" color="tertiary">
-                    {asset.symbol} / {fiat.id.symbol}
+                    {asset.symbol} / {fiat.id.symbol}
                 </Text>
             </View>
-            {diffInPercent !== 0 && <PriceDiff diff={diffInPercent} />}
+            {activePrice === undefined && diffInPercent && (
+                <PriceDiff
+                    formatted={diffInPercent.formatted}
+                    isPositive={diffInPercent.isPositive}
+                />
+            )}
         </View>
     );
 };

@@ -27,7 +27,7 @@ export function useSharedStructuredStorage<K extends keyof SharedStorageStructur
         const data = await sharedStorage.getItem(key);
         const structData: unknown = data === null ? null : JSON.parse(data);
 
-        return sharedStorageStructure[key].parse(structData);
+        return sharedStorageStructure[key].parse(structData) as z.output<SharedStorageStructure[K]>;
     }, [sharedStorage]);
 
     return { get, set, remove };

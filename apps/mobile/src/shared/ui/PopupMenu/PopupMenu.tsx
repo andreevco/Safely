@@ -1,8 +1,17 @@
 import { BlurView } from 'expo-blur';
 import { forwardRef, useCallback, useImperativeHandle, useRef, useState } from 'react';
-import { LayoutChangeEvent, Platform, Pressable, useWindowDimensions, View } from 'react-native';
+import {
+    LayoutChangeEvent,
+    Modal,
+    Platform,
+    Pressable,
+    StatusBar,
+    useWindowDimensions,
+    View
+} from 'react-native';
 import Animated, {
     SharedValue,
+    interpolateColor,
     useAnimatedProps,
     useAnimatedStyle,
     useSharedValue,
@@ -17,7 +26,6 @@ import { TouchableOpacity } from '../TouchableOpacity';
 import { styles } from './PopupMenu.styles';
 
 const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
-const OverlayComponent = Platform.OS === 'ios' ? FullWindowOverlay : View;
 const MENU_MARGIN = 8;
 
 export type PopupMenuRef = {
@@ -27,11 +35,10 @@ export type PopupMenuRef = {
 export type PopupMenuProps = {
     children: React.ReactNode;
     touchable: React.ReactElement | ((progress: SharedValue<number>) => React.ReactElement);
-    hasBlur?: boolean;
 };
 
 export const PopupMenu = forwardRef<PopupMenuRef, PopupMenuProps>((props, ref) => {
-    const { children, touchable: touchableProp, hasBlur = true } = props;
+    const { children, touchable: touchableProp } = props;
 
     const triggerRef = useRef<View>(null);
     const triggerFrame = useRef({ x: 0, y: 0, width: 0, height: 0 });
@@ -45,9 +52,11 @@ export const PopupMenu = forwardRef<PopupMenuRef, PopupMenuProps>((props, ref) =
 
     const open = useCallback(() => {
         triggerRef.current?.measureInWindow((x, y, w, h) => {
-            triggerY.value = y;
+            const offsetY = Platform.OS === 'android' ? (StatusBar.currentHeight ?? 0) : 0;
+            const adjustedY = y + offsetY;
+            triggerY.value = adjustedY;
             triggerHeight.value = h;
-            triggerFrame.current = { x, y, width: w, height: h };
+            triggerFrame.current = { x, y: adjustedY, width: w, height: h };
             setVisible(true);
         });
     }, [triggerY, triggerHeight]);
@@ -74,13 +83,20 @@ export const PopupMenu = forwardRef<PopupMenuRef, PopupMenuProps>((props, ref) =
         [menuHeight, progress, scale]
     );
 
-    const { height, width: windowWidth } = useWindowDimensions();
+    const height = useWindowDimensions().height;
 
     const touchable = typeof touchableProp === 'function' ? touchableProp(progress) : touchableProp;
 
     const blurAnimatedProps = useAnimatedProps(() => ({
         intensity: progress.value * 45
     }));
+
+    const blurAnimatedStyle = useAnimatedStyle(
+        () => ({
+            backgroundColor: interpolateColor(progress.value, [0, 1], ['transparent', '#000000A3'])
+        }),
+        [progress]
+    );
 
     const menuAnimatedStyle = useAnimatedStyle(() => {
         const spaceBelow = height - (triggerY.value + triggerHeight.value + MENU_MARGIN);
@@ -97,55 +113,50 @@ export const PopupMenu = forwardRef<PopupMenuRef, PopupMenuProps>((props, ref) =
         };
     }, [height, triggerY, triggerHeight, menuHeight, progress, scale]);
 
+    const overlayContent = (
+        <>
+            <AnimatedBlurView
+                tint="dark"
+                animatedProps={blurAnimatedProps}
+                style={[styles.backdrop, blurAnimatedStyle]}
+                pointerEvents="none"
+            />
+            <Pressable style={StyleSheet.absoluteFill} onPress={close} />
+            <View
+                style={{
+                    position: 'absolute',
+                    top: triggerFrame.current.y,
+                    left: triggerFrame.current.x,
+                    width: triggerFrame.current.width,
+                    height: triggerFrame.current.height
+                }}
+                pointerEvents="none"
+            >
+                {touchable}
+            </View>
+            <Animated.View
+                style={[styles.menu, menuAnimatedStyle]}
+                onLayout={onMenuLayout}
+                pointerEvents="box-none"
+            >
+                {children}
+            </Animated.View>
+        </>
+    );
+
     return (
         <>
             <TouchableOpacity ref={triggerRef} onPress={open}>
                 {touchable}
             </TouchableOpacity>
-            {visible && (
-                <OverlayComponent style={StyleSheet.absoluteFill}>
-                    {hasBlur && (
-                        <AnimatedBlurView
-                            tint="dark"
-                            animatedProps={blurAnimatedProps}
-                            style={styles.backdrop}
-                            pointerEvents="none"
-                        />
-                    )}
-                    <Pressable style={StyleSheet.absoluteFill} onPress={close} />
-                    {hasBlur && (
-                        <View
-                            style={{
-                                position: 'absolute',
-                                top: triggerFrame.current.y,
-                                left: triggerFrame.current.x,
-                                width: triggerFrame.current.width,
-                                height: triggerFrame.current.height
-                            }}
-                            pointerEvents="none"
-                        >
-                            {touchable}
-                        </View>
-                    )}
-                    <Animated.View
-                        style={[
-                            styles.menu,
-                            hasBlur
-                                ? styles.menuCentered
-                                : {
-                                      right:
-                                          windowWidth -
-                                          (triggerFrame.current.x + triggerFrame.current.width)
-                                  },
-                            menuAnimatedStyle
-                        ]}
-                        onLayout={onMenuLayout}
-                        pointerEvents="box-none"
-                    >
-                        {children}
-                    </Animated.View>
-                </OverlayComponent>
-            )}
+            {visible &&
+                (Platform.OS === 'ios' ? (
+                    <FullWindowOverlay>{overlayContent}</FullWindowOverlay>
+                ) : (
+                    <Modal transparent visible statusBarTranslucent onRequestClose={close}>
+                        {overlayContent}
+                    </Modal>
+                ))}
         </>
     );
 });

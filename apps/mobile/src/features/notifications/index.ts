@@ -1,1 +1,5 @@
-export { useNotificationsQuery, useRequestNotificationPermission } from './useNotifications';
+export {
+    useNotificationsQuery,
+    useRequestNotificationPermission,
+    useToggleNotifications
+} from './useNotifications';

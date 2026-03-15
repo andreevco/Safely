@@ -2,22 +2,12 @@ import { FC, useMemo } from 'react';
 import { View } from 'react-native';
 
 import { ellipsisMiddle, Recipient } from '@safely/core';
-import type { PortfolioMeta } from '@safely/core';
-import { usePortfolios } from '@safely/ux';
+import { findPortfolioMetaByAddress, usePortfolios } from '@safely/ux';
 
 import { PortfolioName } from '@mobile/entities/portfolio/PortfolioName';
 import { Text } from '@mobile/shared/ui';
 
 import { styles } from './Wallet.styles';
-
-function findPortfolioMetaByAddress(
-    portfolios: ReturnType<typeof usePortfolios>,
-    address: string
-): PortfolioMeta | undefined {
-    return portfolios?.find(p =>
-        p.getDerivations().some(d => d.chains.btc.wallets[0]?.address === address)
-    )?.meta;
-}
 
 export const Wallet: FC<{ address: string } | { recipient: Recipient }> = props => {
     const portfolios = usePortfolios();

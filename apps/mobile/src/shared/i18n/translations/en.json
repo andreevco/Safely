@@ -1,6 +1,7 @@
 {
     "currentLanguageName": "English",
     "common": {
+        "edit": "Edit",
         "next": "Next",
         "cancel": "Cancel",
         "continue": "Continue",
@@ -13,7 +14,8 @@
         "title": "Send",
         "recipient": {
             "label": "Recipient",
-            "placeholder": "Address or name"
+            "placeholder": "Address or name",
+            "myWallets": "My wallets"
         },
         "amount": "Amount",
         "max": "Send all",
@@ -199,8 +201,8 @@
         "amount": "Amount",
         "networkFee": {
             "title": "Network Fee",
-            "timeMinutes_one": "~{{count}} minute",
-            "timeMinutes_other": "~{{count}} minutes"
+            "timeMinutes_one": "≈ {{count}} minute",
+            "timeMinutes_other": "≈ {{count}} minutes"
         },
         "sendResult": {
             "status": {
@@ -255,7 +257,8 @@
         "subtitle": "Your personal wallet. Receive, buy and spend crypto with ease.",
         "createNew": "Create new account",
         "importExisting": "Sign in",
-        "legal": "By using Safely, you agree to accept our <terms>Terms of Use</terms> and <privacy>Privacy Policy</privacy>."
+        "legalLine1": "By using Safely, you agree to accept",
+        "legalLine2": "our <terms>Terms of Use</terms> and <privacy>Privacy Policy</privacy>."
     },
     "onboarding": {
         "recoveryPhrase": {
@@ -351,6 +354,12 @@
         "title": "Settings",
         "deviceConnected": "Successfully linked",
         "groups": {
+            "currentWallet": {
+                "title": "Current wallet",
+                "options": {
+                    "wallet": "Wallet"
+                }
+            },
             "account": {
                 "title": "Account",
                 "options": {
@@ -420,7 +429,7 @@
                 "title": "Status",
                 "pending": {
                     "title": "Pending",
-                    "description": "~ 10 minutes processing time"
+                    "description": "≈ 10 minutes processing time"
                 },
                 "confirmed-recently": {
                     "title": "Confirmed at {{date}}",

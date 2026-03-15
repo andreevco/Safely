@@ -17,7 +17,9 @@ export const RemovePortfolioButton = () => {
     const handleDeletePortfolio = () => {
         rootNavigation.navigate('DestructiveConfirmSheet', {
             title: t('settings.removePortfolio.confirm.title'),
-            message: t('settings.removePortfolio.confirm.message'),
+            message: t('settings.removePortfolio.confirm.message', {
+                name: portfolio.meta.name
+            }),
             sliderLabel: t('settings.removePortfolio.confirm.slider.label'),
             sliderDescription: t('settings.removePortfolio.confirm.slider.description'),
             cancelLabel: t('settings.removePortfolio.confirm.cancel'),

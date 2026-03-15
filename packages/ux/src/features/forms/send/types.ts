@@ -4,9 +4,16 @@ import {
     CryptoAsset,
     CryptoAssetAmount,
     FiatAssetAmount,
+    PortfolioMeta,
     RatedCryptoAssetAmount,
     Recipient
 } from '@safely/core';
+
+export interface SendSuggestion {
+    address: string;
+    meta: PortfolioMeta;
+    tag?: number;
+}
 
 export type AmountInputType = 'crypto' | 'fiat';
 
@@ -56,11 +63,13 @@ export interface SendFormInitialValues {
     recipient?: string;
     amount?: string;
     amountInputType?: AmountInputType;
+    isMax?: boolean;
     stepIndex?: number;
 }
 
 export interface SendFormValues {
     recipient: string;
+    recipientLabel: string | undefined;
     amount: string;
     amountInputType: AmountInputType;
     isMax: boolean;
@@ -88,7 +97,7 @@ export interface SendFormState {
 }
 
 export type SendFormAction =
-    | { type: 'SET_RECIPIENT'; value: string }
+    | { type: 'SET_RECIPIENT'; value: string; label?: string }
     | {
           type: 'SET_RECIPIENT_VALIDATED';
           recipient: Recipient | undefined;
@@ -112,4 +121,13 @@ export type SendFormAction =
     | { type: 'NEXT_STEP' }
     | { type: 'PREV_STEP' }
     | { type: 'RESET' }
-    | { type: 'RESET_DEPENDENT_FIELDS' };
+    | { type: 'RESET_DEPENDENT_FIELDS' }
+    | {
+          type: 'RESTORE_DRAFT';
+          recipient: Recipient;
+          asset: RatedCryptoAssetAmount;
+          assetId: string;
+          amountInputType: AmountInputType;
+          isMax: boolean;
+          stepIndex: number;
+      };

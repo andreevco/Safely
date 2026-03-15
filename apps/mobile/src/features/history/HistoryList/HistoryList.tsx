@@ -1,7 +1,7 @@
 import { useIsFocused } from '@react-navigation/native';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { type TFunction } from 'i18next';
-import { useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
@@ -124,6 +124,8 @@ export const HistoryList = (props: HistoryListProps) => {
         }
     });
 
+    const getItemType = useCallback((item: HistoryRowItem) => item.type, []);
+
     const rows = useMemo<HistoryRowItem[] | undefined>(() => {
         return historyGroups?.flatMap(item => {
             const { items: groupActivity, ...meta } = item;
@@ -194,6 +196,8 @@ export const HistoryList = (props: HistoryListProps) => {
             onScroll={onScroll}
             data={rows}
             keyExtractor={item => item.key}
+            getItemType={getItemType}
+            drawDistance={600}
             onEndReached={fetchNextPage}
             onEndReachedThreshold={0.5}
             ItemSeparatorComponent={renderSeparator}
