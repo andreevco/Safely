@@ -99,7 +99,7 @@ function useNewPortfolioFallbackName() {
 
     const portfoliosCount = portfolios?.length ?? 0;
 
-    return t('settings.wallet.defaultName', { number: portfoliosCount + 1 });
+    return t('security.groups.wallet.defaultName', { number: portfoliosCount + 1 });
 }
 
 export function useGeneratePortfolio() {

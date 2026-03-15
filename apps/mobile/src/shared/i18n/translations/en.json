@@ -132,12 +132,33 @@
             "title": "No linked device",
             "subtitle": "Link another device to protect your account. Without it, your access can't be restored if this phone is lost."
         },
+        "accountProtected": {
+            "title": "Account Protected",
+            "subtitle": "Linked devices have full access to your account and can be used to restore access if another device is lost."
+        },
+        "device": {
+            "added": "Added {{date}}",
+            "upToDate": "Up to date",
+            "disconnect": "Disconnect"
+        },
+        "disconnectDevice": {
+            "title": "Disconnect {{deviceName}}",
+            "subtitle": "This will disconnect your account from this device. The account will remain on the device, but will no longer sync.",
+            "confirm": "Disconnect device"
+        },
         "groups": {
             "account": {
                 "title": "Account",
                 "protect": {
                     "title": "Protect your account",
+                    "badge": "Set up required",
                     "subtitle": "Link another device to protect your account. Without it, your access can't be restored if this phone is lost."
+                },
+                "protection": {
+                    "title": "Account Protection",
+                    "badge": "Enabled",
+                    "subtitle_one": "Protected with {{count}} device",
+                    "subtitle_other": "Protected with {{count}} devices"
                 }
             },
             "application": {
@@ -158,7 +179,8 @@
                 "defaultName": "Wallet {{number}}",
                 "recovery": {
                     "title": "Recovery phrase",
-                    "subtitle": "Keep it private. View only if necessary. This phrase has never been viewed."
+                    "subtitle": "Keep it private. View only if necessary. This phrase has never been viewed.",
+                    "revealed": "Security reduced. First viewed on {{date}} on {{device}}."
                 }
             }
         }
