@@ -3,7 +3,8 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { useActivePortfolio } from '@safely/ux';
+import { useActivePortfolio, useDevicesMeta, useSeedRevealInfo } from '@safely/ux';
+import { useDateFormatter } from '@safely/ux/shared/format/date';
 import { useSecurityCheck } from '@safely/ux/shared/security';
 
 import { RootStackNavigationProp, SettingsStackNavigationProp } from '@mobile/app/navigation/types';
@@ -13,7 +14,7 @@ import {
     useBiometryQuery,
     useSetBiometryEnabled
 } from '@mobile/features/biometry';
-import { Cell, List, Screen, Switch } from '@mobile/shared/ui';
+import { Badge, Cell, List, Screen, Switch } from '@mobile/shared/ui';
 import { ArrowLeft16, Icon, Switch16 } from '@mobile/shared/ui/Icon';
 
 import { styles } from './SecurityScreen.styles';
@@ -26,6 +27,19 @@ export const SecurityScreen = () => {
     const portfolio = useActivePortfolio();
     const navigation = useNavigation<SettingsStackNavigationProp>();
     const rootNavigation = useNavigation<RootStackNavigationProp>();
+
+    const devicesMeta = useDevicesMeta();
+    const seedRevealInfo = useSeedRevealInfo();
+    const formatDate = useDateFormatter({
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+    });
+    const otherDeviceCount = devicesMeta ? Object.keys(devicesMeta).length - 1 : 0;
+    const hasLinkedDevices = otherDeviceCount > 0;
 
     const [lockScreenEnabled, setLockScreenEnabled] = useState(false);
 
@@ -62,21 +76,47 @@ export const SecurityScreen = () => {
                     <List>
                         <List.Title>{t('security.groups.account.title')}</List.Title>
                         <List.Group>
-                            <Cell onPress={() => navigation.navigate('ProtectAccountModal')}>
-                                <Cell.Content>
-                                    <Cell.Row>
-                                        <Cell.Title>
-                                            {t('security.groups.account.protect.title')}
-                                        </Cell.Title>
-                                    </Cell.Row>
-                                    <Cell.Row>
-                                        <Cell.Subtitle numberOfLines={0}>
-                                            {t('security.groups.account.protect.subtitle')}
-                                        </Cell.Subtitle>
-                                    </Cell.Row>
-                                </Cell.Content>
-                                <Cell.Chevron />
-                            </Cell>
+                            {hasLinkedDevices ? (
+                                <Cell onPress={() => navigation.navigate('AccountProtectedModal')}>
+                                    <Cell.Content>
+                                        <View style={styles.badgeRow}>
+                                            <Cell.Title>
+                                                {t('security.groups.account.protection.title')}
+                                            </Cell.Title>
+                                            <Badge type="success" isUppercase>
+                                                {t('security.groups.account.protection.badge')}
+                                            </Badge>
+                                        </View>
+                                        <Cell.Row>
+                                            <Cell.Subtitle numberOfLines={0}>
+                                                {t('security.groups.account.protection.subtitle', {
+                                                    count: otherDeviceCount
+                                                })}
+                                            </Cell.Subtitle>
+                                        </Cell.Row>
+                                    </Cell.Content>
+                                    <Cell.Chevron />
+                                </Cell>
+                            ) : (
+                                <Cell onPress={() => navigation.navigate('ProtectAccountModal')}>
+                                    <Cell.Content>
+                                        <View style={styles.badgeRow}>
+                                            <Cell.Title>
+                                                {t('security.groups.account.protect.title')}
+                                            </Cell.Title>
+                                            <Badge type="warning" isUppercase>
+                                                {t('security.groups.account.protect.badge')}
+                                            </Badge>
+                                        </View>
+                                        <Cell.Row>
+                                            <Cell.Subtitle numberOfLines={0}>
+                                                {t('security.groups.account.protect.subtitle')}
+                                            </Cell.Subtitle>
+                                        </Cell.Row>
+                                    </Cell.Content>
+                                    <Cell.Chevron />
+                                </Cell>
+                            )}
                         </List.Group>
                     </List>
 
@@ -160,7 +200,14 @@ export const SecurityScreen = () => {
                                     </Cell.Row>
                                     <Cell.Row>
                                         <Cell.Subtitle numberOfLines={0}>
-                                            {t('security.groups.wallet.recovery.subtitle')}
+                                            {seedRevealInfo
+                                                ? t('security.groups.wallet.recovery.revealed', {
+                                                      date: formatDate.format(
+                                                          seedRevealInfo.timestamp
+                                                      ),
+                                                      device: seedRevealInfo.deviceName
+                                                  })
+                                                : t('security.groups.wallet.recovery.subtitle')}
                                         </Cell.Subtitle>
                                     </Cell.Row>
                                 </Cell.Content>
