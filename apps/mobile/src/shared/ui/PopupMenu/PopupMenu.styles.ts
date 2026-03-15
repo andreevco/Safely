@@ -7,9 +7,11 @@ export const styles = StyleSheet.create(theme => ({
     },
     menu: {
         position: 'absolute',
-        left: theme.spacing[48],
-        right: theme.spacing[48],
         gap: theme.spacing[8],
         zIndex: 1000
+    },
+    menuCentered: {
+        left: theme.spacing[48],
+        right: theme.spacing[48]
     }
 }));

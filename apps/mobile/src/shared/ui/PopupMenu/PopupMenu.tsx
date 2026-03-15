@@ -27,10 +27,11 @@ export type PopupMenuRef = {
 export type PopupMenuProps = {
     children: React.ReactNode;
     touchable: React.ReactElement | ((progress: SharedValue<number>) => React.ReactElement);
+    hasBlur?: boolean;
 };
 
 export const PopupMenu = forwardRef<PopupMenuRef, PopupMenuProps>((props, ref) => {
-    const { children, touchable: touchableProp } = props;
+    const { children, touchable: touchableProp, hasBlur = true } = props;
 
     const triggerRef = useRef<View>(null);
     const triggerFrame = useRef({ x: 0, y: 0, width: 0, height: 0 });
@@ -73,7 +74,7 @@ export const PopupMenu = forwardRef<PopupMenuRef, PopupMenuProps>((props, ref) =
         [menuHeight, progress, scale]
     );
 
-    const height = useWindowDimensions().height;
+    const { height, width: windowWidth } = useWindowDimensions();
 
     const touchable = typeof touchableProp === 'function' ? touchableProp(progress) : touchableProp;
 
@@ -103,27 +104,41 @@ export const PopupMenu = forwardRef<PopupMenuRef, PopupMenuProps>((props, ref) =
             </TouchableOpacity>
             {visible && (
                 <OverlayComponent style={StyleSheet.absoluteFill}>
-                    <AnimatedBlurView
-                        tint="dark"
-                        animatedProps={blurAnimatedProps}
-                        style={styles.backdrop}
-                        pointerEvents="none"
-                    />
+                    {hasBlur && (
+                        <AnimatedBlurView
+                            tint="dark"
+                            animatedProps={blurAnimatedProps}
+                            style={styles.backdrop}
+                            pointerEvents="none"
+                        />
+                    )}
                     <Pressable style={StyleSheet.absoluteFill} onPress={close} />
-                    <View
-                        style={{
-                            position: 'absolute',
-                            top: triggerFrame.current.y,
-                            left: triggerFrame.current.x,
-                            width: triggerFrame.current.width,
-                            height: triggerFrame.current.height
-                        }}
-                        pointerEvents="none"
-                    >
-                        {touchable}
-                    </View>
+                    {hasBlur && (
+                        <View
+                            style={{
+                                position: 'absolute',
+                                top: triggerFrame.current.y,
+                                left: triggerFrame.current.x,
+                                width: triggerFrame.current.width,
+                                height: triggerFrame.current.height
+                            }}
+                            pointerEvents="none"
+                        >
+                            {touchable}
+                        </View>
+                    )}
                     <Animated.View
-                        style={[styles.menu, menuAnimatedStyle]}
+                        style={[
+                            styles.menu,
+                            hasBlur
+                                ? styles.menuCentered
+                                : {
+                                      right:
+                                          windowWidth -
+                                          (triggerFrame.current.x + triggerFrame.current.width)
+                                  },
+                            menuAnimatedStyle
+                        ]}
                         onLayout={onMenuLayout}
                         pointerEvents="box-none"
                     >
