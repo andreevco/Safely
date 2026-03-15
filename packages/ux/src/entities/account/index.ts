@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect } from 'react';
 
 import { delay, notNullish, PortfolioFactory, PortfolioNetworkType } from '@safely/core';
 import { generateBip39Accessor } from '@safely/core/entities/seed';
@@ -67,12 +67,18 @@ function generateAccountMeta(accountId: string, name?: string) {
     };
 }
 
+let _syncAccountFactory: SyncAccountFactory<SyncedStorageStructure> | null = null;
+
+export function resetAccountsFactory() {
+    _syncAccountFactory = null;
+}
+
 export function useAccountsFactory() {
     const config = useBootConfig();
     const { storage, encryptedStorage, secureEncryptedStorage } = useAppContext();
 
-    return useMemo(() => {
-        return new SyncAccountFactory({
+    if (!_syncAccountFactory) {
+        _syncAccountFactory = new SyncAccountFactory({
             storage,
             encryptedStorage,
             secureEncryptedStorage,
@@ -81,7 +87,9 @@ export function useAccountsFactory() {
                 basePath: config.sync.api_url
             }
         });
-    }, [config, storage, encryptedStorage, secureEncryptedStorage]);
+    }
+
+    return _syncAccountFactory;
 }
 
 function useAccountsQueryConfig() {
@@ -112,7 +120,7 @@ export function useActiveAccountQuery() {
         queryKey: accountKey.list.active.toKey(),
         async queryFn() {
             const activeId = await get();
-            const accounts = await client.ensureQueryData(accountsQueryConfig);
+            const accounts = await client.fetchQuery({ ...accountsQueryConfig, staleTime: 0 });
             let activeAccount = accounts.find(k => k.accountId === activeId);
 
             if (!activeAccount) {
@@ -142,7 +150,7 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
             const account = await factory.createSyncAccount();
             await account.syncProvider.set(
                 'meta',
-                generateAccountMeta(account.accountId, t('settings.wallet.main'))
+                generateAccountMeta(account.accountId, t('security.groups.wallet.main'))
             );
 
             if (options?.createWallet || options?.setActive) {
@@ -150,7 +158,7 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
                 using accessorVault = generateBip39Accessor();
                 const portfolio = await portfolioFactory.generatePortfolioBip39(accessorVault, {
                     network: PortfolioNetworkType.MAINNET,
-                    name: t('settings.wallet.defaultName', { number: 1 })
+                    name: t('security.groups.wallet.defaultName', { number: 1 })
                 });
 
                 await account.syncProvider.set('portfolios', [portfolio.toJSON()]);
@@ -287,7 +295,7 @@ export function useSetActiveAccount() {
             await delay();
             await set(id);
 
-            await client.invalidateQueries({
+            await client.refetchQueries({
                 queryKey: accountKey.list.active.toKey()
             });
         }
@@ -328,6 +336,7 @@ export function useEraseAllData() {
 
     return useMutation({
         async mutationFn() {
+            resetAccountsFactory();
             await clearAllData();
 
             queryClient.clear();
