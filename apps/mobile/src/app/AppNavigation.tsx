@@ -9,6 +9,7 @@ import { SyncStorageProvider } from '@safely/ux';
 import Navigation from './navigation';
 import { navigationRef } from './navigation/navigationRef';
 import { useInitialNavigationState } from './navigation/useInitialNavigationState';
+import { DeviceMetaReporter } from '../shared/providers/DeviceMetaReporter';
 
 export function AppNavigation() {
     const { theme } = useUnistyles();
@@ -36,6 +37,7 @@ export function AppNavigation() {
 
     return (
         <SyncStorageProvider>
+            <DeviceMetaReporter />
             <Navigation
                 ref={navigationRef}
                 initialState={initialState}
