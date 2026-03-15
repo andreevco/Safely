@@ -1,3 +1,4 @@
+import * as Device from 'expo-device';
 import { getLocales } from 'expo-localization';
 import { FC, PropsWithChildren, Suspense, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -40,6 +41,10 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
             },
             version: packageJson.version,
             build,
+            deviceInfo: {
+                name: Device.modelName ?? (Platform.OS === 'ios' ? 'iPhone' : 'Android device'),
+                osVersion: Device.osVersion ?? String(Platform.Version)
+            },
             numberFormatLocale: new MobileNumberFormatLocale(getLocales()[0]),
             storage: mobileStorages.app.storage,
             encryptedStorage: mobileStorages.encrypted.storage,

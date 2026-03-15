@@ -10,6 +10,11 @@ export interface IAppContext {
 
     build: Build;
 
+    deviceInfo: {
+        name: string;
+        osVersion: string;
+    };
+
     userCountryInfo?: UserCountryInfo;
 
     storage: ITreeStorage;
