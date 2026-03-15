@@ -56,11 +56,7 @@ function DeviceItem(props: { ikPubHex: string; meta: DeviceMeta }) {
                     {t('security.device.upToDate')}
                 </Text>
             </View>
-            <PopupMenu
-                ref={menuRef}
-                hasBlur={false}
-                touchable={<Icon icon={More28} color="tertiary" />}
-            >
+            <PopupMenu ref={menuRef} touchable={<Icon icon={More28} color="tertiary" />}>
                 <Pressable onPress={handleDisconnect}>
                     <View style={styles.menuItem}>
                         <Text variant="labelL">{t('security.device.disconnect')}</Text>
