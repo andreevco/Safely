@@ -31,6 +31,7 @@ jobs:
     needs: [build_android]
     steps:
       - uses: eas/download_build
+        id: download_build
         with:
           build_id: ${{ needs.build_android.outputs.build_id }}
           extensions: [apk]
@@ -40,7 +41,13 @@ jobs:
 
       - name: Upload to Firebase App Distribution
         run: |
-          firebase appdistribution:distribute ${{ steps.download_build.outputs.artifact_path }} \
-            --app "${{ secrets.FIREBASE_APP_ID }}" \
-            --token "${{ secrets.FIREBASE_TOKEN }}" \
+          APK_PATH=$(find ${{ steps.download_build.outputs.artifact_path }} -name "*.apk" -type f | head -1)
+          if [ -z "$APK_PATH" ]; then
+            echo "No .apk file found in artifact. Contents:"
+            ls -R ${{ steps.download_build.outputs.artifact_path }}
+            exit 1
+          fi
+          firebase appdistribution:distribute "$APK_PATH" \
+            --app "${{ env.FIREBASE_APP_ID }}" \
+            --token "${{ env.FIREBASE_TOKEN }}" \
             --groups "testers"
