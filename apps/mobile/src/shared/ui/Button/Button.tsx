@@ -24,7 +24,9 @@ export const Button = (props: ButtonProps) => {
             {...rest}
         >
             {typeof children === 'string' ? (
-                <Text variant={size === 'small' ? 'labelM' : 'labelL'}>{children}</Text>
+                <Text variant={size === 'small' ? 'labelM' : 'labelL'} style={styles.text}>
+                    {children}
+                </Text>
             ) : (
                 children
             )}

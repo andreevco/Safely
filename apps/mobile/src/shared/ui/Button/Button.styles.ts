@@ -49,25 +49,33 @@ export const styles = StyleSheet.create(theme => ({
                     backgroundColor: theme.colors.other.constant.white
                 }
             }
-        },
-        text: {
-            variants: {
-                type: {
-                    primary: {
-                        color: theme.colors.button.primary.foreground
-                    },
-                    secondary: {
-                        color: theme.colors.button.secondary.foreground
-                    },
-                    tertiary: {
-                        color: theme.colors.button.tertiary.foreground
-                    },
-                    destructive: {
-                        color: theme.colors.accent.red
-                    },
-                    overlay: {
-                        color: theme.colors.other.constant.black
-                    }
+        }
+    },
+    text: {
+        variants: {
+            disabled: {
+                true: {}
+            },
+            size: {
+                small: {},
+                medium: {},
+                large: {}
+            },
+            type: {
+                primary: {
+                    color: theme.colors.button.primary.foreground
+                },
+                secondary: {
+                    color: theme.colors.button.secondary.foreground
+                },
+                tertiary: {
+                    color: theme.colors.button.tertiary.foreground
+                },
+                destructive: {
+                    color: theme.colors.accent.red
+                },
+                overlay: {
+                    color: theme.colors.other.constant.black
                 }
             }
         }
