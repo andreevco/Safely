@@ -1,4 +1,5 @@
 import { useNavigation } from '@react-navigation/native';
+import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
@@ -16,9 +17,22 @@ const RecoveryConfirmContent = () => {
     const portfolio = useActivePortfolio();
     const navigation = useNavigation<RootStackNavigationProp>();
 
+    const hasRevealed = useRef(false);
+
+    useEffect(() => {
+        const unsubscribe = navigation.addListener('focus', () => {
+            if (hasRevealed.current) {
+                close();
+            }
+        });
+
+        return unsubscribe;
+    }, [navigation, close]);
+
     const handleReveal = async () => {
         try {
             const mnemonic = await portfolio.getMnemonic();
+            hasRevealed.current = true;
             navigation.navigate('RecoveryPhraseModal', { mnemonic });
         } catch {
             // Security check failed
