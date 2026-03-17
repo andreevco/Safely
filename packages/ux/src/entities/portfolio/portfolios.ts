@@ -191,22 +191,12 @@ export function useReorderPortfolios() {
     const client = useQueryClient();
     const accountQueryKey = useActiveAccountQueryKey();
 
-    return useMutation<void, Error, Portfolio[], { previous: Portfolio[] | undefined }>({
-        async onMutate(nextPortfoliosOrder) {
-            await client.cancelQueries({ queryKey: accountQueryKey.portfolios.toKey() });
-            const previous = client.getQueryData<Portfolio[]>(
-                accountQueryKey.portfolios.toKey()
-            );
+    return useMutation<void, Error, Portfolio[]>({
+        onMutate(nextPortfoliosOrder) {
             client.setQueryData(accountQueryKey.portfolios.toKey(), nextPortfoliosOrder);
-            return { previous };
         },
         async mutationFn(nextPortfoliosOrder) {
             await mutateAsync(nextPortfoliosOrder);
-        },
-        onError(_err, _variables, context) {
-            if (context?.previous) {
-                client.setQueryData(accountQueryKey.portfolios.toKey(), context.previous);
-            }
         }
     });
 }
