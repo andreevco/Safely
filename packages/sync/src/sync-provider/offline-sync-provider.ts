@@ -1,4 +1,4 @@
-import { z, ZodType } from 'zod';
+import { output, z, ZodType } from 'zod';
 
 import { ISyncProvider } from './I-sync-provider';
 import { SyncContainer } from '../sync-container';
@@ -17,10 +17,20 @@ export class OfflineSyncProvider<S extends Record<string, ZodType>> implements I
         // nothing to dispose in the base class, but subclasses can override this method to clean up resources
     }
 
-    public async get<K extends keyof S>(k: K): Promise<z.output<S[K]>> {
+    public get<K extends keyof S>(k: K): z.output<S[K]> {
         const v = this.container.yManager.get(k.toString());
         const schema = this.structure[k];
         return schema.parse(JSON.parse(v));
+    }
+
+    public getAll(): { [K in keyof S]: output<S[K]> } {
+        const result = {} as { [K in keyof S]: output<S[K]> };
+        for (const k of Object.keys(this.structure) as Array<keyof S>) {
+            const v = this.container.yManager.get(k.toString());
+            const schema = this.structure[k];
+            result[k] = schema.parse(JSON.parse(v));
+        }
+        return result;
     }
 
     public async remove(k: keyof S): Promise<void> {
