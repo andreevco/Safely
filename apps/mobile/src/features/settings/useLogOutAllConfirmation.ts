@@ -2,29 +2,29 @@ import { useNavigation } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { useDeleteAccount } from '@safely/ux';
+import { useEraseAllData } from '@safely/ux';
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 
-export function useSignOutConfirmation() {
+export function useLogOutAllConfirmation() {
     const { t } = useTranslation();
     const navigation = useNavigation<RootStackNavigationProp>();
-    const { mutateAsync: signOutAccount } = useDeleteAccount();
+    const { mutateAsync: eraseAllData } = useEraseAllData();
 
     return useCallback(() => {
         navigation.navigate('DestructiveConfirmSheet', {
-            title: t('settings.signOutAccount.confirm.title'),
-            message: t('settings.signOutAccount.confirm.message'),
-            sliderLabel: t('settings.signOutAccount.confirm.slider.label'),
-            sliderDescription: t('settings.signOutAccount.confirm.slider.description'),
-            cancelLabel: t('settings.signOutAccount.confirm.cancel'),
+            title: t('logOutAllAccounts.title'),
+            message: t('logOutAllAccounts.message'),
+            sliderLabel: t('logOutAllAccounts.slider.label'),
+            sliderDescription: t('logOutAllAccounts.slider.description'),
+            cancelLabel: t('logOutAllAccounts.cancel'),
             onConfirm: async () => {
-                await signOutAccount();
+                await eraseAllData();
                 navigation.reset({
                     index: 0,
                     routes: [{ name: 'WelcomeScreen' }]
                 });
             }
         });
-    }, [signOutAccount, navigation, t]);
+    }, [eraseAllData, navigation, t]);
 }

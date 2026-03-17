@@ -4,6 +4,7 @@ import { Build, ITreeStorage, NumberFormatLocale, QrScanner, UserCountryInfo } f
 
 import { Security, ToastService } from '../../entities';
 import { TranslateFn } from '../i18n';
+import { IUnlockableSecuredEncryptedStorage } from '../security';
 
 export interface IAppContext {
     version: string;
@@ -21,7 +22,7 @@ export interface IAppContext {
 
     encryptedStorage: ITreeStorage;
 
-    secureEncryptedStorage: ITreeStorage;
+    secureEncryptedStorage: IUnlockableSecuredEncryptedStorage;
 
     qrScanner: QrScanner;
 

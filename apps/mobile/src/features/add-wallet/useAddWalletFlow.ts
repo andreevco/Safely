@@ -2,12 +2,7 @@ import { CommonActions, useNavigation } from '@react-navigation/native';
 import { useCallback } from 'react';
 
 import { MnemonicResource, PortfolioMeta } from '@safely/core';
-import {
-    useGeneratePortfolio,
-    useImportPortfolio,
-    useRecordSeedReveal,
-    useSecurityCheck
-} from '@safely/ux';
+import { useGeneratePortfolio, useImportPortfolio, useSecurityCheck } from '@safely/ux';
 
 import { useLoader } from '@mobile/shared/providers/loader';
 
@@ -21,7 +16,6 @@ export function useAddWalletFlow() {
     const { withLoader } = useLoader();
     const { mutateAsync: importPortfolio } = useImportPortfolio();
     const { mutateAsync: generatePortfolio } = useGeneratePortfolio();
-    const { mutateAsync: recordSeedReveal } = useRecordSeedReveal();
     const check = useSecurityCheck();
 
     const startCreateFlow = useCallback(() => {
@@ -56,7 +50,6 @@ export function useAddWalletFlow() {
             await withLoader(async () => {
                 using accessor = new MnemonicResource(mnemonic);
                 const portfolio = await importPortfolio(accessor);
-                recordSeedReveal().catch(console.error);
 
                 navigation.dispatch(
                     CommonActions.navigate(routes.customize, {
@@ -73,7 +66,7 @@ export function useAddWalletFlow() {
                 );
             });
         },
-        [navigation, importPortfolio, recordSeedReveal, withLoader, check]
+        [navigation, importPortfolio, withLoader, check]
     );
 
     return {

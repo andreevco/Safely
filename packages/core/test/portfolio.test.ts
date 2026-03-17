@@ -80,7 +80,8 @@ describe('Test portfolio generation (Bitcoin)', () => {
             },
             meta: {
                 name: portfolioName,
-                icon: portfolio.meta.icon
+                icon: portfolio.meta.icon,
+                seedRevealedAt: null
             },
             derivations: [
                 {
@@ -341,7 +342,11 @@ describe('Extended tests for portfolio operations (Bitcoin)', () => {
 
         const storedPortfolio: SPortfolioBip39In = {
             id: portfolio.id.toJSON(),
-            meta: portfolio.meta,
+            meta: {
+                name: portfolio.meta.name,
+                icon: portfolio.meta.icon,
+                seedRevealedAt: portfolio.meta.seedRevealedAt?.getTime() ?? null
+            },
             derivations: portfolio.derivations.map(d => ({
                 index: d.index,
                 chains: {

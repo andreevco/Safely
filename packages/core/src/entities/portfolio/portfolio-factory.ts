@@ -33,6 +33,7 @@ export class PortfolioFactory {
         options: {
             network: PortfolioNetworkType;
             name: string;
+            seedRevealed?: boolean;
         }
     ): Promise<PortfolioBip39> {
         return await this.generatePortfolioBip39(secret, options);
@@ -43,6 +44,7 @@ export class PortfolioFactory {
         options: {
             network: PortfolioNetworkType;
             name: string;
+            seedRevealed?: boolean;
         }
     ): Promise<PortfolioBip39> {
         try {
@@ -72,7 +74,8 @@ export class PortfolioFactory {
                 id: portfolioId,
                 meta: {
                     name: options.name,
-                    icon: emoji
+                    icon: emoji,
+                    seedRevealedAt: options.seedRevealed ? new Date() : null
                 },
                 derivations: self => [
                     new Derivation(self, derivationIndex, derivationRef => ({

@@ -1,5 +1,5 @@
 import { keepPreviousData, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import {
     BtcWallet,
@@ -40,7 +40,7 @@ export function usePortfoliosFactory() {
     return useMemo(() => new PortfolioFactory(account.secretEncryptor), [account.secretEncryptor]);
 }
 
-function usePortfoliosQueryConfig() {
+export function usePortfoliosQueryConfig() {
     const accountQueryKey = useActiveAccountQueryKey();
     const { get } = useActiveAccountSyncedStorage('portfolios');
     const account = useActiveAccount();
@@ -154,7 +154,8 @@ export function useImportPortfolio() {
 
             const portfolio = await factory.generatePortfolio(accessor, {
                 network: PortfolioNetworkType.MAINNET,
-                name
+                name,
+                seedRevealed: true
             });
 
             if (existingPortfolios?.some(p => p.id.isEq(portfolio.id))) {
@@ -414,6 +415,17 @@ export function useChangePortfolioMeta() {
             return portfolio;
         }
     });
+}
+
+export function useRecordActivePortfolioSecretReveal() {
+    const portfolio = useActivePortfolio();
+    const { mutateAsync } = useChangePortfolioMeta();
+
+    return useCallback(async () => {
+        if (portfolio.meta.seedRevealedAt === null) {
+            return mutateAsync({ portfolio, meta: { seedRevealedAt: new Date() } });
+        }
+    }, [mutateAsync]);
 }
 
 export function useActivePortfolioEntities() {

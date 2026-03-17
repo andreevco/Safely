@@ -18,7 +18,13 @@ export class PortfolioBip39 implements IPortfolioDerivable {
         const mnemonicVault = new MnemonicVault(secretEncryptor, sPortfolio.encryptedSecret);
         return new PortfolioBip39({
             id: sPortfolio.id,
-            meta: sPortfolio.meta,
+            meta: {
+                name: sPortfolio.meta.name,
+                icon: sPortfolio.meta.icon,
+                seedRevealedAt: sPortfolio.meta.seedRevealedAt
+                    ? new Date(sPortfolio.meta.seedRevealedAt)
+                    : null
+            },
             derivations: self =>
                 sPortfolio.derivations.map(d => this.restoreDerivation(mnemonicVault, self, d)),
             mnemonicVault
@@ -131,7 +137,11 @@ export class PortfolioBip39 implements IPortfolioDerivable {
         return {
             id: this.id.toJSON(),
             encryptedSecret: this.mnemonicVault.encryptedSecret,
-            meta: this.meta,
+            meta: {
+                seedRevealedAt: this.meta.seedRevealedAt?.getTime() ?? null,
+                name: this.meta.name,
+                icon: this.meta.icon
+            },
             derivations: this.derivations.map(d => d.toJSON())
         };
     }

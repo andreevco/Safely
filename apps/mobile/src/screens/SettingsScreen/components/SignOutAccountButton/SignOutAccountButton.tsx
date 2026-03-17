@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 
 import { useActiveAccount } from '@safely/ux';
 
-import { useSignOutConfirmation } from '@mobile/features/settings/useSignOutConfirmation';
+import { useSignOutAccountConfirmation } from '@mobile/features/settings/useSignOutAccountConfirmation';
 import { Cell, List, Text } from '@mobile/shared/ui';
 
 import { styles } from './SignOutAccountButton.styles';
@@ -10,7 +10,7 @@ import { styles } from './SignOutAccountButton.styles';
 export const SignOutAccountButton = () => {
     const { t } = useTranslation();
     const accountName = useActiveAccount().meta.name;
-    const handleSignOut = useSignOutConfirmation();
+    const handleSignOut = useSignOutAccountConfirmation();
 
     return (
         <List.Group>

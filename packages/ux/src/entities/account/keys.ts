@@ -21,7 +21,10 @@ export const accountKey = defineQueryKeys('account', {
             portfolios: {
                 active: finalKey
             },
-            devicesMeta: finalKey,
+            devices: {
+                meta: finalKey,
+                currentIkPub: finalKey
+            },
             lastSeedRevealedAt: finalKey
         };
     }

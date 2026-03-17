@@ -2,7 +2,7 @@ import { StaticScreenProps } from '@react-navigation/native';
 import { useEffect, useRef } from 'react';
 
 import { usePasscodeLockout } from '@mobile/entities/security';
-import { useSignOutConfirmation } from '@mobile/features/settings/useSignOutConfirmation';
+import { useLogOutAllConfirmation } from '@mobile/features/settings/useLogOutAllConfirmation';
 
 import { LockoutContent } from './components/LockoutContent';
 import { PasscodeContent } from './components/PasscodeContent';
@@ -17,7 +17,7 @@ export const PasscodeVerificationScreen = (props: PasscodeVerificationScreenProp
     const { onSuccess, onClose, title } = props.route.params;
 
     const { isLocked, remainingSeconds, recordFailedAttempt, resetAttempts } = usePasscodeLockout();
-    const handleSignOut = useSignOutConfirmation();
+    const handleLogOut = useLogOutAllConfirmation();
     const successCalled = useRef(false);
 
     useEffect(() => {
@@ -31,7 +31,7 @@ export const PasscodeVerificationScreen = (props: PasscodeVerificationScreenProp
     }, [onClose]);
 
     if (isLocked) {
-        return <LockoutContent remainingSeconds={remainingSeconds} onSignOut={handleSignOut} />;
+        return <LockoutContent remainingSeconds={remainingSeconds} onSignOut={handleLogOut} />;
     }
 
     return (

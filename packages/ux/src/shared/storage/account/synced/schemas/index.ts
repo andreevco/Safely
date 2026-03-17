@@ -1,8 +1,9 @@
+import { sha256 } from '@noble/hashes/sha2.js';
+import { bytesToHex } from '@noble/hashes/utils.js';
 import type { ZodType } from 'zod';
 
 import { sAccountMeta } from './account-meta.schema';
 import { sDevicesMeta } from './devices-meta.schema';
-import { sLastSeedRevealedAt } from './last-seed-revealed.schema';
 import { sPortfolios } from './portfolios.schema';
 import { sPreferredFiat } from './preferred-fiat';
 
@@ -10,9 +11,14 @@ export const syncedStorageStructure = {
     preferredFiat: sPreferredFiat,
     portfolios: sPortfolios,
     meta: sAccountMeta,
-    devicesMeta: sDevicesMeta,
-    lastSeedRevealedAt: sLastSeedRevealedAt
+    devicesMeta: sDevicesMeta
 } as const satisfies Record<string, ZodType>;
+
+export function calcSyncedStorageHash(storage: SyncedStorageStructure) {
+    const { devicesMeta: _, ...rest } = storage;
+    const string = JSON.stringify(rest);
+    return bytesToHex(sha256(Buffer.from(string, 'utf8')));
+}
 
 export type SyncedStorageStructure = typeof syncedStorageStructure;
 export { type AccountMeta } from './account-meta.schema';

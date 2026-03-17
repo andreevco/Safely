@@ -3,7 +3,11 @@ import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
 
-import { useDevicesMeta, useMyDeviceIkPub } from '@safely/ux';
+import {
+    useCurrentDeviceIkPub,
+    useCurrentDeviceMetaSyncedState,
+    useSyncedDevicesMeta
+} from '@safely/ux';
 import { useDateFormatter } from '@safely/ux/shared/format/date';
 import { DeviceMeta } from '@safely/ux/shared/storage/account/synced/schemas';
 
@@ -34,6 +38,15 @@ function DeviceItem(props: { ikPubHex: string; meta: DeviceMeta }) {
     const menuRef = useRef<PopupMenuRef>(null);
     const formatDate = useDateFormatter({ month: 'short', day: 'numeric', year: 'numeric' });
 
+    const devicePortfolioHashes = Object.entries(meta.syncState.portfoliosHashes);
+    const currentDeviceMeta = useCurrentDeviceMetaSyncedState();
+    const isUpToDate = currentDeviceMeta?.stateHash === meta.syncState.stateHash;
+    const notSyncedWalletsCount = currentDeviceMeta
+        ? Object.entries(currentDeviceMeta.portfoliosHashes).filter(([id, hash]) =>
+              devicePortfolioHashes.every(([id2, hash2]) => id !== id2 || hash !== hash2)
+          ).length
+        : 0;
+
     const handleDisconnect = () => {
         menuRef.current?.close();
         rootNavigation.navigate('DisconnectDeviceSheet', {
@@ -50,10 +63,13 @@ function DeviceItem(props: { ikPubHex: string; meta: DeviceMeta }) {
                     <Badge>{formatOsBadge(meta.platform, meta.osVersion)}</Badge>
                 </View>
                 <Text variant="bodyM" color="secondary">
-                    {t('security.device.added', { date: formatDate.format(meta.lastSyncedAt) })}
+                    {t('security.device.added', { date: formatDate.format(meta.pairedAt) })}
                 </Text>
                 <Text variant="bodyM" color="tertiary">
-                    {t('security.device.upToDate')}
+                    {t(isUpToDate ? 'security.device.upToDate' : 'security.device.notUpToDate')}
+                    {notSyncedWalletsCount > 0 &&
+                        ' · ' +
+                            t('security.device.walletsNotSynced', { count: notSyncedWalletsCount })}
                 </Text>
             </View>
             <PopupMenu ref={menuRef} touchable={<Icon icon={More28} color="tertiary" />}>
@@ -71,8 +87,8 @@ function DeviceItem(props: { ikPubHex: string; meta: DeviceMeta }) {
 export const AccountProtectedModal = () => {
     const { t } = useTranslation();
     const navigation = useNavigation();
-    const devicesMeta = useDevicesMeta();
-    const myIkPubHex = useMyDeviceIkPub();
+    const devicesMeta = useSyncedDevicesMeta();
+    const myIkPubHex = useCurrentDeviceIkPub();
 
     const devices = Object.entries(devicesMeta ?? {}).filter(
         ([ikPubHex]) => ikPubHex !== myIkPubHex

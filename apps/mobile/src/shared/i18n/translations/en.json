@@ -141,6 +141,8 @@
         "device": {
             "added": "Added {{date}}",
             "upToDate": "Up to date",
+            "notUpToDate": "Not up to date",
+            "walletsNotSynced": "{{ count }} wallets not synced",
             "disconnect": "Disconnect"
         },
         "disconnectDevice": {
@@ -401,6 +403,15 @@
                 "cancel": "Cancel"
             }
         }
+    },
+    "logOutAllAccounts": {
+        "title": "Erase this device?",
+        "message": "All accounts and data will be permanently removed from this device. Only accounts with a backup can be restored.",
+        "slider": {
+            "label": "Erase device",
+            "description": "Slide to erase"
+        },
+        "cancel": "Cancel"
     },
     "tabs": {
         "home": "Home",

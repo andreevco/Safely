@@ -2,7 +2,7 @@ import { StaticScreenProps } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { useRevokeDevice } from '@safely/ux';
+import { useRevokeSyncedDevice } from '@safely/ux';
 
 import { BottomSheet, Button, Text, useBottomSheet } from '@mobile/shared/ui';
 
@@ -18,7 +18,7 @@ const DisconnectDeviceContent = (props: DisconnectDeviceSheetProps['route']['par
 
     const { t } = useTranslation();
     const { close } = useBottomSheet();
-    const { mutate: revokeDevice, isPending } = useRevokeDevice();
+    const { mutate: revokeDevice, isPending } = useRevokeSyncedDevice();
 
     const handleDisconnect = () => {
         revokeDevice(ikPubHex, {

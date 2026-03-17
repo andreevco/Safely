@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { FC, PropsWithChildren, useEffect } from 'react';
 
-import { useActiveAccountQuery, fiatKeys } from '../../entities';
+import { useActiveAccountQuery, fiatKeys, useUpdateOwnSyncedDeviceMeta } from '../../entities';
 import { accountKey } from '../../entities/account/keys';
 import { SyncedStorageStructure, syncedStorageStructure } from '../storage';
 
@@ -10,6 +10,7 @@ const syncedStorageKeys = Object.keys(syncedStorageStructure) as (keyof SyncedSt
 function useSyncChangeObserver() {
     const client = useQueryClient();
     const { data: activeAccount } = useActiveAccountQuery();
+    const { mutateAsync: updateOwnSyncedDeviceMeta } = useUpdateOwnSyncedDeviceMeta();
 
     useEffect(() => {
         if (!activeAccount) return;
@@ -21,12 +22,15 @@ function useSyncChangeObserver() {
             portfolios: accountQueryKey.portfolios.toKey(),
             preferredFiat: fiatKeys.active.toKey(),
             meta: accountKey.list.toKey(),
-            devicesMeta: accountQueryKey.devicesMeta.toKey(),
-            lastSeedRevealedAt: accountQueryKey.lastSeedRevealedAt.toKey()
+            devicesMeta: accountQueryKey.devices.meta.toKey()
         };
 
         const unsubscribes = syncedStorageKeys.map(field =>
-            syncProvider.onChange(field, () => {
+            syncProvider.onChange(field, async () => {
+                if (field !== 'devicesMeta') {
+                    await updateOwnSyncedDeviceMeta(activeAccount);
+                }
+
                 void client.invalidateQueries({ queryKey: queryKeysToInvalidate[field] });
             })
         );
@@ -34,7 +38,7 @@ function useSyncChangeObserver() {
         return () => {
             unsubscribes.forEach(fn => fn());
         };
-    }, [activeAccount, client]);
+    }, [activeAccount, client, updateOwnSyncedDeviceMeta]);
 }
 
 export const SyncStorageProvider: FC<PropsWithChildren> = ({ children }) => {

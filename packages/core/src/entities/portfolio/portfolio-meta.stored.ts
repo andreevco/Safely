@@ -16,7 +16,8 @@ export type SPortfolioMetaIcon = z.infer<typeof sPortfolioMetaIcon>;
 
 export const sPortfolioMeta = z.object({
     name: z.string(),
-    icon: sPortfolioMetaIcon
+    icon: sPortfolioMetaIcon,
+    seedRevealedAt: z.union([z.number(), z.null()])
 });
 
 export type SPortfolioMeta = z.infer<typeof sPortfolioMeta>;

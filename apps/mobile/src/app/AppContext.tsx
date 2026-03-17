@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Platform } from 'react-native';
 
 import { Build } from '@safely/core';
-import { AppContext, IAppContext } from '@safely/ux';
+import { AppContext, IAppContext, UnlockableSecuredEncryptedStorage } from '@safely/ux';
 
 import { navigationRef } from '@mobile/app/navigation/navigationRef';
 import { useMobileSecurityCheck } from '@mobile/entities/security';
@@ -25,6 +25,11 @@ const build: Build =
         android: 'android' as const,
         web: 'web' as const
     }) ?? ('web' as const);
+
+const secureEncryptedStorage = new UnlockableSecuredEncryptedStorage(
+    mobileStorages.secureEncrypted.storage,
+    { check: securityCheck }
+);
 
 export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
     const {
@@ -48,11 +53,13 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
             numberFormatLocale: new MobileNumberFormatLocale(getLocales()[0]),
             storage: mobileStorages.app.storage,
             encryptedStorage: mobileStorages.encrypted.storage,
-            // TODO Discuss with Sergey
-            secureEncryptedStorage: mobileStorages.secureEncrypted.storage,
+            secureEncryptedStorage,
             qrScanner: {
                 scan: options =>
                     new Promise<string>(resolve => {
+                        // TODO
+                        // @ts-ignore
+                        window.qrResult = resolve;
                         navigationRef.navigate('QRScanModal', {
                             onSuccess: resolve,
                             title: t(options?.titleTranslationKey ?? 'qrScan.title'),

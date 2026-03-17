@@ -19,7 +19,7 @@ const DEFAULT_ICON: WalletIcon = {
 
 type CustomizeWalletModalProps = StaticScreenProps<{
     portfolio?: Portfolio;
-    onSave?: (meta: PortfolioMeta) => Promise<void>;
+    onSave?: (meta: Pick<PortfolioMeta, 'icon' | 'name'>) => Promise<void>;
     // NOTE: this callback is for navigation actions only and calling in cases when user don't save changes
     onCompleteCustomize?: () => void;
 }>;

@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { useActivePortfolio, useDevicesMeta, useSeedRevealInfo } from '@safely/ux';
+import { useActivePortfolio, useSyncedDevicesMeta } from '@safely/ux';
 import { useDateFormatter } from '@safely/ux/shared/format/date';
 import { useSecurityCheck } from '@safely/ux/shared/security';
 
@@ -28,8 +28,7 @@ export const SecurityScreen = () => {
     const navigation = useNavigation<SettingsStackNavigationProp>();
     const rootNavigation = useNavigation<RootStackNavigationProp>();
 
-    const devicesMeta = useDevicesMeta();
-    const seedRevealInfo = useSeedRevealInfo();
+    const devicesMeta = useSyncedDevicesMeta();
     const formatDate = useDateFormatter({
         month: 'long',
         day: 'numeric',
@@ -200,10 +199,10 @@ export const SecurityScreen = () => {
                                     </Cell.Row>
                                     <Cell.Row>
                                         <Cell.Subtitle numberOfLines={0}>
-                                            {seedRevealInfo
+                                            {portfolio.meta.seedRevealedAt
                                                 ? t('security.groups.wallet.recovery.revealed', {
                                                       date: formatDate.format(
-                                                          seedRevealInfo.timestamp
+                                                          portfolio.meta.seedRevealedAt
                                                       ),
                                                       device: seedRevealInfo.deviceName
                                                   })
