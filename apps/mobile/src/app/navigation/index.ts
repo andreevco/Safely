@@ -12,6 +12,7 @@ import { OnboardingPasscodeScreen } from '@mobile/screens/OnboardingPasscodeScre
 import { PasscodeVerificationScreen } from '@mobile/screens/PasscodeVerificationScreen';
 import { QRScanModal } from '@mobile/screens/QRScanModal';
 import { ReceiveAssetModal } from '@mobile/screens/ReceiveAssetModal';
+import { RemoveWalletSheet } from '@mobile/screens/RemoveWalletSheet';
 import { RecoveryConfirmSheet, RecoveryPhraseSheet } from '@mobile/screens/SecurityScreen/screens';
 import { SelectAccountModal } from '@mobile/screens/SelectAccountModal';
 import { TransactionScreen } from '@mobile/screens/TransactionScreen';
@@ -61,7 +62,8 @@ export const RootStack = createNativeStackNavigator({
         Sheets: {
             screens: {
                 RecoveryConfirmSheet: RecoveryConfirmSheet,
-                DestructiveConfirmSheet: DestructiveConfirmSheet
+                DestructiveConfirmSheet: DestructiveConfirmSheet,
+                RemoveWalletSheet: RemoveWalletSheet
             },
             screenOptions: {
                 animationDuration: 0,

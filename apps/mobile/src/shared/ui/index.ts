@@ -3,6 +3,7 @@ export { Toast } from './Toast';
 export { TouchableOpacity } from './TouchableOpacity';
 export { Screen } from './Screen';
 export { Button } from './Button';
+export { Checkbox } from './Checkbox';
 export { Actions } from './Actions';
 export { Cell } from './Cell';
 export { List } from './List';
