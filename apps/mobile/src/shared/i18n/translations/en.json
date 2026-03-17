@@ -66,6 +66,10 @@
             "addressCopied": "Address copied",
             "updating": "Updating...",
             "noInternet": "No internet connection"
+        },
+        "emptyState": {
+            "title": "Get started with a wallet",
+            "subtitle": "Create or import a wallet\nto start using your account"
         }
     },
     "accounts": {
