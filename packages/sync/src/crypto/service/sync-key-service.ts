@@ -1,9 +1,9 @@
 import { xchacha20poly1305 } from '@noble/ciphers/chacha.js';
 
-import { KeyRepository } from '../key-repository';
+import { EncryptedKeyRepository } from '../encrypted-key-repository';
 
 export class SyncKeyService {
-    constructor(private readonly keyRepository: KeyRepository) {}
+    constructor(private readonly keyRepository: EncryptedKeyRepository) {}
 
     public async encrypt(data: Buffer): Promise<{ ciphertext: Buffer; nonce: Buffer }> {
         const nonce = crypto.getRandomValues(new Uint8Array(24));

@@ -6,6 +6,7 @@ import { OnboardingInvitationCodec } from './onboarding-codec';
 import { AccountManager } from '../account/account-manager';
 import { ApiSigner } from '../api/api-signer';
 import { AccountsApi, Configuration, OnboardingMessage } from '../api/generated';
+import { ITreeStorage } from '../I-storage';
 
 export class NewDeviceOnboarding<S extends Record<string, ZodType>> {
     private ephemeralKeyPair: { publicKey: Buffer; secretKey: Buffer } | null = null;
@@ -13,7 +14,8 @@ export class NewDeviceOnboarding<S extends Record<string, ZodType>> {
     constructor(
         private readonly ik: { publicKey: Buffer; secretKey: Buffer },
         private readonly accountsApi: AccountsApi,
-        private readonly accountManager: AccountManager<S>
+        private readonly accountManager: AccountManager<S>,
+        private readonly secureEncryptedStorage: ITreeStorage
     ) {}
 
     public generateOnboardingData(): Buffer {
@@ -48,7 +50,11 @@ export class NewDeviceOnboarding<S extends Record<string, ZodType>> {
 
     private async handleOnboardingMessage(msg: OnboardingMessage) {
         const masterKey = await this.getMasterKey(msg);
-        return await this.accountManager.createOnlineAccountFromMasterKey(masterKey, this.ik);
+        return await this.accountManager.createOnlineAccountFromMasterKey(
+            this.secureEncryptedStorage,
+            masterKey,
+            this.ik
+        );
     }
 
     private async getMasterKey(msg: OnboardingMessage) {

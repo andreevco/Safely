@@ -2,6 +2,7 @@ import { ZodType } from 'zod';
 
 import { ISyncAccount } from './I-sync-account';
 import { Device } from '../device-manager/device-repository';
+import { ITreeStorage } from '../I-storage';
 import { PrimaryDeviceOnboarding } from '../onboarding/primary-device-onboarding';
 import { ISecretEncryptor } from '../secret-encryptor';
 import { SyncContainer } from '../sync-container';
@@ -42,12 +43,15 @@ export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAcco
         return this.syncProviderInternal;
     }
 
-    public async connectToNewDevice(data: Buffer): Promise<void> {
+    public async connectToNewDevice(
+        data: Buffer,
+        secureEncryptedStorage: ITreeStorage
+    ): Promise<void> {
         await this.ensureAccountOnline();
 
         const onboarding = new PrimaryDeviceOnboarding(
-            this.container.masterKeyService,
-            this.container.dmkService,
+            this.container.keyServiceFactory.createMasterKeyService(secureEncryptedStorage),
+            this.container.keyServiceFactory.createDmkSignerService(secureEncryptedStorage),
             this.container.accountsApi,
             this.container.deviceManager,
             () => {
@@ -61,22 +65,31 @@ export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAcco
         return await this.container.deviceManager.getDevices();
     }
 
-    public async revokeRemoteDevice(ikPub: Buffer): Promise<void> {
+    public async revokeRemoteDevice(
+        ikPub: Buffer,
+        secureEncryptedStorage: ITreeStorage
+    ): Promise<void> {
         const myIkPub = await this.container.ikService.getPub();
         if (ikPub.equals(myIkPub)) {
             throw new Error(
                 'Cannot revoke self device with revokeRemoteDevice, use SyncAccountFactory.deleteLocalAccount instead'
             );
         }
-        await this.container.deviceManager.revokeDevice(ikPub);
+        await this.container.deviceManager.revokeDevice(
+            ikPub,
+            this.container.keyServiceFactory.createDmkSignerService(secureEncryptedStorage)
+        );
     }
 
-    public async deleteThisDevice(): Promise<void> {
+    public async deleteThisDevice(secureEncryptedStorage: ITreeStorage): Promise<void> {
         this.syncProvider.dispose();
 
         // Revoke self device in doc
         const myIkPub = await this.container.ikService.getPub();
-        await this.container.deviceManager.revokeDevice(myIkPub);
+        await this.container.deviceManager.revokeDevice(
+            myIkPub,
+            this.container.keyServiceFactory.createDmkSignerService(secureEncryptedStorage)
+        );
 
         // Send manually new snapshot to the server so that the revoke operation is synced on
         // the other devices.
@@ -87,7 +100,9 @@ export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAcco
         }
 
         try {
-            const sig = await this.container.dmkService.signRevokeMessageForServer(myIkPub);
+            const sig = await this.container.keyServiceFactory
+                .createDmkSignerService(secureEncryptedStorage)
+                .signRevokeMessageForServer(myIkPub);
             await this.container.accountsApi.removeDeviceFromAccount({
                 deviceToRemove: {
                     identityPubKey: myIkPub.toString('hex'),

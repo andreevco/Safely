@@ -14,26 +14,25 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
     constructor(
         private readonly storage: ITreeStorage,
         private readonly encryptedStorage: ITreeStorage,
-        private readonly secureEncryptedStorage: ITreeStorage,
         private readonly syncAccountIDRepository: SyncAccountRepository,
         private readonly structure: S,
         private readonly apiConfiguration: Configuration
     ) {}
 
-    public async createOfflineAccount() {
+    public async createOfflineAccount(secureEncryptedStorage: ITreeStorage) {
         const masterKey = await generateMasterKey();
         const accountID = await generateAccountID(masterKey);
 
         const storage = getSyncAccountStorage(this.storage, accountID);
         const encryptedStorage = getSyncAccountStorage(this.encryptedStorage, accountID);
-        const secureEncryptedStorage = getSyncAccountStorage(
-            this.secureEncryptedStorage,
+        const accountSecureEncryptedStorage = getSyncAccountStorage(
+            secureEncryptedStorage,
             accountID
         );
         await initializeSyncAccount({
             storage,
             encryptedStorage,
-            secureEncryptedStorage,
+            secureEncryptedStorage: accountSecureEncryptedStorage,
             masterKey
         });
         masterKey.fill(0);
@@ -41,15 +40,18 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
         await this.syncAccountIDRepository.addAccount(accountID);
 
         const container = await createSyncContainer({
+            accountId: accountID,
             storage,
             encryptedStorage,
-            secureEncryptedStorage,
             apiConfiguration: this.apiConfiguration
         });
 
-        await container.deviceManager.addDevice({
-            ikPub: await container.ikService.getPub()
-        });
+        await container.deviceManager.addDevice(
+            {
+                ikPub: await container.ikService.getPub()
+            },
+            container.keyServiceFactory.createDmkSignerService(secureEncryptedStorage)
+        );
 
         return new SyncAccount({
             accountId: accountID,
@@ -62,6 +64,7 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
     }
 
     public async createOnlineAccountFromMasterKey(
+        secureEncryptedStorage: ITreeStorage,
         masterKey: Buffer,
         ik: { publicKey: Buffer; secretKey: Buffer }
     ) {
@@ -69,14 +72,14 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
 
         const storage = getSyncAccountStorage(this.storage, accountID);
         const encryptedStorage = getSyncAccountStorage(this.encryptedStorage, accountID);
-        const secureEncryptedStorage = getSyncAccountStorage(
-            this.secureEncryptedStorage,
+        const accountSecureEncryptedStorage = getSyncAccountStorage(
+            secureEncryptedStorage,
             accountID
         );
         await initializeSyncAccount({
             storage,
             encryptedStorage: encryptedStorage,
-            secureEncryptedStorage: secureEncryptedStorage,
+            secureEncryptedStorage: accountSecureEncryptedStorage,
             masterKey,
             ik
         });
@@ -85,9 +88,9 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
         await this.syncAccountIDRepository.addAccount(accountID, true);
 
         const container = await createSyncContainer({
+            accountId: accountID,
             storage,
             encryptedStorage,
-            secureEncryptedStorage,
             apiConfiguration: this.apiConfiguration
         });
 

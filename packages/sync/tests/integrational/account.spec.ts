@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 
-import { ISyncAccount } from '../../src/account/I-sync-account';
-import { SyncAccountFactory } from '../../src/account/sync-account-factory';
+import { ISyncAccount } from '../../src';
+import { SyncAccountFactory } from '../../src';
 import { InMemStorage } from '../impl/storage';
 
 const SchemaTestWallet = z.object({
@@ -17,53 +17,63 @@ export const Schema = {
 function makeFactory() {
     const storage = new InMemStorage();
     const encryptedStorage = new InMemStorage();
-    const secureEncryptedStorage = new InMemStorage();
     const apiConfiguration = {
         basePath: 'https://dev-sync.safely.app'
     };
     return new SyncAccountFactory({
         storage,
         encryptedStorage,
-        secureEncryptedStorage,
         structure: Schema,
         apiConfiguration
     });
 }
 
 async function onboardDevice(
-    existingAccount: ISyncAccount<typeof Schema>
-): Promise<ISyncAccount<typeof Schema>> {
+    existingAccount: ISyncAccount<typeof Schema>,
+    existingAccountSecureEncryptedStorage: InMemStorage
+) {
+    const secureEncryptedStorage = new InMemStorage();
+
     const factoryDevice2 = makeFactory();
-    const onboardingConnector = await factoryDevice2.connectToExistingSyncAccount();
-    const promise1 = existingAccount.connectToNewDevice(onboardingConnector.data);
+    const onboardingConnector =
+        await factoryDevice2.connectToExistingSyncAccount(secureEncryptedStorage);
+    const promise1 = existingAccount.connectToNewDevice(
+        onboardingConnector.data,
+        existingAccountSecureEncryptedStorage
+    );
     const promise2 = onboardingConnector.waitForCompletion();
     const [_, newAccount] = await Promise.all([promise1, promise2]);
-    return newAccount;
+    return {
+        newAccount,
+        secureEncryptedStorage
+    };
 }
 
 describe('Account', () => {
     let factory: SyncAccountFactory<typeof Schema>;
+    let secureEncryptedStorage: InMemStorage;
 
     beforeEach(async () => {
         factory = makeFactory();
+        secureEncryptedStorage = new InMemStorage();
     });
 
     it('create account', async () => {
-        const account = await factory.createSyncAccount();
+        const account = await factory.createSyncAccount(secureEncryptedStorage);
 
         const devices = await account.getDevices();
         expect(devices).toHaveLength(1);
     });
 
     it('makes account online', async () => {
-        const account = await factory.createSyncAccount();
-        await onboardDevice(account);
+        const account = await factory.createSyncAccount(secureEncryptedStorage);
+        await onboardDevice(account, secureEncryptedStorage);
         expect(account.syncProvider.type).toBe('online');
     });
 
     it('should sync data with server', async () => {
-        const account = await factory.createSyncAccount();
-        await onboardDevice(account);
+        const account = await factory.createSyncAccount(secureEncryptedStorage);
+        await onboardDevice(account, secureEncryptedStorage);
 
         await account.syncProvider.set('wallets', [
             {
@@ -76,8 +86,8 @@ describe('Account', () => {
     });
 
     it('should onboard new device', async () => {
-        const account = await factory.createSyncAccount();
-        const onlineAccount2 = await onboardDevice(account);
+        const account = await factory.createSyncAccount(secureEncryptedStorage);
+        const { newAccount } = await onboardDevice(account, secureEncryptedStorage);
 
         await account.syncProvider.set('wallets', [
             {
@@ -87,7 +97,7 @@ describe('Account', () => {
         ]);
 
         await vi.waitFor(async () => {
-            const wallets = await onlineAccount2.syncProvider.get('wallets');
+            const wallets = await newAccount.syncProvider.get('wallets');
             expect(wallets).toEqual([
                 {
                     name: 'My Wallet',
@@ -98,8 +108,8 @@ describe('Account', () => {
     });
 
     it('should delete offline account', async () => {
-        const account = await factory.createSyncAccount();
-        await factory.deleteLocalAccount(account.accountId);
+        const account = await factory.createSyncAccount(secureEncryptedStorage);
+        await factory.deleteLocalAccount(account.accountId, secureEncryptedStorage);
 
         const accounts = await factory.getSyncAccounts();
         expect(accounts).toHaveLength(0);
@@ -107,11 +117,11 @@ describe('Account', () => {
 
     // TODO: this test emits error
     it('should delete online account', async () => {
-        const account = await factory.createSyncAccount();
-        await onboardDevice(account);
+        const account = await factory.createSyncAccount(secureEncryptedStorage);
+        await onboardDevice(account, secureEncryptedStorage);
         await new Promise(resolve => setTimeout(resolve, 200));
 
-        await factory.deleteLocalAccount(account.accountId);
+        await factory.deleteLocalAccount(account.accountId, secureEncryptedStorage);
 
         const accounts = await factory.getSyncAccounts();
         expect(accounts).toHaveLength(0);

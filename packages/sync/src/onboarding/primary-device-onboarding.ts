@@ -3,7 +3,7 @@ import { x25519 } from '@noble/curves/ed25519.js';
 import { deriveOnboardingKey, encryptMasterKey } from './crypto';
 import { OnboardingInvitationCodec } from './onboarding-codec';
 import { AccountsApi } from '../api/generated';
-import { DmkService } from '../crypto/service/dmk-service';
+import { DmkSignerService } from '../crypto/service/dmk-signer-service';
 import { MasterKeyService } from '../crypto/service/master-key-service';
 import { DeviceManagementService } from '../device-manager/device-management-service';
 import { u8be, utf8 } from '../utils/buffer';
@@ -11,7 +11,7 @@ import { u8be, utf8 } from '../utils/buffer';
 export class PrimaryDeviceOnboarding {
     constructor(
         private readonly masterKeyService: MasterKeyService,
-        private readonly dmkService: DmkService,
+        private readonly dmkService: DmkSignerService,
         private readonly accountsApi: AccountsApi,
         private readonly deviceManager: DeviceManagementService,
         private readonly onDeviceAdded: () => void
@@ -42,9 +42,12 @@ export class PrimaryDeviceOnboarding {
         });
         const signature = await this.signOnboardingMessage(invitation.ikPub);
 
-        await this.deviceManager.addDevice({
-            ikPub: invitation.ikPub
-        });
+        await this.deviceManager.addDevice(
+            {
+                ikPub: invitation.ikPub
+            },
+            this.dmkService
+        );
         this.onDeviceAdded();
 
         await this.accountsApi.toOnboardNewDevice({

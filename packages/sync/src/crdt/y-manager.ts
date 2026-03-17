@@ -79,6 +79,7 @@ export type DeviceOp = {
     type: 'add' | 'revoke';
     ikPub: Buffer;
     ts: number;
+    kid: Buffer;
     sig: Buffer;
 };
 
@@ -96,6 +97,7 @@ export function deviceOpToJson(op: DeviceOp): string {
         type: op.type,
         ikPub: op.ikPub.toString('hex'),
         ts: op.ts,
+        kid: op.kid.toString('hex'),
         sig: op.sig.toString('hex')
     });
 }
@@ -104,5 +106,6 @@ export const DeviceOpSchema = z.object({
     type: z.enum(['add', 'revoke']),
     ikPub: BufferHexSchema,
     ts: z.number(),
+    kid: BufferHexSchema,
     sig: BufferHexSchema
 });

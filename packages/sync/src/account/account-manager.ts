@@ -17,7 +17,6 @@ export class AccountManager<S extends Record<string, ZodType>> {
     constructor(
         private readonly storage: ITreeStorage,
         private readonly encryptedStorage: ITreeStorage,
-        private readonly secureEncryptedStorage: ITreeStorage,
         private readonly syncAccountIdRepository: SyncAccountRepository,
         private readonly structure: S,
         private readonly apiConfiguration: Configuration,
@@ -48,14 +47,10 @@ export class AccountManager<S extends Record<string, ZodType>> {
             this.encryptedStorage,
             accountInfo.accountId
         );
-        const secureEncryptedStorage = getSyncAccountStorage(
-            this.secureEncryptedStorage,
-            accountInfo.accountId
-        );
         const container = await createSyncContainer({
+            accountId,
             storage,
             encryptedStorage,
-            secureEncryptedStorage,
             apiConfiguration: this.apiConfiguration
         });
 
@@ -73,17 +68,22 @@ export class AccountManager<S extends Record<string, ZodType>> {
         });
     }
 
-    public async createOfflineAccount(): Promise<ISyncAccount<S>> {
-        const account = await this.createAccountService.createOfflineAccount();
+    public async createOfflineAccount(
+        secureEncryptedStorage: ITreeStorage
+    ): Promise<ISyncAccount<S>> {
+        const account =
+            await this.createAccountService.createOfflineAccount(secureEncryptedStorage);
         this.accounts.push(account);
         return account;
     }
 
     public async createOnlineAccountFromMasterKey(
+        secureEncryptedStorage: ITreeStorage,
         masterKey: Buffer,
         ik: { publicKey: Buffer; secretKey: Buffer }
     ) {
         const account = await this.createAccountService.createOnlineAccountFromMasterKey(
+            secureEncryptedStorage,
             masterKey,
             ik
         );
@@ -91,17 +91,20 @@ export class AccountManager<S extends Record<string, ZodType>> {
         return account;
     }
 
-    public async deleteAccount(accountId: string): Promise<void> {
+    public async deleteAccount(
+        accountId: string,
+        secureEncryptedStorage: ITreeStorage
+    ): Promise<void> {
         const accountInfo = await this.syncAccountIdRepository.getSyncAccount(accountId);
 
         if (accountInfo.online) {
             const account = (await this.getSyncAccount(accountId)) as SyncAccount<S>;
-            await account.deleteThisDevice();
+            await account.deleteThisDevice(secureEncryptedStorage);
         }
 
         const storage = getSyncAccountStorage(this.storage, accountId);
         const encryptedStorage = getSyncAccountStorage(this.encryptedStorage, accountId);
-        const secureKeychainStorage = getSyncAccountStorage(this.secureEncryptedStorage, accountId);
+        const secureKeychainStorage = getSyncAccountStorage(secureEncryptedStorage, accountId);
         await storage.clear();
         await encryptedStorage.clear();
         await secureKeychainStorage.clear();

@@ -1,18 +1,19 @@
-import { VaultKeyService } from './crypto/service/vault-key-service';
+import { KeyServiceFactory } from './crypto/service/key-service-factory';
+import { ITreeStorage } from './I-storage';
 import { hex } from './utils/buffer';
 
 export interface ISecretEncryptor {
-    encrypt(plaintext: string): Promise<string>;
-    decrypt(encryptedPayload: string): Promise<string>;
+    encrypt(plaintext: string, secureEncryptedStorage: ITreeStorage): Promise<string>;
+    decrypt(encryptedPayload: string, secureEncryptedStorage: ITreeStorage): Promise<string>;
 }
 
 export class SecretEncryptor implements ISecretEncryptor {
-    constructor(private readonly vaultKeyService: VaultKeyService) {}
+    constructor(private readonly keyServiceFactory: KeyServiceFactory) {}
 
-    public async encrypt(plaintext: string): Promise<string> {
-        const { ciphertext, nonce } = await this.vaultKeyService.encrypt(
-            Buffer.from(plaintext, 'utf8')
-        );
+    public async encrypt(plaintext: string, secureEncryptedStorage: ITreeStorage): Promise<string> {
+        const { ciphertext, nonce } = await this.keyServiceFactory
+            .createVaultKeyService(secureEncryptedStorage)
+            .encrypt(Buffer.from(plaintext, 'utf8'));
         const result = Buffer.concat([
             Buffer.from([0x01]), // version
             nonce,
@@ -21,7 +22,10 @@ export class SecretEncryptor implements ISecretEncryptor {
         return result.toString('hex');
     }
 
-    public async decrypt(encryptedPayload: string): Promise<string> {
+    public async decrypt(
+        encryptedPayload: string,
+        secureEncryptedStorage: ITreeStorage
+    ): Promise<string> {
         const data = hex(encryptedPayload);
         const version = data[0];
         if (version !== 0x01) {
@@ -30,7 +34,9 @@ export class SecretEncryptor implements ISecretEncryptor {
         const nonce = data.slice(1, 25);
         const ciphertext = data.slice(25);
 
-        const plaintext = await this.vaultKeyService.decrypt(ciphertext, nonce);
+        const plaintext = await this.keyServiceFactory
+            .createVaultKeyService(secureEncryptedStorage)
+            .decrypt(ciphertext, nonce);
         return plaintext.toString('utf8');
     }
 }

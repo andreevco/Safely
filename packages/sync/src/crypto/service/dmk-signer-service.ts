@@ -1,9 +1,9 @@
 import { utf8 } from '../../utils/buffer';
-import { ed25519_sign, ed25519_verify } from '../ed25519';
-import { KeyRepository } from '../key-repository';
+import { ed25519_sign } from '../ed25519';
+import { SecureEncryptedKeyRepository } from '../secure-encrypted-key-repository';
 
-export class DmkService {
-    constructor(private readonly keyRepository: KeyRepository) {}
+export class DmkSignerService {
+    constructor(private readonly keyRepository: SecureEncryptedKeyRepository) {}
 
     public async sign(data: Buffer): Promise<Buffer> {
         const ik = await this.keyRepository.getDMKPrv();
@@ -13,11 +13,6 @@ export class DmkService {
         const sig = ed25519_sign(data, ik);
         ik.fill(0);
         return sig;
-    }
-
-    public async verify(data: Buffer, sig: Buffer): Promise<boolean> {
-        const ikPub = await this.keyRepository.getDMKPub();
-        return ed25519_verify(sig, data, ikPub);
     }
 
     public async signRevokeMessageForServer(ikPub: Buffer): Promise<Buffer> {

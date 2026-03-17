@@ -1,7 +1,7 @@
-import { KeyRepository } from '../key-repository';
+import { SecureEncryptedKeyRepository } from '../secure-encrypted-key-repository';
 
 export class MasterKeyService {
-    constructor(private readonly keyRepository: KeyRepository) {}
+    constructor(private readonly keyRepository: SecureEncryptedKeyRepository) {}
 
     public async withMasterKey<T>(f: (masterKey: Buffer) => T): Promise<T> {
         const masterKey = await this.keyRepository.getMasterKey();

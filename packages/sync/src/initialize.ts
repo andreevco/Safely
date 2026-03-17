@@ -6,7 +6,8 @@ import * as Y from 'yjs';
 
 import { YCRDT } from './crdt/y-crdt';
 import { YCRDTRepository } from './crdt/y-crdt-repository';
-import { KeyRepository } from './crypto/key-repository';
+import { EncryptedKeyRepository } from './crypto/encrypted-key-repository';
+import { SecureEncryptedKeyRepository } from './crypto/secure-encrypted-key-repository';
 import { IStorage } from './I-storage';
 import { SyncStateRepository } from './update-handler/sync-state-repository';
 import { utf8 } from './utils/buffer';
@@ -17,7 +18,7 @@ export async function generateMasterKey(): Promise<Buffer> {
 
 export async function generateAccountID(masterKey: Buffer): Promise<string> {
     const accountID = hkdf(sha256, masterKey, undefined, utf8('safely/sync/v1/account-id'), 32);
-    return Buffer.from(accountID).slice(0, 16).toString('hex');
+    return Buffer.from(accountID).slice(0, 32).toString('hex');
 }
 
 export async function initializeSyncState(repo: SyncStateRepository): Promise<void> {
@@ -27,7 +28,8 @@ export async function initializeSyncState(repo: SyncStateRepository): Promise<vo
 }
 
 export async function initializeKeys(
-    repo: KeyRepository,
+    encryptedKeyRepository: EncryptedKeyRepository,
+    secureEncryptedKeyRepository: SecureEncryptedKeyRepository,
     masterKey: Buffer,
     ik?: { secretKey: Buffer; publicKey: Buffer }
 ): Promise<void> {
@@ -37,14 +39,16 @@ export async function initializeKeys(
     const dmkKeypair = ed25519.keygen(dmkSeed);
 
     const identityKey = ik ? ik : ed25519.keygen();
-    await repo.initialize({
-        masterKey: Buffer.from(masterKey),
-        vaultKey: Buffer.from(vaultKey),
+    await encryptedKeyRepository.initialize({
         dmkPub: Buffer.from(dmkKeypair.publicKey),
-        dmkPrv: Buffer.from(dmkKeypair.secretKey),
         selfIKPub: Buffer.from(identityKey.publicKey),
         selfIKPrv: Buffer.from(identityKey.secretKey),
         syncKey: Buffer.from(syncKey)
+    });
+    await secureEncryptedKeyRepository.initialize({
+        masterKey: Buffer.from(masterKey),
+        vaultKey: Buffer.from(vaultKey),
+        dmkPrv: Buffer.from(dmkKeypair.secretKey)
     });
 }
 
@@ -59,11 +63,19 @@ export async function initializeSyncAccount(opts: {
     masterKey: Buffer;
     ik?: { secretKey: Buffer; publicKey: Buffer };
 }): Promise<void> {
-    const keyRepository = new KeyRepository(opts.encryptedStorage, opts.secureEncryptedStorage);
+    const encryptedKeyRepository = new EncryptedKeyRepository(opts.encryptedStorage);
+    const secureEncryptedKeyRepository = new SecureEncryptedKeyRepository(
+        opts.secureEncryptedStorage
+    );
     const syncStateRepository = new SyncStateRepository(opts.storage);
     const ycrdtRepository = new YCRDTRepository(opts.storage);
 
-    await initializeKeys(keyRepository, opts.masterKey, opts.ik);
+    await initializeKeys(
+        encryptedKeyRepository,
+        secureEncryptedKeyRepository,
+        opts.masterKey,
+        opts.ik
+    );
     await initializeSyncState(syncStateRepository);
     await initializeCrdt(ycrdtRepository);
 }
