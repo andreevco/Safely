@@ -80,8 +80,84 @@ describe('Test portfolio generation (Bitcoin)', () => {
             },
             meta: {
                 name: portfolioName,
-                icon: portfolio.meta.icon,
-                seedRevealedAt: null
+                icon: portfolio.meta.icon
+            },
+            secretRevealedStatus: null,
+            derivations: [
+                {
+                    index: 0,
+                    chains: {
+                        btc: {
+                            xpub: portfolio.derivations[0].chains.btc.xpub,
+                            wallets: [
+                                {
+                                    type: BtcWalletType.NATIVE_SEGWIT
+                                }
+                            ]
+                        }
+                    }
+                }
+            ],
+            encryptedSecret: portfolio.toJSON().encryptedSecret
+        };
+
+        expect(parsed).toMatchObject({
+            id: { type: PortfolioType.BIP39, networkType: PortfolioNetworkType.MAINNET },
+            meta: { name: portfolioName },
+            derivations: [
+                {
+                    index: 0,
+                    chains: {
+                        btc: {
+                            wallets: [{ type: BtcWalletType.NATIVE_SEGWIT }]
+                        }
+                    }
+                }
+            ]
+        });
+
+        const portfolioRestored = PortfolioFactory.restorePortfolio(
+            encryptor,
+            sPortfolio.parse(expectedStructure)
+        );
+        expect(portfolioRestored.type).toBe(PortfolioType.BIP39);
+        expect(portfolioRestored.derivations[0].chains.btc.wallets[0].address).toBe(
+            portfolio.derivations[0].chains.btc.wallets[0].address
+        );
+    });
+
+    it('Should serialize and deserialize portfolio bip39 revealed', async () => {
+        const testMnemonic =
+            'firm idle yellow accuse lizard dial labor cushion blade voice spy impact'.split(' ');
+        const portfolioName = 'Portfolio 1';
+
+        const portfolio = await portfolioFactory.generatePortfolio(
+            new ClosableMnemonicAccessorVault(testMnemonic),
+            {
+                network: PortfolioNetworkType.MAINNET,
+                name: portfolioName,
+                seedRevealedFromDevice: 'TEST_DEVICE_NAME'
+            }
+        );
+
+        expect(portfolio).not.toBeNull();
+
+        const serialized = JSON.stringify(portfolio);
+        const parsed: unknown = JSON.parse(serialized);
+
+        const expectedStructure: SPortfolioBip39In = {
+            id: {
+                type: PortfolioType.BIP39,
+                hash: portfolio.id.toJSON().hash,
+                networkType: PortfolioNetworkType.MAINNET
+            },
+            meta: {
+                name: portfolioName,
+                icon: portfolio.meta.icon
+            },
+            secretRevealedStatus: {
+                revealedAt: portfolio.secretRevealedStatus!.revealedAt.getTime(),
+                revealedFromDevice: 'TEST_DEVICE_NAME'
             },
             derivations: [
                 {
@@ -104,6 +180,7 @@ describe('Test portfolio generation (Bitcoin)', () => {
         expect(parsed).toMatchObject({
             id: { type: PortfolioType.BIP39, networkType: PortfolioNetworkType.MAINNET },
             meta: { name: portfolioName },
+            secretRevealedStatus: { revealedFromDevice: 'TEST_DEVICE_NAME' },
             derivations: [
                 {
                     index: 0,
@@ -344,9 +421,14 @@ describe('Extended tests for portfolio operations (Bitcoin)', () => {
             id: portfolio.id.toJSON(),
             meta: {
                 name: portfolio.meta.name,
-                icon: portfolio.meta.icon,
-                seedRevealedAt: portfolio.meta.seedRevealedAt?.getTime() ?? null
+                icon: portfolio.meta.icon
             },
+            secretRevealedStatus: portfolio.secretRevealedStatus
+                ? {
+                      revealedAt: portfolio.secretRevealedStatus.revealedAt.getTime(),
+                      revealedFromDevice: portfolio.secretRevealedStatus.revealedFromDevice
+                  }
+                : null,
             derivations: portfolio.derivations.map(d => ({
                 index: d.index,
                 chains: {

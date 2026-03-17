@@ -9,6 +9,7 @@ import { BtcWalletType } from '../blockchain';
 import { SDerivation } from '../derivation/derivation.stored';
 import { MnemonicResource, IMnemonicVaultEncryptedSecretStored, MnemonicVault } from '../mnemonic';
 import { BtcBip39SeedProducer } from '../seed';
+import { PortfolioSecretRevealedStatus } from './portfolio-secret-revealed-status';
 
 export class PortfolioBip39 implements IPortfolioDerivable {
     public static restorePortfolio(
@@ -18,13 +19,13 @@ export class PortfolioBip39 implements IPortfolioDerivable {
         const mnemonicVault = new MnemonicVault(secretEncryptor, sPortfolio.encryptedSecret);
         return new PortfolioBip39({
             id: sPortfolio.id,
-            meta: {
-                name: sPortfolio.meta.name,
-                icon: sPortfolio.meta.icon,
-                seedRevealedAt: sPortfolio.meta.seedRevealedAt
-                    ? new Date(sPortfolio.meta.seedRevealedAt)
-                    : null
-            },
+            meta: sPortfolio.meta,
+            secretRevealedStatus: sPortfolio.secretRevealedStatus
+                ? {
+                      revealedAt: new Date(sPortfolio.secretRevealedStatus.revealedAt),
+                      revealedFromDevice: sPortfolio.secretRevealedStatus.revealedFromDevice
+                  }
+                : null,
             derivations: self =>
                 sPortfolio.derivations.map(d => this.restoreDerivation(mnemonicVault, self, d)),
             mnemonicVault
@@ -50,6 +51,8 @@ export class PortfolioBip39 implements IPortfolioDerivable {
 
     public meta: PortfolioMeta;
 
+    public secretRevealedStatus: PortfolioSecretRevealedStatus;
+
     public get type() {
         return this.id.type;
     }
@@ -65,6 +68,7 @@ export class PortfolioBip39 implements IPortfolioDerivable {
     constructor(params: {
         id: PortfolioIdMnemonicBased<PortfolioType.BIP39>;
         meta: PortfolioMeta;
+        secretRevealedStatus: PortfolioSecretRevealedStatus;
         derivations: IDerivation[] | ((self: PortfolioBip39) => IDerivation[]);
         mnemonicVault: IMnemonicVaultEncryptedSecretStored;
     }) {
@@ -74,6 +78,7 @@ export class PortfolioBip39 implements IPortfolioDerivable {
 
         this.id = params.id;
         this.meta = params.meta;
+        this.secretRevealedStatus = params.secretRevealedStatus;
         this.derivations = Array.isArray(params.derivations)
             ? params.derivations
             : params.derivations(this);
@@ -129,6 +134,13 @@ export class PortfolioBip39 implements IPortfolioDerivable {
         this.meta = { ...this.meta, ...meta };
     }
 
+    public recordSecretReveal(fromDevice: string) {
+        this.secretRevealedStatus = {
+            revealedAt: new Date(),
+            revealedFromDevice: fromDevice
+        };
+    }
+
     public getMnemonic(): Promise<string[]> {
         return this.mnemonicVault.getMnemonic();
     }
@@ -137,11 +149,13 @@ export class PortfolioBip39 implements IPortfolioDerivable {
         return {
             id: this.id.toJSON(),
             encryptedSecret: this.mnemonicVault.encryptedSecret,
-            meta: {
-                seedRevealedAt: this.meta.seedRevealedAt?.getTime() ?? null,
-                name: this.meta.name,
-                icon: this.meta.icon
-            },
+            meta: this.meta,
+            secretRevealedStatus: this.secretRevealedStatus
+                ? {
+                      revealedAt: this.secretRevealedStatus.revealedAt.getTime(),
+                      revealedFromDevice: this.secretRevealedStatus.revealedFromDevice
+                  }
+                : null,
             derivations: this.derivations.map(d => d.toJSON())
         };
     }

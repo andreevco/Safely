@@ -4,6 +4,7 @@ import { PortfolioType } from './I-portfolio';
 import { PortfolioIdMnemonicBased } from './portfolio-id';
 import { sPortfolioMeta } from './portfolio-meta.stored';
 import { PortfolioNetworkType } from './portfolio-network-type';
+import { sPortfolioSecretRevealedStatus } from './portfolio-secret-revealed-status.stored';
 import { sSecretEncrypted } from '../../di';
 import { sDerivation } from '../derivation/derivation.stored';
 
@@ -23,6 +24,7 @@ export const sPortfolioBip39 = z.object({
                 )
         ),
     meta: sPortfolioMeta,
+    secretRevealedStatus: sPortfolioSecretRevealedStatus,
     encryptedSecret: sSecretEncrypted,
     derivations: z.array(sDerivation)
 });

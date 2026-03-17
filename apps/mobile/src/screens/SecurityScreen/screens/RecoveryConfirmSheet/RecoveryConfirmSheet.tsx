@@ -16,7 +16,7 @@ const RecoveryConfirmContent = () => {
     const portfolio = useActivePortfolio();
     const navigation = useNavigation<RootStackNavigationProp>();
 
-    const recordSeedReveal = useRecordActivePortfolioSecretReveal();
+    const { mutateAsync: recordSeedReveal } = useRecordActivePortfolioSecretReveal();
 
     const handleReveal = async () => {
         try {

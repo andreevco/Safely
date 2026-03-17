@@ -1,7 +1,6 @@
 export interface PortfolioMeta {
     name: string;
     icon: PortfolioMetaIcon;
-    seedRevealedAt: Date | null;
 }
 
 export type PortfolioMetaIcon = PortfolioMetaIconEmoji | PortfolioMetaIconColor;

@@ -1,5 +1,5 @@
 import { keepPreviousData, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
 
 import {
     BtcWallet,
@@ -23,7 +23,8 @@ import {
     useErrorToast,
     useSuspenseQuery,
     useAccountLocalStorage,
-    useSecurityCheck
+    useSecurityCheck,
+    useAppContext
 } from '../../shared';
 import { useActiveAccountSyncedStorage } from '../../shared/storage/account/synced';
 import { useActiveAccount, useActiveAccountQueryKey } from '../account';
@@ -147,6 +148,7 @@ export function useImportPortfolio() {
         PortfolioAlreadyExistsError: 'importWalletScreen.errors.alreadyExists'
     });
     const factory = usePortfoliosFactory();
+    const { deviceInfo } = useAppContext();
 
     return useMutation<Portfolio, Error, IMnemonicAccessor>({
         async mutationFn(accessor) {
@@ -155,7 +157,7 @@ export function useImportPortfolio() {
             const portfolio = await factory.generatePortfolio(accessor, {
                 network: PortfolioNetworkType.MAINNET,
                 name,
-                seedRevealed: true
+                seedRevealedFromDevice: deviceInfo.name
             });
 
             if (existingPortfolios?.some(p => p.id.isEq(portfolio.id))) {
@@ -418,14 +420,27 @@ export function useChangePortfolioMeta() {
 }
 
 export function useRecordActivePortfolioSecretReveal() {
-    const portfolio = useActivePortfolio();
-    const { mutateAsync } = useChangePortfolioMeta();
+    const client = useQueryClient();
+    const portfoliosQuery = usePortfoliosQueryConfig();
+    const activePortfolio = useActivePortfolio();
+    const { mutateAsync } = useSetPortfolios();
+    const { deviceInfo } = useAppContext();
 
-    return useCallback(async () => {
-        if (portfolio.meta.seedRevealedAt === null) {
-            return mutateAsync({ portfolio, meta: { seedRevealedAt: new Date() } });
+    return useMutation({
+        async mutationFn() {
+            if (activePortfolio.secretRevealedStatus === null) {
+                return;
+            }
+
+            const portfolios: Portfolio[] = await client.fetchQuery(portfoliosQuery);
+            const portfolio = portfolios.find(p => p.id.isEq(activePortfolio.id));
+            if (!portfolio) {
+                throw new Error('Portfolio not found');
+            }
+            portfolio.recordSecretReveal(deviceInfo.name);
+            await mutateAsync(portfolios);
         }
-    }, [mutateAsync]);
+    });
 }
 
 export function useActivePortfolioEntities() {

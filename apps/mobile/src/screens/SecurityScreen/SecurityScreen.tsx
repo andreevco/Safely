@@ -199,12 +199,13 @@ export const SecurityScreen = () => {
                                     </Cell.Row>
                                     <Cell.Row>
                                         <Cell.Subtitle numberOfLines={0}>
-                                            {portfolio.meta.seedRevealedAt
+                                            {portfolio.secretRevealedStatus
                                                 ? t('security.groups.wallet.recovery.revealed', {
                                                       date: formatDate.format(
-                                                          portfolio.meta.seedRevealedAt
+                                                          portfolio.secretRevealedStatus.revealedAt
                                                       ),
-                                                      device: seedRevealInfo.deviceName
+                                                      device: portfolio.secretRevealedStatus
+                                                          .revealedFromDevice
                                                   })
                                                 : t('security.groups.wallet.recovery.subtitle')}
                                         </Cell.Subtitle>
