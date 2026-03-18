@@ -1,6 +1,7 @@
 import { BlurView } from 'expo-blur';
 import { forwardRef, useImperativeHandle } from 'react';
 import { Modal, Platform, Pressable, useWindowDimensions } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, { SharedValue } from 'react-native-reanimated';
 import { FullWindowOverlay } from 'react-native-screens';
 import { StyleSheet } from 'react-native-unistyles';
@@ -34,11 +35,15 @@ export const PopupMenu = forwardRef<PopupMenuRef, PopupMenuProps>((props, ref) =
 
     const overlayContent = (
         <>
-            <AnimatedBlurView
-                animatedProps={menu.blurAnimatedProps}
-                style={[styles.backdrop, menu.blurAnimatedStyle]}
-                pointerEvents="none"
-            />
+            {Platform.OS === 'ios' ? (
+                <AnimatedBlurView
+                    animatedProps={menu.blurAnimatedProps}
+                    style={[styles.backdrop, menu.blurAnimatedStyle]}
+                    pointerEvents="none"
+                />
+            ) : (
+                <Animated.View style={[styles.backdrop, menu.blurAnimatedStyle]} />
+            )}
             {header}
             <Pressable style={StyleSheet.absoluteFill} onPress={menu.close} />
             <Animated.View
@@ -78,7 +83,9 @@ export const PopupMenu = forwardRef<PopupMenuRef, PopupMenuProps>((props, ref) =
                     <FullWindowOverlay>{overlayContent}</FullWindowOverlay>
                 ) : (
                     <Modal transparent visible statusBarTranslucent onRequestClose={menu.close}>
-                        {overlayContent}
+                        <GestureHandlerRootView style={StyleSheet.absoluteFill}>
+                            {overlayContent}
+                        </GestureHandlerRootView>
                     </Modal>
                 ))}
         </>

@@ -6,7 +6,6 @@ import {
     useAnimatedProps,
     useAnimatedStyle,
     useSharedValue,
-    withSpring,
     withTiming
 } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
@@ -20,7 +19,7 @@ export const usePopupMenu = (screenHeight: number) => {
 
     const triggerHeight = useSharedValue(0);
     const menuHeight = useSharedValue(0);
-    const scale = useSharedValue(0.35);
+    const scale = useSharedValue(0.75);
     const progress = useSharedValue(0);
 
     const open = useCallback(() => {
@@ -38,8 +37,8 @@ export const usePopupMenu = (screenHeight: number) => {
     }, []);
 
     const close = useCallback(() => {
-        progress.value = withTiming(0, { duration: 120 });
-        scale.value = withTiming(0.35, { duration: 120 }, finished => {
+        progress.value = withTiming(0, { duration: 50 });
+        scale.value = withTiming(0.75, { duration: 50 }, finished => {
             if (finished) {
                 scheduleOnRN(hide);
             }
@@ -49,8 +48,8 @@ export const usePopupMenu = (screenHeight: number) => {
     const onMenuLayout = useCallback(
         (e: LayoutChangeEvent) => {
             menuHeight.value = e.nativeEvent.layout.height;
-            progress.value = withTiming(1, { duration: 120 });
-            scale.value = withSpring(1, { damping: 19, stiffness: 650, mass: 0.27 });
+            progress.value = withTiming(1, { duration: 50 });
+            scale.value = withTiming(1, { duration: 50 });
         },
         [menuHeight, progress, scale]
     );
