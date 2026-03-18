@@ -1,8 +1,10 @@
 import { Device, DeviceRepository } from './device-repository';
-import { DeviceOp, YManager } from '../crdt/y-manager';
-import { ed25519_sign, ed25519_verify } from '../crypto/ed25519';
+import { AddDeviceOp, DeviceOp, YManager } from '../crdt/y-manager';
+import { ed25519_verify } from '../crypto/ed25519';
 import { generateKID } from '../crypto/generate-kid';
-import { KeyRepository } from '../crypto/key-repository';
+import { DmkSignerService } from '../crypto/service/dmk-signer-service';
+import { DmkVerifierService } from '../crypto/service/dmk-verifier-service';
+import { IkService } from '../crypto/service/ik-service';
 import { SyncError } from '../sync-error';
 import { u64be, utf8 } from '../utils/buffer';
 
@@ -10,71 +12,109 @@ export class DeviceManagementService {
     constructor(
         private readonly deviceRepository: DeviceRepository,
         private readonly yManager: YManager,
-        private readonly keyRepository: KeyRepository
+        private readonly ikService: IkService,
+        private readonly dmkVerifierService: DmkVerifierService
     ) {}
 
     public async getDevices(): Promise<Device[]> {
         return await this.deviceRepository.getDevices();
     }
 
-    public async addDevice(device: Device): Promise<void> {
+    public async addDevice(device: Device, dmkSignerService: DmkSignerService): Promise<void> {
         const devices = await this.getDevices();
         if (devices.some(d => d.ikPub.equals(device.ikPub))) {
             throw new Error('Device with the same ikPub already exists.');
         }
 
-        const ts = Date.now();
-        const sig = await this.signDeviceOp({
+        await this.performOperation({
             type: 'add',
             ikPub: device.ikPub,
-            ts
+            dmkSignerService
         });
-
-        const op: DeviceOp = {
-            type: 'add',
-            ikPub: device.ikPub,
-            ts,
-            sig
-        };
-        await this.yManager.addDeviceOp(op);
         await this.deviceRepository.setDevices([...devices, device]);
     }
 
-    public async revokeDevice(ikPub: Buffer): Promise<void> {
+    public async revokeDevice(ikPub: Buffer, dmkSignerService: DmkSignerService): Promise<void> {
         const devices = await this.getDevices();
         if (!devices.some(d => d.ikPub.equals(ikPub))) {
             throw new Error('Device not found.');
         }
 
-        const ts = Date.now();
-        const sig = await this.signDeviceOp({
+        await this.performOperation({
             type: 'revoke',
             ikPub,
+            dmkSignerService
+        });
+
+        await this.deviceRepository.setDevices(devices.filter(d => !d.ikPub.equals(ikPub)));
+    }
+
+    private async performOperation(opts: {
+        type: 'add' | 'revoke';
+        ikPub: Buffer;
+        dmkSignerService: DmkSignerService;
+    }) {
+        const ts = Date.now();
+        const kid = await this.ikService.getKID();
+        const sig = await this.signDeviceOp({
+            ...opts,
             ts
         });
 
         const op: DeviceOp = {
-            type: 'revoke',
-            ikPub,
+            type: opts.type,
+            ikPub: opts.ikPub,
             ts,
+            kid,
             sig
         };
         await this.yManager.addDeviceOp(op);
-        await this.deviceRepository.setDevices(devices.filter(d => !d.ikPub.equals(ikPub)));
+    }
+
+    /**
+     * In onboarding flow, primary device creates add operation and sends it to the new device, which then applies it.
+     * @param ikPub
+     * @param dmkSignerService
+     */
+    public async makeAddOp(
+        ikPub: Buffer,
+        dmkSignerService: DmkSignerService
+    ): Promise<AddDeviceOp> {
+        const ts = Date.now();
+        const kid = await this.ikService.getKID();
+        const sig = await this.signDeviceOp({
+            type: 'add',
+            ikPub,
+            dmkSignerService,
+            ts
+        });
+
+        return {
+            type: 'add',
+            ikPub,
+            ts,
+            kid,
+            sig
+        };
     }
 
     public async verifyDeviceOpAndApply(op: DeviceOp): Promise<void> {
+        const devices = await this.getDevices();
+
+        if (devices.length !== 0) {
+            await this.verifyKidExists(op.kid);
+        }
+
         await this.verifyDeviceOpSignature(op);
 
-        const devices = await this.getDevices();
         if (op.type === 'add') {
             if (devices.some(d => d.ikPub.equals(op.ikPub))) {
-                return;
+                throw new Error('Device with the same ikPub already exists.');
             }
             await this.deviceRepository.setDevices([...devices, { ikPub: op.ikPub }]);
         } else if (op.type === 'revoke') {
             if (!devices.some(d => d.ikPub.equals(op.ikPub))) {
-                return;
+                throw new Error('Device not found.');
             }
             await this.deviceRepository.setDevices(devices.filter(d => !d.ikPub.equals(op.ikPub)));
         }
@@ -104,13 +144,20 @@ export class DeviceManagementService {
             utf8(`safely/sync/v1/device/${op.type}`),
             Buffer.from([0x00]),
             op.ikPub,
+            op.kid,
             u64be(op.ts)
         ]);
 
-        const dmkPub = await this.keyRepository.getDMKPub();
-        const isValid = ed25519_verify(op.sig, dataToVerify, dmkPub);
+        const isValid = await this.dmkVerifierService.verify(op.sig, dataToVerify);
         if (!isValid) {
             throw new InvalidDMKSignatureError('Invalid device operation signature.');
+        }
+    }
+
+    private async verifyKidExists(kid: Buffer): Promise<void> {
+        const devices = await this.getDevices();
+        if (!devices.some(d => generateKID(d.ikPub).equals(kid))) {
+            throw new UnknownDeviceError('Device with the given KID not found.');
         }
     }
 
@@ -118,18 +165,18 @@ export class DeviceManagementService {
         type: 'add' | 'revoke';
         ikPub: Buffer;
         ts: number;
+        dmkSignerService: DmkSignerService;
     }): Promise<Buffer> {
+        const selfKID = await this.ikService.getKID();
         const dataToSign = Buffer.concat([
             utf8(`safely/sync/v1/device/${opts.type}`),
             Buffer.from([0x00]),
             opts.ikPub,
+            selfKID,
             u64be(opts.ts)
         ]);
 
-        const dmkKey = await this.keyRepository.getDMKPrv();
-        const sig = ed25519_sign(dataToSign, dmkKey);
-        dmkKey.fill(0);
-        return sig;
+        return await opts.dmkSignerService.sign(dataToSign);
     }
 }
 

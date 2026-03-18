@@ -7,7 +7,6 @@
 Name | Type
 ------------ | -------------
 `code` | number
-`message` | string
 
 ## Example
 
@@ -17,7 +16,6 @@ import type { ModelError } from ''
 // TODO: Update the object below with actual values
 const example = {
   "code": null,
-  "message": null,
 } satisfies ModelError
 
 console.log(example)

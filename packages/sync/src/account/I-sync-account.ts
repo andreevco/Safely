@@ -1,6 +1,7 @@
 import { ZodType } from 'zod';
 
 import { Device } from '../device-manager/device-repository';
+import { ITreeStorage } from '../I-storage';
 import { ISecretEncryptor } from '../secret-encryptor';
 import { ISyncProvider } from '../sync-provider/I-sync-provider';
 
@@ -23,8 +24,9 @@ export interface ISyncAccount<S extends Record<string, ZodType>> {
      * Connects a new device to the sync account using the provided onboarding data.
      * If the account is offline, it will be promoted to online automatically.
      * @param data
+     * @param secureEncryptedStorage - unlocked secure encrypted storage
      */
-    connectToNewDevice(data: Buffer): Promise<void>;
+    connectToNewDevice(data: Buffer, secureEncryptedStorage: ITreeStorage): Promise<void>;
 
     /**
      * Retrieves the list of devices currently connected to the sync account.
@@ -36,8 +38,9 @@ export interface ISyncAccount<S extends Record<string, ZodType>> {
      * If trying to revoke the current device, it will throw an error.
      * Use SyncAccountFactory.deleteLocalAccount to delete the local account instead.
      * @param ikPub
+     * @param secureEncryptedStorage - unlocked secure encrypted storage
      */
-    revokeRemoteDevice(ikPub: Buffer): Promise<void>;
+    revokeRemoteDevice(ikPub: Buffer, secureEncryptedStorage: ITreeStorage): Promise<void>;
 
     /**
      * Returns the IK public key of the current device.

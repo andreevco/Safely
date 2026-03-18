@@ -1,6 +1,14 @@
-import { Configuration, Snapshot, SnapshotWithProofs } from '../../src/api/generated';
+import { sha256 } from '@noble/hashes/sha2.js';
+
+import {
+    Configuration,
+    Snapshot,
+    SnapshotProofChain,
+    SnapshotWithProofs
+} from '../../src/api/generated';
 import type {
     GetActualSnapshotRequest,
+    GetSnapshotProofChainRequest,
     SaveSnapshotRequest
 } from '../../src/api/generated/apis/SnapshotsApi';
 import { EncryptedState } from '../../src/api/types';
@@ -41,11 +49,21 @@ export class MockSnapshotsServer {
         }
 
         const latest = this.snapshots[this.snapshots.length - 1];
-        const proofChainEntries = this.buildProofChain(requestParameters.withProofChainTo);
+        const proofChainEntries = this.buildProofChain(requestParameters.withProofChainTo, {
+            includeLatest: false
+        });
 
         return {
             snapshot: latest.snapshot,
             proofChain: proofChainEntries.length ? { proofChain: proofChainEntries } : undefined
+        };
+    }
+
+    public async getSnapshotProofChain(
+        request: GetSnapshotProofChainRequest
+    ): Promise<SnapshotProofChain> {
+        return {
+            proofChain: this.buildProofChain(request.snapshotProof, { includeLatest: true })
         };
     }
 
@@ -81,7 +99,10 @@ export class MockSnapshotsServer {
         }
     }
 
-    private buildProofChain(withProofChainTo?: string): string[] {
+    private buildProofChain(
+        withProofChainTo?: string,
+        opts: { includeLatest: boolean } = { includeLatest: false }
+    ): string[] {
         if (this.snapshots.length <= 1) {
             return [];
         }
@@ -92,9 +113,11 @@ export class MockSnapshotsServer {
         );
         const fromIndex = startIndex >= 0 ? startIndex : -1;
 
+        const endIndex = opts.includeLatest ? this.snapshots.length : this.snapshots.length - 1;
+
         const proofChain: string[] = [];
-        for (let i = fromIndex + 1; i < this.snapshots.length - 1; i++) {
-            proofChain.push(this.snapshots[i].snapshot.ciphertext);
+        for (let i = fromIndex + 1; i < endIndex; i++) {
+            proofChain.push(this.snapshots[i].ciphertextHash.toString('hex'));
         }
         return proofChain;
     }
@@ -103,7 +126,8 @@ export class MockSnapshotsServer {
         const encrypted = cloneEncryptedState(snapshot);
         return {
             snapshot: encryptedStateToSnapshot(encrypted),
-            encrypted
+            encrypted,
+            ciphertextHash: Buffer.from(sha256(encrypted.ciphertext))
         };
     }
 }
@@ -119,6 +143,12 @@ export class MockSnapshotsApi {
         request: GetActualSnapshotRequest = {}
     ): Promise<SnapshotWithProofs> {
         return await this.server.getActualSnapshot(request);
+    }
+
+    public async getSnapshotProofChain(
+        request: GetSnapshotProofChainRequest
+    ): Promise<SnapshotProofChain> {
+        return await this.server.getSnapshotProofChain(request);
     }
 
     public async saveSnapshot(request: SaveSnapshotRequest): Promise<void> {
@@ -140,6 +170,7 @@ export class MockSnapshotsSse {
 type SnapshotRecord = {
     snapshot: Snapshot;
     encrypted: EncryptedState;
+    ciphertextHash: Buffer;
 };
 
 type Subscriber = {

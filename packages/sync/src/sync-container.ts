@@ -4,12 +4,11 @@ import { SnapshotsSse } from './api/snapshots-sse';
 import { StorageVerifierService } from './crdt/storage-verifier-service';
 import { YCRDTRepository } from './crdt/y-crdt-repository';
 import { YManager } from './crdt/y-manager';
-import { KeyRepository } from './crypto/key-repository';
-import { DmkService } from './crypto/service/dmk-service';
+import { EncryptedKeyRepository } from './crypto/encrypted-key-repository';
+import { DmkVerifierService } from './crypto/service/dmk-verifier-service';
 import { IkService } from './crypto/service/ik-service';
-import { MasterKeyService } from './crypto/service/master-key-service';
+import { KeyServiceFactory } from './crypto/service/key-service-factory';
 import { SyncKeyService } from './crypto/service/sync-key-service';
-import { VaultKeyService } from './crypto/service/vault-key-service';
 import { DeviceManagementService } from './device-manager/device-management-service';
 import { DeviceRepository } from './device-manager/device-repository';
 import { IStorage } from './I-storage';
@@ -22,18 +21,16 @@ import { SyncStateRepository } from './update-handler/sync-state-repository';
 export type SyncContainer = {
     storage: IStorage;
     encryptedStorage: IStorage;
-    secureEncryptedStorage: IStorage;
 
-    keyRepository: KeyRepository;
+    keyRepository: EncryptedKeyRepository;
     crdtRepository: YCRDTRepository;
     syncStateRepository: SyncStateRepository;
     deviceRepository: DeviceRepository;
 
+    keyServiceFactory: KeyServiceFactory;
+    dmkVerifierService: DmkVerifierService;
     ikService: IkService;
-    dmkService: DmkService;
     syncKeyService: SyncKeyService;
-    masterKeyService: MasterKeyService;
-    vaultKeyService: VaultKeyService;
 
     storageVerifierService: StorageVerifierService;
 
@@ -53,21 +50,20 @@ export type SyncContainer = {
 };
 
 export async function createSyncContainer(opts: {
+    accountId: string;
     storage: IStorage;
     encryptedStorage: IStorage;
-    secureEncryptedStorage: IStorage;
     apiConfiguration?: Configuration;
 }): Promise<SyncContainer> {
-    const keyRepository = new KeyRepository(opts.encryptedStorage, opts.secureEncryptedStorage);
+    const keyRepository = new EncryptedKeyRepository(opts.encryptedStorage);
     const syncStateRepository = new SyncStateRepository(opts.storage);
     const crdtRepository = new YCRDTRepository(opts.storage);
     const deviceRepository = new DeviceRepository(opts.storage);
 
     const ikService = new IkService(keyRepository);
-    const dmkService = new DmkService(keyRepository);
     const syncKeyService = new SyncKeyService(keyRepository);
-    const masterKeyService = new MasterKeyService(keyRepository);
-    const vaultKeyService = new VaultKeyService(keyRepository);
+    const dmkVerifierService = new DmkVerifierService(keyRepository);
+    const keyServiceFactory = new KeyServiceFactory(opts.accountId);
 
     const apiSigner = new ApiSigner(ikService);
     const accountsApi = new AccountsApi(apiSigner, opts.apiConfiguration);
@@ -75,7 +71,12 @@ export async function createSyncContainer(opts: {
     const snapshotSse = new SnapshotsSse(syncStateRepository, snapshotApi, apiSigner);
 
     const yManager = await YManager.create(crdtRepository);
-    const deviceManager = new DeviceManagementService(deviceRepository, yManager, keyRepository);
+    const deviceManager = new DeviceManagementService(
+        deviceRepository,
+        yManager,
+        ikService,
+        dmkVerifierService
+    );
 
     const updateEncryptor = new UpdateEncryptorService(
         syncKeyService,
@@ -94,21 +95,20 @@ export async function createSyncContainer(opts: {
         snapshotApi
     );
 
-    const secretEncryptor = new SecretEncryptor(vaultKeyService);
+    const secretEncryptor = new SecretEncryptor(keyServiceFactory);
 
     return {
+        dmkVerifierService,
+        keyServiceFactory,
         storage: opts.storage,
         encryptedStorage: opts.encryptedStorage,
-        secureEncryptedStorage: opts.secureEncryptedStorage,
         storageVerifierService,
         keyRepository,
         syncStateRepository,
         crdtRepository,
         deviceRepository,
         ikService,
-        dmkService,
         syncKeyService,
-        masterKeyService,
         updateEncryptor,
         updateDecryptor,
         updateHandler,
@@ -118,7 +118,6 @@ export async function createSyncContainer(opts: {
         accountsApi,
         snapshotApi,
         snapshotSse,
-        vaultKeyService,
         secretEncryptor
     };
 }

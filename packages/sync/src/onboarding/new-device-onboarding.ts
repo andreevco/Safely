@@ -7,6 +7,7 @@ import { AccountManager } from '../account/account-manager';
 import { ISyncAccount } from '../account/I-sync-account';
 import { ApiSigner } from '../api/api-signer';
 import { AccountsApi, Configuration, OnboardingMessage } from '../api/generated';
+import { ITreeStorage } from '../I-storage';
 import { OnboardingAbortedError } from '../sync-error';
 
 export class NewDeviceOnboarding<S extends Record<string, ZodType>> {
@@ -15,7 +16,8 @@ export class NewDeviceOnboarding<S extends Record<string, ZodType>> {
     constructor(
         private readonly ik: { publicKey: Buffer; secretKey: Buffer },
         private readonly accountsApi: AccountsApi,
-        private readonly accountManager: AccountManager<S>
+        private readonly accountManager: AccountManager<S>,
+        private readonly secureEncryptedStorage: ITreeStorage
     ) {}
 
     public generateOnboardingData(): Buffer {
@@ -51,7 +53,7 @@ export class NewDeviceOnboarding<S extends Record<string, ZodType>> {
 
             let message: OnboardingMessage;
             try {
-                message = await this.accountsApi.acceptOnboarding({
+                message = await this.accountsApi.getOnboardingMessage({
                     signal
                 });
             } catch (err) {
@@ -74,7 +76,13 @@ export class NewDeviceOnboarding<S extends Record<string, ZodType>> {
 
     private async handleOnboardingMessage(msg: OnboardingMessage) {
         const masterKey = await this.getMasterKey(msg);
-        return await this.accountManager.createOnlineAccountFromMasterKey(masterKey, this.ik);
+        const account = await this.accountManager.createOnlineAccountFromMasterKey(
+            this.secureEncryptedStorage,
+            masterKey,
+            this.ik
+        );
+        console.info('Onboarding completed');
+        return account;
     }
 
     private async getMasterKey(msg: OnboardingMessage) {
@@ -96,14 +104,12 @@ export class NewDeviceOnboarding<S extends Record<string, ZodType>> {
             info: metadata
         });
 
-        const masterKey = decryptMasterKey({
+        return decryptMasterKey({
             onboardKey,
             ciphertext: Buffer.from(msg.ciphertext, 'hex'),
             nonce: Buffer.from(msg.nonce, 'hex'),
             aad: metadata
         });
-
-        return masterKey;
     }
 }
 

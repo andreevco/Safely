@@ -22,7 +22,6 @@ export class SyncAccountFactory<
     constructor(opts: {
         storage: ITreeStorage;
         encryptedStorage: ITreeStorage;
-        secureEncryptedStorage: ITreeStorage;
         structure: S;
         apiConfiguration?: SyncApiConfiguration;
     }) {
@@ -32,7 +31,6 @@ export class SyncAccountFactory<
         const createAccountService = new CreateAccountService(
             opts.storage,
             opts.encryptedStorage,
-            opts.secureEncryptedStorage,
             this.syncAccountIdRepository,
             opts.structure,
             this.apiConfiguration
@@ -40,7 +38,6 @@ export class SyncAccountFactory<
         this.accountManager = new AccountManager(
             opts.storage,
             opts.encryptedStorage,
-            opts.secureEncryptedStorage,
             this.syncAccountIdRepository,
             opts.structure,
             this.apiConfiguration,
@@ -53,12 +50,15 @@ export class SyncAccountFactory<
      * This method returns an OnboardingConnector which contains the data needed for onboarding and
      * a method to wait for the completion of the onboarding process.
      */
-    public async connectToExistingSyncAccount(): Promise<OnboardingConnector<S>> {
+    public async connectToExistingSyncAccount(
+        secureEncryptedStorage: ITreeStorage
+    ): Promise<OnboardingConnector<S>> {
         const ikKeypair = ed25519_keygen();
         const onboarding = new NewDeviceOnboarding(
             ikKeypair,
             accountsApiForOnboarding(ikKeypair, this.apiConfiguration),
-            this.accountManager
+            this.accountManager,
+            secureEncryptedStorage
         );
         const data = onboarding.generateOnboardingData();
         const abortController = new AbortController();
@@ -76,8 +76,8 @@ export class SyncAccountFactory<
     /**
      * Creates a new offline sync account. The account will be stored locally and can be made online later.
      */
-    public async createSyncAccount(): Promise<ISyncAccount<S>> {
-        return await this.accountManager.createOfflineAccount();
+    public async createSyncAccount(secureEncryptedStorage: ITreeStorage): Promise<ISyncAccount<S>> {
+        return await this.accountManager.createOfflineAccount(secureEncryptedStorage);
     }
 
     /**
@@ -101,7 +101,10 @@ export class SyncAccountFactory<
      * 3. Deletes the account data from local storage
      * @param accountId
      */
-    public async deleteLocalAccount(accountId: string): Promise<void> {
-        await this.accountManager.deleteAccount(accountId);
+    public async deleteLocalAccount(
+        accountId: string,
+        secureEncryptedStorage: ITreeStorage
+    ): Promise<void> {
+        await this.accountManager.deleteAccount(accountId, secureEncryptedStorage);
     }
 }

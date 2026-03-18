@@ -6,7 +6,7 @@ import { MockSnapshotsServer } from './mocks/mock-snapshots-api';
 import { createMockSyncContainer, MockSyncContainer } from './mocks/mock-sync-container';
 import { SnapshotsApi } from '../src/api/generated';
 import { SnapshotsSse } from '../src/api/snapshots-sse';
-import { initializeSyncAccount } from '../src/initialize';
+import { generateAccountID, initializeSyncAccount } from '../src/initialize';
 import { createSyncMachine, SyncMachine } from '../src/sync-machine/machine';
 
 const DATA_KEY = 'value';
@@ -126,17 +126,21 @@ async function createMachineContext(
     const storage = new InMemStorage();
     const encryptedStorage = new InMemStorage();
     const secureEncryptedStorage = new InMemStorage();
+    const accountId = await generateAccountID(masterKey);
+    const accountStorage = storage.child(accountId);
+    const accountEncryptedStorage = encryptedStorage.child(accountId);
+    const accountSecureEncryptedStorage = secureEncryptedStorage.child(accountId);
     await initializeSyncAccount({
-        storage,
-        encryptedStorage,
-        secureEncryptedStorage,
+        storage: accountStorage,
+        encryptedStorage: accountEncryptedStorage,
+        secureEncryptedStorage: accountSecureEncryptedStorage,
         masterKey
     });
     const container = await createMockSyncContainer(
-        storage,
-        encryptedStorage,
-        secureEncryptedStorage,
-        server
+        accountStorage,
+        accountEncryptedStorage,
+        server,
+        accountId
     );
 
     if (!server.hasSnapshot()) {

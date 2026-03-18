@@ -32,12 +32,12 @@ export interface CreateAccountRequest {
     newAccount: NewAccount;
 }
 
-export interface RemoveDeviceFromAccountRequest {
-    deviceToRemove: DeviceToRemove;
+export interface PostOnboardingMessageRequest {
+    onboardingMessage: OnboardingMessage;
 }
 
-export interface ToOnboardNewDeviceRequest {
-    onboardingMessage: OnboardingMessage;
+export interface RemoveDeviceFromAccountRequest {
+    deviceToRemove: DeviceToRemove;
 }
 
 /**
@@ -46,15 +46,15 @@ export interface ToOnboardNewDeviceRequest {
 export class AccountsApi extends runtime.BaseAPI {
 
     /**
-     * Creates request options for acceptOnboarding without sending the request
+     * Creates request options for confirmOnboarding without sending the request
      */
-    async acceptOnboardingRequestOpts(): Promise<runtime.RequestOpts> {
+    async confirmOnboardingRequestOpts(): Promise<runtime.RequestOpts> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
 
-        let urlPath = `/v1/device/onboarding/accept`;
+        let urlPath = `/v1/devices/onboarding/confirm`;
 
         return {
             path: urlPath,
@@ -65,21 +65,20 @@ export class AccountsApi extends runtime.BaseAPI {
     }
 
     /**
-     * Get onboarding message and accept it
+     * Confirm onboarding
      */
-    async acceptOnboardingRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<OnboardingMessage>> {
-        const requestOptions = await this.acceptOnboardingRequestOpts();
+    async confirmOnboardingRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const requestOptions = await this.confirmOnboardingRequestOpts();
         const response = await this.request(requestOptions, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => OnboardingMessageFromJSON(jsonValue));
+        return new runtime.VoidApiResponse(response);
     }
 
     /**
-     * Get onboarding message and accept it
+     * Confirm onboarding
      */
-    async acceptOnboarding(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<OnboardingMessage> {
-        const response = await this.acceptOnboardingRaw(initOverrides);
-        return await response.value();
+    async confirmOnboarding(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.confirmOnboardingRaw(initOverrides);
     }
 
     /**
@@ -129,6 +128,89 @@ export class AccountsApi extends runtime.BaseAPI {
     }
 
     /**
+     * Creates request options for getOnboardingMessage without sending the request
+     */
+    async getOnboardingMessageRequestOpts(): Promise<runtime.RequestOpts> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/v1/devices/onboarding/message`;
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Get onboarding message
+     */
+    async getOnboardingMessageRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<OnboardingMessage>> {
+        const requestOptions = await this.getOnboardingMessageRequestOpts();
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => OnboardingMessageFromJSON(jsonValue));
+    }
+
+    /**
+     * Get onboarding message
+     */
+    async getOnboardingMessage(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<OnboardingMessage> {
+        const response = await this.getOnboardingMessageRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for postOnboardingMessage without sending the request
+     */
+    async postOnboardingMessageRequestOpts(requestParameters: PostOnboardingMessageRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['onboardingMessage'] == null) {
+            throw new runtime.RequiredError(
+                'onboardingMessage',
+                'Required parameter "onboardingMessage" was null or undefined when calling postOnboardingMessage().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/v1/devices/onboarding/message`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: OnboardingMessageToJSON(requestParameters['onboardingMessage']),
+        };
+    }
+
+    /**
+     * Post onboarding message
+     */
+    async postOnboardingMessageRaw(requestParameters: PostOnboardingMessageRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const requestOptions = await this.postOnboardingMessageRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Post onboarding message
+     */
+    async postOnboardingMessage(requestParameters: PostOnboardingMessageRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.postOnboardingMessageRaw(requestParameters, initOverrides);
+    }
+
+    /**
      * Creates request options for removeDeviceFromAccount without sending the request
      */
     async removeDeviceFromAccountRequestOpts(requestParameters: RemoveDeviceFromAccountRequest): Promise<runtime.RequestOpts> {
@@ -172,52 +254,6 @@ export class AccountsApi extends runtime.BaseAPI {
      */
     async removeDeviceFromAccount(requestParameters: RemoveDeviceFromAccountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.removeDeviceFromAccountRaw(requestParameters, initOverrides);
-    }
-
-    /**
-     * Creates request options for toOnboardNewDevice without sending the request
-     */
-    async toOnboardNewDeviceRequestOpts(requestParameters: ToOnboardNewDeviceRequest): Promise<runtime.RequestOpts> {
-        if (requestParameters['onboardingMessage'] == null) {
-            throw new runtime.RequiredError(
-                'onboardingMessage',
-                'Required parameter "onboardingMessage" was null or undefined when calling toOnboardNewDevice().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-
-        let urlPath = `/v1/devices/onboardings`;
-
-        return {
-            path: urlPath,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: OnboardingMessageToJSON(requestParameters['onboardingMessage']),
-        };
-    }
-
-    /**
-     * To onboard a new device
-     */
-    async toOnboardNewDeviceRaw(requestParameters: ToOnboardNewDeviceRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
-        const requestOptions = await this.toOnboardNewDeviceRequestOpts(requestParameters);
-        const response = await this.request(requestOptions, initOverrides);
-
-        return new runtime.VoidApiResponse(response);
-    }
-
-    /**
-     * To onboard a new device
-     */
-    async toOnboardNewDevice(requestParameters: ToOnboardNewDeviceRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.toOnboardNewDeviceRaw(requestParameters, initOverrides);
     }
 
 }

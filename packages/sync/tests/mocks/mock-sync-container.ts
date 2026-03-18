@@ -4,15 +4,14 @@ import { AccountsApi, Configuration, SnapshotsApi } from '../../src/api/generate
 import { StorageVerifierService } from '../../src/crdt/storage-verifier-service';
 import { YCRDTRepository } from '../../src/crdt/y-crdt-repository';
 import { YManager } from '../../src/crdt/y-manager';
-import { KeyRepository } from '../../src/crypto/key-repository';
-import { DmkService } from '../../src/crypto/service/dmk-service';
+import { EncryptedKeyRepository } from '../../src/crypto/encrypted-key-repository';
+import { DmkVerifierService } from '../../src/crypto/service/dmk-verifier-service';
 import { IkService } from '../../src/crypto/service/ik-service';
-import { MasterKeyService } from '../../src/crypto/service/master-key-service';
+import { KeyServiceFactory } from '../../src/crypto/service/key-service-factory';
 import { SyncKeyService } from '../../src/crypto/service/sync-key-service';
-import { VaultKeyService } from '../../src/crypto/service/vault-key-service';
 import { DeviceManagementService } from '../../src/device-manager/device-management-service';
 import { DeviceRepository } from '../../src/device-manager/device-repository';
-import { IStorage } from '../../src/I-storage';
+import { ITreeStorage } from '../../src/I-storage';
 import { SecretEncryptor } from '../../src/secret-encryptor';
 import { SyncContainer } from '../../src/sync-container';
 import { UpdateDecryptorService } from '../../src/update-encryptor/update-decryptor-service';
@@ -26,22 +25,21 @@ export type MockSyncContainer = Omit<SyncContainer, 'snapshotApi' | 'snapshotSse
 };
 
 export async function createMockSyncContainer(
-    storage: IStorage,
-    encryptedStorage: IStorage,
-    secureEncryptedStorage: IStorage,
+    storage: ITreeStorage,
+    encryptedStorage: ITreeStorage,
     server: MockSnapshotsServer,
+    accountId: string,
     apiConfiguration?: Configuration
 ): Promise<MockSyncContainer> {
-    const keyRepository = new KeyRepository(encryptedStorage, secureEncryptedStorage);
+    const keyRepository = new EncryptedKeyRepository(encryptedStorage);
     const syncStateRepository = new SyncStateRepository(storage);
     const crdtRepository = new YCRDTRepository(storage);
     const deviceRepository = new DeviceRepository(storage);
 
     const ikService = new IkService(keyRepository);
-    const dmkService = new DmkService(keyRepository);
     const syncKeyService = new SyncKeyService(keyRepository);
-    const masterKeyService = new MasterKeyService(keyRepository);
-    const vaultKeyService = new VaultKeyService(keyRepository);
+    const dmkVerifierService = new DmkVerifierService(keyRepository);
+    const keyServiceFactory = new KeyServiceFactory(accountId);
 
     const apiSigner = new ApiSigner(ikService);
     const accountsApi = new AccountsApi(apiSigner, apiConfiguration);
@@ -49,7 +47,12 @@ export async function createMockSyncContainer(
     const snapshotSse = new MockSnapshotsSse(server);
 
     const yManager = await YManager.create(crdtRepository);
-    const deviceManager = new DeviceManagementService(deviceRepository, yManager, keyRepository);
+    const deviceManager = new DeviceManagementService(
+        deviceRepository,
+        yManager,
+        ikService,
+        dmkVerifierService
+    );
 
     const updateEncryptor = new UpdateEncryptorService(
         syncKeyService,
@@ -68,31 +71,29 @@ export async function createMockSyncContainer(
         snapshotApi as unknown as SnapshotsApi
     );
 
-    const secretEncryptor = new SecretEncryptor(vaultKeyService);
+    const secretEncryptor = new SecretEncryptor(keyServiceFactory);
 
     return {
         storage,
         encryptedStorage,
-        secureEncryptedStorage,
         storageVerifierService,
         keyRepository,
         syncStateRepository,
         crdtRepository,
         deviceRepository,
         ikService,
-        dmkService,
         syncKeyService,
-        masterKeyService,
+        keyServiceFactory,
         updateEncryptor,
         updateDecryptor,
         updateHandler,
         yManager,
         deviceManager,
+        dmkVerifierService,
         apiSigner,
         accountsApi,
         snapshotApi,
         snapshotSse,
-        vaultKeyService,
         secretEncryptor
     };
 }

@@ -1,7 +1,7 @@
 import { sha256 } from '@noble/hashes/sha2.js';
 
 import { ed25519_sign, ed25519_verify } from '../ed25519';
-import { KeyRepository } from '../key-repository';
+import { EncryptedKeyRepository } from '../encrypted-key-repository';
 
 export interface IIkService {
     sign(data: Buffer): Promise<Buffer>;
@@ -10,7 +10,7 @@ export interface IIkService {
 }
 
 export class IkService implements IIkService {
-    constructor(private readonly keyRepository: KeyRepository) {}
+    constructor(private readonly keyRepository: EncryptedKeyRepository) {}
 
     public async sign(data: Buffer): Promise<Buffer> {
         const ik = await this.keyRepository.getIKPrv();
