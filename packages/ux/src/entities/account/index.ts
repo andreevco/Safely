@@ -171,6 +171,9 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
             }
 
             return account;
+        },
+        onError(e) {
+            console.error(e);
         }
     });
 }
@@ -282,6 +285,9 @@ export function useConnectAccountToNewDevice() {
         },
         onSuccess() {
             toast(t('settings.deviceConnected'));
+        },
+        onError(e) {
+            console.error(e);
         }
     });
 }

@@ -1,11 +1,11 @@
 import * as Device from 'expo-device';
 import { getLocales } from 'expo-localization';
-import { FC, PropsWithChildren, Suspense, useEffect, useMemo } from 'react';
+import { FC, PropsWithChildren, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Platform } from 'react-native';
 
 import { Build } from '@safely/core';
-import { AppContext, IAppContext, UnlockableSecuredEncryptedStorage } from '@safely/ux';
+import { AppContext, IAppContext, Security, UnlockableSecuredEncryptedStorage } from '@safely/ux';
 
 import { navigationRef } from '@mobile/app/navigation/navigationRef';
 import { useMobileSecurityCheck } from '@mobile/entities/security';
@@ -15,8 +15,10 @@ import { MobileNumberFormatLocale } from '@mobile/shared/utils';
 
 import packageJson from '../../package.json';
 
-let securityCheck: () => Promise<void> = () => {
-    throw new Error('Security check not initialized');
+const security: Security = {
+    check() {
+        throw new Error('Security check not initialized');
+    }
 };
 
 const build: Build =
@@ -28,7 +30,7 @@ const build: Build =
 
 const secureEncryptedStorage = new UnlockableSecuredEncryptedStorage(
     mobileStorages.secureEncrypted.storage,
-    { check: securityCheck }
+    security
 );
 
 export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
@@ -71,7 +73,7 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
                 show: toastService.show
             },
             security: {
-                check: () => securityCheck()
+                check: () => security.check()
             },
             async clearAllData() {
                 const storages = Object.values(mobileStorages);
@@ -85,9 +87,7 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
 
     return (
         <AppContext value={appContext}>
-            <Suspense fallback={null}>
-                <SecurityCheckInitializer />
-            </Suspense>
+            <SecurityCheckInitializer />
             {children}
         </AppContext>
     );
@@ -97,7 +97,7 @@ const SecurityCheckInitializer: FC = () => {
     const check = useMobileSecurityCheck();
 
     useEffect(() => {
-        securityCheck = check;
+        security.check = check;
     }, [check]);
 
     return null;

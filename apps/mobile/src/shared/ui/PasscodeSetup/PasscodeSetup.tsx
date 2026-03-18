@@ -52,8 +52,9 @@ export const PasscodeSetup = ({
                 await notificationAsync(NotificationFeedbackType.Success);
                 passcodeState.isSuccess.value = true;
 
+                const inputValue = passcodeState.inputValue;
                 setTimeout(() => {
-                    void onComplete(passcodeState.inputValue);
+                    void onComplete(inputValue);
                 }, 300);
             } else {
                 await notificationAsync(NotificationFeedbackType.Error);

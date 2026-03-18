@@ -41,7 +41,7 @@ export function useOnboardingFlow() {
 
             if (!_isSignInFlow) {
                 Keyboard.dismiss();
-                await withLoader(() => createAccount());
+                await withLoader(createAccount);
             }
 
             navigation.dispatch(CommonActions.navigate(routes.biometry));
