@@ -1,5 +1,5 @@
 import { Device, DeviceRepository } from './device-repository';
-import { DeviceOp, YManager } from '../crdt/y-manager';
+import { AddDeviceOp, DeviceOp, YManager } from '../crdt/y-manager';
 import { ed25519_verify } from '../crypto/ed25519';
 import { generateKID } from '../crypto/generate-kid';
 import { DmkSignerService } from '../crypto/service/dmk-signer-service';
@@ -69,6 +69,33 @@ export class DeviceManagementService {
             sig
         };
         await this.yManager.addDeviceOp(op);
+    }
+
+    /**
+     * In onboarding flow, primary device creates add operation and sends it to the new device, which then applies it.
+     * @param ikPub
+     * @param dmkSignerService
+     */
+    public async makeAddOp(
+        ikPub: Buffer,
+        dmkSignerService: DmkSignerService
+    ): Promise<AddDeviceOp> {
+        const ts = Date.now();
+        const kid = await this.ikService.getKID();
+        const sig = await this.signDeviceOp({
+            type: 'add',
+            ikPub,
+            dmkSignerService,
+            ts
+        });
+
+        return {
+            type: 'add',
+            ikPub,
+            ts,
+            kid,
+            sig
+        };
     }
 
     public async verifyDeviceOpAndApply(op: DeviceOp): Promise<void> {

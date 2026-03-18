@@ -97,10 +97,27 @@ describe('Account', () => {
         ]);
 
         await vi.waitFor(async () => {
-            const wallets = await newAccount.syncProvider.get('wallets');
+            const wallets = newAccount.syncProvider.get('wallets');
             expect(wallets).toEqual([
                 {
                     name: 'My Wallet',
+                    mnemonic: 'test'
+                }
+            ]);
+        });
+
+        await newAccount.syncProvider.set('wallets', [
+            {
+                name: 'My Wallet 2',
+                mnemonic: 'test'
+            }
+        ]);
+
+        await vi.waitFor(async () => {
+            const wallets = account.syncProvider.get('wallets');
+            expect(wallets).toEqual([
+                {
+                    name: 'My Wallet 2',
                     mnemonic: 'test'
                 }
             ]);

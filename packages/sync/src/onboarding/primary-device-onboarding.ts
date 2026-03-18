@@ -50,7 +50,7 @@ export class PrimaryDeviceOnboarding {
         );
         this.onDeviceAdded();
 
-        await this.accountsApi.toOnboardNewDevice({
+        await this.accountsApi.postOnboardingMessage({
             onboardingMessage: {
                 newIdentityPubKey: invitation.ikPub.toString('hex'),
                 inviterEphemeralPubKey: Buffer.from(ephemeralKeyPair.publicKey).toString('hex'),

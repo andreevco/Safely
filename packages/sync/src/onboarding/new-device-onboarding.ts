@@ -37,7 +37,7 @@ export class NewDeviceOnboarding<S extends Record<string, ZodType>> {
 
             let message: OnboardingMessage;
             try {
-                message = await this.accountsApi.acceptOnboarding();
+                message = await this.accountsApi.getOnboardingMessage();
             } catch (err) {
                 console.log('No onboarding message yet, retrying...', err);
                 continue;
@@ -50,11 +50,13 @@ export class NewDeviceOnboarding<S extends Record<string, ZodType>> {
 
     private async handleOnboardingMessage(msg: OnboardingMessage) {
         const masterKey = await this.getMasterKey(msg);
-        return await this.accountManager.createOnlineAccountFromMasterKey(
+        const account = await this.accountManager.createOnlineAccountFromMasterKey(
             this.secureEncryptedStorage,
             masterKey,
             this.ik
         );
+        console.info('Onboarding completed');
+        return account;
     }
 
     private async getMasterKey(msg: OnboardingMessage) {
@@ -76,14 +78,12 @@ export class NewDeviceOnboarding<S extends Record<string, ZodType>> {
             info: metadata
         });
 
-        const masterKey = decryptMasterKey({
+        return decryptMasterKey({
             onboardKey,
             ciphertext: Buffer.from(msg.ciphertext, 'hex'),
             nonce: Buffer.from(msg.nonce, 'hex'),
             aad: metadata
         });
-
-        return masterKey;
     }
 }
 

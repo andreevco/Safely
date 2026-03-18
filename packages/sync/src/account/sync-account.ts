@@ -171,5 +171,9 @@ export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAcco
                 signature: encrypted.signature.toString('hex')
             }
         });
+
+        await this.container.syncStateRepository.saveState({
+            snapshotProof: encrypted.snapshotProof
+        });
     }
 }

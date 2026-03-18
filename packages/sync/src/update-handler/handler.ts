@@ -71,6 +71,20 @@ export class UpdateHandler {
         return { hasLocalChanges: this.hasLocalChanges(update) };
     }
 
+    /**
+     * During onboarding process, new device receives raw snapshot which must be applied without verification.
+     * @param update
+     * @param syncState
+     */
+    public async applyInitialUpdate(update: Buffer, syncState: SyncState) {
+        await this.yManager.applyUpdate(update, 'remote');
+        await this.syncStateRepository.saveState(syncState);
+
+        for (const deviceOp of await this.yManager.getDeviceLog()) {
+            await this.deviceManagementService.verifyDeviceOpAndApply(deviceOp);
+        }
+    }
+
     private async fetchProofChainAndVerify(
         syncState: SyncState,
         actualSnapshotProof: Buffer

@@ -93,6 +93,7 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
             encryptedStorage,
             apiConfiguration: this.apiConfiguration
         });
+        await container.accountsApi.confirmOnboarding();
 
         return new SyncAccount({
             accountId: accountID,

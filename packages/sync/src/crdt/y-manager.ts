@@ -83,6 +83,9 @@ export type DeviceOp = {
     sig: Buffer;
 };
 
+export type AddDeviceOp = DeviceOp & { type: 'add' };
+export type RevokeDeviceOp = DeviceOp & { type: 'revoke' };
+
 export function deviceOpIsEquals(op1: DeviceOp, op2: DeviceOp): boolean {
     return (
         op1.type === op2.type &&

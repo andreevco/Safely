@@ -18,7 +18,7 @@ export async function generateMasterKey(): Promise<Buffer> {
 
 export async function generateAccountID(masterKey: Buffer): Promise<string> {
     const accountID = hkdf(sha256, masterKey, undefined, utf8('safely/sync/v1/account-id'), 32);
-    return Buffer.from(accountID).slice(0, 32).toString('hex');
+    return Buffer.from(accountID).slice(0, 16).toString('hex');
 }
 
 export async function initializeSyncState(repo: SyncStateRepository): Promise<void> {
