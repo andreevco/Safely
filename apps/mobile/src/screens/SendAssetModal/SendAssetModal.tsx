@@ -185,7 +185,7 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
                     key="recipient"
                     inputRef={recipientInputRef}
                     value={state.values.recipient}
-                    error={state.errors.recipient}
+                    error={meta.suggestions.length > 0 ? undefined : state.errors.recipient}
                     onChangeText={actions.setRecipient}
                     suggestions={meta.suggestions}
                 />

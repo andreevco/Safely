@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { useActivePortfolio, useDeletePortfolio } from '@safely/ux';
+import { useActivePortfolio, useDeletePortfolio, useToast } from '@safely/ux';
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { BottomSheet, Button, Checkbox, Text, useBottomSheet } from '@mobile/shared/ui';
@@ -16,17 +16,16 @@ const isSeedRevealed = true;
 const RemoveWalletContent = () => {
     const { t } = useTranslation();
     const { close } = useBottomSheet();
-    const navigation = useNavigation<RootStackNavigationProp>();
     const portfolio = useActivePortfolio();
+    const toast = useToast();
     const { mutateAsync: deletePortfolio, isPending } = useDeletePortfolio();
+    const navigation = useNavigation<RootStackNavigationProp>();
     const [isConfirmed, setIsConfirmed] = useState(false);
 
     const handleRemove = async () => {
         await deletePortfolio(portfolio);
-        navigation.reset({
-            index: 0,
-            routes: [{ name: 'TabsNavigator' }]
-        });
+        toast(t('removeWallet.toastMessages.walletRemoved'));
+        navigation.goBack();
     };
 
     const handleBackUpPress = () => {

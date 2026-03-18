@@ -66,6 +66,10 @@
             "addressCopied": "Address copied",
             "updating": "Updating...",
             "noInternet": "No internet connection"
+        },
+        "emptyState": {
+            "title": "Get started with a wallet",
+            "subtitle": "Create or import a wallet\nto start using your account"
         }
     },
     "accounts": {
@@ -374,6 +378,9 @@
         "backUpLink": "Back up recovery phrase",
         "removeButton": "Remove anyway",
         "cancelButton": "Cancel",
+        "toastMessages": {
+            "walletRemoved": "Wallet removed"
+        },
         "revealed": {
             "subtitle": "Without the recovery phrase, this wallet cannot be recovered.",
             "checkbox": "I understand that removing this wallet cannot be undone."

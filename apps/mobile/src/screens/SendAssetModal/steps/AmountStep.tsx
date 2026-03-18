@@ -80,7 +80,7 @@ export const AmountStep = (props: AmountStepProps) => {
                 />
                 {!isMax && isMaxAvailable && (
                     <Animated.View entering={FadeIn.duration(100)} exiting={FadeOut.duration(100)}>
-                        <TouchableOpacity onPress={handleMaxPress}>
+                        <TouchableOpacity onPress={handleMaxPress} hitSlop={12}>
                             <Text variant="bodyM" color="secondary">
                                 {t('send.max')}
                             </Text>
