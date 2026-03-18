@@ -1,14 +1,10 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { GestureDetector } from 'react-native-gesture-handler';
-import Animated, { useSharedValue } from 'react-native-reanimated';
+import { useCallback, useLayoutEffect, useRef } from 'react';
+import { useSharedValue } from 'react-native-reanimated';
 
 import { Portfolio } from '@safely/core';
-import { useActivePortfolio, useReorderPortfolios, useSetActivePortfolio } from '@safely/ux';
+import { useReorderPortfolios, useSetActivePortfolio } from '@safely/ux';
 
-import { PortfolioName } from '@mobile/entities/portfolio/PortfolioName/PortfolioName';
-import { Cell, Dots14, Draggable, Icon } from '@mobile/shared/ui';
-
-import { styles } from './PortfoliosList.styles';
+import { DraggablePortfolio } from './components';
 
 interface PortfoliosListProps {
     portfolios: Portfolio[];
@@ -19,21 +15,13 @@ interface PortfoliosListProps {
 
 export const PortfoliosList = (props: PortfoliosListProps) => {
     const { portfolios, onSelect, variant } = props;
-    const activePortfolio = useActivePortfolio();
     const { mutate: reorderPortfolios } = useReorderPortfolios();
     const { mutate: setActivePortfolio } = useSetActivePortfolio();
 
     const draggedIndex = useSharedValue<number | null>(null);
     const offsetY = useSharedValue(0);
 
-    const [orderedPortfolios, setOrderedPortfolios] = useState(portfolios);
     const pendingDragReset = useRef(false);
-
-    styles.useVariants({ variant });
-
-    useEffect(() => {
-        setOrderedPortfolios(portfolios);
-    }, [portfolios]);
 
     useLayoutEffect(() => {
         if (pendingDragReset.current) {
@@ -41,7 +29,7 @@ export const PortfoliosList = (props: PortfoliosListProps) => {
             draggedIndex.value = null;
             offsetY.value = 0;
         }
-    }, [orderedPortfolios, draggedIndex, offsetY]);
+    }, [portfolios, draggedIndex, offsetY]);
 
     const handleSelect = useCallback(
         (portfolio: Portfolio) => {
@@ -50,61 +38,37 @@ export const PortfoliosList = (props: PortfoliosListProps) => {
         [setActivePortfolio, onSelect]
     );
 
+    const handleDragStart = useCallback(() => {
+        pendingDragReset.current = false;
+    }, []);
+
     const moveItem = useCallback(
         (fromIndex: number, toIndex: number) => {
-            const newPortfolios = [...orderedPortfolios];
+            const newPortfolios = [...portfolios];
             const clampedToIndex = Math.max(0, Math.min(toIndex, newPortfolios.length - 1));
 
             newPortfolios.splice(clampedToIndex, 0, newPortfolios.splice(fromIndex, 1)[0]);
 
             pendingDragReset.current = true;
-            setOrderedPortfolios(newPortfolios);
             reorderPortfolios(newPortfolios);
         },
-        [orderedPortfolios, reorderPortfolios]
+        [portfolios, reorderPortfolios]
     );
 
-    return orderedPortfolios.map((portfolio, index) => {
-        const isActive = activePortfolio.id.isEq(portfolio.id);
-        const handlePress = isActive ? undefined : () => handleSelect(portfolio);
-
+    return portfolios.map((portfolio, index) => {
         return (
-            <Draggable
-                gap={variant === 'compact' ? 0 : 2}
+            <DraggablePortfolio
                 key={portfolio.id.toString()}
+                portfolio={portfolio}
                 index={index}
-                itemCount={orderedPortfolios.length}
+                portfolios={portfolios}
                 draggedIndex={draggedIndex}
                 offsetY={offsetY}
                 moveItem={moveItem}
-            >
-                {({ panGesture }) => (
-                    <GestureDetector gesture={panGesture}>
-                        <Cell
-                            style={styles.portfolioItem}
-                            containerStyle={styles.portfolioItemContainer}
-                            onPress={handlePress}
-                            showDivider={
-                                variant === 'compact'
-                                    ? index !== orderedPortfolios.length - 1
-                                    : false
-                            }
-                        >
-                            <Cell.Content>
-                                <Cell.Row>
-                                    <PortfolioName meta={portfolio.meta} gap={12} size={16} />
-                                </Cell.Row>
-                            </Cell.Content>
-                            <Animated.View key="checkmark">
-                                {activePortfolio.id.isEq(portfolio.id) && <Cell.Checkmark />}
-                            </Animated.View>
-                            {orderedPortfolios.length > 1 && (
-                                <Icon icon={Dots14} style={styles.dotsIcon} color="tertiary" />
-                            )}
-                        </Cell>
-                    </GestureDetector>
-                )}
-            </Draggable>
+                handleSelect={handleSelect}
+                handleDragStart={handleDragStart}
+                variant={variant}
+            />
         );
     });
 };

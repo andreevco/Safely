@@ -1,18 +1,21 @@
-import { impactAsync, ImpactFeedbackStyle } from 'expo-haptics';
+import { impactAsync } from 'expo-haptics';
 import React, { useCallback } from 'react';
-import { LayoutChangeEvent } from 'react-native';
-import { Gesture } from 'react-native-gesture-handler';
+import { LayoutChangeEvent, StyleProp, ViewStyle } from 'react-native';
+import { ComposedGesture, Gesture, GestureType } from 'react-native-gesture-handler';
 import Animated, {
-    runOnJS,
     useAnimatedStyle,
     useDerivedValue,
     useSharedValue,
-    withSpring
+    Easing,
+    withTiming
 } from 'react-native-reanimated';
 import { SharedValue } from 'react-native-reanimated';
+import { useUnistyles } from 'react-native-unistyles';
+import { scheduleOnRN } from 'react-native-worklets';
 
 type DraggableRenderProps = {
-    panGesture: ReturnType<typeof Gesture.Pan>;
+    gesture: GestureType | ComposedGesture;
+    underlayStyle: StyleProp<ViewStyle>;
 };
 
 type DraggableProps = {
@@ -23,6 +26,9 @@ type DraggableProps = {
     moveItem: (fromIndex: number, toIndex: number) => void;
     children?: (props: DraggableRenderProps) => React.ReactNode;
     gap?: number;
+    activationDelay?: number;
+    onPress?: () => void;
+    onDragStart?: () => void;
 };
 const useDraggable = ({
     index,
@@ -30,10 +36,15 @@ const useDraggable = ({
     draggedIndex,
     offsetY,
     moveItem,
-    gap = 0
+    gap = 0,
+    activationDelay,
+    onPress,
+    onDragStart
 }: DraggableProps) => {
     const itemHeight = useSharedValue(0);
     const startY = useSharedValue(0);
+    const isBeingActive = useSharedValue(false);
+    const { theme } = useUnistyles();
 
     const getUpdatedOffsetY = useCallback(
         (translationY: number) => {
@@ -80,11 +91,17 @@ const useDraggable = ({
     });
 
     const panGesture = Gesture.Pan()
-        .minDistance(5)
+        .activateAfterLongPress(activationDelay ?? 0)
         .onBegin(() => {
             'worklet';
 
-            runOnJS(impactAsync)(ImpactFeedbackStyle.Medium);
+            isBeingActive.value = true;
+            if (onDragStart) scheduleOnRN(onDragStart);
+        })
+        .onStart(() => {
+            'worklet';
+
+            scheduleOnRN(impactAsync);
             draggedIndex.value = index;
         })
         .onUpdate(e => {
@@ -93,29 +110,46 @@ const useDraggable = ({
         .onEnd(() => {
             'worklet';
 
+            isBeingActive.value = false;
+
             if (draggedIndex.value === null) return;
 
             const indexOffset = nextIndexToInsertAt.value - draggedIndex.value;
 
             const targetOffsetY = indexOffset * (itemHeight.value + gap);
 
-            offsetY.value = withSpring(targetOffsetY, {}, () => {
-                const fromIndex = draggedIndex.value;
+            offsetY.value = withTiming(
+                targetOffsetY,
+                { duration: 100, easing: Easing.linear },
+                () => {
+                    const fromIndex = draggedIndex.value;
 
-                if (fromIndex === null) return;
+                    if (fromIndex === null) return;
 
-                runOnJS(moveItem)(fromIndex, nextIndexToInsertAt.value);
-            });
+                    scheduleOnRN(moveItem, fromIndex, nextIndexToInsertAt.value);
+                }
+            );
         })
         .onFinalize(() => {});
+
+    const tapGesture = Gesture.Tap().onEnd(() => {
+        'worklet';
+
+        if (onPress) scheduleOnRN(onPress);
+    });
+
+    const gesture = onPress ? Gesture.Exclusive(panGesture, tapGesture) : panGesture;
 
     const translateY = useDerivedValue(() => {
         'worklet';
 
         if (draggedIndex.value === null) return 0;
-        if (draggedIndex.value === index) return withSpring(offsetY.value);
+        if (draggedIndex.value === index) return offsetY.value;
 
-        return withSpring(movingDirection.value * (itemHeight.value + gap));
+        return withTiming(movingDirection.value * (itemHeight.value + gap), {
+            duration: 100,
+            easing: Easing.linear
+        });
     });
 
     const animatedStyle = useAnimatedStyle(() => {
@@ -134,10 +168,22 @@ const useDraggable = ({
         [itemHeight]
     );
 
+    const underlayStyle = useAnimatedStyle(() => {
+        return {
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: isBeingActive.value ? theme.colors.other.hover : 'transparent'
+        };
+    });
+
     return {
         animatedStyle,
         onLayout,
-        panGesture
+        gesture,
+        underlayStyle
     };
 };
 
@@ -148,22 +194,28 @@ export const Draggable = ({
     offsetY,
     moveItem,
     children,
-    gap
+    gap,
+    activationDelay,
+    onPress,
+    onDragStart
 }: DraggableProps) => {
-    const { animatedStyle, onLayout, panGesture } = useDraggable({
+    const { animatedStyle, onLayout, gesture, underlayStyle } = useDraggable({
         index,
         itemCount,
         draggedIndex,
         offsetY,
         moveItem,
-        gap
+        gap,
+        activationDelay,
+        onPress,
+        onDragStart
     });
 
     if (!children) return null;
 
     return (
         <Animated.View onLayout={onLayout} style={[animatedStyle]}>
-            {children({ panGesture: panGesture })}
+            {children({ gesture, underlayStyle })}
         </Animated.View>
     );
 };

@@ -284,6 +284,13 @@
             "subtitle": "Track by wallet address"
         }
     },
+    "portfoliosPopup": {
+        "reorderHint": "Press and hold to reorder.",
+        "settingsHint": {
+            "1": "Tap",
+            "2": "to customize."
+        }
+    },
     "biometry": {
         "enable": "Enable {{name}}",
         "default": {
