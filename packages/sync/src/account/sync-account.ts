@@ -81,6 +81,10 @@ export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAcco
         );
     }
 
+    public async getMyDeviceIkPub(): Promise<Buffer> {
+        return this.container.ikService.getPub();
+    }
+
     public async deleteThisDevice(secureEncryptedStorage: ITreeStorage): Promise<void> {
         this.syncProvider.dispose();
 

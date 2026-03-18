@@ -1,10 +1,24 @@
+import { z } from 'zod';
+
 import { KeyServiceFactory } from './crypto/service/key-service-factory';
 import { ITreeStorage } from './I-storage';
 import { hex } from './utils/buffer';
 
+export const sSecretEncrypted = z.string();
+export type SSecretEncrypted = z.infer<typeof sSecretEncrypted>;
+
+export const sSecretDecrypted = z.string();
+export type SSecretDecrypted = z.infer<typeof sSecretDecrypted>;
+
 export interface ISecretEncryptor {
-    encrypt(plaintext: string, secureEncryptedStorage: ITreeStorage): Promise<string>;
-    decrypt(encryptedPayload: string, secureEncryptedStorage: ITreeStorage): Promise<string>;
+    encrypt(
+        decryptedSecret: SSecretDecrypted,
+        secureEncryptedStorage: ITreeStorage
+    ): Promise<SSecretEncrypted>;
+    decrypt(
+        encryptedSecret: SSecretEncrypted,
+        secureEncryptedStorage: ITreeStorage
+    ): Promise<SSecretDecrypted>;
 }
 
 export class SecretEncryptor implements ISecretEncryptor {

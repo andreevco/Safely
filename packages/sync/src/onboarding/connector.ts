@@ -12,4 +12,8 @@ export type OnboardingConnector<S extends Record<string, ZodType>> = {
      * Throws and error if the onboarding process isn't completed after 30 seconds
      */
     waitForCompletion: () => Promise<ISyncAccount<S>>;
+    /**
+     * Aborts the onboarding polling.
+     */
+    abort: () => void;
 };

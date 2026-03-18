@@ -41,4 +41,9 @@ export interface ISyncAccount<S extends Record<string, ZodType>> {
      * @param secureEncryptedStorage - unlocked secure encrypted storage
      */
     revokeRemoteDevice(ikPub: Buffer, secureEncryptedStorage: ITreeStorage): Promise<void>;
+
+    /**
+     * Returns the IK public key of the current device.
+     */
+    getMyDeviceIkPub(): Promise<Buffer>;
 }

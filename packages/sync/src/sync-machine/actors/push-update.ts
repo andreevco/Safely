@@ -13,4 +13,8 @@ export const pushUpdateToServer = fromPromise(async ({ input }: { input: SyncMac
             signature: encrypted.signature.toString('hex')
         }
     });
+
+    await input.syncStateRepository.saveState({
+        snapshotProof: encrypted.snapshotProof
+    });
 });
