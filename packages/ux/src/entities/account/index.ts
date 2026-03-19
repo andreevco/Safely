@@ -24,6 +24,7 @@ import {
     useTranslate
 } from '../../shared';
 import { useActiveAccountSyncedStorage } from '../../shared';
+import { useLoader } from '../loader';
 import { useToast } from '../toast';
 
 export type SyncAccount = ISyncAccount<SyncedStorageStructure> & {
@@ -35,20 +36,6 @@ export type OnboardingConnector = {
     accountPromise: Promise<ISyncAccount<SyncedStorageStructure>>;
     abort: () => void;
 };
-
-let _activeConnector: OnboardingConnector | null = null;
-
-export function setActiveConnector(connector: OnboardingConnector | null) {
-    _activeConnector = connector;
-}
-
-export function getActiveConnector(): OnboardingConnector {
-    if (!_activeConnector) {
-        throw new Error('No active connector');
-    }
-
-    return _activeConnector;
-}
 
 function withMeta(account: ISyncAccount<SyncedStorageStructure>): SyncAccount {
     let meta = account.syncProvider.get('meta');
@@ -192,13 +179,18 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
 
 export function useCreateExistingAccountConnector() {
     const factory = useAccountsFactory();
-    const { getSecureEncryptedStorage } = useAppContext();
 
-    const mutation = useMutation({
-        async mutationFn() {
+    const mutation = useMutation<
+        {
+            connectionString: string;
+            accountPromise: Promise<ISyncAccount<SyncedStorageStructure>>;
+            abort: () => void;
+        },
+        Error,
+        { secureEncryptedStorage: ITreeStorage }
+    >({
+        async mutationFn({ secureEncryptedStorage }) {
             await delay();
-            using secureEncryptedStorage = getSecureEncryptedStorage();
-            await secureEncryptedStorage.unlock();
             const connector = await factory.connectToExistingSyncAccount(secureEncryptedStorage);
 
             return {
@@ -291,14 +283,17 @@ export function useConnectAccountToNewDevice() {
     const t = useTranslate();
     const activeKeeperId = useActiveAccount();
     const toast = useToast();
+    const { withLoader } = useLoader();
     const { qrScanner } = useAppContext();
 
     return useMutation<void, Error, { secureEncryptedStorage: ITreeStorage }>({
         async mutationFn({ secureEncryptedStorage }) {
             const connectionString = await qrScanner.scan();
-            await activeKeeperId.connectToNewDevice(
-                Buffer.from(connectionString, 'base64url'),
-                secureEncryptedStorage
+            await withLoader(() =>
+                activeKeeperId.connectToNewDevice(
+                    Buffer.from(connectionString, 'base64url'),
+                    secureEncryptedStorage
+                )
             );
         },
         onSuccess() {
@@ -349,6 +344,7 @@ export function useDeleteAccount() {
     return useMutation({
         async mutationFn() {
             using secureEncryptedStorage = getSecureEncryptedStorage();
+            await secureEncryptedStorage.unlock();
 
             await accountFactory.deleteLocalAccount(account.accountId, secureEncryptedStorage);
             await removeActiveAccount();

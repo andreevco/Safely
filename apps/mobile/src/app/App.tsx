@@ -23,8 +23,8 @@ export const App = () => {
                             <LoaderServiceProvider>
                                 <AppContextProvider>
                                     <LoaderProvider>
-                                    <AppNavigation />
-                                    <ToastProvider />
+                                        <AppNavigation />
+                                        <ToastProvider />
                                     </LoaderProvider>
                                 </AppContextProvider>
                             </LoaderServiceProvider>

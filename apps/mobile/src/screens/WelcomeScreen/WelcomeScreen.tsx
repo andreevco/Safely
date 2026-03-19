@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { ImageBackground, Linking, View } from 'react-native';
 
-import { setActiveConnector, useCreateExistingAccountConnector } from '@safely/ux';
+import { useAppContext, useCreateExistingAccountConnector } from '@safely/ux';
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { useOnboardingFlow } from '@mobile/features/onboarding';
@@ -20,14 +20,22 @@ export const WelcomeScreen = () => {
     const { onStartCreate } = useOnboardingFlow();
     const signIn = useCreateExistingAccountConnector();
     const navigation = useNavigation<RootStackNavigationProp>();
+    const { getSecureEncryptedStorage } = useAppContext();
 
     const handleSignIn = useCallback(async () => {
         signIn.reset();
 
-        const connector = await signIn.mutateAsync();
-        setActiveConnector(connector);
-        navigation.navigate('SignInScreen', { connectionString: connector.connectionString });
-    }, [signIn, navigation]);
+        // resource will be closed manually in `closeStorage` because it needs to be opened on the SignInScreen
+        const secureEncryptedStorage = getSecureEncryptedStorage();
+        secureEncryptedStorage.UNSAFE_SKIP_SECURITY_CHECK_unlock();
+
+        const connector = await signIn.mutateAsync({ secureEncryptedStorage });
+
+        navigation.navigate('SignInScreen', {
+            connector,
+            closeStorage: () => secureEncryptedStorage[Symbol.dispose]()
+        });
+    }, [signIn, navigation, getSecureEncryptedStorage]);
 
     return (
         <Screen background="transparent">

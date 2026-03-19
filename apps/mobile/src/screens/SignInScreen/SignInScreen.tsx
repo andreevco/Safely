@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import QRCode from 'react-native-qrcode-skia';
 
-import { getActiveConnector, useAccountConnectedCallback, useToast } from '@safely/ux';
+import { OnboardingConnector, useAccountConnectedCallback, useToast } from '@safely/ux';
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { DeviceLink, Screen, Text, TouchableOpacity } from '@mobile/shared/ui';
@@ -13,15 +13,17 @@ import { useCopy } from '@mobile/shared/utils/copy';
 
 import { styles } from './SignInScreen.styles';
 
-type SignInScreenProps = StaticScreenProps<{ connectionString: string }>;
+type SignInScreenProps = StaticScreenProps<{
+    connector: OnboardingConnector;
+    closeStorage: () => void;
+}>;
 
 export const SignInScreen = (props: SignInScreenProps) => {
-    const { connectionString } = props.route.params;
+    const { connector, closeStorage } = props.route.params;
 
     const { t } = useTranslation();
     const copy = useCopy();
     const toast = useToast();
-    const connector = getActiveConnector();
     const navigation = useNavigation<RootStackNavigationProp>();
 
     useEffect(() => {
@@ -30,9 +32,11 @@ export const SignInScreen = (props: SignInScreenProps) => {
         };
     }, [connector]);
 
+    useEffect(() => closeStorage, [closeStorage]);
+
     const handleCopy = useCallback(() => {
-        copy(connectionString);
-    }, [copy, connectionString]);
+        copy(connector.connectionString);
+    }, [copy, connector.connectionString]);
 
     const handleConnected = useCallback(() => {
         navigation.navigate('SignInSuccessScreen');
@@ -62,7 +66,7 @@ export const SignInScreen = (props: SignInScreenProps) => {
                                 shape: 'square',
                                 eyePatternShape: 'square'
                             }}
-                            value={connectionString}
+                            value={connector.connectionString}
                             size={198}
                         />
                     </TouchableOpacity>

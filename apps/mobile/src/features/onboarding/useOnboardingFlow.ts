@@ -3,9 +3,9 @@ import { useCallback } from 'react';
 import { Keyboard } from 'react-native';
 
 import { useCreateAccount } from '@safely/ux';
+import { useLoader } from '@safely/ux';
 
 import { usePasscode } from '@mobile/entities/security';
-import { useLoader } from '@safely/ux';
 
 const routes = {
     passcode: 'OnboardingPasscodeScreen',

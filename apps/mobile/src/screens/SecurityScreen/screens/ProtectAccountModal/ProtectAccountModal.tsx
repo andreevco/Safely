@@ -1,3 +1,4 @@
+import { useNavigation } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
@@ -17,14 +18,16 @@ const steps = [
 export const ProtectAccountModal = () => {
     const { t } = useTranslation();
     const { getSecureEncryptedStorage } = useAppContext();
-    const { mutate: connectToNewDevice } = useConnectAccountToNewDevice();
+    const { mutateAsync: connectToNewDevice } = useConnectAccountToNewDevice();
+    const navigation = useNavigation();
 
     const handleConnect = useCallback(async () => {
         using secureEncryptedStorage = getSecureEncryptedStorage();
         await secureEncryptedStorage.unlock();
 
-        connectToNewDevice({ secureEncryptedStorage });
-    }, [getSecureEncryptedStorage, connectToNewDevice]);
+        await connectToNewDevice({ secureEncryptedStorage });
+        navigation.goBack();
+    }, [getSecureEncryptedStorage, connectToNewDevice, navigation]);
 
     return (
         <Screen>
