@@ -59,7 +59,7 @@ export const PopupMenu = forwardRef<PopupMenuRef, PopupMenuProps>((props, ref) =
                 {touchable}
             </Animated.View>
             <Animated.View
-                style={[styles.menu, menu.menuAnimatedStyle]}
+                style={[styles.menu, styles.menuCentered, menu.menuAnimatedStyle]}
                 onLayout={menu.onMenuLayout}
                 pointerEvents="box-none"
             >
