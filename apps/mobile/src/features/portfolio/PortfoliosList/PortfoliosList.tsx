@@ -35,7 +35,8 @@ export const PortfoliosList = (props: PortfoliosListProps) => {
     const handleSelect = useCallback(
         (portfolio: Portfolio) => {
             void impactAsync(ImpactFeedbackStyle.Medium);
-            setActivePortfolio({ id: portfolio.id }, { onSuccess: onSelect });
+            onSelect();
+            setActivePortfolio({ id: portfolio.id });
         },
         [setActivePortfolio, onSelect]
     );

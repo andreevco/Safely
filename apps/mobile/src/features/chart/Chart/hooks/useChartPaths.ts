@@ -69,8 +69,6 @@ export const useChartPaths = (params: UseChartPathsParams) => {
         const last = chartPoints[chartPoints.length - 1];
         const periodSplitEnd = splitIndex > 0 ? (fractions[splitIndex] ?? 0) : 0;
 
-        console.log('splitIndex', periodSplitEnd);
-
         return {
             fullPath,
             periodSplitEnd,

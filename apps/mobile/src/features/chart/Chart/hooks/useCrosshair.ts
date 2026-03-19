@@ -80,6 +80,7 @@ export const useCrosshair = (params: UseCrosshairParams) => {
     const gesture = useMemo(
         () =>
             Gesture.Pan()
+                .minDistance(0)
                 .onStart(e => {
                     'worklet';
                     isActive.value = true;
