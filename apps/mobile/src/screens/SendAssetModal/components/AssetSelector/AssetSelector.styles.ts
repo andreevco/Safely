@@ -4,15 +4,7 @@ export const styles = StyleSheet.create(theme => ({
     image: {
         width: 32,
         height: 32,
+        margin: theme.spacing[12],
         borderRadius: theme.radius.full
-    },
-    label: {
-        marginBottom: -2
-    },
-    imageWithText: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: theme.spacing[12],
-        margin: theme.spacing[12]
     }
 }));

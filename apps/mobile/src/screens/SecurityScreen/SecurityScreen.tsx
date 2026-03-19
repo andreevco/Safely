@@ -5,18 +5,19 @@ import { View } from 'react-native';
 
 import { useActivePortfolio, useSyncedDevicesMeta } from '@safely/ux';
 import { useDateFormatter } from '@safely/ux/shared/format/date';
+import { useHasPortfolio } from '@safely/ux';
 import { useSecurityCheck } from '@safely/ux/shared/security';
 
 import { RootStackNavigationProp, SettingsStackNavigationProp } from '@mobile/app/navigation/types';
-import { PortfolioName } from '@mobile/entities/portfolio';
 import {
     getBiometryTranslationKey,
     useBiometryQuery,
     useSetBiometryEnabled
 } from '@mobile/features/biometry';
 import { Badge, Cell, List, Screen, Switch } from '@mobile/shared/ui';
-import { ArrowLeft16, Icon, Switch16 } from '@mobile/shared/ui/Icon';
+import { ArrowLeft16, Icon } from '@mobile/shared/ui/Icon';
 
+import { WalletSecuritySection } from './components';
 import { styles } from './SecurityScreen.styles';
 
 export const SecurityScreen = () => {
@@ -24,7 +25,7 @@ export const SecurityScreen = () => {
     const { data: biometry } = useBiometryQuery();
     const { mutateAsync: setBiometryEnabled } = useSetBiometryEnabled();
     const check = useSecurityCheck();
-    const portfolio = useActivePortfolio();
+    const hasPortfolio = useHasPortfolio();
     const navigation = useNavigation<SettingsStackNavigationProp>();
     const rootNavigation = useNavigation<RootStackNavigationProp>();
 
@@ -48,17 +49,9 @@ export const SecurityScreen = () => {
         }
     };
 
-    const handleSelectWallet = () => {
-        rootNavigation.navigate('SelectAccountModal');
-    };
-
     const handleChangePasscode = async () => {
         await check({ title: t('changePasscode.verify.title') });
         rootNavigation.navigate('ChangePasscodeModal');
-    };
-
-    const handleRecoveryPress = () => {
-        rootNavigation.navigate('RecoveryConfirmSheet');
     };
 
     return (
@@ -177,44 +170,7 @@ export const SecurityScreen = () => {
                         </List.Group>
                     </List>
 
-                    <List>
-                        <List.Title>{t('security.groups.wallet.title')}</List.Title>
-                        <List.Group style={styles.listGroupMargin}>
-                            <Cell onPress={handleSelectWallet}>
-                                <Cell.Content>
-                                    <Cell.Row>
-                                        <PortfolioName meta={portfolio.meta} />
-                                    </Cell.Row>
-                                </Cell.Content>
-                                <Icon icon={Switch16} color="tertiary" />
-                            </Cell>
-                        </List.Group>
-                        <List.Group>
-                            <Cell onPress={handleRecoveryPress}>
-                                <Cell.Content>
-                                    <Cell.Row>
-                                        <Cell.Title>
-                                            {t('security.groups.wallet.recovery.title')}
-                                        </Cell.Title>
-                                    </Cell.Row>
-                                    <Cell.Row>
-                                        <Cell.Subtitle numberOfLines={0}>
-                                            {portfolio.secretRevealedStatus
-                                                ? t('security.groups.wallet.recovery.revealed', {
-                                                      date: formatDate.format(
-                                                          portfolio.secretRevealedStatus.revealedAt
-                                                      ),
-                                                      device: portfolio.secretRevealedStatus
-                                                          .revealedFromDevice
-                                                  })
-                                                : t('security.groups.wallet.recovery.subtitle')}
-                                        </Cell.Subtitle>
-                                    </Cell.Row>
-                                </Cell.Content>
-                                <Cell.Chevron />
-                            </Cell>
-                        </List.Group>
-                    </List>
+                    {hasPortfolio && <WalletSecuritySection />}
                 </View>
             </Screen.Scrollable>
         </Screen>

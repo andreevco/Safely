@@ -53,8 +53,14 @@ export const styles = StyleSheet.create(theme => ({
     },
     text: {
         variants: {
-            disabled: {},
-            size: {},
+            disabled: {
+                true: {}
+            },
+            size: {
+                small: {},
+                medium: {},
+                large: {}
+            },
             type: {
                 primary: {
                     color: theme.colors.button.primary.foreground

@@ -1,6 +1,6 @@
 import { StyleSheet } from 'react-native-unistyles';
 
-export const styles = StyleSheet.create(theme => ({
+export const styles = StyleSheet.create((theme, rt) => ({
     backdrop: {
         ...StyleSheet.absoluteFillObject
     },
@@ -12,5 +12,21 @@ export const styles = StyleSheet.create(theme => ({
     menuCentered: {
         left: theme.spacing[48],
         right: theme.spacing[48]
+    },
+    footer: {
+        position: 'absolute',
+        bottom: rt.insets.bottom + theme.spacing[24],
+        left: 0,
+        right: 0,
+        alignItems: 'center'
+    },
+    header: {
+        position: 'absolute',
+        top: rt.insets.top + 2,
+        left: 0,
+        right: 0,
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexDirection: 'row'
     }
 }));

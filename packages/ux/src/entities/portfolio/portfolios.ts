@@ -184,9 +184,6 @@ export function useDeletePortfolio() {
 
     return useMutation<void, Error, { id: IPortfolioId }>({
         async mutationFn({ id }) {
-            if (portfolios.length === 1) {
-                throw new Error('Cannot delete last portfolio');
-            }
             await check();
             await mutateAsync(portfolios.filter(p => !p.id.isEq(id)));
         }
@@ -338,7 +335,9 @@ export function useActivePortfolioEntitiesQuery() {
 }
 
 export function useHasPortfolio() {
-    return !!useActivePortfolioEntitiesQuery().data?.portfolio;
+    const { data: portfolios } = usePortfoliosQuery();
+
+    return (portfolios?.length ?? 0) > 0;
 }
 
 export function useSetActiveDerivation() {

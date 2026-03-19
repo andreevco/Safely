@@ -66,6 +66,10 @@
             "addressCopied": "Address copied",
             "updating": "Updating...",
             "noInternet": "No internet connection"
+        },
+        "emptyState": {
+            "title": "Get started with a wallet",
+            "subtitle": "Create or import a wallet\nto start using your account"
         }
     },
     "accounts": {
@@ -325,6 +329,13 @@
             "subtitle": "Track by wallet address"
         }
     },
+    "portfoliosPopup": {
+        "reorderHint": "Press and hold to reorder.",
+        "settingsHint": {
+            "1": "Tap",
+            "2": "to customize."
+        }
+    },
     "biometry": {
         "enable": "Enable {{name}}",
         "default": {
@@ -412,6 +423,23 @@
             "description": "Slide to erase"
         },
         "cancel": "Cancel"
+    },
+    "removeWallet": {
+        "title": "Remove wallet {{name}}?",
+        "backUpLink": "Back up recovery phrase",
+        "removeButton": "Remove anyway",
+        "cancelButton": "Cancel",
+        "toastMessages": {
+            "walletRemoved": "Wallet removed"
+        },
+        "revealed": {
+            "subtitle": "Without the recovery phrase, this wallet cannot be recovered.",
+            "checkbox": "I understand that removing this wallet cannot be undone."
+        },
+        "notRevealed": {
+            "subtitle": "You haven't backed up your recovery phrase. Without it, this wallet cannot be recovered.",
+            "checkbox": "I understand that I will permanently lose access to this wallet."
+        }
     },
     "tabs": {
         "home": "Home",

@@ -1,6 +1,6 @@
 import { StyleSheet } from 'react-native-unistyles';
 
-export const styles = StyleSheet.create(theme => ({
+export const styles = StyleSheet.create((theme, rt) => ({
     root: {
         flex: 1
     },
@@ -26,6 +26,36 @@ export const styles = StyleSheet.create(theme => ({
     },
     listContainer: {
         borderRadius: theme.radius.md,
-        overflow: 'hidden'
+        overflow: 'hidden',
+        backgroundColor: theme.colors.background.secondary
+    },
+    footer: {
+        gap: theme.spacing[4]
+    },
+    settingsHint: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: theme.spacing[4],
+        justifyContent: 'center'
+    },
+    settingsHeader: {
+        position: 'absolute',
+        top: rt.insets.top + 2,
+        left: 0,
+        zIndex: 1000
+    },
+    settingsTouchable: {
+        paddingVertical: 18,
+        paddingHorizontal: theme.spacing[16]
+    },
+    settingsButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: theme.spacing[4],
+        paddingHorizontal: 5.5,
+        borderRadius: 5,
+        borderWidth: 0.75,
+        borderColor: theme.colors.other.transparentElement,
+        backgroundColor: theme.colors.background.primary
     }
 }));

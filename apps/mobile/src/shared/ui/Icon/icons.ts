@@ -31,6 +31,7 @@ import FrameCorner48Svg from '@safely/ux/shared/assets/icons/48/frame-corner-48.
 import DeviceLinkSvg from '@safely/ux/shared/assets/icons/56/device-link.svg';
 import Loader56Svg from '@safely/ux/shared/assets/icons/56/loader-56.svg';
 import Lock56Svg from '@safely/ux/shared/assets/icons/56/lock-56.svg';
+import AddWallet96Svg from '@safely/ux/shared/assets/icons/96/add-wallet-96.svg';
 import CameraLock96Svg from '@safely/ux/shared/assets/icons/96/camera-lock-96.svg';
 import Checkmark96Svg from '@safely/ux/shared/assets/icons/96/checkmark-96.svg';
 import DeviceLinkCheckmark96Svg from '@safely/ux/shared/assets/icons/96/device-link-checkmark-96.svg';
@@ -75,6 +76,7 @@ export const FrameCorner48 = { image: FrameCorner48Svg, size: 48 } as const;
 export const DeviceLink = { image: DeviceLinkSvg, size: 56 } as const;
 export const Loader56 = { image: Loader56Svg, size: 56 } as const;
 export const Lock56 = { image: Lock56Svg, size: 56 } as const;
+export const AddWallet96 = { image: AddWallet96Svg, size: 96 } as const;
 export const CameraLock96 = { image: CameraLock96Svg, size: 96 } as const;
 export const Checkmark96 = { image: Checkmark96Svg, size: 96 } as const;
 export const DeviceLinkCheckmark96 = { image: DeviceLinkCheckmark96Svg, size: 96 } as const;

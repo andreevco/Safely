@@ -9,9 +9,7 @@
     "ios": "expo run:ios",
     "icons": "node scripts/generate-icons-file.js",
     "compile": "tsc --noEmit",
-    "build:ios": "pnpm dlx eas-cli build --platform ios --profile production --non-interactive --no-wait --auto-submit",
-    "build:android": "pnpm dlx eas-cli build --platform android --profile production --non-interactive --no-wait",
-    "build": "pnpm build:ios && pnpm build:android",
+    "build": "pnpm dlx eas-cli workflow:run build-and-distribute.yml",
     "lint": "eslint ./src"
   },
   "dependencies": {

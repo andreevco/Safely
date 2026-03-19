@@ -1,18 +1,17 @@
 import React from 'react';
-import { Platform, View } from 'react-native';
+import { Platform, View, ViewProps } from 'react-native';
 
 import { Title } from './components/Title';
 import { HeaderVariant, HeaderContext } from './Header.context';
 import { styles } from './Header.styles';
 import { useScreenContext } from '../../Screen.context';
 
-interface HeaderProps {
-    children?: React.ReactNode;
+interface HeaderProps extends ViewProps {
     variant?: HeaderVariant;
 }
 
 export const HeaderContainer = (props: HeaderProps) => {
-    const { children, variant = 'center' } = props;
+    const { children, variant = 'center', style, ...rest } = props;
     const { background, layout } = useScreenContext();
 
     const shouldInsetTop = layout === 'screen' || (layout === 'modal' && Platform.OS === 'android');
@@ -42,9 +41,13 @@ export const HeaderContainer = (props: HeaderProps) => {
     return (
         <HeaderContext.Provider value={{ variant, hasSides, shouldInsetTop }}>
             <View
-                style={styles.container({
-                    shouldInsetTop
-                })}
+                style={[
+                    styles.container({
+                        shouldInsetTop
+                    }),
+                    style
+                ]}
+                {...rest}
             >
                 {hasTitle ? (
                     <>

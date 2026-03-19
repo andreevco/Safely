@@ -5,13 +5,13 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import Animated, { interpolate, SharedValue, useAnimatedStyle } from 'react-native-reanimated';
 
-import { Portfolio } from '@safely/core';
+import { delay, Portfolio } from '@safely/core';
 import { useActivePortfolio, usePortfolios } from '@safely/ux';
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { PortfolioName } from '@mobile/entities/portfolio';
 import { PortfoliosList } from '@mobile/features/portfolio';
-import { Button, ChevronDown16, Icon, PopupMenu } from '@mobile/shared/ui';
+import { Button, ChevronDown16, Icon, PopupMenu, Sliders16, Text, Screen } from '@mobile/shared/ui';
 import { PopupMenuRef } from '@mobile/shared/ui/PopupMenu';
 
 import { styles } from './CompactAccountSelector.styles';
@@ -48,6 +48,40 @@ export const CompactAccountSelector = () => {
     return (
         <PopupMenu
             ref={popupMenuRef}
+            header={
+                <View style={styles.settingsHeader}>
+                    <Screen.Header.Button
+                        type="transparent"
+                        onPress={async () => {
+                            popupMenuRef.current?.close();
+                            await delay(100);
+                            navigation.navigate('SettingsModal');
+                        }}
+                    >
+                        <Icon icon={Sliders16} color="secondary" />
+                    </Screen.Header.Button>
+                </View>
+            }
+            footer={
+                <View style={styles.footer}>
+                    {portfolios.length > 1 && (
+                        <Text variant="bodyM" color="secondary">
+                            {t('portfoliosPopup.reorderHint')}
+                        </Text>
+                    )}
+                    <View style={styles.settingsHint}>
+                        <Text variant="bodyM" color="tertiary">
+                            {t('portfoliosPopup.settingsHint.1')}
+                        </Text>
+                        <View style={styles.settingsButton}>
+                            <Icon icon={Sliders16} color="tertiary" />
+                        </View>
+                        <Text variant="bodyM" color="tertiary">
+                            {t('portfoliosPopup.settingsHint.2')}
+                        </Text>
+                    </View>
+                </View>
+            }
             touchable={progress => <Touchable progress={progress} portfolio={portfolio} />}
         >
             <View style={styles.listContainer}>

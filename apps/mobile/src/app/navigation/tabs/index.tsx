@@ -1,9 +1,25 @@
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import {
+    BottomTabBar,
+    BottomTabBarProps,
+    createBottomTabNavigator
+} from '@react-navigation/bottom-tabs';
 import i18next from 'i18next';
+
+import { useHasPortfolio } from '@safely/ux';
 
 import { HistoryScreen } from '@mobile/screens/HistoryScreen';
 import { HomeScreen } from '@mobile/screens/HomeScreen';
 import { Bolt28, Home28, Icon } from '@mobile/shared/ui/Icon';
+
+const TabBar = (props: BottomTabBarProps) => {
+    const hasPortfolio = useHasPortfolio();
+
+    if (!hasPortfolio) {
+        return null;
+    }
+
+    return <BottomTabBar {...props} />;
+};
 
 export const TabsNavigator = createBottomTabNavigator({
     screens: {
@@ -29,5 +45,6 @@ export const TabsNavigator = createBottomTabNavigator({
             paddingHorizontal: 16,
             marginBottom: 8
         }
-    }
+    },
+    tabBar: props => <TabBar {...props} />
 });

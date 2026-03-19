@@ -1,6 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
 
-import { usePortfolios } from '@safely/ux';
+import { usePortfoliosQuery } from '@safely/ux';
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { Screen } from '@mobile/shared/ui';
@@ -14,7 +14,8 @@ import {
 
 export const HomeHeader = () => {
     const navigation = useNavigation<RootStackNavigationProp<'TabsNavigator'>>();
-    const portfolios = usePortfolios();
+    const portfolios = usePortfoliosQuery().data;
+    const portfolioCount = portfolios?.length ?? 0;
 
     return (
         <Screen.Header>
@@ -24,7 +25,8 @@ export const HomeHeader = () => {
             >
                 <SettingsButton />
             </Screen.Header.Button>
-            {portfolios.length <= 10 ? <CompactAccountSelector /> : <AccountSelector />}
+            {portfolioCount > 0 &&
+                (portfolioCount <= 10 ? <CompactAccountSelector /> : <AccountSelector />)}
             <Screen.Header.Button
                 type="transparent"
                 onPress={() => navigation.navigate('CurrencyModal')}
