@@ -36,9 +36,18 @@ export class OfflineSyncProvider<S extends Record<string, ZodType>> implements I
     public getAll(): { [K in keyof S]: output<S[K]> } {
         const result = {} as { [K in keyof S]: output<S[K]> };
         for (const k of Object.keys(this.structure) as Array<keyof S>) {
-            const v = this.container.yManager.get(k.toString());
+            let v: string | null;
+            try {
+                v = this.container.yManager.get(k.toString());
+            } catch (e) {
+                if (e instanceof StorageError) {
+                    v = null;
+                } else {
+                    throw e;
+                }
+            }
             const schema = this.structure[k];
-            result[k] = schema.parse(JSON.parse(v));
+            result[k] = schema.parse(v !== null ? JSON.parse(v) : null);
         }
         return result;
     }
