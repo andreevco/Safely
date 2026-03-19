@@ -1,7 +1,13 @@
 import { createRootRoute, createRoute, createRouter, RouterProvider } from '@tanstack/react-router';
 import { useMemo } from 'react';
 
-import { AppContext, IAppContext, createPersister, noopLoaderService, QueryProvider } from '@safely/ux';
+import {
+    AppContext,
+    IAppContext,
+    createPersister,
+    noopLoaderService,
+    QueryProvider
+} from '@safely/ux';
 
 import packageJson from '../../package.json';
 import { ToastProvider, useToastServiceContext } from './localProviders/ToastProvider';

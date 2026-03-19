@@ -80,7 +80,10 @@ export const AddWallet96 = { image: AddWallet96Svg, size: 96 } as const;
 export const CameraLock96 = { image: CameraLock96Svg, size: 96 } as const;
 export const Checkmark96 = { image: Checkmark96Svg, size: 96 } as const;
 export const DeviceLinkCheckmark96 = { image: DeviceLinkCheckmark96Svg, size: 96 } as const;
-export const DeviceLinkExclamationmark96 = { image: DeviceLinkExclamationmark96Svg, size: 96 } as const;
+export const DeviceLinkExclamationmark96 = {
+    image: DeviceLinkExclamationmark96Svg,
+    size: 96
+} as const;
 export const FaceidAndroid96 = { image: FaceidAndroid96Svg, size: 96 } as const;
 export const FaceidIos96 = { image: FaceidIos96Svg, size: 96 } as const;
 export const Fingerprint96 = { image: Fingerprint96Svg, size: 96 } as const;
