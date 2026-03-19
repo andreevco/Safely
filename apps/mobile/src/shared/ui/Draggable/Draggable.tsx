@@ -130,7 +130,9 @@ const useDraggable = ({
                 }
             );
         })
-        .onFinalize(() => {});
+        .onTouchesCancelled(() => {
+            isBeingActive.value = false;
+        });
 
     const tapGesture = Gesture.Tap().onEnd(() => {
         'worklet';

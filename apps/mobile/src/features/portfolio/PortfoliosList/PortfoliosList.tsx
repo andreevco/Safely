@@ -36,7 +36,7 @@ export const PortfoliosList = (props: PortfoliosListProps) => {
         (portfolio: Portfolio) => {
             void impactAsync(ImpactFeedbackStyle.Medium);
             onSelect();
-            setActivePortfolio({ id: portfolio.id });
+            requestAnimationFrame(() => setActivePortfolio({ id: portfolio.id }));
         },
         [setActivePortfolio, onSelect]
     );
