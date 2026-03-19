@@ -9,25 +9,24 @@ type AssetCellProps = {
     cryptoAssetAmount: CryptoAssetAmount;
     price: CryptoFiatRate | null;
     showDivider?: boolean;
+    onPress?: () => void;
 };
 
 export const AssetCell = (props: AssetCellProps) => {
-    const { cryptoAssetAmount, price, showDivider = true } = props;
+    const { cryptoAssetAmount, price, showDivider = true, onPress } = props;
     const formatter = useNumberFormatter();
-
-    const activeFiat = useActiveFiat();
+    const fiat = useActiveFiat();
 
     const priceFormatted =
         price &&
-        new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: activeFiat.id.symbol,
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0
-        }).format(price.value.toNumber());
+        formatter.formatFiat(price.value, {
+            currencyDisplay: 'symbol',
+            currency: fiat.id.symbol,
+            useGrouping: true
+        });
 
     return (
-        <Cell showDivider={showDivider}>
+        <Cell showDivider={showDivider} onPress={onPress}>
             <Cell.Image type="image" image={cryptoAssetAmount.asset.image} />
             <Cell.Content>
                 <Cell.Row>

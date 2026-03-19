@@ -1,6 +1,6 @@
-import { useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 import { View } from 'react-native';
-import Animated from 'react-native-reanimated';
+import { useSharedValue } from 'react-native-reanimated';
 
 import { BTC_ASSET } from '@safely/core';
 import { useChart } from '@safely/ux/entities/asset/useChart';
@@ -16,14 +16,15 @@ export const Chart = () => {
     const asset = BTC_ASSET;
     const { data: selectedPeriod = ChartPeriod.ONE_MONTH } = useChartPeriodQuery();
     const { mutate: setSelectedPeriod } = useSetChartPeriod();
-    const chartPointsRef = useRef<ChartPoint[]>([]);
+    const chartPointsShared = useSharedValue<ChartPoint[]>([]);
+    const pathFractionsShared = useSharedValue<number[]>([]);
 
     const stickyStartDate = useMemo(() => {
         const periodConfig = CHART_CONFIG[selectedPeriod];
         return periodConfig.startOfPeriod(new Date(Date.now() - periodConfig.fullPeriodLength));
     }, [selectedPeriod]);
     const chart = useChart(asset, stickyStartDate);
-    const crosshair = useCrosshair({ chartPointsRef, selectedPeriod });
+    const crosshair = useCrosshair({ chartPointsShared, pathFractionsShared, selectedPeriod });
 
     return (
         <View style={styles.container}>
@@ -31,21 +32,29 @@ export const Chart = () => {
                 prices={chart.data?.prices ?? []}
                 asset={asset}
                 selectedPeriod={selectedPeriod}
-                activePrice={crosshair.activePoint?.price}
+                activePrice={crosshair.activePrice}
             />
-            <Animated.View style={crosshair.periodsAnimatedStyle}>
-                <ChartPeriods selectedPeriod={selectedPeriod} onSelectPeriod={setSelectedPeriod} />
-            </Animated.View>
+            <ChartPeriods selectedPeriod={selectedPeriod} onSelectPeriod={setSelectedPeriod} />
             <ChartLine
                 startDate={stickyStartDate}
                 prices={chart.data?.prices ?? []}
                 selectedPeriod={selectedPeriod}
-                chartPointsRef={chartPointsRef}
-                activePoint={crosshair.activePoint}
+                chartPointsShared={chartPointsShared}
+                pathFractionsShared={pathFractionsShared}
+                activeX={crosshair.activeX}
+                activeY={crosshair.activeY}
+                isActive={crosshair.isActive}
+                activePathFraction={crosshair.activePathFraction}
                 gesture={crosshair.gesture}
+            />
+            <ChartFooter
+                startDate={stickyStartDate}
+                selectedPeriod={selectedPeriod}
+                isActive={crosshair.isActive}
+                isTimeLabelReady={crosshair.isTimeLabelReady}
+                activeX={crosshair.activeX}
                 formattedTime={crosshair.formattedTime}
             />
-            <ChartFooter startDate={stickyStartDate} selectedPeriod={selectedPeriod} />
         </View>
     );
 };
