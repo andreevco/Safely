@@ -2,7 +2,11 @@ import { CommonActions, useNavigation } from '@react-navigation/native';
 import { useCallback } from 'react';
 
 import { MnemonicResource, PortfolioMeta } from '@safely/core';
-import { useGeneratePortfolio, useImportPortfolio, useSecurityCheck } from '@safely/ux';
+import {
+    useGeneratePortfolio,
+    useImportPortfolio,
+    useUnlockableSecretEncryptorFactory
+} from '@safely/ux';
 
 import { useLoader } from '@mobile/shared/providers/loader';
 
@@ -16,14 +20,17 @@ export function useAddWalletFlow() {
     const { withLoader } = useLoader();
     const { mutateAsync: importPortfolio } = useImportPortfolio();
     const { mutateAsync: generatePortfolio } = useGeneratePortfolio();
-    const check = useSecurityCheck();
+    const createEncryptor = useUnlockableSecretEncryptorFactory();
 
     const startCreateFlow = useCallback(() => {
         navigation.dispatch(
             CommonActions.navigate(routes.customize, {
                 onSave: async (meta: PortfolioMeta) => {
+                    using secretEncryptor = createEncryptor();
+                    await secretEncryptor.unlockEncryption();
+
                     await withLoader(async () => {
-                        await generatePortfolio(meta);
+                        await generatePortfolio({ meta, secretEncryptor });
                     });
 
                     navigation.dispatch(
@@ -46,10 +53,12 @@ export function useAddWalletFlow() {
 
     const onMnemonicReady = useCallback(
         async (mnemonic: string[]) => {
-            await check();
+            using secretEncryptor = createEncryptor();
+            await secretEncryptor.unlockEncryption();
+
             await withLoader(async () => {
-                using accessor = new MnemonicResource(mnemonic);
-                const portfolio = await importPortfolio(accessor);
+                using mnemonicAccessor = new MnemonicResource(mnemonic);
+                const portfolio = await importPortfolio({ mnemonicAccessor, secretEncryptor });
 
                 navigation.dispatch(
                     CommonActions.navigate(routes.customize, {
@@ -66,7 +75,7 @@ export function useAddWalletFlow() {
                 );
             });
         },
-        [navigation, importPortfolio, withLoader, check]
+        [navigation, importPortfolio, withLoader, createEncryptor]
     );
 
     return {

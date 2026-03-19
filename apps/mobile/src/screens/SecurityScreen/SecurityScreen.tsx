@@ -3,8 +3,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { useActivePortfolio, useSyncedDevicesMeta } from '@safely/ux';
-import { useDateFormatter } from '@safely/ux/shared/format/date';
+import { useSyncedDevicesMeta } from '@safely/ux';
 import { useHasPortfolio } from '@safely/ux';
 import { useSecurityCheck } from '@safely/ux/shared/security';
 
@@ -30,14 +29,6 @@ export const SecurityScreen = () => {
     const rootNavigation = useNavigation<RootStackNavigationProp>();
 
     const devicesMeta = useSyncedDevicesMeta();
-    const formatDate = useDateFormatter({
-        month: 'long',
-        day: 'numeric',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false
-    });
     const otherDeviceCount = devicesMeta ? Object.keys(devicesMeta).length - 1 : 0;
     const hasLinkedDevices = otherDeviceCount > 0;
 

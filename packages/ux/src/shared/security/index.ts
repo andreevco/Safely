@@ -1,9 +1,15 @@
 import { useCallback } from 'react';
 
-import { IEnumerableStorage, TreeStorage } from '@safely/core';
-import { ITreeStorage } from '@safely/sync';
+import {
+    IEnumerableStorage,
+    SSecretDecrypted,
+    SSecretEncrypted,
+    TreeStorage,
+    ISecretEncryptor
+} from '@safely/core';
+import { ITreeStorage, ISecretEncryptor as ISyncSecretEncryptor } from '@safely/sync';
 
-import { Security } from '../../entities';
+import { Security, useActiveAccount } from '../../entities';
 import { useAppContext } from '../providers';
 
 export function useSecurityCheck() {
@@ -13,6 +19,8 @@ export function useSecurityCheck() {
 
 export interface IUnlockableSecuredEncryptedStorage extends ITreeStorage {
     unlock: () => Promise<void>;
+
+    UNSAFE_SKIP_SECURITY_CHECK_unlock: () => void;
 
     isLocked: boolean;
 
@@ -69,7 +77,79 @@ export class UnlockableSecuredEncryptedStorage
         this.#isLocked = false;
     }
 
+    public UNSAFE_SKIP_SECURITY_CHECK_unlock() {
+        this.#isLocked = false;
+    }
+
     public [Symbol.dispose]() {
         this.#isLocked = true;
     }
+}
+
+export class SecretEncryptor implements ISecretEncryptor {
+    constructor(
+        private readonly syncEncryptor: ISyncSecretEncryptor,
+        private readonly secureStorage: ITreeStorage
+    ) {}
+
+    public encrypt(decryptedSecret: SSecretDecrypted): Promise<SSecretEncrypted> {
+        return this.syncEncryptor.encrypt(decryptedSecret, this.secureStorage);
+    }
+
+    public decrypt(encryptedSecret: SSecretEncrypted): Promise<SSecretDecrypted> {
+        return this.syncEncryptor.decrypt(encryptedSecret, this.secureStorage);
+    }
+}
+
+export class UnlockableSecretEncryptor implements ISecretEncryptor {
+    readonly #encryptStorage: IUnlockableSecuredEncryptedStorage;
+
+    readonly #decryptStorage: IUnlockableSecuredEncryptedStorage;
+
+    public get isEncryptLocked() {
+        return this.#encryptStorage.isLocked;
+    }
+
+    public get isDecryptLocked() {
+        return this.#decryptStorage.isLocked;
+    }
+
+    constructor(
+        private readonly syncEncryptor: ISyncSecretEncryptor,
+        getSecureStorage: () => IUnlockableSecuredEncryptedStorage
+    ) {
+        this.#decryptStorage = getSecureStorage();
+        this.#encryptStorage = getSecureStorage();
+    }
+
+    public unlockEncryption() {
+        return this.#encryptStorage.unlock();
+    }
+
+    public unlockDecryption() {
+        return this.#decryptStorage.unlock();
+    }
+
+    public encrypt(decryptedSecret: SSecretDecrypted): Promise<SSecretEncrypted> {
+        return this.syncEncryptor.encrypt(decryptedSecret, this.#decryptStorage);
+    }
+
+    public decrypt(encryptedSecret: SSecretEncrypted): Promise<SSecretDecrypted> {
+        return this.syncEncryptor.decrypt(encryptedSecret, this.#encryptStorage);
+    }
+
+    public [Symbol.dispose]() {
+        this.#decryptStorage[Symbol.dispose]();
+        this.#encryptStorage[Symbol.dispose]();
+    }
+}
+
+export function useUnlockableSecretEncryptorFactory() {
+    const account = useActiveAccount();
+    const { getSecureEncryptedStorage } = useAppContext();
+
+    return useCallback(
+        () => new UnlockableSecretEncryptor(account.secretEncryptor, getSecureEncryptedStorage),
+        [account.secretEncryptor, getSecureEncryptedStorage]
+    );
 }

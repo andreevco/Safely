@@ -28,10 +28,8 @@ const build: Build =
         web: 'web' as const
     }) ?? ('web' as const);
 
-const secureEncryptedStorage = new UnlockableSecuredEncryptedStorage(
-    mobileStorages.secureEncrypted.storage,
-    security
-);
+const getSecureEncryptedStorage = () =>
+    new UnlockableSecuredEncryptedStorage(mobileStorages.secureEncrypted.storage, security);
 
 export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
     const {
@@ -55,13 +53,10 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
             numberFormatLocale: new MobileNumberFormatLocale(getLocales()[0]),
             storage: mobileStorages.app.storage,
             encryptedStorage: mobileStorages.encrypted.storage,
-            secureEncryptedStorage,
+            getSecureEncryptedStorage,
             qrScanner: {
                 scan: options =>
                     new Promise<string>(resolve => {
-                        // TODO
-                        // @ts-ignore
-                        window.qrResult = resolve;
                         navigationRef.navigate('QRScanModal', {
                             onSuccess: resolve,
                             title: t(options?.titleTranslationKey ?? 'qrScan.title'),

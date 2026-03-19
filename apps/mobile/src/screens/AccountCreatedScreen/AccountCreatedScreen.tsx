@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { useActiveAccountQuery, useAppContext, useToast } from '@safely/ux';
+import { useActiveAccountQuery, useAppContext, useConnectAccountToNewDevice } from '@safely/ux';
 
 import { useOnboardingFlow } from '@mobile/features/onboarding';
 import { useLoader } from '@mobile/shared/providers/loader';
@@ -17,29 +17,21 @@ const steps = [
 ] as const;
 
 export const AccountCreatedScreen = () => {
-    const toast = useToast();
     const { t } = useTranslation();
-    const { qrScanner } = useAppContext();
-    const { showLoader, hideLoader } = useLoader();
+    const { getSecureEncryptedStorage } = useAppContext();
+    const { withLoader } = useLoader();
     const { data: activeAccount } = useActiveAccountQuery();
     const { onAccountCreatedFinished } = useOnboardingFlow();
+    const { mutateAsync: connectAccountToNewDevice } = useConnectAccountToNewDevice();
 
     const handleAddDevice = useCallback(async () => {
         if (!activeAccount) return;
 
-        try {
-            const connectionString = await qrScanner.scan();
+        using secureEncryptedStorage = getSecureEncryptedStorage();
+        secureEncryptedStorage.UNSAFE_SKIP_SECURITY_CHECK_unlock();
 
-            showLoader();
-
-            await activeAccount.connectToNewDevice(Buffer.from(connectionString, 'base64url'));
-            onAccountCreatedFinished();
-        } catch {
-            toast(t('onboarding.accountCreated.deviceNotAdded'));
-        } finally {
-            hideLoader();
-        }
-    }, [activeAccount, qrScanner, showLoader, hideLoader, onAccountCreatedFinished, toast, t]);
+        return await withLoader(() => connectAccountToNewDevice({ secureEncryptedStorage }));
+    }, [withLoader, connectAccountToNewDevice, activeAccount, getSecureEncryptedStorage]);
 
     const handleProtectLater = useCallback(() => {
         onAccountCreatedFinished();

@@ -1,7 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 
-import { useActivePortfolio } from '@safely/ux';
+import { useActivePortfolio, useDateFormatter } from '@safely/ux';
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { PortfolioName } from '@mobile/entities/portfolio';
@@ -14,6 +14,14 @@ export const WalletSecuritySection = () => {
     const { t } = useTranslation();
     const portfolio = useActivePortfolio();
     const rootNavigation = useNavigation<RootStackNavigationProp>();
+    const formatDate = useDateFormatter({
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+    });
 
     const handleSelectWallet = () => {
         rootNavigation.navigate('SelectAccountModal');
@@ -44,7 +52,14 @@ export const WalletSecuritySection = () => {
                         </Cell.Row>
                         <Cell.Row>
                             <Cell.Subtitle numberOfLines={0}>
-                                {t('security.groups.wallet.recovery.subtitle')}
+                                {portfolio.secretRevealedStatus
+                                    ? t('security.groups.wallet.recovery.revealed', {
+                                          date: formatDate.format(
+                                              portfolio.secretRevealedStatus.revealedAt
+                                          ),
+                                          device: portfolio.secretRevealedStatus.revealedFromDevice
+                                      })
+                                    : t('security.groups.wallet.recovery.subtitle')}
                             </Cell.Subtitle>
                         </Cell.Row>
                     </Cell.Content>

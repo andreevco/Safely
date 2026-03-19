@@ -6,7 +6,9 @@ import {
     type DeviceMeta,
     useAppContext,
     useSuspenseQuery,
-    useActiveAccountSyncedStorage
+    useActiveAccountSyncedStorage,
+    SecretEncryptor,
+    SyncedStorageStructure
 } from '../../shared';
 import { calcSyncedStorageHash } from '../../shared/storage/account/synced/schemas';
 import { calculatePortfoliosHashes } from '../../shared/storage/account/synced/schemas/devices-meta.schema';
@@ -54,12 +56,16 @@ export function useRevokeSyncedDevice() {
     const account = useActiveAccount();
     const accountQueryKey = useActiveAccountQueryKey();
     const { get, set } = useActiveAccountSyncedStorage('devicesMeta');
+    const { getSecureEncryptedStorage } = useAppContext();
 
     return useMutation({
         async mutationFn(ikPubHex: string) {
-            await account.revokeRemoteDevice(Buffer.from(ikPubHex, 'hex'));
+            await account.revokeRemoteDevice(
+                Buffer.from(ikPubHex, 'hex'),
+                getSecureEncryptedStorage()
+            );
 
-            const existing = (await get()) ?? {};
+            const existing = get() ?? {};
             const { [ikPubHex]: _, ...rest } = existing;
             await set(Object.keys(rest).length > 0 ? rest : null);
 
@@ -70,19 +76,27 @@ export function useRevokeSyncedDevice() {
 
 export function useUpdateOwnSyncedDeviceMeta() {
     const client = useQueryClient();
-    const { version, build, deviceInfo } = useAppContext();
+    const { version, build, deviceInfo, getSecureEncryptedStorage } = useAppContext();
 
     return useMutation<void, Error, SyncAccount>({
         async mutationFn(syncAccount) {
             const ikPub = await syncAccount.getMyDeviceIkPub();
             const ikPubHex = ikPub.toString('hex');
 
-            const existing = await syncAccount.syncProvider.get('devicesMeta');
+            const existing = syncAccount.syncProvider.get('devicesMeta');
             const currentMetaExisting = existing?.[ikPubHex];
             const portfolios =
-                (await syncAccount.syncProvider.get('portfolios'))?.map(a =>
-                    PortfolioFactory.restorePortfolio(syncAccount.secretEncryptor, a)
-                ) ?? [];
+                syncAccount.syncProvider
+                    .get('portfolios')
+                    ?.map(a =>
+                        PortfolioFactory.restorePortfolio(
+                            new SecretEncryptor(
+                                syncAccount.secretEncryptor,
+                                getSecureEncryptedStorage()
+                            ),
+                            a
+                        )
+                    ) ?? [];
 
             const currentMeta: DeviceMeta = {
                 name: deviceInfo.name,
@@ -91,7 +105,9 @@ export function useUpdateOwnSyncedDeviceMeta() {
                 appVersion: version,
                 pairedAt: currentMetaExisting?.pairedAt ?? Date.now(),
                 syncState: {
-                    stateHash: calcSyncedStorageHash({} as any), // TODO sync
+                    stateHash: calcSyncedStorageHash(
+                        syncAccount.syncProvider.getAll() as unknown as SyncedStorageStructure
+                    ), // TODO sync
                     portfoliosHashes: calculatePortfoliosHashes(portfolios)
                 }
             };

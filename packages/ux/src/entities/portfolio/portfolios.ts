@@ -1,5 +1,4 @@
 import { keepPreviousData, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useMemo } from 'react';
 
 import {
     BtcWallet,
@@ -15,7 +14,8 @@ import {
     PortfolioNetworkType,
     PortfolioType,
     IPortfolioId,
-    generateBip39Accessor
+    generateBip39Accessor,
+    ISecretEncryptor
 } from '@safely/core';
 
 import {
@@ -24,7 +24,8 @@ import {
     useSuspenseQuery,
     useAccountLocalStorage,
     useSecurityCheck,
-    useAppContext
+    useAppContext,
+    SecretEncryptor
 } from '../../shared';
 import { useActiveAccountSyncedStorage } from '../../shared/storage/account/synced';
 import { useActiveAccount, useActiveAccountQueryKey } from '../account';
@@ -36,25 +37,26 @@ export function usePortfoliosQuery() {
     return useSuspenseQuery(config);
 }
 
-export function usePortfoliosFactory() {
-    const account = useActiveAccount();
-    return useMemo(() => new PortfolioFactory(account.secretEncryptor), [account.secretEncryptor]);
-}
-
 export function usePortfoliosQueryConfig() {
     const accountQueryKey = useActiveAccountQueryKey();
     const { get } = useActiveAccountSyncedStorage('portfolios');
     const account = useActiveAccount();
+    const { getSecureEncryptedStorage } = useAppContext();
 
     return {
         queryKey: accountQueryKey.portfolios.toKey(),
         async queryFn() {
-            const data = await get();
+            const data = get();
             if (data === null) {
                 return null;
             }
 
-            return data.map(a => PortfolioFactory.restorePortfolio(account.secretEncryptor, a));
+            return data.map(p =>
+                PortfolioFactory.restorePortfolio(
+                    new SecretEncryptor(account.secretEncryptor, getSecureEncryptedStorage()),
+                    p
+                )
+            );
         },
         staleTime: Infinity,
         placeholderData: keepPreviousData
@@ -110,20 +112,25 @@ export function useGeneratePortfolio() {
     const errorToast = useErrorToast({
         PortfolioGenerationFailedError: 'importWalletScreen.errors.failedToGenerate'
     });
-    const factory = usePortfoliosFactory();
 
-    return useMutation<PortfolioBip39, Error, Partial<PortfolioMeta> | void>({
+    return useMutation<
+        PortfolioBip39,
+        Error,
+        { meta?: Partial<PortfolioMeta>; secretEncryptor: ISecretEncryptor }
+    >({
         async mutationFn(params) {
             await delay();
+
             using accessorVault = generateBip39Accessor();
+            const factory = new PortfolioFactory(params.secretEncryptor);
 
             const portfolio = await factory.generatePortfolioBip39(accessorVault, {
                 network: PortfolioNetworkType.MAINNET,
-                name: params?.name ?? fallbackName
+                name: params?.meta?.name ?? fallbackName
             });
 
-            if (params?.icon) {
-                portfolio.updateMeta({ icon: params.icon });
+            if (params?.meta?.icon) {
+                portfolio.updateMeta({ icon: params.meta.icon });
             }
 
             await addAccount(portfolio);
@@ -147,14 +154,19 @@ export function useImportPortfolio() {
         InvalidMnemonicError: 'importWalletScreen.errors.invalidMnemonic',
         PortfolioAlreadyExistsError: 'importWalletScreen.errors.alreadyExists'
     });
-    const factory = usePortfoliosFactory();
     const { deviceInfo } = useAppContext();
 
-    return useMutation<Portfolio, Error, IMnemonicAccessor>({
-        async mutationFn(accessor) {
+    return useMutation<
+        Portfolio,
+        Error,
+        { mnemonicAccessor: IMnemonicAccessor; secretEncryptor: ISecretEncryptor }
+    >({
+        async mutationFn({ mnemonicAccessor, secretEncryptor }) {
             await delay();
 
-            const portfolio = await factory.generatePortfolio(accessor, {
+            const factory = new PortfolioFactory(secretEncryptor);
+
+            const portfolio = await factory.generatePortfolio(mnemonicAccessor, {
                 network: PortfolioNetworkType.MAINNET,
                 name,
                 seedRevealedFromDevice: deviceInfo.name

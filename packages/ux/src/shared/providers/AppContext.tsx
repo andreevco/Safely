@@ -22,7 +22,7 @@ export interface IAppContext {
 
     encryptedStorage: ITreeStorage;
 
-    secureEncryptedStorage: IUnlockableSecuredEncryptedStorage;
+    getSecureEncryptedStorage(this: void): IUnlockableSecuredEncryptedStorage;
 
     qrScanner: QrScanner;
 

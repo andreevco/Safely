@@ -1,13 +1,20 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect } from 'react';
 
-import { delay, notNullish, PortfolioFactory, PortfolioNetworkType } from '@safely/core';
+import {
+    delay,
+    ITreeStorage,
+    notNullish,
+    PortfolioFactory,
+    PortfolioNetworkType
+} from '@safely/core';
 import { generateBip39Accessor } from '@safely/core/entities/seed';
 import { ISyncAccount, OnboardingAbortedError, SyncAccountFactory } from '@safely/sync';
 
 import { accountKey } from './keys';
 import {
     AccountMeta,
+    SecretEncryptor,
     syncedStorageStructure,
     SyncedStorageStructure,
     useAppContext,
@@ -43,8 +50,8 @@ export function getActiveConnector(): OnboardingConnector {
     return _activeConnector;
 }
 
-async function withMeta(account: ISyncAccount<SyncedStorageStructure>): Promise<SyncAccount> {
-    let meta = await account.syncProvider.get('meta');
+function withMeta(account: ISyncAccount<SyncedStorageStructure>): SyncAccount {
+    let meta = account.syncProvider.get('meta');
     if (!meta) {
         meta = generateAccountMeta(account.accountId);
     }
@@ -75,13 +82,12 @@ export function resetAccountsFactory() {
 
 export function useAccountsFactory() {
     const config = useBootConfig();
-    const { storage, encryptedStorage, secureEncryptedStorage } = useAppContext();
+    const { storage, encryptedStorage } = useAppContext();
 
     if (!_syncAccountFactory) {
         _syncAccountFactory = new SyncAccountFactory({
             storage,
             encryptedStorage,
-            secureEncryptedStorage,
             structure: syncedStorageStructure,
             apiConfiguration: {
                 basePath: config.sync.api_url
@@ -99,7 +105,7 @@ function useAccountsQueryConfig() {
         queryKey: accountKey.list.toKey(),
         async queryFn() {
             const accounts = await factory.getSyncAccounts();
-            return Promise.all(accounts.map(withMeta));
+            return accounts.map(withMeta);
         },
         staleTime: Infinity
     };
@@ -143,18 +149,24 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
     const client = useQueryClient();
     const factory = useAccountsFactory();
     const { mutateAsync: setActive } = useSetActiveAccount();
+    const { getSecureEncryptedStorage } = useAppContext();
 
     return useMutation({
         async mutationFn() {
             await delay();
-            const account = await factory.createSyncAccount();
+            using secureEncryptedStorage = getSecureEncryptedStorage();
+            secureEncryptedStorage.UNSAFE_SKIP_SECURITY_CHECK_unlock();
+
+            const account = await factory.createSyncAccount(secureEncryptedStorage);
             await account.syncProvider.set(
                 'meta',
                 generateAccountMeta(account.accountId, t('security.groups.wallet.main'))
             );
 
             if (options?.createWallet || options?.setActive) {
-                const portfolioFactory = new PortfolioFactory(account.secretEncryptor);
+                const portfolioFactory = new PortfolioFactory(
+                    new SecretEncryptor(account.secretEncryptor, secureEncryptedStorage)
+                );
                 using accessorVault = generateBip39Accessor();
                 const portfolio = await portfolioFactory.generatePortfolioBip39(accessorVault, {
                     network: PortfolioNetworkType.MAINNET,
@@ -180,11 +192,14 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
 
 export function useCreateExistingAccountConnector() {
     const factory = useAccountsFactory();
+    const { getSecureEncryptedStorage } = useAppContext();
 
     const mutation = useMutation({
         async mutationFn() {
             await delay();
-            const connector = await factory.connectToExistingSyncAccount();
+            using secureEncryptedStorage = getSecureEncryptedStorage();
+            await secureEncryptedStorage.unlock();
+            const connector = await factory.connectToExistingSyncAccount(secureEncryptedStorage);
 
             return {
                 connectionString: connector.data.toString('base64url'),
@@ -237,7 +252,7 @@ export function useAccountConnectedCallback(
                     await setActive(account.accountId);
                 }
 
-                callback(await withMeta(account));
+                callback(withMeta(account));
             })
             .catch(e => {
                 if (isReset || e instanceof OnboardingAbortedError) {
@@ -278,10 +293,13 @@ export function useConnectAccountToNewDevice() {
     const toast = useToast();
     const { qrScanner } = useAppContext();
 
-    return useMutation({
-        async mutationFn() {
+    return useMutation<void, Error, { secureEncryptedStorage: ITreeStorage }>({
+        async mutationFn({ secureEncryptedStorage }) {
             const connectionString = await qrScanner.scan();
-            await activeKeeperId.connectToNewDevice(Buffer.from(connectionString, 'base64url'));
+            await activeKeeperId.connectToNewDevice(
+                Buffer.from(connectionString, 'base64url'),
+                secureEncryptedStorage
+            );
         },
         onSuccess() {
             toast(t('settings.deviceConnected'));
@@ -326,10 +344,13 @@ export function useDeleteAccount() {
     const accountFactory = useAccountsFactory();
     const client = useQueryClient();
     const { remove: removeActiveAccount } = useSharedStructuredStorage('activeAccount');
+    const { getSecureEncryptedStorage } = useAppContext();
 
     return useMutation({
         async mutationFn() {
-            await accountFactory.deleteLocalAccount(account.accountId);
+            using secureEncryptedStorage = getSecureEncryptedStorage();
+
+            await accountFactory.deleteLocalAccount(account.accountId, secureEncryptedStorage);
             await removeActiveAccount();
             client.removeQueries({ queryKey: accountKey.toKey() });
         }

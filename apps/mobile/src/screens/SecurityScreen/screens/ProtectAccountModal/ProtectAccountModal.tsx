@@ -1,7 +1,8 @@
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { useConnectAccountToNewDevice } from '@safely/ux';
+import { useAppContext, useConnectAccountToNewDevice } from '@safely/ux';
 
 import { Button, DeviceLinkExclamationmark96, Icon, Screen, Text } from '@mobile/shared/ui';
 
@@ -15,7 +16,15 @@ const steps = [
 
 export const ProtectAccountModal = () => {
     const { t } = useTranslation();
+    const { getSecureEncryptedStorage } = useAppContext();
     const { mutate: connectToNewDevice } = useConnectAccountToNewDevice();
+
+    const handleConnect = useCallback(async () => {
+        using secureEncryptedStorage = getSecureEncryptedStorage();
+        await secureEncryptedStorage.unlock();
+
+        connectToNewDevice({ secureEncryptedStorage });
+    }, [getSecureEncryptedStorage, connectToNewDevice]);
 
     return (
         <Screen>
@@ -49,7 +58,7 @@ export const ProtectAccountModal = () => {
                     </View>
                 </View>
                 <View style={styles.buttonContainer}>
-                    <Button type="primary" size="large" onPress={() => connectToNewDevice()}>
+                    <Button type="primary" size="large" onPress={handleConnect}>
                         {t('onboarding.accountCreated.addDevice')}
                     </Button>
                 </View>
