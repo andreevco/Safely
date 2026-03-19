@@ -4,7 +4,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { createPersister, QueryProvider } from '@safely/ux';
 
-import { LoaderProvider } from '@mobile/shared/providers/loader';
+import { LoaderProvider, LoaderServiceProvider } from '@mobile/shared/providers/loader';
 import { ToastProvider, ToastServiceProvider } from '@mobile/shared/providers/toast';
 import { mobileStorages } from '@mobile/shared/storage';
 
@@ -20,12 +20,14 @@ export const App = () => {
                 <KeyboardProvider>
                     <QueryProvider persister={persister}>
                         <ToastServiceProvider>
-                            <AppContextProvider>
-                                <LoaderProvider>
+                            <LoaderServiceProvider>
+                                <AppContextProvider>
+                                    <LoaderProvider>
                                     <AppNavigation />
                                     <ToastProvider />
-                                </LoaderProvider>
-                            </AppContextProvider>
+                                    </LoaderProvider>
+                                </AppContextProvider>
+                            </LoaderServiceProvider>
                         </ToastServiceProvider>
                     </QueryProvider>
                 </KeyboardProvider>

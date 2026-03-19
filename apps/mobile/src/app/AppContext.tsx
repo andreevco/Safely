@@ -9,6 +9,7 @@ import { AppContext, IAppContext, Security, UnlockableSecuredEncryptedStorage } 
 
 import { navigationRef } from '@mobile/app/navigation/navigationRef';
 import { useMobileSecurityCheck } from '@mobile/entities/security';
+import { useLoaderServiceContext } from '@mobile/shared/providers/loader';
 import { useToastServiceContext } from '@mobile/shared/providers/toast';
 import { mobileStorages } from '@mobile/shared/storage';
 import { MobileNumberFormatLocale } from '@mobile/shared/utils';
@@ -37,6 +38,7 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
         i18n: { language }
     } = useTranslation();
     const { service: toastService } = useToastServiceContext();
+    const { service: loaderService } = useLoaderServiceContext();
 
     const appContext = useMemo<IAppContext>(
         () => ({
@@ -67,6 +69,11 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
             toast: {
                 show: toastService.show
             },
+            loader: {
+                show: loaderService.show,
+                hide: loaderService.hide,
+                withLoader: loaderService.withLoader
+            },
             security: {
                 check: () => security.check()
             },
@@ -77,7 +84,7 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
                 }
             }
         }),
-        [t, toastService, language]
+        [t, toastService, loaderService, language]
     );
 
     return (

@@ -2,7 +2,7 @@ import { createContext, useContext } from 'react';
 
 import { Build, ITreeStorage, NumberFormatLocale, QrScanner, UserCountryInfo } from '@safely/core';
 
-import { Security, ToastService } from '../../entities';
+import { LoaderService, Security, ToastService } from '../../entities';
 import { TranslateFn } from '../i18n';
 import { IUnlockableSecuredEncryptedStorage } from '../security';
 
@@ -29,6 +29,8 @@ export interface IAppContext {
     numberFormatLocale: NumberFormatLocale;
 
     toast: ToastService;
+
+    loader: LoaderService;
 
     i18n: {
         language: string;

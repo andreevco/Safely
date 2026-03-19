@@ -5,7 +5,7 @@ import { Keyboard } from 'react-native';
 import { useCreateAccount } from '@safely/ux';
 
 import { usePasscode } from '@mobile/entities/security';
-import { useLoader } from '@mobile/shared/providers/loader';
+import { useLoader } from '@safely/ux';
 
 const routes = {
     passcode: 'OnboardingPasscodeScreen',

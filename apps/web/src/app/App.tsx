@@ -1,7 +1,7 @@
 import { createRootRoute, createRoute, createRouter, RouterProvider } from '@tanstack/react-router';
 import { useMemo } from 'react';
 
-import { AppContext, IAppContext, createPersister, QueryProvider } from '@safely/ux';
+import { AppContext, IAppContext, createPersister, noopLoaderService, QueryProvider } from '@safely/ux';
 
 import packageJson from '../../package.json';
 import { ToastProvider, useToastServiceContext } from './localProviders/ToastProvider';
@@ -33,7 +33,8 @@ function AppContent() {
             sdk: {}, // TODO Implement
             version: packageJson.version,
             build: 'web',
-            toast: toastService
+            toast: toastService,
+            loader: noopLoaderService
         };
     }, [toastService]);
 

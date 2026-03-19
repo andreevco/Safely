@@ -2,10 +2,14 @@ import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { useActiveAccountQuery, useAppContext, useConnectAccountToNewDevice } from '@safely/ux';
+import {
+    useActiveAccountQuery,
+    useAppContext,
+    useConnectAccountToNewDevice,
+    useLoader
+} from '@safely/ux';
 
 import { useOnboardingFlow } from '@mobile/features/onboarding';
-import { useLoader } from '@mobile/shared/providers/loader';
 import { Button, Icon, Checkmark96, Screen, Text } from '@mobile/shared/ui';
 
 import { styles } from './AccountCreatedScreen.styles';

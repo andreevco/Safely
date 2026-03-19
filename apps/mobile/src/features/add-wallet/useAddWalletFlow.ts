@@ -7,8 +7,7 @@ import {
     useImportPortfolio,
     useUnlockableSecretEncryptorFactory
 } from '@safely/ux';
-
-import { useLoader } from '@mobile/shared/providers/loader';
+import { useLoader } from '@safely/ux';
 
 const routes = {
     importWallet: 'ImportWalletModal',

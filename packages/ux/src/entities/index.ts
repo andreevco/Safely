@@ -3,6 +3,7 @@ export * from './asset';
 export * from './fiat';
 export * from './portfolio';
 export * from './toast';
+export * from './loader';
 export * from './account';
 export * from './synced-device';
 export * from './explorer';
