@@ -62,23 +62,29 @@ export class OfflineSyncProvider<S extends Record<string, ZodType>> implements I
     }
 
     public onChange<K extends keyof S>(k: K, observer: (v: z.output<S[K]>) => void): () => void {
+        let lastStored: string | null | undefined;
         return this.container.yManager.onChange(() => {
-            let valueString: string;
+            let v: string | null;
             try {
-                valueString = this.container.yManager.get(k.toString());
+                v = this.container.yManager.get(k.toString());
             } catch (e) {
                 if (e instanceof StorageError) {
-                    return;
+                    v = null;
+                } else {
+                    throw e;
                 }
-                throw e;
+            }
+            if (lastStored !== undefined && v === lastStored) {
+                return;
             }
             const schema = this.structure[k];
             let value: z.output<S[K]>;
             try {
-                value = schema.parse(JSON.parse(valueString));
+                value = schema.parse(v !== null ? JSON.parse(v) : null);
             } catch {
                 return;
             }
+            lastStored = v;
             observer(value);
         });
     }
