@@ -14,7 +14,7 @@ export function useActiveFiatQuery() {
     return useSuspenseQuery<FiatAsset>({
         queryKey: fiatKeys.active({ availableFiats }).toKey(),
         queryFn: async () => {
-            const stored = await get();
+            const stored = get();
 
             if (stored) {
                 const isSupported = availableFiats.some(fiat => fiat.id.isEq(stored.id));

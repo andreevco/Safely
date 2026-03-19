@@ -7,8 +7,7 @@ import {
     useAppContext,
     useSuspenseQuery,
     useActiveAccountSyncedStorage,
-    SecretEncryptor,
-    SyncedStorageStructure
+    SecretEncryptor
 } from '../../shared';
 import { calcSyncedStorageHash } from '../../shared/storage/account/synced/schemas';
 import { calculatePortfoliosHashes } from '../../shared/storage/account/synced/schemas/devices-meta.schema';
@@ -105,9 +104,7 @@ export function useUpdateOwnSyncedDeviceMeta() {
                 appVersion: version,
                 pairedAt: currentMetaExisting?.pairedAt ?? Date.now(),
                 syncState: {
-                    stateHash: calcSyncedStorageHash(
-                        syncAccount.syncProvider.getAll() as unknown as SyncedStorageStructure
-                    ), // TODO sync
+                    stateHash: calcSyncedStorageHash(syncAccount.syncProvider.getAll()),
                     portfoliosHashes: calculatePortfoliosHashes(portfolios)
                 }
             };

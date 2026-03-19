@@ -1,6 +1,6 @@
 import { sha256 } from '@noble/hashes/sha2.js';
 import { bytesToHex } from '@noble/hashes/utils.js';
-import type { ZodType } from 'zod';
+import { z, ZodType } from 'zod';
 
 import { sAccountMeta } from './account-meta.schema';
 import { sDevicesMeta } from './devices-meta.schema';
@@ -14,7 +14,9 @@ export const syncedStorageStructure = {
     devicesMeta: sDevicesMeta
 } as const satisfies Record<string, ZodType>;
 
-export function calcSyncedStorageHash(storage: SyncedStorageStructure) {
+export function calcSyncedStorageHash(storage: {
+    [K in keyof SyncedStorageStructure]: z.output<SyncedStorageStructure[K]>;
+}) {
     const { devicesMeta: _, ...rest } = storage;
     const string = JSON.stringify(rest);
     return bytesToHex(sha256(Buffer.from(string, 'utf8')));

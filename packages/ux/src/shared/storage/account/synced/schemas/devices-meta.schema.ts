@@ -21,7 +21,7 @@ export function calculatePortfoliosHashes(
 ): DeviceMeta['syncState']['portfoliosHashes'] {
     return Object.fromEntries(
         portfolios.map(p => [p, bytesToHex(sha256(Buffer.from(JSON.stringify(p), 'utf8')))])
-    );
+    ) as DeviceMeta['syncState']['portfoliosHashes'];
 }
 
 export type DeviceMeta = z.infer<typeof sDeviceMeta>;
