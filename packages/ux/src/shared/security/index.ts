@@ -131,11 +131,11 @@ export class UnlockableSecretEncryptor implements ISecretEncryptor {
     }
 
     public encrypt(decryptedSecret: SSecretDecrypted): Promise<SSecretEncrypted> {
-        return this.syncEncryptor.encrypt(decryptedSecret, this.#decryptStorage);
+        return this.syncEncryptor.encrypt(decryptedSecret, this.#encryptStorage);
     }
 
     public decrypt(encryptedSecret: SSecretEncrypted): Promise<SSecretDecrypted> {
-        return this.syncEncryptor.decrypt(encryptedSecret, this.#encryptStorage);
+        return this.syncEncryptor.decrypt(encryptedSecret, this.#decryptStorage);
     }
 
     public [Symbol.dispose]() {
