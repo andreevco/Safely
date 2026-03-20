@@ -75,6 +75,12 @@ export class NewDeviceOnboarding<S extends Record<string, ZodType>> {
     }
 
     private async handleOnboardingMessage(msg: OnboardingMessage) {
+        // We don't need to verify signature from the onboarding message because it is the signature for server
+        // operation, not for the new device.
+        if (msg.newIdentityPubKey !== this.ik.publicKey.toString('hex')) {
+            throw new Error('Onboarding message is not for this device');
+        }
+
         const masterKey = await this.getMasterKey(msg);
         const account = await this.accountManager.createOnlineAccountFromMasterKey(
             this.secureEncryptedStorage,
