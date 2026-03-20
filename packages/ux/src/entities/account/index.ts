@@ -138,8 +138,8 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
     const { mutateAsync: setActive } = useSetActiveAccount();
     const { getSecureEncryptedStorage } = useAppContext();
 
-    return useMutation({
-        async mutationFn() {
+    return useMutation<ISyncAccount<SyncedStorageStructure>, Error, { name?: string } | void>({
+        async mutationFn(params) {
             await delay();
             using secureEncryptedStorage = getSecureEncryptedStorage();
             secureEncryptedStorage.UNSAFE_SKIP_SECURITY_CHECK_unlock();
@@ -147,7 +147,10 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
             const account = await factory.createSyncAccount(secureEncryptedStorage);
             await account.syncProvider.set(
                 'meta',
-                generateAccountMeta(account.accountId, t('security.groups.wallet.main'))
+                generateAccountMeta(
+                    account.accountId,
+                    params?.name ?? t('security.groups.wallet.main')
+                )
             );
 
             if (options?.createWallet || options?.setActive) {

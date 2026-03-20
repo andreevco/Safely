@@ -1,11 +1,12 @@
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { useHasPortfolio } from '@safely/ux';
+import { useAppContext, useHasPortfolio } from '@safely/ux';
 
-import { List, Screen } from '@mobile/shared/ui';
+import { List, Screen, Text } from '@mobile/shared/ui';
 
 import {
+    AccountSection,
     CurrentWalletSection,
     RemovePortfolioButton,
     SettingsGroups,
@@ -15,6 +16,7 @@ import { styles } from './SettingsScreen.styles';
 
 export const SettingsScreen = () => {
     const { t } = useTranslation();
+    const { version } = useAppContext();
     const hasPortfolio = useHasPortfolio();
 
     return (
@@ -26,11 +28,15 @@ export const SettingsScreen = () => {
             </Screen.Header>
             <Screen.Scrollable contentContainerStyle={styles.container}>
                 {hasPortfolio && <CurrentWalletSection />}
+                <AccountSection />
                 <SettingsGroups />
                 <List>
                     {hasPortfolio && <RemovePortfolioButton />}
                     <SignOutAccountButton />
                 </List>
+                <Text variant="bodyM" color="tertiary" textAlign="center" style={styles.version}>
+                    Safely · {version}
+                </Text>
             </Screen.Scrollable>
         </Screen>
     );

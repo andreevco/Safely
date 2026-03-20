@@ -2,9 +2,11 @@ import { createStaticNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { AccountCreatedScreen } from '@mobile/screens/AccountCreatedScreen';
+import { AddAccountSheet } from '@mobile/screens/AddAccountSheet';
 import { BiometryScreen } from '@mobile/screens/BiometryScreen';
 import { ChangePasscodeScreen } from '@mobile/screens/ChangePasscodeScreen';
 import { CurrencyScreen } from '@mobile/screens/CurrencyScreen';
+import { CustomizeAccountModal } from '@mobile/screens/CustomizeAccountModal';
 import { CustomizeWalletModal } from '@mobile/screens/CustomizeWalletModal';
 import { DestructiveConfirmSheet } from '@mobile/screens/DestructiveConfirmSheet';
 import { OnboardingNotificationsScreen } from '@mobile/screens/OnboardingNotificationsScreen';
@@ -19,6 +21,7 @@ import {
     RecoveryPhraseSheet
 } from '@mobile/screens/SecurityScreen/screens';
 import { SelectAccountModal } from '@mobile/screens/SelectAccountModal';
+import { SelectAccountSelectorModal } from '@mobile/screens/SelectAccountSelectorModal';
 import { SignInScreen } from '@mobile/screens/SignInScreen';
 import { SignInSuccessScreen } from '@mobile/screens/SignInSuccessScreen';
 import { TransactionScreen } from '@mobile/screens/TransactionScreen';
@@ -56,10 +59,13 @@ export const RootStack = createNativeStackNavigator({
                 RecoveryPhraseModal: RecoveryPhraseSheet,
                 PasscodeVerificationModal: PasscodeVerificationScreen,
                 ChangePasscodeModal: ChangePasscodeScreen,
+                SignInModal: SignInScreen,
+                CustomizeAccountModal: CustomizeAccountModal,
                 CustomizeWalletModal: CustomizeWalletModal,
                 QRScanModal: QRScanModal,
                 AddWalletModal: AddWalletStack,
                 SelectAccountModal: SelectAccountModal,
+                SelectAccountSelectorModal: SelectAccountSelectorModal,
                 ReceiveAssetModal: ReceiveAssetModal,
                 SendAssetModal: SendStack
             },
@@ -69,6 +75,7 @@ export const RootStack = createNativeStackNavigator({
         },
         Sheets: {
             screens: {
+                AddAccountSheet: AddAccountSheet,
                 RecoveryConfirmSheet: RecoveryConfirmSheet,
                 DestructiveConfirmSheet: DestructiveConfirmSheet,
                 DisconnectDeviceSheet: DisconnectDeviceSheet,
