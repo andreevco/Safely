@@ -49,8 +49,11 @@ const AddAccountContent = () => {
         navigation.navigate('CustomizeAccountModal', {
             defaultName,
             onSave: async (name: string) => {
+                using secureEncryptedStorage = getSecureEncryptedStorage();
+                await secureEncryptedStorage.unlock();
+
                 await withLoader(async () => {
-                    await createAccount({ name });
+                    await createAccount({ name, secureEncryptedStorage });
                 });
 
                 toast(t('addAccount.toastAccountCreated'));
