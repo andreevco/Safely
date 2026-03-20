@@ -79,6 +79,7 @@ export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAcco
             ikPub,
             this.container.keyServiceFactory.createDmkSignerService(secureEncryptedStorage)
         );
+        await this.syncProvider.triggerSync();
     }
 
     public async getMyDeviceIkPub(): Promise<Buffer> {

@@ -12,7 +12,7 @@ import { OfflineSyncProvider } from '../sync-provider/offline-sync-provider';
 import { OnlineSyncProvider } from '../sync-provider/online-sync-provider';
 
 export class AccountManager<S extends Record<string, ZodType>> {
-    private accounts: ISyncAccount<S>[] = [];
+    private readonly accounts = new Map<string, ISyncAccount<S>>();
 
     constructor(
         private readonly storage: ITreeStorage,
@@ -24,22 +24,25 @@ export class AccountManager<S extends Record<string, ZodType>> {
     ) {}
 
     public async getAccounts(): Promise<ISyncAccount<S>[]> {
-        if (this.accounts.length === 0) {
+        if (this.accounts.size === 0) {
             await this.initializeAccounts();
         }
-        return this.accounts;
+        return [...this.accounts.values()];
     }
 
     private async initializeAccounts(): Promise<void> {
         const accountInfos = await this.syncAccountIdRepository.getSyncAccounts();
-        const accounts: ISyncAccount<S>[] = [];
         for (const accountInfo of accountInfos) {
-            accounts.push(await this.getSyncAccount(accountInfo.accountId));
+            const acc = await this.getSyncAccount(accountInfo.accountId);
+            this.accounts.set(acc.accountId, acc);
         }
-        this.accounts = accounts;
     }
 
     public async getSyncAccount(accountId: string): Promise<ISyncAccount<S>> {
+        if (this.accounts.has(accountId)) {
+            return this.accounts.get(accountId)!;
+        }
+
         const accountInfo = await this.syncAccountIdRepository.getSyncAccount(accountId);
 
         const storage = getSyncAccountStorage(this.storage, accountInfo.accountId);
@@ -73,7 +76,7 @@ export class AccountManager<S extends Record<string, ZodType>> {
     ): Promise<ISyncAccount<S>> {
         const account =
             await this.createAccountService.createOfflineAccount(secureEncryptedStorage);
-        this.accounts.push(account);
+        this.accounts.set(account.accountId, account);
         return account;
     }
 
@@ -87,7 +90,7 @@ export class AccountManager<S extends Record<string, ZodType>> {
             masterKey,
             ik
         );
-        this.accounts.push(account);
+        this.accounts.set(account.accountId, account);
         return account;
     }
 
@@ -110,6 +113,6 @@ export class AccountManager<S extends Record<string, ZodType>> {
         await secureKeychainStorage.clear();
         await this.syncAccountIdRepository.removeAccount(accountId);
 
-        this.accounts = this.accounts.filter(acc => acc.accountId !== accountId);
+        this.accounts.delete(accountId);
     }
 }

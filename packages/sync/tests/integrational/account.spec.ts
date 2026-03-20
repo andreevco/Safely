@@ -124,6 +124,48 @@ describe('Account', () => {
         });
     });
 
+    it('should reconnect and accept update after reconnect', async () => {
+        const account = await factory.createSyncAccount(secureEncryptedStorage);
+        const { newAccount } = await onboardDevice(account, secureEncryptedStorage);
+
+        await account.syncProvider.set('wallets', [
+            {
+                name: 'My Wallet',
+                mnemonic: 'test'
+            }
+        ]);
+
+        await vi.waitFor(async () => {
+            const wallets = newAccount.syncProvider.get('wallets');
+            expect(wallets).toEqual([
+                {
+                    name: 'My Wallet',
+                    mnemonic: 'test'
+                }
+            ]);
+        });
+
+        account.syncProvider.restart();
+        await account.syncProvider.waitForInitialSync();
+
+        await account.syncProvider.set('wallets', [
+            {
+                name: 'My Wallet 2',
+                mnemonic: 'test'
+            }
+        ]);
+
+        await vi.waitFor(async () => {
+            const wallets = newAccount.syncProvider.get('wallets');
+            expect(wallets).toEqual([
+                {
+                    name: 'My Wallet 2',
+                    mnemonic: 'test'
+                }
+            ]);
+        });
+    });
+
     it('should delete offline account', async () => {
         const account = await factory.createSyncAccount(secureEncryptedStorage);
         await factory.deleteLocalAccount(account.accountId, secureEncryptedStorage);

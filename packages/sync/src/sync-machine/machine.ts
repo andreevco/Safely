@@ -100,6 +100,11 @@ export const createSyncMachine = () => {
             id: 'syncMachine',
             initial: 'initialSyncing',
             context: ({ input }) => defaultConfig(input),
+            on: {
+                LOCAL_UPDATE: {
+                    actions: ['markDirty']
+                }
+            },
             states: {
                 initialSyncing: {
                     invoke: {
