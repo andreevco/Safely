@@ -16,7 +16,7 @@ export const styles = StyleSheet.create(theme => ({
     ticksContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'flex-end',
+        alignItems: 'flex-start',
         height: 16
     },
     tick: (variant: 'small' | 'medium' | 'large') => ({
@@ -25,6 +25,9 @@ export const styles = StyleSheet.create(theme => ({
         backgroundColor:
             variant === 'small' ? theme.colors.icon.tertiary : theme.colors.icon.secondary
     }),
+    datesWrapper: {
+        position: 'relative'
+    },
     dates: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -32,5 +35,11 @@ export const styles = StyleSheet.create(theme => ({
     },
     dateContainer: {
         flex: 1
+    },
+    timeLabelContainer: {
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        justifyContent: 'center'
     }
 }));

@@ -1,3 +1,4 @@
+import { impactAsync, ImpactFeedbackStyle } from 'expo-haptics';
 import { useCallback, useLayoutEffect, useRef } from 'react';
 import { useSharedValue } from 'react-native-reanimated';
 
@@ -33,7 +34,9 @@ export const PortfoliosList = (props: PortfoliosListProps) => {
 
     const handleSelect = useCallback(
         (portfolio: Portfolio) => {
-            setActivePortfolio({ id: portfolio.id }, { onSuccess: onSelect });
+            void impactAsync(ImpactFeedbackStyle.Medium);
+            onSelect();
+            requestAnimationFrame(() => setActivePortfolio({ id: portfolio.id }));
         },
         [setActivePortfolio, onSelect]
     );

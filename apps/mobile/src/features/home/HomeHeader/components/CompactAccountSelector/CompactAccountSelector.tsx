@@ -1,5 +1,4 @@
 import { useNavigation } from '@react-navigation/native';
-import { impactAsync, ImpactFeedbackStyle } from 'expo-haptics';
 import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
@@ -93,7 +92,6 @@ export const CompactAccountSelector = () => {
                     }}
                     onSelect={() => {
                         popupMenuRef.current?.close();
-                        impactAsync(ImpactFeedbackStyle.Medium);
                     }}
                 />
             </View>

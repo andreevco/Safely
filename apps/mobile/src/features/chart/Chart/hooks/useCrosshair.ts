@@ -1,128 +1,146 @@
 import { impactAsync, ImpactFeedbackStyle, selectionAsync } from 'expo-haptics';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Gesture } from 'react-native-gesture-handler';
-import { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
+import { type SharedValue, useSharedValue } from 'react-native-reanimated';
 import { runOnJS } from 'react-native-worklets';
 
 import { useDateFormatter } from '@safely/ux';
 
 import type { ChartPoint } from '@mobile/shared/utils/chart';
 
-import { ChartPeriod } from '../config';
+import { CHART_CONFIG, ChartPeriod } from '../config';
 
-const getTimeLabelFormat = (period: ChartPeriod): Intl.DateTimeFormatOptions => {
-    switch (period) {
-        case ChartPeriod.ONE_HOUR:
-        case ChartPeriod.ONE_DAY:
-            return { hour: 'numeric', minute: '2-digit' };
-        case ChartPeriod.ONE_WEEK:
-        case ChartPeriod.ONE_MONTH:
-        case ChartPeriod.NINETY_DAYS:
-            return { month: 'short', day: 'numeric' };
-        default:
-            return { month: 'short', year: 'numeric' };
+const findNearestIndex = (points: ChartPoint[], touchX: number): number => {
+    'worklet';
+    const len = points.length;
+    if (len === 0) return -1;
+
+    let low = 0;
+    let high = len - 1;
+
+    while (low < high) {
+        const mid = (low + high) >> 1;
+        if (points[mid].x < touchX) {
+            low = mid + 1;
+        } else {
+            high = mid;
+        }
     }
+
+    if (low > 0 && Math.abs(points[low - 1].x - touchX) < Math.abs(points[low].x - touchX)) {
+        return low - 1;
+    }
+
+    return low;
 };
 
 type UseCrosshairParams = {
-    chartPointsRef: React.RefObject<ChartPoint[]>;
+    chartPointsShared: SharedValue<ChartPoint[]>;
+    pathFractionsShared: SharedValue<number[]>;
     selectedPeriod: ChartPeriod;
 };
 
 export const useCrosshair = (params: UseCrosshairParams) => {
-    const { chartPointsRef, selectedPeriod } = params;
+    const { chartPointsShared, pathFractionsShared, selectedPeriod } = params;
 
-    const [activePoint, setActivePoint] = useState<ChartPoint | null>(null);
-    const lastPointIndexRef = useRef(-1);
     const isActive = useSharedValue(false);
+    const activeX = useSharedValue(0);
+    const activeY = useSharedValue(0);
+    const lastPointIndex = useSharedValue(-1);
+    const activePathFraction = useSharedValue(0);
+    const isTimeLabelReady = useSharedValue(false);
+
+    const [activePrice, setActivePrice] = useState<number | undefined>(undefined);
+    const [formattedTime, setFormattedTime] = useState('');
     const dateFormatter = useDateFormatter();
 
-    const findNearestPoint = useCallback(
-        (touchX: number): ChartPoint | null => {
-            const points = chartPointsRef.current;
-            if (!points || points.length === 0) return null;
-
-            let closest = points[0];
-            let minDist = Math.abs(points[0].x - touchX);
-
-            for (let i = 1; i < points.length; i++) {
-                const dist = Math.abs(points[i].x - touchX);
-                if (dist < minDist) {
-                    minDist = dist;
-                    closest = points[i];
-                }
-            }
-
-            return closest;
+    const onPointChanged = useCallback(
+        (timestamp: number, price: number) => {
+            void selectionAsync();
+            setActivePrice(price);
+            setFormattedTime(
+                dateFormatter(CHART_CONFIG[selectedPeriod].crosshairDateFormat).format(
+                    new Date(timestamp)
+                )
+            );
+            isTimeLabelReady.value = true;
         },
-        [chartPointsRef]
+        [dateFormatter, selectedPeriod, isTimeLabelReady]
     );
-
-    const handleGestureActive = useCallback(
-        (x: number) => {
-            const point = findNearestPoint(x);
-            if (!point) return;
-
-            const points = chartPointsRef.current;
-            const pointIndex = points ? points.indexOf(point) : -1;
-
-            if (pointIndex !== lastPointIndexRef.current) {
-                lastPointIndexRef.current = pointIndex;
-                void selectionAsync();
-            }
-
-            setActivePoint(point);
-        },
-        [findNearestPoint, chartPointsRef]
-    );
-
-    const handleGestureEnd = useCallback(() => {
-        lastPointIndexRef.current = -1;
-        setActivePoint(null);
-    }, []);
 
     const triggerHaptic = useCallback(() => {
         void impactAsync(ImpactFeedbackStyle.Light);
     }, []);
 
+    const onGestureEnd = useCallback(() => {
+        setActivePrice(undefined);
+        setFormattedTime('');
+    }, []);
+
     const gesture = useMemo(
         () =>
             Gesture.Pan()
-                .activateAfterLongPress(200)
                 .minDistance(0)
                 .onStart(e => {
                     'worklet';
                     isActive.value = true;
+                    isTimeLabelReady.value = false;
                     runOnJS(triggerHaptic)();
-                    runOnJS(handleGestureActive)(e.x);
+
+                    const points = chartPointsShared.value;
+                    const idx = findNearestIndex(points, e.x);
+                    if (idx === -1) return;
+
+                    activeX.value = points[idx].x;
+                    activeY.value = points[idx].y;
+                    activePathFraction.value = pathFractionsShared.value[idx] ?? 0;
+                    lastPointIndex.value = idx;
+                    runOnJS(onPointChanged)(points[idx].timestamp, points[idx].price);
                 })
                 .onUpdate(e => {
                     'worklet';
-                    runOnJS(handleGestureActive)(e.x);
+                    const points = chartPointsShared.value;
+                    const idx = findNearestIndex(points, e.x);
+                    if (idx === -1) return;
+
+                    activeX.value = points[idx].x;
+                    activeY.value = points[idx].y;
+                    activePathFraction.value = pathFractionsShared.value[idx] ?? 0;
+
+                    if (idx !== lastPointIndex.value) {
+                        lastPointIndex.value = idx;
+                        runOnJS(onPointChanged)(points[idx].timestamp, points[idx].price);
+                    }
                 })
                 .onEnd(() => {
                     'worklet';
                     isActive.value = false;
-                    runOnJS(handleGestureEnd)();
+                    lastPointIndex.value = -1;
+                    runOnJS(onGestureEnd)();
                 }),
-        [handleGestureActive, handleGestureEnd, triggerHaptic, isActive]
+        [
+            chartPointsShared,
+            pathFractionsShared,
+            isActive,
+            activeX,
+            activeY,
+            activePathFraction,
+            isTimeLabelReady,
+            lastPointIndex,
+            triggerHaptic,
+            onPointChanged,
+            onGestureEnd
+        ]
     );
 
-    const formattedTime = useMemo(() => {
-        if (!activePoint) return '';
-        return dateFormatter(getTimeLabelFormat(selectedPeriod)).format(
-            new Date(activePoint.timestamp)
-        );
-    }, [activePoint, dateFormatter, selectedPeriod]);
-
-    const periodsAnimatedStyle = useAnimatedStyle(() => ({
-        opacity: isActive.value ? 0 : 1
-    }));
-
     return {
-        activePoint,
+        activeX,
+        activeY,
+        isActive,
+        activePathFraction,
+        isTimeLabelReady,
+        activePrice,
         gesture,
-        formattedTime,
-        periodsAnimatedStyle
+        formattedTime
     };
 };

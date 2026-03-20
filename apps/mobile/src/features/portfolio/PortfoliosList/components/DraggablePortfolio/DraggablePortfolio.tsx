@@ -51,7 +51,7 @@ export const DraggablePortfolio = (props: DraggablePortfolioProps) => {
             draggedIndex={draggedIndex}
             offsetY={offsetY}
             moveItem={moveItem}
-            activationDelay={300}
+            activationDelay={120}
             onPress={() => handleSelect(portfolio)}
             onDragStart={handleDragStart}
         >
