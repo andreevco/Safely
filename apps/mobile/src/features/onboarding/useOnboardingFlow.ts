@@ -2,8 +2,7 @@ import { CommonActions, useNavigation } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { Keyboard } from 'react-native';
 
-import { useCreateAccount } from '@safely/ux';
-import { useLoader } from '@safely/ux';
+import { useAppContext, useCreateAccount, useLoader } from '@safely/ux';
 
 import { usePasscode } from '@mobile/entities/security';
 
@@ -22,8 +21,9 @@ export function useOnboardingFlow() {
         createWallet: true,
         setActive: true
     });
-    const { set: setPasscode } = usePasscode();
     const { withLoader } = useLoader();
+    const { set: setPasscode } = usePasscode();
+    const { getSecureEncryptedStorage } = useAppContext();
 
     const onStartCreate = useCallback(() => {
         _isSignInFlow = false;
@@ -41,7 +41,12 @@ export function useOnboardingFlow() {
 
             if (!_isSignInFlow) {
                 Keyboard.dismiss();
-                await withLoader(createAccount);
+                await withLoader(async () => {
+                    using secureEncryptedStorage = getSecureEncryptedStorage();
+                    secureEncryptedStorage.UNSAFE_SKIP_SECURITY_CHECK_unlock();
+
+                    await createAccount({ secureEncryptedStorage });
+                });
             }
 
             navigation.dispatch(CommonActions.navigate(routes.biometry));

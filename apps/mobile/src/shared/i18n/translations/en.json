@@ -75,6 +75,9 @@
     "accounts": {
         "title": "Wallets"
     },
+    "accountSelector": {
+        "title": "Accounts"
+    },
     "actions": {
         "edit": "Edit",
         "done": "Done",
@@ -199,6 +202,12 @@
         "namePlaceholder": "Wallet name",
         "save": "Save"
     },
+    "customizeAccount": {
+        "title": "Customize your account",
+        "subtitle": "Name this account to tell it apart here.\nSyncs across your devices.",
+        "namePlaceholder": "Account name",
+        "save": "Save"
+    },
     "confirmation": {
         "title": "Send {{symbol}}",
         "success": "Sent",
@@ -314,7 +323,7 @@
         "addOrEdit": "Add or Edit"
     },
     "addWallet": {
-        "title": "Add Wallet",
+        "title": "Add wallet",
         "subtitle": "Choose how you want to add a wallet.",
         "createNew": {
             "title": "Create new",
@@ -328,6 +337,14 @@
             "title": "Watch account",
             "subtitle": "Track by wallet address"
         }
+    },
+    "addAccount": {
+        "title": "Add account",
+        "subtitle": "Add another account to keep things separate — personal, family, or work.",
+        "createNew": "Create new account",
+        "signIn": "Sign in",
+        "defaultName": "Account {{number}}",
+        "toastAccountCreated": "Account created"
     },
     "portfoliosPopup": {
         "reorderHint": "Press and hold to reorder.",
@@ -366,7 +383,13 @@
     "settings": {
         "title": "Settings",
         "deviceConnected": "Successfully linked",
+        "addAccount": "Add account",
+        "walletsCount_one": "{{count}} wallet",
+        "walletsCount_other": "{{count}} wallets",
         "groups": {
+            "currentAccount": {
+                "title": "Current account"
+            },
             "currentWallet": {
                 "title": "Current wallet",
                 "options": {
@@ -374,8 +397,10 @@
                 }
             },
             "account": {
-                "title": "Account",
+                "title": "Settings",
                 "options": {
+                    "editAccount": "Edit account",
+                    "addressBook": "Address book",
                     "notifications": "Notifications",
                     "security": "Security",
                     "language": "Language"

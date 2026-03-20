@@ -75,6 +75,9 @@
             "subtitle": "Создайте или импортируйте кошелёк,\nчтобы начать использовать аккаунт"
         }
     },
+    "accountSelector": {
+        "title": "Аккаунты"
+    },
     "qrScan": {
         "title": "Сканировать QR-код",
         "subtitle": "Отсканируйте адрес BTC для продолжения."
@@ -164,6 +167,12 @@
         "title": "Настройте кошелёк",
         "description": "Выберите имя и иконку для кошелька, чтобы его было легко узнать.",
         "namePlaceholder": "Название кошелька",
+        "save": "Сохранить"
+    },
+    "customizeAccount": {
+        "title": "Настройте аккаунт",
+        "subtitle": "Назовите аккаунт, чтобы его было легко отличить.\nСинхронизируется между устройствами.",
+        "namePlaceholder": "Название аккаунта",
         "save": "Сохранить"
     },
     "confirmation": {
@@ -292,6 +301,14 @@
             "subtitle": "Отслеживать по адресу кошелька"
         }
     },
+    "addAccount": {
+        "title": "Добавить аккаунт",
+        "subtitle": "Добавьте ещё один аккаунт — личный, семейный или рабочий.",
+        "createNew": "Создать новый аккаунт",
+        "signIn": "Войти",
+        "defaultName": "Аккаунт {{number}}",
+        "toastAccountCreated": "Аккаунт создан"
+    },
     "biometry": {
         "enable": "Включить {{name}}",
         "default": {
@@ -322,10 +339,25 @@
     "settings": {
         "title": "Настройки",
         "deviceConnected": "Успешно привязано",
+        "addAccount": "Добавить аккаунт",
+        "walletsCount_one": "{{count}} кошелёк",
+        "walletsCount_few": "{{count}} кошелька",
+        "walletsCount_many": "{{count}} кошельков",
         "groups": {
-            "account": {
-                "title": "Аккаунт",
+            "currentAccount": {
+                "title": "Текущий аккаунт"
+            },
+            "currentWallet": {
+                "title": "Текущий кошелёк",
                 "options": {
+                    "wallet": "Кошелёк"
+                }
+            },
+            "account": {
+                "title": "Настройки",
+                "options": {
+                    "editAccount": "Редактировать аккаунт",
+                    "addressBook": "Адресная книга",
                     "notifications": "Уведомления",
                     "security": "Безопасность",
                     "language": "Язык"

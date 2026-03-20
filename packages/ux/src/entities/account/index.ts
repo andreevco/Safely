@@ -136,23 +136,27 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
     const client = useQueryClient();
     const factory = useAccountsFactory();
     const { mutateAsync: setActive } = useSetActiveAccount();
-    const { getSecureEncryptedStorage } = useAppContext();
 
-    return useMutation({
-        async mutationFn() {
+    return useMutation<
+        ISyncAccount<SyncedStorageStructure>,
+        Error,
+        { name?: string; secureEncryptedStorage: ITreeStorage }
+    >({
+        async mutationFn(params) {
             await delay();
-            using secureEncryptedStorage = getSecureEncryptedStorage();
-            secureEncryptedStorage.UNSAFE_SKIP_SECURITY_CHECK_unlock();
 
-            const account = await factory.createSyncAccount(secureEncryptedStorage);
+            const account = await factory.createSyncAccount(params.secureEncryptedStorage);
             await account.syncProvider.set(
                 'meta',
-                generateAccountMeta(account.accountId, t('security.groups.wallet.main'))
+                generateAccountMeta(
+                    account.accountId,
+                    params?.name ?? t('security.groups.wallet.main')
+                )
             );
 
             if (options?.createWallet || options?.setActive) {
                 const portfolioFactory = new PortfolioFactory(
-                    new SecretEncryptor(account.secretEncryptor, secureEncryptedStorage)
+                    new SecretEncryptor(account.secretEncryptor, params.secureEncryptedStorage)
                 );
                 using accessorVault = generateBip39Accessor();
                 const portfolio = await portfolioFactory.generatePortfolioBip39(accessorVault, {
