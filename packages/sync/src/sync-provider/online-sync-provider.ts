@@ -1,6 +1,6 @@
 import { createActor } from 'xstate';
-import { ZodType } from 'zod';
 import * as z from 'zod';
+import { ZodType } from 'zod';
 
 import { ISyncProvider } from './I-sync-provider';
 import { SyncContainer } from '../sync-container';
@@ -14,7 +14,7 @@ export class OnlineSyncProvider<S extends Record<string, ZodType>>
     constructor(
         structure: S,
         container: SyncContainer,
-        private readonly syncMachine: SyncMachine
+        private syncMachine: SyncMachine
     ) {
         super(structure, container, 'online');
     }
@@ -65,6 +65,12 @@ export class OnlineSyncProvider<S extends Record<string, ZodType>>
         this.syncMachine.stop();
     }
 
+    public restart(): void {
+        this.syncMachine.stop();
+        this.syncMachine = machineFromContainer(this.container);
+        this.syncMachine.start();
+    }
+
     public async remove(k: keyof S): Promise<void> {
         await super.remove(k);
 
@@ -80,4 +86,23 @@ export class OnlineSyncProvider<S extends Record<string, ZodType>>
     public triggerSync(): void {
         this.syncMachine.send({ type: 'LOCAL_UPDATE' });
     }
+}
+
+function machineFromContainer(container: SyncContainer) {
+    return createActor(createSyncMachine(), {
+        input: {
+            syncStateRepository: container.syncStateRepository,
+            updateHandler: container.updateHandler,
+            yManager: container.yManager,
+            updateEncryptor: container.updateEncryptor,
+            snapshotsApi: container.snapshotApi,
+            snapshotsSse: container.snapshotSse,
+            ikService: container.ikService
+        },
+        inspect: event => {
+            if (event.type === '@xstate.event') {
+                // console.log(`[SyncMachine] Event: ${event.event.type}`);
+            }
+        }
+    });
 }

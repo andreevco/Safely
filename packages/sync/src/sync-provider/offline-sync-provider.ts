@@ -18,6 +18,10 @@ export class OfflineSyncProvider<S extends Record<string, ZodType>> implements I
         // nothing to dispose in the base class, but subclasses can override this method to clean up resources
     }
 
+    public restart() {
+        // in offline mode, restart doesn't do anything
+    }
+
     public get<K extends keyof S>(k: K): z.output<S[K]> {
         let v: string | null;
         try {
