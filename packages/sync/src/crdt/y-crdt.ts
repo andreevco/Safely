@@ -44,9 +44,9 @@ export class YCRDT implements ICRDT<Buffer> {
     }
 
     public equals(other: YCRDT): boolean {
-        const thisState = Y.encodeStateVector(this.doc);
-        const otherState = Y.encodeStateVector(other.doc);
-        return Buffer.from(thisState).equals(Buffer.from(otherState));
+        const thisSnapshot = Buffer.from(Y.encodeStateAsUpdateV2(this.doc));
+        const otherSnapshot = Buffer.from(Y.encodeStateAsUpdateV2(other.doc));
+        return thisSnapshot.equals(otherSnapshot);
     }
 
     public toRaw(): Y.Doc {
