@@ -1,3 +1,4 @@
+import { sha256 } from '@noble/hashes/sha2.js';
 import * as Y from 'yjs';
 
 import { getSnapshotProof, getSnapshotProofFromCiphertextHash } from './snapshot-proof';
@@ -31,9 +32,15 @@ export class UpdateHandler {
 
         if (syncState.snapshotProof.length !== 0) {
             let proof = syncState.snapshotProof;
-            for (const proofItem of upd.snapshotProofChain) {
-                proof = getSnapshotProofFromCiphertextHash(proof, proofItem);
+            if (upd.snapshotProofChain.length >= 1) {
+                for (const proofItem of upd.snapshotProofChain.slice(
+                    0,
+                    upd.snapshotProofChain.length - 1
+                )) {
+                    proof = getSnapshotProofFromCiphertextHash(proof, proofItem);
+                }
             }
+
             const expectedProof = getSnapshotProof(proof, upd.ciphertext);
 
             if (!upd.snapshotProof.equals(expectedProof)) {
@@ -42,7 +49,8 @@ export class UpdateHandler {
                 );
                 const isProofCorrect = await this.fetchProofChainAndVerify(
                     syncState,
-                    upd.snapshotProof
+                    upd.snapshotProof,
+                    Buffer.from(sha256(upd.ciphertext)).toString('hex')
                 );
                 if (!isProofCorrect) {
                     throw new Error('Invalid snapshot proof');
@@ -87,7 +95,8 @@ export class UpdateHandler {
 
     private async fetchProofChainAndVerify(
         syncState: SyncState,
-        actualSnapshotProof: Buffer
+        actualSnapshotProof: Buffer,
+        actualSnapshotCiphertextHash: string
     ): Promise<boolean> {
         const proofChain = await this.snapshotsApi.getSnapshotProofChain({
             snapshotProof: syncState.snapshotProof.toString('hex')
@@ -102,7 +111,10 @@ export class UpdateHandler {
                 return true;
             }
         }
-        return tempProof.equals(actualSnapshotProof);
+        return (
+            proofChain.proofChain[proofChain.proofChain.length - 1] ===
+                actualSnapshotCiphertextHash && tempProof.equals(actualSnapshotProof)
+        );
     }
 
     private hasLocalChanges(upd: Buffer): boolean {
