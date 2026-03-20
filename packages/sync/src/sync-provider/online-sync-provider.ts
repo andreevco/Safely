@@ -77,7 +77,7 @@ export class OnlineSyncProvider<S extends Record<string, ZodType>>
         this.syncMachine.send({ type: 'LOCAL_UPDATE' });
     }
 
-    public async triggerSync(): Promise<void> {
+    public triggerSync(): void {
         this.syncMachine.send({ type: 'LOCAL_UPDATE' });
     }
 }

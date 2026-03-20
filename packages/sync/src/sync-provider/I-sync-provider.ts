@@ -24,5 +24,5 @@ export interface ISyncProvider<S extends Record<string, ZodType>> {
      * This method forces sending update to the server.
      * This method is mainly for debug purposes.
      */
-    triggerSync(): Promise<void>;
+    triggerSync(): void;
 }

@@ -100,7 +100,7 @@ export class OfflineSyncProvider<S extends Record<string, ZodType>> implements I
         // in offline mode, data is always available locally
     }
 
-    public async triggerSync(): Promise<void> {
+    public triggerSync(): void {
         // in offline mode, triggerSync doesn't do anything
     }
 }
