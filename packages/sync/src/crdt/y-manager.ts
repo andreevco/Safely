@@ -91,6 +91,7 @@ export function deviceOpIsEquals(op1: DeviceOp, op2: DeviceOp): boolean {
         op1.type === op2.type &&
         op1.ikPub.equals(op2.ikPub) &&
         op1.ts === op2.ts &&
+        op1.kid.equals(op2.kid) &&
         op1.sig.equals(op2.sig)
     );
 }
