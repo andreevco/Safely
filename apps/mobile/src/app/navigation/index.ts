@@ -24,6 +24,7 @@ import { SelectAccountModal } from '@mobile/screens/SelectAccountModal';
 import { SelectAccountSelectorModal } from '@mobile/screens/SelectAccountSelectorModal';
 import { SignInScreen } from '@mobile/screens/SignInScreen';
 import { SignInSuccessScreen } from '@mobile/screens/SignInSuccessScreen';
+import { SignOutAccountSheet } from '@mobile/screens/SignOutAccountSheet';
 import { TransactionScreen } from '@mobile/screens/TransactionScreen';
 import { WelcomeScreen } from '@mobile/screens/WelcomeScreen';
 
@@ -79,7 +80,8 @@ export const RootStack = createNativeStackNavigator({
                 RecoveryConfirmSheet: RecoveryConfirmSheet,
                 DestructiveConfirmSheet: DestructiveConfirmSheet,
                 DisconnectDeviceSheet: DisconnectDeviceSheet,
-                RemoveWalletSheet: RemoveWalletSheet
+                RemoveWalletSheet: RemoveWalletSheet,
+                SignOutAccountSheet: SignOutAccountSheet
             },
             screenOptions: {
                 animationDuration: 0,
