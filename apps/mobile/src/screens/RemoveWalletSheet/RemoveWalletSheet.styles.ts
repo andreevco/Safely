@@ -10,22 +10,6 @@ export const styles = StyleSheet.create((theme, rt) => ({
     subtitle: {
         width: '100%'
     },
-    checkboxRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: theme.spacing[16],
-        marginVertical: theme.spacing[16],
-        marginHorizontal: theme.spacing[24],
-        paddingVertical: theme.spacing[12],
-        paddingHorizontal: theme.spacing[16],
-        borderRadius: theme.radius.md,
-        borderWidth: theme.border.hairline,
-        borderColor: theme.colors.other.transparentElement,
-        backgroundColor: theme.colors.background.secondary
-    },
-    checkboxText: {
-        flex: 1
-    },
     footer: {
         width: '100%',
         gap: theme.spacing[8],
