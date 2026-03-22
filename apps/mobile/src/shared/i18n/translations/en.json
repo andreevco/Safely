@@ -417,15 +417,24 @@
         },
         "signOutAccount": {
             "title": "Sign out account “{{name}}”",
-            "confirm": {
-                "title": "Erase this device?",
-                "message": "All accounts and data will be permanently removed from this device. Only accounts with a backup can be restored.",
-                "slider": {
-                    "label": "Erase device",
-                    "description": "Slide to erase"
+            "sheet": {
+                "title": "Sign out of {{name}}?",
+                "noDevices": {
+                    "subtitle": "This is the only device with a copy of this account. If you sign out, you will permanently lose access.",
+                    "protectLink": "Protect account now",
+                    "checkbox": "I understand that I will permanently lose this account."
                 },
-                "cancel": "Cancel"
-            }
+                "fullCopy": {
+                    "subtitle": "After signing out, your account will remain available on your other linked devices. You can restore access from them at any time."
+                },
+                "partialCopy": {
+                    "subtitle": "Other devices haven't finished syncing this account. They need to be online to update.",
+                    "checkbox": "I understand that some account data may be lost."
+                },
+                "signOutButton": "Sign out anyway",
+                "cancelButton": "Cancel"
+            },
+            "toastAccountRemoved": "Account removed from this device"
         },
         "removePortfolio": {
             "title": "Remove wallet “{{name}}”",
@@ -479,8 +488,8 @@
             "send": "Send"
         },
         "dateHeaders": {
-          "today": "Today",
-          "yesterday": "Yesterday"
+            "today": "Today",
+            "yesterday": "Yesterday"
         },
         "transactionInfo": {
             "sent": "Sent",
