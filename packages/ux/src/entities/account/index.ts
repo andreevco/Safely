@@ -352,7 +352,10 @@ export function useDeleteAccount() {
 
             await accountFactory.deleteLocalAccount(account.accountId, secureEncryptedStorage);
             await removeActiveAccount();
-            client.removeQueries({ queryKey: accountKey.toKey() });
+            client.removeQueries({
+                queryKey: accountKey.accountId(account.accountId).toKey()
+            });
+            await client.invalidateQueries({ queryKey: accountKey.list.toKey() });
         }
     });
 }
