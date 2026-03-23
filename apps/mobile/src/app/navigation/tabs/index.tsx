@@ -4,6 +4,7 @@ import {
     createBottomTabNavigator
 } from '@react-navigation/bottom-tabs';
 import i18next from 'i18next';
+import { useEffect, useState } from 'react';
 
 import { useHasPortfolio } from '@safely/ux';
 
@@ -13,8 +14,14 @@ import { Bolt28, Home28, Icon } from '@mobile/shared/ui/Icon';
 
 const TabBar = (props: BottomTabBarProps) => {
     const hasPortfolio = useHasPortfolio();
+    // Defer BottomTabBar render to avoid setState in onLayout before mount
+    const [mounted, setMounted] = useState(false);
 
-    if (!hasPortfolio) {
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    if (!hasPortfolio || !mounted) {
         return null;
     }
 
