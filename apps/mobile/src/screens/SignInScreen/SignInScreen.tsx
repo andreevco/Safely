@@ -1,5 +1,5 @@
 import { StaticScreenProps, useNavigation } from '@react-navigation/native';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import QRCode from 'react-native-qrcode-skia';
@@ -26,9 +26,13 @@ export const SignInScreen = (props: SignInScreenProps) => {
     const toast = useToast();
     const navigation = useNavigation<RootStackNavigationProp>();
 
+    const connectedRef = useRef(false);
+
     useEffect(() => {
         return () => {
-            connector.abort();
+            if (!connectedRef.current) {
+                connector.abort();
+            }
         };
     }, [connector]);
 
@@ -39,6 +43,7 @@ export const SignInScreen = (props: SignInScreenProps) => {
     }, [copy, connector.connectionString]);
 
     const handleConnected = useCallback(() => {
+        connectedRef.current = true;
         navigation.navigate('SignInSuccessScreen');
     }, [navigation]);
 
