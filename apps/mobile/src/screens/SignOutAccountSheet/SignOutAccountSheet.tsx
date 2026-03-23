@@ -6,11 +6,10 @@ import { View } from 'react-native';
 import { BottomSheet, Button, ConfirmCheckbox, Text, useBottomSheet } from '@mobile/shared/ui';
 
 import { styles } from './SignOutAccountSheet.styles';
-import { AccountSyncState } from './useAccountSyncState';
+import { AccountSyncState, useAccountSyncState } from './useAccountSyncState';
 
 type SignOutAccountParams = {
     accountName: string;
-    syncState: AccountSyncState;
     onConfirm: () => Promise<void>;
     onProtect: () => void;
 };
@@ -20,10 +19,11 @@ type SignOutAccountSheetProps = StaticScreenProps<SignOutAccountParams>;
 const needsCheckbox = (syncState: AccountSyncState) => syncState !== 'fullCopy';
 
 const SignOutAccountContent = (props: SignOutAccountParams) => {
-    const { accountName, syncState, onConfirm, onProtect } = props;
+    const { accountName, onConfirm, onProtect } = props;
 
     const { t } = useTranslation();
     const { close } = useBottomSheet();
+    const syncState = useAccountSyncState();
 
     const [isConfirmed, setIsConfirmed] = useState(false);
 
@@ -75,16 +75,9 @@ const SignOutAccountContent = (props: SignOutAccountParams) => {
 };
 
 export const SignOutAccountSheet = (props: SignOutAccountSheetProps) => {
-    const { accountName, syncState, onConfirm, onProtect } = props.route?.params ?? {};
-
     return (
         <BottomSheet>
-            <SignOutAccountContent
-                accountName={accountName}
-                syncState={syncState}
-                onConfirm={onConfirm}
-                onProtect={onProtect}
-            />
+            <SignOutAccountContent {...props.route.params} />
         </BottomSheet>
     );
 };

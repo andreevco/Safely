@@ -5,14 +5,12 @@ import { useTranslation } from 'react-i18next';
 import { useAccounts, useActiveAccount, useDeleteAccount, useToast } from '@safely/ux';
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
-import { useAccountSyncState } from '@mobile/screens/SignOutAccountSheet/useAccountSyncState';
 
 export function useSignOutAccountConfirmation() {
     const { t } = useTranslation();
     const navigation = useNavigation<RootStackNavigationProp>();
     const accounts = useAccounts();
     const account = useActiveAccount();
-    const syncState = useAccountSyncState();
     const toast = useToast();
     const { mutateAsync: deleteAccount } = useDeleteAccount();
 
@@ -21,7 +19,6 @@ export function useSignOutAccountConfirmation() {
 
         navigation.navigate('SignOutAccountSheet', {
             accountName: account.meta.name,
-            syncState,
             onConfirm: async () => {
                 await deleteAccount();
 
@@ -38,5 +35,5 @@ export function useSignOutAccountConfirmation() {
                 navigation.navigate('SettingsModal', { screen: 'ProtectAccountModal' });
             }
         });
-    }, [navigation, account.meta.name, accounts?.length, syncState, deleteAccount, toast, t]);
+    }, [navigation, account.meta.name, accounts?.length, deleteAccount, toast, t]);
 }
