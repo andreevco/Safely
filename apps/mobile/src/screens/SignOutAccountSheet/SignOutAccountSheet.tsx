@@ -5,13 +5,13 @@ import { View } from 'react-native';
 
 import { BottomSheet, Button, ConfirmCheckbox, Text, useBottomSheet } from '@mobile/shared/ui';
 
-import { AccountSyncState } from './getAccountSyncState';
 import { styles } from './SignOutAccountSheet.styles';
+import { AccountSyncState } from './useAccountSyncState';
 
 type SignOutAccountParams = {
     accountName: string;
     syncState: AccountSyncState;
-    onConfirm: () => void;
+    onConfirm: () => Promise<void>;
     onProtect: () => void;
 };
 
@@ -27,8 +27,8 @@ const SignOutAccountContent = (props: SignOutAccountParams) => {
 
     const [isConfirmed, setIsConfirmed] = useState(false);
 
-    const handleSignOut = () => {
-        onConfirm();
+    const handleSignOut = async () => {
+        await onConfirm();
         close();
     };
 
