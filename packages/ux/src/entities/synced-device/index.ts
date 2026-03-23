@@ -1,17 +1,19 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { PortfolioFactory } from '@safely/core';
+import { ISyncAccount } from '@safely/sync';
 
 import {
     type DeviceMeta,
     useAppContext,
     useSuspenseQuery,
     useActiveAccountSyncedStorage,
-    SecretEncryptor
+    SecretEncryptor,
+    SyncedStorageStructure
 } from '../../shared';
 import { calcSyncedStorageHash } from '../../shared/storage/account/synced/schemas';
 import { calculatePortfoliosHashes } from '../../shared/storage/account/synced/schemas/devices-meta.schema';
-import { SyncAccount, useActiveAccount, useActiveAccountQueryKey } from '../account';
+import { useActiveAccount, useActiveAccountQueryKey } from '../account';
 import { accountKey } from '../account/keys';
 
 export function useSyncedDevicesMetaQuery() {
@@ -77,7 +79,7 @@ export function useUpdateOwnSyncedDeviceMeta() {
     const client = useQueryClient();
     const { version, build, deviceInfo, getSecureEncryptedStorage } = useAppContext();
 
-    return useMutation<void, Error, SyncAccount>({
+    return useMutation<void, Error, ISyncAccount<SyncedStorageStructure>>({
         async mutationFn(syncAccount) {
             const ikPub = await syncAccount.getMyDeviceIkPub();
             const ikPubHex = ikPub.toString('hex');

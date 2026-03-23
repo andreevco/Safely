@@ -25,6 +25,7 @@ import {
 } from '../../shared';
 import { useActiveAccountSyncedStorage } from '../../shared';
 import { useLoader } from '../loader';
+import { useUpdateOwnSyncedDeviceMeta } from '../synced-device';
 import { useToast } from '../toast';
 
 export type SyncAccount = ISyncAccount<SyncedStorageStructure> & {
@@ -227,6 +228,7 @@ export function useAccountConnectedCallback(
 ) {
     const client = useQueryClient();
     const { mutateAsync: setActive } = useSetActiveAccount();
+    const { mutateAsync: updateOwnSyncedDeviceMeta } = useUpdateOwnSyncedDeviceMeta();
     const setAsActive = options?.setAsActive ?? false;
 
     useEffect(() => {
@@ -238,6 +240,7 @@ export function useAccountConnectedCallback(
                 }
 
                 await account.syncProvider.waitForInitialSync();
+                await updateOwnSyncedDeviceMeta(account);
 
                 if (isReset) {
                     return;
