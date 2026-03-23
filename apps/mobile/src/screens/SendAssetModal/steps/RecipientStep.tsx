@@ -1,6 +1,7 @@
 import { Ref } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TextInput, View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
 import { SendSuggestion } from '@safely/ux';
 
@@ -20,7 +21,7 @@ export const RecipientStep = (props: RecipientStepProps) => {
     const { t } = useTranslation();
 
     return (
-        <View>
+        <View style={{ flex: 1 }}>
             <AddressInput
                 value={value}
                 onChangeText={onChangeText}
@@ -29,7 +30,14 @@ export const RecipientStep = (props: RecipientStepProps) => {
                 label={t('send.recipient.label')}
                 placeholder={t('send.recipient.placeholder')}
             />
-            <SuggestionsList suggestions={suggestions} onSelect={onChangeText} />
+            <KeyboardAwareScrollView
+                style={{ flex: 1 }}
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+                bottomOffset={16}
+            >
+                <SuggestionsList suggestions={suggestions} onSelect={onChangeText} />
+            </KeyboardAwareScrollView>
         </View>
     );
 };
