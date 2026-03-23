@@ -4,6 +4,7 @@ import { Keyboard } from 'react-native';
 
 import { useAppContext, useCreateAccount, useLoader } from '@safely/ux';
 
+import { tabsInitialState } from '@mobile/app/navigation/tabs';
 import { usePasscode } from '@mobile/entities/security';
 
 const routes = {
@@ -63,7 +64,7 @@ export function useOnboardingFlow() {
             navigation.dispatch(
                 CommonActions.reset({
                     index: 0,
-                    routes: [{ name: 'TabsNavigator' }]
+                    routes: [{ name: 'TabsNavigator', state: tabsInitialState }]
                 })
             );
         } else {
@@ -75,7 +76,7 @@ export function useOnboardingFlow() {
         navigation.dispatch(
             CommonActions.reset({
                 index: 0,
-                routes: [{ name: 'TabsNavigator' }]
+                routes: [{ name: 'TabsNavigator', state: tabsInitialState }]
             })
         );
     }, [navigation]);

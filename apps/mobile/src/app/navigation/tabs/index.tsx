@@ -55,3 +55,10 @@ export const TabsNavigator = createBottomTabNavigator({
     },
     tabBar: props => <TabBar {...props} />
 });
+
+const tabScreenNames = Object.keys(TabsNavigator.config.screens);
+
+export const tabsInitialState = {
+    index: 0,
+    routes: tabScreenNames.map(name => ({ name }))
+};
