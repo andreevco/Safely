@@ -36,7 +36,12 @@ const RemoveWalletContent = () => {
         <View>
             <View style={styles.titleBox}>
                 <Text textAlign="center" variant="titleM">
-                    {t('removeWallet.title', { name: portfolio.meta.name })}
+                    {t('removeWallet.title', {
+                        name:
+                            portfolio.meta.icon.type === 'emoji'
+                                ? `${portfolio.meta.icon.value} ${portfolio.meta.name}`
+                                : portfolio.meta.name
+                    })}
                 </Text>
                 <Text textAlign="center" variant="bodyL" color="secondary" style={styles.subtitle}>
                     {isSeedRevealed

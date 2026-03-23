@@ -416,7 +416,7 @@
             }
         },
         "signOutAccount": {
-            "title": "Sign out account “{{name}}”",
+            "title": "Sign out account {{name}}",
             "sheet": {
                 "title": "Sign out of {{name}}?",
                 "noDevices": {
@@ -437,7 +437,7 @@
             "toastAccountRemoved": "Account removed from this device"
         },
         "removePortfolio": {
-            "title": "Remove wallet “{{name}}”",
+            "title": "Remove wallet {{name}}",
             "confirm": {
                 "title": "Remove this wallet?",
                 "message": "This will remove wallet “{{name}}”. This action cannot be undone.",
