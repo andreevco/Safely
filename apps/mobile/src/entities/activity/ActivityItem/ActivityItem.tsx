@@ -3,8 +3,16 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import { BTC_ASSET, ellipsisMiddle } from '@safely/core';
-import { type BtcActivityItem, useDateFormatter, useNumberFormatter, useRate } from '@safely/ux';
+import {
+    type BtcActivityItem,
+    findPortfolioMetaByAddress,
+    useDateFormatter,
+    useNumberFormatter,
+    usePortfolios,
+    useRate
+} from '@safely/ux';
 
+import { PortfolioName } from '@mobile/entities/portfolio';
 import { Cell, Text } from '@mobile/shared/ui';
 
 import { styles } from './ActivityItem.styles';
@@ -22,9 +30,14 @@ export const ActivityItem = (props: ActivityItemProps) => {
     const formatter = useNumberFormatter();
     const rate = useRate(BTC_ASSET);
     const { t } = useTranslation();
+    const portfolios = usePortfolios();
 
     const isInitiator = activity.transaction.isInitiator;
     const dateFormatter = useDateFormatter({ hour: 'numeric', minute: 'numeric' });
+    const counterpartyAddress = isInitiator
+        ? activity.transaction.toAddress
+        : activity.transaction.fromAddress;
+    const counterpartyMeta = findPortfolioMetaByAddress(portfolios, counterpartyAddress);
 
     return (
         <View style={styles.border}>
@@ -50,14 +63,17 @@ export const ActivityItem = (props: ActivityItemProps) => {
                         </Cell.Value>
                     </Cell.Row>
                     <Cell.Row>
-                        <Cell.Subtitle>
-                            {ellipsisMiddle(
-                                activity.transaction.isInitiator
-                                    ? activity.transaction.toAddress
-                                    : activity.transaction.fromAddress,
-                                6
-                            )}
-                        </Cell.Subtitle>
+                        {counterpartyMeta ? (
+                            <PortfolioName
+                                meta={counterpartyMeta}
+                                size={12}
+                                gap={6}
+                                fontVariant="bodyM"
+                                color="secondary"
+                            />
+                        ) : (
+                            <Cell.Subtitle>{ellipsisMiddle(counterpartyAddress, 6)}</Cell.Subtitle>
+                        )}
                         <Cell.Subvalue>
                             {rate.data &&
                                 activity.transaction.value.convert(rate.data).format(formatter)}
