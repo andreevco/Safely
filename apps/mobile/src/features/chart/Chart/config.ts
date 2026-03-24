@@ -189,7 +189,7 @@ export const CHART_CONFIG: Record<ChartPeriod, ChartConfig> = {
         tickConfig: {
             tick: (idx: number) => (idx % ALL_TIME_YEAR_STEP === 0 ? 'large' : 'medium'),
             mediumTickColor: 'tertiary',
-            count: computeAllTimeIntermediatePoints(ALL_TIME_START).length * 4 + 1
+            count: (computeAllTimeIntermediatePoints(ALL_TIME_START).length - 1) * 4 + 1
         }
     }
 };
