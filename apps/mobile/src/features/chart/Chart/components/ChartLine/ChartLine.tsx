@@ -13,7 +13,7 @@ import Animated, {
 import { useUnistyles } from 'react-native-unistyles';
 
 import { Text } from '@mobile/shared/ui';
-import { type ChartPoint, formatCompactPrice } from '@mobile/shared/utils/chart';
+import { formatCompactPrice, type ChartPoint } from '@mobile/shared/utils/chart';
 
 import { styles } from './ChartLine.styles';
 import { ChartPeriod } from '../../config';
@@ -90,6 +90,21 @@ export const ChartLine = (props: ChartLineProps) => {
         <View style={styles.container}>
             <GestureDetector gesture={gesture}>
                 <View style={styles.canvasContainer} onLayout={onLayout}>
+                    <View style={styles.priceLabelsContainer} pointerEvents="none">
+                        {elegantPrices
+                            ?.slice(0, 3)
+                            .filter(item => item.shouldBeRendered)
+                            .map(item => (
+                                <Animated.View
+                                    key={`price-${item.price}`}
+                                    style={[styles.priceLabel, { top: item.y }]}
+                                >
+                                    <Text monospace variant="bodyS" color="tertiary">
+                                        {formatCompactPrice(item.price)}
+                                    </Text>
+                                </Animated.View>
+                            ))}
+                    </View>
                     <Canvas style={styles.canvas}>
                         {/* Horizontal reference lines */}
                         {elegantPrices?.slice(1, 3).map((item, index) => (
@@ -181,21 +196,6 @@ export const ChartLine = (props: ChartLineProps) => {
                             <Circle cx={activeX} cy={activeY} r={DOT_RADIUS} color={LINE_COLOR} />
                         </Group>
                     </Canvas>
-                    <View style={styles.priceLabelsContainer} pointerEvents="none">
-                        {elegantPrices
-                            ?.slice(0, 3)
-                            .filter(item => item.shouldBeRendered)
-                            .map(item => (
-                                <Animated.View
-                                    key={`price-${item.price}`}
-                                    style={[styles.priceLabel, { top: item.y }]}
-                                >
-                                    <Text monospace variant="bodyS" color="tertiary">
-                                        {formatCompactPrice(item.price)}
-                                    </Text>
-                                </Animated.View>
-                            ))}
-                    </View>
                 </View>
             </GestureDetector>
         </View>
