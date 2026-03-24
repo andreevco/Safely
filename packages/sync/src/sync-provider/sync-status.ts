@@ -46,7 +46,7 @@ export interface ISyncStatusManager {
     waitForStatus(targetStatus: SyncStatus): Promise<void>;
 }
 
-export class SyncStatusManager {
+export class SyncStatusManager implements ISyncStatusManager {
     private readonly subscribers: Set<(status: SyncStatus) => void> = new Set();
 
     constructor(private status: SyncStatus) {}
