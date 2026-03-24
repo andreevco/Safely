@@ -52,25 +52,26 @@ export const useChartPaths = (params: UseChartPathsParams) => {
         const intermediatePoints =
             CHART_CONFIG[selectedPeriod].getPeriodIntermediatePoints(startDate);
 
-        const chartPoints = buildChartPoints(width, height, prices, {
+        const chart = buildChartPoints(width, height, prices, {
             startTimestamp: intermediatePoints[0],
             endTimestamp: intermediatePoints[intermediatePoints.length - 1]
         });
 
-        chartPointsShared.value = chartPoints;
+        chartPointsShared.value = chart.points;
 
-        const fullPath = buildChartPath(chartPoints);
-        const fractions = computePathFractions(chartPoints);
+        const fullPath = buildChartPath(chart.points);
+        const fractions = computePathFractions(chart.points);
         pathFractionsShared.value = fractions;
 
         const splitPoint = Date.now() - CHART_CONFIG[selectedPeriod].fullPeriodLength;
-        const splitIndex = chartPoints.findIndex(point => point.timestamp >= splitPoint);
+        const splitIndex = chart.points.findIndex(point => point.timestamp >= splitPoint);
 
-        const last = chartPoints[chartPoints.length - 1];
+        const last = chart.points[chart.points.length - 1];
         const periodSplitEnd = splitIndex > 0 ? (fractions[splitIndex] ?? 0) : 0;
 
         return {
             fullPath,
+            elegantPrices: chart.elegantPrices,
             periodSplitEnd,
             lastPoint: last ? { x: last.x, y: last.y } : null
         };
