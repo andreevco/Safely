@@ -149,14 +149,14 @@ export const buildChartPoints = (
         const clamped = Math.max(0, Math.min(1, normalized));
         const y = height - clamped * height;
 
-        const lastPoint = mappedPoints[mappedPoints.length - 1];
+        const shouldBeRendered = !mappedPoints.some(
+            point => point.x > width - 26 && Math.abs(point.y - y) < 2
+        );
 
         return {
             price,
             y,
-            shouldBeRendered:
-                width - lastPoint.x > 26 ||
-                Math.abs(mappedPoints[mappedPoints.length - 1].y - y) > 3
+            shouldBeRendered
         };
     });
 
