@@ -63,7 +63,7 @@ export class UnlockableSecuredEncryptedStorage
                 return encryptedStorage.getAllKeys();
             }
         };
-        super([], storage);
+        super([], storage, null, encryptedStorage);
     }
 
     private async securityCheck() {
