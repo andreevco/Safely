@@ -23,6 +23,10 @@ export const updatesSubscriberActor = fromCallback(
                         if (abortController.signal.aborted) {
                             return;
                         }
+                        console.log(
+                            '[Sync SSE] Received remote update via SSE, proof:',
+                            upd.snapshotProof.toString('hex').slice(0, 16) + '...'
+                        );
                         opts.sendBack({ type: 'REMOTE_UPDATE', upd });
                     },
                     reason => {

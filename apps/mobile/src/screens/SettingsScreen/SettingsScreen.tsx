@@ -6,6 +6,7 @@ import { useAppContext, useHasPortfolio } from '@safely/ux';
 
 import { useLogOutAllConfirmation } from '@mobile/features/settings/useLogOutAllConfirmation';
 import { List, Screen, Text } from '@mobile/shared/ui';
+import { shareLogs } from '@mobile/shared/utils/log-capture';
 
 import {
     AccountSection,
@@ -58,9 +59,16 @@ export const SettingsScreen = () => {
                         <SignOutAccountButton />
                     </List.Group>
                 </List>
-                <Text variant="bodyM" color="tertiary" textAlign="center" style={styles.version}>
-                    Safely · {version}
-                </Text>
+                <Pressable onLongPress={shareLogs}>
+                    <Text
+                        variant="bodyM"
+                        color="tertiary"
+                        textAlign="center"
+                        style={styles.version}
+                    >
+                        Safely · {version}
+                    </Text>
+                </Pressable>
             </Screen.Scrollable>
         </Screen>
     );

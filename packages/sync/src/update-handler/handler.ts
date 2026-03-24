@@ -24,9 +24,11 @@ export class UpdateHandler {
     public async handle(upd: EncryptedStateAndProofChain): Promise<{ hasLocalChanges: boolean }> {
         const syncState = await this.syncStateRepository.getState();
 
+        console.log('[Sync Handler] Decrypting and verifying incoming update...');
         const update = await this.updateDecryptor.verifyAndDecrypt(upd);
 
         if (upd.snapshotProof.equals(syncState.snapshotProof)) {
+            console.log('[Sync Handler] Update already applied, skipping');
             return { hasLocalChanges: this.hasLocalChanges(update) }; // Already have this update
         }
 
@@ -71,12 +73,15 @@ export class UpdateHandler {
             await this.deviceManagementService.verifyDeviceOpAndApply(deviceOp);
         }
 
+        console.log('[Sync Handler] Applying update to local CRDT document...');
         await this.yManager.applyUpdate(update, 'remote');
 
         syncState.snapshotProof = upd.snapshotProof;
         await this.syncStateRepository.saveState(syncState);
 
-        return { hasLocalChanges: this.hasLocalChanges(update) };
+        const hasLocalChanges = this.hasLocalChanges(update);
+        console.log('[Sync Handler] Update applied, hasLocalChanges:', hasLocalChanges);
+        return { hasLocalChanges };
     }
 
     /**

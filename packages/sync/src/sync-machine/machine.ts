@@ -10,10 +10,15 @@ import { hex } from '../utils/buffer';
 export type SyncMachine = Awaited<Actor<ReturnType<typeof createSyncMachine>>>;
 
 const initialSyncing = fromPromise(async ({ input }: { input: SyncMachineConfig }) => {
+    console.log('[Sync] Initial syncing: fetching latest snapshot from server...');
     const knownState = await input.syncStateRepository.getState();
     const lastState = await input.snapshotsApi.getActualSnapshot({
         withProofChainTo: knownState.snapshotProof.toString('hex')
     });
+    console.log(
+        '[Sync] Initial syncing: received snapshot from server, proof:',
+        lastState.snapshot.snapshotProof.slice(0, 16) + '...'
+    );
 
     try {
         return await input.updateHandler.handle({
@@ -35,11 +40,16 @@ const initialSyncing = fromPromise(async ({ input }: { input: SyncMachineConfig 
 const applyUpdate = fromPromise(async ({ input }: { input: { config: SyncMachineConfig } }) => {
     const upd = input.config.remoteUpdates[0] ?? null;
     if (upd === null) return;
+    console.log(
+        '[Sync Pull] Applying remote update, proof:',
+        upd.snapshotProof.toString('hex').slice(0, 16) + '...'
+    );
     try {
         await input.config.updateHandler.handle({
             snapshotProofChain: [],
             ...upd
         });
+        console.log('[Sync Pull] Remote update applied successfully');
     } catch (e) {
         console.error('[SyncMachine] Error applying update', e);
         throw e;
