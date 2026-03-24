@@ -4,14 +4,14 @@ import { ISyncProvider } from './I-sync-provider';
 import { StorageError } from '../crdt/y-manager';
 import { SyncContainer } from '../sync-container';
 import { SyncError } from '../sync-error';
+import { SyncStatus, SyncStatusManager } from './sync-status';
 
 export class OfflineSyncProvider<S extends Record<string, ZodType>> implements ISyncProvider<S> {
     private readonly onErrorObservers = new Set<(e: SyncError) => void>();
-
     constructor(
         public readonly structure: S,
         protected readonly container: SyncContainer,
-        public readonly type: 'online' | 'offline' = 'offline' as const
+        public readonly syncStatusManager = new SyncStatusManager(SyncStatus.OFFLINE)
     ) {}
 
     public dispose(): void {

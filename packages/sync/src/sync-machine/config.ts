@@ -3,6 +3,7 @@ import { SnapshotsSse } from '../api/snapshots-sse';
 import { EncryptedState } from '../api/types';
 import { YManager } from '../crdt/y-manager';
 import { IkService } from '../crypto/service/ik-service';
+import { SyncStatusManager } from '../sync-provider/sync-status';
 import { UpdateEncryptorService } from '../update-encryptor/update-encryptor-service';
 import { UpdateHandler } from '../update-handler/handler';
 import { SyncStateRepository } from '../update-handler/sync-state-repository';
@@ -15,6 +16,7 @@ export type SyncMachineInput = {
     snapshotsApi: SnapshotsApi;
     snapshotsSse: SnapshotsSse;
     ikService: IkService;
+    syncStatusManager: SyncStatusManager;
 };
 
 export type SyncMachineConfig = SyncMachineInput & {

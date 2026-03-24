@@ -9,6 +9,7 @@ import { SyncContainer } from '../sync-container';
 import { SyncAccountRepository } from './sync-account-repository';
 import { ISyncProvider } from '../sync-provider/I-sync-provider';
 import { OnlineSyncProvider } from '../sync-provider/online-sync-provider';
+import { SyncStatus, SyncStatusManager } from '../sync-provider/sync-status';
 
 export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAccount<S> {
     public readonly secretEncryptor: ISecretEncryptor;
@@ -79,7 +80,7 @@ export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAcco
             ikPub,
             this.container.keyServiceFactory.createDmkSignerService(secureEncryptedStorage)
         );
-        await this.syncProvider.triggerSync();
+        this.syncProvider.triggerSync();
     }
 
     public async getMyDeviceIkPub(): Promise<Buffer> {
@@ -154,12 +155,19 @@ export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAcco
     }
 
     private async promoteToOnlineProvider(): Promise<void> {
-        if (this.syncProviderInternal.type === 'online') {
+        if (this.syncProviderInternal.syncStatusManager.getStatus() !== SyncStatus.OFFLINE) {
             return;
         }
 
         this.syncProviderInternal.dispose();
-        this.syncProviderInternal = await OnlineSyncProvider.create(this.structure, this.container);
+        this.syncProviderInternal = await OnlineSyncProvider.create(
+            this.structure,
+            this.container,
+            // We pass the same SyncStatusManager instance to the OnlineSyncProvider, so that the
+            // subscribers to the SyncAccount's syncProvider will be notified of the status changes
+            // when we promote to online provider.
+            this.syncProviderInternal.syncStatusManager as SyncStatusManager
+        );
     }
 
     private async sendSnapshotManually(): Promise<void> {
