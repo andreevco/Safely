@@ -120,7 +120,7 @@ export const ChartLine = (props: ChartLineProps) => {
                                     color={FADED_LINE_COLOR}
                                     strokeWidth={LINE_STROKE_WIDTH}
                                     style="stroke"
-                                    end={periodSplitEnd - 0.005}
+                                    end={periodSplitEnd - 0.0025}
                                 />
                             </Group>
                         )}
