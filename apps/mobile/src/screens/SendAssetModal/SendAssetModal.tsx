@@ -54,7 +54,7 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
     const recipientInputRef = useRef<TextInput>(null);
     const amountInputRef = useRef<MaskedTextInputRef>(null);
 
-    const { state, actions, step, meta } = useSendForm({
+    const { state, actions, step, meta, suggestionSelection } = useSendForm({
         onSubmit: handleSubmit,
         shouldResetForm: false,
         initialValues: { recipient: address, amount }
@@ -188,6 +188,10 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
                     error={meta.suggestions.length > 0 ? undefined : state.errors.recipient}
                     onChangeText={actions.setRecipient}
                     suggestions={meta.suggestions}
+                    restoredSuggestions={meta.restoredSuggestions}
+                    selectedAddress={suggestionSelection.selectedAddress}
+                    onSelectSuggestion={suggestionSelection.select}
+                    onClearSuggestionSelection={suggestionSelection.clear}
                 />
                 <AmountStep
                     key="amount"
