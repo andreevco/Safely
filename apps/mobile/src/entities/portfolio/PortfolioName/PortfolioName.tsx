@@ -11,11 +11,12 @@ type PortfolioNameProps = {
     size?: number;
     gap?: number;
     fontVariant?: TextProps['variant'];
+    color?: TextProps['color'];
     tag?: number | false;
 };
 
 export const PortfolioName = (props: PortfolioNameProps) => {
-    const { meta, size = 12, gap = 6, fontVariant = 'labelL', tag } = props;
+    const { meta, size = 12, gap = 6, fontVariant = 'labelL', color, tag } = props;
 
     switch (meta.icon.type) {
         case 'color':
@@ -23,7 +24,12 @@ export const PortfolioName = (props: PortfolioNameProps) => {
                 <View style={styles.contentWithTag}>
                     <View style={styles.container(gap)}>
                         <View style={styles.dot(meta.icon.value, size)} />
-                        <Text variant={fontVariant} numberOfLines={1} style={styles.name}>
+                        <Text
+                            variant={fontVariant}
+                            color={color}
+                            numberOfLines={1}
+                            style={styles.name}
+                        >
                             {meta.name}
                         </Text>
                     </View>
@@ -41,7 +47,12 @@ export const PortfolioName = (props: PortfolioNameProps) => {
                 <View style={styles.contentWithTag}>
                     <View style={styles.container(gap)}>
                         <Text>{meta.icon.value}</Text>
-                        <Text variant={fontVariant} numberOfLines={1} style={styles.name}>
+                        <Text
+                            variant={fontVariant}
+                            color={color}
+                            numberOfLines={1}
+                            style={styles.name}
+                        >
                             {meta.name}
                         </Text>
                     </View>

@@ -1,4 +1,4 @@
-import { useIsFocused } from '@react-navigation/native';
+import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { type TFunction } from 'i18next';
 import { useCallback, useMemo, useRef } from 'react';
@@ -101,6 +101,16 @@ export const HistoryList = (props: HistoryListProps) => {
     const { data: historyGroups, refetch, fetchNextPage } = useGroupedHistory();
     const { atTop, onScroll } = useScrollPosition({ threshold: 100 });
     const client = useQueryClient();
+
+    useFocusEffect(
+        useCallback(() => {
+            return () => {
+                if (!atTop) {
+                    listRef.current?.scrollToOffset({ offset: 0, animated: false });
+                }
+            };
+        }, [atTop])
+    );
 
     const { mutate: runIntervalRefetch } = useMutation({
         async mutationFn() {
