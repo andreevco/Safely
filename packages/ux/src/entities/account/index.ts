@@ -9,7 +9,7 @@ import {
     PortfolioNetworkType
 } from '@safely/core';
 import { generateBip39Accessor } from '@safely/core/entities/seed';
-import { ISyncAccount, OnboardingAbortedError, SyncAccountFactory } from '@safely/sync';
+import { ISyncAccount, OnboardingAbortedError, SyncAccountFactory, SyncStatus } from '@safely/sync';
 
 import { accountKey } from './keys';
 import {
@@ -239,7 +239,7 @@ export function useAccountConnectedCallback(
                     return;
                 }
 
-                await account.syncProvider.waitForInitialSync();
+                await account.syncProvider.syncStatusManager.waitForStatus(SyncStatus.SYNCHRONIZED);
                 await updateOwnSyncedDeviceMeta(account);
 
                 if (isReset) {
