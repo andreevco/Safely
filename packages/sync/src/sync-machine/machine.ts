@@ -5,6 +5,7 @@ import { pushUpdateToServer } from './actors/push-update';
 import { updatesSubscriberActor } from './actors/updates-subscriber-actor';
 import { defaultConfig, SyncMachineConfig, SyncMachineInput } from './config';
 import { EncryptedState } from '../api/types';
+import { SyncStatus } from '../sync-provider/sync-status';
 import { hex } from '../utils/buffer';
 
 export type SyncMachine = Awaited<Actor<ReturnType<typeof createSyncMachine>>>;
@@ -85,6 +86,15 @@ export const createSyncMachine = () => {
                 shouldHandleUpdate: ({ context }) => context.remoteUpdates.length > 0
             },
             actions: {
+                setStatusDisconnected: ({ context }) => {
+                    context.syncStatusManager.setStatus(SyncStatus.DISCONNECTED);
+                },
+                setStatusSynchronizing: ({ context }) => {
+                    context.syncStatusManager.setStatus(SyncStatus.SYNCHRONIZING);
+                },
+                setStatusSynchronized: ({ context }) => {
+                    context.syncStatusManager.setStatus(SyncStatus.SYNCHRONIZED);
+                },
                 markDirty: assign({
                     shouldSendUpdate: () => {
                         return true;
@@ -124,10 +134,10 @@ export const createSyncMachine = () => {
                         onDone: [
                             {
                                 guard: ({ event }) => event.output.hasLocalChanges,
-                                actions: ['markDirty'],
+                                actions: ['markDirty', 'setStatusSynchronizing'],
                                 target: 'connectionSession'
                             },
-                            { target: 'connectionSession' }
+                            { actions: 'setStatusSynchronizing', target: 'connectionSession' }
                         ],
                         onError: {
                             target: '#syncMachine.waitingForRetry'
@@ -151,11 +161,13 @@ export const createSyncMachine = () => {
                     },
                     states: {
                         connecting: {
+                            entry: ['setStatusSynchronizing'],
                             on: {
                                 CONNECTED: { target: 'connected' }
                             }
                         },
                         connected: {
+                            entry: ['setStatusSynchronized'],
                             always: [
                                 {
                                     guard: 'shouldHandleUpdate',
@@ -178,6 +190,7 @@ export const createSyncMachine = () => {
                             }
                         },
                         applyingUpdate: {
+                            entry: ['setStatusSynchronizing'],
                             invoke: {
                                 id: 'applyUpdate',
                                 src: 'applyUpdate',
@@ -195,6 +208,7 @@ export const createSyncMachine = () => {
                             }
                         },
                         transmitting: {
+                            entry: ['setStatusSynchronizing'],
                             invoke: {
                                 id: 'pushUpdateToServer',
                                 src: 'pushUpdateToServer',
@@ -213,6 +227,7 @@ export const createSyncMachine = () => {
                 },
 
                 waitingForRetry: {
+                    entry: ['setStatusDisconnected'],
                     after: {
                         1000: { target: '#syncMachine.initialSyncing' }
                     },

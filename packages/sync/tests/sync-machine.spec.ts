@@ -8,6 +8,7 @@ import { SnapshotsApi } from '../src/api/generated';
 import { SnapshotsSse } from '../src/api/snapshots-sse';
 import { generateAccountID, initializeSyncAccount } from '../src/initialize';
 import { createSyncMachine, SyncMachine } from '../src/sync-machine/machine';
+import { SyncStatus, SyncStatusManager } from '../src/sync-provider/sync-status';
 
 const DATA_KEY = 'value';
 
@@ -150,6 +151,7 @@ async function createMachineContext(
         await server.seedFromSnapshot(encrypted);
     }
 
+    const syncStatusManager = new SyncStatusManager(SyncStatus.DISCONNECTED);
     const machine = createActor(createSyncMachine(), {
         input: {
             syncStateRepository: container.syncStateRepository,
@@ -158,7 +160,8 @@ async function createMachineContext(
             updateEncryptor: container.updateEncryptor,
             snapshotsApi: container.snapshotApi as unknown as SnapshotsApi,
             snapshotsSse: container.snapshotSse as unknown as SnapshotsSse,
-            ikService: container.ikService
+            ikService: container.ikService,
+            syncStatusManager
         }
     });
 

@@ -5,6 +5,7 @@ import { ZodType } from 'zod';
 import { ISyncProvider } from './I-sync-provider';
 import { SyncContainer } from '../sync-container';
 import { OfflineSyncProvider } from './offline-sync-provider';
+import { SyncStatus, SyncStatusManager } from './sync-status';
 import { createSyncMachine, SyncMachine } from '../sync-machine/machine';
 
 export class OnlineSyncProvider<S extends Record<string, ZodType>>
@@ -14,15 +15,18 @@ export class OnlineSyncProvider<S extends Record<string, ZodType>>
     constructor(
         structure: S,
         container: SyncContainer,
-        private syncMachine: SyncMachine
+        private syncMachine: SyncMachine,
+        public readonly syncStatusManager: SyncStatusManager
     ) {
-        super(structure, container, 'online');
+        super(structure, container, syncStatusManager);
     }
 
     public static async create<S extends Record<string, ZodType>>(
         structure: S,
-        container: SyncContainer
+        container: SyncContainer,
+        syncStatusManager = new SyncStatusManager(SyncStatus.DISCONNECTED)
     ): Promise<OnlineSyncProvider<S>> {
+        syncStatusManager.setStatus(SyncStatus.DISCONNECTED);
         const machine = createActor(createSyncMachine(), {
             input: {
                 syncStateRepository: container.syncStateRepository,
@@ -31,7 +35,8 @@ export class OnlineSyncProvider<S extends Record<string, ZodType>>
                 updateEncryptor: container.updateEncryptor,
                 snapshotsApi: container.snapshotApi,
                 snapshotsSse: container.snapshotSse,
-                ikService: container.ikService
+                ikService: container.ikService,
+                syncStatusManager
             },
             inspect: event => {
                 if (event.type === '@xstate.event') {
@@ -41,7 +46,7 @@ export class OnlineSyncProvider<S extends Record<string, ZodType>>
         });
         machine.start();
 
-        return new OnlineSyncProvider(structure, container, machine);
+        return new OnlineSyncProvider(structure, container, machine, syncStatusManager);
     }
 
     public async waitForInitialSync(): Promise<void> {
@@ -63,11 +68,13 @@ export class OnlineSyncProvider<S extends Record<string, ZodType>>
     public dispose(): void {
         super.dispose();
         this.syncMachine.stop();
+        this.syncStatusManager.setStatus(SyncStatus.DISABLED);
     }
 
     public restart(): void {
         this.syncMachine.stop();
-        this.syncMachine = machineFromContainer(this.container);
+        this.syncStatusManager.setStatus(SyncStatus.DISCONNECTED);
+        this.syncMachine = machineFromContainer(this.container, this.syncStatusManager);
         this.syncMachine.start();
     }
 
@@ -88,7 +95,7 @@ export class OnlineSyncProvider<S extends Record<string, ZodType>>
     }
 }
 
-function machineFromContainer(container: SyncContainer) {
+function machineFromContainer(container: SyncContainer, syncStatusManager: SyncStatusManager) {
     return createActor(createSyncMachine(), {
         input: {
             syncStateRepository: container.syncStateRepository,
@@ -97,7 +104,8 @@ function machineFromContainer(container: SyncContainer) {
             updateEncryptor: container.updateEncryptor,
             snapshotsApi: container.snapshotApi,
             snapshotsSse: container.snapshotSse,
-            ikService: container.ikService
+            ikService: container.ikService,
+            syncStatusManager
         },
         inspect: event => {
             if (event.type === '@xstate.event') {

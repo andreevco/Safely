@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 
-import { ISyncAccount } from '../../src';
-import { SyncAccountFactory } from '../../src';
+import { ISyncAccount, SyncAccountFactory } from '../../src';
+import { SyncStatus } from '../../src/sync-provider/sync-status';
 import { InMemStorage } from '../impl/storage';
 
 const SchemaTestWallet = z.object({
@@ -68,7 +68,7 @@ describe('Account', () => {
     it('makes account online', async () => {
         const account = await factory.createSyncAccount(secureEncryptedStorage);
         await onboardDevice(account, secureEncryptedStorage);
-        expect(account.syncProvider.type).toBe('online');
+        await account.syncProvider.syncStatusManager.waitForStatus(SyncStatus.SYNCHRONIZED);
     });
 
     it('should sync data with server', async () => {
@@ -146,7 +146,7 @@ describe('Account', () => {
         });
 
         account.syncProvider.restart();
-        await account.syncProvider.waitForInitialSync();
+        await account.syncProvider.syncStatusManager.waitForStatus(SyncStatus.SYNCHRONIZED);
 
         await account.syncProvider.set('wallets', [
             {
