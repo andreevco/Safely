@@ -1,7 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import { useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
+import { Keyboard, View } from 'react-native';
 
 import {
     useAccounts,
@@ -51,6 +51,8 @@ const AddAccountContent = () => {
             onSave: async (name: string) => {
                 using secureEncryptedStorage = getSecureEncryptedStorage();
                 await secureEncryptedStorage.unlock();
+
+                Keyboard.dismiss();
 
                 await withLoader(async () => {
                     await createAccount({ name, secureEncryptedStorage });

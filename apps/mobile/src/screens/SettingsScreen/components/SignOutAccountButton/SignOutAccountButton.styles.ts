@@ -5,6 +5,9 @@ export const styles = StyleSheet.create(theme => ({
     cell: {
         backgroundColor: Color(theme.colors.accent.red).alpha(0.16).toString()
     },
+    row: {
+        justifyContent: 'center'
+    },
     text: {
         color: theme.colors.accent.red
     }

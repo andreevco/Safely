@@ -345,7 +345,6 @@ export function useDeleteAccount() {
     const account = useActiveAccount();
     const accountFactory = useAccountsFactory();
     const client = useQueryClient();
-    const { remove: removeActiveAccount } = useSharedStructuredStorage('activeAccount');
     const { getSecureEncryptedStorage } = useAppContext();
 
     return useMutation({
@@ -354,8 +353,16 @@ export function useDeleteAccount() {
             await secureEncryptedStorage.unlock();
 
             await accountFactory.deleteLocalAccount(account.accountId, secureEncryptedStorage);
-            await removeActiveAccount();
-            client.removeQueries({ queryKey: accountKey.toKey() });
+
+            const accounts = client.getQueryData<SyncAccount[]>(accountKey.list.toKey());
+            const remaining = accounts?.filter(a => a.accountId !== account.accountId) ?? [];
+
+            if (remaining.length > 0) {
+                client.setQueryData(accountKey.list.toKey(), remaining);
+                client.setQueryData(accountKey.list.active.toKey(), remaining[0]);
+            } else {
+                client.removeQueries({ queryKey: accountKey.toKey() });
+            }
         }
     });
 }

@@ -48,9 +48,15 @@ export const SettingsScreen = () => {
                 {hasPortfolio && <CurrentWalletSection />}
                 <AccountSection />
                 <SettingsGroups />
-                <List>
-                    {hasPortfolio && <RemovePortfolioButton />}
-                    <SignOutAccountButton />
+                <List
+                    style={{
+                        marginTop: 8
+                    }}
+                >
+                    <List.Group variant="separated">
+                        {hasPortfolio && <RemovePortfolioButton />}
+                        <SignOutAccountButton />
+                    </List.Group>
                 </List>
                 <Text variant="bodyM" color="tertiary" textAlign="center" style={styles.version}>
                     Safely · {version}

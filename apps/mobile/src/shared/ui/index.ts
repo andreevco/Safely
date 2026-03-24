@@ -5,6 +5,7 @@ export { TouchableOpacity } from './TouchableOpacity';
 export { Screen } from './Screen';
 export { Button } from './Button';
 export { Checkbox } from './Checkbox';
+export { ConfirmCheckbox } from './ConfirmCheckbox';
 export { Actions } from './Actions';
 export { Cell } from './Cell';
 export { List } from './List';
