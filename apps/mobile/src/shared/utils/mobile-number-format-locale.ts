@@ -49,6 +49,15 @@ export class MobileNumberFormatLocale implements NumberFormatLocale {
         return { positive, negative };
     }
 
+    public getCurrencyFractionDigits(currency: string): number {
+        return (
+            this.createIntlFormatter({
+                style: 'currency',
+                currency
+            }).resolvedOptions().minimumFractionDigits ?? 2
+        );
+    }
+
     private normalizeCurrencyCodePosition(affixes: { prefix: string; suffix: string }): void {
         if (affixes.suffix === '') {
             affixes.suffix = ' ' + affixes.prefix.replace(/[\s\u00A0]+/g, '');
