@@ -1,11 +1,11 @@
-import { StaticScreenProps } from '@react-navigation/native';
-import { useEffect, useRef } from 'react';
+import { useNavigation, StaticScreenProps } from '@react-navigation/native';
+import { useCallback, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 
-import { usePasscodeLockout } from '@mobile/entities/security';
+import { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import { usePasscodeVerification } from '@mobile/entities/security';
 import { useSignOutConfirmation } from '@mobile/features/settings/useSignOutConfirmation';
-
-import { LockoutContent } from './components/LockoutContent';
-import { PasscodeContent } from './components/PasscodeContent';
+import { LockoutContent, PasscodeInput, PasscodeLayout, Screen } from '@mobile/shared/ui';
 
 type PasscodeVerificationScreenProps = StaticScreenProps<{
     onSuccess: () => void;
@@ -16,9 +16,26 @@ type PasscodeVerificationScreenProps = StaticScreenProps<{
 export const PasscodeVerificationScreen = (props: PasscodeVerificationScreenProps) => {
     const { onSuccess, onClose, title } = props.route.params;
 
-    const { isLocked, remainingSeconds, recordFailedAttempt, resetAttempts } = usePasscodeLockout();
+    const { t } = useTranslation();
+    const navigation = useNavigation<RootStackNavigationProp>();
     const handleSignOut = useSignOutConfirmation();
     const successCalled = useRef(false);
+
+    const handleSuccess = useCallback(() => {
+        successCalled.current = true;
+        navigation.goBack();
+        setTimeout(onSuccess, 100);
+    }, [navigation, onSuccess]);
+
+    const {
+        inputValue,
+        digitsAmount,
+        isSuccess,
+        isError,
+        isLocked,
+        remainingSeconds,
+        handleInputChange
+    } = usePasscodeVerification({ onSuccess: handleSuccess });
 
     useEffect(() => {
         const ref = successCalled;
@@ -35,12 +52,20 @@ export const PasscodeVerificationScreen = (props: PasscodeVerificationScreenProp
     }
 
     return (
-        <PasscodeContent
-            onSuccess={onSuccess}
-            successCalled={successCalled}
-            title={title}
-            recordFailedAttempt={recordFailedAttempt}
-            resetAttempts={resetAttempts}
-        />
+        <Screen>
+            <Screen.Header variant="left">
+                <Screen.Header.CloseButton />
+            </Screen.Header>
+
+            <PasscodeLayout title={title ?? t('passcode.verify.title')}>
+                <PasscodeInput
+                    numberOfDigits={digitsAmount}
+                    value={inputValue}
+                    onChange={handleInputChange}
+                    isSuccess={isSuccess}
+                    isError={isError}
+                />
+            </PasscodeLayout>
+        </Screen>
     );
 };

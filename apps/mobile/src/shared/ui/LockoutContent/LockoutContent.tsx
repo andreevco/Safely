@@ -1,10 +1,12 @@
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { Icon, Lock56, Screen, Text } from '@mobile/shared/ui';
+import { formatLockoutTime } from '@mobile/shared/utils';
 
-import { styles } from '../PasscodeVerificationScreen.styles';
-import { formatLockoutTime } from '../utils';
+import { Icon, Lock56 } from '../Icon';
+import { Screen } from '../Screen';
+import { Text } from '../Text';
+import { styles } from './LockoutContent.styles';
 
 interface LockoutContentProps {
     remainingSeconds: number;
@@ -13,7 +15,6 @@ interface LockoutContentProps {
 
 export const LockoutContent = (props: LockoutContentProps) => {
     const { remainingSeconds, onSignOut } = props;
-
     const { t } = useTranslation();
 
     return (
