@@ -1,5 +1,4 @@
 import { useNavigation } from '@react-navigation/native';
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
@@ -7,6 +6,7 @@ import { useHasPortfolio } from '@safely/ux';
 import { useSecurityCheck } from '@safely/ux/shared/security';
 
 import { RootStackNavigationProp, SettingsStackNavigationProp } from '@mobile/app/navigation/types';
+import { useLockScreenQuery, useSetLockScreenEnabled } from '@mobile/entities/security';
 import {
     getBiometryTranslationKey,
     useBiometryQuery,
@@ -27,12 +27,18 @@ export const SecurityScreen = () => {
     const navigation = useNavigation<SettingsStackNavigationProp>();
     const rootNavigation = useNavigation<RootStackNavigationProp>();
 
-    const [lockScreenEnabled, setLockScreenEnabled] = useState(false);
+    const { data: lockScreenEnabled } = useLockScreenQuery();
+    const { mutateAsync: setLockScreenEnabled } = useSetLockScreenEnabled();
 
     const handleBiometryToggle = async () => {
         if (biometry) {
             await setBiometryEnabled(!biometry.isEnabled);
         }
+    };
+
+    const handleLockScreenToggle = async () => {
+        await check();
+        await setLockScreenEnabled(!lockScreenEnabled);
     };
 
     const handleChangePasscode = async () => {
@@ -114,7 +120,7 @@ export const SecurityScreen = () => {
                                 </Cell.Content>
                                 <Switch
                                     value={lockScreenEnabled}
-                                    onPress={() => setLockScreenEnabled(!lockScreenEnabled)}
+                                    onPress={handleLockScreenToggle}
                                 />
                             </Cell>
                             <Cell onPress={handleChangePasscode}>
