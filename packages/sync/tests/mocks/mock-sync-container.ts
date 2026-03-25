@@ -12,6 +12,7 @@ import { SyncKeyService } from '../../src/crypto/service/sync-key-service';
 import { DeviceManagementService } from '../../src/device-manager/device-management-service';
 import { DeviceRepository } from '../../src/device-manager/device-repository';
 import { ITreeStorage } from '../../src/I-storage';
+import { Logger } from '../../src/logger/logger';
 import { SecretEncryptor } from '../../src/secret-encryptor';
 import { SyncContainer } from '../../src/sync-container';
 import { UpdateDecryptorService } from '../../src/update-encryptor/update-decryptor-service';
@@ -29,10 +30,11 @@ export async function createMockSyncContainer(
     encryptedStorage: ITreeStorage,
     server: MockSnapshotsServer,
     accountId: string,
+    logger: Logger,
     apiConfiguration?: Configuration
 ): Promise<MockSyncContainer> {
     const keyRepository = new EncryptedKeyRepository(encryptedStorage);
-    const syncStateRepository = new SyncStateRepository(storage);
+    const syncStateRepository = new SyncStateRepository(storage, logger);
     const crdtRepository = new YCRDTRepository(storage);
     const deviceRepository = new DeviceRepository(storage);
 
@@ -68,12 +70,14 @@ export async function createMockSyncContainer(
         updateDecryptor,
         storageVerifierService,
         deviceManager,
-        snapshotApi as unknown as SnapshotsApi
+        snapshotApi as unknown as SnapshotsApi,
+        logger
     );
 
     const secretEncryptor = new SecretEncryptor(keyServiceFactory);
 
     return {
+        logger,
         storage,
         encryptedStorage,
         storageVerifierService,

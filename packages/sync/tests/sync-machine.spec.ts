@@ -7,6 +7,7 @@ import { createMockSyncContainer, MockSyncContainer } from './mocks/mock-sync-co
 import { SnapshotsApi } from '../src/api/generated';
 import { SnapshotsSse } from '../src/api/snapshots-sse';
 import { generateAccountID, initializeSyncAccount } from '../src/initialize';
+import { Logger } from '../src/logger/logger';
 import { createSyncMachine, SyncMachine } from '../src/sync-machine/machine';
 import { SyncStatus, SyncStatusManager } from '../src/sync-provider/sync-status';
 
@@ -131,17 +132,20 @@ async function createMachineContext(
     const accountStorage = storage.child(accountId);
     const accountEncryptedStorage = encryptedStorage.child(accountId);
     const accountSecureEncryptedStorage = secureEncryptedStorage.child(accountId);
+    const logger = new Logger();
     await initializeSyncAccount({
         storage: accountStorage,
         encryptedStorage: accountEncryptedStorage,
         secureEncryptedStorage: accountSecureEncryptedStorage,
-        masterKey
+        masterKey,
+        logger
     });
     const container = await createMockSyncContainer(
         accountStorage,
         accountEncryptedStorage,
         server,
-        accountId
+        accountId,
+        logger
     );
 
     if (!server.hasSnapshot()) {
@@ -161,7 +165,8 @@ async function createMachineContext(
             snapshotsApi: container.snapshotApi as unknown as SnapshotsApi,
             snapshotsSse: container.snapshotSse as unknown as SnapshotsSse,
             ikService: container.ikService,
-            syncStatusManager
+            syncStatusManager,
+            logger: logger
         }
     });
 
