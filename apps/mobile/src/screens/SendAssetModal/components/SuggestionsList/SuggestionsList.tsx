@@ -9,11 +9,12 @@ import { styles } from './SuggestionsList.styles';
 
 interface SuggestionsListProps {
     suggestions: SendSuggestion[];
+    selectedAddress?: string;
     onSelect: (address: string, label: string) => void;
 }
 
 export const SuggestionsList = (props: SuggestionsListProps) => {
-    const { suggestions, onSelect } = props;
+    const { suggestions, selectedAddress, onSelect } = props;
 
     if (suggestions.length === 0) {
         return null;
@@ -27,6 +28,7 @@ export const SuggestionsList = (props: SuggestionsListProps) => {
                         <SuggestionCell
                             key={suggestion.address}
                             suggestion={suggestion}
+                            isSelected={suggestion.address === selectedAddress}
                             showDivider={idx < suggestions.length - 1}
                             onSelect={onSelect}
                         />

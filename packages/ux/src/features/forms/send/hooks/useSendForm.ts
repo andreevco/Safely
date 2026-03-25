@@ -4,6 +4,7 @@ import { SendFormInitialValues, SendFormResult } from '../types';
 import { useSendFormDraft } from './useSendFormDraft';
 import { useSendFormMeta } from './useSendFormMeta';
 import { useSendFormState } from './useSendFormState';
+import { useSuggestionDraft } from './useSuggestionDraft';
 
 export interface UseSendFormOptions {
     onSubmit: (result: SendFormResult, onSuccess: () => void) => void;
@@ -29,7 +30,13 @@ export function useSendForm(props: UseSendFormOptions) {
         clearDraft
     });
 
-    const meta = useSendFormMeta({ state, assetsData });
+    const suggestionDraft = useSuggestionDraft(initialDraft);
+
+    const meta = useSendFormMeta({
+        state,
+        assetsData,
+        suggestionDraft: suggestionDraft.state
+    });
 
     useEffect(() => {
         if (state.values.recipient) {
@@ -38,7 +45,8 @@ export function useSendForm(props: UseSendFormOptions) {
                 amount: state.values.amount || undefined,
                 amountInputType: state.values.amountInputType,
                 isMax: state.values.isMax || undefined,
-                stepIndex: state.stepIndex
+                stepIndex: state.stepIndex,
+                ...suggestionDraft.state
             });
         } else {
             clearDraft();
@@ -48,13 +56,16 @@ export function useSendForm(props: UseSendFormOptions) {
         state.values.amount,
         state.values.amountInputType,
         state.values.isMax,
-        state.stepIndex
+        state.stepIndex,
+        suggestionDraft.state.selectedAddress,
+        suggestionDraft.state.suggestionAddresses
     ]);
 
     return {
         state,
         actions,
         step,
-        meta
+        meta,
+        suggestionSelection: suggestionDraft.actions
     };
 }

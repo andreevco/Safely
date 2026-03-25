@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { NumberFormatter, WebNumberFormatLocale } from '../src/utils';
+import { NumberFormatter, WebNumberFormatLocale } from '../src';
 
 const NBSP = '\u00A0';
 
@@ -16,7 +16,7 @@ describe('NumberFormatter', () => {
         expect(formatter.formatFiat(1.004, { currency: 'USD' })).toBe('$1');
         expect(formatter.formatFiat(1.005, { currency: 'USD' })).toBe('$1');
         expect(formatter.formatFiat(1.045, { currency: 'USD' })).toBe('$1.04');
-        expect(formatter.formatFiat(1.901, { currency: 'USD' })).toBe('$1.9');
+        expect(formatter.formatFiat(1.901, { currency: 'USD' })).toBe('$1.90');
         expect(formatter.formatFiat(-0.01, { currency: 'USD' })).toBe('-$0.01');
         expect(formatter.formatFiat(1000000, { currency: 'USD' })).toBe('$1,000,000');
         expect(formatter.formatFiat(1000000.99, { currency: 'USD' })).toBe('$1,000,000');
@@ -28,7 +28,7 @@ describe('NumberFormatter', () => {
     it('formats fiat in de-DE locale with code', () => {
         const formatter = new NumberFormatter(new WebNumberFormatLocale('de-DE'));
         expect(formatter.formatFiat(1.8051, { currency: 'EUR', currencyDisplay: 'code' })).toBe(
-            `1,8${NBSP}EUR`
+            `1,80${NBSP}EUR`
         );
         expect(formatter.formatFiat(0.01, { currency: 'EUR', currencyDisplay: 'code' })).toBe(
             `0,01${NBSP}EUR`
@@ -166,7 +166,7 @@ describe('NumberFormatter', () => {
         expect(formatter.formatFiat(0, { currencyDisplay: 'symbol', currency: 'EUR' })).toBe(
             `0${NBSP}€`
         );
-        expect(formatter.formatFiat(0.1, { currency: 'EUR' })).toBe(`0,1${NBSP}€`);
+        expect(formatter.formatFiat(0.1, { currency: 'EUR' })).toBe(`0,10${NBSP}€`);
         expect(formatter.formatFiat(0.12, { currency: 'EUR' })).toBe(`0,12${NBSP}€`);
         expect(formatter.formatFiat(0.123, { currency: 'EUR' })).toBe(`0,123${NBSP}€`);
         expect(formatter.formatFiat(0.00100099, { currency: 'EUR' })).toBe(`0,001${NBSP}€`);
@@ -180,7 +180,7 @@ describe('NumberFormatter', () => {
     it('formats fiat in ru-RU locale with decimals', () => {
         const formatter = new NumberFormatter(new WebNumberFormatLocale('ru-RU'));
 
-        expect(formatter.formatFiat(0.2, { currency: 'RUB' })).toBe(`0,2${NBSP}₽`);
+        expect(formatter.formatFiat(0.2, { currency: 'RUB' })).toBe(`0,20${NBSP}₽`);
         expect(formatter.formatFiat(0.02, { currency: 'RUB' })).toBe(`0,02${NBSP}₽`);
         expect(formatter.formatFiat(0.0002, { currency: 'RUB' })).toBe(`0,0002${NBSP}₽`);
         expect(formatter.formatFiat(7.00002, { currency: 'RUB' })).toBe(`7${NBSP}₽`);
@@ -194,13 +194,13 @@ describe('NumberFormatter', () => {
     it('formats fiat in es-ES locale with decimals', () => {
         const formatter = new NumberFormatter(new WebNumberFormatLocale('es-ES'));
 
-        expect(formatter.formatFiat(0.1, { currency: 'EUR' })).toBe(`0,1${NBSP}€`);
+        expect(formatter.formatFiat(0.1, { currency: 'EUR' })).toBe(`0,10${NBSP}€`);
         expect(formatter.formatFiat(0.555, { currency: 'EUR' })).toBe(`0,555${NBSP}€`);
         expect(formatter.formatFiat(1.556, { currency: 'EUR' })).toBe(`1,55${NBSP}€`);
         expect(formatter.formatFiat(98.067, { currency: 'EUR' })).toBe(`98,06${NBSP}€`);
         expect(formatter.formatFiat(1000000.999, { currency: 'EUR' })).toBe(`1.000.000${NBSP}€`);
         expect(formatter.formatFiat(0.1, { currency: 'EUR', currencyDisplay: 'code' })).toBe(
-            `0,1${NBSP}EUR`
+            `0,10${NBSP}EUR`
         );
         expect(formatter.formatFiat(0.123, { currency: 'EUR', currencyDisplay: 'code' })).toBe(
             `0,123${NBSP}EUR`
@@ -229,7 +229,7 @@ describe('NumberFormatter', () => {
         expect(formatter.formatFiat(1.004, { currency: 'KZT' })).toBe(`1${NBSP}₸`);
         expect(formatter.formatFiat(1.005, { currency: 'KZT' })).toBe(`1${NBSP}₸`);
         expect(formatter.formatFiat(1.045, { currency: 'KZT' })).toBe(`1,04${NBSP}₸`);
-        expect(formatter.formatFiat(1.901, { currency: 'KZT' })).toBe(`1,9${NBSP}₸`);
+        expect(formatter.formatFiat(1.901, { currency: 'KZT' })).toBe(`1,90${NBSP}₸`);
         expect(formatter.formatFiat(-0.01, { currency: 'KZT' })).toBe(`-0,01${NBSP}₸`);
         expect(formatter.formatFiat(1000000, { currency: 'KZT' })).toBe(
             `1${NBSP}000${NBSP}000${NBSP}₸`
@@ -255,7 +255,7 @@ describe('NumberFormatter', () => {
         expect(formatter.formatFiat(1.004, { currency: 'UAH' })).toBe(`1${NBSP}₴`);
         expect(formatter.formatFiat(1.005, { currency: 'UAH' })).toBe(`1${NBSP}₴`);
         expect(formatter.formatFiat(1.045, { currency: 'UAH' })).toBe(`1,04${NBSP}₴`);
-        expect(formatter.formatFiat(1.901, { currency: 'UAH' })).toBe(`1,9${NBSP}₴`);
+        expect(formatter.formatFiat(1.901, { currency: 'UAH' })).toBe(`1,90${NBSP}₴`);
         expect(formatter.formatFiat(-0.01, { currency: 'UAH' })).toBe(`-0,01${NBSP}₴`);
         expect(formatter.formatFiat(1000000, { currency: 'UAH' })).toBe(
             `1${NBSP}000${NBSP}000${NBSP}₴`
@@ -279,7 +279,7 @@ describe('NumberFormatter', () => {
         expect(formatter.formatFiat(1.004, { currency: 'GBP' })).toBe('£1');
         expect(formatter.formatFiat(1.005, { currency: 'GBP' })).toBe('£1');
         expect(formatter.formatFiat(1.045, { currency: 'GBP' })).toBe('£1.04');
-        expect(formatter.formatFiat(1.901, { currency: 'GBP' })).toBe('£1.9');
+        expect(formatter.formatFiat(1.901, { currency: 'GBP' })).toBe('£1.90');
         expect(formatter.formatFiat(-0.01, { currency: 'GBP' })).toBe('-£0.01');
         expect(formatter.formatFiat(1000000, { currency: 'GBP' })).toBe('£1,000,000');
         expect(formatter.formatFiat(1000000.99, { currency: 'GBP' })).toBe('£1,000,000');
@@ -299,7 +299,7 @@ describe('NumberFormatter', () => {
         expect(formatter.formatFiat(1.004, { currency: 'CNY' })).toBe('¥1');
         expect(formatter.formatFiat(1.005, { currency: 'CNY' })).toBe('¥1');
         expect(formatter.formatFiat(1.045, { currency: 'CNY' })).toBe('¥1.04');
-        expect(formatter.formatFiat(1.901, { currency: 'CNY' })).toBe('¥1.9');
+        expect(formatter.formatFiat(1.901, { currency: 'CNY' })).toBe('¥1.90');
         expect(formatter.formatFiat(-0.01, { currency: 'CNY' })).toBe('-¥0.01');
         expect(formatter.formatFiat(1000000, { currency: 'CNY' })).toBe('¥1,000,000');
         expect(formatter.formatFiat(1000000.99, { currency: 'CNY' })).toBe('¥1,000,000');
@@ -319,7 +319,7 @@ describe('NumberFormatter', () => {
         expect(formatter.formatFiat(1.004, { currency: 'INR' })).toBe('₹1');
         expect(formatter.formatFiat(1.005, { currency: 'INR' })).toBe('₹1');
         expect(formatter.formatFiat(1.045, { currency: 'INR' })).toBe('₹1.04');
-        expect(formatter.formatFiat(1.901, { currency: 'INR' })).toBe('₹1.9');
+        expect(formatter.formatFiat(1.901, { currency: 'INR' })).toBe('₹1.90');
         expect(formatter.formatFiat(-0.01, { currency: 'INR' })).toBe('-₹0.01');
         expect(formatter.formatFiat(1000000, { currency: 'INR' })).toBe('₹10,00,000');
         expect(formatter.formatFiat(1000000.99, { currency: 'INR' })).toBe('₹10,00,000');
@@ -339,13 +339,44 @@ describe('NumberFormatter', () => {
         expect(formatter.formatFiat(1.004, { currency: 'TRY' })).toBe('₺1');
         expect(formatter.formatFiat(1.005, { currency: 'TRY' })).toBe('₺1');
         expect(formatter.formatFiat(1.045, { currency: 'TRY' })).toBe('₺1,04');
-        expect(formatter.formatFiat(1.901, { currency: 'TRY' })).toBe('₺1,9');
+        expect(formatter.formatFiat(1.901, { currency: 'TRY' })).toBe('₺1,90');
         expect(formatter.formatFiat(-0.01, { currency: 'TRY' })).toBe('-₺0,01');
         expect(formatter.formatFiat(1000000, { currency: 'TRY' })).toBe('₺1.000.000');
         expect(formatter.formatFiat(1000000.99, { currency: 'TRY' })).toBe('₺1.000.000');
         expect(formatter.formatFiat(7890.234, { currency: 'TRY', currencyDisplay: 'code' })).toBe(
             '7.890 TRY'
         );
+    });
+
+    it('formats JPY (0 fraction digits) correctly', () => {
+        const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'));
+
+        expect(formatter.formatFiat(0, { currency: 'JPY' })).toBe('¥0');
+        expect(formatter.formatFiat(1, { currency: 'JPY' })).toBe('¥1');
+        expect(formatter.formatFiat(1.9, { currency: 'JPY' })).toBe('¥1');
+        expect(formatter.formatFiat(100.5, { currency: 'JPY' })).toBe('¥100');
+        expect(formatter.formatFiat(1234, { currency: 'JPY' })).toBe('¥1,234');
+        expect(formatter.formatFiat(1234.99, { currency: 'JPY' })).toBe('¥1,234');
+    });
+
+    it('formats KRW (0 fraction digits) correctly', () => {
+        const formatter = new NumberFormatter(new WebNumberFormatLocale('ko-KR'));
+
+        expect(formatter.formatFiat(0, { currency: 'KRW' })).toBe('₩0');
+        expect(formatter.formatFiat(1500, { currency: 'KRW' })).toBe('₩1,500');
+        expect(formatter.formatFiat(1500.7, { currency: 'KRW' })).toBe('₩1,500');
+    });
+
+    it('formats BHD (3 fraction digits) correctly', () => {
+        const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'));
+
+        expect(formatter.formatFiat(0, { currency: 'BHD' })).toBe('BHD\u00A00');
+        expect(formatter.formatFiat(1, { currency: 'BHD' })).toBe('BHD\u00A01');
+        expect(formatter.formatFiat(1.5, { currency: 'BHD' })).toBe('BHD\u00A01.500');
+        expect(formatter.formatFiat(1.23, { currency: 'BHD' })).toBe('BHD\u00A01.230');
+        expect(formatter.formatFiat(1.234, { currency: 'BHD' })).toBe('BHD\u00A01.234');
+        expect(formatter.formatFiat(0.1, { currency: 'BHD' })).toBe('BHD\u00A00.100');
+        expect(formatter.formatFiat(0.999, { currency: 'BHD' })).toBe('BHD\u00A00.999');
     });
 
     describe('Fiat Formatting - Different Locales and Display Options', () => {

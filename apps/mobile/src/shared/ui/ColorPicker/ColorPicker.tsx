@@ -21,6 +21,7 @@ export const ColorPicker = (props: ColorPickerProps) => {
                     <TouchableOpacity
                         key={color}
                         activeOpacity={0.8}
+                        style={styles.colorButton}
                         onPress={() => {
                             selectionAsync();
                             onColorSelect(color);

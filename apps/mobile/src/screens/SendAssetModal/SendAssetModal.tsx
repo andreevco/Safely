@@ -54,7 +54,7 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
     const recipientInputRef = useRef<TextInput>(null);
     const amountInputRef = useRef<MaskedTextInputRef>(null);
 
-    const { state, actions, step, meta } = useSendForm({
+    const { state, actions, step, meta, suggestionSelection } = useSendForm({
         onSubmit: handleSubmit,
         shouldResetForm: false,
         initialValues: { recipient: address, amount }
@@ -134,7 +134,7 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
 
     return (
         <Screen>
-            <Screen.Header>
+            <Screen.Header variant="left">
                 {isFirstStep ? (
                     <Screen.Header.CloseButton />
                 ) : (
@@ -143,21 +143,33 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
                     </Screen.Header.Button>
                 )}
                 <Screen.Header.Title>
-                    <Text variant="titleS">{t('send.title')}</Text>
+                    <Text variant="titleS" textAlign="center">
+                        {t('send.title')}
+                    </Text>
                     {state.parsed.recipient && (
                         <Animated.View
                             entering={FadeIn.duration(150)}
                             exiting={FadeOut.duration(150)}
                         >
                             {meta.portfolioMetaByAddress ? (
-                                <Text variant="bodyM" color="tertiary" numberOfLines={1}>
+                                <Text
+                                    variant="bodyM"
+                                    color="tertiary"
+                                    textAlign="center"
+                                    numberOfLines={1}
+                                >
                                     <Text variant="bodyM" color="secondary">
                                         {meta.portfolioMetaByAddress.name}
                                     </Text>{' '}
                                     {ellipsisMiddle(state.parsed.recipient.address)}
                                 </Text>
                             ) : (
-                                <Text variant="bodyM" color="secondary" numberOfLines={1}>
+                                <Text
+                                    textAlign="center"
+                                    variant="bodyM"
+                                    color="secondary"
+                                    numberOfLines={1}
+                                >
                                     {ellipsisMiddle(state.parsed.recipient.address)}
                                 </Text>
                             )}
@@ -188,6 +200,10 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
                     error={meta.suggestions.length > 0 ? undefined : state.errors.recipient}
                     onChangeText={actions.setRecipient}
                     suggestions={meta.suggestions}
+                    restoredSuggestions={meta.restoredSuggestions}
+                    selectedAddress={suggestionSelection.selectedAddress}
+                    onSelectSuggestion={suggestionSelection.select}
+                    onClearSuggestionSelection={suggestionSelection.clear}
                 />
                 <AmountStep
                     key="amount"

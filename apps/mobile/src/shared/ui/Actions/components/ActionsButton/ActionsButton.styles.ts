@@ -5,6 +5,7 @@ export const styles = StyleSheet.create(theme => ({
         flex: 1,
         alignItems: 'center',
         gap: theme.spacing[8],
+        paddingVertical: theme.spacing[16],
         paddingHorizontal: theme.spacing[4]
     },
     iconContainer: {

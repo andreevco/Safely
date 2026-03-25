@@ -10,6 +10,8 @@ export interface NumberFormatLocale {
         currency: string,
         display: Exclude<FiatCurrencyDisplay, 'none'>
     ): SignedCurrencyAffixes;
+
+    getCurrencyFractionDigits(currency: string): number;
 }
 
 export class WebNumberFormatLocale implements NumberFormatLocale {
@@ -60,6 +62,15 @@ export class WebNumberFormatLocale implements NumberFormatLocale {
             affixes.suffix = ' ' + affixes.prefix.replace(/[\s\u00A0]+/g, '');
             affixes.prefix = '';
         }
+    }
+
+    public getCurrencyFractionDigits(currency: string): number {
+        return (
+            this.createFormatter({
+                style: 'currency',
+                currency
+            }).resolvedOptions().minimumFractionDigits ?? 2
+        );
     }
 
     private extractAffixes(parts: Intl.NumberFormatPart[]): { prefix: string; suffix: string } {
