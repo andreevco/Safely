@@ -9,6 +9,7 @@ import { SyncAccountRepository } from './sync-account-repository';
 import { Configuration } from '../api/generated';
 import { SyncApiConfiguration } from '../api/sync-api-configuration';
 import { ed25519_keygen } from '../crypto/ed25519';
+import { Logger, LogLevel } from '../logger/logger';
 import { OnboardingConnector } from '../onboarding/connector';
 import { accountsApiForOnboarding, NewDeviceOnboarding } from '../onboarding/new-device-onboarding';
 
@@ -18,22 +19,32 @@ export class SyncAccountFactory<
     private readonly syncAccountIdRepository: SyncAccountRepository;
     private readonly accountManager: AccountManager<S>;
     private readonly apiConfiguration: Configuration;
+    private readonly logger: Logger;
 
     constructor(opts: {
         storage: ITreeStorage;
         encryptedStorage: ITreeStorage;
         structure: S;
         apiConfiguration?: SyncApiConfiguration;
+        logger?: Logger;
     }) {
         this.syncAccountIdRepository = new SyncAccountRepository(opts.storage);
         this.apiConfiguration = new Configuration(opts.apiConfiguration);
+        this.logger =
+            opts.logger ??
+            (() => {
+                const logger = new Logger();
+                logger.setLevel(LogLevel.TRACE);
+                return logger;
+            })();
 
         const createAccountService = new CreateAccountService(
             opts.storage,
             opts.encryptedStorage,
             this.syncAccountIdRepository,
             opts.structure,
-            this.apiConfiguration
+            this.apiConfiguration,
+            this.logger
         );
         this.accountManager = new AccountManager(
             opts.storage,
@@ -41,7 +52,8 @@ export class SyncAccountFactory<
             this.syncAccountIdRepository,
             opts.structure,
             this.apiConfiguration,
-            createAccountService
+            createAccountService,
+            this.logger
         );
     }
 

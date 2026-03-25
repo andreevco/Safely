@@ -8,6 +8,7 @@ import { SyncAccount } from './sync-account';
 import { SyncAccountRepository } from './sync-account-repository';
 import { Configuration } from '../api/generated';
 import { ITreeStorage } from '../I-storage';
+import { Logger } from '../logger/logger';
 import { OfflineSyncProvider } from '../sync-provider/offline-sync-provider';
 import { OnlineSyncProvider } from '../sync-provider/online-sync-provider';
 
@@ -20,7 +21,8 @@ export class AccountManager<S extends Record<string, ZodType>> {
         private readonly syncAccountIdRepository: SyncAccountRepository,
         private readonly structure: S,
         private readonly apiConfiguration: Configuration,
-        private readonly createAccountService: CreateAccountService<S>
+        private readonly createAccountService: CreateAccountService<S>,
+        private readonly logger: Logger
     ) {}
 
     public async getAccounts(): Promise<ISyncAccount<S>[]> {
@@ -50,11 +52,13 @@ export class AccountManager<S extends Record<string, ZodType>> {
             this.encryptedStorage,
             accountInfo.accountId
         );
+        const logger = this.logger.child(accountInfo.accountId.slice(0, 4));
         const container = await createSyncContainer({
             accountId,
             storage,
             encryptedStorage,
-            apiConfiguration: this.apiConfiguration
+            apiConfiguration: this.apiConfiguration,
+            logger
         });
 
         const syncProvider = accountInfo.online
