@@ -59,8 +59,9 @@ function elegantScale(minVal: number, maxVal: number): [number, number, number, 
     for (const step of candidateSteps) {
         const kMin = Math.floor((maxVal - 3 * step) / step);
         const kMax = Math.floor(minVal / step);
+        const kStart = minVal >= 0 ? Math.max(kMin, 0) : kMin;
 
-        for (let k = kMin; k <= kMax; k++) {
+        for (let k = kStart; k <= kMax; k++) {
             const axisMin = k * step;
             const score = scoreAxis(minVal, maxVal, axisMin, step);
 
