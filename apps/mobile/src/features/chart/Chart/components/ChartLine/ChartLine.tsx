@@ -2,19 +2,27 @@ import { Canvas, Circle, Group, Line, Path, vec } from '@shopify/react-native-sk
 import { useState } from 'react';
 import { LayoutChangeEvent, View } from 'react-native';
 import { GestureDetector, GestureType } from 'react-native-gesture-handler';
-import { type SharedValue, useDerivedValue } from 'react-native-reanimated';
+import Animated, {
+    type SharedValue,
+    useDerivedValue,
+    withDelay,
+    withRepeat,
+    withSequence,
+    withTiming
+} from 'react-native-reanimated';
 import { useUnistyles } from 'react-native-unistyles';
 
-import type { ChartPoint } from '@mobile/shared/utils/chart';
+import { Text } from '@mobile/shared/ui';
+import { formatCompactPrice, type ChartPoint } from '@mobile/shared/utils/chart';
 
 import { styles } from './ChartLine.styles';
 import { ChartPeriod } from '../../config';
 import {
-    CROSSHAIR_DOT_RADIUS,
+    DOT_RADIUS,
     FADED_LINE_COLOR,
-    LAST_POINT_RADIUS,
     LINE_COLOR,
-    LINE_STROKE_WIDTH
+    LINE_STROKE_WIDTH,
+    OPAQUE_LINE_COLOR
 } from '../../constants';
 import { useChartPaths } from '../../hooks';
 
@@ -57,7 +65,7 @@ export const ChartLine = (props: ChartLineProps) => {
     const crosshairP1 = useDerivedValue(() => vec(activeX.value, 0));
     const crosshairP2 = useDerivedValue(() => vec(activeX.value, size.height));
 
-    const { fullPath, periodSplitEnd, lastPoint } = useChartPaths({
+    const { fullPath, periodSplitEnd, lastPoint, elegantPrices } = useChartPaths({
         prices,
         width: size.width,
         height: size.height,
@@ -67,11 +75,48 @@ export const ChartLine = (props: ChartLineProps) => {
         pathFractionsShared
     });
 
+    const animatedCircleColor = useDerivedValue(() => {
+        return withRepeat(
+            withSequence(
+                withTiming(LINE_COLOR, { duration: 1000 }),
+                withDelay(1500, withTiming(OPAQUE_LINE_COLOR, { duration: 1000 }))
+            ),
+            -1,
+            true
+        );
+    });
+
     return (
         <View style={styles.container}>
             <GestureDetector gesture={gesture}>
                 <View style={styles.canvasContainer} onLayout={onLayout}>
+                    <View style={styles.priceLabelsContainer} pointerEvents="none">
+                        {elegantPrices
+                            ?.slice(0, 3)
+                            .filter(item => item.shouldBeRendered)
+                            .map(item => (
+                                <Animated.View
+                                    key={`price-${item.price}`}
+                                    style={[styles.priceLabel, { top: item.y }]}
+                                >
+                                    <Text monospace variant="bodyS" color="tertiary">
+                                        {formatCompactPrice(item.price)}
+                                    </Text>
+                                </Animated.View>
+                            ))}
+                    </View>
                     <Canvas style={styles.canvas}>
+                        {/* Horizontal reference lines */}
+                        {elegantPrices?.slice(1, 3).map((item, index) => (
+                            <Line
+                                key={`ref-${index}`}
+                                p1={vec(0, item.y)}
+                                p2={vec(size.width, item.y)}
+                                color={theme.colors.other.transparentElement}
+                                strokeWidth={0.5}
+                            />
+                        ))}
+
                         {/* Crosshair vertical line */}
                         <Group opacity={crosshairOpacity}>
                             <Line
@@ -90,7 +135,7 @@ export const ChartLine = (props: ChartLineProps) => {
                                     color={FADED_LINE_COLOR}
                                     strokeWidth={LINE_STROKE_WIDTH}
                                     style="stroke"
-                                    end={periodSplitEnd - 0.005}
+                                    end={periodSplitEnd - 0.0025}
                                 />
                             </Group>
                         )}
@@ -128,14 +173,14 @@ export const ChartLine = (props: ChartLineProps) => {
                                 <Circle
                                     cx={lastPoint.x}
                                     cy={lastPoint.y}
-                                    r={LAST_POINT_RADIUS + 2}
+                                    r={DOT_RADIUS + 1}
                                     color={theme.colors.background.secondary}
                                 />
                                 <Circle
                                     cx={lastPoint.x}
                                     cy={lastPoint.y}
-                                    r={LAST_POINT_RADIUS}
-                                    color={LINE_COLOR}
+                                    r={DOT_RADIUS}
+                                    color={animatedCircleColor}
                                 />
                             </Group>
                         )}
@@ -145,15 +190,10 @@ export const ChartLine = (props: ChartLineProps) => {
                             <Circle
                                 cx={activeX}
                                 cy={activeY}
-                                r={CROSSHAIR_DOT_RADIUS + 1}
+                                r={DOT_RADIUS + 1}
                                 color={theme.colors.background.secondary}
                             />
-                            <Circle
-                                cx={activeX}
-                                cy={activeY}
-                                r={CROSSHAIR_DOT_RADIUS}
-                                color={LINE_COLOR}
-                            />
+                            <Circle cx={activeX} cy={activeY} r={DOT_RADIUS} color={LINE_COLOR} />
                         </Group>
                     </Canvas>
                 </View>

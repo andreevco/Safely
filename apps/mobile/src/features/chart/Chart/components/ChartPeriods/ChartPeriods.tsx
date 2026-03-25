@@ -45,16 +45,14 @@ export const ChartPeriods = (props: ChartPeriodsProps) => {
 
     return (
         <View style={styles.container}>
-            {Object.values(ChartPeriod)
-                .slice(0, -1)
-                .map(period => (
-                    <Tab
-                        key={period}
-                        isActive={selectedPeriod === period}
-                        onSelect={() => handleSelectPeriod(period)}
-                        label={t(`chart.periods.${period}`)}
-                    />
-                ))}
+            {Object.values(ChartPeriod).map(period => (
+                <Tab
+                    key={period}
+                    isActive={selectedPeriod === period}
+                    onSelect={() => handleSelectPeriod(period)}
+                    label={t(`chart.periods.${period}`)}
+                />
+            ))}
         </View>
     );
 };

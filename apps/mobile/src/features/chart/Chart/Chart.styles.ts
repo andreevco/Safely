@@ -4,6 +4,7 @@ export const styles = StyleSheet.create(theme => ({
     container: {
         backgroundColor: theme.colors.background.secondary,
         marginHorizontal: theme.spacing[8],
-        borderRadius: theme.radius.md
+        borderRadius: theme.radius.md,
+        overflow: 'hidden'
     }
 }));

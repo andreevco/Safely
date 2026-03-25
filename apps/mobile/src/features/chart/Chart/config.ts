@@ -2,7 +2,6 @@ import {
     startOfDay,
     startOfHour,
     startOfMonth,
-    startOfWeek,
     startOfYear,
     addMonthsToTimestamp,
     addYearsToTimestamp
@@ -33,6 +32,19 @@ export type ChartConfig = {
     footerDateFormat: Intl.DateTimeFormatOptions;
 };
 
+const ALL_TIME_START = new Date(2014, 0).getTime();
+const ALL_TIME_YEAR_STEP = 4;
+
+function computeAllTimeIntermediatePoints(startDate: number): number[] {
+    const points: number[] = [startDate];
+    let lastPoint = startDate;
+    while (lastPoint < Date.now()) {
+        lastPoint = addYearsToTimestamp(lastPoint, ALL_TIME_YEAR_STEP);
+        points.push(lastPoint);
+    }
+    return points;
+}
+
 export const CHART_CONFIG: Record<ChartPeriod, ChartConfig> = {
     [ChartPeriod.ONE_HOUR]: {
         startOfPeriod: startOfHour,
@@ -40,7 +52,9 @@ export const CHART_CONFIG: Record<ChartPeriod, ChartConfig> = {
         getPeriodIntermediatePoints: (startDate: number) => {
             return [
                 startDate,
+                new Date(startDate + 0.5 * 60 * 60 * 1000).getTime(),
                 new Date(startDate + 1 * 60 * 60 * 1000).getTime(),
+                new Date(startDate + 1.5 * 60 * 60 * 1000).getTime(),
                 new Date(startDate + 2 * 60 * 60 * 1000).getTime()
             ];
         },
@@ -73,11 +87,11 @@ export const CHART_CONFIG: Record<ChartPeriod, ChartConfig> = {
             },
             count: 49
         },
-        crosshairDateFormat: { hour: '2-digit', minute: '2-digit' },
+        crosshairDateFormat: { hour: '2-digit', minute: '2-digit', month: 'short', day: 'numeric' },
         footerDateFormat: { month: 'short', day: 'numeric' }
     },
     [ChartPeriod.ONE_WEEK]: {
-        startOfPeriod: () => startOfWeek(new Date(Date.now())),
+        startOfPeriod: () => startOfDay(new Date(Date.now() - 6 * 24 * 60 * 60 * 1000)),
         fullPeriodLength: 7 * 24 * 60 * 60 * 1000,
         getPeriodIntermediatePoints: (startDate: number) => {
             return [
@@ -118,7 +132,7 @@ export const CHART_CONFIG: Record<ChartPeriod, ChartConfig> = {
             },
             count: 61
         },
-        crosshairDateFormat: { month: 'short', day: 'numeric' },
+        crosshairDateFormat: { month: 'short', day: 'numeric', year: 'numeric' },
         footerDateFormat: { month: 'short' }
     },
     [ChartPeriod.NINETY_DAYS]: {
@@ -142,7 +156,7 @@ export const CHART_CONFIG: Record<ChartPeriod, ChartConfig> = {
             // TODO: ask Techies should represent real days or pofig i tak soidet?
             count: 117
         },
-        crosshairDateFormat: { month: 'short', day: 'numeric' },
+        crosshairDateFormat: { month: 'short', day: 'numeric', year: 'numeric' },
         footerDateFormat: { month: 'short' }
     },
     [ChartPeriod.ONE_YEAR]: {
@@ -167,16 +181,15 @@ export const CHART_CONFIG: Record<ChartPeriod, ChartConfig> = {
         footerDateFormat: { year: 'numeric' }
     },
     [ChartPeriod.ALL_TIME]: {
-        startOfPeriod: startOfYear,
-        fullPeriodLength: Infinity,
-        getPeriodIntermediatePoints: (startDate: number) => {
-            return [startDate];
-        },
-        tickConfig: {
-            tick: (_: number) => 'large',
-            count: 1
-        },
+        startOfPeriod: () => ALL_TIME_START,
+        fullPeriodLength: Date.now() - ALL_TIME_START,
+        getPeriodIntermediatePoints: computeAllTimeIntermediatePoints,
         crosshairDateFormat: { month: 'short', year: 'numeric' },
-        footerDateFormat: { year: 'numeric' }
+        footerDateFormat: { year: 'numeric' },
+        tickConfig: {
+            tick: (idx: number) => (idx % ALL_TIME_YEAR_STEP === 0 ? 'large' : 'medium'),
+            mediumTickColor: 'tertiary',
+            count: (computeAllTimeIntermediatePoints(ALL_TIME_START).length - 1) * 4 + 1
+        }
     }
 };
