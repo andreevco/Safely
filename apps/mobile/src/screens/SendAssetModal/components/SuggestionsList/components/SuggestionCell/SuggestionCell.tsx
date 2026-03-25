@@ -1,18 +1,19 @@
 import { SendSuggestion } from '@safely/ux';
 
 import { PortfolioName } from '@mobile/entities/portfolio';
-import { Cell } from '@mobile/shared/ui';
+import { Cell, Checkmark28, Icon } from '@mobile/shared/ui';
 
 import { styles } from './SuggestionCell.styles';
 
 interface SuggestionCellProps {
     suggestion: SendSuggestion;
+    isSelected: boolean;
     showDivider?: boolean;
     onSelect: (address: string, label: string) => void;
 }
 
 export const SuggestionCell = (props: SuggestionCellProps) => {
-    const { suggestion, showDivider, onSelect } = props;
+    const { suggestion, isSelected, showDivider, onSelect } = props;
 
     return (
         <Cell
@@ -29,6 +30,7 @@ export const SuggestionCell = (props: SuggestionCellProps) => {
                         size={16}
                         tag={suggestion.tag}
                     />
+                    {isSelected && <Icon icon={Checkmark28} color="accent" />}
                 </Cell.Row>
             </Cell.Content>
         </Cell>

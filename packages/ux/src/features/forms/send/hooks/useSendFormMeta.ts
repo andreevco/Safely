@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { RatedCryptoAssetAmount } from '@safely/core';
+import { Portfolio, RatedCryptoAssetAmount } from '@safely/core';
 
 import {
     findPortfolioMetaByAddress,
@@ -8,15 +8,32 @@ import {
     usePortfolios
 } from '../../../../entities';
 import { fuzzySearch } from '../../../../shared';
-import { SendFormState } from '../types';
+import { SendFormState, SendSuggestion } from '../types';
+import { SuggestionDraftState } from './useSuggestionDraft';
+
+function mapPortfolioToSuggestions(
+    portfolio: Portfolio,
+    activeDerivation: ReturnType<typeof useActiveDerivation>
+): SendSuggestion[] {
+    const derivations = portfolio.getDerivations();
+    return derivations
+        .filter(d => !d.id.isEq(activeDerivation.id))
+        .map(derivation => ({
+            address: derivation.chains.btc.wallets[0]?.address,
+            meta: portfolio.meta,
+            tag: derivations.length > 1 ? derivation.index + 1 : undefined
+        }));
+}
 
 interface UseSendFormMetaParams {
     state: SendFormState;
     assetsData: RatedCryptoAssetAmount[] | undefined;
+    suggestionDraft: SuggestionDraftState;
 }
 
 export function useSendFormMeta(params: UseSendFormMetaParams) {
-    const { state, assetsData } = params;
+    const { state, assetsData, suggestionDraft } = params;
+    const { selectedAddress, suggestionAddresses: savedSuggestionAddresses } = suggestionDraft;
 
     const blockchain = state.parsed.recipient?.blockchain;
     const portfolios = usePortfolios();
@@ -25,21 +42,25 @@ export function useSendFormMeta(params: UseSendFormMetaParams) {
     const suggestions = useMemo(() => {
         const query = state.values.recipient;
 
-        const allAddresses = fuzzySearch(portfolios, query, s => s.meta.name)
-            .flatMap(portfolio => {
-                const derivations = portfolio.getDerivations();
-                return derivations
-                    .filter(d => !d.id.isEq(activeDerivation.id))
-                    .map(derivation => ({
-                        address: derivation.chains.btc.wallets[0]?.address,
-                        meta: portfolio.meta,
-                        tag: derivations.length > 1 ? derivation.index + 1 : undefined
-                    }));
-            })
+        return fuzzySearch(portfolios, query, s => s.meta.name)
+            .flatMap(portfolio => mapPortfolioToSuggestions(portfolio, activeDerivation))
             .slice(0, 8);
-
-        return allAddresses;
     }, [portfolios, activeDerivation, state.values.recipient, state.parsed.recipient]);
+
+    const restoredSuggestions = useMemo(() => {
+        if (!savedSuggestionAddresses || !selectedAddress) return undefined;
+
+        const addressSet = new Set(savedSuggestionAddresses);
+
+        return portfolios
+            .flatMap(portfolio => mapPortfolioToSuggestions(portfolio, activeDerivation))
+            .filter(s => addressSet.has(s.address))
+            .sort(
+                (a, b) =>
+                    savedSuggestionAddresses.indexOf(a.address) -
+                    savedSuggestionAddresses.indexOf(b.address)
+            );
+    }, [savedSuggestionAddresses, selectedAddress, portfolios, activeDerivation]);
 
     const portfolioMetaByAddress = useMemo(() => {
         if (!state.parsed.recipient) {
@@ -65,6 +86,7 @@ export function useSendFormMeta(params: UseSendFormMetaParams) {
         isMaxAvailable,
         availableAssets,
         suggestions,
+        restoredSuggestions,
         portfolioMetaByAddress
     };
 }

@@ -156,9 +156,11 @@ export class NumberFormatter {
 
         const opts = options;
         const bigValue = Big(value);
+        const minFractionDigits = this.locale.getCurrencyFractionDigits(opts.currency);
         const formatted = this.formatNumber(bigValue.abs(), {
             fullPrecision: opts.fullPrecision,
-            useGrouping: opts.useGrouping
+            useGrouping: opts.useGrouping,
+            minFractionDigits
         });
 
         const display = opts.currencyDisplay ?? 'symbol';
@@ -179,28 +181,37 @@ export class NumberFormatter {
 
     private formatNumber(
         value: BigSource,
-        options?: { fullPrecision?: boolean; useGrouping?: boolean }
+        options?: { fullPrecision?: boolean; useGrouping?: boolean; minFractionDigits?: number }
     ): string {
         const bigValue = Big(value);
         const useGrouping = options?.useGrouping ?? true;
+        const minFractionDigits = options?.minFractionDigits;
 
         return options?.fullPrecision
-            ? this.formatFullPrecision(bigValue, useGrouping)
-            : this.formatDynamicPrecision(bigValue, useGrouping);
+            ? this.formatFullPrecision(bigValue, useGrouping, minFractionDigits)
+            : this.formatDynamicPrecision(bigValue, useGrouping, minFractionDigits);
     }
 
-    private formatDynamicPrecision(value: Big, useGrouping = true): string {
-        const truncated = this.truncateForDisplay(value);
-        return truncated.eq(0) ? '0' : this.formatFullPrecision(truncated, useGrouping);
+    private formatDynamicPrecision(
+        value: Big,
+        useGrouping = true,
+        minFractionDigits?: number
+    ): string {
+        const truncated = this.truncateForDisplay(value, minFractionDigits);
+
+        return truncated.eq(0)
+            ? '0'
+            : this.formatFullPrecision(truncated, useGrouping, minFractionDigits);
     }
 
-    private truncateForDisplay(value: Big): Big {
+    private truncateForDisplay(value: Big, fractionDigits?: number): Big {
         const abs = value.abs();
+        const decimals = fractionDigits ?? 2;
 
         if (abs.gte(1000)) {
             return value.round(0, 0);
         } else if (abs.gte(1)) {
-            return value.round(2, 0);
+            return value.round(decimals, 0);
         } else if (abs.gt(0)) {
             return value.prec(3, 0);
         }
@@ -208,17 +219,30 @@ export class NumberFormatter {
         return Big(0);
     }
 
-    private formatFullPrecision(value: Big, useGrouping = true): string {
+    private formatFullPrecision(
+        value: Big,
+        useGrouping = true,
+        minFractionDigits?: number
+    ): string {
         const isNegative = value.lt(0);
         const absStr = value.abs().toFixed();
         const [intPart, fracPart = ''] = absStr.split('.');
 
         const formattedInt = useGrouping ? this.addGroupSeparators(intPart) : intPart;
-        const result = fracPart
-            ? `${formattedInt}${this.locale.decimalSeparator}${fracPart}`
+        const paddedFrac = this.padFraction(fracPart, minFractionDigits);
+        const result = paddedFrac
+            ? `${formattedInt}${this.locale.decimalSeparator}${paddedFrac}`
             : formattedInt;
 
         return isNegative ? `-${result}` : result;
+    }
+
+    private padFraction(fracPart: string, minFractionDigits?: number): string {
+        if (!fracPart || minFractionDigits === undefined || minFractionDigits === 0) {
+            return fracPart;
+        }
+
+        return fracPart.padEnd(minFractionDigits, '0');
     }
 
     private addGroupSeparators(integerPart: string): string {

@@ -1,30 +1,43 @@
-import { Canvas, Circle, Line, Path, vec } from '@shopify/react-native-skia';
-import Color from 'color';
-import { useCallback, useMemo, useState } from 'react';
+import { Canvas, Circle, Group, Line, Path, vec } from '@shopify/react-native-skia';
+import { useState } from 'react';
 import { LayoutChangeEvent, View } from 'react-native';
 import { GestureDetector, GestureType } from 'react-native-gesture-handler';
+import Animated, {
+    type SharedValue,
+    useDerivedValue,
+    withDelay,
+    withRepeat,
+    withSequence,
+    withTiming
+} from 'react-native-reanimated';
 import { useUnistyles } from 'react-native-unistyles';
 
 import { Text } from '@mobile/shared/ui';
-import { buildChartPath, buildChartPoints, type ChartPoint } from '@mobile/shared/utils/chart';
+import { formatCompactPrice, type ChartPoint } from '@mobile/shared/utils/chart';
 
 import { styles } from './ChartLine.styles';
-import { CHART_CONFIG, ChartPeriod } from '../../config';
+import { ChartPeriod } from '../../config';
+import {
+    DOT_RADIUS,
+    FADED_LINE_COLOR,
+    LINE_COLOR,
+    LINE_STROKE_WIDTH,
+    OPAQUE_LINE_COLOR
+} from '../../constants';
+import { useChartPaths } from '../../hooks';
 
 type ChartLineProps = {
     prices: [number, number][];
     startDate: number;
     selectedPeriod: ChartPeriod;
-    chartPointsRef: React.RefObject<ChartPoint[]>;
-    activePoint: ChartPoint | null;
+    chartPointsShared: SharedValue<ChartPoint[]>;
+    pathFractionsShared: SharedValue<number[]>;
+    activeX: SharedValue<number>;
+    activeY: SharedValue<number>;
+    isActive: SharedValue<boolean>;
+    activePathFraction: SharedValue<number>;
     gesture: GestureType;
-    formattedTime: string;
 };
-
-const LINE_COLOR = 'rgba(247, 147, 26, 1)';
-const LINE_STROKE_WIDTH = 1.5;
-const LAST_POINT_RADIUS = 4;
-const CROSSHAIR_DOT_RADIUS = 2;
 
 export const ChartLine = (props: ChartLineProps) => {
     const { theme } = useUnistyles();
@@ -32,126 +45,157 @@ export const ChartLine = (props: ChartLineProps) => {
         prices,
         startDate,
         selectedPeriod,
-        chartPointsRef,
-        activePoint,
-        gesture,
-        formattedTime
+        chartPointsShared,
+        pathFractionsShared,
+        activeX,
+        activeY,
+        isActive,
+        activePathFraction,
+        gesture
     } = props;
     const [size, setSize] = useState({ width: 0, height: 0 });
-    const [timeLabelWidth, setTimeLabelWidth] = useState(0);
-
     const onLayout = (event: LayoutChangeEvent) => {
         const { width, height } = event.nativeEvent.layout;
         setSize({ width, height });
     };
 
-    const onTimeLabelLayout = useCallback((event: LayoutChangeEvent) => {
-        setTimeLabelWidth(event.nativeEvent.layout.width);
-    }, []);
+    const crosshairOpacity = useDerivedValue(() => (isActive.value ? 1 : 0));
+    const lastPointOpacity = useDerivedValue(() => (isActive.value ? 0 : 1));
 
-    const timeLabelLeft = activePoint
-        ? Math.max(0, Math.min(activePoint.x - timeLabelWidth / 2, size.width - timeLabelWidth))
-        : 0;
+    const crosshairP1 = useDerivedValue(() => vec(activeX.value, 0));
+    const crosshairP2 = useDerivedValue(() => vec(activeX.value, size.height));
 
-    const [fadedPath, mainPath, lastPoint] = useMemo(() => {
-        const [start, _, target] =
-            CHART_CONFIG[selectedPeriod].getPeriodIndermediatePoints(startDate);
+    const { fullPath, periodSplitEnd, lastPoint, elegantPrices } = useChartPaths({
+        prices,
+        width: size.width,
+        height: size.height,
+        startDate,
+        selectedPeriod,
+        chartPointsShared,
+        pathFractionsShared
+    });
 
-        const chartPoints = buildChartPoints(size.width, size.height, prices, {
-            startTimestamp: start,
-            endTimestamp: target
-        });
-
-        chartPointsRef.current = chartPoints;
-
-        const splitPoint = Date.now() - CHART_CONFIG[selectedPeriod].fullPeriodLength;
-        const splitIndex = chartPoints.findIndex(point => point.timestamp >= splitPoint);
-
-        const last = chartPoints[chartPoints.length - 1];
-
-        if (splitIndex === -1) {
-            return [null, buildChartPath(chartPoints), last];
-        }
-
-        const fadedPoints = chartPoints.slice(0, splitIndex + 1);
-        const mainPoints = chartPoints.slice(splitIndex);
-
-        return [
-            buildChartPath(fadedPoints),
-            buildChartPath(mainPoints),
-            last ? { x: last.x, y: last.y } : null
-        ] as const;
-    }, [prices, size.height, size.width, startDate, selectedPeriod, chartPointsRef]);
+    const animatedCircleColor = useDerivedValue(() => {
+        return withRepeat(
+            withSequence(
+                withTiming(LINE_COLOR, { duration: 1000 }),
+                withDelay(1500, withTiming(OPAQUE_LINE_COLOR, { duration: 1000 }))
+            ),
+            -1,
+            true
+        );
+    });
 
     return (
         <View style={styles.container}>
             <GestureDetector gesture={gesture}>
                 <View style={styles.canvasContainer} onLayout={onLayout}>
+                    <View style={styles.priceLabelsContainer} pointerEvents="none">
+                        {elegantPrices
+                            ?.slice(0, 3)
+                            .filter(item => item.shouldBeRendered)
+                            .map(item => (
+                                <Animated.View
+                                    key={`price-${item.price}`}
+                                    style={[styles.priceLabel, { top: item.y }]}
+                                >
+                                    <Text monospace variant="bodyS" color="tertiary">
+                                        {formatCompactPrice(item.price)}
+                                    </Text>
+                                </Animated.View>
+                            ))}
+                    </View>
                     <Canvas style={styles.canvas}>
-                        {activePoint && (
+                        {/* Horizontal reference lines */}
+                        {elegantPrices?.slice(1, 3).map((item, index) => (
                             <Line
-                                p1={vec(activePoint.x, 0)}
-                                p2={vec(activePoint.x, size.height)}
+                                key={`ref-${index}`}
+                                p1={vec(0, item.y)}
+                                p2={vec(size.width, item.y)}
+                                color={theme.colors.other.transparentElement}
+                                strokeWidth={0.5}
+                            />
+                        ))}
+
+                        {/* Crosshair vertical line */}
+                        <Group opacity={crosshairOpacity}>
+                            <Line
+                                p1={crosshairP1}
+                                p2={crosshairP2}
                                 color={theme.colors.icon.tertiary}
                                 strokeWidth={1}
                             />
+                        </Group>
+
+                        {/* Inactive mode: period-based faded/main split */}
+                        {periodSplitEnd > 0 && (
+                            <Group opacity={lastPointOpacity}>
+                                <Path
+                                    path={fullPath}
+                                    color={FADED_LINE_COLOR}
+                                    strokeWidth={LINE_STROKE_WIDTH}
+                                    style="stroke"
+                                    end={periodSplitEnd - 0.0025}
+                                />
+                            </Group>
                         )}
-                        {fadedPath && (
+                        <Group opacity={lastPointOpacity}>
                             <Path
-                                path={fadedPath}
-                                color={new Color(LINE_COLOR).alpha(0.48).toString()}
+                                path={fullPath}
+                                color={LINE_COLOR}
                                 strokeWidth={LINE_STROKE_WIDTH}
                                 style="stroke"
+                                start={periodSplitEnd}
                             />
-                        )}
-                        <Path
-                            path={mainPath}
-                            color={LINE_COLOR}
-                            strokeWidth={LINE_STROKE_WIDTH}
-                            style="stroke"
-                        />
-                        {lastPoint && !activePoint && (
-                            <Circle
-                                cx={lastPoint.x}
-                                cy={lastPoint.y}
-                                r={LAST_POINT_RADIUS + 2}
-                                color={theme.colors.background.secondary}
-                            >
+                        </Group>
+
+                        {/* Active mode: bright before crosshair, faded after */}
+                        <Group opacity={crosshairOpacity}>
+                            <Path
+                                path={fullPath}
+                                color={LINE_COLOR}
+                                strokeWidth={LINE_STROKE_WIDTH}
+                                style="stroke"
+                                end={activePathFraction}
+                            />
+                            <Path
+                                path={fullPath}
+                                color={FADED_LINE_COLOR}
+                                strokeWidth={LINE_STROKE_WIDTH}
+                                style="stroke"
+                                start={activePathFraction}
+                            />
+                        </Group>
+
+                        {/* Last point dot (hidden during gesture) */}
+                        {lastPoint && (
+                            <Group opacity={lastPointOpacity}>
                                 <Circle
                                     cx={lastPoint.x}
                                     cy={lastPoint.y}
-                                    r={LAST_POINT_RADIUS}
-                                    color={LINE_COLOR}
+                                    r={DOT_RADIUS + 1}
+                                    color={theme.colors.background.secondary}
                                 />
-                            </Circle>
-                        )}
-                        {activePoint && (
-                            <Circle
-                                cx={activePoint.x}
-                                cy={activePoint.y}
-                                r={CROSSHAIR_DOT_RADIUS + 1}
-                                color={theme.colors.background.secondary}
-                            >
                                 <Circle
-                                    cx={activePoint.x}
-                                    cy={activePoint.y}
-                                    r={CROSSHAIR_DOT_RADIUS}
-                                    color={LINE_COLOR}
+                                    cx={lastPoint.x}
+                                    cy={lastPoint.y}
+                                    r={DOT_RADIUS}
+                                    color={animatedCircleColor}
                                 />
-                            </Circle>
+                            </Group>
                         )}
+
+                        {/* Crosshair dot */}
+                        <Group opacity={crosshairOpacity}>
+                            <Circle
+                                cx={activeX}
+                                cy={activeY}
+                                r={DOT_RADIUS + 1}
+                                color={theme.colors.background.secondary}
+                            />
+                            <Circle cx={activeX} cy={activeY} r={DOT_RADIUS} color={LINE_COLOR} />
+                        </Group>
                     </Canvas>
-                    {activePoint && (
-                        <View
-                            style={[styles.timeLabelContainer, { left: timeLabelLeft }]}
-                            onLayout={onTimeLabelLayout}
-                            pointerEvents="none"
-                        >
-                            <Text variant="bodyM" monospace style={styles.timeLabelText}>
-                                {formattedTime}
-                            </Text>
-                        </View>
-                    )}
                 </View>
             </GestureDetector>
         </View>

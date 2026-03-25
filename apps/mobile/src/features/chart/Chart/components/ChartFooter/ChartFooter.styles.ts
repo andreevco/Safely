@@ -1,9 +1,9 @@
 import { StyleSheet } from 'react-native-unistyles';
 
 const TICK_HEIGHT_BY_VARIANT = {
-    small: 4,
-    medium: 8,
-    large: 12
+    small: 2,
+    medium: 4,
+    large: 8
 } as const;
 
 export const styles = StyleSheet.create(theme => ({
@@ -16,8 +16,8 @@ export const styles = StyleSheet.create(theme => ({
     ticksContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'flex-end',
-        height: 16
+        alignItems: 'flex-start',
+        height: 8
     },
     tick: (variant: 'small' | 'medium' | 'large') => ({
         height: TICK_HEIGHT_BY_VARIANT[variant],
@@ -25,6 +25,9 @@ export const styles = StyleSheet.create(theme => ({
         backgroundColor:
             variant === 'small' ? theme.colors.icon.tertiary : theme.colors.icon.secondary
     }),
+    datesWrapper: {
+        position: 'relative'
+    },
     dates: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -32,5 +35,11 @@ export const styles = StyleSheet.create(theme => ({
     },
     dateContainer: {
         flex: 1
+    },
+    timeLabelContainer: {
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        justifyContent: 'center'
     }
 }));
