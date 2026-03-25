@@ -3,11 +3,14 @@ import { StyleSheet } from 'react-native-unistyles';
 export const styles = StyleSheet.create(theme => ({
     container: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    colorButton: {
+        width: 44,
+        height: 44,
         alignItems: 'center',
-        paddingTop: theme.spacing[16],
-        paddingBottom: theme.spacing[8],
-        paddingHorizontal: theme.spacing[8]
+        justifyContent: 'center'
     },
     colorCircle: {
         width: 32,

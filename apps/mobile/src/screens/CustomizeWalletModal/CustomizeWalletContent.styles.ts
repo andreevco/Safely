@@ -3,24 +3,24 @@ import { StyleSheet } from 'react-native-unistyles';
 export const styles = StyleSheet.create(theme => ({
     scrollContainer: {
         flex: 1,
-        marginTop: theme.spacing[12]
+        paddingTop: theme.spacing[8]
     },
     scrollContent: {
         paddingHorizontal: theme.spacing[4],
         paddingBottom: theme.spacing[16]
     },
     content: {
-        flex: 1,
-        paddingHorizontal: theme.spacing[16]
+        flex: 1
     },
     textContainer: {
         gap: theme.spacing[8],
         paddingVertical: theme.spacing[16],
-        paddingHorizontal: theme.spacing[16],
+        paddingHorizontal: theme.spacing[32],
         marginBottom: theme.spacing[12]
     },
     inputContainer: {
-        marginVertical: theme.spacing[8]
+        marginVertical: theme.spacing[8],
+        paddingHorizontal: theme.spacing[24]
     },
     inputWrapper: {
         flexDirection: 'row',
