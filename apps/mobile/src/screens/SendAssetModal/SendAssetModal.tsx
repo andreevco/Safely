@@ -134,7 +134,7 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
 
     return (
         <Screen>
-            <Screen.Header>
+            <Screen.Header variant="left">
                 {isFirstStep ? (
                     <Screen.Header.CloseButton />
                 ) : (
@@ -143,21 +143,33 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
                     </Screen.Header.Button>
                 )}
                 <Screen.Header.Title>
-                    <Text variant="titleS">{t('send.title')}</Text>
+                    <Text variant="titleS" textAlign="center">
+                        {t('send.title')}
+                    </Text>
                     {state.parsed.recipient && (
                         <Animated.View
                             entering={FadeIn.duration(150)}
                             exiting={FadeOut.duration(150)}
                         >
                             {meta.portfolioMetaByAddress ? (
-                                <Text variant="bodyM" color="tertiary" numberOfLines={1}>
+                                <Text
+                                    variant="bodyM"
+                                    color="tertiary"
+                                    textAlign="center"
+                                    numberOfLines={1}
+                                >
                                     <Text variant="bodyM" color="secondary">
                                         {meta.portfolioMetaByAddress.name}
                                     </Text>{' '}
                                     {ellipsisMiddle(state.parsed.recipient.address)}
                                 </Text>
                             ) : (
-                                <Text variant="bodyM" color="secondary" numberOfLines={1}>
+                                <Text
+                                    textAlign="center"
+                                    variant="bodyM"
+                                    color="secondary"
+                                    numberOfLines={1}
+                                >
                                     {ellipsisMiddle(state.parsed.recipient.address)}
                                 </Text>
                             )}

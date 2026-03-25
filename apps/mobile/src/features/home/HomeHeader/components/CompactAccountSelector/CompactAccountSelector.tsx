@@ -45,67 +45,69 @@ export const CompactAccountSelector = () => {
     const portfolios = usePortfolios();
 
     return (
-        <PopupMenu
-            ref={popupMenuRef}
-            header={
-                <View style={styles.settingsHeader}>
-                    <Screen.Header.Button
-                        type="transparent"
-                        onPress={async () => {
-                            popupMenuRef.current?.close();
-                            await delay(100);
-                            navigation.navigate('SettingsModal');
-                        }}
-                    >
-                        <Icon icon={Sliders16} color="secondary" />
-                    </Screen.Header.Button>
-                </View>
-            }
-            footer={
-                <View style={styles.footer}>
-                    {portfolios.length > 1 && (
-                        <Text variant="bodyM" color="secondary">
-                            {t('portfoliosPopup.reorderHint')}
-                        </Text>
-                    )}
-                    <View style={styles.settingsHint}>
-                        <Text variant="bodyM" color="tertiary">
-                            {t('portfoliosPopup.settingsHint.1')}
-                        </Text>
-                        <View style={styles.settingsButton}>
-                            <Icon icon={Sliders16} color="tertiary" />
-                        </View>
-                        <Text variant="bodyM" color="tertiary">
-                            {t('portfoliosPopup.settingsHint.2')}
-                        </Text>
+        <View style={styles.root}>
+            <PopupMenu
+                ref={popupMenuRef}
+                header={
+                    <View style={styles.settingsHeader}>
+                        <Screen.Header.Button
+                            type="transparent"
+                            onPress={async () => {
+                                popupMenuRef.current?.close();
+                                await delay(100);
+                                navigation.navigate('SettingsModal');
+                            }}
+                        >
+                            <Icon icon={Sliders16} color="secondary" />
+                        </Screen.Header.Button>
                     </View>
-                </View>
-            }
-            touchable={progress => <Touchable progress={progress} portfolio={portfolio} />}
-        >
-            <View style={styles.listContainer}>
-                <PortfoliosList
-                    portfolios={portfolios}
-                    variant="compact"
-                    onCustomize={() => {
-                        popupMenuRef.current?.close();
-                    }}
-                    onSelect={() => {
-                        popupMenuRef.current?.close();
-                    }}
-                />
-            </View>
-            <Button
-                style={styles.addButton}
-                type="secondary"
-                size="small"
-                onPress={() => {
-                    popupMenuRef.current?.close();
-                    navigation.navigate('AddWalletModal');
-                }}
+                }
+                footer={
+                    <View style={styles.footer}>
+                        {portfolios.length > 1 && (
+                            <Text variant="bodyM" color="secondary">
+                                {t('portfoliosPopup.reorderHint')}
+                            </Text>
+                        )}
+                        <View style={styles.settingsHint}>
+                            <Text variant="bodyM" color="tertiary">
+                                {t('portfoliosPopup.settingsHint.1')}
+                            </Text>
+                            <View style={styles.settingsButton}>
+                                <Icon icon={Sliders16} color="tertiary" />
+                            </View>
+                            <Text variant="bodyM" color="tertiary">
+                                {t('portfoliosPopup.settingsHint.2')}
+                            </Text>
+                        </View>
+                    </View>
+                }
+                touchable={progress => <Touchable progress={progress} portfolio={portfolio} />}
             >
-                {t('addWallet.title')}
-            </Button>
-        </PopupMenu>
+                <View style={styles.listContainer}>
+                    <PortfoliosList
+                        portfolios={portfolios}
+                        variant="compact"
+                        onCustomize={() => {
+                            popupMenuRef.current?.close();
+                        }}
+                        onSelect={() => {
+                            popupMenuRef.current?.close();
+                        }}
+                    />
+                </View>
+                <Button
+                    style={styles.addButton}
+                    type="secondary"
+                    size="small"
+                    onPress={() => {
+                        popupMenuRef.current?.close();
+                        navigation.navigate('AddWalletModal');
+                    }}
+                >
+                    {t('addWallet.title')}
+                </Button>
+            </PopupMenu>
+        </View>
     );
 };
