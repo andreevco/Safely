@@ -9,7 +9,7 @@ import { useActivePortfolio, usePortfolios } from '@safely/ux';
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { PortfolioName } from '@mobile/entities/portfolio';
-import { PortfoliosList } from '@mobile/features/portfolio';
+import { PortfoliosList } from '@mobile/features/portfolio/PortfoliosList';
 import { Button, ChevronDown16, Icon, PopupMenu, Sliders16, Text, Screen } from '@mobile/shared/ui';
 import { PopupMenuRef } from '@mobile/shared/ui/PopupMenu';
 
