@@ -9,6 +9,7 @@ import { YCRDTRepository } from './crdt/y-crdt-repository';
 import { EncryptedKeyRepository } from './crypto/encrypted-key-repository';
 import { SecureEncryptedKeyRepository } from './crypto/secure-encrypted-key-repository';
 import { IStorage } from './I-storage';
+import { Logger } from './logger/logger';
 import { SyncStateRepository } from './update-handler/sync-state-repository';
 import { utf8 } from './utils/buffer';
 
@@ -61,13 +62,14 @@ export async function initializeSyncAccount(opts: {
     encryptedStorage: IStorage;
     secureEncryptedStorage: IStorage;
     masterKey: Buffer;
+    logger: Logger;
     ik?: { secretKey: Buffer; publicKey: Buffer };
 }): Promise<void> {
     const encryptedKeyRepository = new EncryptedKeyRepository(opts.encryptedStorage);
     const secureEncryptedKeyRepository = new SecureEncryptedKeyRepository(
         opts.secureEncryptedStorage
     );
-    const syncStateRepository = new SyncStateRepository(opts.storage);
+    const syncStateRepository = new SyncStateRepository(opts.storage, opts.logger);
     const ycrdtRepository = new YCRDTRepository(opts.storage);
 
     await initializeKeys(

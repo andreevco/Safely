@@ -12,6 +12,7 @@ import { SyncKeyService } from './crypto/service/sync-key-service';
 import { DeviceManagementService } from './device-manager/device-management-service';
 import { DeviceRepository } from './device-manager/device-repository';
 import { IStorage } from './I-storage';
+import { Logger } from './logger/logger';
 import { SecretEncryptor } from './secret-encryptor';
 import { UpdateDecryptorService } from './update-encryptor/update-decryptor-service';
 import { UpdateEncryptorService } from './update-encryptor/update-encryptor-service';
@@ -21,6 +22,7 @@ import { SyncStateRepository } from './update-handler/sync-state-repository';
 export type SyncContainer = {
     storage: IStorage;
     encryptedStorage: IStorage;
+    logger: Logger;
 
     keyRepository: EncryptedKeyRepository;
     crdtRepository: YCRDTRepository;
@@ -53,10 +55,11 @@ export async function createSyncContainer(opts: {
     accountId: string;
     storage: IStorage;
     encryptedStorage: IStorage;
+    logger: Logger;
     apiConfiguration?: Configuration;
 }): Promise<SyncContainer> {
     const keyRepository = new EncryptedKeyRepository(opts.encryptedStorage);
-    const syncStateRepository = new SyncStateRepository(opts.storage);
+    const syncStateRepository = new SyncStateRepository(opts.storage, opts.logger);
     const crdtRepository = new YCRDTRepository(opts.storage);
     const deviceRepository = new DeviceRepository(opts.storage);
 
@@ -92,12 +95,14 @@ export async function createSyncContainer(opts: {
         updateDecryptor,
         storageVerifierService,
         deviceManager,
-        snapshotApi
+        snapshotApi,
+        opts.logger
     );
 
     const secretEncryptor = new SecretEncryptor(keyServiceFactory);
 
     return {
+        logger: opts.logger,
         dmkVerifierService,
         keyServiceFactory,
         storage: opts.storage,

@@ -7,6 +7,7 @@ import { SyncAccount } from './sync-account';
 import { SyncAccountRepository } from './sync-account-repository';
 import { Configuration } from '../api/generated';
 import { ITreeStorage } from '../I-storage';
+import { Logger } from '../logger/logger';
 import { OfflineSyncProvider } from '../sync-provider/offline-sync-provider';
 import { OnlineSyncProvider } from '../sync-provider/online-sync-provider';
 
@@ -16,7 +17,8 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
         private readonly encryptedStorage: ITreeStorage,
         private readonly syncAccountIDRepository: SyncAccountRepository,
         private readonly structure: S,
-        private readonly apiConfiguration: Configuration
+        private readonly apiConfiguration: Configuration,
+        private readonly logger: Logger
     ) {}
 
     public async createOfflineAccount(secureEncryptedStorage: ITreeStorage) {
@@ -29,11 +31,13 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
             secureEncryptedStorage,
             accountID
         );
+        const logger = this.logger.child(accountID.slice(0, 4));
         await initializeSyncAccount({
             storage,
             encryptedStorage,
             secureEncryptedStorage: accountSecureEncryptedStorage,
-            masterKey
+            masterKey,
+            logger
         });
         masterKey.fill(0);
 
@@ -43,7 +47,8 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
             accountId: accountID,
             storage,
             encryptedStorage,
-            apiConfiguration: this.apiConfiguration
+            apiConfiguration: this.apiConfiguration,
+            logger: this.logger.child(accountID.slice(0, 4))
         });
 
         await container.deviceManager.addDevice(
@@ -76,12 +81,14 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
             secureEncryptedStorage,
             accountID
         );
+        const logger = this.logger.child(accountID.slice(0, 4));
         await initializeSyncAccount({
             storage,
             encryptedStorage: encryptedStorage,
             secureEncryptedStorage: accountSecureEncryptedStorage,
             masterKey,
-            ik
+            ik,
+            logger
         });
         masterKey.fill(0);
 
@@ -91,7 +98,8 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
             accountId: accountID,
             storage,
             encryptedStorage,
-            apiConfiguration: this.apiConfiguration
+            apiConfiguration: this.apiConfiguration,
+            logger: this.logger.child(accountID.slice(0, 4))
         });
         await container.accountsApi.confirmOnboarding();
 

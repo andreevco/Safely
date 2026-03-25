@@ -9,6 +9,7 @@ import { EncryptedStateAndProofChain } from '../api/types';
 import { StorageVerifierService } from '../crdt/storage-verifier-service';
 import { YManager } from '../crdt/y-manager';
 import { DeviceManagementService } from '../device-manager/device-management-service';
+import { Logger } from '../logger/logger';
 import { UpdateDecryptorService } from '../update-encryptor/update-decryptor-service';
 
 export class UpdateHandler {
@@ -18,17 +19,19 @@ export class UpdateHandler {
         private readonly updateDecryptor: UpdateDecryptorService,
         private readonly storageVerifierService: StorageVerifierService,
         private readonly deviceManagementService: DeviceManagementService,
-        private readonly snapshotsApi: SnapshotsApi
+        private readonly snapshotsApi: SnapshotsApi,
+        private readonly logger: Logger
     ) {}
 
     public async handle(upd: EncryptedStateAndProofChain): Promise<{ hasLocalChanges: boolean }> {
         const syncState = await this.syncStateRepository.getState();
+        this.logger.info('Handling incoming update', upd.snapshotProof.toString('hex'));
 
         console.log('[Sync Handler] Decrypting and verifying incoming update...');
         const update = await this.updateDecryptor.verifyAndDecrypt(upd);
 
         if (upd.snapshotProof.equals(syncState.snapshotProof)) {
-            console.log('[Sync Handler] Update already applied, skipping');
+            this.logger.info('Update already received');
             return { hasLocalChanges: this.hasLocalChanges(update) }; // Already have this update
         }
 
@@ -46,8 +49,8 @@ export class UpdateHandler {
             const expectedProof = getSnapshotProof(proof, upd.ciphertext);
 
             if (!upd.snapshotProof.equals(expectedProof)) {
-                console.info(
-                    'Snapshot proof does not match expected proof, fetching proof chain to verify'
+                this.logger.info(
+                    `Expected proof ${expectedProof.toString('hex')}, but got ${upd.snapshotProof.toString('hex')}`
                 );
                 const isProofCorrect = await this.fetchProofChainAndVerify(
                     syncState,
@@ -103,6 +106,8 @@ export class UpdateHandler {
         actualSnapshotProof: Buffer,
         actualSnapshotCiphertextHash: string
     ): Promise<boolean> {
+        this.logger.trace('Fetching proof chain to verify snapshot proof');
+
         const proofChain = await this.snapshotsApi.getSnapshotProofChain({
             snapshotProof: syncState.snapshotProof.toString('hex')
         });
@@ -116,6 +121,13 @@ export class UpdateHandler {
                 return true;
             }
         }
+        this.logger.trace(
+            'Proof chain last item:',
+            proofChain.proofChain[proofChain.proofChain.length - 1]
+        );
+        this.logger.trace('Actual snapshot cipht:', actualSnapshotCiphertextHash);
+        this.logger.trace('Calculated proof from chain:', tempProof.toString('hex'));
+        this.logger.trace('Actual snapshot proof:', actualSnapshotProof.toString('hex'));
         return (
             proofChain.proofChain[proofChain.proofChain.length - 1] ===
                 actualSnapshotCiphertextHash && tempProof.equals(actualSnapshotProof)

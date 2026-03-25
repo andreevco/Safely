@@ -23,5 +23,5 @@ export const pushUpdateToServer = fromPromise(async ({ input }: { input: SyncMac
     await input.syncStateRepository.saveState({
         snapshotProof: encrypted.snapshotProof
     });
-    console.log('[Sync Push] Local sync state updated');
+    input.logger.info(`Pushed new update ${encrypted.snapshotProof.toString('hex')}`);
 });

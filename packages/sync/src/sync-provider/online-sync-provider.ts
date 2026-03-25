@@ -36,7 +36,8 @@ export class OnlineSyncProvider<S extends Record<string, ZodType>>
                 snapshotsApi: container.snapshotApi,
                 snapshotsSse: container.snapshotSse,
                 ikService: container.ikService,
-                syncStatusManager
+                syncStatusManager,
+                logger: container.logger
             },
             inspect: event => {
                 if (event.type === '@xstate.event') {
@@ -105,7 +106,8 @@ function machineFromContainer(container: SyncContainer, syncStatusManager: SyncS
             snapshotsApi: container.snapshotApi,
             snapshotsSse: container.snapshotSse,
             ikService: container.ikService,
-            syncStatusManager
+            syncStatusManager,
+            logger: container.logger
         },
         inspect: event => {
             if (event.type === '@xstate.event') {

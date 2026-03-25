@@ -13,6 +13,8 @@ export type SyncMachine = Awaited<Actor<ReturnType<typeof createSyncMachine>>>;
 const initialSyncing = fromPromise(async ({ input }: { input: SyncMachineConfig }) => {
     console.log('[Sync] Initial syncing: fetching latest snapshot from server...');
     const knownState = await input.syncStateRepository.getState();
+    input.logger.info(`Initial sync ${knownState.snapshotProof.toString('hex')}`);
+
     const lastState = await input.snapshotsApi.getActualSnapshot({
         withProofChainTo: knownState.snapshotProof.toString('hex')
     });
