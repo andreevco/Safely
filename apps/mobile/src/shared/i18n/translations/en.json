@@ -40,6 +40,9 @@
             "signOut": "Log out"
         }
     },
+    "lockScreen": {
+        "title": "Enter passcode"
+    },
     "changePasscode": {
         "title": "Change passcode",
         "verify": {

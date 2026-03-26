@@ -43,6 +43,9 @@
             "signOut": "Выйти"
         }
     },
+    "lockScreen": {
+        "title": "Введите код-пароль"
+    },
     "changePasscode": {
         "title": "Изменить код-пароль",
         "verify": {

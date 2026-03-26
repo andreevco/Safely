@@ -25,3 +25,4 @@ export * from './EmojiPicker';
 export * from './PasscodeInput';
 export * from './PasscodeLayout';
 export * from './PasscodeSetup';
+export { LockoutContent } from './LockoutContent';

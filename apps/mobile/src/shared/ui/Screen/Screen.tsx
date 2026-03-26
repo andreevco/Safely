@@ -1,4 +1,4 @@
-import { useNavigationState } from '@react-navigation/native';
+import { useRoute } from '@react-navigation/native';
 import { PropsWithChildren } from 'react';
 import { View } from 'react-native';
 import { UnistylesVariants } from 'react-native-unistyles';
@@ -13,7 +13,7 @@ type ScreenContainerProps = { children: React.ReactNode } & UnistylesVariants<ty
 export function ScreenContainer({ children, background }: PropsWithChildren<ScreenContainerProps>) {
     const resolvedBackground = background ?? 'primary';
 
-    const screenName = useNavigationState(state => state.routes[state.index].name);
+    const screenName = useRoute().name;
 
     styles.useVariants({ background: resolvedBackground });
 

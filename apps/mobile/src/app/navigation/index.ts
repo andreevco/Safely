@@ -9,6 +9,7 @@ import { CurrencyScreen } from '@mobile/screens/CurrencyScreen';
 import { CustomizeAccountModal } from '@mobile/screens/CustomizeAccountModal';
 import { CustomizeWalletModal } from '@mobile/screens/CustomizeWalletModal';
 import { DestructiveConfirmSheet } from '@mobile/screens/DestructiveConfirmSheet';
+import { LockScreen } from '@mobile/screens/LockScreen';
 import { OnboardingNotificationsScreen } from '@mobile/screens/OnboardingNotificationsScreen';
 import { OnboardingPasscodeScreen } from '@mobile/screens/OnboardingPasscodeScreen';
 import { PasscodeVerificationScreen } from '@mobile/screens/PasscodeVerificationScreen';
@@ -39,6 +40,13 @@ export const RootStack = createNativeStackNavigator({
         Onboarding: {
             screens: {
                 WelcomeScreen: WelcomeScreen,
+                LockScreen: {
+                    screen: LockScreen,
+                    options: {
+                        gestureEnabled: false,
+                        animation: 'none' as const
+                    }
+                },
                 OnboardingPasscodeScreen: OnboardingPasscodeScreen,
                 BiometryScreen: BiometryScreen,
                 OnboardingNotificationsScreen: OnboardingNotificationsScreen,
