@@ -142,7 +142,7 @@
             "subtitle": "Link another device to protect your account. Without it, your access can't be restored if this phone is lost."
         },
         "accountProtected": {
-            "title": "Account Protected",
+            "title": "Account protected",
             "subtitle": "Linked devices have full access to your account and can be used to restore access if another device is lost."
         },
         "device": {

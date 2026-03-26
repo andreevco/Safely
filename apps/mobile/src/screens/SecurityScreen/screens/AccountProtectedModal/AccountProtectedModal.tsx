@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
 
 import {
+    useAppContext,
+    useConnectAccountToNewDevice,
     useCurrentDeviceIkPub,
     useCurrentDeviceMetaSyncedState,
     useSyncedDevicesMeta
@@ -87,8 +89,17 @@ function DeviceItem(props: { ikPubHex: string; meta: DeviceMeta }) {
 export const AccountProtectedModal = () => {
     const { t } = useTranslation();
     const navigation = useNavigation();
+    const { getSecureEncryptedStorage } = useAppContext();
+    const { mutateAsync: connectToNewDevice } = useConnectAccountToNewDevice();
     const devicesMeta = useSyncedDevicesMeta();
     const myIkPubHex = useCurrentDeviceIkPub();
+
+    const handleAddDevice = async () => {
+        using secureEncryptedStorage = getSecureEncryptedStorage();
+        await secureEncryptedStorage.unlock();
+
+        await connectToNewDevice({ secureEncryptedStorage });
+    };
 
     const devices = Object.entries(devicesMeta ?? {}).filter(
         ([ikPubHex]) => ikPubHex !== myIkPubHex
@@ -104,6 +115,12 @@ export const AccountProtectedModal = () => {
         <Screen>
             <Screen.Header>
                 <Screen.Header.BackButton />
+                <Screen.Header.Title />
+                <Screen.Header.Button type="small" onPress={handleAddDevice}>
+                    <Text variant="labelM" color="primary">
+                        {t('onboarding.accountCreated.addDevice')}
+                    </Text>
+                </Screen.Header.Button>
             </Screen.Header>
             <Screen.Scrollable>
                 <View style={styles.content}>
