@@ -42,9 +42,9 @@ export function useSendFormMeta(params: UseSendFormMetaParams) {
     const suggestions = useMemo(() => {
         const query = state.values.recipient;
 
-        return fuzzySearch(portfolios, query, s => s.meta.name)
-            .flatMap(portfolio => mapPortfolioToSuggestions(portfolio, activeDerivation))
-            .slice(0, 8);
+        return fuzzySearch(portfolios, query, s => s.meta.name).flatMap(portfolio =>
+            mapPortfolioToSuggestions(portfolio, activeDerivation)
+        );
     }, [portfolios, activeDerivation, state.values.recipient, state.parsed.recipient]);
 
     const restoredSuggestions = useMemo(() => {

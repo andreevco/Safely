@@ -152,17 +152,20 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
                             exiting={FadeOut.duration(150)}
                         >
                             {meta.portfolioMetaByAddress ? (
-                                <Text
-                                    variant="bodyM"
-                                    color="tertiary"
-                                    textAlign="center"
-                                    numberOfLines={1}
-                                >
-                                    <Text variant="bodyM" color="secondary">
+                                <View style={styles.recipientRow}>
+                                    <Text
+                                        variant="bodyM"
+                                        color="secondary"
+                                        numberOfLines={1}
+                                        style={styles.recipientName}
+                                    >
                                         {meta.portfolioMetaByAddress.name}
-                                    </Text>{' '}
-                                    {ellipsisMiddle(state.parsed.recipient.address)}
-                                </Text>
+                                    </Text>
+                                    <Text variant="bodyM" color="tertiary">
+                                        {' '}
+                                        {ellipsisMiddle(state.parsed.recipient.address)}
+                                    </Text>
+                                </View>
                             ) : (
                                 <Text
                                     textAlign="center"
