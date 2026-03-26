@@ -14,5 +14,10 @@ export const styles = StyleSheet.create((theme, rt) => ({
     },
     listGroupMargin: {
         marginBottom: theme.spacing[2]
+    },
+    badgeRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4
     }
 }));

@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { useActivePortfolio } from '@safely/ux';
+import { useActivePortfolio, useRecordActivePortfolioSecretReveal } from '@safely/ux';
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { BottomSheet, Button, Text, useBottomSheet } from '@mobile/shared/ui';
@@ -17,6 +17,7 @@ const RecoveryConfirmContent = () => {
     const portfolio = useActivePortfolio();
     const navigation = useNavigation<RootStackNavigationProp>();
 
+    const { mutateAsync: recordSeedReveal } = useRecordActivePortfolioSecretReveal();
     const hasRevealed = useRef(false);
 
     useEffect(() => {
@@ -32,6 +33,7 @@ const RecoveryConfirmContent = () => {
     const handleReveal = async () => {
         try {
             const mnemonic = await portfolio.getMnemonic();
+            await recordSeedReveal();
             hasRevealed.current = true;
             navigation.navigate('RecoveryPhraseModal', { mnemonic });
         } catch {

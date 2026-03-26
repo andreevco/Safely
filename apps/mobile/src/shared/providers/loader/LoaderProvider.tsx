@@ -1,52 +1,19 @@
-import React, {
-    createContext,
-    FC,
-    PropsWithChildren,
-    useCallback,
-    useContext,
-    useMemo,
-    useState
-} from 'react';
+import React, { FC, PropsWithChildren, useCallback, useEffect, useState } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 import { FullWindowOverlay } from 'react-native-screens';
 
 import { FullScreenLoader } from '@mobile/shared/ui/FullScreenLoader';
 
+import { useLoaderServiceContext } from './LoaderServiceProvider';
+
 const Overlay = Platform.OS === 'ios' ? FullWindowOverlay : View;
 
-const LoaderContext = createContext<
-    { isShown: boolean; show: () => void; hide: () => void } | undefined
->(undefined);
-
 export const LoaderProvider: FC<PropsWithChildren> = ({ children }) => {
+    const { setService } = useLoaderServiceContext();
     const [isShown, setIsShown] = useState(false);
 
     const show = useCallback(() => setIsShown(true), []);
     const hide = useCallback(() => setIsShown(false), []);
-
-    const value = useMemo(() => {
-        return { show, hide, isShown };
-    }, [show, hide, isShown]);
-
-    return (
-        <LoaderContext.Provider value={value}>
-            {children}
-            {isShown && (
-                <Overlay style={StyleSheet.absoluteFill}>
-                    <FullScreenLoader visible />
-                </Overlay>
-            )}
-        </LoaderContext.Provider>
-    );
-};
-
-export function useLoader() {
-    const context = useContext(LoaderContext);
-    if (!context) {
-        throw new Error('useLoader must be used inside LoaderProvider');
-    }
-
-    const { show, hide, isShown } = context;
 
     const withLoader = useCallback(
         async <T,>(callback: () => Promise<T>): Promise<T> => {
@@ -61,10 +28,18 @@ export function useLoader() {
         [show, hide]
     );
 
-    return {
-        showLoader: show,
-        hideLoader: hide,
-        isLoaderShown: isShown,
-        withLoader
-    };
-}
+    useEffect(() => {
+        setService({ show, hide, withLoader });
+    }, [setService, show, hide, withLoader]);
+
+    return (
+        <>
+            {children}
+            {isShown && (
+                <Overlay style={StyleSheet.absoluteFill}>
+                    <FullScreenLoader visible />
+                </Overlay>
+            )}
+        </>
+    );
+};

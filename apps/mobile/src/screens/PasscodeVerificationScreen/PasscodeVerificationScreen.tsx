@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { usePasscodeVerification } from '@mobile/entities/security';
-import { useSignOutConfirmation } from '@mobile/features/settings/useSignOutConfirmation';
+import { useLogOutAllConfirmation } from '@mobile/features/settings/useLogOutAllConfirmation';
 import { LockoutContent, PasscodeInput, PasscodeLayout, Screen } from '@mobile/shared/ui';
 
 type PasscodeVerificationScreenProps = StaticScreenProps<{
@@ -18,7 +18,7 @@ export const PasscodeVerificationScreen = (props: PasscodeVerificationScreenProp
 
     const { t } = useTranslation();
     const navigation = useNavigation<RootStackNavigationProp>();
-    const handleSignOut = useSignOutConfirmation();
+    const handleLogOut = useLogOutAllConfirmation();
     const successCalled = useRef(false);
 
     const handleSuccess = useCallback(() => {
@@ -48,7 +48,7 @@ export const PasscodeVerificationScreen = (props: PasscodeVerificationScreenProp
     }, [onClose]);
 
     if (isLocked) {
-        return <LockoutContent remainingSeconds={remainingSeconds} onSignOut={handleSignOut} />;
+        return <LockoutContent remainingSeconds={remainingSeconds} onSignOut={handleLogOut} />;
     }
 
     return (

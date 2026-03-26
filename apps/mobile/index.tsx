@@ -1,5 +1,10 @@
 import './global-polyfills';
 
+/* eslint-disable-next-line */
+import { installLogCapture } from '@mobile/shared/utils/log-capture';
+
+installLogCapture();
+
 import '@mobile/shared/i18n';
 import '@mobile/shared/unistyles';
 

@@ -2,6 +2,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
+import { useSyncedDevicesMeta } from '@safely/ux';
 import { useHasPortfolio } from '@safely/ux';
 import { useSecurityCheck } from '@safely/ux/shared/security';
 
@@ -12,7 +13,7 @@ import {
     useBiometryQuery,
     useSetBiometryEnabled
 } from '@mobile/features/biometry';
-import { Cell, List, Screen, Switch } from '@mobile/shared/ui';
+import { Badge, Cell, List, Screen, Switch } from '@mobile/shared/ui';
 import { ArrowLeft16, Icon } from '@mobile/shared/ui/Icon';
 
 import { WalletSecuritySection } from './components';
@@ -29,6 +30,10 @@ export const SecurityScreen = () => {
 
     const { data: lockScreenEnabled } = useLockScreenQuery();
     const { mutateAsync: setLockScreenEnabled } = useSetLockScreenEnabled();
+
+    const devicesMeta = useSyncedDevicesMeta();
+    const otherDeviceCount = devicesMeta ? Object.keys(devicesMeta).length - 1 : 0;
+    const hasLinkedDevices = otherDeviceCount > 0;
 
     const handleBiometryToggle = async () => {
         if (biometry) {
@@ -60,21 +65,47 @@ export const SecurityScreen = () => {
                     <List>
                         <List.Title>{t('security.groups.account.title')}</List.Title>
                         <List.Group>
-                            <Cell>
-                                <Cell.Content>
-                                    <Cell.Row>
-                                        <Cell.Title>
-                                            {t('security.groups.account.protect.title')}
-                                        </Cell.Title>
-                                    </Cell.Row>
-                                    <Cell.Row>
-                                        <Cell.Subtitle numberOfLines={0}>
-                                            {t('security.groups.account.protect.subtitle')}
-                                        </Cell.Subtitle>
-                                    </Cell.Row>
-                                </Cell.Content>
-                                <Cell.Chevron />
-                            </Cell>
+                            {hasLinkedDevices ? (
+                                <Cell onPress={() => navigation.navigate('AccountProtectedModal')}>
+                                    <Cell.Content>
+                                        <View style={styles.badgeRow}>
+                                            <Cell.Title>
+                                                {t('security.groups.account.protection.title')}
+                                            </Cell.Title>
+                                            <Badge type="success" isUppercase>
+                                                {t('security.groups.account.protection.badge')}
+                                            </Badge>
+                                        </View>
+                                        <Cell.Row>
+                                            <Cell.Subtitle numberOfLines={0}>
+                                                {t('security.groups.account.protection.subtitle', {
+                                                    count: otherDeviceCount
+                                                })}
+                                            </Cell.Subtitle>
+                                        </Cell.Row>
+                                    </Cell.Content>
+                                    <Cell.Chevron />
+                                </Cell>
+                            ) : (
+                                <Cell onPress={() => navigation.navigate('ProtectAccountModal')}>
+                                    <Cell.Content>
+                                        <View style={styles.badgeRow}>
+                                            <Cell.Title>
+                                                {t('security.groups.account.protect.title')}
+                                            </Cell.Title>
+                                            <Badge type="warning" isUppercase>
+                                                {t('security.groups.account.protect.badge')}
+                                            </Badge>
+                                        </View>
+                                        <Cell.Row>
+                                            <Cell.Subtitle numberOfLines={0}>
+                                                {t('security.groups.account.protect.subtitle')}
+                                            </Cell.Subtitle>
+                                        </Cell.Row>
+                                    </Cell.Content>
+                                    <Cell.Chevron />
+                                </Cell>
+                            )}
                         </List.Group>
                     </List>
 

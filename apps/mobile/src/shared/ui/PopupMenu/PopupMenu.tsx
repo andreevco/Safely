@@ -16,15 +16,18 @@ export type PopupMenuRef = {
     close: () => void;
 };
 
+export type PopupMenuVariant = 'default' | 'fullWidth';
+
 export type PopupMenuProps = {
     children: React.ReactNode;
     footer?: React.ReactNode;
     header?: React.ReactNode;
     touchable: React.ReactElement | ((progress: SharedValue<number>) => React.ReactElement);
+    variant?: PopupMenuVariant;
 };
 
 export const PopupMenu = forwardRef<PopupMenuRef, PopupMenuProps>((props, ref) => {
-    const { children, footer, header, touchable: touchableProp } = props;
+    const { children, footer, header, touchable: touchableProp, variant = 'default' } = props;
     const { height } = useWindowDimensions();
     const menu = usePopupMenu(height);
 
@@ -59,7 +62,11 @@ export const PopupMenu = forwardRef<PopupMenuRef, PopupMenuProps>((props, ref) =
                 {touchable}
             </Animated.View>
             <Animated.View
-                style={[styles.menu, menu.menuAnimatedStyle]}
+                style={[
+                    styles.menu,
+                    variant === 'fullWidth' ? styles.menuFullWidth : styles.menuCentered,
+                    menu.menuAnimatedStyle
+                ]}
                 onLayout={menu.onMenuLayout}
                 pointerEvents="box-none"
             >
