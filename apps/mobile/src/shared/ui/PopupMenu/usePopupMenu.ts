@@ -1,6 +1,5 @@
-import { useCallback, useRef, useState } from 'react';
-import { LayoutChangeEvent, Platform, StatusBar } from 'react-native';
-import { View } from 'react-native';
+import { RefObject, useCallback, useRef, useState } from 'react';
+import { LayoutChangeEvent, Platform, StatusBar, View } from 'react-native';
 import {
     interpolateColor,
     useAnimatedProps,
@@ -10,9 +9,16 @@ import {
 } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 
+interface Frame {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+}
+
 const MENU_MARGIN = 8;
 
-export const usePopupMenu = (screenHeight: number) => {
+export const usePopupMenu = (screenHeight: number, portalContainerRef?: RefObject<View | null>) => {
     const triggerRef = useRef<View>(null);
     const triggerFrame = useSharedValue({ x: 0, y: 0, width: 0, height: 0 });
     const [visible, setVisible] = useState(false);
@@ -23,14 +29,23 @@ export const usePopupMenu = (screenHeight: number) => {
     const progress = useSharedValue(0);
 
     const open = useCallback(() => {
-        triggerRef.current?.measureInWindow((x, y, w, h) => {
-            const offsetY = Platform.OS === 'android' ? (StatusBar.currentHeight ?? 0) : 0;
-            const adjustedY = y + offsetY;
-            triggerHeight.value = h;
-            triggerFrame.value = { x, y: adjustedY, width: w, height: h };
+        const onMeasure = (frame: Frame) => {
+            triggerHeight.value = frame.height;
+            triggerFrame.value = frame;
             setVisible(true);
-        });
-    }, [triggerHeight]);
+        };
+
+        if (portalContainerRef?.current && triggerRef.current) {
+            triggerRef.current.measureLayout(portalContainerRef.current, (x, y, width, height) => {
+                onMeasure({ x, y, width, height });
+            });
+        } else {
+            triggerRef.current?.measureInWindow((x, y, width, height) => {
+                const offsetY = Platform.OS === 'android' ? (StatusBar.currentHeight ?? 0) : 0;
+                onMeasure({ x, y: y + offsetY, width, height });
+            });
+        }
+    }, [triggerHeight, portalContainerRef]);
 
     const hide = useCallback(() => {
         setVisible(false);
