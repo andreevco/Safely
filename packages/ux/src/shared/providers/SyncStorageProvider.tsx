@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { FC, PropsWithChildren, useEffect } from 'react';
 
-import { useActiveAccountQuery, fiatKeys, useUpdateOwnSyncedDeviceMeta } from '../../entities';
+import { useActiveAccountQuery, useUpdateOwnSyncedDeviceMeta } from '../../entities';
 import { accountKey } from '../../entities/account/keys';
 import { SyncedStorageStructure, syncedStorageStructure } from '../storage';
 
@@ -20,7 +20,7 @@ function useSyncChangeObserver() {
 
         const queryKeysToInvalidate: Record<keyof SyncedStorageStructure, readonly unknown[]> = {
             portfolios: accountQueryKey.portfolios.toKey(),
-            preferredFiat: fiatKeys.active.toKey(),
+            preferredFiat: accountQueryKey.preferredFiat.toKey(),
             meta: accountKey.list.toKey(),
             devicesMeta: accountQueryKey.devices.meta.toKey()
         };
