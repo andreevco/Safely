@@ -6,10 +6,16 @@ export const styles = StyleSheet.create((theme, rt) => ({
     },
     menu: {
         position: 'absolute',
-        left: theme.spacing[48],
-        right: theme.spacing[48],
         gap: theme.spacing[8],
         zIndex: 1000
+    },
+    menuCentered: {
+        left: theme.spacing[48],
+        right: theme.spacing[48]
+    },
+    menuFullWidth: {
+        left: theme.spacing[8],
+        right: theme.spacing[8]
     },
     footer: {
         position: 'absolute',

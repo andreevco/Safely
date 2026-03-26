@@ -5,7 +5,6 @@ import {
     UseSuspenseQueryOptions,
     UseSuspenseQueryResult
 } from '@tanstack/react-query';
-import { use } from 'react';
 
 export function useSuspenseQuery<
     TQueryFnData = unknown,
@@ -19,7 +18,8 @@ export function useSuspenseQuery<
     const result = useQuery(options) as UseSuspenseQueryResult<TData, TError>;
 
     if (result.data === undefined) {
-        use(result.refetch());
+        // eslint-disable-next-line @typescript-eslint/only-throw-error
+        throw result.refetch();
     }
 
     return result;

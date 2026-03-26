@@ -46,5 +46,9 @@ export const bootConfigSchema = z.looseObject({
         support: z.looseObject({
             email: z.string()
         })
+    }),
+
+    sync: z.object({
+        api_url: z.string()
     })
 });

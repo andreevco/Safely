@@ -1,13 +1,15 @@
+export { Badge } from './Badge';
 export { Text, TextProps } from './Text';
 export { Toast } from './Toast';
 export { TouchableOpacity } from './TouchableOpacity';
 export { Screen } from './Screen';
 export { Button } from './Button';
 export { Checkbox } from './Checkbox';
+export { ConfirmCheckbox } from './ConfirmCheckbox';
 export { Actions } from './Actions';
 export { Cell } from './Cell';
 export { List } from './List';
-export { PopupMenu } from './PopupMenu';
+export { PopupMenu, type PopupMenuRef } from './PopupMenu';
 export { Banner } from './Banner';
 export { Switch } from './Switch';
 export { SlideButton } from './SlideButton';
