@@ -19,7 +19,7 @@ class SafelyMaskedInputView: ExpoView, UITextFieldDelegate {
     // MARK: - Font config
 
     private var mainFontSize: CGFloat = 17
-    private var mainFontWeight: UIFont.Weight = .regular
+    private var mainFontWeight: UIFont.Weight = .semibold
     private var mainFontFamily: String?
 
     // MARK: - Segment colors
@@ -90,7 +90,7 @@ class SafelyMaskedInputView: ExpoView, UITextFieldDelegate {
     }
 
     func setFontWeightValue(_ weight: String) {
-        mainFontWeight = weight == "bold" ? .bold : .regular
+        mainFontWeight = .semibold
         textField.font = resolvedMainFont()
         applyMask()
     }

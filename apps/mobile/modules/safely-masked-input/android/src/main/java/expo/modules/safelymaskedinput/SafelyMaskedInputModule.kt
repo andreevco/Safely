@@ -45,11 +45,7 @@ class SafelyMaskedInputModule : Module() {
             Prop("fontFamily") { view: SafelyMaskedInputView, family: String ->
                 view.setFontFamilyValue(family)
             }
-
-            Prop("fontWeight") { view: SafelyMaskedInputView, weight: String ->
-                view.setFontWeightValue(weight)
-            }
-
+            
             Prop("textColor") { view: SafelyMaskedInputView, color: String ->
                 view.setTextColorValue(color)
             }

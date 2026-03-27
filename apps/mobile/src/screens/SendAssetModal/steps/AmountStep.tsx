@@ -5,7 +5,7 @@ import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
 import { Text } from '@mobile/shared/ui/Text';
 
-import { SafelyMaskedInputRef } from '../../../../modules/safely-masked-input/src';
+import { MaskedInputRef } from '../../../../modules/safely-masked-input/src';
 import { AmountInput, AmountStatus, AssetSelector } from '../components';
 import { styles } from './AmountStep.styles';
 
@@ -23,7 +23,7 @@ interface AmountStepProps {
     currencySymbol?: string;
     decimals: number;
     decimalSeparator: string;
-    inputRef?: Ref<SafelyMaskedInputRef>;
+    inputRef?: Ref<MaskedInputRef>;
 }
 
 export const AmountStep = (props: AmountStepProps) => {

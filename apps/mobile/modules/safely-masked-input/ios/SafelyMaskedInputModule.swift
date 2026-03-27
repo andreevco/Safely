@@ -55,10 +55,6 @@ public class SafelyMaskedInputModule: Module {
                 view.setFontFamilyValue(family)
             }
 
-            Prop("fontWeight") { (view: SafelyMaskedInputView, weight: String) in
-                view.setFontWeightValue(weight)
-            }
-
             Prop("textColor") { (view: SafelyMaskedInputView, color: String) in
                 view.setTextColorValue(color)
             }

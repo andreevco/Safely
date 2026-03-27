@@ -129,9 +129,6 @@ class SafelyMaskedInputView(context: Context, appContext: AppContext) : ExpoView
     fun setFontFamilyValue(family: String) {
         try { editText.typeface = Typeface.create(family, editText.typeface?.style ?: Typeface.NORMAL) } catch (_: Exception) {}
     }
-    fun setFontWeightValue(weight: String) {
-        editText.typeface = Typeface.create(editText.typeface, if (weight == "bold") Typeface.BOLD else Typeface.NORMAL)
-    }
     fun setTextColorValue(hex: String) { tryParseColor(hex) { integerColor = it; applyMask() } }
     fun setPlaceholderValue(placeholder: String) { editText.hint = placeholder }
     fun setPlaceholderTextColorValue(hex: String) { tryParseColor(hex) { editText.setHintTextColor(it) } }

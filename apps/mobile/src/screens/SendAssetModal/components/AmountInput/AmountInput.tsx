@@ -7,10 +7,7 @@ import { Icon, SwapVertical20 } from '@mobile/shared/ui/Icon';
 import { Text } from '@mobile/shared/ui/Text';
 
 import { styles, useInputAnimatedStyle } from './AmountInput.styles';
-import {
-    SafelyMaskedInput,
-    SafelyMaskedInputRef
-} from '../../../../../modules/safely-masked-input/src';
+import { MaskedInput, type MaskedInputRef } from '../../../../../modules/safely-masked-input/src';
 
 export type AmountInputProps = {
     decimals: number;
@@ -28,7 +25,7 @@ export type AmountInputProps = {
     onFocus?: () => void;
 };
 
-export const AmountInput = forwardRef<SafelyMaskedInputRef, AmountInputProps>((props, ref) => {
+export const AmountInput = forwardRef<MaskedInputRef, AmountInputProps>((props, ref) => {
     const {
         label,
         errored,
@@ -45,7 +42,7 @@ export const AmountInput = forwardRef<SafelyMaskedInputRef, AmountInputProps>((p
         onFocus
     } = props;
     const { theme } = useUnistyles();
-    const inputRef = useRef<SafelyMaskedInputRef | null>(null);
+    const inputRef = useRef<MaskedInputRef | null>(null);
     const focused = useSharedValue<boolean>(false);
 
     const inputStyle = useInputAnimatedStyle(focused, errored ?? false);
@@ -67,7 +64,7 @@ export const AmountInput = forwardRef<SafelyMaskedInputRef, AmountInputProps>((p
         [onChangeText]
     );
 
-    useImperativeHandle(ref, () => inputRef.current as SafelyMaskedInputRef, []);
+    useImperativeHandle(ref, () => inputRef.current as MaskedInputRef, []);
 
     return (
         <View>
@@ -88,7 +85,7 @@ export const AmountInput = forwardRef<SafelyMaskedInputRef, AmountInputProps>((p
                                         ≈{' '}
                                     </Text>
                                 )}
-                                <SafelyMaskedInput
+                                <MaskedInput
                                     ref={inputRef}
                                     decimals={decimals}
                                     decimalSeparator={decimalSeparator}
@@ -100,7 +97,6 @@ export const AmountInput = forwardRef<SafelyMaskedInputRef, AmountInputProps>((p
                                     textColor={theme.colors.text.primary}
                                     keyboardType="decimal-pad"
                                     fontSize={32}
-                                    fontWeight="bold"
                                     suffix={currencySymbol ?? ''}
                                     suffixColor={theme.colors.text.tertiary}
                                     suffixFontSize={14}

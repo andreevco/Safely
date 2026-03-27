@@ -21,7 +21,7 @@ import { ArrowLeft16, Icon } from '@mobile/shared/ui/Icon';
 
 import { styles } from './SendAssetModal.styles';
 import { AmountStep, RecipientStep } from './steps';
-import { SafelyMaskedInputRef } from '../../../modules/safely-masked-input/src';
+import { MaskedInputRef } from '../../../modules/safely-masked-input/src';
 
 type SendStackParamList = {
     SendAssetModal: {
@@ -52,7 +52,7 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
     );
 
     const recipientInputRef = useRef<TextInput>(null);
-    const amountInputRef = useRef<SafelyMaskedInputRef>(null);
+    const amountInputRef = useRef<MaskedInputRef>(null);
 
     const { state, actions, step, meta, suggestionSelection } = useSendForm({
         onSubmit: handleSubmit,
