@@ -1,4 +1,3 @@
-import { Platform } from 'react-native';
 import { SharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
@@ -25,19 +24,8 @@ export const styles = StyleSheet.create(theme => ({
         flex: 1
     },
     input: {
-        fontSize: 32,
-        fontWeight: 600,
-        fontVariant: ['tabular-nums', 'lining-nums'],
-        color: theme.colors.text.primary,
         flex: 1,
-        height: 40,
-        letterSpacing: 0.42,
-        ...(Platform.OS === 'android'
-            ? {
-                  paddingBottom: 0,
-                  paddingTop: 0
-              }
-            : {})
+        height: 40
     },
     rightContentContainer: {
         paddingRight: theme.spacing[12],

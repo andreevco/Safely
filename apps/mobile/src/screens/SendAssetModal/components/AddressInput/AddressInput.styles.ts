@@ -32,13 +32,13 @@ export const styles = StyleSheet.create(theme => ({
     },
     input: {
         fontSize: 17,
-        lineHeight: 24,
         letterSpacing: -0.44,
         fontWeight: 400,
         color: theme.colors.text.primary,
         paddingTop: 0,
         paddingBottom: 0,
-        includeFontPadding: false
+        includeFontPadding: false,
+        textAlignVertical: 'top'
     },
     iconButton: {
         position: 'absolute',

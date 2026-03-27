@@ -151,7 +151,7 @@ export const buildChartPoints = (
         const y = height - clamped * height;
 
         const shouldBeRendered = !mappedPoints.some(
-            point => point.x > width - 26 && Math.abs(point.y - y) < 2
+            point => point.x > width - 32 && Math.abs(point.y - y) < 2
         );
 
         return {
