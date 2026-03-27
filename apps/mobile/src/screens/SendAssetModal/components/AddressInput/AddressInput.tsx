@@ -18,10 +18,11 @@ interface AddressInputProps {
     label?: string;
     placeholder?: string;
     inputRef?: Ref<TextInput>;
+    onSubmitEditing?: () => void;
 }
 
 export const AddressInput = (props: AddressInputProps) => {
-    const { value, onChangeText, error, label, placeholder, inputRef } = props;
+    const { value, onChangeText, error, label, placeholder, inputRef, onSubmitEditing } = props;
 
     const { t } = useTranslation();
     const { theme } = useUnistyles();
@@ -86,6 +87,9 @@ export const AddressInput = (props: AddressInputProps) => {
                     autoCorrect={false}
                     spellCheck={false}
                     multiline
+                    submitBehavior="submit"
+                    returnKeyType="done"
+                    onSubmitEditing={onSubmitEditing}
                 />
 
                 <TouchableOpacity

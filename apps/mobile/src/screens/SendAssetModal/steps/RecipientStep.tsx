@@ -18,6 +18,7 @@ interface RecipientStepProps {
     selectedAddress?: string;
     onSelectSuggestion: (address: string, visibleSuggestions: SendSuggestion[]) => void;
     onClearSuggestionSelection: () => void;
+    onSubmitEditing?: () => void;
 }
 
 export const RecipientStep = (props: RecipientStepProps) => {
@@ -30,7 +31,8 @@ export const RecipientStep = (props: RecipientStepProps) => {
         selectedAddress,
         onChangeText,
         onSelectSuggestion,
-        onClearSuggestionSelection
+        onClearSuggestionSelection,
+        onSubmitEditing
     } = props;
 
     const { t } = useTranslation();
@@ -47,6 +49,7 @@ export const RecipientStep = (props: RecipientStepProps) => {
     return (
         <View style={{ flex: 1 }}>
             <AddressInput
+                onSubmitEditing={onSubmitEditing}
                 value={value}
                 onChangeText={handleChangeText}
                 error={error}

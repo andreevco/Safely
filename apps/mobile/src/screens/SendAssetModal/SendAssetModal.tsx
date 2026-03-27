@@ -197,6 +197,7 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
                 style={styles.pagerView}
             >
                 <RecipientStep
+                    onSubmitEditing={step.canGoNext ? step.next : undefined}
                     key="recipient"
                     inputRef={recipientInputRef}
                     value={state.values.recipient}
