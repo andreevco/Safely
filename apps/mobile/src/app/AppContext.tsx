@@ -2,7 +2,7 @@ import * as Device from 'expo-device';
 import { getLocales } from 'expo-localization';
 import { FC, PropsWithChildren, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Platform } from 'react-native';
+import { AppState, Platform } from 'react-native';
 
 import { Build } from '@safely/core';
 import { AppContext, IAppContext, Security, UnlockableSecuredEncryptedStorage } from '@safely/ux';
@@ -82,6 +82,10 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
                 for (const storageConfig of storages) {
                     await storageConfig.storage.clear();
                 }
+            },
+            subscribeAppStateChange(callback) {
+                const subscription = AppState.addEventListener('change', callback);
+                return () => subscription.remove();
             }
         }),
         [t, toastService, loaderService, language]

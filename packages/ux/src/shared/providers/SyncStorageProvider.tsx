@@ -1,9 +1,10 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { FC, PropsWithChildren, useEffect } from 'react';
+import { FC, PropsWithChildren, useEffect, useRef } from 'react';
 
 import { useActiveAccountQuery, fiatKeys, useUpdateOwnSyncedDeviceMeta } from '../../entities';
 import { accountKey } from '../../entities/account/keys';
 import { SyncedStorageStructure, syncedStorageStructure } from '../storage';
+import { AppStateStatus, useAppContext } from './AppContext';
 
 const syncedStorageKeys = Object.keys(syncedStorageStructure) as (keyof SyncedStorageStructure)[];
 
@@ -41,8 +42,27 @@ function useSyncChangeObserver() {
     }, [activeAccount, client, updateOwnSyncedDeviceMeta]);
 }
 
+function useSyncRestartOnForeground() {
+    const { data: activeAccount } = useActiveAccountQuery();
+    const { subscribeAppStateChange } = useAppContext();
+    const appStateRef = useRef<AppStateStatus>('active');
+
+    useEffect(() => {
+        if (!activeAccount) return;
+
+        return subscribeAppStateChange(status => {
+            if (appStateRef.current.match(/inactive|background/) && status === 'active') {
+                activeAccount.syncProvider.restart();
+            }
+
+            appStateRef.current = status;
+        });
+    }, [activeAccount, subscribeAppStateChange]);
+}
+
 export const SyncStorageProvider: FC<PropsWithChildren> = ({ children }) => {
     useSyncChangeObserver();
+    useSyncRestartOnForeground();
 
     return <>{children}</>;
 };
