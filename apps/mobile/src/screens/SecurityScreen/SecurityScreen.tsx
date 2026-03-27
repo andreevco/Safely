@@ -78,7 +78,7 @@ export const SecurityScreen = () => {
                                             </Cell.Subtitle>
                                         </Cell.Row>
                                     </Cell.Content>
-                                    <Cell.Chevron />
+                                    <View style={styles.syncDotGreen} />
                                 </Cell>
                             ) : (
                                 <Cell onPress={() => navigation.navigate('ProtectAccountModal')}>
@@ -97,7 +97,7 @@ export const SecurityScreen = () => {
                                             </Cell.Subtitle>
                                         </Cell.Row>
                                     </Cell.Content>
-                                    <Cell.Chevron />
+                                    <View style={styles.syncDotYellow} />
                                 </Cell>
                             )}
                         </List.Group>

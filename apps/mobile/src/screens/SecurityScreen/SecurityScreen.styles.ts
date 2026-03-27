@@ -19,5 +19,17 @@ export const styles = StyleSheet.create((theme, rt) => ({
         flexDirection: 'row',
         alignItems: 'center',
         gap: 4
+    },
+    syncDotGreen: {
+        width: 10,
+        height: 10,
+        borderRadius: 5,
+        backgroundColor: theme.colors.accent.green
+    },
+    syncDotYellow: {
+        width: 10,
+        height: 10,
+        borderRadius: 5,
+        backgroundColor: theme.colors.accent.orange
     }
 }));
