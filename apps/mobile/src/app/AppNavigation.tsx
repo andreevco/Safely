@@ -6,6 +6,8 @@ import { useUnistyles } from 'react-native-unistyles';
 
 import { SyncStorageProvider } from '@safely/ux';
 
+import { useLockOnBackground } from '@mobile/entities/security';
+
 import Navigation from './navigation';
 import { navigationRef } from './navigation/navigationRef';
 import { useInitialNavigationState } from './navigation/useInitialNavigationState';
@@ -13,6 +15,7 @@ import { useInitialNavigationState } from './navigation/useInitialNavigationStat
 export function AppNavigation() {
     const { theme } = useUnistyles();
     const initialState = useInitialNavigationState();
+    useLockOnBackground();
 
     const NavigationTheme: Theme = useMemo(
         () => ({
