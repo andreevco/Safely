@@ -88,7 +88,11 @@
     },
     "qrScan": {
         "title": "Scan QR code",
-        "subtitle": "Scan BTC address to continue."
+        "subtitle": "Scan BTC address to continue.",
+        "addDevice": {
+            "title": "Scan QR code to add",
+            "subtitle": "Scan the code on your other device. It's shown in \"Sign in\" there."
+        }
     },
     "camera": {
         "permissionRequest": {
