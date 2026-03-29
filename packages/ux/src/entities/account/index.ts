@@ -336,7 +336,7 @@ export function useChangeAccountMeta() {
     return useMutation<void, Error, Partial<AccountMeta>>({
         async mutationFn(meta) {
             await set({ ...account.meta, ...meta });
-            await client.invalidateQueries({ queryKey: accountKey.list.toKey() });
+            await client.refetchQueries({ queryKey: accountKey.list.toKey() });
         }
     });
 }
