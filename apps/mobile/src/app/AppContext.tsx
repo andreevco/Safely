@@ -84,7 +84,17 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
                 }
             },
             subscribeAppStateChange(callback) {
-                const subscription = AppState.addEventListener('change', callback);
+                const subscription = AppState.addEventListener('change', state => {
+                    switch (state) {
+                        case 'active':
+                        case 'background':
+                        case 'inactive':
+                            return callback(state);
+                        case 'extension':
+                        case 'unknown':
+                            return callback('unknown');
+                    }
+                });
                 return () => subscription.remove();
             }
         }),

@@ -6,7 +6,7 @@ import { LoaderService, Security, ToastService } from '../../entities';
 import { TranslateFn } from '../i18n';
 import { IUnlockableSecuredEncryptedStorage } from '../security';
 
-export type AppStateStatus = 'active' | 'background' | 'inactive';
+export type AppStateStatus = 'active' | 'background' | 'inactive' | 'unknown';
 
 export interface IAppContext {
     version: string;

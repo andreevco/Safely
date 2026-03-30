@@ -50,12 +50,15 @@ function useSyncRestartOnForeground() {
     useEffect(() => {
         if (!activeAccount) return;
 
-        return subscribeAppStateChange(status => {
-            if (appStateRef.current.match(/inactive|background/) && status === 'active') {
+        return subscribeAppStateChange(nextStatus => {
+            if (
+                appStateRef.current === 'inactive' ||
+                (appStateRef.current === 'background' && nextStatus === 'active')
+            ) {
                 activeAccount.syncProvider.restart();
             }
 
-            appStateRef.current = status;
+            appStateRef.current = nextStatus;
         });
     }, [activeAccount, subscribeAppStateChange]);
 }
