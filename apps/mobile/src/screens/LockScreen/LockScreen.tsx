@@ -1,9 +1,7 @@
-import { CommonActions, useNavigation } from '@react-navigation/native';
-import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { usePasscodeVerification } from '@mobile/entities/security';
+import { usePasscodeVerification, useLockScreenControl } from '@mobile/entities/security';
 import { useLogOutAllConfirmation } from '@mobile/features/settings/useLogOutAllConfirmation';
 import { LockoutContent, PasscodeInput, PasscodeLayout, Screen, Text } from '@mobile/shared/ui';
 
@@ -13,21 +11,8 @@ const SHOW_SIGN_OUT_THRESHOLD = 3;
 
 export const LockScreen = () => {
     const { t } = useTranslation();
-    const navigation = useNavigation();
+    const { unlock } = useLockScreenControl();
     const handleLogOut = useLogOutAllConfirmation();
-
-    const handleSuccess = useCallback(() => {
-        if (navigation.canGoBack()) {
-            navigation.goBack();
-        } else {
-            navigation.dispatch(
-                CommonActions.reset({
-                    index: 0,
-                    routes: [{ name: 'TabsNavigator' }]
-                })
-            );
-        }
-    }, [navigation]);
 
     const {
         inputValue,
@@ -38,7 +23,7 @@ export const LockScreen = () => {
         remainingSeconds,
         failedAttempts,
         handleInputChange
-    } = usePasscodeVerification({ onSuccess: handleSuccess });
+    } = usePasscodeVerification({ onSuccess: unlock });
 
     const isSignOutVisible = failedAttempts >= SHOW_SIGN_OUT_THRESHOLD;
 
