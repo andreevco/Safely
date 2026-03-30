@@ -1,4 +1,4 @@
-import { Ref } from 'react';
+import { Ref, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TextInput, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
@@ -46,6 +46,11 @@ export const RecipientStep = (props: RecipientStepProps) => {
         onClearSuggestionSelection
     });
 
+    const selectedMeta = useMemo(
+        () => displaySuggestions.find(s => s.address === selectedAddress)?.meta,
+        [displaySuggestions, selectedAddress]
+    );
+
     return (
         <View style={{ flex: 1 }}>
             <AddressInput
@@ -56,6 +61,7 @@ export const RecipientStep = (props: RecipientStepProps) => {
                 inputRef={inputRef}
                 label={t('send.recipient.label')}
                 placeholder={t('send.recipient.placeholder')}
+                selectedMeta={selectedMeta}
             />
             <KeyboardAwareScrollView
                 style={{ flex: 1 }}

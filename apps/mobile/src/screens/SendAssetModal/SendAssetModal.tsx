@@ -2,7 +2,6 @@ import { useNavigation, NavigationProp, StaticScreenProps } from '@react-navigat
 import { useRef, useCallback, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Keyboard, TextInput, View } from 'react-native';
-import { MaskedTextInputRef } from 'react-native-advanced-input-mask';
 import PagerView from 'react-native-pager-view';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
@@ -22,6 +21,7 @@ import { ArrowLeft16, Icon } from '@mobile/shared/ui/Icon';
 
 import { styles } from './SendAssetModal.styles';
 import { AmountStep, RecipientStep } from './steps';
+import { MaskedInputRef } from '../../../modules/safely-masked-input/src';
 
 type SendStackParamList = {
     SendAssetModal: {
@@ -52,7 +52,7 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
     );
 
     const recipientInputRef = useRef<TextInput>(null);
-    const amountInputRef = useRef<MaskedTextInputRef>(null);
+    const amountInputRef = useRef<MaskedInputRef>(null);
 
     const { state, actions, step, meta, suggestionSelection } = useSendForm({
         onSubmit: handleSubmit,
@@ -69,11 +69,7 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
         actions.setAmountInputType(newType);
     }, [amountInputType, actions]);
 
-    const mask = useMemo(() => {
-        const decimals = asset?.amount.asset.decimals ?? 8;
-        const decimalsMask = '9'.repeat(decimals);
-        return `[09999999999999999999999]${numberFormatLocale.decimalSeparator}[${decimalsMask}]`;
-    }, [asset, numberFormatLocale.decimalSeparator]);
+    const decimals = asset?.amount.asset.decimals ?? 8;
 
     const alternativeAmount = useMemo(() => {
         const parsedAmount = state.parsed.amount;
@@ -212,7 +208,8 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
                 <AmountStep
                     key="amount"
                     inputRef={amountInputRef}
-                    mask={mask}
+                    decimals={decimals}
+                    decimalSeparator={numberFormatLocale.decimalSeparator}
                     value={state.values.amount}
                     onChangeText={actions.setAmount}
                     isMax={state.parsed.isMax}
