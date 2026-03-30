@@ -6,7 +6,7 @@ import { ActivityPage, BtcActivityItem, IActivityFilters } from './types';
 
 const ON_PAGE_ELEMENTS_LIMIT = 25;
 
-function getBiggestIOAddress(io: BtcApiTx['vin' | 'vout']) {
+export function getBiggestBtcIOAddress(io: BtcApiTx['vin' | 'vout']) {
     return io.slice().sort((a, b) => toBigOrZero(b.value).cmp(toBigOrZero(a.value)))[0]
         ?.addresses?.[0];
 }
@@ -42,13 +42,13 @@ export async function fetchBtcActivity(
         .map(tx => {
             const isInitiator = !!tx.vin?.some(input => input.isOwn);
 
-            const fromAddress = getBiggestIOAddress(
+            const fromAddress = getBiggestBtcIOAddress(
                 tx.vin.filter(v => Boolean(v.isOwn) === isInitiator)
             );
 
             const toAddress =
-                getBiggestIOAddress(tx.vout.filter(v => Boolean(v.isOwn) === !isInitiator)) ??
-                getBiggestIOAddress(tx.vout);
+                getBiggestBtcIOAddress(tx.vout.filter(v => Boolean(v.isOwn) === !isInitiator)) ??
+                getBiggestBtcIOAddress(tx.vout);
 
             if (!fromAddress || !toAddress) {
                 return null;

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { bootConfigSchema, sCryptoAssetAmount } from '@safely/core';
-import { sRatedCryptoAssetAmountArray } from '@safely/core';
+import { bootConfigSchema, sCryptoAssetAmount, TxSchema } from '@safely/core';
+import { UtxoSchema } from '@safely/core/api/btc/models';
 
 const sHistoricalPrice = z.object({
     prices: z.array(z.tuple([z.number(), z.number()])).describe('[timestamp, price] pair')
@@ -39,7 +39,23 @@ const sInfiniteActivityData = z.object({
 });
 
 export const cacheSchemas = {
-    sRatedCryptoAssetAmountArray,
+    sBtcWalletUtxos: z.object({
+        confirmedIn: z.object({
+            totalAmount: sCryptoAssetAmount
+        }),
+        unconfirmedInSafe: z.object({
+            totalAmount: sCryptoAssetAmount,
+            utxos: z.array(UtxoSchema)
+        }),
+        unconfirmedInUnsafe: z.object({
+            totalAmount: sCryptoAssetAmount,
+            utxos: z.array(UtxoSchema)
+        }),
+        unconfirmedOut: z.object({
+            totalAmount: sCryptoAssetAmount,
+            txs: z.array(TxSchema)
+        })
+    }),
     bootConfig: bootConfigSchema,
     infiniteActivityData: sInfiniteActivityData,
     sHistoricalPrice: sHistoricalPrice,

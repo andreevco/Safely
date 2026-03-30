@@ -73,7 +73,7 @@ export class BtcEstimator implements IIdentifiable {
 
         const { feeSatVb, targetBlock } = await this.getFeeValue(request.feeType);
 
-        const utxos = await this.btcApi.getAccountUtxo(this.wallet);
+        const utxos = await this.btcApi.getAccountConfirmedUtxo(this.wallet);
         if (!utxos.length) {
             throw new Error('No UTXOs available');
         }
@@ -107,7 +107,7 @@ export class BtcEstimator implements IIdentifiable {
     ) {
         const { feeSatVb, targetBlock } = await this.getFeeValue(request.feeType);
 
-        const utxos = await this.btcApi.getAccountUtxo(this.wallet);
+        const utxos = await this.btcApi.getAccountConfirmedUtxo(this.wallet);
         if (!utxos.length) {
             throw new Error('No UTXOs available');
         }

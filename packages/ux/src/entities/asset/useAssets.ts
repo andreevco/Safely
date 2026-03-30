@@ -1,56 +1,35 @@
-import { useQueryClient } from '@tanstack/react-query';
+import { BTC_ASSET, BtcAssetAmount, BtcWallet, RatedCryptoAssetAmount } from '@safely/core';
 
-import { BTC_ASSET, BtcWallet, CryptoAssetAmount, RatedCryptoAssetAmount } from '@safely/core';
-
-import {
-    QUERIES_STALE_TIME,
-    QUERIES_REFETCH_INTERVAL,
-    usePersistQuery,
-    useBtcApi,
-    usePriceApi
-} from '../../shared';
-import { useActiveFiat } from '../fiat';
+import { useDerivedQuery } from '../../shared';
 import { useActiveBtcWallet } from '../portfolio';
-import { assetKeys } from './keys';
-import { fetchRateQuery } from './rateQuery';
 import { getSortedAssets } from './utils';
+import { useBtcWalletUtxo } from '../btc-blockchain';
+import { useRate } from './useRate';
 
-// TODO Think again, maybe detach useBalances in separate query
 export function useWalletAssets(wallet: BtcWallet) {
-    const btcApi = useBtcApi();
-    const fiat = useActiveFiat();
-    const priceApi = usePriceApi();
-    const queryClient = useQueryClient();
+    const btcWalletUtxosQuery = useBtcWalletUtxo(wallet);
+    const btcPriceQuery = useRate(BTC_ASSET);
 
-    return usePersistQuery<RatedCryptoAssetAmount[]>({
-        queryKey: assetKeys.all(wallet.id.toString()).fiat(fiat.id.toString()).toKey(),
-        queryFn: async () => {
-            const fiatSymbol = fiat.id.symbol;
+    return useDerivedQuery({
+        queries: [btcWalletUtxosQuery, btcPriceQuery],
+        queryFn: ([
+            { confirmedIn, unconfirmedInSafe, unconfirmedInUnsafe, unconfirmedOut },
+            btcPrice
+        ]) => {
+            const totalReceive = confirmedIn.totalAmount
+                .amountAdd(unconfirmedInSafe.totalAmount)
+                .amountAdd(unconfirmedInUnsafe.totalAmount);
 
-            const [addressInfo, btcPrice] = await Promise.all([
-                btcApi.getXpub(wallet, {
-                    secondaryCurrency: fiatSymbol
-                }),
-                fetchRateQuery(queryClient, priceApi, BTC_ASSET, fiat)
-            ]);
-
-            const btcAmount = new CryptoAssetAmount({
-                asset: BTC_ASSET,
-                weiAmount: addressInfo.balance
-            });
+            const totalBalance = totalReceive.gt(unconfirmedOut.totalAmount)
+                ? totalReceive.amountSub(unconfirmedOut.totalAmount)
+                : BtcAssetAmount.fromWeiAmount('0');
 
             const btcItem: RatedCryptoAssetAmount = {
-                amount: btcAmount,
+                amount: totalBalance,
                 price: btcPrice
             };
 
             return getSortedAssets([btcItem]);
-        },
-        staleTime: QUERIES_STALE_TIME.ASSETS,
-        refetchInterval: QUERIES_REFETCH_INTERVAL.DEFAULT,
-        meta: {
-            persist: true,
-            schemaKey: 'sRatedCryptoAssetAmountArray'
         }
     });
 }

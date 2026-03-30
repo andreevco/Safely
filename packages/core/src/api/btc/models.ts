@@ -313,6 +313,8 @@ export const UtxoSchema = z.looseObject({
     coinbase: z.boolean().optional()
 });
 
+export const UtxoWithTxSchema = UtxoSchema.extend({ tx: TxSchema });
+
 export const BlockHeightScheme = z.looseObject({
     height: z.number()
 });

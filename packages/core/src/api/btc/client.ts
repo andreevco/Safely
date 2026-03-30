@@ -1,6 +1,13 @@
 import { z } from 'zod';
 
-import { AddressSchema, BlockHeightScheme, GasPricesSchema, TxSchema, UtxoSchema } from './models';
+import {
+    AddressSchema,
+    BlockHeightScheme,
+    GasPricesSchema,
+    TxSchema,
+    UtxoSchema,
+    UtxoWithTxSchema
+} from './models';
 import { BtcWalletType } from '../../entities/blockchain/btc';
 import { ApiClient } from '../../utils/fetch';
 import { IIdentifiable } from '../../utils/types';
@@ -47,9 +54,16 @@ export class BtcApi extends ApiClient implements IIdentifiable {
         return await this.getJson(`/api/v2/xpub/${serialized}`, AddressSchema, params);
     }
 
-    public async getAccountUtxo(descriptor: BtcDescriptor) {
+    public async getAccountConfirmedUtxo(descriptor: BtcDescriptor) {
         const serialized = this.serializeDescriptor(descriptor);
-        return await this.getJson(`/api/v2/utxo/${serialized}`, z.array(UtxoSchema));
+        return await this.getJson(`/api/v2/utxo/${serialized}?confirmed=true`, z.array(UtxoSchema));
+    }
+
+    public async getAccountUnconfirmedUtxo(descriptor: BtcDescriptor) {
+        return this.getJson(
+            `/extensions/v1/utxo/${this.serializeDescriptor(descriptor)}/unconfirmed?withTxs=true`,
+            z.array(UtxoWithTxSchema)
+        );
     }
 
     public async getTransaction(txid: string) {
