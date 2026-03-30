@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 
-import { ISyncAccount, SyncAccountFactory } from '../../src';
+import { arrayById, ISyncAccount, SyncAccountFactory } from '../../src';
 import { SyncStatus } from '../../src/sync-provider/sync-status';
 import { InMemStorage } from '../impl/storage';
 
@@ -9,7 +9,7 @@ const SchemaTestWallet = z.object({
     name: z.string(),
     mnemonic: z.string()
 });
-const SchemaTestWallets = z.array(SchemaTestWallet);
+const SchemaTestWallets = arrayById(SchemaTestWallet, item => item.name);
 export const Schema = {
     wallets: SchemaTestWallets
 };

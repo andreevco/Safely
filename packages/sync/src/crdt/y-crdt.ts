@@ -1,9 +1,14 @@
 import * as Y from 'yjs';
+import { ZodType } from 'zod';
 
-import { ICRDT } from './I-crdt';
+import { deepMerge } from './deep-merge/deep-merge';
+import { yValueToJs } from './deep-merge/y-value-to-js';
 
-export class YCRDT implements ICRDT<Buffer> {
-    constructor(private readonly doc: Y.Doc) {}
+export class YCRDT {
+    constructor(
+        private readonly doc: Y.Doc,
+        public readonly schema: Record<string, ZodType>
+    ) {}
 
     public applyUpdate(update: Buffer, origin: string): void {
         Y.applyUpdateV2(this.doc, update, origin);
@@ -13,9 +18,10 @@ export class YCRDT implements ICRDT<Buffer> {
         return Buffer.from(Y.encodeStateAsUpdateV2(this.doc));
     }
 
-    public get(k: string): string | null {
-        const map = this.doc.getMap<string>('root');
-        return map.get(k) ?? null;
+    public get(k: string): unknown {
+        const map = this.doc.getMap('root');
+        const value = map.get(k);
+        return value ? yValueToJs(value, this.schema[k]) : null;
     }
 
     public getArray(k: string): Y.Array<string> {
@@ -38,9 +44,10 @@ export class YCRDT implements ICRDT<Buffer> {
         map.delete(k);
     }
 
-    public set(k: string, v: string): void {
-        const map = this.doc.getMap<string>('root');
-        map.set(k, v);
+    public set(k: string, v: unknown): void {
+        this.doc.transact(() => {
+            deepMerge(this.doc.getMap('root'), k, v, this.schema[k]);
+        });
     }
 
     public equals(other: YCRDT): boolean {

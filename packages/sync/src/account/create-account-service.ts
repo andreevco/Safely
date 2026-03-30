@@ -36,6 +36,7 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
             storage,
             encryptedStorage,
             secureEncryptedStorage: accountSecureEncryptedStorage,
+            structure: this.structure,
             masterKey,
             logger
         });
@@ -45,6 +46,7 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
 
         const container = await createSyncContainer({
             accountId: accountID,
+            structure: this.structure,
             storage,
             encryptedStorage,
             apiConfiguration: this.apiConfiguration,
@@ -84,6 +86,7 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
         const logger = this.logger.child(accountID.slice(0, 4));
         await initializeSyncAccount({
             storage,
+            structure: this.structure,
             encryptedStorage: encryptedStorage,
             secureEncryptedStorage: accountSecureEncryptedStorage,
             masterKey,
@@ -96,6 +99,7 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
 
         const container = await createSyncContainer({
             accountId: accountID,
+            structure: this.structure,
             storage,
             encryptedStorage,
             apiConfiguration: this.apiConfiguration,

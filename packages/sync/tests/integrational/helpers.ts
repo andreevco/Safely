@@ -1,10 +1,10 @@
 import { z } from 'zod';
 
-import { ISyncAccount, SyncAccountFactory } from '../../src';
+import { arrayById, ISyncAccount, SyncAccountFactory } from '../../src';
 import { InMemStorage } from '../impl/storage';
 
 export const Schema = {
-    wallets: z.array(z.string())
+    wallets: arrayById(z.string(), v => v)
 };
 
 export function makeFactory() {

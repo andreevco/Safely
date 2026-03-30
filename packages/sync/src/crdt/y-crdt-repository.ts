@@ -1,11 +1,14 @@
 import * as Y from 'yjs';
+import { ZodType } from 'zod';
 
-import { ICRDTRepository } from './I-crdt-repository';
 import { YCRDT } from './y-crdt';
 import { IStorage } from '../I-storage';
 
-export class YCRDTRepository implements ICRDTRepository<YCRDT> {
-    constructor(private readonly storage: IStorage) {}
+export class YCRDTRepository {
+    constructor(
+        private readonly storage: IStorage,
+        private readonly schema: Record<string, ZodType>
+    ) {}
 
     public async loadCRDT(): Promise<YCRDT> {
         const crdt_raw = await this.storage.getItem('crdt');
@@ -15,7 +18,7 @@ export class YCRDTRepository implements ICRDTRepository<YCRDT> {
         }
         const crdt_buffer = Buffer.from(crdt_raw, 'hex');
         Y.applyUpdateV2(ydoc, crdt_buffer);
-        return new YCRDT(ydoc);
+        return new YCRDT(ydoc, this.schema);
     }
 
     public async saveCRDT(crdt: YCRDT): Promise<void> {

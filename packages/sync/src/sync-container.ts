@@ -1,3 +1,5 @@
+import { ZodType } from 'zod';
+
 import { ApiSigner } from './api/api-signer';
 import { AccountsApi, Configuration, SnapshotsApi } from './api/generated';
 import { SnapshotsSse } from './api/snapshots-sse';
@@ -53,6 +55,7 @@ export type SyncContainer = {
 
 export async function createSyncContainer(opts: {
     accountId: string;
+    structure: Record<string, ZodType>;
     storage: IStorage;
     encryptedStorage: IStorage;
     logger: Logger;
@@ -60,7 +63,7 @@ export async function createSyncContainer(opts: {
 }): Promise<SyncContainer> {
     const keyRepository = new EncryptedKeyRepository(opts.encryptedStorage);
     const syncStateRepository = new SyncStateRepository(opts.storage, opts.logger);
-    const crdtRepository = new YCRDTRepository(opts.storage);
+    const crdtRepository = new YCRDTRepository(opts.storage, opts.structure);
     const deviceRepository = new DeviceRepository(opts.storage);
 
     const ikService = new IkService(keyRepository);

@@ -55,6 +55,7 @@ export class AccountManager<S extends Record<string, ZodType>> {
         const logger = this.logger.child(accountInfo.accountId.slice(0, 4));
         const container = await createSyncContainer({
             accountId,
+            structure: this.structure,
             storage,
             encryptedStorage,
             apiConfiguration: this.apiConfiguration,
