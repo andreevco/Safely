@@ -43,7 +43,7 @@ export interface IAppContext {
 
     security: Security;
 
-    subscribeAppStateChange(callback: (status: AppStateStatus) => void): () => void;
+    subscribeAppStateChange(this: void, callback: (status: AppStateStatus) => void): () => void;
 }
 
 export const AppContext = createContext<IAppContext | null>(null);
