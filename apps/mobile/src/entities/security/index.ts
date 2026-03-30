@@ -4,4 +4,5 @@ export { usePasscodeLockout } from './usePasscodeLockout';
 export { useMobileSecurityCheck } from './useMobileSecurityCheck';
 export { useLockScreenQuery, useSetLockScreenEnabled } from './useLockScreen';
 export { usePasscodeVerification } from './usePasscodeVerification';
+export { LockScreenProvider, useLockScreenControl } from './LockScreenProvider';
 export type { PromptAndCheckOptions } from './types';
