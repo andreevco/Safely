@@ -295,7 +295,10 @@ export function useConnectAccountToNewDevice() {
 
     return useMutation<void, Error, { secureEncryptedStorage: ITreeStorage }>({
         async mutationFn({ secureEncryptedStorage }) {
-            const connectionString = await qrScanner.scan();
+            const connectionString = await qrScanner.scan({
+                titleTranslationKey: 'qrScan.addDevice.title',
+                subTranslationKey: 'qrScan.addDevice.subtitle'
+            });
             await withLoader(() =>
                 activeKeeperId.connectToNewDevice(
                     Buffer.from(connectionString, 'base64url'),
