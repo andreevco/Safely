@@ -347,9 +347,9 @@ export function useActivePortfolioEntitiesQuery() {
 }
 
 export function useHasPortfolio() {
-    const { data: portfolios } = usePortfoliosQuery();
+    const { data: active } = useActivePortfolioEntitiesQuery();
 
-    return (portfolios?.length ?? 0) > 0;
+    return active !== null;
 }
 
 export function useSetActiveDerivation() {

@@ -21,7 +21,8 @@ export type LanguageCode = keyof typeof resources;
 export const i18n = i18next.use(initReactI18next).init({
     lng: detectedLanguage,
     fallbackLng: FALLBACK_LANGUAGE,
-    resources
+    resources,
+    interpolation: { escapeValue: false }
 });
 
 export const availableLanguages = (Object.keys(resources) as LanguageCode[]).map(code => ({
