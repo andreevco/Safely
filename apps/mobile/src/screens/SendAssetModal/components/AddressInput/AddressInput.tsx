@@ -88,7 +88,7 @@ export const AddressInput = (props: AddressInputProps) => {
                     spellCheck={false}
                     multiline
                     submitBehavior="submit"
-                    returnKeyType="done"
+                    returnKeyType="next"
                     onSubmitEditing={onSubmitEditing}
                 />
 
