@@ -25,7 +25,11 @@ import {
 } from '../../shared';
 import { useActiveAccountSyncedStorage } from '../../shared';
 import { useLoader } from '../loader';
-import { useUpdateOwnSyncedDeviceMeta } from '../synced-device';
+import {
+    useCurrentDeviceIkPub,
+    useSyncedDevicesMeta,
+    useUpdateOwnSyncedDeviceMeta
+} from '../synced-device';
 import { useToast } from '../toast';
 
 export type SyncAccount = ISyncAccount<SyncedStorageStructure> & {
@@ -346,11 +350,21 @@ export function useDeleteAccount() {
     const accountFactory = useAccountsFactory();
     const client = useQueryClient();
     const { getSecureEncryptedStorage } = useAppContext();
+    const ikPub = useCurrentDeviceIkPub();
+    const devicesMeta = useSyncedDevicesMeta();
 
     return useMutation({
         async mutationFn() {
             using secureEncryptedStorage = getSecureEncryptedStorage();
             await secureEncryptedStorage.unlock();
+
+            if (devicesMeta) {
+                const { [ikPub]: _, ...rest } = devicesMeta;
+                await account.syncProvider.set(
+                    'devicesMeta',
+                    Object.keys(rest).length > 0 ? rest : null
+                );
+            }
 
             await accountFactory.deleteLocalAccount(account.accountId, secureEncryptedStorage);
 
