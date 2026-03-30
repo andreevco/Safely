@@ -49,6 +49,7 @@ export function installLogCapture() {
     const levels: LogLevel[] = ['log', 'warn', 'error', 'info'];
 
     for (const level of levels) {
+        // eslint-disable-next-line no-console
         console[level] = (...args: unknown[]) => {
             capture(level, args);
             originalConsole[level](...args);

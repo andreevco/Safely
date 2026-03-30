@@ -41,7 +41,16 @@ interface AddressInputProps {
 }
 
 export const AddressInput = (props: AddressInputProps) => {
-    const { value, onChangeText, error, label, placeholder, inputRef, selectedMeta, onSubmitEditing } = props;
+    const {
+        value,
+        onChangeText,
+        error,
+        label,
+        placeholder,
+        inputRef,
+        selectedMeta,
+        onSubmitEditing
+    } = props;
     const { t } = useTranslation();
     const { theme } = useUnistyles();
 
