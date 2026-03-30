@@ -3,6 +3,7 @@ export type { UsePasscodeResult } from './usePasscode';
 export { usePasscodeLockout } from './usePasscodeLockout';
 export { useMobileSecurityCheck } from './useMobileSecurityCheck';
 export { useLockScreenQuery, useSetLockScreenEnabled } from './useLockScreen';
+export { useLockOnBackground } from './useLockOnBackground';
 export { usePasscodeVerification } from './usePasscodeVerification';
 export { LockScreenProvider, useLockScreenControl } from './LockScreenProvider';
 export type { PromptAndCheckOptions } from './types';
