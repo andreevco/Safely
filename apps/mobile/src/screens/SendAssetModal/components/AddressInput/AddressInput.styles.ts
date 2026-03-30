@@ -6,6 +6,7 @@ export const styles = StyleSheet.create(theme => ({
         paddingHorizontal: theme.spacing[16]
     },
     container: {
+        minHeight: 56,
         borderRadius: theme.radius.md,
         backgroundColor: theme.colors.input.background,
         borderWidth: theme.border.border,
@@ -32,13 +33,21 @@ export const styles = StyleSheet.create(theme => ({
     },
     input: {
         fontSize: 17,
-        lineHeight: 24,
         letterSpacing: -0.44,
         fontWeight: 400,
         color: theme.colors.text.primary,
         paddingTop: 0,
         paddingBottom: 0,
-        includeFontPadding: false
+        includeFontPadding: false,
+        textAlignVertical: 'top'
+    },
+    hiddenInput: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
+        opacity: 0
     },
     iconButton: {
         position: 'absolute',
@@ -47,6 +56,30 @@ export const styles = StyleSheet.create(theme => ({
         bottom: 0,
         justifyContent: 'center',
         alignItems: 'center'
+    },
+    selectedContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: theme.spacing[4]
+    },
+    selectedDot: (color: string) => ({
+        width: 20,
+        height: 20,
+        borderRadius: theme.radius.full,
+        backgroundColor: color
+    }),
+    selectedEmoji: {
+        fontSize: 20
+    },
+    selectedName: {
+        fontSize: 17,
+        fontWeight: '500' as const,
+        color: theme.colors.text.primary
+    },
+    selectedCursor: {
+        width: 2,
+        height: 20,
+        borderRadius: 1
     },
     errorText: {
         marginBottom: theme.spacing[12],

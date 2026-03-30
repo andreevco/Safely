@@ -25,7 +25,11 @@ import {
 } from '../../shared';
 import { useActiveAccountSyncedStorage } from '../../shared';
 import { useLoader } from '../loader';
-import { useUpdateOwnSyncedDeviceMeta } from '../synced-device';
+import {
+    useCurrentDeviceIkPub,
+    useSyncedDevicesMeta,
+    useUpdateOwnSyncedDeviceMeta
+} from '../synced-device';
 import { useToast } from '../toast';
 
 export type SyncAccount = ISyncAccount<SyncedStorageStructure> & {
@@ -295,7 +299,10 @@ export function useConnectAccountToNewDevice() {
 
     return useMutation<void, Error, { secureEncryptedStorage: ITreeStorage }>({
         async mutationFn({ secureEncryptedStorage }) {
-            const connectionString = await qrScanner.scan();
+            const connectionString = await qrScanner.scan({
+                titleTranslationKey: 'qrScan.addDevice.title',
+                subTranslationKey: 'qrScan.addDevice.subtitle'
+            });
             await withLoader(() =>
                 activeKeeperId.connectToNewDevice(
                     Buffer.from(connectionString, 'base64url'),
@@ -336,7 +343,7 @@ export function useChangeAccountMeta() {
     return useMutation<void, Error, Partial<AccountMeta>>({
         async mutationFn(meta) {
             await set({ ...account.meta, ...meta });
-            await client.invalidateQueries({ queryKey: accountKey.list.toKey() });
+            await client.refetchQueries({ queryKey: accountKey.list.toKey() });
         }
     });
 }
@@ -346,11 +353,21 @@ export function useDeleteAccount() {
     const accountFactory = useAccountsFactory();
     const client = useQueryClient();
     const { getSecureEncryptedStorage } = useAppContext();
+    const ikPub = useCurrentDeviceIkPub();
+    const devicesMeta = useSyncedDevicesMeta();
 
     return useMutation({
         async mutationFn() {
             using secureEncryptedStorage = getSecureEncryptedStorage();
             await secureEncryptedStorage.unlock();
+
+            if (devicesMeta) {
+                const { [ikPub]: _, ...rest } = devicesMeta;
+                await account.syncProvider.set(
+                    'devicesMeta',
+                    Object.keys(rest).length > 0 ? rest : null
+                );
+            }
 
             await accountFactory.deleteLocalAccount(account.accountId, secureEncryptedStorage);
 

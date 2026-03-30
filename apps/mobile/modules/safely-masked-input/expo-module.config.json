@@ -1,0 +1,9 @@
+{
+  "platforms": ["ios", "android"],
+  "ios": {
+    "modules": ["SafelyMaskedInputModule"]
+  },
+  "android": {
+    "modules": ["expo.modules.safelymaskedinput.SafelyMaskedInputModule"]
+  }
+}
