@@ -17,12 +17,16 @@ export const LockScreen = () => {
     const handleLogOut = useLogOutAllConfirmation();
 
     const handleSuccess = useCallback(() => {
-        navigation.dispatch(
-            CommonActions.reset({
-                index: 0,
-                routes: [{ name: 'TabsNavigator' }]
-            })
-        );
+        if (navigation.canGoBack()) {
+            navigation.goBack();
+        } else {
+            navigation.dispatch(
+                CommonActions.reset({
+                    index: 0,
+                    routes: [{ name: 'TabsNavigator' }]
+                })
+            );
+        }
     }, [navigation]);
 
     const {

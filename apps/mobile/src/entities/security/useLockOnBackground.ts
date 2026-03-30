@@ -22,12 +22,7 @@ export function useLockOnBackground() {
             appStateRef.current = nextAppState;
 
             if (wasActive && (nextAppState === 'inactive' || nextAppState === 'background')) {
-                navigationRef.dispatch(
-                    CommonActions.reset({
-                        index: 0,
-                        routes: [{ name: 'LockScreen' }]
-                    })
-                );
+                navigationRef.dispatch(CommonActions.navigate('LockScreen'));
             }
         });
 
