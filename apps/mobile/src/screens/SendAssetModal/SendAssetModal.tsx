@@ -11,8 +11,8 @@ import {
     SendFormResult,
     SendFormError,
     useNumberFormatter,
-    useAppSdk,
-    useActiveFiat
+    useActiveFiat,
+    useAppContext
 } from '@safely/ux';
 
 import { SendConfirmationParams } from '@mobile/screens/ConfirmationScreen';
@@ -39,7 +39,7 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
     const navigation = useNavigation<NavigationProp<SendStackParamList>>();
     const pagerRef = useRef<PagerView>(null);
     const formatter = useNumberFormatter();
-    const { numberFormatLocale } = useAppSdk();
+    const { numberFormatLocale } = useAppContext();
     const activeFiat = useActiveFiat();
     const handleSubmit = useCallback(
         (confirmationResult: SendFormResult, onSuccess: () => void) => {
@@ -148,17 +148,20 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
                             exiting={FadeOut.duration(150)}
                         >
                             {meta.portfolioMetaByAddress ? (
-                                <Text
-                                    variant="bodyM"
-                                    color="tertiary"
-                                    textAlign="center"
-                                    numberOfLines={1}
-                                >
-                                    <Text variant="bodyM" color="secondary">
+                                <View style={styles.recipientRow}>
+                                    <Text
+                                        variant="bodyM"
+                                        color="secondary"
+                                        numberOfLines={1}
+                                        style={styles.recipientName}
+                                    >
                                         {meta.portfolioMetaByAddress.name}
-                                    </Text>{' '}
-                                    {ellipsisMiddle(state.parsed.recipient.address)}
-                                </Text>
+                                    </Text>
+                                    <Text variant="bodyM" color="tertiary">
+                                        {' '}
+                                        {ellipsisMiddle(state.parsed.recipient.address)}
+                                    </Text>
+                                </View>
                             ) : (
                                 <Text
                                     textAlign="center"
@@ -190,6 +193,7 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
                 style={styles.pagerView}
             >
                 <RecipientStep
+                    onSubmitEditing={step.canGoNext ? step.next : undefined}
                     key="recipient"
                     inputRef={recipientInputRef}
                     value={state.values.recipient}

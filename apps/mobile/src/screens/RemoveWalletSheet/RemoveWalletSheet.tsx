@@ -6,7 +6,7 @@ import { View } from 'react-native';
 import { useActivePortfolio, useDeletePortfolio, useToast } from '@safely/ux';
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
-import { BottomSheet, Button, Checkbox, Text, useBottomSheet } from '@mobile/shared/ui';
+import { BottomSheet, Button, ConfirmCheckbox, Text, useBottomSheet } from '@mobile/shared/ui';
 
 import { styles } from './RemoveWalletSheet.styles';
 
@@ -36,7 +36,12 @@ const RemoveWalletContent = () => {
         <View>
             <View style={styles.titleBox}>
                 <Text textAlign="center" variant="titleM">
-                    {t('removeWallet.title', { name: portfolio.meta.name })}
+                    {t('removeWallet.title', {
+                        name:
+                            portfolio.meta.icon.type === 'emoji'
+                                ? `${portfolio.meta.icon.value} ${portfolio.meta.name}`
+                                : portfolio.meta.name
+                    })}
                 </Text>
                 <Text textAlign="center" variant="bodyL" color="secondary" style={styles.subtitle}>
                     {isSeedRevealed
@@ -48,14 +53,15 @@ const RemoveWalletContent = () => {
                 </Text>
             </View>
 
-            <View style={styles.checkboxRow}>
-                <Text variant="bodyM" color="primary" style={styles.checkboxText}>
-                    {isSeedRevealed
+            <ConfirmCheckbox
+                text={
+                    isSeedRevealed
                         ? t('removeWallet.revealed.checkbox')
-                        : t('removeWallet.notRevealed.checkbox')}
-                </Text>
-                <Checkbox isChecked={isConfirmed} onPress={() => setIsConfirmed(prev => !prev)} />
-            </View>
+                        : t('removeWallet.notRevealed.checkbox')
+                }
+                isChecked={isConfirmed}
+                onToggle={() => setIsConfirmed(prev => !prev)}
+            />
 
             <View style={styles.footer}>
                 <Button

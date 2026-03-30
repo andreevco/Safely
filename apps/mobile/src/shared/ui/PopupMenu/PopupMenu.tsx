@@ -1,14 +1,16 @@
 import { BlurView } from 'expo-blur';
-import { forwardRef, useImperativeHandle } from 'react';
-import { Modal, Platform, Pressable, useWindowDimensions } from 'react-native';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { forwardRef, useEffect, useImperativeHandle } from 'react';
+import { Platform, Pressable, useWindowDimensions } from 'react-native';
 import Animated, { SharedValue } from 'react-native-reanimated';
-import { FullWindowOverlay } from 'react-native-screens';
 import { StyleSheet } from 'react-native-unistyles';
 
-import { TouchableOpacity } from '../TouchableOpacity';
+import { TouchableOpacity } from '@mobile/shared/ui';
+
+import { OverlayContainer } from './OverlayContainer';
 import { styles } from './PopupMenu.styles';
+import { usePopupMenuPortal } from './PopupMenuPortal';
 import { usePopupMenu } from './usePopupMenu';
+import { useScreenContext } from '../Screen/Screen.context';
 
 const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 
@@ -16,17 +18,23 @@ export type PopupMenuRef = {
     close: () => void;
 };
 
+export type PopupMenuVariant = 'default' | 'fullWidth';
+
 export type PopupMenuProps = {
     children: React.ReactNode;
     footer?: React.ReactNode;
     header?: React.ReactNode;
     touchable: React.ReactElement | ((progress: SharedValue<number>) => React.ReactElement);
+    variant?: PopupMenuVariant;
 };
 
 export const PopupMenu = forwardRef<PopupMenuRef, PopupMenuProps>((props, ref) => {
-    const { children, footer, header, touchable: touchableProp } = props;
+    const { children, footer, header, touchable: touchableProp, variant = 'default' } = props;
     const { height } = useWindowDimensions();
-    const menu = usePopupMenu(height);
+    const portal = usePopupMenuPortal();
+    const { layout } = useScreenContext();
+    const isPortalMode = portal !== null && Platform.OS === 'ios' && layout === 'modal';
+    const menu = usePopupMenu(height, isPortalMode ? portal.containerRef : undefined);
 
     useImperativeHandle(ref, () => ({ close: menu.close }), [menu.close]);
 
@@ -59,7 +67,11 @@ export const PopupMenu = forwardRef<PopupMenuRef, PopupMenuProps>((props, ref) =
                 {touchable}
             </Animated.View>
             <Animated.View
-                style={[styles.menu, menu.menuAnimatedStyle]}
+                style={[
+                    styles.menu,
+                    variant === 'fullWidth' ? styles.menuFullWidth : styles.menuCentered,
+                    menu.menuAnimatedStyle
+                ]}
                 onLayout={menu.onMenuLayout}
                 pointerEvents="box-none"
             >
@@ -73,21 +85,28 @@ export const PopupMenu = forwardRef<PopupMenuRef, PopupMenuProps>((props, ref) =
         </>
     );
 
+    if (isPortalMode && portal) {
+        portal.contentRef.current = overlayContent;
+    }
+
+    useEffect(() => {
+        if (!isPortalMode || !portal) return;
+
+        portal.setVisible(menu.visible);
+
+        return () => {
+            portal.setVisible(false);
+        };
+    }, [isPortalMode, menu.visible, portal]);
+
     return (
         <>
             <TouchableOpacity ref={menu.triggerRef} onPress={menu.open}>
                 {touchable}
             </TouchableOpacity>
-            {menu.visible &&
-                (Platform.OS === 'ios' ? (
-                    <FullWindowOverlay>{overlayContent}</FullWindowOverlay>
-                ) : (
-                    <Modal transparent visible statusBarTranslucent onRequestClose={menu.close}>
-                        <GestureHandlerRootView style={StyleSheet.absoluteFill}>
-                            {overlayContent}
-                        </GestureHandlerRootView>
-                    </Modal>
-                ))}
+            {!isPortalMode && menu.visible && (
+                <OverlayContainer onClose={menu.close}>{overlayContent}</OverlayContainer>
+            )}
         </>
     );
 });

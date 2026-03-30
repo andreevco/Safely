@@ -37,11 +37,11 @@ interface AddressInputProps {
     placeholder?: string;
     inputRef?: Ref<TextInput>;
     selectedMeta?: PortfolioMeta;
+    onSubmitEditing?: () => void;
 }
 
 export const AddressInput = (props: AddressInputProps) => {
-    const { value, onChangeText, error, label, placeholder, inputRef, selectedMeta } = props;
-
+    const { value, onChangeText, error, label, placeholder, inputRef, selectedMeta, onSubmitEditing } = props;
     const { t } = useTranslation();
     const { theme } = useUnistyles();
 
@@ -130,6 +130,9 @@ export const AddressInput = (props: AddressInputProps) => {
                         spellCheck={false}
                         multiline
                         onContentSizeChange={handleContentSizeChange}
+                        submitBehavior="submit"
+                        returnKeyType="next"
+                        onSubmitEditing={onSubmitEditing}
                     />
                 </Animated.View>
 

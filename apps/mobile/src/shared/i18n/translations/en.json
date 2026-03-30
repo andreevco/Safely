@@ -40,6 +40,9 @@
             "signOut": "Log out"
         }
     },
+    "lockScreen": {
+        "title": "Enter passcode"
+    },
     "changePasscode": {
         "title": "Change passcode",
         "verify": {
@@ -75,6 +78,9 @@
     "accounts": {
         "title": "Wallets"
     },
+    "accountSelector": {
+        "title": "Accounts"
+    },
     "actions": {
         "edit": "Edit",
         "done": "Done",
@@ -82,7 +88,11 @@
     },
     "qrScan": {
         "title": "Scan QR code",
-        "subtitle": "Scan BTC address to continue."
+        "subtitle": "Scan BTC address to continue.",
+        "addDevice": {
+            "title": "Scan QR code to add",
+            "subtitle": "Scan the code on your other device. It's shown in \"Sign in\" there."
+        }
     },
     "camera": {
         "permissionRequest": {
@@ -134,12 +144,39 @@
             "warning": "Do not share this phrase.\nAnyone with it can access your wallet.",
             "copy": "Copy"
         },
+        "protectAccount": {
+            "title": "No linked device",
+            "subtitle": "Link another device to protect your account. Without it, your access can't be restored if this phone is lost."
+        },
+        "accountProtected": {
+            "title": "Account protected",
+            "subtitle": "Linked devices have full access to your account and can be used to restore access if another device is lost."
+        },
+        "device": {
+            "added": "Added {{date}}",
+            "upToDate": "Up to date",
+            "notUpToDate": "Not up to date",
+            "walletsNotSynced": "{{ count }} wallets not synced",
+            "disconnect": "Disconnect"
+        },
+        "disconnectDevice": {
+            "title": "Disconnect {{deviceName}}",
+            "subtitle": "This will disconnect your account from this device. The account will remain on the device, but will no longer sync.",
+            "confirm": "Disconnect device"
+        },
         "groups": {
             "account": {
                 "title": "Account",
                 "protect": {
                     "title": "Protect your account",
+                    "badge": "Set up required",
                     "subtitle": "Link another device to protect your account. Without it, your access can't be restored if this phone is lost."
+                },
+                "protection": {
+                    "title": "Account Protection",
+                    "badge": "Enabled",
+                    "subtitle_one": "Protected with {{count}} device",
+                    "subtitle_other": "Protected with {{count}} devices"
                 }
             },
             "application": {
@@ -157,9 +194,11 @@
             "wallet": {
                 "title": "Wallet",
                 "main": "Main",
+                "defaultName": "Wallet {{number}}",
                 "recovery": {
                     "title": "Recovery phrase",
-                    "subtitle": "Keep it private. View only if necessary. This phrase has never been viewed."
+                    "subtitle": "Keep it private. View only if necessary. This phrase has never been viewed.",
+                    "revealed": "Security reduced. First viewed on {{date}} on {{device}}."
                 }
             }
         }
@@ -168,6 +207,12 @@
         "title": "Customize your wallet",
         "description": "Set a name and icon to tell this wallet apart here. Sync across your devices.",
         "namePlaceholder": "Wallet name",
+        "save": "Save"
+    },
+    "customizeAccount": {
+        "title": "Customize your account",
+        "subtitle": "Name this account to tell it apart here.\nSyncs across your devices.",
+        "namePlaceholder": "Account name",
         "save": "Save"
     },
     "confirmation": {
@@ -218,6 +263,17 @@
             "insufficientBalance": "Insufficient balance"
         }
     },
+    "signIn": {
+        "title": "Scan QR to sign in",
+        "description": "Scan it with your other device to add this device to your account.",
+        "banner": "This device will have full access to your account. It can be used if your other device is lost.",
+        "timeout": "Connection timed out. Please try again.",
+        "success": {
+            "title": "Signed in",
+            "subtitle": "This device now has full access\nto your account.",
+            "continue": "Continue"
+        }
+    },
     "welcome": {
         "title": "Safely",
         "subtitle": "Your personal wallet. Receive, buy and spend crypto with ease.",
@@ -266,14 +322,15 @@
                 "step3": "Tap \"Add device\" below and scan that code — camera access will be required."
             },
             "addDevice": "Add device",
-            "protectLater": "Protect account later"
+            "protectLater": "Protect account later",
+            "deviceNotAdded": "Device was not added. Please try again."
         }
     },
     "compactAccountSelector": {
         "addOrEdit": "Add or Edit"
     },
     "addWallet": {
-        "title": "Add Wallet",
+        "title": "Add wallet",
         "subtitle": "Choose how you want to add a wallet.",
         "createNew": {
             "title": "Create new",
@@ -287,6 +344,14 @@
             "title": "Watch account",
             "subtitle": "Track by wallet address"
         }
+    },
+    "addAccount": {
+        "title": "Add account",
+        "subtitle": "Add another account to keep things separate — personal, family, or work.",
+        "createNew": "Create new account",
+        "signIn": "Sign in",
+        "defaultName": "Account {{number}}",
+        "toastAccountCreated": "Account created"
     },
     "portfoliosPopup": {
         "reorderHint": "Press and hold to reorder.",
@@ -324,7 +389,14 @@
     },
     "settings": {
         "title": "Settings",
+        "deviceConnected": "Successfully linked",
+        "addAccount": "Add account",
+        "walletsCount_one": "{{count}} wallet",
+        "walletsCount_other": "{{count}} wallets",
         "groups": {
+            "currentAccount": {
+                "title": "Current account"
+            },
             "currentWallet": {
                 "title": "Current wallet",
                 "options": {
@@ -332,8 +404,10 @@
                 }
             },
             "account": {
-                "title": "Account",
+                "title": "Settings",
                 "options": {
+                    "editAccount": "Edit account",
+                    "addressBook": "Address book",
                     "notifications": "Notifications",
                     "security": "Security",
                     "language": "Language"
@@ -349,19 +423,28 @@
             }
         },
         "signOutAccount": {
-            "title": "Sign out account “{{name}}”",
-            "confirm": {
-                "title": "Erase this device?",
-                "message": "All accounts and data will be permanently removed from this device. Only accounts with a backup can be restored.",
-                "slider": {
-                    "label": "Erase device",
-                    "description": "Slide to erase"
+            "title": "Sign out account {{name}}",
+            "sheet": {
+                "title": "Sign out of {{name}}?",
+                "noDevices": {
+                    "subtitle": "This is the only device with a copy of this account. If you sign out, you will permanently lose access.",
+                    "protectLink": "Protect account now",
+                    "checkbox": "I understand that I will permanently lose this account."
                 },
-                "cancel": "Cancel"
-            }
+                "fullCopy": {
+                    "subtitle": "After signing out, your account will remain available on your other linked devices. You can restore access from them at any time."
+                },
+                "partialCopy": {
+                    "subtitle": "Other devices haven't finished syncing this account. They need to be online to update.",
+                    "checkbox": "I understand that some account data may be lost."
+                },
+                "signOutButton": "Sign out anyway",
+                "cancelButton": "Cancel"
+            },
+            "toastAccountRemoved": "Account removed from this device"
         },
         "removePortfolio": {
-            "title": "Remove wallet “{{name}}”",
+            "title": "Remove wallet {{name}}",
             "confirm": {
                 "title": "Remove this wallet?",
                 "message": "This will remove wallet “{{name}}”. This action cannot be undone.",
@@ -372,6 +455,15 @@
                 "cancel": "Cancel"
             }
         }
+    },
+    "logOutAllAccounts": {
+        "title": "Erase this device?",
+        "message": "All accounts and data will be permanently removed from this device. Only accounts with a backup can be restored.",
+        "slider": {
+            "label": "Erase device",
+            "description": "Slide to erase"
+        },
+        "cancel": "Cancel"
     },
     "removeWallet": {
         "title": "Remove wallet {{name}}?",
@@ -392,7 +484,16 @@
     },
     "tabs": {
         "home": "Home",
-        "history": "History"
+        "history": "History",
+        "about": "About"
+    },
+    "safelyBeta": {
+        "title": "Safely is in beta",
+        "subtitle": "Some features are still evolving.\nSave your recovery phrases in Settings \u2192 Security.",
+        "feedback": {
+            "description": "Found a bug or have an idea?\nYour feedback helps us improve Safely.",
+            "action": "Send feedback"
+        }
     },
     "history": {
         "title": "History",
@@ -403,8 +504,8 @@
             "send": "Send"
         },
         "dateHeaders": {
-          "today": "Today",
-          "yesterday": "Yesterday"
+            "today": "Today",
+            "yesterday": "Yesterday"
         },
         "transactionInfo": {
             "sent": "Sent",

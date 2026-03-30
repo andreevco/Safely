@@ -1,6 +1,11 @@
-import { defineQueryKeys, finalKey } from '../../shared';
+import { FiatAsset } from '@safely/core';
+
+import { defineQueryKeys, finalKey, mappedParams } from '../../shared';
 
 export const fiatKeys = defineQueryKeys('fiat', {
-    active: () => finalKey,
+    active: mappedParams(
+        (_: { availableFiats: FiatAsset[] }) => finalKey,
+        p => [{ availableFiats: p.availableFiats.map(a => a.id.toString()) }]
+    ),
     available: () => finalKey
 });

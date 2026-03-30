@@ -1,39 +1,45 @@
 import { useCallback } from 'react';
 import z from 'zod';
 
-import { syncedStorageStructure, SyncedStorageStructure } from './schemas';
+import { ISyncProvider } from '@safely/sync';
+
+import { SyncedStorageStructure } from './schemas';
 import { useAccounts, useActiveAccount } from '../../../../entities';
 
-export function useGetSyncProvider(accountId: string | null) {
+export type SyncProvider = ISyncProvider<SyncedStorageStructure>;
+
+export function useGetSyncProvider(
+    accountId: string | null
+): () => Pick<SyncProvider, 'get' | 'set' | 'remove'> {
     const accounts = useAccounts();
 
     return useCallback(() => {
         if (accountId === null) {
             return {
-                getItem() {
-                    return null;
+                get() {
+                    throw new Error('Cannot get data from uninitialized account storage');
                 },
-                setItem() {
-                    throw new Error('Cannot set data to uninitialized keeper id storage');
+                set() {
+                    throw new Error('Cannot set data to uninitialized account storage');
                 },
-                removeItem() {
-                    throw new Error('Cannot remove data from uninitialized keeper id storage');
+                remove() {
+                    throw new Error('Cannot remove data from uninitialized account storage');
                 }
             };
         }
 
-        const keeperIdInstance = accounts.find(a => a.id === accountId);
-        if (!keeperIdInstance) {
-            throw new Error(`Unable to get keeper id for ${accountId}`);
+        const account = accounts.find(a => a.accountId === accountId);
+        if (!account) {
+            throw new Error(`Unable to find account by given id ${accountId}`);
         }
 
-        return keeperIdInstance.syncProvider;
+        return account.syncProvider;
     }, [accounts, accountId]);
 }
 
 export function useActiveAccountSyncedStorage<K extends keyof SyncedStorageStructure>(key: K) {
     const account = useActiveAccount();
-    return useAccountSyncedStorage(account?.id ?? null, key);
+    return useAccountSyncedStorage(account.accountId, key);
 }
 
 export function useAccountSyncedStorage<K extends keyof SyncedStorageStructure>(
@@ -42,28 +48,20 @@ export function useAccountSyncedStorage<K extends keyof SyncedStorageStructure>(
 ) {
     const getSyncProvider = useGetSyncProvider(accountId);
 
-    const get = useCallback(async () => {
-        const val = await getSyncProvider().getItem(key);
-        if (val === null) {
-            return null;
-        }
-
-        return syncedStorageStructure[key].parse(JSON.parse(val)) as z.output<
-            SyncedStorageStructure[K]
-        >;
-    }, [getSyncProvider]);
+    const get = useCallback(() => {
+        return getSyncProvider().get(key);
+    }, [getSyncProvider, key]);
 
     const set = useCallback<(val: z.input<SyncedStorageStructure[K]>) => Promise<void>>(
         val => {
-            syncedStorageStructure[key].parse(val);
-            return getSyncProvider().setItem(key, JSON.stringify(val));
+            return getSyncProvider().set(key, val);
         },
-        [getSyncProvider]
+        [getSyncProvider, key]
     );
 
     const remove = useCallback<() => Promise<void>>(() => {
-        return getSyncProvider().removeItem(key);
-    }, [getSyncProvider]);
+        return getSyncProvider().remove(key);
+    }, [getSyncProvider, key]);
 
     return { get, set, remove };
 }

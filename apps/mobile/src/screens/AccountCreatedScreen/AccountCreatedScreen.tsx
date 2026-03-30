@@ -2,6 +2,8 @@ import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
+import { useActiveAccountQuery, useAppContext, useConnectAccountToNewDevice } from '@safely/ux';
+
 import { useOnboardingFlow } from '@mobile/features/onboarding';
 import { Button, Icon, Checkmark96, Screen, Text } from '@mobile/shared/ui';
 
@@ -15,11 +17,25 @@ const steps = [
 
 export const AccountCreatedScreen = () => {
     const { t } = useTranslation();
+    const { getSecureEncryptedStorage } = useAppContext();
+    const { data: activeAccount } = useActiveAccountQuery();
     const { onAccountCreatedFinished } = useOnboardingFlow();
+    const { mutateAsync: connectAccountToNewDevice } = useConnectAccountToNewDevice();
 
-    const handleAddDevice = useCallback(() => {
-        // TODO: Implement add device flow
-    }, []);
+    const handleAddDevice = useCallback(async () => {
+        if (!activeAccount) return;
+
+        using secureEncryptedStorage = getSecureEncryptedStorage();
+        secureEncryptedStorage.UNSAFE_SKIP_SECURITY_CHECK_unlock();
+
+        await connectAccountToNewDevice({ secureEncryptedStorage });
+        onAccountCreatedFinished();
+    }, [
+        connectAccountToNewDevice,
+        activeAccount,
+        getSecureEncryptedStorage,
+        onAccountCreatedFinished
+    ]);
 
     const handleProtectLater = useCallback(() => {
         onAccountCreatedFinished();

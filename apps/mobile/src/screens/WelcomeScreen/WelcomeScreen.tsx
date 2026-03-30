@@ -1,6 +1,11 @@
+import { useNavigation } from '@react-navigation/native';
+import { useCallback } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
-import { Alert, ImageBackground, Linking, View } from 'react-native';
+import { ImageBackground, Linking, View } from 'react-native';
 
+import { useAppContext, useCreateExistingAccountConnector } from '@safely/ux';
+
+import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { useOnboardingFlow } from '@mobile/features/onboarding';
 import { resources } from '@mobile/shared/resources';
 import { Button, Icon, Safely96, Screen, Text } from '@mobile/shared/ui';
@@ -13,10 +18,24 @@ const PRIVACY_URL = 'https://google.com';
 export const WelcomeScreen = () => {
     const { t } = useTranslation();
     const { onStartCreate } = useOnboardingFlow();
+    const signIn = useCreateExistingAccountConnector();
+    const navigation = useNavigation<RootStackNavigationProp>();
+    const { getSecureEncryptedStorage } = useAppContext();
 
-    const handleSignIn = () => {
-        Alert.alert('Not implemented yet');
-    };
+    const handleSignIn = useCallback(async () => {
+        signIn.reset();
+
+        // resource will be closed manually in `closeStorage` because it needs to be opened on the SignInScreen
+        const secureEncryptedStorage = getSecureEncryptedStorage();
+        secureEncryptedStorage.UNSAFE_SKIP_SECURITY_CHECK_unlock();
+
+        const connector = await signIn.mutateAsync({ secureEncryptedStorage });
+
+        navigation.navigate('SignInScreen', {
+            connector,
+            closeStorage: () => secureEncryptedStorage[Symbol.dispose]()
+        });
+    }, [signIn, navigation, getSecureEncryptedStorage]);
 
     return (
         <Screen background="transparent">

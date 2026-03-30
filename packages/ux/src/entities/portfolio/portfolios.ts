@@ -12,21 +12,23 @@ import {
     PortfolioFactory,
     PortfolioMeta,
     PortfolioNetworkType,
-    PortfolioType
+    PortfolioType,
+    IPortfolioId,
+    generateBip39Accessor,
+    ISecretEncryptor
 } from '@safely/core';
-import { IPortfolioId } from '@safely/core/entities/portfolio/portfolio-id';
-import { generateBip39Accessor } from '@safely/core/entities/seed';
 
 import {
-    useAppSdk,
     useTranslate,
     useErrorToast,
     useSuspenseQuery,
-    useAccountLocalStorage
+    useAccountLocalStorage,
+    useSecurityCheck,
+    useAppContext,
+    SecretEncryptor
 } from '../../shared';
-import { useSecurityCheck } from '../../shared/security';
 import { useActiveAccountSyncedStorage } from '../../shared/storage/account/synced';
-import { useActiveAccountQueryKey } from '../account';
+import { useActiveAccount, useActiveAccountQueryKey } from '../account';
 import { useToast } from '../toast';
 
 export function usePortfoliosQuery() {
@@ -35,20 +37,26 @@ export function usePortfoliosQuery() {
     return useSuspenseQuery(config);
 }
 
-function usePortfoliosQueryConfig() {
-    const sdk = useAppSdk();
+export function usePortfoliosQueryConfig() {
     const accountQueryKey = useActiveAccountQueryKey();
     const { get } = useActiveAccountSyncedStorage('portfolios');
+    const account = useActiveAccount();
+    const { getSecureEncryptedStorage } = useAppContext();
 
     return {
         queryKey: accountQueryKey.portfolios.toKey(),
         async queryFn() {
-            const data = await get();
+            const data = get();
             if (data === null) {
                 return null;
             }
 
-            return data.map(a => PortfolioFactory.restorePortfolio(sdk.secretEncryptor, a));
+            return data.map(p =>
+                PortfolioFactory.restorePortfolio(
+                    new SecretEncryptor(account.secretEncryptor, getSecureEncryptedStorage()),
+                    p
+                )
+            );
         },
         staleTime: Infinity,
         placeholderData: keepPreviousData
@@ -56,12 +64,12 @@ function usePortfoliosQueryConfig() {
 }
 
 export function usePortfolios() {
-    const accounts = usePortfoliosQuery().data;
-    if (!accounts) {
-        throw new Error('Unexpected accounts query');
+    const portfolios = usePortfoliosQuery().data;
+    if (!portfolios) {
+        throw new Error('Unexpected portfolios query');
     }
 
-    return accounts;
+    return portfolios;
 }
 
 function useSetPortfolios() {
@@ -90,14 +98,14 @@ export function useAddPortfolio() {
 
 export function useNewPortfolioFallbackName() {
     const { data: portfolios } = usePortfoliosQuery();
+    const t = useTranslate();
 
     const portfoliosCount = portfolios?.length ?? 0;
 
-    return `Wallet ${portfoliosCount + 1}`;
+    return t('security.groups.wallet.defaultName', { number: portfoliosCount + 1 });
 }
 
 export function useGeneratePortfolio() {
-    const sdk = useAppSdk();
     const { mutateAsync: setActivePortfolio } = useSetActivePortfolio();
     const { mutateAsync: addAccount } = useAddPortfolio();
     const fallbackName = useNewPortfolioFallbackName();
@@ -105,19 +113,24 @@ export function useGeneratePortfolio() {
         PortfolioGenerationFailedError: 'importWalletScreen.errors.failedToGenerate'
     });
 
-    return useMutation<PortfolioBip39, Error, Partial<PortfolioMeta> | void>({
+    return useMutation<
+        PortfolioBip39,
+        Error,
+        { meta?: Partial<PortfolioMeta>; secretEncryptor: ISecretEncryptor }
+    >({
         async mutationFn(params) {
             await delay();
-            const factory = new PortfolioFactory(sdk.secretEncryptor);
+
             using accessorVault = generateBip39Accessor();
+            const factory = new PortfolioFactory(params.secretEncryptor);
 
             const portfolio = await factory.generatePortfolioBip39(accessorVault, {
                 network: PortfolioNetworkType.MAINNET,
-                name: params?.name ?? fallbackName
+                name: params?.meta?.name ?? fallbackName
             });
 
-            if (params?.icon) {
-                portfolio.updateMeta({ icon: params.icon });
+            if (params?.meta?.icon) {
+                portfolio.updateMeta({ icon: params.meta.icon });
             }
 
             await addAccount(portfolio);
@@ -131,7 +144,6 @@ export function useGeneratePortfolio() {
 }
 
 export function useImportPortfolio() {
-    const sdk = useAppSdk();
     const { data: existingPortfolios } = usePortfoliosQuery();
     const name = useNewPortfolioFallbackName();
     const { mutateAsync: addPortfolio } = useAddPortfolio();
@@ -142,15 +154,22 @@ export function useImportPortfolio() {
         InvalidMnemonicError: 'importWalletScreen.errors.invalidMnemonic',
         PortfolioAlreadyExistsError: 'importWalletScreen.errors.alreadyExists'
     });
+    const { deviceInfo } = useAppContext();
 
-    return useMutation<Portfolio, Error, IMnemonicAccessor>({
-        async mutationFn(accessor) {
+    return useMutation<
+        Portfolio,
+        Error,
+        { mnemonicAccessor: IMnemonicAccessor; secretEncryptor: ISecretEncryptor }
+    >({
+        async mutationFn({ mnemonicAccessor, secretEncryptor }) {
             await delay();
-            const factory = new PortfolioFactory(sdk.secretEncryptor);
 
-            const portfolio = await factory.generatePortfolio(accessor, {
+            const factory = new PortfolioFactory(secretEncryptor);
+
+            const portfolio = await factory.generatePortfolio(mnemonicAccessor, {
                 network: PortfolioNetworkType.MAINNET,
-                name
+                name,
+                seedRevealedFromDevice: deviceInfo.name
             });
 
             if (existingPortfolios?.some(p => p.id.isEq(portfolio.id))) {
@@ -411,10 +430,28 @@ export function useChangePortfolioMeta() {
     });
 }
 
-export function useHasAccount() {
-    useActivePortfolioEntitiesQuery();
-    const { data: portfolios } = usePortfoliosQuery();
-    return portfolios !== null;
+export function useRecordActivePortfolioSecretReveal() {
+    const client = useQueryClient();
+    const portfoliosQuery = usePortfoliosQueryConfig();
+    const activePortfolio = useActivePortfolio();
+    const { mutateAsync } = useSetPortfolios();
+    const { deviceInfo } = useAppContext();
+
+    return useMutation({
+        async mutationFn() {
+            if (activePortfolio.secretRevealedStatus === null) {
+                return;
+            }
+
+            const portfolios: Portfolio[] = await client.fetchQuery(portfoliosQuery);
+            const portfolio = portfolios.find(p => p.id.isEq(activePortfolio.id));
+            if (!portfolio) {
+                throw new Error('Portfolio not found');
+            }
+            portfolio.recordSecretReveal(deviceInfo.name);
+            await mutateAsync(portfolios);
+        }
+    });
 }
 
 export function useActivePortfolioEntities() {

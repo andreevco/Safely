@@ -6,5 +6,13 @@ export const styles = StyleSheet.create(theme => ({
     },
     nextButton: {
         margin: theme.spacing[12]
+    },
+    recipientRow: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    recipientName: {
+        flexShrink: 1
     }
 }));
