@@ -1,6 +1,7 @@
 import * as Y from 'yjs';
 import { ZodType } from 'zod';
 
+import { atomicTransaction } from './atomic-transaction';
 import { deepMerge } from './deep-merge/deep-merge';
 import { yValueToJs } from './deep-merge/y-value-to-js';
 
@@ -45,8 +46,8 @@ export class YCRDT {
     }
 
     public set(k: string, v: unknown): void {
-        this.doc.transact(() => {
-            deepMerge(this.doc.getMap('root'), k, v, this.schema[k]);
+        atomicTransaction(this.doc, doc => {
+            deepMerge(doc.getMap('root'), k, v, this.schema[k]);
         });
     }
 

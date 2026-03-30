@@ -256,4 +256,42 @@ describe('crdt', () => {
         expect(crdt1.get('key')).toBeNull();
         expect(crdt2.get('key')).toBeNull();
     });
+
+    it('should throw exception and do not apply any updates', () => {
+        const schema = {
+            value: z.object({
+                key1: z.string(),
+                key2: z.array(z.number())
+            })
+        };
+        const doc = new Y.Doc();
+        const root = doc.getMap('root');
+        root.set(
+            'value',
+            (() => {
+                const map = new Y.Map();
+                map.set('key1', 'value');
+                map.set('key2', new Y.Map());
+                return map;
+            })()
+        );
+
+        crdt1 = new YCRDT(doc, schema);
+
+        let thrown = false;
+        try {
+            crdt1.set('value', {
+                key1: 'new value',
+                key2: [1, 2, 3]
+            });
+        } catch {
+            thrown = true;
+        }
+        if (!thrown) {
+            throw new Error('Expected to throw an error');
+        }
+        // @ts-expect-error - type is unknown, but we know it's a Y.Map
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        expect(root.get('value').get('key1')).toBe('value');
+    });
 });
