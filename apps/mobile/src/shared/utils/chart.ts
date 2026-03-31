@@ -150,7 +150,7 @@ export const buildChartPoints = (
         const clamped = Math.max(0, Math.min(1, normalized));
         const y = height - clamped * height;
 
-        const LABEL_X_WIDTH = 70;
+        const LABEL_X_WIDTH = 40;
         const LABEL_Y_OFFSET = 20;
         const LABEL_Y_HEIGHT = 14;
         const MARGIN = 4;
