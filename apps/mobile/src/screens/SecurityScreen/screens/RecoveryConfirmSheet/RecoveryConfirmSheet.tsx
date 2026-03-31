@@ -1,12 +1,12 @@
 import { useNavigation } from '@react-navigation/native';
-import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
+import { PortfolioBip39 } from '@safely/core';
 import { useActivePortfolio, useRecordActivePortfolioSecretReveal } from '@safely/ux';
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
-import { BottomSheet, Button, Text, useBottomSheet } from '@mobile/shared/ui';
+import { BottomSheet, Button, Text, useBottomSheet, useCloseOnReturn } from '@mobile/shared/ui';
 import { Icon, ListKey96 } from '@mobile/shared/ui/Icon';
 
 import { styles } from './RecoveryConfirmSheet.styles';
@@ -14,27 +14,17 @@ import { styles } from './RecoveryConfirmSheet.styles';
 const RecoveryConfirmContent = () => {
     const { t } = useTranslation();
     const { close } = useBottomSheet();
-    const portfolio = useActivePortfolio();
+    const portfolio = useActivePortfolio() as PortfolioBip39;
     const navigation = useNavigation<RootStackNavigationProp>();
+    const markNavigated = useCloseOnReturn();
 
     const { mutateAsync: recordSeedReveal } = useRecordActivePortfolioSecretReveal();
-    const hasRevealed = useRef(false);
-
-    useEffect(() => {
-        const unsubscribe = navigation.addListener('focus', () => {
-            if (hasRevealed.current) {
-                close();
-            }
-        });
-
-        return unsubscribe;
-    }, [navigation, close]);
 
     const handleReveal = async () => {
         try {
             const mnemonic = await portfolio.getMnemonic();
             await recordSeedReveal();
-            hasRevealed.current = true;
+            markNavigated();
             navigation.navigate('RecoveryPhraseModal', { mnemonic });
         } catch {
             // Security check failed
