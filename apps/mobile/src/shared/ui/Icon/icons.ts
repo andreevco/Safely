@@ -1,3 +1,4 @@
+/* eslint-disable */
 // Generated file. Do not edit by hand.
 
 import Dots14Svg from '@safely/ux/shared/assets/icons/14/dots-14.svg';
