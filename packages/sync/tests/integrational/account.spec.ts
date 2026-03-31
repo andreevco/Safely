@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { makeFactory, onboardDevice, Schema } from './helpers';
 import { SyncAccountFactory } from '../../src';
-import { SyncStatus } from '../../src/sync-provider/sync-status';
+import { SyncStatus } from '../../src';
 import { InMemStorage } from '../impl/storage';
 
 describe('Account', () => {
@@ -94,5 +94,22 @@ describe('Account', () => {
 
         const accounts = await factory.getSyncAccounts();
         expect(accounts).toHaveLength(0);
+    });
+
+    describe('errors', () => {
+        it('should handle when remote account is revoked after SSE is broken', async () => {
+            const account = await factory.createSyncAccount(secureEncryptedStorage);
+            const { newAccount } = await onboardDevice(account, secureEncryptedStorage);
+            await new Promise(resolve => setTimeout(resolve, 200));
+
+            await account.revokeRemoteDevice(
+                await newAccount.getMyDeviceIkPub(),
+                secureEncryptedStorage
+            );
+
+            await newAccount.syncProvider.syncStatusManager.waitForStatus(
+                SyncStatus.DEVICE_DELETED
+            );
+        });
     });
 });
