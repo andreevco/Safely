@@ -19,7 +19,8 @@
         "amount": "Сумма",
         "max": "Отправить всё",
         "maxHint": "Будет отправлен весь доступный баланс. Комиссия включена.",
-        "remaining": "Остаток: {{amount}}{{symbol}}",
+        "remaining": "Остаток:",
+        "pending": "Ожидается:",
         "insufficientBalance": "Недостаточно средств"
     },
     "passcode": {

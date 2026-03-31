@@ -13,7 +13,8 @@ import {
     SendFormError,
     useNumberFormatter,
     useAppSdk,
-    useActiveFiat
+    useActiveFiat,
+    useActiveBtcWalletUtxo
 } from '@safely/ux';
 
 import { SendConfirmationParams } from '@mobile/screens/ConfirmationScreen';
@@ -53,6 +54,8 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
 
     const recipientInputRef = useRef<TextInput>(null);
     const amountInputRef = useRef<MaskedTextInputRef>(null);
+
+    const { data: utxoData } = useActiveBtcWalletUtxo();
 
     const { state, actions, step, meta, suggestionSelection } = useSendForm({
         onSubmit: handleSubmit,
@@ -113,6 +116,15 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
             .amountSub({ relativeAmount: usedAmount.relativeAmount })
             .format(formatter);
     }, [asset, state.parsed.amount, formatter]);
+
+    const pendingBalance = useMemo(() => {
+        if (!utxoData) return undefined;
+
+        const pending = utxoData.unconfirmedInUnsafe.totalAmount;
+        if (pending.relativeAmount.eq(0)) return undefined;
+
+        return pending.format(formatter);
+    }, [utxoData, formatter]);
 
     const hasInsufficientBalance = state.errors.amount === SendFormError.INSUFFICIENT_BALANCE;
 
@@ -222,6 +234,7 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
                     onSwitchFiatMode={hasPrice ? handleSwitchFiatMode : undefined}
                     currencySymbol={amountInputType === 'fiat' ? activeFiat.id.symbol : undefined}
                     remainingBalance={remainingBalance}
+                    pendingBalance={pendingBalance}
                     hasInsufficientBalance={hasInsufficientBalance}
                 />
             </PagerView>

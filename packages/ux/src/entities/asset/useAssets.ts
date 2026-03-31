@@ -12,13 +12,8 @@ export function useWalletAssets(wallet: BtcWallet) {
 
     return useDerivedQuery({
         queries: [btcWalletUtxosQuery, btcPriceQuery],
-        queryFn: ([
-            { confirmedIn, unconfirmedInSafe, unconfirmedInUnsafe, unconfirmedOut },
-            btcPrice
-        ]) => {
-            const totalReceive = confirmedIn.totalAmount
-                .amountAdd(unconfirmedInSafe.totalAmount)
-                .amountAdd(unconfirmedInUnsafe.totalAmount);
+        queryFn: ([{ confirmedIn, unconfirmedInSafe, unconfirmedOut }, btcPrice]) => {
+            const totalReceive = confirmedIn.totalAmount.amountAdd(unconfirmedInSafe.totalAmount);
 
             const totalBalance = totalReceive.gt(unconfirmedOut.totalAmount)
                 ? totalReceive.amountSub(unconfirmedOut.totalAmount)

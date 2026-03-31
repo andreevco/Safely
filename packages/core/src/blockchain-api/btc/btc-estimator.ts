@@ -46,11 +46,11 @@ export class BtcEstimator implements IIdentifiable {
         }
     }
 
-    public async getMaxSendValue(
+    public async getSendFee(
         request: Omit<BtcTransferRequestMax, 'type' | 'estimatedAmount'>
     ): Promise<BtcAssetAmount> {
-        const { fee, utxos } = await this.estimateSendMaxFee(request);
-        return getUtxoTotal(utxos).amountSub(fee);
+        const { fee } = await this.estimateSendFee(request);
+        return fee;
     }
 
     public async estimate(request: BtcTransferRequest): Promise<BtcTransactionTemplate> {
@@ -102,7 +102,7 @@ export class BtcEstimator implements IIdentifiable {
         });
     }
 
-    private async estimateSendMaxFee(
+    private async estimateSendFee(
         request: Omit<BtcTransferRequestMax, 'type' | 'estimatedAmount'>
     ) {
         const { feeSatVb, targetBlock } = await this.getFeeValue(request.feeType);
@@ -130,7 +130,7 @@ export class BtcEstimator implements IIdentifiable {
     }
 
     private async estimateMax(request: BtcTransferRequestMax): Promise<BtcTransactionTemplate> {
-        const { fee, targetBlock, utxos } = await this.estimateSendMaxFee(request);
+        const { fee, targetBlock, utxos } = await this.estimateSendFee(request);
         const totalBalance = getUtxoTotal(utxos);
 
         const amount = totalBalance.sub(fee);

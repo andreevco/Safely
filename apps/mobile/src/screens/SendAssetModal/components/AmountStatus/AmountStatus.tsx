@@ -1,16 +1,20 @@
 import { useTranslation } from 'react-i18next';
+import { View } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
 import { Text } from '@mobile/shared/ui/Text';
+
+import { styles } from './AmountStatus.styles';
 
 interface AmountStatusProps {
     isMax: boolean;
     hasInsufficientBalance?: boolean;
     remainingBalance?: string;
+    pendingBalance?: string;
 }
 
 export const AmountStatus = (props: AmountStatusProps) => {
-    const { isMax, hasInsufficientBalance, remainingBalance } = props;
+    const { isMax, hasInsufficientBalance, remainingBalance, pendingBalance } = props;
 
     const { t } = useTranslation();
 
@@ -33,13 +37,25 @@ export const AmountStatus = (props: AmountStatusProps) => {
     }
 
     return (
-        <Text variant="bodyM" color="tertiary" monospace>
-            {remainingBalance
-                ? t('send.remaining', {
-                      amount: remainingBalance,
-                      symbol: ''
-                  })
-                : ' '}
-        </Text>
+        <View>
+            <View style={styles.row}>
+                <Text variant="bodyM" color="tertiary" monospace>
+                    {t('send.remaining')}{' '}
+                </Text>
+                <Text variant="bodyM" color="tertiary" monospace>
+                    {remainingBalance ?? ' '}
+                </Text>
+            </View>
+            {pendingBalance && (
+                <View style={styles.row}>
+                    <Text variant="bodyM" color="tertiary" monospace>
+                        {t('send.pending')}{' '}
+                    </Text>
+                    <Text variant="bodyM" color="tertiary" monospace>
+                        {pendingBalance}
+                    </Text>
+                </View>
+            )}
+        </View>
     );
 };

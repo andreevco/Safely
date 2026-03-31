@@ -17,6 +17,7 @@ interface AmountStepProps {
     onMaxReset: () => void;
     isMaxAvailable?: boolean;
     remainingBalance?: string;
+    pendingBalance?: string;
     hasInsufficientBalance?: boolean;
     formattedAlternativeAmount?: string;
     onSwitchFiatMode?: () => void;
@@ -34,6 +35,7 @@ export const AmountStep = (props: AmountStepProps) => {
         onMaxReset,
         isMaxAvailable = true,
         remainingBalance,
+        pendingBalance,
         hasInsufficientBalance,
         formattedAlternativeAmount,
         onSwitchFiatMode,
@@ -77,6 +79,7 @@ export const AmountStep = (props: AmountStepProps) => {
                     isMax={isMax}
                     hasInsufficientBalance={hasInsufficientBalance}
                     remainingBalance={remainingBalance}
+                    pendingBalance={pendingBalance}
                 />
                 {!isMax && isMaxAvailable && (
                     <Animated.View entering={FadeIn.duration(100)} exiting={FadeOut.duration(100)}>

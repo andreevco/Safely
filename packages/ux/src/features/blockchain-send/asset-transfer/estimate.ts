@@ -3,11 +3,15 @@ import { skipToken, useQuery } from '@tanstack/react-query';
 import {
     assertUnreachable,
     BLOCKCHAIN_NAME,
+    BTC_ASSET,
+    BtcAssetAmount,
     BtcEstimator,
     BtcFeeType,
+    RatedCryptoAssetAmount,
     TransactionTemplate
 } from '@safely/core';
 
+import { useAssets } from '../../../entities';
 import { defineQueryKeys, finalKey, mappedParams, QUERIES_REFETCH_INTERVAL } from '../../../shared';
 import { SendFormResult } from '../../forms';
 import { useBtcEstimator } from '../btc/estimator';
@@ -27,8 +31,9 @@ export const maxSendKey = defineQueryKeys('maxSendKey', {
     form(__: Pick<SendFormResult, 'blockchain' | 'recipient'> | undefined) {
         return {
             services: mappedParams(
-                (_: { btcEstimator: BtcEstimator }) => finalKey,
-                p => [p.btcEstimator.id]
+                (_: { btcEstimator: BtcEstimator; assets: RatedCryptoAssetAmount[] | undefined }) =>
+                    finalKey,
+                p => [p.btcEstimator.id, JSON.stringify(p.assets)]
             )
         };
     }
@@ -73,16 +78,28 @@ export function useMaxSendAssetTransfer(
     form: Pick<SendFormResult, 'blockchain' | 'recipient'> | undefined
 ) {
     const btcEstimator = useBtcEstimator();
+    const { data: assets } = useAssets();
 
     return useQuery({
-        queryKey: maxSendKey.form(form).services({ btcEstimator }).toKey(),
+        queryKey: maxSendKey.form(form).services({ btcEstimator, assets }).toKey(),
         queryFn: form
             ? async () => {
                   if (form.blockchain === BLOCKCHAIN_NAME.BTC) {
-                      return btcEstimator.getMaxSendValue({
+                      const fee = await btcEstimator.getSendFee({
                           recipientAddress: form.recipient.address,
                           feeType: BtcFeeType.FAST
                       });
+
+                      const btcBalance = assets?.find(a => a.amount.asset.id.isEq(BTC_ASSET.id));
+                      if (!btcBalance) {
+                          throw new Error('BTC asset not found');
+                      }
+
+                      if (btcBalance.amount.lte(fee)) {
+                          return BtcAssetAmount.fromWeiAmount('0');
+                      }
+
+                      return btcBalance.amount.amountSub(fee);
                   }
 
                   assertUnreachable(form.blockchain);
