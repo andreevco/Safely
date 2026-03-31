@@ -81,6 +81,15 @@ export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAcco
             this.container.keyServiceFactory.createDmkSignerService(secureEncryptedStorage)
         );
         this.syncProvider.triggerSync();
+        const sig = await this.container.keyServiceFactory
+            .createDmkSignerService(secureEncryptedStorage)
+            .signRevokeMessageForServer(ikPub);
+        await this.container.accountsApi.removeDeviceFromAccount({
+            deviceToRemove: {
+                identityPubKey: ikPub.toString('hex'),
+                signature: sig.toString('hex')
+            }
+        });
     }
 
     public async getMyDeviceIkPub(): Promise<Buffer> {
