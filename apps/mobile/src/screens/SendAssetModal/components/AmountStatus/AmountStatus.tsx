@@ -1,7 +1,9 @@
+import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
+import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { Text } from '@mobile/shared/ui/Text';
 
 import { styles } from './AmountStatus.styles';
@@ -17,6 +19,7 @@ export const AmountStatus = (props: AmountStatusProps) => {
     const { isMax, hasInsufficientBalance, remainingBalance, pendingBalance } = props;
 
     const { t } = useTranslation();
+    const navigation = useNavigation<RootStackNavigationProp>();
 
     if (isMax) {
         return (
@@ -36,8 +39,8 @@ export const AmountStatus = (props: AmountStatusProps) => {
         );
     }
 
-    return (
-        <View>
+    const content = (
+        <>
             <View style={styles.row}>
                 <Text variant="bodyM" color="tertiary" monospace>
                     {t('send.remaining')}{' '}
@@ -56,6 +59,16 @@ export const AmountStatus = (props: AmountStatusProps) => {
                     </Text>
                 </View>
             )}
-        </View>
+        </>
     );
+
+    if (pendingBalance) {
+        return (
+            <Pressable onPress={() => navigation.navigate('PendingFundsSheet')}>
+                {content}
+            </Pressable>
+        );
+    } else {
+        return <View>{content}</View>;
+    }
 };

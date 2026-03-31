@@ -74,6 +74,7 @@ export class NumberFormatter {
         value: CryptoAssetAmount,
         options?: {
             fullPrecision?: boolean;
+            showPositiveSign?: boolean;
             currencyDisplay?: CryptoCurrencyDisplay;
             useGrouping?: boolean;
         }

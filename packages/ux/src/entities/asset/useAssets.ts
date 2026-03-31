@@ -1,26 +1,20 @@
-import { BTC_ASSET, BtcAssetAmount, BtcWallet, RatedCryptoAssetAmount } from '@safely/core';
+import { BTC_ASSET, BtcWallet, RatedCryptoAssetAmount } from '@safely/core';
 
 import { useDerivedQuery } from '../../shared';
 import { useActiveBtcWallet } from '../portfolio';
 import { getSortedAssets } from './utils';
-import { useBtcWalletUtxo } from '../btc-blockchain';
+import { useBtcBalance } from '../btc-blockchain';
 import { useRate } from './useRate';
 
 export function useWalletAssets(wallet: BtcWallet) {
-    const btcWalletUtxosQuery = useBtcWalletUtxo(wallet);
+    const btcWalletUtxosQuery = useBtcBalance(wallet);
     const btcPriceQuery = useRate(BTC_ASSET);
 
     return useDerivedQuery({
         queries: [btcWalletUtxosQuery, btcPriceQuery],
-        queryFn: ([{ confirmedIn, unconfirmedInSafe, unconfirmedOut }, btcPrice]) => {
-            const totalReceive = confirmedIn.totalAmount.amountAdd(unconfirmedInSafe.totalAmount);
-
-            const totalBalance = totalReceive.gt(unconfirmedOut.totalAmount)
-                ? totalReceive.amountSub(unconfirmedOut.totalAmount)
-                : BtcAssetAmount.fromWeiAmount('0');
-
+        queryFn: ([{ display: btcBalance }, btcPrice]) => {
             const btcItem: RatedCryptoAssetAmount = {
-                amount: totalBalance,
+                amount: btcBalance,
                 price: btcPrice
             };
 

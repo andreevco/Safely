@@ -281,7 +281,11 @@ export class CryptoAssetAmount<T extends CryptoAsset = CryptoAsset> extends Base
 
     public format(
         formatter: NumberFormatter,
-        options?: { fullPrecision?: boolean; currencyDisplay?: CryptoCurrencyDisplay }
+        options?: {
+            fullPrecision?: boolean;
+            currencyDisplay?: CryptoCurrencyDisplay;
+            showPositiveSign?: boolean;
+        }
     ): string {
         return formatter.formatAssetAmount(this, options);
     }

@@ -1,14 +1,14 @@
 import { useMemo } from 'react';
 
-import {
-    assertUnreachable,
-    BtcApiUtxo,
-    BtcAssetAmount,
-    BtcWallet,
-    PortfolioType
-} from '@safely/core';
+import { assertUnreachable, BtcAssetAmount, BtcWallet, PortfolioType } from '@safely/core';
+import { BtcApiUtxoWithTx } from '@safely/core/api/btc';
 
-import { QUERIES_REFETCH_INTERVAL, useBtcApi, usePersistQuery } from '../../shared';
+import {
+    QUERIES_REFETCH_INTERVAL,
+    useBtcApi,
+    useDerivedQuery,
+    usePersistQuery
+} from '../../shared';
 import { useActiveBtcWallet, usePortfolios } from '../portfolio';
 import { utxo } from './keys';
 import { getBiggestBtcIOAddress } from '../activity/api';
@@ -73,8 +73,8 @@ export function useBtcWalletUtxo(btcWallet: BtcWallet) {
                     }
                 },
                 { safe: [], unsafe: [] } as {
-                    safe: BtcApiUtxo[];
-                    unsafe: BtcApiUtxo[];
+                    safe: BtcApiUtxoWithTx[];
+                    unsafe: BtcApiUtxoWithTx[];
                 }
             );
 
@@ -108,6 +108,25 @@ export function useBtcWalletUtxo(btcWallet: BtcWallet) {
         },
         refetchInterval: QUERIES_REFETCH_INTERVAL.DEFAULT
     });
+}
+
+export function useBtcBalance(wallet: BtcWallet) {
+    const utxosQuery = useBtcWalletUtxo(wallet);
+
+    return useDerivedQuery({
+        queries: [utxosQuery],
+        queryFn: ([utxos]) => ({
+            display: utxos.confirmedIn.totalAmount
+                .amountAdd(utxos.unconfirmedInSafe.totalAmount)
+                .amountSub(utxos.unconfirmedOut.totalAmount),
+            pending: utxos.unconfirmedInUnsafe.totalAmount
+        })
+    });
+}
+
+export function useActiveWalletBtcBalance() {
+    const wallet = useActiveBtcWallet();
+    return useBtcBalance(wallet);
 }
 
 export function useActiveBtcWalletUtxo() {

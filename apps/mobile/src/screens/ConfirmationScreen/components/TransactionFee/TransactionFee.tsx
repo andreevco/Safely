@@ -2,15 +2,13 @@ import { FC } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { Estimation } from '@safely/core';
+import { btcBlockWaitingTimeMinutes, Estimation } from '@safely/core';
 import { useFiatEquivalent, useNumberFormatter } from '@safely/ux';
 
 import { TransactionCell } from '@mobile/screens/ConfirmationScreen/components';
 import { Text } from '@mobile/shared/ui';
 
 import { styles } from './TransactionFee.styles';
-
-const btcBlockWaitingTimeMinutes = 10;
 
 export const TransactionFee: FC<{ estimation: Estimation | undefined; showDivider?: boolean }> = ({
     estimation,

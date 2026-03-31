@@ -27,3 +27,5 @@ export function btcNetworkByPortfolioNetworkType(networkType: PortfolioNetworkTy
             assertUnreachable(networkType);
     }
 }
+
+export const btcBlockWaitingTimeMinutes = 10;

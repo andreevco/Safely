@@ -391,6 +391,15 @@
             "checkbox": "I understand that I will permanently lose access to this wallet."
         }
     },
+    "pendingFunds": {
+        "title": "Pending funds",
+        "subtitle": "Some funds are pending and not yet available.",
+        "pending": "Pending",
+        "available": "Available",
+        "total": "Total",
+        "estimatedTime": "\u2248 {{minutes}} minutes",
+        "ok": "OK"
+    },
     "tabs": {
         "home": "Home",
         "history": "History"

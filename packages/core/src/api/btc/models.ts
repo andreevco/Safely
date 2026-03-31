@@ -331,5 +331,6 @@ export const GasPricesSchema = z.object({
 
 export type BtcApiAddress = z.infer<typeof AddressSchema>;
 export type BtcApiUtxo = z.infer<typeof UtxoSchema>;
+export type BtcApiUtxoWithTx = z.infer<typeof UtxoWithTxSchema>;
 export type BtcApiGasPrice = z.infer<typeof GasPriceSchema>;
 export type BtcApiTx = z.infer<typeof TxSchema>;
