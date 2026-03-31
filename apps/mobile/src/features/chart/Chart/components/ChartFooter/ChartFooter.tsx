@@ -85,9 +85,9 @@ export const ChartFooter = (props: ChartFooterProps) => {
     }));
 
     return (
-        <View style={styles.container} onLayout={onContainerLayout}>
+        <View style={styles.container}>
             <Ticks selectedPeriod={selectedPeriod} />
-            <View style={styles.datesWrapper}>
+            <View style={styles.datesWrapper} onLayout={onContainerLayout}>
                 <Animated.View style={[styles.dates, datesAnimatedStyle]}>
                     {CHART_CONFIG[selectedPeriod]
                         .getPeriodIntermediatePoints(startDate)
