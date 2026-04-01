@@ -222,6 +222,149 @@ describe('crdt', () => {
         });
     });
 
+    describe('nullable union schemas', () => {
+        it('should set and get object with z.union([T, z.null()]) schema', () => {
+            setup({
+                meta: z.union([
+                    z.object({
+                        name: z.string(),
+                        icon: z.union([
+                            z.object({ type: z.literal('emoji'), value: z.string() }),
+                            z.object({ type: z.literal('color'), value: z.string() })
+                        ])
+                    }),
+                    z.null()
+                ])
+            });
+
+            crdt1.set('meta', {
+                name: 'Test Account',
+                icon: { type: 'color', value: '#FF0000' }
+            });
+
+            expect(crdt1.get('meta')).toEqual({
+                name: 'Test Account',
+                icon: { type: 'color', value: '#FF0000' }
+            });
+        });
+
+        it('should set and get array with z.union([zArrayWithKey(...), z.null()]) schema', () => {
+            setup({
+                items: z.union([
+                    zArrayWithKey(z.object({ id: z.string(), value: z.number() }), item => item.id),
+                    z.null()
+                ])
+            });
+
+            crdt1.set('items', [
+                { id: 'a', value: 1 },
+                { id: 'b', value: 2 }
+            ]);
+
+            expect(crdt1.get('items')).toEqual([
+                { id: 'a', value: 1 },
+                { id: 'b', value: 2 }
+            ]);
+        });
+
+        it('should set and get record with z.union([z.record(...), z.null()]) schema', () => {
+            setup({
+                devices: z.union([
+                    z.record(
+                        z.string(),
+                        z.object({
+                            name: z.string(),
+                            platform: z.string()
+                        })
+                    ),
+                    z.null()
+                ])
+            });
+
+            crdt1.set('devices', {
+                device1: { name: 'iPhone', platform: 'ios' },
+                device2: { name: 'Pixel', platform: 'android' }
+            });
+
+            expect(crdt1.get('devices')).toEqual({
+                device1: { name: 'iPhone', platform: 'ios' },
+                device2: { name: 'Pixel', platform: 'android' }
+            });
+        });
+
+        it('should set and get object with .transform() schema', () => {
+            setup({
+                item: z.union([
+                    z.object({
+                        id: z
+                            .object({
+                                type: z.literal('bip39'),
+                                hash: z.string()
+                            })
+                            .transform(val => `${val.type}:${val.hash}`),
+                        meta: z.object({
+                            name: z.string(),
+                            icon: z.union([
+                                z.object({ type: z.literal('emoji'), value: z.string() }),
+                                z.object({ type: z.literal('color'), value: z.string() })
+                            ])
+                        }),
+                        derivations: zArrayWithKey(
+                            z.object({
+                                index: z.number(),
+                                chains: z.object({ xpub: z.string() })
+                            }),
+                            item => String(item.index)
+                        )
+                    }),
+                    z.null()
+                ])
+            });
+
+            crdt1.set('item', {
+                id: { type: 'bip39', hash: 'abc123' },
+                meta: { name: 'Wallet 1', icon: { type: 'color', value: '#FF0000' } },
+                derivations: [{ index: 0, chains: { xpub: 'xpub123' } }]
+            });
+
+            expect(crdt1.get('item')).toEqual({
+                id: { type: 'bip39', hash: 'abc123' },
+                meta: { name: 'Wallet 1', icon: { type: 'color', value: '#FF0000' } },
+                derivations: [{ index: 0, chains: { xpub: 'xpub123' } }]
+            });
+        });
+
+        it('should merge nullable union arrays across peers', () => {
+            setup({
+                items: z.union([
+                    zArrayWithKey(z.object({ id: z.string(), value: z.number() }), item => item.id),
+                    z.null()
+                ])
+            });
+
+            crdt1.set('items', [
+                { id: 'a', value: 1 },
+                { id: 'b', value: 2 }
+            ]);
+            sync();
+
+            crdt1.set('items', [
+                { id: 'a', value: 10 },
+                { id: 'b', value: 2 }
+            ]);
+            crdt2.set('items', [
+                { id: 'a', value: 1 },
+                { id: 'b', value: 20 }
+            ]);
+
+            sync();
+            expect(crdt1.get('items')).toEqual([
+                { id: 'a', value: 10 },
+                { id: 'b', value: 20 }
+            ]);
+        });
+    });
+
     it('should check equality of CRDTs', () => {
         setup({
             key: z.string()

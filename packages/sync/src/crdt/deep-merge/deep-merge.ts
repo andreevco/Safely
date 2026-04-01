@@ -4,7 +4,12 @@ import { z } from 'zod';
 import { ArrayMergeMeta } from './array-registry';
 import { cloneJson, isArray, isPlainObject } from './helpers';
 import { yValueToJs } from './y-value-to-js';
-import { getArrayItemSchema, getArrayMeta, getObjectFieldSchema } from './z-schema';
+import {
+    getArrayItemSchema,
+    getArrayMeta,
+    getObjectFieldSchema,
+    resolveSchemaForValue
+} from './z-schema';
 
 /**
  * Syncs plain object into existing Y.Map:
@@ -148,10 +153,11 @@ export function deepMerge(
         return;
     }
 
+    const resolved = resolveSchemaForValue(schema, nextValue);
     const current = parent.get(key);
 
-    updateValue(parent, key, current, nextValue, schema, () => {
-        const currentJs = yValueToJs(current, schema);
+    updateValue(parent, key, current, nextValue, resolved, () => {
+        const currentJs = yValueToJs(current, resolved);
 
         if (currentJs !== nextValue) {
             parent.set(key, cloneJson(nextValue));

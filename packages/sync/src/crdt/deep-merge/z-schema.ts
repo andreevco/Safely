@@ -16,10 +16,43 @@ export function unwrapSchema(schema: z.ZodTypeAny): z.ZodTypeAny {
             continue;
         }
 
+        if (current instanceof z.ZodPipe) {
+            current = current._zod.def.in as z.ZodTypeAny;
+            continue;
+        }
+
+        if (current instanceof z.ZodUnion) {
+            const options = current.options as z.ZodTypeAny[];
+            const nonNull = options.filter(
+                o => !(o instanceof z.ZodNull || o instanceof z.ZodUndefined)
+            );
+            if (nonNull.length === 1) {
+                current = nonNull[0];
+                continue;
+            }
+        }
+
         return current;
     }
 
     return current;
+}
+
+export function resolveSchemaForValue(schema: z.ZodTypeAny, value: unknown): z.ZodTypeAny {
+    const unwrapped = unwrapSchema(schema);
+
+    if (!(unwrapped instanceof z.ZodUnion)) {
+        return unwrapped;
+    }
+
+    const options = unwrapped.options as z.ZodTypeAny[];
+    for (const option of options) {
+        if (option.safeParse(value).success) {
+            return unwrapSchema(option);
+        }
+    }
+
+    return unwrapped;
 }
 
 export function getObjectFieldSchema(schema: z.ZodTypeAny, key: string): z.ZodTypeAny {
@@ -31,9 +64,13 @@ export function getObjectFieldSchema(schema: z.ZodTypeAny, key: string): z.ZodTy
         const child = shape[key];
         if (!child) throw new Error(`Unknown schema field: ${key}`);
         return child as z.ZodTypeAny;
-    } else {
-        throw new Error(`Unable to get object field schema for ${key}`);
     }
+
+    if (unwrapped instanceof z.ZodRecord) {
+        return unwrapped.valueType as z.ZodTypeAny;
+    }
+
+    throw new Error(`Unable to get object field schema for ${key}`);
 }
 
 export function getArrayItemSchema(schema: z.ZodTypeAny): z.ZodTypeAny {

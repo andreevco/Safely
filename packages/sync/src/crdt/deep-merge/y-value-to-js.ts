@@ -1,11 +1,16 @@
 import * as Y from 'yjs';
 import { z } from 'zod';
 
-import { getArrayItemSchema, getArrayMeta, getObjectFieldSchema, unwrapSchema } from './z-schema';
+import {
+    getArrayItemSchema,
+    getArrayMeta,
+    getObjectFieldSchema,
+    resolveSchemaForValue
+} from './z-schema';
 
 export function yValueToJs(value: unknown, schema: z.ZodTypeAny): unknown {
     if (value instanceof Y.Map) {
-        const schemaUnwrapped = unwrapSchema(schema);
+        const schemaUnwrapped = resolveSchemaForValue(schema, value.toJSON());
 
         if (schemaUnwrapped instanceof z.ZodArray) {
             const itemSchema = getArrayItemSchema(schemaUnwrapped);
@@ -37,7 +42,7 @@ export function yValueToJs(value: unknown, schema: z.ZodTypeAny): unknown {
 
         const obj: Record<string, unknown> = {};
         for (const [key, val] of value.entries()) {
-            obj[key] = yValueToJs(val, getObjectFieldSchema(schema, key));
+            obj[key] = yValueToJs(val, getObjectFieldSchema(schemaUnwrapped, key));
         }
         return obj;
     }
