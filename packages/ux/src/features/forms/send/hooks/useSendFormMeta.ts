@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { Portfolio, RatedCryptoAssetAmount } from '@safely/core';
+import { Portfolio, PortfolioType, RatedCryptoAssetAmount } from '@safely/core';
 
 import {
     findPortfolioMetaByAddress,
@@ -21,7 +21,8 @@ function mapPortfolioToSuggestions(
         .map(derivation => ({
             address: derivation.chains.btc.wallets[0]?.address,
             meta: portfolio.meta,
-            tag: derivations.length > 1 ? derivation.index + 1 : undefined
+            tag: derivations.length > 1 ? derivation.index + 1 : undefined,
+            isWatchOnly: portfolio.id.type === PortfolioType.WATCH_ONLY
         }));
 }
 

@@ -1,10 +1,12 @@
 import { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import QRCode from 'react-native-qrcode-skia';
 
 import { type CryptoAsset } from '@safely/core';
+import { useIsActiveWalletWatchOnly } from '@safely/ux';
 
-import { Text, Image, TouchableOpacity } from '@mobile/shared/ui';
+import { Badge, Text, Image, TouchableOpacity } from '@mobile/shared/ui';
 import { useCopy } from '@mobile/shared/utils/copy';
 
 import { styles } from './QRCodeBlock.styles';
@@ -17,6 +19,8 @@ type QRCodeBlockProps = {
 export const QRCodeBlock = (props: QRCodeBlockProps) => {
     const { address, asset } = props;
     const copy = useCopy();
+    const { t } = useTranslation();
+    const isWatchOnly = useIsActiveWalletWatchOnly();
 
     const handleCopyAddress = useCallback(() => {
         copy(address);
@@ -46,6 +50,13 @@ export const QRCodeBlock = (props: QRCodeBlockProps) => {
                     {address}
                 </Text>
             </TouchableOpacity>
+            {isWatchOnly && (
+                <View style={styles.badgeContainer}>
+                    <Badge type="warningFilled" isUppercase>
+                        {t('portfolio.watchOnly')}
+                    </Badge>
+                </View>
+            )}
         </View>
     );
 };

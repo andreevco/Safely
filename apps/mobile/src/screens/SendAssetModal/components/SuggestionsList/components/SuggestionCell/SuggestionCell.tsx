@@ -29,6 +29,8 @@ export const SuggestionCell = (props: SuggestionCellProps) => {
                         gap={12}
                         size={16}
                         tag={suggestion.tag}
+                        isWatchOnly={suggestion.isWatchOnly}
+                        watchOnlyBadgeType="warning"
                     />
                     {isSelected && <Icon icon={Checkmark28} color="accent" />}
                 </Cell.Row>

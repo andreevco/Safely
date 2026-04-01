@@ -257,15 +257,13 @@ export function useRemoveBip39Derivation() {
     });
 }
 
-type ActivePortfolioBip39Entities = {
-    portfolio: PortfolioBip39;
+type ActivePortfolioEntities = {
+    portfolio: Portfolio;
     derivation: IDerivation;
     chains: {
         btc: BtcWallet;
     };
 };
-
-type ActivePortfolioEntities = ActivePortfolioBip39Entities;
 
 export function useActivePortfolioEntitiesQuery() {
     const { get, set } = useAccountLocalStorage('activePortfolio');
@@ -350,6 +348,44 @@ export function useHasPortfolio() {
     const { data: active } = useActivePortfolioEntitiesQuery();
 
     return active !== null;
+}
+
+export function useIsActiveWalletWatchOnly(): boolean {
+    const entities = useActivePortfolioEntitiesQuery().data;
+
+    return entities?.portfolio.id.type === PortfolioType.WATCH_ONLY;
+}
+
+export function useAddWatchOnlyPortfolio() {
+    const { data: existingPortfolios } = usePortfoliosQuery();
+    const { mutateAsync: addPortfolio } = useAddPortfolio();
+    const { mutateAsync: setActivePortfolio } = useSetActivePortfolio();
+    const errorToast = useErrorToast({
+        PortfolioAlreadyExistsError: 'importWalletScreen.errors.alreadyExists'
+    });
+
+    return useMutation<Portfolio, Error, { address: string; meta: PortfolioMeta }>({
+        async mutationFn({ address, meta }) {
+            const portfolio = PortfolioFactory.generateWatchOnlyPortfolio(address, {
+                network: PortfolioNetworkType.MAINNET,
+                meta
+            });
+
+            const addressExists = existingPortfolios?.some(p =>
+                p.getDerivations().some(d => d.chains.btc.wallets.some(w => w.address === address))
+            );
+
+            if (addressExists) {
+                throw new PortfolioAlreadyExistsError();
+            }
+
+            await addPortfolio(portfolio);
+            await setActivePortfolio(portfolio);
+
+            return portfolio;
+        },
+        onError: errorToast
+    });
 }
 
 export function useSetActiveDerivation() {

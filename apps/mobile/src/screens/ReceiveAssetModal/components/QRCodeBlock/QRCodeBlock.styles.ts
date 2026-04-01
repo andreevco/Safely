@@ -25,5 +25,9 @@ export const styles = StyleSheet.create(theme => ({
         height: 48,
         width: 48,
         borderRadius: theme.radius.full
+    },
+    badgeContainer: {
+        alignItems: 'center',
+        marginTop: -4
     }
 }));

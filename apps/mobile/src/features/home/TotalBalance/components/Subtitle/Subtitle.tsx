@@ -2,6 +2,7 @@ import { setStringAsync } from 'expo-clipboard';
 import { notificationAsync, NotificationFeedbackType } from 'expo-haptics';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { View } from 'react-native';
 import Animated, {
     Easing,
     FadeIn,
@@ -17,7 +18,7 @@ import { useUnistyles } from 'react-native-unistyles';
 
 import { ellipsisMiddle } from '@safely/core';
 
-import { Text, TextProps } from '@mobile/shared/ui';
+import { Badge, Text, TextProps } from '@mobile/shared/ui';
 
 import { SubtitleStatus, useSubtitleStatus } from './useSubtitleStatus';
 
@@ -25,6 +26,7 @@ interface SubtitleProps {
     address: string;
     isFetching: boolean;
     lastUpdatedAt: number;
+    isWatchOnly?: boolean;
 }
 
 const AnimatedText = Animated.createAnimatedComponent(Text);
@@ -61,7 +63,7 @@ export const SubtitleAnimatedText = ({ children, ...props }: TextProps) => {
     );
 };
 
-export const Subtitle = ({ address, isFetching, lastUpdatedAt }: SubtitleProps) => {
+export const Subtitle = ({ address, isFetching, lastUpdatedAt, isWatchOnly }: SubtitleProps) => {
     const { t } = useTranslation();
 
     const { status, onCopyAddress } = useSubtitleStatus({ isFetching, lastUpdatedAt });
@@ -90,14 +92,28 @@ export const Subtitle = ({ address, isFetching, lastUpdatedAt }: SubtitleProps) 
                 );
             case SubtitleStatus.ADDRESS:
                 return (
-                    <Text
-                        onPress={handleCopyAddress}
-                        textAlign="center"
-                        variant="bodyL"
-                        color="secondary"
+                    <View
+                        style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: 6
+                        }}
                     >
-                        {ellipsisMiddle(address, 4)}
-                    </Text>
+                        <Text
+                            onPress={handleCopyAddress}
+                            textAlign="center"
+                            variant="bodyL"
+                            color="secondary"
+                        >
+                            {ellipsisMiddle(address, 4)}
+                        </Text>
+                        {isWatchOnly && (
+                            <Badge type="warning" isUppercase>
+                                {t('portfolio.watchOnly')}
+                            </Badge>
+                        )}
+                    </View>
                 );
             case SubtitleStatus.ADDRESS_COPIED:
                 return (
@@ -118,7 +134,7 @@ export const Subtitle = ({ address, isFetching, lastUpdatedAt }: SubtitleProps) 
                     </Text>
                 );
         }
-    }, [status, t, handleCopyAddress, address, lastUpdatedAt]);
+    }, [status, t, handleCopyAddress, address, lastUpdatedAt, isWatchOnly]);
 
     return (
         <Animated.View
