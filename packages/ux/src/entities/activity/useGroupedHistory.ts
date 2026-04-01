@@ -37,11 +37,20 @@ function getEventGroupMeta(
     }
 
     if (today.getMonth() === date.getMonth() && today.getFullYear() === date.getFullYear()) {
-        return { label: ACTIVITY_GROUP_LABEL.THIS_MONTH, day: date.getDate() };
+        return {
+            label: ACTIVITY_GROUP_LABEL.THIS_MONTH,
+            year: date.getFullYear(),
+            month: date.getMonth(),
+            day: date.getDate()
+        };
     }
 
     if (today.getFullYear() === date.getFullYear()) {
-        return { label: ACTIVITY_GROUP_LABEL.THIS_YEAR, month: date.getMonth() };
+        return {
+            label: ACTIVITY_GROUP_LABEL.THIS_YEAR,
+            year: date.getFullYear(),
+            month: date.getMonth()
+        };
     }
 
     return {
