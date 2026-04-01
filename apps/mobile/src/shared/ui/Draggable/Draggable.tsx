@@ -140,7 +140,7 @@ const useDraggable = ({
         if (onPress) scheduleOnRN(onPress);
     });
 
-    const gesture = onPress ? Gesture.Race(panGesture, tapGesture) : panGesture;
+    const gesture = onPress ? Gesture.Simultaneous(panGesture, tapGesture) : panGesture;
 
     const translateY = useDerivedValue(() => {
         'worklet';
