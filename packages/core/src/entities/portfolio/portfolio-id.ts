@@ -48,7 +48,7 @@ export class PortfolioIdMnemonicBased<PortfolioType extends PortfolioType.BIP39>
     }
 
     public toString(): string {
-        return this.of('portfolio', this.hash, this.network);
+        return this.of('portfolio', 'seed', this.hash, this.network);
     }
 
     public toJSON(): {

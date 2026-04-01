@@ -36,10 +36,10 @@ export const sPortfolioWatchOnly = z.object({
     id: z
         .object({
             type: z.literal(PortfolioType.WATCH_ONLY),
-            hash: z.string(),
+            address: z.string(),
             networkType: z.enum(PortfolioNetworkType)
         })
-        .transform(val => new PortfolioIdAddressBased(val.hash, val.networkType)),
+        .transform(val => new PortfolioIdAddressBased(val.address, val.networkType)),
     meta: sPortfolioMeta,
     address: z.string(),
     derivations: z.array(sDerivation)
