@@ -10,7 +10,16 @@ import { useActivePortfolio, usePortfolios } from '@safely/ux';
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { PortfolioName } from '@mobile/entities/portfolio';
 import { PortfoliosList } from '@mobile/features/portfolio/PortfoliosList';
-import { Button, ChevronDown16, Icon, PopupMenu, Sliders16, Text, Screen } from '@mobile/shared/ui';
+import {
+    Button,
+    ChevronDown16,
+    Icon,
+    PopupMenu,
+    Sliders12,
+    Sliders16,
+    Text,
+    Screen
+} from '@mobile/shared/ui';
 import { PopupMenuRef } from '@mobile/shared/ui/PopupMenu';
 
 import { styles } from './CompactAccountSelector.styles';
@@ -74,7 +83,7 @@ export const CompactAccountSelector = () => {
                                 {t('portfoliosPopup.settingsHint.1')}
                             </Text>
                             <View style={styles.settingsButton}>
-                                <Icon icon={Sliders16} color="tertiary" />
+                                <Icon icon={Sliders12} color="tertiary" />
                             </View>
                             <Text variant="bodyM" color="tertiary">
                                 {t('portfoliosPopup.settingsHint.2')}

@@ -1,5 +1,5 @@
-import { RefObject, useCallback, useRef, useState } from 'react';
-import { LayoutChangeEvent, Platform, StatusBar, View } from 'react-native';
+import { useCallback, useRef, useState } from 'react';
+import { InteractionManager, LayoutChangeEvent, Platform, StatusBar, View } from 'react-native';
 import {
     interpolateColor,
     useAnimatedProps,
@@ -7,18 +7,14 @@ import {
     useSharedValue,
     withTiming
 } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { scheduleOnRN } from 'react-native-worklets';
 
-interface Frame {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-}
+import { useScreenContext } from '../Screen/Screen.context';
 
 const MENU_MARGIN = 8;
 
-export const usePopupMenu = (screenHeight: number, portalContainerRef?: RefObject<View | null>) => {
+export const usePopupMenu = (screenHeight: number) => {
     const triggerRef = useRef<View>(null);
     const triggerFrame = useSharedValue({ x: 0, y: 0, width: 0, height: 0 });
     const [visible, setVisible] = useState(false);
@@ -28,24 +24,24 @@ export const usePopupMenu = (screenHeight: number, portalContainerRef?: RefObjec
     const scale = useSharedValue(0.75);
     const progress = useSharedValue(0);
 
-    const open = useCallback(() => {
-        const onMeasure = (frame: Frame) => {
-            triggerHeight.value = frame.height;
-            triggerFrame.value = frame;
-            setVisible(true);
-        };
+    const { layout } = useScreenContext();
+    const { top } = useSafeAreaInsets();
+    const offsetY =
+        Platform.OS === 'ios' && layout === 'modal'
+            ? top + 10
+            : Platform.OS === 'android'
+              ? (StatusBar.currentHeight ?? 0)
+              : 0;
 
-        if (portalContainerRef?.current && triggerRef.current) {
-            triggerRef.current.measureLayout(portalContainerRef.current, (x, y, width, height) => {
-                onMeasure({ x, y, width, height });
-            });
-        } else {
+    const open = useCallback(() => {
+        InteractionManager.runAfterInteractions(() => {
             triggerRef.current?.measureInWindow((x, y, width, height) => {
-                const offsetY = Platform.OS === 'android' ? (StatusBar.currentHeight ?? 0) : 0;
-                onMeasure({ x, y: y + offsetY, width, height });
+                triggerHeight.value = height;
+                triggerFrame.value = { x, y: y + offsetY, width, height };
+                setVisible(true);
             });
-        }
-    }, [triggerHeight, portalContainerRef]);
+        });
+    }, [triggerHeight, triggerFrame, offsetY]);
 
     const hide = useCallback(() => {
         setVisible(false);
@@ -68,6 +64,14 @@ export const usePopupMenu = (screenHeight: number, portalContainerRef?: RefObjec
         },
         [menuHeight, progress, scale]
     );
+
+    const triggerFrameStyle = useAnimatedStyle(() => ({
+        position: 'absolute',
+        top: triggerFrame.value.y,
+        left: triggerFrame.value.x,
+        width: triggerFrame.value.width,
+        height: triggerFrame.value.height
+    }));
 
     const blurAnimatedProps = useAnimatedProps(() => ({
         intensity: progress.value * 80
@@ -111,6 +115,7 @@ export const usePopupMenu = (screenHeight: number, portalContainerRef?: RefObjec
         visible,
         triggerRef,
         triggerFrame,
+        triggerFrameStyle,
         progress,
         open,
         close,

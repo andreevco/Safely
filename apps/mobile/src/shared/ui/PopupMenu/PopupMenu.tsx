@@ -1,5 +1,5 @@
 import { BlurView } from 'expo-blur';
-import { forwardRef, useEffect, useImperativeHandle } from 'react';
+import { forwardRef, useImperativeHandle } from 'react';
 import { Platform, Pressable, useWindowDimensions } from 'react-native';
 import Animated, { SharedValue } from 'react-native-reanimated';
 import { StyleSheet } from 'react-native-unistyles';
@@ -8,9 +8,7 @@ import { TouchableOpacity } from '@mobile/shared/ui';
 
 import { OverlayContainer } from './OverlayContainer';
 import { styles } from './PopupMenu.styles';
-import { usePopupMenuPortal } from './PopupMenuPortal';
 import { usePopupMenu } from './usePopupMenu';
-import { useScreenContext } from '../Screen/Screen.context';
 
 const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 
@@ -31,10 +29,7 @@ export type PopupMenuProps = {
 export const PopupMenu = forwardRef<PopupMenuRef, PopupMenuProps>((props, ref) => {
     const { children, footer, header, touchable: touchableProp, variant = 'default' } = props;
     const { height } = useWindowDimensions();
-    const portal = usePopupMenuPortal();
-    const { layout } = useScreenContext();
-    const isPortalMode = portal !== null && Platform.OS === 'ios' && layout === 'modal';
-    const menu = usePopupMenu(height, isPortalMode ? portal.containerRef : undefined);
+    const menu = usePopupMenu(height);
 
     useImperativeHandle(ref, () => ({ close: menu.close }), [menu.close]);
 
@@ -54,16 +49,7 @@ export const PopupMenu = forwardRef<PopupMenuRef, PopupMenuProps>((props, ref) =
             )}
             {header}
             <Pressable style={StyleSheet.absoluteFill} onPress={menu.close} />
-            <Animated.View
-                style={{
-                    position: 'absolute',
-                    top: menu.triggerFrame.value.y,
-                    left: menu.triggerFrame.value.x,
-                    width: menu.triggerFrame.value.width,
-                    height: menu.triggerFrame.value.height
-                }}
-                pointerEvents="none"
-            >
+            <Animated.View style={menu.triggerFrameStyle} pointerEvents="none">
                 {touchable}
             </Animated.View>
             <Animated.View
@@ -85,26 +71,12 @@ export const PopupMenu = forwardRef<PopupMenuRef, PopupMenuProps>((props, ref) =
         </>
     );
 
-    if (isPortalMode && portal) {
-        portal.contentRef.current = overlayContent;
-    }
-
-    useEffect(() => {
-        if (!isPortalMode || !portal) return;
-
-        portal.setVisible(menu.visible);
-
-        return () => {
-            portal.setVisible(false);
-        };
-    }, [isPortalMode, menu.visible, portal]);
-
     return (
         <>
             <TouchableOpacity ref={menu.triggerRef} onPress={menu.open}>
                 {touchable}
             </TouchableOpacity>
-            {!isPortalMode && menu.visible && (
+            {menu.visible && (
                 <OverlayContainer onClose={menu.close}>{overlayContent}</OverlayContainer>
             )}
         </>

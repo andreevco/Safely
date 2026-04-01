@@ -52,7 +52,7 @@ export const DraggablePortfolio = (props: DraggablePortfolioProps) => {
             draggedIndex={draggedIndex}
             offsetY={offsetY}
             moveItem={moveItem}
-            activationDelay={120}
+            activationDelay={200}
             onPress={() => handleSelect(portfolio)}
             onDragStart={handleDragStart}
         >
@@ -63,7 +63,9 @@ export const DraggablePortfolio = (props: DraggablePortfolioProps) => {
                         style={styles.item}
                         containerStyle={styles.itemContainer}
                         showDivider={
-                            variant === 'compact' ? index !== portfolios.length - 1 : false
+                            !isSelected && variant === 'compact'
+                                ? index !== portfolios.length - 1
+                                : false
                         }
                     >
                         <Animated.View style={underlayStyle} />
