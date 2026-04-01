@@ -8,6 +8,7 @@ import { CreateAccountService } from './create-account-service';
 import { SyncAccountRepository } from './sync-account-repository';
 import { Configuration } from '../api/generated';
 import { SyncApiConfiguration } from '../api/sync-api-configuration';
+import { validateSyncDataScheme } from '../crdt/deep-merge/z-schema';
 import { ed25519_keygen } from '../crypto/ed25519';
 import { Logger, LogLevel } from '../logger/logger';
 import { OnboardingConnector } from '../onboarding/connector';
@@ -28,6 +29,8 @@ export class SyncAccountFactory<
         apiConfiguration?: SyncApiConfiguration;
         logger?: Logger;
     }) {
+        validateSyncDataScheme(opts.structure);
+
         this.syncAccountIdRepository = new SyncAccountRepository(opts.storage);
         this.apiConfiguration = new Configuration(opts.apiConfiguration);
         this.logger =

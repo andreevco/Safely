@@ -1,5 +1,11 @@
 import z from 'zod';
 
-import { sPortfolio } from '@safely/core';
+import { PortfolioIdMnemonicBased, sPortfolio } from '@safely/core';
+import { zArrayWithKey } from '@safely/sync';
 
-export const sPortfolios = z.union([z.array(sPortfolio), z.null()]);
+export const sPortfolios = z.union([
+    zArrayWithKey(sPortfolio, item =>
+        new PortfolioIdMnemonicBased(item.id.type, item.id.hash, item.id.networkType).toString()
+    ),
+    z.null()
+]);

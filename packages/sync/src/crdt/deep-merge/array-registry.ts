@@ -12,9 +12,9 @@ export const crdtRegistry = z.registry<ArrayMergeMeta>();
  * @param itemSchema
  * @param getId - MUST return unique id for the item, otherwise items will overwrite each other.
  */
-export function arrayById<Item extends z.ZodTypeAny>(
+export function zArrayWithKey<Item extends z.ZodTypeAny>(
     itemSchema: Item,
-    getId: (item: z.output<Item>) => string
+    getId: (item: z.input<Item>) => string
 ): z.ZodArray<Item> {
     const schema = z.array(itemSchema);
     schema.register(crdtRegistry, {

@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import * as Y from 'yjs';
 import { z } from 'zod';
 
-import { arrayById } from '../src';
+import { zArrayWithKey } from '../src';
 import { YCRDT } from '../src/crdt/y-crdt';
 
 describe('crdt', () => {
@@ -34,7 +34,7 @@ describe('crdt', () => {
             key2: z.number(),
             key3: z.null(),
             key4: z.object({ nested: z.string() }),
-            key5: arrayById(z.string(), item => item)
+            key5: zArrayWithKey(z.string(), item => item)
         });
 
         crdt1.set('key1', 'value1');
@@ -138,7 +138,7 @@ describe('crdt', () => {
     describe('arrays', () => {
         it('should merge arrays by id', () => {
             setup({
-                shared: arrayById(z.string(), item => item)
+                shared: zArrayWithKey(z.string(), item => item)
             });
 
             crdt1.set('shared', ['a', 'b', 'c']);
@@ -154,7 +154,7 @@ describe('crdt', () => {
 
         it('should remove items from arrays by id', () => {
             setup({
-                shared: arrayById(z.string(), item => item)
+                shared: zArrayWithKey(z.string(), item => item)
             });
 
             crdt1.set('shared', ['a', 'b', 'c']);
@@ -170,7 +170,7 @@ describe('crdt', () => {
 
         it('should merge arrays by id with concurrent adds and removes', () => {
             setup({
-                shared: arrayById(z.string(), item => item)
+                shared: zArrayWithKey(z.string(), item => item)
             });
 
             crdt1.set('shared', ['a', 'b', 'c']);
@@ -186,7 +186,7 @@ describe('crdt', () => {
 
         it('should deep merge arrays of objects by id', () => {
             setup({
-                shared: arrayById(
+                shared: zArrayWithKey(
                     z.object({
                         id: z.string(),
                         value: z.number()

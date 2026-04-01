@@ -19,5 +19,5 @@ export { sSecretEncrypted, sSecretDecrypted } from './secret-encryptor';
 
 export { type IsomorphicEventSource } from './utils/sse-stream';
 
-export { arrayById } from './crdt/deep-merge/array-registry';
+export { zArrayWithKey } from './crdt/deep-merge/array-registry';
 export type { ArrayMergeMeta } from './crdt/deep-merge/array-registry';

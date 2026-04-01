@@ -55,3 +55,39 @@ export function getArrayMeta(schema: z.ZodTypeAny): ArrayMergeMeta {
     }
     return meta;
 }
+
+export function validateSyncDataScheme(structure: Record<string, z.ZodTypeAny>): void {
+    assertAllArraysRegistered(structure);
+}
+
+function assertAllArraysRegistered(structure: Record<string, z.ZodTypeAny>): void {
+    for (const [key, schema] of Object.entries(structure)) {
+        assertArraysRegisteredInSchema(schema, key);
+    }
+}
+
+function assertArraysRegisteredInSchema(schema: z.ZodTypeAny, path: string): void {
+    const unwrapped = unwrapSchema(schema);
+
+    if (unwrapped instanceof z.ZodArray) {
+        const meta = crdtRegistry.get(unwrapped);
+        if (!meta || typeof meta.getId !== 'function' || meta.kind !== 'by-id') {
+            throw new Error(
+                `Array at "${path}" must be wrapped with arrayById(). ` +
+                    'All arrays in synced storage must have a getId function for deep merge.'
+            );
+        }
+        assertArraysRegisteredInSchema(unwrapped.element as z.ZodTypeAny, `${path}[]`);
+    } else if (unwrapped instanceof z.ZodObject) {
+        const shape = unwrapped.shape as Record<string, z.ZodTypeAny>;
+        for (const [key, value] of Object.entries(shape)) {
+            assertArraysRegisteredInSchema(value, `${path}.${key}`);
+        }
+    } else if (unwrapped instanceof z.ZodUnion) {
+        for (const option of unwrapped.options as z.ZodTypeAny[]) {
+            assertArraysRegisteredInSchema(option, path);
+        }
+    } else if (unwrapped instanceof z.ZodRecord) {
+        assertArraysRegisteredInSchema(unwrapped.valueType as z.ZodTypeAny, `${path}[*]`);
+    }
+}
