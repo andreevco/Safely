@@ -51,28 +51,30 @@ export function useAddWalletFlow() {
     }, [navigation]);
 
     const onMnemonicReady = useCallback(
-        async (mnemonic: string[]) => {
-            using secretEncryptor = createEncryptor();
-            await secretEncryptor.unlockEncryption();
+        (mnemonic: string[]) => {
+            navigation.dispatch(
+                CommonActions.navigate(routes.customize, {
+                    onSave: async (meta: PortfolioMeta) => {
+                        using secretEncryptor = createEncryptor();
+                        await secretEncryptor.unlockEncryption();
 
-            await withLoader(async () => {
-                using mnemonicAccessor = new MnemonicResource(mnemonic);
-                const portfolio = await importPortfolio({ mnemonicAccessor, secretEncryptor });
+                        await withLoader(async () => {
+                            using mnemonicAccessor = new MnemonicResource(mnemonic);
+                            await importPortfolio({ mnemonicAccessor, secretEncryptor, meta });
+                        });
 
-                navigation.dispatch(
-                    CommonActions.navigate(routes.customize, {
-                        portfolio,
-                        onCompleteCustomize: () => {
-                            navigation.dispatch(
-                                CommonActions.reset({
-                                    index: 0,
-                                    routes: [{ name: 'TabsNavigator' }]
-                                })
-                            );
-                        }
-                    })
-                );
-            });
+                        navigation.dispatch(
+                            CommonActions.reset({
+                                index: 0,
+                                routes: [{ name: 'TabsNavigator' }]
+                            })
+                        );
+                    },
+                    onCompleteCustomize: () => {
+                        navigation.goBack();
+                    }
+                })
+            );
         },
         [navigation, importPortfolio, withLoader, createEncryptor]
     );

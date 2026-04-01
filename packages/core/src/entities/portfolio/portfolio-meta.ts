@@ -3,6 +3,10 @@ export interface PortfolioMeta {
     icon: PortfolioMetaIcon;
 }
 
+export type NoIconPortfolioMeta = Omit<PortfolioMeta, 'icon'> & {
+    icon?: PortfolioMetaIcon;
+};
+
 export type PortfolioMetaIcon = PortfolioMetaIconEmoji | PortfolioMetaIconColor;
 export type PortfolioMetaIconEmoji = {
     type: 'emoji';

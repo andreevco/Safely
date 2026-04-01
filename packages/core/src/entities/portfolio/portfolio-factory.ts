@@ -2,7 +2,7 @@ import { PortfolioType } from './I-portfolio';
 import { PortfolioBip39 } from './portfolio-bip39';
 import { PortfolioIdMnemonicBased } from './portfolio-id';
 import { PortfolioIdAddressBased } from './portfolio-id-address-based';
-import { PortfolioMeta } from './portfolio-meta';
+import { NoIconPortfolioMeta, PortfolioMeta } from './portfolio-meta';
 import { PortfolioNetworkType } from './portfolio-network-type';
 import { PortfolioWatchOnly } from './portfolio-watch-only';
 import type { SPortfolioBip39Out, SPortfolioOut, SPortfolioWatchOnlyOut } from './portfolio.stored';
@@ -43,7 +43,7 @@ export class PortfolioFactory {
         secret: IMnemonicAccessor,
         options: {
             network: PortfolioNetworkType;
-            name: string;
+            meta: NoIconPortfolioMeta;
             seedRevealedFromDevice?: string;
         }
     ): Promise<PortfolioBip39> {
@@ -54,7 +54,7 @@ export class PortfolioFactory {
         mnemonicAccessor: IMnemonicAccessor,
         options: {
             network: PortfolioNetworkType;
-            name: string;
+            meta: NoIconPortfolioMeta;
             seedRevealedFromDevice?: string;
         }
     ): Promise<PortfolioBip39> {
@@ -79,14 +79,14 @@ export class PortfolioFactory {
             });
 
             const mnemonicVault = await this.getMnemonicVault(mnemonicAccessor);
-            const emoji = portfolioId.getFallbackEmoji();
+            const meta = {
+                name: options.meta.name,
+                icon: options.meta.icon ?? portfolioId.getFallbackEmoji()
+            };
 
             return new PortfolioBip39({
                 id: portfolioId,
-                meta: {
-                    name: options.name,
-                    icon: emoji
-                },
+                meta,
                 secretRevealedStatus: options.seedRevealedFromDevice
                     ? {
                           revealedAt: new Date(),

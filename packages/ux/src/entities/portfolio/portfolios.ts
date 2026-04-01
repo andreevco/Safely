@@ -108,7 +108,7 @@ export function useNewPortfolioFallbackName() {
 export function useGeneratePortfolio() {
     const { mutateAsync: setActivePortfolio } = useSetActivePortfolio();
     const { mutateAsync: addAccount } = useAddPortfolio();
-    const fallbackName = useNewPortfolioFallbackName();
+
     const errorToast = useErrorToast({
         PortfolioGenerationFailedError: 'importWalletScreen.errors.failedToGenerate'
     });
@@ -116,7 +116,7 @@ export function useGeneratePortfolio() {
     return useMutation<
         PortfolioBip39,
         Error,
-        { meta?: Partial<PortfolioMeta>; secretEncryptor: ISecretEncryptor }
+        { meta: PortfolioMeta; secretEncryptor: ISecretEncryptor }
     >({
         async mutationFn(params) {
             await delay();
@@ -126,12 +126,8 @@ export function useGeneratePortfolio() {
 
             const portfolio = await factory.generatePortfolioBip39(accessorVault, {
                 network: PortfolioNetworkType.MAINNET,
-                name: params?.meta?.name ?? fallbackName
+                meta: params.meta
             });
-
-            if (params?.meta?.icon) {
-                portfolio.updateMeta({ icon: params.meta.icon });
-            }
 
             await addAccount(portfolio);
 
@@ -145,7 +141,6 @@ export function useGeneratePortfolio() {
 
 export function useImportPortfolio() {
     const { data: existingPortfolios } = usePortfoliosQuery();
-    const name = useNewPortfolioFallbackName();
     const { mutateAsync: addPortfolio } = useAddPortfolio();
     const { mutateAsync: setActivePortfolio } = useSetActivePortfolio();
     const toast = useToast();
@@ -159,16 +154,20 @@ export function useImportPortfolio() {
     return useMutation<
         Portfolio,
         Error,
-        { mnemonicAccessor: IMnemonicAccessor; secretEncryptor: ISecretEncryptor }
+        {
+            mnemonicAccessor: IMnemonicAccessor;
+            secretEncryptor: ISecretEncryptor;
+            meta: PortfolioMeta;
+        }
     >({
-        async mutationFn({ mnemonicAccessor, secretEncryptor }) {
+        async mutationFn({ mnemonicAccessor, secretEncryptor, meta }) {
             await delay();
 
             const factory = new PortfolioFactory(secretEncryptor);
 
             const portfolio = await factory.generatePortfolio(mnemonicAccessor, {
                 network: PortfolioNetworkType.MAINNET,
-                name,
+                meta,
                 seedRevealedFromDevice: deviceInfo.name
             });
 

@@ -35,7 +35,7 @@ describe('Test portfolio generation (Bitcoin)', () => {
             new ClosableMnemonicAccessorVault(testMnemonic),
             {
                 network: PortfolioNetworkType.TESTNET,
-                name: portfolioName
+                meta: { name: portfolioName }
             }
         );
 
@@ -63,7 +63,7 @@ describe('Test portfolio generation (Bitcoin)', () => {
             new ClosableMnemonicAccessorVault(testMnemonic),
             {
                 network: PortfolioNetworkType.MAINNET,
-                name: portfolioName
+                meta: { name: portfolioName }
             }
         );
 
@@ -135,7 +135,7 @@ describe('Test portfolio generation (Bitcoin)', () => {
             new ClosableMnemonicAccessorVault(testMnemonic),
             {
                 network: PortfolioNetworkType.MAINNET,
-                name: portfolioName,
+                meta: { name: portfolioName },
                 seedRevealedFromDevice: 'TEST_DEVICE_NAME'
             }
         );
@@ -213,7 +213,7 @@ describe('Test portfolio generation (Bitcoin)', () => {
             new ClosableMnemonicAccessorVault(testMnemonic),
             {
                 network: PortfolioNetworkType.MAINNET,
-                name: portfolioName
+                meta: { name: portfolioName }
             }
         );
 
@@ -268,7 +268,7 @@ describe('Extended tests for portfolio operations (Bitcoin)', () => {
                 new ClosableMnemonicAccessorVault(mnemonic),
                 {
                     network: PortfolioNetworkType.TESTNET,
-                    name: portfolioName1
+                    meta: { name: portfolioName1 }
                 }
             );
 
@@ -276,7 +276,7 @@ describe('Extended tests for portfolio operations (Bitcoin)', () => {
                 new ClosableMnemonicAccessorVault(mnemonic),
                 {
                     network: PortfolioNetworkType.TESTNET,
-                    name: portfolioName2
+                    meta: { name: portfolioName2 }
                 }
             );
 
@@ -303,7 +303,7 @@ describe('Extended tests for portfolio operations (Bitcoin)', () => {
                 new ClosableMnemonicAccessorVault(mnemonic),
                 {
                     network: PortfolioNetworkType.MAINNET,
-                    name: portfolioName
+                    meta: { name: portfolioName }
                 }
             );
 
@@ -311,7 +311,7 @@ describe('Extended tests for portfolio operations (Bitcoin)', () => {
                 new ClosableMnemonicAccessorVault(mnemonic),
                 {
                     network: PortfolioNetworkType.TESTNET,
-                    name: portfolioName
+                    meta: { name: portfolioName }
                 }
             );
 
@@ -341,7 +341,7 @@ describe('Extended tests for portfolio operations (Bitcoin)', () => {
                 new ClosableMnemonicAccessorVault(mnemonic),
                 {
                     network: PortfolioNetworkType.MAINNET,
-                    name: portfolioName
+                    meta: { name: portfolioName }
                 }
             );
 
@@ -349,7 +349,7 @@ describe('Extended tests for portfolio operations (Bitcoin)', () => {
                 new ClosableMnemonicAccessorVault(mnemonic),
                 {
                     network: PortfolioNetworkType.MAINNET,
-                    name: portfolioName
+                    meta: { name: portfolioName }
                 }
             );
 
@@ -379,7 +379,7 @@ describe('Extended tests for portfolio operations (Bitcoin)', () => {
             new ClosableMnemonicAccessorVault(mnemonic),
             {
                 network: PortfolioNetworkType.TESTNET,
-                name: portfolioName
+                meta: { name: portfolioName }
             }
         );
 
@@ -404,7 +404,7 @@ describe('Extended tests for portfolio operations (Bitcoin)', () => {
             new ClosableMnemonicAccessorVault(mnemonic),
             {
                 network: PortfolioNetworkType.TESTNET,
-                name: portfolioName
+                meta: { name: portfolioName }
             }
         );
 
@@ -498,7 +498,7 @@ describe('Negative scenarios (Bitcoin)', () => {
         await expect(
             portfolioFactory.generatePortfolio(new ClosableMnemonicAccessorVault(invalidMnemonic), {
                 network: PortfolioNetworkType.MAINNET,
-                name: portfolioName
+                meta: { name: portfolioName }
             })
         ).rejects.toThrow(InvalidMnemonicError);
         expect(encryptor.decrypt).toHaveBeenCalledTimes(0);
@@ -512,7 +512,7 @@ describe('Negative scenarios (Bitcoin)', () => {
         await expect(
             portfolioFactory.generatePortfolio(new ClosableMnemonicAccessorVault(invalidMnemonic), {
                 network: PortfolioNetworkType.MAINNET,
-                name: portfolioName
+                meta: { name: portfolioName }
             })
         ).rejects.toThrow(InvalidMnemonicError);
         expect(encryptor.decrypt).toHaveBeenCalledTimes(0);
@@ -531,7 +531,7 @@ describe('Negative scenarios (Bitcoin)', () => {
         await expect(
             portfolioFactory.generatePortfolio(new ClosableMnemonicAccessorVault(invalidMnemonic), {
                 network: PortfolioNetworkType.MAINNET,
-                name: portfolioName
+                meta: { name: portfolioName }
             })
         ).rejects.toThrow(InvalidMnemonicError);
         expect(encryptor.decrypt).toHaveBeenCalledTimes(0);
@@ -544,7 +544,7 @@ describe('Negative scenarios (Bitcoin)', () => {
         await expect(
             portfolioFactory.generatePortfolio(new ClosableMnemonicAccessorVault(invalidMnemonic), {
                 network: PortfolioNetworkType.MAINNET,
-                name: portfolioName
+                meta: { name: portfolioName }
             })
         ).rejects.toThrow(InvalidMnemonicError);
         expect(encryptor.decrypt).toHaveBeenCalledTimes(0);
@@ -557,7 +557,7 @@ describe('Negative scenarios (Bitcoin)', () => {
         await expect(
             portfolioFactory.generatePortfolio(new ClosableMnemonicAccessorVault(invalidMnemonic), {
                 network: PortfolioNetworkType.MAINNET,
-                name: portfolioName
+                meta: { name: portfolioName }
             })
         ).rejects.toThrow(InvalidMnemonicError);
         expect(encryptor.decrypt).toHaveBeenCalledTimes(0);
@@ -570,7 +570,7 @@ describe('Negative scenarios (Bitcoin)', () => {
         await expect(
             portfolioFactory.generatePortfolio(new ClosableMnemonicAccessorVault(invalidMnemonic), {
                 network: PortfolioNetworkType.MAINNET,
-                name: portfolioName
+                meta: { name: portfolioName }
             })
         ).rejects.toThrow(InvalidMnemonicError);
         expect(encryptor.decrypt).toHaveBeenCalledTimes(0);
@@ -584,7 +584,7 @@ describe('Negative scenarios (Bitcoin)', () => {
         await expect(
             portfolioFactory.generatePortfolio(new ClosableMnemonicAccessorVault(invalidMnemonic), {
                 network: PortfolioNetworkType.MAINNET,
-                name: portfolioName
+                meta: { name: portfolioName }
             })
         ).rejects.toThrow(InvalidMnemonicError);
         expect(encryptor.decrypt).toHaveBeenCalledTimes(0);
@@ -601,7 +601,7 @@ describe('Negative scenarios (Bitcoin)', () => {
             new ClosableMnemonicAccessorVault(validMnemonic),
             {
                 network: PortfolioNetworkType.MAINNET,
-                name: portfolioName
+                meta: { name: portfolioName }
             }
         );
 
@@ -620,7 +620,7 @@ describe('Negative scenarios (Bitcoin)', () => {
 
             const portfolio = await portfolioFactory.generatePortfolioBip39(accessor, {
                 network: PortfolioNetworkType.MAINNET,
-                name
+                meta: { name }
             });
 
             // Портфолио успешно создано
@@ -673,7 +673,7 @@ describe('Negative scenarios (Bitcoin)', () => {
 
             const portfolio = await portfolioFactory.generatePortfolio(accessor, {
                 network: PortfolioNetworkType.MAINNET,
-                name
+                meta: { name }
             });
 
             // Импорт прошёл успешно
