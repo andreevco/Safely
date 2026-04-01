@@ -9,9 +9,26 @@ import {
     BtcTransferRequestNotMax
 } from './types';
 import { getUtxoTotal } from './utils';
-import { BtcApi, BtcApiGasPrice } from '../../api/btc';
+import { BtcApi, BtcApiGasPrice, BtcApiTx, BtcApiUtxo } from '../../api/btc';
 import { BtcAssetAmount, btcNetworkConfig, BtcWallet } from '../../entities';
 import { abs, assertUnreachable, IIdentifiable, toBig } from '../../utils';
+
+export type UtxoForEstimation = {
+    in: BtcApiUtxo[];
+    pendingOut: BtcApiTx[];
+};
+
+function getAvailableUtxos(utxos: UtxoForEstimation): BtcApiUtxo[] {
+    const spentSet = new Set(
+        utxos.pendingOut.flatMap(tx =>
+            tx.vin
+                ?.filter(vin => vin.isOwn && vin.txid != null && vin.vout != null)
+                .map(vin => `${vin.txid}:${vin.vout}`)
+        )
+    );
+
+    return utxos.in.filter(u => !spentSet.has(`${u.txid}:${u.vout}`));
+}
 
 export class BtcEstimator implements IIdentifiable {
     public readonly id: string;
@@ -47,25 +64,32 @@ export class BtcEstimator implements IIdentifiable {
     }
 
     public async getSendFee(
-        request: Omit<BtcTransferRequestMax, 'type' | 'estimatedAmount'>
+        request: Omit<BtcTransferRequestMax, 'type' | 'estimatedAmount'>,
+        utxoForEstimation: UtxoForEstimation
     ): Promise<BtcAssetAmount> {
-        const { fee } = await this.estimateSendFee(request);
+        const utxos = getAvailableUtxos(utxoForEstimation);
+        const { fee } = await this.estimateSendFee(request, utxos);
         return fee;
     }
 
-    public async estimate(request: BtcTransferRequest): Promise<BtcTransactionTemplate> {
+    public async estimate(
+        request: BtcTransferRequest,
+        utxoForEstimation: UtxoForEstimation
+    ): Promise<BtcTransactionTemplate> {
+        const utxos = getAvailableUtxos(utxoForEstimation);
         switch (request.type) {
             case 'max':
-                return this.estimateMax(request);
+                return this.estimateMax(request, utxos);
             case 'not-max':
-                return this.estimateNotMax(request);
+                return this.estimateNotMax(request, utxos);
             default:
                 assertUnreachable(request);
         }
     }
 
     private async estimateNotMax(
-        request: BtcTransferRequestNotMax
+        request: BtcTransferRequestNotMax,
+        utxos: BtcApiUtxo[]
     ): Promise<BtcTransactionTemplate> {
         if (request.amount.weiAmount <= 0n) {
             throw new Error('Amount must be greater than zero');
@@ -73,7 +97,6 @@ export class BtcEstimator implements IIdentifiable {
 
         const { feeSatVb, targetBlock } = await this.getFeeValue(request.feeType);
 
-        const utxos = await this.btcApi.getAccountConfirmedUtxo(this.wallet);
         if (!utxos.length) {
             throw new Error('No UTXOs available');
         }
@@ -103,11 +126,11 @@ export class BtcEstimator implements IIdentifiable {
     }
 
     private async estimateSendFee(
-        request: Omit<BtcTransferRequestMax, 'type' | 'estimatedAmount'>
+        request: Omit<BtcTransferRequestMax, 'type' | 'estimatedAmount'>,
+        utxos: BtcApiUtxo[]
     ) {
         const { feeSatVb, targetBlock } = await this.getFeeValue(request.feeType);
 
-        const utxos = await this.btcApi.getAccountConfirmedUtxo(this.wallet);
         if (!utxos.length) {
             throw new Error('No UTXOs available');
         }
@@ -129,8 +152,11 @@ export class BtcEstimator implements IIdentifiable {
         return { fee, targetBlock, utxos };
     }
 
-    private async estimateMax(request: BtcTransferRequestMax): Promise<BtcTransactionTemplate> {
-        const { fee, targetBlock, utxos } = await this.estimateSendFee(request);
+    private async estimateMax(
+        request: BtcTransferRequestMax,
+        utxos: BtcApiUtxo[]
+    ): Promise<BtcTransactionTemplate> {
+        const { fee, targetBlock } = await this.estimateSendFee(request, utxos);
         const totalBalance = getUtxoTotal(utxos);
 
         const amount = totalBalance.sub(fee);

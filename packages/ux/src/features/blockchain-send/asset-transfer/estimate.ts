@@ -6,12 +6,13 @@ import {
     BTC_ASSET,
     BtcAssetAmount,
     BtcEstimator,
+    UtxoForEstimation,
     BtcFeeType,
     RatedCryptoAssetAmount,
     TransactionTemplate
 } from '@safely/core';
 
-import { useAssets } from '../../../entities';
+import { useActiveBtcWalletUtxoForEstimation, useAssets } from '../../../entities';
 import { defineQueryKeys, finalKey, mappedParams, QUERIES_REFETCH_INTERVAL } from '../../../shared';
 import { SendFormResult } from '../../forms';
 import { useBtcEstimator } from '../btc/estimator';
@@ -19,9 +20,10 @@ import { useBtcEstimator } from '../btc/estimator';
 export const estimationKey = defineQueryKeys('estimation', {
     form(__: SendFormResult) {
         return {
-            services: mappedParams(
-                (_: { btcEstimator: BtcEstimator }) => finalKey,
-                p => [p.btcEstimator.id]
+            params: mappedParams(
+                (_: { btcEstimator: BtcEstimator; utxos: UtxoForEstimation | undefined }) =>
+                    finalKey,
+                p => [p.btcEstimator.id, JSON.stringify(p.utxos)]
             )
         };
     }
@@ -30,10 +32,13 @@ export const estimationKey = defineQueryKeys('estimation', {
 export const maxSendKey = defineQueryKeys('maxSendKey', {
     form(__: Pick<SendFormResult, 'blockchain' | 'recipient'> | undefined) {
         return {
-            services: mappedParams(
-                (_: { btcEstimator: BtcEstimator; assets: RatedCryptoAssetAmount[] | undefined }) =>
-                    finalKey,
-                p => [p.btcEstimator.id, JSON.stringify(p.assets)]
+            params: mappedParams(
+                (_: {
+                    btcEstimator: BtcEstimator;
+                    assets: RatedCryptoAssetAmount[] | undefined;
+                    utxos: UtxoForEstimation | undefined;
+                }) => finalKey,
+                p => [p.btcEstimator.id, JSON.stringify(p.assets), JSON.stringify(p.utxos)]
             )
         };
     }
@@ -41,33 +46,38 @@ export const maxSendKey = defineQueryKeys('maxSendKey', {
 
 export function useEstimateAssetTransfer(form: SendFormResult) {
     const btcEstimator = useBtcEstimator();
+    const { data: utxos } = useActiveBtcWalletUtxoForEstimation();
 
     return useQuery<TransactionTemplate>({
-        queryKey: estimationKey.form(form).services({ btcEstimator }).toKey(),
-        async queryFn() {
-            if (form.blockchain === BLOCKCHAIN_NAME.BTC) {
-                const recipientAddress = form.recipient.address;
-                const feeType = BtcFeeType.FAST;
+        queryKey: estimationKey.form(form).params({ btcEstimator, utxos }).toKey(),
+        queryFn:
+            utxos !== undefined
+                ? async () => {
+                      if (form.blockchain === BLOCKCHAIN_NAME.BTC) {
+                          const recipientAddress = form.recipient.address;
+                          const feeType = BtcFeeType.FAST;
 
-                return btcEstimator.estimate(
-                    form.isMax
-                        ? {
-                              type: 'max',
-                              recipientAddress,
-                              estimatedAmount: form.amount.cryptoAssetAmount,
-                              feeType
-                          }
-                        : {
-                              type: 'not-max',
-                              recipientAddress,
-                              feeType,
-                              amount: form.amount.cryptoAssetAmount
-                          }
-                );
-            }
+                          return btcEstimator.estimate(
+                              form.isMax
+                                  ? {
+                                        type: 'max',
+                                        recipientAddress,
+                                        estimatedAmount: form.amount.cryptoAssetAmount,
+                                        feeType
+                                    }
+                                  : {
+                                        type: 'not-max',
+                                        recipientAddress,
+                                        feeType,
+                                        amount: form.amount.cryptoAssetAmount
+                                    },
+                              utxos
+                          );
+                      }
 
-            assertUnreachable(form.blockchain);
-        },
+                      assertUnreachable(form.blockchain);
+                  }
+                : skipToken,
         refetchInterval: QUERIES_REFETCH_INTERVAL.TRANSACTION,
         refetchOnMount: 'always',
         retry: 2
@@ -79,32 +89,39 @@ export function useMaxSendAssetTransfer(
 ) {
     const btcEstimator = useBtcEstimator();
     const { data: assets } = useAssets();
+    const { data: utxos } = useActiveBtcWalletUtxoForEstimation();
 
     return useQuery({
-        queryKey: maxSendKey.form(form).services({ btcEstimator, assets }).toKey(),
-        queryFn: form
-            ? async () => {
-                  if (form.blockchain === BLOCKCHAIN_NAME.BTC) {
-                      const fee = await btcEstimator.getSendFee({
-                          recipientAddress: form.recipient.address,
-                          feeType: BtcFeeType.FAST
-                      });
+        queryKey: maxSendKey.form(form).params({ btcEstimator, assets, utxos }).toKey(),
+        queryFn:
+            form && utxos && assets
+                ? async () => {
+                      if (form.blockchain === BLOCKCHAIN_NAME.BTC) {
+                          const fee = await btcEstimator.getSendFee(
+                              {
+                                  recipientAddress: form.recipient.address,
+                                  feeType: BtcFeeType.FAST
+                              },
+                              utxos
+                          );
 
-                      const btcBalance = assets?.find(a => a.amount.asset.id.isEq(BTC_ASSET.id));
-                      if (!btcBalance) {
-                          throw new Error('BTC asset not found');
+                          const btcBalance = assets?.find(a =>
+                              a.amount.asset.id.isEq(BTC_ASSET.id)
+                          );
+                          if (!btcBalance) {
+                              throw new Error('BTC asset not found');
+                          }
+
+                          if (btcBalance.amount.lte(fee)) {
+                              return BtcAssetAmount.fromWeiAmount('0');
+                          }
+
+                          return btcBalance.amount.amountSub(fee);
                       }
 
-                      if (btcBalance.amount.lte(fee)) {
-                          return BtcAssetAmount.fromWeiAmount('0');
-                      }
-
-                      return btcBalance.amount.amountSub(fee);
+                      assertUnreachable(form.blockchain);
                   }
-
-                  assertUnreachable(form.blockchain);
-              }
-            : skipToken,
+                : skipToken,
         refetchInterval: QUERIES_REFETCH_INTERVAL.TRANSACTION,
         refetchOnMount: 'always',
         retry: 2

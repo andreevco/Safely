@@ -38,8 +38,8 @@ export function useBtcWalletUtxo(btcWallet: BtcWallet) {
     return usePersistQuery({
         queryKey: utxo.wallet(btcWallet).api(client).toKey(),
         async queryFn() {
-            const [confirmedBalance, unconfirmedIn, txHistory] = await Promise.all([
-                client.getXpub(btcWallet),
+            const [confirmedIn, unconfirmedIn, txHistory] = await Promise.all([
+                client.getAccountConfirmedUtxo(btcWallet),
                 client.getAccountUnconfirmedUtxo(btcWallet),
                 client.getXpub(
                     {
@@ -86,7 +86,8 @@ export function useBtcWalletUtxo(btcWallet: BtcWallet) {
 
             return {
                 confirmedIn: {
-                    totalAmount: BtcAssetAmount.fromWeiAmount(confirmedBalance.balance)
+                    totalAmount: getTotal(confirmedIn),
+                    utxos: confirmedIn
                 },
                 unconfirmedInSafe: {
                     totalAmount: getTotal(safe),
@@ -132,4 +133,17 @@ export function useActiveWalletBtcBalance() {
 export function useActiveBtcWalletUtxo() {
     const wallet = useActiveBtcWallet();
     return useBtcWalletUtxo(wallet);
+}
+
+export function useActiveBtcWalletUtxoForEstimation() {
+    const utxoQuery = useActiveBtcWalletUtxo();
+    return useDerivedQuery({
+        queries: [utxoQuery],
+        queryFn([u]) {
+            return {
+                in: u.confirmedIn.utxos.concat(u.unconfirmedInSafe.utxos),
+                pendingOut: u.unconfirmedOut.txs
+            };
+        }
+    });
 }
