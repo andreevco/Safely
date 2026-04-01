@@ -7,7 +7,6 @@ import { resolveLayoutByScreenName } from '@mobile/shared/utils';
 
 import { ScreenContext } from './Screen.context';
 import { styles } from './Screen.styles';
-import { PopupMenuPortalHost } from '../PopupMenu/PopupMenuPortal';
 
 type ScreenContainerProps = { children: React.ReactNode } & UnistylesVariants<typeof styles>;
 
@@ -28,7 +27,7 @@ export function ScreenContainer({ children, background }: PropsWithChildren<Scre
                 layout
             }}
         >
-            {layout === 'modal' ? <PopupMenuPortalHost>{content}</PopupMenuPortalHost> : content}
+            {content}
         </ScreenContext.Provider>
     );
 }

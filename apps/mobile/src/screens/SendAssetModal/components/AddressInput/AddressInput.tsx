@@ -105,7 +105,7 @@ export const AddressInput = (props: AddressInputProps) => {
 
     const contentAnimatedStyle = useAnimatedStyle(
         () => ({
-            height: contentHeight.value > 0 && !selectedMeta ? contentHeight.value : 0
+            height: selectedMeta ? 0 : contentHeight.value || undefined
         }),
         [selectedMeta, contentHeight]
     );

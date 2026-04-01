@@ -17,14 +17,12 @@ export const styles = StyleSheet.create(theme => ({
         paddingVertical: theme.spacing[16],
         paddingHorizontal: theme.spacing[32]
     },
-    infoBox: {
-        borderRadius: theme.radius.md,
-        borderWidth: theme.border.hairline,
-        borderColor: theme.colors.other.transparentElement,
-        backgroundColor: theme.colors.background.tertiary,
-        padding: theme.spacing[16],
-        gap: theme.spacing[12],
+    banner: {
         margin: theme.spacing[24]
+    },
+    logo: {
+        width: 96,
+        height: 96
     },
     feedbackRow: {
         flexDirection: 'row',

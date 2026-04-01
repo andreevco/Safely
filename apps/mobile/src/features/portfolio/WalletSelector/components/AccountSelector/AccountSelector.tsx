@@ -1,4 +1,5 @@
 import { useNavigation } from '@react-navigation/native';
+import { impactAsync, ImpactFeedbackStyle } from 'expo-haptics';
 
 import { useActivePortfolio } from '@safely/ux';
 
@@ -14,7 +15,10 @@ export const AccountSelector = () => {
 
     return (
         <TouchableOpacity
-            onPress={() => navigation.navigate('SelectAccountModal')}
+            onPress={() => {
+                navigation.navigate('SelectAccountModal');
+                void impactAsync(ImpactFeedbackStyle.Medium);
+            }}
             style={styles.container}
         >
             <PortfolioName meta={portfolio.meta} />

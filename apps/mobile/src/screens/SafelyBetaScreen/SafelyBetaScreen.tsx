@@ -1,11 +1,11 @@
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Linking, Pressable, View } from 'react-native';
+import { Linking, View } from 'react-native';
 
 import { useBootConfig } from '@safely/ux';
 
-import { AppIcon96, Screen, Text } from '@mobile/shared/ui';
-import { ChevronRight16, Icon } from '@mobile/shared/ui/Icon';
+import { resources } from '@mobile/shared/resources';
+import { Banner, Image, Screen, Text } from '@mobile/shared/ui';
 
 import { styles } from './SafelyBetaScreen.styles';
 
@@ -22,7 +22,7 @@ export const SafelyBetaScreen = () => {
             <Screen.Header />
             <View style={styles.container}>
                 <View style={styles.centerBlock}>
-                    <Icon icon={AppIcon96} />
+                    <Image source={resources.safelyLogoWithBg} style={styles.logo} />
                     <View style={styles.titleBox}>
                         <Text variant="titleM" textAlign="center">
                             {t('safelyBeta.title')}
@@ -32,18 +32,12 @@ export const SafelyBetaScreen = () => {
                         </Text>
                     </View>
                 </View>
-
-                <View style={styles.infoBox}>
-                    <Text variant="bodyM" color="primary">
-                        {t('safelyBeta.feedback.description')}
-                    </Text>
-                    <Pressable style={styles.feedbackRow} onPress={handleFeedback}>
-                        <Text variant="labelM" color="primary">
-                            {t('safelyBeta.feedback.action')}
-                        </Text>
-                        <Icon icon={ChevronRight16} color="secondary" />
-                    </Pressable>
-                </View>
+                <Banner
+                    style={styles.banner}
+                    text={t('safelyBeta.feedback.description')}
+                    actionText={t('safelyBeta.feedback.action')}
+                    onPress={handleFeedback}
+                />
             </View>
         </Screen>
     );

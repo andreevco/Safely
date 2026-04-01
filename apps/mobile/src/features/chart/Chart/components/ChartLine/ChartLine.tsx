@@ -4,6 +4,7 @@ import { LayoutChangeEvent, View } from 'react-native';
 import { GestureDetector, GestureType } from 'react-native-gesture-handler';
 import Animated, {
     type SharedValue,
+    useAnimatedStyle,
     useDerivedValue,
     withDelay,
     withRepeat,
@@ -75,6 +76,12 @@ export const ChartLine = (props: ChartLineProps) => {
         pathFractionsShared
     });
 
+    const priceLabelsStyle = useAnimatedStyle(() => {
+        if (!isActive.value) return { opacity: 1 };
+        const near = activeX.value > size.width - 40;
+        return { opacity: withTiming(near ? 0 : 1, { duration: 60 }) };
+    });
+
     const animatedCircleColor = useDerivedValue(() => {
         return withRepeat(
             withSequence(
@@ -90,7 +97,10 @@ export const ChartLine = (props: ChartLineProps) => {
         <View style={styles.container}>
             <GestureDetector gesture={gesture}>
                 <View style={styles.canvasContainer} onLayout={onLayout}>
-                    <View style={styles.priceLabelsContainer} pointerEvents="none">
+                    <Animated.View
+                        style={[styles.priceLabelsContainer, priceLabelsStyle]}
+                        pointerEvents="none"
+                    >
                         {elegantPrices
                             ?.slice(0, 3)
                             .filter(item => item.shouldBeRendered)
@@ -104,7 +114,7 @@ export const ChartLine = (props: ChartLineProps) => {
                                     </Text>
                                 </Animated.View>
                             ))}
-                    </View>
+                    </Animated.View>
                     <Canvas style={styles.canvas}>
                         {/* Horizontal reference lines */}
                         {elegantPrices?.slice(1, 3).map((item, index) => (
