@@ -492,6 +492,9 @@
         "notRevealed": {
             "subtitle": "You haven't backed up your recovery phrase. Without it, this wallet cannot be recovered.",
             "checkbox": "I understand that I will permanently lose access to this wallet."
+        },
+        "watchOnly": {
+            "subtitle": "This wallet will be removed from your account. You can add it again anytime using the address."
         }
     },
     "tabs": {
