@@ -47,12 +47,7 @@ export const PortfolioName = (props: PortfolioNameProps) => {
                 <View style={styles.contentWithTag}>
                     <View style={styles.container(gap)}>
                         <View style={styles.emojiContainer(size)}>
-                            <Text
-                                onLayout={e => console.log(e.nativeEvent.layout.width)}
-                                style={styles.emoji(size)}
-                            >
-                                {meta.icon.value}
-                            </Text>
+                            <Text style={styles.emoji(size)}>{meta.icon.value}</Text>
                         </View>
                         <Text
                             variant={fontVariant}
