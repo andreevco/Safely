@@ -46,34 +46,22 @@ const getGroupTitle = (
     t: TFunction,
     formatter: DateFormatter
 ): string => {
-    const today = new Date();
     switch (meta.label) {
         case ACTIVITY_GROUP_LABEL.TODAY:
             return t('history.dateHeaders.today');
         case ACTIVITY_GROUP_LABEL.YESTERDAY:
             return t('history.dateHeaders.yesterday');
         case ACTIVITY_GROUP_LABEL.THIS_MONTH: {
-            const date = new Date(today.getFullYear(), today.getMonth(), meta.day);
-
-            return formatter({
-                month: 'long',
-                day: 'numeric'
-            }).format(date);
+            const date = new Date(meta.year, meta.month, meta.day);
+            return formatter({ month: 'long', day: 'numeric' }).format(date);
         }
         case ACTIVITY_GROUP_LABEL.THIS_YEAR: {
-            const date = new Date(2000, meta.month, 1);
-
-            return formatter({
-                month: 'long'
-            }).format(date);
+            const date = new Date(meta.year, meta.month, 1);
+            return formatter({ month: 'long' }).format(date);
         }
         case ACTIVITY_GROUP_LABEL.PAST_YEAR: {
             const date = new Date(meta.year, meta.month, 1);
-
-            return formatter({
-                month: 'long',
-                year: 'numeric'
-            }).format(date);
+            return formatter({ month: 'long', year: 'numeric' }).format(date);
         }
     }
 };

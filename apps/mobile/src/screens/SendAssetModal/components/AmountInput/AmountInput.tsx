@@ -1,7 +1,5 @@
 import { forwardRef, useCallback, useImperativeHandle, useRef } from 'react';
-import type { FocusEvent } from 'react-native';
-import { TextInputProps, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
-import { MaskedTextInput, MaskedTextInputRef } from 'react-native-advanced-input-mask';
+import { TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import Animated, { useSharedValue } from 'react-native-reanimated';
 import { useUnistyles } from 'react-native-unistyles';
 
@@ -9,8 +7,13 @@ import { Icon, SwapVertical20 } from '@mobile/shared/ui/Icon';
 import { Text } from '@mobile/shared/ui/Text';
 
 import { styles, useInputAnimatedStyle } from './AmountInput.styles';
+import { MaskedInput, type MaskedInputRef } from '../../../../../modules/safely-masked-input/src';
 
-export type AmountInputProps = TextInputProps & {
+export type AmountInputProps = {
+    decimals: number;
+    decimalSeparator: string;
+    value?: string;
+    onChangeText?: (value: string) => void;
     label?: string;
     RightComponent?: React.ReactNode;
     onSwitchFiatMode?: () => void;
@@ -18,42 +21,50 @@ export type AmountInputProps = TextInputProps & {
     errored?: boolean;
     currencySymbol?: string;
     isMax?: boolean;
-    mask: string;
+    placeholder?: string;
+    onFocus?: () => void;
 };
 
-export const AmountInput = forwardRef<MaskedTextInputRef, AmountInputProps>((props, ref) => {
+export const AmountInput = forwardRef<MaskedInputRef, AmountInputProps>((props, ref) => {
     const {
         label,
-        style,
         errored,
         RightComponent,
         onSwitchFiatMode,
-        mask,
+        decimals,
+        decimalSeparator,
+        value,
+        onChangeText,
         formattedAlternativeAmount,
         currencySymbol,
         isMax,
-        onFocus,
-        ...rest
+        placeholder,
+        onFocus
     } = props;
     const { theme } = useUnistyles();
-    const inputRef = useRef<MaskedTextInputRef | null>(null);
+    const inputRef = useRef<MaskedInputRef | null>(null);
     const focused = useSharedValue<boolean>(false);
 
     const inputStyle = useInputAnimatedStyle(focused, errored ?? false);
 
-    const handleFocus = useCallback(
-        (e: FocusEvent) => {
-            focused.value = true;
-            onFocus?.(e);
+    const handleFocusChange = useCallback(
+        (isFocused: boolean) => {
+            focused.value = isFocused;
+            if (isFocused) {
+                onFocus?.();
+            }
         },
         [focused, onFocus]
     );
 
-    const handleBlur = useCallback(() => {
-        focused.value = false;
-    }, [focused]);
+    const handleChangeText = useCallback(
+        (rawText: string, _formattedText: string) => {
+            onChangeText?.(rawText);
+        },
+        [onChangeText]
+    );
 
-    useImperativeHandle(ref, () => inputRef.current as MaskedTextInputRef, []);
+    useImperativeHandle(ref, () => inputRef.current as MaskedInputRef, []);
 
     return (
         <View>
@@ -74,21 +85,23 @@ export const AmountInput = forwardRef<MaskedTextInputRef, AmountInputProps>((pro
                                         ≈{' '}
                                     </Text>
                                 )}
-                                <MaskedTextInput
-                                    mask={mask}
+                                <MaskedInput
                                     ref={inputRef}
+                                    decimals={decimals}
+                                    decimalSeparator={decimalSeparator}
+                                    value={value}
+                                    onChangeText={handleChangeText}
+                                    onFocusChange={handleFocusChange}
+                                    placeholder={placeholder}
                                     placeholderTextColor={theme.colors.text.tertiary}
-                                    keyboardType="numeric"
-                                    onFocus={handleFocus}
-                                    onBlur={handleBlur}
-                                    style={[styles.input, style]}
-                                    {...rest}
+                                    textColor={theme.colors.text.primary}
+                                    keyboardType="decimal-pad"
+                                    fontSize={32}
+                                    suffix={currencySymbol ?? ''}
+                                    suffixColor={theme.colors.text.tertiary}
+                                    suffixFontSize={14}
+                                    style={styles.input}
                                 />
-                                {currencySymbol && (
-                                    <Text variant="bodyM" color="tertiary">
-                                        {currencySymbol}
-                                    </Text>
-                                )}
                             </View>
                             <TouchableOpacity
                                 activeOpacity={0.8}

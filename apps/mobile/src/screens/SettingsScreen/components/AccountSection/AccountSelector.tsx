@@ -15,10 +15,11 @@ const MAX_POPUP_ACCOUNTS = 5;
 interface AccountSelectorProps {
     accounts: SyncAccount[];
     rootNavigation: RootStackNavigationProp;
+    onAddAccount: () => void;
 }
 
 export const AccountSelector = (props: AccountSelectorProps) => {
-    const { accounts, rootNavigation } = props;
+    const { accounts, rootNavigation, onAddAccount } = props;
     const account = useActiveAccount();
     const { mutateAsync: setActiveAccount } = useSetActiveAccount();
     const popupMenuRef = useRef<PopupMenuRef>(null);
@@ -51,6 +52,7 @@ export const AccountSelector = (props: AccountSelectorProps) => {
                 accounts={accounts}
                 activeAccountId={account.accountId}
                 onSwitchAccount={handleSwitchAccount}
+                onAddAccount={onAddAccount}
                 popupMenuRef={popupMenuRef}
             />
         );

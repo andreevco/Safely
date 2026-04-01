@@ -1,11 +1,11 @@
-import { Ref, useCallback } from 'react';
+import { RefObject, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Keyboard, TouchableOpacity, View } from 'react-native';
-import { MaskedTextInputRef } from 'react-native-advanced-input-mask';
+import { TouchableOpacity, View } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
 import { Text } from '@mobile/shared/ui/Text';
 
+import { MaskedInputRef } from '../../../../modules/safely-masked-input/src';
 import { AmountInput, AmountStatus, AssetSelector } from '../components';
 import { styles } from './AmountStep.styles';
 
@@ -21,8 +21,9 @@ interface AmountStepProps {
     formattedAlternativeAmount?: string;
     onSwitchFiatMode?: () => void;
     currencySymbol?: string;
-    mask: string;
-    inputRef?: Ref<MaskedTextInputRef>;
+    decimals: number;
+    decimalSeparator: string;
+    inputRef?: RefObject<MaskedInputRef | null>;
 }
 
 export const AmountStep = (props: AmountStepProps) => {
@@ -38,16 +39,17 @@ export const AmountStep = (props: AmountStepProps) => {
         formattedAlternativeAmount,
         onSwitchFiatMode,
         currencySymbol,
-        mask,
+        decimals,
+        decimalSeparator,
         inputRef
     } = props;
 
     const { t } = useTranslation();
 
     const handleMaxPress = useCallback(() => {
-        Keyboard.dismiss();
+        inputRef?.current?.blur();
         onMaxPress();
-    }, [onMaxPress]);
+    }, [inputRef, onMaxPress]);
 
     const handleFocus = useCallback(() => {
         if (isMax) {
@@ -59,7 +61,8 @@ export const AmountStep = (props: AmountStepProps) => {
         <View style={styles.container}>
             <AmountInput
                 ref={inputRef}
-                mask={mask}
+                decimals={decimals}
+                decimalSeparator={decimalSeparator}
                 value={value}
                 onChangeText={onChangeText}
                 onFocus={handleFocus}

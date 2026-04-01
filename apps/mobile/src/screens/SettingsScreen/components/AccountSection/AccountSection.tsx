@@ -38,7 +38,11 @@ export const AccountSection = () => {
     return (
         <List>
             <List.Title>{t('settings.groups.account.title')}</List.Title>
-            <AccountSelector accounts={accounts ?? []} rootNavigation={rootNavigation} />
+            <AccountSelector
+                accounts={accounts ?? []}
+                rootNavigation={rootNavigation}
+                onAddAccount={handleAddAccount}
+            />
             <List.Group variant="divided" style={styles.accountOptions}>
                 <Cell onPress={handleEditAccount}>
                     <Cell.Content>

@@ -6,6 +6,8 @@ import { LoaderService, Security, ToastService } from '../../entities';
 import { TranslateFn } from '../i18n';
 import { IUnlockableSecuredEncryptedStorage } from '../security';
 
+export type AppStateStatus = 'active' | 'background' | 'inactive' | 'unknown';
+
 export interface IAppContext {
     version: string;
 
@@ -40,6 +42,8 @@ export interface IAppContext {
     clearAllData: () => Promise<void>;
 
     security: Security;
+
+    subscribeAppStateChange(this: void, callback: (status: AppStateStatus) => void): () => void;
 }
 
 export const AppContext = createContext<IAppContext | null>(null);
