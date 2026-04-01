@@ -1,4 +1,5 @@
 import { BlurView } from 'expo-blur';
+import { impactAsync, ImpactFeedbackStyle } from 'expo-haptics';
 import { forwardRef, useImperativeHandle } from 'react';
 import { Platform, Pressable, useWindowDimensions } from 'react-native';
 import Animated, { SharedValue } from 'react-native-reanimated';
@@ -73,7 +74,13 @@ export const PopupMenu = forwardRef<PopupMenuRef, PopupMenuProps>((props, ref) =
 
     return (
         <>
-            <TouchableOpacity ref={menu.triggerRef} onPress={menu.open}>
+            <TouchableOpacity
+                ref={menu.triggerRef}
+                onPress={() => {
+                    menu.open();
+                    void impactAsync(ImpactFeedbackStyle.Medium);
+                }}
+            >
                 {touchable}
             </TouchableOpacity>
             {menu.visible && (
