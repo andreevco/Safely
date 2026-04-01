@@ -1,5 +1,14 @@
 {
     "currentLanguageName": "English",
+    "portfolio": {
+        "watchOnly": "Watch only"
+    },
+    "watchOnlySheet": {
+        "title": "Watch-only wallet",
+        "subtitle": "This wallet lets you view balance and transactions. Import it to enable sending funds.",
+        "import": "Import wallet",
+        "ok": "OK"
+    },
     "common": {
         "edit": "Edit",
         "next": "Next",
@@ -342,7 +351,10 @@
         },
         "watchAccount": {
             "title": "Watch account",
-            "subtitle": "Track by wallet address"
+            "subtitle": "Track wallet activity without\nrecovery phrase.",
+            "placeholder": "Enter address",
+            "info": "Watch account cannot sign transactions and send funds.",
+            "invalidAddress": "Invalid Bitcoin address"
         }
     },
     "addAccount": {
