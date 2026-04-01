@@ -6,7 +6,8 @@ import { PortfolioNetworkType } from './portfolio-network-type';
 import { PortfolioSecretRevealedStatus } from './portfolio-secret-revealed-status';
 
 export enum PortfolioType {
-    BIP39 = 'BIP39'
+    BIP39 = 'BIP39',
+    WATCH_ONLY = 'WATCH_ONLY'
 }
 
 export interface IPortfolioDerivable {

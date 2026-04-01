@@ -13,6 +13,7 @@ export interface SendSuggestion {
     address: string;
     meta: PortfolioMeta;
     tag?: number;
+    isWatchOnly?: boolean;
 }
 
 export type AmountInputType = 'crypto' | 'fiat';

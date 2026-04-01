@@ -28,7 +28,7 @@ export function useWalletAssets(wallet: BtcWallet) {
             const fiatSymbol = fiat.id.symbol;
 
             const [addressInfo, btcPrice] = await Promise.all([
-                btcApi.getXpub(wallet, {
+                btcApi.getAddressInfo(wallet, {
                     secondaryCurrency: fiatSymbol
                 }),
                 fetchRateQuery(queryClient, priceApi, BTC_ASSET, fiat)

@@ -1,12 +1,19 @@
 import { PortfolioType } from './I-portfolio';
 import { PortfolioBip39 } from './portfolio-bip39';
 import { PortfolioIdMnemonicBased } from './portfolio-id';
+import { PortfolioIdAddressBased } from './portfolio-id-address-based';
+import { PortfolioMeta } from './portfolio-meta';
 import { PortfolioNetworkType } from './portfolio-network-type';
-import type { SPortfolioOut } from './portfolio.stored';
+import { PortfolioWatchOnly } from './portfolio-watch-only';
+import type { SPortfolioBip39Out, SPortfolioOut, SPortfolioWatchOnlyOut } from './portfolio.stored';
 import { ISecretEncryptor } from '../../di';
 import { assertUnreachable } from '../../utils';
 import { BtcWalletType } from '../blockchain';
-import { DerivationChainItemBtcSeed, Derivation } from '../derivation';
+import {
+    DerivationChainItemBtcSeed,
+    Derivation,
+    DerivationChainItemBtcAddress
+} from '../derivation';
 import { InvalidMnemonicError, PortfolioGenerationFailedError } from '../errors';
 import {
     MNEMONIC_TYPE,
@@ -19,11 +26,15 @@ import { BtcBip39SeedProducer } from '../seed';
 
 export class PortfolioFactory {
     public static restorePortfolio(encryptor: ISecretEncryptor, portfolio: SPortfolioOut) {
-        switch (portfolio.id.type) {
+        const type = portfolio.id.type;
+
+        switch (type) {
             case PortfolioType.BIP39:
-                return PortfolioBip39.restorePortfolio(encryptor, portfolio);
+                return PortfolioBip39.restorePortfolio(encryptor, portfolio as SPortfolioBip39Out);
+            case PortfolioType.WATCH_ONLY:
+                return PortfolioWatchOnly.restorePortfolio(portfolio as SPortfolioWatchOnlyOut);
             default:
-                assertUnreachable(portfolio.id.type);
+                assertUnreachable(type);
         }
     }
     constructor(private readonly encryptor: ISecretEncryptor) {}
@@ -102,6 +113,30 @@ export class PortfolioFactory {
             console.error(error);
             throw new PortfolioGenerationFailedError(undefined, { cause: error });
         }
+    }
+
+    public static generateWatchOnlyPortfolio(
+        address: string,
+        options: {
+            network: PortfolioNetworkType;
+            meta: PortfolioMeta;
+        }
+    ): PortfolioWatchOnly {
+        const portfolioId = PortfolioIdAddressBased.create(address, options.network);
+
+        return new PortfolioWatchOnly({
+            id: portfolioId,
+            meta: options.meta,
+            address,
+            derivations: self => [
+                new Derivation(self, 0, derivationRef => ({
+                    btc: DerivationChainItemBtcAddress.generate({
+                        address,
+                        derivationRef
+                    })
+                }))
+            ]
+        });
     }
 
     private async getMnemonicVault(mnemonicAccessor: IMnemonicAccessor): Promise<MnemonicVault> {

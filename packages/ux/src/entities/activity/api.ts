@@ -13,13 +13,13 @@ function getBiggestIOAddress(io: BtcApiTx['vin' | 'vout']) {
 
 export async function fetchBtcActivity(
     btcApi: BtcApi,
-    wallet: Pick<BtcWallet, 'type' | 'xpub'>,
+    wallet: Pick<BtcWallet, 'type' | 'xpub' | 'address'>,
     page: number,
     filters: IActivityFilters
 ): Promise<ActivityPage> {
     const pageNum = page >= 1 ? page : 1;
 
-    const addressData = await btcApi.getXpub(
+    const addressData = await btcApi.getAddressInfo(
         {
             ...wallet,
             derivationPath: {
