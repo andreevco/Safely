@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Keyboard, TextInput, View } from 'react-native';
+import { TextInput, View } from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';
 
 import { useImportSeedPhrase } from '@safely/ux';
@@ -29,7 +29,6 @@ export const ImportWalletScreen = () => {
     });
 
     const handleContinue = useCallback(() => {
-        Keyboard.dismiss();
         handleSubmit();
     }, [handleSubmit]);
 
@@ -44,7 +43,7 @@ export const ImportWalletScreen = () => {
                     onPress={handleContinue}
                     disabled={!isDirty}
                 >
-                    {t('onboarding.importWallet.continue')}
+                    {t('common.continue')}
                 </Button>
             </Screen.Header>
             <Screen.Scrollable>
@@ -66,6 +65,9 @@ export const ImportWalletScreen = () => {
                             onBlur={() => setIsFocused(false)}
                             style={[styles.textArea, { color: theme.colors.text.primary }]}
                             multiline
+                            submitBehavior="submit"
+                            returnKeyType="next"
+                            onSubmitEditing={isDirty ? handleContinue : undefined}
                             autoFocus
                             autoCapitalize="none"
                             autoCorrect={false}

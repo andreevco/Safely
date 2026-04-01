@@ -74,6 +74,7 @@ export const CustomizeWalletModal = (props: CustomizeWalletModalProps) => {
                     onWalletNameChange={setWalletName}
                     selectedIcon={selectedIcon}
                     onIconChange={setSelectedIcon}
+                    onSubmitEditing={isNameValid ? handleSave : undefined}
                 />
             </Screen.Content>
         </Screen>

@@ -21,6 +21,7 @@ interface CustomizeWalletContentProps {
     selectedIcon: WalletIcon;
     onIconChange: (icon: WalletIcon) => void;
     disabled?: boolean;
+    onSubmitEditing?: () => void;
 }
 
 export const CustomizeWalletContent = ({
@@ -30,7 +31,8 @@ export const CustomizeWalletContent = ({
     onWalletNameChange,
     selectedIcon,
     onIconChange,
-    disabled = false
+    disabled = false,
+    onSubmitEditing
 }: CustomizeWalletContentProps) => {
     const { t } = useTranslation();
     const { theme } = useUnistyles();
@@ -84,6 +86,8 @@ export const CustomizeWalletContent = ({
                             placeholderTextColor={theme.colors.text.tertiary}
                             style={[styles.input, { color: theme.colors.text.primary }]}
                             editable={!disabled}
+                            returnKeyType="done"
+                            onSubmitEditing={onSubmitEditing}
                         />
                         {iconDisplay && <View style={styles.iconContainer}>{iconDisplay}</View>}
                     </View>

@@ -74,7 +74,7 @@ export const AddWatchOnlyScreen = () => {
                     onPress={handleNext}
                     disabled={!isValidAddress}
                 >
-                    {t('common.next')}
+                    {t('common.continue')}
                 </Button>
             </Screen.Header>
             <Screen>
@@ -96,7 +96,7 @@ export const AddWatchOnlyScreen = () => {
                         style={[styles.input, { color: theme.colors.text.primary }]}
                         multiline
                         submitBehavior="submit"
-                        returnKeyType="done"
+                        returnKeyType="next"
                         onSubmitEditing={isValidAddress ? handleNext : undefined}
                         autoFocus
                         autoCapitalize="none"
