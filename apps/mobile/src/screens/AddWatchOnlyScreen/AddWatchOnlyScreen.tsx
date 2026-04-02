@@ -12,6 +12,8 @@ import { Button, Screen, Text } from '@mobile/shared/ui';
 import { Icon, XmarkCircle16 } from '@mobile/shared/ui/Icon';
 import { TouchableOpacity } from '@mobile/shared/ui/TouchableOpacity';
 
+import { handleDuplicatePortfolio } from '@mobile/features/add-wallet/handleDuplicatePortfolio';
+
 import { styles } from './AddWatchOnlyScreen.styles';
 
 export const AddWatchOnlyScreen = () => {
@@ -41,20 +43,25 @@ export const AddWatchOnlyScreen = () => {
     const handleNext = useCallback(() => {
         navigation.dispatch(
             CommonActions.navigate('CustomizeWalletModal', {
+                hasBackButton: true,
                 onSave: async (meta: PortfolioMeta) => {
-                    await withLoader(async () => {
-                        await addWatchOnlyPortfolio({
-                            address: address.trim(),
-                            meta
+                    try {
+                        await withLoader(async () => {
+                            await addWatchOnlyPortfolio({
+                                address: address.trim(),
+                                meta
+                            });
                         });
-                    });
 
-                    navigation.dispatch(
-                        CommonActions.reset({
-                            index: 0,
-                            routes: [{ name: 'TabsNavigator' }]
-                        })
-                    );
+                        navigation.dispatch(
+                            CommonActions.reset({
+                                index: 0,
+                                routes: [{ name: 'TabsNavigator' }]
+                            })
+                        );
+                    } catch (error) {
+                        handleDuplicatePortfolio(error, navigation);
+                    }
                 },
                 onCompleteCustomize: () => {
                     navigation.goBack();

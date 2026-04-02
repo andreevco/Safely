@@ -146,8 +146,7 @@ export function useImportPortfolio() {
     const toast = useToast();
     const t = useTranslate();
     const errorToast = useErrorToast({
-        InvalidMnemonicError: 'importWalletScreen.errors.invalidMnemonic',
-        PortfolioAlreadyExistsError: 'importWalletScreen.errors.alreadyExists'
+        InvalidMnemonicError: 'importWalletScreen.errors.invalidMnemonic'
     });
     const { deviceInfo } = useAppContext();
 
@@ -171,8 +170,10 @@ export function useImportPortfolio() {
                 seedRevealedFromDevice: deviceInfo.name
             });
 
-            if (existingPortfolios?.some(p => p.id.isEq(portfolio.id))) {
-                throw new PortfolioAlreadyExistsError();
+            const existingBip39 = existingPortfolios?.find(p => p.id.isEq(portfolio.id));
+
+            if (existingBip39) {
+                throw new PortfolioAlreadyExistsError(existingBip39);
             }
 
             await addPortfolio(portfolio);
@@ -184,7 +185,13 @@ export function useImportPortfolio() {
         onSuccess() {
             toast(t('importWalletScreen.toastMessages.importedWallet'));
         },
-        onError: errorToast
+        onError(error) {
+            if (error instanceof PortfolioAlreadyExistsError) {
+                return;
+            }
+
+            errorToast(error);
+        }
     });
 }
 
@@ -359,9 +366,6 @@ export function useAddWatchOnlyPortfolio() {
     const { data: existingPortfolios } = usePortfoliosQuery();
     const { mutateAsync: addPortfolio } = useAddPortfolio();
     const { mutateAsync: setActivePortfolio } = useSetActivePortfolio();
-    const errorToast = useErrorToast({
-        PortfolioAlreadyExistsError: 'importWalletScreen.errors.alreadyExists'
-    });
 
     return useMutation<Portfolio, Error, { address: string; meta: PortfolioMeta }>({
         async mutationFn({ address, meta }) {
@@ -370,20 +374,23 @@ export function useAddWatchOnlyPortfolio() {
                 meta
             });
 
-            const addressExists = existingPortfolios?.some(p =>
-                p.getDerivations().some(d => d.chains.btc.wallets.some(w => w.address === address))
+            const existingWatchOnly = existingPortfolios?.find(
+                p =>
+                    p.id.type === PortfolioType.WATCH_ONLY &&
+                    p
+                        .getDerivations()
+                        .some(d => d.chains.btc.wallets.some(w => w.address === address))
             );
 
-            if (addressExists) {
-                throw new PortfolioAlreadyExistsError();
+            if (existingWatchOnly) {
+                throw new PortfolioAlreadyExistsError(existingWatchOnly);
             }
 
             await addPortfolio(portfolio);
             await setActivePortfolio(portfolio);
 
             return portfolio;
-        },
-        onError: errorToast
+        }
     });
 }
 

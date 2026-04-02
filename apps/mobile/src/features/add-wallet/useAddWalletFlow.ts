@@ -9,6 +9,8 @@ import {
 } from '@safely/ux';
 import { useLoader } from '@safely/ux';
 
+import { handleDuplicatePortfolio } from './handleDuplicatePortfolio';
+
 const routes = {
     importWallet: 'ImportWalletModal',
     customize: 'CustomizeWalletModal'
@@ -55,20 +57,24 @@ export function useAddWalletFlow() {
             navigation.dispatch(
                 CommonActions.navigate(routes.customize, {
                     onSave: async (meta: PortfolioMeta) => {
-                        using secretEncryptor = createEncryptor();
-                        await secretEncryptor.unlockEncryption();
+                        try {
+                            using secretEncryptor = createEncryptor();
+                            await secretEncryptor.unlockEncryption();
 
-                        await withLoader(async () => {
-                            using mnemonicAccessor = new MnemonicResource(mnemonic);
-                            await importPortfolio({ mnemonicAccessor, secretEncryptor, meta });
-                        });
+                            await withLoader(async () => {
+                                using mnemonicAccessor = new MnemonicResource(mnemonic);
+                                await importPortfolio({ mnemonicAccessor, secretEncryptor, meta });
+                            });
 
-                        navigation.dispatch(
-                            CommonActions.reset({
-                                index: 0,
-                                routes: [{ name: 'TabsNavigator' }]
-                            })
-                        );
+                            navigation.dispatch(
+                                CommonActions.reset({
+                                    index: 0,
+                                    routes: [{ name: 'TabsNavigator' }]
+                                })
+                            );
+                        } catch (error) {
+                            handleDuplicatePortfolio(error, navigation);
+                        }
                     },
                     onCompleteCustomize: () => {
                         navigation.goBack();
