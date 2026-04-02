@@ -1,7 +1,7 @@
 import { useFocusEffect } from '@react-navigation/native';
 import { selectionAsync } from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TextInput, View } from 'react-native';
 import { KeyboardAwareScrollView, KeyboardStickyView } from 'react-native-keyboard-controller';
@@ -37,6 +37,9 @@ export const CustomizeWalletContent = ({
     const { t } = useTranslation();
     const { theme } = useUnistyles();
     const inputRef = useRef<TextInput>(null);
+    const [isFocused, setIsFocused] = useState(false);
+
+    styles.useVariants({ focused: isFocused });
 
     useFocusEffect(
         useCallback(() => {
@@ -86,6 +89,8 @@ export const CustomizeWalletContent = ({
                             placeholderTextColor={theme.colors.text.tertiary}
                             style={[styles.input, { color: theme.colors.text.primary }]}
                             editable={!disabled}
+                            onFocus={() => setIsFocused(true)}
+                            onBlur={() => setIsFocused(false)}
                             returnKeyType="done"
                             onSubmitEditing={onSubmitEditing}
                         />
