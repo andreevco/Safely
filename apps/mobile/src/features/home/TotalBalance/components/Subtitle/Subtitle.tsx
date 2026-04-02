@@ -1,8 +1,9 @@
+import { useNavigation } from '@react-navigation/native';
 import { setStringAsync } from 'expo-clipboard';
 import { notificationAsync, NotificationFeedbackType } from 'expo-haptics';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import Animated, {
     Easing,
     FadeIn,
@@ -18,6 +19,7 @@ import { useUnistyles } from 'react-native-unistyles';
 
 import { ellipsisMiddle } from '@safely/core';
 
+import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { Badge, Text, TextProps } from '@mobile/shared/ui';
 
 import { SubtitleStatus, useSubtitleStatus } from './useSubtitleStatus';
@@ -65,8 +67,13 @@ export const SubtitleAnimatedText = ({ children, ...props }: TextProps) => {
 
 export const Subtitle = ({ address, isFetching, lastUpdatedAt, isWatchOnly }: SubtitleProps) => {
     const { t } = useTranslation();
+    const navigation = useNavigation<RootStackNavigationProp>();
 
     const { status, onCopyAddress } = useSubtitleStatus({ isFetching, lastUpdatedAt });
+
+    const handleWatchOnlyPress = useCallback(() => {
+        navigation.navigate('WatchOnlySheet');
+    }, [navigation]);
 
     const hasChangedRef = useRef(false);
 
@@ -109,9 +116,11 @@ export const Subtitle = ({ address, isFetching, lastUpdatedAt, isWatchOnly }: Su
                             {ellipsisMiddle(address, 4)}
                         </Text>
                         {isWatchOnly && (
-                            <Badge type="warning" isUppercase>
-                                {t('portfolio.watchOnly')}
-                            </Badge>
+                            <Pressable onPress={handleWatchOnlyPress}>
+                                <Badge type="warning" isUppercase>
+                                    {t('portfolio.watchOnly')}
+                                </Badge>
+                            </Pressable>
                         )}
                     </View>
                 );
@@ -134,7 +143,7 @@ export const Subtitle = ({ address, isFetching, lastUpdatedAt, isWatchOnly }: Su
                     </Text>
                 );
         }
-    }, [status, t, handleCopyAddress, address, lastUpdatedAt, isWatchOnly]);
+    }, [status, t, lastUpdatedAt, handleCopyAddress, address, isWatchOnly, handleWatchOnlyPress]);
 
     return (
         <Animated.View
