@@ -19,6 +19,7 @@ function mapPortfolioToSuggestions(
     return derivations
         .filter(d => !d.id.isEq(activeDerivation.id))
         .map(derivation => ({
+            id: portfolio.id.toString(),
             address: derivation.chains.btc.wallets[0]?.address,
             meta: portfolio.meta,
             tag: derivations.length > 1 ? derivation.index + 1 : undefined,
@@ -34,7 +35,7 @@ interface UseSendFormMetaParams {
 
 export function useSendFormMeta(params: UseSendFormMetaParams) {
     const { state, assetsData, suggestionDraft } = params;
-    const { selectedAddress, suggestionAddresses: savedSuggestionAddresses } = suggestionDraft;
+    const { selectedId, suggestionIds: savedSuggestionIds } = suggestionDraft;
 
     const blockchain = state.parsed.recipient?.blockchain;
     const portfolios = usePortfolios();
@@ -49,19 +50,15 @@ export function useSendFormMeta(params: UseSendFormMetaParams) {
     }, [portfolios, activeDerivation, state.values.recipient, state.parsed.recipient]);
 
     const restoredSuggestions = useMemo(() => {
-        if (!savedSuggestionAddresses || !selectedAddress) return undefined;
+        if (!savedSuggestionIds || !selectedId) return undefined;
 
-        const addressSet = new Set(savedSuggestionAddresses);
+        const idSet = new Set(savedSuggestionIds);
 
         return portfolios
             .flatMap(portfolio => mapPortfolioToSuggestions(portfolio, activeDerivation))
-            .filter(s => addressSet.has(s.address))
-            .sort(
-                (a, b) =>
-                    savedSuggestionAddresses.indexOf(a.address) -
-                    savedSuggestionAddresses.indexOf(b.address)
-            );
-    }, [savedSuggestionAddresses, selectedAddress, portfolios, activeDerivation]);
+            .filter(s => idSet.has(s.id))
+            .sort((a, b) => savedSuggestionIds.indexOf(a.id) - savedSuggestionIds.indexOf(b.id));
+    }, [savedSuggestionIds, selectedId, portfolios, activeDerivation]);
 
     const portfolioMetaByAddress = useMemo(() => {
         if (!state.parsed.recipient) {

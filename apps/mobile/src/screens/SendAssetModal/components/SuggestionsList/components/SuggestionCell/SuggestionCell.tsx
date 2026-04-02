@@ -9,7 +9,7 @@ interface SuggestionCellProps {
     suggestion: SendSuggestion;
     isSelected: boolean;
     showDivider?: boolean;
-    onSelect: (address: string, label: string) => void;
+    onSelect: (id: string, address: string, label: string) => void;
 }
 
 export const SuggestionCell = (props: SuggestionCellProps) => {
@@ -19,7 +19,7 @@ export const SuggestionCell = (props: SuggestionCellProps) => {
         <Cell
             style={styles.cell}
             showDivider={showDivider}
-            onPress={() => onSelect(suggestion.address, suggestion.meta.name)}
+            onPress={() => onSelect(suggestion.id, suggestion.address, suggestion.meta.name)}
         >
             <Cell.Content>
                 <Cell.Row>

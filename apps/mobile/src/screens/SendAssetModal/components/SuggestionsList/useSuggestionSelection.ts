@@ -5,9 +5,9 @@ import { SendSuggestion } from '@safely/ux';
 interface UseSuggestionSelectionParams {
     suggestions: SendSuggestion[];
     restoredSuggestions?: SendSuggestion[];
-    selectedAddress?: string;
+    selectedId?: string;
     onChangeText: (value: string, label?: string) => void;
-    onSelectSuggestion: (address: string, visibleSuggestions: SendSuggestion[]) => void;
+    onSelectSuggestion: (id: string, visibleSuggestions: SendSuggestion[]) => void;
     onClearSuggestionSelection: () => void;
 }
 
@@ -15,7 +15,7 @@ export function useSuggestionSelection(params: UseSuggestionSelectionParams) {
     const {
         suggestions,
         restoredSuggestions,
-        selectedAddress,
+        selectedId,
         onChangeText,
         onSelectSuggestion,
         onClearSuggestionSelection
@@ -29,11 +29,11 @@ export function useSuggestionSelection(params: UseSuggestionSelectionParams) {
         }
     }, [suggestions]);
 
-    const displaySuggestions = selectedAddress ? savedSuggestions.current : suggestions;
+    const displaySuggestions = selectedId ? savedSuggestions.current : suggestions;
 
     const handleSelect = useCallback(
-        (address: string, label: string) => {
-            onSelectSuggestion(address, savedSuggestions.current);
+        (id: string, address: string, label: string) => {
+            onSelectSuggestion(id, savedSuggestions.current);
             onChangeText(address, label);
         },
         [onChangeText, onSelectSuggestion]
@@ -49,7 +49,7 @@ export function useSuggestionSelection(params: UseSuggestionSelectionParams) {
 
     return {
         displaySuggestions,
-        selectedAddress,
+        selectedId,
         handleSelect,
         handleChangeText
     };

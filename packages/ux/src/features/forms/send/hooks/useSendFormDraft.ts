@@ -7,8 +7,8 @@ import { SendFormInitialValues } from '../types';
 
 type SendFormDraft = Required<Pick<SendFormInitialValues, 'recipient'>> &
     Omit<SendFormInitialValues, 'recipient'> & {
-        selectedAddress?: string;
-        suggestionAddresses?: string[];
+        selectedId?: string;
+        suggestionIds?: string[];
     };
 
 export function useSendFormDraft() {
