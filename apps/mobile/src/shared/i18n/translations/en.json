@@ -3,6 +3,12 @@
     "portfolio": {
         "watchOnly": "Watch only"
     },
+    "walletAlreadyAdded": {
+        "title": "You've already added this wallet as {{name}}",
+        "subtitle": "Open it or edit its details.",
+        "open": "Open wallet",
+        "edit": "Edit"
+    },
     "watchOnlySheet": {
         "title": "Watch-only wallet",
         "subtitle": "This wallet lets you view balance and transactions. Import it to enable sending funds.",
