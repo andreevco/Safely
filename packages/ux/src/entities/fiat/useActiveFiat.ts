@@ -2,25 +2,23 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { FiatAsset } from '@safely/core';
 
-import { fiatKeys } from './keys';
-import { useBootConfig, useSuspenseQuery } from '../../shared';
-import { useActiveAccountSyncedStorage } from '../../shared/storage/account/synced';
+import { useAvailableFiats, useSuspenseQuery, useActiveAccountSyncedStorage } from '../../shared';
+import { useActiveAccountQueryKey } from '../account';
 
 const USD_FIAT = FiatAsset.create({ symbol: 'USD', name: 'US Dollar' });
 
 export function useActiveFiatQuery() {
+    const availableFiats = useAvailableFiats();
+    const accountQueryKey = useActiveAccountQueryKey();
     const { get } = useActiveAccountSyncedStorage('preferredFiat');
-    const { currencies } = useBootConfig();
 
     return useSuspenseQuery<FiatAsset>({
-        queryKey: fiatKeys.active().toKey(),
+        queryKey: accountQueryKey.preferredFiat.deps({ availableFiats }).toKey(),
         queryFn: async () => {
-            const stored = await get();
+            const stored = get();
 
             if (stored) {
-                const isSupported = currencies.supported_currencies.some(
-                    c => c.slug === stored.id.symbol
-                );
+                const isSupported = availableFiats.some(fiat => fiat.id.isEq(stored.id));
 
                 if (isSupported) return stored;
             }
@@ -37,13 +35,14 @@ export function useActiveFiat() {
 
 export function useSetActiveFiat() {
     const client = useQueryClient();
+    const accountQueryKey = useActiveAccountQueryKey();
     const { set } = useActiveAccountSyncedStorage('preferredFiat');
 
     return useMutation<void, Error, { fiat: FiatAsset }>({
         mutationFn: async ({ fiat }) => {
             await set(fiat.toJSON());
             await client.invalidateQueries({
-                queryKey: fiatKeys.active().toKey()
+                queryKey: accountQueryKey.preferredFiat.toKey()
             });
         }
     });

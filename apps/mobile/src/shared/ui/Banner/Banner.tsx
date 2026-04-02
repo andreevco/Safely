@@ -1,4 +1,4 @@
-import { View } from 'react-native';
+import { StyleProp, ViewStyle, View } from 'react-native';
 import { UnistylesVariants } from 'react-native-unistyles';
 
 import { ChevronRight16, Icon } from '@mobile/shared/ui/Icon';
@@ -11,15 +11,16 @@ export type BannerProps = UnistylesVariants<typeof styles> & {
     text: string;
     onPress?: () => void;
     actionText?: string;
+    style?: StyleProp<ViewStyle>;
 };
 
 export const Banner = (props: BannerProps) => {
-    const { variant, text, onPress, actionText, ...rest } = props;
+    const { variant, text, onPress, actionText, style, ...rest } = props;
 
     styles.useVariants({ variant, ...rest });
 
     return (
-        <TouchableOpacity style={styles.container} onPress={onPress}>
+        <TouchableOpacity style={[styles.container, style]} onPress={onPress}>
             <Text variant="bodyM" style={styles.text}>
                 {text}
             </Text>

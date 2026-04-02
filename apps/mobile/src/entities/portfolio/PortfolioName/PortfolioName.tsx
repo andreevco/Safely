@@ -46,7 +46,9 @@ export const PortfolioName = (props: PortfolioNameProps) => {
             return (
                 <View style={styles.contentWithTag}>
                     <View style={styles.container(gap)}>
-                        <Text>{meta.icon.value}</Text>
+                        <View style={styles.emojiContainer(size)}>
+                            <Text style={styles.emoji(size)}>{meta.icon.value}</Text>
+                        </View>
                         <Text
                             variant={fontVariant}
                             color={color}

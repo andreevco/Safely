@@ -4,6 +4,7 @@ import { LayoutChangeEvent, View } from 'react-native';
 import { GestureDetector, GestureType } from 'react-native-gesture-handler';
 import Animated, {
     type SharedValue,
+    useAnimatedStyle,
     useDerivedValue,
     withDelay,
     withRepeat,
@@ -60,12 +61,12 @@ export const ChartLine = (props: ChartLineProps) => {
     };
 
     const crosshairOpacity = useDerivedValue(() => (isActive.value ? 1 : 0));
-    const lastPointOpacity = useDerivedValue(() => (isActive.value ? 0 : 1));
+    const pointsOpacity = useDerivedValue(() => (isActive.value ? 0 : 1));
 
     const crosshairP1 = useDerivedValue(() => vec(activeX.value, 0));
     const crosshairP2 = useDerivedValue(() => vec(activeX.value, size.height));
 
-    const { fullPath, periodSplitEnd, lastPoint, elegantPrices } = useChartPaths({
+    const { fullPath, periodSplitEnd, lastPoint, elegantPrices, splitPoint } = useChartPaths({
         prices,
         width: size.width,
         height: size.height,
@@ -73,6 +74,12 @@ export const ChartLine = (props: ChartLineProps) => {
         selectedPeriod,
         chartPointsShared,
         pathFractionsShared
+    });
+
+    const priceLabelsStyle = useAnimatedStyle(() => {
+        if (!isActive.value) return { opacity: 1 };
+        const near = activeX.value > size.width - 40;
+        return { opacity: withTiming(near ? 0 : 1, { duration: 60 }) };
     });
 
     const animatedCircleColor = useDerivedValue(() => {
@@ -90,7 +97,10 @@ export const ChartLine = (props: ChartLineProps) => {
         <View style={styles.container}>
             <GestureDetector gesture={gesture}>
                 <View style={styles.canvasContainer} onLayout={onLayout}>
-                    <View style={styles.priceLabelsContainer} pointerEvents="none">
+                    <Animated.View
+                        style={[styles.priceLabelsContainer, priceLabelsStyle]}
+                        pointerEvents="none"
+                    >
                         {elegantPrices
                             ?.slice(0, 3)
                             .filter(item => item.shouldBeRendered)
@@ -104,7 +114,7 @@ export const ChartLine = (props: ChartLineProps) => {
                                     </Text>
                                 </Animated.View>
                             ))}
-                    </View>
+                    </Animated.View>
                     <Canvas style={styles.canvas}>
                         {/* Horizontal reference lines */}
                         {elegantPrices?.slice(1, 3).map((item, index) => (
@@ -129,17 +139,17 @@ export const ChartLine = (props: ChartLineProps) => {
 
                         {/* Inactive mode: period-based faded/main split */}
                         {periodSplitEnd > 0 && (
-                            <Group opacity={lastPointOpacity}>
+                            <Group opacity={pointsOpacity}>
                                 <Path
                                     path={fullPath}
                                     color={FADED_LINE_COLOR}
                                     strokeWidth={LINE_STROKE_WIDTH}
                                     style="stroke"
-                                    end={periodSplitEnd - 0.0025}
+                                    end={periodSplitEnd}
                                 />
                             </Group>
                         )}
-                        <Group opacity={lastPointOpacity}>
+                        <Group opacity={pointsOpacity}>
                             <Path
                                 path={fullPath}
                                 color={LINE_COLOR}
@@ -148,6 +158,23 @@ export const ChartLine = (props: ChartLineProps) => {
                                 start={periodSplitEnd}
                             />
                         </Group>
+
+                        {splitPoint && (
+                            <Group opacity={pointsOpacity}>
+                                <Circle
+                                    cx={splitPoint.x}
+                                    cy={splitPoint.y}
+                                    r={DOT_RADIUS + 1}
+                                    color={theme.colors.background.secondary}
+                                />
+                                <Circle
+                                    cx={splitPoint.x}
+                                    cy={splitPoint.y}
+                                    r={DOT_RADIUS}
+                                    color={LINE_COLOR}
+                                />
+                            </Group>
+                        )}
 
                         {/* Active mode: bright before crosshair, faded after */}
                         <Group opacity={crosshairOpacity}>
@@ -169,7 +196,7 @@ export const ChartLine = (props: ChartLineProps) => {
 
                         {/* Last point dot (hidden during gesture) */}
                         {lastPoint && (
-                            <Group opacity={lastPointOpacity}>
+                            <Group opacity={pointsOpacity}>
                                 <Circle
                                     cx={lastPoint.x}
                                     cy={lastPoint.y}

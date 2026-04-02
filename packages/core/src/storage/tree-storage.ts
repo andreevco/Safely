@@ -1,15 +1,20 @@
 import { IEnumerableStorage, ITreeStorage } from '../di';
 
 export class TreeStorage implements ITreeStorage {
-    public static root(storage: IEnumerableStorage) {
-        return new TreeStorage([], storage);
+    public static root(storage: IEnumerableStorage, intentStorage?: IEnumerableStorage) {
+        return new TreeStorage([], storage, null, intentStorage);
     }
+
+    private readonly intentStorage: IEnumerableStorage;
 
     constructor(
         public path: string[],
         private readonly storage: IEnumerableStorage,
-        public parent: TreeStorage | null = null
-    ) {}
+        public parent: TreeStorage | null = null,
+        intentStorage?: IEnumerableStorage
+    ) {
+        this.intentStorage = intentStorage ?? storage;
+    }
 
     private readonly separator = '..';
 
@@ -48,14 +53,14 @@ export class TreeStorage implements ITreeStorage {
     }
 
     public async clear(): Promise<void> {
-        await this.storage.setItem(this.clearIntentKey, 'true');
+        await this.intentStorage.setItem(this.clearIntentKey, 'true');
 
         const actualKeys = await this.getAllKeys();
         for (const key of actualKeys) {
             await this.storage.removeItem(key);
         }
 
-        await this.storage.removeItem(this.clearIntentKey);
+        await this.intentStorage.removeItem(this.clearIntentKey);
     }
 
     public async getAllKeys(): Promise<string[]> {
@@ -71,14 +76,19 @@ export class TreeStorage implements ITreeStorage {
         let current: TreeStorage = this;
 
         for (const segment of segments) {
-            current = new TreeStorage([...current.path, segment], this.storage, current);
+            current = new TreeStorage(
+                [...current.path, segment],
+                this.storage,
+                current,
+                this.intentStorage
+            );
         }
 
         return current;
     }
 
     private async recoverIntents() {
-        const clearIntent = await this.storage.getItem(this.clearIntentKey);
+        const clearIntent = await this.intentStorage.getItem(this.clearIntentKey);
         if (clearIntent) {
             return this.clear();
         }

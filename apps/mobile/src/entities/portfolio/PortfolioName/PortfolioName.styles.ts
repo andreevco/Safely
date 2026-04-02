@@ -13,6 +13,16 @@ export const styles = StyleSheet.create(theme => ({
         borderRadius: theme.radius.full,
         backgroundColor: color
     }),
+    emojiContainer: (size: number) => ({
+        width: size,
+        height: size,
+        alignItems: 'center',
+        justifyContent: 'center'
+    }),
+    emoji: (size: number) => ({
+        fontSize: size * 0.75,
+        lineHeight: size
+    }),
     tag: {
         paddingVertical: 1,
         paddingHorizontal: theme.spacing[4],

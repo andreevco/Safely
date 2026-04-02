@@ -13,6 +13,8 @@ import '@formatjs/intl-numberformat/locale-data/en';
 import '@formatjs/intl-numberformat/locale-data/ru';
 import * as Crypto from 'expo-crypto';
 
+import { XHREventSource } from '@safely/sync';
+
 /**
  *  Explicit resources management polyfills
  */
@@ -43,6 +45,12 @@ if (typeof global.SuppressedError === 'undefined') {
  */
 
 global.Buffer = require('@craftzdog/react-native-buffer').Buffer;
+
+/**
+ *  EventSource polyfill
+ */
+
+(global as any).IsomorphicEventSource = XHREventSource;
 
 /**
  * crypto polyfills

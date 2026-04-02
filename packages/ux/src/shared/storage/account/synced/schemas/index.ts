@@ -1,13 +1,28 @@
-import type { ZodType } from 'zod';
+import { sha256 } from '@noble/hashes/sha2.js';
+import { bytesToHex } from '@noble/hashes/utils.js';
+import { z, ZodType } from 'zod';
 
-import { sAccountDataSchema } from './account-data.schema';
+import { sAccountMeta } from './account-meta.schema';
+import { sDevicesMeta } from './devices-meta.schema';
 import { sPortfolios } from './portfolios.schema';
 import { sPreferredFiat } from './preferred-fiat';
 
 export const syncedStorageStructure = {
     preferredFiat: sPreferredFiat,
     portfolios: sPortfolios,
-    accountData: sAccountDataSchema
+    meta: sAccountMeta,
+    devicesMeta: sDevicesMeta
 } as const satisfies Record<string, ZodType>;
 
+export function calcSyncedStorageHash(storage: {
+    [K in keyof SyncedStorageStructure]: z.output<SyncedStorageStructure[K]>;
+}) {
+    const { devicesMeta: _, ...rest } = storage;
+    const string = JSON.stringify(rest);
+    return bytesToHex(sha256(Buffer.from(string, 'utf8')));
+}
+
 export type SyncedStorageStructure = typeof syncedStorageStructure;
+export { type AccountMeta } from './account-meta.schema';
+export { type DeviceMeta } from './devices-meta.schema';
+export { type SeedRevealInfo } from './last-seed-revealed.schema';

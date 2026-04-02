@@ -59,8 +59,9 @@ function elegantScale(minVal: number, maxVal: number): [number, number, number, 
     for (const step of candidateSteps) {
         const kMin = Math.floor((maxVal - 3 * step) / step);
         const kMax = Math.floor(minVal / step);
+        const kStart = minVal >= 0 ? Math.max(kMin, 0) : kMin;
 
-        for (let k = kMin; k <= kMax; k++) {
+        for (let k = kStart; k <= kMax; k++) {
             const axisMin = k * step;
             const score = scoreAxis(minVal, maxVal, axisMin, step);
 
@@ -149,9 +150,22 @@ export const buildChartPoints = (
         const clamped = Math.max(0, Math.min(1, normalized));
         const y = height - clamped * height;
 
-        const shouldBeRendered = !mappedPoints.some(
-            point => point.x > width - 26 && Math.abs(point.y - y) < 2
-        );
+        const LABEL_X_WIDTH = 40;
+        const LABEL_Y_OFFSET = 20;
+        const LABEL_Y_HEIGHT = 14;
+        const MARGIN = 4;
+
+        const labelTop = y - LABEL_Y_OFFSET - MARGIN;
+        const labelBottom = y - LABEL_Y_OFFSET + LABEL_Y_HEIGHT + MARGIN;
+
+        const shouldBeRendered = !mappedPoints.some((point, i) => {
+            if (i === 0) return false;
+            const prev = mappedPoints[i - 1];
+            if (Math.max(prev.x, point.x) <= width - LABEL_X_WIDTH) return false;
+            const segYMin = Math.min(prev.y, point.y);
+            const segYMax = Math.max(prev.y, point.y);
+            return segYMax >= labelTop && segYMin <= labelBottom;
+        });
 
         return {
             price,

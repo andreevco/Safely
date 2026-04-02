@@ -7,7 +7,7 @@ import { useStorageFactory } from '../../storage-factory';
 
 export function useAccountLocalStorage<K extends keyof AccountLocalStorageStructure>(key: K) {
     const storageFactory = useStorageFactory();
-    const activeAccountId = useActiveAccount()?.id;
+    const activeAccountId = useActiveAccount()?.accountId;
 
     const storage = useMemo(
         () => (activeAccountId ? storageFactory.account(activeAccountId).local : null),

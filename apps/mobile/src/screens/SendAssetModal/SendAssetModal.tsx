@@ -1,8 +1,7 @@
 import { useNavigation, NavigationProp, StaticScreenProps } from '@react-navigation/native';
 import { useRef, useCallback, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Keyboard, TextInput, View } from 'react-native';
-import { MaskedTextInputRef } from 'react-native-advanced-input-mask';
+import { TextInput, View } from 'react-native';
 import PagerView from 'react-native-pager-view';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
@@ -12,8 +11,8 @@ import {
     SendFormResult,
     SendFormError,
     useNumberFormatter,
-    useAppSdk,
     useActiveFiat,
+    useAppContext,
     useActiveBtcWalletUtxo
 } from '@safely/ux';
 
@@ -23,6 +22,7 @@ import { ArrowLeft16, Icon } from '@mobile/shared/ui/Icon';
 
 import { styles } from './SendAssetModal.styles';
 import { AmountStep, RecipientStep } from './steps';
+import { MaskedInputRef } from '../../../modules/safely-masked-input/src';
 
 type SendStackParamList = {
     SendAssetModal: {
@@ -40,7 +40,7 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
     const navigation = useNavigation<NavigationProp<SendStackParamList>>();
     const pagerRef = useRef<PagerView>(null);
     const formatter = useNumberFormatter();
-    const { numberFormatLocale } = useAppSdk();
+    const { numberFormatLocale } = useAppContext();
     const activeFiat = useActiveFiat();
     const handleSubmit = useCallback(
         (confirmationResult: SendFormResult, onSuccess: () => void) => {
@@ -53,7 +53,7 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
     );
 
     const recipientInputRef = useRef<TextInput>(null);
-    const amountInputRef = useRef<MaskedTextInputRef>(null);
+    const amountInputRef = useRef<MaskedInputRef>(null);
 
     const { data: utxoData } = useActiveBtcWalletUtxo();
 
@@ -72,11 +72,7 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
         actions.setAmountInputType(newType);
     }, [amountInputType, actions]);
 
-    const mask = useMemo(() => {
-        const decimals = asset?.amount.asset.decimals ?? 8;
-        const decimalsMask = '9'.repeat(decimals);
-        return `[09999999999999999999999]${numberFormatLocale.decimalSeparator}[${decimalsMask}]`;
-    }, [asset, numberFormatLocale.decimalSeparator]);
+    const decimals = asset?.amount.asset.decimals ?? 8;
 
     const alternativeAmount = useMemo(() => {
         const parsedAmount = state.parsed.amount;
@@ -135,7 +131,7 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
 
         const timer =
             state.parsed.isMax && step.index === 1
-                ? setTimeout(() => Keyboard.dismiss(), 250)
+                ? setTimeout(() => amountInputRef.current?.blur(), 250)
                 : setTimeout(
                       () => [recipientInputRef, amountInputRef][step.index]?.current?.focus(),
                       250
@@ -164,17 +160,20 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
                             exiting={FadeOut.duration(150)}
                         >
                             {meta.portfolioMetaByAddress ? (
-                                <Text
-                                    variant="bodyM"
-                                    color="tertiary"
-                                    textAlign="center"
-                                    numberOfLines={1}
-                                >
-                                    <Text variant="bodyM" color="secondary">
+                                <View style={styles.recipientRow}>
+                                    <Text
+                                        variant="bodyM"
+                                        color="secondary"
+                                        numberOfLines={1}
+                                        style={styles.recipientName}
+                                    >
                                         {meta.portfolioMetaByAddress.name}
-                                    </Text>{' '}
-                                    {ellipsisMiddle(state.parsed.recipient.address)}
-                                </Text>
+                                    </Text>
+                                    <Text variant="bodyM" color="tertiary">
+                                        {' '}
+                                        {ellipsisMiddle(state.parsed.recipient.address)}
+                                    </Text>
+                                </View>
                             ) : (
                                 <Text
                                     textAlign="center"
@@ -206,6 +205,7 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
                 style={styles.pagerView}
             >
                 <RecipientStep
+                    onSubmitEditing={step.canGoNext ? step.next : undefined}
                     key="recipient"
                     inputRef={recipientInputRef}
                     value={state.values.recipient}
@@ -220,7 +220,8 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
                 <AmountStep
                     key="amount"
                     inputRef={amountInputRef}
-                    mask={mask}
+                    decimals={decimals}
+                    decimalSeparator={numberFormatLocale.decimalSeparator}
                     value={state.values.amount}
                     onChangeText={actions.setAmount}
                     isMax={state.parsed.isMax}

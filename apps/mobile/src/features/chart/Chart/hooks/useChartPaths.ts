@@ -63,16 +63,19 @@ export const useChartPaths = (params: UseChartPathsParams) => {
         const fractions = computePathFractions(chart.points);
         pathFractionsShared.value = fractions;
 
-        const splitPoint = Date.now() - CHART_CONFIG[selectedPeriod].fullPeriodLength;
-        const splitIndex = chart.points.findIndex(point => point.timestamp >= splitPoint);
+        const splitTimestamp = Date.now() - CHART_CONFIG[selectedPeriod].fullPeriodLength;
+        const splitIndex = chart.points.findIndex(point => point.timestamp >= splitTimestamp);
 
         const last = chart.points[chart.points.length - 1];
         const periodSplitEnd = splitIndex > 0 ? (fractions[splitIndex] ?? 0) : 0;
+
+        const splitPoint = chart.points[splitIndex];
 
         return {
             fullPath,
             elegantPrices: chart.elegantPrices,
             periodSplitEnd,
+            splitPoint,
             lastPoint: last ? { x: last.x, y: last.y } : null
         };
     }, [prices, height, width, startDate, selectedPeriod, chartPointsShared, pathFractionsShared]);

@@ -47,7 +47,8 @@ function createMMKVSyncSingleStorage(id: string) {
 
 export const mobileStorages = {
     app: createMMKVTreeStorage('app'),
-    keychain: createMMKVTreeStorage('keychain'),
+    encrypted: createMMKVTreeStorage('encrypted'),
+    secureEncrypted: createMMKVTreeStorage('secureEncrypted'),
     persister: createMMKVEnumerableStorage('persister'),
     locale: createMMKVSyncSingleStorage('locale')
 };

@@ -4,6 +4,10 @@ import * as SystemUI from 'expo-system-ui';
 import { useEffect, useMemo } from 'react';
 import { useUnistyles } from 'react-native-unistyles';
 
+import { SyncStorageProvider } from '@safely/ux';
+
+import { LockScreenProvider } from '@mobile/entities/security';
+
 import Navigation from './navigation';
 import { navigationRef } from './navigation/navigationRef';
 import { useInitialNavigationState } from './navigation/useInitialNavigationState';
@@ -33,11 +37,15 @@ export function AppNavigation() {
     }, [theme.colors.background.primary]);
 
     return (
-        <Navigation
-            ref={navigationRef}
-            initialState={initialState}
-            onReady={() => SplashScreen.hideAsync()}
-            theme={NavigationTheme}
-        />
+        <LockScreenProvider>
+            <SyncStorageProvider>
+                <Navigation
+                    ref={navigationRef}
+                    initialState={initialState}
+                    onReady={() => SplashScreen.hideAsync()}
+                    theme={NavigationTheme}
+                />
+            </SyncStorageProvider>
+        </LockScreenProvider>
     );
 }

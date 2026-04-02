@@ -1,6 +1,5 @@
 import { IMnemonic, IMnemonicAccessor } from './mnemonic';
-import { ISecretEncryptor } from '../../di';
-import type { SSecretEncrypted } from '../../di/I-secret-encryptor';
+import { ISecretEncryptor, SSecretEncrypted } from '../../di';
 
 export interface IMnemonicVault {
     getMnemonic(): Promise<IMnemonic>;
@@ -22,7 +21,7 @@ export class MnemonicVault implements IMnemonicVaultEncryptedSecretStored {
     public static async fromMnemonic(encryptor: ISecretEncryptor, mnemonic: IMnemonic) {
         return new MnemonicVault(
             encryptor,
-            await encryptor.encryptSecret(this.mnemonicToString(mnemonic))
+            await encryptor.encrypt(this.mnemonicToString(mnemonic))
         );
     }
 
@@ -39,7 +38,7 @@ export class MnemonicVault implements IMnemonicVaultEncryptedSecretStored {
     ) {}
 
     public async getMnemonic(): Promise<IMnemonic> {
-        const decrypted = await this.bridge.decryptSecret(this.encryptedSecret);
+        const decrypted = await this.bridge.decrypt(this.encryptedSecret);
         return MnemonicVault.mnemonicFromString(decrypted);
     }
 }

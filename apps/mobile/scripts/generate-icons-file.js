@@ -7,7 +7,7 @@ const ROOT = path.resolve(__dirname, '../../../packages/ux/src/shared/assets/ico
 const OUT = path.resolve(__dirname, '../src/shared/ui/Icon/icons.ts');
 
 const POSIX_SEP = '/';
-const HEADER = `// Generated file. Do not edit by hand.\n`;
+const HEADER = `/* eslint-disable */\n// Generated file. Do not edit by hand.\n`;
 
 function existsDir(p) {
   try {

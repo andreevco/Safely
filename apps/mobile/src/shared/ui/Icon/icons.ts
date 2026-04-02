@@ -1,7 +1,10 @@
+/* eslint-disable */
 // Generated file. Do not edit by hand.
 
+import Sliders12Svg from '@safely/ux/shared/assets/icons/12/sliders-12.svg';
 import Dots14Svg from '@safely/ux/shared/assets/icons/14/dots-14.svg';
 import ArrowLeft16Svg from '@safely/ux/shared/assets/icons/16/arrow-left-16.svg';
+import Block16Svg from '@safely/ux/shared/assets/icons/16/block-16.svg';
 import ChevronDown16Svg from '@safely/ux/shared/assets/icons/16/chevron-down-16.svg';
 import ChevronRight16Svg from '@safely/ux/shared/assets/icons/16/chevron-right-16.svg';
 import Copy16Svg from '@safely/ux/shared/assets/icons/16/copy-16.svg';
@@ -23,14 +26,19 @@ import Checkmark28Svg from '@safely/ux/shared/assets/icons/28/checkmark-28.svg';
 import Copy28Svg from '@safely/ux/shared/assets/icons/28/copy-28.svg';
 import Flashlight28Svg from '@safely/ux/shared/assets/icons/28/flashlight-28.svg';
 import Home28Svg from '@safely/ux/shared/assets/icons/28/home-28.svg';
+import InformationCircle28Svg from '@safely/ux/shared/assets/icons/28/information-circle-28.svg';
 import Loader28Svg from '@safely/ux/shared/assets/icons/28/loader-28.svg';
+import More28Svg from '@safely/ux/shared/assets/icons/28/more-28.svg';
 import QrCodeScan28Svg from '@safely/ux/shared/assets/icons/28/qr-code-scan-28.svg';
 import FrameCorner48Svg from '@safely/ux/shared/assets/icons/48/frame-corner-48.svg';
+import DeviceLinkSvg from '@safely/ux/shared/assets/icons/56/device-link.svg';
 import Loader56Svg from '@safely/ux/shared/assets/icons/56/loader-56.svg';
 import Lock56Svg from '@safely/ux/shared/assets/icons/56/lock-56.svg';
 import AddWallet96Svg from '@safely/ux/shared/assets/icons/96/add-wallet-96.svg';
 import CameraLock96Svg from '@safely/ux/shared/assets/icons/96/camera-lock-96.svg';
 import Checkmark96Svg from '@safely/ux/shared/assets/icons/96/checkmark-96.svg';
+import DeviceLinkCheckmark96Svg from '@safely/ux/shared/assets/icons/96/device-link-checkmark-96.svg';
+import DeviceLinkExclamationmark96Svg from '@safely/ux/shared/assets/icons/96/device-link-exclamationmark-96.svg';
 import FaceidAndroid96Svg from '@safely/ux/shared/assets/icons/96/faceid-android-96.svg';
 import FaceidIos96Svg from '@safely/ux/shared/assets/icons/96/faceid-ios-96.svg';
 import Fingerprint96Svg from '@safely/ux/shared/assets/icons/96/fingerprint-96.svg';
@@ -40,8 +48,10 @@ import Placeholder96Svg from '@safely/ux/shared/assets/icons/96/placeholder-96.s
 import Safely96Svg from '@safely/ux/shared/assets/icons/96/safely-96.svg';
 import WalletPlus96Svg from '@safely/ux/shared/assets/icons/96/wallet-plus-96.svg';
 
+export const Sliders12 = { image: Sliders12Svg, size: 12 } as const;
 export const Dots14 = { image: Dots14Svg, size: 14 } as const;
 export const ArrowLeft16 = { image: ArrowLeft16Svg, size: 16 } as const;
+export const Block16 = { image: Block16Svg, size: 16 } as const;
 export const ChevronDown16 = { image: ChevronDown16Svg, size: 16 } as const;
 export const ChevronRight16 = { image: ChevronRight16Svg, size: 16 } as const;
 export const Copy16 = { image: Copy16Svg, size: 16 } as const;
@@ -63,14 +73,19 @@ export const Checkmark28 = { image: Checkmark28Svg, size: 28 } as const;
 export const Copy28 = { image: Copy28Svg, size: 28 } as const;
 export const Flashlight28 = { image: Flashlight28Svg, size: 28 } as const;
 export const Home28 = { image: Home28Svg, size: 28 } as const;
+export const InformationCircle28 = { image: InformationCircle28Svg, size: 28 } as const;
 export const Loader28 = { image: Loader28Svg, size: 28 } as const;
+export const More28 = { image: More28Svg, size: 28 } as const;
 export const QrCodeScan28 = { image: QrCodeScan28Svg, size: 28 } as const;
 export const FrameCorner48 = { image: FrameCorner48Svg, size: 48 } as const;
+export const DeviceLink = { image: DeviceLinkSvg, size: 56 } as const;
 export const Loader56 = { image: Loader56Svg, size: 56 } as const;
 export const Lock56 = { image: Lock56Svg, size: 56 } as const;
 export const AddWallet96 = { image: AddWallet96Svg, size: 96 } as const;
 export const CameraLock96 = { image: CameraLock96Svg, size: 96 } as const;
 export const Checkmark96 = { image: Checkmark96Svg, size: 96 } as const;
+export const DeviceLinkCheckmark96 = { image: DeviceLinkCheckmark96Svg, size: 96 } as const;
+export const DeviceLinkExclamationmark96 = { image: DeviceLinkExclamationmark96Svg, size: 96 } as const;
 export const FaceidAndroid96 = { image: FaceidAndroid96Svg, size: 96 } as const;
 export const FaceidIos96 = { image: FaceidIos96Svg, size: 96 } as const;
 export const Fingerprint96 = { image: Fingerprint96Svg, size: 96 } as const;
