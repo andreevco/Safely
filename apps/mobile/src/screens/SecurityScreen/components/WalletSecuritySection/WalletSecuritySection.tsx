@@ -6,7 +6,7 @@ import { useActivePortfolio, useDateFormatter } from '@safely/ux';
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { PortfolioName } from '@mobile/entities/portfolio';
-import { Cell, List } from '@mobile/shared/ui';
+import { Cell, List, Text } from '@mobile/shared/ui';
 import { Icon, Switch16 } from '@mobile/shared/ui/Icon';
 
 import { styles } from '../../SecurityScreen.styles';
@@ -46,7 +46,11 @@ export const WalletSecuritySection = () => {
                     <Icon icon={Switch16} color="tertiary" />
                 </Cell>
             </List.Group>
-            {!isWatchOnly && (
+            {isWatchOnly ? (
+                <Text variant="bodyM" color="tertiary" style={styles.watchInfoText}>
+                    {t('addWallet.watchAccount.info')}
+                </Text>
+            ) : (
                 <List.Group>
                     <Cell onPress={handleRecoveryPress}>
                         <Cell.Content>

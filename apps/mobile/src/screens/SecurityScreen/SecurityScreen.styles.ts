@@ -20,6 +20,10 @@ export const styles = StyleSheet.create((theme, rt) => ({
         alignItems: 'center',
         gap: 4
     },
+    watchInfoText: {
+        paddingVertical: theme.spacing[8],
+        paddingHorizontal: theme.spacing[16]
+    },
     syncDot: (synced: boolean) => ({
         width: 10,
         height: 10,
