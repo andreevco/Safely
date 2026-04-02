@@ -49,6 +49,7 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
             notificationAsync(NotificationFeedbackType.Success);
             setConfirmationState({ type: 'success' });
         } catch (error) {
+            console.error(error);
             notificationAsync(NotificationFeedbackType.Error);
             setConfirmationState({ type: 'error', error });
         }

@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
+import { useActiveWalletBtcBalance, useNumberFormatter } from '@safely/ux';
+
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { Text } from '@mobile/shared/ui/Text';
 
@@ -12,11 +14,15 @@ interface AmountStatusProps {
     isMax: boolean;
     hasInsufficientBalance?: boolean;
     remainingBalance?: string;
-    pendingBalance?: string;
 }
 
 export const AmountStatus = (props: AmountStatusProps) => {
-    const { isMax, hasInsufficientBalance, remainingBalance, pendingBalance } = props;
+    const { isMax, hasInsufficientBalance, remainingBalance } = props;
+
+    const formatter = useNumberFormatter();
+    const { data: balance } = useActiveWalletBtcBalance();
+    const pendingBalance = balance?.pending;
+    const hasPendingBalance = pendingBalance?.relativeAmount.gt(0);
 
     const { t } = useTranslation();
     const navigation = useNavigation<RootStackNavigationProp>();
@@ -49,20 +55,20 @@ export const AmountStatus = (props: AmountStatusProps) => {
                     {remainingBalance ?? ' '}
                 </Text>
             </View>
-            {pendingBalance && (
+            {hasPendingBalance && (
                 <View style={styles.row}>
                     <Text variant="bodyM" color="tertiary" monospace>
                         {t('send.pending')}{' '}
                     </Text>
                     <Text variant="bodyM" color="tertiary" monospace>
-                        {pendingBalance}
+                        {pendingBalance!.format(formatter)}
                     </Text>
                 </View>
             )}
         </>
     );
 
-    if (pendingBalance) {
+    if (hasPendingBalance) {
         return (
             <Pressable onPress={() => navigation.navigate('PendingFundsSheet')}>
                 {content}
