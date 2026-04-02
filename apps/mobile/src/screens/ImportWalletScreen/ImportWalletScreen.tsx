@@ -1,4 +1,5 @@
-import { useCallback, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TextInput, View } from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';
@@ -21,7 +22,18 @@ export const ImportWalletScreen = () => {
         }
     });
 
+    const inputRef = useRef<TextInput>(null);
     const [isFocused, setIsFocused] = useState(false);
+
+    useFocusEffect(
+        useCallback(() => {
+            const timer = setTimeout(() => {
+                inputRef.current?.focus();
+            }, 400);
+
+            return () => clearTimeout(timer);
+        }, [])
+    );
 
     styles.useVariants({
         focused: isFocused && !error,
@@ -59,6 +71,7 @@ export const ImportWalletScreen = () => {
 
                     <View style={styles.inputContainer}>
                         <TextInput
+                            ref={inputRef}
                             value={value}
                             onChangeText={onChange}
                             onFocus={() => setIsFocused(true)}
@@ -68,7 +81,6 @@ export const ImportWalletScreen = () => {
                             submitBehavior="submit"
                             returnKeyType="next"
                             onSubmitEditing={isDirty ? handleContinue : undefined}
-                            autoFocus
                             autoCapitalize="none"
                             autoCorrect={false}
                             spellCheck={false}

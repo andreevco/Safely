@@ -1,5 +1,5 @@
-import { CommonActions, useNavigation } from '@react-navigation/native';
-import { useCallback, useState } from 'react';
+import { CommonActions, useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TextInput, View } from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';
@@ -22,9 +22,20 @@ export const AddWatchOnlyScreen = () => {
     const { withLoader } = useLoader();
     const { mutateAsync: addWatchOnlyPortfolio } = useAddWatchOnlyPortfolio();
 
+    const inputRef = useRef<TextInput>(null);
     const [address, setAddress] = useState('');
     const [isFocused, setIsFocused] = useState(false);
     const hasValue = address.length > 0;
+
+    useFocusEffect(
+        useCallback(() => {
+            const timer = setTimeout(() => {
+                inputRef.current?.focus();
+            }, 400);
+
+            return () => clearTimeout(timer);
+        }, [])
+    );
 
     const handleClear = useCallback(() => {
         setAddress('');
@@ -95,6 +106,7 @@ export const AddWatchOnlyScreen = () => {
 
                 <View style={styles.inputContainer}>
                     <TextInput
+                        ref={inputRef}
                         value={address}
                         onChangeText={setAddress}
                         onFocus={() => setIsFocused(true)}
@@ -104,7 +116,6 @@ export const AddWatchOnlyScreen = () => {
                         submitBehavior="submit"
                         returnKeyType="next"
                         onSubmitEditing={isValidAddress ? handleNext : undefined}
-                        autoFocus
                         autoCapitalize="none"
                         autoCorrect={false}
                         spellCheck={false}
