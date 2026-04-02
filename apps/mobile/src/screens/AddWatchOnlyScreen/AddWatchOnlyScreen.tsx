@@ -8,11 +8,10 @@ import { BtcAddress, PortfolioMeta } from '@safely/core';
 import { useAddWatchOnlyPortfolio } from '@safely/ux';
 import { useLoader } from '@safely/ux';
 
+import { handleDuplicatePortfolio } from '@mobile/features/add-wallet/handleDuplicatePortfolio';
 import { Button, Screen, Text } from '@mobile/shared/ui';
 import { Icon, XmarkCircle16 } from '@mobile/shared/ui/Icon';
 import { TouchableOpacity } from '@mobile/shared/ui/TouchableOpacity';
-
-import { handleDuplicatePortfolio } from '@mobile/features/add-wallet/handleDuplicatePortfolio';
 
 import { styles } from './AddWatchOnlyScreen.styles';
 
