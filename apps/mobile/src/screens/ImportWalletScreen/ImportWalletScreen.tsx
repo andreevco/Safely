@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Keyboard, TextInput, View } from 'react-native';
+import { Keyboard, View } from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';
 
 import { useImportSeedPhrase } from '@safely/ux';
@@ -9,6 +9,7 @@ import { useAddWalletFlow } from '@mobile/features/add-wallet';
 import { Button, Screen, Text } from '@mobile/shared/ui';
 
 import { styles } from './ImportWalletScreen.styles';
+import { SeedPhraseInput } from '../../../modules/safely-masked-input/src';
 
 export const ImportWalletScreen = () => {
     const { t } = useTranslation();
@@ -59,20 +60,15 @@ export const ImportWalletScreen = () => {
                     </View>
 
                     <View style={styles.inputContainer}>
-                        <TextInput
+                        <SeedPhraseInput
                             value={value}
                             onChangeText={onChange}
-                            onFocus={() => setIsFocused(true)}
-                            onBlur={() => setIsFocused(false)}
-                            style={[styles.textArea, { color: theme.colors.text.primary }]}
-                            multiline
-                            autoFocus
-                            autoCapitalize="none"
-                            autoCorrect={false}
-                            spellCheck={false}
+                            onFocusChange={setIsFocused}
+                            style={styles.textArea}
+                            textColor={theme.colors.text.primary}
                             placeholder={t('onboarding.importWallet.placeholder')}
                             placeholderTextColor={theme.colors.text.tertiary}
-                            textAlignVertical="top"
+                            autoFocus
                         />
                     </View>
 
