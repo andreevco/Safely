@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createActor } from 'xstate';
+import { z } from 'zod';
 
 import { InMemStorage } from './impl/storage';
 import { MockSnapshotsServer } from './mocks/mock-snapshots-api';
@@ -133,8 +134,10 @@ async function createMachineContext(
     const accountEncryptedStorage = encryptedStorage.child(accountId);
     const accountSecureEncryptedStorage = secureEncryptedStorage.child(accountId);
     const logger = new Logger();
+    const structure = { value: z.string() };
     await initializeSyncAccount({
         storage: accountStorage,
+        structure,
         encryptedStorage: accountEncryptedStorage,
         secureEncryptedStorage: accountSecureEncryptedStorage,
         masterKey,
@@ -145,7 +148,8 @@ async function createMachineContext(
         accountEncryptedStorage,
         server,
         accountId,
-        logger
+        logger,
+        structure
     );
 
     if (!server.hasSnapshot()) {

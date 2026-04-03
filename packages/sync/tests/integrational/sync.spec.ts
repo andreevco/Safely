@@ -4,7 +4,7 @@ import { makeFactory, onboardDevice, Schema } from './helpers';
 import { ISyncAccount, SyncAccountFactory } from '../../src';
 import { InMemStorage } from '../impl/storage';
 
-describe('Account', () => {
+describe('Sync', () => {
     let factory: SyncAccountFactory<typeof Schema>;
     let secureEncryptedStorage: InMemStorage;
     let accounts: ISyncAccount<typeof Schema>[];

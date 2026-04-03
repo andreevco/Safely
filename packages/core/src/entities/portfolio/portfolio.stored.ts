@@ -1,5 +1,7 @@
 import * as z from 'zod';
 
+import { zArrayWithKey } from '@safely/sync';
+
 import { PortfolioType } from './I-portfolio';
 import { PortfolioIdMnemonicBased } from './portfolio-id';
 import { sPortfolioMeta } from './portfolio-meta.stored';
@@ -26,7 +28,7 @@ export const sPortfolioBip39 = z.object({
     meta: sPortfolioMeta,
     secretRevealedStatus: sPortfolioSecretRevealedStatus,
     encryptedSecret: sSecretEncrypted,
-    derivations: z.array(sDerivation)
+    derivations: zArrayWithKey(sDerivation, item => String(item.index))
 });
 export type SPortfolioBip39Out = z.output<typeof sPortfolioBip39>;
 export type SPortfolioBip39In = z.input<typeof sPortfolioBip39>;
