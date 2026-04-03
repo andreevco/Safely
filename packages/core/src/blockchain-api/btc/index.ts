@@ -9,3 +9,4 @@ export type {
     BtcTransferRequestMax
 } from './types';
 export * from './errors';
+export { getUtxoTotal } from './utils';

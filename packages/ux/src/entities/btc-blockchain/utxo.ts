@@ -11,6 +11,15 @@ import {
 } from '../../shared';
 import { useActiveBtcWallet, usePortfolios } from '../portfolio';
 import { utxo } from './keys';
+import {
+    usePendingBtcTransactions,
+    useRemovePendingBtcTransactions,
+    pendingTxsForWallet,
+    patchConfirmedUtxos,
+    patchUnconfirmedOut,
+    patchUnconfirmedInSafe,
+    resolvedPendingTxIds
+} from './pending-txs';
 import { getBiggestBtcIOAddress } from '../activity/api';
 
 function useAccessibleBtcWallets() {
@@ -34,6 +43,8 @@ function useAccessibleBtcWallets() {
 export function useBtcWalletUtxo(btcWallet: BtcWallet) {
     const client = useBtcApi();
     const accessibleBtcWallets = useAccessibleBtcWallets();
+    const { data: allPendingTxs = [] } = usePendingBtcTransactions();
+    const { mutate: removePendingTxs } = useRemovePendingBtcTransactions();
 
     return usePersistQuery({
         queryKey: utxo.wallet(btcWallet).api(client).toKey(),
@@ -57,10 +68,30 @@ export function useBtcWalletUtxo(btcWallet: BtcWallet) {
                 )
             ]);
 
+            const serverTxIds = new Set([
+                ...(txHistory.transactions?.map(tx => tx.txid) ?? []),
+                ...unconfirmedIn.map(u => u.txid)
+            ]);
+            const resolved = resolvedPendingTxIds(serverTxIds, allPendingTxs);
+            if (resolved.length > 0) {
+                void removePendingTxs(resolved);
+            }
+
+            const activePendingTxs = allPendingTxs.filter(tx => !resolved.includes(tx.txId));
+            const { outgoing, incoming } = pendingTxsForWallet(activePendingTxs, btcWallet.address);
+
+            const patchedConfirmedIn = patchConfirmedUtxos(confirmedIn, outgoing);
+
             const unconfirmedOut =
                 txHistory.transactions?.filter(
                     tx => tx.vin?.some(input => input.isOwn) && tx.confirmations < 1
                 ) ?? [];
+
+            const patchedUnconfirmedOut = patchUnconfirmedOut(
+                unconfirmedOut,
+                outgoing,
+                btcWallet.address
+            );
 
             const { safe, unsafe } = unconfirmedIn.reduce(
                 (acc, item) => {
@@ -78,6 +109,8 @@ export function useBtcWalletUtxo(btcWallet: BtcWallet) {
                 }
             );
 
+            const patchedSafe = patchUnconfirmedInSafe(safe, incoming, btcWallet.address);
+
             const getTotal = (utxos: { value: string }[]) =>
                 utxos.reduce(
                     (acc, tx) => acc.amountAdd(BtcAssetAmount.fromWeiAmount(tx.value)),
@@ -86,20 +119,20 @@ export function useBtcWalletUtxo(btcWallet: BtcWallet) {
 
             return {
                 confirmedIn: {
-                    totalAmount: getTotal(confirmedIn),
-                    utxos: confirmedIn
+                    totalAmount: getTotal(patchedConfirmedIn),
+                    utxos: patchedConfirmedIn
                 },
                 unconfirmedInSafe: {
-                    totalAmount: getTotal(safe),
-                    utxos: safe
+                    totalAmount: getTotal(patchedSafe),
+                    utxos: patchedSafe
                 },
                 unconfirmedInUnsafe: {
                     totalAmount: getTotal(unsafe),
                     utxos: unsafe
                 },
                 unconfirmedOut: {
-                    totalAmount: getTotal(unconfirmedOut),
-                    txs: unconfirmedOut
+                    totalAmount: getTotal(patchedUnconfirmedOut),
+                    txs: patchedUnconfirmedOut
                 }
             };
         },
