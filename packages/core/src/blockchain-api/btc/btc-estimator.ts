@@ -20,10 +20,14 @@ export type UtxoForEstimation = {
 
 function getAvailableUtxos(utxos: UtxoForEstimation): BtcApiUtxo[] {
     const spentSet = new Set(
-        utxos.pendingOut.flatMap(tx =>
-            tx.vin
-                ?.filter(vin => vin.isOwn && vin.txid != null && vin.vout != null)
-                .map(vin => `${vin.txid}:${vin.vout}`)
+        utxos.pendingOut.flatMap(
+            tx =>
+                tx.vin
+                    // TODO из-за проблем бэка временная заглушка: неопределенный vout считаем нулевым
+                    ?.filter(vin => vin.isOwn && vin.txid != null)
+                    // TODO ?.filter(vin => vin.isOwn && vin.txid != null && vin.vout != null)
+                    .map(vin => `${vin.txid}:${vin.vout ?? 0}`)
+            // TODO .map(vin => `${vin.txid}:${vin.vout}`)
         )
     );
 

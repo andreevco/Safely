@@ -14,11 +14,7 @@ import { utxo } from './keys';
 import {
     usePendingBtcTransactions,
     useRemovePendingBtcTransactions,
-    pendingTxsForWallet,
-    patchConfirmedUtxos,
-    patchUnconfirmedOut,
-    patchUnconfirmedInSafe,
-    resolvedPendingTxIds
+    PendingBtcTxsService
 } from './pending-txs';
 import { getBiggestBtcIOAddress } from '../activity/api';
 
@@ -41,18 +37,18 @@ function useAccessibleBtcWallets() {
 }
 
 export function useBtcWalletUtxo(btcWallet: BtcWallet) {
-    const client = useBtcApi();
+    const api = useBtcApi();
     const accessibleBtcWallets = useAccessibleBtcWallets();
-    const { data: allPendingTxs = [] } = usePendingBtcTransactions();
+    const { data: pendingTxs = [] } = usePendingBtcTransactions();
     const { mutate: removePendingTxs } = useRemovePendingBtcTransactions();
 
     return usePersistQuery({
-        queryKey: utxo.wallet(btcWallet).api(client).toKey(),
+        queryKey: utxo.wallet(btcWallet).params({ api, pendingTxs }).toKey(),
         async queryFn() {
-            const [confirmedIn, unconfirmedIn, txHistory] = await Promise.all([
-                client.getAccountConfirmedUtxo(btcWallet),
-                client.getAccountUnconfirmedUtxo(btcWallet),
-                client.getXpub(
+            const [serverConfirmedIn, serverUnconfirmedIn, txHistory] = await Promise.all([
+                api.getAccountConfirmedUtxo(btcWallet),
+                api.getAccountUnconfirmedUtxo(btcWallet),
+                api.getXpub(
                     {
                         ...btcWallet,
                         derivationPath: {
@@ -68,32 +64,27 @@ export function useBtcWalletUtxo(btcWallet: BtcWallet) {
                 )
             ]);
 
-            const serverTxIds = new Set([
-                ...(txHistory.transactions?.map(tx => tx.txid) ?? []),
-                ...unconfirmedIn.map(u => u.txid)
-            ]);
-            const resolved = resolvedPendingTxIds(serverTxIds, allPendingTxs);
-            if (resolved.length > 0) {
-                void removePendingTxs(resolved);
+            const pendingTxsService = new PendingBtcTxsService(
+                pendingTxs,
+                btcWallet.address,
+                txHistory.transactions,
+                serverUnconfirmedIn
+            );
+
+            if (pendingTxsService.resolvedTxs.length > 0) {
+                void removePendingTxs(pendingTxsService.resolvedTxs);
             }
 
-            const activePendingTxs = allPendingTxs.filter(tx => !resolved.includes(tx.txId));
-            const { outgoing, incoming } = pendingTxsForWallet(activePendingTxs, btcWallet.address);
+            const confirmedIn = pendingTxsService.toConfirmed(serverConfirmedIn);
 
-            const patchedConfirmedIn = patchConfirmedUtxos(confirmedIn, outgoing);
-
-            const unconfirmedOut =
+            const serverUnconfirmedOut =
                 txHistory.transactions?.filter(
                     tx => tx.vin?.some(input => input.isOwn) && tx.confirmations < 1
                 ) ?? [];
 
-            const patchedUnconfirmedOut = patchUnconfirmedOut(
-                unconfirmedOut,
-                outgoing,
-                btcWallet.address
-            );
+            const unconfirmedOut = pendingTxsService.toUnconfirmedOut(serverUnconfirmedOut);
 
-            const { safe, unsafe } = unconfirmedIn.reduce(
+            const { safe: serverSafe, unsafe } = serverUnconfirmedIn.reduce(
                 (acc, item) => {
                     const fromAddress = getBiggestBtcIOAddress(item.tx.vin.filter(v => !v.isOwn));
                     const isSafe = accessibleBtcWallets.some(w => w.address === fromAddress);
@@ -109,7 +100,7 @@ export function useBtcWalletUtxo(btcWallet: BtcWallet) {
                 }
             );
 
-            const patchedSafe = patchUnconfirmedInSafe(safe, incoming, btcWallet.address);
+            const patchedSafe = pendingTxsService.toUnconfirmedInSafe(serverSafe);
 
             const getTotal = (utxos: { value: string }[]) =>
                 utxos.reduce(
@@ -119,8 +110,8 @@ export function useBtcWalletUtxo(btcWallet: BtcWallet) {
 
             return {
                 confirmedIn: {
-                    totalAmount: getTotal(patchedConfirmedIn),
-                    utxos: patchedConfirmedIn
+                    totalAmount: getTotal(confirmedIn),
+                    utxos: confirmedIn
                 },
                 unconfirmedInSafe: {
                     totalAmount: getTotal(patchedSafe),
@@ -131,8 +122,8 @@ export function useBtcWalletUtxo(btcWallet: BtcWallet) {
                     utxos: unsafe
                 },
                 unconfirmedOut: {
-                    totalAmount: getTotal(patchedUnconfirmedOut),
-                    txs: patchedUnconfirmedOut
+                    totalAmount: getTotal(unconfirmedOut),
+                    txs: unconfirmedOut
                 }
             };
         },
