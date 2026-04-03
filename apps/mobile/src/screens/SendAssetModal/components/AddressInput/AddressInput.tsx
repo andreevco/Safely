@@ -1,13 +1,6 @@
 import { Ref, useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-    Keyboard,
-    NativeSyntheticEvent,
-    Pressable,
-    TextInput,
-    TextInputContentSizeChangeEventData,
-    View
-} from 'react-native';
+import { Keyboard, Pressable, TextInput, View } from 'react-native';
 import Animated, {
     useAnimatedStyle,
     useSharedValue,
@@ -94,22 +87,6 @@ export const AddressInput = (props: AddressInputProps) => {
         onChangeText('');
     }, [onChangeText]);
 
-    const contentHeight = useSharedValue(0);
-
-    const handleContentSizeChange = useCallback(
-        (e: NativeSyntheticEvent<TextInputContentSizeChangeEventData>) => {
-            contentHeight.value = e.nativeEvent.contentSize.height;
-        },
-        [contentHeight]
-    );
-
-    const contentAnimatedStyle = useAnimatedStyle(
-        () => ({
-            height: selectedMeta ? 0 : contentHeight.value || undefined
-        }),
-        [selectedMeta, contentHeight]
-    );
-
     const handleSelectedPress = useCallback(() => {
         textInputRef.current?.focus();
     }, [textInputRef]);
@@ -124,27 +101,23 @@ export const AddressInput = (props: AddressInputProps) => {
                 </View>
             )}
             <View style={styles.container}>
-                <Animated.View style={contentAnimatedStyle}>
-                    <TextInput
-                        ref={textInputRef}
-                        value={value}
-                        onChangeText={onChangeText}
-                        onFocus={handleFocus}
-                        onBlur={handleBlur}
-                        style={selectedMeta ? styles.hiddenInput : styles.input}
-                        placeholder={placeholder}
-                        placeholderTextColor={theme.colors.text.tertiary}
-                        autoCapitalize="none"
-                        autoCorrect={false}
-                        spellCheck={false}
-                        multiline
-                        onContentSizeChange={handleContentSizeChange}
-                        submitBehavior="submit"
-                        returnKeyType="next"
-                        onSubmitEditing={onSubmitEditing}
-                    />
-                </Animated.View>
-
+                <TextInput
+                    ref={textInputRef}
+                    value={value}
+                    onChangeText={onChangeText}
+                    onFocus={handleFocus}
+                    onBlur={handleBlur}
+                    style={[styles.input, selectedMeta && styles.hiddenInput]}
+                    placeholder={placeholder}
+                    placeholderTextColor={theme.colors.text.tertiary}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    spellCheck={false}
+                    multiline
+                    submitBehavior="submit"
+                    returnKeyType="next"
+                    onSubmitEditing={onSubmitEditing}
+                />
                 {selectedMeta && (
                     <Pressable style={styles.selectedContent} onPress={handleSelectedPress}>
                         <PortfolioName gap={8} meta={selectedMeta} size={16} fontVariant="bodyL" />
