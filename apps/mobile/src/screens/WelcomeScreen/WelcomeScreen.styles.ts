@@ -6,12 +6,13 @@ export const styles = StyleSheet.create(theme => ({
     },
     logo: {
         margin: 'auto',
-        marginBottom: theme.spacing[16]
+        marginBottom: theme.spacing[8]
     },
     textContainer: {
         alignItems: 'center',
         marginVertical: theme.spacing[16],
-        marginHorizontal: theme.spacing[32]
+        marginHorizontal: theme.spacing[32],
+        gap: theme.spacing[4]
     },
     buttonsContainer: {
         gap: theme.spacing[8],
@@ -19,7 +20,7 @@ export const styles = StyleSheet.create(theme => ({
     },
     legalContainer: {
         alignItems: 'center',
-        paddingBottom: theme.spacing[16],
+        paddingBottom: theme.spacing[8],
         paddingHorizontal: theme.spacing[16]
     }
 }));
