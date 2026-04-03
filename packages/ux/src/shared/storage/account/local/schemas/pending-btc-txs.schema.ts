@@ -8,6 +8,7 @@ const sBtcTxOutput = z.object({
 });
 
 const sPendingBtcTxSpentUtxo = z.object({
+    address: z.string(),
     txid: z.string(),
     vout: z.number(),
     value: z.string()
@@ -16,8 +17,6 @@ const sPendingBtcTxSpentUtxo = z.object({
 const sPendingBtcTx = z.object({
     txId: z.string(),
     timestamp: z.number(),
-    senderAddress: z.string(),
-    recipientAddress: z.string(),
     inputs: z.array(sPendingBtcTxSpentUtxo),
     outputs: z.array(sBtcTxOutput),
     fee: z.string()

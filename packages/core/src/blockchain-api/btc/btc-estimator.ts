@@ -9,27 +9,19 @@ import {
     BtcTransferRequestNotMax
 } from './types';
 import { getUtxoTotal } from './utils';
-import { BtcApi, BtcApiGasPrice, BtcApiTx, BtcApiUtxo } from '../../api/btc';
+import { BtcApi, BtcApiGasPrice, BtcApiUtxo } from '../../api/btc';
 import { BtcAssetAmount, btcNetworkConfig, BtcWallet } from '../../entities';
 import { abs, assertUnreachable, IIdentifiable, toBig } from '../../utils';
 
+export type SpentUtxo = { txid: string; vout: number; value: string };
+
 export type UtxoForEstimation = {
     in: BtcApiUtxo[];
-    pendingOut: BtcApiTx[];
+    pendingOut: SpentUtxo[];
 };
 
 function getAvailableUtxos(utxos: UtxoForEstimation): BtcApiUtxo[] {
-    const spentSet = new Set(
-        utxos.pendingOut.flatMap(
-            tx =>
-                tx.vin
-                    // TODO из-за проблем бэка временная заглушка: неопределенный vout считаем нулевым
-                    ?.filter(vin => vin.isOwn && vin.txid != null)
-                    // TODO ?.filter(vin => vin.isOwn && vin.txid != null && vin.vout != null)
-                    .map(vin => `${vin.txid}:${vin.vout ?? 0}`)
-            // TODO .map(vin => `${vin.txid}:${vin.vout}`)
-        )
-    );
+    const spentSet = new Set(utxos.pendingOut.map(u => `${u.txid}:${u.vout}`));
 
     return utxos.in.filter(u => !spentSet.has(`${u.txid}:${u.vout}`));
 }

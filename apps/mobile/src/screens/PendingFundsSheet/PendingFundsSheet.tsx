@@ -28,11 +28,11 @@ const PendingFundsContent = () => {
             id: item.tx.txid
         }));
 
-        const pendingOutItems = btcUtxo?.unconfirmedOut.txs.map(item => ({
+        const pendingOutItems = btcUtxo?.unconfirmedOut.utxos.map(item => ({
             value: BtcAssetAmount.fromWeiAmount(item.value),
-            confirmationETABlocks: item.confirmationETABlocks,
-            timestamp: item.timestamp,
-            id: item.txid
+            confirmationETABlocks: undefined as number | undefined,
+            timestamp: undefined as number | undefined,
+            id: `${item.txid}:${item.vout}`
         }));
 
         return pendingInItems?.concat(pendingOutItems ?? []);

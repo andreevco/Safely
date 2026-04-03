@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { BtcTransactionTemplate, getUtxoTotal, notNullish } from '@safely/core';
-import { BtcApiTx, BtcApiUtxo, BtcApiUtxoWithTx } from '@safely/core/api/btc';
+import { BtcApiTx, BtcApiUtxoWithTx } from '@safely/core/api/btc';
 
 import { pendingBtcTxs } from './keys';
 import { useAccountLocalStorage } from '../../shared';
@@ -66,9 +66,12 @@ export class PendingBtcTx {
         return new PendingBtcTx({
             txId: template.sendResult.txId,
             timestamp: Date.now(),
-            senderAddress: template.wallet.address,
-            recipientAddress: template.request.recipientAddress,
-            inputs: template.inputs.map(u => ({ txid: u.txid, vout: u.vout, value: u.value })),
+            inputs: template.inputs.map(u => ({
+                txid: u.txid,
+                vout: u.vout,
+                value: u.value,
+                address: u.address!
+            })),
             outputs: template.outputs.map(o => ({ address: o.address, value: o.value.toString() })),
             fee: template.estimation.fee.amount.weiAmount.toString()
         });
@@ -76,34 +79,28 @@ export class PendingBtcTx {
 
     public readonly txId: string;
     public readonly timestamp: number;
-    public readonly senderAddress: string;
-    public readonly recipientAddress: string;
-    public readonly inputs: { txid: string; vout: number; value: string }[];
+    public readonly inputs: { txid: string; vout: number; value: string; address: string }[];
     public readonly outputs: { address: string; value: string }[];
     public readonly fee: string;
 
     constructor(val: SPendingBtcTx) {
         this.txId = val.txId;
         this.timestamp = val.timestamp;
-        this.senderAddress = val.senderAddress;
-        this.recipientAddress = val.recipientAddress;
         this.inputs = val.inputs;
         this.outputs = val.outputs;
         this.fee = val.fee;
     }
 
     public toBtcApiTx(walletAddress: string): BtcApiTx {
-        const isSender = walletAddress === this.senderAddress;
-
         return {
             txid: this.txId,
             vin: this.inputs.map((u, i) => ({
                 txid: u.txid,
                 vout: u.vout,
                 n: i,
-                addresses: [this.senderAddress],
+                addresses: [u.address],
                 isAddress: true,
-                isOwn: isSender,
+                isOwn: u.address === walletAddress,
                 value: u.value
             })),
             vout: this.outputs.map((o, i) => ({
@@ -148,15 +145,12 @@ export class PendingBtcTxsService {
 
         pendingTxs = pendingTxs.filter(tx => !this.resolvedTxs.includes(tx.txId));
 
-        this.outgoingPendingTxs = pendingTxs.filter(t => t.senderAddress === walletAddress);
-        this.incomingPendingTxs = pendingTxs.filter(t => t.recipientAddress === walletAddress);
-    }
-
-    public toConfirmed(serverConfirmed: BtcApiUtxo[]): BtcApiUtxo[] {
-        const spentSet = new Set(
-            this.outgoingPendingTxs.flatMap(tx => tx.inputs.map(u => `${u.txid}:${u.vout}`))
+        this.outgoingPendingTxs = pendingTxs.filter(t =>
+            t.inputs.some(u => u.address === walletAddress)
         );
-        return serverConfirmed.filter(u => !spentSet.has(`${u.txid}:${u.vout}`));
+        this.incomingPendingTxs = pendingTxs.filter(t =>
+            t.outputs.some(o => o.address === walletAddress)
+        );
     }
 
     public toUnconfirmedOut(serverUnconfirmedOut: BtcApiTx[]): BtcApiTx[] {
@@ -176,17 +170,17 @@ export class PendingBtcTxsService {
                     return null;
                 }
 
-                const recipientOutputIndex = pending.outputs.findIndex(
+                const ownOutputIndex = pending.outputs.findIndex(
                     o => o.address === this.walletAddress
                 );
-                if (recipientOutputIndex === -1) {
+                if (ownOutputIndex === -1) {
                     return null;
                 }
 
-                const output = pending.outputs[recipientOutputIndex];
+                const output = pending.outputs[ownOutputIndex];
                 return {
                     txid: pending.txId,
-                    vout: recipientOutputIndex,
+                    vout: ownOutputIndex,
                     value: output.value,
                     confirmations: 0,
                     address: this.walletAddress,

@@ -1,5 +1,5 @@
 export { BtcAddress } from './btc-address';
-export { BtcEstimator, type UtxoForEstimation } from './btc-estimator';
+export { BtcEstimator, type UtxoForEstimation, type SpentUtxo } from './btc-estimator';
 export { BtcTransactionTemplate } from './btc-transaction-template';
 export { BtcFeeType } from './types';
 export type {

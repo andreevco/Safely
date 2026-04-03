@@ -45,7 +45,7 @@ export function useBtcWalletUtxo(btcWallet: BtcWallet) {
     return usePersistQuery({
         queryKey: utxo.wallet(btcWallet).params({ api, pendingTxs }).toKey(),
         async queryFn() {
-            const [serverConfirmedIn, serverUnconfirmedIn, txHistory] = await Promise.all([
+            const [confirmedIn, serverUnconfirmedIn, txHistory] = await Promise.all([
                 api.getAccountConfirmedUtxo(btcWallet),
                 api.getAccountUnconfirmedUtxo(btcWallet),
                 api.getXpub(
@@ -75,14 +75,22 @@ export function useBtcWalletUtxo(btcWallet: BtcWallet) {
                 void removePendingTxs(pendingTxsService.resolvedTxs);
             }
 
-            const confirmedIn = pendingTxsService.toConfirmed(serverConfirmedIn);
-
-            const serverUnconfirmedOut =
+            const serverUnconfirmedOutTxs =
                 txHistory.transactions?.filter(
                     tx => tx.vin?.some(input => input.isOwn) && tx.confirmations < 1
                 ) ?? [];
 
-            const unconfirmedOut = pendingTxsService.toUnconfirmedOut(serverUnconfirmedOut);
+            const unconfirmedOutTxs = pendingTxsService.toUnconfirmedOut(serverUnconfirmedOutTxs);
+
+            const unconfirmedOutUtxos = unconfirmedOutTxs.flatMap(tx =>
+                tx.vin
+                    .filter(vin => vin.isOwn && vin.txid != null)
+                    .map(vin => ({
+                        txid: vin.txid!,
+                        vout: vin.vout ?? 0,
+                        value: vin.value ?? '0'
+                    }))
+            );
 
             const { safe: serverSafe, unsafe } = serverUnconfirmedIn.reduce(
                 (acc, item) => {
@@ -122,8 +130,8 @@ export function useBtcWalletUtxo(btcWallet: BtcWallet) {
                     utxos: unsafe
                 },
                 unconfirmedOut: {
-                    totalAmount: getTotal(unconfirmedOut),
-                    txs: unconfirmedOut
+                    totalAmount: getTotal(unconfirmedOutUtxos),
+                    utxos: unconfirmedOutUtxos
                 }
             };
         },
@@ -166,7 +174,7 @@ export function useActiveBtcWalletUtxoForEstimation() {
         queryFn([u]) {
             return {
                 in: u.confirmedIn.utxos.concat(u.unconfirmedInSafe.utxos),
-                pendingOut: u.unconfirmedOut.txs
+                pendingOut: u.unconfirmedOut.utxos
             };
         }
     });

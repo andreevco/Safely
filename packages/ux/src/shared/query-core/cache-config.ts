@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { bootConfigSchema, sCryptoAssetAmount, TxSchema } from '@safely/core';
+import { bootConfigSchema, sCryptoAssetAmount } from '@safely/core';
 import { UtxoSchema } from '@safely/core/api/btc/models';
 
 const sHistoricalPrice = z.object({
@@ -55,7 +55,13 @@ export const cacheSchemas = {
         }),
         unconfirmedOut: z.object({
             totalAmount: sCryptoAssetAmount,
-            txs: z.array(TxSchema)
+            utxos: z.array(
+                z.object({
+                    txid: z.string(),
+                    vout: z.number(),
+                    value: z.string()
+                })
+            )
         })
     }),
     bootConfig: bootConfigSchema,
