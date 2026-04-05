@@ -14,7 +14,8 @@ import { BtcKeypairSigner, BtcSigningRequest } from '../../../../signer';
 import { Derivation } from '../../../derivation';
 import { SBtcAccountChainItem } from '../../../derivation.stored';
 import { BtcWalletId } from '../../btc-wallet-id';
-import { IDerivationChainItemBtc, BtcWallet } from '../../I-derivation-chain-item-btc';
+import { SignableBtcWallet } from '../../I-btc-wallet';
+import { IDerivationChainItemBtc } from '../../I-derivation-chain-item-btc';
 
 export class DerivationChainItemBtcSeed implements IDerivationChainItemBtc {
     public static async getXpub({
@@ -79,7 +80,7 @@ export class DerivationChainItemBtcSeed implements IDerivationChainItemBtc {
 
     public readonly xpub: string;
 
-    public readonly wallets: BtcWallet[];
+    public readonly wallets: SignableBtcWallet[];
 
     public readonly network: BtcNetwork;
 
@@ -121,7 +122,10 @@ export class DerivationChainItemBtcSeed implements IDerivationChainItemBtc {
         });
     }
 
-    private createSigner(seedProducer: ISeedProducer, wallet: Pick<BtcWallet, 'type' | 'address'>) {
+    private createSigner(
+        seedProducer: ISeedProducer,
+        wallet: Pick<SignableBtcWallet, 'type' | 'address'>
+    ) {
         const keypairProducer = new BtcBip32NodeProducer(
             seedProducer,
             wallet.type,

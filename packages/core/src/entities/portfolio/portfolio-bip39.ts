@@ -47,15 +47,13 @@ export class PortfolioBip39 implements IPortfolioDerivable {
         }));
     }
 
-    public readonly id: PortfolioIdMnemonicBased<PortfolioType.BIP39>;
+    public readonly id: PortfolioIdMnemonicBased;
 
     public meta: PortfolioMeta;
 
     public secretRevealedStatus: PortfolioSecretRevealedStatus;
 
-    public get type() {
-        return this.id.type;
-    }
+    public readonly type = PortfolioType.BIP39;
 
     public get networkType() {
         return this.id.network;
@@ -63,10 +61,14 @@ export class PortfolioBip39 implements IPortfolioDerivable {
 
     public derivations: IDerivation[];
 
+    public getBtcWallet() {
+        return this.derivations[0].chains.btc.wallets[0];
+    }
+
     private readonly mnemonicVault: IMnemonicVaultEncryptedSecretStored;
 
     constructor(params: {
-        id: PortfolioIdMnemonicBased<PortfolioType.BIP39>;
+        id: PortfolioIdMnemonicBased;
         meta: PortfolioMeta;
         secretRevealedStatus: PortfolioSecretRevealedStatus;
         derivations: IDerivation[] | ((self: PortfolioBip39) => IDerivation[]);
@@ -94,7 +96,7 @@ export class PortfolioBip39 implements IPortfolioDerivable {
     }
 
     public async addNextDerivation() {
-        const nextIndex = Math.max(...this.derivations.map(d => d.index));
+        const nextIndex = Math.max(...this.derivations.map(d => d.index)) + 1;
         return this.addDerivation(nextIndex);
     }
 
@@ -147,6 +149,7 @@ export class PortfolioBip39 implements IPortfolioDerivable {
 
     public toJSON(): SPortfolioBip39In {
         return {
+            type: this.type,
             id: this.id.toJSON(),
             encryptedSecret: this.mnemonicVault.encryptedSecret,
             meta: this.meta,
