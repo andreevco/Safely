@@ -14,7 +14,9 @@ import { styles } from '../../SecurityScreen.styles';
 export const WalletSecuritySection = () => {
     const { t } = useTranslation();
     const portfolio = useActivePortfolio();
-    const isWatchOnly = portfolio.id.type === PortfolioType.WATCH_ONLY;
+    const isWatchOnly = portfolio.type === PortfolioType.WATCH_ONLY;
+    const secretRevealedStatus =
+        portfolio.type === PortfolioType.BIP39 ? portfolio.secretRevealedStatus : null;
     const rootNavigation = useNavigation<RootStackNavigationProp>();
     const formatDate = useDateFormatter({
         month: 'long',
@@ -61,13 +63,12 @@ export const WalletSecuritySection = () => {
                             </Cell.Row>
                             <Cell.Row>
                                 <Cell.Subtitle numberOfLines={0}>
-                                    {portfolio.secretRevealedStatus
+                                    {secretRevealedStatus
                                         ? t('security.groups.wallet.recovery.revealed', {
                                               date: formatDate.format(
-                                                  portfolio.secretRevealedStatus.revealedAt
+                                                  secretRevealedStatus.revealedAt
                                               ),
-                                              device: portfolio.secretRevealedStatus
-                                                  .revealedFromDevice
+                                              device: secretRevealedStatus.revealedFromDevice
                                           })
                                         : t('security.groups.wallet.recovery.subtitle')}
                                 </Cell.Subtitle>

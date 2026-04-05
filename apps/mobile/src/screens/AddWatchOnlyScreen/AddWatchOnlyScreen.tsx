@@ -4,9 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { TextInput, View } from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';
 
-import { BtcAddress, PortfolioMeta } from '@safely/core';
-import { useAddWatchOnlyPortfolio } from '@safely/ux';
-import { useLoader } from '@safely/ux';
+import { BtcAddress, BtcXpub, PortfolioMeta } from '@safely/core';
+import { useAddWatchOnlyPortfolio, useLoader } from '@safely/ux';
 
 import { handleDuplicatePortfolio } from '@mobile/features/add-wallet/handleDuplicatePortfolio';
 import { Button, Screen, Text } from '@mobile/shared/ui';
@@ -41,9 +40,9 @@ export const AddWatchOnlyScreen = () => {
         setAddress('');
     }, []);
 
-    const trimmedAddress = address.trim();
-    const isValidAddress = BtcAddress.validate(trimmedAddress);
-    const hasError = trimmedAddress.length >= 5 && !isValidAddress;
+    const trimmedInput = address.trim();
+    const isValidInput = BtcAddress.validate(trimmedInput) || BtcXpub.validate(trimmedInput);
+    const hasError = trimmedInput.length >= 20 && !isValidInput;
 
     styles.useVariants({
         focused: isFocused,
@@ -58,7 +57,7 @@ export const AddWatchOnlyScreen = () => {
                     try {
                         await withLoader(async () => {
                             await addWatchOnlyPortfolio({
-                                address: address.trim(),
+                                input: address.trim(),
                                 meta
                             });
                         });
@@ -89,7 +88,7 @@ export const AddWatchOnlyScreen = () => {
                     size="small"
                     style={styles.nextButton}
                     onPress={handleNext}
-                    disabled={!isValidAddress}
+                    disabled={!isValidInput}
                 >
                     {t('common.continue')}
                 </Button>
@@ -115,7 +114,7 @@ export const AddWatchOnlyScreen = () => {
                         multiline
                         submitBehavior="submit"
                         returnKeyType="next"
-                        onSubmitEditing={isValidAddress ? handleNext : undefined}
+                        onSubmitEditing={isValidInput ? handleNext : undefined}
                         autoCapitalize="none"
                         autoCorrect={false}
                         spellCheck={false}

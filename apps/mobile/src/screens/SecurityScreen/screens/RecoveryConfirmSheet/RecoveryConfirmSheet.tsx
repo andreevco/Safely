@@ -2,7 +2,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { PortfolioBip39 } from '@safely/core';
+import { PortfolioType } from '@safely/core';
 import { useActivePortfolio, useRecordActivePortfolioSecretReveal } from '@safely/ux';
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
@@ -14,7 +14,12 @@ import { styles } from './RecoveryConfirmSheet.styles';
 const RecoveryConfirmContent = () => {
     const { t } = useTranslation();
     const { close } = useBottomSheet();
-    const portfolio = useActivePortfolio() as PortfolioBip39;
+    const portfolio = useActivePortfolio();
+
+    if (portfolio.type !== PortfolioType.BIP39) {
+        throw new Error('Recovery only available for BIP39 portfolio');
+    }
+
     const navigation = useNavigation<RootStackNavigationProp>();
     const markNavigated = useCloseOnReturn();
 

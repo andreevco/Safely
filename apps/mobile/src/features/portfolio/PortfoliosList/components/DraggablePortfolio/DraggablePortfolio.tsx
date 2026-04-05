@@ -74,7 +74,7 @@ export const DraggablePortfolio = (props: DraggablePortfolioProps) => {
                                     meta={portfolio.meta}
                                     gap={12}
                                     size={16}
-                                    isWatchOnly={portfolio.id.type === PortfolioType.WATCH_ONLY}
+                                    isWatchOnly={portfolio.type === PortfolioType.WATCH_ONLY}
                                 />
                                 <Text
                                     variant="bodyM"

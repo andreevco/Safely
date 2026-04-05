@@ -37,7 +37,7 @@ export const CurrentWalletSection = () => {
                                 fontVariant="labelL"
                                 gap={12}
                                 size={16}
-                                isWatchOnly={activePortfolio.id.type === PortfolioType.WATCH_ONLY}
+                                isWatchOnly={activePortfolio.type === PortfolioType.WATCH_ONLY}
                             />
                             <Cell.Value variant="bodyL" color="tertiary">
                                 {t('common.edit')}

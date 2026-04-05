@@ -22,9 +22,13 @@ const RemoveWalletContent = () => {
     const [isConfirmed, setIsConfirmed] = useState(false);
 
     const handleRemove = async () => {
-        await deletePortfolio(portfolio);
-        toast(t('removeWallet.toastMessages.walletRemoved'));
-        navigation.goBack();
+        try {
+            await deletePortfolio(portfolio);
+            toast(t('removeWallet.toastMessages.walletRemoved'));
+            navigation.goBack();
+        } catch {
+            // Security check cancelled
+        }
     };
 
     const handleBackUpPress = () => {
