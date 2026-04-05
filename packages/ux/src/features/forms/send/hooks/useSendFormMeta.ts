@@ -1,10 +1,10 @@
 import { useMemo } from 'react';
 
-import { Portfolio, PortfolioType, RatedCryptoAssetAmount } from '@safely/core';
+import { IDerivation, Portfolio, PortfolioType, RatedCryptoAssetAmount } from '@safely/core';
 
 import {
     findPortfolioMetaByAddress,
-    useActiveDerivation,
+    useActivePortfolioEntities,
     usePortfolios
 } from '../../../../entities';
 import { fuzzySearch } from '../../../../shared';
@@ -13,17 +13,27 @@ import { SuggestionDraftState } from './useSuggestionDraft';
 
 function mapPortfolioToSuggestions(
     portfolio: Portfolio,
-    activeDerivation: ReturnType<typeof useActiveDerivation>
+    activeDerivation?: IDerivation
 ): SendSuggestion[] {
+    if (portfolio.type === PortfolioType.WATCH_ONLY) {
+        return [
+            {
+                id: portfolio.id.toString(),
+                address: portfolio.btcWallet.address,
+                meta: portfolio.meta,
+                isWatchOnly: true
+            }
+        ];
+    }
+
     const derivations = portfolio.getDerivations();
     return derivations
-        .filter(d => !d.id.isEq(activeDerivation.id))
+        .filter(d => !activeDerivation || !d.id.isEq(activeDerivation.id))
         .map(derivation => ({
             id: portfolio.id.toString(),
             address: derivation.chains.btc.wallets[0]?.address,
             meta: portfolio.meta,
-            tag: derivations.length > 1 ? derivation.index + 1 : undefined,
-            isWatchOnly: portfolio.id.type === PortfolioType.WATCH_ONLY
+            tag: derivations.length > 1 ? derivation.index + 1 : undefined
         }));
 }
 
@@ -39,7 +49,8 @@ export function useSendFormMeta(params: UseSendFormMetaParams) {
 
     const blockchain = state.parsed.recipient?.blockchain;
     const portfolios = usePortfolios();
-    const activeDerivation = useActiveDerivation();
+    const entities = useActivePortfolioEntities();
+    const activeDerivation = entities.kind === 'bip39' ? entities.derivation : undefined;
 
     const suggestions = useMemo(() => {
         const query = state.values.recipient;

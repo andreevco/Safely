@@ -6,8 +6,7 @@ import { useWalletAssets } from './useAssets';
 import { calculateTotalBalance } from './utils';
 
 export function usePortfolioBalance(portfolio: Portfolio) {
-    // TODO: should think for solution for multiple derivations
-    const assetsQuery = useWalletAssets(portfolio.derivations[0].chains.btc.wallets[0]);
+    const assetsQuery = useWalletAssets(portfolio.getBtcWallet());
     const fiat = useActiveFiat();
 
     return useDerivedQuery({

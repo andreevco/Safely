@@ -1,7 +1,8 @@
 import { keepPreviousData, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import {
-    BtcWallet,
+    BtcWalletReadOnly,
+    SignableBtcWallet,
     delay,
     Id,
     IDerivation,
@@ -13,6 +14,8 @@ import {
     PortfolioMeta,
     PortfolioNetworkType,
     PortfolioType,
+    PortfolioWatchOnly,
+    WatchOnlySource,
     IPortfolioId,
     generateBip39Accessor,
     ISecretEncryptor
@@ -263,13 +266,20 @@ export function useRemoveBip39Derivation() {
     });
 }
 
-type ActivePortfolioEntities = {
-    portfolio: Portfolio;
+type ActivePortfolioEntitiesBip39 = {
+    kind: 'bip39';
+    portfolio: PortfolioBip39;
+    btcWallet: SignableBtcWallet;
     derivation: IDerivation;
-    chains: {
-        btc: BtcWallet;
-    };
 };
+
+type ActivePortfolioEntitiesWatchOnly = {
+    kind: 'watch-only';
+    portfolio: PortfolioWatchOnly;
+    btcWallet: BtcWalletReadOnly;
+};
+
+type ActivePortfolioEntities = ActivePortfolioEntitiesBip39 | ActivePortfolioEntitiesWatchOnly;
 
 export function useActivePortfolioEntitiesQuery() {
     const { get, set } = useAccountLocalStorage('activePortfolio');
@@ -288,36 +298,39 @@ export function useActivePortfolioEntitiesQuery() {
 
             const activeConfig = await get();
 
-            const getFallbackPortfolioEntities = async (
-                portfolioToSet?: Portfolio,
-                derivationToSet?: IDerivation,
-                chains?: {
-                    btc: BtcWallet | undefined;
+            const resolveEntities = async (
+                portfolio: Portfolio
+            ): Promise<ActivePortfolioEntities> => {
+                if (portfolio.type === PortfolioType.WATCH_ONLY) {
+                    await set({ portfolioId: portfolio.id.toString(), derivationId: '' });
+
+                    return {
+                        kind: 'watch-only',
+                        portfolio,
+                        btcWallet: portfolio.btcWallet
+                    };
                 }
-            ) => {
-                portfolioToSet ??= portfolios[0];
-                derivationToSet ??= portfolioToSet.getDerivations()[0];
 
-                const chainWallets = {
-                    btc: chains?.btc ?? derivationToSet.chains.btc.wallets[0]
-                };
-
-                const derivationId = derivationToSet.id.toString();
+                const derivation = activeConfig
+                    ? (portfolio.getDerivation(Id.fromString(activeConfig.derivationId)) ??
+                      portfolio.getDerivations()[0])
+                    : portfolio.getDerivations()[0];
 
                 await set({
-                    portfolioId: portfolioToSet.id.toString(),
-                    derivationId
+                    portfolioId: portfolio.id.toString(),
+                    derivationId: derivation.id.toString()
                 });
 
                 return {
-                    portfolio: portfolioToSet,
-                    derivation: derivationToSet,
-                    chains: chainWallets
+                    kind: 'bip39',
+                    portfolio,
+                    btcWallet: derivation.chains.btc.wallets[0],
+                    derivation
                 };
             };
 
             if (!activeConfig) {
-                return getFallbackPortfolioEntities();
+                return resolveEntities(portfolios[0]);
             }
 
             const activePortfolio = portfolios.find(p =>
@@ -325,25 +338,10 @@ export function useActivePortfolioEntitiesQuery() {
             );
 
             if (!activePortfolio) {
-                return getFallbackPortfolioEntities();
+                return resolveEntities(portfolios[0]);
             }
 
-            const derivation = activePortfolio.getDerivation(
-                Id.fromString(activeConfig.derivationId)
-            );
-            if (!derivation) {
-                return getFallbackPortfolioEntities(activePortfolio);
-            }
-
-            const btcWallet = derivation.chains.btc.wallets[0];
-
-            return {
-                portfolio: activePortfolio,
-                derivation,
-                chains: {
-                    btc: btcWallet
-                }
-            } as ActivePortfolioEntities;
+            return resolveEntities(activePortfolio);
         },
         staleTime: Infinity,
         placeholderData: keepPreviousData
@@ -359,34 +357,49 @@ export function useHasPortfolio() {
 export function useIsActiveWalletWatchOnly(): boolean {
     const entities = useActivePortfolioEntitiesQuery().data;
 
-    return entities?.portfolio.id.type === PortfolioType.WATCH_ONLY;
+    return entities?.kind === 'watch-only';
 }
 
 export function useAddWatchOnlyPortfolio() {
-    const { data: existingPortfolios } = usePortfoliosQuery();
-    const { mutateAsync: addPortfolio } = useAddPortfolio();
+    const client = useQueryClient();
+    const portfoliosQuery = usePortfoliosQueryConfig();
+    const { mutateAsync: setPortfolios } = useSetPortfolios();
     const { mutateAsync: setActivePortfolio } = useSetActivePortfolio();
 
-    return useMutation<Portfolio, Error, { address: string; meta: PortfolioMeta }>({
-        async mutationFn({ address, meta }) {
-            const portfolio = PortfolioFactory.generateWatchOnlyPortfolio(address, {
+    return useMutation<Portfolio, Error, { input: string; meta: PortfolioMeta }>({
+        async mutationFn({ input, meta }) {
+            const portfolio = PortfolioFactory.generateWatchOnlyPortfolio(input, {
                 network: PortfolioNetworkType.MAINNET,
                 meta
             });
 
-            const existingWatchOnly = existingPortfolios?.find(
-                p =>
-                    p.id.type === PortfolioType.WATCH_ONLY &&
-                    p
-                        .getDerivations()
-                        .some(d => d.chains.btc.wallets.some(w => w.address === address))
+            const address = portfolio.btcWallet.address;
+            const portfolios: Portfolio[] = await client.fetchQuery(portfoliosQuery);
+
+            const existingWatchOnly = portfolios.find(
+                p => p.type === PortfolioType.WATCH_ONLY && p.getBtcWallet().address === address
             );
 
-            if (existingWatchOnly) {
+            if (existingWatchOnly && existingWatchOnly.type === PortfolioType.WATCH_ONLY) {
+                const isUpgrade =
+                    existingWatchOnly.source === WatchOnlySource.ADDRESS &&
+                    portfolio.source === WatchOnlySource.XPUB;
+
+                if (isUpgrade) {
+                    portfolio.updateMeta(existingWatchOnly.meta);
+
+                    await setPortfolios(
+                        portfolios.map(p => (p.id.isEq(existingWatchOnly.id) ? portfolio : p))
+                    );
+                    await setActivePortfolio(portfolio);
+
+                    return portfolio;
+                }
+
                 throw new PortfolioAlreadyExistsError(existingWatchOnly);
             }
 
-            await addPortfolio(portfolio);
+            await setPortfolios(portfolios.concat(portfolio));
             await setActivePortfolio(portfolio);
 
             return portfolio;
@@ -404,17 +417,20 @@ export function useSetActiveDerivation() {
         async mutationFn({ id }) {
             const portfolios: Portfolio[] = await client.fetchQuery(portfoliosQuery);
             const portfolioToSet = portfolios.find(a => a.id.isEq(id.portfolioId));
-            const derivationToSet = portfolioToSet?.getDerivation(id);
 
-            if (!portfolioToSet || !derivationToSet) {
-                throw new Error('Portfolio not found');
+            if (!portfolioToSet || portfolioToSet.type !== PortfolioType.BIP39) {
+                throw new Error('Portfolio not found or not derivable');
             }
 
-            const derivationId = portfolioToSet.id.toString();
+            const derivationToSet = portfolioToSet.getDerivation(id);
+
+            if (!derivationToSet) {
+                throw new Error('Derivation not found');
+            }
 
             await set({
                 portfolioId: portfolioToSet.id.toString(),
-                derivationId
+                derivationId: derivationToSet.id.toString()
             });
 
             await client.invalidateQueries({
@@ -427,21 +443,33 @@ export function useSetActiveDerivation() {
 }
 
 export function useSetActivePortfolio() {
-    const { mutateAsync } = useSetActiveDerivation();
+    const { set } = useAccountLocalStorage('activePortfolio');
     const portfoliosQuery = usePortfoliosQueryConfig();
     const client = useQueryClient();
+    const accountQueryKey = useActiveAccountQueryKey();
 
     return useMutation<Portfolio, Error, Pick<Portfolio, 'id'>>({
         async mutationFn({ id }) {
             const portfolios: Portfolio[] = await client.fetchQuery(portfoliosQuery);
             const portfolioToSet = portfolios.find(a => a.id.isEq(id));
-            const derivationToSet = portfolioToSet?.getDerivations()[0];
 
-            if (!portfolioToSet || !derivationToSet) {
-                throw new Error('Account not found');
+            if (!portfolioToSet) {
+                throw new Error('Portfolio not found');
             }
 
-            await mutateAsync(derivationToSet);
+            const derivationId =
+                portfolioToSet.type === PortfolioType.BIP39
+                    ? portfolioToSet.getDerivations()[0].id.toString()
+                    : '';
+
+            await set({
+                portfolioId: portfolioToSet.id.toString(),
+                derivationId
+            });
+
+            await client.invalidateQueries({
+                queryKey: accountQueryKey.portfolios.toKey()
+            });
 
             return portfolioToSet;
         }
@@ -481,14 +509,14 @@ export function useRecordActivePortfolioSecretReveal() {
 
     return useMutation({
         async mutationFn() {
-            if (activePortfolio.secretRevealedStatus === null) {
+            if (activePortfolio.type !== PortfolioType.BIP39) {
                 return;
             }
 
             const portfolios: Portfolio[] = await client.fetchQuery(portfoliosQuery);
             const portfolio = portfolios.find(p => p.id.isEq(activePortfolio.id));
-            if (!portfolio) {
-                throw new Error('Portfolio not found');
+            if (!portfolio || portfolio.type !== PortfolioType.BIP39) {
+                return;
             }
             portfolio.recordSecretReveal(deviceInfo.name);
             await mutateAsync(portfolios);
@@ -509,19 +537,23 @@ export function useActivePortfolio() {
     return useActivePortfolioEntities().portfolio;
 }
 
-export function useActiveDerivation() {
-    return useActivePortfolioEntities().derivation;
+export function useActiveBtcWallet(): BtcWalletReadOnly {
+    return useActivePortfolioEntities().btcWallet;
 }
 
-export function useActiveBtcWallet() {
-    return useActivePortfolioEntities().chains.btc;
+export function useActiveSignableBtcWallet(): SignableBtcWallet {
+    const entities = useActivePortfolioEntities();
+
+    if (entities.kind !== 'bip39') {
+        throw new Error('Signable wallet unavailable for watch-only portfolio');
+    }
+
+    return entities.btcWallet;
 }
 
 export function findPortfolioMetaByAddress(
     portfolios: ReturnType<typeof usePortfolios>,
     address: string
 ): PortfolioMeta | undefined {
-    return portfolios?.find(p =>
-        p.getDerivations().some(d => d.chains.btc.wallets[0]?.address === address)
-    )?.meta;
+    return portfolios?.find(p => p.getBtcWallet().address === address)?.meta;
 }

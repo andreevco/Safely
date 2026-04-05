@@ -1,9 +1,9 @@
+import { PortfolioType } from '@safely/core';
 import { useActivePortfolio, useIsActiveWalletWatchOnly } from '@safely/ux';
 
 export function useRemoveWalletState() {
     const isWatchOnly = useIsActiveWalletWatchOnly();
     const portfolio = useActivePortfolio();
-    const isSeedRevealed = portfolio.secretRevealedStatus !== null;
 
     if (isWatchOnly) {
         return {
@@ -12,6 +12,9 @@ export function useRemoveWalletState() {
             hasBackUpLink: false
         } as const;
     }
+
+    const isSeedRevealed =
+        portfolio.type === PortfolioType.BIP39 && portfolio.secretRevealedStatus !== null;
 
     if (isSeedRevealed) {
         return {
