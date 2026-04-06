@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { makeFactory, onboardDevice, Schema } from './helpers';
-import { ISyncAccount, SyncAccountFactory, SyncStatus } from '../../src';
+import { ISyncAccount, SyncAccountFactory } from '../../src';
 import { InMemStorage } from '../impl/storage';
 
 describe('Sync', () => {
@@ -100,7 +100,6 @@ describe('Sync', () => {
         const account = await factory.createSyncAccount(secureEncryptedStorage);
         const { newAccount: account2, secureEncryptedStorage: secureEncryptedStorage2 } =
             await onboardDevice(account, secureEncryptedStorage);
-        await account2.syncProvider.syncStatusManager.waitForStatus(SyncStatus.SYNCHRONIZED);
         const { newAccount: account3 } = await onboardDevice(account2, secureEncryptedStorage2);
 
         accounts.push(account);

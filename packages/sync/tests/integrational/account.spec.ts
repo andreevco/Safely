@@ -68,7 +68,6 @@ describe('Account', () => {
     it('makes account online', async () => {
         const account = await factory.createSyncAccount(secureEncryptedStorage);
         await onboardDevice(account, secureEncryptedStorage);
-        await account.syncProvider.syncStatusManager.waitForStatus(SyncStatus.SYNCHRONIZED);
     });
 
     it('should sync data with server', async () => {

@@ -9,6 +9,7 @@ import { ApiSigner } from '../api/api-signer';
 import { AccountsApi, Configuration, OnboardingMessage } from '../api/generated';
 import { ITreeStorage } from '../I-storage';
 import { OnboardingAbortedError } from '../sync-error';
+import { SyncStatus } from '../sync-provider/sync-status';
 
 export class NewDeviceOnboarding<S extends Record<string, ZodType>> {
     private ephemeralKeyPair: { publicKey: Buffer; secretKey: Buffer } | null = null;
@@ -87,6 +88,7 @@ export class NewDeviceOnboarding<S extends Record<string, ZodType>> {
             masterKey,
             this.ik
         );
+        await account.syncProvider.syncStatusManager.waitForStatus(SyncStatus.SYNCHRONIZED);
         console.info('Onboarding completed');
         return account;
     }
