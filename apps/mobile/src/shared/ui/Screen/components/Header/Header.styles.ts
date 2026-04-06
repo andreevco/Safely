@@ -38,14 +38,17 @@ export const styles = StyleSheet.create((theme, rt) => ({
             }
         }
     }),
-    compensateHeaderHeight: ({ shouldInsetTop }: { shouldInsetTop: boolean }) => ({
-        height: shouldInsetTop ? rt.insets.top + HEADER_HEIGHT : HEADER_HEIGHT
-    }),
     side: {
         flexDirection: 'row',
         alignItems: 'center'
     },
     sideRight: {
         justifyContent: 'flex-end'
+    },
+    topInset: {
+        height: rt.insets.top
+    },
+    headerHeight: {
+        height: HEADER_HEIGHT
     }
 }));

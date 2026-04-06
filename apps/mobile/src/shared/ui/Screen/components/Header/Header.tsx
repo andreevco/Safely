@@ -8,10 +8,11 @@ import { useScreenContext } from '../../Screen.context';
 
 interface HeaderProps extends ViewProps {
     variant?: HeaderVariant;
+    withCompensateHeight?: boolean;
 }
 
 export const HeaderContainer = (props: HeaderProps) => {
-    const { children, variant = 'center', style, ...rest } = props;
+    const { children, variant = 'center', style, withCompensateHeight = true, ...rest } = props;
     const { background, layout } = useScreenContext();
 
     const shouldInsetTop = layout === 'screen' || (layout === 'modal' && Platform.OS === 'android');
@@ -59,7 +60,8 @@ export const HeaderContainer = (props: HeaderProps) => {
                     children
                 )}
             </View>
-            <View style={styles.compensateHeaderHeight({ shouldInsetTop })} />
+            {shouldInsetTop && <View style={styles.topInset} />}
+            {withCompensateHeight && <View style={styles.headerHeight} />}
         </HeaderContext.Provider>
     );
 };
