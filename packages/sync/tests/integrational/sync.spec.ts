@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { makeFactory, onboardDevice, Schema } from './helpers';
-import { ISyncAccount, SyncAccountFactory } from '../../src';
+import { ISyncAccount, SyncAccountFactory, SyncStatus } from '../../src';
 import { InMemStorage } from '../impl/storage';
 
 describe('Sync', () => {
@@ -59,5 +59,61 @@ describe('Sync', () => {
         await setAndVerify(account, ['wallet1']);
         await setAndVerify(account2, ['wallet1', 'wallet2']);
         await setAndVerify(account3, ['wallet1', 'wallet2', 'wallet3']);
+    });
+
+    it('should sync device list when 1 device is onboarded', async () => {
+        const account = await factory.createSyncAccount(secureEncryptedStorage);
+        const { newAccount: account2 } = await onboardDevice(account, secureEncryptedStorage);
+
+        accounts.push(account);
+        accounts.push(account2);
+
+        await vi.waitFor(async () => {
+            const devices1 = await account.getDevices();
+            const devices2 = await account2.getDevices();
+
+            expect(devices1).toHaveLength(2);
+            expect(devices1).toEqual(devices2);
+        });
+    });
+
+    it('should sync device lists between 3 devices (A->B, A->C)', async () => {
+        const account = await factory.createSyncAccount(secureEncryptedStorage);
+        const { newAccount: account2 } = await onboardDevice(account, secureEncryptedStorage);
+        const { newAccount: account3 } = await onboardDevice(account, secureEncryptedStorage);
+
+        accounts.push(account);
+        accounts.push(account2);
+        accounts.push(account3);
+
+        await vi.waitFor(async () => {
+            const devices1 = await account.getDevices();
+            const devices2 = await account2.getDevices();
+            const devices3 = await account3.getDevices();
+
+            expect(devices1).toEqual(devices2);
+            expect(devices2).toEqual(devices3);
+        });
+    });
+
+    it('should sync device lists between 3 devices (A->B, B->C)', async () => {
+        const account = await factory.createSyncAccount(secureEncryptedStorage);
+        const { newAccount: account2, secureEncryptedStorage: secureEncryptedStorage2 } =
+            await onboardDevice(account, secureEncryptedStorage);
+        await account2.syncProvider.syncStatusManager.waitForStatus(SyncStatus.SYNCHRONIZED);
+        const { newAccount: account3 } = await onboardDevice(account2, secureEncryptedStorage2);
+
+        accounts.push(account);
+        accounts.push(account2);
+        accounts.push(account3);
+
+        await vi.waitFor(async () => {
+            const devices1 = await account.getDevices();
+            const devices2 = await account2.getDevices();
+            const devices3 = await account3.getDevices();
+
+            expect(devices1).toEqual(devices2);
+            expect(devices2).toEqual(devices3);
+        });
     });
 });
