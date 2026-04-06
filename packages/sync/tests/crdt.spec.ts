@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import * as Y from 'yjs';
 import { z } from 'zod';
 
-import { zArrayWithKey } from '../src';
+import { sSecretEncrypted, zArrayWithKey } from '../src';
 import { YCRDT } from '../src/crdt/y-crdt';
 
 describe('crdt', () => {
@@ -363,6 +363,210 @@ describe('crdt', () => {
                 { id: 'b', value: 20 }
             ]);
         });
+    });
+
+    it('should set and get discriminated unions', () => {
+        enum PortfolioType {
+            BIP39 = 'BIP39',
+            WATCH_ONLY = 'WATCH_ONLY'
+        }
+
+        enum WatchOnlySource {
+            ADDRESS = 'ADDRESS',
+            XPUB = 'XPUB'
+        }
+        enum PortfolioNetworkType {
+            MAINNET = 'MAINNET',
+            TESTNET = 'TESTNET'
+        }
+        const sPortfolioMetaIconEmoji = z.object({
+            type: z.literal('emoji'),
+            value: z.string()
+        });
+
+        const sPortfolioMetaIconColor = z.object({
+            type: z.literal('color'),
+            value: z.string()
+        });
+
+        const sPortfolioMetaIcon = z.union([sPortfolioMetaIconEmoji, sPortfolioMetaIconColor]);
+
+        const sPortfolioMeta = z.object({
+            name: z.string(),
+            icon: sPortfolioMetaIcon
+        });
+
+        const sPortfolioSecretRevealedStatus = z.union([
+            z.object({
+                revealedAt: z.number(),
+                revealedFromDevice: z.string()
+            }),
+            z.null()
+        ]);
+        enum BtcWalletType {
+            NATIVE_SEGWIT = 'NATIVE_SEGWIT'
+        }
+
+        const sBtcAccountChainItem = z.object({
+            wallets: zArrayWithKey(
+                z.object({
+                    type: z.enum(BtcWalletType)
+                }),
+                item => item.type
+            ),
+            xpub: z.string()
+        });
+
+        const sDerivationChains = z.object({
+            btc: sBtcAccountChainItem
+        });
+
+        const sDerivation = z.object({
+            index: z.number(),
+            chains: sDerivationChains
+        });
+        class PortfolioIdWatchOnly {
+            constructor(
+                public readonly identifier: string,
+                public readonly source: WatchOnlySource,
+                public readonly network: PortfolioNetworkType
+            ) {}
+
+            public toString(): string {
+                return 'portfolio' + 'watch-only' + this.source + this.identifier + this.network;
+            }
+
+            public toJSON(): {
+                identifier: string;
+                source: WatchOnlySource;
+                networkType: PortfolioNetworkType;
+            } {
+                return {
+                    identifier: this.identifier,
+                    source: this.source,
+                    networkType: this.network
+                };
+            }
+        }
+
+        class PortfolioIdMnemonicBased {
+            constructor(
+                private readonly hash: string,
+                public readonly network: PortfolioNetworkType
+            ) {}
+
+            public toString(): string {
+                return 'portfolio' + 'seed' + this.hash + this.network;
+            }
+
+            public toJSON(): {
+                hash: string;
+                networkType: PortfolioNetworkType;
+            } {
+                return {
+                    hash: this.hash,
+                    networkType: this.network
+                };
+            }
+        }
+
+        const sPortfolioBip39 = z.object({
+            id: z
+                .object({
+                    hash: z.string(),
+                    networkType: z.enum(PortfolioNetworkType)
+                })
+                .transform(val => new PortfolioIdMnemonicBased(val.hash, val.networkType)),
+            meta: sPortfolioMeta,
+            type: z.literal(PortfolioType.BIP39),
+            secretRevealedStatus: sPortfolioSecretRevealedStatus,
+            encryptedSecret: sSecretEncrypted,
+            derivations: zArrayWithKey(sDerivation, item => String(item.index))
+        });
+
+        const sPortfolioWatchOnly = z.object({
+            id: z
+                .object({
+                    identifier: z.string(),
+                    source: z.enum(WatchOnlySource),
+                    networkType: z.enum(PortfolioNetworkType)
+                })
+                .transform(
+                    val => new PortfolioIdWatchOnly(val.identifier, val.source, val.networkType)
+                ),
+            meta: sPortfolioMeta,
+            type: z.literal(PortfolioType.WATCH_ONLY),
+            address: z.string(),
+            xpub: z.string().optional()
+        });
+
+        const sPortfolio = z.discriminatedUnion('type', [sPortfolioBip39, sPortfolioWatchOnly]);
+
+        const sPortfolios = z.union([
+            zArrayWithKey(sPortfolio, item => {
+                if (item.type === PortfolioType.BIP39) {
+                    return new PortfolioIdMnemonicBased(
+                        item.id.hash,
+                        item.id.networkType
+                    ).toString();
+                }
+                return new PortfolioIdWatchOnly(
+                    item.id.identifier,
+                    item.id.source,
+                    item.id.networkType
+                ).toString();
+            }),
+            z.null()
+        ]);
+
+        setup({
+            items: sPortfolios
+        });
+
+        const items = [
+            {
+                id: {
+                    hash: 'abc123',
+                    networkType: PortfolioNetworkType.MAINNET
+                },
+                meta: {
+                    name: 'Wallet 1',
+                    icon: { type: 'color', value: '#FF0000' }
+                },
+                type: PortfolioType.BIP39,
+                secretRevealedStatus: null,
+                encryptedSecret: 'encryptedSecret',
+                derivations: [
+                    {
+                        index: 0,
+                        chains: {
+                            btc: {
+                                wallets: [{ type: BtcWalletType.NATIVE_SEGWIT }],
+                                xpub: 'xpub123'
+                            }
+                        }
+                    }
+                ]
+            },
+            {
+                id: {
+                    identifier: 'watch-only-1',
+                    source: WatchOnlySource.ADDRESS,
+                    networkType: PortfolioNetworkType.TESTNET
+                },
+                meta: {
+                    name: 'Watch Only 1',
+                    icon: { type: 'emoji', value: '👀' }
+                },
+                type: PortfolioType.WATCH_ONLY,
+                address: 'tb1qaddress',
+                xpub: 'xpub456'
+            }
+        ];
+
+        crdt1.set('items', items);
+
+        expect(crdt1.get('items')).toEqual(items);
     });
 
     it('should check equality of CRDTs', () => {
