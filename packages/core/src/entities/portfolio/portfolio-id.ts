@@ -1,6 +1,7 @@
 import { hmac } from '@noble/hashes/hmac.js';
 import { sha512 } from '@noble/hashes/sha2.js';
 
+import { PortfolioType } from './I-portfolio';
 import { allowedPortfolioMetaEmojis, PortfolioMetaIconEmoji } from './portfolio-meta';
 import { PortfolioNetworkType } from './portfolio-network-type';
 import { xorFold16 } from '../../utils/crypto';
@@ -42,7 +43,7 @@ export class PortfolioIdMnemonicBased extends Id implements IPortfolioId {
     }
 
     public toString(): string {
-        return this.of('portfolio', 'seed', this.hash, this.network);
+        return this.of('portfolio', PortfolioType.BIP39, this.hash, this.network);
     }
 
     public toJSON(): {

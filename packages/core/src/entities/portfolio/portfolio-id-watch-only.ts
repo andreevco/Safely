@@ -1,4 +1,4 @@
-import { WatchOnlySource } from './I-portfolio';
+import { PortfolioType, WatchOnlySource } from './I-portfolio';
 import { IPortfolioId } from './portfolio-id';
 import { PortfolioNetworkType } from './portfolio-network-type';
 import { Id } from '../../utils';
@@ -13,7 +13,13 @@ export class PortfolioIdWatchOnly extends Id implements IPortfolioId {
     }
 
     public toString(): string {
-        return this.of('portfolio', 'watch-only', this.source, this.identifier, this.network);
+        return this.of(
+            'portfolio',
+            PortfolioType.WATCH_ONLY,
+            this.source,
+            this.identifier,
+            this.network
+        );
     }
 
     public toJSON(): {
