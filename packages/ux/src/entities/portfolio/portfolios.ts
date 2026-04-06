@@ -15,7 +15,6 @@ import {
     PortfolioNetworkType,
     PortfolioType,
     PortfolioWatchOnly,
-    WatchOnlySource,
     IPortfolioId,
     generateBip39Accessor,
     ISecretEncryptor
@@ -373,30 +372,11 @@ export function useAddWatchOnlyPortfolio() {
                 meta
             });
 
-            const address = portfolio.btcWallet.address;
             const portfolios: Portfolio[] = await client.fetchQuery(portfoliosQuery);
 
-            const existingWatchOnly = portfolios.find(
-                p => p.type === PortfolioType.WATCH_ONLY && p.getBtcWallet().address === address
-            );
-
-            if (existingWatchOnly && existingWatchOnly.type === PortfolioType.WATCH_ONLY) {
-                const isUpgrade =
-                    existingWatchOnly.source === WatchOnlySource.ADDRESS &&
-                    portfolio.source === WatchOnlySource.XPUB;
-
-                if (isUpgrade) {
-                    portfolio.updateMeta(existingWatchOnly.meta);
-
-                    await setPortfolios(
-                        portfolios.map(p => (p.id.isEq(existingWatchOnly.id) ? portfolio : p))
-                    );
-                    await setActivePortfolio(portfolio);
-
-                    return portfolio;
-                }
-
-                throw new PortfolioAlreadyExistsError(existingWatchOnly);
+            const existing = portfolios.find(p => p.id.isEq(portfolio.id));
+            if (existing) {
+                throw new PortfolioAlreadyExistsError(existing);
             }
 
             await setPortfolios(portfolios.concat(portfolio));
