@@ -362,7 +362,7 @@ export function useIsActiveWalletWatchOnly(): boolean {
 export function useAddWatchOnlyPortfolio() {
     const client = useQueryClient();
     const portfoliosQuery = usePortfoliosQueryConfig();
-    const { mutateAsync: setPortfolios } = useSetPortfolios();
+    const { mutateAsync: addPortfolio } = useAddPortfolio();
     const { mutateAsync: setActivePortfolio } = useSetActivePortfolio();
 
     return useMutation<Portfolio, Error, { input: string; meta: PortfolioMeta }>({
@@ -379,7 +379,7 @@ export function useAddWatchOnlyPortfolio() {
                 throw new PortfolioAlreadyExistsError(existing);
             }
 
-            await setPortfolios(portfolios.concat(portfolio));
+            await addPortfolio(portfolio);
             await setActivePortfolio(portfolio);
 
             return portfolio;
