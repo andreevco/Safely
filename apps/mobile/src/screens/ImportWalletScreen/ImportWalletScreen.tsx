@@ -1,7 +1,7 @@
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Keyboard, View } from 'react-native';
+import { View } from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';
 
 import { useImportSeedPhrase } from '@safely/ux';
@@ -10,7 +10,7 @@ import { useAddWalletFlow } from '@mobile/features/add-wallet';
 import { Button, Screen, Text } from '@mobile/shared/ui';
 
 import { styles } from './ImportWalletScreen.styles';
-import { SeedPhraseInput } from '../../../modules/safely-masked-input/src';
+import { SeedPhraseInput, SeedPhraseInputRef } from '../../../modules/safely-masked-input/src';
 
 export const ImportWalletScreen = () => {
     const { t } = useTranslation();
@@ -23,7 +23,7 @@ export const ImportWalletScreen = () => {
         }
     });
 
-    const inputRef = useRef<TextInput>(null);
+    const inputRef = useRef<SeedPhraseInputRef>(null);
     const [isFocused, setIsFocused] = useState(false);
 
     useFocusEffect(
@@ -72,6 +72,7 @@ export const ImportWalletScreen = () => {
 
                     <View style={styles.inputContainer}>
                         <SeedPhraseInput
+                            ref={inputRef}
                             value={value}
                             onChangeText={onChange}
                             onFocusChange={setIsFocused}
@@ -79,7 +80,6 @@ export const ImportWalletScreen = () => {
                             textColor={theme.colors.text.primary}
                             placeholder={t('onboarding.importWallet.placeholder')}
                             placeholderTextColor={theme.colors.text.tertiary}
-                            autoFocus
                         />
                     </View>
 
