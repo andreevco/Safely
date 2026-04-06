@@ -85,6 +85,7 @@ export const CustomizeWalletContent = ({
                             placeholderTextColor={theme.colors.text.tertiary}
                             style={[styles.input, { color: theme.colors.text.primary }]}
                             editable={!disabled}
+                            maxLength={24}
                         />
                         {iconDisplay && <View style={styles.iconContainer}>{iconDisplay}</View>}
                     </View>
