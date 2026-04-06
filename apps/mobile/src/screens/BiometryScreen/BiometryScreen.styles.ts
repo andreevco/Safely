@@ -1,6 +1,6 @@
 import { StyleSheet } from 'react-native-unistyles';
 
-export const styles = StyleSheet.create((theme, rt) => ({
+export const styles = StyleSheet.create(theme => ({
     container: {
         flex: 1
     },
@@ -16,6 +16,6 @@ export const styles = StyleSheet.create((theme, rt) => ({
     },
     buttonContainer: {
         margin: theme.spacing[24],
-        marginBottom: theme.spacing[24] + rt.insets.bottom
+        marginBottom: theme.spacing[24]
     }
 }));
