@@ -42,12 +42,7 @@ export class PrimaryDeviceOnboarding {
         });
         const signature = await this.signOnboardingMessage(invitation.ikPub);
 
-        await this.deviceManager.addDevice(
-            {
-                ikPub: invitation.ikPub
-            },
-            this.dmkService
-        );
+        await this.deviceManager.addDevice(invitation.ikPub, this.dmkService);
         this.onDeviceAdded();
 
         await this.accountsApi.postOnboardingMessage({

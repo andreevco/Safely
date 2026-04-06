@@ -54,9 +54,7 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
         });
 
         await container.deviceManager.addDevice(
-            {
-                ikPub: await container.ikService.getPub()
-            },
+            await container.ikService.getPub(),
             container.keyServiceFactory.createDmkSignerService(secureEncryptedStorage)
         );
 

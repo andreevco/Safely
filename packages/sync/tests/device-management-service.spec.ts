@@ -11,10 +11,8 @@ describe('device management service', () => {
         server = new MockSnapshotsServer();
     });
 
-    function device(i: number) {
-        return {
-            ikPub: Buffer.from(`ikPub${i}`)
-        };
+    function deviceIkPub(i: number) {
+        return Buffer.from(`ikPub${i}`);
     }
 
     function opAdd(i: number) {
@@ -45,18 +43,14 @@ describe('device management service', () => {
 
     function add(ctx: MachineContext, i: number) {
         return ctx.container.deviceManager.addDevice(
-            {
-                ikPub: Buffer.from(`ikPub${i}`)
-            },
+            Buffer.from(`ikPub${i}`),
             ctx.container.keyServiceFactory.createDmkSignerService(ctx.secureEncryptedStorage)
         );
     }
 
     function addPub(ctx: MachineContext, ikPub: Buffer) {
         return ctx.container.deviceManager.addDevice(
-            {
-                ikPub
-            },
+            ikPub,
             ctx.container.keyServiceFactory.createDmkSignerService(ctx.secureEncryptedStorage)
         );
     }
@@ -75,6 +69,18 @@ describe('device management service', () => {
         );
     }
 
+    async function verifyDeviceList(ctx: MachineContext, expectedDevices: Buffer[]) {
+        const devices = await ctx.container.deviceManager.getDevices();
+        expect(devices).toEqual(
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            expectedDevices.map(x => ({ ikPub: x, addedAt: expect.any(Number) }))
+        );
+        // verify that list is sorted by addedAt
+        for (let i = 1; i < devices.length; i++) {
+            expect(devices[i].addedAt).toBeGreaterThanOrEqual(devices[i - 1].addedAt);
+        }
+    }
+
     it('adds 1 device', async () => {
         const ctx = await createMachineContext(server);
 
@@ -82,7 +88,7 @@ describe('device management service', () => {
 
         await add(ctx, 1);
 
-        expect(await ctx.container.deviceManager.getDevices()).toEqual([device(1)]);
+        await verifyDeviceList(ctx, [deviceIkPub(1)]);
 
         expect(await ctx.container.yManager.getDeviceLog()).toEqual([opAdd(1)]);
     });
@@ -96,8 +102,9 @@ describe('device management service', () => {
             await add(ctx, i);
         }
 
-        expect(await ctx.container.deviceManager.getDevices()).toEqual(
-            Array.from({ length: 10 }, (_, i) => device(i))
+        await verifyDeviceList(
+            ctx,
+            Array.from({ length: 10 }, (_, i) => deviceIkPub(i))
         );
     });
 
@@ -110,12 +117,10 @@ describe('device management service', () => {
             await add(ctx, i);
         }
 
-        const devices = await ctx.container.deviceManager.getDevices();
-        expect(devices).toEqual([device(1), device(2)]);
-
+        await verifyDeviceList(ctx, [deviceIkPub(1), deviceIkPub(2)]);
         await revoke(ctx, 1);
 
-        expect(await ctx.container.deviceManager.getDevices()).toEqual([device(2)]);
+        await verifyDeviceList(ctx, [deviceIkPub(2)]);
 
         expect(await ctx.container.yManager.getDeviceLog()).toEqual([
             opAdd(1),
@@ -135,29 +140,21 @@ describe('device management service', () => {
         await addPub(ctx1, ik1.publicKey);
         await addPub(ctx1, ik2.publicKey);
 
-        expect(await ctx1.container.deviceManager.getDevices()).toEqual([
-            { ikPub: ik1.publicKey },
-            { ikPub: ik2.publicKey }
-        ]);
+        await verifyDeviceList(ctx1, [ik1.publicKey, ik2.publicKey]);
 
         const deviceLog1_1 = await ctx1.container.yManager.getDeviceLog();
 
         await ctx2.container.deviceManager.verifyDeviceOpAndApply(deviceLog1_1[0]);
         await ctx2.container.deviceManager.verifyDeviceOpAndApply(deviceLog1_1[1]);
 
-        expect(await ctx2.container.deviceManager.getDevices()).toEqual([
-            { ikPub: ik1.publicKey },
-            { ikPub: ik2.publicKey }
-        ]);
+        await verifyDeviceList(ctx2, [ik1.publicKey, ik2.publicKey]);
 
         await revokePub(ctx1, ik1.publicKey);
-
-        expect(await ctx1.container.deviceManager.getDevices()).toEqual([{ ikPub: ik2.publicKey }]);
+        await verifyDeviceList(ctx1, [ik2.publicKey]);
 
         const deviceLog2_2 = await ctx1.container.yManager.getDeviceLog();
-
         await ctx2.container.deviceManager.verifyDeviceOpAndApply(deviceLog2_2[2]);
 
-        expect(await ctx2.container.deviceManager.getDevices()).toEqual([{ ikPub: ik2.publicKey }]);
+        await verifyDeviceList(ctx2, [ik2.publicKey]);
     });
 });
