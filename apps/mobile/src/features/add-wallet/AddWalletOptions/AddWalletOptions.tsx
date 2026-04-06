@@ -19,7 +19,9 @@ export const AddWalletOptions = () => {
                             <Cell.Title>{t('addWallet.createNew.title')}</Cell.Title>
                         </Cell.Row>
                         <Cell.Row>
-                            <Cell.Subtitle>{t('addWallet.createNew.subtitle')}</Cell.Subtitle>
+                            <Cell.Subtitle color="tertiary">
+                                {t('addWallet.createNew.subtitle')}
+                            </Cell.Subtitle>
                         </Cell.Row>
                     </Cell.Content>
                     <Cell.Chevron />
@@ -30,7 +32,9 @@ export const AddWalletOptions = () => {
                             <Cell.Title>{t('addWallet.importExisting.title')}</Cell.Title>
                         </Cell.Row>
                         <Cell.Row>
-                            <Cell.Subtitle>{t('addWallet.importExisting.subtitle')}</Cell.Subtitle>
+                            <Cell.Subtitle color="tertiary">
+                                {t('addWallet.importExisting.subtitle')}
+                            </Cell.Subtitle>
                         </Cell.Row>
                     </Cell.Content>
                     <Cell.Chevron />
@@ -41,7 +45,9 @@ export const AddWalletOptions = () => {
                             <Cell.Title>{t('addWallet.watchAccount.title')}</Cell.Title>
                         </Cell.Row>
                         <Cell.Row>
-                            <Cell.Subtitle>{t('addWallet.watchAccount.subtitle')}</Cell.Subtitle>
+                            <Cell.Subtitle color="tertiary">
+                                {t('addWallet.watchAccount.subtitle')}
+                            </Cell.Subtitle>
                         </Cell.Row>
                     </Cell.Content>
                     <Cell.Chevron />
