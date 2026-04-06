@@ -26,6 +26,7 @@ export function atomicTransaction<T>(doc: Y.Doc, mutator: (draft: Y.Doc) => T): 
     try {
         result = draft.transact(() => mutator(draft));
     } catch (error) {
+        console.error(error);
         throw new TransactionError('Draft transaction failed', error);
     }
 
