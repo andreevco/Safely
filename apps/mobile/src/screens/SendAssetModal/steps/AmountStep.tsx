@@ -1,6 +1,6 @@
-import { Ref, useCallback } from 'react';
+import { RefObject, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Keyboard, TouchableOpacity, View } from 'react-native';
+import { TouchableOpacity, View } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
 import { Text } from '@mobile/shared/ui/Text';
@@ -23,7 +23,7 @@ interface AmountStepProps {
     currencySymbol?: string;
     decimals: number;
     decimalSeparator: string;
-    inputRef?: Ref<MaskedInputRef>;
+    inputRef?: RefObject<MaskedInputRef | null>;
 }
 
 export const AmountStep = (props: AmountStepProps) => {
@@ -47,9 +47,9 @@ export const AmountStep = (props: AmountStepProps) => {
     const { t } = useTranslation();
 
     const handleMaxPress = useCallback(() => {
-        Keyboard.dismiss();
+        inputRef?.current?.blur();
         onMaxPress();
-    }, [onMaxPress]);
+    }, [inputRef, onMaxPress]);
 
     const handleFocus = useCallback(() => {
         if (isMax) {

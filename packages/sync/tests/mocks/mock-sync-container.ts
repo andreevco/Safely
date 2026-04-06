@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 import { MockSnapshotsApi, MockSnapshotsServer, MockSnapshotsSse } from './mock-snapshots-api';
 import { ApiSigner } from '../../src/api/api-signer';
 import { AccountsApi, Configuration, SnapshotsApi } from '../../src/api/generated';
@@ -31,11 +33,12 @@ export async function createMockSyncContainer(
     server: MockSnapshotsServer,
     accountId: string,
     logger: Logger,
+    structure: Record<string, z.ZodType>,
     apiConfiguration?: Configuration
 ): Promise<MockSyncContainer> {
     const keyRepository = new EncryptedKeyRepository(encryptedStorage);
     const syncStateRepository = new SyncStateRepository(storage, logger);
-    const crdtRepository = new YCRDTRepository(storage);
+    const crdtRepository = new YCRDTRepository(storage, structure);
     const deviceRepository = new DeviceRepository(storage);
 
     const ikService = new IkService(keyRepository);

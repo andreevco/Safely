@@ -48,6 +48,7 @@ export function useErrorToast(config: TranslatableErrorsConfig, options?: ParseE
 
     return useCallback(
         (e: unknown) => {
+            console.error(e);
             toast({ message: parseError(e), type: 'error' });
         },
         [toast, parseError]

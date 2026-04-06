@@ -22,12 +22,12 @@ export class YManager {
         await this.yRepository.saveCRDT(this.yDoc);
     }
 
-    public async set(key: string, value: string): Promise<void> {
+    public async set(key: string, value: unknown): Promise<void> {
         this.yDoc.set(key, value);
         await this.yRepository.saveCRDT(this.yDoc);
     }
 
-    public get(key: string): string {
+    public get(key: string): unknown {
         const value = this.yDoc.get(key);
         if (value === null) {
             throw new StorageError(`Key "${key}" does not exist.`);
@@ -52,7 +52,7 @@ export class YManager {
     }
 
     public equalsToRemoteUpdate(snapshot: Buffer): boolean {
-        const remoteDoc = new YCRDT(new Y.Doc());
+        const remoteDoc = new YCRDT(new Y.Doc(), this.yDoc.schema);
         remoteDoc.applyUpdate(snapshot, 'remote');
 
         return this.yDoc.equals(remoteDoc);

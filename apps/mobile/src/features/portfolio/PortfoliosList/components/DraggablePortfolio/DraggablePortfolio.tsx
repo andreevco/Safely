@@ -39,6 +39,7 @@ export const DraggablePortfolio = (props: DraggablePortfolioProps) => {
 
     const formatter = useNumberFormatter();
     const skeletonWidth = useMemo(() => 42 + Math.floor(Math.random() * 4) * 2, []);
+    const isSelected = activePortfolio.id.isEq(portfolio.id);
 
     styles.useVariants({ variant });
 
@@ -51,20 +52,20 @@ export const DraggablePortfolio = (props: DraggablePortfolioProps) => {
             draggedIndex={draggedIndex}
             offsetY={offsetY}
             moveItem={moveItem}
-            activationDelay={120}
+            activationDelay={150}
             onPress={() => handleSelect(portfolio)}
             onDragStart={handleDragStart}
         >
             {({ gesture, underlayStyle }) => (
                 <GestureDetector gesture={gesture}>
                     <Cell
-                        background={
-                            activePortfolio.id.isEq(portfolio.id) ? 'tertiary' : 'secondary'
-                        }
+                        background={isSelected ? 'tertiary' : 'secondary'}
                         style={styles.item}
                         containerStyle={styles.itemContainer}
                         showDivider={
-                            variant === 'compact' ? index !== portfolios.length - 1 : false
+                            !isSelected && variant === 'compact'
+                                ? index !== portfolios.length - 1
+                                : false
                         }
                     >
                         <Animated.View style={underlayStyle} />
@@ -78,7 +79,7 @@ export const DraggablePortfolio = (props: DraggablePortfolioProps) => {
                                 />
                                 <Text
                                     variant="bodyM"
-                                    color="tertiary"
+                                    color={isSelected ? 'secondary' : 'tertiary'}
                                     skeleton
                                     skeletonWidth={skeletonWidth}
                                     skeletonVariant="transparentElement"

@@ -22,7 +22,7 @@ export const styles = StyleSheet.create(theme => ({
         }
     },
     text: {
-        color: theme.colors.text.secondary,
+        color: theme.colors.text.primary,
         variants: {
             variant: {
                 warning: {

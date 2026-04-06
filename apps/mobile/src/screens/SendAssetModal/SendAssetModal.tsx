@@ -1,7 +1,7 @@
 import { useNavigation, NavigationProp, StaticScreenProps } from '@react-navigation/native';
 import { useRef, useCallback, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Keyboard, TextInput, View } from 'react-native';
+import { TextInput, View } from 'react-native';
 import PagerView from 'react-native-pager-view';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
@@ -119,7 +119,7 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
 
         const timer =
             state.parsed.isMax && step.index === 1
-                ? setTimeout(() => Keyboard.dismiss(), 250)
+                ? setTimeout(() => amountInputRef.current?.blur(), 250)
                 : setTimeout(
                       () => [recipientInputRef, amountInputRef][step.index]?.current?.focus(),
                       250

@@ -1,5 +1,7 @@
+/* eslint-disable */
 // Generated file. Do not edit by hand.
 
+import Sliders12Svg from '@safely/ux/shared/assets/icons/12/sliders-12.svg';
 import Dots14Svg from '@safely/ux/shared/assets/icons/14/dots-14.svg';
 import ArrowLeft16Svg from '@safely/ux/shared/assets/icons/16/arrow-left-16.svg';
 import Block16Svg from '@safely/ux/shared/assets/icons/16/block-16.svg';
@@ -33,7 +35,6 @@ import DeviceLinkSvg from '@safely/ux/shared/assets/icons/56/device-link.svg';
 import Loader56Svg from '@safely/ux/shared/assets/icons/56/loader-56.svg';
 import Lock56Svg from '@safely/ux/shared/assets/icons/56/lock-56.svg';
 import AddWallet96Svg from '@safely/ux/shared/assets/icons/96/add-wallet-96.svg';
-import AppIcon96Svg from '@safely/ux/shared/assets/icons/96/app-icon-96.svg';
 import CameraLock96Svg from '@safely/ux/shared/assets/icons/96/camera-lock-96.svg';
 import Checkmark96Svg from '@safely/ux/shared/assets/icons/96/checkmark-96.svg';
 import DeviceLinkCheckmark96Svg from '@safely/ux/shared/assets/icons/96/device-link-checkmark-96.svg';
@@ -47,6 +48,7 @@ import Placeholder96Svg from '@safely/ux/shared/assets/icons/96/placeholder-96.s
 import Safely96Svg from '@safely/ux/shared/assets/icons/96/safely-96.svg';
 import WalletPlus96Svg from '@safely/ux/shared/assets/icons/96/wallet-plus-96.svg';
 
+export const Sliders12 = { image: Sliders12Svg, size: 12 } as const;
 export const Dots14 = { image: Dots14Svg, size: 14 } as const;
 export const ArrowLeft16 = { image: ArrowLeft16Svg, size: 16 } as const;
 export const Block16 = { image: Block16Svg, size: 16 } as const;
@@ -80,14 +82,10 @@ export const DeviceLink = { image: DeviceLinkSvg, size: 56 } as const;
 export const Loader56 = { image: Loader56Svg, size: 56 } as const;
 export const Lock56 = { image: Lock56Svg, size: 56 } as const;
 export const AddWallet96 = { image: AddWallet96Svg, size: 96 } as const;
-export const AppIcon96 = { image: AppIcon96Svg, size: 96 } as const;
 export const CameraLock96 = { image: CameraLock96Svg, size: 96 } as const;
 export const Checkmark96 = { image: Checkmark96Svg, size: 96 } as const;
 export const DeviceLinkCheckmark96 = { image: DeviceLinkCheckmark96Svg, size: 96 } as const;
-export const DeviceLinkExclamationmark96 = {
-    image: DeviceLinkExclamationmark96Svg,
-    size: 96
-} as const;
+export const DeviceLinkExclamationmark96 = { image: DeviceLinkExclamationmark96Svg, size: 96 } as const;
 export const FaceidAndroid96 = { image: FaceidAndroid96Svg, size: 96 } as const;
 export const FaceidIos96 = { image: FaceidIos96Svg, size: 96 } as const;
 export const Fingerprint96 = { image: Fingerprint96Svg, size: 96 } as const;

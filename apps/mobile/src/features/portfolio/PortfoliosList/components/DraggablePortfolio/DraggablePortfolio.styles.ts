@@ -17,6 +17,7 @@ export const styles = StyleSheet.create(theme => ({
         }
     },
     row: {
-        alignItems: 'center'
+        alignItems: 'center',
+        paddingRight: theme.spacing[6]
     }
 }));
