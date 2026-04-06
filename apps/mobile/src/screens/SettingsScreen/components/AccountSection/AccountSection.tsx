@@ -2,7 +2,12 @@ import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { Alert, View } from 'react-native';
 
-import { useAccounts, useActiveAccount, useChangeAccountMeta } from '@safely/ux';
+import {
+    useAccounts,
+    useActiveAccount,
+    useChangeAccountMeta,
+    useSyncedDevicesMeta
+} from '@safely/ux';
 
 import { RootStackNavigationProp, SettingsStackNavigationProp } from '@mobile/app/navigation/types';
 import { Button, Cell, List } from '@mobile/shared/ui';
@@ -17,6 +22,8 @@ export const AccountSection = () => {
     const navigation = useNavigation<SettingsStackNavigationProp>();
     const rootNavigation = useNavigation<RootStackNavigationProp>();
     const { mutateAsync: changeAccountMeta } = useChangeAccountMeta();
+    const devicesMeta = useSyncedDevicesMeta();
+    const hasLinkedDevices = devicesMeta ? Object.keys(devicesMeta).length - 1 > 0 : false;
 
     const handleEditAccount = () => {
         rootNavigation.navigate('CustomizeAccountModal', {
@@ -90,7 +97,7 @@ export const AccountSection = () => {
                             <Cell.Title>{t('settings.groups.account.options.security')}</Cell.Title>
                         </Cell.Row>
                     </Cell.Content>
-                    <Cell.Chevron />
+                    <View style={styles.syncDot(hasLinkedDevices)} />
                 </Cell>
             </List.Group>
             <View style={styles.buttonContainer}>

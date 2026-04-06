@@ -7,5 +7,11 @@ export const styles = StyleSheet.create(theme => ({
     buttonContainer: {
         alignItems: 'center',
         paddingBottom: theme.spacing[8]
-    }
+    },
+    syncDot: (synced: boolean) => ({
+        width: 10,
+        height: 10,
+        borderRadius: theme.radius.full,
+        backgroundColor: synced ? theme.colors.accent.green : theme.colors.accent.orange
+    })
 }));
