@@ -1,9 +1,13 @@
+import Color from 'color';
 import { StyleSheet } from 'react-native-unistyles';
 
 export const styles = StyleSheet.create(theme => ({
     container: {
         variants: {
             background: {
+                accentRed: {
+                    backgroundColor: new Color(theme.colors.accent.red).alpha(0.16).toString()
+                },
                 secondary: {
                     backgroundColor: theme.colors.background.secondary
                 },
