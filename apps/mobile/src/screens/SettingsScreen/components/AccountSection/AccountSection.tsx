@@ -2,16 +2,12 @@ import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { Alert, View } from 'react-native';
 
-import {
-    useAccounts,
-    useActiveAccount,
-    useChangeAccountMeta,
-    useSyncedDevicesMeta
-} from '@safely/ux';
+import { useAccounts, useActiveAccount, useChangeAccountMeta } from '@safely/ux';
 
 import { RootStackNavigationProp, SettingsStackNavigationProp } from '@mobile/app/navigation/types';
 import { Button, Cell, List } from '@mobile/shared/ui';
 
+import { SyncDot } from '../SyncDot';
 import { styles } from './AccountSection.styles';
 import { AccountSelector } from './AccountSelector';
 
@@ -22,8 +18,6 @@ export const AccountSection = () => {
     const navigation = useNavigation<SettingsStackNavigationProp>();
     const rootNavigation = useNavigation<RootStackNavigationProp>();
     const { mutateAsync: changeAccountMeta } = useChangeAccountMeta();
-    const devicesMeta = useSyncedDevicesMeta();
-    const hasLinkedDevices = devicesMeta ? Object.keys(devicesMeta).length - 1 > 0 : false;
 
     const handleEditAccount = () => {
         rootNavigation.navigate('CustomizeAccountModal', {
@@ -97,7 +91,7 @@ export const AccountSection = () => {
                             <Cell.Title>{t('settings.groups.account.options.security')}</Cell.Title>
                         </Cell.Row>
                     </Cell.Content>
-                    <View style={styles.syncDot(hasLinkedDevices)} />
+                    <SyncDot />
                 </Cell>
             </List.Group>
             <View style={styles.buttonContainer}>
