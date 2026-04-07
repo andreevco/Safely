@@ -115,4 +115,30 @@ describe('Sync', () => {
             expect(devices2).toEqual(devices3);
         });
     });
+
+    // Scenario 1:
+    // - User has two devices A (online) and B (offline)
+    // - User adds device C from A, and then send snapshots to server from C
+    // - B comes online and receives snapshot from device C, but there is no yet device C in the B's device list
+    // - B should be able to handle this snapshot
+    it('should perform scenario 1', async () => {
+        const accountA = await factory.createSyncAccount(secureEncryptedStorage);
+        const { newAccount: accountB, secureEncryptedStorage: secureEncryptedStorageB } =
+            await onboardDevice(accountA, secureEncryptedStorage);
+        accountB.syncProvider.dispose();
+
+        const { newAccount: accountC } = await onboardDevice(accountA, secureEncryptedStorage);
+
+        accounts.push(accountA);
+        accounts.push(accountC);
+
+        await setAndVerify(accountC, ['wallet1', 'wallet2']);
+
+        accountB.syncProvider.restart();
+
+        await vi.waitFor(async () => {
+            const walletsB = accountB.syncProvider.get('wallets');
+            expect(walletsB).toEqual(['wallet1', 'wallet2']);
+        });
+    });
 });
