@@ -66,6 +66,14 @@ export const RootStack = createNativeStackNavigator({
                         animation: 'fade',
                         animationDuration: 50
                     }
+                },
+                ChangePasscodeScreen: {
+                    screen: ChangePasscodeScreen,
+                    options: {
+                        presentation: 'fullScreenModal',
+                        animation: 'fade',
+                        animationDuration: 50
+                    }
                 }
             }
         },
@@ -74,7 +82,6 @@ export const RootStack = createNativeStackNavigator({
                 SettingsModal: SettingsStack,
                 CurrencyModal: CurrencyScreen,
                 RecoveryPhraseModal: RecoveryPhraseSheet,
-                ChangePasscodeModal: ChangePasscodeScreen,
                 SignInModal: SignInScreen,
                 CustomizeAccountModal: CustomizeAccountModal,
                 CustomizeWalletModal: CustomizeWalletModal,

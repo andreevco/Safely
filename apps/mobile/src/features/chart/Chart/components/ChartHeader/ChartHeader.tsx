@@ -1,3 +1,5 @@
+/* eslint-disable no-irregular-whitespace */
+
 import { View } from 'react-native';
 
 import { CryptoAsset } from '@safely/core';
@@ -50,7 +52,7 @@ export const ChartHeader = (props: ChartHeaderProps) => {
                     {displayPrice ?? '-'}
                 </Text>
                 <Text style={styles.description} variant="bodyM" color="tertiary">
-                    {asset.symbol} / {fiat.id.symbol}
+                    {asset.symbol} / {fiat.id.symbol}
                 </Text>
             </View>
             {activePrice === undefined && priceDiff && (

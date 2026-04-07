@@ -427,8 +427,8 @@
             "sheet": {
                 "title": "Sign out of {{name}}?",
                 "noDevices": {
-                    "subtitle": "This is the only device with a copy of this account. If you sign out, you will permanently lose access.",
-                    "protectLink": "Protect account now",
+                    "subtitle": "This is the only device with a copy of this account. If you sign out, you will permanently lose access.",
+                    "protectLink": "Protect account now",
                     "checkbox": "I understand that I will permanently lose this account."
                 },
                 "fullCopy": {
@@ -534,12 +534,12 @@
     },
     "chart": {
         "periods": {
-            "1h": "1h",
-            "24h": "24h",
-            "7d": "7d",
-            "30d": "30d",
-            "90d": "90d",
-            "12m": "12m",
+            "1h": "1 h",
+            "24h": "24 h",
+            "7d": "7 d",
+            "30d": "30 d",
+            "90d": "90 d",
+            "12m": "12 m",
             "all": "All"
         }
     },

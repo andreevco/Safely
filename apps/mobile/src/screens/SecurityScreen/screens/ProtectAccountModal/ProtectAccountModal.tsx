@@ -49,7 +49,7 @@ export const ProtectAccountModal = () => {
                         {steps.map((step, index) => (
                             <View key={step} style={styles.stepRow}>
                                 <View style={styles.stepNumber}>
-                                    <Text variant="labelM" color="tertiary" monospace>
+                                    <Text variant="bodyM" color="tertiary" monospace>
                                         {index + 1}.
                                     </Text>
                                 </View>

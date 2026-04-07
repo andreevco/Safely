@@ -61,6 +61,11 @@ export const TabsNavigator = createBottomTabNavigator({
         tabBarStyle: {
             paddingHorizontal: 16,
             marginBottom: 8
+        },
+        tabBarLabelStyle: {
+            fontSize: 11,
+            lineHeight: 16,
+            fontWeight: '600'
         }
     },
     tabBar: props => <TabBar {...props} />

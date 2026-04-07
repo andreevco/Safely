@@ -21,7 +21,7 @@ export const styles = StyleSheet.create(theme => ({
         flexDirection: 'row',
         minHeight: 48,
         alignItems: 'center',
-        gap: theme.spacing[16],
+        gap: theme.spacing[12],
         paddingHorizontal: theme.spacing[16],
         paddingVertical: 10,
         borderBottomWidth: showDivider ? theme.border.hairline : 0,
