@@ -1,10 +1,11 @@
+/* eslint-disable no-irregular-whitespace */
 import { Skia, type SkPath } from '@shopify/react-native-skia';
 
 export function formatCompactPrice(value: number): string {
     const abs = Math.abs(value);
-    if (abs >= 1e9) return `${value / 1e9} B`;
-    if (abs >= 1e6) return `${value / 1e6} M`;
-    return `${value / 1e3} K`;
+    if (abs >= 1e9) return `${value / 1e9} B`;
+    if (abs >= 1e6) return `${value / 1e6} M`;
+    return `${value / 1e3} K`;
 }
 
 const NICE_MULTIPLIERS = [1, 2, 2.5, 5, 10];
