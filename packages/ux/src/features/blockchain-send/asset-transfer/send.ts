@@ -2,13 +2,13 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { BtcTransactionTemplate, TransactionTemplate } from '@safely/core';
 
-import { PendingBtcTx, useActiveBtcWallet, useBtcSendLocked } from '../../../entities';
+import { BroadcastedBtcTx, useActiveBtcWallet, useBtcSendLocked } from '../../../entities';
 import { utxo } from '../../../entities/btc-blockchain/keys';
-import { useSetPendingBtcTransaction } from '../../../entities/btc-blockchain/pending-txs';
+import { useSetBroadcastedBtcTxCache } from '../../../entities/btc-blockchain/broadcasted-tx-cache';
 
 export function useSendAssetTransfer(transactionTemplate: TransactionTemplate | undefined) {
     const btcWallet = useActiveBtcWallet();
-    const { mutateAsync: addPendingTx } = useSetPendingBtcTransaction();
+    const { mutateAsync: setBroadcastedTx } = useSetBroadcastedBtcTxCache();
     const queryClient = useQueryClient();
     const isLocked = useBtcSendLocked();
 
@@ -19,14 +19,16 @@ export function useSendAssetTransfer(transactionTemplate: TransactionTemplate | 
             }
 
             if (isLocked) {
-                throw new Error('Cannot send while pending transaction exists');
+                throw new Error('Cannot send while broadcasted transaction cache exists');
             }
 
             return transactionTemplate.send();
         },
         async onSuccess() {
             if (transactionTemplate instanceof BtcTransactionTemplate) {
-                await addPendingTx(PendingBtcTx.fromTransactionTemplate(transactionTemplate));
+                await setBroadcastedTx(
+                    BroadcastedBtcTx.fromTransactionTemplate(transactionTemplate)
+                );
                 void queryClient.refetchQueries({
                     queryKey: utxo.wallet(btcWallet).toKey()
                 });

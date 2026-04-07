@@ -2,7 +2,7 @@ import { BtcApi, BtcWallet } from '@safely/core';
 
 import { defineQueryKeys, finalKey, mappedParams } from '../../shared';
 import { SyncAccount } from '../account';
-import { PendingBtcTx } from './pending-txs';
+import { BroadcastedBtcTx } from './broadcasted-tx-cache';
 
 export const btcBlockchain = defineQueryKeys('btc-blockchain', {
     blockNumber: mappedParams(
@@ -17,15 +17,15 @@ export const utxo = defineQueryKeys('utxo', {
     wallet: mappedParams(
         (__: BtcWallet) => ({
             params: mappedParams(
-                (_: { api: BtcApi; pendingTx: PendingBtcTx | null }) => finalKey,
-                ({ api, pendingTx }) => [api.id, JSON.stringify(pendingTx)]
+                (_: { api: BtcApi; broadcastedTx: BroadcastedBtcTx | null }) => finalKey,
+                ({ api, broadcastedTx }) => [api.id, JSON.stringify(broadcastedTx)]
             )
         }),
         wallet => [wallet.id]
     )
 });
 
-export const pendingBtcTxs = defineQueryKeys('pending-btc-txs', {
+export const broadcastedBtcTxCache = defineQueryKeys('broadcasted-btc-tx-cache', {
     account: mappedParams(
         (_: SyncAccount) => finalKey,
         account => [account.accountId]

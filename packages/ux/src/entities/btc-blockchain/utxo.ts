@@ -11,7 +11,7 @@ import {
 } from '../../shared';
 import { useActiveBtcWallet, usePortfolios } from '../portfolio';
 import { utxo } from './keys';
-import { usePendingBtcTransaction, PendingBtcTxsService } from './pending-txs';
+import { useBroadcastedBtcTxCache, BroadcastedBtcTxCacheService } from './broadcasted-tx-cache';
 import { getBiggestBtcIOAddress } from '../activity/api';
 
 function useAccessibleBtcWallets() {
@@ -35,17 +35,17 @@ function useAccessibleBtcWallets() {
 export function useBtcWalletUtxo(btcWallet: BtcWallet) {
     const api = useBtcApi();
     const accessibleBtcWallets = useAccessibleBtcWallets();
-    const { data: pendingTx = null } = usePendingBtcTransaction();
+    const { data: broadcastedTx = null } = useBroadcastedBtcTxCache();
 
     return usePersistQuery({
-        queryKey: utxo.wallet(btcWallet).params({ api, pendingTx }).toKey(),
+        queryKey: utxo.wallet(btcWallet).params({ api, broadcastedTx }).toKey(),
         async queryFn() {
             const allUtxos = await api.getUtxos(btcWallet, true);
 
             const confirmed = allUtxos.filter(u => u.confirmations > 0);
             const unconfirmed = allUtxos.filter(u => u.confirmations === 0);
 
-            const pendingTxsService = new PendingBtcTxsService(pendingTx, btcWallet.address);
+            const cacheService = new BroadcastedBtcTxCacheService(broadcastedTx, btcWallet.address);
 
             const { safe, unsafe } = unconfirmed.reduce(
                 (acc, item) => {
@@ -66,8 +66,8 @@ export function useBtcWalletUtxo(btcWallet: BtcWallet) {
                 }
             );
 
-            const patchedConfirmed = pendingTxsService.toConfirmed(confirmed);
-            const patchedSafe = pendingTxsService.toUnconfirmedSafe(safe);
+            const patchedConfirmed = cacheService.toConfirmed(confirmed);
+            const patchedSafe = cacheService.toUnconfirmedSafe(safe);
 
             const getTotal = (utxos: { value: string }[]) =>
                 utxos.reduce(
@@ -131,6 +131,6 @@ export function useActiveBtcWalletUtxoForEstimation() {
 }
 
 export function useBtcSendLocked() {
-    const { data: pendingTx = null } = usePendingBtcTransaction();
-    return !!pendingTx;
+    const { data: broadcastedTx = null } = useBroadcastedBtcTxCache();
+    return !!broadcastedTx;
 }
