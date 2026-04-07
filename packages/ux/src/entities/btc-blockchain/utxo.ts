@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
 import { assertUnreachable, BtcAssetAmount, BtcWallet, PortfolioType } from '@safely/core';
-import { BtcApiUtxoWithTx } from '@safely/core/api/btc';
+import { BtcApiUtxoWithOptionalTx } from '@safely/core/api/btc';
 
 import {
     QUERIES_REFETCH_INTERVAL,
@@ -11,11 +11,7 @@ import {
 } from '../../shared';
 import { useActiveBtcWallet, usePortfolios } from '../portfolio';
 import { utxo } from './keys';
-import {
-    usePendingBtcTransactions,
-    useRemovePendingBtcTransactions,
-    PendingBtcTxsService
-} from './pending-txs';
+import { usePendingBtcTransactions, PendingBtcTxsService } from './pending-txs';
 import { getBiggestBtcIOAddress } from '../activity/api';
 
 function useAccessibleBtcWallets() {
@@ -40,60 +36,22 @@ export function useBtcWalletUtxo(btcWallet: BtcWallet) {
     const api = useBtcApi();
     const accessibleBtcWallets = useAccessibleBtcWallets();
     const { data: pendingTxs = [] } = usePendingBtcTransactions();
-    const { mutate: removePendingTxs } = useRemovePendingBtcTransactions();
 
     return usePersistQuery({
         queryKey: utxo.wallet(btcWallet).params({ api, pendingTxs }).toKey(),
         async queryFn() {
-            const [confirmedIn, serverUnconfirmedIn, txHistory] = await Promise.all([
-                api.getAccountConfirmedUtxo(btcWallet),
-                api.getAccountUnconfirmedUtxo(btcWallet),
-                api.getXpub(
-                    {
-                        ...btcWallet,
-                        derivationPath: {
-                            change: 0,
-                            addressIndex: '*'
-                        }
-                    },
-                    {
-                        details: 'txs',
-                        page: 1,
-                        pageSize: 1
-                    }
-                )
-            ]);
+            const allUtxos = await api.getUtxos(btcWallet, true);
 
-            const pendingTxsService = new PendingBtcTxsService(
-                pendingTxs,
-                btcWallet.address,
-                txHistory.transactions,
-                serverUnconfirmedIn
-            );
+            const confirmed = allUtxos.filter(u => u.confirmations > 0);
+            const unconfirmed = allUtxos.filter(u => u.confirmations === 0);
 
-            if (pendingTxsService.resolvedTxs.length > 0) {
-                void removePendingTxs(pendingTxsService.resolvedTxs);
-            }
+            const pendingTxsService = new PendingBtcTxsService(pendingTxs, btcWallet.address);
 
-            const serverUnconfirmedOutTxs =
-                txHistory.transactions?.filter(
-                    tx => tx.vin?.some(input => input.isOwn) && tx.confirmations < 1
-                ) ?? [];
-
-            const unconfirmedOutTxs = pendingTxsService.toUnconfirmedOut(serverUnconfirmedOutTxs);
-
-            const unconfirmedOutUtxos = unconfirmedOutTxs.flatMap(tx =>
-                tx.vin
-                    .filter(vin => vin.isOwn && vin.txid != null)
-                    .map(vin => ({
-                        txid: vin.txid!,
-                        vout: vin.vout ?? 0,
-                        value: vin.value ?? '0'
-                    }))
-            );
-
-            const { safe: serverSafe, unsafe } = serverUnconfirmedIn.reduce(
+            const { safe, unsafe } = unconfirmed.reduce(
                 (acc, item) => {
+                    if (!item.tx) {
+                        return { ...acc, unsafe: acc.unsafe.concat(item) };
+                    }
                     const fromAddress = getBiggestBtcIOAddress(item.tx.vin.filter(v => !v.isOwn));
                     const isSafe = accessibleBtcWallets.some(w => w.address === fromAddress);
                     if (isSafe) {
@@ -103,12 +61,13 @@ export function useBtcWalletUtxo(btcWallet: BtcWallet) {
                     }
                 },
                 { safe: [], unsafe: [] } as {
-                    safe: BtcApiUtxoWithTx[];
-                    unsafe: BtcApiUtxoWithTx[];
+                    safe: BtcApiUtxoWithOptionalTx[];
+                    unsafe: BtcApiUtxoWithOptionalTx[];
                 }
             );
 
-            const patchedSafe = pendingTxsService.toUnconfirmedInSafe(serverSafe);
+            const patchedConfirmed = pendingTxsService.toConfirmed(confirmed);
+            const patchedSafe = pendingTxsService.toUnconfirmedSafe(safe);
 
             const getTotal = (utxos: { value: string }[]) =>
                 utxos.reduce(
@@ -118,8 +77,8 @@ export function useBtcWalletUtxo(btcWallet: BtcWallet) {
 
             return {
                 confirmedIn: {
-                    totalAmount: getTotal(confirmedIn),
-                    utxos: confirmedIn
+                    totalAmount: getTotal(patchedConfirmed),
+                    utxos: patchedConfirmed
                 },
                 unconfirmedInSafe: {
                     totalAmount: getTotal(patchedSafe),
@@ -128,10 +87,6 @@ export function useBtcWalletUtxo(btcWallet: BtcWallet) {
                 unconfirmedInUnsafe: {
                     totalAmount: getTotal(unsafe),
                     utxos: unsafe
-                },
-                unconfirmedOut: {
-                    totalAmount: getTotal(unconfirmedOutUtxos),
-                    utxos: unconfirmedOutUtxos
                 }
             };
         },
@@ -149,9 +104,7 @@ export function useBtcBalance(wallet: BtcWallet) {
     return useDerivedQuery({
         queries: [utxosQuery],
         queryFn: ([utxos]) => ({
-            display: utxos.confirmedIn.totalAmount
-                .amountAdd(utxos.unconfirmedInSafe.totalAmount)
-                .amountSub(utxos.unconfirmedOut.totalAmount),
+            display: utxos.confirmedIn.totalAmount.amountAdd(utxos.unconfirmedInSafe.totalAmount),
             pending: utxos.unconfirmedInUnsafe.totalAmount
         })
     });
@@ -172,10 +125,7 @@ export function useActiveBtcWalletUtxoForEstimation() {
     return useDerivedQuery({
         queries: [utxoQuery],
         queryFn([u]) {
-            return {
-                in: u.confirmedIn.utxos.concat(u.unconfirmedInSafe.utxos),
-                pendingOut: u.unconfirmedOut.utxos
-            };
+            return u.confirmedIn.utxos.concat(u.unconfirmedInSafe.utxos);
         }
     });
 }

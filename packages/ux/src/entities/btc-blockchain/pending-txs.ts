@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { BtcTransactionTemplate, getUtxoTotal, notNullish } from '@safely/core';
-import { BtcApiTx, BtcApiUtxoWithTx } from '@safely/core/api/btc';
+import { BtcApiUtxo, BtcTransactionTemplate } from '@safely/core';
+import { BtcApiTx, BtcApiUtxoWithOptionalTx } from '@safely/core/api/btc';
 
 import { pendingBtcTxs } from './keys';
 import { useAccountLocalStorage } from '../../shared';
@@ -94,28 +94,21 @@ export class PendingBtcTx {
     public toBtcApiTx(walletAddress: string): BtcApiTx {
         return {
             txid: this.txId,
-            vin: this.inputs.map((u, i) => ({
+            vin: this.inputs.map(u => ({
                 txid: u.txid,
                 vout: u.vout,
-                n: i,
                 addresses: [u.address],
-                isAddress: true,
-                isOwn: u.address === walletAddress,
-                value: u.value
+                value: u.value,
+                isOwn: u.address === walletAddress
             })),
-            vout: this.outputs.map((o, i) => ({
+            vout: this.outputs.map(o => ({
                 value: o.value,
-                n: i,
                 addresses: [o.address],
-                isAddress: true,
                 isOwn: o.address === walletAddress
             })),
             blockHeight: -1,
             confirmations: 0,
-            blockTime: 0,
-            value: this.outputs.reduce((sum, o) => sum + BigInt(o.value), 0n).toString(),
-            valueIn: getUtxoTotal(this.inputs).weiAmount.toString(),
-            fees: this.fee
+            blockTime: 0
         };
     }
 
@@ -125,69 +118,43 @@ export class PendingBtcTx {
 }
 
 export class PendingBtcTxsService {
-    private readonly outgoingPendingTxs: PendingBtcTx[];
-    private readonly incomingPendingTxs: PendingBtcTx[];
-
-    public readonly resolvedTxs: string[];
-
     constructor(
-        pendingTxs: PendingBtcTx[],
-        private readonly walletAddress: string,
-        ...serverTxIds: ({ txid: string }[] | undefined)[]
-    ) {
-        const serverTxIdsSet = new Set(
-            serverTxIds
-                .flat()
-                .map(tx => tx?.txid)
-                .filter(notNullish)
-        );
-        this.resolvedTxs = pendingTxs.filter(tx => serverTxIdsSet.has(tx.txId)).map(tx => tx.txId);
+        private readonly pendingTxs: PendingBtcTx[],
+        private readonly walletAddress: string
+    ) {}
 
-        pendingTxs = pendingTxs.filter(tx => !this.resolvedTxs.includes(tx.txId));
+    public toConfirmed(serverConfirmed: BtcApiUtxo[]): BtcApiUtxo[] {
+        const spentKeys = new Set(
+            this.pendingTxs.flatMap(tx => tx.inputs.map(i => `${i.txid}:${i.vout}`))
+        );
 
-        this.outgoingPendingTxs = pendingTxs.filter(t =>
-            t.inputs.some(u => u.address === walletAddress)
-        );
-        this.incomingPendingTxs = pendingTxs.filter(t =>
-            t.outputs.some(o => o.address === walletAddress)
-        );
+        return serverConfirmed.filter(utxo => !spentKeys.has(`${utxo.txid}:${utxo.vout}`));
     }
 
-    public toUnconfirmedOut(serverUnconfirmedOut: BtcApiTx[]): BtcApiTx[] {
-        const existingTxIds = new Set(serverUnconfirmedOut.map(tx => tx.txid));
-        const newTxs = this.outgoingPendingTxs
-            .filter(tx => !existingTxIds.has(tx.txId))
-            .map(tx => tx.toBtcApiTx(this.walletAddress));
-        return [...serverUnconfirmedOut, ...newTxs];
-    }
+    public toUnconfirmedSafe(serverSafe: BtcApiUtxoWithOptionalTx[]): BtcApiUtxo[] {
+        const existingKeys = new Set(serverSafe.map(u => `${u.txid}:${u.vout}`));
+        const newUtxos: BtcApiUtxoWithOptionalTx[] = [];
 
-    public toUnconfirmedInSafe(serverSafe: BtcApiUtxoWithTx[]): BtcApiUtxoWithTx[] {
-        const existingTxIds = new Set(serverSafe.map(u => u.txid));
+        for (const pendingTx of this.pendingTxs) {
+            const btcApiTx = pendingTx.toBtcApiTx(this.walletAddress);
 
-        const newUtxos = this.incomingPendingTxs
-            .map(pending => {
-                if (existingTxIds.has(pending.txId)) {
-                    return null;
-                }
+            pendingTx.outputs.forEach((output, vout) => {
+                if (output.address !== this.walletAddress) return;
 
-                const ownOutputIndex = pending.outputs.findIndex(
-                    o => o.address === this.walletAddress
-                );
-                if (ownOutputIndex === -1) {
-                    return null;
-                }
+                const key = `${pendingTx.txId}:${vout}`;
+                if (existingKeys.has(key)) return;
 
-                const output = pending.outputs[ownOutputIndex];
-                return {
-                    txid: pending.txId,
-                    vout: ownOutputIndex,
+                existingKeys.add(key);
+                newUtxos.push({
+                    txid: pendingTx.txId,
+                    vout,
                     value: output.value,
                     confirmations: 0,
-                    address: this.walletAddress,
-                    tx: pending.toBtcApiTx(this.walletAddress)
-                };
-            })
-            .filter(notNullish);
+                    address: output.address,
+                    tx: btcApiTx
+                });
+            });
+        }
 
         return [...serverSafe, ...newUtxos];
     }

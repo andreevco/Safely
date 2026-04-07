@@ -9,22 +9,11 @@ import {
     BtcTransferRequestNotMax
 } from './types';
 import { getUtxoTotal } from './utils';
-import { BtcApi, BtcApiGasPrice, BtcApiUtxo } from '../../api/btc';
+import { BtcApi, BtcApiEstimatedFee, BtcApiUtxo } from '../../api/btc';
 import { BtcAssetAmount, btcNetworkConfig, BtcWallet } from '../../entities';
 import { abs, assertUnreachable, IIdentifiable, toBig } from '../../utils';
 
 export type SpentUtxo = { txid: string; vout: number; value: string };
-
-export type UtxoForEstimation = {
-    in: BtcApiUtxo[];
-    pendingOut: SpentUtxo[];
-};
-
-function getAvailableUtxos(utxos: UtxoForEstimation): BtcApiUtxo[] {
-    const spentSet = new Set(utxos.pendingOut.map(u => `${u.txid}:${u.vout}`));
-
-    return utxos.in.filter(u => !spentSet.has(`${u.txid}:${u.vout}`));
-}
 
 export class BtcEstimator implements IIdentifiable {
     public readonly id: string;
@@ -44,7 +33,7 @@ export class BtcEstimator implements IIdentifiable {
     ): Promise<{ targetBlock: number; feeSatVb: Big }> {
         const feePrice = await this.btcApi.getFeePrice();
 
-        const format = (v: BtcApiGasPrice) => ({
+        const format = (v: BtcApiEstimatedFee) => ({
             targetBlock: v.target_block,
             feeSatVb: toBig(v.fee)
         });
@@ -61,23 +50,21 @@ export class BtcEstimator implements IIdentifiable {
 
     public async getSendFee(
         request: Omit<BtcTransferRequestMax, 'type' | 'estimatedAmount'>,
-        utxoForEstimation: UtxoForEstimation
+        utxo: BtcApiUtxo[]
     ): Promise<BtcAssetAmount> {
-        const utxos = getAvailableUtxos(utxoForEstimation);
-        const { fee } = await this.estimateSendFee(request, utxos);
+        const { fee } = await this.estimateSendFee(request, utxo);
         return fee;
     }
 
     public async estimate(
         request: BtcTransferRequest,
-        utxoForEstimation: UtxoForEstimation
+        utxo: BtcApiUtxo[]
     ): Promise<BtcTransactionTemplate> {
-        const utxos = getAvailableUtxos(utxoForEstimation);
         switch (request.type) {
             case 'max':
-                return this.estimateMax(request, utxos);
+                return this.estimateMax(request, utxo);
             case 'not-max':
-                return this.estimateNotMax(request, utxos);
+                return this.estimateNotMax(request, utxo);
             default:
                 assertUnreachable(request);
         }

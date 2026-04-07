@@ -1,9 +1,9 @@
 export type {
     BtcApiUtxo,
     BtcApiAddress,
-    BtcApiGasPrice,
+    BtcApiEstimatedFee,
     BtcApiTx,
-    BtcApiUtxoWithTx
+    BtcApiUtxoWithOptionalTx
 } from './models';
 export { TxSchema } from './models';
 export { BtcApi } from './client';

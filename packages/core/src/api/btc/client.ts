@@ -2,11 +2,11 @@ import { z } from 'zod';
 
 import {
     AddressSchema,
-    BlockHeightScheme,
-    GasPricesSchema,
+    ChainTipSchema,
+    EstimatedFeesSchema,
+    SendTxResultSchema,
     TxSchema,
-    UtxoSchema,
-    UtxoWithTxSchema
+    UtxoWithOptionalTxSchema
 } from './models';
 import { BtcWalletType } from '../../entities/blockchain/btc';
 import { ApiClient } from '../../utils/fetch';
@@ -16,14 +16,8 @@ export { BtcApiError } from './errors';
 
 export interface GetAddressParams {
     details?: 'basic' | 'tokens' | 'tokenBalances' | 'txids' | 'txslight' | 'txs';
-    tokens?: 'derived' | 'used' | 'nonzero';
     pageSize?: number;
     page?: number;
-    from?: number;
-    to?: number;
-    contractFilter?: string;
-    secondaryCurrency?: string;
-    gap?: number;
 }
 
 export interface BtcDescriptor {
@@ -51,27 +45,24 @@ export class BtcApi extends ApiClient implements IIdentifiable {
 
     public async getXpub(descriptor: BtcDescriptor, params?: GetAddressParams) {
         const serialized = this.serializeDescriptor(descriptor);
-        return await this.getJson(`/api/v2/xpub/${serialized}`, AddressSchema, params);
+        return await this.getJson(`/v1/xpubs/${serialized}`, AddressSchema, params);
     }
 
-    public async getAccountConfirmedUtxo(descriptor: BtcDescriptor) {
+    public async getUtxos(descriptor: BtcDescriptor, withPendingTxs = false) {
         const serialized = this.serializeDescriptor(descriptor);
-        return await this.getJson(`/api/v2/utxo/${serialized}?confirmed=true`, z.array(UtxoSchema));
-    }
-
-    public async getAccountUnconfirmedUtxo(descriptor: BtcDescriptor) {
-        return this.getJson(
-            `/extensions/v1/utxo/${this.serializeDescriptor(descriptor)}/unconfirmed?withTxs=true`,
-            z.array(UtxoWithTxSchema)
+        return await this.getJson(
+            `/v1/utxos/${serialized}`,
+            z.array(UtxoWithOptionalTxSchema),
+            withPendingTxs ? { withPendingTxs: true } : undefined
         );
     }
 
     public async getTransaction(txid: string) {
-        return await this.getJson(`/api/v2/tx/${txid}`, TxSchema);
+        return await this.getJson(`/v1/transactions/${txid}`, TxSchema);
     }
 
     public async getBlockTipHeight(): Promise<number> {
-        const response = await this.getJson(`/extensions/v1/blocks/tip/height`, BlockHeightScheme);
+        const response = await this.getJson(`/v1/chain/tip`, ChainTipSchema);
         return response.height;
     }
 
@@ -79,11 +70,11 @@ export class BtcApi extends ApiClient implements IIdentifiable {
      * float sat/vByte
      */
     public async getFeePrice() {
-        return this.getJson('/extensions/v1/fees/estimate', GasPricesSchema);
+        return this.getJson('/v1/fees/estimate', EstimatedFeesSchema);
     }
 
     public async sendTransaction(hex: string): Promise<{ txid: string }> {
-        const res = await this.postPlain('/api/v2/sendtx/', hex, z.object({ result: z.string() }));
+        const res = await this.postPlain('/v1/transactions/send', hex, SendTxResultSchema);
         return { txid: res.result };
     }
 

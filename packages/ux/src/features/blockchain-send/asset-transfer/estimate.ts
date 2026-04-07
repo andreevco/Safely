@@ -6,10 +6,10 @@ import {
     BTC_ASSET,
     BtcAssetAmount,
     BtcEstimator,
-    UtxoForEstimation,
     BtcFeeType,
     RatedCryptoAssetAmount,
-    TransactionTemplate
+    TransactionTemplate,
+    BtcApiUtxo
 } from '@safely/core';
 
 import { useActiveBtcWalletUtxoForEstimation, useAssets } from '../../../entities';
@@ -21,8 +21,7 @@ export const estimationKey = defineQueryKeys('estimation', {
     form(__: SendFormResult) {
         return {
             params: mappedParams(
-                (_: { btcEstimator: BtcEstimator; utxos: UtxoForEstimation | undefined }) =>
-                    finalKey,
+                (_: { btcEstimator: BtcEstimator; utxos: BtcApiUtxo[] | undefined }) => finalKey,
                 p => [p.btcEstimator.id, JSON.stringify(p.utxos)]
             )
         };
@@ -36,7 +35,7 @@ export const maxSendKey = defineQueryKeys('maxSendKey', {
                 (_: {
                     btcEstimator: BtcEstimator;
                     assets: RatedCryptoAssetAmount[] | undefined;
-                    utxos: UtxoForEstimation | undefined;
+                    utxos: BtcApiUtxo[] | undefined;
                 }) => finalKey,
                 p => [p.btcEstimator.id, JSON.stringify(p.assets), JSON.stringify(p.utxos)]
             )
