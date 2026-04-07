@@ -28,10 +28,7 @@ export const RemovePortfolioButton = (props: RemovePortfolioButtonProps) => {
                 <Cell.Row style={styles.row}>
                     <Text variant="labelL" textAlign="center" style={styles.text}>
                         {t('settings.removePortfolio.title', {
-                            name:
-                                portfolio.meta.icon.type === 'emoji'
-                                    ? `${portfolio.meta.icon.value} ${portfolio.meta.name}`
-                                    : portfolio.meta.name
+                            name: portfolio.meta.name
                         })}
                     </Text>
                 </Cell.Row>

@@ -34,6 +34,7 @@ export const PopupAccountSelector = (props: PopupAccountSelectorProps) => {
 
     return (
         <PopupMenu
+            menuMargin={2}
             ref={popupMenuRef}
             variant="fullWidth"
             touchable={progress => (
@@ -44,7 +45,7 @@ export const PopupAccountSelector = (props: PopupAccountSelectorProps) => {
                 />
             )}
         >
-            <List.Group variant="divided">
+            <List.Group withoutBottomMargin variant="divided">
                 {accounts.map(acc => {
                     const isActive = acc.accountId === activeAccountId;
                     const accWalletsCount = acc.syncProvider.get('portfolios')?.length ?? 0;

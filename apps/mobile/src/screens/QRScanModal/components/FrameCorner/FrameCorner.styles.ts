@@ -6,22 +6,22 @@ export const styles = StyleSheet.create(() => ({
         variants: {
             position: {
                 topLeft: {
-                    top: 0,
-                    left: 0
+                    top: -1,
+                    left: -1
                 },
                 topRight: {
-                    top: 0,
-                    right: 0,
+                    top: -1,
+                    right: -1,
                     transform: [{ rotate: '90deg' }]
                 },
                 bottomLeft: {
-                    bottom: 0,
-                    left: 0,
+                    bottom: -1,
+                    left: -1,
                     transform: [{ rotate: '-90deg' }]
                 },
                 bottomRight: {
-                    bottom: 0,
-                    right: 0,
+                    bottom: -1,
+                    right: -1,
                     transform: [{ rotate: '180deg' }]
                 }
             }

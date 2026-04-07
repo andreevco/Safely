@@ -12,9 +12,7 @@ import { scheduleOnRN } from 'react-native-worklets';
 
 import { useScreenContext } from '../Screen/Screen.context';
 
-const MENU_MARGIN = 8;
-
-export const usePopupMenu = (screenHeight: number) => {
+export const usePopupMenu = (screenHeight: number, menuMargin = 8) => {
     const triggerRef = useRef<View>(null);
     const triggerFrame = useSharedValue({ x: 0, y: 0, width: 0, height: 0 });
     const [visible, setVisible] = useState(false);
@@ -96,15 +94,14 @@ export const usePopupMenu = (screenHeight: number) => {
     );
 
     const menuAnimatedStyle = useAnimatedStyle(() => {
-        const spaceBelow =
-            screenHeight - (triggerFrame.value.y + triggerHeight.value + MENU_MARGIN);
+        const spaceBelow = screenHeight - (triggerFrame.value.y + triggerHeight.value + menuMargin);
         const showBelow =
-            spaceBelow >= menuHeight.value || triggerFrame.value.y < menuHeight.value + MENU_MARGIN;
+            spaceBelow >= menuHeight.value || triggerFrame.value.y < menuHeight.value + menuMargin;
 
         return {
             top: showBelow
-                ? triggerFrame.value.y + triggerHeight.value + MENU_MARGIN
-                : triggerFrame.value.y - menuHeight.value - MENU_MARGIN,
+                ? triggerFrame.value.y + triggerHeight.value + menuMargin
+                : triggerFrame.value.y - menuHeight.value - menuMargin,
             transformOrigin: showBelow ? '50% 0%' : '50% 100%',
             opacity: progress.value,
             transform: [{ scale: scale.value }]
