@@ -2,28 +2,28 @@ export enum SyncStatus {
     /**
      * Special status for offline providers, which are always offline.
      */
-    OFFLINE,
+    OFFLINE = 'offline',
     /**
      * Sync was disabled manually
      */
-    DISABLED,
+    DISABLED = 'disabled',
     /**
      * Server does not respond, or responds with unrecognizable error.
      */
-    DISCONNECTED,
+    DISCONNECTED = 'disconnected',
     /**
      * Server is responding, client is synchronizing data with the server.
      */
-    SYNCHRONIZING,
+    SYNCHRONIZING = 'synchronizing',
     /**
      * Client is synchronized with the server.
      */
-    SYNCHRONIZED,
+    SYNCHRONIZED = 'synchronized',
     /**
      * The current device has been deleted from the account.
+     * This state is FINAL. Only way to recover is manually restart SyncProvider.
      */
-    // TODO: use this status
-    DELETED
+    DEVICE_DELETED = 'device_deleted'
 }
 
 export interface ISyncStatusManager {
