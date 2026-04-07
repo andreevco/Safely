@@ -1,3 +1,4 @@
+import { ErrorDisposition } from './error-handler';
 import { SnapshotsApi } from '../api/generated';
 import { SnapshotsSse } from '../api/snapshots-sse';
 import { EncryptedState } from '../api/types';
@@ -24,6 +25,7 @@ export type SyncMachineInput = {
 export type SyncMachineConfig = SyncMachineInput & {
     shouldSendUpdate: boolean;
     remoteUpdates: EncryptedState[];
+    lastError?: ErrorDisposition;
 };
 
 export function defaultConfig(input: SyncMachineInput): SyncMachineConfig {
