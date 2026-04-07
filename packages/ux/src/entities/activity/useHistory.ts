@@ -1,6 +1,7 @@
 import { InfiniteData, QueryKey } from '@tanstack/react-query';
 
 import { QUERIES_STALE_TIME, useInfinitePersistQuery, useBtcApi } from '../../shared';
+import { useBroadcastedBtcTxCache } from '../btc-blockchain/broadcasted-tx-cache';
 import { useActiveBtcWallet } from '../portfolio';
 import { fetchBtcActivity } from './api';
 import { activityKeys } from './keys';
@@ -14,6 +15,7 @@ export function useHistory<TData = InfiniteData<ActivityPage, IActivityPageParam
 ) {
     const btcApi = useBtcApi();
     const btcWallet = useActiveBtcWallet();
+    const { data: broadcastedTx = null } = useBroadcastedBtcTxCache();
 
     return useInfinitePersistQuery<ActivityPage, unknown, TData, QueryKey, IActivityPageParam>({
         queryKey: activityKeys.all(btcWallet.id.toString(), filters).toKey(),
@@ -35,6 +37,33 @@ export function useHistory<TData = InfiniteData<ActivityPage, IActivityPageParam
             persist: true,
             schemaKey: 'infiniteActivityData'
         },
-        select: options?.select
+        select(data) {
+            const allItems = data?.pages?.length ? data.pages.flatMap(page => page.items) : [];
+
+            if (broadcastedTx) {
+                const broadcastedItem = broadcastedTx.toActivityItem(btcWallet.address);
+
+                if (
+                    broadcastedItem &&
+                    !allItems.some(
+                        item => item.transaction.raw.txid === broadcastedItem.transaction.raw.txid
+                    ) &&
+                    (filters.isInitiator === undefined ||
+                        broadcastedItem.transaction.isInitiator === filters.isInitiator)
+                ) {
+                    allItems.unshift(broadcastedItem);
+                }
+            }
+
+            const patchedData: InfiniteData<ActivityPage, IActivityPageParam> = {
+                ...data,
+                pages: [
+                    { items: allItems, hasNextPage: data.pages[0]?.hasNextPage ?? false },
+                    ...data.pages.slice(1)
+                ]
+            };
+
+            return options?.select ? options.select(patchedData) : (patchedData as TData);
+        }
     });
 }

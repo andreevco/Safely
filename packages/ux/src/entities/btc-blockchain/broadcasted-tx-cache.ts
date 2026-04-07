@@ -1,12 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { BtcApiUtxo, BtcTransactionTemplate } from '@safely/core';
+import { BtcApiUtxo, BtcAssetAmount, BtcTransactionTemplate } from '@safely/core';
+import { toBig, toBigOrZero } from '@safely/core';
 import { BtcApiTx, BtcApiUtxoWithOptionalTx } from '@safely/core/api/btc';
 
 import { broadcastedBtcTxCache } from './keys';
 import { useAccountLocalStorage, useBtcApi } from '../../shared';
 import { SBroadcastedBtcTx } from '../../shared/storage/account/local/schemas';
 import { useActiveAccount } from '../account';
+import { getBiggestBtcIOAddress } from '../activity/api';
+import { BtcActivityItem } from '../activity/types';
 
 export function useBroadcastedBtcTxCache() {
     const { get, set } = useAccountLocalStorage('broadcastedBtcTxCache');
@@ -104,6 +107,42 @@ export class BroadcastedBtcTx {
             blockHeight: -1,
             confirmations: 0,
             blockTime: 0
+        };
+    }
+
+    public toActivityItem(walletAddress: string): BtcActivityItem | null {
+        const btcApiTx = this.toBtcApiTx(walletAddress);
+
+        const isInitiator = !!btcApiTx.vin?.some(input => input.isOwn);
+
+        const fromAddress = getBiggestBtcIOAddress(
+            btcApiTx.vin.filter(v => Boolean(v.isOwn) === isInitiator)
+        );
+        const toAddress =
+            getBiggestBtcIOAddress(btcApiTx.vout.filter(v => Boolean(v.isOwn) === !isInitiator)) ??
+            getBiggestBtcIOAddress(btcApiTx.vout);
+
+        if (!fromAddress || !toAddress) {
+            return null;
+        }
+
+        const weiAmount = btcApiTx.vout
+            .filter(v => Boolean(v.isOwn) === !isInitiator)
+            .reduce((acc, v) => acc.plus(toBigOrZero(v.value)), toBig(0));
+
+        return {
+            timestamp: this.timestamp,
+            key: btcApiTx.txid,
+            transaction: {
+                isInitiator,
+                fromAddress,
+                toAddress,
+                value: BtcAssetAmount.fromWeiAmount(weiAmount),
+                fee: this.fee
+                    ? { type: 'crypto', amount: BtcAssetAmount.fromWeiAmount(this.fee) }
+                    : undefined,
+                raw: btcApiTx
+            }
         };
     }
 
