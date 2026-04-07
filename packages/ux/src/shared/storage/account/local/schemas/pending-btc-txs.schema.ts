@@ -24,7 +24,7 @@ const sPendingBtcTx = z.object({
 
 export const sPendingBtcTxsSchema = z.union([
     z.null(),
-    z.array(sPendingBtcTx).transform(val => val.map(v => new PendingBtcTx(v)))
+    sPendingBtcTx.transform(val => new PendingBtcTx(val))
 ]);
 
 export type SPendingBtcTx = z.input<typeof sPendingBtcTx>;

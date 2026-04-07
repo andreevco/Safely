@@ -17,8 +17,8 @@ export const utxo = defineQueryKeys('utxo', {
     wallet: mappedParams(
         (__: BtcWallet) => ({
             params: mappedParams(
-                (_: { api: BtcApi; pendingTxs: PendingBtcTx[] }) => finalKey,
-                ({ api, pendingTxs }) => [api.id, JSON.stringify(pendingTxs)]
+                (_: { api: BtcApi; pendingTx: PendingBtcTx | null }) => finalKey,
+                ({ api, pendingTx }) => [api.id, JSON.stringify(pendingTx)]
             )
         }),
         wallet => [wallet.id]

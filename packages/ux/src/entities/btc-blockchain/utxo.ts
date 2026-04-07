@@ -11,7 +11,7 @@ import {
 } from '../../shared';
 import { useActiveBtcWallet, usePortfolios } from '../portfolio';
 import { utxo } from './keys';
-import { usePendingBtcTransactions, PendingBtcTxsService } from './pending-txs';
+import { usePendingBtcTransaction, PendingBtcTxsService } from './pending-txs';
 import { getBiggestBtcIOAddress } from '../activity/api';
 
 function useAccessibleBtcWallets() {
@@ -35,17 +35,17 @@ function useAccessibleBtcWallets() {
 export function useBtcWalletUtxo(btcWallet: BtcWallet) {
     const api = useBtcApi();
     const accessibleBtcWallets = useAccessibleBtcWallets();
-    const { data: pendingTxs = [] } = usePendingBtcTransactions();
+    const { data: pendingTx = null } = usePendingBtcTransaction();
 
     return usePersistQuery({
-        queryKey: utxo.wallet(btcWallet).params({ api, pendingTxs }).toKey(),
+        queryKey: utxo.wallet(btcWallet).params({ api, pendingTx }).toKey(),
         async queryFn() {
             const allUtxos = await api.getUtxos(btcWallet, true);
 
             const confirmed = allUtxos.filter(u => u.confirmations > 0);
             const unconfirmed = allUtxos.filter(u => u.confirmations === 0);
 
-            const pendingTxsService = new PendingBtcTxsService(pendingTxs, btcWallet.address);
+            const pendingTxsService = new PendingBtcTxsService(pendingTx, btcWallet.address);
 
             const { safe, unsafe } = unconfirmed.reduce(
                 (acc, item) => {
@@ -128,4 +128,9 @@ export function useActiveBtcWalletUtxoForEstimation() {
             return u.confirmedIn.utxos.concat(u.unconfirmedInSafe.utxos);
         }
     });
+}
+
+export function useBtcSendLocked() {
+    const { data: pendingTx = null } = usePendingBtcTransaction();
+    return !!pendingTx;
 }

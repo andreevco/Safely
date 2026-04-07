@@ -4,50 +4,45 @@ import { BtcApiUtxo, BtcTransactionTemplate } from '@safely/core';
 import { BtcApiTx, BtcApiUtxoWithOptionalTx } from '@safely/core/api/btc';
 
 import { pendingBtcTxs } from './keys';
-import { useAccountLocalStorage } from '../../shared';
+import { useAccountLocalStorage, useBtcApi } from '../../shared';
 import { SPendingBtcTx } from '../../shared/storage/account/local/schemas';
 import { useActiveAccount } from '../account';
 
-export function usePendingBtcTransactions() {
-    const { get } = useAccountLocalStorage('pendingBtcTxs');
+export function usePendingBtcTransaction() {
+    const { get, set } = useAccountLocalStorage('pendingBtcTxs');
     const account = useActiveAccount();
+    const btcApi = useBtcApi();
 
     return useQuery({
         queryKey: pendingBtcTxs.account(account).toKey(),
         async queryFn() {
-            return (await get()) ?? [];
-        }
+            const pending = (await get()) ?? null;
+            if (!pending) return null;
+
+            try {
+                await btcApi.getTransaction(pending.txId);
+                await set(null);
+                return null;
+            } catch {
+                return pending;
+            }
+        },
+        refetchInterval: ({ state }) => (state.data ? 2000 : false)
     });
 }
 
-export function useAddPendingBtcTransaction() {
+export function useSetPendingBtcTransaction() {
     const { get, set } = useAccountLocalStorage('pendingBtcTxs');
     const queryClient = useQueryClient();
     const account = useActiveAccount();
 
     return useMutation({
         async mutationFn(tx: PendingBtcTx) {
-            const current = (await get()) ?? [];
-            await set([...current, tx]);
-        },
-        onSuccess() {
-            void queryClient.invalidateQueries({
-                queryKey: pendingBtcTxs.account(account).toKey()
-            });
-        }
-    });
-}
-
-export function useRemovePendingBtcTransactions() {
-    const { get, set } = useAccountLocalStorage('pendingBtcTxs');
-    const queryClient = useQueryClient();
-    const account = useActiveAccount();
-
-    return useMutation({
-        async mutationFn(txIds: string[]) {
-            if (txIds.length === 0) return;
-            const current = (await get()) ?? [];
-            await set(current.filter(tx => !txIds.includes(tx.txId)));
+            const existing = await get();
+            if (existing) {
+                throw new Error('Pending BTC transaction already exists');
+            }
+            await set(tx);
         },
         onSuccess() {
             void queryClient.invalidateQueries({
@@ -119,42 +114,41 @@ export class PendingBtcTx {
 
 export class PendingBtcTxsService {
     constructor(
-        private readonly pendingTxs: PendingBtcTx[],
+        private readonly pendingTx: PendingBtcTx | null,
         private readonly walletAddress: string
     ) {}
 
     public toConfirmed(serverConfirmed: BtcApiUtxo[]): BtcApiUtxo[] {
-        const spentKeys = new Set(
-            this.pendingTxs.flatMap(tx => tx.inputs.map(i => `${i.txid}:${i.vout}`))
-        );
+        if (!this.pendingTx) return serverConfirmed;
+
+        const spentKeys = new Set(this.pendingTx.inputs.map(i => `${i.txid}:${i.vout}`));
 
         return serverConfirmed.filter(utxo => !spentKeys.has(`${utxo.txid}:${utxo.vout}`));
     }
 
     public toUnconfirmedSafe(serverSafe: BtcApiUtxoWithOptionalTx[]): BtcApiUtxo[] {
+        if (!this.pendingTx) return serverSafe;
+
         const existingKeys = new Set(serverSafe.map(u => `${u.txid}:${u.vout}`));
         const newUtxos: BtcApiUtxoWithOptionalTx[] = [];
+        const btcApiTx = this.pendingTx.toBtcApiTx(this.walletAddress);
 
-        for (const pendingTx of this.pendingTxs) {
-            const btcApiTx = pendingTx.toBtcApiTx(this.walletAddress);
+        this.pendingTx.outputs.forEach((output, vout) => {
+            if (output.address !== this.walletAddress) return;
 
-            pendingTx.outputs.forEach((output, vout) => {
-                if (output.address !== this.walletAddress) return;
+            const key = `${this.pendingTx!.txId}:${vout}`;
+            if (existingKeys.has(key)) return;
 
-                const key = `${pendingTx.txId}:${vout}`;
-                if (existingKeys.has(key)) return;
-
-                existingKeys.add(key);
-                newUtxos.push({
-                    txid: pendingTx.txId,
-                    vout,
-                    value: output.value,
-                    confirmations: 0,
-                    address: output.address,
-                    tx: btcApiTx
-                });
+            existingKeys.add(key);
+            newUtxos.push({
+                txid: this.pendingTx!.txId,
+                vout,
+                value: output.value,
+                confirmations: 0,
+                address: output.address,
+                tx: btcApiTx
             });
-        }
+        });
 
         return [...serverSafe, ...newUtxos];
     }
