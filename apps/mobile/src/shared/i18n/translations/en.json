@@ -238,7 +238,7 @@
         },
         "slider": {
             "send": "Send",
-            "slideToConfirm": "slide to confirm",
+            "slideToConfirm": "slide right to confirm",
             "estimatingFee": "estimating fee…",
             "backToWallet": "Back to Wallet"
         },
