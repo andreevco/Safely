@@ -9,6 +9,7 @@ import { SyncAccountRepository } from './sync-account-repository';
 import { Configuration } from '../api/generated';
 import { ITreeStorage } from '../I-storage';
 import { Logger } from '../logger/logger';
+import { OnboardingMessagePayload } from '../onboarding/onboarding-message-payload';
 import { OfflineSyncProvider } from '../sync-provider/offline-sync-provider';
 import { OnlineSyncProvider } from '../sync-provider/online-sync-provider';
 
@@ -87,12 +88,12 @@ export class AccountManager<S extends Record<string, ZodType>> {
 
     public async createOnlineAccountFromMasterKey(
         secureEncryptedStorage: ITreeStorage,
-        masterKey: Buffer,
+        payload: OnboardingMessagePayload,
         ik: { publicKey: Buffer; secretKey: Buffer }
     ) {
         const account = await this.createAccountService.createOnlineAccountFromMasterKey(
             secureEncryptedStorage,
-            masterKey,
+            payload,
             ik
         );
         this.accounts.set(account.accountId, account);
