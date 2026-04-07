@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo } from 'react';
 
 import { useActiveBtcWallet } from '../../../../entities';
+import { QUERIES_GC_TIME } from '../../../../shared';
 import { sendFormKeys } from '../keys';
 import { SendFormInitialValues } from '../types';
 
@@ -17,6 +18,7 @@ export function useSendFormDraft() {
     const draftKey = sendFormKeys.draft(wallet.id.toString()).toKey();
 
     queryClient.setQueryDefaults(draftKey, {
+        gcTime: QUERIES_GC_TIME.SEND_FORM_DRAFT,
         meta: {
             persist: true,
             schemaKey: 'sendFormDraft'

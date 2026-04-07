@@ -12,3 +12,7 @@ export const QUERIES_REFETCH_INTERVAL = {
     DEFAULT: 1000 * 30,
     TRANSACTION: 1000 * 60
 };
+
+export const QUERIES_GC_TIME = {
+    SEND_FORM_DRAFT: 1000 * 60 * 60
+};
