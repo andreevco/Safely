@@ -72,7 +72,7 @@ export function usePasscode(): UsePasscodeResult {
     const promptAndCheck = useCallback(
         (options?: PromptAndCheckOptions): Promise<void> =>
             new Promise<void>((resolve, reject) => {
-                navigationRef.current?.navigate('PasscodeVerificationModal', {
+                navigationRef.current?.navigate('PasscodeVerificationScreen', {
                     onSuccess: resolve,
                     onClose: reject,
                     title: options?.title
