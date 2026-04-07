@@ -1,15 +1,15 @@
 import { ed25519, x25519 } from '@noble/curves/ed25519.js';
 import { ZodType } from 'zod';
 
-import { decryptMasterKey, deriveOnboardingKey } from './crypto';
+import { decryptOnboardingMessagePayload, deriveOnboardingKey } from './crypto';
 import { OnboardingInvitationCodec } from './onboarding-codec';
+import { decodeOnboardingMessagePayload } from './onboarding-message-payload';
 import { AccountManager } from '../account/account-manager';
 import { ISyncAccount } from '../account/I-sync-account';
 import { ApiSigner } from '../api/api-signer';
 import { AccountsApi, Configuration, OnboardingMessage } from '../api/generated';
 import { ITreeStorage } from '../I-storage';
 import { OnboardingAbortedError } from '../sync-error';
-import { SyncStatus } from '../sync-provider/sync-status';
 
 export class NewDeviceOnboarding<S extends Record<string, ZodType>> {
     private ephemeralKeyPair: { publicKey: Buffer; secretKey: Buffer } | null = null;
@@ -82,18 +82,18 @@ export class NewDeviceOnboarding<S extends Record<string, ZodType>> {
             throw new Error('Onboarding message is not for this device');
         }
 
-        const masterKey = await this.getMasterKey(msg);
+        const onboardingMessagePayload = await this.getOnboardingMessagePayload(msg);
         const account = await this.accountManager.createOnlineAccountFromMasterKey(
             this.secureEncryptedStorage,
-            masterKey,
+            onboardingMessagePayload,
             this.ik
         );
-        await account.syncProvider.syncStatusManager.waitForStatus(SyncStatus.SYNCHRONIZED);
+
         console.info('Onboarding completed');
         return account;
     }
 
-    private async getMasterKey(msg: OnboardingMessage) {
+    private async getOnboardingMessagePayload(msg: OnboardingMessage) {
         if (!this.ephemeralKeyPair) {
             throw new Error('Ephemeral key pair not generated');
         }
@@ -112,12 +112,14 @@ export class NewDeviceOnboarding<S extends Record<string, ZodType>> {
             info: metadata
         });
 
-        return decryptMasterKey({
-            onboardKey,
-            ciphertext: Buffer.from(msg.ciphertext, 'hex'),
-            nonce: Buffer.from(msg.nonce, 'hex'),
-            aad: metadata
-        });
+        return decodeOnboardingMessagePayload(
+            decryptOnboardingMessagePayload({
+                onboardKey,
+                ciphertext: Buffer.from(msg.ciphertext, 'hex'),
+                nonce: Buffer.from(msg.nonce, 'hex'),
+                aad: metadata
+            })
+        );
     }
 }
 

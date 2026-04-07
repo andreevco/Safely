@@ -123,8 +123,7 @@ describe('Sync', () => {
     // - B should be able to handle this snapshot
     it('should perform scenario 1', async () => {
         const accountA = await factory.createSyncAccount(secureEncryptedStorage);
-        const { newAccount: accountB, secureEncryptedStorage: secureEncryptedStorageB } =
-            await onboardDevice(accountA, secureEncryptedStorage);
+        const { newAccount: accountB } = await onboardDevice(accountA, secureEncryptedStorage);
         accountB.syncProvider.dispose();
 
         const { newAccount: accountC } = await onboardDevice(accountA, secureEncryptedStorage);

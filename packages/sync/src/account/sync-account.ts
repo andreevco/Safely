@@ -54,10 +54,7 @@ export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAcco
             this.container.keyServiceFactory.createMasterKeyService(secureEncryptedStorage),
             this.container.keyServiceFactory.createDmkSignerService(secureEncryptedStorage),
             this.container.accountsApi,
-            this.container.deviceManager,
-            () => {
-                this.syncProvider.triggerSync();
-            }
+            this.container.deviceManager
         );
         await onboarding.sendOnboardingMessage(data);
     }
