@@ -109,7 +109,7 @@ const AddAccountContent = () => {
 
 export const AddAccountSheet = () => {
     return (
-        <BottomSheet>
+        <BottomSheet shortHeader>
             <AddAccountContent />
         </BottomSheet>
     );

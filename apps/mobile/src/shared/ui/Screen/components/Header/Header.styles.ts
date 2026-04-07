@@ -49,6 +49,13 @@ export const styles = StyleSheet.create((theme, rt) => ({
         height: rt.insets.top
     },
     headerHeight: {
-        height: HEADER_HEIGHT
+        height: HEADER_HEIGHT,
+        variants: {
+            shortHeader: {
+                true: {
+                    height: HEADER_HEIGHT - 32
+                }
+            }
+        }
     }
 }));
