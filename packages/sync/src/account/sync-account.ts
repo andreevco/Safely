@@ -54,10 +54,7 @@ export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAcco
             this.container.keyServiceFactory.createMasterKeyService(secureEncryptedStorage),
             this.container.keyServiceFactory.createDmkSignerService(secureEncryptedStorage),
             this.container.accountsApi,
-            this.container.deviceManager,
-            () => {
-                this.syncProvider.triggerSync();
-            }
+            this.container.deviceManager
         );
         await onboarding.sendOnboardingMessage(data);
     }
@@ -81,6 +78,15 @@ export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAcco
             this.container.keyServiceFactory.createDmkSignerService(secureEncryptedStorage)
         );
         this.syncProvider.triggerSync();
+        const sig = await this.container.keyServiceFactory
+            .createDmkSignerService(secureEncryptedStorage)
+            .signRevokeMessageForServer(ikPub);
+        await this.container.accountsApi.removeDeviceFromAccount({
+            deviceToRemove: {
+                identityPubKey: ikPub.toString('hex'),
+                signature: sig.toString('hex')
+            }
+        });
     }
 
     public async getMyDeviceIkPub(): Promise<Buffer> {
@@ -99,10 +105,13 @@ export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAcco
 
         // Send manually new snapshot to the server so that the revoke operation is synced on
         // the other devices.
-        try {
-            await this.sendSnapshotManually();
-        } catch (error) {
-            console.warn('Cannot send snapshot to server after revoking self device', error);
+        for (let i = 0; i < 3; i++) {
+            try {
+                await this.sendSnapshotManually();
+                break;
+            } catch (error) {
+                console.warn('Cannot send snapshot to server after revoking self device', error);
+            }
         }
 
         try {

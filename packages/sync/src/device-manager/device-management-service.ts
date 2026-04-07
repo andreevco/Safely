@@ -20,17 +20,20 @@ export class DeviceManagementService {
         return await this.deviceRepository.getDevices();
     }
 
-    public async addDevice(device: Device, dmkSignerService: DmkSignerService): Promise<void> {
+    public async addDevice(ikPub: Buffer, dmkSignerService: DmkSignerService): Promise<void> {
         const devices = await this.getDevices();
-        if (devices.some(d => d.ikPub.equals(device.ikPub))) {
+        if (devices.some(d => d.ikPub.equals(ikPub))) {
             throw new Error('Device with the same ikPub already exists.');
         }
+        const now = Date.now();
 
         await this.performOperation({
             type: 'add',
-            ikPub: device.ikPub,
-            dmkSignerService
+            ikPub,
+            dmkSignerService,
+            time: now
         });
+        const device = { ikPub, addedAt: now };
         await this.deviceRepository.setDevices([...devices, device]);
     }
 
@@ -53,8 +56,9 @@ export class DeviceManagementService {
         type: 'add' | 'revoke';
         ikPub: Buffer;
         dmkSignerService: DmkSignerService;
+        time?: number;
     }) {
-        const ts = Date.now();
+        const ts = opts.time ?? Date.now();
         const kid = await this.ikService.getKID();
         const sig = await this.signDeviceOp({
             ...opts,
@@ -111,7 +115,10 @@ export class DeviceManagementService {
             if (devices.some(d => d.ikPub.equals(op.ikPub))) {
                 throw new Error('Device with the same ikPub already exists.');
             }
-            await this.deviceRepository.setDevices([...devices, { ikPub: op.ikPub }]);
+            await this.deviceRepository.setDevices([
+                ...devices,
+                { ikPub: op.ikPub, addedAt: op.ts }
+            ]);
         } else if (op.type === 'revoke') {
             if (!devices.some(d => d.ikPub.equals(op.ikPub))) {
                 throw new Error('Device not found.');

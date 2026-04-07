@@ -61,6 +61,7 @@ export class OfflineSyncProvider<S extends Record<string, ZodType>> implements I
     }
 
     public async set<K extends keyof S>(k: K, v: z.input<S[K]> | string): Promise<void> {
+        this.container.logger.info('SyncProvider.set<K>', k.toString());
         this.structure[k].parse(v);
         await this.container.yManager.set(k.toString(), v);
     }

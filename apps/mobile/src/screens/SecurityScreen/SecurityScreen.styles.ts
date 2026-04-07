@@ -23,11 +23,5 @@ export const styles = StyleSheet.create((theme, rt) => ({
     watchInfoText: {
         paddingVertical: theme.spacing[8],
         paddingHorizontal: theme.spacing[16]
-    },
-    syncDot: (synced: boolean) => ({
-        width: 10,
-        height: 10,
-        borderRadius: 5,
-        backgroundColor: synced ? theme.colors.accent.green : theme.colors.accent.orange
-    })
+    }
 }));

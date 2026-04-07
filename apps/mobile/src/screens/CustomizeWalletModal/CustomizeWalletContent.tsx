@@ -92,6 +92,7 @@ export const CustomizeWalletContent = ({
                             editable={!disabled}
                             onFocus={() => setIsFocused(true)}
                             onBlur={() => setIsFocused(false)}
+                            maxLength={24}
                             returnKeyType="done"
                             onSubmitEditing={onSubmitEditing}
                         />
