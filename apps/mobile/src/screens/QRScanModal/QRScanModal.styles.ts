@@ -9,5 +9,8 @@ export const styles = StyleSheet.create(theme => ({
         gap: theme.spacing[4],
         alignItems: 'center',
         justifyContent: 'center'
+    },
+    subtitle: {
+        opacity: 0.64
     }
 }));

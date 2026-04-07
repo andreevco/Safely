@@ -19,6 +19,7 @@ export const styles = StyleSheet.create(theme => ({
     },
     content: (showDivider: boolean) => ({
         flexDirection: 'row',
+        minHeight: 48,
         alignItems: 'center',
         gap: theme.spacing[16],
         paddingHorizontal: theme.spacing[16],
