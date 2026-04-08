@@ -109,6 +109,16 @@ export class PortfolioFactory {
         }
     }
 
+    public static resolveWatchOnlyId(
+        input: string,
+        network: PortfolioNetworkType
+    ): PortfolioIdWatchOnly {
+        const isXpub = BtcXpub.validate(input);
+        const source = isXpub ? WatchOnlySource.XPUB : WatchOnlySource.ADDRESS;
+
+        return new PortfolioIdWatchOnly(input, source, network);
+    }
+
     public static generateWatchOnlyPortfolio(
         input: string,
         options: {
@@ -116,22 +126,32 @@ export class PortfolioFactory {
             meta: PortfolioMeta;
         }
     ): PortfolioWatchOnly {
-        const isXpub = BtcXpub.validate(input);
-        const source = isXpub ? WatchOnlySource.XPUB : WatchOnlySource.ADDRESS;
-        const address = isXpub
-            ? BtcXpub.deriveAddress(input, btcNetworkByPortfolioNetworkType(options.network))
-            : input;
-        const xpub = isXpub ? input : '';
+        const portfolioId = PortfolioFactory.resolveWatchOnlyId(input, options.network);
+        const btcNetwork = btcNetworkByPortfolioNetworkType(options.network);
 
-        const portfolioId = new PortfolioIdWatchOnly(input, source, options.network);
+        let address: string;
+        let xpub: string;
+
+        switch (portfolioId.source) {
+            case WatchOnlySource.XPUB:
+                address = BtcXpub.deriveAddress(input, btcNetwork);
+                xpub = input;
+                break;
+            case WatchOnlySource.ADDRESS:
+                address = input;
+                xpub = '';
+                break;
+            default:
+                assertUnreachable(portfolioId.source);
+        }
 
         return new PortfolioWatchOnly({
             id: portfolioId,
             meta: options.meta,
-            source,
+            source: portfolioId.source,
             address,
             xpub,
-            network: btcNetworkByPortfolioNetworkType(options.network)
+            network: btcNetwork
         });
     }
 

@@ -4,8 +4,15 @@ import { useTranslation } from 'react-i18next';
 import { TextInput, View } from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';
 
-import { BtcAddress, BtcXpub, PortfolioMeta } from '@safely/core';
-import { useAddWatchOnlyPortfolio, useLoader } from '@safely/ux';
+import {
+    BtcAddress,
+    BtcXpub,
+    PortfolioAlreadyExistsError,
+    PortfolioFactory,
+    PortfolioMeta,
+    PortfolioNetworkType
+} from '@safely/core';
+import { useAddWatchOnlyPortfolio, useLoader, usePortfolios } from '@safely/ux';
 
 import { handleDuplicatePortfolio } from '@mobile/features/add-wallet/handleDuplicatePortfolio';
 import { Button, Screen, Text } from '@mobile/shared/ui';
@@ -18,6 +25,7 @@ export const AddWatchOnlyScreen = () => {
     const { t } = useTranslation();
     const { theme } = useUnistyles();
     const navigation = useNavigation();
+    const portfolios = usePortfolios();
     const { withLoader } = useLoader();
     const { mutateAsync: addWatchOnlyPortfolio } = useAddWatchOnlyPortfolio();
 
@@ -50,6 +58,21 @@ export const AddWatchOnlyScreen = () => {
     });
 
     const handleNext = useCallback(() => {
+        const portfolioId = PortfolioFactory.resolveWatchOnlyId(
+            trimmedInput,
+            PortfolioNetworkType.MAINNET
+        );
+
+        const existingPortfolio = portfolios.find(p => p.id.isEq(portfolioId));
+        if (existingPortfolio) {
+            handleDuplicatePortfolio(
+                new PortfolioAlreadyExistsError(existingPortfolio),
+                navigation
+            );
+
+            return;
+        }
+
         navigation.dispatch(
             CommonActions.navigate('CustomizeWalletModal', {
                 hasBackButton: true,
@@ -57,7 +80,7 @@ export const AddWatchOnlyScreen = () => {
                     try {
                         await withLoader(async () => {
                             await addWatchOnlyPortfolio({
-                                input: address.trim(),
+                                input: trimmedInput,
                                 meta
                             });
                         });
@@ -77,7 +100,7 @@ export const AddWatchOnlyScreen = () => {
                 }
             })
         );
-    }, [address, navigation, withLoader, addWatchOnlyPortfolio]);
+    }, [trimmedInput, portfolios, navigation, withLoader, addWatchOnlyPortfolio]);
 
     return (
         <Screen>
