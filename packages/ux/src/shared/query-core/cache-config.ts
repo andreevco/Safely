@@ -41,29 +41,7 @@ const sInfiniteActivityData = z.object({
 });
 
 export const cacheSchemas = {
-    sBtcWalletUtxos: z.object({
-        confirmedIn: z.object({
-            totalAmount: sCryptoAssetAmount
-        }),
-        unconfirmedInSafe: z.object({
-            totalAmount: sCryptoAssetAmount,
-            utxos: z.array(UtxoSchema)
-        }),
-        unconfirmedInUnsafe: z.object({
-            totalAmount: sCryptoAssetAmount,
-            utxos: z.array(UtxoSchema)
-        }),
-        unconfirmedOut: z.object({
-            totalAmount: sCryptoAssetAmount,
-            utxos: z.array(
-                z.object({
-                    txid: z.string(),
-                    vout: z.number(),
-                    value: z.string()
-                })
-            )
-        })
-    }),
+    sBtcWalletUtxos: z.array(UtxoSchema),
     bootConfig: bootConfigSchema,
     infiniteActivityData: sInfiniteActivityData,
     sHistoricalPrice: sHistoricalPrice,

@@ -19,7 +19,8 @@ const sBroadcastedBtcTx = z.object({
     timestamp: z.number(),
     inputs: z.array(sBroadcastedBtcTxSpentUtxo),
     outputs: z.array(sBtcTxOutput),
-    fee: z.string()
+    fee: z.string(),
+    senderXpub: z.string()
 });
 
 export const sBroadcastedBtcTxCacheSchema = z.union([

@@ -1,11 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { BtcApiUtxo, BtcAssetAmount, BtcTransactionTemplate } from '@safely/core';
-import { toBig, toBigOrZero } from '@safely/core';
+import {
+    BtcApiUtxo,
+    BtcAssetAmount,
+    BtcTransactionTemplate,
+    toBig,
+    toBigOrZero
+} from '@safely/core';
 import { BtcApiTx, BtcApiUtxoWithOptionalTx } from '@safely/core/api/btc';
 
-import { broadcastedBtcTxCache } from './keys';
-import { useAccountLocalStorage, useBtcApi } from '../../shared';
+import { broadcastedBtcTxCache, utxo } from './keys';
+import { useAccountLocalStorage } from '../../shared';
 import { SBroadcastedBtcTx } from '../../shared/storage/account/local/schemas';
 import { useActiveAccount } from '../account';
 import { getBiggestBtcIOAddress } from '../activity/api';
@@ -14,7 +19,7 @@ import { BtcActivityItem } from '../activity/types';
 export function useBroadcastedBtcTxCache() {
     const { get, set } = useAccountLocalStorage('broadcastedBtcTxCache');
     const account = useActiveAccount();
-    const btcApi = useBtcApi();
+    const client = useQueryClient();
 
     return useQuery({
         queryKey: broadcastedBtcTxCache.account(account).toKey(),
@@ -22,13 +27,21 @@ export function useBroadcastedBtcTxCache() {
             const cached = (await get()) ?? null;
             if (!cached) return null;
 
-            try {
-                await btcApi.getTransaction(cached.txId);
-                await set(null);
-                return null;
-            } catch {
+            await client.refetchQueries({ queryKey: utxo.toKey(), type: 'active' });
+
+            const serverUtxoQueries = client.getQueriesData<{ txid: string; vout: number }[]>({
+                queryKey: utxo.toKey()
+            });
+
+            const allUtxos = serverUtxoQueries.flatMap(([, data]) => data ?? []);
+
+            const spentKeys = new Set(cached.inputs.map(i => `${i.txid}:${i.vout}`));
+            if (allUtxos.some(u => spentKeys.has(`${u.txid}:${u.vout}`))) {
                 return cached;
             }
+
+            await set(null);
+            return null;
         },
         refetchInterval: ({ state }) => (state.data ? 2000 : false)
     });
@@ -71,7 +84,8 @@ export class BroadcastedBtcTx {
                 address: u.address!
             })),
             outputs: template.outputs.map(o => ({ address: o.address, value: o.value.toString() })),
-            fee: template.estimation.fee.amount.weiAmount.toString()
+            fee: template.estimation.fee.amount.weiAmount.toString(),
+            senderXpub: template.wallet.xpub
         });
     }
 
@@ -80,6 +94,7 @@ export class BroadcastedBtcTx {
     public readonly inputs: { txid: string; vout: number; value: string; address: string }[];
     public readonly outputs: { address: string; value: string }[];
     public readonly fee: string;
+    public readonly senderXpub: string;
 
     constructor(val: SBroadcastedBtcTx) {
         this.txId = val.txId;
@@ -87,6 +102,7 @@ export class BroadcastedBtcTx {
         this.inputs = val.inputs;
         this.outputs = val.outputs;
         this.fee = val.fee;
+        this.senderXpub = val.senderXpub;
     }
 
     public toBtcApiTx(walletAddress: string): BtcApiTx {
@@ -162,11 +178,14 @@ export class BroadcastedBtcTxCacheService {
 
         const spentKeys = new Set(this.broadcastedTx.inputs.map(i => `${i.txid}:${i.vout}`));
 
-        return serverConfirmed.filter(utxo => !spentKeys.has(`${utxo.txid}:${utxo.vout}`));
+        return serverConfirmed.filter(u => !spentKeys.has(`${u.txid}:${u.vout}`));
     }
 
     public toUnconfirmedSafe(serverSafe: BtcApiUtxoWithOptionalTx[]): BtcApiUtxo[] {
         if (!this.broadcastedTx) return serverSafe;
+
+        const spentKeys = new Set(this.broadcastedTx.inputs.map(i => `${i.txid}:${i.vout}`));
+        serverSafe = serverSafe.filter(u => !spentKeys.has(`${u.txid}:${u.vout}`));
 
         const existingKeys = new Set(serverSafe.map(u => `${u.txid}:${u.vout}`));
         const newUtxos: BtcApiUtxoWithOptionalTx[] = [];
