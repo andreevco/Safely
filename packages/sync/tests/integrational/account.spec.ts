@@ -148,5 +148,20 @@ describe('Account', () => {
                 SyncStatus.DEVICE_DELETED
             );
         });
+
+        it('should throw when onboarding existing account on new device', async () => {
+            const account = await factory.createSyncAccount(secureEncryptedStorage);
+            const { newAccount, secureEncryptedStorage: newAccountSES } = await onboardDevice(
+                account,
+                secureEncryptedStorage
+            );
+
+            const connector = await factory.connectToExistingSyncAccount(secureEncryptedStorage);
+            const promise = newAccount.connectToNewDevice(connector.data, newAccountSES);
+
+            await expect(
+                Promise.all([connector.waitForCompletion(), promise])
+            ).rejects.toThrowError('Account already exists');
+        });
     });
 });

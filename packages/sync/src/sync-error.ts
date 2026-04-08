@@ -5,3 +5,9 @@ export class OnboardingAbortedError extends SyncError {
         super('Onboarding aborted');
     }
 }
+
+export class AccountAlreadyExistsError extends SyncError {
+    constructor() {
+        super('Account already exists');
+    }
+}
