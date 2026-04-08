@@ -21,6 +21,7 @@ export const CustomizeAccountModal = (props: CustomizeAccountModalProps) => {
     const { theme } = useUnistyles();
     const inputRef = useRef<TextInput>(null);
 
+    const [isFocused, setIsFocused] = useState(false);
     const [accountName, setAccountName] = useState(defaultName ?? '');
 
     useFocusEffect(
@@ -35,6 +36,8 @@ export const CustomizeAccountModal = (props: CustomizeAccountModalProps) => {
     }, [onSave, accountName]);
 
     const isNameValid = accountName.trim().length > 0;
+
+    styles.useVariants({ focused: isFocused });
 
     return (
         <Screen>
@@ -72,8 +75,10 @@ export const CustomizeAccountModal = (props: CustomizeAccountModalProps) => {
                             placeholderTextColor={theme.colors.text.tertiary}
                             style={styles.input}
                             autoCorrect={false}
-                            maxLength={64}
+                            maxLength={24}
                             returnKeyType="done"
+                            onFocus={() => setIsFocused(true)}
+                            onBlur={() => setIsFocused(false)}
                             onSubmitEditing={handleSave}
                         />
                     </View>
