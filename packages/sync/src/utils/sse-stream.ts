@@ -10,7 +10,8 @@ type SSEConfig<T> = {
 
 export type IsomorphicEventSource = new (
     url: string | URL,
-    options?: EventSourceInit & { headers?: Record<string, string> }
+    options?: EventSourceInit & { headers?: Record<string, string> },
+    getAuthorizationHeader?: () => Promise<string>
 ) => EventSource;
 
 declare global {

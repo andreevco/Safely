@@ -18,7 +18,7 @@ class EventSource {
   LF = '\n';
   CR = '\r';
 
-  constructor(url, options = {}) {
+  constructor(url, options = {}, getAuthorizationHeader) {
     this.lastEventId = null;
     this.status = this.CONNECTING;
 
@@ -53,6 +53,7 @@ class EventSource {
     this._xhr = null;
     this._pollTimer = null;
     this._lastIndexProcessed = 0;
+    this.getAuthorizationHeader = getAuthorizationHeader;
 
     if (!url || (typeof url !== 'string' && typeof url.toString !== 'function')) {
       throw new SyntaxError('[EventSource] Invalid URL argument.');
@@ -71,12 +72,12 @@ class EventSource {
     if (time > 0 || allowZero) {
       this._logDebug(`[EventSource] Will open new connection in ${time} ms.`);
       this._pollTimer = setTimeout(() => {
-        this.open();
+        void this.open();
       }, time);
     }
   }
 
-  open() {
+  async open() {
     try {
       this.status = this.CONNECTING;
 
@@ -85,14 +86,31 @@ class EventSource {
       this._xhr = new XMLHttpRequest();
       this._xhr.open(this.method, this.url, true);
 
+      const authorizationHeader = this.getAuthorizationHeader ? await this.getAuthorizationHeader() : undefined;
+
+      if (this.status === this.CLOSED) {
+        return;
+      }
+
       if (this.withCredentials) {
         this._xhr.withCredentials = true;
       }
 
       for (const [key, value] of Object.entries(this.headers)) {
         if (value !== undefined && value !== null) {
+          if (
+            authorizationHeader !== undefined &&
+            authorizationHeader !== null &&
+            key.toLowerCase() === 'authorization'
+          ) {
+            continue;
+          }
           this._xhr.setRequestHeader(key, value);
         }
+      }
+
+      if (authorizationHeader !== undefined && authorizationHeader !== null) {
+        this._xhr.setRequestHeader('Authorization', authorizationHeader);
       }
 
       // PATCHED
