@@ -111,7 +111,6 @@ const useDraggable = ({
             'worklet';
 
             isBeingActive.value = false;
-
             if (draggedIndex.value === null) return;
 
             const indexOffset = nextIndexToInsertAt.value - draggedIndex.value;
@@ -140,7 +139,7 @@ const useDraggable = ({
         if (onPress) scheduleOnRN(onPress);
     });
 
-    const gesture = onPress ? Gesture.Simultaneous(panGesture, tapGesture) : panGesture;
+    const gesture = onPress ? Gesture.Exclusive(panGesture, tapGesture) : panGesture;
 
     const translateY = useDerivedValue(() => {
         'worklet';
