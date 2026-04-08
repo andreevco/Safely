@@ -30,16 +30,34 @@ export const usePopupMenu = (screenHeight: number, menuMargin = 8) => {
             : Platform.OS === 'android'
               ? (StatusBar.currentHeight ?? 0)
               : 0;
+    const shouldApplyOffset = layout === 'modal';
 
     const open = useCallback(() => {
         InteractionManager.runAfterInteractions(() => {
             triggerRef.current?.measureInWindow((x, y, width, height) => {
                 triggerHeight.value = height;
-                triggerFrame.value = { x, y: y + offsetY, width, height };
+                triggerFrame.value = {
+                    x,
+                    y: y + (shouldApplyOffset ? offsetY : 0),
+                    width,
+                    height
+                };
                 setVisible(true);
+
+                requestAnimationFrame(() => {
+                    triggerRef.current?.measureInWindow((nextX, nextY, nextWidth, nextHeight) => {
+                        triggerHeight.value = nextHeight;
+                        triggerFrame.value = {
+                            x: nextX,
+                            y: nextY + (shouldApplyOffset ? offsetY : 0),
+                            width: nextWidth,
+                            height: nextHeight
+                        };
+                    });
+                });
             });
         });
-    }, [triggerHeight, triggerFrame, offsetY]);
+    }, [offsetY, shouldApplyOffset, triggerHeight, triggerFrame]);
 
     const hide = useCallback(() => {
         setVisible(false);
