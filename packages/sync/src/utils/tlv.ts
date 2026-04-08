@@ -31,4 +31,13 @@ export class TLVReader {
         this.offset += 2 + length;
         return { type, value };
     }
+
+    public readAll(): { type: number; value: Buffer }[] {
+        const records = [];
+        let record;
+        while ((record = this.readNext()) !== null) {
+            records.push(record);
+        }
+        return records;
+    }
 }

@@ -1,56 +1,80 @@
+import { SyncError } from '../sync-error';
+import { u8be } from '../utils/buffer';
 import { TLVReader, TLVWriter } from '../utils/tlv';
 
-const TLV_TYPE = {
-    ephemeralPub: 0x01,
-    ikPub: 0x02
-} as const;
+export enum QRMessageOperation {
+    NEW_DEVICE_ONBOARDING = 1,
+    RECONNECTION = 2
+}
 
-type TLVType = (typeof TLV_TYPE)[keyof typeof TLV_TYPE];
-
-export type OnboardingInvitation = {
+export type QRMessageNewDeviceOnboarding = {
+    type: QRMessageOperation.NEW_DEVICE_ONBOARDING;
     ephemeralPub: Buffer;
     ikPub: Buffer;
 };
 
-export class OnboardingInvitationCodec {
-    public static encode(payload: OnboardingInvitation): Buffer {
+export type QRMessageReconnection = {
+    type: QRMessageOperation.RECONNECTION;
+    ikPub: Buffer;
+};
+
+export type QRMessage = QRMessageNewDeviceOnboarding | QRMessageReconnection;
+
+export class QRMessageCodec {
+    public static encode(payload: QRMessage): Buffer {
         const writer = new TLVWriter();
-        writer.write(TLV_TYPE.ephemeralPub, payload.ephemeralPub);
-        writer.write(TLV_TYPE.ikPub, payload.ikPub);
+        writer.write(0x01, u8be(payload.type));
+
+        switch (payload.type) {
+            case QRMessageOperation.NEW_DEVICE_ONBOARDING:
+                writer.write(0x02, payload.ephemeralPub);
+                writer.write(0x03, payload.ikPub);
+                break;
+            case QRMessageOperation.RECONNECTION:
+                writer.write(0x02, payload.ikPub);
+                break;
+            default:
+                throw new SyncError('Unsupported operation type in message');
+        }
+
         return writer.concat();
     }
 
-    public static decode(data: Buffer): OnboardingInvitation {
+    public static decode(data: Buffer): QRMessage {
         const reader = new TLVReader(data);
-        let ephemeralPub: Buffer | null = null;
-        let ikPub: Buffer | null = null;
+        const chunks = reader.readAll();
 
-        let record;
-        while ((record = reader.readNext()) !== null) {
-            if (!OnboardingInvitationCodec.isSupportedTLV(record.type)) {
-                throw new Error('Unknown onboarding invitation TLV type');
-            }
-
-            if (record.type === TLV_TYPE.ephemeralPub) {
-                ephemeralPub = record.value;
-            } else if (record.type === TLV_TYPE.ikPub) {
-                ikPub = record.value;
-            }
+        const op = chunks.find(d => d.type === 0x01);
+        if (!op) {
+            throw new SyncError('Missing operation type in message');
         }
 
-        if (!ephemeralPub || !ikPub) {
-            throw new Error('Missing required onboarding invitation TLV fields');
-        }
-
-        return { ephemeralPub, ikPub };
-    }
-
-    private static isSupportedTLV(type: number): type is TLVType {
-        for (const value of Object.values(TLV_TYPE)) {
-            if (type === value) {
-                return true;
+        const operation = op.value[0];
+        switch (operation) {
+            case QRMessageOperation.NEW_DEVICE_ONBOARDING: {
+                const ephemeralPubChunk = chunks.find(d => d.type === 0x02);
+                const ikPubChunk = chunks.find(d => d.type === 0x03);
+                if (!ephemeralPubChunk || !ikPubChunk) {
+                    throw new SyncError('Missing fields for new device onboarding message');
+                }
+                return {
+                    type: QRMessageOperation.NEW_DEVICE_ONBOARDING,
+                    ephemeralPub: ephemeralPubChunk.value,
+                    ikPub: ikPubChunk.value
+                };
             }
+            case QRMessageOperation.RECONNECTION: {
+                const ikPubChunk = chunks.find(d => d.type === 0x02);
+                if (!ikPubChunk) {
+                    throw new SyncError('Missing IK public key for reconnection message');
+                }
+                return {
+                    type: QRMessageOperation.RECONNECTION,
+                    ikPub: ikPubChunk.value
+                };
+            }
+            default:
+                throw new SyncError('Unsupported operation type in message');
         }
-        return false;
     }
 }
