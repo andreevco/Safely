@@ -49,7 +49,7 @@ export class QRMessageCodec {
             throw new SyncError('Missing operation type in message');
         }
 
-        const operation = op.value[0];
+        const operation = op.value[0] as QRMessageOperation;
         switch (operation) {
             case QRMessageOperation.NEW_DEVICE_ONBOARDING: {
                 const ephemeralPubChunk = chunks.find(d => d.type === 0x02);

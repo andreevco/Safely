@@ -49,7 +49,7 @@ export class ReconnectOnboarding<S extends Record<string, ZodType>> {
             if (synchronized) {
                 return;
             } else {
-                console.debug('Trying to reconnect, attempt', i + 1);
+                console.log('Trying to reconnect, attempt', i + 1);
             }
         }
         throw new Error('Onboarding timed out');
