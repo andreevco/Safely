@@ -18,8 +18,7 @@ export const styles = StyleSheet.create(theme => ({
         width: 198,
         fontSize: 14,
         lineHeight: 20,
-        fontWeight: '500',
-        letterSpacing: 0
+        fontWeight: '500'
     },
     logo: {
         height: 48,
