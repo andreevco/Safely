@@ -13,13 +13,16 @@ import { broadcastedBtcTxCache, utxo } from './keys';
 import { useAccountLocalStorage } from '../../shared';
 import { SBroadcastedBtcTx } from '../../shared/storage/account/local/schemas';
 import { useActiveAccount } from '../account';
+import { useRawBtcWalletUtxo } from './utxo';
 import { getBiggestBtcIOAddress } from '../activity/api';
 import { BtcActivityItem } from '../activity/types';
+import { useActiveBtcWallet } from '../portfolio';
 
 export function useBroadcastedBtcTxCache() {
     const { get, set } = useAccountLocalStorage('broadcastedBtcTxCache');
     const account = useActiveAccount();
     const client = useQueryClient();
+    useRawBtcWalletUtxo(useActiveBtcWallet());
 
     return useQuery({
         queryKey: broadcastedBtcTxCache.account(account).toKey(),

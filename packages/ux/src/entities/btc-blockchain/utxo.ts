@@ -39,7 +39,7 @@ function getTotal(utxos: { value: string }[]) {
     );
 }
 
-function useRawBtcWalletUtxo(btcWallet: BtcWallet) {
+export function useRawBtcWalletUtxo(btcWallet: BtcWallet) {
     const api = useBtcApi();
 
     return usePersistQuery({

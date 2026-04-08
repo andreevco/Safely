@@ -28,9 +28,8 @@ export function useSendAssetTransfer(transactionTemplate: TransactionTemplate | 
                 await setBroadcastedTx(
                     BroadcastedBtcTx.fromTransactionTemplate(transactionTemplate)
                 );
-                void queryClient.refetchQueries({
-                    queryKey: utxo.toKey(),
-                    type: 'active'
+                void queryClient.invalidateQueries({
+                    queryKey: utxo.toKey()
                 });
             }
         }
