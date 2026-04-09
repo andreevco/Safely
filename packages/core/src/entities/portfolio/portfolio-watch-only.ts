@@ -2,20 +2,36 @@ import { IPortfolioWatchOnly, PortfolioType, WatchOnlySource } from './I-portfol
 import { PortfolioIdWatchOnly } from './portfolio-id-watch-only';
 import { PortfolioMeta } from './portfolio-meta';
 import { SPortfolioWatchOnlyIn, SPortfolioWatchOnlyOut } from './portfolio.stored';
-import { BtcNetwork, btcNetworkByPortfolioNetworkType, BtcWalletType } from '../blockchain';
+import { assertUnreachable } from '../../utils';
+import { btcNetworkByPortfolioNetworkType, BtcWalletType, VMType } from '../blockchain';
 import { BtcWalletId } from '../derivation/btc/btc-wallet-id';
 import { BtcWalletReadOnly } from '../derivation/btc/I-btc-wallet';
+import type { WalletReadOnly } from '../derivation/wallet-read-only';
 
 export class PortfolioWatchOnly implements IPortfolioWatchOnly {
     public static restorePortfolio(sPortfolio: SPortfolioWatchOnlyOut): PortfolioWatchOnly {
-        return new PortfolioWatchOnly({
-            id: sPortfolio.id,
-            meta: sPortfolio.meta,
-            source: sPortfolio.id.source,
-            address: sPortfolio.address,
-            xpub: sPortfolio.xpub,
-            network: btcNetworkByPortfolioNetworkType(sPortfolio.id.network)
-        });
+        switch (sPortfolio.id.vmType) {
+            case VMType.BTC: {
+                const wallet: BtcWalletReadOnly = {
+                    vmType: VMType.BTC,
+                    id: new BtcWalletId(sPortfolio.id, sPortfolio.address),
+                    type: BtcWalletType.NATIVE_SEGWIT,
+                    address: sPortfolio.address,
+                    network: btcNetworkByPortfolioNetworkType(sPortfolio.id.network),
+                    xpub: sPortfolio.xpub
+                };
+
+                return new PortfolioWatchOnly({
+                    id: sPortfolio.id,
+                    meta: sPortfolio.meta,
+                    vmType: VMType.BTC,
+                    source: sPortfolio.id.source,
+                    wallet
+                });
+            }
+            default:
+                assertUnreachable(sPortfolio.id.vmType);
+        }
     }
 
     public readonly id: PortfolioIdWatchOnly;
@@ -24,9 +40,11 @@ export class PortfolioWatchOnly implements IPortfolioWatchOnly {
 
     public readonly type = PortfolioType.WATCH_ONLY;
 
+    public readonly vmType: VMType;
+
     public readonly source: WatchOnlySource;
 
-    public readonly btcWallet: BtcWalletReadOnly;
+    public readonly wallet: WalletReadOnly;
 
     public get networkType() {
         return this.id.network;
@@ -35,26 +53,15 @@ export class PortfolioWatchOnly implements IPortfolioWatchOnly {
     constructor(params: {
         id: PortfolioIdWatchOnly;
         meta: PortfolioMeta;
+        vmType: VMType;
         source: WatchOnlySource;
-        address: string;
-        xpub: string | null;
-        network: BtcNetwork;
+        wallet: WalletReadOnly;
     }) {
         this.id = params.id;
         this.meta = params.meta;
+        this.vmType = params.vmType;
         this.source = params.source;
-
-        this.btcWallet = {
-            id: new BtcWalletId(params.id, params.address),
-            type: BtcWalletType.NATIVE_SEGWIT,
-            address: params.address,
-            network: params.network,
-            xpub: params.xpub
-        };
-    }
-
-    public getBtcWallet(): BtcWalletReadOnly {
-        return this.btcWallet;
+        this.wallet = params.wallet;
     }
 
     public updateMeta(meta: Partial<PortfolioMeta>): void {
@@ -62,12 +69,17 @@ export class PortfolioWatchOnly implements IPortfolioWatchOnly {
     }
 
     public toJSON(): SPortfolioWatchOnlyIn {
-        return {
-            id: this.id.toJSON(),
-            meta: this.meta,
-            type: this.type,
-            address: this.btcWallet.address,
-            xpub: this.btcWallet.xpub
-        };
+        switch (this.wallet.vmType) {
+            case VMType.BTC:
+                return {
+                    id: this.id.toJSON(),
+                    meta: this.meta,
+                    type: this.type,
+                    address: this.wallet.address,
+                    xpub: this.wallet.xpub
+                };
+            default:
+                assertUnreachable(this.wallet.vmType);
+        }
     }
 }

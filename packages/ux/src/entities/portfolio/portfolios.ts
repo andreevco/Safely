@@ -17,7 +17,8 @@ import {
     PortfolioWatchOnly,
     IPortfolioId,
     generateBip39Accessor,
-    ISecretEncryptor
+    ISecretEncryptor,
+    VMType
 } from '@safely/core';
 
 import {
@@ -275,7 +276,6 @@ type ActivePortfolioEntitiesBip39 = {
 type ActivePortfolioEntitiesWatchOnly = {
     kind: 'watch-only';
     portfolio: PortfolioWatchOnly;
-    btcWallet: BtcWalletReadOnly;
 };
 
 type ActivePortfolioEntities = ActivePortfolioEntitiesBip39 | ActivePortfolioEntitiesWatchOnly;
@@ -305,8 +305,7 @@ export function useActivePortfolioEntitiesQuery() {
 
                     return {
                         kind: 'watch-only',
-                        portfolio,
-                        btcWallet: portfolio.btcWallet
+                        portfolio
                     };
                 }
 
@@ -369,7 +368,8 @@ export function useAddWatchOnlyPortfolio() {
         async mutationFn({ input, meta }) {
             const portfolio = PortfolioFactory.generateWatchOnlyPortfolio(input, {
                 network: PortfolioNetworkType.MAINNET,
-                meta
+                meta,
+                vmType: VMType.BTC
             });
 
             const portfolios: Portfolio[] = await client.fetchQuery(portfoliosQuery);
@@ -518,7 +518,7 @@ export function useActivePortfolio() {
 }
 
 export function useActiveBtcWallet(): BtcWalletReadOnly {
-    return useActivePortfolioEntities().btcWallet;
+    return resolveBtcWallet(useActivePortfolioEntities().portfolio);
 }
 
 export function useActiveSignableBtcWallet(): SignableBtcWallet {
@@ -535,5 +535,13 @@ export function findPortfolioMetaByAddress(
     portfolios: ReturnType<typeof usePortfolios>,
     address: string
 ): PortfolioMeta | undefined {
-    return portfolios?.find(p => p.getBtcWallet().address === address)?.meta;
+    return portfolios?.find(p => resolveBtcWallet(p).address === address)?.meta;
+}
+
+export function resolveBtcWallet(portfolio: Portfolio): BtcWalletReadOnly {
+    if (portfolio.type === PortfolioType.WATCH_ONLY) {
+        return portfolio.wallet;
+    }
+
+    return portfolio.derivations[0].chains.btc.wallets[0];
 }

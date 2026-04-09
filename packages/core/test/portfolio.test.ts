@@ -12,6 +12,7 @@ import {
     PortfolioFactory,
     PortfolioNetworkType,
     PortfolioType,
+    VMType,
     WatchOnlySource,
     sPortfolio
 } from '../src';
@@ -732,20 +733,22 @@ describe('Negative scenarios (Bitcoin)', () => {
         it('should create watch-only portfolio from address', () => {
             const portfolio = PortfolioFactory.generateWatchOnlyPortfolio(testAddress, {
                 network: PortfolioNetworkType.MAINNET,
-                meta: testMeta
+                meta: testMeta,
+                vmType: VMType.BTC
             });
 
             expect(portfolio.type).toBe(PortfolioType.WATCH_ONLY);
             expect(portfolio.meta.name).toBe('Watch Wallet');
-            expect(portfolio.btcWallet.address).toBe(testAddress);
-            expect(portfolio.btcWallet.xpub).toBeNull();
-            expect(portfolio.getBtcWallet().address).toBe(testAddress);
+            expect(portfolio.wallet.address).toBe(testAddress);
+            expect(portfolio.wallet.xpub).toBeNull();
+            expect(portfolio.wallet.address).toBe(testAddress);
         });
 
         it('should serialize and deserialize watch-only portfolio', () => {
             const portfolio = PortfolioFactory.generateWatchOnlyPortfolio(testAddress, {
                 network: PortfolioNetworkType.MAINNET,
-                meta: testMeta
+                meta: testMeta,
+                vmType: VMType.BTC
             });
 
             const json = portfolio.toJSON();
@@ -753,18 +756,21 @@ describe('Negative scenarios (Bitcoin)', () => {
             const restored = PortfolioFactory.restorePortfolio(encryptor, parsed);
 
             expect(restored.type).toBe(PortfolioType.WATCH_ONLY);
-            expect(restored.getBtcWallet().address).toBe(testAddress);
+            if (restored.type !== PortfolioType.WATCH_ONLY) throw new Error();
+            expect(restored.wallet.address).toBe(testAddress);
             expect(restored.meta.name).toBe('Watch Wallet');
         });
 
         it('should produce deterministic ID for same address', () => {
             const p1 = PortfolioFactory.generateWatchOnlyPortfolio(testAddress, {
                 network: PortfolioNetworkType.MAINNET,
-                meta: testMeta
+                meta: testMeta,
+                vmType: VMType.BTC
             });
             const p2 = PortfolioFactory.generateWatchOnlyPortfolio(testAddress, {
                 network: PortfolioNetworkType.MAINNET,
-                meta: testMeta
+                meta: testMeta,
+                vmType: VMType.BTC
             });
 
             expect(p1.id.toString()).toBe(p2.id.toString());
@@ -783,13 +789,14 @@ describe('Negative scenarios (Bitcoin)', () => {
 
             const portfolio = PortfolioFactory.generateWatchOnlyPortfolio(xpub, {
                 network: PortfolioNetworkType.MAINNET,
-                meta: testMeta
+                meta: testMeta,
+                vmType: VMType.BTC
             });
 
             expect(portfolio.type).toBe(PortfolioType.WATCH_ONLY);
             expect(portfolio.source).toBe(WatchOnlySource.XPUB);
-            expect(portfolio.btcWallet.xpub).toBe(xpub);
-            expect(portfolio.btcWallet.address.startsWith('bc1')).toBe(true);
+            expect(portfolio.wallet.xpub).toBe(xpub);
+            expect(portfolio.wallet.address.startsWith('bc1')).toBe(true);
         });
 
         it('should serialize and deserialize xpub-based watch-only', async () => {
@@ -803,7 +810,8 @@ describe('Negative scenarios (Bitcoin)', () => {
 
             const portfolio = PortfolioFactory.generateWatchOnlyPortfolio(xpub, {
                 network: PortfolioNetworkType.MAINNET,
-                meta: testMeta
+                meta: testMeta,
+                vmType: VMType.BTC
             });
 
             const json = portfolio.toJSON();
@@ -811,8 +819,9 @@ describe('Negative scenarios (Bitcoin)', () => {
             const restored = PortfolioFactory.restorePortfolio(encryptor, parsed);
 
             expect(restored.type).toBe(PortfolioType.WATCH_ONLY);
-            expect(restored.getBtcWallet().address).toBe(portfolio.btcWallet.address);
-            expect(restored.getBtcWallet().xpub).toBe(xpub);
+            if (restored.type !== PortfolioType.WATCH_ONLY) throw new Error();
+            expect(restored.wallet.address).toBe(portfolio.wallet.address);
+            expect(restored.wallet.xpub).toBe(xpub);
         });
 
         it('should validate xpub input', () => {
@@ -824,7 +833,8 @@ describe('Negative scenarios (Bitcoin)', () => {
         it('should have different source for address vs xpub', async () => {
             const addressPortfolio = PortfolioFactory.generateWatchOnlyPortfolio(testAddress, {
                 network: PortfolioNetworkType.MAINNET,
-                meta: testMeta
+                meta: testMeta,
+                vmType: VMType.BTC
             });
 
             expect(addressPortfolio.source).toBe(WatchOnlySource.ADDRESS);
@@ -839,7 +849,8 @@ describe('Negative scenarios (Bitcoin)', () => {
 
             const xpubPortfolio = PortfolioFactory.generateWatchOnlyPortfolio(xpub, {
                 network: PortfolioNetworkType.MAINNET,
-                meta: testMeta
+                meta: testMeta,
+                vmType: VMType.BTC
             });
 
             expect(xpubPortfolio.source).toBe(WatchOnlySource.XPUB);

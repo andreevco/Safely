@@ -19,7 +19,7 @@ function mapPortfolioToSuggestions(
         return [
             {
                 id: portfolio.id.toString(),
-                address: portfolio.btcWallet.address,
+                address: portfolio.wallet.address,
                 meta: portfolio.meta,
                 isWatchOnly: true
             }

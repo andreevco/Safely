@@ -9,6 +9,7 @@ import { sPortfolioMeta } from './portfolio-meta.stored';
 import { PortfolioNetworkType } from './portfolio-network-type';
 import { sPortfolioSecretRevealedStatus } from './portfolio-secret-revealed-status.stored';
 import { sSecretEncrypted } from '../../di';
+import { VMType } from '../blockchain';
 import { sDerivation } from '../derivation/derivation.stored';
 
 export const sPortfolioBip39 = z.object({
@@ -32,9 +33,12 @@ export const sPortfolioWatchOnly = z.object({
         .object({
             identifier: z.string(),
             source: z.enum(WatchOnlySource),
-            networkType: z.enum(PortfolioNetworkType)
+            networkType: z.enum(PortfolioNetworkType),
+            vmType: z.enum(VMType)
         })
-        .transform(val => new PortfolioIdWatchOnly(val.identifier, val.source, val.networkType)),
+        .transform(
+            val => new PortfolioIdWatchOnly(val.identifier, val.source, val.networkType, val.vmType)
+        ),
     meta: sPortfolioMeta,
     type: z.literal(PortfolioType.WATCH_ONLY),
     address: z.string(),

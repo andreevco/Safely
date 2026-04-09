@@ -1,10 +1,10 @@
 import { Id } from '../../utils/id';
-import type { IDerivation } from '../derivation';
+import { VMType } from '../blockchain';
+import type { IDerivation, WalletReadOnly } from '../derivation';
 import { IPortfolioId } from './portfolio-id';
 import { PortfolioMeta } from './portfolio-meta';
 import { PortfolioNetworkType } from './portfolio-network-type';
 import { PortfolioSecretRevealedStatus } from './portfolio-secret-revealed-status';
-import type { BtcWalletReadOnly } from '../derivation/btc/I-btc-wallet';
 
 export enum PortfolioType {
     BIP39 = 'BIP39',
@@ -22,7 +22,6 @@ export interface IPortfolioBase {
     type: PortfolioType;
     networkType: PortfolioNetworkType;
     updateMeta(meta: Partial<PortfolioMeta>): void;
-    getBtcWallet(): BtcWalletReadOnly;
     toJSON(): unknown;
 }
 
@@ -42,6 +41,7 @@ export interface IPortfolioDerivable extends IPortfolioBase {
 
 export interface IPortfolioWatchOnly extends IPortfolioBase {
     type: PortfolioType.WATCH_ONLY;
+    vmType: VMType;
     source: WatchOnlySource;
-    btcWallet: BtcWalletReadOnly;
+    wallet: WalletReadOnly;
 }

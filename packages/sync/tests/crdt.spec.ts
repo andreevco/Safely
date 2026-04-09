@@ -425,26 +425,40 @@ describe('crdt', () => {
             index: z.number(),
             chains: sDerivationChains
         });
+        enum VMType {
+            BTC = 'BTC'
+        }
+
         class PortfolioIdWatchOnly {
             constructor(
                 public readonly identifier: string,
                 public readonly source: WatchOnlySource,
-                public readonly network: PortfolioNetworkType
+                public readonly network: PortfolioNetworkType,
+                public readonly vmType: VMType
             ) {}
 
             public toString(): string {
-                return 'portfolio' + 'watch-only' + this.source + this.identifier + this.network;
+                return (
+                    'portfolio' +
+                    'watch-only' +
+                    this.vmType +
+                    this.source +
+                    this.identifier +
+                    this.network
+                );
             }
 
             public toJSON(): {
                 identifier: string;
                 source: WatchOnlySource;
                 networkType: PortfolioNetworkType;
+                vmType: VMType;
             } {
                 return {
                     identifier: this.identifier,
                     source: this.source,
-                    networkType: this.network
+                    networkType: this.network,
+                    vmType: this.vmType
                 };
             }
         }
@@ -489,15 +503,22 @@ describe('crdt', () => {
                 .object({
                     identifier: z.string(),
                     source: z.enum(WatchOnlySource),
-                    networkType: z.enum(PortfolioNetworkType)
+                    networkType: z.enum(PortfolioNetworkType),
+                    vmType: z.enum(VMType)
                 })
                 .transform(
-                    val => new PortfolioIdWatchOnly(val.identifier, val.source, val.networkType)
+                    val =>
+                        new PortfolioIdWatchOnly(
+                            val.identifier,
+                            val.source,
+                            val.networkType,
+                            val.vmType
+                        )
                 ),
             meta: sPortfolioMeta,
             type: z.literal(PortfolioType.WATCH_ONLY),
             address: z.string(),
-            xpub: z.string().optional()
+            xpub: z.string().nullable()
         });
 
         const sPortfolio = z.discriminatedUnion('type', [sPortfolioBip39, sPortfolioWatchOnly]);
@@ -513,7 +534,8 @@ describe('crdt', () => {
                 return new PortfolioIdWatchOnly(
                     item.id.identifier,
                     item.id.source,
-                    item.id.networkType
+                    item.id.networkType,
+                    item.id.vmType
                 ).toString();
             }),
             z.null()
@@ -552,7 +574,8 @@ describe('crdt', () => {
                 id: {
                     identifier: 'watch-only-1',
                     source: WatchOnlySource.ADDRESS,
-                    networkType: PortfolioNetworkType.TESTNET
+                    networkType: PortfolioNetworkType.TESTNET,
+                    vmType: VMType.BTC
                 },
                 meta: {
                     name: 'Watch Only 1',

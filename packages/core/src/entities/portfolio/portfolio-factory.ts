@@ -9,8 +9,10 @@ import type { SPortfolioOut } from './portfolio.stored';
 import { BtcXpub } from '../../blockchain-api/btc/btc-xpub';
 import { ISecretEncryptor } from '../../di';
 import { assertUnreachable } from '../../utils';
-import { BtcWalletType, btcNetworkByPortfolioNetworkType } from '../blockchain';
+import { BtcNetwork, BtcWalletType, btcNetworkByPortfolioNetworkType, VMType } from '../blockchain';
 import { DerivationChainItemBtcSeed, Derivation } from '../derivation';
+import { BtcWalletId } from '../derivation/btc/btc-wallet-id';
+import { BtcWalletReadOnly } from '../derivation/btc/I-btc-wallet';
 import { InvalidMnemonicError, PortfolioGenerationFailedError } from '../errors';
 import {
     MNEMONIC_TYPE,
@@ -111,12 +113,20 @@ export class PortfolioFactory {
 
     public static resolveWatchOnlyId(
         input: string,
-        network: PortfolioNetworkType
+        network: PortfolioNetworkType,
+        vmType: VMType
     ): PortfolioIdWatchOnly {
-        const isXpub = BtcXpub.validate(input);
-        const source = isXpub ? WatchOnlySource.XPUB : WatchOnlySource.ADDRESS;
+        let source: WatchOnlySource;
 
-        return new PortfolioIdWatchOnly(input, source, network);
+        switch (vmType) {
+            case VMType.BTC:
+                source = BtcXpub.validate(input) ? WatchOnlySource.XPUB : WatchOnlySource.ADDRESS;
+                break;
+            default:
+                assertUnreachable(vmType);
+        }
+
+        return new PortfolioIdWatchOnly(input, source, network, vmType);
     }
 
     public static generateWatchOnlyPortfolio(
@@ -124,35 +134,59 @@ export class PortfolioFactory {
         options: {
             network: PortfolioNetworkType;
             meta: PortfolioMeta;
+            vmType: VMType;
         }
     ): PortfolioWatchOnly {
-        const portfolioId = PortfolioFactory.resolveWatchOnlyId(input, options.network);
-        const btcNetwork = btcNetworkByPortfolioNetworkType(options.network);
+        const portfolioId = PortfolioFactory.resolveWatchOnlyId(
+            input,
+            options.network,
+            options.vmType
+        );
 
-        let address: string;
-        let xpub: string | null;
+        switch (options.vmType) {
+            case VMType.BTC: {
+                const btcNetwork = btcNetworkByPortfolioNetworkType(options.network);
+                const { address, xpub } = PortfolioFactory.resolveBtcWatchOnlyInput(
+                    input,
+                    portfolioId.source,
+                    btcNetwork
+                );
 
-        switch (portfolioId.source) {
-            case WatchOnlySource.XPUB:
-                address = BtcXpub.deriveAddress(input, btcNetwork);
-                xpub = input;
-                break;
-            case WatchOnlySource.ADDRESS:
-                address = input;
-                xpub = null;
-                break;
+                const wallet: BtcWalletReadOnly = {
+                    vmType: VMType.BTC,
+                    id: new BtcWalletId(portfolioId, address),
+                    type: BtcWalletType.NATIVE_SEGWIT,
+                    address,
+                    network: btcNetwork,
+                    xpub
+                };
+
+                return new PortfolioWatchOnly({
+                    id: portfolioId,
+                    meta: options.meta,
+                    vmType: VMType.BTC,
+                    source: portfolioId.source,
+                    wallet
+                });
+            }
             default:
-                assertUnreachable(portfolioId.source);
+                assertUnreachable(options.vmType);
         }
+    }
 
-        return new PortfolioWatchOnly({
-            id: portfolioId,
-            meta: options.meta,
-            source: portfolioId.source,
-            address,
-            xpub,
-            network: btcNetwork
-        });
+    private static resolveBtcWatchOnlyInput(
+        input: string,
+        source: WatchOnlySource,
+        btcNetwork: BtcNetwork
+    ): { address: string; xpub: string | null } {
+        switch (source) {
+            case WatchOnlySource.XPUB:
+                return { address: BtcXpub.deriveAddress(input, btcNetwork), xpub: input };
+            case WatchOnlySource.ADDRESS:
+                return { address: input, xpub: null };
+            default:
+                assertUnreachable(source);
+        }
     }
 
     private async getMnemonicVault(mnemonicAccessor: IMnemonicAccessor): Promise<MnemonicVault> {

@@ -16,7 +16,8 @@ export const sPortfolios = z.union([
         return new PortfolioIdWatchOnly(
             item.id.identifier,
             item.id.source,
-            item.id.networkType
+            item.id.networkType,
+            item.id.vmType
         ).toString();
     }),
     z.null()

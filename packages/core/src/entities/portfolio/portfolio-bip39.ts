@@ -61,10 +61,6 @@ export class PortfolioBip39 implements IPortfolioDerivable {
 
     public derivations: IDerivation[];
 
-    public getBtcWallet() {
-        return this.derivations[0].chains.btc.wallets[0];
-    }
-
     private readonly mnemonicVault: IMnemonicVaultEncryptedSecretStored;
 
     constructor(params: {
