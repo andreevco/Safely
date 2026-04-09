@@ -26,34 +26,35 @@ export const Chart = () => {
     const chart = useChart(asset, stickyStartDate);
     const crosshair = useCrosshair({ chartPointsShared, pathFractionsShared, selectedPeriod });
 
+    const prices = chart.data?.prices ?? [];
+
     return (
         <View style={styles.container}>
             <ChartHeader
-                prices={chart.data?.prices ?? []}
+                prices={prices}
                 asset={asset}
                 selectedPeriod={selectedPeriod}
                 activePrice={crosshair.activePrice}
+                activePriceDiff={crosshair.activePriceDiff}
             />
             <ChartPeriods selectedPeriod={selectedPeriod} onSelectPeriod={setSelectedPeriod} />
             <ChartLine
                 startDate={stickyStartDate}
-                prices={chart.data?.prices ?? []}
+                prices={prices}
                 selectedPeriod={selectedPeriod}
                 chartPointsShared={chartPointsShared}
                 pathFractionsShared={pathFractionsShared}
-                activeX={crosshair.activeX}
-                activeY={crosshair.activeY}
-                isActive={crosshair.isActive}
-                activePathFraction={crosshair.activePathFraction}
+                primaryCrosshair={crosshair.primaryCrosshair}
+                secondaryCrosshair={crosshair.secondaryCrosshair}
                 gesture={crosshair.gesture}
             />
             <ChartFooter
                 startDate={stickyStartDate}
                 selectedPeriod={selectedPeriod}
-                isActive={crosshair.isActive}
+                primaryCrosshair={crosshair.primaryCrosshair}
                 isTimeLabelReady={crosshair.isTimeLabelReady}
-                activeX={crosshair.activeX}
                 formattedTime={crosshair.formattedTime}
+                secondaryCrosshair={crosshair.secondaryCrosshair}
             />
         </View>
     );
