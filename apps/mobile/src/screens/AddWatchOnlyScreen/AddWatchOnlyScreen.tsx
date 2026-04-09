@@ -10,7 +10,8 @@ import {
     PortfolioAlreadyExistsError,
     PortfolioFactory,
     PortfolioMeta,
-    PortfolioNetworkType
+    PortfolioNetworkType,
+    VMType
 } from '@safely/core';
 import { useAddWatchOnlyPortfolio, useLoader, usePortfolios } from '@safely/ux';
 
@@ -60,7 +61,8 @@ export const AddWatchOnlyScreen = () => {
     const handleNext = useCallback(() => {
         const portfolioId = PortfolioFactory.resolveWatchOnlyId(
             trimmedInput,
-            PortfolioNetworkType.MAINNET
+            PortfolioNetworkType.MAINNET,
+            VMType.BTC
         );
 
         const existingPortfolio = portfolios.find(p => p.id.isEq(portfolioId));
