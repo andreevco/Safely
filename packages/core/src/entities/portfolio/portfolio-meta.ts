@@ -1,11 +1,11 @@
+import { OptionalProperty } from '../../utils';
+
 export interface PortfolioMeta {
     name: string;
     icon: PortfolioMetaIcon;
 }
 
-export type NoIconPortfolioMeta = Omit<PortfolioMeta, 'icon'> & {
-    icon?: PortfolioMetaIcon;
-};
+export type NoIconPortfolioMeta = OptionalProperty<PortfolioMeta, 'icon'>;
 
 export type PortfolioMetaIcon = PortfolioMetaIconEmoji | PortfolioMetaIconColor;
 export type PortfolioMetaIconEmoji = {
