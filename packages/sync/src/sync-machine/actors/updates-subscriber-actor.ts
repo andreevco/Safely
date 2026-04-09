@@ -10,7 +10,7 @@ export const updatesSubscriberActor = fromCallback(
 
         const timeoutId = setTimeout(() => {
             if (!connected) {
-                console.warn('[Updates Subscriber]: timeout exceeded, aborting connection');
+                opts.input.logger.warn('Updates subscriber: timeout exceeded, aborting connection');
                 abortController.abort();
                 opts.sendBack({ type: 'DISCONNECTED' });
             }
@@ -23,8 +23,8 @@ export const updatesSubscriberActor = fromCallback(
                         if (abortController.signal.aborted) {
                             return;
                         }
-                        console.log(
-                            '[Sync SSE] Received remote update via SSE, proof:',
+                        opts.input.logger.info(
+                            'Received remote update via SSE, proof:',
                             upd.snapshotProof.toString('hex').slice(0, 16) + '...'
                         );
                         opts.sendBack({ type: 'REMOTE_UPDATE', upd });
@@ -52,7 +52,7 @@ export const updatesSubscriberActor = fromCallback(
             } catch (err) {
                 if (abortController.signal.aborted) return;
 
-                console.error('[Updates Subscriber]: failed to subscribe to updates', err);
+                opts.input.logger.error('Failed to subscribe to updates', err);
                 opts.sendBack({
                     type: 'CONNECTION_ERROR',
                     error: err instanceof Error ? err : String(err)

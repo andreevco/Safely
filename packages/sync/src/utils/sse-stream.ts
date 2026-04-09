@@ -5,6 +5,7 @@ type SSEConfig<T> = {
     onUpdate: (update: T, eventId: string) => void;
     onOpen?: () => void;
     onError?: (err: Event) => void;
+    onLog?: (level: 'error' | 'info', message: string, error?: unknown) => void;
     signal?: AbortSignal;
 };
 
@@ -96,7 +97,7 @@ export class SSEStream<T> implements AsyncIterable<SSEStreamItem<T>> {
                     const parsed = parser(JSON.parse(event.data));
                     if (parsed) this.push({ value: parsed, eventId: event.lastEventId });
                 } catch (e) {
-                    console.error(`Error parsing SSE event '${eventType}':`, e);
+                    this.config.onLog?.('error', `Error parsing SSE event '${eventType}'`, e);
                 }
             });
         }
@@ -118,7 +119,7 @@ export class SSEStream<T> implements AsyncIterable<SSEStreamItem<T>> {
         this.eventSource?.close();
         this.eventSource = null;
         this.queue = [];
-        console.log('SSEStream: device-connection closed and cleaned up');
+        this.config.onLog?.('info', 'SSEStream: device-connection closed and cleaned up');
     }
 }
 

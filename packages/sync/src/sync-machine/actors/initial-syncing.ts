@@ -5,9 +5,8 @@ import { SyncMachineConfig } from '../config';
 import { classifyError } from '../error-handler';
 
 export const initialSyncing = fromPromise(async ({ input }: { input: SyncMachineConfig }) => {
-    console.log('[Sync] Initial syncing: fetching latest snapshot from server...');
+    input.logger.info('Initial syncing: fetching latest snapshot from server...');
     const knownState = await input.syncStateRepository.getState();
-    input.logger.info(`Initial sync ${knownState.snapshotProof.toString('hex')}`);
 
     let lastState;
     try {
@@ -17,8 +16,8 @@ export const initialSyncing = fromPromise(async ({ input }: { input: SyncMachine
     } catch (e) {
         throw await classifyError(e);
     }
-    console.log(
-        '[Sync] Initial syncing: received snapshot from server, proof:',
+    input.logger.info(
+        'Received snapshot from server, proof:',
         lastState.snapshot.snapshotProof.slice(0, 16) + '...'
     );
 
@@ -34,7 +33,7 @@ export const initialSyncing = fromPromise(async ({ input }: { input: SyncMachine
                 : []
         });
     } catch (e) {
-        console.error('[SyncMachine] Error during initial syncing', e);
+        input.logger.error('Error during initial syncing', e);
         throw await classifyError(e);
     }
 });

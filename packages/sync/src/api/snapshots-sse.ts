@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { ApiSigner } from './api-signer';
 import { SnapshotsApi } from './generated';
 import { EncryptedState } from './types';
+import { Logger } from '../logger';
 import { SyncStateRepository } from '../update-handler/sync-state-repository';
 import { BufferHexSchema } from '../utils/schemas';
 import { SSEStream } from '../utils/sse-stream';
@@ -11,7 +12,8 @@ export class SnapshotsSse {
     constructor(
         private readonly syncStateRepository: SyncStateRepository,
         private readonly snapshotsApi: SnapshotsApi,
-        private readonly apiSigner: ApiSigner
+        private readonly apiSigner: ApiSigner,
+        private readonly logger: Logger
     ) {}
 
     public async subscribeToUpdates(
@@ -40,9 +42,12 @@ export class SnapshotsSse {
             onUpdate: async (update, _) => {
                 await onUpdate(update);
             },
-            onOpen: () => console.log('/v1/snapshots/stream connected'),
+            onOpen: () => this.logger.info('/v1/snapshots/stream connected'),
             onError: err => {
-                console.error('/v1/snapshots/stream error', err);
+                this.logger.error('/v1/snapshots/stream error', err);
+            },
+            onLog: (level, message, error) => {
+                this.logger[level](message, ...(error !== undefined ? [error] : []));
             },
             parsers: {
                 snapshot: data => {
@@ -62,7 +67,7 @@ export class SnapshotsSse {
                 notifyDisconnect();
             } catch (err) {
                 if (abortController.signal.aborted) return;
-                console.error('Error in snapshots stream', err);
+                this.logger.error('Error in snapshots stream', err);
                 notifyDisconnect(err);
             }
         })();

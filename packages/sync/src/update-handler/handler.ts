@@ -9,7 +9,7 @@ import { EncryptedStateAndProofChain } from '../api/types';
 import { StorageVerifierService } from '../crdt/storage-verifier-service';
 import { YManager } from '../crdt/y-manager';
 import { DeviceManagementService } from '../device-manager/device-management-service';
-import { Logger } from '../logger/logger';
+import { Logger } from '../logger';
 import { UpdateDecryptorService } from '../update-encryptor/update-decryptor-service';
 
 export class UpdateHandler {
@@ -87,14 +87,14 @@ export class UpdateHandler {
         //   At this point we cant really protect user, so this is acceptable scenario.
         await this.updateDecryptor.verifyIKSig(upd);
 
-        console.log('[Sync Handler] Applying update to local CRDT document...');
+        this.logger.info('Applying update to local CRDT document...');
         await this.yManager.applyUpdate(update, 'remote');
 
         syncState.snapshotProof = upd.snapshotProof;
         await this.syncStateRepository.saveState(syncState);
 
         const hasLocalChanges = this.hasLocalChanges(update);
-        console.log('[Sync Handler] Update applied, hasLocalChanges:', hasLocalChanges);
+        this.logger.info('Update applied, hasLocalChanges:', hasLocalChanges);
         return { hasLocalChanges };
     }
 

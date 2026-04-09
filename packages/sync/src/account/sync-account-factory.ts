@@ -10,7 +10,7 @@ import { Configuration } from '../api/generated';
 import { SyncApiConfiguration } from '../api/sync-api-configuration';
 import { validateSyncDataScheme } from '../crdt/deep-merge/z-schema';
 import { ed25519_keygen } from '../crypto/ed25519';
-import { Logger, LogLevel } from '../logger/logger';
+import { Logger, LogLevel } from '../logger';
 import { OnboardingConnector } from '../onboarding/connector';
 import { accountsApiForOnboarding, NewDeviceOnboarding } from '../onboarding/new-device-onboarding';
 
@@ -73,7 +73,8 @@ export class SyncAccountFactory<
             ikKeypair,
             accountsApiForOnboarding(ikKeypair, this.apiConfiguration),
             this.accountManager,
-            secureEncryptedStorage
+            secureEncryptedStorage,
+            this.logger
         );
         const data = onboarding.generateOnboardingData();
         const abortController = new AbortController();
