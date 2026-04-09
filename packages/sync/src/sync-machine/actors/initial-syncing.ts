@@ -34,7 +34,11 @@ export const initialSyncing = fromPromise(async ({ input }: { input: SyncMachine
                 : []
         });
     } catch (e) {
-        console.error('[SyncMachine] Error during initial syncing', e);
+        console.error('[SyncMachine] Error during initial syncing', {
+            isError: e instanceof Error,
+            name: e instanceof Error ? e.name : undefined,
+            message: e instanceof Error ? e.message : String(e)
+        });
         throw await classifyError(e);
     }
 });
