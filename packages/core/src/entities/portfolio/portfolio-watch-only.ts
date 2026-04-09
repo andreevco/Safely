@@ -13,7 +13,7 @@ export class PortfolioWatchOnly implements IPortfolioWatchOnly {
             meta: sPortfolio.meta,
             source: sPortfolio.id.source,
             address: sPortfolio.address,
-            xpub: sPortfolio.xpub ?? '',
+            xpub: sPortfolio.xpub,
             network: btcNetworkByPortfolioNetworkType(sPortfolio.id.network)
         });
     }
@@ -37,7 +37,7 @@ export class PortfolioWatchOnly implements IPortfolioWatchOnly {
         meta: PortfolioMeta;
         source: WatchOnlySource;
         address: string;
-        xpub: string;
+        xpub: string | null;
         network: BtcNetwork;
     }) {
         this.id = params.id;
@@ -67,7 +67,7 @@ export class PortfolioWatchOnly implements IPortfolioWatchOnly {
             meta: this.meta,
             type: this.type,
             address: this.btcWallet.address,
-            xpub: this.btcWallet.xpub || undefined
+            xpub: this.btcWallet.xpub
         };
     }
 }

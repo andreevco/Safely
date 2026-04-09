@@ -738,7 +738,7 @@ describe('Negative scenarios (Bitcoin)', () => {
             expect(portfolio.type).toBe(PortfolioType.WATCH_ONLY);
             expect(portfolio.meta.name).toBe('Watch Wallet');
             expect(portfolio.btcWallet.address).toBe(testAddress);
-            expect(portfolio.btcWallet.xpub).toBe('');
+            expect(portfolio.btcWallet.xpub).toBeNull();
             expect(portfolio.getBtcWallet().address).toBe(testAddress);
         });
 

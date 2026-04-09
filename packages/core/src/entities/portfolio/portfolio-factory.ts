@@ -130,7 +130,7 @@ export class PortfolioFactory {
         const btcNetwork = btcNetworkByPortfolioNetworkType(options.network);
 
         let address: string;
-        let xpub: string;
+        let xpub: string | null;
 
         switch (portfolioId.source) {
             case WatchOnlySource.XPUB:
@@ -139,7 +139,7 @@ export class PortfolioFactory {
                 break;
             case WatchOnlySource.ADDRESS:
                 address = input;
-                xpub = '';
+                xpub = null;
                 break;
             default:
                 assertUnreachable(portfolioId.source);

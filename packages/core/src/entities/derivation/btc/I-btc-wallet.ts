@@ -8,7 +8,7 @@ export interface BtcWalletReadOnly {
     id: BtcWalletId;
     address: string;
     network: BtcNetwork;
-    xpub: string;
+    xpub: string | null;
 }
 
 export interface SignableBtcWallet extends BtcWalletReadOnly {

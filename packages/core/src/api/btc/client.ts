@@ -32,12 +32,12 @@ export interface BtcXpubDescriptor {
 
 export interface BtcAddressDescriptor {
     type: BtcWalletType;
-    xpub: '';
+    xpub: null;
     address: string;
 }
 
 function isAddressDescriptor(descriptor: BtcDescriptor): descriptor is BtcAddressDescriptor {
-    return !descriptor.xpub;
+    return descriptor.xpub === null;
 }
 
 const btcWalletTypeToDescriptor: Record<BtcWalletType, 'wpkh' | 'pkh' | 'tr' | 'sh-wpkh'> = {

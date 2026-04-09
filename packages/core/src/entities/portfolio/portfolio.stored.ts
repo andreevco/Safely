@@ -38,7 +38,7 @@ export const sPortfolioWatchOnly = z.object({
     meta: sPortfolioMeta,
     type: z.literal(PortfolioType.WATCH_ONLY),
     address: z.string(),
-    xpub: z.string().optional()
+    xpub: z.string().nullable()
 });
 export type SPortfolioWatchOnlyOut = z.output<typeof sPortfolioWatchOnly>;
 export type SPortfolioWatchOnlyIn = z.input<typeof sPortfolioWatchOnly>;
