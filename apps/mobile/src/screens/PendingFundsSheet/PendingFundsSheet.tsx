@@ -20,23 +20,16 @@ const PendingFundsContent = () => {
         availableBalance?.pending ?? BtcAssetAmount.fromWeiAmount('0')
     );
 
-    const pending = useMemo(() => {
-        const pendingInItems = btcUtxo?.unconfirmedInUnsafe.utxos.map(item => ({
-            value: BtcAssetAmount.fromWeiAmount(item.value),
-            confirmationETABlocks: item.tx.confirmationETABlocks,
-            timestamp: item.tx.timestamp,
-            id: item.tx.txid
-        }));
-
-        const pendingOutItems = btcUtxo?.unconfirmedOut.utxos.map(item => ({
-            value: BtcAssetAmount.fromWeiAmount(item.value),
-            confirmationETABlocks: undefined as number | undefined,
-            timestamp: undefined as number | undefined,
-            id: `${item.txid}:${item.vout}`
-        }));
-
-        return pendingInItems?.concat(pendingOutItems ?? []);
-    }, [btcUtxo]);
+    const pending = useMemo(
+        () =>
+            btcUtxo?.unconfirmedUnsafe.utxos.map(item => ({
+                value: BtcAssetAmount.fromWeiAmount(item.value),
+                confirmationETABlocks: item.tx.confirmationETABlocks,
+                timestamp: item.tx.blockTime,
+                id: item.tx.txid
+            })),
+        [btcUtxo]
+    );
 
     return (
         <View>

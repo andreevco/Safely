@@ -29,7 +29,7 @@ export const BtcAssetCell = (props: BtcAssetCellProps) => {
         useLastBtcTransactionTimestamp();
 
     const receivingUtxoValues = useMemo(
-        () => btcUtxo?.unconfirmedInUnsafe.utxos.map(u => u.value) ?? [],
+        () => btcUtxo?.unconfirmedUnsafe.utxos.map(u => u.value) ?? [],
         [btcUtxo]
     );
 
@@ -43,7 +43,7 @@ export const BtcAssetCell = (props: BtcAssetCellProps) => {
     if (isSubtitleLoading) {
         subtitle = <Cell.Subtitle skeletonWidth={140} />;
     } else if (hasReceiving) {
-        subtitle = <ReceivingBadges utxo={btcUtxo!.unconfirmedInUnsafe.utxos} />;
+        subtitle = <ReceivingBadges utxo={btcUtxo!.unconfirmedUnsafe.utxos} />;
     } else if (timeAgo) {
         subtitle = (
             <Cell.Subtitle color="secondary" numberOfLines={undefined} style={styles.subtitle}>

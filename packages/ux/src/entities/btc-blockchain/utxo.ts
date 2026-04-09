@@ -1,6 +1,12 @@
 import { useCallback, useMemo } from 'react';
 
-import { assertUnreachable, BtcAssetAmount, BtcWallet, PortfolioType } from '@safely/core';
+import {
+    assertUnreachable,
+    BtcAssetAmount,
+    BtcWallet,
+    PortfolioType,
+    RequiredProperties
+} from '@safely/core';
 import { BtcApiUtxoWithOptionalTx } from '@safely/core/api/btc';
 
 import {
@@ -46,7 +52,7 @@ export function useRawBtcWalletUtxo(btcWallet: BtcWallet) {
         queryKey: utxo.wallet(btcWallet).params({ api }).toKey(),
         queryFn: () => api.getUtxos(btcWallet, true),
         schemaKey: 'sBtcWalletUtxos',
-        refetchInterval: QUERIES_REFETCH_INTERVAL.DEFAULT
+        refetchInterval: QUERIES_REFETCH_INTERVAL.UTXO
     });
 }
 
@@ -62,32 +68,33 @@ function useBtcWalletUtxoFromServer(btcWallet: BtcWallet) {
             const { safe, unsafe } = unconfirmed.reduce(
                 (acc, item) => {
                     if (!item.tx) {
-                        return { ...acc, unsafe: acc.unsafe.concat(item) };
+                        return { ...acc };
                     }
                     const fromAddress = getBiggestBtcIOAddress(item.tx.vin.filter(v => !v.isOwn));
                     const isSafe = accessibleBtcWallets.some(w => w.address === fromAddress);
+                    const narrowed = item as RequiredProperties<BtcApiUtxoWithOptionalTx, 'tx'>;
                     if (isSafe) {
-                        return { ...acc, safe: acc.safe.concat(item) };
+                        return { ...acc, safe: acc.safe.concat(narrowed) };
                     } else {
-                        return { ...acc, unsafe: acc.unsafe.concat(item) };
+                        return { ...acc, unsafe: acc.unsafe.concat(narrowed) };
                     }
                 },
                 { safe: [], unsafe: [] } as {
-                    safe: BtcApiUtxoWithOptionalTx[];
-                    unsafe: BtcApiUtxoWithOptionalTx[];
+                    safe: RequiredProperties<BtcApiUtxoWithOptionalTx, 'tx'>[];
+                    unsafe: RequiredProperties<BtcApiUtxoWithOptionalTx, 'tx'>[];
                 }
             );
 
             return {
-                confirmedIn: {
+                confirmed: {
                     totalAmount: getTotal(confirmed),
                     utxos: confirmed
                 },
-                unconfirmedInSafe: {
+                unconfirmedSafe: {
                     totalAmount: getTotal(safe),
                     utxos: safe
                 },
-                unconfirmedInUnsafe: {
+                unconfirmedUnsafe: {
                     totalAmount: getTotal(unsafe),
                     utxos: unsafe
                 }
@@ -110,8 +117,8 @@ export function useBtcWalletUtxo(btcWallet: BtcWallet) {
         queries: [serverUtxoQuery, broadcastedTxQuery],
         queryFn([serverUtxo, rawBroadcastedTx]) {
             const spentKeys = new Set(rawBroadcastedTx?.inputs.map(i => `${i.txid}:${i.vout}`));
-            const isSender = serverUtxo.unconfirmedInSafe.utxos
-                .concat(serverUtxo.confirmedIn.utxos)
+            const isSender = serverUtxo.confirmed.utxos
+                .concat(serverUtxo.unconfirmedSafe.utxos)
                 .some(u => spentKeys.has(`${u.txid}:${u.vout}`));
             const isRecipient =
                 rawBroadcastedTx?.outputs.some(o => o.address === btcWallet.address) ?? false;
@@ -125,19 +132,19 @@ export function useBtcWalletUtxo(btcWallet: BtcWallet) {
                 btcWallet.address
             );
 
-            const patchedConfirmed = cacheService.toConfirmed(serverUtxo.confirmedIn.utxos);
-            const patchedSafe = cacheService.toUnconfirmedSafe(serverUtxo.unconfirmedInSafe.utxos);
+            const patchedConfirmed = cacheService.toConfirmed(serverUtxo.confirmed.utxos);
+            const patchedSafe = cacheService.toUnconfirmedSafe(serverUtxo.unconfirmedSafe.utxos);
 
             return {
-                confirmedIn: {
+                confirmed: {
                     totalAmount: getTotal(patchedConfirmed),
                     utxos: patchedConfirmed
                 },
-                unconfirmedInSafe: {
+                unconfirmedSafe: {
                     totalAmount: getTotal(patchedSafe),
                     utxos: patchedSafe
                 },
-                unconfirmedInUnsafe: serverUtxo.unconfirmedInUnsafe
+                unconfirmedUnsafe: serverUtxo.unconfirmedUnsafe
             };
         }
     });
@@ -149,8 +156,8 @@ export function useBtcBalance(wallet: BtcWallet) {
     return useDerivedQuery({
         queries: [utxosQuery],
         queryFn: ([utxos]) => ({
-            display: utxos.confirmedIn.totalAmount.amountAdd(utxos.unconfirmedInSafe.totalAmount),
-            pending: utxos.unconfirmedInUnsafe.totalAmount
+            display: utxos.confirmed.totalAmount.amountAdd(utxos.unconfirmedSafe.totalAmount),
+            pending: utxos.unconfirmedUnsafe.totalAmount
         })
     });
 }
@@ -170,7 +177,7 @@ export function useActiveBtcWalletUtxoForEstimation() {
     return useDerivedQuery({
         queries: [utxoQuery],
         queryFn([u]) {
-            return u.confirmedIn.utxos.concat(u.unconfirmedInSafe.utxos);
+            return u.confirmed.utxos.concat(u.unconfirmedSafe.utxos);
         }
     });
 }

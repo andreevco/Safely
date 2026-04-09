@@ -148,7 +148,8 @@ export class BroadcastedBtcTx {
             })),
             blockHeight: -1,
             confirmations: 0,
-            blockTime: 0
+            blockTime: this.timestamp,
+            confirmationETABlocks: 1
         };
     }
 
