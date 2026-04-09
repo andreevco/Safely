@@ -10,7 +10,7 @@ import {
 import { BtcApiTx, BtcApiUtxoWithOptionalTx } from '@safely/core/api/btc';
 
 import { broadcastedBtcTxCache, utxo } from './keys';
-import { useAccountLocalStorage } from '../../shared';
+import { useAccountLocalStorage, refetchQueries } from '../../shared';
 import { SBroadcastedBtcTx } from '../../shared/storage/account/local/schemas';
 import { useActiveAccount } from '../account';
 import { useRawBtcWalletUtxo } from './utxo';
@@ -30,7 +30,7 @@ export function useBroadcastedBtcTxCache() {
             const cached = (await get()) ?? null;
             if (!cached) return null;
 
-            await client.refetchQueries({ queryKey: utxo.toKey(), type: 'active' });
+            await refetchQueries(client, utxo.toKey());
 
             const serverUtxoQueries = client.getQueriesData<{ txid: string; vout: number }[]>({
                 queryKey: utxo.toKey()

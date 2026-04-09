@@ -5,6 +5,7 @@ import { BtcTransactionTemplate, TransactionTemplate } from '@safely/core';
 import { BroadcastedBtcTx, useBtcSendLocked } from '../../../entities';
 import { useSetBroadcastedBtcTxCache } from '../../../entities/btc-blockchain/broadcasted-tx-cache';
 import { utxo } from '../../../entities/btc-blockchain/keys';
+import { refetchQueries } from '../../../shared';
 
 export function useSendAssetTransfer(transactionTemplate: TransactionTemplate | undefined) {
     const { mutateAsync: setBroadcastedTx } = useSetBroadcastedBtcTxCache();
@@ -28,9 +29,7 @@ export function useSendAssetTransfer(transactionTemplate: TransactionTemplate | 
                 await setBroadcastedTx(
                     BroadcastedBtcTx.fromTransactionTemplate(transactionTemplate)
                 );
-                void queryClient.invalidateQueries({
-                    queryKey: utxo.toKey()
-                });
+                void refetchQueries(queryClient, utxo.toKey());
             }
         }
     });

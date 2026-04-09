@@ -33,10 +33,7 @@ export function useHistory<TData = InfiniteData<ActivityPage, IActivityPageParam
             return { page: currentPage + 1 };
         },
         initialPageParam: { page: INITIAL_PAGE },
-        meta: {
-            persist: true,
-            schemaKey: 'infiniteActivityData'
-        },
+        schemaKey: 'infiniteActivityData',
         select(data) {
             const allItems = data?.pages?.length ? data.pages.flatMap(page => page.items) : [];
 

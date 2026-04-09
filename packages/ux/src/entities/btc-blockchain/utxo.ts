@@ -45,10 +45,7 @@ export function useRawBtcWalletUtxo(btcWallet: BtcWallet) {
     return usePersistQuery({
         queryKey: utxo.wallet(btcWallet).params({ api }).toKey(),
         queryFn: () => api.getUtxos(btcWallet, true),
-        meta: {
-            persist: true,
-            schemaKey: 'sBtcWalletUtxos'
-        },
+        schemaKey: 'sBtcWalletUtxos',
         refetchInterval: QUERIES_REFETCH_INTERVAL.DEFAULT
     });
 }
