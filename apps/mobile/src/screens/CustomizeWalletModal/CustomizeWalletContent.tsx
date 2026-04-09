@@ -43,8 +43,7 @@ export const CustomizeWalletContent = ({
 
     useFocusEffect(
         useCallback(() => {
-            const timeout = setTimeout(() => inputRef.current?.focus(), 100);
-            return () => clearTimeout(timeout);
+            requestAnimationFrame(() => inputRef.current?.focus());
         }, [])
     );
 
