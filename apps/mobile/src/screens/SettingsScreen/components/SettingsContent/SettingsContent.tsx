@@ -2,8 +2,8 @@ import { Pressable } from 'react-native';
 
 import { useAppContext, useHasPortfolio } from '@safely/ux';
 
+import { shareLogs } from '@mobile/shared/logger';
 import { List, Screen, Text } from '@mobile/shared/ui';
-import { shareLogs } from '@mobile/shared/utils/log-capture';
 
 import { AccountSection } from '../AccountSection';
 import { CurrentWalletSection } from '../CurrentWalletSection';

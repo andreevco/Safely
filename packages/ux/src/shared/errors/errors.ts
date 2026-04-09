@@ -4,6 +4,7 @@ import { getErrorText, TranslatableErrorsConfig } from '@safely/core';
 
 import { useToast } from '../../entities';
 import { useTranslate } from '../i18n';
+import { useAppContext } from '../providers';
 
 export interface ParseErrorOptions {
     fallback?: string;
@@ -44,13 +45,14 @@ export function useParsedError(
 
 export function useErrorToast(config: TranslatableErrorsConfig, options?: ParseErrorOptions) {
     const toast = useToast();
+    const { logger } = useAppContext();
     const parseError = useParseError(config, options);
 
     return useCallback(
         (e: unknown) => {
-            console.error(e);
+            logger.error(e);
             toast({ message: parseError(e), type: 'error' });
         },
-        [toast, parseError]
+        [toast, parseError, logger]
     );
 }

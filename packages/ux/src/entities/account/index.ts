@@ -74,7 +74,7 @@ export function resetAccountsFactory() {
 
 export function useAccountsFactory() {
     const config = useBootConfig();
-    const { storage, encryptedStorage } = useAppContext();
+    const { storage, encryptedStorage, logger } = useAppContext();
 
     if (!_syncAccountFactory) {
         _syncAccountFactory = new SyncAccountFactory({
@@ -83,7 +83,8 @@ export function useAccountsFactory() {
             structure: syncedStorageStructure,
             apiConfiguration: {
                 basePath: config.sync.api_url
-            }
+            },
+            logger: logger.child('sync')
         });
     }
 
@@ -140,6 +141,7 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
     const t = useTranslate();
     const client = useQueryClient();
     const factory = useAccountsFactory();
+    const { logger } = useAppContext();
     const { mutateAsync: setActive } = useSetActiveAccount();
 
     return useMutation<
@@ -181,7 +183,7 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
             return account;
         },
         onError(e) {
-            console.error(e);
+            logger.error(e);
         }
     });
 }
@@ -231,6 +233,7 @@ export function useAccountConnectedCallback(
     options?: { setAsActive: boolean; onError?: (e: Error) => void }
 ) {
     const client = useQueryClient();
+    const { logger } = useAppContext();
     const { mutateAsync: setActive } = useSetActiveAccount();
     const { mutateAsync: updateOwnSyncedDeviceMeta } = useUpdateOwnSyncedDeviceMeta();
     const setAsActive = options?.setAsActive ?? false;
@@ -261,7 +264,7 @@ export function useAccountConnectedCallback(
                     return;
                 }
 
-                console.error('[useAccountConnectedCallback]', e);
+                logger.error('[useAccountConnectedCallback]', e);
                 options?.onError?.(e instanceof Error ? e : new Error(String(e)));
             });
         return () => {
@@ -294,7 +297,7 @@ export function useConnectAccountToNewDevice() {
     const activeKeeperId = useActiveAccount();
     const toast = useToast();
     const { withLoader } = useLoader();
-    const { qrScanner } = useAppContext();
+    const { qrScanner, logger } = useAppContext();
 
     return useMutation<void, Error, { secureEncryptedStorage: ITreeStorage }>({
         async mutationFn({ secureEncryptedStorage }) {
@@ -313,7 +316,7 @@ export function useConnectAccountToNewDevice() {
             toast(t('settings.deviceConnected'));
         },
         onError(e) {
-            console.error(e);
+            logger.error(e);
         }
     });
 }
