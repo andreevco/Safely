@@ -52,7 +52,6 @@ export function useEstimateAssetTransfer(form: SendFormResult, options?: { enabl
         queryFn:
             utxos !== undefined && options?.enabled !== false
                 ? async () => {
-                      console.log('useEstimateAssetTransfer');
                       if (form.blockchain === BLOCKCHAIN_NAME.BTC) {
                           const recipientAddress = form.recipient.address;
                           const feeType = BtcFeeType.FAST;
@@ -98,7 +97,6 @@ export function useMaxSendAssetTransfer(
         queryFn:
             form && utxos && assets && options?.enabled !== false
                 ? async () => {
-                      console.log('useMaxSendAssetTransfer');
                       if (form.blockchain === BLOCKCHAIN_NAME.BTC) {
                           const fee = await btcEstimator.getSendFee(
                               {
