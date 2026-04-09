@@ -438,7 +438,12 @@
         "available": "Доступно",
         "total": "Итого",
         "estimatedTime": "≈ {{minutes}} минут",
-        "ok": "OK"
+        "ok": "OK",
+        "receiving": "Получение {{amount}}\u2026"
+    },
+    "assetCell": {
+        "lastTransaction": "Последняя транзакция {{timeAgo}}",
+        "noTransactions": "Нет транзакций"
     },
     "history": {
         "title": "История",

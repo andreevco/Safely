@@ -1,1 +1,1 @@
-export { AssetCell, AssetCellSkeleton } from './AssetCell';
+export { BtcAssetCell, AssetCellSkeleton } from './AssetCell';

@@ -490,7 +490,12 @@
         "available": "Available",
         "total": "Total",
         "estimatedTime": "\u2248 {{minutes}} minutes",
-        "ok": "OK"
+        "ok": "OK",
+        "receiving": "Receiving {{amount}}\u2026"
+    },
+    "assetCell": {
+        "lastTransaction": "Last transaction {{timeAgo}}",
+        "noTransactions": "No transactions"
     },
     "tabs": {
         "home": "Home",

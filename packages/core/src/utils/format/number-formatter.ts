@@ -139,7 +139,7 @@ export class NumberFormatter {
             return formatted;
         }
 
-        return `${formatted} ${options.symbol}`;
+        return `${formatted}\u00A0${options.symbol}`;
     }
 
     public formatFiat(value: BigSource, options: FormatFiatOptions): string;

@@ -11,6 +11,10 @@ import '@formatjs/intl-pluralrules/locale-data/ru';
 import '@formatjs/intl-numberformat/polyfill';
 import '@formatjs/intl-numberformat/locale-data/en';
 import '@formatjs/intl-numberformat/locale-data/ru';
+
+import '@formatjs/intl-relativetimeformat/polyfill';
+import '@formatjs/intl-relativetimeformat/locale-data/en';
+import '@formatjs/intl-relativetimeformat/locale-data/ru';
 import * as Crypto from 'expo-crypto';
 
 import { XHREventSource } from '@safely/sync';
