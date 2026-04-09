@@ -1,4 +1,4 @@
-import { skipToken, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, skipToken, useQuery } from '@tanstack/react-query';
 
 import {
     assertUnreachable,
@@ -43,15 +43,16 @@ export const maxSendKey = defineQueryKeys('maxSendKey', {
     }
 });
 
-export function useEstimateAssetTransfer(form: SendFormResult) {
+export function useEstimateAssetTransfer(form: SendFormResult, options?: { enabled?: boolean }) {
     const btcEstimator = useBtcEstimator();
     const { data: utxos } = useActiveBtcWalletUtxoForEstimation();
 
     return useQuery<TransactionTemplate>({
         queryKey: estimationKey.form(form).params({ btcEstimator, utxos }).toKey(),
         queryFn:
-            utxos !== undefined
+            utxos !== undefined && options?.enabled !== false
                 ? async () => {
+                      console.log('useEstimateAssetTransfer');
                       if (form.blockchain === BLOCKCHAIN_NAME.BTC) {
                           const recipientAddress = form.recipient.address;
                           const feeType = BtcFeeType.FAST;
@@ -79,12 +80,14 @@ export function useEstimateAssetTransfer(form: SendFormResult) {
                 : skipToken,
         refetchInterval: QUERIES_REFETCH_INTERVAL.TRANSACTION,
         refetchOnMount: 'always',
+        placeholderData: keepPreviousData,
         retry: 2
     });
 }
 
 export function useMaxSendAssetTransfer(
-    form: Pick<SendFormResult, 'blockchain' | 'recipient'> | undefined
+    form: Pick<SendFormResult, 'blockchain' | 'recipient'> | undefined,
+    options?: { enabled?: boolean }
 ) {
     const btcEstimator = useBtcEstimator();
     const { data: assets } = useAssets();
@@ -93,8 +96,9 @@ export function useMaxSendAssetTransfer(
     return useQuery({
         queryKey: maxSendKey.form(form).params({ btcEstimator, assets, utxos }).toKey(),
         queryFn:
-            form && utxos && assets
+            form && utxos && assets && options?.enabled !== false
                 ? async () => {
+                      console.log('useMaxSendAssetTransfer');
                       if (form.blockchain === BLOCKCHAIN_NAME.BTC) {
                           const fee = await btcEstimator.getSendFee(
                               {
@@ -123,6 +127,7 @@ export function useMaxSendAssetTransfer(
                 : skipToken,
         refetchInterval: QUERIES_REFETCH_INTERVAL.TRANSACTION,
         refetchOnMount: 'always',
+        placeholderData: keepPreviousData,
         retry: 2
     });
 }

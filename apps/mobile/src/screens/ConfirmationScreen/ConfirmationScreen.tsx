@@ -37,7 +37,9 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
 
     const [confirmationState, setConfirmationState] = useState<ConfirmationState>({ type: 'idle' });
 
-    const { data: txTemplate } = useEstimateAssetTransfer(confirmationResult);
+    const { data: txTemplate } = useEstimateAssetTransfer(confirmationResult, {
+        enabled: confirmationState.type !== 'success'
+    });
     const { mutateAsync: send, data: sendResult } = useSendAssetTransfer(txTemplate);
     const formatter = useNumberFormatter();
 

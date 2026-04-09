@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 
 import { useAssets } from '../../../../entities';
 import { useNumberFormatter } from '../../../../shared';
@@ -38,13 +38,16 @@ export function useSendFormState(params: UseSendFormStateParams) {
         createInitialState
     );
 
+    const [isSubmitted, setIsSubmitted] = useState(false);
+
     const { data: maxSendValue } = useMaxSendAssetTransfer(
         state.parsed.recipient
             ? {
                   recipient: state.parsed.recipient,
                   blockchain: state.parsed.recipient.blockchain
               }
-            : undefined
+            : undefined,
+        { enabled: !isSubmitted }
     );
 
     const formatter = useNumberFormatter();
@@ -253,9 +256,14 @@ export function useSendFormState(params: UseSendFormStateParams) {
     );
 
     const reset = useCallback(() => {
+        setIsSubmitted(false);
         dispatch({ type: 'RESET' });
         clearDraft();
     }, [clearDraft]);
+
+    const onBackToEditing = useCallback(() => {
+        setIsSubmitted(false);
+    }, []);
 
     const goPrev = useCallback(() => {
         dispatch({ type: 'PREV_STEP' });
@@ -283,6 +291,7 @@ export function useSendFormState(params: UseSendFormStateParams) {
             isMax: state.parsed.isMax
         };
 
+        setIsSubmitted(true);
         onSubmit(result, clearDraft);
 
         if (shouldResetForm) {
@@ -363,7 +372,8 @@ export function useSendFormState(params: UseSendFormStateParams) {
             setAmountInputType,
             setIsMax,
             setAsset,
-            reset
+            reset,
+            onBackToEditing
         },
         step: {
             index: state.stepIndex,
