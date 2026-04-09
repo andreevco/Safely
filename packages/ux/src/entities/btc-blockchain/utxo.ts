@@ -110,11 +110,13 @@ export function useBtcWalletUtxo(btcWallet: BtcWallet) {
         queries: [serverUtxoQuery, broadcastedTxQuery],
         queryFn([serverUtxo, rawBroadcastedTx]) {
             const spentKeys = new Set(rawBroadcastedTx?.inputs.map(i => `${i.txid}:${i.vout}`));
-            if (
-                serverUtxo.unconfirmedInSafe.utxos
-                    .concat(serverUtxo.confirmedIn.utxos)
-                    .every(u => !spentKeys.has(`${u.txid}:${u.vout}`))
-            ) {
+            const isSender = serverUtxo.unconfirmedInSafe.utxos
+                .concat(serverUtxo.confirmedIn.utxos)
+                .some(u => spentKeys.has(`${u.txid}:${u.vout}`));
+            const isRecipient =
+                rawBroadcastedTx?.outputs.some(o => o.address === btcWallet.address) ?? false;
+
+            if (!isSender && !isRecipient) {
                 rawBroadcastedTx = null;
             }
 

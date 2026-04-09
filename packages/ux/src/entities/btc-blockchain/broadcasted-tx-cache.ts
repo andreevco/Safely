@@ -10,19 +10,20 @@ import {
 import { BtcApiTx, BtcApiUtxoWithOptionalTx } from '@safely/core/api/btc';
 
 import { broadcastedBtcTxCache, utxo } from './keys';
-import { useAccountLocalStorage, refetchQueries } from '../../shared';
+import { refetchQueries, useAccountLocalStorage } from '../../shared';
 import { SBroadcastedBtcTx } from '../../shared/storage/account/local/schemas';
 import { useActiveAccount } from '../account';
 import { useRawBtcWalletUtxo } from './utxo';
 import { getBiggestBtcIOAddress } from '../activity/api';
 import { BtcActivityItem } from '../activity/types';
-import { useActiveBtcWallet } from '../portfolio';
+import { useActiveBtcWallet, usePortfoliosQueryConfig } from '../portfolio';
 
 export function useBroadcastedBtcTxCache() {
     const { get, set } = useAccountLocalStorage('broadcastedBtcTxCache');
     const account = useActiveAccount();
     const client = useQueryClient();
     useRawBtcWalletUtxo(useActiveBtcWallet());
+    const portfoliosQuery = usePortfoliosQueryConfig();
 
     return useQuery({
         queryKey: broadcastedBtcTxCache.account(account).toKey(),
@@ -30,10 +31,32 @@ export function useBroadcastedBtcTxCache() {
             const cached = (await get()) ?? null;
             if (!cached) return null;
 
-            await refetchQueries(client, utxo.toKey());
+            const portfolios = client.getQueryData<
+                Awaited<ReturnType<(typeof portfoliosQuery)['queryFn']>>
+            >(portfoliosQuery.queryKey);
+
+            const allWallets = portfolios?.map(p => p.derivations[0].chains.btc.wallets[0]) ?? [];
+
+            const senderWallet = allWallets.find(w => w.xpub === cached.senderXpub);
+
+            if (!senderWallet) {
+                throw new Error('Wallet not found');
+            }
+
+            const recipientWallets = allWallets.filter(
+                w =>
+                    w.xpub !== cached.senderXpub &&
+                    cached.outputs.some(o => o.address === w.address)
+            );
+
+            await Promise.all(
+                [senderWallet, ...recipientWallets].map(w =>
+                    refetchQueries(client, utxo.wallet(w).toKey())
+                )
+            );
 
             const serverUtxoQueries = client.getQueriesData<{ txid: string; vout: number }[]>({
-                queryKey: utxo.toKey()
+                queryKey: utxo.wallet(senderWallet).toKey()
             });
 
             const allUtxos = serverUtxoQueries.flatMap(([, data]) => data ?? []);
