@@ -1,7 +1,8 @@
 import { HDKey } from '@scure/bip32';
 import * as bitcoin from 'bitcoinjs-lib';
 
-import { BtcNetwork, btcNetworkConfig } from '../../entities/blockchain';
+import { BtcNetwork, btcNetworkConfig, BtcWalletType } from '../../entities/blockchain';
+import { assertUnreachable } from '../../utils';
 
 export class BtcXpub {
     public static validate(input: string): boolean {
@@ -13,7 +14,11 @@ export class BtcXpub {
         }
     }
 
-    public static deriveAddress(xpub: string, network: BtcNetwork): string {
+    public static deriveAddress(
+        xpub: string,
+        network: BtcNetwork,
+        walletType: BtcWalletType
+    ): string {
         const hdKey = HDKey.fromExtendedKey(xpub);
         const pubkey = hdKey.deriveChild(0).deriveChild(0).publicKey;
 
@@ -21,15 +26,21 @@ export class BtcXpub {
             throw new Error('Failed to derive public key from xpub');
         }
 
-        const { address } = bitcoin.payments.p2wpkh({
-            pubkey,
-            network: btcNetworkConfig[network]
-        });
+        switch (walletType) {
+            case BtcWalletType.NATIVE_SEGWIT: {
+                const { address } = bitcoin.payments.p2wpkh({
+                    pubkey,
+                    network: btcNetworkConfig[network]
+                });
 
-        if (!address) {
-            throw new Error('Failed to derive address from xpub');
+                if (!address) {
+                    throw new Error('Failed to derive address from xpub');
+                }
+
+                return address;
+            }
+            default:
+                assertUnreachable(walletType);
         }
-
-        return address;
     }
 }

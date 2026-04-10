@@ -190,7 +190,10 @@ export class PortfolioFactory {
     ): { address: string; xpub: string | null } {
         switch (source) {
             case WatchOnlySource.XPUB:
-                return { address: BtcXpub.deriveAddress(input, btcNetwork), xpub: input };
+                return {
+                    address: BtcXpub.deriveAddress(input, btcNetwork, BtcWalletType.NATIVE_SEGWIT),
+                    xpub: input
+                };
             case WatchOnlySource.ADDRESS:
                 return { address: input, xpub: null };
             default:

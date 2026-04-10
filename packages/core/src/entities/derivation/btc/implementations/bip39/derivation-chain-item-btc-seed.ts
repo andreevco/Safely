@@ -1,11 +1,8 @@
-import { HDKey } from '@scure/bip32';
-import * as bitcoin from 'bitcoinjs-lib';
-
 import { BtcBip32NodeProducer } from './btc-bip32-node-producer';
+import { BtcXpub } from '../../../../../blockchain-api';
 import {
     BtcNetwork,
     btcNetworkByPortfolioNetworkType,
-    btcNetworkConfig,
     BtcWalletType,
     VMType
 } from '../../../../blockchain';
@@ -68,17 +65,6 @@ export class DerivationChainItemBtcSeed implements IDerivationChainItemBtc {
         });
     }
 
-    private static getWalletAddress(hdKey: HDKey, network: BtcNetwork): string {
-        const { address } = bitcoin.payments.p2wpkh({
-            pubkey: hdKey.deriveChild(0).deriveChild(0).publicKey!,
-            network: btcNetworkConfig[network]
-        });
-
-        if (!address) throw new Error('Failed to construct address');
-
-        return address;
-    }
-
     public readonly xpub: string;
 
     public readonly wallets: SignableBtcWallet[];
@@ -103,10 +89,7 @@ export class DerivationChainItemBtcSeed implements IDerivationChainItemBtc {
         this.derivationIndex = derivationIndex;
 
         this.wallets = sDerivation.wallets.map(w => {
-            const address = DerivationChainItemBtcSeed.getWalletAddress(
-                HDKey.fromExtendedKey(this.xpub),
-                this.network
-            );
+            const address = BtcXpub.deriveAddress(this.xpub, this.network, w.type);
             const signer = this.createSigner(seedProducer, { type: w.type, address });
 
             return {
