@@ -301,7 +301,7 @@ export function useActivePortfolioEntitiesQuery() {
                 portfolio: Portfolio
             ): Promise<ActivePortfolioEntities> => {
                 if (portfolio.type === PortfolioType.WATCH_ONLY) {
-                    await set({ portfolioId: portfolio.id.toString(), derivationId: '' });
+                    await set({ portfolioId: portfolio.id.toString(), derivationId: null });
 
                     return {
                         kind: 'watch-only',
@@ -309,7 +309,12 @@ export function useActivePortfolioEntitiesQuery() {
                     };
                 }
 
-                const derivation = activeConfig
+                if (activeConfig && !activeConfig.derivationId) {
+                    // TODO Use logger after it comes to master
+                    console.error('derivationId is null for derivable portfolio');
+                }
+
+                const derivation = activeConfig?.derivationId
                     ? (portfolio.getDerivation(Id.fromString(activeConfig.derivationId)) ??
                       portfolio.getDerivations()[0])
                     : portfolio.getDerivations()[0];
@@ -440,7 +445,7 @@ export function useSetActivePortfolio() {
             const derivationId =
                 portfolioToSet.type === PortfolioType.BIP39
                     ? portfolioToSet.getDerivations()[0].id.toString()
-                    : '';
+                    : null;
 
             await set({
                 portfolioId: portfolioToSet.id.toString(),
