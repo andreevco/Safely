@@ -6,14 +6,14 @@ import { type CryptoAssetAmount, type CryptoFiatRate } from '@safely/core';
 import {
     useActiveBtcWalletUtxo,
     useLastBtcTransactionTimestamp,
-    useNumberFormatter
+    useNumberFormatter,
+    useRelativeTime
 } from '@safely/ux';
 
 import { Cell } from '@mobile/shared/ui';
 
 import { styles } from './BtcAssetCell.styles';
 import { ReceivingBadges } from './ReceivingBadge';
-import { useRelativeTime } from './useRelativeTime';
 
 type BtcAssetCellProps = {
     cryptoAssetAmount: CryptoAssetAmount;
