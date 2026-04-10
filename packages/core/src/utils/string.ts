@@ -9,3 +9,5 @@ export function ellipsisMiddle(string: string | undefined, sideChars = 4) {
     }
     return string.slice(0, sideChars) + '…' + string.slice(-sideChars);
 }
+
+export const NBSP = '\u00A0';

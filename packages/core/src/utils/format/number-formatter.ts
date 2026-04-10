@@ -5,6 +5,7 @@ import { isCryptoAsset, isFiatAsset } from '../../entities';
 import { assertUnreachable } from '../types';
 import { NumberFormatLocale } from './locale-adapter';
 import { CryptoCurrencyDisplay, FiatCurrencyDisplay } from './types';
+import { NBSP } from '../string';
 
 interface FormatCryptoOptions {
     fullPrecision?: boolean;
@@ -139,7 +140,7 @@ export class NumberFormatter {
             return formatted;
         }
 
-        return `${formatted}\u00A0${options.symbol}`;
+        return `${formatted}${NBSP}${options.symbol}`;
     }
 
     public formatFiat(value: BigSource, options: FormatFiatOptions): string;

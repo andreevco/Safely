@@ -1,6 +1,6 @@
 import { Locale } from 'expo-localization';
 
-import { FiatCurrencyDisplay, NumberFormatLocale, SignedCurrencyAffixes } from '@safely/core';
+import { FiatCurrencyDisplay, NBSP, NumberFormatLocale, SignedCurrencyAffixes } from '@safely/core';
 
 export class MobileNumberFormatLocale implements NumberFormatLocale {
     private readonly locale: string;
@@ -60,7 +60,7 @@ export class MobileNumberFormatLocale implements NumberFormatLocale {
 
     private normalizeCurrencyCodePosition(affixes: { prefix: string; suffix: string }): void {
         if (affixes.suffix === '') {
-            affixes.suffix = ' ' + affixes.prefix.replace(/[\s\u00A0]+/g, '');
+            affixes.suffix = NBSP + affixes.prefix.replace(new RegExp(`[\\s${NBSP}]+`, 'g'), '');
             affixes.prefix = '';
         }
     }

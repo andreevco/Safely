@@ -1,3 +1,4 @@
+import { NBSP } from '@safely/core';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -20,7 +21,7 @@ export function useRelativeTime(timestampMs: number | null): string | null {
             style: 'long'
         });
 
-        const withNbsp = (s: string) => s.replace(/(\d)\s+/g, '$1\u00A0');
+        const withNbsp = (s: string) => s.replace(/(\d)\s+/g, `$1${NBSP}`);
 
         if (diffDays > 0) {
             return withNbsp(rtf.format(-diffDays, 'day'));

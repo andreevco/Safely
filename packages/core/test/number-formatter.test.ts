@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { NumberFormatter, WebNumberFormatLocale } from '../src';
-
-const NBSP = '\u00A0';
+import { NBSP, NumberFormatter, WebNumberFormatLocale } from '../src';
 
 describe('NumberFormatter', () => {
     it('formats fiat in en-US locale with symbol (boundary values)', () => {
@@ -57,54 +55,56 @@ describe('NumberFormatter', () => {
     it('formats crypto above 1000 with grouping', () => {
         const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'));
 
-        expect(formatter.formatCrypto(123456.789, { symbol: 'BTC' })).toBe('123,456 BTC');
-        expect(formatter.formatCrypto(1000, { symbol: 'BTC' })).toBe('1,000 BTC');
-        expect(formatter.formatCrypto(1000.08, { symbol: 'BTC' })).toBe('1,000 BTC');
-        expect(formatter.formatCrypto(1000.0001, { symbol: 'BTC' })).toBe('1,000 BTC');
-        expect(formatter.formatCrypto(1000.049, { symbol: 'BTC' })).toBe('1,000 BTC');
-        expect(formatter.formatCrypto(1000.051, { symbol: 'BTC' })).toBe('1,000 BTC');
-        expect(formatter.formatCrypto(57004.9999, { symbol: 'BTC' })).toBe('57,004 BTC');
-        expect(formatter.formatCrypto(999.99, { symbol: 'BTC' })).toBe('999.99 BTC');
-        expect(formatter.formatCrypto(57004.9999, { symbol: 'BTC' })).toBe('57,004 BTC');
-        expect(formatter.formatCrypto(57004.99999, { symbol: 'BTC' })).toBe('57,004 BTC');
+        expect(formatter.formatCrypto(123456.789, { symbol: 'BTC' })).toBe(`123,456${NBSP}BTC`);
+        expect(formatter.formatCrypto(1000, { symbol: 'BTC' })).toBe(`1,000${NBSP}BTC`);
+        expect(formatter.formatCrypto(1000.08, { symbol: 'BTC' })).toBe(`1,000${NBSP}BTC`);
+        expect(formatter.formatCrypto(1000.0001, { symbol: 'BTC' })).toBe(`1,000${NBSP}BTC`);
+        expect(formatter.formatCrypto(1000.049, { symbol: 'BTC' })).toBe(`1,000${NBSP}BTC`);
+        expect(formatter.formatCrypto(1000.051, { symbol: 'BTC' })).toBe(`1,000${NBSP}BTC`);
+        expect(formatter.formatCrypto(57004.9999, { symbol: 'BTC' })).toBe(`57,004${NBSP}BTC`);
+        expect(formatter.formatCrypto(999.99, { symbol: 'BTC' })).toBe(`999.99${NBSP}BTC`);
+        expect(formatter.formatCrypto(57004.9999, { symbol: 'BTC' })).toBe(`57,004${NBSP}BTC`);
+        expect(formatter.formatCrypto(57004.99999, { symbol: 'BTC' })).toBe(`57,004${NBSP}BTC`);
     });
 
     it('formats crypto between 1 and 1000 with 2 decimals', () => {
         const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'));
 
-        expect(formatter.formatCrypto(123.456, { symbol: 'BTC' })).toBe('123.45 BTC');
-        expect(formatter.formatCrypto(999.999, { symbol: 'BTC' })).toBe('999.99 BTC');
-        expect(formatter.formatCrypto(1.004, { symbol: 'BTC' })).toBe('1 BTC');
-        expect(formatter.formatCrypto(1.005, { symbol: 'BTC' })).toBe('1 BTC');
-        expect(formatter.formatCrypto(99.994, { symbol: 'BTC' })).toBe('99.99 BTC');
-        expect(formatter.formatCrypto(99.995, { symbol: 'BTC' })).toBe('99.99 BTC');
-        expect(formatter.formatCrypto(876.8899, { symbol: 'BTC' })).toBe('876.88 BTC');
-        expect(formatter.formatCrypto(1000, { symbol: 'BTC' })).toBe('1,000 BTC');
-        expect(formatter.formatCrypto(1000.01, { symbol: 'BTC' })).toBe('1,000 BTC');
+        expect(formatter.formatCrypto(123.456, { symbol: 'BTC' })).toBe(`123.45${NBSP}BTC`);
+        expect(formatter.formatCrypto(999.999, { symbol: 'BTC' })).toBe(`999.99${NBSP}BTC`);
+        expect(formatter.formatCrypto(1.004, { symbol: 'BTC' })).toBe(`1${NBSP}BTC`);
+        expect(formatter.formatCrypto(1.005, { symbol: 'BTC' })).toBe(`1${NBSP}BTC`);
+        expect(formatter.formatCrypto(99.994, { symbol: 'BTC' })).toBe(`99.99${NBSP}BTC`);
+        expect(formatter.formatCrypto(99.995, { symbol: 'BTC' })).toBe(`99.99${NBSP}BTC`);
+        expect(formatter.formatCrypto(876.8899, { symbol: 'BTC' })).toBe(`876.88${NBSP}BTC`);
+        expect(formatter.formatCrypto(1000, { symbol: 'BTC' })).toBe(`1,000${NBSP}BTC`);
+        expect(formatter.formatCrypto(1000.01, { symbol: 'BTC' })).toBe(`1,000${NBSP}BTC`);
     });
 
     it('formats small crypto with significant digits', () => {
         const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'));
 
-        expect(formatter.formatCrypto(0.000123456, { symbol: 'DOGE' })).toBe('0.000123 DOGE');
+        expect(formatter.formatCrypto(0.000123456, { symbol: 'DOGE' })).toBe(`0.000123${NBSP}DOGE`);
     });
 
     it('formats zero with fullPrecision', () => {
         const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'));
 
-        expect(formatter.formatCrypto(0, { symbol: 'USDT', fullPrecision: true })).toBe('0 USDT');
+        expect(formatter.formatCrypto(0, { symbol: 'USDT', fullPrecision: true })).toBe(
+            `0${NBSP}USDT`
+        );
     });
 
     it('formats with full precision (no truncation)', () => {
         const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'));
 
         expect(formatter.formatCrypto(0.000143945, { symbol: 'BTC', fullPrecision: true })).toBe(
-            '0.000143945 BTC'
+            `0.000143945${NBSP}BTC`
         );
-        expect(formatter.formatCrypto(123456.789, { symbol: 'BTC' })).toBe('123,456 BTC');
+        expect(formatter.formatCrypto(123456.789, { symbol: 'BTC' })).toBe(`123,456${NBSP}BTC`);
         expect(
             formatter.formatCrypto(0.000000123456789, { symbol: 'USDT', fullPrecision: true })
-        ).toBe('0.000000123456789 USDT');
+        ).toBe(`0.000000123456789${NBSP}USDT`);
     });
 
     it('formats negative fiat correctly', () => {
@@ -117,14 +117,14 @@ describe('NumberFormatter', () => {
                 currencyDisplay: 'code',
                 fullPrecision: true
             })
-        ).toBe('-99.99 USD');
+        ).toBe(`-99.99${NBSP}USD`);
     });
 
     it('formats negative crypto correctly', () => {
         const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'));
 
         expect(formatter.formatCrypto(-0.000456, { currencyDisplay: 'none' })).toBe('-0.000456');
-        expect(formatter.formatCrypto(-0.000456, { symbol: 'BTC' })).toBe('-0.000456 BTC');
+        expect(formatter.formatCrypto(-0.000456, { symbol: 'BTC' })).toBe(`-0.000456${NBSP}BTC`);
     });
 
     it('throws for non-finite values', () => {
@@ -284,7 +284,7 @@ describe('NumberFormatter', () => {
         expect(formatter.formatFiat(1000000, { currency: 'GBP' })).toBe('£1,000,000');
         expect(formatter.formatFiat(1000000.99, { currency: 'GBP' })).toBe('£1,000,000');
         expect(formatter.formatFiat(2345.678, { currency: 'GBP', currencyDisplay: 'code' })).toBe(
-            '2,345 GBP'
+            `2,345${NBSP}GBP`
         );
     });
 
@@ -304,7 +304,7 @@ describe('NumberFormatter', () => {
         expect(formatter.formatFiat(1000000, { currency: 'CNY' })).toBe('¥1,000,000');
         expect(formatter.formatFiat(1000000.99, { currency: 'CNY' })).toBe('¥1,000,000');
         expect(formatter.formatFiat(3456.789, { currency: 'CNY', currencyDisplay: 'code' })).toBe(
-            '3,456 CNY'
+            `3,456${NBSP}CNY`
         );
     });
 
@@ -324,7 +324,7 @@ describe('NumberFormatter', () => {
         expect(formatter.formatFiat(1000000, { currency: 'INR' })).toBe('₹10,00,000');
         expect(formatter.formatFiat(1000000.99, { currency: 'INR' })).toBe('₹10,00,000');
         expect(formatter.formatFiat(4567.89, { currency: 'INR', currencyDisplay: 'code' })).toBe(
-            '4,567 INR'
+            `4,567${NBSP}INR`
         );
     });
 
@@ -344,7 +344,7 @@ describe('NumberFormatter', () => {
         expect(formatter.formatFiat(1000000, { currency: 'TRY' })).toBe('₺1.000.000');
         expect(formatter.formatFiat(1000000.99, { currency: 'TRY' })).toBe('₺1.000.000');
         expect(formatter.formatFiat(7890.234, { currency: 'TRY', currencyDisplay: 'code' })).toBe(
-            '7.890 TRY'
+            `7.890${NBSP}TRY`
         );
     });
 
@@ -370,13 +370,13 @@ describe('NumberFormatter', () => {
     it('formats BHD (3 fraction digits) correctly', () => {
         const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'));
 
-        expect(formatter.formatFiat(0, { currency: 'BHD' })).toBe('BHD\u00A00');
-        expect(formatter.formatFiat(1, { currency: 'BHD' })).toBe('BHD\u00A01');
-        expect(formatter.formatFiat(1.5, { currency: 'BHD' })).toBe('BHD\u00A01.500');
-        expect(formatter.formatFiat(1.23, { currency: 'BHD' })).toBe('BHD\u00A01.230');
-        expect(formatter.formatFiat(1.234, { currency: 'BHD' })).toBe('BHD\u00A01.234');
-        expect(formatter.formatFiat(0.1, { currency: 'BHD' })).toBe('BHD\u00A00.100');
-        expect(formatter.formatFiat(0.999, { currency: 'BHD' })).toBe('BHD\u00A00.999');
+        expect(formatter.formatFiat(0, { currency: 'BHD' })).toBe(`BHD${NBSP}0`);
+        expect(formatter.formatFiat(1, { currency: 'BHD' })).toBe(`BHD${NBSP}1`);
+        expect(formatter.formatFiat(1.5, { currency: 'BHD' })).toBe(`BHD${NBSP}1.500`);
+        expect(formatter.formatFiat(1.23, { currency: 'BHD' })).toBe(`BHD${NBSP}1.230`);
+        expect(formatter.formatFiat(1.234, { currency: 'BHD' })).toBe(`BHD${NBSP}1.234`);
+        expect(formatter.formatFiat(0.1, { currency: 'BHD' })).toBe(`BHD${NBSP}0.100`);
+        expect(formatter.formatFiat(0.999, { currency: 'BHD' })).toBe(`BHD${NBSP}0.999`);
     });
 
     describe('Fiat Formatting - Different Locales and Display Options', () => {
@@ -388,7 +388,7 @@ describe('NumberFormatter', () => {
             ).toBe('$1,234');
             expect(
                 formatter.formatFiat(1234.56, { currency: 'USD', currencyDisplay: 'code' })
-            ).toBe('1,234 USD');
+            ).toBe(`1,234${NBSP}USD`);
             expect(
                 formatter.formatFiat(1234.56, { currency: 'USD', currencyDisplay: 'none' })
             ).toBe('1,234');
@@ -397,7 +397,7 @@ describe('NumberFormatter', () => {
             );
             expect(
                 formatter.formatFiat(1000000.99, { currency: 'USD', currencyDisplay: 'code' })
-            ).toBe('1,000,000 USD');
+            ).toBe(`1,000,000${NBSP}USD`);
         });
 
         it('formats EUR in de-DE locale with symbol, code, and narrowSymbol display', () => {
@@ -448,7 +448,7 @@ describe('NumberFormatter', () => {
             ).toBe('£1,234');
             expect(
                 formatter.formatFiat(1234.56, { currency: 'GBP', currencyDisplay: 'code' })
-            ).toBe('1,234 GBP');
+            ).toBe(`1,234${NBSP}GBP`);
             expect(
                 formatter.formatFiat(1234.56, { currency: 'GBP', currencyDisplay: 'name' })
             ).toContain('1,234');
@@ -457,7 +457,7 @@ describe('NumberFormatter', () => {
             );
             expect(
                 formatter.formatFiat(1000000.99, { currency: 'GBP', currencyDisplay: 'code' })
-            ).toBe('1,000,000 GBP');
+            ).toBe(`1,000,000${NBSP}GBP`);
         });
 
         it('formats JPY in ja-JP locale with symbol and code display', () => {
@@ -488,13 +488,13 @@ describe('NumberFormatter', () => {
             ).toBe('¥1,234');
             expect(
                 formatter.formatFiat(1234.56, { currency: 'CNY', currencyDisplay: 'code' })
-            ).toBe('1,234 CNY');
+            ).toBe(`1,234${NBSP}CNY`);
             expect(formatter.formatFiat(0.99, { currency: 'CNY', currencyDisplay: 'symbol' })).toBe(
                 '¥0.99'
             );
             expect(
                 formatter.formatFiat(1000000.99, { currency: 'CNY', currencyDisplay: 'code' })
-            ).toBe('1,000,000 CNY');
+            ).toBe(`1,000,000${NBSP}CNY`);
             expect(
                 formatter.formatFiat(1234.56, { currency: 'CNY', currencyDisplay: 'none' })
             ).toBe('1,234');
@@ -508,13 +508,13 @@ describe('NumberFormatter', () => {
             ).toBe('₹1,234');
             expect(
                 formatter.formatFiat(1234.56, { currency: 'INR', currencyDisplay: 'code' })
-            ).toBe('1,234 INR');
+            ).toBe(`1,234${NBSP}INR`);
             expect(formatter.formatFiat(0.99, { currency: 'INR', currencyDisplay: 'symbol' })).toBe(
                 '₹0.99'
             );
             expect(
                 formatter.formatFiat(1000000.99, { currency: 'INR', currencyDisplay: 'code' })
-            ).toBe('10,00,000 INR');
+            ).toBe(`10,00,000${NBSP}INR`);
             expect(
                 formatter.formatFiat(1234.56, { currency: 'INR', currencyDisplay: 'none' })
             ).toBe('1,234');
@@ -528,13 +528,13 @@ describe('NumberFormatter', () => {
             ).toBe('₺1.234');
             expect(
                 formatter.formatFiat(1234.56, { currency: 'TRY', currencyDisplay: 'code' })
-            ).toBe('1.234 TRY');
+            ).toBe(`1.234${NBSP}TRY`);
             expect(formatter.formatFiat(0.99, { currency: 'TRY', currencyDisplay: 'symbol' })).toBe(
                 '₺0,99'
             );
             expect(
                 formatter.formatFiat(1000000.99, { currency: 'TRY', currencyDisplay: 'code' })
-            ).toBe('1.000.000 TRY');
+            ).toBe(`1.000.000${NBSP}TRY`);
             expect(
                 formatter.formatFiat(1234.56, { currency: 'TRY', currencyDisplay: 'none' })
             ).toBe('1.234');
@@ -585,34 +585,42 @@ describe('NumberFormatter', () => {
         it('formats crypto with symbol in en-US locale - numbers >= 1000 (integer part only)', () => {
             const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'));
 
-            expect(formatter.formatCrypto(33000.999, { symbol: 'BTC' })).toBe('33,000 BTC');
-            expect(formatter.formatCrypto(1000.90932, { symbol: 'BTC' })).toBe('1,000 BTC');
-            expect(formatter.formatCrypto(1234.56, { symbol: 'BTC' })).toBe('1,234 BTC');
-            expect(formatter.formatCrypto(1000000.99, { symbol: 'ETH' })).toBe('1,000,000 ETH');
-            expect(formatter.formatCrypto(1000, { symbol: 'BTC' })).toBe('1,000 BTC');
+            expect(formatter.formatCrypto(33000.999, { symbol: 'BTC' })).toBe(`33,000${NBSP}BTC`);
+            expect(formatter.formatCrypto(1000.90932, { symbol: 'BTC' })).toBe(`1,000${NBSP}BTC`);
+            expect(formatter.formatCrypto(1234.56, { symbol: 'BTC' })).toBe(`1,234${NBSP}BTC`);
+            expect(formatter.formatCrypto(1000000.99, { symbol: 'ETH' })).toBe(
+                `1,000,000${NBSP}ETH`
+            );
+            expect(formatter.formatCrypto(1000, { symbol: 'BTC' })).toBe(`1,000${NBSP}BTC`);
         });
 
         it('formats crypto with symbol in en-US locale - numbers 1 to 1000 (up to 2 decimals, drop trailing zeros)', () => {
             const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'));
 
-            expect(formatter.formatCrypto(99.999999940005, { symbol: 'BTC' })).toBe('99.99 BTC');
-            expect(formatter.formatCrypto(10.00932, { symbol: 'BTC' })).toBe('10 BTC');
-            expect(formatter.formatCrypto(10.0998, { symbol: 'BTC' })).toBe('10.09 BTC');
-            expect(formatter.formatCrypto(1.0099, { symbol: 'BTC' })).toBe('1 BTC');
-            expect(formatter.formatCrypto(1.0965, { symbol: 'BTC' })).toBe('1.09 BTC');
-            expect(formatter.formatCrypto(1.8051, { symbol: 'BTC' })).toBe('1.8 BTC');
+            expect(formatter.formatCrypto(99.999999940005, { symbol: 'BTC' })).toBe(
+                `99.99${NBSP}BTC`
+            );
+            expect(formatter.formatCrypto(10.00932, { symbol: 'BTC' })).toBe(`10${NBSP}BTC`);
+            expect(formatter.formatCrypto(10.0998, { symbol: 'BTC' })).toBe(`10.09${NBSP}BTC`);
+            expect(formatter.formatCrypto(1.0099, { symbol: 'BTC' })).toBe(`1${NBSP}BTC`);
+            expect(formatter.formatCrypto(1.0965, { symbol: 'BTC' })).toBe(`1.09${NBSP}BTC`);
+            expect(formatter.formatCrypto(1.8051, { symbol: 'BTC' })).toBe(`1.8${NBSP}BTC`);
         });
 
         it('formats crypto with symbol in en-US locale - numbers 0 to 1 (up to 3 significant digits, drop trailing zeros)', () => {
             const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'));
 
-            expect(formatter.formatCrypto(0.000143945, { symbol: 'BTC' })).toBe('0.000143 BTC');
-            expect(formatter.formatCrypto(0.00100099, { symbol: 'BTC' })).toBe('0.001 BTC');
-            expect(formatter.formatCrypto(0.00000099992, { symbol: 'BTC' })).toBe(
-                '0.000000999 BTC'
+            expect(formatter.formatCrypto(0.000143945, { symbol: 'BTC' })).toBe(
+                `0.000143${NBSP}BTC`
             );
-            expect(formatter.formatCrypto(0.99, { symbol: 'BTC' })).toBe('0.99 BTC');
-            expect(formatter.formatCrypto(0.000123, { symbol: 'DOGE' })).toBe('0.000123 DOGE');
+            expect(formatter.formatCrypto(0.00100099, { symbol: 'BTC' })).toBe(`0.001${NBSP}BTC`);
+            expect(formatter.formatCrypto(0.00000099992, { symbol: 'BTC' })).toBe(
+                `0.000000999${NBSP}BTC`
+            );
+            expect(formatter.formatCrypto(0.99, { symbol: 'BTC' })).toBe(`0.99${NBSP}BTC`);
+            expect(formatter.formatCrypto(0.000123, { symbol: 'DOGE' })).toBe(
+                `0.000123${NBSP}DOGE`
+            );
         });
 
         it('formats crypto without symbol in en-US locale', () => {
@@ -632,20 +640,28 @@ describe('NumberFormatter', () => {
         it('formats crypto with symbol in de-DE locale - different number ranges', () => {
             const formatter = new NumberFormatter(new WebNumberFormatLocale('de-DE'));
 
-            expect(formatter.formatCrypto(33000.999, { symbol: 'BTC' })).toBe('33.000 BTC');
-            expect(formatter.formatCrypto(1.8051, { symbol: 'BTC' })).toBe('1,8 BTC');
-            expect(formatter.formatCrypto(0.000143945, { symbol: 'BTC' })).toBe('0,000143 BTC');
-            expect(formatter.formatCrypto(1000000.99, { symbol: 'ETH' })).toBe('1.000.000 ETH');
-            expect(formatter.formatCrypto(1.234, { symbol: 'USDT' })).toBe('1,23 USDT');
+            expect(formatter.formatCrypto(33000.999, { symbol: 'BTC' })).toBe(`33.000${NBSP}BTC`);
+            expect(formatter.formatCrypto(1.8051, { symbol: 'BTC' })).toBe(`1,8${NBSP}BTC`);
+            expect(formatter.formatCrypto(0.000143945, { symbol: 'BTC' })).toBe(
+                `0,000143${NBSP}BTC`
+            );
+            expect(formatter.formatCrypto(1000000.99, { symbol: 'ETH' })).toBe(
+                `1.000.000${NBSP}ETH`
+            );
+            expect(formatter.formatCrypto(1.234, { symbol: 'USDT' })).toBe(`1,23${NBSP}USDT`);
         });
 
         it('formats crypto with symbol in ru-RU locale - different number ranges', () => {
             const formatter = new NumberFormatter(new WebNumberFormatLocale('ru-RU'));
 
-            expect(formatter.formatCrypto(33000.999, { symbol: 'BTC' })).toBe(`33${NBSP}000 BTC`);
-            expect(formatter.formatCrypto(1.8051, { symbol: 'BTC' })).toBe('1,8 BTC');
-            expect(formatter.formatCrypto(0.000143945, { symbol: 'BTC' })).toBe('0,000143 BTC');
-            expect(formatter.formatCrypto(1.234, { symbol: 'USDT' })).toBe('1,23 USDT');
+            expect(formatter.formatCrypto(33000.999, { symbol: 'BTC' })).toBe(
+                `33${NBSP}000${NBSP}BTC`
+            );
+            expect(formatter.formatCrypto(1.8051, { symbol: 'BTC' })).toBe(`1,8${NBSP}BTC`);
+            expect(formatter.formatCrypto(0.000143945, { symbol: 'BTC' })).toBe(
+                `0,000143${NBSP}BTC`
+            );
+            expect(formatter.formatCrypto(1.234, { symbol: 'USDT' })).toBe(`1,23${NBSP}USDT`);
         });
     });
 
@@ -661,7 +677,7 @@ describe('NumberFormatter', () => {
                 expect(
                     formatter.formatFiat(0, { currency: 'EUR', currencyDisplay: 'code' })
                 ).toBeTruthy();
-                expect(formatter.formatCrypto(0, { symbol: 'BTC' })).toBe('0 BTC');
+                expect(formatter.formatCrypto(0, { symbol: 'BTC' })).toBe(`0${NBSP}BTC`);
                 expect(formatter.formatCrypto(0, { currencyDisplay: 'none' })).toBe('0');
             });
         });
@@ -680,7 +696,9 @@ describe('NumberFormatter', () => {
             expect(
                 formatterFR.formatFiat(-1234.56, { currency: 'EUR', currencyDisplay: 'symbol' })
             ).toContain('-');
-            expect(formatterUS.formatCrypto(-0.000123, { symbol: 'BTC' })).toBe('-0.000123 BTC');
+            expect(formatterUS.formatCrypto(-0.000123, { symbol: 'BTC' })).toBe(
+                `-0.000123${NBSP}BTC`
+            );
             expect(formatterUS.formatCrypto(-1234.56, { currencyDisplay: 'none' })).toBe('-1,234');
         });
 
@@ -693,7 +711,7 @@ describe('NumberFormatter', () => {
 
             expect(
                 formatterUS.formatFiat(largeNumber, { currency: 'USD', currencyDisplay: 'code' })
-            ).toBe('999,999,999 USD');
+            ).toBe(`999,999,999${NBSP}USD`);
             expect(
                 formatterDE.formatFiat(largeNumber, { currency: 'EUR', currencyDisplay: 'code' })
             ).toContain('999.999.999');
@@ -701,7 +719,7 @@ describe('NumberFormatter', () => {
                 formatterIN.formatFiat(largeNumber, { currency: 'INR', currencyDisplay: 'code' })
             ).toContain('INR');
             expect(formatterUS.formatCrypto(largeNumber, { symbol: 'BTC' })).toBe(
-                '999,999,999 BTC'
+                `999,999,999${NBSP}BTC`
             );
         });
 
@@ -717,7 +735,7 @@ describe('NumberFormatter', () => {
             ).toBe('$0.000000123');
             expect(
                 formatter.formatCrypto(0.000000123456789, { symbol: 'USDT', fullPrecision: true })
-            ).toBe('0.000000123456789 USDT');
+            ).toBe(`0.000000123456789${NBSP}USDT`);
             expect(
                 formatter.formatCrypto(0.000000123456789, {
                     currencyDisplay: 'none',
@@ -733,7 +751,7 @@ describe('NumberFormatter', () => {
             ).toContain('EUR');
             expect(
                 formatter.formatCrypto(0.000143945, { symbol: 'BTC', fullPrecision: true })
-            ).toBe('0.000143945 BTC');
+            ).toBe(`0.000143945${NBSP}BTC`);
         });
 
         it('handles numbers between 1 and 1000 with proper decimal truncation (no rounding, drop trailing zeros)', () => {
@@ -754,8 +772,8 @@ describe('NumberFormatter', () => {
             expect(
                 formatter.formatFiat(999.999, { currency: 'USD', currencyDisplay: 'symbol' })
             ).toBe('$999.99');
-            expect(formatter.formatCrypto(1.8051, { symbol: 'BTC' })).toBe('1.8 BTC');
-            expect(formatter.formatCrypto(10.00932, { symbol: 'BTC' })).toBe('10 BTC');
+            expect(formatter.formatCrypto(1.8051, { symbol: 'BTC' })).toBe(`1.8${NBSP}BTC`);
+            expect(formatter.formatCrypto(10.00932, { symbol: 'BTC' })).toBe(`10${NBSP}BTC`);
         });
 
         it('handles numbers exactly at 1000 boundary (fractional part dropped for >= 1000)', () => {
@@ -773,10 +791,10 @@ describe('NumberFormatter', () => {
             expect(
                 formatter.formatFiat(1000.90932, { currency: 'USD', currencyDisplay: 'symbol' })
             ).toBe('$1,000');
-            expect(formatter.formatCrypto(999.99, { symbol: 'BTC' })).toBe('999.99 BTC');
-            expect(formatter.formatCrypto(1000, { symbol: 'BTC' })).toBe('1,000 BTC');
-            expect(formatter.formatCrypto(1000.01, { symbol: 'BTC' })).toBe('1,000 BTC');
-            expect(formatter.formatCrypto(33000.999, { symbol: 'BTC' })).toBe('33,000 BTC');
+            expect(formatter.formatCrypto(999.99, { symbol: 'BTC' })).toBe(`999.99${NBSP}BTC`);
+            expect(formatter.formatCrypto(1000, { symbol: 'BTC' })).toBe(`1,000${NBSP}BTC`);
+            expect(formatter.formatCrypto(1000.01, { symbol: 'BTC' })).toBe(`1,000${NBSP}BTC`);
+            expect(formatter.formatCrypto(33000.999, { symbol: 'BTC' })).toBe(`33,000${NBSP}BTC`);
         });
     });
 });

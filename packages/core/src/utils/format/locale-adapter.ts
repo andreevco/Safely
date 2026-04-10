@@ -1,3 +1,4 @@
+import { NBSP } from '../string';
 import { FiatCurrencyDisplay, SignedCurrencyAffixes } from './types';
 
 export interface NumberFormatLocale {
@@ -59,7 +60,7 @@ export class WebNumberFormatLocale implements NumberFormatLocale {
 
     private normalizeCurrencyCodePosition(affixes: { prefix: string; suffix: string }): void {
         if (affixes.suffix === '') {
-            affixes.suffix = ' ' + affixes.prefix.replace(/[\s\u00A0]+/g, '');
+            affixes.suffix = NBSP + affixes.prefix.replace(new RegExp(`[\\s${NBSP}]+`, 'g'), '');
             affixes.prefix = '';
         }
     }
