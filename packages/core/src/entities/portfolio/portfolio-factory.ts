@@ -4,8 +4,8 @@ import { PortfolioIdMnemonicBased } from './portfolio-id';
 import { PortfolioIdWatchOnly } from './portfolio-id-watch-only';
 import { NoIconPortfolioMeta, PortfolioMeta } from './portfolio-meta';
 import { PortfolioNetworkType } from './portfolio-network-type';
-import { PortfolioWatchOnly } from './portfolio-watch-only';
-import type { SPortfolioOut } from './portfolio.stored';
+import { PortfolioWatchOnly, PortfolioWatchOnlyBtc } from './portfolio-watch-only';
+import type { SPortfolioOut, SPortfolioWatchOnlyOut } from './portfolio.stored';
 import { BtcXpub } from '../../blockchain-api/btc/btc-xpub';
 import { ISecretEncryptor } from '../../di';
 import { assertUnreachable } from '../../utils';
@@ -29,11 +29,21 @@ export class PortfolioFactory {
             case PortfolioType.BIP39:
                 return PortfolioBip39.restorePortfolio(encryptor, portfolio);
             case PortfolioType.WATCH_ONLY:
-                return PortfolioWatchOnly.restorePortfolio(portfolio);
+                return PortfolioFactory.restoreWatchOnlyPortfolio(portfolio);
             default:
                 assertUnreachable(portfolio);
         }
     }
+
+    private static restoreWatchOnlyPortfolio(portfolio: SPortfolioWatchOnlyOut) {
+        switch (portfolio.id.vmType) {
+            case VMType.BTC:
+                return PortfolioWatchOnlyBtc.restorePortfolio(portfolio);
+            default:
+                assertUnreachable(portfolio.id.vmType);
+        }
+    }
+
     constructor(private readonly encryptor: ISecretEncryptor) {}
 
     public async generatePortfolio(
@@ -161,10 +171,9 @@ export class PortfolioFactory {
                     xpub
                 };
 
-                return new PortfolioWatchOnly({
+                return new PortfolioWatchOnlyBtc({
                     id: portfolioId,
                     meta: options.meta,
-                    vmType: VMType.BTC,
                     source: portfolioId.source,
                     wallet
                 });

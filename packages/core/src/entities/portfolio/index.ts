@@ -2,6 +2,7 @@ export * from './I-portfolio';
 export * from './portfolio-id';
 export * from './portfolio-id-watch-only';
 export * from './portfolio-bip39';
+export * from './portfolio-watch-only-base';
 export * from './portfolio-watch-only';
 export * from './portfolio-factory';
 export * from './portfolio-meta';

@@ -28,13 +28,13 @@ export const sPortfolioBip39 = z.object({
 export type SPortfolioBip39Out = z.output<typeof sPortfolioBip39>;
 export type SPortfolioBip39In = z.input<typeof sPortfolioBip39>;
 
-export const sPortfolioWatchOnly = z.object({
+export const sPortfolioBtcWatchOnly = z.object({
     id: z
         .object({
             identifier: z.string(),
             source: z.enum(WatchOnlySource),
             networkType: z.enum(PortfolioNetworkType),
-            vmType: z.enum(VMType)
+            vmType: z.literal(VMType.BTC)
         })
         .transform(
             val => new PortfolioIdWatchOnly(val.identifier, val.source, val.networkType, val.vmType)
@@ -44,6 +44,10 @@ export const sPortfolioWatchOnly = z.object({
     address: z.string(),
     xpub: z.string().nullable()
 });
+export type SPortfolioBtcWatchOnlyOut = z.output<typeof sPortfolioBtcWatchOnly>;
+export type SPortfolioBtcWatchOnlyIn = z.input<typeof sPortfolioBtcWatchOnly>;
+
+export const sPortfolioWatchOnly = sPortfolioBtcWatchOnly;
 export type SPortfolioWatchOnlyOut = z.output<typeof sPortfolioWatchOnly>;
 export type SPortfolioWatchOnlyIn = z.input<typeof sPortfolioWatchOnly>;
 
