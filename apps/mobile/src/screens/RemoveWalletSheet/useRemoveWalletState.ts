@@ -1,11 +1,10 @@
 import { PortfolioType } from '@safely/core';
-import { useActivePortfolio, useIsActiveWalletWatchOnly } from '@safely/ux';
+import { useActivePortfolio } from '@safely/ux';
 
 export function useRemoveWalletState() {
-    const isWatchOnly = useIsActiveWalletWatchOnly();
     const portfolio = useActivePortfolio();
 
-    if (isWatchOnly) {
+    if (portfolio.type === PortfolioType.WATCH_ONLY) {
         return {
             subtitleKey: 'removeWallet.watchOnly.subtitle',
             hasCheckbox: false,
@@ -13,8 +12,7 @@ export function useRemoveWalletState() {
         } as const;
     }
 
-    const isSeedRevealed =
-        portfolio.type === PortfolioType.BIP39 && portfolio.secretRevealedStatus !== null;
+    const isSeedRevealed = portfolio.secretRevealedStatus !== null;
 
     if (isSeedRevealed) {
         return {
