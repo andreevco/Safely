@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import { Portfolio } from '@safely/core';
-import { useSetActivePortfolio } from '@safely/ux';
+import { getPortfolioDisplayName, useSetActivePortfolio } from '@safely/ux';
 
 import { Button, Screen, Text } from '@mobile/shared/ui';
 
@@ -20,10 +20,7 @@ export const WalletAlreadyAddedScreen = (props: WalletAlreadyAddedScreenProps) =
     const navigation = useNavigation();
     const { mutateAsync: setActivePortfolio } = useSetActivePortfolio();
 
-    const walletDisplayName =
-        portfolio.meta.icon.type === 'emoji'
-            ? `${portfolio.meta.icon.value} ${portfolio.meta.name}`
-            : portfolio.meta.name;
+    const walletDisplayName = getPortfolioDisplayName(portfolio.meta);
 
     const handleOpen = useCallback(async () => {
         await setActivePortfolio(portfolio);

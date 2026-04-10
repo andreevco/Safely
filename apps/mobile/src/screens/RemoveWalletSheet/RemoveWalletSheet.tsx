@@ -3,7 +3,12 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { useActivePortfolio, useDeletePortfolio, useToast } from '@safely/ux';
+import {
+    getPortfolioDisplayName,
+    useActivePortfolio,
+    useDeletePortfolio,
+    useToast
+} from '@safely/ux';
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { BottomSheet, Button, ConfirmCheckbox, Text, useBottomSheet } from '@mobile/shared/ui';
@@ -35,10 +40,7 @@ const RemoveWalletContent = () => {
         navigation.navigate('RecoveryConfirmSheet');
     };
 
-    const walletDisplayName =
-        portfolio.meta.icon.type === 'emoji'
-            ? `${portfolio.meta.icon.value} ${portfolio.meta.name}`
-            : portfolio.meta.name;
+    const walletDisplayName = getPortfolioDisplayName(portfolio.meta);
 
     return (
         <View>

@@ -1,7 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 
-import { useActivePortfolio } from '@safely/ux';
+import { getPortfolioDisplayName, useActivePortfolio } from '@safely/ux';
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { Cell, Text } from '@mobile/shared/ui';
@@ -23,10 +23,7 @@ export const RemovePortfolioButton = () => {
                 <Cell.Row style={styles.row}>
                     <Text variant="labelL" textAlign="center" style={styles.text}>
                         {t('settings.removePortfolio.title', {
-                            name:
-                                portfolio.meta.icon.type === 'emoji'
-                                    ? `${portfolio.meta.icon.value} ${portfolio.meta.name}`
-                                    : portfolio.meta.name
+                            name: getPortfolioDisplayName(portfolio.meta)
                         })}
                     </Text>
                 </Cell.Row>

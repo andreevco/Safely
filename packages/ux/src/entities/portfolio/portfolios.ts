@@ -550,3 +550,11 @@ export function resolveBtcWallet(portfolio: Portfolio): BtcWalletReadOnly {
 
     return portfolio.derivations[0].chains.btc.wallets[0];
 }
+
+export function getPortfolioDisplayName(meta: PortfolioMeta): string {
+    if (meta.icon.type === 'emoji') {
+        return `${meta.icon.value} ${meta.name}`;
+    }
+
+    return meta.name;
+}
