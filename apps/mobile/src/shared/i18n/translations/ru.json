@@ -132,7 +132,7 @@
             "walletsNotSynced_few": "{{ count }} кошелька не синхронизировано",
             "walletsNotSynced_many": "{{ count }} кошельков не синхронизировано",
             "walletsNotSynced_other": "{{ count }} кошельков не синхронизировано",
-            "disconnect": "Отключить"
+            "unlink": "Отключить"
         },
         "disconnectDevice": {
             "title": "Отключить {{deviceName}}",

@@ -157,7 +157,7 @@
             "upToDate": "Up to date",
             "notUpToDate": "Not up to date",
             "walletsNotSynced": "{{ count }} wallets not synced",
-            "disconnect": "Disconnect"
+            "unlink": "Unlink"
         },
         "disconnectDevice": {
             "title": "Disconnect {{deviceName}}",
