@@ -50,5 +50,4 @@ export interface ActivityPage {
 
 export interface IHistoryOptions<TData> {
     select?: (data: InfiniteData<ActivityPage, IActivityPageParam>) => TData;
-    refetchInterval?: number;
 }

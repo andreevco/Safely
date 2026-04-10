@@ -3,13 +3,16 @@ import { useTranslation } from 'react-i18next';
 import { type ViewStyle } from 'react-native';
 
 import { type CryptoAssetAmount, type CryptoFiatRate } from '@safely/core';
-import { useActiveBtcWalletUtxo, useNumberFormatter } from '@safely/ux';
+import {
+    useActiveBtcWalletUtxo,
+    useLastBtcTransactionTimestamp,
+    useNumberFormatter
+} from '@safely/ux';
 
 import { Cell } from '@mobile/shared/ui';
 
 import { styles } from './BtcAssetCell.styles';
 import { ReceivingBadges } from './ReceivingBadge';
-import { useLastBtcTransactionTimestamp } from './useLastBtcTransactionTimestamp';
 import { useRelativeTime } from './useRelativeTime';
 
 type BtcAssetCellProps = {

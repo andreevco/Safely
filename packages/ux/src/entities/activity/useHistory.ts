@@ -20,7 +20,6 @@ export function useHistory<TData = InfiniteData<ActivityPage, IActivityPageParam
     return useInfinitePersistQuery<ActivityPage, unknown, TData, QueryKey, IActivityPageParam>({
         queryKey: activityKeys.all(btcWallet.id.toString(), filters).toKey(),
         staleTime: QUERIES_STALE_TIME.ACTIVITY,
-        refetchInterval: options?.refetchInterval ?? QUERIES_STALE_TIME.ACTIVITY,
         queryFn: async ({ pageParam }) => {
             const page = pageParam?.page ?? INITIAL_PAGE;
             return fetchBtcActivity(btcApi, btcWallet, page, filters);
