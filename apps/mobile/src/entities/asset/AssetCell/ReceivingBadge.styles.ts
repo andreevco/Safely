@@ -7,9 +7,9 @@ export const styles = StyleSheet.create(theme => ({
         gap: theme.spacing[4]
     },
     badge: {
-        paddingHorizontal: theme.spacing[16],
+        paddingHorizontal: theme.spacing[12],
         paddingVertical: theme.spacing[8],
-        borderRadius: theme.radius.full,
+        borderRadius: theme.radius.sm,
         backgroundColor: theme.colors.background.tertiary,
         alignSelf: 'flex-start'
     }
