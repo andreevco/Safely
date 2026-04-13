@@ -1,24 +1,28 @@
+import { useMemo } from 'react';
 import { View } from 'react-native';
+import Animated, { useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
 
 import { CryptoAsset } from '@safely/core';
 import { useActiveFiat, useNumberFormatter, useRate } from '@safely/ux';
 
+import { ChartPeriod } from '@mobile/features/chart/Chart/config';
+import { usePriceDiff } from '@mobile/features/chart/Chart/hooks';
+import { type PriceDiffValue } from '@mobile/features/chart/Chart/utils/priceDiff';
 import { Text } from '@mobile/shared/ui';
 
 import { styles } from './ChartHeader.styles';
 import { PriceDiff } from './PriceDiff';
-import { ChartPeriod } from '../../config';
-import { usePriceDiff } from '../../hooks';
 
 type ChartHeaderProps = {
     asset: CryptoAsset;
     prices: [number, number][];
     selectedPeriod: ChartPeriod;
     activePrice?: number;
+    activePriceDiff?: PriceDiffValue;
 };
 
 export const ChartHeader = (props: ChartHeaderProps) => {
-    const { prices, asset, selectedPeriod, activePrice } = props;
+    const { prices, asset, selectedPeriod, activePrice, activePriceDiff } = props;
     const rate = useRate(asset);
     const fiat = useActiveFiat();
     const formatter = useNumberFormatter();
@@ -43,6 +47,20 @@ export const ChartHeader = (props: ChartHeaderProps) => {
 
     const displayPrice = formattedActivePrice ?? formattedRate;
 
+    const displayPriceDiff = useMemo(() => {
+        return activePriceDiff ?? priceDiff;
+    }, [activePriceDiff, priceDiff]);
+
+    const animatedPriceDiffStyle = useAnimatedStyle(
+        () => ({
+            opacity:
+                !activePrice || activePriceDiff
+                    ? withTiming(1, { duration: 120, easing: Easing.inOut(Easing.ease) })
+                    : withTiming(0.56, { duration: 180, easing: Easing.inOut(Easing.ease) })
+        }),
+        [activePrice, activePriceDiff]
+    );
+
     return (
         <View style={styles.container}>
             <View style={styles.titleContainer}>
@@ -53,9 +71,9 @@ export const ChartHeader = (props: ChartHeaderProps) => {
                     {asset.symbol} / {fiat.id.symbol}
                 </Text>
             </View>
-            {activePrice === undefined && priceDiff && (
-                <PriceDiff formatted={priceDiff.formatted} isPositive={priceDiff.isPositive} />
-            )}
+            <Animated.View style={animatedPriceDiffStyle}>
+                <PriceDiff priceDiff={displayPriceDiff} />
+            </Animated.View>
         </View>
     );
 };

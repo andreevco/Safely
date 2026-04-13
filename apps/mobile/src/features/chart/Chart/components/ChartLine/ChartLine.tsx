@@ -13,19 +13,20 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useUnistyles } from 'react-native-unistyles';
 
-import { Text } from '@mobile/shared/ui';
-import { formatCompactPrice, type ChartPoint } from '@mobile/shared/utils/chart';
-
-import { styles } from './ChartLine.styles';
-import { ChartPeriod } from '../../config';
+import { ChartPeriod } from '@mobile/features/chart/Chart/config';
 import {
     DOT_RADIUS,
     FADED_LINE_COLOR,
     LINE_COLOR,
     LINE_STROKE_WIDTH,
     OPAQUE_LINE_COLOR
-} from '../../constants';
-import { useChartPaths } from '../../hooks';
+} from '@mobile/features/chart/Chart/constants';
+import { useChartPaths } from '@mobile/features/chart/Chart/hooks';
+import type { CrosshairState } from '@mobile/features/chart/Chart/hooks/useCrosshair';
+import { Text } from '@mobile/shared/ui';
+import { formatCompactPrice, type ChartPoint } from '@mobile/shared/utils/chart';
+
+import { styles } from './ChartLine.styles';
 
 type ChartLineProps = {
     prices: [number, number][];
@@ -33,10 +34,8 @@ type ChartLineProps = {
     selectedPeriod: ChartPeriod;
     chartPointsShared: SharedValue<ChartPoint[]>;
     pathFractionsShared: SharedValue<number[]>;
-    activeX: SharedValue<number>;
-    activeY: SharedValue<number>;
-    isActive: SharedValue<boolean>;
-    activePathFraction: SharedValue<number>;
+    primaryCrosshair: SharedValue<CrosshairState>;
+    secondaryCrosshair: SharedValue<CrosshairState>;
     gesture: GestureType;
 };
 
@@ -48,10 +47,8 @@ export const ChartLine = (props: ChartLineProps) => {
         selectedPeriod,
         chartPointsShared,
         pathFractionsShared,
-        activeX,
-        activeY,
-        isActive,
-        activePathFraction,
+        primaryCrosshair,
+        secondaryCrosshair,
         gesture
     } = props;
     const [size, setSize] = useState({ width: 0, height: 0 });
@@ -60,11 +57,32 @@ export const ChartLine = (props: ChartLineProps) => {
         setSize({ width, height });
     };
 
-    const crosshairOpacity = useDerivedValue(() => (isActive.value ? 1 : 0));
-    const pointsOpacity = useDerivedValue(() => (isActive.value ? 0 : 1));
+    const activeX = useDerivedValue(() => primaryCrosshair.value.x);
+    const activeY = useDerivedValue(() => primaryCrosshair.value.y);
+    const activeX2 = useDerivedValue(() => secondaryCrosshair.value.x);
+    const activeY2 = useDerivedValue(() => secondaryCrosshair.value.y);
+    const eitherActive = useDerivedValue(
+        () => primaryCrosshair.value.isActive || secondaryCrosshair.value.isActive
+    );
+    const crosshairOpacity = useDerivedValue(() => (eitherActive.value ? 1 : 0));
+    const pointsOpacity = useDerivedValue(() => (eitherActive.value ? 0 : 1));
 
     const crosshairP1 = useDerivedValue(() => vec(activeX.value, 0));
     const crosshairP2 = useDerivedValue(() => vec(activeX.value, size.height));
+
+    const crosshair2P1 = useDerivedValue(() => vec(activeX2.value, 0));
+    const crosshair2P2 = useDerivedValue(() => vec(activeX2.value, size.height));
+    const crosshair2Opacity = useDerivedValue(() => (secondaryCrosshair.value.isActive ? 1 : 0));
+
+    const minFraction = useDerivedValue(() => {
+        if (!secondaryCrosshair.value.isActive) return 0;
+        return Math.min(primaryCrosshair.value.pathFraction, secondaryCrosshair.value.pathFraction);
+    });
+    const maxFraction = useDerivedValue(() => {
+        if (!primaryCrosshair.value.isActive) return 0;
+        if (!secondaryCrosshair.value.isActive) return primaryCrosshair.value.pathFraction;
+        return Math.max(primaryCrosshair.value.pathFraction, secondaryCrosshair.value.pathFraction);
+    });
 
     const { fullPath, periodSplitEnd, lastPoint, elegantPrices, splitPoint } = useChartPaths({
         prices,
@@ -77,8 +95,10 @@ export const ChartLine = (props: ChartLineProps) => {
     });
 
     const priceLabelsStyle = useAnimatedStyle(() => {
-        if (!isActive.value) return { opacity: 1 };
-        const near = activeX.value > size.width - 40;
+        if (!eitherActive.value) return { opacity: 1 };
+        const near =
+            primaryCrosshair.value.x > size.width - 40 ||
+            (secondaryCrosshair.value.isActive && secondaryCrosshair.value.x > size.width - 40);
         return { opacity: withTiming(near ? 0 : 1, { duration: 60 }) };
     });
 
@@ -136,6 +156,14 @@ export const ChartLine = (props: ChartLineProps) => {
                                 strokeWidth={1}
                             />
                         </Group>
+                        <Group opacity={crosshair2Opacity}>
+                            <Line
+                                p1={crosshair2P1}
+                                p2={crosshair2P2}
+                                color={theme.colors.icon.tertiary}
+                                strokeWidth={1}
+                            />
+                        </Group>
 
                         {/* Inactive mode: period-based faded/main split */}
                         {periodSplitEnd > 0 && (
@@ -180,17 +208,25 @@ export const ChartLine = (props: ChartLineProps) => {
                         <Group opacity={crosshairOpacity}>
                             <Path
                                 path={fullPath}
+                                color={FADED_LINE_COLOR}
+                                strokeWidth={LINE_STROKE_WIDTH}
+                                style="stroke"
+                                end={minFraction}
+                            />
+                            <Path
+                                path={fullPath}
                                 color={LINE_COLOR}
                                 strokeWidth={LINE_STROKE_WIDTH}
                                 style="stroke"
-                                end={activePathFraction}
+                                start={minFraction}
+                                end={maxFraction}
                             />
                             <Path
                                 path={fullPath}
                                 color={FADED_LINE_COLOR}
                                 strokeWidth={LINE_STROKE_WIDTH}
                                 style="stroke"
-                                start={activePathFraction}
+                                start={maxFraction}
                             />
                         </Group>
 
@@ -221,6 +257,15 @@ export const ChartLine = (props: ChartLineProps) => {
                                 color={theme.colors.background.secondary}
                             />
                             <Circle cx={activeX} cy={activeY} r={DOT_RADIUS} color={LINE_COLOR} />
+                        </Group>
+                        <Group opacity={crosshair2Opacity}>
+                            <Circle
+                                cx={activeX2}
+                                cy={activeY2}
+                                r={DOT_RADIUS + 1}
+                                color={theme.colors.background.secondary}
+                            />
+                            <Circle cx={activeX2} cy={activeY2} r={DOT_RADIUS} color={LINE_COLOR} />
                         </Group>
                     </Canvas>
                 </View>
