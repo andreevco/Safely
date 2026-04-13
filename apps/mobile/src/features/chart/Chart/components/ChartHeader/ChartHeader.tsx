@@ -68,7 +68,8 @@ export const ChartHeader = (props: ChartHeaderProps) => {
                     {displayPrice ?? '-'}
                 </Text>
                 <Text style={styles.description} variant="bodyM" color="tertiary">
-                    {asset.symbol}${SPACE.THSP}/${SPACE.THSP}
+                    {asset.symbol}
+                    {SPACE.THSP}/{SPACE.THSP}
                     {fiat.id.symbol}
                 </Text>
             </View>
