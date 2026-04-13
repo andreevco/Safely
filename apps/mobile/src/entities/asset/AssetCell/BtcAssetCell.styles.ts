@@ -4,6 +4,10 @@ export const styles = StyleSheet.create(() => ({
     cell: {
         alignItems: 'flex-start'
     },
+    titleRow: {
+        alignItems: 'center',
+        minHeight: 24
+    },
     subtitleRow: {
         alignItems: 'flex-start'
     },

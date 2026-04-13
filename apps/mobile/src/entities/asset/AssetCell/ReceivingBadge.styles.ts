@@ -4,7 +4,8 @@ export const styles = StyleSheet.create(theme => ({
     container: {
         flex: 1,
         flexDirection: 'column',
-        gap: theme.spacing[4]
+        gap: theme.spacing[2],
+        paddingTop: theme.spacing[2]
     },
     badge: {
         paddingHorizontal: theme.spacing[12],

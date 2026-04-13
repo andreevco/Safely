@@ -65,7 +65,7 @@ export const BtcAssetCell = (props: BtcAssetCellProps) => {
         <Cell showDivider={showDivider} onPress={onPress} style={styles.cell as ViewStyle}>
             <Cell.Image type="image" image={cryptoAssetAmount.asset.image} />
             <Cell.Content>
-                <Cell.Row>
+                <Cell.Row style={styles.titleRow}>
                     <Cell.Title color="primary">{cryptoAssetAmount.asset.name}</Cell.Title>
                     <Cell.Value color="primary">
                         {price ? cryptoAssetAmount.convert(price).format(formatter) : '–'}
