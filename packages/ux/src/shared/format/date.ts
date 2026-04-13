@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { NBSP } from '@safely/core';
+import { SPACE } from '@safely/core';
 
 import { useAppContext } from '../providers';
 
@@ -53,7 +53,7 @@ export function useRelativeTime(timestampMs: number | null): string | null {
             style: 'long'
         });
 
-        const withNbsp = (s: string) => s.replace(/(\d)\s+/g, `$1${NBSP}`);
+        const withNbsp = (s: string) => s.replace(/(\d)\s+/g, `$1${SPACE.NBSP}`);
 
         if (diffDays > 0) {
             return withNbsp(rtf.format(-diffDays, 'day'));

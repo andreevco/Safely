@@ -1,6 +1,9 @@
-import { NBSP } from '@safely/core';
+import { SPACE } from '@safely/core';
 
-const NON_STANDARD_SPACES = new RegExp(`[${NBSP}\u2007\u202F\u2009]`, 'g');
+const NON_STANDARD_SPACES = new RegExp(
+    `[${SPACE.NBSP}${SPACE.FSP}${SPACE.NNBSP}${SPACE.THSP}]`,
+    'g'
+);
 
 export const normalizeInput = (str: string) =>
     str

@@ -1,10 +1,8 @@
-/* eslint-disable no-irregular-whitespace */
-
 import { useMemo } from 'react';
 import { View } from 'react-native';
 import Animated, { useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
 
-import { CryptoAsset } from '@safely/core';
+import { CryptoAsset, SPACE } from '@safely/core';
 import { useActiveFiat, useNumberFormatter, useRate } from '@safely/ux';
 
 import { ChartPeriod } from '@mobile/features/chart/Chart/config';
@@ -70,7 +68,8 @@ export const ChartHeader = (props: ChartHeaderProps) => {
                     {displayPrice ?? '-'}
                 </Text>
                 <Text style={styles.description} variant="bodyM" color="tertiary">
-                    {asset.symbol} / {fiat.id.symbol}
+                    {asset.symbol}${SPACE.THSP}/${SPACE.THSP}
+                    {fiat.id.symbol}
                 </Text>
             </View>
             <Animated.View style={animatedPriceDiffStyle}>
