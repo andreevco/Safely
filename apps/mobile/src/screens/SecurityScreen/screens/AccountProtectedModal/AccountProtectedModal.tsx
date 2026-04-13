@@ -65,13 +65,13 @@ function DeviceItem(props: { ikPubHex: string; meta: DeviceMeta }) {
                     <Badge>{formatOsBadge(meta.platform, meta.osVersion)}</Badge>
                 </View>
                 <Text variant="bodyM" color="secondary">
-                    {t('security.device.added', { date: formatDate.format(meta.pairedAt) })}
-                </Text>
-                <Text variant="bodyM" color="tertiary">
                     {t(isUpToDate ? 'security.device.upToDate' : 'security.device.notUpToDate')}
                     {notSyncedWalletsCount > 0 &&
                         ' · ' +
                             t('security.device.walletsNotSynced', { count: notSyncedWalletsCount })}
+                </Text>
+                <Text variant="bodyM" color="tertiary">
+                    {t('security.device.added', { date: formatDate.format(meta.pairedAt) })}
                 </Text>
             </View>
             <PopupMenu
