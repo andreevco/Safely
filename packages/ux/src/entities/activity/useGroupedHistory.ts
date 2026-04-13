@@ -1,3 +1,4 @@
+import { isBtcTransactionPending } from './blockchain-specific/btc';
 import {
     ACTIVITY_GROUP_LABEL,
     ActivityItem,
@@ -71,27 +72,29 @@ export function groupActivityItems(items: ActivityItem[]): ActivityItemsDatedGro
     const yesterdayDate = new Date();
     yesterdayDate.setDate(yesterdayDate.getDate() - 1);
 
-    const grouped = sortedItems.reduce(
-        (acc, item) => {
-            const groupMeta = JSON.stringify(
-                getEventGroupMeta(item.timestamp, todayDate, yesterdayDate)
-            );
+    const pendingItems: ActivityItem[] = [];
+    const grouped: Record<string, ActivityItem[]> = {};
 
-            if (!acc[groupMeta]) {
-                acc[groupMeta] = [];
+    for (const item of sortedItems) {
+        if (isBtcTransactionPending(item.transaction.raw)) {
+            pendingItems.push(item);
+        } else {
+            const key = JSON.stringify(getEventGroupMeta(item.timestamp, todayDate, yesterdayDate));
+            if (!grouped[key]) {
+                grouped[key] = [];
             }
-            acc[groupMeta].push(item);
+            grouped[key].push(item);
+        }
+    }
 
-            return acc;
-        },
-        {} as Record<string, ActivityItem[]>
-    );
+    const datedGroups: ActivityItemsDatedGroup[] = Object.entries(grouped).map(([key, value]) => ({
+        ...(JSON.parse(key) as ActivityItemsDatedGroupMeta),
+        items: value
+    }));
 
-    return Object.entries(grouped).map(([key, value]) => {
-        const meta = JSON.parse(key) as ActivityItemsDatedGroupMeta;
-        return {
-            ...meta,
-            items: value
-        };
-    });
+    if (pendingItems.length > 0) {
+        return [{ label: ACTIVITY_GROUP_LABEL.PENDING, items: pendingItems }, ...datedGroups];
+    }
+
+    return datedGroups;
 }

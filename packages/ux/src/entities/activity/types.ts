@@ -23,6 +23,7 @@ export interface BtcActivityItem {
 export type ActivityItem = BtcActivityItem;
 
 export enum ACTIVITY_GROUP_LABEL {
+    PENDING = 'PENDING',
     TODAY = 'TODAY',
     YESTERDAY = 'YESTERDAY',
     THIS_MONTH = 'THIS_MONTH',
@@ -31,6 +32,7 @@ export enum ACTIVITY_GROUP_LABEL {
 }
 
 export type ActivityItemsDatedGroupMeta =
+    | { label: ACTIVITY_GROUP_LABEL.PENDING }
     | { label: ACTIVITY_GROUP_LABEL.TODAY }
     | { label: ACTIVITY_GROUP_LABEL.YESTERDAY }
     | { label: ACTIVITY_GROUP_LABEL.THIS_MONTH; year: number; month: number; day: number }

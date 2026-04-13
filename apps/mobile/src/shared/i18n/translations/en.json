@@ -540,10 +540,13 @@
             "send": "Send"
         },
         "dateHeaders": {
+            "pending": "Pending",
             "today": "Today",
             "yesterday": "Yesterday"
         },
         "transactionInfo": {
+            "sending": "Sending",
+            "receiving": "Receiving",
             "sent": "Sent",
             "received": "Received",
             "recipient": "Recipient",

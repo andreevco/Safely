@@ -47,6 +47,8 @@ const getGroupTitle = (
     formatter: DateFormatter
 ): string => {
     switch (meta.label) {
+        case ACTIVITY_GROUP_LABEL.PENDING:
+            return t('history.dateHeaders.pending');
         case ACTIVITY_GROUP_LABEL.TODAY:
             return t('history.dateHeaders.today');
         case ACTIVITY_GROUP_LABEL.YESTERDAY:
@@ -71,6 +73,7 @@ type HistoryListProps = {
 };
 
 const timeFormatDetailsMap: Record<ACTIVITY_GROUP_LABEL, ActivityItemTimeFormatDetails> = {
+    [ACTIVITY_GROUP_LABEL.PENDING]: 'time',
     [ACTIVITY_GROUP_LABEL.TODAY]: 'time',
     [ACTIVITY_GROUP_LABEL.YESTERDAY]: 'time',
     [ACTIVITY_GROUP_LABEL.THIS_MONTH]: 'time',

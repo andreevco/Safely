@@ -14,12 +14,15 @@ type BtcTransactionDisplayStatus =
     | { type: 'confirmed-recently'; timestamp: Date; confirmations: number }
     | { type: 'confirmed-long-ago'; timestamp: Date };
 
+export function isBtcTransactionPending(tx: Pick<BtcApiTx, 'blockHeight'>): boolean {
+    return tx.blockHeight === -1;
+}
+
 export function useBtcTransactionDisplayStatus(
     tx: Pick<BtcApiTx, 'blockHeight' | 'confirmations' | 'blockTime'>
 ): BtcTransactionDisplayStatus {
     const { data: currentBlockNumber } = useActualBtcBlockNumber();
-
-    if (tx.blockHeight === -1) {
+    if (isBtcTransactionPending(tx)) {
         return { type: 'pending' };
     } else {
         const timestamp = new Date(tx.blockTime * 1000);

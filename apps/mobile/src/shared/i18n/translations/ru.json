@@ -475,10 +475,13 @@
             "send": "Отправить"
         },
         "dateHeaders": {
+            "pending": "Обрабатывается",
             "today": "Сегодня",
             "yesterday": "Вчера"
         },
         "transactionInfo": {
+            "sending": "Отправляется",
+            "receiving": "Получение",
             "sent": "Отправлено",
             "received": "Получено",
             "recipient": "Получатель",
