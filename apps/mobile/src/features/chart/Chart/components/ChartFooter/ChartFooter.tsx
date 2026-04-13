@@ -13,6 +13,7 @@ import { Text } from '@mobile/shared/ui';
 import { styles } from './ChartFooter.styles';
 import { Tick } from './Tick';
 import { CHART_CONFIG, ChartPeriod } from '../../config';
+import type { CrosshairState } from '../../hooks/useCrosshair';
 
 type TicksProps = {
     selectedPeriod: ChartPeriod;
@@ -39,14 +40,21 @@ export const Ticks = (props: TicksProps) => {
 type ChartFooterProps = {
     selectedPeriod: ChartPeriod;
     startDate: number;
-    isActive: SharedValue<boolean>;
+    primaryCrosshair: SharedValue<CrosshairState>;
     isTimeLabelReady: SharedValue<boolean>;
-    activeX: SharedValue<number>;
     formattedTime: string;
+    secondaryCrosshair: SharedValue<CrosshairState>;
 };
 
 export const ChartFooter = (props: ChartFooterProps) => {
-    const { selectedPeriod, startDate, isActive, isTimeLabelReady, activeX, formattedTime } = props;
+    const {
+        selectedPeriod,
+        startDate,
+        primaryCrosshair,
+        isTimeLabelReady,
+        formattedTime,
+        secondaryCrosshair
+    } = props;
     const dateFormatter = useDateFormatter();
     const containerWidth = useSharedValue(0);
     const timeLabelWidth = useSharedValue(0);
@@ -66,23 +74,29 @@ export const ChartFooter = (props: ChartFooterProps) => {
     );
 
     const datesAnimatedStyle = useAnimatedStyle(() => ({
-        opacity: isActive.value ? 0 : 1
+        opacity: primaryCrosshair.value.isActive ? 0 : 1
     }));
 
-    const timeLabelAnimatedStyle = useAnimatedStyle(() => ({
-        opacity: isActive.value && isTimeLabelReady.value ? 1 : 0,
-        transform: [
-            {
-                translateX: Math.max(
-                    0,
-                    Math.min(
-                        activeX.value - timeLabelWidth.value / 2,
-                        containerWidth.value - timeLabelWidth.value
+    const timeLabelAnimatedStyle = useAnimatedStyle(() => {
+        const labelAnchorX = secondaryCrosshair.value.isActive
+            ? (primaryCrosshair.value.x + secondaryCrosshair.value.x) / 2
+            : primaryCrosshair.value.x;
+
+        return {
+            opacity: primaryCrosshair.value.isActive && isTimeLabelReady.value ? 1 : 0,
+            transform: [
+                {
+                    translateX: Math.max(
+                        0,
+                        Math.min(
+                            labelAnchorX - timeLabelWidth.value / 2,
+                            containerWidth.value - timeLabelWidth.value
+                        )
                     )
-                )
-            }
-        ]
-    }));
+                }
+            ]
+        };
+    });
 
     return (
         <View style={styles.container}>

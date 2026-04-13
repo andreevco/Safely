@@ -120,7 +120,8 @@ export const buildChartPoints = (
 
     const scale = elegantScale(min, max);
     const scaleMin = scale[0];
-    const range = scale[3] - scale[0] || 1;
+    const dataSpan = max - scaleMin;
+    const range = dataSpan > 0 ? dataSpan / 0.85 : scale[3] - scale[0];
 
     const toMilliseconds = (timestamp: number) => {
         // API may return unix seconds while axis timestamps are in milliseconds.

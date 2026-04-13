@@ -1,18 +1,14 @@
 import { useMemo } from 'react';
 
 import { CHART_CONFIG, ChartPeriod } from '../config';
-
-type PriceDiffResult = {
-    formatted: string;
-    isPositive: boolean;
-} | null;
+import { getPriceDiff, type PriceDiffValue } from '../utils/priceDiff';
 
 type UsePriceDiffParams = {
     prices: [number, number][];
     selectedPeriod: ChartPeriod;
 };
 
-export const usePriceDiff = (params: UsePriceDiffParams): PriceDiffResult => {
+export const usePriceDiff = (params: UsePriceDiffParams): PriceDiffValue => {
     const { prices, selectedPeriod } = params;
 
     return useMemo(() => {
@@ -30,23 +26,6 @@ export const usePriceDiff = (params: UsePriceDiffParams): PriceDiffResult => {
         const startPrice = periodStartPoint[1];
         const endPrice = prices[prices.length - 1][1];
 
-        if (startPrice === 0) {
-            return null;
-        }
-
-        const diff = ((endPrice - startPrice) / startPrice) * 100;
-        const abs = Math.abs(diff);
-
-        let formatted: string;
-        if (abs >= 1) {
-            formatted = parseFloat(abs.toFixed(1)).toString();
-        } else if (abs === 0) {
-            return null;
-        } else {
-            const decimals = -Math.floor(Math.log10(abs));
-            formatted = abs.toFixed(decimals);
-        }
-
-        return { formatted, isPositive: diff > 0 };
+        return getPriceDiff(startPrice, endPrice);
     }, [prices, selectedPeriod]);
 };
