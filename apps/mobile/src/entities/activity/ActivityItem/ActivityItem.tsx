@@ -67,13 +67,15 @@ export const ActivityItem = (props: ActivityItemProps) => {
                     <Cell.Row>
                         <View style={styles.titleWithTimestamp}>
                             <Cell.Title>{title}</Cell.Title>
-                            <Text color="tertiary" style={styles.timestamp}>
-                                {timeFormatDetails === 'time'
-                                    ? dateFormatter.format(activity.timestamp)
-                                    : dateFormatter({ day: 'numeric', month: 'short' }).format(
-                                          activity.timestamp
-                                      )}
-                            </Text>
+                            {status.type !== 'pending' && (
+                                <Text color="tertiary" style={styles.timestamp}>
+                                    {timeFormatDetails === 'time'
+                                        ? dateFormatter.format(activity.timestamp)
+                                        : dateFormatter({ day: 'numeric', month: 'short' }).format(
+                                              activity.timestamp
+                                          )}
+                                </Text>
+                            )}
                         </View>
                         <Cell.Value
                             color={
