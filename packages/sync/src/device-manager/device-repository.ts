@@ -20,7 +20,9 @@ export class DeviceRepository {
         if (!devicesJson) {
             return [];
         }
-        return DeviceSchema.array().parse(JSON.parse(devicesJson));
+        const devices = DeviceSchema.array().parse(JSON.parse(devicesJson));
+        devices.sort((a, b) => a.addedAt - b.addedAt);
+        return devices;
     }
 
     public async setDevices(devices: Device[]): Promise<void> {
@@ -31,14 +33,17 @@ export class DeviceRepository {
 
 export type Device = {
     ikPub: Buffer;
+    addedAt: number;
 };
 
 function deviceToJson(device: Device) {
     return {
-        ikPub: device.ikPub.toString('hex')
+        ikPub: device.ikPub.toString('hex'),
+        addedAt: device.addedAt
     };
 }
 
 export const DeviceSchema = z.object({
-    ikPub: BufferHexSchema
+    ikPub: BufferHexSchema,
+    addedAt: z.number()
 });

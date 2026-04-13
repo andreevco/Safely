@@ -8,7 +8,11 @@ export class UpdateDecryptorService {
         private readonly deviceManager: DeviceManagementService
     ) {}
 
-    public async verifyAndDecrypt(state: EncryptedState): Promise<Buffer> {
+    public async decrypt(state: EncryptedState): Promise<Buffer> {
+        return await this.syncKeyService.decrypt(state.ciphertext, state.nonce);
+    }
+
+    public async verifyIKSig(state: EncryptedState): Promise<void> {
         const isValid = await this.deviceManager.verifyDeviceIKSig({
             kid: state.kid,
             sig: state.signature,
@@ -17,7 +21,5 @@ export class UpdateDecryptorService {
         if (!isValid) {
             throw new Error('Invalid snapshot IK signature');
         }
-
-        return await this.syncKeyService.decrypt(state.ciphertext, state.nonce);
     }
 }

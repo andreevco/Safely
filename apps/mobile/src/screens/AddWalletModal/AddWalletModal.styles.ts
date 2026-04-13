@@ -2,7 +2,8 @@ import { StyleSheet } from 'react-native-unistyles';
 
 export const styles = StyleSheet.create(theme => ({
     icon: {
-        marginHorizontal: 'auto'
+        marginHorizontal: 'auto',
+        marginTop: theme.spacing[16]
     },
     textContainer: {
         gap: 4,

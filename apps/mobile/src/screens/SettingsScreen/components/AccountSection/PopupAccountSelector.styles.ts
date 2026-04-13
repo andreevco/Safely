@@ -1,8 +1,7 @@
 import { StyleSheet } from 'react-native-unistyles';
 
-export const styles = StyleSheet.create(theme => ({
+export const styles = StyleSheet.create(() => ({
     addButton: {
-        alignSelf: 'center',
-        marginTop: theme.spacing[8]
+        alignSelf: 'center'
     }
 }));

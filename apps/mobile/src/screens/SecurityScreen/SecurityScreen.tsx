@@ -48,7 +48,7 @@ export const SecurityScreen = () => {
 
     const handleChangePasscode = async () => {
         await check({ title: t('changePasscode.verify.title') });
-        rootNavigation.navigate('ChangePasscodeModal');
+        rootNavigation.navigate('ChangePasscodeScreen');
     };
 
     return (
@@ -84,7 +84,7 @@ export const SecurityScreen = () => {
                                             </Cell.Subtitle>
                                         </Cell.Row>
                                     </Cell.Content>
-                                    <View style={styles.syncDot(true)} />
+                                    <Cell.Chevron />
                                 </Cell>
                             ) : (
                                 <Cell onPress={() => navigation.navigate('ProtectAccountModal')}>
@@ -103,7 +103,7 @@ export const SecurityScreen = () => {
                                             </Cell.Subtitle>
                                         </Cell.Row>
                                     </Cell.Content>
-                                    <View style={styles.syncDot(false)} />
+                                    <Cell.Chevron />
                                 </Cell>
                             )}
                         </List.Group>

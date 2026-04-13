@@ -14,7 +14,6 @@ export const styles = StyleSheet.create(theme => ({
         marginTop: theme.spacing[6],
         marginBottom: theme.spacing[2],
         fontSize: 12.5,
-        lineHeight: 16,
-        letterSpacing: -0.15
+        lineHeight: 16
     }
 }));

@@ -4,22 +4,26 @@ import Color from 'color';
 import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
+import { PriceDiffValue } from '@mobile/features/chart/Chart/utils/priceDiff';
 import { Text } from '@mobile/shared/ui';
 
 type PriceDiffProps = {
-    formatted: string;
-    isPositive: boolean;
+    priceDiff?: PriceDiffValue;
 };
 
 export const PriceDiff = (props: PriceDiffProps) => {
-    const { formatted, isPositive } = props;
+    const { priceDiff } = props;
 
-    styles.useVariants({ type: isPositive ? 'positive' : 'negative' });
+    styles.useVariants({ type: priceDiff?.isPositive ? 'positive' : 'negative' });
 
     return (
         <View style={styles.diff}>
-            <Text variant="bodyM" monospace color={isPositive ? 'accentGreen' : 'accentRed'}>
-                {isPositive ? '+' : '−'} {formatted} %
+            <Text
+                variant="bodyM"
+                monospace
+                color={priceDiff?.isPositive ? 'accentGreen' : 'accentRed'}
+            >
+                {priceDiff?.isPositive ? '+' : '−'} {priceDiff?.formatted} %
             </Text>
         </View>
     );

@@ -15,8 +15,8 @@ interface RecipientStepProps {
     inputRef?: Ref<TextInput>;
     suggestions: SendSuggestion[];
     restoredSuggestions?: SendSuggestion[];
-    selectedAddress?: string;
-    onSelectSuggestion: (address: string, visibleSuggestions: SendSuggestion[]) => void;
+    selectedId?: string;
+    onSelectSuggestion: (id: string, visibleSuggestions: SendSuggestion[]) => void;
     onClearSuggestionSelection: () => void;
     onSubmitEditing?: () => void;
 }
@@ -28,7 +28,7 @@ export const RecipientStep = (props: RecipientStepProps) => {
         inputRef,
         suggestions,
         restoredSuggestions,
-        selectedAddress,
+        selectedId,
         onChangeText,
         onSelectSuggestion,
         onClearSuggestionSelection,
@@ -40,15 +40,15 @@ export const RecipientStep = (props: RecipientStepProps) => {
     const { displaySuggestions, handleSelect, handleChangeText } = useSuggestionSelection({
         suggestions,
         restoredSuggestions,
-        selectedAddress,
+        selectedId,
         onChangeText,
         onSelectSuggestion,
         onClearSuggestionSelection
     });
 
     const selectedMeta = useMemo(
-        () => displaySuggestions.find(s => s.address === selectedAddress)?.meta,
-        [displaySuggestions, selectedAddress]
+        () => displaySuggestions.find(s => s.id === selectedId)?.meta,
+        [displaySuggestions, selectedId]
     );
 
     return (
@@ -71,7 +71,7 @@ export const RecipientStep = (props: RecipientStepProps) => {
             >
                 <SuggestionsList
                     suggestions={displaySuggestions}
-                    selectedAddress={selectedAddress}
+                    selectedId={selectedId}
                     onSelect={handleSelect}
                 />
             </KeyboardAwareScrollView>

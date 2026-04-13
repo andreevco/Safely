@@ -10,7 +10,7 @@ import {
 } from './types';
 import { getUtxoTotal } from './utils';
 import { BtcApi, BtcApiEstimatedFee, BtcApiUtxo } from '../../api/btc';
-import { BtcAssetAmount, btcNetworkConfig, BtcWallet } from '../../entities';
+import { BtcAssetAmount, btcNetworkConfig, SignableBtcWallet } from '../../entities';
 import { abs, assertUnreachable, IIdentifiable, toBig } from '../../utils';
 
 export type SpentUtxo = { txid: string; vout: number; value: string };
@@ -22,7 +22,7 @@ export class BtcEstimator implements IIdentifiable {
 
     constructor(
         private readonly btcApi: BtcApi,
-        private readonly wallet: BtcWallet
+        private readonly wallet: SignableBtcWallet
     ) {
         this.id = `${this.constructor.name}:${this.btcApi.id}:${this.wallet.id.toString()}`;
         this.psbtBulder = new BtcPsbtBulder(btcApi, btcNetworkConfig[this.wallet.network]);

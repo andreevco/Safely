@@ -1,5 +1,6 @@
+import { CommonActions, useNavigation } from '@react-navigation/native';
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert } from 'react-native';
 
 import { Cell, List } from '@mobile/shared/ui';
 
@@ -8,7 +9,12 @@ import { styles } from './AddWalletOptions.styles';
 
 export const AddWalletOptions = () => {
     const { t } = useTranslation();
+    const navigation = useNavigation();
     const { startCreateFlow, startImportFlow } = useAddWalletFlow();
+
+    const startWatchOnlyFlow = useCallback(() => {
+        navigation.dispatch(CommonActions.navigate('AddWatchOnlyModal'));
+    }, [navigation]);
 
     return (
         <List style={styles.list}>
@@ -35,7 +41,7 @@ export const AddWalletOptions = () => {
                     </Cell.Content>
                     <Cell.Chevron />
                 </Cell>
-                <Cell onPress={() => Alert.alert('Coming soon')}>
+                <Cell onPress={startWatchOnlyFlow}>
                     <Cell.Content>
                         <Cell.Row>
                             <Cell.Title>{t('addWallet.watchAccount.title')}</Cell.Title>

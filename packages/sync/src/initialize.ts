@@ -3,6 +3,7 @@ import { ed25519 } from '@noble/curves/ed25519.js';
 import { hkdf } from '@noble/hashes/hkdf.js';
 import { sha256 } from '@noble/hashes/sha2.js';
 import * as Y from 'yjs';
+import { ZodType } from 'zod';
 
 import { YCRDT } from './crdt/y-crdt';
 import { YCRDTRepository } from './crdt/y-crdt-repository';
@@ -53,14 +54,18 @@ export async function initializeKeys(
     });
 }
 
-export async function initializeCrdt(repo: YCRDTRepository): Promise<void> {
-    await repo.saveCRDT(new YCRDT(new Y.Doc()));
+export async function initializeCrdt(
+    repo: YCRDTRepository,
+    schema: Record<string, ZodType>
+): Promise<void> {
+    await repo.saveCRDT(new YCRDT(new Y.Doc(), schema));
 }
 
 export async function initializeSyncAccount(opts: {
     storage: IStorage;
     encryptedStorage: IStorage;
     secureEncryptedStorage: IStorage;
+    structure: Record<string, ZodType>;
     masterKey: Buffer;
     logger: Logger;
     ik?: { secretKey: Buffer; publicKey: Buffer };
@@ -70,7 +75,7 @@ export async function initializeSyncAccount(opts: {
         opts.secureEncryptedStorage
     );
     const syncStateRepository = new SyncStateRepository(opts.storage, opts.logger);
-    const ycrdtRepository = new YCRDTRepository(opts.storage);
+    const ycrdtRepository = new YCRDTRepository(opts.storage, opts.structure);
 
     await initializeKeys(
         encryptedKeyRepository,
@@ -79,5 +84,5 @@ export async function initializeSyncAccount(opts: {
         opts.ik
     );
     await initializeSyncState(syncStateRepository);
-    await initializeCrdt(ycrdtRepository);
+    await initializeCrdt(ycrdtRepository, opts.structure);
 }

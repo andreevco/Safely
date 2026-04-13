@@ -208,7 +208,7 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
                     onChangeText={actions.setRecipient}
                     suggestions={meta.suggestions}
                     restoredSuggestions={meta.restoredSuggestions}
-                    selectedAddress={suggestionSelection.selectedAddress}
+                    selectedId={suggestionSelection.selectedId}
                     onSelectSuggestion={suggestionSelection.select}
                     onClearSuggestionSelection={suggestionSelection.clear}
                 />

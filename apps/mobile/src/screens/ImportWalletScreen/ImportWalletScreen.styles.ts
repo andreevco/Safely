@@ -14,11 +14,11 @@ export const styles = StyleSheet.create(theme => ({
     },
     textContainer: {
         alignItems: 'center',
-        gap: theme.spacing[8],
-        paddingHorizontal: theme.spacing[16],
-        marginBottom: theme.spacing[4]
+        gap: theme.spacing[4],
+        padding: theme.spacing[16]
     },
     inputContainer: {
+        marginHorizontal: theme.spacing[8],
         backgroundColor: theme.colors.background.secondary,
         borderRadius: theme.radius.md,
         padding: theme.spacing[16],

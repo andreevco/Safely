@@ -15,18 +15,22 @@
 
 import * as runtime from '../runtime';
 import type {
-  DeviceToRemove,
   NewAccount,
   OnboardingMessage,
+  SignedDeviceIdentity,
 } from '../models/index';
 import {
-    DeviceToRemoveFromJSON,
-    DeviceToRemoveToJSON,
     NewAccountFromJSON,
     NewAccountToJSON,
     OnboardingMessageFromJSON,
     OnboardingMessageToJSON,
+    SignedDeviceIdentityFromJSON,
+    SignedDeviceIdentityToJSON,
 } from '../models/index';
+
+export interface AddDeviceToAccountRequest {
+    signedDeviceIdentity: SignedDeviceIdentity;
+}
 
 export interface CreateAccountRequest {
     newAccount: NewAccount;
@@ -37,13 +41,59 @@ export interface PostOnboardingMessageRequest {
 }
 
 export interface RemoveDeviceFromAccountRequest {
-    deviceToRemove: DeviceToRemove;
+    signedDeviceIdentity: SignedDeviceIdentity;
 }
 
 /**
  * 
  */
 export class AccountsApi extends runtime.BaseAPI {
+
+    /**
+     * Creates request options for addDeviceToAccount without sending the request
+     */
+    async addDeviceToAccountRequestOpts(requestParameters: AddDeviceToAccountRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['signedDeviceIdentity'] == null) {
+            throw new runtime.RequiredError(
+                'signedDeviceIdentity',
+                'Required parameter "signedDeviceIdentity" was null or undefined when calling addDeviceToAccount().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/v1/devices`;
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SignedDeviceIdentityToJSON(requestParameters['signedDeviceIdentity']),
+        };
+    }
+
+    /**
+     * Add device to account
+     */
+    async addDeviceToAccountRaw(requestParameters: AddDeviceToAccountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        const requestOptions = await this.addDeviceToAccountRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Add device to account
+     */
+    async addDeviceToAccount(requestParameters: AddDeviceToAccountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.addDeviceToAccountRaw(requestParameters, initOverrides);
+    }
 
     /**
      * Creates request options for confirmOnboarding without sending the request
@@ -214,10 +264,10 @@ export class AccountsApi extends runtime.BaseAPI {
      * Creates request options for removeDeviceFromAccount without sending the request
      */
     async removeDeviceFromAccountRequestOpts(requestParameters: RemoveDeviceFromAccountRequest): Promise<runtime.RequestOpts> {
-        if (requestParameters['deviceToRemove'] == null) {
+        if (requestParameters['signedDeviceIdentity'] == null) {
             throw new runtime.RequiredError(
-                'deviceToRemove',
-                'Required parameter "deviceToRemove" was null or undefined when calling removeDeviceFromAccount().'
+                'signedDeviceIdentity',
+                'Required parameter "signedDeviceIdentity" was null or undefined when calling removeDeviceFromAccount().'
             );
         }
 
@@ -235,7 +285,7 @@ export class AccountsApi extends runtime.BaseAPI {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: DeviceToRemoveToJSON(requestParameters['deviceToRemove']),
+            body: SignedDeviceIdentityToJSON(requestParameters['signedDeviceIdentity']),
         };
     }
 

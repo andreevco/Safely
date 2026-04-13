@@ -14,3 +14,7 @@ export const QUERIES_REFETCH_INTERVAL = {
     LAST_BTC_TX: 1000 * 5,
     UTXO: 1000 * 5
 };
+
+export const QUERIES_GC_TIME = {
+    SEND_FORM_DRAFT: 1000 * 60 * 60
+};

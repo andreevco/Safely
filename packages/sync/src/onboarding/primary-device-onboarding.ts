@@ -1,11 +1,18 @@
 import { x25519 } from '@noble/curves/ed25519.js';
 
-import { deriveOnboardingKey, encryptMasterKey } from './crypto';
-import { OnboardingInvitationCodec } from './onboarding-codec';
+import { deriveOnboardingKey, encryptOnboardingMessage } from './crypto';
+import {
+    QRMessageCodec,
+    QRMessageNewDeviceOnboarding,
+    QRMessageOperation,
+    QRMessageReconnection
+} from './onboarding-codec';
+import { encodeOnboardingMessagePayload } from './onboarding-message-payload';
 import { AccountsApi } from '../api/generated';
 import { DmkSignerService } from '../crypto/service/dmk-signer-service';
 import { MasterKeyService } from '../crypto/service/master-key-service';
 import { DeviceManagementService } from '../device-manager/device-management-service';
+import { SyncError } from '../sync-error';
 import { u8be, utf8 } from '../utils/buffer';
 
 export class PrimaryDeviceOnboarding {
@@ -14,51 +21,87 @@ export class PrimaryDeviceOnboarding {
         private readonly dmkService: DmkSignerService,
         private readonly accountsApi: AccountsApi,
         private readonly deviceManager: DeviceManagementService,
-        private readonly onDeviceAdded: () => void
+        private readonly triggerSync: () => void
     ) {}
 
-    public async sendOnboardingMessage(data: Buffer): Promise<void> {
-        const invitation = OnboardingInvitationCodec.decode(data);
+    public async onboard(data: Buffer): Promise<void> {
+        const message = QRMessageCodec.decode(data);
+
+        switch (message.type) {
+            case QRMessageOperation.NEW_DEVICE_ONBOARDING:
+                await this.onboardNewDevice(message);
+                break;
+            case QRMessageOperation.RECONNECTION:
+                await this.reconnectExistingDevice(message);
+                break;
+            default:
+                throw new PrimaryDeviceOnboardingError('Unsupported onboarding operation');
+        }
+    }
+
+    private async reconnectExistingDevice(message: QRMessageReconnection): Promise<void> {
+        const signature = await this.signOnboardingMessage(message.ikPub);
+        await this.accountsApi.addDeviceToAccount({
+            signedDeviceIdentity: {
+                identityPubKey: message.ikPub.toString('hex'),
+                signature: signature.toString('hex')
+            }
+        });
+
+        await this.deviceManager.addDevice(message.ikPub, this.dmkService);
+        this.triggerSync();
+    }
+
+    private async onboardNewDevice(message: QRMessageNewDeviceOnboarding): Promise<void> {
         const ephemeralKeyPair = x25519.keygen();
 
         const onboardingMetadata = {
             inviterEphemeralPub: Buffer.from(ephemeralKeyPair.publicKey),
-            invitationEphemeraPub: invitation.ephemeralPub,
-            invitationIkPub: invitation.ikPub
+            invitationEphemeraPub: message.ephemeralPub,
+            invitationIkPub: message.ikPub
         };
 
         const onboardKey = deriveOnboardingKey({
             ephemeralPrv: Buffer.from(ephemeralKeyPair.secretKey),
-            ephemeralPub: invitation.ephemeralPub,
+            ephemeralPub: message.ephemeralPub,
             info: onboardingMetadata
         });
 
+        const addOp = await this.deviceManager.makeAddOp(message.ikPub, this.dmkService);
+
         const { ciphertext, nonce } = await this.masterKeyService.withMasterKey(masterKey => {
-            return encryptMasterKey({
+            return encryptOnboardingMessage({
                 aad: onboardingMetadata,
                 onboardKey,
-                masterKey
+                onboardingMessagePayload: encodeOnboardingMessagePayload({
+                    masterKey,
+                    addOp
+                })
             });
         });
-        const signature = await this.signOnboardingMessage(invitation.ikPub);
-
-        await this.deviceManager.addDevice(
-            {
-                ikPub: invitation.ikPub
-            },
-            this.dmkService
-        );
-        this.onDeviceAdded();
+        const signature = await this.signOnboardingMessage(message.ikPub);
 
         await this.accountsApi.postOnboardingMessage({
             onboardingMessage: {
-                newIdentityPubKey: invitation.ikPub.toString('hex'),
+                newIdentityPubKey: message.ikPub.toString('hex'),
                 inviterEphemeralPubKey: Buffer.from(ephemeralKeyPair.publicKey).toString('hex'),
                 ciphertext: Buffer.from(ciphertext).toString('hex'),
                 nonce: Buffer.from(nonce).toString('hex'),
                 signature: signature.toString('hex')
             }
         });
+
+        for (let i = 0; i < 3; i++) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            const devices = await this.deviceManager.getDevices();
+            if (devices.some(d => d.ikPub.equals(message.ikPub))) {
+                return;
+            }
+        }
+
+        throw new PrimaryDeviceOnboardingError(
+            'New device did not appear after onboarding message was sent'
+        );
     }
 
     private async signOnboardingMessage(newIkPub: Buffer): Promise<Buffer> {
@@ -70,3 +113,5 @@ export class PrimaryDeviceOnboarding {
         return await this.dmkService.sign(toSign);
     }
 }
+
+export class PrimaryDeviceOnboardingError extends SyncError {}

@@ -1,6 +1,11 @@
 import { View } from 'react-native';
 
-import { useActiveBtcWallet, useNumberFormatter, useTotalBalance } from '@safely/ux';
+import {
+    useActiveBtcWallet,
+    useIsActiveWalletWatchOnly,
+    useNumberFormatter,
+    useTotalBalance
+} from '@safely/ux';
 
 import { Text } from '@mobile/shared/ui';
 
@@ -11,6 +16,7 @@ export const TotalBalance = () => {
     const totalBalance = useTotalBalance();
     const formatter = useNumberFormatter();
     const activeWallet = useActiveBtcWallet();
+    const isWatchOnly = useIsActiveWalletWatchOnly();
 
     return (
         <View style={styles.container}>
@@ -21,6 +27,7 @@ export const TotalBalance = () => {
                 address={activeWallet.address}
                 isFetching={totalBalance.isFetching}
                 lastUpdatedAt={totalBalance.dataUpdatedAt}
+                isWatchOnly={isWatchOnly}
             />
         </View>
     );

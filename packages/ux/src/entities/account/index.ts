@@ -9,7 +9,7 @@ import {
     PortfolioNetworkType
 } from '@safely/core';
 import { generateBip39Accessor } from '@safely/core/entities/seed';
-import { ISyncAccount, OnboardingAbortedError, SyncAccountFactory, SyncStatus } from '@safely/sync';
+import { ISyncAccount, OnboardingAbortedError, SyncAccountFactory } from '@safely/sync';
 
 import { accountKey } from './keys';
 import {
@@ -166,7 +166,7 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
                 using accessorVault = generateBip39Accessor();
                 const portfolio = await portfolioFactory.generatePortfolioBip39(accessorVault, {
                     network: PortfolioNetworkType.MAINNET,
-                    name: t('security.groups.wallet.defaultName', { number: 1 })
+                    meta: { name: t('security.groups.wallet.defaultName', { number: 1 }) }
                 });
 
                 await account.syncProvider.set('portfolios', [portfolio.toJSON()]);
@@ -243,7 +243,6 @@ export function useAccountConnectedCallback(
                     return;
                 }
 
-                await account.syncProvider.syncStatusManager.waitForStatus(SyncStatus.SYNCHRONIZED);
                 await updateOwnSyncedDeviceMeta(account);
 
                 if (isReset) {

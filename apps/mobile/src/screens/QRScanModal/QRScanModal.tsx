@@ -194,11 +194,16 @@ export const QRScanModal = (props: QRScanModalProps) => {
             </Screen.Header>
             <Screen.Content>
                 <Animated.View style={styles.textContainer}>
-                    <Text textAlign="center" variant="titleM">
+                    <Text textAlign="center" variant="titleM" color="constantWhite">
                         {title}
                     </Text>
                     {subtitle ? (
-                        <Text textAlign="center" variant="bodyL" color="tertiary">
+                        <Text
+                            style={styles.subtitle}
+                            textAlign="center"
+                            variant="bodyL"
+                            color="constantWhite"
+                        >
                             {subtitle}
                         </Text>
                     ) : null}

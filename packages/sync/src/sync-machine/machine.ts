@@ -1,63 +1,16 @@
 import * as x from 'xstate';
-import { Actor, assign, fromPromise } from 'xstate';
+import { Actor, assign } from 'xstate';
 
 import { pushUpdateToServer } from './actors/push-update';
 import { updatesSubscriberActor } from './actors/updates-subscriber-actor';
 import { defaultConfig, SyncMachineConfig, SyncMachineInput } from './config';
 import { EncryptedState } from '../api/types';
 import { SyncStatus } from '../sync-provider/sync-status';
-import { hex } from '../utils/buffer';
+import { applyUpdate } from './actors/apply-update';
+import { initialSyncing } from './actors/initial-syncing';
+import { SyncMachineError } from './error-handler';
 
 export type SyncMachine = Awaited<Actor<ReturnType<typeof createSyncMachine>>>;
-
-const initialSyncing = fromPromise(async ({ input }: { input: SyncMachineConfig }) => {
-    console.log('[Sync] Initial syncing: fetching latest snapshot from server...');
-    const knownState = await input.syncStateRepository.getState();
-    input.logger.info(`Initial sync ${knownState.snapshotProof.toString('hex')}`);
-
-    const lastState = await input.snapshotsApi.getActualSnapshot({
-        withProofChainTo: knownState.snapshotProof.toString('hex')
-    });
-    console.log(
-        '[Sync] Initial syncing: received snapshot from server, proof:',
-        lastState.snapshot.snapshotProof.slice(0, 16) + '...'
-    );
-
-    try {
-        return await input.updateHandler.handle({
-            kid: hex(lastState.snapshot.kid),
-            ciphertext: hex(lastState.snapshot.ciphertext),
-            nonce: hex(lastState.snapshot.nonce),
-            signature: hex(lastState.snapshot.signature),
-            snapshotProof: hex(lastState.snapshot.snapshotProof),
-            snapshotProofChain: lastState.proofChain
-                ? lastState.proofChain.proofChain.map(proof => hex(proof))
-                : []
-        });
-    } catch (e) {
-        console.error('[SyncMachine] Error during initial syncing', e);
-        throw e;
-    }
-});
-
-const applyUpdate = fromPromise(async ({ input }: { input: { config: SyncMachineConfig } }) => {
-    const upd = input.config.remoteUpdates[0] ?? null;
-    if (upd === null) return;
-    console.log(
-        '[Sync Pull] Applying remote update, proof:',
-        upd.snapshotProof.toString('hex').slice(0, 16) + '...'
-    );
-    try {
-        await input.config.updateHandler.handle({
-            snapshotProofChain: [],
-            ...upd
-        });
-        console.log('[Sync Pull] Remote update applied successfully');
-    } catch (e) {
-        console.error('[SyncMachine] Error applying update', e);
-        throw e;
-    }
-});
 
 export const createSyncMachine = () => {
     return x
@@ -80,12 +33,9 @@ export const createSyncMachine = () => {
                 applyUpdate: applyUpdate
             },
             guards: {
-                isFatalError: () => {
-                    // TODO
-                    return false;
-                },
                 shouldSendUpdate: ({ context }) => context.shouldSendUpdate,
-                shouldHandleUpdate: ({ context }) => context.remoteUpdates.length > 0
+                shouldHandleUpdate: ({ context }) => context.remoteUpdates.length > 0,
+                isFatalError: ({ context }) => context.lastError?.type === 'fatal'
             },
             actions: {
                 setStatusDisconnected: ({ context }) => {
@@ -96,6 +46,25 @@ export const createSyncMachine = () => {
                 },
                 setStatusSynchronized: ({ context }) => {
                     context.syncStatusManager.setStatus(SyncStatus.SYNCHRONIZED);
+                },
+                handleError: assign({
+                    lastError: ({ event }: { event: unknown }) => {
+                        const error = (event as { error?: unknown }).error;
+                        if (error instanceof SyncMachineError) {
+                            return error.disposition;
+                        } else {
+                            return { type: 'reconnect' };
+                        }
+                    }
+                }),
+                clearError: assign({
+                    lastError: () => undefined
+                }),
+                applyErrorStatus: ({ context }) => {
+                    const resolution = context.lastError;
+                    if (resolution?.type === 'fatal') {
+                        context.syncStatusManager.setStatus(resolution.status);
+                    }
                 },
                 markDirty: assign({
                     shouldSendUpdate: () => {
@@ -142,7 +111,8 @@ export const createSyncMachine = () => {
                             { actions: 'setStatusSynchronizing', target: 'connectionSession' }
                         ],
                         onError: {
-                            target: '#syncMachine.waitingForRetry'
+                            actions: ['handleError'],
+                            target: 'errorHandling'
                         }
                     }
                 },
@@ -153,7 +123,10 @@ export const createSyncMachine = () => {
                         input: ({ context }) => {
                             return context;
                         },
-                        onError: { target: '#syncMachine.waitingForRetry' }
+                        onError: {
+                            actions: ['handleError'],
+                            target: '#syncMachine.errorHandling'
+                        }
                     },
                     initial: 'connecting',
                     on: {
@@ -204,8 +177,8 @@ export const createSyncMachine = () => {
                                     target: 'connected'
                                 },
                                 onError: {
-                                    actions: 'clearRemoteUpdate',
-                                    target: '#syncMachine.waitingForRetry'
+                                    actions: ['clearRemoteUpdate', 'handleError'],
+                                    target: '#syncMachine.errorHandling'
                                 }
                             }
                         },
@@ -220,12 +193,26 @@ export const createSyncMachine = () => {
                                     target: 'connected'
                                 },
                                 onError: {
-                                    actions: 'clearDirty',
-                                    target: '#syncMachine.waitingForRetry'
+                                    actions: ['clearDirty', 'handleError'],
+                                    target: '#syncMachine.errorHandling'
                                 }
                             }
                         }
                     }
+                },
+
+                errorHandling: {
+                    entry: ['applyErrorStatus'],
+                    always: [
+                        {
+                            guard: 'isFatalError',
+                            target: 'fatalError'
+                        },
+                        {
+                            target: 'waitingForRetry'
+                        }
+                    ],
+                    exit: ['clearError']
                 },
 
                 waitingForRetry: {
@@ -236,6 +223,10 @@ export const createSyncMachine = () => {
                     on: {
                         CONNECT_RETRY: { target: '#syncMachine.initialSyncing' }
                     }
+                },
+
+                fatalError: {
+                    type: 'final'
                 }
             }
         });
