@@ -6,6 +6,7 @@ import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { useActiveWalletBtcBalance, useNumberFormatter } from '@safely/ux';
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import { Icon, InformationCircle12 } from '@mobile/shared/ui/Icon';
 import { Text } from '@mobile/shared/ui/Text';
 
 import { styles } from './AmountStatus.styles';
@@ -63,6 +64,9 @@ export const AmountStatus = (props: AmountStatusProps) => {
                     <Text variant="bodyM" color="tertiary" monospace>
                         {pendingBalance!.format(formatter)}
                     </Text>
+                    <View style={styles.infoIcon}>
+                        <Icon icon={InformationCircle12} color="tertiary" />
+                    </View>
                 </View>
             )}
         </>
