@@ -93,7 +93,6 @@ export class DerivationChainItemBtcSeed implements IDerivationChainItemBtc {
             const signer = this.createSigner(seedProducer, { type: w.type, address });
 
             return {
-                vmType: VMType.BTC,
                 id: new BtcWalletId(derivationRef.id, address),
                 type: w.type,
                 address,

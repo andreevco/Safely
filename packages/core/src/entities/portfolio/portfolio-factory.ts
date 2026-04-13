@@ -163,7 +163,6 @@ export class PortfolioFactory {
                 );
 
                 const wallet: BtcWalletReadOnly = {
-                    vmType: VMType.BTC,
                     id: new BtcWalletId(portfolioId, address),
                     type: BtcWalletType.NATIVE_SEGWIT,
                     address,

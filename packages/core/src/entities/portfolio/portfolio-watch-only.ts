@@ -10,7 +10,6 @@ import { BtcWalletReadOnly } from '../derivation/btc/I-btc-wallet';
 export class PortfolioWatchOnlyBtc extends PortfolioWatchOnlyBase {
     public static restorePortfolio(sPortfolio: SPortfolioBtcWatchOnlyOut): PortfolioWatchOnlyBtc {
         const wallet: BtcWalletReadOnly = {
-            vmType: VMType.BTC,
             id: new BtcWalletId(sPortfolio.id, sPortfolio.address),
             type: BtcWalletType.NATIVE_SEGWIT,
             address: sPortfolio.address,
