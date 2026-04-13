@@ -3,8 +3,7 @@ import { BtcXpub } from '../../../../../blockchain-api';
 import {
     BtcNetwork,
     btcNetworkByPortfolioNetworkType,
-    BtcWalletType,
-    VMType
+    BtcWalletType
 } from '../../../../blockchain';
 import { PortfolioNetworkType } from '../../../../portfolio';
 import { ISeedProducer } from '../../../../seed/I-seed-producer';
