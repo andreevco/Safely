@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { View } from 'react-native';
-import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
 
 import { CryptoAsset } from '@safely/core';
 import { useActiveFiat, useNumberFormatter, useRate } from '@safely/ux';
@@ -53,7 +53,10 @@ export const ChartHeader = (props: ChartHeaderProps) => {
 
     const animatedPriceDiffStyle = useAnimatedStyle(
         () => ({
-            opacity: withTiming(!activePrice || activePriceDiff ? 1 : 0, { duration: 100 })
+            opacity:
+                !activePrice || activePriceDiff
+                    ? withTiming(1, { duration: 120, easing: Easing.inOut(Easing.ease) })
+                    : withTiming(0.56, { duration: 180, easing: Easing.inOut(Easing.ease) })
         }),
         [activePrice, activePriceDiff]
     );
