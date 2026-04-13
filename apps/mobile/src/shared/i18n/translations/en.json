@@ -1,5 +1,20 @@
 {
     "currentLanguageName": "English",
+    "portfolio": {
+        "watchOnly": "Watch only"
+    },
+    "walletAlreadyAdded": {
+        "title": "You've already added this wallet as {{name}}",
+        "subtitle": "Open it or edit its details.",
+        "open": "Open wallet",
+        "edit": "Edit"
+    },
+    "watchOnlySheet": {
+        "title": "Watch-only wallet",
+        "subtitle": "This wallet lets you view balance and transactions. Import it to enable sending funds.",
+        "import": "Import wallet",
+        "ok": "OK"
+    },
     "common": {
         "edit": "Edit",
         "next": "Next",
@@ -342,7 +357,10 @@
         },
         "watchAccount": {
             "title": "Watch account",
-            "subtitle": "Track by wallet address"
+            "subtitle": "Track wallet activity without\nrecovery phrase.",
+            "placeholder": "Enter address or XPUB",
+            "info": "Watch account cannot sign transactions and send funds.",
+            "invalidAddress": "Invalid Bitcoin address"
         }
     },
     "addAccount": {
@@ -480,6 +498,9 @@
         "notRevealed": {
             "subtitle": "You haven't backed up your recovery phrase. Without it, this wallet cannot be recovered.",
             "checkbox": "I understand that I will permanently lose access to this wallet."
+        },
+        "watchOnly": {
+            "subtitle": "This wallet will be removed from your account. You can add it again anytime using the address."
         }
     },
     "tabs": {

@@ -1,6 +1,13 @@
-import { BtcApi, BtcApiTx, BtcAsset, BtcAssetAmount, TransactionFeeCrypto } from '@safely/core';
-import { BtcWallet } from '@safely/core';
-import { toBig, toBigOrZero } from '@safely/core';
+import {
+    BtcApi,
+    BtcApiTx,
+    BtcAsset,
+    BtcAssetAmount,
+    BtcWalletReadOnly,
+    TransactionFeeCrypto,
+    toBig,
+    toBigOrZero
+} from '@safely/core';
 
 import { ActivityPage, BtcActivityItem, IActivityFilters } from './types';
 
@@ -13,13 +20,13 @@ function getBiggestIOAddress(io: BtcApiTx['vin' | 'vout']) {
 
 export async function fetchBtcActivity(
     btcApi: BtcApi,
-    wallet: Pick<BtcWallet, 'type' | 'xpub'>,
+    wallet: Pick<BtcWalletReadOnly, 'type' | 'xpub' | 'address'>,
     page: number,
     filters: IActivityFilters
 ): Promise<ActivityPage> {
     const pageNum = page >= 1 ? page : 1;
 
-    const addressData = await btcApi.getXpub(
+    const addressData = await btcApi.getAddressInfo(
         {
             ...wallet,
             derivationPath: {

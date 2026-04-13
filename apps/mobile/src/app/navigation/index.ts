@@ -27,6 +27,7 @@ import { SignInScreen } from '@mobile/screens/SignInScreen';
 import { SignInSuccessScreen } from '@mobile/screens/SignInSuccessScreen';
 import { SignOutAccountSheet } from '@mobile/screens/SignOutAccountSheet';
 import { TransactionScreen } from '@mobile/screens/TransactionScreen';
+import { WatchOnlySheet } from '@mobile/screens/WatchOnlySheet';
 import { WelcomeScreen } from '@mobile/screens/WelcomeScreen';
 
 import { AddWalletStack } from './stacks/AddWalletStack';
@@ -89,7 +90,8 @@ export const RootStack = createNativeStackNavigator({
                 DestructiveConfirmSheet: DestructiveConfirmSheet,
                 DisconnectDeviceSheet: DisconnectDeviceSheet,
                 RemoveWalletSheet: RemoveWalletSheet,
-                SignOutAccountSheet: SignOutAccountSheet
+                SignOutAccountSheet: SignOutAccountSheet,
+                WatchOnlySheet: WatchOnlySheet
             },
             screenOptions: {
                 animationDuration: 0,

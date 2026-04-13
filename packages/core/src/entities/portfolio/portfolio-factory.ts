@@ -1,12 +1,18 @@
-import { PortfolioType } from './I-portfolio';
+import { PortfolioType, WatchOnlySource } from './I-portfolio';
 import { PortfolioBip39 } from './portfolio-bip39';
 import { PortfolioIdMnemonicBased } from './portfolio-id';
+import { PortfolioIdWatchOnly } from './portfolio-id-watch-only';
+import { NoIconPortfolioMeta, PortfolioMeta } from './portfolio-meta';
 import { PortfolioNetworkType } from './portfolio-network-type';
-import type { SPortfolioOut } from './portfolio.stored';
+import { PortfolioWatchOnly, PortfolioWatchOnlyBtc } from './portfolio-watch-only';
+import type { SPortfolioOut, SPortfolioWatchOnlyOut } from './portfolio.stored';
+import { BtcXpub } from '../../blockchain-api/btc/btc-xpub';
 import { ISecretEncryptor } from '../../di';
 import { assertUnreachable } from '../../utils';
-import { BtcWalletType } from '../blockchain';
+import { BtcNetwork, BtcWalletType, btcNetworkByPortfolioNetworkType, VMType } from '../blockchain';
 import { DerivationChainItemBtcSeed, Derivation } from '../derivation';
+import { BtcWalletId } from '../derivation/btc/btc-wallet-id';
+import { BtcWalletReadOnly } from '../derivation/btc/I-btc-wallet';
 import { InvalidMnemonicError, PortfolioGenerationFailedError } from '../errors';
 import {
     MNEMONIC_TYPE,
@@ -19,20 +25,32 @@ import { BtcBip39SeedProducer } from '../seed';
 
 export class PortfolioFactory {
     public static restorePortfolio(encryptor: ISecretEncryptor, portfolio: SPortfolioOut) {
-        switch (portfolio.id.type) {
+        switch (portfolio.type) {
             case PortfolioType.BIP39:
                 return PortfolioBip39.restorePortfolio(encryptor, portfolio);
+            case PortfolioType.WATCH_ONLY:
+                return PortfolioFactory.restoreWatchOnlyPortfolio(portfolio);
             default:
-                assertUnreachable(portfolio.id.type);
+                assertUnreachable(portfolio);
         }
     }
+
+    private static restoreWatchOnlyPortfolio(portfolio: SPortfolioWatchOnlyOut) {
+        switch (portfolio.id.vmType) {
+            case VMType.BTC:
+                return PortfolioWatchOnlyBtc.restorePortfolio(portfolio);
+            default:
+                assertUnreachable(portfolio.id.vmType);
+        }
+    }
+
     constructor(private readonly encryptor: ISecretEncryptor) {}
 
     public async generatePortfolio(
         secret: IMnemonicAccessor,
         options: {
             network: PortfolioNetworkType;
-            name: string;
+            meta: NoIconPortfolioMeta;
             seedRevealedFromDevice?: string;
         }
     ): Promise<PortfolioBip39> {
@@ -43,7 +61,7 @@ export class PortfolioFactory {
         mnemonicAccessor: IMnemonicAccessor,
         options: {
             network: PortfolioNetworkType;
-            name: string;
+            meta: NoIconPortfolioMeta;
             seedRevealedFromDevice?: string;
         }
     ): Promise<PortfolioBip39> {
@@ -51,7 +69,6 @@ export class PortfolioFactory {
             await validateMnemonic(MNEMONIC_TYPE.BIP39, mnemonicAccessor.value);
 
             const portfolioId = await PortfolioIdMnemonicBased.create(
-                PortfolioType.BIP39,
                 mnemonicAccessor,
                 options.network
             );
@@ -68,14 +85,14 @@ export class PortfolioFactory {
             });
 
             const mnemonicVault = await this.getMnemonicVault(mnemonicAccessor);
-            const emoji = portfolioId.getFallbackEmoji();
+            const meta = {
+                name: options.meta.name,
+                icon: options.meta.icon ?? portfolioId.getFallbackEmoji()
+            };
 
             return new PortfolioBip39({
                 id: portfolioId,
-                meta: {
-                    name: options.name,
-                    icon: emoji
-                },
+                meta,
                 secretRevealedStatus: options.seedRevealedFromDevice
                     ? {
                           revealedAt: new Date(),
@@ -101,6 +118,85 @@ export class PortfolioFactory {
 
             console.error(error);
             throw new PortfolioGenerationFailedError(undefined, { cause: error });
+        }
+    }
+
+    public static resolveWatchOnlyId(
+        input: string,
+        network: PortfolioNetworkType,
+        vmType: VMType
+    ): PortfolioIdWatchOnly {
+        let source: WatchOnlySource;
+
+        switch (vmType) {
+            case VMType.BTC:
+                source = BtcXpub.validate(input) ? WatchOnlySource.XPUB : WatchOnlySource.ADDRESS;
+                break;
+            default:
+                assertUnreachable(vmType);
+        }
+
+        return new PortfolioIdWatchOnly(input, source, network, vmType);
+    }
+
+    public static generateWatchOnlyPortfolio(
+        input: string,
+        options: {
+            network: PortfolioNetworkType;
+            meta: PortfolioMeta;
+            vmType: VMType;
+        }
+    ): PortfolioWatchOnly {
+        const portfolioId = PortfolioFactory.resolveWatchOnlyId(
+            input,
+            options.network,
+            options.vmType
+        );
+
+        switch (options.vmType) {
+            case VMType.BTC: {
+                const btcNetwork = btcNetworkByPortfolioNetworkType(options.network);
+                const { address, xpub } = PortfolioFactory.resolveBtcWatchOnlyInput(
+                    input,
+                    portfolioId.source,
+                    btcNetwork
+                );
+
+                const wallet: BtcWalletReadOnly = {
+                    id: new BtcWalletId(portfolioId, address),
+                    type: BtcWalletType.NATIVE_SEGWIT,
+                    address,
+                    network: btcNetwork,
+                    xpub
+                };
+
+                return new PortfolioWatchOnlyBtc({
+                    id: portfolioId,
+                    meta: options.meta,
+                    source: portfolioId.source,
+                    wallet
+                });
+            }
+            default:
+                assertUnreachable(options.vmType);
+        }
+    }
+
+    private static resolveBtcWatchOnlyInput(
+        input: string,
+        source: WatchOnlySource,
+        btcNetwork: BtcNetwork
+    ): { address: string; xpub: string | null } {
+        switch (source) {
+            case WatchOnlySource.XPUB:
+                return {
+                    address: BtcXpub.deriveAddress(input, btcNetwork, BtcWalletType.NATIVE_SEGWIT),
+                    xpub: input
+                };
+            case WatchOnlySource.ADDRESS:
+                return { address: input, xpub: null };
+            default:
+                assertUnreachable(source);
         }
     }
 

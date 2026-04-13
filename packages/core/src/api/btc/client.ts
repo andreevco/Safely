@@ -19,13 +19,25 @@ export interface GetAddressParams {
     gap?: number;
 }
 
-export interface BtcDescriptor {
+export type BtcDescriptor = BtcXpubDescriptor | BtcAddressDescriptor;
+
+export interface BtcXpubDescriptor {
     type: BtcWalletType;
     xpub: string;
     derivationPath?: {
         change: number;
         addressIndex: number | '*';
     };
+}
+
+export interface BtcAddressDescriptor {
+    type: BtcWalletType;
+    xpub: null;
+    address: string;
+}
+
+function isAddressDescriptor(descriptor: BtcDescriptor): descriptor is BtcAddressDescriptor {
+    return descriptor.xpub === null;
 }
 
 const btcWalletTypeToDescriptor: Record<BtcWalletType, 'wpkh' | 'pkh' | 'tr' | 'sh-wpkh'> = {
@@ -42,14 +54,14 @@ export class BtcApi extends ApiClient implements IIdentifiable {
         this.id = `${this.constructor.name}:${baseUrl}`;
     }
 
-    public async getXpub(descriptor: BtcDescriptor, params?: GetAddressParams) {
-        const serialized = this.serializeDescriptor(descriptor);
-        return await this.getJson(`/api/v2/xpub/${serialized}`, AddressSchema, params);
+    public async getAddressInfo(descriptor: BtcDescriptor, params?: GetAddressParams) {
+        const id = this.resolveDescriptorId(descriptor);
+        return await this.getJson(`/api/v2/${id.endpoint}/${id.value}`, AddressSchema, params);
     }
 
     public async getAccountUtxo(descriptor: BtcDescriptor) {
-        const serialized = this.serializeDescriptor(descriptor);
-        return await this.getJson(`/api/v2/utxo/${serialized}`, z.array(UtxoSchema));
+        const id = this.resolveDescriptorId(descriptor);
+        return await this.getJson(`/api/v2/utxo/${id.value}`, z.array(UtxoSchema));
     }
 
     public async getTransaction(txid: string) {
@@ -73,12 +85,16 @@ export class BtcApi extends ApiClient implements IIdentifiable {
         return { txid: res.result };
     }
 
-    private serializeDescriptor(descriptor: BtcDescriptor): string {
-        let path = `${btcWalletTypeToDescriptor[descriptor.type]}(${descriptor.xpub}`;
-        if (descriptor.derivationPath) {
-            path += `/${descriptor.derivationPath?.change ?? 0}/${descriptor.derivationPath?.addressIndex ?? '*'}`;
+    private resolveDescriptorId(descriptor: BtcDescriptor): { endpoint: string; value: string } {
+        if (isAddressDescriptor(descriptor)) {
+            return { endpoint: 'address', value: descriptor.address };
         }
 
-        return path + ')';
+        let path = `${btcWalletTypeToDescriptor[descriptor.type]}(${descriptor.xpub}`;
+        if (descriptor.derivationPath) {
+            path += `/${descriptor.derivationPath.change ?? 0}/${descriptor.derivationPath.addressIndex ?? '*'}`;
+        }
+
+        return { endpoint: 'xpub', value: path + ')' };
     }
 }

@@ -1,10 +1,14 @@
+import { useNavigation } from '@react-navigation/native';
 import { useCallback } from 'react';
-import { View } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { Pressable, View } from 'react-native';
 import QRCode from 'react-native-qrcode-skia';
 
 import { type CryptoAsset } from '@safely/core';
+import { useIsActiveWalletWatchOnly } from '@safely/ux';
 
-import { Text, Image, TouchableOpacity } from '@mobile/shared/ui';
+import { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import { Badge, Text, Image, TouchableOpacity } from '@mobile/shared/ui';
 import { useCopy } from '@mobile/shared/utils/copy';
 
 import { styles } from './QRCodeBlock.styles';
@@ -17,10 +21,17 @@ type QRCodeBlockProps = {
 export const QRCodeBlock = (props: QRCodeBlockProps) => {
     const { address, asset } = props;
     const copy = useCopy();
+    const { t } = useTranslation();
+    const navigation = useNavigation<RootStackNavigationProp>();
+    const isWatchOnly = useIsActiveWalletWatchOnly();
 
     const handleCopyAddress = useCallback(() => {
         copy(address);
     }, [copy, address]);
+
+    const handleWatchOnlyPress = useCallback(() => {
+        navigation.navigate('WatchOnlySheet');
+    }, [navigation]);
 
     return (
         <View style={styles.content}>
@@ -46,6 +57,13 @@ export const QRCodeBlock = (props: QRCodeBlockProps) => {
                     {address}
                 </Text>
             </TouchableOpacity>
+            {isWatchOnly && (
+                <Pressable style={styles.badgeContainer} onPress={handleWatchOnlyPress}>
+                    <Badge type="warningFilled" isUppercase>
+                        {t('portfolio.watchOnly')}
+                    </Badge>
+                </Pressable>
+            )}
         </View>
     );
 };

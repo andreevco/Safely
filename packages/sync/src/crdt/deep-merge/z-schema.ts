@@ -70,6 +70,17 @@ export function getObjectFieldSchema(schema: z.ZodTypeAny, key: string): z.ZodTy
         return unwrapped.valueType as z.ZodTypeAny;
     }
 
+    if (unwrapped instanceof z.ZodUnion) {
+        const options = unwrapped.options as z.ZodTypeAny[];
+        for (const option of options) {
+            try {
+                return getObjectFieldSchema(option, key);
+            } catch {
+                // ignore and try next option
+            }
+        }
+    }
+
     throw new Error(`Unable to get object field schema for ${key}`);
 }
 
