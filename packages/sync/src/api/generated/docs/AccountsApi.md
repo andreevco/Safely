@@ -4,12 +4,79 @@ All URIs are relative to *http://localhost:8006*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
+| [**addDeviceToAccount**](AccountsApi.md#adddevicetoaccount) | **POST** /v1/devices | Add device to account |
 | [**confirmOnboarding**](AccountsApi.md#confirmonboarding) | **POST** /v1/devices/onboarding/confirm | Confirm onboarding |
 | [**createAccount**](AccountsApi.md#createaccount) | **POST** /v1/accounts | Create new account |
 | [**getOnboardingMessage**](AccountsApi.md#getonboardingmessage) | **GET** /v1/devices/onboarding/message | Get onboarding message |
 | [**postOnboardingMessage**](AccountsApi.md#postonboardingmessage) | **POST** /v1/devices/onboarding/message | Post onboarding message |
 | [**removeDeviceFromAccount**](AccountsApi.md#removedevicefromaccount) | **POST** /v1/devices/remove | Remove device from account |
 
+
+
+## addDeviceToAccount
+
+> addDeviceToAccount(signedDeviceIdentity)
+
+Add device to account
+
+### Example
+
+```ts
+import {
+  Configuration,
+  AccountsApi,
+} from '';
+import type { AddDeviceToAccountRequest } from '';
+
+async function example() {
+  console.log("🚀 Testing  SDK...");
+  const api = new AccountsApi();
+
+  const body = {
+    // SignedDeviceIdentity
+    signedDeviceIdentity: ...,
+  } satisfies AddDeviceToAccountRequest;
+
+  try {
+    const data = await api.addDeviceToAccount(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **signedDeviceIdentity** | [SignedDeviceIdentity](SignedDeviceIdentity.md) |  | |
+
+### Return type
+
+`void` (Empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | ok |  -  |
+| **0** | Common error response |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
 ## confirmOnboarding
@@ -262,7 +329,7 @@ No authorization required
 
 ## removeDeviceFromAccount
 
-> removeDeviceFromAccount(deviceToRemove)
+> removeDeviceFromAccount(signedDeviceIdentity)
 
 Remove device from account
 
@@ -280,8 +347,8 @@ async function example() {
   const api = new AccountsApi();
 
   const body = {
-    // DeviceToRemove
-    deviceToRemove: ...,
+    // SignedDeviceIdentity
+    signedDeviceIdentity: ...,
   } satisfies RemoveDeviceFromAccountRequest;
 
   try {
@@ -301,7 +368,7 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **deviceToRemove** | [DeviceToRemove](DeviceToRemove.md) |  | |
+| **signedDeviceIdentity** | [SignedDeviceIdentity](SignedDeviceIdentity.md) |  | |
 
 ### Return type
 

@@ -2,7 +2,7 @@ import { ed25519, x25519 } from '@noble/curves/ed25519.js';
 import { ZodType } from 'zod';
 
 import { decryptOnboardingMessagePayload, deriveOnboardingKey } from './crypto';
-import { OnboardingInvitationCodec } from './onboarding-codec';
+import { QRMessageCodec, QRMessageOperation } from './onboarding-codec';
 import { decodeOnboardingMessagePayload } from './onboarding-message-payload';
 import { AccountManager } from '../account/account-manager';
 import { ISyncAccount } from '../account/I-sync-account';
@@ -28,7 +28,8 @@ export class NewDeviceOnboarding<S extends Record<string, ZodType>> {
             secretKey: Buffer.from(generated.secretKey)
         };
 
-        return OnboardingInvitationCodec.encode({
+        return QRMessageCodec.encode({
+            type: QRMessageOperation.NEW_DEVICE_ONBOARDING,
             ephemeralPub: this.ephemeralKeyPair.publicKey,
             ikPub: this.ik.publicKey
         });
