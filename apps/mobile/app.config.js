@@ -49,11 +49,11 @@ module.exports = {
             ],
             'react-native-bottom-tabs',
             'expo-asset',
-            './plugins/withSplashScreenBG',
             [
                 'expo-splash-screen',
                 {
-                    image: './assets/splash-icon.png'
+                    image: './assets/splash-icon.png',
+                    backgroundColor: "#0C0C0D"
                 }
             ],
             [

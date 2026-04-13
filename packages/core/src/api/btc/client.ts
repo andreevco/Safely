@@ -57,27 +57,13 @@ export class BtcApi extends ApiClient implements IIdentifiable {
 
     public async getAddressInfo(descriptor: BtcDescriptor, params?: GetAddressParams) {
         const id = this.resolveDescriptorId(descriptor);
-        todo
-        return await this.getJson(`/api/v2/${id.endpoint}/${id.value}`, AddressSchema, params);
-    }
-
-    public async getXpub(descriptor: BtcDescriptor, params?: GetAddressParams) {
-        const serialized = this.serializeDescriptor(descriptor);
-        return await this.getJson(`/v1/xpubs/${serialized}`, AddressSchema, params);
-    }
-
-
-    public async getAccountUtxo(descriptor: BtcDescriptor) {
-        const id = this.resolveDescriptorId(descriptor);
-        return await this.getJson(`/api/v2/utxo/${id.value}`, z.array(UtxoSchema));
+        return await this.getJson(`/v1/${id.endpoint}/${id.value}`, AddressSchema, params);
     }
 
     public async getUtxos(descriptor: BtcDescriptor, withPendingTxs = false) {
-        const serialized = this.serializeDescriptor(descriptor);
-
-        todo
+        const id = this.resolveDescriptorId(descriptor);
         return await this.getJson(
-            `/v1/utxos/${serialized}`,
+            `/v1/utxos/${id.value}`,
             z.array(UtxoWithOptionalTxSchema),
             withPendingTxs ? { withPendingTxs: true } : undefined
         );
@@ -106,7 +92,7 @@ export class BtcApi extends ApiClient implements IIdentifiable {
 
     private resolveDescriptorId(descriptor: BtcDescriptor): { endpoint: string; value: string } {
         if (isAddressDescriptor(descriptor)) {
-            return { endpoint: 'address', value: descriptor.address };
+            return { endpoint: 'addresses', value: descriptor.address };
         }
 
         let path = `${btcWalletTypeToDescriptor[descriptor.type]}(${descriptor.xpub}`;
@@ -114,6 +100,6 @@ export class BtcApi extends ApiClient implements IIdentifiable {
             path += `/${descriptor.derivationPath.change ?? 0}/${descriptor.derivationPath.addressIndex ?? '*'}`;
         }
 
-        return { endpoint: 'xpub', value: path + ')' };
+        return { endpoint: 'xpubs', value: path + ')' };
     }
 }

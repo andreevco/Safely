@@ -16,7 +16,7 @@ import { useActiveAccount } from '../account';
 import { useRawBtcWalletUtxo } from './utxo';
 import { getBiggestBtcIOAddress } from '../activity/api';
 import { BtcActivityItem } from '../activity/types';
-import { useActiveBtcWallet, usePortfoliosQueryConfig } from '../portfolio';
+import { resolveBtcWallet, useActiveBtcWallet, usePortfoliosQueryConfig } from '../portfolio';
 
 export function useBroadcastedBtcTxCache() {
     const { get, set } = useAccountLocalStorage('broadcastedBtcTxCache');
@@ -35,7 +35,7 @@ export function useBroadcastedBtcTxCache() {
                 Awaited<ReturnType<(typeof portfoliosQuery)['queryFn']>>
             >(portfoliosQuery.queryKey);
 
-            const allWallets = portfolios?.map(p => p.derivations[0].chains.btc.wallets[0]) ?? [];
+            const allWallets = portfolios?.map(p => resolveBtcWallet(p)) ?? [];
 
             const senderWallet = allWallets.find(w => w.xpub === cached.senderXpub);
 

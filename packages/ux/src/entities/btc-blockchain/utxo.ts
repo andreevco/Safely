@@ -15,7 +15,7 @@ import {
     useDerivedQuery,
     usePersistQuery
 } from '../../shared';
-import { useActiveBtcWallet, usePortfolios } from '../portfolio';
+import { resolveBtcWallet, useActiveBtcWallet, usePortfolios } from '../portfolio';
 import { useBroadcastedBtcTxCache, BroadcastedBtcTxCacheService } from './broadcasted-tx-cache';
 import { utxo } from './keys';
 import { getBiggestBtcIOAddress } from '../activity/api';
@@ -29,11 +29,13 @@ function useAccessibleBtcWallets() {
                     switch (p.type) {
                         case PortfolioType.BIP39:
                             return true;
+                        case PortfolioType.WATCH_ONLY:
+                            return false;
                         default:
-                            assertUnreachable(p.type);
+                            assertUnreachable(p);
                     }
                 })
-                .map(p => p.derivations[0].chains.btc.wallets[0]),
+                .map(p => resolveBtcWallet(p)),
         [portfolios]
     );
 }
