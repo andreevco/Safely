@@ -4,7 +4,7 @@ export const styles = StyleSheet.create(theme => ({
     box: {
         width: 24,
         height: 24,
-        borderRadius: theme.radius.sm,
+        borderRadius: theme.radius.xs,
         borderWidth: theme.border.hairline,
         borderColor: theme.colors.other.transparentElement,
         backgroundColor: theme.colors.background.tertiary,

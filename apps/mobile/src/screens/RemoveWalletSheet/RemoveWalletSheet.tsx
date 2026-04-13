@@ -3,12 +3,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import {
-    getPortfolioDisplayName,
-    useActivePortfolio,
-    useDeletePortfolio,
-    useToast
-} from '@safely/ux';
+import { useActivePortfolio, useDeletePortfolio, useToast } from '@safely/ux';
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { BottomSheet, Button, ConfirmCheckbox, Text, useBottomSheet } from '@mobile/shared/ui';
@@ -40,13 +35,11 @@ const RemoveWalletContent = () => {
         navigation.navigate('RecoveryConfirmSheet');
     };
 
-    const walletDisplayName = getPortfolioDisplayName(portfolio.meta);
-
     return (
         <View>
             <View style={styles.titleBox}>
                 <Text textAlign="center" variant="titleM">
-                    {t('removeWallet.title', { name: walletDisplayName })}
+                    {t('removeWallet.title', { name: portfolio.meta.name })}
                 </Text>
                 <Text textAlign="center" variant="bodyL" color="secondary" style={styles.subtitle}>
                     {t(state.subtitleKey)}{' '}

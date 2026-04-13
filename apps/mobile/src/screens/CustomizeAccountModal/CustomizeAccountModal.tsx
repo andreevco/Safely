@@ -2,10 +2,11 @@ import { useFocusEffect } from '@react-navigation/native';
 import { StaticScreenProps } from '@react-navigation/native';
 import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Keyboard, TextInput, View } from 'react-native';
+import { Keyboard, TextInput, TouchableOpacity, View } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useUnistyles } from 'react-native-unistyles';
 
-import { Button, Icon, Screen, Text, Xmark16 } from '@mobile/shared/ui';
+import { Button, Icon, Screen, Text, Xmark16, XmarkCircle16 } from '@mobile/shared/ui';
 
 import { styles } from './CustomizeAccountModal.styles';
 
@@ -20,8 +21,8 @@ export const CustomizeAccountModal = (props: CustomizeAccountModalProps) => {
     const { t } = useTranslation();
     const { theme } = useUnistyles();
     const inputRef = useRef<TextInput>(null);
+    const isFocused = useSharedValue(false);
 
-    const [isFocused, setIsFocused] = useState(false);
     const [accountName, setAccountName] = useState(defaultName ?? '');
 
     useFocusEffect(
@@ -37,7 +38,23 @@ export const CustomizeAccountModal = (props: CustomizeAccountModalProps) => {
 
     const isNameValid = accountName.trim().length > 0;
 
-    styles.useVariants({ focused: isFocused });
+    const inputContainerAnimatedStyle = useAnimatedStyle(() => ({
+        borderWidth: 1,
+        borderColor: isFocused.value
+            ? theme.colors.input.focused.border
+            : theme.colors.input.background
+    }));
+
+    const iconButtonAnimatedStyle = useAnimatedStyle(
+        () => ({
+            opacity: withTiming(accountName.length ? 1 : 0, { duration: 50 })
+        }),
+        [accountName]
+    );
+
+    const handleClear = useCallback(() => {
+        setAccountName('');
+    }, [setAccountName]);
 
     return (
         <Screen>
@@ -66,8 +83,10 @@ export const CustomizeAccountModal = (props: CustomizeAccountModalProps) => {
                         </Text>
                     </View>
 
-                    <View style={styles.inputContainer}>
+                    <Animated.View style={[styles.inputContainer, inputContainerAnimatedStyle]}>
                         <TextInput
+                            onFocus={() => (isFocused.value = true)}
+                            onBlur={() => (isFocused.value = false)}
                             ref={inputRef}
                             value={accountName}
                             onChangeText={setAccountName}
@@ -77,11 +96,14 @@ export const CustomizeAccountModal = (props: CustomizeAccountModalProps) => {
                             autoCorrect={false}
                             maxLength={24}
                             returnKeyType="done"
-                            onFocus={() => setIsFocused(true)}
-                            onBlur={() => setIsFocused(false)}
                             onSubmitEditing={handleSave}
                         />
-                    </View>
+                        <Animated.View style={[iconButtonAnimatedStyle, styles.iconButton]}>
+                            <TouchableOpacity hitSlop={16} onPress={handleClear}>
+                                <Icon icon={XmarkCircle16} color="tertiary" />
+                            </TouchableOpacity>
+                        </Animated.View>
+                    </Animated.View>
                 </View>
             </Screen.Content>
         </Screen>

@@ -41,7 +41,7 @@ const RecoveryConfirmContent = () => {
             <Icon icon={ListKey96} />
 
             <View style={styles.titleBox}>
-                <Text textAlign="center" variant="titleL">
+                <Text textAlign="center" variant="titleM">
                     {t('security.recoverySheet.title')}
                 </Text>
                 <Text textAlign="center" variant="bodyL" color="secondary">
@@ -52,13 +52,13 @@ const RecoveryConfirmContent = () => {
             <View style={styles.warningBox}>
                 <View style={styles.bulletRow}>
                     <View style={styles.bulletDot} />
-                    <Text variant="bodyM" color="secondary" style={styles.bulletText}>
+                    <Text variant="bodyM" color="primary" style={styles.bulletText}>
                         {t('security.recoverySheet.warning1')}
                     </Text>
                 </View>
                 <View style={styles.bulletRow}>
                     <View style={styles.bulletDot} />
-                    <Text variant="bodyM" color="secondary" style={styles.bulletText}>
+                    <Text variant="bodyM" color="primary" style={styles.bulletText}>
                         {t('security.recoverySheet.warning2')}
                     </Text>
                 </View>
@@ -83,7 +83,7 @@ const RecoveryConfirmContent = () => {
 
 export const RecoveryConfirmSheet = () => {
     return (
-        <BottomSheet>
+        <BottomSheet shortHeader>
             <RecoveryConfirmContent />
         </BottomSheet>
     );

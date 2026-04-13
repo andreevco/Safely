@@ -21,7 +21,8 @@ export const styles = StyleSheet.create(theme => ({
     },
     tabContainer: {
         flex: 1,
-        paddingVertical: theme.spacing[12],
+        paddingTop: theme.spacing[12],
+        paddingBottom: theme.spacing[4],
         alignItems: 'center',
         justifyContent: 'center'
     },

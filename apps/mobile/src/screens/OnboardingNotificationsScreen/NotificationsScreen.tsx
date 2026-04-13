@@ -29,30 +29,30 @@ export const OnboardingNotificationsScreen = () => {
 
     return (
         <Screen>
-            <Screen.Header>
+            <Screen.Header withCompensateHeight={false}>
                 <View />
                 <Screen.Header.Button type="small" onPress={handleSkip}>
                     <Text variant="labelM">{t('common.later')}</Text>
                 </Screen.Header.Button>
             </Screen.Header>
-            <Screen.Content>
-                <View style={styles.content}>
+            <View style={styles.content}>
+                <View style={styles.iconContainer}>
                     <Icon icon={Notifications96} />
-                    <View style={styles.textContainer}>
-                        <Text textAlign="center" variant="titleM">
-                            {t('onboarding.notifications.title')}
-                        </Text>
-                        <Text textAlign="center" variant="bodyL" color="secondary">
-                            {t('onboarding.notifications.description')}
-                        </Text>
-                    </View>
                 </View>
-                <View style={styles.buttonContainer}>
-                    <Button type="primary" size="large" onPress={handleEnable}>
-                        {t('onboarding.notifications.enable')}
-                    </Button>
+                <View style={styles.textContainer}>
+                    <Text textAlign="center" variant="titleM">
+                        {t('onboarding.notifications.title')}
+                    </Text>
+                    <Text textAlign="center" variant="bodyL" color="secondary">
+                        {t('onboarding.notifications.description')}
+                    </Text>
                 </View>
-            </Screen.Content>
+            </View>
+            <View style={styles.buttonContainer}>
+                <Button type="primary" size="large" onPress={handleEnable}>
+                    {t('onboarding.notifications.enable')}
+                </Button>
+            </View>
         </Screen>
     );
 };

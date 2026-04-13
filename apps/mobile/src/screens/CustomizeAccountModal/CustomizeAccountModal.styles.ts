@@ -13,14 +13,14 @@ export const styles = StyleSheet.create(theme => ({
         paddingHorizontal: theme.spacing[16]
     },
     textContainer: {
-        gap: theme.spacing[8],
+        gap: theme.spacing[4],
         paddingVertical: theme.spacing[16],
         paddingHorizontal: theme.spacing[16],
         marginBottom: theme.spacing[12]
     },
     inputContainer: {
-        marginVertical: theme.spacing[8],
-        backgroundColor: theme.colors.background.tertiary,
+        margin: theme.spacing[8],
+        backgroundColor: theme.colors.input.background,
         borderRadius: theme.radius.md,
         paddingHorizontal: theme.spacing[16],
         borderWidth: 1,
@@ -34,8 +34,16 @@ export const styles = StyleSheet.create(theme => ({
         }
     },
     input: {
-        height: 56,
+        height: 54,
         fontSize: 16,
         color: theme.colors.text.primary
+    },
+    iconButton: {
+        position: 'absolute',
+        right: theme.spacing[16],
+        top: 0,
+        bottom: 0,
+        justifyContent: 'center',
+        alignItems: 'center'
     }
 }));

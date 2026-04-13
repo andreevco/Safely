@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { GestureDetector } from 'react-native-gesture-handler';
 import Animated, { SharedValue } from 'react-native-reanimated';
 
@@ -13,20 +13,20 @@ import { styles } from './DraggablePortfolio.styles';
 type DraggablePortfolioProps = {
     portfolio: Portfolio;
     index: number;
-    portfolios: Portfolio[];
+    itemsCount: number;
     draggedIndex: SharedValue<number | null>;
     offsetY: SharedValue<number>;
     moveItem: (fromIndex: number, toIndex: number) => void;
     handleSelect: (portfolio: Portfolio) => void;
-    handleDragStart: () => void;
+    handleDragStart?: () => void;
     variant?: 'compact';
 };
 
-export const DraggablePortfolio = (props: DraggablePortfolioProps) => {
+export const DraggablePortfolio = memo((props: DraggablePortfolioProps) => {
     const {
         portfolio,
         index,
-        portfolios,
+        itemsCount,
         draggedIndex,
         offsetY,
         moveItem,
@@ -48,7 +48,7 @@ export const DraggablePortfolio = (props: DraggablePortfolioProps) => {
             gap={variant === 'compact' ? 0 : 2}
             key={portfolio.id.toString()}
             index={index}
-            itemCount={portfolios.length}
+            itemCount={itemsCount}
             draggedIndex={draggedIndex}
             offsetY={offsetY}
             moveItem={moveItem}
@@ -63,9 +63,7 @@ export const DraggablePortfolio = (props: DraggablePortfolioProps) => {
                         style={styles.item}
                         containerStyle={styles.itemContainer}
                         showDivider={
-                            !isSelected && variant === 'compact'
-                                ? index !== portfolios.length - 1
-                                : false
+                            !isSelected && variant === 'compact' ? index !== itemsCount - 1 : false
                         }
                     >
                         <Animated.View style={underlayStyle} />
@@ -93,4 +91,4 @@ export const DraggablePortfolio = (props: DraggablePortfolioProps) => {
             )}
         </Draggable>
     );
-};
+});

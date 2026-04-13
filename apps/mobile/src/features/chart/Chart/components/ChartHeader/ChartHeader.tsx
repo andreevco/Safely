@@ -1,3 +1,5 @@
+/* eslint-disable no-irregular-whitespace */
+
 import { useMemo } from 'react';
 import { View } from 'react-native';
 import Animated, { useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
@@ -68,7 +70,7 @@ export const ChartHeader = (props: ChartHeaderProps) => {
                     {displayPrice ?? '-'}
                 </Text>
                 <Text style={styles.description} variant="bodyM" color="tertiary">
-                    {asset.symbol} / {fiat.id.symbol}
+                    {asset.symbol} / {fiat.id.symbol}
                 </Text>
             </View>
             <Animated.View style={animatedPriceDiffStyle}>

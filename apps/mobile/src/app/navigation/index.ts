@@ -59,7 +59,23 @@ export const RootStack = createNativeStackNavigator({
         Screens: {
             screens: {
                 TabsNavigator: TabsNavigator,
-                TransactionScreen: TransactionScreen
+                TransactionScreen: TransactionScreen,
+                PasscodeVerificationScreen: {
+                    screen: PasscodeVerificationScreen,
+                    options: {
+                        presentation: 'fullScreenModal',
+                        animation: 'fade',
+                        animationDuration: 50
+                    }
+                },
+                ChangePasscodeScreen: {
+                    screen: ChangePasscodeScreen,
+                    options: {
+                        presentation: 'fullScreenModal',
+                        animation: 'fade',
+                        animationDuration: 50
+                    }
+                }
             }
         },
         Modals: {
@@ -67,8 +83,6 @@ export const RootStack = createNativeStackNavigator({
                 SettingsModal: SettingsStack,
                 CurrencyModal: CurrencyScreen,
                 RecoveryPhraseModal: RecoveryPhraseSheet,
-                PasscodeVerificationModal: PasscodeVerificationScreen,
-                ChangePasscodeModal: ChangePasscodeScreen,
                 SignInModal: SignInScreen,
                 CustomizeAccountModal: CustomizeAccountModal,
                 CustomizeWalletModal: CustomizeWalletModal,

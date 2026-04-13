@@ -22,7 +22,7 @@ export const Wallet: FC<{ address: string } | { recipient: Recipient }> = props 
         return (
             <View style={styles.container}>
                 <PortfolioName meta={meta} size={12} gap={6} fontVariant="bodyM" />
-                <Text variant="bodyM" color="tertiary" numberOfLines={1} style={styles.addressLine}>
+                <Text variant="bodyM" color="tertiary" numberOfLines={1}>
                     {ellipsisMiddle(address)}
                 </Text>
             </View>

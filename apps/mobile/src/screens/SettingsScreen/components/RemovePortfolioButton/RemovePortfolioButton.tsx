@@ -1,14 +1,19 @@
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 
-import { getPortfolioDisplayName, useActivePortfolio } from '@safely/ux';
+import { useActivePortfolio } from '@safely/ux';
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { Cell, Text } from '@mobile/shared/ui';
 
 import { styles } from './RemovePortfolioButton.styles';
 
-export const RemovePortfolioButton = () => {
+type RemovePortfolioButtonProps = {
+    showDivider?: boolean;
+};
+
+export const RemovePortfolioButton = (props: RemovePortfolioButtonProps) => {
+    const { showDivider = true } = props;
     const { t } = useTranslation();
     const rootNavigation = useNavigation<RootStackNavigationProp>();
     const portfolio = useActivePortfolio();
@@ -18,12 +23,12 @@ export const RemovePortfolioButton = () => {
     };
 
     return (
-        <Cell style={styles.cell} onPress={handleDeletePortfolio}>
+        <Cell showDivider={showDivider} background="accentRed" onPress={handleDeletePortfolio}>
             <Cell.Content>
                 <Cell.Row style={styles.row}>
                     <Text variant="labelL" textAlign="center" style={styles.text}>
                         {t('settings.removePortfolio.title', {
-                            name: getPortfolioDisplayName(portfolio.meta)
+                            name: portfolio.meta.name
                         })}
                     </Text>
                 </Cell.Row>
