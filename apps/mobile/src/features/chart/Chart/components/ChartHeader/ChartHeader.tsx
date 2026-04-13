@@ -1,7 +1,6 @@
 /* eslint-disable no-irregular-whitespace */
 
 import { useMemo } from 'react';
-
 import { View } from 'react-native';
 import Animated, { useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
 
