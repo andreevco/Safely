@@ -23,7 +23,7 @@ export class OfflineSyncProvider<S extends Record<string, ZodType>> implements I
     }
 
     public get<K extends keyof S>(k: K): z.output<S[K]> {
-        let v: string | null;
+        let v: unknown;
         try {
             v = this.container.yManager.get(k.toString());
         } catch (e) {
@@ -34,13 +34,13 @@ export class OfflineSyncProvider<S extends Record<string, ZodType>> implements I
             }
         }
         const schema = this.structure[k];
-        return schema.parse(v !== null ? JSON.parse(v) : null);
+        return schema.parse(v);
     }
 
     public getAll(): { [K in keyof S]: output<S[K]> } {
         const result = {} as { [K in keyof S]: output<S[K]> };
         for (const k of Object.keys(this.structure) as Array<keyof S>) {
-            let v: string | null;
+            let v: unknown;
             try {
                 v = this.container.yManager.get(k.toString());
             } catch (e) {
@@ -51,7 +51,7 @@ export class OfflineSyncProvider<S extends Record<string, ZodType>> implements I
                 }
             }
             const schema = this.structure[k];
-            result[k] = schema.parse(v !== null ? JSON.parse(v) : null);
+            result[k] = schema.parse(v);
         }
         return result;
     }
@@ -61,14 +61,15 @@ export class OfflineSyncProvider<S extends Record<string, ZodType>> implements I
     }
 
     public async set<K extends keyof S>(k: K, v: z.input<S[K]> | string): Promise<void> {
+        this.container.logger.info('SyncProvider.set<K>', k.toString());
         this.structure[k].parse(v);
-        await this.container.yManager.set(k.toString(), JSON.stringify(v));
+        await this.container.yManager.set(k.toString(), v);
     }
 
     public onChange<K extends keyof S>(k: K, observer: (v: z.output<S[K]>) => void): () => void {
-        let lastStored: string | null | undefined;
+        let lastStored: unknown;
         return this.container.yManager.onChange(() => {
-            let v: string | null;
+            let v: unknown;
             try {
                 v = this.container.yManager.get(k.toString());
             } catch (e) {
@@ -84,7 +85,7 @@ export class OfflineSyncProvider<S extends Record<string, ZodType>> implements I
             const schema = this.structure[k];
             let value: z.output<S[K]>;
             try {
-                value = schema.parse(v !== null ? JSON.parse(v) : null);
+                value = schema.parse(v);
             } catch {
                 return;
             }

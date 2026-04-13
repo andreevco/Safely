@@ -22,7 +22,16 @@ export const styles = StyleSheet.create(theme => ({
         margin: theme.spacing[8],
         backgroundColor: theme.colors.input.background,
         borderRadius: theme.radius.md,
-        paddingHorizontal: theme.spacing[16]
+        paddingHorizontal: theme.spacing[16],
+        borderWidth: 1,
+        borderColor: 'transparent',
+        variants: {
+            focused: {
+                true: {
+                    borderColor: theme.colors.accent.blue
+                }
+            }
+        }
     },
     input: {
         height: 54,

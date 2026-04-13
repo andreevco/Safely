@@ -4,7 +4,7 @@ import { makeFactory, onboardDevice, Schema } from './helpers';
 import { ISyncAccount, SyncAccountFactory } from '../../src';
 import { InMemStorage } from '../impl/storage';
 
-describe('Account', () => {
+describe('Sync', () => {
     let factory: SyncAccountFactory<typeof Schema>;
     let secureEncryptedStorage: InMemStorage;
     let accounts: ISyncAccount<typeof Schema>[];
@@ -59,5 +59,85 @@ describe('Account', () => {
         await setAndVerify(account, ['wallet1']);
         await setAndVerify(account2, ['wallet1', 'wallet2']);
         await setAndVerify(account3, ['wallet1', 'wallet2', 'wallet3']);
+    });
+
+    it('should sync device list when 1 device is onboarded', async () => {
+        const account = await factory.createSyncAccount(secureEncryptedStorage);
+        const { newAccount: account2 } = await onboardDevice(account, secureEncryptedStorage);
+
+        accounts.push(account);
+        accounts.push(account2);
+
+        await vi.waitFor(async () => {
+            const devices1 = await account.getDevices();
+            const devices2 = await account2.getDevices();
+
+            expect(devices1).toHaveLength(2);
+            expect(devices1).toEqual(devices2);
+        });
+    });
+
+    it('should sync device lists between 3 devices (A->B, A->C)', async () => {
+        const account = await factory.createSyncAccount(secureEncryptedStorage);
+        const { newAccount: account2 } = await onboardDevice(account, secureEncryptedStorage);
+        const { newAccount: account3 } = await onboardDevice(account, secureEncryptedStorage);
+
+        accounts.push(account);
+        accounts.push(account2);
+        accounts.push(account3);
+
+        await vi.waitFor(async () => {
+            const devices1 = await account.getDevices();
+            const devices2 = await account2.getDevices();
+            const devices3 = await account3.getDevices();
+
+            expect(devices1).toEqual(devices2);
+            expect(devices2).toEqual(devices3);
+        });
+    });
+
+    it('should sync device lists between 3 devices (A->B, B->C)', async () => {
+        const account = await factory.createSyncAccount(secureEncryptedStorage);
+        const { newAccount: account2, secureEncryptedStorage: secureEncryptedStorage2 } =
+            await onboardDevice(account, secureEncryptedStorage);
+        const { newAccount: account3 } = await onboardDevice(account2, secureEncryptedStorage2);
+
+        accounts.push(account);
+        accounts.push(account2);
+        accounts.push(account3);
+
+        await vi.waitFor(async () => {
+            const devices1 = await account.getDevices();
+            const devices2 = await account2.getDevices();
+            const devices3 = await account3.getDevices();
+
+            expect(devices1).toEqual(devices2);
+            expect(devices2).toEqual(devices3);
+        });
+    });
+
+    // Scenario 1:
+    // - User has two devices A (online) and B (offline)
+    // - User adds device C from A, and then send snapshots to server from C
+    // - B comes online and receives snapshot from device C, but there is no yet device C in the B's device list
+    // - B should be able to handle this snapshot
+    it('should perform scenario 1', async () => {
+        const accountA = await factory.createSyncAccount(secureEncryptedStorage);
+        const { newAccount: accountB } = await onboardDevice(accountA, secureEncryptedStorage);
+        accountB.syncProvider.dispose();
+
+        const { newAccount: accountC } = await onboardDevice(accountA, secureEncryptedStorage);
+
+        accounts.push(accountA);
+        accounts.push(accountC);
+
+        await setAndVerify(accountC, ['wallet1', 'wallet2']);
+
+        accountB.syncProvider.restart();
+
+        await vi.waitFor(async () => {
+            const walletsB = accountB.syncProvider.get('wallets');
+            expect(walletsB).toEqual(['wallet1', 'wallet2']);
+        });
     });
 });

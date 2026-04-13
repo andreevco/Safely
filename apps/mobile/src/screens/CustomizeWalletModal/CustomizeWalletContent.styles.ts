@@ -27,7 +27,16 @@ export const styles = StyleSheet.create(theme => ({
         alignItems: 'center',
         backgroundColor: theme.colors.background.tertiary,
         borderRadius: theme.radius.md,
-        paddingHorizontal: theme.spacing[16]
+        paddingHorizontal: theme.spacing[16],
+        borderWidth: 1,
+        borderColor: 'transparent',
+        variants: {
+            focused: {
+                true: {
+                    borderColor: theme.colors.accent.blue
+                }
+            }
+        }
     },
     input: {
         flex: 1,

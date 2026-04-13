@@ -94,7 +94,7 @@ export const CustomizeAccountModal = (props: CustomizeAccountModalProps) => {
                             placeholderTextColor={theme.colors.text.tertiary}
                             style={styles.input}
                             autoCorrect={false}
-                            maxLength={64}
+                            maxLength={24}
                             returnKeyType="done"
                             onSubmitEditing={handleSave}
                         />

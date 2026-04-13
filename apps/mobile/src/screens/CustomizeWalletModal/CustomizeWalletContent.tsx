@@ -1,7 +1,7 @@
 import { useFocusEffect } from '@react-navigation/native';
 import { selectionAsync } from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TextInput, View } from 'react-native';
 import { KeyboardAwareScrollView, KeyboardStickyView } from 'react-native-keyboard-controller';
@@ -21,6 +21,7 @@ interface CustomizeWalletContentProps {
     selectedIcon: WalletIcon;
     onIconChange: (icon: WalletIcon) => void;
     disabled?: boolean;
+    onSubmitEditing?: () => void;
 }
 
 export const CustomizeWalletContent = ({
@@ -30,15 +31,19 @@ export const CustomizeWalletContent = ({
     onWalletNameChange,
     selectedIcon,
     onIconChange,
-    disabled = false
+    disabled = false,
+    onSubmitEditing
 }: CustomizeWalletContentProps) => {
     const { t } = useTranslation();
     const { theme } = useUnistyles();
     const inputRef = useRef<TextInput>(null);
+    const [isFocused, setIsFocused] = useState(false);
+
+    styles.useVariants({ focused: isFocused });
 
     useFocusEffect(
         useCallback(() => {
-            inputRef.current?.focus();
+            requestAnimationFrame(() => inputRef.current?.focus());
         }, [])
     );
 
@@ -84,6 +89,11 @@ export const CustomizeWalletContent = ({
                             placeholderTextColor={theme.colors.text.tertiary}
                             style={[styles.input, { color: theme.colors.text.primary }]}
                             editable={!disabled}
+                            onFocus={() => setIsFocused(true)}
+                            onBlur={() => setIsFocused(false)}
+                            maxLength={24}
+                            returnKeyType="done"
+                            onSubmitEditing={onSubmitEditing}
                         />
                         {iconDisplay && <View style={styles.iconContainer}>{iconDisplay}</View>}
                     </View>

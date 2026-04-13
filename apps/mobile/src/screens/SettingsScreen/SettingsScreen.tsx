@@ -1,26 +1,15 @@
-import { useRef } from 'react';
+import { Suspense, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
 
-import { useAppContext, useHasPortfolio } from '@safely/ux';
-
 import { useLogOutAllConfirmation } from '@mobile/features/settings/useLogOutAllConfirmation';
-import { List, Screen, Text } from '@mobile/shared/ui';
-import { shareLogs } from '@mobile/shared/utils/log-capture';
+import { Screen, Text } from '@mobile/shared/ui';
 
-import {
-    AccountSection,
-    CurrentWalletSection,
-    RemovePortfolioButton,
-    SettingsGroups,
-    SignOutAccountButton
-} from './components';
+import { SettingsContent } from './components';
 import { styles } from './SettingsScreen.styles';
 
 export const SettingsScreen = () => {
     const { t } = useTranslation();
-    const { version } = useAppContext();
-    const hasPortfolio = useHasPortfolio();
     const eraseAllData = useLogOutAllConfirmation();
     const tapCountRef = useRef(0);
 
@@ -45,31 +34,9 @@ export const SettingsScreen = () => {
                 </Screen.Header.Title>
                 <Screen.Header.CloseButton />
             </Screen.Header>
-            <Screen.Scrollable contentContainerStyle={styles.container}>
-                {hasPortfolio && <CurrentWalletSection />}
-                <AccountSection />
-                <SettingsGroups />
-                <List
-                    style={{
-                        marginTop: 8
-                    }}
-                >
-                    <List.Group variant="separated">
-                        {hasPortfolio && <RemovePortfolioButton />}
-                        <SignOutAccountButton />
-                    </List.Group>
-                </List>
-                <Pressable onLongPress={shareLogs}>
-                    <Text
-                        variant="bodyM"
-                        color="tertiary"
-                        textAlign="center"
-                        style={styles.version}
-                    >
-                        Safely · {version}
-                    </Text>
-                </Pressable>
-            </Screen.Scrollable>
+            <Suspense fallback={null}>
+                <SettingsContent />
+            </Suspense>
         </Screen>
     );
 };

@@ -10,9 +10,11 @@ import {
 } from '@safely/core';
 
 export interface SendSuggestion {
+    id: string;
     address: string;
     meta: PortfolioMeta;
     tag?: number;
+    isWatchOnly?: boolean;
 }
 
 export type AmountInputType = 'crypto' | 'fiat';

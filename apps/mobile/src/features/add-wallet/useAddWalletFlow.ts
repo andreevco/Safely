@@ -9,6 +9,8 @@ import {
 } from '@safely/ux';
 import { useLoader } from '@safely/ux';
 
+import { handleDuplicatePortfolio } from './handleDuplicatePortfolio';
+
 const routes = {
     importWallet: 'ImportWalletModal',
     customize: 'CustomizeWalletModal'
@@ -51,28 +53,34 @@ export function useAddWalletFlow() {
     }, [navigation]);
 
     const onMnemonicReady = useCallback(
-        async (mnemonic: string[]) => {
-            using secretEncryptor = createEncryptor();
-            await secretEncryptor.unlockEncryption();
+        (mnemonic: string[]) => {
+            navigation.dispatch(
+                CommonActions.navigate(routes.customize, {
+                    onSave: async (meta: PortfolioMeta) => {
+                        try {
+                            using secretEncryptor = createEncryptor();
+                            await secretEncryptor.unlockEncryption();
 
-            await withLoader(async () => {
-                using mnemonicAccessor = new MnemonicResource(mnemonic);
-                const portfolio = await importPortfolio({ mnemonicAccessor, secretEncryptor });
+                            await withLoader(async () => {
+                                using mnemonicAccessor = new MnemonicResource(mnemonic);
+                                await importPortfolio({ mnemonicAccessor, secretEncryptor, meta });
+                            });
 
-                navigation.dispatch(
-                    CommonActions.navigate(routes.customize, {
-                        portfolio,
-                        onCompleteCustomize: () => {
                             navigation.dispatch(
                                 CommonActions.reset({
                                     index: 0,
                                     routes: [{ name: 'TabsNavigator' }]
                                 })
                             );
+                        } catch (error) {
+                            handleDuplicatePortfolio(error, navigation);
                         }
-                    })
-                );
-            });
+                    },
+                    onCompleteCustomize: () => {
+                        navigation.goBack();
+                    }
+                })
+            );
         },
         [navigation, importPortfolio, withLoader, createEncryptor]
     );

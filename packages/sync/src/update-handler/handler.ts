@@ -27,8 +27,7 @@ export class UpdateHandler {
         const syncState = await this.syncStateRepository.getState();
         this.logger.info('Handling incoming update', upd.snapshotProof.toString('hex'));
 
-        console.log('[Sync Handler] Decrypting and verifying incoming update...');
-        const update = await this.updateDecryptor.verifyAndDecrypt(upd);
+        const update = await this.updateDecryptor.decrypt(upd);
 
         if (upd.snapshotProof.equals(syncState.snapshotProof)) {
             this.logger.info('Update already received');
@@ -75,6 +74,18 @@ export class UpdateHandler {
         for (const deviceOp of result.newDeviceOps) {
             await this.deviceManagementService.verifyDeviceOpAndApply(deviceOp);
         }
+
+        // Suppose following scenario:
+        // - User has two devices A (online) and B (offline)
+        // - User adds device C from A, and then send snapshots to server from C
+        // - B comes online and receives snapshot from server, but there is no yet device C in the B's device list
+        // - To prevent deadlock (B needs to verify snapshot with C's signature, but to do so it needs to read C's
+        //   snapshot), we first apply any device ops from the update, and only then verify IK signature of the snapshot.
+        // Security considerations:
+        // - If the attacker can create a valid device op, then they can get access to all the private keys from compromised
+        //   device (including wallet secrets) at which point they can do much more harm than just sending invalid snapshots.
+        //   At this point we cant really protect user, so this is acceptable scenario.
+        await this.updateDecryptor.verifyIKSig(upd);
 
         console.log('[Sync Handler] Applying update to local CRDT document...');
         await this.yManager.applyUpdate(update, 'remote');

@@ -1,6 +1,11 @@
 import { useQueryClient } from '@tanstack/react-query';
 
-import { BTC_ASSET, BtcWallet, CryptoAssetAmount, RatedCryptoAssetAmount } from '@safely/core';
+import {
+    BTC_ASSET,
+    BtcWalletReadOnly,
+    CryptoAssetAmount,
+    RatedCryptoAssetAmount
+} from '@safely/core';
 
 import {
     QUERIES_STALE_TIME,
@@ -16,7 +21,7 @@ import { fetchRateQuery } from './rateQuery';
 import { getSortedAssets } from './utils';
 
 // TODO Think again, maybe detach useBalances in separate query
-export function useWalletAssets(wallet: BtcWallet) {
+export function useWalletAssets(wallet: BtcWalletReadOnly) {
     const btcApi = useBtcApi();
     const fiat = useActiveFiat();
     const priceApi = usePriceApi();
@@ -28,7 +33,7 @@ export function useWalletAssets(wallet: BtcWallet) {
             const fiatSymbol = fiat.id.symbol;
 
             const [addressInfo, btcPrice] = await Promise.all([
-                btcApi.getXpub(wallet, {
+                btcApi.getAddressInfo(wallet, {
                     secondaryCurrency: fiatSymbol
                 }),
                 fetchRateQuery(queryClient, priceApi, BTC_ASSET, fiat)

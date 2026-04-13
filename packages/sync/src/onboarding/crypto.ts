@@ -34,27 +34,27 @@ export function deriveOnboardingKey(opts: {
     return Buffer.from(onboardKey);
 }
 
-export function encryptMasterKey(opts: {
+export function encryptOnboardingMessage(opts: {
     aad: {
         inviterEphemeralPub: Buffer;
         invitationEphemeraPub: Buffer;
         invitationIkPub: Buffer;
     };
     onboardKey: Buffer;
-    masterKey: Buffer;
+    onboardingMessagePayload: Buffer;
 }): { ciphertext: Buffer; nonce: Buffer } {
     const nonce = randomBytes(24);
     const aad = encryptionMasterKeyAAD(opts.aad);
 
     return {
         ciphertext: Buffer.from(
-            xchacha20poly1305(opts.onboardKey, nonce, aad).encrypt(opts.masterKey)
+            xchacha20poly1305(opts.onboardKey, nonce, aad).encrypt(opts.onboardingMessagePayload)
         ),
         nonce: Buffer.from(nonce)
     };
 }
 
-export function decryptMasterKey(opts: {
+export function decryptOnboardingMessagePayload(opts: {
     aad: {
         inviterEphemeralPub: Buffer;
         invitationEphemeraPub: Buffer;

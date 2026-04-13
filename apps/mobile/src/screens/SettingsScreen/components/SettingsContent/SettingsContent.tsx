@@ -1,0 +1,37 @@
+import { Pressable } from 'react-native';
+
+import { useAppContext, useHasPortfolio } from '@safely/ux';
+
+import { List, Screen, Text } from '@mobile/shared/ui';
+import { shareLogs } from '@mobile/shared/utils/log-capture';
+
+import { AccountSection } from '../AccountSection';
+import { CurrentWalletSection } from '../CurrentWalletSection';
+import { RemovePortfolioButton } from '../RemovePortfolioButton';
+import { SettingsGroups } from '../SettingsGroups';
+import { SignOutAccountButton } from '../SignOutAccountButton';
+import { styles } from './SettingsContent.styles';
+
+export const SettingsContent = () => {
+    const { version } = useAppContext();
+    const hasPortfolio = useHasPortfolio();
+
+    return (
+        <Screen.Scrollable contentContainerStyle={styles.container}>
+            {hasPortfolio && <CurrentWalletSection />}
+            <AccountSection />
+            <SettingsGroups />
+            <List style={{ marginTop: 8 }}>
+                <List.Group variant="separated">
+                    {hasPortfolio && <RemovePortfolioButton />}
+                    <SignOutAccountButton />
+                </List.Group>
+            </List>
+            <Pressable onLongPress={shareLogs}>
+                <Text variant="bodyM" color="tertiary" textAlign="center" style={styles.version}>
+                    Safely · {version}
+                </Text>
+            </Pressable>
+        </Screen.Scrollable>
+    );
+};

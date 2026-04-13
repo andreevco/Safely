@@ -41,6 +41,9 @@ jobs:
 
       - name: Upload to Firebase App Distribution
         run: |
+          echo '${{ env.SERVICE_ACCOUNT }}' > /tmp/sa-key.json
+          export GOOGLE_APPLICATION_CREDENTIALS=/tmp/sa-key.json
+
           APK_PATH=$(find ${{ steps.download_build.outputs.artifact_path }} -name "*.apk" -type f | head -1)
           if [ -z "$APK_PATH" ]; then
             echo "No .apk file found in artifact. Contents:"
@@ -49,5 +52,4 @@ jobs:
           fi
           firebase appdistribution:distribute "$APK_PATH" \
             --app "${{ env.FIREBASE_APP_ID }}" \
-            --token "${{ env.FIREBASE_TOKEN }}" \
             --groups "testers"

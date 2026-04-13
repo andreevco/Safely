@@ -3,35 +3,33 @@ import { useCallback, useState } from 'react';
 import { SendSuggestion } from '../types';
 
 export interface SuggestionDraftState {
-    selectedAddress?: string;
-    suggestionAddresses?: string[];
+    selectedId?: string;
+    suggestionIds?: string[];
 }
 
 export function useSuggestionDraft(initial?: SuggestionDraftState) {
-    const [selectedAddress, setSelectedAddress] = useState<string | undefined>(
-        initial?.selectedAddress
-    );
-    const [suggestionAddresses, setSuggestionAddresses] = useState<string[] | undefined>(
-        initial?.suggestionAddresses
+    const [selectedId, setSelectedId] = useState<string | undefined>(initial?.selectedId);
+    const [suggestionIds, setSuggestionIds] = useState<string[] | undefined>(
+        initial?.suggestionIds
     );
 
-    const select = useCallback((address: string, visibleSuggestions: SendSuggestion[]) => {
-        setSelectedAddress(address);
-        setSuggestionAddresses(visibleSuggestions.map(s => s.address));
+    const select = useCallback((id: string, visibleSuggestions: SendSuggestion[]) => {
+        setSelectedId(id);
+        setSuggestionIds(visibleSuggestions.map(s => s.id));
     }, []);
 
     const clear = useCallback(() => {
-        setSelectedAddress(undefined);
-        setSuggestionAddresses(undefined);
+        setSelectedId(undefined);
+        setSuggestionIds(undefined);
     }, []);
 
     return {
         state: {
-            selectedAddress,
-            suggestionAddresses
+            selectedId,
+            suggestionIds
         },
         actions: {
-            selectedAddress,
+            selectedId,
             select,
             clear
         }

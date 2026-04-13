@@ -8,8 +8,10 @@ import { SyncAccountRepository } from './sync-account-repository';
 import { Configuration } from '../api/generated';
 import { ITreeStorage } from '../I-storage';
 import { Logger } from '../logger/logger';
+import { OnboardingMessagePayload } from '../onboarding/onboarding-message-payload';
 import { OfflineSyncProvider } from '../sync-provider/offline-sync-provider';
 import { OnlineSyncProvider } from '../sync-provider/online-sync-provider';
+import { SyncStatus } from '../sync-provider/sync-status';
 
 export class CreateAccountService<S extends Record<string, ZodType>> {
     constructor(
@@ -36,6 +38,7 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
             storage,
             encryptedStorage,
             secureEncryptedStorage: accountSecureEncryptedStorage,
+            structure: this.structure,
             masterKey,
             logger
         });
@@ -45,6 +48,7 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
 
         const container = await createSyncContainer({
             accountId: accountID,
+            structure: this.structure,
             storage,
             encryptedStorage,
             apiConfiguration: this.apiConfiguration,
@@ -52,9 +56,7 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
         });
 
         await container.deviceManager.addDevice(
-            {
-                ikPub: await container.ikService.getPub()
-            },
+            await container.ikService.getPub(),
             container.keyServiceFactory.createDmkSignerService(secureEncryptedStorage)
         );
 
@@ -70,10 +72,10 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
 
     public async createOnlineAccountFromMasterKey(
         secureEncryptedStorage: ITreeStorage,
-        masterKey: Buffer,
+        payload: OnboardingMessagePayload,
         ik: { publicKey: Buffer; secretKey: Buffer }
     ) {
-        const accountID = await generateAccountID(masterKey);
+        const accountID = await generateAccountID(payload.masterKey);
 
         const storage = getSyncAccountStorage(this.storage, accountID);
         const encryptedStorage = getSyncAccountStorage(this.encryptedStorage, accountID);
@@ -84,18 +86,20 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
         const logger = this.logger.child(accountID.slice(0, 4));
         await initializeSyncAccount({
             storage,
+            structure: this.structure,
             encryptedStorage: encryptedStorage,
             secureEncryptedStorage: accountSecureEncryptedStorage,
-            masterKey,
+            masterKey: payload.masterKey,
             ik,
             logger
         });
-        masterKey.fill(0);
+        payload.masterKey.fill(0);
 
         await this.syncAccountIDRepository.addAccount(accountID, true);
 
         const container = await createSyncContainer({
             accountId: accountID,
+            structure: this.structure,
             storage,
             encryptedStorage,
             apiConfiguration: this.apiConfiguration,
@@ -103,7 +107,7 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
         });
         await container.accountsApi.confirmOnboarding();
 
-        return new SyncAccount({
+        const account = new SyncAccount({
             accountId: accountID,
             structure: this.structure,
             syncProvider: await OnlineSyncProvider.create(this.structure, container),
@@ -111,5 +115,14 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
             syncAccountRepository: this.syncAccountIDRepository,
             online: true
         });
+        await account.syncProvider.syncStatusManager.waitForStatus(SyncStatus.SYNCHRONIZED);
+
+        // TODO: in scenario when computation crushed before this point, the new device will not be
+        // added to the Y.doc. We need to handle this edge case
+        await container.yManager.addDeviceOp(payload.addOp);
+        await container.deviceManager.verifyDeviceOpAndApply(payload.addOp);
+        account.syncProvider.triggerSync();
+
+        return account;
     }
 }

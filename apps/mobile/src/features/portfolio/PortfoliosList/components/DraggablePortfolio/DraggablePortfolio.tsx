@@ -2,7 +2,7 @@ import { memo, useMemo } from 'react';
 import { GestureDetector } from 'react-native-gesture-handler';
 import Animated, { SharedValue } from 'react-native-reanimated';
 
-import { Portfolio } from '@safely/core';
+import { Portfolio, PortfolioType } from '@safely/core';
 import { useActivePortfolio, useNumberFormatter, usePortfolioBalance } from '@safely/ux';
 
 import { PortfolioName } from '@mobile/entities/portfolio';
@@ -69,7 +69,12 @@ export const DraggablePortfolio = memo((props: DraggablePortfolioProps) => {
                         <Animated.View style={underlayStyle} />
                         <Cell.Content>
                             <Cell.Row style={styles.row}>
-                                <PortfolioName meta={portfolio.meta} gap={12} size={16} />
+                                <PortfolioName
+                                    meta={portfolio.meta}
+                                    gap={12}
+                                    size={16}
+                                    isWatchOnly={portfolio.type === PortfolioType.WATCH_ONLY}
+                                />
                                 <Text
                                     variant="bodyM"
                                     color={isSelected ? 'secondary' : 'tertiary'}

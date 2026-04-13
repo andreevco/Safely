@@ -18,3 +18,6 @@ export type { ISecretEncryptor, SSecretDecrypted, SSecretEncrypted } from './sec
 export { sSecretEncrypted, sSecretDecrypted } from './secret-encryptor';
 
 export { type IsomorphicEventSource } from './utils/sse-stream';
+
+export { zArrayWithKey } from './crdt/deep-merge/array-registry';
+export type { ArrayMergeMeta } from './crdt/deep-merge/array-registry';

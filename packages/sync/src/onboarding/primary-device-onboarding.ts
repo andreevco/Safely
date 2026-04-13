@@ -1,11 +1,13 @@
 import { x25519 } from '@noble/curves/ed25519.js';
 
-import { deriveOnboardingKey, encryptMasterKey } from './crypto';
+import { deriveOnboardingKey, encryptOnboardingMessage } from './crypto';
 import { OnboardingInvitationCodec } from './onboarding-codec';
+import { encodeOnboardingMessagePayload } from './onboarding-message-payload';
 import { AccountsApi } from '../api/generated';
 import { DmkSignerService } from '../crypto/service/dmk-signer-service';
 import { MasterKeyService } from '../crypto/service/master-key-service';
 import { DeviceManagementService } from '../device-manager/device-management-service';
+import { SyncError } from '../sync-error';
 import { u8be, utf8 } from '../utils/buffer';
 
 export class PrimaryDeviceOnboarding {
@@ -13,8 +15,7 @@ export class PrimaryDeviceOnboarding {
         private readonly masterKeyService: MasterKeyService,
         private readonly dmkService: DmkSignerService,
         private readonly accountsApi: AccountsApi,
-        private readonly deviceManager: DeviceManagementService,
-        private readonly onDeviceAdded: () => void
+        private readonly deviceManager: DeviceManagementService
     ) {}
 
     public async sendOnboardingMessage(data: Buffer): Promise<void> {
@@ -33,22 +34,19 @@ export class PrimaryDeviceOnboarding {
             info: onboardingMetadata
         });
 
+        const addOp = await this.deviceManager.makeAddOp(invitation.ikPub, this.dmkService);
+
         const { ciphertext, nonce } = await this.masterKeyService.withMasterKey(masterKey => {
-            return encryptMasterKey({
+            return encryptOnboardingMessage({
                 aad: onboardingMetadata,
                 onboardKey,
-                masterKey
+                onboardingMessagePayload: encodeOnboardingMessagePayload({
+                    masterKey,
+                    addOp
+                })
             });
         });
         const signature = await this.signOnboardingMessage(invitation.ikPub);
-
-        await this.deviceManager.addDevice(
-            {
-                ikPub: invitation.ikPub
-            },
-            this.dmkService
-        );
-        this.onDeviceAdded();
 
         await this.accountsApi.postOnboardingMessage({
             onboardingMessage: {
@@ -59,6 +57,18 @@ export class PrimaryDeviceOnboarding {
                 signature: signature.toString('hex')
             }
         });
+
+        for (let i = 0; i < 3; i++) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            const devices = await this.deviceManager.getDevices();
+            if (devices.some(d => d.ikPub.equals(invitation.ikPub))) {
+                return;
+            }
+        }
+
+        throw new PrimaryDeviceOnboardingError(
+            'New device did not appear after onboarding message was sent'
+        );
     }
 
     private async signOnboardingMessage(newIkPub: Buffer): Promise<Buffer> {
@@ -70,3 +80,5 @@ export class PrimaryDeviceOnboarding {
         return await this.dmkService.sign(toSign);
     }
 }
+
+export class PrimaryDeviceOnboardingError extends SyncError {}

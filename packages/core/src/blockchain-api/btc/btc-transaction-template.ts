@@ -7,7 +7,7 @@ import {
     BLOCKCHAIN_NAME,
     BtcAssetAmount,
     btcNetworkConfig,
-    BtcWallet,
+    SignableBtcWallet,
     ExplorerFactory
 } from '../../entities';
 import { getExternalErrorText } from '../../entities/errors/errors.service';
@@ -22,7 +22,7 @@ export class BtcTransactionTemplate {
 
     constructor(
         private readonly btcApi: BtcApi,
-        private readonly wallet: BtcWallet,
+        private readonly wallet: SignableBtcWallet,
         public readonly request: BtcTransferRequest & { amount: BtcAssetAmount },
         private readonly utxos: BtcApiUtxo[],
         public readonly estimation: BtcEstimation
