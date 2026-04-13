@@ -19,6 +19,9 @@ export const styles = StyleSheet.create(theme => ({
                 },
                 error: {
                     backgroundColor: Color(theme.colors.accent.red).alpha(0.16).toString()
+                },
+                warningFilled: {
+                    backgroundColor: theme.colors.accent.orange
                 }
             }
         }
@@ -37,6 +40,9 @@ export const styles = StyleSheet.create(theme => ({
                 },
                 error: {
                     color: theme.colors.accent.red
+                },
+                warningFilled: {
+                    color: theme.colors.other.constant.black
                 }
             }
         }

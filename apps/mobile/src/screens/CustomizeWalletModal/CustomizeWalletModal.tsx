@@ -22,10 +22,11 @@ type CustomizeWalletModalProps = StaticScreenProps<{
     onSave?: (meta: Pick<PortfolioMeta, 'icon' | 'name'>) => Promise<void>;
     // NOTE: this callback is for navigation actions only and calling in cases when user don't save changes
     onCompleteCustomize?: () => void;
+    hasBackButton?: boolean;
 }>;
 
 export const CustomizeWalletModal = (props: CustomizeWalletModalProps) => {
-    const { portfolio, onSave, onCompleteCustomize } = props.route?.params ?? {};
+    const { portfolio, onSave, onCompleteCustomize, hasBackButton } = props.route?.params ?? {};
     const { t } = useTranslation();
     const fallbackName = useNewPortfolioFallbackName();
     const { mutateAsync: changePortfolioMeta } = useChangePortfolioMeta();
@@ -53,9 +54,13 @@ export const CustomizeWalletModal = (props: CustomizeWalletModalProps) => {
     return (
         <Screen>
             <Screen.Header variant="left">
-                <Screen.Header.Button onPress={onCompleteCustomize}>
-                    <Icon icon={Xmark16} />
-                </Screen.Header.Button>
+                {hasBackButton ? (
+                    <Screen.Header.BackButton />
+                ) : (
+                    <Screen.Header.Button onPress={onCompleteCustomize}>
+                        <Icon icon={Xmark16} />
+                    </Screen.Header.Button>
+                )}
                 <Button
                     type="primary"
                     size="small"
@@ -74,6 +79,7 @@ export const CustomizeWalletModal = (props: CustomizeWalletModalProps) => {
                     onWalletNameChange={setWalletName}
                     selectedIcon={selectedIcon}
                     onIconChange={setSelectedIcon}
+                    onSubmitEditing={isNameValid ? handleSave : undefined}
                 />
             </Screen.Content>
         </Screen>

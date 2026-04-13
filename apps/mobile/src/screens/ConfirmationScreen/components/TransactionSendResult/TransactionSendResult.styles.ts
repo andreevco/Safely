@@ -8,6 +8,7 @@ export const styles = StyleSheet.create(theme => ({
         gap: theme.spacing[16],
         flexDirection: 'row',
         flex: 1,
-        justifyContent: 'flex-end'
+        justifyContent: 'flex-end',
+        alignItems: 'center'
     }
 }));

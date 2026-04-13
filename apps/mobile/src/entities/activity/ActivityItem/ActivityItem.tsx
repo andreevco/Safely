@@ -72,7 +72,9 @@ export const ActivityItem = (props: ActivityItemProps) => {
                                 color="secondary"
                             />
                         ) : (
-                            <Cell.Subtitle>{ellipsisMiddle(counterpartyAddress, 6)}</Cell.Subtitle>
+                            <Cell.Subtitle color="secondary">
+                                {ellipsisMiddle(counterpartyAddress, 6)}
+                            </Cell.Subtitle>
                         )}
                         <Cell.Subvalue>
                             {rate.data &&

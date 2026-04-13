@@ -95,30 +95,28 @@ const BiometrySupportedScreen: FC<{
 
     return (
         <Screen>
-            <Screen.Header>
+            <Screen.Header withCompensateHeight={false}>
                 <View />
                 <Screen.Header.Button type="small" onPress={handleSkip}>
                     <Text variant="labelM">{t('common.later')}</Text>
                 </Screen.Header.Button>
             </Screen.Header>
-            <Screen.Content>
-                <View style={styles.content}>
-                    {picture}
-                    <View style={styles.textContainer}>
-                        <Text textAlign="center" variant="titleM">
-                            {title}
-                        </Text>
-                        <Text textAlign="center" variant="bodyL" color="secondary">
-                            {description}
-                        </Text>
-                    </View>
+            <View style={styles.content}>
+                <View style={styles.iconContainer}>{picture}</View>
+                <View style={styles.textContainer}>
+                    <Text textAlign="center" variant="titleM">
+                        {title}
+                    </Text>
+                    <Text textAlign="center" variant="bodyL" color="secondary">
+                        {description}
+                    </Text>
                 </View>
-                <View style={styles.buttonContainer}>
-                    <Button type="primary" size="large" onPress={handleEnable}>
-                        {t('biometry.enable', { name: title })}
-                    </Button>
-                </View>
-            </Screen.Content>
+            </View>
+            <View style={styles.buttonContainer}>
+                <Button type="primary" size="large" onPress={handleEnable}>
+                    {t('biometry.enable', { name: title })}
+                </Button>
+            </View>
         </Screen>
     );
 };

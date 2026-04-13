@@ -2,30 +2,25 @@ import * as z from 'zod';
 
 import { zArrayWithKey } from '@safely/sync';
 
-import { PortfolioType } from './I-portfolio';
+import { PortfolioType, WatchOnlySource } from './I-portfolio';
 import { PortfolioIdMnemonicBased } from './portfolio-id';
+import { PortfolioIdWatchOnly } from './portfolio-id-watch-only';
 import { sPortfolioMeta } from './portfolio-meta.stored';
 import { PortfolioNetworkType } from './portfolio-network-type';
 import { sPortfolioSecretRevealedStatus } from './portfolio-secret-revealed-status.stored';
 import { sSecretEncrypted } from '../../di';
+import { VMType } from '../blockchain';
 import { sDerivation } from '../derivation/derivation.stored';
 
 export const sPortfolioBip39 = z.object({
     id: z
         .object({
-            type: z.literal(PortfolioType.BIP39),
             hash: z.string(),
             networkType: z.enum(PortfolioNetworkType)
         })
-        .transform(
-            val =>
-                new PortfolioIdMnemonicBased<PortfolioType.BIP39>(
-                    val.type,
-                    val.hash,
-                    val.networkType
-                )
-        ),
+        .transform(val => new PortfolioIdMnemonicBased(val.hash, val.networkType)),
     meta: sPortfolioMeta,
+    type: z.literal(PortfolioType.BIP39),
     secretRevealedStatus: sPortfolioSecretRevealedStatus,
     encryptedSecret: sSecretEncrypted,
     derivations: zArrayWithKey(sDerivation, item => String(item.index))
@@ -33,5 +28,28 @@ export const sPortfolioBip39 = z.object({
 export type SPortfolioBip39Out = z.output<typeof sPortfolioBip39>;
 export type SPortfolioBip39In = z.input<typeof sPortfolioBip39>;
 
-export const sPortfolio = sPortfolioBip39;
+export const sPortfolioBtcWatchOnly = z.object({
+    id: z
+        .object({
+            identifier: z.string(),
+            source: z.enum(WatchOnlySource),
+            networkType: z.enum(PortfolioNetworkType),
+            vmType: z.literal(VMType.BTC)
+        })
+        .transform(
+            val => new PortfolioIdWatchOnly(val.identifier, val.source, val.networkType, val.vmType)
+        ),
+    meta: sPortfolioMeta,
+    type: z.literal(PortfolioType.WATCH_ONLY),
+    address: z.string(),
+    xpub: z.string().nullable()
+});
+export type SPortfolioBtcWatchOnlyOut = z.output<typeof sPortfolioBtcWatchOnly>;
+export type SPortfolioBtcWatchOnlyIn = z.input<typeof sPortfolioBtcWatchOnly>;
+
+export const sPortfolioWatchOnly = sPortfolioBtcWatchOnly;
+export type SPortfolioWatchOnlyOut = z.output<typeof sPortfolioWatchOnly>;
+export type SPortfolioWatchOnlyIn = z.input<typeof sPortfolioWatchOnly>;
+
+export const sPortfolio = z.discriminatedUnion('type', [sPortfolioBip39, sPortfolioWatchOnly]);
 export type SPortfolioOut = z.output<typeof sPortfolio>;

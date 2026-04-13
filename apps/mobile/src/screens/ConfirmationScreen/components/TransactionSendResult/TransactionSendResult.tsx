@@ -30,6 +30,7 @@ export const TransactionSendResult: FC<{ sendResult: SendResult }> = ({ sendResu
             />
             <TransactionCell
                 title={t('confirmation.sendResult.transaction')}
+                showDivider={false}
                 value={
                     <View style={styles.transactionInfoContainer}>
                         <Text color="primary" variant="bodyM">

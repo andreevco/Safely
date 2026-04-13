@@ -15,7 +15,7 @@ export const styles = StyleSheet.create(theme => ({
         borderRadius: theme.radius.md,
         borderWidth: theme.border.hairline,
         borderColor: theme.colors.other.transparentElement,
-        backgroundColor: theme.colors.background.tertiary,
+        backgroundColor: theme.colors.background.secondary,
         padding: theme.spacing[16],
         marginVertical: theme.spacing[16],
         gap: theme.spacing[4]
@@ -38,7 +38,8 @@ export const styles = StyleSheet.create(theme => ({
     buttons: {
         flexDirection: 'row',
         gap: theme.spacing[8],
-        marginVertical: theme.spacing[24]
+        marginTop: theme.spacing[24],
+        marginBottom: theme.spacing[16]
     },
     button: {
         flex: 1,

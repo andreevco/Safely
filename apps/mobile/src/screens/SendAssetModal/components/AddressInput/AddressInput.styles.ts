@@ -33,8 +33,6 @@ export const styles = StyleSheet.create(theme => ({
     },
     input: {
         fontSize: 17,
-        lineHeight: 22,
-        letterSpacing: -0.44,
         fontWeight: 400,
         color: theme.colors.text.primary,
         paddingTop: 0,

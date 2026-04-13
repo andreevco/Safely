@@ -20,13 +20,15 @@ type ModalSheetProps = {
     containerStyle?: ViewStyle;
     closeOnBackdropPress?: boolean;
     headerTitle?: string;
+    shortHeader?: boolean;
 };
 
 export function BottomSheet({
     children,
     containerStyle,
     closeOnBackdropPress = true,
-    headerTitle
+    headerTitle,
+    shortHeader = false
 }: ModalSheetProps) {
     const nav = useNavigation();
     const ref = useRef<GHBottomSheet>(null);
@@ -78,7 +80,7 @@ export function BottomSheet({
                 >
                     <BottomSheetView style={containerStyle}>
                         <Screen background="transparent">
-                            <Screen.Header variant="left">
+                            <Screen.Header variant="left" shortHeader={shortHeader}>
                                 {headerTitle ? (
                                     <Screen.Header.Title>{headerTitle}</Screen.Header.Title>
                                 ) : (

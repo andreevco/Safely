@@ -26,6 +26,7 @@ export type PopupMenuProps = {
     touchable: React.ReactElement | ((progress: SharedValue<number>) => React.ReactElement);
     variant?: PopupMenuVariant;
     hasBackdrop?: boolean;
+    menuMargin?: number;
 };
 
 export const PopupMenu = forwardRef<PopupMenuRef, PopupMenuProps>((props, ref) => {
@@ -35,10 +36,11 @@ export const PopupMenu = forwardRef<PopupMenuRef, PopupMenuProps>((props, ref) =
         header,
         touchable: touchableProp,
         variant = 'default',
-        hasBackdrop = true
+        hasBackdrop = true,
+        menuMargin = 8
     } = props;
     const { height } = useWindowDimensions();
-    const menu = usePopupMenu(height);
+    const menu = usePopupMenu(height, menuMargin);
 
     useImperativeHandle(ref, () => ({ close: menu.close }), [menu.close]);
 

@@ -15,7 +15,7 @@ export const PermissionRequest = () => {
 
     return (
         <Screen background="primary">
-            <Screen.Header>
+            <Screen.Header withCompensateHeight={false}>
                 <Screen.Header.Title />
                 <Screen.Header.CloseButton />
             </Screen.Header>

@@ -28,7 +28,7 @@ export const Subtitle = (props: TextProps) => {
         <Text
             numberOfLines={1}
             variant="bodyM"
-            color="secondary"
+            color="tertiary"
             skeletonVariant="transparentElement"
             skeleton={cellContext.skeleton}
             {...rest}

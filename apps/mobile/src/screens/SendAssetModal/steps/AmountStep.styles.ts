@@ -9,7 +9,6 @@ export const styles = StyleSheet.create(theme => ({
         justifyContent: 'space-between',
         alignItems: 'center',
         paddingHorizontal: theme.spacing[16],
-        paddingVertical: theme.spacing[4],
         gap: theme.spacing[8]
     }
 }));

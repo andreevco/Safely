@@ -27,6 +27,7 @@ import { SignInScreen } from '@mobile/screens/SignInScreen';
 import { SignInSuccessScreen } from '@mobile/screens/SignInSuccessScreen';
 import { SignOutAccountSheet } from '@mobile/screens/SignOutAccountSheet';
 import { TransactionScreen } from '@mobile/screens/TransactionScreen';
+import { WatchOnlySheet } from '@mobile/screens/WatchOnlySheet';
 import { WelcomeScreen } from '@mobile/screens/WelcomeScreen';
 
 import { AddWalletStack } from './stacks/AddWalletStack';
@@ -58,7 +59,23 @@ export const RootStack = createNativeStackNavigator({
         Screens: {
             screens: {
                 TabsNavigator: TabsNavigator,
-                TransactionScreen: TransactionScreen
+                TransactionScreen: TransactionScreen,
+                PasscodeVerificationScreen: {
+                    screen: PasscodeVerificationScreen,
+                    options: {
+                        presentation: 'fullScreenModal',
+                        animation: 'fade',
+                        animationDuration: 50
+                    }
+                },
+                ChangePasscodeScreen: {
+                    screen: ChangePasscodeScreen,
+                    options: {
+                        presentation: 'fullScreenModal',
+                        animation: 'fade',
+                        animationDuration: 50
+                    }
+                }
             }
         },
         Modals: {
@@ -66,8 +83,6 @@ export const RootStack = createNativeStackNavigator({
                 SettingsModal: SettingsStack,
                 CurrencyModal: CurrencyScreen,
                 RecoveryPhraseModal: RecoveryPhraseSheet,
-                PasscodeVerificationModal: PasscodeVerificationScreen,
-                ChangePasscodeModal: ChangePasscodeScreen,
                 SignInModal: SignInScreen,
                 CustomizeAccountModal: CustomizeAccountModal,
                 CustomizeWalletModal: CustomizeWalletModal,
@@ -89,7 +104,8 @@ export const RootStack = createNativeStackNavigator({
                 DestructiveConfirmSheet: DestructiveConfirmSheet,
                 DisconnectDeviceSheet: DisconnectDeviceSheet,
                 RemoveWalletSheet: RemoveWalletSheet,
-                SignOutAccountSheet: SignOutAccountSheet
+                SignOutAccountSheet: SignOutAccountSheet,
+                WatchOnlySheet: WatchOnlySheet
             },
             screenOptions: {
                 animationDuration: 0,

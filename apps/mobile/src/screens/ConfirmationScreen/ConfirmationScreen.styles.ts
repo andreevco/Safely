@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native-unistyles';
 export const styles = StyleSheet.create(theme => ({
     container: {
         flex: 1,
-        paddingTop: 12
+        paddingTop: theme.spacing[16]
     },
     assetLogo: {
         width: 72,
@@ -15,9 +15,7 @@ export const styles = StyleSheet.create(theme => ({
         paddingHorizontal: theme.spacing[32]
     },
     assetLogoContainer: {
-        width: 96,
-        height: 96,
-        margin: theme.spacing[12],
+        padding: theme.spacing[12],
         alignItems: 'center',
         justifyContent: 'center'
     },
@@ -27,7 +25,8 @@ export const styles = StyleSheet.create(theme => ({
     },
     list: {
         gap: theme.spacing[2],
-        paddingHorizontal: theme.spacing[8]
+        paddingHorizontal: theme.spacing[8],
+        paddingTop: theme.spacing[8]
     },
     listGroup: {
         marginBottom: 0

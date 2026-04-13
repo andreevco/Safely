@@ -1,0 +1,1 @@
+export { WalletAlreadyAddedScreen } from './WalletAlreadyAddedScreen';

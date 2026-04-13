@@ -7,12 +7,16 @@ export const styles = StyleSheet.create((theme, rt) => ({
         justifyContent: 'center'
     },
     textContainer: {
-        marginVertical: theme.spacing[16],
+        paddingVertical: theme.spacing[16],
         paddingHorizontal: theme.spacing[32],
+        gap: theme.spacing[4],
         alignItems: 'center'
     },
     buttonContainer: {
         margin: theme.spacing[24],
-        marginBottom: theme.spacing[24] + rt.insets.bottom
+        marginBottom: rt.insets.bottom + theme.spacing[24]
+    },
+    iconContainer: {
+        paddingTop: theme.spacing[16]
     }
 }));

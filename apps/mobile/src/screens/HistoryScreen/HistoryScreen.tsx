@@ -1,5 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import { useCallback } from 'react';
+import { View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BtcActivityItem, useHasHistory, useHasPortfolio } from '@safely/ux';
 
@@ -11,6 +13,7 @@ import { Screen } from '@mobile/shared/ui';
 const HistoryContent = () => {
     const navigation = useNavigation<RootStackNavigationProp<'TabsNavigator'>>();
     const { data: hasHistory } = useHasHistory();
+    const insets = useSafeAreaInsets();
 
     const onNavigateToTransaction = useCallback(
         (activity: BtcActivityItem) => {
@@ -21,12 +24,14 @@ const HistoryContent = () => {
 
     return (
         <>
-            {hasHistory !== false && (
+            {hasHistory !== false ? (
                 <Screen.Header>
                     <Screen.Header.Title>
                         <WalletSelector />
                     </Screen.Header.Title>
                 </Screen.Header>
+            ) : (
+                <View style={{ height: insets.top }} />
             )}
             <HistoryList onNavigateToTransaction={onNavigateToTransaction} />
         </>

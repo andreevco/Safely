@@ -15,6 +15,7 @@ export const styles = StyleSheet.create(theme => ({
         left: 0,
         right: 0,
         paddingHorizontal: theme.spacing[16],
+        paddingBottom: 1,
         alignItems: 'center',
         justifyContent: 'center'
     },

@@ -9,6 +9,7 @@ import { Configuration } from '../api/generated';
 import { ITreeStorage } from '../I-storage';
 import { Logger } from '../logger/logger';
 import { OnboardingMessagePayload } from '../onboarding/onboarding-message-payload';
+import { AccountAlreadyExistsError } from '../sync-error';
 import { OfflineSyncProvider } from '../sync-provider/offline-sync-provider';
 import { OnlineSyncProvider } from '../sync-provider/online-sync-provider';
 import { SyncStatus } from '../sync-provider/sync-status';
@@ -76,6 +77,11 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
         ik: { publicKey: Buffer; secretKey: Buffer }
     ) {
         const accountID = await generateAccountID(payload.masterKey);
+
+        const accounts = await this.syncAccountIDRepository.getSyncAccounts();
+        if (accounts.some(acc => acc.accountId === accountID)) {
+            throw new AccountAlreadyExistsError();
+        }
 
         const storage = getSyncAccountStorage(this.storage, accountID);
         const encryptedStorage = getSyncAccountStorage(this.encryptedStorage, accountID);

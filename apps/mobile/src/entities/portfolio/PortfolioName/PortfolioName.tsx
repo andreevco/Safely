@@ -1,10 +1,14 @@
+import { ComponentProps } from 'react';
+import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import { PortfolioMeta } from '@safely/core';
 
-import { Text, TextProps } from '@mobile/shared/ui';
+import { Badge, Text, TextProps } from '@mobile/shared/ui';
 
 import { styles } from './PortfolioName.styles';
+
+type WatchOnlyBadgeType = ComponentProps<typeof Badge>['type'];
 
 type PortfolioNameProps = {
     meta: PortfolioMeta;
@@ -13,10 +17,22 @@ type PortfolioNameProps = {
     fontVariant?: TextProps['variant'];
     color?: TextProps['color'];
     tag?: number | false;
+    isWatchOnly?: boolean;
+    watchOnlyBadgeType?: WatchOnlyBadgeType;
 };
 
 export const PortfolioName = (props: PortfolioNameProps) => {
-    const { meta, size = 12, gap = 6, fontVariant = 'labelL', color, tag } = props;
+    const {
+        meta,
+        size = 12,
+        gap = 6,
+        fontVariant = 'labelL',
+        color,
+        tag,
+        isWatchOnly,
+        watchOnlyBadgeType = 'neutral'
+    } = props;
+    const { t } = useTranslation();
 
     switch (meta.icon.type) {
         case 'color':
@@ -39,6 +55,11 @@ export const PortfolioName = (props: PortfolioNameProps) => {
                                 #{tag}
                             </Text>
                         </View>
+                    )}
+                    {isWatchOnly && (
+                        <Badge type={watchOnlyBadgeType} isUppercase>
+                            {t('portfolio.watchOnly')}
+                        </Badge>
                     )}
                 </View>
             );
@@ -64,6 +85,11 @@ export const PortfolioName = (props: PortfolioNameProps) => {
                                 #{tag}
                             </Text>
                         </View>
+                    )}
+                    {isWatchOnly && (
+                        <Badge type={watchOnlyBadgeType} isUppercase>
+                            {t('portfolio.watchOnly')}
+                        </Badge>
                     )}
                 </View>
             );

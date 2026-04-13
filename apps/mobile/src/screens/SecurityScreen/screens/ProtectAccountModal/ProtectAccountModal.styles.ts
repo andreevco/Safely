@@ -35,6 +35,7 @@ export const styles = StyleSheet.create(theme => ({
         flex: 1
     },
     buttonContainer: {
-        padding: theme.spacing[24]
+        padding: theme.spacing[24],
+        paddingBottom: theme.spacing[16]
     }
 }));

@@ -20,7 +20,7 @@ import { mapValues } from '../runtime';
  */
 export interface NewAccount {
     /**
-     * hex-encoded 32 bytes
+     * hex-encoded 16 bytes
      * @type {string}
      * @memberof NewAccount
      */

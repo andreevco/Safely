@@ -29,11 +29,16 @@ export const Group = (props: GroupProps) => {
             }
             case 'separated':
                 return items.map((child, index) => {
-                    return (
-                        <View style={styles.separatedContainer} key={`item-${index}`}>
-                            {child}
-                        </View>
-                    );
+                    if (isValidElement(child)) {
+                        return (
+                            <View style={styles.separatedContainer} key={`item-${index}`}>
+                                {cloneElement(child, { showDivider: false } as Record<
+                                    string,
+                                    unknown
+                                >)}
+                            </View>
+                        );
+                    }
                 });
             default:
                 return items;
