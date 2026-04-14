@@ -7,7 +7,7 @@ export const styles = StyleSheet.create(theme => ({
     remainingContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         paddingHorizontal: theme.spacing[16],
         gap: theme.spacing[8]
     }

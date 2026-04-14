@@ -13,6 +13,7 @@ import { LockScreen } from '@mobile/screens/LockScreen';
 import { OnboardingNotificationsScreen } from '@mobile/screens/OnboardingNotificationsScreen';
 import { OnboardingPasscodeScreen } from '@mobile/screens/OnboardingPasscodeScreen';
 import { PasscodeVerificationScreen } from '@mobile/screens/PasscodeVerificationScreen';
+import { PendingFundsSheet } from '@mobile/screens/PendingFundsSheet';
 import { QRScanModal } from '@mobile/screens/QRScanModal';
 import { ReceiveAssetModal } from '@mobile/screens/ReceiveAssetModal';
 import { RemoveWalletSheet } from '@mobile/screens/RemoveWalletSheet';
@@ -105,7 +106,8 @@ export const RootStack = createNativeStackNavigator({
                 DisconnectDeviceSheet: DisconnectDeviceSheet,
                 RemoveWalletSheet: RemoveWalletSheet,
                 SignOutAccountSheet: SignOutAccountSheet,
-                WatchOnlySheet: WatchOnlySheet
+                WatchOnlySheet: WatchOnlySheet,
+                PendingFundsSheet: PendingFundsSheet
             },
             screenOptions: {
                 animationDuration: 0,

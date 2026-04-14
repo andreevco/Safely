@@ -28,10 +28,7 @@ export function useBootConfigQuery() {
     return usePersistSuspenseQuery<BootConfig>({
         queryKey: apiKeys.bootConfig(bootApi.id).toKey(),
         queryFn: () => bootApi.boot(),
-        meta: {
-            persist: true,
-            schemaKey: 'bootConfig'
-        }
+        schemaKey: 'bootConfig'
     });
 }
 

@@ -35,7 +35,8 @@
         "amount": "Amount",
         "max": "Send all",
         "maxHint": "All available balance will be sent. Fee included.",
-        "remaining": "Remaining: {{amount}}{{symbol}}",
+        "remaining": "Remaining:",
+        "pending": "Pending:",
         "insufficientBalance": "Insufficient balance"
     },
     "passcode": {
@@ -503,6 +504,20 @@
             "subtitle": "This wallet will be removed from your account. You can add it again anytime using the address."
         }
     },
+    "pendingFunds": {
+        "title": "Pending funds",
+        "subtitle": "Some funds are pending and not yet available.",
+        "pending": "Pending",
+        "available": "Available",
+        "total": "Total",
+        "estimatedTime": "\u2248 {{minutes}} minutes",
+        "ok": "OK",
+        "receiving": "Receiving {{amount}}\u2026"
+    },
+    "assetCell": {
+        "lastTransaction": "Last transaction {{timeAgo}}",
+        "noTransactions": "No transactions"
+    },
     "tabs": {
         "home": "Home",
         "history": "History",
@@ -525,10 +540,13 @@
             "send": "Send"
         },
         "dateHeaders": {
+            "pending": "Pending",
             "today": "Today",
             "yesterday": "Yesterday"
         },
         "transactionInfo": {
+            "sending": "Sending",
+            "receiving": "Receiving",
             "sent": "Sent",
             "received": "Received",
             "recipient": "Recipient",

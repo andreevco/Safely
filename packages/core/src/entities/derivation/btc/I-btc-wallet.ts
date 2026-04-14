@@ -18,3 +18,5 @@ export interface SignableBtcWallet extends BtcWalletReadOnly {
 
     sign(tx: BtcSigningRequest): Promise<Buffer>;
 }
+
+export type BtcWallet = BtcWalletReadOnly | SignableBtcWallet;

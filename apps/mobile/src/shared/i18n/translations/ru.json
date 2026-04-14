@@ -34,7 +34,8 @@
         "amount": "Сумма",
         "max": "Отправить всё",
         "maxHint": "Будет отправлен весь доступный баланс. Комиссия включена.",
-        "remaining": "Остаток: {{amount}}{{symbol}}",
+        "remaining": "Остаток:",
+        "pending": "Ожидается:",
         "insufficientBalance": "Недостаточно средств"
     },
     "passcode": {
@@ -451,6 +452,20 @@
             "subtitle": "Этот кошелёк будет удалён из вашего аккаунта. Вы можете добавить его снова в любое время по адресу."
         }
     },
+    "pendingFunds": {
+        "title": "Ожидаемые средства",
+        "subtitle": "Некоторые средства ожидают подтверждения и пока недоступны.",
+        "pending": "Ожидается",
+        "available": "Доступно",
+        "total": "Итого",
+        "estimatedTime": "≈ {{minutes}} минут",
+        "ok": "OK",
+        "receiving": "Получение {{amount}}\u2026"
+    },
+    "assetCell": {
+        "lastTransaction": "Последняя транзакция {{timeAgo}}",
+        "noTransactions": "Нет транзакций"
+    },
     "history": {
         "title": "История",
         "empty": {
@@ -460,10 +475,13 @@
             "send": "Отправить"
         },
         "dateHeaders": {
+            "pending": "Обрабатывается",
             "today": "Сегодня",
             "yesterday": "Вчера"
         },
         "transactionInfo": {
+            "sending": "Отправляется",
+            "receiving": "Получение",
             "sent": "Отправлено",
             "received": "Получено",
             "recipient": "Получатель",

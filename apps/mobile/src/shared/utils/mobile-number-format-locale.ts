@@ -1,6 +1,11 @@
 import { Locale } from 'expo-localization';
 
-import { FiatCurrencyDisplay, NumberFormatLocale, SignedCurrencyAffixes } from '@safely/core';
+import {
+    FiatCurrencyDisplay,
+    SPACE,
+    NumberFormatLocale,
+    SignedCurrencyAffixes
+} from '@safely/core';
 
 export class MobileNumberFormatLocale implements NumberFormatLocale {
     private readonly locale: string;
@@ -14,7 +19,10 @@ export class MobileNumberFormatLocale implements NumberFormatLocale {
         this.locale = expoLocale.languageCode ?? 'en-US';
 
         this.decimalSeparator = expoLocale.decimalSeparator ?? '.';
-        this.groupSeparator = expoLocale.digitGroupingSeparator ?? ' ';
+        this.groupSeparator = (expoLocale.digitGroupingSeparator ?? SPACE.NNBSP).replaceAll(
+            SPACE.NBSP,
+            SPACE.NNBSP
+        );
         this.primaryGroupSize = 3;
         this.secondaryGroupSize = 3;
     }
@@ -60,8 +68,10 @@ export class MobileNumberFormatLocale implements NumberFormatLocale {
 
     private normalizeCurrencyCodePosition(affixes: { prefix: string; suffix: string }): void {
         if (affixes.suffix === '') {
-            affixes.suffix = ' ' + affixes.prefix.replace(/[\s\u00A0]+/g, '');
+            affixes.suffix = SPACE.NNBSP + affixes.prefix.replace(/\s+/g, '');
             affixes.prefix = '';
+        } else {
+            affixes.suffix = SPACE.NNBSP + affixes.suffix.replace(/^\s+/, '');
         }
     }
 
@@ -81,17 +91,23 @@ export class MobileNumberFormatLocale implements NumberFormatLocale {
         const isSignPart = (p: Intl.NumberFormatPart) =>
             p.type === 'minusSign' || p.type === 'plusSign';
 
-        const prefix = parts
-            .slice(0, firstNumberIndex)
-            .filter(p => !isSignPart(p))
-            .map(p => p.value)
-            .join('');
+        const normalizeSpaces = (value: string) => value.replaceAll(SPACE.NBSP, SPACE.NNBSP);
 
-        const suffix = parts
-            .slice(lastNumberIndex + 1)
-            .filter(p => !isSignPart(p))
-            .map(p => p.value)
-            .join('');
+        const prefix = normalizeSpaces(
+            parts
+                .slice(0, firstNumberIndex)
+                .filter(p => !isSignPart(p))
+                .map(p => p.value)
+                .join('')
+        );
+
+        const suffix = normalizeSpaces(
+            parts
+                .slice(lastNumberIndex + 1)
+                .filter(p => !isSignPart(p))
+                .map(p => p.value)
+                .join('')
+        );
 
         return { prefix, suffix };
     }

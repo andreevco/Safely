@@ -1,6 +1,13 @@
 import { z } from 'zod';
 
-import { AddressSchema, BlockHeightScheme, GasPricesSchema, TxSchema, UtxoSchema } from './models';
+import {
+    AddressSchema,
+    ChainTipSchema,
+    EstimatedFeesSchema,
+    SendTxResultSchema,
+    TxSchema,
+    UtxoWithOptionalTxSchema
+} from './models';
 import { BtcWalletType } from '../../entities/blockchain/btc';
 import { ApiClient } from '../../utils/fetch';
 import { IIdentifiable } from '../../utils/types';
@@ -9,14 +16,8 @@ export { BtcApiError } from './errors';
 
 export interface GetAddressParams {
     details?: 'basic' | 'tokens' | 'tokenBalances' | 'txids' | 'txslight' | 'txs';
-    tokens?: 'derived' | 'used' | 'nonzero';
     pageSize?: number;
     page?: number;
-    from?: number;
-    to?: number;
-    contractFilter?: string;
-    secondaryCurrency?: string;
-    gap?: number;
 }
 
 export type BtcDescriptor = BtcXpubDescriptor | BtcAddressDescriptor;
@@ -56,20 +57,24 @@ export class BtcApi extends ApiClient implements IIdentifiable {
 
     public async getAddressInfo(descriptor: BtcDescriptor, params?: GetAddressParams) {
         const id = this.resolveDescriptorId(descriptor);
-        return await this.getJson(`/api/v2/${id.endpoint}/${id.value}`, AddressSchema, params);
+        return await this.getJson(`/v1/${id.endpoint}/${id.value}`, AddressSchema, params);
     }
 
-    public async getAccountUtxo(descriptor: BtcDescriptor) {
+    public async getUtxos(descriptor: BtcDescriptor, withPendingTxs = false) {
         const id = this.resolveDescriptorId(descriptor);
-        return await this.getJson(`/api/v2/utxo/${id.value}`, z.array(UtxoSchema));
+        return await this.getJson(
+            `/v1/utxos/${id.value}`,
+            z.array(UtxoWithOptionalTxSchema),
+            withPendingTxs ? { withPendingTxs: true } : undefined
+        );
     }
 
     public async getTransaction(txid: string) {
-        return await this.getJson(`/api/v2/tx/${txid}`, TxSchema);
+        return await this.getJson(`/v1/transactions/${txid}`, TxSchema);
     }
 
     public async getBlockTipHeight(): Promise<number> {
-        const response = await this.getJson(`/extensions/v1/blocks/tip/height`, BlockHeightScheme);
+        const response = await this.getJson(`/v1/chain/tip`, ChainTipSchema);
         return response.height;
     }
 
@@ -77,17 +82,17 @@ export class BtcApi extends ApiClient implements IIdentifiable {
      * float sat/vByte
      */
     public async getFeePrice() {
-        return this.getJson('/extensions/v1/fees/estimate', GasPricesSchema);
+        return this.getJson('/v1/fees/estimate', EstimatedFeesSchema);
     }
 
     public async sendTransaction(hex: string): Promise<{ txid: string }> {
-        const res = await this.postPlain('/api/v2/sendtx/', hex, z.object({ result: z.string() }));
+        const res = await this.postPlain('/v1/transactions/send', hex, SendTxResultSchema);
         return { txid: res.result };
     }
 
     private resolveDescriptorId(descriptor: BtcDescriptor): { endpoint: string; value: string } {
         if (isAddressDescriptor(descriptor)) {
-            return { endpoint: 'address', value: descriptor.address };
+            return { endpoint: 'addresses', value: descriptor.address };
         }
 
         let path = `${btcWalletTypeToDescriptor[descriptor.type]}(${descriptor.xpub}`;
@@ -95,6 +100,6 @@ export class BtcApi extends ApiClient implements IIdentifiable {
             path += `/${descriptor.derivationPath.change ?? 0}/${descriptor.derivationPath.addressIndex ?? '*'}`;
         }
 
-        return { endpoint: 'xpub', value: path + ')' };
+        return { endpoint: 'xpubs', value: path + ')' };
     }
 }

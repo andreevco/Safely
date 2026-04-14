@@ -1,13 +1,8 @@
 import { CacheSchemaKey } from './cache-config';
 
-export type PersistMeta = {
-    persist: true;
-    schemaKey: CacheSchemaKey;
-};
-
 export type WithIsActualised<T> = T & { isActualised: boolean };
 
-export type WithPersistMeta<TOptions> = Omit<TOptions, 'meta'> & { meta: PersistMeta };
+export type WithPersistMeta<TOptions> = Omit<TOptions, 'meta'> & { schemaKey: CacheSchemaKey };
 
 export type DerivedQueryResult<TData = unknown, TError = unknown> = {
     data: TData | undefined;

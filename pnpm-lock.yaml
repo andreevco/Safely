@@ -85,6 +85,9 @@ importers:
       '@formatjs/intl-pluralrules':
         specifier: ^6.2.1
         version: 6.2.1
+      '@formatjs/intl-relativetimeformat':
+        specifier: ^12.3.1
+        version: 12.3.1
       '@gorhom/bottom-sheet':
         specifier: ^5.2.8
         version: 5.2.8(@types/react@19.1.17)(react-native-gesture-handler@2.30.1(react-native@0.81.4(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native-reanimated@4.2.1(react-native-worklets@0.7.1(@babel/core@7.28.5)(react-native@0.81.4(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.4(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
@@ -1425,11 +1428,20 @@ packages:
     resolution: {integrity: sha512-ReZxZ8pdnoI3tP/dNnJdnmAk7uLT4FjsKDGW7YeDdvdOMz2XCQSmSCM9IWlrXuWtMF9zeSB6WJtEhCQ41gQOfw==}
     hasBin: true
 
+  '@formatjs/bigdecimal@0.2.0':
+    resolution: {integrity: sha512-GeaxHZbUoYvHL9tC5eltHLs+1zU70aPw0s7LwqgktIzF5oMhNY4o4deEtusJMsq7WFJF3Ye2zQEzdG8beVk73w==}
+
   '@formatjs/ecma402-abstract@3.1.0':
     resolution: {integrity: sha512-CjP1sUzM7XiQW6YluDreN+dMvcKZysO/J4ikvuDjDyd6nSOoSqAK9gvD1s75ZFaJVXtYOsz+y3CUXPZ1sKxcxw==}
 
+  '@formatjs/ecma402-abstract@3.2.0':
+    resolution: {integrity: sha512-dHnqHgBo6GXYGRsepaE1wmsC2etaivOWd5VaJstZd+HI2zR3DCUjbDVZRtoPGkkXZmyHvBwrdEUuqfvzhF/DtQ==}
+
   '@formatjs/fast-memoize@3.1.0':
     resolution: {integrity: sha512-b5mvSWCI+XVKiz5WhnBCY3RJ4ZwfjAidU0yVlKa3d3MSgKmH1hC3tBGEAtYyN5mqL7N0G5x0BOUYyO8CEupWgg==}
+
+  '@formatjs/fast-memoize@3.1.1':
+    resolution: {integrity: sha512-CbNbf+tlJn1baRnPkNePnBqTLxGliG6DDgNa/UtV66abwIjwsliPMOt0172tzxABYzSuxZBZfcp//qI8AvBWPg==}
 
   '@formatjs/intl-getcanonicallocales@3.2.0':
     resolution: {integrity: sha512-SwGdxPj2uMavGfMiYO+flxlLDC17I70YulIU8dXnGn5aN5/g447SZjnVHiKdZxQ6zM3boYKT8WyoQ2AwbOpKeQ==}
@@ -1440,11 +1452,17 @@ packages:
   '@formatjs/intl-localematcher@0.8.0':
     resolution: {integrity: sha512-zgMYWdUlmEZpX2Io+v3LHrfq9xZ6khpQVf9UAw2xYWhGerGgI9XgH1HvL/A34jWiruUJpYlP5pk4g8nIcaDrXQ==}
 
+  '@formatjs/intl-localematcher@0.8.2':
+    resolution: {integrity: sha512-q05KMYGJLyqFNFtIb8NhWLF5X3aK/k0wYt7dnRFuy6aLQL+vUwQ1cg5cO4qawEiINybeCPXAWlprY2mSBjSXAQ==}
+
   '@formatjs/intl-numberformat@9.2.1':
     resolution: {integrity: sha512-5SN0pfd6TMYo3c6w+KJE3w6eAtEVNjHpynqRmNBZxK5qErj1cu4Q+IQ6LiXAiK7309lRUCwUs+VAVzf49hxZrw==}
 
   '@formatjs/intl-pluralrules@6.2.1':
     resolution: {integrity: sha512-RV/rbwv3q68ZyLRayUp8ky0YxS89XzyvwTtKjOmuysrjzq/33SAG1W8vYP291REx7XsPctaXuGvY4ChdwqjFaQ==}
+
+  '@formatjs/intl-relativetimeformat@12.3.1':
+    resolution: {integrity: sha512-l/HskJ16/Wn0m9GFZANIkhJ4NkgJB2BZoq0YvSIFY/qbKv07aZ4U0m1V/8H+lCfYyOvzUkE7Xez9ftAnqxgedA==}
 
   '@formatjs/intl-supportedvaluesof@2.2.0':
     resolution: {integrity: sha512-XYdL5ZB0wmfEtDqWFfKCztuk0RVJ5zgmDfE4pe40Kyxo4/ie5CG+9+LqoIgB8wlr4cfjfAeP5cRRLa0H5EFUHA==}
@@ -8070,6 +8088,8 @@ snapshots:
       find-up: 5.0.0
       js-yaml: 4.1.1
 
+  '@formatjs/bigdecimal@0.2.0': {}
+
   '@formatjs/ecma402-abstract@3.1.0':
     dependencies:
       '@formatjs/fast-memoize': 3.1.0
@@ -8077,9 +8097,17 @@ snapshots:
       decimal.js: 10.6.0
       tslib: 2.8.1
 
+  '@formatjs/ecma402-abstract@3.2.0':
+    dependencies:
+      '@formatjs/bigdecimal': 0.2.0
+      '@formatjs/fast-memoize': 3.1.1
+      '@formatjs/intl-localematcher': 0.8.2
+
   '@formatjs/fast-memoize@3.1.0':
     dependencies:
       tslib: 2.8.1
+
+  '@formatjs/fast-memoize@3.1.1': {}
 
   '@formatjs/intl-getcanonicallocales@3.2.0':
     dependencies:
@@ -8097,6 +8125,10 @@ snapshots:
       '@formatjs/fast-memoize': 3.1.0
       tslib: 2.8.1
 
+  '@formatjs/intl-localematcher@0.8.2':
+    dependencies:
+      '@formatjs/fast-memoize': 3.1.1
+
   '@formatjs/intl-numberformat@9.2.1':
     dependencies:
       '@formatjs/ecma402-abstract': 3.1.0
@@ -8110,6 +8142,11 @@ snapshots:
       '@formatjs/intl-localematcher': 0.8.0
       decimal.js: 10.6.0
       tslib: 2.8.1
+
+  '@formatjs/intl-relativetimeformat@12.3.1':
+    dependencies:
+      '@formatjs/ecma402-abstract': 3.2.0
+      '@formatjs/intl-localematcher': 0.8.2
 
   '@formatjs/intl-supportedvaluesof@2.2.0':
     dependencies:

@@ -1,4 +1,9 @@
-import { useNavigation, NavigationProp, StaticScreenProps } from '@react-navigation/native';
+import {
+    useNavigation,
+    NavigationProp,
+    StaticScreenProps,
+    useFocusEffect
+} from '@react-navigation/native';
 import { useRef, useCallback, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TextInput, View } from 'react-native';
@@ -59,6 +64,8 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
         shouldResetForm: false,
         initialValues: { recipient: address, amount }
     });
+
+    useFocusEffect(actions.onBackToEditing);
 
     const amountInputType = state.values.amountInputType;
     const asset = state.parsed.asset;

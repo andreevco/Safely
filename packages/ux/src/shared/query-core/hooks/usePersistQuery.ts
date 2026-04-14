@@ -17,7 +17,8 @@ export function usePersistQuery<
     options: WithPersistMeta<UseQueryOptions<TQueryFnData, TError, TData, TQueryKey>>
 ): PersistQueryResult<TData, TError> {
     const hydratedAt = useHydratedAt();
-    const result = useQuery(options);
+    const { schemaKey, ...rest } = options;
+    const result = useQuery({ ...rest, meta: { persist: true, schemaKey } });
 
     return useIsActualised(result, hydratedAt);
 }

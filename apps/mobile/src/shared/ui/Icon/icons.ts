@@ -1,6 +1,7 @@
 /* eslint-disable */
 // Generated file. Do not edit by hand.
 
+import InformationCircle12Svg from '@safely/ux/shared/assets/icons/12/information-circle-12.svg';
 import Sliders12Svg from '@safely/ux/shared/assets/icons/12/sliders-12.svg';
 import Dots14Svg from '@safely/ux/shared/assets/icons/14/dots-14.svg';
 import ArrowLeft16Svg from '@safely/ux/shared/assets/icons/16/arrow-left-16.svg';
@@ -49,6 +50,7 @@ import Placeholder96Svg from '@safely/ux/shared/assets/icons/96/placeholder-96.s
 import Safely96Svg from '@safely/ux/shared/assets/icons/96/safely-96.svg';
 import WalletPlus96Svg from '@safely/ux/shared/assets/icons/96/wallet-plus-96.svg';
 
+export const InformationCircle12 = { image: InformationCircle12Svg, size: 12 } as const;
 export const Sliders12 = { image: Sliders12Svg, size: 12 } as const;
 export const Dots14 = { image: Dots14Svg, size: 14 } as const;
 export const ArrowLeft16 = { image: ArrowLeft16Svg, size: 16 } as const;

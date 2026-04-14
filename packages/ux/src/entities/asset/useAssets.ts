@@ -1,61 +1,24 @@
-import { useQueryClient } from '@tanstack/react-query';
+import { BTC_ASSET, BtcWallet, RatedCryptoAssetAmount } from '@safely/core';
 
-import {
-    BTC_ASSET,
-    BtcWalletReadOnly,
-    CryptoAssetAmount,
-    RatedCryptoAssetAmount
-} from '@safely/core';
-
-import {
-    QUERIES_STALE_TIME,
-    QUERIES_REFETCH_INTERVAL,
-    usePersistQuery,
-    useBtcApi,
-    usePriceApi
-} from '../../shared';
-import { useActiveFiat } from '../fiat';
+import { useDerivedQuery } from '../../shared';
 import { useActiveBtcWallet } from '../portfolio';
-import { assetKeys } from './keys';
-import { fetchRateQuery } from './rateQuery';
 import { getSortedAssets } from './utils';
+import { useBtcBalance } from '../btc-blockchain';
+import { useRate } from './useRate';
 
-// TODO Think again, maybe detach useBalances in separate query
-export function useWalletAssets(wallet: BtcWalletReadOnly) {
-    const btcApi = useBtcApi();
-    const fiat = useActiveFiat();
-    const priceApi = usePriceApi();
-    const queryClient = useQueryClient();
+export function useWalletAssets(wallet: BtcWallet) {
+    const btcWalletUtxosQuery = useBtcBalance(wallet);
+    const btcPriceQuery = useRate(BTC_ASSET);
 
-    return usePersistQuery<RatedCryptoAssetAmount[]>({
-        queryKey: assetKeys.all(wallet.id.toString()).fiat(fiat.id.toString()).toKey(),
-        queryFn: async () => {
-            const fiatSymbol = fiat.id.symbol;
-
-            const [addressInfo, btcPrice] = await Promise.all([
-                btcApi.getAddressInfo(wallet, {
-                    secondaryCurrency: fiatSymbol
-                }),
-                fetchRateQuery(queryClient, priceApi, BTC_ASSET, fiat)
-            ]);
-
-            const btcAmount = new CryptoAssetAmount({
-                asset: BTC_ASSET,
-                weiAmount: addressInfo.balance
-            });
-
+    return useDerivedQuery({
+        queries: [btcWalletUtxosQuery, btcPriceQuery],
+        queryFn: ([{ display: btcBalance }, btcPrice]) => {
             const btcItem: RatedCryptoAssetAmount = {
-                amount: btcAmount,
+                amount: btcBalance,
                 price: btcPrice
             };
 
             return getSortedAssets([btcItem]);
-        },
-        staleTime: QUERIES_STALE_TIME.ASSETS,
-        refetchInterval: QUERIES_REFETCH_INTERVAL.DEFAULT,
-        meta: {
-            persist: true,
-            schemaKey: 'sRatedCryptoAssetAmountArray'
         }
     });
 }

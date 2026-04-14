@@ -36,7 +36,9 @@ export function useAccountLocalStorage<K extends keyof AccountLocalStorageStruct
         const data = (await storage?.getItem(key)) ?? null;
         const structData: unknown = data === null ? null : JSON.parse(data);
 
-        return accountLocalStorageStructure[key].parse(structData);
+        return accountLocalStorageStructure[key].parse(structData) as z.output<
+            AccountLocalStorageStructure[K]
+        >;
     }, [storage]);
 
     return { get, set, remove };
