@@ -358,7 +358,7 @@
         },
         "watchAccount": {
             "title": "Watch account",
-            "subtitle": "Track wallet activity without\nrecovery phrase.",
+            "subtitle": "Track by wallet address",
             "placeholder": "Enter address or XPUB",
             "info": "Watch account cannot sign transactions and send funds.",
             "invalidAddress": "Invalid Bitcoin address"
