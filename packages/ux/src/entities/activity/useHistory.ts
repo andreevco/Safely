@@ -55,8 +55,7 @@ export function useHistory<TData = InfiniteData<ActivityPage, IActivityPageParam
             const lastPage = data.pages[data.pages.length - 1];
             const patchedData: InfiniteData<ActivityPage, IActivityPageParam> = {
                 ...data,
-                pages: [{ items: allItems, hasNextPage: lastPage?.hasNextPage ?? false }],
-                pageParams: [data.pageParams[0]]
+                pages: [{ items: allItems, hasNextPage: lastPage?.hasNextPage ?? false }]
             };
 
             return options?.select ? options.select(patchedData) : (patchedData as TData);
