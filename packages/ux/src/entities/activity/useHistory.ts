@@ -1,11 +1,11 @@
 import { InfiniteData, QueryKey } from '@tanstack/react-query';
 
-import { QUERIES_STALE_TIME, useInfinitePersistQuery, useBtcApi } from '../../shared';
-import { useBroadcastedBtcTxCache } from '../btc-blockchain/broadcasted-tx-cache';
-import { useActiveBtcWallet } from '../portfolio';
 import { fetchBtcActivity } from './api';
 import { activityKeys } from './keys';
 import { ActivityPage, IActivityFilters, IActivityPageParam, IHistoryOptions } from './types';
+import { QUERIES_STALE_TIME, useInfinitePersistQuery, useBtcApi } from '../../shared';
+import { useBroadcastedBtcTxCache } from '../btc-blockchain/broadcasted-tx-cache';
+import { useActiveBtcWallet } from '../portfolio';
 
 const INITIAL_PAGE = 1;
 
@@ -52,12 +52,11 @@ export function useHistory<TData = InfiniteData<ActivityPage, IActivityPageParam
                 }
             }
 
+            const lastPage = data.pages[data.pages.length - 1];
             const patchedData: InfiniteData<ActivityPage, IActivityPageParam> = {
                 ...data,
-                pages: [
-                    { items: allItems, hasNextPage: data.pages[0]?.hasNextPage ?? false },
-                    ...data.pages.slice(1)
-                ]
+                pages: [{ items: allItems, hasNextPage: lastPage?.hasNextPage ?? false }],
+                pageParams: [data.pageParams[0]]
             };
 
             return options?.select ? options.select(patchedData) : (patchedData as TData);
