@@ -17,7 +17,9 @@ export const HomeHeader = () => {
             >
                 <SettingsButton />
             </Screen.Header.Button>
-            <WalletSelector />
+            <Screen.Header.Title>
+                <WalletSelector />
+            </Screen.Header.Title>
             <Screen.Header.Button
                 type="transparent"
                 onPress={() => navigation.navigate('CurrencyModal')}

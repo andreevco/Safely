@@ -128,16 +128,18 @@ export const AddressInput = (props: AddressInputProps) => {
                     </Pressable>
                 )}
 
-                <TouchableOpacity
-                    style={styles.iconButton}
-                    onPress={hasValue ? handleClear : handleScan}
-                >
-                    {hasValue ? (
+                {hasValue ? (
+                    <TouchableOpacity
+                        style={[styles.iconButton, styles.clearIconButton]}
+                        onPress={handleClear}
+                    >
                         <Icon icon={XmarkCircle16} color="tertiary" />
-                    ) : (
+                    </TouchableOpacity>
+                ) : (
+                    <TouchableOpacity style={styles.iconButton} onPress={handleScan}>
                         <Icon icon={QrCodeScan28} color="accent" />
-                    )}
-                </TouchableOpacity>
+                    </TouchableOpacity>
+                )}
             </View>
 
             {hasError && <Text style={styles.errorText}>{t(error)}</Text>}
