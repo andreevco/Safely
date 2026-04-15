@@ -20,7 +20,6 @@ export function createReadOnlyCertificate(accountNode: HDKey) {
         v: 1,
         typ: 'wallet-http-ro',
         alg: 'ed25519',
-        scope: 'read-only',
         xpub: accountNode.publicExtendedKey,
         req_pub: bytesToHex(reqPublicKey)
     };

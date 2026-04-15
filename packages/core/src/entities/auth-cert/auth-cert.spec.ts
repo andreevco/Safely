@@ -113,7 +113,6 @@ function parseCertBody(certBodyBytes: Uint8Array): ReadOnlyCertBody {
     expect(obj.v).toEqual(1);
     expect(obj.typ).toEqual('wallet-http-ro');
     expect(obj.alg).toEqual('ed25519');
-    expect(obj.scope).toEqual('read-only');
 
     return obj as ReadOnlyCertBody;
 }
@@ -127,7 +126,6 @@ interface ReadOnlyCertBody {
     v: 1;
     typ: 'wallet-http-ro';
     alg: 'ed25519';
-    scope: 'read-only';
     xpub: string; // standard BIP32 xpub
     req_pub: string; // hex, 32 bytes => 64 hex chars
 }
