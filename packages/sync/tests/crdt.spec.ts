@@ -334,6 +334,84 @@ describe('crdt', () => {
             });
         });
 
+        it('should transition from null to object value in union schema', () => {
+            setup({
+                meta: z.union([
+                    z.object({
+                        revealedAt: z.number(),
+                        revealedFromDevice: z.string()
+                    }),
+                    z.null()
+                ])
+            });
+
+            crdt1.set('meta', null);
+            expect(crdt1.get('meta')).toBeNull();
+
+            crdt1.set('meta', { revealedAt: 42, revealedFromDevice: 'iPhone' });
+            expect(crdt1.get('meta')).toEqual({
+                revealedAt: 42,
+                revealedFromDevice: 'iPhone'
+            });
+        });
+
+        it('should transition from null to object value nested in object', () => {
+            setup({
+                portfolio: z.object({
+                    id: z.string(),
+                    secretRevealedStatus: z.union([
+                        z.object({
+                            revealedAt: z.number(),
+                            revealedFromDevice: z.string()
+                        }),
+                        z.null()
+                    ])
+                })
+            });
+
+            crdt1.set('portfolio', {
+                id: 'p1',
+                secretRevealedStatus: null
+            });
+
+            crdt1.set('portfolio', {
+                id: 'p1',
+                secretRevealedStatus: {
+                    revealedAt: 42,
+                    revealedFromDevice: 'iPhone'
+                }
+            });
+
+            expect(crdt1.get('portfolio')).toEqual({
+                id: 'p1',
+                secretRevealedStatus: {
+                    revealedAt: 42,
+                    revealedFromDevice: 'iPhone'
+                }
+            });
+        });
+
+        it('should transition from null to array value in union schema', () => {
+            setup({
+                items: z.union([
+                    zArrayWithKey(z.object({ id: z.string(), value: z.number() }), item => item.id),
+                    z.null()
+                ])
+            });
+
+            crdt1.set('items', null);
+            expect(crdt1.get('items')).toBeNull();
+
+            crdt1.set('items', [
+                { id: 'a', value: 1 },
+                { id: 'b', value: 2 }
+            ]);
+            expect(crdt1.get('items')).toEqual([
+                { id: 'a', value: 1 },
+                { id: 'b', value: 2 }
+            ]);
+        });
+
         it('should merge nullable union arrays across peers', () => {
             setup({
                 items: z.union([
