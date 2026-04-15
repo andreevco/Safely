@@ -12,6 +12,7 @@
     "@safely/sync": "workspace:*",
     "@bitcoinerlab/secp256k1": "^1.2.0",
     "@noble/hashes": "^2.0.1",
+    "@noble/curves": "^2.0.1",
     "@scure/bip32": "^2.0.1",
     "@scure/bip39": "^2.0.1",
     "big.js": "^7.0.1",
