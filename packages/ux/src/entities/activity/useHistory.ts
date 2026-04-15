@@ -1,10 +1,11 @@
 import { InfiniteData, QueryKey } from '@tanstack/react-query';
+import { useCallback } from 'react';
 
 import { fetchBtcActivity } from './api';
 import { activityKeys } from './keys';
 import { ActivityPage, IActivityFilters, IActivityPageParam, IHistoryOptions } from './types';
 import { QUERIES_STALE_TIME, useInfinitePersistQuery, useBtcApi } from '../../shared';
-import { useBroadcastedBtcTxCache } from '../btc-blockchain/broadcasted-tx-cache';
+import { useLastBroadcastedBtcTx } from '../btc-blockchain';
 import { useActiveBtcWallet } from '../portfolio';
 
 const INITIAL_PAGE = 1;
@@ -15,7 +16,7 @@ export function useHistory<TData = InfiniteData<ActivityPage, IActivityPageParam
 ) {
     const btcApi = useBtcApi();
     const btcWallet = useActiveBtcWallet();
-    const { data: broadcastedTx = null } = useBroadcastedBtcTxCache();
+    const broadcastedTx = useLastBroadcastedBtcTx();
 
     return useInfinitePersistQuery<ActivityPage, unknown, TData, QueryKey, IActivityPageParam>({
         queryKey: activityKeys.all(btcWallet.id.toString(), filters).toKey(),
@@ -34,31 +35,49 @@ export function useHistory<TData = InfiniteData<ActivityPage, IActivityPageParam
         },
         initialPageParam: { page: INITIAL_PAGE },
         schemaKey: 'infiniteActivityData',
-        select(data) {
-            const allItems = data?.pages?.length ? data.pages.flatMap(page => page.items) : [];
+        select: useCallback(
+            (data: InfiniteData<ActivityPage, IActivityPageParam>) => {
+                const getPatchedData = () => {
+                    const broadcastedItem = broadcastedTx?.toActivityItem(btcWallet.address);
 
-            if (broadcastedTx) {
-                const broadcastedItem = broadcastedTx.toActivityItem(btcWallet.address);
+                    if (!broadcastedItem) {
+                        return data;
+                    }
 
-                if (
-                    broadcastedItem &&
-                    !allItems.some(
-                        item => item.transaction.raw.txid === broadcastedItem.transaction.raw.txid
-                    ) &&
-                    (filters.isInitiator === undefined ||
-                        broadcastedItem.transaction.isInitiator === filters.isInitiator)
-                ) {
-                    allItems.unshift(broadcastedItem);
-                }
-            }
+                    const alreadyInHistory = data.pages.some(p =>
+                        p.items.some(
+                            item =>
+                                item.transaction.raw.txid === broadcastedItem.transaction.raw.txid
+                        )
+                    );
 
-            const lastPage = data.pages[data.pages.length - 1];
-            const patchedData: InfiniteData<ActivityPage, IActivityPageParam> = {
-                ...data,
-                pages: [{ items: allItems, hasNextPage: lastPage?.hasNextPage ?? false }]
-            };
+                    if (alreadyInHistory) {
+                        return data;
+                    }
 
-            return options?.select ? options.select(patchedData) : (patchedData as TData);
-        }
+                    if (
+                        filters.isInitiator !== undefined &&
+                        broadcastedItem.transaction.isInitiator !== filters.isInitiator
+                    ) {
+                        return data;
+                    }
+
+                    const firstPage = data.pages[0] ?? { items: [], hasNextPage: false };
+
+                    return {
+                        ...data,
+                        pages: [
+                            { ...firstPage, items: [broadcastedItem, ...firstPage.items] },
+                            ...data.pages.slice(1)
+                        ]
+                    };
+                };
+
+                return options?.select
+                    ? options.select(getPatchedData())
+                    : (getPatchedData() as TData);
+            },
+            [broadcastedTx, options?.select, filters.isInitiator, btcWallet.address]
+        )
     });
 }

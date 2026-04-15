@@ -1,3 +1,3 @@
 export * from './useActualBtcBlockNumber';
 export * from './utxo';
-export * from './broadcasted-tx-cache';
+export * from './last-broadcasted-btc-tx';

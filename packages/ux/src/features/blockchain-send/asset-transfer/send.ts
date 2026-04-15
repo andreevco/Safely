@@ -2,13 +2,12 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { BtcTransactionTemplate, TransactionTemplate } from '@safely/core';
 
-import { BroadcastedBtcTx, useBtcSendLocked } from '../../../entities';
-import { useSetBroadcastedBtcTxCache } from '../../../entities/btc-blockchain/broadcasted-tx-cache';
+import { BroadcastedBtcTx, useBtcSendLocked, useSetLastBroadcastedBtcTx } from '../../../entities';
 import { utxo } from '../../../entities/btc-blockchain/keys';
 import { refetchQueries } from '../../../shared';
 
 export function useSendAssetTransfer(transactionTemplate: TransactionTemplate | undefined) {
-    const { mutateAsync: setBroadcastedTx } = useSetBroadcastedBtcTxCache();
+    const { mutateAsync: setLastBroadcastedBtcTx } = useSetLastBroadcastedBtcTx();
     const queryClient = useQueryClient();
     const isLocked = useBtcSendLocked();
 
@@ -26,7 +25,7 @@ export function useSendAssetTransfer(transactionTemplate: TransactionTemplate | 
         },
         async onSuccess() {
             if (transactionTemplate instanceof BtcTransactionTemplate) {
-                await setBroadcastedTx(
+                await setLastBroadcastedBtcTx(
                     BroadcastedBtcTx.fromTransactionTemplate(transactionTemplate)
                 );
                 void queryClient.invalidateQueries({ queryKey: utxo.toKey() });

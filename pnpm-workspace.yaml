@@ -3,7 +3,7 @@ packages:
   - 'apps/web'
   - 'apps/mobile'
 
-minimumReleaseAge: 10080
+minimumReleaseAge: 5760
 
 onlyBuiltDependencies:
   - '@shopify/react-native-skia'
