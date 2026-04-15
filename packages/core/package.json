@@ -13,6 +13,7 @@
     "@safely/sync-storage": "workspace:*",
     "@bitcoinerlab/secp256k1": "^1.2.0",
     "@noble/hashes": "catalog:",
+    "@noble/curves": "^2.0.1",
     "@scure/bip32": "^2.0.1",
     "@scure/bip39": "^2.0.1",
     "big.js": "catalog:",
