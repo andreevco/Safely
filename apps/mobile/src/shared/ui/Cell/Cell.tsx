@@ -31,7 +31,11 @@ export const CellContainer = (props: CellContainerProps) => {
     return (
         <CellContext.Provider value={contextValue}>
             <View style={[styles.container, containerStyle]}>
-                <TouchableHighlight underlayColor={theme.colors.other.hover} {...rest}>
+                <TouchableHighlight
+                    activeOpacity={1}
+                    underlayColor={theme.colors.other.hover}
+                    {...rest}
+                >
                     <View style={[styles.content(showDivider), style]}>{children}</View>
                 </TouchableHighlight>
             </View>
