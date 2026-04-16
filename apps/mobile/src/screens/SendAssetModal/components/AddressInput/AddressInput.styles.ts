@@ -56,6 +56,9 @@ export const styles = StyleSheet.create(theme => ({
         justifyContent: 'center',
         alignItems: 'center'
     },
+    clearIconButton: {
+        right: 20
+    },
     selectedContent: {
         flexDirection: 'row',
         alignItems: 'center',

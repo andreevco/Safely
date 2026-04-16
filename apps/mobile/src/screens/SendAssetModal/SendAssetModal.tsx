@@ -137,7 +137,7 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
 
     return (
         <Screen>
-            <Screen.Header variant="left">
+            <Screen.Header>
                 {isFirstStep ? (
                     <Screen.Header.CloseButton />
                 ) : (
