@@ -46,7 +46,7 @@ export const BtcAssetCell = (props: BtcAssetCellProps) => {
     if (isSubtitleLoading) {
         subtitle = <Cell.Subtitle skeletonWidth={140} />;
     } else if (hasReceiving) {
-        subtitle = <ReceivingBadges utxo={btcUtxo!.unconfirmedUnsafe.utxos} />;
+        subtitle = <ReceivingBadges utxos={btcUtxo!.unconfirmedUnsafe.utxos} />;
     } else if (timeAgo) {
         subtitle = (
             <Cell.Subtitle color="secondary" numberOfLines={undefined} style={styles.subtitle}>

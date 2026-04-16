@@ -7,6 +7,7 @@ import { Linking, View } from 'react-native';
 import { BLOCKCHAIN_NAME, BTC_ASSET, ellipsisMiddle } from '@safely/core';
 import {
     type BtcActivityItem,
+    isBtcTransactionPending,
     useDateFormatter,
     useExplorer,
     useNumberFormatter,
@@ -40,6 +41,7 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
     } = props;
     const { t } = useTranslation();
     const isInitiator = activity.transaction.isInitiator;
+    const isPending = isBtcTransactionPending(activity.transaction.raw);
     const formatter = useNumberFormatter();
     const { data: rate } = useRate(BTC_ASSET);
     const explorer = useExplorer(BLOCKCHAIN_NAME.BTC);
@@ -79,12 +81,22 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
                 <Screen.Header.Title>
                     <Text variant="titleS" color="primary" textAlign="center">
                         {isInitiator
-                            ? t('history.transactionInfo.sent')
-                            : t('history.transactionInfo.received')}
+                            ? t(
+                                  isPending
+                                      ? 'history.transactionInfo.sending'
+                                      : 'history.transactionInfo.sent'
+                              )
+                            : t(
+                                  isPending
+                                      ? 'history.transactionInfo.receiving'
+                                      : 'history.transactionInfo.received'
+                              )}
                     </Text>
-                    <Text variant="bodyM" color="secondary" textAlign="center">
-                        {confirmedAt}
-                    </Text>
+                    {!isPending && (
+                        <Text variant="bodyM" color="secondary" textAlign="center">
+                            {confirmedAt}
+                        </Text>
+                    )}
                 </Screen.Header.Title>
             </Screen.Header>
             <Screen.Scrollable>

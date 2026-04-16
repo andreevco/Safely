@@ -17,6 +17,50 @@ export function getBiggestBtcIOAddress(io: BtcApiTx['vin' | 'vout']) {
     return io.slice().sort((a, b) => toBigOrZero(b.value).cmp(toBigOrZero(a.value)))[0]
         ?.addresses?.[0];
 }
+export function btcTxToActivityItem(tx: BtcApiTx): BtcActivityItem | null {
+    const isInitiator = !!tx.vin?.some(input => input.isOwn);
+
+    const fromAddress = getBiggestBtcIOAddress(
+        tx.vin.filter(v => Boolean(v.isOwn) === isInitiator)
+    );
+
+    const toAddress =
+        getBiggestBtcIOAddress(tx.vout.filter(v => Boolean(v.isOwn) === !isInitiator)) ??
+        getBiggestBtcIOAddress(tx.vout);
+
+    if (!fromAddress || !toAddress) {
+        return null;
+    }
+
+    const weiAmount = tx.vout
+        .filter(v => Boolean(v.isOwn) === !isInitiator)
+        .reduce((acc, v) => acc.plus(toBigOrZero(v.value)), toBig(0));
+
+    let fee: TransactionFeeCrypto<BtcAsset> | undefined;
+    try {
+        if (tx.fees) {
+            fee = {
+                type: 'crypto',
+                amount: BtcAssetAmount.fromWeiAmount(tx.fees)
+            };
+        }
+    } catch {
+        //
+    }
+
+    return {
+        timestamp: (tx.blockTime || 0) * 1000,
+        key: tx.txid,
+        transaction: {
+            isInitiator,
+            fromAddress,
+            toAddress,
+            value: BtcAssetAmount.fromWeiAmount(weiAmount),
+            fee,
+            raw: tx
+        }
+    };
+}
 
 export async function fetchBtcActivity(
     btcApi: BtcApi,
@@ -46,50 +90,7 @@ export async function fetchBtcActivity(
     }
 
     const items: BtcActivityItem[] = addressData.transactions
-        .map(tx => {
-            const isInitiator = !!tx.vin?.some(input => input.isOwn);
-
-            const fromAddress = getBiggestBtcIOAddress(
-                tx.vin.filter(v => Boolean(v.isOwn) === isInitiator)
-            );
-
-            const toAddress =
-                getBiggestBtcIOAddress(tx.vout.filter(v => Boolean(v.isOwn) === !isInitiator)) ??
-                getBiggestBtcIOAddress(tx.vout);
-
-            if (!fromAddress || !toAddress) {
-                return null;
-            }
-
-            const weiAmount = tx.vout
-                .filter(v => Boolean(v.isOwn) === !isInitiator)
-                .reduce((acc, v) => acc.plus(toBigOrZero(v.value)), toBig(0));
-
-            let fee: TransactionFeeCrypto<BtcAsset> | undefined;
-            try {
-                if (tx.fees) {
-                    fee = {
-                        type: 'crypto',
-                        amount: BtcAssetAmount.fromWeiAmount(tx.fees)
-                    };
-                }
-            } catch {
-                //
-            }
-
-            return {
-                timestamp: (tx.blockTime || 0) * 1000,
-                key: tx.txid,
-                transaction: {
-                    isInitiator,
-                    fromAddress,
-                    toAddress,
-                    value: BtcAssetAmount.fromWeiAmount(weiAmount),
-                    fee,
-                    raw: tx
-                }
-            };
-        })
+        .map(btcTxToActivityItem)
         .filter((item): item is BtcActivityItem => item !== null)
         .filter(tx => {
             if (filters.isInitiator !== undefined) {
