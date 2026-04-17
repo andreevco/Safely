@@ -68,6 +68,7 @@ export const RecipientStep = (props: RecipientStepProps) => {
                 keyboardShouldPersistTaps="handled"
                 showsVerticalScrollIndicator={false}
                 bottomOffset={16}
+                keyboardDismissMode="on-drag"
             >
                 <SuggestionsList
                     suggestions={displaySuggestions}
