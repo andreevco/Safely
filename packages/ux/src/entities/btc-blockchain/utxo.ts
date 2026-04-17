@@ -15,9 +15,13 @@ import {
     useDerivedQuery,
     usePersistQuery
 } from '../../shared';
+import { useActiveAccount } from '../account';
 import { resolveBtcWallet, useActiveBtcWallet, usePortfolios } from '../portfolio';
 import { utxo } from './keys';
-import { BroadcastedBtcTxService, useLastBroadcastedBtcTx } from './last-broadcasted-btc-tx';
+import {
+    BroadcastedBtcTxService,
+    getLastBroadcastedBtcTxForWallet
+} from './last-broadcasted-btc-tx';
 import { getBiggestBtcIOAddress } from '../activity/api';
 
 function useAccessibleBtcWallets() {
@@ -50,10 +54,10 @@ function getTotal(utxos: { value: string }[]) {
 export function useBtcWalletUtxo(btcWallet: BtcWallet) {
     const api = useBtcApi();
     const accessibleBtcWallets = useAccessibleBtcWallets();
-    const lastBroadcastedBtcTx = useLastBroadcastedBtcTx();
+    const account = useActiveAccount();
 
     return usePersistQuery({
-        queryKey: utxo.wallet(btcWallet).params({ api, lastBroadcastedBtcTx }).toKey(),
+        queryKey: utxo.wallet(btcWallet).params({ api }).toKey(),
         queryFn: async () => {
             const utxos = await api.getUtxos(btcWallet, true);
 
@@ -83,28 +87,23 @@ export function useBtcWalletUtxo(btcWallet: BtcWallet) {
                 }
             );
 
-            const service = new BroadcastedBtcTxService(
-                lastBroadcastedBtcTx ?? null,
-                btcWallet.address,
-                {
-                    serverConfirmed,
-                    serverSafe,
-                    serverUnsafe
-                }
+            const lastBroadcastedBtcTx = getLastBroadcastedBtcTxForWallet(
+                account.accountId,
+                btcWallet
             );
+
+            const service = new BroadcastedBtcTxService(lastBroadcastedBtcTx, btcWallet.address, {
+                serverConfirmed,
+                serverSafe,
+                serverUnsafe
+            });
 
             const confirmed = service.confirmed;
             const safe = service.unconfirmedSafe;
 
             return {
-                confirmed: {
-                    totalAmount: getTotal(confirmed),
-                    utxos: confirmed
-                },
-                unconfirmedSafe: {
-                    totalAmount: getTotal(safe),
-                    utxos: safe
-                },
+                confirmed: { totalAmount: getTotal(confirmed), utxos: confirmed },
+                unconfirmedSafe: { totalAmount: getTotal(safe), utxos: safe },
                 unconfirmedUnsafe: {
                     totalAmount: getTotal(serverUnsafe),
                     utxos: serverUnsafe

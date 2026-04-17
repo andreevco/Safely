@@ -1,10 +1,11 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createStore, useStore } from '@tanstack/react-store';
 
 import {
     BtcApiUtxo,
     BtcAssetAmount,
     BtcTransactionTemplate,
+    BtcWallet,
     toBig,
     toBigOrZero
 } from '@safely/core';
@@ -14,33 +15,49 @@ import { useActiveAccount } from '../account';
 import { getBiggestBtcIOAddress } from '../activity/api';
 import { BtcActivityItem } from '../activity/types';
 import { useActiveBtcWallet } from '../portfolio';
+import { utxo } from './keys';
+import { refetchQueries } from '../../shared';
 
 const lastBroadcastedBtcTxStore = createStore<Record<string, BroadcastedBtcTx>>({});
+
+function selectLastBroadcastedBtcTxForWallet(
+    tx: BroadcastedBtcTx | undefined,
+    wallet: BtcWallet
+): BroadcastedBtcTx | null {
+    if (!tx) return null;
+    if (tx.senderXpub === wallet.xpub || tx.outputs.some(o => o.address === wallet.address)) {
+        return tx;
+    }
+    return null;
+}
 
 export function useLastBroadcastedBtcTx(): BroadcastedBtcTx | undefined {
     const account = useActiveAccount();
     const wallet = useActiveBtcWallet();
     return useStore(lastBroadcastedBtcTxStore, caches => {
-        const tx: BroadcastedBtcTx | undefined = caches[account.accountId];
-        if (!tx) {
-            return undefined;
-        }
-
-        if (tx.senderXpub === wallet.xpub || tx.receiverAddress === wallet.address) {
-            return tx;
-        } else {
-            return undefined;
-        }
+        return selectLastBroadcastedBtcTxForWallet(caches[account.accountId], wallet) ?? undefined;
     });
+}
+
+export function getLastBroadcastedBtcTxForWallet(
+    accountId: string,
+    wallet: BtcWallet
+): BroadcastedBtcTx | null {
+    return selectLastBroadcastedBtcTxForWallet(lastBroadcastedBtcTxStore.state[accountId], wallet);
 }
 
 export function useSetLastBroadcastedBtcTx() {
     const account = useActiveAccount();
+    const queryClient = useQueryClient();
 
     return useMutation({
         async mutationFn(tx: BroadcastedBtcTx) {
             const accountId = account.accountId;
             lastBroadcastedBtcTxStore.setState(s => ({ ...s, [accountId]: tx }));
+
+            void queryClient.invalidateQueries({ queryKey: utxo.toKey() });
+            void refetchQueries(queryClient, utxo.toKey());
+
             setTimeout(() => {
                 if (lastBroadcastedBtcTxStore.state[accountId]?.txId === tx.txId) {
                     lastBroadcastedBtcTxStore.setState(s => {
@@ -70,8 +87,7 @@ export class BroadcastedBtcTx {
             })),
             template.outputs.map(o => ({ address: o.address, value: o.value.toString() })),
             template.estimation.fee.amount.weiAmount.toString(),
-            template.wallet.xpub,
-            template.request.recipientAddress
+            template.wallet.xpub
         );
     }
 
@@ -81,8 +97,7 @@ export class BroadcastedBtcTx {
         public readonly inputs: { txid: string; vout: number; value: string; address: string }[],
         public readonly outputs: { address: string; value: string }[],
         public readonly fee: string,
-        public readonly senderXpub: string,
-        public readonly receiverAddress: string
+        public readonly senderXpub: string
     ) {}
 
     public toBtcApiTx(walletAddress: string): BtcApiTx {

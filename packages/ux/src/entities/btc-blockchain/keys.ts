@@ -1,6 +1,5 @@
 import { BtcApi, BtcWallet } from '@safely/core';
 
-import { BroadcastedBtcTx } from './last-broadcasted-btc-tx';
 import { defineQueryKeys, finalKey, mappedParams } from '../../shared';
 
 export const btcBlockchain = defineQueryKeys('btc-blockchain', {
@@ -16,9 +15,8 @@ export const utxo = defineQueryKeys('utxo', {
     wallet: mappedParams(
         (__: BtcWallet) => ({
             params: mappedParams(
-                (_: { api: BtcApi; lastBroadcastedBtcTx: BroadcastedBtcTx | undefined }) =>
-                    finalKey,
-                ({ api, lastBroadcastedBtcTx }) => [api.id, lastBroadcastedBtcTx]
+                (_: { api: BtcApi }) => finalKey,
+                ({ api }) => [api.id]
             )
         }),
         wallet => [wallet.id]
