@@ -1,6 +1,6 @@
 {
   "name": "@safely/mobile",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "main": "index.tsx",
   "scripts": {
     "start": "expo start --dev-client",
@@ -29,7 +29,7 @@
     "@safely/core": "workspace:*",
     "@safely/sync": "workspace:*",
     "@safely/ux": "workspace:*",
-    "@shopify/flash-list": "2.0.2",
+    "@shopify/flash-list": "2.3.1",
     "@shopify/react-native-skia": "^2.4.14",
     "@tanstack/react-query": "^5.90.5",
     "big.js": "^7.0.1",

@@ -119,12 +119,6 @@ export const HistoryList = (props: HistoryListProps) => {
 
     useInterval(() => runIntervalRefetch(), atTop && isFocused ? 2000 : null);
 
-    const { mutateAsync: manuallyRefetch, isPending: isRefetching } = useMutation({
-        async mutationFn() {
-            await refetch();
-        }
-    });
-
     const getItemType = useCallback((item: HistoryRowItem) => item.type, []);
 
     const rows = useMemo<HistoryRowItem[] | undefined>(() => {
@@ -192,8 +186,6 @@ export const HistoryList = (props: HistoryListProps) => {
         <Screen.List
             ref={listRef}
             contentContainerStyle={styles.contentContainer}
-            refreshing={isRefetching}
-            onRefresh={manuallyRefetch}
             onScroll={onScroll}
             data={rows}
             keyExtractor={item => item.key}

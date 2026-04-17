@@ -1,16 +1,21 @@
+import { InfiniteData } from '@tanstack/react-query';
+import { useCallback } from 'react';
+
 import { isBtcTransactionPending } from './blockchain-specific/btc';
 import {
     ACTIVITY_GROUP_LABEL,
     ActivityItem,
     ActivityItemsDatedGroup,
     ActivityItemsDatedGroupMeta,
-    IActivityFilters
+    ActivityPage,
+    IActivityFilters,
+    IActivityPageParam
 } from './types';
 import { useHistory } from './useHistory';
 
 export function useGroupedHistory(filters: IActivityFilters = {}) {
     return useHistory<ActivityItemsDatedGroup[]>(filters, {
-        select(data) {
+        select: useCallback((data: InfiniteData<ActivityPage, IActivityPageParam>) => {
             if (!data?.pages?.length) {
                 return [];
             }
@@ -18,7 +23,7 @@ export function useGroupedHistory(filters: IActivityFilters = {}) {
             const allItems = data.pages.flatMap(page => page.items);
 
             return groupActivityItems(allItems);
-        }
+        }, [])
     });
 }
 
