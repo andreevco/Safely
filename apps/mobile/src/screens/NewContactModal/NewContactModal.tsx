@@ -96,7 +96,7 @@ export const NewContactModal = ({ route }: NewContactModalProps) => {
                     {addressError && (
                         <Input.Description color="accentRed">{addressError}</Input.Description>
                     )}
-                    {initialContact && (
+                    {initialContact && !addressError && (
                         <Input.Description>
                             {t('newContact.form.addedOn', {
                                 date: dateFormatter.format(initialContact.createdAt)

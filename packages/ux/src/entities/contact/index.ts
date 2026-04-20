@@ -9,7 +9,7 @@ import {
     IContact
 } from '@safely/core';
 
-import { useActiveAccountSyncedStorage, useSuspenseQuery } from '../../shared';
+import { useActiveAccountSyncedStorage, useSuspenseQuery, useTranslate } from '../../shared';
 import { useActiveAccountQueryKey } from '../account';
 import { useToast } from '../toast';
 
@@ -106,13 +106,14 @@ export function useDeleteContact() {
     const { mutateAsync: setContacts } = useSetContacts();
     const contacts = useContacts();
     const toast = useToast();
+    const t = useTranslate();
 
     return useMutation<void, Error, IContact>({
         async mutationFn(contact) {
             await setContacts(contacts.filter(c => !c.id.isEq(contact.id)));
         },
         onSuccess() {
-            toast('Contact deleted');
+            toast({ message: t('common.removed') });
         }
     });
 }

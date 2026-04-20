@@ -18,6 +18,7 @@
     "common": {
         "edit": "Edit",
         "remove": "Remove",
+        "removed": "Removed",
         "next": "Next",
         "save": "Save",
         "cancel": "Cancel",
