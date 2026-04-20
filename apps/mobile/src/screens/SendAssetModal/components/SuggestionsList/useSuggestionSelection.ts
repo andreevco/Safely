@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useRef } from 'react';
 
-import { SendSuggestion } from '@safely/ux';
+import { SendSuggestions } from '@safely/ux';
 
 interface UseSuggestionSelectionParams {
-    suggestions: SendSuggestion[];
-    restoredSuggestions?: SendSuggestion[];
+    suggestions: SendSuggestions;
+    restoredSuggestions?: SendSuggestions;
     selectedId?: string;
     onChangeText: (value: string, label?: string) => void;
-    onSelectSuggestion: (id: string, visibleSuggestions: SendSuggestion[]) => void;
+    onSelectSuggestion: (id: string, visibleSuggestions: SendSuggestions) => void;
     onClearSuggestionSelection: () => void;
 }
 
@@ -21,10 +21,10 @@ export function useSuggestionSelection(params: UseSuggestionSelectionParams) {
         onClearSuggestionSelection
     } = params;
 
-    const savedSuggestions = useRef<SendSuggestion[]>(restoredSuggestions ?? suggestions);
+    const savedSuggestions = useRef<SendSuggestions>(restoredSuggestions ?? suggestions);
 
     useEffect(() => {
-        if (suggestions.length > 0) {
+        if (suggestions.portfolios.length > 0 || suggestions.contacts.length > 0) {
             savedSuggestions.current = suggestions;
         }
     }, [suggestions]);

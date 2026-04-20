@@ -12,9 +12,10 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useUnistyles } from 'react-native-unistyles';
 
-import { PortfolioMeta, ellipsisMiddle } from '@safely/core';
+import { ContactMeta, PortfolioMeta, ellipsisMiddle } from '@safely/core';
 import { useScanQrScheme } from '@safely/ux';
 
+import { ContactName } from '@mobile/entities/contact';
 import { PortfolioName } from '@mobile/entities/portfolio';
 import { Icon, QrCodeScan28, XmarkCircle16 } from '@mobile/shared/ui/Icon';
 import { Text } from '@mobile/shared/ui/Text';
@@ -29,7 +30,8 @@ interface AddressInputProps {
     label?: string;
     placeholder?: string;
     inputRef?: Ref<TextInput>;
-    selectedMeta?: PortfolioMeta;
+    selectedPortfolioMeta?: PortfolioMeta;
+    selectedContactMeta?: ContactMeta;
     onSubmitEditing?: () => void;
 }
 
@@ -41,9 +43,11 @@ export const AddressInput = (props: AddressInputProps) => {
         label,
         placeholder,
         inputRef,
-        selectedMeta,
+        selectedPortfolioMeta,
+        selectedContactMeta,
         onSubmitEditing
     } = props;
+    const selectedMeta = selectedPortfolioMeta ?? selectedContactMeta;
     const { t } = useTranslation();
     const { theme } = useUnistyles();
 
@@ -132,7 +136,23 @@ export const AddressInput = (props: AddressInputProps) => {
                 />
                 {selectedMeta && (
                     <Pressable style={styles.selectedContent} onPress={handleSelectedPress}>
-                        <PortfolioName gap={8} meta={selectedMeta} size={16} fontVariant="bodyL" />
+                        {selectedPortfolioMeta ? (
+                            <PortfolioName
+                                gap={8}
+                                meta={selectedPortfolioMeta}
+                                size={16}
+                                fontVariant="bodyL"
+                            />
+                        ) : (
+                            selectedContactMeta && (
+                                <ContactName
+                                    gap={8}
+                                    meta={selectedContactMeta}
+                                    size={16}
+                                    fontVariant="bodyL"
+                                />
+                            )
+                        )}
                         <Text variant="bodyL" color="tertiary">
                             {ellipsisMiddle(value)}
                         </Text>

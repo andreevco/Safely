@@ -7,13 +7,16 @@ import { BTC_ASSET, ellipsisMiddle } from '@safely/core';
 import {
     type BtcActivityItem,
     findPortfolioMetaByAddress,
+    findContactMetaByAddress,
     useBtcTransactionDisplayStatus,
     useDateFormatter,
     useNumberFormatter,
     usePortfolios,
-    useRate
+    useRate,
+    useContacts
 } from '@safely/ux';
 
+import { ContactName } from '@mobile/entities/contact';
 import { PortfolioName } from '@mobile/entities/portfolio';
 import { Cell, Text } from '@mobile/shared/ui';
 
@@ -33,13 +36,14 @@ export const ActivityItem = (props: ActivityItemProps) => {
     const rate = useRate(BTC_ASSET);
     const { t } = useTranslation();
     const portfolios = usePortfolios();
-
+    const contacts = useContacts();
     const isInitiator = activity.transaction.isInitiator;
     const dateFormatter = useDateFormatter({ hour: 'numeric', minute: 'numeric' });
     const counterpartyAddress = isInitiator
         ? activity.transaction.toAddress
         : activity.transaction.fromAddress;
-    const counterpartyMeta = findPortfolioMetaByAddress(portfolios, counterpartyAddress);
+    const counterpartyPortfolioMeta = findPortfolioMetaByAddress(portfolios, counterpartyAddress);
+    const counterpartyContactMeta = findContactMetaByAddress(contacts, counterpartyAddress);
 
     const status = useBtcTransactionDisplayStatus(activity.transaction.raw);
 
@@ -55,6 +59,36 @@ export const ActivityItem = (props: ActivityItemProps) => {
             ? t('history.transactionInfo.sent')
             : t('history.transactionInfo.received');
     }, [status.type, isInitiator, t]);
+
+    const CounterpartyName = useMemo(() => {
+        if (counterpartyContactMeta) {
+            return (
+                <ContactName
+                    meta={counterpartyContactMeta}
+                    size={12}
+                    gap={6}
+                    fontVariant="bodyM"
+                    color="secondary"
+                />
+            );
+        }
+        if (counterpartyPortfolioMeta) {
+            return (
+                <PortfolioName
+                    meta={counterpartyPortfolioMeta}
+                    size={12}
+                    gap={6}
+                    fontVariant="bodyM"
+                    color="secondary"
+                />
+            );
+        }
+        return (
+            <Cell.Subtitle color="secondary">
+                {ellipsisMiddle(counterpartyAddress, 6)}
+            </Cell.Subtitle>
+        );
+    }, [counterpartyPortfolioMeta, counterpartyContactMeta, counterpartyAddress]);
 
     return (
         <View style={styles.border}>
@@ -77,28 +111,12 @@ export const ActivityItem = (props: ActivityItemProps) => {
                                 </Text>
                             )}
                         </View>
-                        <Cell.Value
-                            color={
-                                status.type === 'pending' || isInitiator ? 'primary' : 'accentGreen'
-                            }
-                        >
+                        <Cell.Value color={isInitiator ? 'primary' : 'accentGreen'}>
                             {isInitiator ? '−' : '+'} {activity.transaction.value.format(formatter)}
                         </Cell.Value>
                     </Cell.Row>
                     <Cell.Row>
-                        {counterpartyMeta ? (
-                            <PortfolioName
-                                meta={counterpartyMeta}
-                                size={12}
-                                gap={6}
-                                fontVariant="bodyM"
-                                color="secondary"
-                            />
-                        ) : (
-                            <Cell.Subtitle color="secondary">
-                                {ellipsisMiddle(counterpartyAddress, 6)}
-                            </Cell.Subtitle>
-                        )}
+                        {CounterpartyName}
                         <Cell.Subvalue>
                             {rate.data &&
                                 activity.transaction.value.convert(rate.data).format(formatter)}

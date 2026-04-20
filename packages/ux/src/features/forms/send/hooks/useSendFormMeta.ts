@@ -1,20 +1,39 @@
 import { useMemo } from 'react';
 
-import { IDerivation, Portfolio, PortfolioType, RatedCryptoAssetAmount } from '@safely/core';
-
 import {
+    Contact,
+    IDerivation,
+    Portfolio,
+    PortfolioType,
+    RatedCryptoAssetAmount
+} from '@safely/core';
+
+import { SuggestionDraftState } from './useSuggestionDraft';
+import {
+    findContactMetaByAddress,
     findPortfolioMetaByAddress,
     useActivePortfolioEntities,
+    useContacts,
     usePortfolios
 } from '../../../../entities';
 import { fuzzySearch } from '../../../../shared';
-import { SendFormState, SendSuggestion } from '../types';
-import { SuggestionDraftState } from './useSuggestionDraft';
+import { ContactSuggestion, PortfolioSuggestion, SendFormState } from '../types';
+
+function mapContactToSuggestion(contact: Contact): ContactSuggestion {
+    return {
+        id: contact.id.toString(),
+        address: contact.address,
+        meta: {
+            name: contact.meta.name,
+            color: contact.meta.color
+        }
+    };
+}
 
 function mapPortfolioToSuggestions(
     portfolio: Portfolio,
     activeDerivation?: IDerivation
-): SendSuggestion[] {
+): PortfolioSuggestion[] {
     if (portfolio.type === PortfolioType.WATCH_ONLY) {
         return [
             {
@@ -45,31 +64,52 @@ interface UseSendFormMetaParams {
 
 export function useSendFormMeta(params: UseSendFormMetaParams) {
     const { state, assetsData, suggestionDraft } = params;
-    const { selectedId, suggestionIds: savedSuggestionIds } = suggestionDraft;
+    const { selectedId, suggestionPortfoliosIds, suggestionContactsIds } = suggestionDraft;
 
     const blockchain = state.parsed.recipient?.blockchain;
     const portfolios = usePortfolios();
     const entities = useActivePortfolioEntities();
     const activeDerivation = entities.kind === 'bip39' ? entities.derivation : undefined;
 
+    const contacts = useContacts();
+
     const suggestions = useMemo(() => {
         const query = state.values.recipient;
 
-        return fuzzySearch(portfolios, query, s => s.meta.name).flatMap(portfolio =>
-            mapPortfolioToSuggestions(portfolio, activeDerivation)
-        );
+        return {
+            portfolios: fuzzySearch(portfolios, query, s => s.meta.name).flatMap(portfolio =>
+                mapPortfolioToSuggestions(portfolio, activeDerivation)
+            ),
+            contacts: fuzzySearch(contacts, query, s => s.meta.name).map(contact =>
+                mapContactToSuggestion(contact)
+            )
+        };
     }, [portfolios, activeDerivation, state.values.recipient, state.parsed.recipient]);
 
     const restoredSuggestions = useMemo(() => {
-        if (!savedSuggestionIds || !selectedId) return undefined;
+        if (!suggestionPortfoliosIds || !suggestionContactsIds || !selectedId) return undefined;
 
-        const idSet = new Set(savedSuggestionIds);
+        const portfolioIdSet = new Set(suggestionPortfoliosIds);
+        const contactIdSet = new Set(suggestionContactsIds);
 
-        return portfolios
-            .flatMap(portfolio => mapPortfolioToSuggestions(portfolio, activeDerivation))
-            .filter(s => idSet.has(s.id))
-            .sort((a, b) => savedSuggestionIds.indexOf(a.id) - savedSuggestionIds.indexOf(b.id));
-    }, [savedSuggestionIds, selectedId, portfolios, activeDerivation]);
+        return {
+            portfolios: portfolios
+                .flatMap(portfolio => mapPortfolioToSuggestions(portfolio, activeDerivation))
+                .filter(s => portfolioIdSet.has(s.id))
+                .sort(
+                    (a, b) =>
+                        suggestionPortfoliosIds.indexOf(a.id) -
+                        suggestionPortfoliosIds.indexOf(b.id)
+                ),
+            contacts: contacts
+                .map(contact => mapContactToSuggestion(contact))
+                .filter(s => contactIdSet.has(s.id))
+                .sort(
+                    (a, b) =>
+                        suggestionContactsIds.indexOf(a.id) - suggestionContactsIds.indexOf(b.id)
+                )
+        };
+    }, [suggestionPortfoliosIds, suggestionContactsIds, selectedId, portfolios, activeDerivation]);
 
     const portfolioMetaByAddress = useMemo(() => {
         if (!state.parsed.recipient) {
@@ -78,6 +118,14 @@ export function useSendFormMeta(params: UseSendFormMetaParams) {
 
         return findPortfolioMetaByAddress(portfolios, state.parsed.recipient.address);
     }, [portfolios, state.parsed.recipient]);
+
+    const contactMetaByAddress = useMemo(() => {
+        if (!state.parsed.recipient) {
+            return;
+        }
+
+        return findContactMetaByAddress(contacts, state.parsed.recipient.address);
+    }, [contacts, state.parsed.recipient]);
 
     const isMaxAvailable = useMemo(() => {
         const asset = state.parsed.asset;
@@ -96,6 +144,7 @@ export function useSendFormMeta(params: UseSendFormMetaParams) {
         availableAssets,
         suggestions,
         restoredSuggestions,
-        portfolioMetaByAddress
+        portfolioMetaByAddress,
+        contactMetaByAddress
     };
 }

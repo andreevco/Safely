@@ -5,6 +5,7 @@ export * from './portfolio';
 export * from './toast';
 export * from './loader';
 export * from './account';
+export * from './contact';
 export * from './synced-device';
 export * from './explorer';
 export * from './security';

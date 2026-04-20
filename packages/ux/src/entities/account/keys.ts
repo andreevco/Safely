@@ -25,6 +25,7 @@ export const accountKey = defineQueryKeys('account', {
                 meta: finalKey,
                 currentIkPub: finalKey
             },
+            contacts: finalKey,
             lastSeedRevealedAt: finalKey
         };
     }
