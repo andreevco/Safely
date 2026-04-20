@@ -5,6 +5,7 @@ import { YCRDT } from './y-crdt';
 import { YCRDTRepository } from './y-crdt-repository';
 import { SyncError } from '../sync-error';
 import { BufferHexSchema } from '../utils/schemas';
+import { VersionsRepository } from './repositories/versions';
 
 export class YManager {
     private constructor(
@@ -17,8 +18,12 @@ export class YManager {
         return new YManager(yRepository, yDoc);
     }
 
-    public async applyUpdate(update: Buffer, origin: string): Promise<void> {
-        this.yDoc.applyUpdate(update, origin);
+    public async applyUpdate(
+        update: Buffer,
+        origin: string,
+        remoteStorageVersion: number
+    ): Promise<void> {
+        this.yDoc.applyUpdate(update, origin, remoteStorageVersion);
         await this.yRepository.saveCRDT(this.yDoc);
     }
 
@@ -35,13 +40,25 @@ export class YManager {
         return value;
     }
 
+    public getVersionsRepository(): VersionsRepository {
+        return new VersionsRepository(this);
+    }
+
+    public getVersionsMap(): Y.Map<string> {
+        const versions = this.yDoc.get('versions');
+        if (versions instanceof Y.Map) {
+            return versions as Y.Map<string>;
+        }
+        throw new StorageError(`Corrupted storage: "versions" is not in storage.`);
+    }
+
     public async getDeviceLog(): Promise<DeviceOp[]> {
-        const deviceLog = this.yDoc.getArray('devices');
+        const deviceLog = this.yDoc.systemGetArray('devices');
         return deviceLog.toArray().map(x => DeviceOpSchema.parse(JSON.parse(x)));
     }
 
     public async addDeviceOp(op: DeviceOp): Promise<void> {
-        const deviceLog = this.yDoc.getArray('devices');
+        const deviceLog = this.yDoc.systemGetArray('devices');
         deviceLog.push([deviceOpToJson(op)]);
         await this.yRepository.saveCRDT(this.yDoc);
     }

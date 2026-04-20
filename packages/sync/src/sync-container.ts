@@ -3,6 +3,7 @@ import { ZodType } from 'zod';
 import { ApiSigner } from './api/api-signer';
 import { AccountsApi, Configuration, SnapshotsApi } from './api/generated';
 import { SnapshotsSse } from './api/snapshots-sse';
+import { VersionsRepository } from './crdt/repositories/versions';
 import { StorageVerifierService } from './crdt/storage-verifier-service';
 import { YCRDTRepository } from './crdt/y-crdt-repository';
 import { YManager } from './crdt/y-manager';
@@ -45,6 +46,8 @@ export type SyncContainer = {
     yManager: YManager;
     deviceManager: DeviceManagementService;
 
+    versionsRepository: VersionsRepository;
+
     apiSigner: ApiSigner;
     accountsApi: AccountsApi;
     snapshotApi: SnapshotsApi;
@@ -84,6 +87,8 @@ export async function createSyncContainer(opts: {
         dmkVerifierService
     );
 
+    const versionsRepository = new VersionsRepository(yManager);
+
     const updateEncryptor = new UpdateEncryptorService(
         syncKeyService,
         ikService,
@@ -122,6 +127,7 @@ export async function createSyncContainer(opts: {
         updateHandler,
         yManager,
         deviceManager,
+        versionsRepository,
         apiSigner,
         accountsApi,
         snapshotApi,

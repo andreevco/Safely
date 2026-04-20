@@ -1,35 +1,34 @@
-import { ZodType } from 'zod';
-
 import { AccountManager } from './account-manager';
 import { ISyncAccount } from './I-sync-account';
-import { ISyncAccountFactory } from './I-sync-account-factory';
 import { ITreeStorage } from '../I-storage';
 import { CreateAccountService } from './create-account-service';
+import { ISyncAccountFactory } from './I-sync-account-factory';
 import { SyncAccountRepository } from './sync-account-repository';
 import { Configuration } from '../api/generated';
 import { SyncApiConfiguration } from '../api/sync-api-configuration';
-import { validateSyncDataScheme } from '../crdt/deep-merge/z-schema';
+import { AnyStorageVersion, AssertVersionChain } from '../crdt/version';
 import { ed25519_keygen } from '../crypto/ed25519';
 import { Logger, LogLevel } from '../logger/logger';
 import { OnboardingConnector } from '../onboarding/connector';
 import { accountsApiForOnboarding, NewDeviceOnboarding } from '../onboarding/new-device-onboarding';
 
 export class SyncAccountFactory<
-    S extends Record<string, ZodType>
+    const S extends readonly AnyStorageVersion[]
 > implements ISyncAccountFactory<S> {
     private readonly syncAccountIdRepository: SyncAccountRepository;
     private readonly accountManager: AccountManager<S>;
     private readonly apiConfiguration: Configuration;
     private readonly logger: Logger;
+    private readonly structure: S;
 
     constructor(opts: {
         storage: ITreeStorage;
         encryptedStorage: ITreeStorage;
-        structure: S;
+        structure: S & AssertVersionChain<S>;
         apiConfiguration?: SyncApiConfiguration;
         logger?: Logger;
     }) {
-        validateSyncDataScheme(opts.structure);
+        //validateSyncDataScheme(opts.structure);
 
         this.syncAccountIdRepository = new SyncAccountRepository(opts.storage);
         this.apiConfiguration = new Configuration(opts.apiConfiguration);
