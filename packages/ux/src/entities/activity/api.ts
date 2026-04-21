@@ -1,25 +1,76 @@
-import { BtcApi, BtcApiTx, BtcAsset, BtcAssetAmount, TransactionFeeCrypto } from '@safely/core';
-import { BtcWallet } from '@safely/core';
-import { toBig, toBigOrZero } from '@safely/core';
+import {
+    BtcApi,
+    BtcApiTx,
+    BtcAsset,
+    BtcAssetAmount,
+    BtcWalletReadOnly,
+    TransactionFeeCrypto,
+    toBig,
+    toBigOrZero
+} from '@safely/core';
 
 import { ActivityPage, BtcActivityItem, IActivityFilters } from './types';
 
 const ON_PAGE_ELEMENTS_LIMIT = 25;
 
-function getBiggestIOAddress(io: BtcApiTx['vin' | 'vout']) {
+export function getBiggestBtcIOAddress(io: BtcApiTx['vin' | 'vout']) {
     return io.slice().sort((a, b) => toBigOrZero(b.value).cmp(toBigOrZero(a.value)))[0]
         ?.addresses?.[0];
+}
+export function btcTxToActivityItem(tx: BtcApiTx): BtcActivityItem | null {
+    const isInitiator = !!tx.vin?.some(input => input.isOwn);
+
+    const fromAddress = getBiggestBtcIOAddress(
+        tx.vin.filter(v => Boolean(v.isOwn) === isInitiator)
+    );
+
+    const toAddress =
+        getBiggestBtcIOAddress(tx.vout.filter(v => Boolean(v.isOwn) === !isInitiator)) ??
+        getBiggestBtcIOAddress(tx.vout);
+
+    if (!fromAddress || !toAddress) {
+        return null;
+    }
+
+    const weiAmount = tx.vout
+        .filter(v => Boolean(v.isOwn) === !isInitiator)
+        .reduce((acc, v) => acc.plus(toBigOrZero(v.value)), toBig(0));
+
+    let fee: TransactionFeeCrypto<BtcAsset> | undefined;
+    try {
+        if (tx.fees) {
+            fee = {
+                type: 'crypto',
+                amount: BtcAssetAmount.fromWeiAmount(tx.fees)
+            };
+        }
+    } catch {
+        //
+    }
+
+    return {
+        timestamp: (tx.blockTime || 0) * 1000,
+        key: tx.txid,
+        transaction: {
+            isInitiator,
+            fromAddress,
+            toAddress,
+            value: BtcAssetAmount.fromWeiAmount(weiAmount),
+            fee,
+            raw: tx
+        }
+    };
 }
 
 export async function fetchBtcActivity(
     btcApi: BtcApi,
-    wallet: Pick<BtcWallet, 'type' | 'xpub'>,
+    wallet: Pick<BtcWalletReadOnly, 'type' | 'xpub' | 'address'>,
     page: number,
     filters: IActivityFilters
 ): Promise<ActivityPage> {
     const pageNum = page >= 1 ? page : 1;
 
-    const addressData = await btcApi.getXpub(
+    const addressData = await btcApi.getAddressInfo(
         {
             ...wallet,
             derivationPath: {
@@ -39,50 +90,7 @@ export async function fetchBtcActivity(
     }
 
     const items: BtcActivityItem[] = addressData.transactions
-        .map(tx => {
-            const isInitiator = !!tx.vin?.some(input => input.isOwn);
-
-            const fromAddress = getBiggestIOAddress(
-                tx.vin.filter(v => Boolean(v.isOwn) === isInitiator)
-            );
-
-            const toAddress =
-                getBiggestIOAddress(tx.vout.filter(v => Boolean(v.isOwn) === !isInitiator)) ??
-                getBiggestIOAddress(tx.vout);
-
-            if (!fromAddress || !toAddress) {
-                return null;
-            }
-
-            const weiAmount = tx.vout
-                .filter(v => Boolean(v.isOwn) === !isInitiator)
-                .reduce((acc, v) => acc.plus(toBigOrZero(v.value)), toBig(0));
-
-            let fee: TransactionFeeCrypto<BtcAsset> | undefined;
-            try {
-                if (tx.fees) {
-                    fee = {
-                        type: 'crypto',
-                        amount: BtcAssetAmount.fromWeiAmount(tx.fees)
-                    };
-                }
-            } catch {
-                //
-            }
-
-            return {
-                timestamp: (tx.blockTime || 0) * 1000,
-                key: tx.txid,
-                transaction: {
-                    isInitiator,
-                    fromAddress,
-                    toAddress,
-                    value: BtcAssetAmount.fromWeiAmount(weiAmount),
-                    fee,
-                    raw: tx
-                }
-            };
-        })
+        .map(btcTxToActivityItem)
         .filter((item): item is BtcActivityItem => item !== null)
         .filter(tx => {
             if (filters.isInitiator !== undefined) {

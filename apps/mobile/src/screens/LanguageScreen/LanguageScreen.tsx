@@ -46,11 +46,7 @@ export const LanguageScreen = () => {
                                                 {t(`language.languages.${language.code}`)}
                                             </Cell.Title>
                                         </Cell.Row>
-                                        <Text
-                                            variant="bodyM"
-                                            color="secondary"
-                                            style={styles.nativeName}
-                                        >
+                                        <Text variant="bodyM" color="secondary">
                                             {language.nativeName}
                                         </Text>
                                     </Cell.Content>

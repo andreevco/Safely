@@ -19,5 +19,9 @@ export const styles = StyleSheet.create((theme, rt) => ({
         flexDirection: 'row',
         alignItems: 'center',
         gap: 4
+    },
+    watchInfoText: {
+        paddingVertical: theme.spacing[8],
+        paddingHorizontal: theme.spacing[16]
     }
 }));

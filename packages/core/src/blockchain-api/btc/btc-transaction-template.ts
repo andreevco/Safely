@@ -7,7 +7,7 @@ import {
     BLOCKCHAIN_NAME,
     BtcAssetAmount,
     btcNetworkConfig,
-    BtcWallet,
+    SignableBtcWallet,
     ExplorerFactory
 } from '../../entities';
 import { getExternalErrorText } from '../../entities/errors/errors.service';
@@ -20,9 +20,37 @@ export class BtcTransactionTemplate {
 
     private readonly psbtBuilder: BtcPsbtBulder;
 
+    public get outputs(): PsbtRequest['outputs'] {
+        const total = getUtxoTotal(this.utxos);
+        const recipientOutput = {
+            address: this.request.recipientAddress,
+            value: this.request.amount.weiAmount
+        };
+
+        switch (this.request.type) {
+            case 'max':
+                return [recipientOutput];
+            case 'not-max':
+                return [
+                    recipientOutput,
+                    {
+                        address: this.wallet.address,
+                        value: total.sub(this.request.amount).sub(this.estimation.fee.amount)
+                            .weiAmount
+                    }
+                ];
+            default:
+                assertUnreachable(this.request);
+        }
+    }
+
+    public get inputs() {
+        return this.utxos;
+    }
+
     constructor(
         private readonly btcApi: BtcApi,
-        private readonly wallet: BtcWallet,
+        public readonly wallet: SignableBtcWallet,
         public readonly request: BtcTransferRequest & { amount: BtcAssetAmount },
         private readonly utxos: BtcApiUtxo[],
         public readonly estimation: BtcEstimation
@@ -34,34 +62,10 @@ export class BtcTransactionTemplate {
         if (this.sendResult) {
             throw new Error(`Tx is already published, ${this.sendResult.txId}`);
         }
-        const total = getUtxoTotal(this.utxos);
-        const recipientOutput = {
-            address: this.request.recipientAddress,
-            value: this.request.amount.weiAmount
-        };
-
-        let outputs: PsbtRequest['outputs'];
-        switch (this.request.type) {
-            case 'max':
-                outputs = [recipientOutput];
-                break;
-            case 'not-max':
-                outputs = [
-                    recipientOutput,
-                    {
-                        address: this.wallet.address,
-                        value: total.sub(this.request.amount).sub(this.estimation.fee.amount)
-                            .weiAmount
-                    }
-                ];
-                break;
-            default:
-                assertUnreachable(this.request);
-        }
 
         const psbt = await this.psbtBuilder.buildPsbt({
             inputs: this.utxos,
-            outputs
+            outputs: this.outputs
         });
 
         const signed = await this.wallet.sign({

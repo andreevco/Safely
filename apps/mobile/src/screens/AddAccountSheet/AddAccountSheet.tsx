@@ -1,5 +1,5 @@
 import { useNavigation } from '@react-navigation/native';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Keyboard, View } from 'react-native';
 
@@ -13,13 +13,12 @@ import {
 } from '@safely/ux';
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
-import { BottomSheet, Button, Text, useBottomSheet } from '@mobile/shared/ui';
+import { BottomSheet, Button, Text, useCloseOnReturn } from '@mobile/shared/ui';
 
 import { styles } from './AddAccountSheet.styles';
 
 const AddAccountContent = () => {
     const { t } = useTranslation();
-    const { close } = useBottomSheet();
     const { getSecureEncryptedStorage } = useAppContext();
     const navigation = useNavigation<RootStackNavigationProp>();
     const signIn = useCreateExistingAccountConnector();
@@ -30,21 +29,10 @@ const AddAccountContent = () => {
     });
     const { withLoader } = useLoader();
     const toast = useToast();
-
-    const shouldCloseOnFocus = useRef(false);
-
-    useEffect(() => {
-        const unsubscribe = navigation.addListener('focus', () => {
-            if (shouldCloseOnFocus.current) {
-                close();
-            }
-        });
-
-        return unsubscribe;
-    }, [navigation, close]);
+    const markNavigated = useCloseOnReturn();
 
     const handleCreateNew = () => {
-        shouldCloseOnFocus.current = true;
+        markNavigated();
         const defaultName = t('addAccount.defaultName', { number: (accounts?.length ?? 0) + 1 });
         navigation.navigate('CustomizeAccountModal', {
             defaultName,
@@ -109,7 +97,7 @@ const AddAccountContent = () => {
 
 export const AddAccountSheet = () => {
     return (
-        <BottomSheet>
+        <BottomSheet shortHeader>
             <AddAccountContent />
         </BottomSheet>
     );

@@ -9,9 +9,7 @@ import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { BottomSheet, Button, ConfirmCheckbox, Text, useBottomSheet } from '@mobile/shared/ui';
 
 import { styles } from './RemoveWalletSheet.styles';
-
-// TODO: connect to sync - replace with useSeedRevealInfo() from the other branch
-const isSeedRevealed = true;
+import { useRemoveWalletState } from './useRemoveWalletState';
 
 const RemoveWalletContent = () => {
     const { t } = useTranslation();
@@ -20,12 +18,17 @@ const RemoveWalletContent = () => {
     const toast = useToast();
     const { mutateAsync: deletePortfolio, isPending } = useDeletePortfolio();
     const navigation = useNavigation<RootStackNavigationProp>();
+    const state = useRemoveWalletState();
     const [isConfirmed, setIsConfirmed] = useState(false);
 
     const handleRemove = async () => {
-        await deletePortfolio(portfolio);
-        toast(t('removeWallet.toastMessages.walletRemoved'));
-        navigation.goBack();
+        try {
+            await deletePortfolio(portfolio);
+            toast(t('removeWallet.toastMessages.walletRemoved'));
+            navigation.goBack();
+        } catch {
+            // Security check cancelled
+        }
     };
 
     const handleBackUpPress = () => {
@@ -36,38 +39,31 @@ const RemoveWalletContent = () => {
         <View>
             <View style={styles.titleBox}>
                 <Text textAlign="center" variant="titleM">
-                    {t('removeWallet.title', {
-                        name:
-                            portfolio.meta.icon.type === 'emoji'
-                                ? `${portfolio.meta.icon.value} ${portfolio.meta.name}`
-                                : portfolio.meta.name
-                    })}
+                    {t('removeWallet.title', { name: portfolio.meta.name })}
                 </Text>
                 <Text textAlign="center" variant="bodyL" color="secondary" style={styles.subtitle}>
-                    {isSeedRevealed
-                        ? t('removeWallet.revealed.subtitle')
-                        : t('removeWallet.notRevealed.subtitle')}{' '}
-                    <Text variant="bodyL" color="link" onPress={handleBackUpPress}>
-                        {t('removeWallet.backUpLink')}
-                    </Text>
+                    {t(state.subtitleKey)}{' '}
+                    {state.hasBackUpLink && (
+                        <Text variant="bodyL" color="link" onPress={handleBackUpPress}>
+                            {t('removeWallet.backUpLink')}
+                        </Text>
+                    )}
                 </Text>
             </View>
 
-            <ConfirmCheckbox
-                text={
-                    isSeedRevealed
-                        ? t('removeWallet.revealed.checkbox')
-                        : t('removeWallet.notRevealed.checkbox')
-                }
-                isChecked={isConfirmed}
-                onToggle={() => setIsConfirmed(prev => !prev)}
-            />
+            {state.hasCheckbox && (
+                <ConfirmCheckbox
+                    text={t(state.checkboxKey)}
+                    isChecked={isConfirmed}
+                    onToggle={() => setIsConfirmed(prev => !prev)}
+                />
+            )}
 
             <View style={styles.footer}>
                 <Button
                     type="destructive"
                     size="large"
-                    disabled={!isConfirmed || isPending}
+                    disabled={(state.hasCheckbox && !isConfirmed) || isPending}
                     onPress={handleRemove}
                 >
                     {t('removeWallet.removeButton')}

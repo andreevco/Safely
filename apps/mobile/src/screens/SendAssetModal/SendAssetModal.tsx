@@ -1,4 +1,9 @@
-import { useNavigation, NavigationProp, StaticScreenProps } from '@react-navigation/native';
+import {
+    useNavigation,
+    NavigationProp,
+    StaticScreenProps,
+    useFocusEffect
+} from '@react-navigation/native';
 import { useRef, useCallback, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TextInput, View } from 'react-native';
@@ -59,6 +64,8 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
         shouldResetForm: false,
         initialValues: { recipient: address, amount }
     });
+
+    useFocusEffect(actions.onBackToEditing);
 
     const amountInputType = state.values.amountInputType;
     const asset = state.parsed.asset;
@@ -130,7 +137,7 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
 
     return (
         <Screen>
-            <Screen.Header variant="left">
+            <Screen.Header>
                 {isFirstStep ? (
                     <Screen.Header.CloseButton />
                 ) : (
@@ -201,7 +208,7 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
                     onChangeText={actions.setRecipient}
                     suggestions={meta.suggestions}
                     restoredSuggestions={meta.restoredSuggestions}
-                    selectedAddress={suggestionSelection.selectedAddress}
+                    selectedId={suggestionSelection.selectedId}
                     onSelectSuggestion={suggestionSelection.select}
                     onClearSuggestionSelection={suggestionSelection.clear}
                 />

@@ -1,3 +1,4 @@
+import { SPACE } from '../string';
 import { FiatCurrencyDisplay, SignedCurrencyAffixes } from './types';
 
 export interface NumberFormatLocale {
@@ -59,8 +60,10 @@ export class WebNumberFormatLocale implements NumberFormatLocale {
 
     private normalizeCurrencyCodePosition(affixes: { prefix: string; suffix: string }): void {
         if (affixes.suffix === '') {
-            affixes.suffix = ' ' + affixes.prefix.replace(/[\s\u00A0]+/g, '');
+            affixes.suffix = SPACE.NNBSP + affixes.prefix.replace(/\s+/g, '');
             affixes.prefix = '';
+        } else {
+            affixes.suffix = SPACE.NNBSP + affixes.suffix.replace(/^\s+/, '');
         }
     }
 
@@ -89,17 +92,23 @@ export class WebNumberFormatLocale implements NumberFormatLocale {
         const isSignPart = (p: Intl.NumberFormatPart) =>
             p.type === 'minusSign' || p.type === 'plusSign';
 
-        const prefix = parts
-            .slice(0, firstNumberIndex)
-            .filter(p => !isSignPart(p))
-            .map(p => p.value)
-            .join('');
+        const normalizeSpaces = (value: string) => value.replaceAll(SPACE.NBSP, SPACE.NNBSP);
 
-        const suffix = parts
-            .slice(lastNumberIndex + 1)
-            .filter(p => !isSignPart(p))
-            .map(p => p.value)
-            .join('');
+        const prefix = normalizeSpaces(
+            parts
+                .slice(0, firstNumberIndex)
+                .filter(p => !isSignPart(p))
+                .map(p => p.value)
+                .join('')
+        );
+
+        const suffix = normalizeSpaces(
+            parts
+                .slice(lastNumberIndex + 1)
+                .filter(p => !isSignPart(p))
+                .map(p => p.value)
+                .join('')
+        );
 
         return { prefix, suffix };
     }
@@ -107,7 +116,7 @@ export class WebNumberFormatLocale implements NumberFormatLocale {
     private extractGroupingInfo() {
         const defaults = {
             decimalSeparator: '.',
-            groupSeparator: ' ',
+            groupSeparator: SPACE.NNBSP,
             primaryGroupSize: 3,
             secondaryGroupSize: 3
         };
@@ -118,8 +127,9 @@ export class WebNumberFormatLocale implements NumberFormatLocale {
                 .find(p => p.type === 'decimal')?.value ?? defaults.decimalSeparator;
 
         const parts = this.createFormatter().formatToParts(1234567890123);
-        const groupSeparator =
+        const rawGroupSeparator =
             parts.find(p => p.type === 'group')?.value ?? defaults.groupSeparator;
+        const groupSeparator = rawGroupSeparator.replaceAll(SPACE.NBSP, SPACE.NNBSP);
 
         const groupLengths = this.calculateGroupLengths(parts);
         const reversedLengths = groupLengths.slice().reverse();

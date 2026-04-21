@@ -106,7 +106,7 @@ function updateValue(
         if (sharedType instanceof Y.Map) {
             syncObjectIntoYMap(sharedType, value, schema);
             return;
-        } else if (sharedType === undefined) {
+        } else if (sharedType === undefined || sharedType === null) {
             const newMap = new Y.Map();
             parent.set(key, newMap);
             syncObjectIntoYMap(newMap, value, schema);
@@ -118,7 +118,7 @@ function updateValue(
         if (sharedType instanceof Y.Map) {
             syncArrayIntoYMap(sharedType, value, schema);
             return;
-        } else if (sharedType === undefined) {
+        } else if (sharedType === undefined || sharedType === null) {
             const newMap = new Y.Map();
             parent.set(key, newMap);
             syncArrayIntoYMap(newMap, value, schema);

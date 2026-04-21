@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native-unistyles';
 export const styles = StyleSheet.create((theme, rt) => ({
     addButton: {
         alignSelf: 'center',
-        marginTop: theme.spacing[8]
+        marginTop: theme.spacing[8] - 2
     },
     contentContainer: {
         flexGrow: 1,

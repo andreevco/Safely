@@ -25,7 +25,8 @@ export function useInfinitePersistQuery<
     >
 ): PersistInfiniteQueryResult<TData, TError> {
     const hydratedAt = useHydratedAt();
-    const result = useInfiniteQuery(options);
+    const { schemaKey, ...rest } = options;
+    const result = useInfiniteQuery({ ...rest, meta: { persist: true, schemaKey } });
 
     return useIsActualised(result, hydratedAt);
 }

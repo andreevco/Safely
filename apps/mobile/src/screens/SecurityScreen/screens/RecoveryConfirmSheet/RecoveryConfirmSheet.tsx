@@ -1,12 +1,12 @@
 import { useNavigation } from '@react-navigation/native';
-import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
+import { PortfolioType } from '@safely/core';
 import { useActivePortfolio, useRecordActivePortfolioSecretReveal } from '@safely/ux';
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
-import { BottomSheet, Button, Text, useBottomSheet } from '@mobile/shared/ui';
+import { BottomSheet, Button, Text, useBottomSheet, useCloseOnReturn } from '@mobile/shared/ui';
 import { Icon, ListKey96 } from '@mobile/shared/ui/Icon';
 
 import { styles } from './RecoveryConfirmSheet.styles';
@@ -15,26 +15,21 @@ const RecoveryConfirmContent = () => {
     const { t } = useTranslation();
     const { close } = useBottomSheet();
     const portfolio = useActivePortfolio();
+
+    if (portfolio.type !== PortfolioType.BIP39) {
+        throw new Error('Recovery only available for BIP39 portfolio');
+    }
+
     const navigation = useNavigation<RootStackNavigationProp>();
+    const markNavigated = useCloseOnReturn();
 
     const { mutateAsync: recordSeedReveal } = useRecordActivePortfolioSecretReveal();
-    const hasRevealed = useRef(false);
-
-    useEffect(() => {
-        const unsubscribe = navigation.addListener('focus', () => {
-            if (hasRevealed.current) {
-                close();
-            }
-        });
-
-        return unsubscribe;
-    }, [navigation, close]);
 
     const handleReveal = async () => {
         try {
             const mnemonic = await portfolio.getMnemonic();
             await recordSeedReveal();
-            hasRevealed.current = true;
+            markNavigated();
             navigation.navigate('RecoveryPhraseModal', { mnemonic });
         } catch {
             // Security check failed
@@ -46,7 +41,7 @@ const RecoveryConfirmContent = () => {
             <Icon icon={ListKey96} />
 
             <View style={styles.titleBox}>
-                <Text textAlign="center" variant="titleL">
+                <Text textAlign="center" variant="titleM">
                     {t('security.recoverySheet.title')}
                 </Text>
                 <Text textAlign="center" variant="bodyL" color="secondary">
@@ -57,13 +52,13 @@ const RecoveryConfirmContent = () => {
             <View style={styles.warningBox}>
                 <View style={styles.bulletRow}>
                     <View style={styles.bulletDot} />
-                    <Text variant="bodyM" color="secondary" style={styles.bulletText}>
+                    <Text variant="bodyM" color="primary" style={styles.bulletText}>
                         {t('security.recoverySheet.warning1')}
                     </Text>
                 </View>
                 <View style={styles.bulletRow}>
                     <View style={styles.bulletDot} />
-                    <Text variant="bodyM" color="secondary" style={styles.bulletText}>
+                    <Text variant="bodyM" color="primary" style={styles.bulletText}>
                         {t('security.recoverySheet.warning2')}
                     </Text>
                 </View>
@@ -88,7 +83,7 @@ const RecoveryConfirmContent = () => {
 
 export const RecoveryConfirmSheet = () => {
     return (
-        <BottomSheet>
+        <BottomSheet shortHeader>
             <RecoveryConfirmContent />
         </BottomSheet>
     );

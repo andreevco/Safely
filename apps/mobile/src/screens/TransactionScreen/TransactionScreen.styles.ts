@@ -13,6 +13,7 @@ export const styles = StyleSheet.create(theme => ({
     },
     iconsContainer: {
         flexDirection: 'row',
+        alignItems: 'center',
         gap: theme.spacing[16]
     }
 }));

@@ -7,11 +7,13 @@ type SSEConfig<T> = {
     onError?: (err: Event) => void;
     onLog?: (level: 'error' | 'info', message: string, error?: unknown) => void;
     signal?: AbortSignal;
+    getAuthorizationHeader?: () => Promise<string>;
 };
 
 export type IsomorphicEventSource = new (
     url: string | URL,
-    options?: EventSourceInit & { headers?: Record<string, string> }
+    options?: EventSourceInit & { headers?: Record<string, string> },
+    getAuthorizationHeader?: () => Promise<string>
 ) => EventSource;
 
 declare global {
@@ -80,9 +82,13 @@ export class SSEStream<T> implements AsyncIterable<SSEStreamItem<T>> {
     }
 
     private connect() {
-        this.eventSource = new IsomorphicEventSource(this.config.url, {
-            headers: this.config.headers
-        });
+        this.eventSource = new IsomorphicEventSource(
+            this.config.url,
+            {
+                headers: this.config.headers
+            },
+            this.config.getAuthorizationHeader
+        );
 
         this.eventSource.onopen = () => this.config.onOpen?.();
 

@@ -168,7 +168,7 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
                 using accessorVault = generateBip39Accessor();
                 const portfolio = await portfolioFactory.generatePortfolioBip39(accessorVault, {
                     network: PortfolioNetworkType.MAINNET,
-                    name: t('security.groups.wallet.defaultName', { number: 1 })
+                    meta: { name: t('security.groups.wallet.defaultName', { number: 1 }) }
                 });
 
                 await account.syncProvider.set('portfolios', [portfolio.toJSON()]);

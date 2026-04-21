@@ -3,7 +3,7 @@ import ECPairFactory from 'ecpair';
 
 import { BtcSigningRequest, IBtcSigner } from './I-btc-signer';
 import { btcNetworkConfig } from '../../blockchain';
-import { BtcWallet } from '../../derivation';
+import { BtcWalletReadOnly } from '../../derivation';
 import { IBtcNodeProducer } from '../../derivation/btc/I-btc-node-producer';
 
 const ECPair = ECPairFactory(ecc);
@@ -11,7 +11,7 @@ const ECPair = ECPairFactory(ecc);
 export class BtcKeypairSigner implements IBtcSigner {
     constructor(
         private readonly nodeProducer: IBtcNodeProducer,
-        private readonly wallet: Pick<BtcWallet, 'type' | 'address' | 'network'>
+        private readonly wallet: Pick<BtcWalletReadOnly, 'type' | 'address' | 'network'>
     ) {}
 
     public async sign({ psbt, utxos }: BtcSigningRequest): Promise<Buffer> {

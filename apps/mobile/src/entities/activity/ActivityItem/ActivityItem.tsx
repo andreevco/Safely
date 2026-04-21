@@ -1,4 +1,5 @@
 /* eslint-disable no-irregular-whitespace */
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
@@ -6,6 +7,7 @@ import { BTC_ASSET, ellipsisMiddle } from '@safely/core';
 import {
     type BtcActivityItem,
     findPortfolioMetaByAddress,
+    useBtcTransactionDisplayStatus,
     useDateFormatter,
     useNumberFormatter,
     usePortfolios,
@@ -39,26 +41,47 @@ export const ActivityItem = (props: ActivityItemProps) => {
         : activity.transaction.fromAddress;
     const counterpartyMeta = findPortfolioMetaByAddress(portfolios, counterpartyAddress);
 
+    const status = useBtcTransactionDisplayStatus(activity.transaction.raw);
+
+    const title = useMemo(() => {
+        if (status.type === 'pending') {
+            if (isInitiator) {
+                return t('history.transactionInfo.sending');
+            } else {
+                return t('history.transactionInfo.receiving');
+            }
+        }
+        return isInitiator
+            ? t('history.transactionInfo.sent')
+            : t('history.transactionInfo.received');
+    }, [status.type, isInitiator, t]);
+
     return (
         <View style={styles.border}>
-            <Cell showDivider={false} onPress={() => onNavigateToTransaction(activity)}>
+            <Cell
+                background={status.type === 'pending' ? 'tertiary' : 'secondary'}
+                showDivider={false}
+                onPress={() => onNavigateToTransaction(activity)}
+            >
                 <Cell.Content>
                     <Cell.Row>
                         <View style={styles.titleWithTimestamp}>
-                            <Cell.Title>
-                                {isInitiator
-                                    ? t('history.transactionInfo.sent')
-                                    : t('history.transactionInfo.received')}
-                            </Cell.Title>
-                            <Text color="tertiary" style={styles.timestamp}>
-                                {timeFormatDetails === 'time'
-                                    ? dateFormatter.format(activity.timestamp)
-                                    : dateFormatter({ day: 'numeric', month: 'short' }).format(
-                                          activity.timestamp
-                                      )}
-                            </Text>
+                            <Cell.Title>{title}</Cell.Title>
+                            {status.type !== 'pending' && (
+                                <Text color="tertiary" style={styles.timestamp}>
+                                    {timeFormatDetails === 'time'
+                                        ? dateFormatter.format(activity.timestamp)
+                                        : dateFormatter({ day: 'numeric', month: 'short' }).format(
+                                              activity.timestamp
+                                          )}
+                                </Text>
+                            )}
                         </View>
-                        <Cell.Value color={isInitiator ? 'primary' : 'accentGreen'}>
+                        <Cell.Value
+                            color={
+                                status.type === 'pending' || isInitiator ? 'primary' : 'accentGreen'
+                            }
+                        >
                             {isInitiator ? '−' : '+'} {activity.transaction.value.format(formatter)}
                         </Cell.Value>
                     </Cell.Row>
@@ -72,7 +95,9 @@ export const ActivityItem = (props: ActivityItemProps) => {
                                 color="secondary"
                             />
                         ) : (
-                            <Cell.Subtitle>{ellipsisMiddle(counterpartyAddress, 6)}</Cell.Subtitle>
+                            <Cell.Subtitle color="secondary">
+                                {ellipsisMiddle(counterpartyAddress, 6)}
+                            </Cell.Subtitle>
                         )}
                         <Cell.Subvalue>
                             {rate.data &&

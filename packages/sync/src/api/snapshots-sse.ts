@@ -21,11 +21,9 @@ export class SnapshotsSse {
         onDisconnect?: (reason?: unknown) => void
     ): Promise<() => void> {
         const url = `${this.snapshotsApi.configuration.basePath}/v1/snapshots/stream`;
-        const authHeader = await this.apiSigner.sign('GET', '/v1/snapshots/stream', '');
 
         const state = await this.syncStateRepository.getState();
         const headers = {
-            Authorization: authHeader,
             'Last-Event-ID': state.snapshotProof.toString('hex')
         };
 
@@ -56,7 +54,10 @@ export class SnapshotsSse {
                     };
                 }
             },
-            signal: abortController.signal
+            signal: abortController.signal,
+            getAuthorizationHeader: async () => {
+                return await this.apiSigner.sign('GET', '/v1/snapshots/stream', '');
+            }
         });
 
         void (async () => {

@@ -2,6 +2,7 @@ import { ZodType } from 'zod';
 
 import { Device } from '../device-manager/device-repository';
 import { ITreeStorage } from '../I-storage';
+import { OnboardingConnector } from '../onboarding/connector';
 import { ISecretEncryptor } from '../secret-encryptor';
 import { ISyncProvider } from '../sync-provider/I-sync-provider';
 
@@ -27,6 +28,11 @@ export interface ISyncAccount<S extends Record<string, ZodType>> {
      * @param secureEncryptedStorage - unlocked secure encrypted storage
      */
     connectToNewDevice(data: Buffer, secureEncryptedStorage: ITreeStorage): Promise<void>;
+
+    /**
+     * Initiates the process of reconnecting to an existing sync account.
+     */
+    reconnectToAccount(): Promise<OnboardingConnector<S>>;
 
     /**
      * Retrieves the list of devices currently connected to the sync account.

@@ -64,7 +64,7 @@ export const PortfoliosList = (props: PortfoliosListProps) => {
                 key={portfolio.id.toString()}
                 portfolio={portfolio}
                 index={index}
-                portfolios={portfolios}
+                itemsCount={portfolios.length}
                 draggedIndex={draggedIndex}
                 offsetY={offsetY}
                 moveItem={moveItem}

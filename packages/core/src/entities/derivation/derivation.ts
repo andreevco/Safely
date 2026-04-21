@@ -1,4 +1,4 @@
-import type { Portfolio } from '../portfolio';
+import type { IPortfolioDerivable } from '../portfolio';
 import { DerivationId } from './derivation-id';
 import type { SDerivationChains, SDerivation } from './derivation.stored';
 import type { IDerivation, IDerivationChains } from './I-derivation';
@@ -13,7 +13,7 @@ export class Derivation implements IDerivation {
     }
 
     constructor(
-        public portfolioRef: Portfolio,
+        public portfolioRef: IPortfolioDerivable,
         index: number,
         chains: IDerivationChains | ((self: Derivation) => IDerivationChains)
     ) {

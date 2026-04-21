@@ -87,6 +87,18 @@ export const AddressInput = (props: AddressInputProps) => {
         onChangeText('');
     }, [onChangeText]);
 
+    const handleChangeText = useCallback(
+        (text: string) => {
+            if (selectedMeta) {
+                const added = text.length > value.length ? text.slice(value.length) : '';
+                onChangeText(added);
+                return;
+            }
+            onChangeText(text);
+        },
+        [onChangeText, selectedMeta, value]
+    );
+
     const handleSelectedPress = useCallback(() => {
         textInputRef.current?.focus();
     }, [textInputRef]);
@@ -104,7 +116,7 @@ export const AddressInput = (props: AddressInputProps) => {
                 <TextInput
                     ref={textInputRef}
                     value={value}
-                    onChangeText={onChangeText}
+                    onChangeText={handleChangeText}
                     onFocus={handleFocus}
                     onBlur={handleBlur}
                     style={[styles.input, selectedMeta && styles.hiddenInput]}
@@ -121,23 +133,25 @@ export const AddressInput = (props: AddressInputProps) => {
                 {selectedMeta && (
                     <Pressable style={styles.selectedContent} onPress={handleSelectedPress}>
                         <PortfolioName gap={8} meta={selectedMeta} size={16} fontVariant="bodyL" />
-                        <BlinkingCursor color={theme.colors.accent.blue} />
                         <Text variant="bodyL" color="tertiary">
                             {ellipsisMiddle(value)}
                         </Text>
+                        <BlinkingCursor color={theme.colors.accent.blue} />
                     </Pressable>
                 )}
 
-                <TouchableOpacity
-                    style={styles.iconButton}
-                    onPress={hasValue ? handleClear : handleScan}
-                >
-                    {hasValue ? (
+                {hasValue ? (
+                    <TouchableOpacity
+                        style={[styles.iconButton, styles.clearIconButton]}
+                        onPress={handleClear}
+                    >
                         <Icon icon={XmarkCircle16} color="tertiary" />
-                    ) : (
+                    </TouchableOpacity>
+                ) : (
+                    <TouchableOpacity style={styles.iconButton} onPress={handleScan}>
                         <Icon icon={QrCodeScan28} color="accent" />
-                    )}
-                </TouchableOpacity>
+                    </TouchableOpacity>
+                )}
             </View>
 
             {hasError && <Text style={styles.errorText}>{t(error)}</Text>}

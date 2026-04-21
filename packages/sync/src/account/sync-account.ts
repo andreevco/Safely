@@ -3,10 +3,13 @@ import { ZodType } from 'zod';
 import { ISyncAccount } from './I-sync-account';
 import { Device } from '../device-manager/device-repository';
 import { ITreeStorage } from '../I-storage';
+import { OnboardingConnector } from '../onboarding/connector';
 import { PrimaryDeviceOnboarding } from '../onboarding/primary-device-onboarding';
+import { ReconnectOnboarding } from '../onboarding/reconnect/reconnect-onboarding';
 import { ISecretEncryptor } from '../secret-encryptor';
 import { SyncContainer } from '../sync-container';
 import { SyncAccountRepository } from './sync-account-repository';
+import { SyncError } from '../sync-error';
 import { ISyncProvider } from '../sync-provider/I-sync-provider';
 import { OnlineSyncProvider } from '../sync-provider/online-sync-provider';
 import { SyncStatus, SyncStatusManager } from '../sync-provider/sync-status';
@@ -54,9 +57,12 @@ export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAcco
             this.container.keyServiceFactory.createMasterKeyService(secureEncryptedStorage),
             this.container.keyServiceFactory.createDmkSignerService(secureEncryptedStorage),
             this.container.accountsApi,
-            this.container.deviceManager
+            this.container.deviceManager,
+            () => {
+                this.syncProvider.triggerSync();
+            }
         );
-        await onboarding.sendOnboardingMessage(data);
+        await onboarding.onboard(data);
     }
 
     public async getDevices(): Promise<Device[]> {
@@ -82,11 +88,39 @@ export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAcco
             .createDmkSignerService(secureEncryptedStorage)
             .signRevokeMessageForServer(ikPub);
         await this.container.accountsApi.removeDeviceFromAccount({
-            deviceToRemove: {
+            signedDeviceIdentity: {
                 identityPubKey: ikPub.toString('hex'),
                 signature: sig.toString('hex')
             }
         });
+    }
+
+    public async reconnectToAccount(): Promise<OnboardingConnector<S>> {
+        if (this.syncProviderInternal.syncStatusManager.getStatus() !== SyncStatus.DEVICE_DELETED) {
+            const deviceList = await this.container.deviceManager.getDevices();
+            const myIkPub = await this.container.ikService.getPub();
+            const isMyDeviceInList = deviceList.some(device => device.ikPub.equals(myIkPub));
+            if (isMyDeviceInList) {
+                throw new SyncError('Device was not deleted');
+            }
+        }
+
+        const onboarding = new ReconnectOnboarding(
+            await this.container.ikService.getPub(),
+            this.syncProviderInternal as OnlineSyncProvider<S>
+        );
+        const data = onboarding.generateOnboardingData();
+        const abortController = new AbortController();
+        return {
+            data,
+            waitForCompletion: async () => {
+                await onboarding.waitForOnboarding(abortController.signal);
+                return this;
+            },
+            abort: () => {
+                abortController.abort();
+            }
+        };
     }
 
     public async getMyDeviceIkPub(): Promise<Buffer> {
@@ -122,7 +156,7 @@ export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAcco
                 .createDmkSignerService(secureEncryptedStorage)
                 .signRevokeMessageForServer(myIkPub);
             await this.container.accountsApi.removeDeviceFromAccount({
-                deviceToRemove: {
+                signedDeviceIdentity: {
                     identityPubKey: myIkPub.toString('hex'),
                     signature: sig.toString('hex')
                 }

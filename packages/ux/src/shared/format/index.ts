@@ -1,2 +1,2 @@
 export { useNumberFormatter, useFormattedAmount } from './number';
-export { useDateFormatter, type DateFormatter } from './date';
+export { useDateFormatter, type DateFormatter, useRelativeTime } from './date';

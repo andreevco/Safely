@@ -8,7 +8,12 @@ import { Cell, Text } from '@mobile/shared/ui';
 
 import { styles } from './RemovePortfolioButton.styles';
 
-export const RemovePortfolioButton = () => {
+type RemovePortfolioButtonProps = {
+    showDivider?: boolean;
+};
+
+export const RemovePortfolioButton = (props: RemovePortfolioButtonProps) => {
+    const { showDivider = true } = props;
     const { t } = useTranslation();
     const rootNavigation = useNavigation<RootStackNavigationProp>();
     const portfolio = useActivePortfolio();
@@ -18,15 +23,12 @@ export const RemovePortfolioButton = () => {
     };
 
     return (
-        <Cell style={styles.cell} onPress={handleDeletePortfolio}>
+        <Cell showDivider={showDivider} background="accentRed" onPress={handleDeletePortfolio}>
             <Cell.Content>
                 <Cell.Row style={styles.row}>
                     <Text variant="labelL" textAlign="center" style={styles.text}>
                         {t('settings.removePortfolio.title', {
-                            name:
-                                portfolio.meta.icon.type === 'emoji'
-                                    ? `${portfolio.meta.icon.value} ${portfolio.meta.name}`
-                                    : portfolio.meta.name
+                            name: portfolio.meta.name
                         })}
                     </Text>
                 </Cell.Row>

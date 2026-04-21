@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import { bootConfigSchema, sCryptoAssetAmount } from '@safely/core';
-import { sRatedCryptoAssetAmountArray } from '@safely/core';
+import { UtxoSchema, UtxoWithOptionalTxSchema } from '@safely/core/api/btc/models';
 
 const sHistoricalPrice = z.object({
     prices: z.array(z.tuple([z.number(), z.number()])).describe('[timestamp, price] pair')
@@ -13,8 +13,8 @@ const sSendFormDraft = z.object({
     amountInputType: z.enum(['crypto', 'fiat']).optional(),
     isMax: z.boolean().optional(),
     stepIndex: z.number().optional(),
-    selectedAddress: z.string().optional(),
-    suggestionAddresses: z.array(z.string()).optional()
+    selectedId: z.string().optional(),
+    suggestionIds: z.array(z.string()).optional()
 });
 
 const sActivityItem = z.object({
@@ -41,7 +41,21 @@ const sInfiniteActivityData = z.object({
 });
 
 export const cacheSchemas = {
-    sRatedCryptoAssetAmountArray,
+    sBtcWalletUtxos: z.object({
+        confirmed: z.object({
+            totalAmount: sCryptoAssetAmount,
+            utxos: z.array(UtxoSchema)
+        }),
+        unconfirmedSafe: z.object({
+            totalAmount: sCryptoAssetAmount,
+            utxos: z.array(UtxoWithOptionalTxSchema)
+        }),
+        unconfirmedUnsafe: z.object({
+            totalAmount: sCryptoAssetAmount,
+            utxos: z.array(UtxoWithOptionalTxSchema)
+        }),
+        hasLocalNotBroadcastedCache: z.boolean()
+    }),
     bootConfig: bootConfigSchema,
     infiniteActivityData: sInfiniteActivityData,
     sHistoricalPrice: sHistoricalPrice,

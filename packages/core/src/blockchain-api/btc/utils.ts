@@ -2,7 +2,7 @@ import { BtcApiUtxo } from '../../api/btc';
 import { BtcAssetAmount } from '../../entities';
 import { isInteger } from '../../utils';
 
-export function getUtxoTotal(utxos: BtcApiUtxo[]) {
+export function getUtxoTotal(utxos: { value: string }[]) {
     return BtcAssetAmount.fromWeiAmount(utxos.reduce((sum, u) => sum + BigInt(u.value), 0n));
 }
 
