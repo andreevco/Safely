@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 
 import { useActiveBtcWallet } from '../../../../entities';
 import { QUERIES_GC_TIME } from '../../../../shared';
@@ -15,15 +15,19 @@ type SendFormDraft = Required<Pick<SendFormInitialValues, 'recipient'>> &
 export function useSendFormDraft() {
     const wallet = useActiveBtcWallet();
     const queryClient = useQueryClient();
-    const draftKey = sendFormKeys.draft(wallet.id.toString()).toKey();
+    const walletId = wallet.id.toString();
 
-    queryClient.setQueryDefaults(draftKey, {
-        gcTime: QUERIES_GC_TIME.SEND_FORM_DRAFT,
-        meta: {
-            persist: true,
-            schemaKey: 'sendFormDraft'
-        }
-    });
+    const draftKey = useMemo(() => sendFormKeys.draft(walletId).toKey(), [walletId]);
+
+    useEffect(() => {
+        queryClient.setQueryDefaults(draftKey, {
+            gcTime: QUERIES_GC_TIME.SEND_FORM_DRAFT,
+            meta: {
+                persist: true,
+                schemaKey: 'sendFormDraft'
+            }
+        });
+    }, [queryClient, draftKey]);
 
     const initialDraft = useMemo(() => queryClient.getQueryData<SendFormDraft>(draftKey), []);
 

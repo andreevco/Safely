@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback } from 'react';
 
 import { SendSuggestion } from '@safely/ux';
 
 interface UseSuggestionSelectionParams {
     suggestions: SendSuggestion[];
+    allSuggestions: SendSuggestion[];
     restoredSuggestions?: SendSuggestion[];
     selectedId?: string;
     onChangeText: (value: string, label?: string) => void;
@@ -14,6 +15,7 @@ interface UseSuggestionSelectionParams {
 export function useSuggestionSelection(params: UseSuggestionSelectionParams) {
     const {
         suggestions,
+        allSuggestions,
         restoredSuggestions,
         selectedId,
         onChangeText,
@@ -21,30 +23,30 @@ export function useSuggestionSelection(params: UseSuggestionSelectionParams) {
         onClearSuggestionSelection
     } = params;
 
-    const savedSuggestions = useRef<SendSuggestion[]>(restoredSuggestions ?? suggestions);
-
-    useEffect(() => {
-        if (suggestions.length > 0) {
-            savedSuggestions.current = suggestions;
-        }
-    }, [suggestions]);
-
-    const displaySuggestions = selectedId ? savedSuggestions.current : suggestions;
+    const displaySuggestions =
+        selectedId && restoredSuggestions ? restoredSuggestions : suggestions;
 
     const handleSelect = useCallback(
-        (id: string, address: string, label: string) => {
-            onSelectSuggestion(id, savedSuggestions.current);
-            onChangeText(address, label);
+        (id: string) => {
+            onSelectSuggestion(id, displaySuggestions);
         },
-        [onChangeText, onSelectSuggestion]
+        [onSelectSuggestion, displaySuggestions]
     );
 
     const handleChangeText = useCallback(
         (text: string, label?: string) => {
+            const trimmed = text.trim();
+            const match = trimmed ? allSuggestions.find(s => s.address === trimmed) : undefined;
+
+            if (match) {
+                onSelectSuggestion(match.id, allSuggestions);
+                return;
+            }
+
             onClearSuggestionSelection();
             onChangeText(text, label);
         },
-        [onChangeText, onClearSuggestionSelection]
+        [allSuggestions, onChangeText, onSelectSuggestion, onClearSuggestionSelection]
     );
 
     return {

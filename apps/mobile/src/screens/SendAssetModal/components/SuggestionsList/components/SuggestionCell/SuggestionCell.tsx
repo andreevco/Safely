@@ -9,18 +9,14 @@ interface SuggestionCellProps {
     suggestion: SendSuggestion;
     isSelected: boolean;
     showDivider?: boolean;
-    onSelect: (id: string, address: string, label: string) => void;
+    onSelect: (id: string) => void;
 }
 
 export const SuggestionCell = (props: SuggestionCellProps) => {
     const { suggestion, isSelected, showDivider, onSelect } = props;
 
     return (
-        <Cell
-            style={styles.cell}
-            showDivider={showDivider}
-            onPress={() => onSelect(suggestion.id, suggestion.address, suggestion.meta.name)}
-        >
+        <Cell style={styles.cell} showDivider={showDivider} onPress={() => onSelect(suggestion.id)}>
             <Cell.Content>
                 <Cell.Row>
                     <PortfolioName

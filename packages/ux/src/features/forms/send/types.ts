@@ -91,11 +91,17 @@ export interface SendFormErrors {
     asset: string | undefined;
 }
 
+export interface SendSuggestionState {
+    selectedId: string | undefined;
+    suggestionIds: string[] | undefined;
+}
+
 export interface SendFormState {
     values: SendFormValues;
     parsed: SendFormParsed;
     errors: SendFormErrors;
     stepIndex: number;
+    suggestion: SendSuggestionState;
 }
 
 export type SendFormAction =
@@ -124,6 +130,14 @@ export type SendFormAction =
     | { type: 'PREV_STEP' }
     | { type: 'RESET' }
     | { type: 'RESET_DEPENDENT_FIELDS' }
+    | {
+          type: 'SELECT_SUGGESTION';
+          id: string;
+          address: string;
+          label?: string;
+          suggestionIds: string[];
+      }
+    | { type: 'CLEAR_SUGGESTION' }
     | {
           type: 'RESTORE_DRAFT';
           recipient: Recipient;

@@ -207,6 +207,7 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
                     error={meta.suggestions.length > 0 ? undefined : state.errors.recipient}
                     onChangeText={actions.setRecipient}
                     suggestions={meta.suggestions}
+                    allSuggestions={meta.allSuggestions}
                     restoredSuggestions={meta.restoredSuggestions}
                     selectedId={suggestionSelection.selectedId}
                     onSelectSuggestion={suggestionSelection.select}

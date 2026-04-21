@@ -14,6 +14,7 @@ interface RecipientStepProps {
     onChangeText: (value: string, label?: string) => void;
     inputRef?: Ref<TextInput>;
     suggestions: SendSuggestion[];
+    allSuggestions: SendSuggestion[];
     restoredSuggestions?: SendSuggestion[];
     selectedId?: string;
     onSelectSuggestion: (id: string, visibleSuggestions: SendSuggestion[]) => void;
@@ -27,6 +28,7 @@ export const RecipientStep = (props: RecipientStepProps) => {
         error,
         inputRef,
         suggestions,
+        allSuggestions,
         restoredSuggestions,
         selectedId,
         onChangeText,
@@ -39,6 +41,7 @@ export const RecipientStep = (props: RecipientStepProps) => {
 
     const { displaySuggestions, handleSelect, handleChangeText } = useSuggestionSelection({
         suggestions,
+        allSuggestions,
         restoredSuggestions,
         selectedId,
         onChangeText,
@@ -47,8 +50,8 @@ export const RecipientStep = (props: RecipientStepProps) => {
     });
 
     const selectedMeta = useMemo(
-        () => displaySuggestions.find(s => s.id === selectedId)?.meta,
-        [displaySuggestions, selectedId]
+        () => allSuggestions.find(s => s.id === selectedId)?.meta,
+        [allSuggestions, selectedId]
     );
 
     return (

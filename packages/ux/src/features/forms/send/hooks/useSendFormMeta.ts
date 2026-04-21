@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { IDerivation, Portfolio, PortfolioType, RatedCryptoAssetAmount } from '@safely/core';
+import { RatedCryptoAssetAmount } from '@safely/core';
 
 import {
     findPortfolioMetaByAddress,
@@ -8,44 +8,17 @@ import {
     usePortfolios
 } from '../../../../entities';
 import { fuzzySearch } from '../../../../shared';
-import { SendFormState, SendSuggestion } from '../types';
-import { SuggestionDraftState } from './useSuggestionDraft';
-
-function mapPortfolioToSuggestions(
-    portfolio: Portfolio,
-    activeDerivation?: IDerivation
-): SendSuggestion[] {
-    if (portfolio.type === PortfolioType.WATCH_ONLY) {
-        return [
-            {
-                id: portfolio.id.toString(),
-                address: portfolio.wallet.address,
-                meta: portfolio.meta,
-                isWatchOnly: true
-            }
-        ];
-    }
-
-    const derivations = portfolio.getDerivations();
-    return derivations
-        .filter(d => !activeDerivation || !d.id.isEq(activeDerivation.id))
-        .map(derivation => ({
-            id: portfolio.id.toString(),
-            address: derivation.chains.btc.wallets[0]?.address,
-            meta: portfolio.meta,
-            tag: derivations.length > 1 ? derivation.index + 1 : undefined
-        }));
-}
+import { SendFormState } from '../types';
+import { mapPortfolioToSuggestions } from '../utils';
 
 interface UseSendFormMetaParams {
     state: SendFormState;
     assetsData: RatedCryptoAssetAmount[] | undefined;
-    suggestionDraft: SuggestionDraftState;
 }
 
 export function useSendFormMeta(params: UseSendFormMetaParams) {
-    const { state, assetsData, suggestionDraft } = params;
-    const { selectedId, suggestionIds: savedSuggestionIds } = suggestionDraft;
+    const { state, assetsData } = params;
+    const { selectedId, suggestionIds: savedSuggestionIds } = state.suggestion;
 
     const blockchain = state.parsed.recipient?.blockchain;
     const portfolios = usePortfolios();
@@ -58,7 +31,12 @@ export function useSendFormMeta(params: UseSendFormMetaParams) {
         return fuzzySearch(portfolios, query, s => s.meta.name).flatMap(portfolio =>
             mapPortfolioToSuggestions(portfolio, activeDerivation)
         );
-    }, [portfolios, activeDerivation, state.values.recipient, state.parsed.recipient]);
+    }, [portfolios, activeDerivation, state.values.recipient]);
+
+    const allSuggestions = useMemo(
+        () => portfolios.flatMap(portfolio => mapPortfolioToSuggestions(portfolio)),
+        [portfolios]
+    );
 
     const restoredSuggestions = useMemo(() => {
         if (!savedSuggestionIds || !selectedId) return undefined;
@@ -95,6 +73,7 @@ export function useSendFormMeta(params: UseSendFormMetaParams) {
         isMaxAvailable,
         availableAssets,
         suggestions,
+        allSuggestions,
         restoredSuggestions,
         portfolioMetaByAddress
     };

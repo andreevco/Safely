@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 
-import { useAssets } from '../../../../entities';
+import { useActiveBtcWallet, useAssets } from '../../../../entities';
 import { useNumberFormatter } from '../../../../shared';
 import { useMaxSendAssetTransfer } from '../../../blockchain-send';
 import { SendFormError } from '../errors';
@@ -10,7 +10,9 @@ import {
     FormStepNames,
     SEND_STEPS,
     SendFormInitialValues,
-    SendFormResult
+    SendFormResult,
+    SendSuggestion,
+    SendSuggestionState
 } from '../types';
 import {
     assetIdSchema,
@@ -24,18 +26,18 @@ const LAST_STEP_INDEX = SEND_STEPS.length - 1;
 
 export interface UseSendFormStateParams {
     resolvedInitialValues: SendFormInitialValues | undefined;
+    draftSuggestion?: SendSuggestionState;
     onSubmit: (result: SendFormResult, onSuccess: () => void) => void;
     shouldResetForm: boolean;
     clearDraft: () => void;
 }
 
 export function useSendFormState(params: UseSendFormStateParams) {
-    const { resolvedInitialValues, onSubmit, shouldResetForm, clearDraft } = params;
+    const { resolvedInitialValues, draftSuggestion, onSubmit, shouldResetForm, clearDraft } =
+        params;
 
-    const [state, dispatch] = useReducer(
-        sendFormReducer,
-        resolvedInitialValues,
-        createInitialState
+    const [state, dispatch] = useReducer(sendFormReducer, undefined, () =>
+        createInitialState(resolvedInitialValues, draftSuggestion)
     );
 
     const [isSubmitted, setIsSubmitted] = useState(false);
@@ -59,6 +61,10 @@ export function useSendFormState(params: UseSendFormStateParams) {
     const ratedAssetsRef = useRef(ratedAssets);
     ratedAssetsRef.current = ratedAssets;
 
+    const activeBtcWallet = useActiveBtcWallet();
+    const activeBtcWalletRef = useRef(activeBtcWallet);
+    activeBtcWalletRef.current = activeBtcWallet;
+
     const currentStepId = SEND_STEPS[state.stepIndex];
 
     const canGoToNextStep = useMemo(() => {
@@ -81,7 +87,7 @@ export function useSendFormState(params: UseSendFormStateParams) {
     const validateRecipient = useCallback((value: string) => {
         dispatch({ type: 'RESET_DEPENDENT_FIELDS' });
 
-        if (!value.trim()) {
+        if (value.trim().length < 5) {
             dispatch({
                 type: 'SET_RECIPIENT_VALIDATED',
                 recipient: undefined,
@@ -95,7 +101,7 @@ export function useSendFormState(params: UseSendFormStateParams) {
             dispatch({
                 type: 'SET_RECIPIENT_VALIDATED',
                 recipient: undefined,
-                error: zodResult.error.issues[0]?.message ?? SendFormError.INVALID_RECIPIENT_ADDRESS
+                error: zodResult.error.issues[0]?.message ?? SendFormError.INVALID_WALLET_ADDRESS
             });
             return;
         }
@@ -108,6 +114,15 @@ export function useSendFormState(params: UseSendFormStateParams) {
                 type: 'SET_RECIPIENT_VALIDATED',
                 recipient: undefined,
                 error: parsedRecipient
+            });
+            return;
+        }
+
+        if (parsedRecipient.address === activeBtcWalletRef.current.address) {
+            dispatch({
+                type: 'SET_RECIPIENT_VALIDATED',
+                recipient: undefined,
+                error: SendFormError.SELF_TRANSFER
             });
             return;
         }
@@ -255,6 +270,27 @@ export function useSendFormState(params: UseSendFormStateParams) {
         [state.parsed.amount]
     );
 
+    const selectSuggestion = useCallback(
+        (id: string, visible: SendSuggestion[]) => {
+            const picked = visible.find(s => s.id === id);
+            if (!picked) return;
+
+            dispatch({
+                type: 'SELECT_SUGGESTION',
+                id,
+                address: picked.address,
+                label: picked.meta.name,
+                suggestionIds: visible.map(s => s.id)
+            });
+            validateRecipient(picked.address);
+        },
+        [validateRecipient]
+    );
+
+    const clearSuggestion = useCallback(() => {
+        dispatch({ type: 'CLEAR_SUGGESTION' });
+    }, []);
+
     const reset = useCallback(() => {
         setIsSubmitted(false);
         dispatch({ type: 'RESET' });
@@ -372,6 +408,8 @@ export function useSendFormState(params: UseSendFormStateParams) {
             setAmountInputType,
             setIsMax,
             setAsset,
+            selectSuggestion,
+            clearSuggestion,
             reset,
             onBackToEditing
         },

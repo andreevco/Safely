@@ -10,7 +10,7 @@ import { styles } from './SuggestionsList.styles';
 interface SuggestionsListProps {
     suggestions: SendSuggestion[];
     selectedId?: string;
-    onSelect: (id: string, address: string, label: string) => void;
+    onSelect: (id: string) => void;
 }
 
 export const SuggestionsList = (props: SuggestionsListProps) => {
