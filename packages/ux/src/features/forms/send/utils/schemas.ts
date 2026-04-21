@@ -10,9 +10,9 @@ export const recipientSchema = z
     .pipe(
         z
             .string()
-            .min(5, SendFormError.ENTER_RECIPIENT_ADDRESS)
+            .min(5, SendFormError.INVALID_WALLET_ADDRESS)
             .refine(val => BtcAddress.validate(val), {
-                message: SendFormError.INVALID_ADDRESS_FORMAT
+                message: SendFormError.INVALID_WALLET_ADDRESS
             })
     );
 

@@ -20,7 +20,7 @@ export function parseRecipient(input: string): Recipient | SendFormError {
     const detectedType = detectAddressType(input);
 
     if (!detectedType) {
-        return SendFormError.INVALID_ADDRESS_FORMAT;
+        return SendFormError.INVALID_WALLET_ADDRESS;
     }
 
     switch (detectedType.blockchain) {

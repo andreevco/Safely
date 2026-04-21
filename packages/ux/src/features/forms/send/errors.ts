@@ -1,7 +1,6 @@
 export enum SendFormError {
-    ENTER_RECIPIENT_ADDRESS = 'sendForm.errors.enterRecipientAddress',
-    INVALID_ADDRESS_FORMAT = 'sendForm.errors.invalidAddressFormat',
-    INVALID_RECIPIENT_ADDRESS = 'sendForm.errors.invalidRecipientAddress',
+    INVALID_WALLET_ADDRESS = 'sendForm.errors.invalidWalletAddress',
+    SELF_TRANSFER = 'sendForm.errors.selfTransfer',
     UNSUPPORTED_BLOCKCHAIN = 'sendForm.errors.unsupportedBlockchain',
     SELECT_TOKEN = 'sendForm.errors.selectToken',
     SELECT_TOKEN_FIRST = 'sendForm.errors.selectTokenFirst',
