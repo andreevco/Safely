@@ -1,65 +1,44 @@
-import { Build, filterSensitiveData } from '@safely/core';
+import { Build } from '@safely/core';
 import {
+    CombinedTransport,
     ConsoleTransport,
-    ILoggerTransport,
-    IRemoteLogSender,
-    LogEntry,
     Logger,
     LogLevel,
-    RemoteTransport
+    logsFilterMinSeverityLevel
 } from '@safely/sync';
 
 import { FileTransport } from './file-transport';
+import { SanitizedTransport } from './sanitized-transport';
 
-class FilteredTransport implements ILoggerTransport {
-    constructor(
-        private readonly inner: ILoggerTransport,
-        private readonly minLevel: LogLevel = LogLevel.TRACE
-    ) {}
-
-    public log(entry: LogEntry): void {
-        if (entry.level < this.minLevel) return;
-
-        this.inner.log({
-            ...entry,
-            message: filterSensitiveData(entry.message)
-        });
-    }
-
-    public async flush(): Promise<void> {
-        await this.inner.flush?.();
-    }
-
-    public async dispose(): Promise<void> {
-        const result = this.inner.dispose?.();
-        if (result instanceof Promise) await result;
-    }
-}
-
-export function createMobileLogger(opts: {
+type MobileLoggerConfig = {
     appVersion: string;
     build: Build;
     deviceInfo: { name: string; osVersion: string };
     isDev: boolean;
-    remoteSender?: IRemoteLogSender;
-}): { logger: Logger; shareLogs: () => Promise<void> } {
-    const fileTransport = new FileTransport();
-    const consoleTransport = new ConsoleTransport();
+};
 
-    const consoleLevel = opts.isDev ? LogLevel.TRACE : LogLevel.ERROR;
+type MobileLogger = {
+    logger: Logger;
+    shareLogs: () => Promise<void>;
+};
 
-    const transports: ILoggerTransport[] = [
-        new FilteredTransport(consoleTransport, consoleLevel),
-        new FilteredTransport(fileTransport)
-    ];
+export function createMobileLogger(opts: MobileLoggerConfig): MobileLogger {
+    const fileTransport = new FileTransport({
+        build: opts.build,
+        appVersion: opts.appVersion,
+        deviceInfo: opts.deviceInfo
+    });
 
-    if (!opts.isDev && opts.remoteSender) {
-        const remoteTransport = new RemoteTransport({ sender: opts.remoteSender });
-        transports.push(new FilteredTransport(remoteTransport, LogLevel.ERROR));
-    }
+    const transport = new SanitizedTransport(
+        new CombinedTransport([new ConsoleTransport(), fileTransport])
+    );
 
-    const logger = new Logger({ transports, appVersion: opts.appVersion });
-    logger.setLevel(LogLevel.TRACE);
+    const logger = new Logger(transport);
+    logger.setLogsFilter(
+        opts.isDev
+            ? logsFilterMinSeverityLevel(LogLevel.TRACE)
+            : logsFilterMinSeverityLevel(LogLevel.INFO)
+    );
 
     return {
         logger,

@@ -7,7 +7,8 @@ import { AppContext, IAppContext, Security, UnlockableSecuredEncryptedStorage } 
 
 import { navigationRef } from '@mobile/app/navigation/navigationRef';
 import { useMobileSecurityCheck } from '@mobile/entities/security';
-import { build, deviceInfo, logger } from '@mobile/shared/logger';
+import { build, deviceInfo } from '@mobile/shared/app-meta';
+import { logger } from '@mobile/shared/logger';
 import { useLoaderServiceContext } from '@mobile/shared/providers/loader';
 import { useToastServiceContext } from '@mobile/shared/providers/toast';
 import { mobileStorages } from '@mobile/shared/storage';

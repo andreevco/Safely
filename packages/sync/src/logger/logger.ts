@@ -2,47 +2,24 @@ import { ConsoleTransport } from './console-transport';
 import { ILoggerTransport } from './I-logger-transport';
 import { LogEntry } from './log-entry';
 import { LogLevel } from './log-level';
+import { LogsFilter, logsFilterMinSeverityLevel } from './logs-filter';
 
 export class Logger {
     private readonly path: string[] = [];
-    private readonly transports: ILoggerTransport[];
-    private readonly appVersion?: string;
-    private level: LogLevel = LogLevel.INFO;
+    private logsFilter: LogsFilter = logsFilterMinSeverityLevel(LogLevel.INFO);
 
-    constructor(opts?: { transports?: ILoggerTransport[]; appVersion?: string }) {
-        this.transports = opts?.transports ?? [new ConsoleTransport()];
-        this.appVersion = opts?.appVersion;
-    }
+    constructor(private readonly transport: ILoggerTransport = new ConsoleTransport()) {}
 
-    public setLevel(level: LogLevel): void {
-        this.level = level;
+    public setLogsFilter(filter: LogsFilter): void {
+        this.logsFilter = filter;
     }
 
     public child(name: string): Logger {
-        const childLogger = new Logger({
-            transports: this.transports,
-            appVersion: this.appVersion
-        });
+        const childLogger = new Logger(this.transport);
         childLogger.path.push(...this.path, name);
-        childLogger.setLevel(this.level);
+        childLogger.logsFilter = this.logsFilter;
+
         return childLogger;
-    }
-
-    public async flush(): Promise<void> {
-        await Promise.allSettled(
-            this.transports.map(async t => {
-                await t.flush?.();
-            })
-        );
-    }
-
-    public async dispose(): Promise<void> {
-        await Promise.allSettled(
-            this.transports.map(async t => {
-                const result = t.dispose?.();
-                if (result instanceof Promise) await result;
-            })
-        );
     }
 
     public trace(...args: unknown[]): void {
@@ -70,39 +47,21 @@ export class Logger {
     }
 
     private dispatch(level: LogLevel, args: unknown[]): void {
-        if (level < this.level) {
+        const entry: LogEntry = {
+            timestamp: new Date(),
+            level,
+            path: [...this.path],
+            message: args
+        };
+
+        if (!this.logsFilter(entry)) {
             return;
         }
 
-        const entry: LogEntry = {
-            timestamp: new Date().toISOString(),
-            level,
-            path: [...this.path],
-            message: formatArgs(args),
-            appVersion: this.appVersion
-        };
-
-        for (const transport of this.transports) {
-            try {
-                transport.log(entry);
-            } catch {
-                // logger should not get the app down
-            }
+        try {
+            this.transport.log(entry);
+        } catch (e) {
+            console.error('[Logger] transport failed', e);
         }
     }
-}
-
-function formatArgs(args: unknown[]): string {
-    return args
-        .map(arg => {
-            if (typeof arg === 'string') return arg;
-            if (arg instanceof Error) return arg.stack ?? arg.message;
-
-            try {
-                return JSON.stringify(arg, null, 2);
-            } catch {
-                return String(arg);
-            }
-        })
-        .join(' ');
 }

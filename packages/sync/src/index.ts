@@ -22,5 +22,11 @@ export { type IsomorphicEventSource } from './utils/sse-stream';
 export { zArrayWithKey } from './crdt/deep-merge/array-registry';
 export type { ArrayMergeMeta } from './crdt/deep-merge/array-registry';
 
-export { LogLevel, Logger, ConsoleTransport, RemoteTransport } from './logger';
-export type { LogEntry, ILoggerTransport, IRemoteLogSender } from './logger';
+export {
+    LogLevel,
+    Logger,
+    ConsoleTransport,
+    CombinedTransport,
+    logsFilterMinSeverityLevel
+} from './logger';
+export type { LogEntry, ILoggerTransport, LogsFilter } from './logger';

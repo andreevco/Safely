@@ -1,22 +1,6 @@
-import * as Device from 'expo-device';
-import { Platform } from 'react-native';
-
-import { Build } from '@safely/core';
-
 import { createMobileLogger } from './logger';
 import packageJson from '../../../package.json';
-
-const build: Build =
-    Platform.select({
-        ios: 'ios' as const,
-        android: 'android' as const,
-        web: 'web' as const
-    }) ?? ('web' as const);
-
-const deviceInfo = {
-    name: Device.modelName ?? (Platform.OS === 'ios' ? 'iPhone' : 'Android device'),
-    osVersion: Device.osVersion ?? String(Platform.Version)
-};
+import { build, deviceInfo } from '../app-meta';
 
 const { logger, shareLogs } = createMobileLogger({
     appVersion: packageJson.version,
@@ -37,4 +21,4 @@ if (typeof globalThis.onunhandledrejection === 'undefined') {
     };
 }
 
-export { logger, shareLogs, build, deviceInfo };
+export { logger, shareLogs };

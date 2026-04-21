@@ -10,7 +10,7 @@ import { Configuration } from '../api/generated';
 import { SyncApiConfiguration } from '../api/sync-api-configuration';
 import { validateSyncDataScheme } from '../crdt/deep-merge/z-schema';
 import { ed25519_keygen } from '../crypto/ed25519';
-import { Logger, LogLevel } from '../logger';
+import { Logger, logsFilterMinSeverityLevel, LogLevel } from '../logger';
 import { OnboardingConnector } from '../onboarding/connector';
 import { accountsApiForOnboarding, NewDeviceOnboarding } from '../onboarding/new-device-onboarding';
 
@@ -37,7 +37,7 @@ export class SyncAccountFactory<
             opts.logger ??
             (() => {
                 const logger = new Logger();
-                logger.setLevel(LogLevel.TRACE);
+                logger.setLogsFilter(logsFilterMinSeverityLevel(LogLevel.TRACE));
                 return logger;
             })();
 

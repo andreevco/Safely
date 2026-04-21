@@ -8,19 +8,34 @@ const LOG_FILENAME = 'safely-logs.ndjson';
 const DEFAULT_FLUSH_INTERVAL_MS = 30_000;
 const DEFAULT_MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024;
 
+type FileTransportConfig = {
+    appVersion?: string;
+    build?: string;
+    deviceInfo?: { name: string; osVersion: string };
+    flushIntervalMs?: number;
+    maxFileSizeBytes?: number;
+};
+
 export class FileTransport implements ILoggerTransport {
     private readonly mmkv = createMMKV({ id: 'logger-buffer' });
+    private readonly build?: string;
+    private readonly device?: string;
+    private readonly appVersion?: string;
     private readonly flushIntervalMs: number;
     private readonly maxFileSizeBytes: number;
-    private timer: ReturnType<typeof setInterval> | null = null;
     private flushing: Promise<void> = Promise.resolve();
     private flushScheduled = false;
     private seqNo = 0;
 
-    constructor(opts?: { flushIntervalMs?: number; maxFileSizeBytes?: number }) {
+    constructor(opts?: FileTransportConfig) {
+        this.appVersion = opts?.appVersion;
+        this.build = opts?.build;
+        this.device = opts?.deviceInfo
+            ? `${opts.deviceInfo.name}, ${opts.deviceInfo.osVersion}`
+            : undefined;
         this.flushIntervalMs = opts?.flushIntervalMs ?? DEFAULT_FLUSH_INTERVAL_MS;
         this.maxFileSizeBytes = opts?.maxFileSizeBytes ?? DEFAULT_MAX_FILE_SIZE_BYTES;
-        this.timer = setInterval(() => void this.flush(), this.flushIntervalMs);
+        setInterval(() => void this.flush(), this.flushIntervalMs);
     }
 
     public log(entry: LogEntry): void {
@@ -28,11 +43,13 @@ export class FileTransport implements ILoggerTransport {
         this.mmkv.set(
             key,
             JSON.stringify({
-                t: entry.timestamp,
+                t: entry.timestamp.toISOString(),
                 l: entry.level,
                 p: entry.path,
-                m: entry.message,
-                v: entry.appVersion
+                m: entry.message.map(serializeMessage).join(' '),
+                v: this.appVersion,
+                b: this.build,
+                d: this.device
             })
         );
 
@@ -65,18 +82,9 @@ export class FileTransport implements ILoggerTransport {
                 mimeType: 'application/x-ndjson',
                 dialogTitle: 'Share Safely Logs'
             });
-        } catch {
-            // silently ignore
+        } catch (e) {
+            console.error('[FileTransport] shareLogs failed', e);
         }
-    }
-
-    public dispose(): void {
-        if (this.timer) {
-            clearInterval(this.timer);
-            this.timer = null;
-        }
-
-        this.doFlush();
     }
 
     private doFlush(): void {
@@ -99,8 +107,8 @@ export class FileTransport implements ILoggerTransport {
             if (logFile.exists && logFile.size > this.maxFileSizeBytes) {
                 logFile.delete();
             }
-        } catch {
-            // silently ignore
+        } catch (e) {
+            console.error('[FileTransport] failed to check/delete log file', e);
         }
 
         try {
@@ -113,8 +121,19 @@ export class FileTransport implements ILoggerTransport {
                 logFile.create();
                 logFile.write(content);
             }
-        } catch {
-            // silently ignore
+        } catch (e) {
+            console.error('[FileTransport] failed to write logs', e);
         }
+    }
+}
+
+function serializeMessage(message: unknown): string {
+    if (typeof message === 'string') return message;
+    if (message instanceof Error) return message.stack ?? message.message;
+
+    try {
+        return JSON.stringify(message);
+    } catch {
+        return String(message);
     }
 }
