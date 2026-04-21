@@ -4,10 +4,10 @@ import { ConsoleTransport, LogEntry, LogLevel } from '../../src';
 
 function makeEntry(overrides: Partial<LogEntry> = {}): LogEntry {
     return {
-        timestamp: '2026-04-07T12:00:00.000Z',
+        timestamp: new Date('2026-04-07T12:00:00.000Z'),
         level: LogLevel.INFO,
         path: [],
-        message: 'test message',
+        message: ['test message'],
         ...overrides
     };
 }
@@ -69,22 +69,10 @@ describe('ConsoleTransport', () => {
             expect(prefix).toContain('[TRACE]');
         });
 
-        it('should include timestamp', () => {
-            transport.log(makeEntry({ timestamp: '2026-01-15T10:30:00.000Z' }));
+        it('should include timestamp as ISO string', () => {
+            transport.log(makeEntry({ timestamp: new Date('2026-01-15T10:30:00.000Z') }));
             const prefix = logSpy.mock.calls[0][0] as string;
             expect(prefix).toContain('[2026-01-15T10:30:00.000Z]');
-        });
-
-        it('should include app version when present', () => {
-            transport.log(makeEntry({ appVersion: '1.0.1' }));
-            const prefix = logSpy.mock.calls[0][0] as string;
-            expect(prefix).toContain('[v1.0.1]');
-        });
-
-        it('should omit version when not present', () => {
-            transport.log(makeEntry());
-            const prefix = logSpy.mock.calls[0][0] as string;
-            expect(prefix).not.toContain('[v');
         });
 
         it('should include path joined by >', () => {
@@ -99,10 +87,24 @@ describe('ConsoleTransport', () => {
             const afterTimestamp = prefix.split(']').slice(2).join(']');
             expect(afterTimestamp).not.toContain('[');
         });
+    });
 
-        it('should pass message as second argument', () => {
-            transport.log(makeEntry({ message: 'hello world' }));
+    describe('message handling', () => {
+        it('should spread message array as arguments after prefix', () => {
+            transport.log(makeEntry({ message: ['hello', 42, { x: 1 }] }));
+            expect(logSpy.mock.calls[0][1]).toBe('hello');
+            expect(logSpy.mock.calls[0][2]).toBe(42);
+            expect(logSpy.mock.calls[0][3]).toEqual({ x: 1 });
+        });
+
+        it('should spread single-element array', () => {
+            transport.log(makeEntry({ message: ['hello world'] }));
             expect(logSpy.mock.calls[0][1]).toBe('hello world');
+        });
+
+        it('should handle empty message array', () => {
+            transport.log(makeEntry({ message: [] }));
+            expect(logSpy.mock.calls[0]).toHaveLength(1);
         });
     });
 });
