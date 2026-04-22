@@ -1,12 +1,10 @@
-import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { useCallback, useMemo, useReducer, useState } from 'react';
 
 import { useActiveBtcWallet, useAssets } from '../../../../entities';
 import { useNumberFormatter } from '../../../../shared';
 import { useMaxSendAssetTransfer } from '../../../blockchain-send';
-import { SendFormError } from '../errors';
 import { createInitialState, sendFormReducer } from '../reducer';
 import {
-    AmountInputType,
     FormStepNames,
     SEND_STEPS,
     SendFormInitialValues,
@@ -14,18 +12,9 @@ import {
     SendSuggestion,
     SendSuggestionState
 } from '../types';
-import {
-    assetIdSchema,
-    BLOCKCHAIN_DEFAULT_TOKENS,
-    parseRecipient,
-    recipientSchema
-} from '../utils';
-import {
-    calculateMaxAmount,
-    reformatForInputType,
-    validateAmount,
-    validateRecipientInput
-} from '../validators';
+import { useAmountActions } from './useAmountActions';
+import { useRecipientValidation } from './useRecipientValidation';
+import { useSendFormRestoration } from './useSendFormRestoration';
 
 const LAST_STEP_INDEX = SEND_STEPS.length - 1;
 
@@ -54,6 +43,11 @@ export function useSendFormState(params: UseSendFormStateParams) {
 
     const [isSubmitted, setIsSubmitted] = useState(false);
 
+    const { data: assetsData } = useAssets();
+    const ratedAssets = assetsData ?? [];
+    const formatter = useNumberFormatter();
+    const activeBtcWallet = useActiveBtcWallet();
+
     const { data: maxSendValue } = useMaxSendAssetTransfer(
         state.parsed.recipient
             ? {
@@ -64,21 +58,28 @@ export function useSendFormState(params: UseSendFormStateParams) {
         { enabled: !isSubmitted }
     );
 
-    const formatter = useNumberFormatter();
-    const { data: assetsData } = useAssets();
+    const { setRecipient, selectSuggestion, clearSuggestion } = useRecipientValidation({
+        dispatch,
+        ratedAssets,
+        activeWalletAddress: activeBtcWallet.address,
+        allSuggestions
+    });
 
-    const skipNextAmountValidation = useRef(false);
+    const { setAmount, setAmountInputType, setIsMax, setAsset } = useAmountActions({
+        dispatch,
+        state,
+        formatter,
+        maxSendValue,
+        ratedAssets,
+        resolvedInitialValues
+    });
 
-    const ratedAssets = assetsData ?? [];
-    const ratedAssetsRef = useRef(ratedAssets);
-    ratedAssetsRef.current = ratedAssets;
-
-    const activeBtcWallet = useActiveBtcWallet();
-    const activeBtcWalletRef = useRef(activeBtcWallet);
-    activeBtcWalletRef.current = activeBtcWallet;
-
-    const allSuggestionsRef = useRef(allSuggestions);
-    allSuggestionsRef.current = allSuggestions;
+    useSendFormRestoration({
+        resolvedInitialValues,
+        ratedAssets,
+        dispatch,
+        setRecipient
+    });
 
     const currentStepId = SEND_STEPS[state.stepIndex];
 
@@ -98,158 +99,6 @@ export function useSendFormState(params: UseSendFormStateParams) {
 
         return false;
     }, [state, currentStepId]);
-
-    const validateRecipient = useCallback((value: string) => {
-        const result = validateRecipientInput(value, {
-            ratedAssets: ratedAssetsRef.current,
-            activeWalletAddress: activeBtcWalletRef.current.address,
-            allSuggestions: allSuggestionsRef.current
-        });
-        dispatch({ type: 'VALIDATE_RECIPIENT_RESULT', ...result });
-    }, []);
-
-    const setRecipient = useCallback(
-        (value: string) => {
-            dispatch({ type: 'SET_RECIPIENT', value });
-            validateRecipient(value);
-        },
-        [validateRecipient]
-    );
-
-    const setAmount = useCallback(
-        (value: string) => {
-            if (skipNextAmountValidation.current) {
-                skipNextAmountValidation.current = false;
-                return;
-            }
-
-            dispatch({ type: 'SET_AMOUNT', value });
-
-            const result = validateAmount(
-                value,
-                state.values.amountInputType,
-                state.parsed.asset,
-                formatter
-            );
-            dispatch({ type: 'SET_AMOUNT_VALIDATED', ...result });
-        },
-        [state.parsed.asset, state.values.amountInputType, formatter]
-    );
-
-    const setAmountInputType = useCallback(
-        (value: AmountInputType) => {
-            dispatch({ type: 'SET_AMOUNT_INPUT_TYPE', value });
-
-            const currentParsed = state.parsed.amount;
-            if (!currentParsed?.fiatAssetAmount) return;
-
-            const result = reformatForInputType(currentParsed, value, formatter);
-            if (result) {
-                dispatch({
-                    type: 'SET_AMOUNT_VALIDATED',
-                    parsed: result.parsed,
-                    formatted: result.formatted,
-                    error: state.errors.amount
-                });
-            }
-        },
-        [state.parsed.amount, state.errors.amount, formatter]
-    );
-
-    const setIsMax = useCallback(
-        (isMax: boolean) => {
-            dispatch({ type: 'SET_IS_MAX', value: isMax });
-
-            if (!isMax) {
-                skipNextAmountValidation.current = false;
-                return;
-            }
-
-            const asset = state.parsed.asset;
-            if (!asset || !maxSendValue) return;
-
-            const result = calculateMaxAmount(
-                { amount: maxSendValue, price: asset.price },
-                state.values.amountInputType,
-                formatter
-            );
-            if (!result) return;
-
-            dispatch({
-                type: 'SET_AMOUNT_VALIDATED',
-                parsed: result.parsed,
-                formatted: result.formatted,
-                error: undefined
-            });
-
-            skipNextAmountValidation.current = true;
-        },
-        [state.parsed.asset, state.values.amountInputType, formatter, maxSendValue]
-    );
-
-    const setAsset = useCallback(
-        (assetId: string) => {
-            const zodResult = assetIdSchema.safeParse(assetId);
-            if (!zodResult.success) {
-                dispatch({
-                    type: 'SET_ASSET',
-                    assetId,
-                    asset: undefined,
-                    error: zodResult.error.issues[0]?.message ?? SendFormError.SELECT_TOKEN
-                });
-
-                return;
-            }
-
-            const parsedAsset = ratedAssetsRef.current.find(
-                ({ amount }) => amount.asset.id.toString() === zodResult.data
-            );
-
-            if (!parsedAsset) {
-                dispatch({
-                    type: 'SET_ASSET',
-                    assetId,
-                    asset: undefined,
-                    error: SendFormError.UNABLE_TO_VALIDATE_TOKEN
-                });
-                return;
-            }
-
-            dispatch({ type: 'SET_ASSET', assetId, asset: parsedAsset, error: undefined });
-
-            if (state.parsed.amount) {
-                dispatch({ type: 'SET_IS_MAX', value: false });
-                dispatch({
-                    type: 'SET_AMOUNT_VALIDATED',
-                    parsed: undefined,
-                    formatted: '',
-                    error: undefined
-                });
-            }
-        },
-        [state.parsed.amount]
-    );
-
-    const selectSuggestion = useCallback(
-        (id: string, visible: SendSuggestion[]) => {
-            const picked = visible.find(s => s.id === id);
-            if (!picked) return;
-
-            dispatch({
-                type: 'SELECT_SUGGESTION',
-                id,
-                address: picked.address,
-                label: picked.meta.name,
-                suggestionIds: visible.map(s => s.id)
-            });
-            validateRecipient(picked.address);
-        },
-        [validateRecipient]
-    );
-
-    const clearSuggestion = useCallback(() => {
-        dispatch({ type: 'CLEAR_SUGGESTION' });
-    }, []);
 
     const reset = useCallback(() => {
         setIsSubmitted(false);
@@ -294,71 +143,6 @@ export function useSendFormState(params: UseSendFormStateParams) {
             dispatch({ type: 'RESET' });
         }
     }, [state, onSubmit, shouldResetForm, clearDraft]);
-
-    // --- Restoration effects ---
-
-    useEffect(() => {
-        if (!resolvedInitialValues?.recipient) return;
-
-        if (resolvedInitialValues.isMax) {
-            const zodResult = recipientSchema.safeParse(resolvedInitialValues.recipient);
-            if (!zodResult.success) return;
-
-            const parsedRecipient = parseRecipient(zodResult.data);
-            if (typeof parsedRecipient === 'string') return;
-
-            const defaultAsset = BLOCKCHAIN_DEFAULT_TOKENS[parsedRecipient.blockchain];
-            const parsedAsset = ratedAssetsRef.current.find(({ amount }) =>
-                amount.asset.id.isEq(defaultAsset.id)
-            );
-
-            if (parsedAsset) {
-                dispatch({
-                    type: 'RESTORE_DRAFT',
-                    recipient: parsedRecipient,
-                    asset: parsedAsset,
-                    assetId: defaultAsset.id.toString(),
-                    amountInputType: resolvedInitialValues.amountInputType ?? 'crypto',
-                    isMax: true,
-                    stepIndex: resolvedInitialValues.stepIndex ?? 0
-                });
-                return;
-            }
-        }
-
-        setRecipient(resolvedInitialValues.recipient);
-    }, []);
-
-    useEffect(() => {
-        if (!state.parsed.isMax) return;
-        if (state.parsed.amount) return;
-        if (!state.parsed.asset || !maxSendValue) return;
-
-        const result = calculateMaxAmount(
-            { amount: maxSendValue, price: state.parsed.asset.price },
-            state.values.amountInputType,
-            formatter
-        );
-        if (!result) return;
-
-        dispatch({
-            type: 'SET_AMOUNT_VALIDATED',
-            parsed: result.parsed,
-            formatted: result.formatted,
-            error: undefined
-        });
-        skipNextAmountValidation.current = true;
-    }, [state.parsed.isMax, state.parsed.amount, state.parsed.asset, maxSendValue]);
-
-    useEffect(() => {
-        if (!state.parsed.asset) return;
-        if (state.parsed.amount) return;
-        if (state.parsed.isMax) return;
-
-        if (resolvedInitialValues?.amount) {
-            setAmount(resolvedInitialValues.amount);
-        }
-    }, [state.parsed.asset]);
 
     return {
         state,
