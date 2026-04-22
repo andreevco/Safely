@@ -1,14 +1,14 @@
-import * as Device from 'expo-device';
 import { getLocales } from 'expo-localization';
 import { FC, PropsWithChildren, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AppState, Platform } from 'react-native';
+import { AppState } from 'react-native';
 
-import { Build } from '@safely/core';
 import { AppContext, IAppContext, Security, UnlockableSecuredEncryptedStorage } from '@safely/ux';
 
 import { navigationRef } from '@mobile/app/navigation/navigationRef';
 import { useMobileSecurityCheck } from '@mobile/entities/security';
+import { build, deviceInfo } from '@mobile/shared/app-meta';
+import { logger } from '@mobile/shared/logger';
 import { useLoaderServiceContext } from '@mobile/shared/providers/loader';
 import { useToastServiceContext } from '@mobile/shared/providers/toast';
 import { mobileStorages } from '@mobile/shared/storage';
@@ -21,13 +21,6 @@ const security: Security = {
         throw new Error('Security check not initialized');
     }
 };
-
-const build: Build =
-    Platform.select({
-        ios: 'ios' as const,
-        android: 'android' as const,
-        web: 'web' as const
-    }) ?? ('web' as const);
 
 const getSecureEncryptedStorage = () =>
     new UnlockableSecuredEncryptedStorage(mobileStorages.secureEncrypted.storage, security);
@@ -48,10 +41,7 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
             },
             version: packageJson.version,
             build,
-            deviceInfo: {
-                name: Device.modelName ?? (Platform.OS === 'ios' ? 'iPhone' : 'Android device'),
-                osVersion: Device.osVersion ?? String(Platform.Version)
-            },
+            deviceInfo,
             numberFormatLocale: new MobileNumberFormatLocale(getLocales()[0]),
             storage: mobileStorages.app.storage,
             encryptedStorage: mobileStorages.encrypted.storage,
@@ -74,6 +64,7 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
                 hide: loaderService.hide,
                 withLoader: loaderService.withLoader
             },
+            logger,
             security: {
                 check: () => security.check()
             },

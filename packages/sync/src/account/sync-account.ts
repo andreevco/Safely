@@ -144,7 +144,10 @@ export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAcco
                 await this.sendSnapshotManually();
                 break;
             } catch (error) {
-                console.warn('Cannot send snapshot to server after revoking self device', error);
+                this.container.logger.warn(
+                    'Cannot send snapshot to server after revoking self device',
+                    error
+                );
             }
         }
 
@@ -159,7 +162,7 @@ export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAcco
                 }
             });
         } catch (error) {
-            console.warn('Cannot revoke self device on server', error);
+            this.container.logger.warn('Cannot revoke self device on server', error);
         }
     }
 

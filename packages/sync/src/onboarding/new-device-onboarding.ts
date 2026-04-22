@@ -9,6 +9,7 @@ import { ISyncAccount } from '../account/I-sync-account';
 import { ApiSigner } from '../api/api-signer';
 import { AccountsApi, Configuration, OnboardingMessage } from '../api/generated';
 import { ITreeStorage } from '../I-storage';
+import { Logger } from '../logger';
 import { OnboardingAbortedError } from '../sync-error';
 
 export class NewDeviceOnboarding<S extends Record<string, ZodType>> {
@@ -18,7 +19,8 @@ export class NewDeviceOnboarding<S extends Record<string, ZodType>> {
         private readonly ik: { publicKey: Buffer; secretKey: Buffer },
         private readonly accountsApi: AccountsApi,
         private readonly accountManager: AccountManager<S>,
-        private readonly secureEncryptedStorage: ITreeStorage
+        private readonly secureEncryptedStorage: ITreeStorage,
+        private readonly logger: Logger
     ) {}
 
     public generateOnboardingData(): Buffer {
@@ -63,7 +65,7 @@ export class NewDeviceOnboarding<S extends Record<string, ZodType>> {
                     throw new OnboardingAbortedError();
                 }
 
-                console.log('No onboarding message yet, retrying...', err);
+                this.logger.info('No onboarding message yet, retrying...', err);
                 continue;
             }
 
@@ -90,7 +92,7 @@ export class NewDeviceOnboarding<S extends Record<string, ZodType>> {
             this.ik
         );
 
-        console.info('Onboarding completed');
+        this.logger.info('Onboarding completed');
         return account;
     }
 

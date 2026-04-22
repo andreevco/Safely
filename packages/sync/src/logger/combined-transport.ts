@@ -1,0 +1,16 @@
+import { ILoggerTransport } from './I-logger-transport';
+import { LogEntry } from './log-entry';
+
+export class CombinedTransport implements ILoggerTransport {
+    constructor(private readonly transports: ILoggerTransport[]) {}
+
+    public log(entry: LogEntry): void {
+        for (const transport of this.transports) {
+            try {
+                transport.log(entry);
+            } catch (e) {
+                console.error('[CombinedTransport] transport failed', e);
+            }
+        }
+    }
+}
