@@ -62,10 +62,8 @@ export class YManager {
         return this.yDoc.encodeAsSnapshot();
     }
 
-    public onChange(observer: (snapshot: Buffer) => void): () => void {
-        return this.yDoc.onUpdate((update: Buffer) => {
-            observer(update);
-        });
+    public onChange(key: string, observer: () => void): () => void {
+        return this.yDoc.onChange(key, observer);
     }
 
     public getDoc(): Y.Doc {

@@ -11,6 +11,10 @@ export class YCRDT {
         public readonly schema: Record<string, ZodType>
     ) {}
 
+    private readonly observers = new Map<string, () => void>();
+    private deepObserveHandler: ((events: Y.YEvent<Y.AbstractType<unknown>>[]) => void) | null =
+        null;
+
     public applyUpdate(update: Buffer, origin: string): void {
         Y.applyUpdateV2(this.doc, update, origin);
     }
@@ -38,6 +42,45 @@ export class YCRDT {
         return () => {
             this.doc.off('updateV2', handler);
         };
+    }
+
+    public onChange(key: string, observer: () => void): () => void {
+        this.observers.set(key, observer);
+        this.observeIfNeeded();
+        return () => {
+            this.observers.delete(key);
+            if (this.observers.size === 0) {
+                this.detachDeepObserver();
+            }
+        };
+    }
+
+    private observeIfNeeded(): void {
+        if (this.deepObserveHandler) {
+            return;
+        }
+        const root = this.doc.getMap('root');
+        this.deepObserveHandler = (events: Y.YEvent<Y.AbstractType<unknown>>[]) => {
+            for (const event of events) {
+                if (event instanceof Y.YMapEvent && event.path.length > 0) {
+                    const key = event.path[0].toString();
+                    const observer = this.observers.get(key);
+                    if (observer) {
+                        observer();
+                    }
+                }
+            }
+        };
+        root.observeDeep(this.deepObserveHandler);
+    }
+
+    private detachDeepObserver(): void {
+        if (!this.deepObserveHandler) {
+            return;
+        }
+        const root = this.doc.getMap('root');
+        root.unobserveDeep(this.deepObserveHandler);
+        this.deepObserveHandler = null;
     }
 
     public remove(k: string): void {
