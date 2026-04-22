@@ -154,11 +154,12 @@ export function useSendFormState(params: UseSendFormStateParams) {
                 value,
                 state.values.amountInputType,
                 state.parsed.asset,
-                formatter
+                formatter,
+                maxSendValue
             );
             dispatch({ type: 'SET_AMOUNT_VALIDATED', ...result });
         },
-        [state.parsed.asset, state.values.amountInputType, formatter]
+        [state.parsed.asset, state.values.amountInputType, formatter, maxSendValue]
     );
 
     const setAmountInputType = useCallback(

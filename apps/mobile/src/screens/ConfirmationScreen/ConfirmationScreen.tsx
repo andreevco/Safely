@@ -1,6 +1,6 @@
 import { StaticScreenProps, useNavigation } from '@react-navigation/native';
 import { notificationAsync, NotificationFeedbackType } from 'expo-haptics';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
@@ -37,9 +37,12 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
 
     const [confirmationState, setConfirmationState] = useState<ConfirmationState>({ type: 'idle' });
 
-    const { data: txTemplate } = useEstimateAssetTransfer(confirmationResult, {
-        enabled: confirmationState.type !== 'success'
-    });
+    const { data: txTemplate, error: txTemplateError } = useEstimateAssetTransfer(
+        confirmationResult,
+        {
+            enabled: confirmationState.type !== 'success'
+        }
+    );
     const { mutateAsync: send, data: sendResult } = useSendAssetTransfer(txTemplate);
     const formatter = useNumberFormatter();
 
@@ -57,6 +60,12 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
         }
     }, [send, onSuccess]);
 
+    useEffect(() => {
+        if (txTemplateError) {
+            setConfirmationState({ type: 'estimateError', error: txTemplateError });
+        }
+    }, [txTemplateError]);
+
     const onGoBack = useCallback(() => {
         navigation.getParent()?.goBack();
     }, [navigation]);
@@ -68,6 +77,7 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
             case 'idle':
             case 'sending':
             case 'error':
+            case 'estimateError':
                 return (
                     <Animated.View
                         key={confirmationState.type}

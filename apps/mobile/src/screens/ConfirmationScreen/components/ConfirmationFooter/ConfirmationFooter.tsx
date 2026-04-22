@@ -27,6 +27,15 @@ export const ConfirmationFooter = (props: Props) => {
         { fallback: 'confirmation.sendError.default' }
     );
 
+    const errorMessage =
+        state.type === 'error'
+            ? parseError(state.error)
+            : state.type === 'estimateError'
+              ? state.error instanceof Error
+                  ? state.error.message
+                  : t('confirmation.sendError.default')
+              : null;
+
     return (
         <View style={styles.container}>
             {(state.type === 'idle' || state.type === 'sending') && (
@@ -55,14 +64,14 @@ export const ConfirmationFooter = (props: Props) => {
                     </Button>
                 </Animated.View>
             )}
-            {state.type === 'error' && (
+            {errorMessage !== null && (
                 <Animated.View entering={FadeIn.duration(150)} exiting={FadeOut.duration(150)}>
                     <View style={styles.errorTextBlock}>
                         <Text variant="labelL" color="accentRed" style={styles.errorText}>
                             {t('confirmation.sendError.title')}
                         </Text>
                         <Text variant="bodyM" color="accentRed" style={styles.errorText}>
-                            {parseError(state.error)}
+                            {errorMessage}
                         </Text>
                     </View>
                 </Animated.View>
