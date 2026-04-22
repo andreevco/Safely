@@ -7,10 +7,7 @@ import { sendFormKeys } from '../keys';
 import { SendFormInitialValues } from '../types';
 
 type SendFormDraft = Required<Pick<SendFormInitialValues, 'recipient'>> &
-    Omit<SendFormInitialValues, 'recipient'> & {
-        selectedId?: string;
-        suggestionIds?: string[];
-    };
+    Omit<SendFormInitialValues, 'recipient'>;
 
 export function useSendFormDraft() {
     const wallet = useActiveBtcWallet();

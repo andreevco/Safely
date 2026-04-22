@@ -211,7 +211,6 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
                     restoredSuggestions={meta.restoredSuggestions}
                     selectedId={suggestionSelection.selectedId}
                     onSelectSuggestion={suggestionSelection.select}
-                    onClearSuggestionSelection={suggestionSelection.clear}
                 />
                 <AmountStep
                     key="amount"

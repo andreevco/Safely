@@ -18,7 +18,6 @@ interface RecipientStepProps {
     restoredSuggestions?: SendSuggestion[];
     selectedId?: string;
     onSelectSuggestion: (id: string, visibleSuggestions: SendSuggestion[]) => void;
-    onClearSuggestionSelection: () => void;
     onSubmitEditing?: () => void;
 }
 
@@ -33,7 +32,6 @@ export const RecipientStep = (props: RecipientStepProps) => {
         selectedId,
         onChangeText,
         onSelectSuggestion,
-        onClearSuggestionSelection,
         onSubmitEditing
     } = props;
 
@@ -41,12 +39,10 @@ export const RecipientStep = (props: RecipientStepProps) => {
 
     const { displaySuggestions, handleSelect, handleChangeText } = useSuggestionSelection({
         suggestions,
-        allSuggestions,
         restoredSuggestions,
         selectedId,
         onChangeText,
-        onSelectSuggestion,
-        onClearSuggestionSelection
+        onSelectSuggestion
     });
 
     const selectedMeta = useMemo(

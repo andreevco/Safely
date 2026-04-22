@@ -26,18 +26,25 @@ const LAST_STEP_INDEX = SEND_STEPS.length - 1;
 
 export interface UseSendFormStateParams {
     resolvedInitialValues: SendFormInitialValues | undefined;
-    draftSuggestion?: SendSuggestionState;
+    initialSuggestion?: SendSuggestionState;
+    allSuggestions: SendSuggestion[];
     onSubmit: (result: SendFormResult, onSuccess: () => void) => void;
     shouldResetForm: boolean;
     clearDraft: () => void;
 }
 
 export function useSendFormState(params: UseSendFormStateParams) {
-    const { resolvedInitialValues, draftSuggestion, onSubmit, shouldResetForm, clearDraft } =
-        params;
+    const {
+        resolvedInitialValues,
+        initialSuggestion,
+        allSuggestions,
+        onSubmit,
+        shouldResetForm,
+        clearDraft
+    } = params;
 
     const [state, dispatch] = useReducer(sendFormReducer, undefined, () =>
-        createInitialState(resolvedInitialValues, draftSuggestion)
+        createInitialState(resolvedInitialValues, initialSuggestion)
     );
 
     const [isSubmitted, setIsSubmitted] = useState(false);
@@ -64,6 +71,9 @@ export function useSendFormState(params: UseSendFormStateParams) {
     const activeBtcWallet = useActiveBtcWallet();
     const activeBtcWalletRef = useRef(activeBtcWallet);
     activeBtcWalletRef.current = activeBtcWallet;
+
+    const allSuggestionsRef = useRef(allSuggestions);
+    allSuggestionsRef.current = allSuggestions;
 
     const currentStepId = SEND_STEPS[state.stepIndex];
 
@@ -116,6 +126,17 @@ export function useSendFormState(params: UseSendFormStateParams) {
                 error: parsedRecipient
             });
             return;
+        }
+
+        const match = allSuggestionsRef.current.find(s => s.address === parsedRecipient.address);
+        if (match) {
+            dispatch({
+                type: 'SELECT_SUGGESTION',
+                id: match.id,
+                address: parsedRecipient.address,
+                label: match.meta.name,
+                suggestionIds: allSuggestionsRef.current.map(s => s.id)
+            });
         }
 
         if (parsedRecipient.address === activeBtcWalletRef.current.address) {

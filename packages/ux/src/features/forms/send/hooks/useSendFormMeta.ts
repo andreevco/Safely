@@ -8,16 +8,17 @@ import {
     usePortfolios
 } from '../../../../entities';
 import { fuzzySearch } from '../../../../shared';
-import { SendFormState } from '../types';
+import { SendFormState, SendSuggestion } from '../types';
 import { mapPortfolioToSuggestions } from '../utils';
 
 interface UseSendFormMetaParams {
     state: SendFormState;
     assetsData: RatedCryptoAssetAmount[] | undefined;
+    allSuggestions: SendSuggestion[];
 }
 
 export function useSendFormMeta(params: UseSendFormMetaParams) {
-    const { state, assetsData } = params;
+    const { state, assetsData, allSuggestions } = params;
     const { selectedId, suggestionIds: savedSuggestionIds } = state.suggestion;
 
     const blockchain = state.parsed.recipient?.blockchain;
@@ -32,11 +33,6 @@ export function useSendFormMeta(params: UseSendFormMetaParams) {
             mapPortfolioToSuggestions(portfolio, activeDerivation)
         );
     }, [portfolios, activeDerivation, state.values.recipient]);
-
-    const allSuggestions = useMemo(
-        () => portfolios.flatMap(portfolio => mapPortfolioToSuggestions(portfolio)),
-        [portfolios]
-    );
 
     const restoredSuggestions = useMemo(() => {
         if (!savedSuggestionIds || !selectedId) return undefined;

@@ -12,9 +12,7 @@ const sSendFormDraft = z.object({
     amount: z.string().optional(),
     amountInputType: z.enum(['crypto', 'fiat']).optional(),
     isMax: z.boolean().optional(),
-    stepIndex: z.number().optional(),
-    selectedId: z.string().optional(),
-    suggestionIds: z.array(z.string()).optional()
+    stepIndex: z.number().optional()
 });
 
 const sActivityItem = z.object({
