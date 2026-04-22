@@ -106,11 +106,6 @@ export interface SendFormState {
 
 export type SendFormAction =
     | { type: 'SET_RECIPIENT'; value: string; label?: string }
-    | {
-          type: 'SET_RECIPIENT_VALIDATED';
-          recipient: Recipient | undefined;
-          error: string | undefined;
-      }
     | { type: 'SET_AMOUNT'; value: string }
     | {
           type: 'SET_AMOUNT_VALIDATED';
@@ -129,7 +124,21 @@ export type SendFormAction =
     | { type: 'NEXT_STEP' }
     | { type: 'PREV_STEP' }
     | { type: 'RESET' }
-    | { type: 'RESET_DEPENDENT_FIELDS' }
+    | {
+          type: 'VALIDATE_RECIPIENT_RESULT';
+          recipient: Recipient | undefined;
+          error: string | undefined;
+          asset?: {
+              assetId: string;
+              asset: RatedCryptoAssetAmount;
+          };
+          suggestion?: {
+              id: string;
+              address: string;
+              label: string;
+              suggestionIds: string[];
+          };
+      }
     | {
           type: 'SELECT_SUGGESTION';
           id: string;

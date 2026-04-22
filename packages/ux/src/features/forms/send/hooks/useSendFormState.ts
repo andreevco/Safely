@@ -20,7 +20,12 @@ import {
     parseRecipient,
     recipientSchema
 } from '../utils';
-import { calculateMaxAmount, reformatForInputType, validateAmount } from '../validators';
+import {
+    calculateMaxAmount,
+    reformatForInputType,
+    validateAmount,
+    validateRecipientInput
+} from '../validators';
 
 const LAST_STEP_INDEX = SEND_STEPS.length - 1;
 
@@ -95,78 +100,12 @@ export function useSendFormState(params: UseSendFormStateParams) {
     }, [state, currentStepId]);
 
     const validateRecipient = useCallback((value: string) => {
-        dispatch({ type: 'RESET_DEPENDENT_FIELDS' });
-
-        if (value.trim().length < 5) {
-            dispatch({
-                type: 'SET_RECIPIENT_VALIDATED',
-                recipient: undefined,
-                error: undefined
-            });
-            return;
-        }
-
-        const zodResult = recipientSchema.safeParse(value);
-        if (!zodResult.success) {
-            dispatch({
-                type: 'SET_RECIPIENT_VALIDATED',
-                recipient: undefined,
-                error: zodResult.error.issues[0]?.message ?? SendFormError.INVALID_WALLET_ADDRESS
-            });
-            return;
-        }
-
-        const input = zodResult.data;
-        const parsedRecipient = parseRecipient(input);
-
-        if (typeof parsedRecipient === 'string') {
-            dispatch({
-                type: 'SET_RECIPIENT_VALIDATED',
-                recipient: undefined,
-                error: parsedRecipient
-            });
-            return;
-        }
-
-        const match = allSuggestionsRef.current.find(s => s.address === parsedRecipient.address);
-        if (match) {
-            dispatch({
-                type: 'SELECT_SUGGESTION',
-                id: match.id,
-                address: parsedRecipient.address,
-                label: match.meta.name,
-                suggestionIds: allSuggestionsRef.current.map(s => s.id)
-            });
-        }
-
-        if (parsedRecipient.address === activeBtcWalletRef.current.address) {
-            dispatch({
-                type: 'SET_RECIPIENT_VALIDATED',
-                recipient: undefined,
-                error: SendFormError.SELF_TRANSFER
-            });
-            return;
-        }
-
-        dispatch({
-            type: 'SET_RECIPIENT_VALIDATED',
-            recipient: parsedRecipient,
-            error: undefined
+        const result = validateRecipientInput(value, {
+            ratedAssets: ratedAssetsRef.current,
+            activeWalletAddress: activeBtcWalletRef.current.address,
+            allSuggestions: allSuggestionsRef.current
         });
-
-        const defaultAsset = BLOCKCHAIN_DEFAULT_TOKENS[parsedRecipient.blockchain];
-        const parsedAsset = ratedAssetsRef.current.find(({ amount }) =>
-            amount.asset.id.isEq(defaultAsset.id)
-        );
-
-        if (parsedAsset) {
-            dispatch({
-                type: 'SET_ASSET',
-                assetId: defaultAsset.id.toString(),
-                asset: parsedAsset,
-                error: undefined
-            });
-        }
+        dispatch({ type: 'VALIDATE_RECIPIENT_RESULT', ...result });
     }, []);
 
     const setRecipient = useCallback(

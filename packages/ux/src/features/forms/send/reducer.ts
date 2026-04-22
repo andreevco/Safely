@@ -1,4 +1,12 @@
 import {
+    applyClearSuggestion,
+    applyRestoreDraft,
+    applySelectSuggestion,
+    applySetRecipient,
+    applyValidateRecipientResult,
+    EMPTY_SUGGESTION
+} from './reducer-handlers';
+import {
     SendFormAction,
     SendFormInitialValues,
     SendFormState,
@@ -16,11 +24,6 @@ const DEFAULT_VALUES: SendFormValues = {
     amountInputType: 'crypto',
     isMax: false,
     assetId: ''
-};
-
-const EMPTY_SUGGESTION: SendSuggestionState = {
-    selectedId: undefined,
-    suggestionIds: undefined
 };
 
 export const INITIAL_STATE: SendFormState = {
@@ -69,26 +72,8 @@ export function createInitialState(
 
 export function sendFormReducer(state: SendFormState, action: SendFormAction): SendFormState {
     switch (action.type) {
-        case 'SET_RECIPIENT': {
-            const recipientChanged = state.values.recipient !== action.value;
-
-            return {
-                ...state,
-                values: {
-                    ...state.values,
-                    recipient: action.value,
-                    recipientLabel: action.label
-                },
-                suggestion: recipientChanged ? EMPTY_SUGGESTION : state.suggestion
-            };
-        }
-
-        case 'SET_RECIPIENT_VALIDATED':
-            return {
-                ...state,
-                parsed: { ...state.parsed, recipient: action.recipient },
-                errors: { ...state.errors, recipient: action.error }
-            };
+        case 'SET_RECIPIENT':
+            return applySetRecipient(state, action);
 
         case 'SET_AMOUNT':
             return {
@@ -137,24 +122,14 @@ export function sendFormReducer(state: SendFormState, action: SendFormAction): S
         case 'RESET':
             return INITIAL_STATE;
 
-        case 'RESET_DEPENDENT_FIELDS':
-            return {
-                ...state,
-                values: { ...state.values, amount: '', assetId: '', isMax: false },
-                parsed: {
-                    ...state.parsed,
-                    amount: undefined,
-                    asset: undefined,
-                    isMax: false
-                },
-                errors: { ...state.errors, amount: undefined, asset: undefined }
-            };
+        case 'VALIDATE_RECIPIENT_RESULT':
+            return applyValidateRecipientResult(state, action);
 
         case 'SELECT_SUGGESTION':
             return applySelectSuggestion(state, action);
 
         case 'CLEAR_SUGGESTION':
-            return { ...state, suggestion: EMPTY_SUGGESTION };
+            return applyClearSuggestion(state);
 
         case 'RESTORE_DRAFT':
             return applyRestoreDraft(state, action);
@@ -162,67 +137,4 @@ export function sendFormReducer(state: SendFormState, action: SendFormAction): S
         default:
             return state;
     }
-}
-
-function applySelectSuggestion(
-    state: SendFormState,
-    action: Extract<SendFormAction, { type: 'SELECT_SUGGESTION' }>
-): SendFormState {
-    const recipientChanged = state.values.recipient !== action.address;
-    const values = recipientChanged
-        ? {
-              ...state.values,
-              recipient: action.address,
-              recipientLabel: action.label,
-              amount: '',
-              assetId: '',
-              isMax: false
-          }
-        : {
-              ...state.values,
-              recipientLabel: action.label ?? state.values.recipientLabel
-          };
-
-    return {
-        ...state,
-        values,
-        parsed: recipientChanged
-            ? { ...state.parsed, amount: undefined, asset: undefined, isMax: false }
-            : state.parsed,
-        errors: recipientChanged
-            ? { ...state.errors, amount: undefined, asset: undefined }
-            : state.errors,
-        suggestion: {
-            selectedId: action.id,
-            suggestionIds: action.suggestionIds
-        }
-    };
-}
-
-function applyRestoreDraft(
-    state: SendFormState,
-    action: Extract<SendFormAction, { type: 'RESTORE_DRAFT' }>
-): SendFormState {
-    return {
-        values: {
-            ...state.values,
-            amountInputType: action.amountInputType,
-            assetId: action.assetId,
-            isMax: action.isMax,
-            amount: ''
-        },
-        parsed: {
-            recipient: action.recipient,
-            asset: action.asset,
-            amount: undefined,
-            isMax: action.isMax
-        },
-        errors: {
-            recipient: undefined,
-            amount: undefined,
-            asset: undefined
-        },
-        stepIndex: action.stepIndex,
-        suggestion: state.suggestion
-    };
 }

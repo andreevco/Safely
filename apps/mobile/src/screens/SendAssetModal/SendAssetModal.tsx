@@ -10,7 +10,7 @@ import { TextInput, View } from 'react-native';
 import PagerView from 'react-native-pager-view';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
-import { ellipsisMiddle } from '@safely/core';
+import { BTC_ASSET, ellipsisMiddle } from '@safely/core';
 import {
     useSendForm,
     SendFormResult,
@@ -76,7 +76,7 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
         actions.setAmountInputType(newType);
     }, [amountInputType, actions]);
 
-    const decimals = asset?.amount.asset.decimals ?? 8;
+    const decimals = asset?.amount.asset.decimals ?? BTC_ASSET.decimals;
 
     const alternativeAmount = useMemo(() => {
         const parsedAmount = state.parsed.amount;

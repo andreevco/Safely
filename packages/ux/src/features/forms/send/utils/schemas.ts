@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { BtcAddress } from '@safely/core';
 
 import { SendFormError } from '../errors';
+import { MIN_RECIPIENT_ADDRESS_LENGTH } from './constants';
 
 export const recipientSchema = z
     .string()
@@ -10,7 +11,7 @@ export const recipientSchema = z
     .pipe(
         z
             .string()
-            .min(5, SendFormError.INVALID_WALLET_ADDRESS)
+            .min(MIN_RECIPIENT_ADDRESS_LENGTH, SendFormError.INVALID_WALLET_ADDRESS)
             .refine(val => BtcAddress.validate(val), {
                 message: SendFormError.INVALID_WALLET_ADDRESS
             })
