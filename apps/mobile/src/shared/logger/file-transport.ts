@@ -9,9 +9,9 @@ const DEFAULT_FLUSH_INTERVAL_MS = 30_000;
 const DEFAULT_MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024;
 
 type FileTransportConfig = {
-    appVersion?: string;
-    build?: string;
-    deviceInfo?: { name: string; osVersion: string };
+    appVersion: string;
+    build: string;
+    deviceInfo: { name: string; osVersion: string };
     flushIntervalMs?: number;
     maxFileSizeBytes?: number;
 };
@@ -27,12 +27,10 @@ export class FileTransport implements ILoggerTransport {
     private flushScheduled = false;
     private seqNo = 0;
 
-    constructor(opts?: FileTransportConfig) {
-        this.appVersion = opts?.appVersion;
-        this.build = opts?.build;
-        this.device = opts?.deviceInfo
-            ? `${opts.deviceInfo.name}, ${opts.deviceInfo.osVersion}`
-            : undefined;
+    constructor(opts: FileTransportConfig) {
+        this.appVersion = opts.appVersion;
+        this.build = opts.build;
+        this.device = `${opts.deviceInfo.name}, ${opts.deviceInfo.osVersion}`;
         this.flushIntervalMs = opts?.flushIntervalMs ?? DEFAULT_FLUSH_INTERVAL_MS;
         this.maxFileSizeBytes = opts?.maxFileSizeBytes ?? DEFAULT_MAX_FILE_SIZE_BYTES;
         setInterval(() => void this.flush(), this.flushIntervalMs);

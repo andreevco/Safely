@@ -1,9 +1,10 @@
-import { Build } from '@safely/core';
+import { Build, ILoggerTransport } from '@safely/core';
 import {
     CombinedTransport,
     ConsoleTransport,
     Logger,
     LogLevel,
+    LogsFilter,
     logsFilterMinSeverityLevel
 } from '@safely/sync';
 
@@ -29,16 +30,23 @@ export function createMobileLogger(opts: MobileLoggerConfig): MobileLogger {
         deviceInfo: opts.deviceInfo
     });
 
-    const transport = new SanitizedTransport(
-        new CombinedTransport([new ConsoleTransport(), fileTransport])
-    );
+    let transport: ILoggerTransport;
+    let filter: LogsFilter;
+    if (opts.isDev) {
+        transport = new CombinedTransport([
+            new ConsoleTransport(),
+            new SanitizedTransport(fileTransport)
+        ]);
+        filter = logsFilterMinSeverityLevel(LogLevel.TRACE);
+    } else {
+        transport = new SanitizedTransport(
+            new CombinedTransport([new ConsoleTransport(), fileTransport])
+        );
+        filter = logsFilterMinSeverityLevel(LogLevel.WARN);
+    }
 
     const logger = new Logger(transport);
-    logger.setLogsFilter(
-        opts.isDev
-            ? logsFilterMinSeverityLevel(LogLevel.TRACE)
-            : logsFilterMinSeverityLevel(LogLevel.INFO)
-    );
+    logger.setLogsFilter(filter);
 
     return {
         logger,
