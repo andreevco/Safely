@@ -28,9 +28,7 @@ export function assertUnreachable(_: never): never {
     throw new Error("Didn't expect to get here");
 }
 
-export function assertUnreachableSoft(_: never): void {
-    console.error("Didn't expect to get here", _);
-}
+export function assertUnreachableSoft(_: never): void {}
 
 export function notNullish<T>(x: T | null | undefined): x is T {
     return x !== null && x !== undefined;

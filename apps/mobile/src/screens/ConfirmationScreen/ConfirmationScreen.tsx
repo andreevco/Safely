@@ -15,6 +15,7 @@ import {
 
 import { TransactionFee } from '@mobile/screens/ConfirmationScreen/components/TransactionFee';
 import { TransactionSendResult } from '@mobile/screens/ConfirmationScreen/components/TransactionSendResult';
+import { logger } from '@mobile/shared/logger';
 import { Checkmark96, Icon, List, Screen, Text, Image } from '@mobile/shared/ui';
 
 import { Amount, ConfirmationFooter, Wallet, TransactionCell } from './components';
@@ -51,7 +52,7 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
             notificationAsync(NotificationFeedbackType.Success);
             setConfirmationState({ type: 'success' });
         } catch (error) {
-            console.error(error);
+            logger.error('[ConfirmationScreen] send failed', error);
             notificationAsync(NotificationFeedbackType.Error);
             setConfirmationState({ type: 'error', error });
         }

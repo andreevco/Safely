@@ -285,6 +285,7 @@ export function useActivePortfolioEntitiesQuery() {
     const accountQueryKey = useActiveAccountQueryKey();
     const client = useQueryClient();
     const portfoliosQuery = usePortfoliosQueryConfig();
+    const { logger } = useAppContext();
 
     return useSuspenseQuery<ActivePortfolioEntities | null>({
         queryKey: accountQueryKey.portfolios.active.toKey(),
@@ -310,8 +311,7 @@ export function useActivePortfolioEntitiesQuery() {
                 }
 
                 if (activeConfig && !activeConfig.derivationId) {
-                    // TODO Use logger after it comes to master
-                    console.error('derivationId is null for derivable portfolio');
+                    logger.error('derivationId is null for derivable portfolio');
                 }
 
                 const derivation = activeConfig?.derivationId

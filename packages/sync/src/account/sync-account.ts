@@ -107,7 +107,8 @@ export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAcco
 
         const onboarding = new ReconnectOnboarding(
             await this.container.ikService.getPub(),
-            this.syncProviderInternal as OnlineSyncProvider<S>
+            this.syncProviderInternal as OnlineSyncProvider<S>,
+            this.container.logger
         );
         const data = onboarding.generateOnboardingData();
         const abortController = new AbortController();

@@ -12,8 +12,11 @@ import {
 import { useAppContext } from '../providers';
 
 export function useNumberFormatter() {
-    const { numberFormatLocale } = useAppContext();
-    return useMemo(() => new NumberFormatter(numberFormatLocale), [numberFormatLocale]);
+    const { numberFormatLocale, logger } = useAppContext();
+    return useMemo(
+        () => new NumberFormatter(numberFormatLocale, logger),
+        [numberFormatLocale, logger]
+    );
 }
 
 export function useFormattedAmount(
