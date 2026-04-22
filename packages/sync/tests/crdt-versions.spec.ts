@@ -176,7 +176,7 @@ describe('crdt versions migrations', () => {
 
         // Update on device 1, then sync on device 2
         latestDevice_1.set('profile', { displayName: 'Alice', age: 45 });
-        latestDevice_2.applyUpdate(latestDevice_1.encodeAsSnapshot(), 'remote', 4);
+        latestDevice_2.applyUpdate(latestDevice_1.encodeAsSnapshot(), 'remote', 3);
         expect(latestDevice_2.get('profile')).toEqual({ displayName: 'Alice', age: 45 });
     });
 

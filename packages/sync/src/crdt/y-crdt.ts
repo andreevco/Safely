@@ -1,8 +1,16 @@
 import * as Y from 'yjs';
+import { z } from 'zod';
 
 import { atomicTransaction } from './atomic-transaction';
 import { deepMerge } from './deep-merge/deep-merge';
+import { isArray, isPlainObject } from './deep-merge/helpers';
 import { yValueToJs } from './deep-merge/y-value-to-js';
+import {
+    getArrayItemSchema,
+    getArrayMeta,
+    getObjectFieldSchema,
+    resolveSchemaForValue
+} from './deep-merge/z-schema';
 import { AnyStorageVersion } from './version';
 import { getAsArray, getAsMap } from '../utils/yjs';
 
@@ -54,6 +62,12 @@ export class YCRDT {
 
     public applyUpdate(update: Buffer, origin: string, remoteStorageVersion: number): void {
         if (remoteStorageVersion < this.lastVersion().version) {
+            const tempDoc = new Y.Doc();
+            Y.applyUpdateV2(tempDoc, update);
+            if (existingVersions(tempDoc).includes(lastVersion(this.versions).version.toString())) {
+                reconcile(tempDoc, this.doc, this.versions);
+            }
+
             atomicTransaction(this.doc, doc => {
                 Y.applyUpdateV2(doc, update, origin);
                 migrateIfNeeded(doc, this.versions, remoteStorageVersion);
@@ -218,4 +232,174 @@ function lastVersionMap(doc: Y.Doc, versions: AnyStorageVersion[]): Y.Map<unknow
 
 function lastVersion(versions: AnyStorageVersion[]): AnyStorageVersion {
     return versions[versions.length - 1];
+}
+
+function reconcile(tempDoc: Y.Doc, doc: Y.Doc, versions: AnyStorageVersion[]): void {
+    const version = lastVersion(versions);
+    const schema = version.schema;
+
+    atomicTransaction(tempDoc, tmp => {
+        const remote = lastVersionMap(tmp, versions);
+        const local = lastVersionMap(doc, versions);
+        const keys = new Set<string>([...remote.keys(), ...local.keys(), ...Object.keys(schema)]);
+
+        for (const key of keys) {
+            const fieldSchema = schema[key];
+            if (!fieldSchema) {
+                continue;
+            }
+
+            const localValue = yValueToJs(local.get(key), fieldSchema);
+            const remoteValue = yValueToJs(remote.get(key), fieldSchema);
+            const merged = reconcileValues(localValue, remoteValue, fieldSchema);
+            deepMerge(remote, key, merged, fieldSchema);
+        }
+    });
+
+    const update = Y.encodeStateAsUpdateV2(tempDoc, Y.encodeStateVector(doc));
+    if (update.length > 0) {
+        Y.applyUpdateV2(doc, update, 'reconcile');
+    }
+}
+
+function reconcileValues(local: unknown, remote: unknown, schema: z.ZodTypeAny): unknown {
+    if (local === undefined) {
+        return cloneJsonSafe(remote);
+    }
+    if (remote === undefined) {
+        return cloneJsonSafe(local);
+    }
+
+    const resolvedLocal = resolveSchemaForValue(schema, local);
+    const resolvedRemote = resolveSchemaForValue(schema, remote);
+
+    if (isArray(local) && isArray(remote)) {
+        return reconcileArrays(local, remote, resolvedRemote);
+    }
+
+    if (isPlainObject(local) && isPlainObject(remote)) {
+        return reconcileObjects(local, remote, resolvedLocal, resolvedRemote);
+    }
+
+    const localDeltaLength = scalarDeltaLength(local);
+    const remoteDeltaLength = scalarDeltaLength(remote);
+    if (remoteDeltaLength >= localDeltaLength) {
+        return cloneJsonSafe(remote);
+    }
+    return cloneJsonSafe(local);
+}
+
+function reconcileArrays(local: unknown[], remote: unknown[], schema: z.ZodTypeAny): unknown[] {
+    const meta = getArrayMeta(schema);
+    const itemSchema = getArrayItemSchema(schema);
+    const localById = new Map<string, unknown>();
+    const remoteById = new Map<string, unknown>();
+
+    for (const item of local) {
+        localById.set(meta.getId(item), item);
+    }
+    for (const item of remote) {
+        remoteById.set(meta.getId(item), item);
+    }
+
+    const result: unknown[] = [];
+    const seen = new Set<string>();
+
+    for (const remoteItem of remote) {
+        const id = meta.getId(remoteItem);
+        const localItem = localById.get(id);
+        if (localItem === undefined) {
+            result.push(cloneJsonSafe(remoteItem));
+        } else {
+            result.push(reconcileValues(localItem, remoteItem, itemSchema));
+        }
+        seen.add(id);
+    }
+
+    for (const localItem of local) {
+        const id = meta.getId(localItem);
+        if (seen.has(id)) {
+            continue;
+        }
+        result.push(cloneJsonSafe(localItem));
+    }
+
+    return result;
+}
+
+function reconcileObjects(
+    local: Record<string, unknown>,
+    remote: Record<string, unknown>,
+    localSchema: z.ZodTypeAny,
+    remoteSchema: z.ZodTypeAny
+): Record<string, unknown> {
+    const result: Record<string, unknown> = {};
+    const keys = new Set([...Object.keys(local), ...Object.keys(remote)]);
+
+    for (const key of keys) {
+        const localValue = local[key];
+        const remoteValue = remote[key];
+        const childSchema = resolveChildSchema(localSchema, remoteSchema, key);
+        result[key] = reconcileValues(localValue, remoteValue, childSchema);
+    }
+
+    return result;
+}
+
+function resolveChildSchema(
+    localSchema: z.ZodTypeAny,
+    remoteSchema: z.ZodTypeAny,
+    key: string
+): z.ZodTypeAny {
+    const localObject =
+        localSchema instanceof z.ZodObject || localSchema instanceof z.ZodRecord
+            ? localSchema
+            : null;
+    const remoteObject =
+        remoteSchema instanceof z.ZodObject || remoteSchema instanceof z.ZodRecord
+            ? remoteSchema
+            : null;
+
+    if (remoteObject) {
+        return getObjectFieldSchema(remoteObject, key);
+    }
+    if (localObject) {
+        return getObjectFieldSchema(localObject, key);
+    }
+    return remoteSchema;
+}
+
+function scalarDeltaLength(value: unknown): number {
+    if (value === undefined) {
+        return 0;
+    }
+    console.log(value);
+
+    if (
+        typeof value === 'object' &&
+        value !== null &&
+        'toDelta' in value &&
+        typeof (value as { toDelta: unknown }).toDelta === 'function'
+    ) {
+        // Prefer Yjs delta length for CRDT scalar-like values (e.g. Y.Text).
+        const delta = (value as { toDelta: () => unknown }).toDelta();
+        const serializedDelta = JSON.stringify(delta);
+        return serializedDelta?.length ?? 0;
+    }
+
+    const serialized = JSON.stringify(value);
+    if (serialized === undefined) {
+        return 0;
+    }
+    return serialized.length;
+}
+
+function cloneJsonSafe<T>(value: T): T {
+    if (value === undefined) {
+        return value;
+    }
+    if (typeof globalThis.structuredClone === 'function') {
+        return globalThis.structuredClone(value);
+    }
+    return JSON.parse(JSON.stringify(value)) as T;
 }
