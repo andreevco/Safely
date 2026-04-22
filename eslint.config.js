@@ -89,12 +89,7 @@ export default [
             radix: ['error', 'as-needed'],
             'no-return-assign': 'off',
             'no-restricted-syntax': ['error', 'LabeledStatement', 'WithStatement'],
-            'no-console': [
-                'warn',
-                {
-                    allow: ['warn', 'error', 'info', 'log']
-                }
-            ],
+            'no-console': 'error',
 
             /* imports */
             'import/extensions': 'off',
@@ -211,6 +206,23 @@ export default [
         plugins: { prettier: prettierPlugin },
         rules: {
             'prettier/prettier': 'error'
+        }
+    },
+    /* logger implementations — console is the last-resort fallback */
+    {
+        files: [
+            'apps/mobile/src/shared/logger/**/*.ts',
+            'packages/sync/src/logger/**/*.ts'
+        ],
+        rules: {
+            'no-console': 'off'
+        }
+    },
+    /* tests */
+    {
+        files: ['**/*.test.ts', '**/*.test.tsx', '**/*.spec.ts', '**/*.spec.tsx'],
+        rules: {
+            'no-console': 'off'
         }
     },
     eslintConfigPrettier
