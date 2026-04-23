@@ -58,7 +58,8 @@ export function useSendForm(props: UseSendFormOptions) {
         state.values.isMax,
         state.stepIndex,
         suggestionDraft.state.selectedId,
-        suggestionDraft.state.suggestionIds
+        suggestionDraft.state.suggestionPortfoliosIds,
+        suggestionDraft.state.suggestionContactsIds
     ]);
 
     return {

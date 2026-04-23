@@ -1,6 +1,7 @@
 import {
     BLOCKCHAIN_NAME,
     BtcAsset,
+    ContactMeta,
     CryptoAsset,
     CryptoAssetAmount,
     FiatAssetAmount,
@@ -9,13 +10,24 @@ import {
     Recipient
 } from '@safely/core';
 
-export interface SendSuggestion {
+export interface PortfolioSuggestion {
     id: string;
     address: string;
     meta: PortfolioMeta;
     tag?: number;
     isWatchOnly?: boolean;
 }
+
+export interface ContactSuggestion {
+    id: string;
+    address: string;
+    meta: ContactMeta;
+}
+
+export type SendSuggestions = {
+    portfolios: PortfolioSuggestion[];
+    contacts: ContactSuggestion[];
+};
 
 export type AmountInputType = 'crypto' | 'fiat';
 

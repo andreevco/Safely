@@ -154,7 +154,7 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
                             entering={FadeIn.duration(150)}
                             exiting={FadeOut.duration(150)}
                         >
-                            {meta.portfolioMetaByAddress ? (
+                            {meta.portfolioMetaByAddress || meta.contactMetaByAddress ? (
                                 <View style={styles.recipientRow}>
                                     <Text
                                         variant="bodyM"
@@ -162,7 +162,8 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
                                         numberOfLines={1}
                                         style={styles.recipientName}
                                     >
-                                        {meta.portfolioMetaByAddress.name}
+                                        {meta.contactMetaByAddress?.name ??
+                                            meta.portfolioMetaByAddress?.name}
                                     </Text>
                                     <Text variant="bodyM" color="tertiary">
                                         {' '}
@@ -204,7 +205,12 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
                     key="recipient"
                     inputRef={recipientInputRef}
                     value={state.values.recipient}
-                    error={meta.suggestions.length > 0 ? undefined : state.errors.recipient}
+                    error={
+                        meta.suggestions.portfolios.length > 0 ||
+                        meta.suggestions.contacts.length > 0
+                            ? undefined
+                            : state.errors.recipient
+                    }
                     onChangeText={actions.setRecipient}
                     suggestions={meta.suggestions}
                     restoredSuggestions={meta.restoredSuggestions}
