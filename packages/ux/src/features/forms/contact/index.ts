@@ -13,5 +13,7 @@ export type {
     ContactFormErrors,
     ContactFormAction,
     ContactFormInitialValues,
-    ContactFormResult
+    ContactFormResult,
+    ContactFormParsedAddress,
+    ContactFormAddressValue
 } from './types';

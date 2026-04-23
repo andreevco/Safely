@@ -1,13 +1,13 @@
 import { BLOCKCHAIN_NAME, BtcAddress } from '@safely/core';
 
-import { ContactFormError } from '../errors';
+import { InvalidAddressFormatError, UnsupportedBlockchainError } from './errors';
 
-export interface DetectedContactAddress {
+export interface DetectedAddress {
     blockchain: BLOCKCHAIN_NAME;
     address: string;
 }
 
-export function detectAddressType(input: string): DetectedContactAddress | null {
+export function detectAddressType(input: string): DetectedAddress | null {
     if (!input) return null;
 
     if (BtcAddress.validate(input)) {
@@ -17,17 +17,17 @@ export function detectAddressType(input: string): DetectedContactAddress | null 
     return null;
 }
 
-export function parseContactAddress(input: string): DetectedContactAddress | ContactFormError {
+export function parseAddress(input: string): DetectedAddress {
     const detected = detectAddressType(input);
 
     if (!detected) {
-        return ContactFormError.INVALID_ADDRESS_FORMAT;
+        throw new InvalidAddressFormatError();
     }
 
     switch (detected.blockchain) {
         case BLOCKCHAIN_NAME.BTC:
             return detected;
         default:
-            return ContactFormError.UNSUPPORTED_BLOCKCHAIN;
+            throw new UnsupportedBlockchainError();
     }
 }

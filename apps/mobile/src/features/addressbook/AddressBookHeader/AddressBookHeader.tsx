@@ -5,9 +5,13 @@ import { Icon, Text, AddressBook96 } from '@mobile/shared/ui';
 
 import { styles } from './AddressBookHeader.styles';
 
-export const AddressBookHeader = (props: ViewProps) => {
-    const { style, ...rest } = props;
+type AddressBookHeaderProps = ViewProps & {
+    description?: string;
+};
+
+export const AddressBookHeader = (props: AddressBookHeaderProps) => {
     const { t } = useTranslation();
+    const { style, description = t('addressBook.subtitle'), ...rest } = props;
 
     return (
         <View style={[styles.content, style]} {...rest}>
@@ -17,7 +21,7 @@ export const AddressBookHeader = (props: ViewProps) => {
                     {t('addressBook.title')}
                 </Text>
                 <Text textAlign="center" variant="bodyL" color="secondary">
-                    {t('addressBook.subtitle')}
+                    {description}
                 </Text>
             </View>
         </View>

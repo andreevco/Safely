@@ -1,19 +1,27 @@
 import { BLOCKCHAIN_NAME } from '@safely/core';
 
+export interface ContactFormParsedAddress {
+    address: string;
+    blockchain: BLOCKCHAIN_NAME;
+}
+
+export interface ContactFormAddressValue {
+    value: string;
+}
+
 export interface ContactFormValues {
     name: string;
-    address: string;
+    addresses: ContactFormAddressValue[];
 }
 
 export interface ContactFormParsed {
     name: string | undefined;
-    address: string | undefined;
-    blockchain: BLOCKCHAIN_NAME | undefined;
+    addresses: (ContactFormParsedAddress | undefined)[];
 }
 
 export interface ContactFormErrors {
     name: string | undefined;
-    address: string | undefined;
+    addresses: (string | undefined)[];
 }
 
 export interface ContactFormState {
@@ -24,23 +32,24 @@ export interface ContactFormState {
 
 export interface ContactFormInitialValues {
     name?: string;
-    address?: string;
+    addresses?: string[];
 }
 
 export type ContactFormAction =
     | { type: 'SET_NAME'; value: string }
     | { type: 'SET_NAME_VALIDATED'; parsed: string | undefined; error: string | undefined }
-    | { type: 'SET_ADDRESS'; value: string }
+    | { type: 'SET_ADDRESS'; index: number; value: string }
     | {
           type: 'SET_ADDRESS_VALIDATED';
-          parsed: string | undefined;
-          blockchain: BLOCKCHAIN_NAME | undefined;
+          index: number;
+          parsed: ContactFormParsedAddress | undefined;
           error: string | undefined;
       }
+    | { type: 'ADD_ADDRESS' }
+    | { type: 'REMOVE_ADDRESS'; index: number }
     | { type: 'RESET' };
 
 export interface ContactFormResult {
     name: string;
-    address: string;
-    blockchain: BLOCKCHAIN_NAME;
+    addresses: ContactFormParsedAddress[];
 }

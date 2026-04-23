@@ -8,47 +8,41 @@ export class Contact implements IContact {
     public static restoreContact(sContact: SContactOut): Contact {
         return new Contact({
             id: sContact.id,
-            blockchain: sContact.blockchain,
-            address: sContact.address,
+            addresses: sContact.addresses,
             meta: sContact.meta,
             createdAt: new Date(sContact.createdAt)
         });
     }
 
     public readonly id: ContactId;
-    public blockchain: BLOCKCHAIN_NAME;
-    public address: string;
+    public addresses: { blockchain: BLOCKCHAIN_NAME; address: string }[];
     public meta: ContactMeta;
     public readonly createdAt: Date;
 
     constructor(params: {
-        id: ContactId;
-        blockchain: BLOCKCHAIN_NAME;
-        address: string;
+        id?: ContactId;
+        addresses: { blockchain: BLOCKCHAIN_NAME; address: string }[];
         meta: ContactMeta;
-        createdAt: Date;
+        createdAt?: Date;
     }) {
-        this.id = params.id;
-        this.blockchain = params.blockchain;
-        this.address = params.address;
+        this.id = params.id ?? ContactId.create();
+        this.addresses = params.addresses;
         this.meta = params.meta;
-        this.createdAt = params.createdAt;
+        this.createdAt = params.createdAt ?? new Date();
     }
 
     public updateMeta(meta: Partial<ContactMeta>): void {
         this.meta = { ...this.meta, ...meta };
     }
 
-    public updateAddress(blockchain: BLOCKCHAIN_NAME, address: string): void {
-        this.blockchain = blockchain;
-        this.address = address;
+    public setAddresses(addresses: { blockchain: BLOCKCHAIN_NAME; address: string }[]): void {
+        this.addresses = addresses;
     }
 
     public toJSON(): SContactIn {
         return {
             id: this.id.toJSON(),
-            blockchain: this.blockchain,
-            address: this.address,
+            addresses: this.addresses,
             meta: this.meta,
             createdAt: this.createdAt.getTime()
         };

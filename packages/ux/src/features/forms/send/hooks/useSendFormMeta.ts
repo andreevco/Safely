@@ -19,15 +19,12 @@ import {
 import { fuzzySearch } from '../../../../shared';
 import { ContactSuggestion, PortfolioSuggestion, SendFormState } from '../types';
 
-function mapContactToSuggestion(contact: Contact): ContactSuggestion {
-    return {
+function mapContactToSuggestions(contact: Contact): ContactSuggestion[] {
+    return contact.addresses.map(address => ({
         id: contact.id.toString(),
-        address: contact.address,
-        meta: {
-            name: contact.meta.name,
-            color: contact.meta.color
-        }
-    };
+        address: address.address,
+        meta: contact.meta
+    }));
 }
 
 function mapPortfolioToSuggestions(
@@ -80,8 +77,8 @@ export function useSendFormMeta(params: UseSendFormMetaParams) {
             portfolios: fuzzySearch(portfolios, query, s => s.meta.name).flatMap(portfolio =>
                 mapPortfolioToSuggestions(portfolio, activeDerivation)
             ),
-            contacts: fuzzySearch(contacts, query, s => s.meta.name).map(contact =>
-                mapContactToSuggestion(contact)
+            contacts: fuzzySearch(contacts, query, s => s.meta.name).flatMap(contact =>
+                mapContactToSuggestions(contact)
             )
         };
     }, [portfolios, activeDerivation, state.values.recipient, state.parsed.recipient]);
@@ -102,7 +99,7 @@ export function useSendFormMeta(params: UseSendFormMetaParams) {
                         suggestionPortfoliosIds.indexOf(b.id)
                 ),
             contacts: contacts
-                .map(contact => mapContactToSuggestion(contact))
+                .flatMap(contact => mapContactToSuggestions(contact))
                 .filter(s => contactIdSet.has(s.id))
                 .sort(
                     (a, b) =>
@@ -124,7 +121,7 @@ export function useSendFormMeta(params: UseSendFormMetaParams) {
             return;
         }
 
-        return findContactMetaByAddress(contacts, state.parsed.recipient.address);
+        return findContactMetaByAddress(contacts, state.parsed.recipient.blockchain);
     }, [contacts, state.parsed.recipient]);
 
     const isMaxAvailable = useMemo(() => {

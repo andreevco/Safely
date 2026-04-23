@@ -49,8 +49,6 @@ export const NewContactModal = ({ route }: NewContactModalProps) => {
         navigation.navigate('ConfirmDeleteContactSheet', { contact: initialContact });
     }, [navigation, initialContact]);
 
-    const addressError = state.errors.address ? t(state.errors.address) : undefined;
-
     return (
         <Screen>
             <Screen.Header>
@@ -79,36 +77,47 @@ export const NewContactModal = ({ route }: NewContactModalProps) => {
                         returnKeyType="next"
                     />
                 </Input>
-                <Input>
-                    <Input.Label>{t('newContact.form.address')}</Input.Label>
-                    <Input.Field
-                        withClearButton
-                        multiline
-                        value={state.values.address}
-                        onChangeText={actions.setAddress}
-                        placeholder={t('newContact.form.addressPlaceholder')}
-                        errored={!!addressError}
-                        autoCapitalize="none"
-                        autoCorrect={false}
-                        returnKeyType="done"
-                        onSubmitEditing={meta.canSubmit ? handleSave : undefined}
-                    />
-                    {addressError && (
-                        <Input.Description color="accentRed">{addressError}</Input.Description>
-                    )}
-                    {initialContact && !addressError && (
-                        <Input.Description>
-                            {t('newContact.form.addedOn', {
-                                date: dateFormatter.format(initialContact.createdAt)
-                            })}
-                        </Input.Description>
-                    )}
-                    {initialContact && (
-                        <Input.Description color="accentRed" onPress={handleRemove}>
-                            {t('newContact.form.remove')}
-                        </Input.Description>
-                    )}
-                </Input>
+                {state.values.addresses.map((address, index) => {
+                    const errorKey = state.errors.addresses[index];
+                    const errorText = errorKey ? t(errorKey) : undefined;
+                    const isLast = index === state.values.addresses.length - 1;
+                    const showAddedOn = isLast && !!initialContact && !errorText;
+
+                    return (
+                        <Input key={index}>
+                            {index === 0 && (
+                                <Input.Label>{t('newContact.form.address')}</Input.Label>
+                            )}
+                            <Input.Field
+                                withClearButton
+                                multiline
+                                value={address.value}
+                                onChangeText={value => actions.setAddress(index, value)}
+                                placeholder={t('newContact.form.addressPlaceholder')}
+                                errored={!!errorText}
+                                autoCapitalize="none"
+                                autoCorrect={false}
+                                returnKeyType="done"
+                                onSubmitEditing={meta.canSubmit ? handleSave : undefined}
+                            />
+                            {errorText && (
+                                <Input.Description color="accentRed">{errorText}</Input.Description>
+                            )}
+                            {showAddedOn && initialContact && (
+                                <Input.Description>
+                                    {t('newContact.form.addedOn', {
+                                        date: dateFormatter.format(initialContact.createdAt)
+                                    })}
+                                </Input.Description>
+                            )}
+                        </Input>
+                    );
+                })}
+                {initialContact && (
+                    <Input.Description color="accentRed" onPress={handleRemove}>
+                        {t('newContact.form.remove')}
+                    </Input.Description>
+                )}
             </Screen.Content>
         </Screen>
     );

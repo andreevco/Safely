@@ -1,7 +1,7 @@
-import { BLOCKCHAIN_NAME } from '@safely/core';
-
+import { parseAddress, UnsupportedBlockchainError } from '../../../../shared/address';
 import { ContactFormError } from '../errors';
-import { addressSchema, nameSchema, parseContactAddress } from '../utils';
+import { ContactFormParsedAddress } from '../types';
+import { addressSchema, nameSchema } from '../utils';
 
 export interface ContactNameValidationResult {
     parsed: string | undefined;
@@ -22,8 +22,7 @@ export function validateContactName(value: string): ContactNameValidationResult 
 }
 
 export interface ContactAddressValidationResult {
-    parsed: string | undefined;
-    blockchain: BLOCKCHAIN_NAME | undefined;
+    parsed: ContactFormParsedAddress | undefined;
     error: string | undefined;
 }
 
@@ -33,16 +32,26 @@ export function validateContactAddress(value: string): ContactAddressValidationR
     if (!zodResult.success) {
         return {
             parsed: undefined,
-            blockchain: undefined,
             error: zodResult.error.issues[0]?.message ?? ContactFormError.ENTER_ADDRESS
         };
     }
 
-    const parsed = parseContactAddress(zodResult.data);
-
-    if (typeof parsed === 'string') {
-        return { parsed: undefined, blockchain: undefined, error: parsed };
+    try {
+        const parsed = parseAddress(zodResult.data);
+        return {
+            parsed: { address: parsed.address, blockchain: parsed.blockchain },
+            error: undefined
+        };
+    } catch (error) {
+        if (error instanceof UnsupportedBlockchainError) {
+            return {
+                parsed: undefined,
+                error: ContactFormError.UNSUPPORTED_BLOCKCHAIN
+            };
+        }
+        return {
+            parsed: undefined,
+            error: ContactFormError.INVALID_ADDRESS_FORMAT
+        };
     }
-
-    return { parsed: parsed.address, blockchain: parsed.blockchain, error: undefined };
 }

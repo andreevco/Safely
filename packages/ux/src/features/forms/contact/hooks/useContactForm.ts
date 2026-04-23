@@ -17,7 +17,10 @@ export function useContactForm(params: UseContactFormParams) {
     const initialValues = useMemo(
         () =>
             initialContact
-                ? { name: initialContact.meta.name, address: initialContact.address }
+                ? {
+                      name: initialContact.meta.name,
+                      addresses: initialContact.addresses.map(a => a.address)
+                  }
                 : undefined,
         [initialContact]
     );
@@ -32,23 +35,29 @@ export function useContactForm(params: UseContactFormParams) {
 
     const isValid =
         !!state.parsed.name &&
-        !!state.parsed.address &&
-        !!state.parsed.blockchain &&
         !state.errors.name &&
-        !state.errors.address;
+        state.parsed.addresses.length > 0 &&
+        state.parsed.addresses.every(parsed => !!parsed) &&
+        state.errors.addresses.every(error => !error);
 
     const hasChanges = useMemo(() => {
         if (!initialContact) return true;
 
         const nextName = state.parsed.name ?? state.values.name.trim();
-        const nextAddress = state.parsed.address ?? state.values.address.trim();
-        const nextBlockchain = state.parsed.blockchain;
+        if (nextName !== initialContact.meta.name) return true;
 
-        return (
-            nextName !== initialContact.meta.name ||
-            nextAddress !== initialContact.address ||
-            (nextBlockchain !== undefined && nextBlockchain !== initialContact.blockchain)
-        );
+        const nextAddresses = state.parsed.addresses;
+        if (nextAddresses.length !== initialContact.addresses.length) return true;
+
+        return nextAddresses.some((parsed, index) => {
+            const initial = initialContact.addresses[index];
+            return (
+                !parsed ||
+                !initial ||
+                parsed.address !== initial.address ||
+                parsed.blockchain !== initial.blockchain
+            );
+        });
     }, [initialContact, state.parsed, state.values]);
 
     const canSubmit = isValid && hasChanges && !isSubmitting;
@@ -63,8 +72,7 @@ export function useContactForm(params: UseContactFormParams) {
             ? await editContact({
                   contact: initialContact,
                   meta: { name: result.name },
-                  address: result.address,
-                  blockchain: result.blockchain
+                  addresses: result.addresses
               })
             : await createContact(result);
 
@@ -78,6 +86,8 @@ export function useContactForm(params: UseContactFormParams) {
         actions: {
             setName: actions.setName,
             setAddress: actions.setAddress,
+            addAddress: actions.addAddress,
+            removeAddress: actions.removeAddress,
             reset: actions.reset,
             submit
         },

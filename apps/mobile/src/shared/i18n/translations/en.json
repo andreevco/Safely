@@ -604,7 +604,8 @@
     "addressBook": {
         "title": "Address Book",
         "subtitle": "Add trusted contacts to avoid mistakes and send faster.",
-        "addContact": "Add Contact"
+        "subtitle_not_empty": "Send crypto safely using your saved contacts.",
+        "addContact": "Add contact"
     },
     "newContact": {
         "title": "Contact",

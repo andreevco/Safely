@@ -4,12 +4,11 @@ import { BLOCKCHAIN_NAME } from '../blockchain/blockchain-name';
 
 export interface IContact {
     id: ContactId;
-    blockchain: BLOCKCHAIN_NAME;
-    address: string;
+    addresses: { blockchain: BLOCKCHAIN_NAME; address: string }[];
     meta: ContactMeta;
     createdAt: Date;
 
     updateMeta(meta: Partial<ContactMeta>): void;
-    updateAddress(blockchain: BLOCKCHAIN_NAME, address: string): void;
+    setAddresses(addresses: { blockchain: BLOCKCHAIN_NAME; address: string }[]): void;
     toJSON(): unknown;
 }

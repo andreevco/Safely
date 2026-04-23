@@ -1,15 +1,14 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import {
     allowedContactMetaColors,
     BLOCKCHAIN_NAME,
     Contact,
-    ContactFactory,
     ContactMeta,
     IContact
 } from '@safely/core';
 
-import { useActiveAccountSyncedStorage, useSuspenseQuery, useTranslate } from '../../shared';
+import { useActiveAccountSyncedStorage, useTranslate } from '../../shared';
 import { useActiveAccountQueryKey } from '../account';
 import { useToast } from '../toast';
 
@@ -23,15 +22,22 @@ export function useContactsQuery() {
     const accountQueryKey = useActiveAccountQueryKey();
     const { get } = useActiveAccountSyncedStorage('contacts');
 
-    return useSuspenseQuery({
+    return useQuery({
         queryKey: accountQueryKey.contacts.toKey(),
-        queryFn: () => (get() ?? []).map(c => ContactFactory.restoreContact(c)),
+        async queryFn() {
+            const data = get();
+            if (data === null) {
+                return null;
+            }
+
+            return data.map(c => Contact.restoreContact(c));
+        },
         staleTime: Infinity
     });
 }
 
 export function useContacts(): Contact[] {
-    return useContactsQuery().data;
+    return useContactsQuery().data ?? [];
 }
 
 function useSetContacts() {
@@ -41,7 +47,8 @@ function useSetContacts() {
 
     return useMutation<void, Error, Contact[]>({
         async mutationFn(contacts) {
-            await set(contacts.map(c => c.toJSON()));
+            const sorted = [...contacts].sort((a, b) => a.meta.name.localeCompare(b.meta.name));
+            await set(sorted.map(c => c.toJSON()));
             await client.invalidateQueries({ queryKey: accountQueryKey.contacts.toKey() });
         }
     });
@@ -54,12 +61,11 @@ export function useCreateContact() {
     return useMutation<
         Contact,
         Error,
-        { name: string; address: string; blockchain: BLOCKCHAIN_NAME }
+        { name: string; addresses: { blockchain: BLOCKCHAIN_NAME; address: string }[] }
     >({
-        async mutationFn({ name, address, blockchain }) {
-            const contact = ContactFactory.createContact({
-                blockchain,
-                address,
+        async mutationFn({ name, addresses }) {
+            const contact = new Contact({
+                addresses,
                 meta: { name, color: pickRandomContactColor() }
             });
 
@@ -80,20 +86,17 @@ export function useEditContact() {
         {
             contact: IContact;
             meta?: Partial<ContactMeta>;
-            address?: string;
-            blockchain?: BLOCKCHAIN_NAME;
+            addresses?: { blockchain: BLOCKCHAIN_NAME; address: string }[];
         }
     >({
-        async mutationFn({ contact: { id }, meta, address, blockchain }) {
+        async mutationFn({ contact: { id }, meta, addresses }) {
             const target = contacts.find(c => c.id.isEq(id));
             if (!target) {
                 throw new Error(`Contact not found: ${id.toString()}`);
             }
 
             if (meta) target.updateMeta(meta);
-            if (address !== undefined && blockchain !== undefined) {
-                target.updateAddress(blockchain, address);
-            }
+            if (addresses) target.setAddresses(addresses);
 
             await setContacts(contacts);
 
@@ -122,5 +125,5 @@ export function findContactMetaByAddress(
     contacts: Contact[],
     address: string
 ): ContactMeta | undefined {
-    return contacts.find(c => c.address === address)?.meta;
+    return contacts.find(c => c.addresses.some(a => a.address === address))?.meta;
 }
