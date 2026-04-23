@@ -1,32 +1,39 @@
 import { useCallback, useState } from 'react';
 
-import { SendSuggestion } from '../types';
+import { SendSuggestions } from '../types';
 
 export interface SuggestionDraftState {
     selectedId?: string;
-    suggestionIds?: string[];
+    suggestionPortfoliosIds?: string[];
+    suggestionContactsIds?: string[];
 }
 
 export function useSuggestionDraft(initial?: SuggestionDraftState) {
     const [selectedId, setSelectedId] = useState<string | undefined>(initial?.selectedId);
-    const [suggestionIds, setSuggestionIds] = useState<string[] | undefined>(
-        initial?.suggestionIds
+    const [suggestionPortfoliosIds, setSuggestionPortfoliosIds] = useState<string[] | undefined>(
+        initial?.suggestionPortfoliosIds
+    );
+    const [suggestionContactsIds, setSuggestionContactsIds] = useState<string[] | undefined>(
+        initial?.suggestionContactsIds
     );
 
-    const select = useCallback((id: string, visibleSuggestions: SendSuggestion[]) => {
+    const select = useCallback((id: string, visibleSuggestions: SendSuggestions) => {
         setSelectedId(id);
-        setSuggestionIds(visibleSuggestions.map(s => s.id));
+        setSuggestionPortfoliosIds(visibleSuggestions.portfolios.map(s => s.id));
+        setSuggestionContactsIds(visibleSuggestions.contacts.map(s => s.id));
     }, []);
 
     const clear = useCallback(() => {
         setSelectedId(undefined);
-        setSuggestionIds(undefined);
+        setSuggestionPortfoliosIds(undefined);
+        setSuggestionContactsIds(undefined);
     }, []);
 
     return {
         state: {
             selectedId,
-            suggestionIds
+            suggestionPortfoliosIds,
+            suggestionContactsIds
         },
         actions: {
             selectedId,

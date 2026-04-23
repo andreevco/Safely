@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { TextInput, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
-import { SendSuggestion } from '@safely/ux';
+import { type SendSuggestions } from '@safely/ux';
 
 import { AddressInput, SuggestionsList } from '../components';
 import { useSuggestionSelection } from '../components/SuggestionsList/useSuggestionSelection';
@@ -13,10 +13,10 @@ interface RecipientStepProps {
     error: string | undefined;
     onChangeText: (value: string, label?: string) => void;
     inputRef?: Ref<TextInput>;
-    suggestions: SendSuggestion[];
-    restoredSuggestions?: SendSuggestion[];
+    suggestions: SendSuggestions;
+    restoredSuggestions?: SendSuggestions;
     selectedId?: string;
-    onSelectSuggestion: (id: string, visibleSuggestions: SendSuggestion[]) => void;
+    onSelectSuggestion: (id: string, visibleSuggestions: SendSuggestions) => void;
     onClearSuggestionSelection: () => void;
     onSubmitEditing?: () => void;
 }
@@ -46,8 +46,12 @@ export const RecipientStep = (props: RecipientStepProps) => {
         onClearSuggestionSelection
     });
 
-    const selectedMeta = useMemo(
-        () => displaySuggestions.find(s => s.id === selectedId)?.meta,
+    const selectedPortfolioMeta = useMemo(
+        () => displaySuggestions.portfolios.find(s => s.id === selectedId)?.meta,
+        [displaySuggestions, selectedId]
+    );
+    const selectedContactMeta = useMemo(
+        () => displaySuggestions.contacts.find(s => s.id === selectedId)?.meta,
         [displaySuggestions, selectedId]
     );
 
@@ -61,7 +65,8 @@ export const RecipientStep = (props: RecipientStepProps) => {
                 inputRef={inputRef}
                 label={t('send.recipient.label')}
                 placeholder={t('send.recipient.placeholder')}
-                selectedMeta={selectedMeta}
+                selectedPortfolioMeta={selectedPortfolioMeta}
+                selectedContactMeta={selectedContactMeta}
             />
             <KeyboardAwareScrollView
                 style={{ flex: 1 }}
