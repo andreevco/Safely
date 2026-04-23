@@ -1,4 +1,5 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 
 import {
     allowedContactMetaColors,
@@ -18,11 +19,11 @@ function pickRandomContactColor(): string {
     return allowedContactMetaColors[Math.floor(Math.random() * allowedContactMetaColors.length)];
 }
 
-export function useContactsQuery() {
+function useContactsQuery() {
     const accountQueryKey = useActiveAccountQueryKey();
     const { get } = useActiveAccountSyncedStorage('contacts');
 
-    return useQuery({
+    return useSuspenseQuery({
         queryKey: accountQueryKey.contacts.toKey(),
         async queryFn() {
             const data = get();
@@ -36,8 +37,13 @@ export function useContactsQuery() {
     });
 }
 
-export function useContacts(): Contact[] {
-    return useContactsQuery().data ?? [];
+export function useContacts() {
+    const contacts = useContactsQuery().data;
+    if (!contacts) {
+        throw new Error('Unexpected contacts query');
+    }
+
+    return contacts;
 }
 
 function useSetContacts() {
