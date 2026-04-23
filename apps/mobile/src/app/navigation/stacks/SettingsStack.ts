@@ -1,5 +1,8 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
+import { DevToolsLogsScreen } from '@mobile/screens/DevToolsLogsScreen';
+import { DevToolsScreen } from '@mobile/screens/DevToolsScreen';
+import { DevToolsXpubScreen } from '@mobile/screens/DevToolsXpubScreen';
 import { LanguageScreen } from '@mobile/screens/LanguageScreen';
 import { NotificationsScreen } from '@mobile/screens/NotificationsScreen';
 import { SecurityScreen } from '@mobile/screens/SecurityScreen';
@@ -14,7 +17,10 @@ export const SettingsStack = createNativeStackNavigator({
         NotificationsModal: NotificationsScreen,
         SecurityModal: SecurityScreen,
         ProtectAccountModal: ProtectAccountModal,
-        AccountProtectedModal: AccountProtectedModal
+        AccountProtectedModal: AccountProtectedModal,
+        DevToolsModal: DevToolsScreen,
+        DevToolsXpubModal: DevToolsXpubScreen,
+        DevToolsLogsModal: DevToolsLogsScreen
     },
     screenOptions: {
         headerShown: false
