@@ -28,7 +28,7 @@ function useContactsQuery() {
         async queryFn() {
             const data = get();
             if (data === null) {
-                return null;
+                return [];
             }
 
             return data.map(c => Contact.restoreContact(c));
@@ -38,12 +38,7 @@ function useContactsQuery() {
 }
 
 export function useContacts() {
-    const contacts = useContactsQuery().data;
-    if (!contacts) {
-        throw new Error('Unexpected contacts query');
-    }
-
-    return contacts;
+    return useContactsQuery().data;
 }
 
 function useSetContacts() {
