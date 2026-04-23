@@ -1,8 +1,10 @@
+import { useNavigation } from '@react-navigation/native';
+import { useCallback } from 'react';
 import { Pressable } from 'react-native';
 
 import { useAppContext, useHasPortfolio } from '@safely/ux';
 
-import { shareLogs } from '@mobile/shared/logger';
+import { SettingsStackNavigationProp } from '@mobile/app/navigation/types';
 import { List, Screen, Text } from '@mobile/shared/ui';
 
 import { AccountSection } from '../AccountSection';
@@ -15,6 +17,11 @@ import { styles } from './SettingsContent.styles';
 export const SettingsContent = () => {
     const { version } = useAppContext();
     const hasPortfolio = useHasPortfolio();
+    const navigation = useNavigation<SettingsStackNavigationProp>();
+
+    const openDevTools = useCallback(() => {
+        navigation.navigate('DevToolsModal');
+    }, [navigation]);
 
     return (
         <Screen.Scrollable contentContainerStyle={styles.container}>
@@ -27,7 +34,7 @@ export const SettingsContent = () => {
                     <SignOutAccountButton />
                 </List.Group>
             </List>
-            <Pressable onLongPress={shareLogs}>
+            <Pressable onLongPress={openDevTools}>
                 <Text variant="bodyM" color="tertiary" textAlign="center" style={styles.version}>
                     Safely · {version}
                 </Text>
