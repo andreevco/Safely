@@ -5,7 +5,6 @@ import { DevToolsLogsScreen } from '@mobile/screens/DevToolsLogsScreen';
 import { DevToolsScreen } from '@mobile/screens/DevToolsScreen';
 import { DevToolsXpubScreen } from '@mobile/screens/DevToolsXpubScreen';
 import { LanguageScreen } from '@mobile/screens/LanguageScreen';
-import { LogSandboxScreen } from '@mobile/screens/LogSandboxScreen';
 import { NewContactModal } from '@mobile/screens/NewContactModal';
 import { ConfirmDeleteContactSheet } from '@mobile/screens/NewContactModal/screens/ConfirmDeleteContactSheet';
 import { NotificationsScreen } from '@mobile/screens/NotificationsScreen';
@@ -24,7 +23,6 @@ export const SettingsStack = createNativeStackNavigator({
                 SecurityModal: SecurityScreen,
                 ProtectAccountModal: ProtectAccountModal,
                 AccountProtectedModal: AccountProtectedModal,
-                LogSandboxModal: LogSandboxScreen,
                 AddressBookModal: AddressBookModal,
                 NewContactModal: NewContactModal,
                 DevToolsModal: DevToolsScreen,
