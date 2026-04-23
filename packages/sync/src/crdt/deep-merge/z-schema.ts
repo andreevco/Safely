@@ -52,7 +52,7 @@ export function resolveSchemaForValue(schema: z.ZodTypeAny, value: unknown): z.Z
         }
     }
 
-    return unwrapped;
+    throw new Error('Unable to resolve schema');
 }
 
 export function getObjectFieldSchema(schema: z.ZodTypeAny, key: string): z.ZodTypeAny {

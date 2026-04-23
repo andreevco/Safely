@@ -1,12 +1,28 @@
 import { z } from 'zod';
 
 import { zArrayWithKey, ISyncAccount, SyncAccountFactory } from '../../src';
+import { defineStorageVersion, defineVersionChain } from '../../src/crdt/version';
 import { Logger } from '../../src/logger/logger';
 import { InMemStorage } from '../impl/storage';
 
 export const Schema = {
     wallets: zArrayWithKey(z.string(), v => v)
-};
+} as const;
+
+export const Version1 = defineStorageVersion<{}, typeof Schema>({
+    version: 1,
+    schema: Schema,
+    migrate: () => {
+        return {
+            wallets: []
+        };
+    },
+    reverseMigrate: () => {
+        return {};
+    }
+});
+
+export const Structure = defineVersionChain(Version1);
 
 let accountCounter = 0;
 
@@ -19,7 +35,7 @@ export function makeFactory() {
     return new SyncAccountFactory({
         storage,
         encryptedStorage,
-        structure: Schema,
+        structure: Structure,
         apiConfiguration,
         logger: new Logger().child(`${accountCounter++}`)
     });

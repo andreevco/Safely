@@ -8,17 +8,20 @@ import { yValueToJs } from '../src/crdt/deep-merge/y-value-to-js';
 import { chainToRuntimeArray, defineStorageVersion, defineVersionChain } from '../src/crdt/version';
 import { YCRDT } from '../src/crdt/y-crdt';
 
+// eslint-disable-next-line unused-imports/no-unused-vars
 const schemaV1 = {
     name: z.string(),
     age: z.number()
 };
 
+// eslint-disable-next-line unused-imports/no-unused-vars
 const schemaV2 = {
     fullName: z.string(),
     age: z.number(),
     tags: zArrayWithKey(z.string(), value => value)
 };
 
+// eslint-disable-next-line unused-imports/no-unused-vars
 const schemaV3 = {
     profile: z.object({
         displayName: z.string(),
@@ -28,6 +31,7 @@ const schemaV3 = {
     revision: z.number()
 };
 
+// eslint-disable-next-line unused-imports/no-unused-vars
 const schemaV4 = {
     profile: z.object({
         displayName: z.string(),
@@ -125,11 +129,15 @@ const versionsV1V2V3V4 = chainToRuntimeArray(defineVersionChain(v1, v2, v3, v4))
 
 describe('crdt versions migrations', () => {
     it('migrates forward from v1 to v4 on startup', () => {
-        const legacy = YCRDT.create(new Y.Doc(), versionsV1);
+        const legacy = YCRDT.create(new Y.Doc(), versionsV1, 'device-1');
         legacy.set('name', 'Alice');
         legacy.set('age', 31);
 
-        const latest = YCRDT.create(fromSnapshot(legacy.encodeAsSnapshot()), versionsV1V2V3V4);
+        const latest = YCRDT.create(
+            fromSnapshot(legacy.encodeAsSnapshot()),
+            versionsV1V2V3V4,
+            'device-2'
+        );
 
         expect(latest.get('profile')).toEqual({ displayName: 'Alice', age: 31 });
         expect(latest.get('tags')).toEqual([]);
@@ -138,8 +146,8 @@ describe('crdt versions migrations', () => {
     });
 
     it('migrates update forward when remote device is on older version', () => {
-        const oldDevice = YCRDT.create(new Y.Doc(), versionsV1);
-        const latestDevice = YCRDT.create(new Y.Doc(), versionsV1V2V3V4);
+        const oldDevice = YCRDT.create(new Y.Doc(), versionsV1, 'device-1');
+        const latestDevice = YCRDT.create(new Y.Doc(), versionsV1V2V3V4, 'device-2');
 
         oldDevice.set('name', 'Bob');
         oldDevice.set('age', 44);
@@ -154,8 +162,8 @@ describe('crdt versions migrations', () => {
 
     it('migrates from v3 to v4 on different devices and merges', () => {
         // Create two devices on v3 and SYNC them
-        const v3Device_1 = YCRDT.create(new Y.Doc(), versionsV1V2V3);
-        const v3Device_2 = YCRDT.create(new Y.Doc(), versionsV1V2V3);
+        const v3Device_1 = YCRDT.create(new Y.Doc(), versionsV1V2V3, 'device-1');
+        const v3Device_2 = YCRDT.create(new Y.Doc(), versionsV1V2V3, 'device-2');
         v3Device_2.applyUpdate(v3Device_1.encodeAsSnapshot(), 'remote', 3);
         v3Device_1.applyUpdate(v3Device_2.encodeAsSnapshot(), 'remote', 3);
 
@@ -167,11 +175,13 @@ describe('crdt versions migrations', () => {
         // Migrate both to v4 and DO NOT SYNC yet
         const latestDevice_1 = YCRDT.create(
             fromSnapshot(v3Device_1.encodeAsSnapshot()),
-            versionsV1V2V3V4
+            versionsV1V2V3V4,
+            'device-1'
         );
         const latestDevice_2 = YCRDT.create(
             fromSnapshot(v3Device_2.encodeAsSnapshot()),
-            versionsV1V2V3V4
+            versionsV1V2V3V4,
+            'device-2'
         );
 
         // Update on device 1, then sync on device 2
@@ -181,8 +191,8 @@ describe('crdt versions migrations', () => {
     });
 
     it('reverse-migrates data so a v1 device can consume v4 updates', () => {
-        const oldDevice = YCRDT.create(new Y.Doc(), versionsV1);
-        const latestDevice = YCRDT.create(new Y.Doc(), versionsV1V2V3V4);
+        const oldDevice = YCRDT.create(new Y.Doc(), versionsV1, 'device-1');
+        const latestDevice = YCRDT.create(new Y.Doc(), versionsV1V2V3V4, 'device-2');
 
         latestDevice.set('profile', { displayName: 'Charlie', age: 28 });
         latestDevice.set('tags', ['x', 'y']);
@@ -196,15 +206,15 @@ describe('crdt versions migrations', () => {
     });
 
     it('keeps intermediate maps in sync on reverse migration', () => {
-        const latestDevice = YCRDT.create(new Y.Doc(), versionsV1V2V3V4);
+        const latestDevice = YCRDT.create(new Y.Doc(), versionsV1V2V3V4, 'device-1');
 
-        const v2Device = YCRDT.create(new Y.Doc(), versionsV1V2);
+        const v2Device = YCRDT.create(new Y.Doc(), versionsV1V2, 'device-2');
         v2Device.set('fullName', 'Legacy v2');
         v2Device.set('age', 50);
         v2Device.set('tags', ['a']);
         latestDevice.applyUpdate(v2Device.encodeAsSnapshot(), 'remote-v2', 2);
 
-        const v3Device = YCRDT.create(new Y.Doc(), versionsV1V2V3);
+        const v3Device = YCRDT.create(new Y.Doc(), versionsV1V2V3, 'device-3');
         v3Device.set('profile', { displayName: 'Legacy v3', age: 51 });
         v3Device.set('tags', ['b']);
         v3Device.set('revision', 3);
@@ -232,8 +242,8 @@ describe('crdt versions migrations', () => {
     });
 
     it('supports bidirectional sync between devices on v1 and v4', () => {
-        const oldDevice = YCRDT.create(new Y.Doc(), versionsV1);
-        const latestDevice = YCRDT.create(new Y.Doc(), versionsV1V2V3V4);
+        const oldDevice = YCRDT.create(new Y.Doc(), versionsV1, 'device-1');
+        const latestDevice = YCRDT.create(new Y.Doc(), versionsV1V2V3V4, 'device-2');
 
         oldDevice.set('name', 'First');
         oldDevice.set('age', 18);
@@ -259,8 +269,8 @@ describe('crdt versions migrations', () => {
     });
 
     it('throws for unknown remoteStorageVersion and does not mutate document', () => {
-        const oldDevice = YCRDT.create(new Y.Doc(), versionsV1);
-        const latestDevice = YCRDT.create(new Y.Doc(), versionsV1V2V3V4);
+        const oldDevice = YCRDT.create(new Y.Doc(), versionsV1, 'device-1');
+        const latestDevice = YCRDT.create(new Y.Doc(), versionsV1V2V3V4, 'device-2');
 
         oldDevice.set('name', 'David');
         oldDevice.set('age', 60);

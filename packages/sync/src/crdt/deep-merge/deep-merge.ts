@@ -19,7 +19,8 @@ import {
 function syncObjectIntoYMap(
     target: Y.Map<unknown>,
     next: Record<string, unknown>,
-    schema: z.ZodTypeAny
+    schema: z.ZodTypeAny,
+    myId: DeviceId
 ): void {
     const existingKeys = Array.from(target.keys());
 
@@ -31,7 +32,7 @@ function syncObjectIntoYMap(
 
     for (const [key, nextValue] of Object.entries(next)) {
         const childSchema = getObjectFieldSchema(schema, key);
-        deepMerge(target, key, nextValue, childSchema);
+        deepMerge(target, key, nextValue, childSchema, myId);
     }
 }
 
@@ -39,7 +40,8 @@ function syncArrayIntoYArrayById(
     target: Y.Map<unknown>,
     next: unknown[],
     meta: ArrayMergeMeta,
-    itemSchema: z.ZodTypeAny
+    itemSchema: z.ZodTypeAny,
+    myId: DeviceId
 ): void {
     const existing = [];
 
@@ -56,7 +58,7 @@ function syncArrayIntoYArrayById(
             target.set(id, item);
 
             item.set('index', i);
-            deepMerge(item, 'value', nextItem, itemSchema);
+            deepMerge(item, 'value', nextItem, itemSchema, myId);
             continue;
         }
 
@@ -70,7 +72,7 @@ function syncArrayIntoYArrayById(
             if (index !== i) {
                 currentItem.set('index', i);
             }
-            deepMerge(currentItem, 'value', nextItem, itemSchema);
+            deepMerge(currentItem, 'value', nextItem, itemSchema, myId);
         }
     }
 
@@ -82,12 +84,17 @@ function syncArrayIntoYArrayById(
     }
 }
 
-function syncArrayIntoYMap(target: Y.Map<unknown>, next: unknown[], schema: z.ZodTypeAny): void {
+function syncArrayIntoYMap(
+    target: Y.Map<unknown>,
+    next: unknown[],
+    schema: z.ZodTypeAny,
+    myId: DeviceId
+): void {
     const meta = getArrayMeta(schema);
     const itemSchema = getArrayItemSchema(schema);
 
     if (meta.kind === 'by-id') {
-        syncArrayIntoYArrayById(target, next, meta, itemSchema);
+        syncArrayIntoYArrayById(target, next, meta, itemSchema, myId);
         return;
     } else {
         throw new Error('Unable to get array item schema');
@@ -100,28 +107,29 @@ function updateValue(
     sharedType: unknown,
     value: unknown,
     schema: z.ZodTypeAny,
-    f: () => void
+    f: () => void,
+    myId: DeviceId
 ): void {
     if (isPlainObject(value)) {
         if (sharedType instanceof Y.Map) {
-            syncObjectIntoYMap(sharedType, value, schema);
+            syncObjectIntoYMap(sharedType, value, schema, myId);
             return;
         } else if (sharedType === undefined) {
             const newMap = new Y.Map();
             parent.set(key, newMap);
-            syncObjectIntoYMap(newMap, value, schema);
+            syncObjectIntoYMap(newMap, value, schema, myId);
             return;
         } else {
             throw new Error('Expected Map, found ' + typeof sharedType);
         }
     } else if (isArray(value)) {
         if (sharedType instanceof Y.Map) {
-            syncArrayIntoYMap(sharedType, value, schema);
+            syncArrayIntoYMap(sharedType, value, schema, myId);
             return;
         } else if (sharedType === undefined) {
             const newMap = new Y.Map();
             parent.set(key, newMap);
-            syncArrayIntoYMap(newMap, value, schema);
+            syncArrayIntoYMap(newMap, value, schema, myId);
             return;
         } else {
             throw new Error('Expected Map, found ' + typeof sharedType);
@@ -137,14 +145,15 @@ function updateValue(
  * Semantics:
  * - plain object => store as Y.Map and merge with existing
  * - arrays => store as Y.Map using id from meta as key and then merge
- * - primitives => set only if values changed
+ * - primitives => set using special rules
  * - undefined => delete
  */
 export function deepMerge(
     parent: Y.Map<unknown>,
     key: string,
     nextValue: unknown,
-    schema: z.ZodTypeAny
+    schema: z.ZodTypeAny,
+    myId: DeviceId
 ): void {
     if (nextValue === undefined) {
         if (parent.has(key)) {
@@ -156,11 +165,66 @@ export function deepMerge(
     const resolved = resolveSchemaForValue(schema, nextValue);
     const current = parent.get(key);
 
-    updateValue(parent, key, current, nextValue, resolved, () => {
-        const currentJs = yValueToJs(current, resolved);
+    updateValue(
+        parent,
+        key,
+        current,
+        nextValue,
+        resolved,
+        () => {
+            if (current === undefined) {
+                parent.set(
+                    key,
+                    localSet(
+                        {
+                            value: nextValue,
+                            vv: {},
+                            lastWriter: myId,
+                            lastSeq: 1
+                        },
+                        myId,
+                        cloneJson(nextValue)
+                    )
+                );
+                return;
+            }
 
-        if (currentJs !== nextValue) {
-            parent.set(key, cloneJson(nextValue));
-        }
-    });
+            const data = LeafSchema.parse(current);
+            const currentJs = yValueToJs(data, resolved);
+
+            if (currentJs !== nextValue) {
+                parent.set(key, localSet(data, myId, cloneJson(nextValue)));
+            }
+        },
+        myId
+    );
 }
+
+function localSet<T>(leaf: Leaf<T>, myId: DeviceId, newValue: T): Leaf<T> {
+    const nextSeq = (leaf.vv[myId] ?? 0) + 1;
+
+    return {
+        value: newValue,
+        vv: {
+            ...leaf.vv,
+            [myId]: nextSeq
+        },
+        lastWriter: myId,
+        lastSeq: nextSeq
+    };
+}
+
+type DeviceId = string;
+export type Leaf<T> = {
+    value: T;
+    vv: Record<DeviceId, number>;
+    lastWriter: DeviceId;
+    lastSeq: number;
+};
+
+export const LeafSchema = z.object({
+    value: z.any(),
+    vv: z.record(z.string(), z.number()),
+    lastWriter: z.string(),
+    lastSeq: z.number()
+});

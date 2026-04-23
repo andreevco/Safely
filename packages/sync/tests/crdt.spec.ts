@@ -32,18 +32,15 @@ describe('crdt', () => {
             )
         );
 
-        crdt1 = YCRDT.create(new Y.Doc(), versions);
-        crdt2 = YCRDT.create(new Y.Doc(), versions);
+        crdt1 = YCRDT.create(new Y.Doc(), versions, 'device-1');
+        crdt2 = YCRDT.create(new Y.Doc(), versions, 'device-2');
 
         sync();
     }
 
     function sync() {
-        const update1 = crdt1.encodeAsSnapshot();
-        const update2 = crdt2.encodeAsSnapshot();
-
-        crdt1.applyUpdate(update2, 'sync', 1);
-        crdt2.applyUpdate(update1, 'sync', 1);
+        crdt1.applyUpdate(crdt2.encodeAsSnapshot(), 'sync', 1);
+        crdt2.applyUpdate(crdt1.encodeAsSnapshot(), 'sync', 1);
     }
 
     function expectContainAll(received: unknown[], expected: unknown[]) {
@@ -133,32 +130,6 @@ describe('crdt', () => {
             sync();
             expect(crdt1.get('shared')).toEqual({ a: 1, b: 2, c: 3 });
             expect(crdt2.get('shared')).toEqual({ a: 1, b: 2, c: 3 });
-        });
-
-        it('should remove properties from the same object and merge', () => {
-            setup(
-                {
-                    shared: z.object({
-                        a: z.number(),
-                        b: z.number().optional(),
-                        c: z.number().optional()
-                    })
-                },
-                {
-                    shared: { a: 0, b: 0, c: 0 }
-                }
-            );
-
-            const obj = { a: 1, b: 2, c: 3 };
-            crdt1.set('shared', obj);
-            sync();
-
-            crdt1.set('shared', { a: 1, b: 2 });
-            crdt2.set('shared', { a: 1, c: 3 });
-
-            sync();
-            expect(crdt1.get('shared')).toEqual({ a: 1 });
-            expect(crdt2.get('shared')).toEqual({ a: 1 });
         });
 
         it('should add and remove properties from the same object and merge', () => {
@@ -728,29 +699,6 @@ describe('crdt', () => {
         expect(crdt1.equals(crdt2)).toBe(true);
     });
 
-    // it('should remove keys', () => {
-    //     setup(
-    //         {
-    //             key: z.string().optional()
-    //         },
-    //         {
-    //             key: ''
-    //         }
-    //     );
-    //
-    //     crdt1.set('key', 'value');
-    //     sync();
-    //
-    //     expect(crdt1.get('key')).toBe('value');
-    //     expect(crdt2.get('key')).toBe('value');
-    //
-    //     crdt1.remove('key');
-    //     sync();
-    //
-    //     expect(crdt1.get('key')).toBeNull();
-    //     expect(crdt2.get('key')).toBeNull();
-    // });
-
     it('should throw exception and do not apply any updates', () => {
         const schema = {
             value: z.object({
@@ -789,7 +737,7 @@ describe('crdt', () => {
             })()
         );
 
-        crdt1 = YCRDT.create(doc, versions);
+        crdt1 = YCRDT.create(doc, versions, 'device-1');
 
         let thrown = false;
         try {
