@@ -85,8 +85,7 @@ export function validateAmount(
     value: string,
     inputType: AmountInputType,
     asset: RatedCryptoAssetAmount | undefined,
-    formatter: NumberFormatter,
-    maxSendValue: CryptoAssetAmount<CryptoAsset> | undefined
+    formatter: NumberFormatter
 ): AmountValidationResult {
     if (value === '') {
         return {
@@ -119,13 +118,6 @@ export function validateAmount(
             return {
                 ...result,
                 error: SendFormError.INVALID_AMOUNT
-            };
-        }
-
-        if (maxSendValue && result.parsed.cryptoAssetAmount.gt(maxSendValue)) {
-            return {
-                ...result,
-                error: SendFormError.INSUFFICIENT_BALANCE
             };
         }
 

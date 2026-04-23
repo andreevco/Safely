@@ -20,21 +20,37 @@ export const ConfirmationFooter = (props: Props) => {
     const { onSend, onGoBack, state, isEstimating } = props;
     const { t } = useTranslation();
 
-    const parseError = useParseError(
+    const parseSendError = useParseError(
         {
             BtcSendDustError: 'confirmation.sendError.btc.dust'
         },
         { fallback: 'confirmation.sendError.default' }
     );
 
-    const errorMessage =
-        state.type === 'error'
-            ? parseError(state.error)
-            : state.type === 'estimateError'
-              ? state.error instanceof Error
-                  ? state.error.message
-                  : t('confirmation.sendError.default')
-              : null;
+    const parseEstimateError = useParseError(
+        {
+            OutputsAreSpendingMoreThanInputsError:
+                'confirmation.estimateError.btc.outputsAreSpendingMoreThanInputs'
+        },
+        { fallback: 'confirmation.estimateError.default' }
+    );
+
+    const errorInfo = (() => {
+        switch (state.type) {
+            case 'error':
+                return {
+                    title: t('confirmation.sendError.title'),
+                    message: parseSendError(state.error)
+                };
+            case 'estimateError':
+                return {
+                    title: t('confirmation.estimateError.title'),
+                    message: parseEstimateError(state.error)
+                };
+            default:
+                return null;
+        }
+    })();
 
     return (
         <View style={styles.container}>
@@ -64,14 +80,14 @@ export const ConfirmationFooter = (props: Props) => {
                     </Button>
                 </Animated.View>
             )}
-            {errorMessage !== null && (
+            {errorInfo && (
                 <Animated.View entering={FadeIn.duration(150)} exiting={FadeOut.duration(150)}>
                     <View style={styles.errorTextBlock}>
                         <Text variant="labelL" color="accentRed" style={styles.errorText}>
-                            {t('confirmation.sendError.title')}
+                            {errorInfo.title}
                         </Text>
                         <Text variant="bodyM" color="accentRed" style={styles.errorText}>
-                            {errorMessage}
+                            {errorInfo.message}
                         </Text>
                     </View>
                 </Animated.View>

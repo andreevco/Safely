@@ -1,6 +1,6 @@
 import { StaticScreenProps, useNavigation } from '@react-navigation/native';
 import { notificationAsync, NotificationFeedbackType } from 'expo-haptics';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
@@ -60,11 +60,13 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
         }
     }, [send, onSuccess]);
 
-    useEffect(() => {
+    const displayState = useMemo(() => {
         if (txTemplateError) {
-            setConfirmationState({ type: 'estimateError', error: txTemplateError });
+            return { type: 'estimateError' as const, error: txTemplateError };
         }
-    }, [txTemplateError]);
+
+        return confirmationState;
+    }, [confirmationState, txTemplateError]);
 
     const onGoBack = useCallback(() => {
         navigation.getParent()?.goBack();
@@ -155,7 +157,7 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
                 <ConfirmationFooter
                     onSend={onSend}
                     onGoBack={onGoBack}
-                    state={confirmationState}
+                    state={displayState}
                     isEstimating={!txTemplate}
                 />
             </View>

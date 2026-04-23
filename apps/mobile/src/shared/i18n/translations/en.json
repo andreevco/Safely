@@ -264,6 +264,13 @@
             "btc": {
                 "dust": "Transaction value is too small."
             }
+        },
+        "estimateError": {
+            "title": "Can't estimate transaction",
+            "default": "Check details and try again",
+            "btc": {
+                "outputsAreSpendingMoreThanInputs": "Insufficient balance for transfer amount and fee"
+            }
         }
     },
     "sendForm": {
