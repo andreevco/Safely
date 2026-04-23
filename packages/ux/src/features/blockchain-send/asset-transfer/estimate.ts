@@ -9,7 +9,8 @@ import {
     BtcFeeType,
     RatedCryptoAssetAmount,
     TransactionTemplate,
-    BtcApiUtxo
+    BtcApiUtxo,
+    OutputsAreSpendingMoreThanInputsError
 } from '@safely/core';
 
 import { useActiveBtcWalletUtxoForEstimation, useAssets } from '../../../entities';
@@ -56,22 +57,32 @@ export function useEstimateAssetTransfer(form: SendFormResult, options?: { enabl
                           const recipientAddress = form.recipient.address;
                           const feeType = BtcFeeType.FAST;
 
-                          return btcEstimator.estimate(
-                              form.isMax
-                                  ? {
-                                        type: 'max',
-                                        recipientAddress,
-                                        estimatedAmount: form.amount.cryptoAssetAmount,
-                                        feeType
-                                    }
-                                  : {
-                                        type: 'not-max',
-                                        recipientAddress,
-                                        feeType,
-                                        amount: form.amount.cryptoAssetAmount
-                                    },
-                              utxos
-                          );
+                          try {
+                              return await btcEstimator.estimate(
+                                  form.isMax
+                                      ? {
+                                            type: 'max',
+                                            recipientAddress,
+                                            estimatedAmount: form.amount.cryptoAssetAmount,
+                                            feeType
+                                        }
+                                      : {
+                                            type: 'not-max',
+                                            recipientAddress,
+                                            feeType,
+                                            amount: form.amount.cryptoAssetAmount
+                                        },
+                                  utxos
+                              );
+                          } catch (error) {
+                              if (
+                                  error instanceof Error &&
+                                  error.message.includes('Outputs are spending more than Inputs')
+                              ) {
+                                  throw new OutputsAreSpendingMoreThanInputsError();
+                              }
+                              throw error;
+                          }
                       }
 
                       assertUnreachable(form.blockchain);

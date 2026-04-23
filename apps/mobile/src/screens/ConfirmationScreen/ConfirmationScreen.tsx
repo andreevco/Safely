@@ -37,9 +37,12 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
 
     const [confirmationState, setConfirmationState] = useState<ConfirmationState>({ type: 'idle' });
 
-    const { data: txTemplate } = useEstimateAssetTransfer(confirmationResult, {
-        enabled: confirmationState.type !== 'success'
-    });
+    const { data: txTemplate, error: txTemplateError } = useEstimateAssetTransfer(
+        confirmationResult,
+        {
+            enabled: confirmationState.type !== 'success'
+        }
+    );
     const { mutateAsync: send, data: sendResult } = useSendAssetTransfer(txTemplate);
     const formatter = useNumberFormatter();
 
@@ -57,6 +60,14 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
         }
     }, [send, onSuccess]);
 
+    const displayState = useMemo(() => {
+        if (txTemplateError) {
+            return { type: 'estimateError' as const, error: txTemplateError };
+        }
+
+        return confirmationState;
+    }, [confirmationState, txTemplateError]);
+
     const onGoBack = useCallback(() => {
         navigation.getParent()?.goBack();
     }, [navigation]);
@@ -68,6 +79,7 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
             case 'idle':
             case 'sending':
             case 'error':
+            case 'estimateError':
                 return (
                     <Animated.View
                         key={confirmationState.type}
@@ -145,7 +157,7 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
                 <ConfirmationFooter
                     onSend={onSend}
                     onGoBack={onGoBack}
-                    state={confirmationState}
+                    state={displayState}
                     isEstimating={!txTemplate}
                 />
             </View>
