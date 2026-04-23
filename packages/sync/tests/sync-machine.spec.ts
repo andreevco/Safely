@@ -20,7 +20,7 @@ describe('sync machine', () => {
     });
 
     it('sending update', async () => {
-        const ctx = await createMachineContext(server, getMasterKey(1));
+        const ctx = await createMachineContext(server, getMasterKey(1), undefined, 1, true);
 
         try {
             const initialSnapshots = server.snapshotCount;
@@ -38,8 +38,8 @@ describe('sync machine', () => {
     });
 
     it('receiving 1 update', async () => {
-        const ctx = await createMachineContext(server, getMasterKey(2));
-        const remote = await createMachineContext(server, getMasterKey(2));
+        const ctx = await createMachineContext(server, getMasterKey(2), undefined, 1, true);
+        const remote = await createMachineContext(server, getMasterKey(2), undefined, 1, true);
 
         try {
             await sendLocalUpdate(remote, server, DATA_KEY, 'remote-1');
@@ -53,8 +53,8 @@ describe('sync machine', () => {
     });
 
     it('receiving 2 updates', async () => {
-        const ctx = await createMachineContext(server, getMasterKey(3));
-        const remote = await createMachineContext(server, getMasterKey(3));
+        const ctx = await createMachineContext(server, getMasterKey(3), undefined, 1, true);
+        const remote = await createMachineContext(server, getMasterKey(3), undefined, 1, true);
 
         try {
             await sendLocalUpdate(remote, server, DATA_KEY, 'remote-1');
@@ -71,8 +71,8 @@ describe('sync machine', () => {
     });
 
     it('alternating send and receive updates', async () => {
-        const ctx = await createMachineContext(server, getMasterKey(4));
-        const remote = await createMachineContext(server, getMasterKey(4));
+        const ctx = await createMachineContext(server, getMasterKey(4), undefined, 1, true);
+        const remote = await createMachineContext(server, getMasterKey(4), undefined, 1, true);
 
         try {
             await sendLocalUpdate(ctx, server, DATA_KEY, 'local-1');
@@ -94,8 +94,8 @@ describe('sync machine', () => {
 
     it('syncs updates between two machines', async () => {
         const master = getMasterKey(5);
-        const first = await createMachineContext(server, master);
-        const second = await createMachineContext(server, master);
+        const first = await createMachineContext(server, master, undefined, 1, true);
+        const second = await createMachineContext(server, master, undefined, 1, true);
 
         try {
             await sendLocalUpdate(first, server, DATA_KEY, 'machine-1');
@@ -115,6 +115,5 @@ describe('sync machine', () => {
 });
 
 function getValue(container: MockSyncContainer, key: string): string | undefined {
-    const map = container.yManager.getDoc().getMap<string>('root');
-    return map.get(key) ?? undefined;
+    return container.yManager.get(key) as string;
 }

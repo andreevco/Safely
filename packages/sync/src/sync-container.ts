@@ -1,10 +1,9 @@
-import { ZodType } from 'zod';
-
 import { ApiSigner } from './api/api-signer';
 import { AccountsApi, Configuration, SnapshotsApi } from './api/generated';
 import { SnapshotsSse } from './api/snapshots-sse';
 import { VersionsRepository } from './crdt/repositories/versions';
 import { StorageVerifierService } from './crdt/storage-verifier-service';
+import { AnyStorageVersion } from './crdt/version';
 import { YCRDTRepository } from './crdt/y-crdt-repository';
 import { YManager } from './crdt/y-manager';
 import { EncryptedKeyRepository } from './crypto/encrypted-key-repository';
@@ -58,7 +57,7 @@ export type SyncContainer = {
 
 export async function createSyncContainer(opts: {
     accountId: string;
-    structure: Record<string, ZodType>;
+    versions: AnyStorageVersion[];
     storage: IStorage;
     encryptedStorage: IStorage;
     logger: Logger;
@@ -66,7 +65,6 @@ export async function createSyncContainer(opts: {
 }): Promise<SyncContainer> {
     const keyRepository = new EncryptedKeyRepository(opts.encryptedStorage);
     const syncStateRepository = new SyncStateRepository(opts.storage, opts.logger);
-    const crdtRepository = new YCRDTRepository(opts.storage, opts.structure);
     const deviceRepository = new DeviceRepository(opts.storage);
 
     const ikService = new IkService(keyRepository);
@@ -79,6 +77,11 @@ export async function createSyncContainer(opts: {
     const snapshotApi = new SnapshotsApi(apiSigner, opts.apiConfiguration);
     const snapshotSse = new SnapshotsSse(syncStateRepository, snapshotApi, apiSigner);
 
+    const crdtRepository = new YCRDTRepository(
+        opts.storage,
+        opts.versions,
+        (await ikService.getPub()).toString('hex')
+    );
     const yManager = await YManager.create(crdtRepository);
     const deviceManager = new DeviceManagementService(
         deviceRepository,

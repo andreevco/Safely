@@ -21,9 +21,9 @@ export class YManager {
     public async applyUpdate(
         update: Buffer,
         origin: string,
-        remoteStorageVersion: number
+        remoteDeviceId: string
     ): Promise<void> {
-        this.yDoc.applyUpdate(update, origin, remoteStorageVersion);
+        this.yDoc.applyUpdate(update, origin, remoteDeviceId);
         await this.yRepository.saveCRDT(this.yDoc);
     }
 
@@ -45,11 +45,8 @@ export class YManager {
     }
 
     public getVersionsMap(): Y.Map<string> {
-        const versions = this.yDoc.get('versions');
-        if (versions instanceof Y.Map) {
-            return versions as Y.Map<string>;
-        }
-        throw new StorageError(`Corrupted storage: "versions" is not in storage.`);
+        const versions = this.yDoc.systemGetMap('versions');
+        return versions as Y.Map<string>;
     }
 
     public async getDeviceLog(): Promise<DeviceOp[]> {
@@ -69,10 +66,11 @@ export class YManager {
     }
 
     public equalsToRemoteUpdate(snapshot: Buffer): boolean {
-        const remoteDoc = new YCRDT(new Y.Doc(), this.yDoc.schema);
-        remoteDoc.applyUpdate(snapshot, 'remote');
+        // YCRDT has its own applyUpdate mechanics so we cant reuse it and must work with raw Y.Doc
+        const remoteDoc = new Y.Doc();
+        Y.applyUpdateV2(remoteDoc, snapshot);
 
-        return this.yDoc.equals(remoteDoc);
+        return this.yDoc.equalsToYDoc(remoteDoc);
     }
 
     public encodeAsSnapshot(): Buffer {

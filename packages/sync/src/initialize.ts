@@ -3,8 +3,8 @@ import { ed25519 } from '@noble/curves/ed25519.js';
 import { hkdf } from '@noble/hashes/hkdf.js';
 import { sha256 } from '@noble/hashes/sha2.js';
 import * as Y from 'yjs';
-import { ZodType } from 'zod';
 
+import { AnyStorageVersion } from './crdt/version';
 import { YCRDT } from './crdt/y-crdt';
 import { YCRDTRepository } from './crdt/y-crdt-repository';
 import { EncryptedKeyRepository } from './crypto/encrypted-key-repository';
@@ -23,8 +23,12 @@ export async function generateAccountID(masterKey: Buffer): Promise<string> {
     return Buffer.from(accountID).slice(0, 16).toString('hex');
 }
 
-export async function initializeSyncState(repo: SyncStateRepository): Promise<void> {
+export async function initializeSyncState(
+    repo: SyncStateRepository,
+    firstTime: boolean
+): Promise<void> {
     await repo.saveState({
+        initialized: firstTime,
         snapshotProof: Buffer.from([])
     });
 }
@@ -56,18 +60,28 @@ export async function initializeKeys(
 
 export async function initializeCrdt(
     repo: YCRDTRepository,
-    schema: Record<string, ZodType>
+    versions: AnyStorageVersion[],
+    myDeviceId: string,
+    firstTime: boolean
 ): Promise<void> {
-    await repo.saveCRDT(new YCRDT(new Y.Doc(), schema));
+    const doc = new Y.Doc();
+    const crdt = YCRDT.create(doc, versions, myDeviceId);
+    if (firstTime) {
+        const system = doc.getMap('system');
+        system.set('devices', new Y.Array());
+        system.set('versions', new Y.Map());
+    }
+    await repo.saveCRDT(crdt);
 }
 
 export async function initializeSyncAccount(opts: {
     storage: IStorage;
     encryptedStorage: IStorage;
     secureEncryptedStorage: IStorage;
-    structure: Record<string, ZodType>;
+    versions: AnyStorageVersion[];
     masterKey: Buffer;
     logger: Logger;
+    firstTime: boolean;
     ik?: { secretKey: Buffer; publicKey: Buffer };
 }): Promise<void> {
     const encryptedKeyRepository = new EncryptedKeyRepository(opts.encryptedStorage);
@@ -75,7 +89,6 @@ export async function initializeSyncAccount(opts: {
         opts.secureEncryptedStorage
     );
     const syncStateRepository = new SyncStateRepository(opts.storage, opts.logger);
-    const ycrdtRepository = new YCRDTRepository(opts.storage, opts.structure);
 
     await initializeKeys(
         encryptedKeyRepository,
@@ -83,6 +96,10 @@ export async function initializeSyncAccount(opts: {
         opts.masterKey,
         opts.ik
     );
-    await initializeSyncState(syncStateRepository);
-    await initializeCrdt(ycrdtRepository, opts.structure);
+
+    const deviceId = (await encryptedKeyRepository.getIKPub()).toString('hex');
+    const ycrdtRepository = new YCRDTRepository(opts.storage, opts.versions, deviceId);
+
+    await initializeSyncState(syncStateRepository, opts.firstTime);
+    await initializeCrdt(ycrdtRepository, opts.versions, deviceId, opts.firstTime);
 }

@@ -6,20 +6,20 @@ import { ISyncAccountFactory } from './I-sync-account-factory';
 import { SyncAccountRepository } from './sync-account-repository';
 import { Configuration } from '../api/generated';
 import { SyncApiConfiguration } from '../api/sync-api-configuration';
-import { AnyStorageVersion, AssertVersionChain } from '../crdt/version';
+import { validateSyncDataScheme } from '../crdt/deep-merge/z-schema';
+import { AssertVersionChain, chainToRuntimeArray, LastNew } from '../crdt/version';
 import { ed25519_keygen } from '../crypto/ed25519';
 import { Logger, LogLevel } from '../logger/logger';
 import { OnboardingConnector } from '../onboarding/connector';
 import { accountsApiForOnboarding, NewDeviceOnboarding } from '../onboarding/new-device-onboarding';
 
-export class SyncAccountFactory<
-    const S extends readonly AnyStorageVersion[]
-> implements ISyncAccountFactory<S> {
+export class SyncAccountFactory<const S extends readonly unknown[]> implements ISyncAccountFactory<
+    LastNew<S>
+> {
     private readonly syncAccountIdRepository: SyncAccountRepository;
-    private readonly accountManager: AccountManager<S>;
+    private readonly accountManager: AccountManager<LastNew<S>>;
     private readonly apiConfiguration: Configuration;
     private readonly logger: Logger;
-    private readonly structure: S;
 
     constructor(opts: {
         storage: ITreeStorage;
@@ -28,7 +28,13 @@ export class SyncAccountFactory<
         apiConfiguration?: SyncApiConfiguration;
         logger?: Logger;
     }) {
-        //validateSyncDataScheme(opts.structure);
+        const versions = chainToRuntimeArray(opts.structure);
+
+        for (const item of versions) {
+            validateSyncDataScheme(item.schema);
+        }
+
+        const latestVersion = versions[versions.length - 1];
 
         this.syncAccountIdRepository = new SyncAccountRepository(opts.storage);
         this.apiConfiguration = new Configuration(opts.apiConfiguration);
@@ -44,7 +50,8 @@ export class SyncAccountFactory<
             opts.storage,
             opts.encryptedStorage,
             this.syncAccountIdRepository,
-            opts.structure,
+            versions,
+            latestVersion.schema,
             this.apiConfiguration,
             this.logger
         );
@@ -52,11 +59,12 @@ export class SyncAccountFactory<
             opts.storage,
             opts.encryptedStorage,
             this.syncAccountIdRepository,
-            opts.structure,
+            versions,
+            latestVersion.schema,
             this.apiConfiguration,
             createAccountService,
             this.logger
-        );
+        ) as AccountManager<LastNew<S>>; // TODO: remove cast
     }
 
     /**
@@ -66,7 +74,7 @@ export class SyncAccountFactory<
      */
     public async connectToExistingSyncAccount(
         secureEncryptedStorage: ITreeStorage
-    ): Promise<OnboardingConnector<S>> {
+    ): Promise<OnboardingConnector<LastNew<S>>> {
         const ikKeypair = ed25519_keygen();
         const onboarding = new NewDeviceOnboarding(
             ikKeypair,
@@ -90,14 +98,16 @@ export class SyncAccountFactory<
     /**
      * Creates a new offline sync account. The account will be stored locally and can be made online later.
      */
-    public async createSyncAccount(secureEncryptedStorage: ITreeStorage): Promise<ISyncAccount<S>> {
+    public async createSyncAccount(
+        secureEncryptedStorage: ITreeStorage
+    ): Promise<ISyncAccount<LastNew<S>>> {
         return await this.accountManager.createOfflineAccount(secureEncryptedStorage);
     }
 
     /**
      * Returns a list of all sync accounts available. This includes both online and offline accounts.
      */
-    public async getSyncAccounts(): Promise<ISyncAccount<S>[]> {
+    public async getSyncAccounts(): Promise<ISyncAccount<LastNew<S>>[]> {
         return await this.accountManager.getAccounts();
     }
 
@@ -105,7 +115,7 @@ export class SyncAccountFactory<
      * Returns the sync account with the specified account ID.
      * @param accountId
      */
-    public async getSyncAccount(accountId: string): Promise<ISyncAccount<S>> {
+    public async getSyncAccount(accountId: string): Promise<ISyncAccount<LastNew<S>>> {
         return await this.accountManager.getSyncAccount(accountId);
     }
 

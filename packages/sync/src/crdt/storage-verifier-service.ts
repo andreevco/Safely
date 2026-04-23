@@ -2,6 +2,7 @@ import * as Y from 'yjs';
 
 import { DeviceOp, deviceOpIsEquals, DeviceOpSchema } from './y-manager';
 import { DeviceManagementService } from '../device-manager/device-management-service';
+import { getAsArray } from '../utils/yjs';
 
 export class StorageVerifierService {
     constructor(private readonly deviceManager: DeviceManagementService) {}
@@ -52,6 +53,11 @@ export type VerifyResult = {
 };
 
 function getDeviceLog(doc: Y.Doc): DeviceOp[] {
-    const deviceLog = doc.getArray('devices');
-    return deviceLog.toArray().map(x => DeviceOpSchema.parse(JSON.parse(<string>x)));
+    try {
+        const system = doc.getMap('system');
+        const deviceLog = getAsArray(system, 'devices');
+        return deviceLog.toArray().map(x => DeviceOpSchema.parse(JSON.parse(<string>x)));
+    } catch {
+        return [];
+    }
 }

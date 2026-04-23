@@ -39,8 +39,8 @@ describe('crdt', () => {
     }
 
     function sync() {
-        crdt1.applyUpdate(crdt2.encodeAsSnapshot(), 'sync', 1);
-        crdt2.applyUpdate(crdt1.encodeAsSnapshot(), 'sync', 1);
+        crdt1.applyUpdate(crdt2.encodeAsSnapshot(), 'sync', 'device-2');
+        crdt2.applyUpdate(crdt1.encodeAsSnapshot(), 'sync', 'device-1');
     }
 
     function expectContainAll(received: unknown[], expected: unknown[]) {

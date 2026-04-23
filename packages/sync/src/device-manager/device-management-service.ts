@@ -146,6 +146,16 @@ export class DeviceManagementService {
         throw new UnknownDeviceError('Device with the given KID not found.');
     }
 
+    public async findDeviceByKID(kid: Buffer): Promise<Device> {
+        for (const device of await this.getDevices()) {
+            const deviceKID = generateKID(device.ikPub);
+            if (deviceKID.equals(kid)) {
+                return device;
+            }
+        }
+        throw new UnknownDeviceError('Device with the given KID not found.');
+    }
+
     public async verifyDeviceOpSignature(op: DeviceOp): Promise<void> {
         const dataToVerify = Buffer.concat([
             utf8(`safely/sync/v1/device/${op.type}`),

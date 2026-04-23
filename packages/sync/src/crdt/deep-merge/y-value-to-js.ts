@@ -78,7 +78,6 @@ function prepareJsonForZod(obj: any): any {
         }
     }
 
-    // 3. Обычный объект
     const res: any = {};
     for (const key of keys) {
         res[key] = prepareJsonForZod(obj[key]);

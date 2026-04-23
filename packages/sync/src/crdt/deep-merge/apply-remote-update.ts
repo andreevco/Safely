@@ -181,7 +181,6 @@ function mergeLeaf<T>(local: Leaf<T>, remote: Leaf<T>): Leaf<T> {
         } else if (remoteScore > localScore) {
             winner = remote;
         } else {
-            // ничья: любой детерминированный tie-break
             const lk = `${local.lastWriter}:${local.lastSeq}`;
             const rk = `${remote.lastWriter}:${remote.lastSeq}`;
             winner = lk >= rk ? local : remote;

@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { makeFactory, onboardDevice, Schema } from './helpers';
+import { makeFactory, onboardDevice, Structure } from './helpers';
 import { SyncAccountFactory } from '../../src';
 import { SyncStatus } from '../../src/sync-provider/sync-status';
 import { InMemStorage } from '../impl/storage';
 
 describe('Account', () => {
-    let factory: SyncAccountFactory<typeof Schema>;
+    let factory: SyncAccountFactory<typeof Structure>;
     let secureEncryptedStorage: InMemStorage;
 
     beforeEach(async () => {

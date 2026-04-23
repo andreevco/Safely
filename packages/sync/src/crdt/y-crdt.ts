@@ -59,11 +59,18 @@ export class YCRDT {
 
         atomicTransaction(this.doc, doc => {
             migrateIfNeeded(doc, this.versions, lastExisting.version, this.myDeviceId);
+            setDocMyStorageVersionToLastIfNeeded(
+                doc,
+                this.lastVersion().version.toString(),
+                this.myDeviceId
+            );
         });
     }
 
     // TODO: make this atomic and transactional
-    public applyUpdate(update: Buffer, origin: string, remoteStorageVersion: number): void {
+    public applyUpdate(update: Buffer, origin: string, remoteDeviceId: string): void {
+        const remoteStorageVersion = this.getKnownRemoteVersion(remoteDeviceId) || 1;
+
         const temp = new Y.Doc();
         Y.applyUpdateV2(temp, this.encodeAsSnapshot());
         Y.applyUpdateV2(temp, update);
@@ -127,6 +134,11 @@ export class YCRDT {
         return value !== undefined ? yValueToJs(value, this.lastVersion().schema[k]) : null;
     }
 
+    public systemGetMap(k: string): Y.Map<unknown> {
+        const system = this.systemMap();
+        return getAsMap(system, k);
+    }
+
     public systemGetArray(k: string): Y.Array<string> {
         const system = this.systemMap();
         return getAsArray(system, k);
@@ -165,28 +177,16 @@ export class YCRDT {
 
     public equals(other: YCRDT): boolean {
         return (
-            stableStringify(this.exportLogicalState()) ===
-            stableStringify(other.exportLogicalState())
+            stableStringify(exportLogicalState(this.doc)) ===
+            stableStringify(exportLogicalState(other.doc))
         );
     }
 
-    private exportLogicalState(): Record<string, unknown> {
-        const rootState: Record<string, unknown> = {};
-
-        for (const version of this.versions) {
-            const versionKey = version.version.toString();
-            const root = this.doc.getMap('root');
-
-            if (!root.has(versionKey)) {
-                continue;
-            }
-
-            rootState[versionKey] = getVersionFullState(this.doc, version);
-        }
-
-        return {
-            root: rootState
-        };
+    public equalsToYDoc(other: Y.Doc): boolean {
+        return (
+            stableStringify(exportLogicalState(this.doc)) ===
+            stableStringify(exportLogicalState(other))
+        );
     }
 
     public toRaw(): Y.Doc {
@@ -206,6 +206,32 @@ export class YCRDT {
     private systemMap(): Y.Map<unknown> {
         return this.doc.getMap('system');
     }
+
+    private getKnownRemoteVersion(remoteDeviceId: string): number | null {
+        const versions = this.systemGetMap('versions') as Y.Map<string>;
+        const remoteStorageVersion = versions.get(remoteDeviceId);
+        return remoteStorageVersion ? parseInt(remoteStorageVersion) : null;
+    }
+}
+
+function setDocMyStorageVersionToLastIfNeeded(
+    doc: Y.Doc,
+    latestVersion: string,
+    myDeviceId: string
+): void {
+    const system = doc.getMap('system');
+    const docVersions = getAsMap(system, 'versions') as Y.Map<string>;
+    const current = docVersions.get(myDeviceId);
+    if (current === undefined || current !== latestVersion) {
+        docVersions.set(myDeviceId, latestVersion);
+    }
+}
+
+function exportLogicalState(doc: Y.Doc): Record<string, unknown> {
+    return {
+        root: doc.getMap<unknown>('root').toJSON(),
+        system: doc.getMap('system').toJSON()
+    };
 }
 
 function stableStringify(value: unknown): string {
@@ -238,7 +264,7 @@ function migrateIfNeeded(
 ): void {
     const startIndex = versions.findIndex(v => v.version === startingVersion);
     if (startIndex === -1) {
-        throw new Error(`Unknown starting version: ${startingVersion}`);
+        return;
     }
 
     const existing = new Set(existingVersions(doc));
@@ -463,7 +489,6 @@ function scalarDeltaLength(value: unknown): number {
     if (value === undefined) {
         return 0;
     }
-    console.log(value);
 
     if (
         typeof value === 'object' &&

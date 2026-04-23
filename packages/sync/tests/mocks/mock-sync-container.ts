@@ -1,9 +1,8 @@
-import { z } from 'zod';
-
 import { MockSnapshotsApi, MockSnapshotsServer, MockSnapshotsSse } from './mock-snapshots-api';
 import { ApiSigner } from '../../src/api/api-signer';
 import { AccountsApi, Configuration, SnapshotsApi } from '../../src/api/generated';
 import { StorageVerifierService } from '../../src/crdt/storage-verifier-service';
+import { AnyStorageVersion } from '../../src/crdt/version';
 import { YCRDTRepository } from '../../src/crdt/y-crdt-repository';
 import { YManager } from '../../src/crdt/y-manager';
 import { EncryptedKeyRepository } from '../../src/crypto/encrypted-key-repository';
@@ -33,15 +32,18 @@ export async function createMockSyncContainer(
     server: MockSnapshotsServer,
     accountId: string,
     logger: Logger,
-    structure: Record<string, z.ZodType>,
+    versions: AnyStorageVersion[],
     apiConfiguration?: Configuration
 ): Promise<MockSyncContainer> {
     const keyRepository = new EncryptedKeyRepository(encryptedStorage);
     const syncStateRepository = new SyncStateRepository(storage, logger);
-    const crdtRepository = new YCRDTRepository(storage, structure);
-    const deviceRepository = new DeviceRepository(storage);
-
     const ikService = new IkService(keyRepository);
+    const crdtRepository = new YCRDTRepository(
+        storage,
+        versions,
+        (await ikService.getPub()).toString('hex')
+    );
+    const deviceRepository = new DeviceRepository(storage);
     const syncKeyService = new SyncKeyService(keyRepository);
     const dmkVerifierService = new DmkVerifierService(keyRepository);
     const keyServiceFactory = new KeyServiceFactory(accountId);

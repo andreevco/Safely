@@ -29,6 +29,27 @@ export class UpdateHandler {
 
         const update = await this.updateDecryptor.decrypt(upd);
 
+        if (!syncState.initialized) {
+            const tempDoc = new Y.Doc();
+            Y.applyUpdateV2(tempDoc, update);
+            const result = await this.storageVerifierService.verifyUpdate(
+                this.yManager.getDoc(),
+                tempDoc
+            );
+
+            for (const deviceOp of result.newDeviceOps) {
+                await this.deviceManagementService.verifyDeviceOpAndApply(deviceOp);
+            }
+
+            await this.yManager.applyUpdate(update, 'remote', '');
+
+            await this.syncStateRepository.saveState({
+                initialized: true,
+                snapshotProof: upd.snapshotProof
+            });
+            return { hasLocalChanges: false };
+        }
+
         if (upd.snapshotProof.equals(syncState.snapshotProof)) {
             this.logger.info('Update already received');
             return { hasLocalChanges: this.hasLocalChanges(update) }; // Already have this update
@@ -88,7 +109,8 @@ export class UpdateHandler {
         await this.updateDecryptor.verifyIKSig(upd);
 
         console.log('[Sync Handler] Applying update to local CRDT document...');
-        await this.yManager.applyUpdate(update, 'remote');
+        const remoteDevice = await this.deviceManagementService.findDeviceByKID(upd.kid);
+        await this.yManager.applyUpdate(update, 'remote', remoteDevice.ikPub.toString('hex'));
 
         syncState.snapshotProof = upd.snapshotProof;
         await this.syncStateRepository.saveState(syncState);
@@ -96,20 +118,6 @@ export class UpdateHandler {
         const hasLocalChanges = this.hasLocalChanges(update);
         console.log('[Sync Handler] Update applied, hasLocalChanges:', hasLocalChanges);
         return { hasLocalChanges };
-    }
-
-    /**
-     * During onboarding process, new device receives raw snapshot which must be applied without verification.
-     * @param update
-     * @param syncState
-     */
-    public async applyInitialUpdate(update: Buffer, syncState: SyncState) {
-        await this.yManager.applyUpdate(update, 'remote');
-        await this.syncStateRepository.saveState(syncState);
-
-        for (const deviceOp of await this.yManager.getDeviceLog()) {
-            await this.deviceManagementService.verifyDeviceOpAndApply(deviceOp);
-        }
     }
 
     private async fetchProofChainAndVerify(

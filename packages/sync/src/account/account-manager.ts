@@ -7,6 +7,7 @@ import { CreateAccountService } from './create-account-service';
 import { SyncAccount } from './sync-account';
 import { SyncAccountRepository } from './sync-account-repository';
 import { Configuration } from '../api/generated';
+import { AnyStorageVersion } from '../crdt/version';
 import { ITreeStorage } from '../I-storage';
 import { Logger } from '../logger/logger';
 import { OnboardingMessagePayload } from '../onboarding/onboarding-message-payload';
@@ -20,6 +21,7 @@ export class AccountManager<S extends Record<string, ZodType>> {
         private readonly storage: ITreeStorage,
         private readonly encryptedStorage: ITreeStorage,
         private readonly syncAccountIdRepository: SyncAccountRepository,
+        private readonly versions: AnyStorageVersion[],
         private readonly structure: S,
         private readonly apiConfiguration: Configuration,
         private readonly createAccountService: CreateAccountService<S>,
@@ -56,7 +58,7 @@ export class AccountManager<S extends Record<string, ZodType>> {
         const logger = this.logger.child(accountInfo.accountId.slice(0, 4));
         const container = await createSyncContainer({
             accountId,
-            structure: this.structure,
+            versions: this.versions,
             storage,
             encryptedStorage,
             apiConfiguration: this.apiConfiguration,

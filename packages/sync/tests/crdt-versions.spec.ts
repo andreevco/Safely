@@ -3,7 +3,6 @@ import * as Y from 'yjs';
 import { z } from 'zod';
 
 import { zArrayWithKey } from '../src';
-import { TransactionError } from '../src/crdt/atomic-transaction';
 import { yValueToJs } from '../src/crdt/deep-merge/y-value-to-js';
 import { chainToRuntimeArray, defineStorageVersion, defineVersionChain } from '../src/crdt/version';
 import { YCRDT } from '../src/crdt/y-crdt';
@@ -152,7 +151,7 @@ describe('crdt versions migrations', () => {
         oldDevice.set('name', 'Bob');
         oldDevice.set('age', 44);
 
-        latestDevice.applyUpdate(oldDevice.encodeAsSnapshot(), 'remote-v1', 1);
+        latestDevice.applyUpdate(oldDevice.encodeAsSnapshot(), 'remote-v1', 'device-1');
 
         expect(latestDevice.get('profile')).toEqual({ displayName: 'Bob', age: 44 });
         expect(latestDevice.get('tags')).toEqual([]);
@@ -164,12 +163,12 @@ describe('crdt versions migrations', () => {
         // Create two devices on v3 and SYNC them
         const v3Device_1 = YCRDT.create(new Y.Doc(), versionsV1V2V3, 'device-1');
         const v3Device_2 = YCRDT.create(new Y.Doc(), versionsV1V2V3, 'device-2');
-        v3Device_2.applyUpdate(v3Device_1.encodeAsSnapshot(), 'remote', 3);
-        v3Device_1.applyUpdate(v3Device_2.encodeAsSnapshot(), 'remote', 3);
+        v3Device_2.applyUpdate(v3Device_1.encodeAsSnapshot(), 'remote', 'device-1');
+        v3Device_1.applyUpdate(v3Device_2.encodeAsSnapshot(), 'remote', 'device-2');
 
         // Update on device 1, then sync on device 2
         v3Device_1.set('profile', { displayName: 'Bob', age: 44 });
-        v3Device_2.applyUpdate(v3Device_1.encodeAsSnapshot(), 'remote', 3);
+        v3Device_2.applyUpdate(v3Device_1.encodeAsSnapshot(), 'remote', 'device-1');
         expect(v3Device_2.get('profile')).toEqual({ displayName: 'Bob', age: 44 });
 
         // Migrate both to v4 and DO NOT SYNC yet
@@ -186,7 +185,7 @@ describe('crdt versions migrations', () => {
 
         // Update on device 1, then sync on device 2
         latestDevice_1.set('profile', { displayName: 'Alice', age: 45 });
-        latestDevice_2.applyUpdate(latestDevice_1.encodeAsSnapshot(), 'remote', 3);
+        latestDevice_2.applyUpdate(latestDevice_1.encodeAsSnapshot(), 'remote', 'device-1');
         expect(latestDevice_2.get('profile')).toEqual({ displayName: 'Alice', age: 45 });
     });
 
@@ -199,7 +198,7 @@ describe('crdt versions migrations', () => {
         latestDevice.set('revision', 7);
         latestDevice.set('active', false);
 
-        oldDevice.applyUpdate(latestDevice.encodeAsSnapshot(), 'remote-v4', 4);
+        oldDevice.applyUpdate(latestDevice.encodeAsSnapshot(), 'remote-v4', 'device-2');
 
         expect(oldDevice.get('name')).toBe('Charlie');
         expect(oldDevice.get('age')).toBe(28);
@@ -212,13 +211,13 @@ describe('crdt versions migrations', () => {
         v2Device.set('fullName', 'Legacy v2');
         v2Device.set('age', 50);
         v2Device.set('tags', ['a']);
-        latestDevice.applyUpdate(v2Device.encodeAsSnapshot(), 'remote-v2', 2);
+        latestDevice.applyUpdate(v2Device.encodeAsSnapshot(), 'remote-v2', 'device-2');
 
         const v3Device = YCRDT.create(new Y.Doc(), versionsV1V2V3, 'device-3');
         v3Device.set('profile', { displayName: 'Legacy v3', age: 51 });
         v3Device.set('tags', ['b']);
         v3Device.set('revision', 3);
-        latestDevice.applyUpdate(v3Device.encodeAsSnapshot(), 'remote-v3', 3);
+        latestDevice.applyUpdate(v3Device.encodeAsSnapshot(), 'remote-v3', 'device-3');
 
         latestDevice.set('profile', { displayName: 'Newest', age: 52 });
         latestDevice.set('tags', ['x']);
@@ -247,18 +246,18 @@ describe('crdt versions migrations', () => {
 
         oldDevice.set('name', 'First');
         oldDevice.set('age', 18);
-        latestDevice.applyUpdate(oldDevice.encodeAsSnapshot(), 'old->new', 1);
+        latestDevice.applyUpdate(oldDevice.encodeAsSnapshot(), 'old->new', 'device-1');
 
         latestDevice.set('profile', { displayName: 'Second', age: 19 });
         latestDevice.set('tags', ['sync']);
         latestDevice.set('revision', 10);
         latestDevice.set('active', false);
-        oldDevice.applyUpdate(latestDevice.encodeAsSnapshot(), 'new->old', 4);
+        oldDevice.applyUpdate(latestDevice.encodeAsSnapshot(), 'new->old', 'device-2');
 
         oldDevice.set('name', 'Third');
         oldDevice.set('age', 20);
-        latestDevice.applyUpdate(oldDevice.encodeAsSnapshot(), 'old->new-again', 1);
-        oldDevice.applyUpdate(latestDevice.encodeAsSnapshot(), 'new->old-again', 4);
+        latestDevice.applyUpdate(oldDevice.encodeAsSnapshot(), 'old->new-again', 'device-1');
+        oldDevice.applyUpdate(latestDevice.encodeAsSnapshot(), 'new->old-again', 'device-2');
 
         expect(latestDevice.get('profile')).toEqual({ displayName: 'Third', age: 20 });
         expect(latestDevice.get('tags')).toEqual([]);
@@ -266,20 +265,6 @@ describe('crdt versions migrations', () => {
         expect(latestDevice.get('active')).toBe(true);
         expect(oldDevice.get('name')).toBe('Third');
         expect(oldDevice.get('age')).toBe(20);
-    });
-
-    it('throws for unknown remoteStorageVersion and does not mutate document', () => {
-        const oldDevice = YCRDT.create(new Y.Doc(), versionsV1, 'device-1');
-        const latestDevice = YCRDT.create(new Y.Doc(), versionsV1V2V3V4, 'device-2');
-
-        oldDevice.set('name', 'David');
-        oldDevice.set('age', 60);
-
-        const before = latestDevice.encodeAsSnapshot();
-        expect(() =>
-            latestDevice.applyUpdate(oldDevice.encodeAsSnapshot(), 'bad-version', 0)
-        ).toThrow(TransactionError);
-        expect(latestDevice.encodeAsSnapshot().equals(before)).toBe(true);
     });
 });
 

@@ -6,6 +6,7 @@ import { createSyncContainer } from '../sync-container';
 import { SyncAccount } from './sync-account';
 import { SyncAccountRepository } from './sync-account-repository';
 import { Configuration } from '../api/generated';
+import { AnyStorageVersion } from '../crdt/version';
 import { ITreeStorage } from '../I-storage';
 import { Logger } from '../logger/logger';
 import { OnboardingMessagePayload } from '../onboarding/onboarding-message-payload';
@@ -19,6 +20,7 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
         private readonly storage: ITreeStorage,
         private readonly encryptedStorage: ITreeStorage,
         private readonly syncAccountIDRepository: SyncAccountRepository,
+        private readonly versions: AnyStorageVersion[],
         private readonly structure: S,
         private readonly apiConfiguration: Configuration,
         private readonly logger: Logger
@@ -39,9 +41,10 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
             storage,
             encryptedStorage,
             secureEncryptedStorage: accountSecureEncryptedStorage,
-            structure: this.structure,
+            versions: this.versions,
             masterKey,
-            logger
+            logger,
+            firstTime: true
         });
         masterKey.fill(0);
 
@@ -49,7 +52,7 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
 
         const container = await createSyncContainer({
             accountId: accountID,
-            structure: this.structure,
+            versions: this.versions,
             storage,
             encryptedStorage,
             apiConfiguration: this.apiConfiguration,
@@ -92,12 +95,13 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
         const logger = this.logger.child(accountID.slice(0, 4));
         await initializeSyncAccount({
             storage,
-            structure: this.structure,
+            versions: this.versions,
             encryptedStorage: encryptedStorage,
             secureEncryptedStorage: accountSecureEncryptedStorage,
             masterKey: payload.masterKey,
             ik,
-            logger
+            logger,
+            firstTime: false
         });
         payload.masterKey.fill(0);
 
@@ -105,7 +109,7 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
 
         const container = await createSyncContainer({
             accountId: accountID,
-            structure: this.structure,
+            versions: this.versions,
             storage,
             encryptedStorage,
             apiConfiguration: this.apiConfiguration,

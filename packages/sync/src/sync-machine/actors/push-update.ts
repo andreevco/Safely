@@ -25,7 +25,9 @@ export const pushUpdateToServer = fromPromise(async ({ input }: { input: SyncMac
     }
     console.log('[Sync Push] Snapshot successfully sent to server');
 
+    const prevState = await input.syncStateRepository.getState();
     await input.syncStateRepository.saveState({
+        initialized: prevState.initialized,
         snapshotProof: encrypted.snapshotProof
     });
     input.logger.info(`Pushed new update ${encrypted.snapshotProof.toString('hex')}`);

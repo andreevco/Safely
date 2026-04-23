@@ -6,10 +6,21 @@ import { createMockSyncContainer, MockSyncContainer } from './mock-sync-containe
 import { SyncStatus } from '../../src';
 import { SnapshotsApi } from '../../src/api/generated';
 import { SnapshotsSse } from '../../src/api/snapshots-sse';
-import { generateAccountID, initializeSyncAccount } from '../../src/initialize';
+import {
+    chainToRuntimeArray,
+    defineStorageVersion,
+    defineVersionChain
+} from '../../src/crdt/version';
+import { ed25519_keygen } from '../../src/crypto/ed25519';
+import {
+    generateAccountID,
+    initializeSyncAccount,
+    initializeSyncState
+} from '../../src/initialize';
 import { Logger } from '../../src/logger/logger';
 import { createSyncMachine, SyncMachine } from '../../src/sync-machine/machine';
 import { SyncStatusManager } from '../../src/sync-provider/sync-status';
+import { SyncStateRepository } from '../../src/update-handler/sync-state-repository';
 import { InMemStorage } from '../impl/storage';
 
 export type MachineContext = {
@@ -22,7 +33,8 @@ export async function createMachineContext(
     server: MockSnapshotsServer,
     masterKeyOpt?: Buffer,
     ikOpt?: { secretKey: Buffer; publicKey: Buffer },
-    expectedSubscriberIncrease = 1
+    expectedSubscriberIncrease = 1,
+    bootstrapSelfDevice = false
 ): Promise<MachineContext> {
     const masterKey = masterKeyOpt ?? Buffer.alloc(32, 0);
     const storage = new InMemStorage();
@@ -34,24 +46,37 @@ export async function createMachineContext(
     const accountSecureEncryptedStorage = secureEncryptedStorage.child(accountId);
     const logger = new Logger();
     const structure = { value: z.string() };
+    const version1 = defineStorageVersion<{}, typeof structure>({
+        version: 1,
+        schema: structure,
+        migrate: () => ({ value: '' }),
+        reverseMigrate: () => ({})
+    });
+    const versions = chainToRuntimeArray(defineVersionChain(version1));
+    const ik = ikOpt ?? ed25519_keygen(masterKey);
     await initializeSyncAccount({
         storage: accountStorage,
-        structure,
+        versions,
         encryptedStorage: accountEncryptedStorage,
         secureEncryptedStorage: accountSecureEncryptedStorage,
         masterKey,
         logger,
-        ik: ikOpt
+        ik,
+        firstTime: true
     });
+    await initializeSyncState(new SyncStateRepository(accountStorage, logger), false);
     const container = await createMockSyncContainer(
         accountStorage,
         accountEncryptedStorage,
         server,
         accountId,
         logger,
-        structure
+        versions
     );
-
+    if (bootstrapSelfDevice) {
+        const selfIkPub = await container.ikService.getPub();
+        await container.deviceRepository.setDevices([{ ikPub: selfIkPub, addedAt: Date.now() }]);
+    }
     if (!server.hasSnapshot()) {
         const encrypted = await container.updateEncryptor.encryptAndSign(
             container.yManager.encodeAsSnapshot()

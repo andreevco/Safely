@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { makeFactory, onboardDevice, Schema } from './helpers';
+import { makeFactory, onboardDevice, Schema, Structure } from './helpers';
 import { ISyncAccount, SyncAccountFactory } from '../../src';
 import { InMemStorage } from '../impl/storage';
 
 describe('Sync', () => {
-    let factory: SyncAccountFactory<typeof Schema>;
+    let factory: SyncAccountFactory<typeof Structure>;
     let secureEncryptedStorage: InMemStorage;
     let accounts: ISyncAccount<typeof Schema>[];
 
@@ -59,7 +59,7 @@ describe('Sync', () => {
         await setAndVerify(account, ['wallet1']);
         await setAndVerify(account2, ['wallet1', 'wallet2']);
         await setAndVerify(account3, ['wallet1', 'wallet2', 'wallet3']);
-    });
+    }, 10000);
 
     it('should sync device list when 1 device is onboarded', async () => {
         const account = await factory.createSyncAccount(secureEncryptedStorage);

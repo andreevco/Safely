@@ -228,7 +228,9 @@ export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAcco
             }
         });
 
+        const prevState = await this.container.syncStateRepository.getState();
         await this.container.syncStateRepository.saveState({
+            initialized: prevState.initialized,
             snapshotProof: encrypted.snapshotProof
         });
     }
