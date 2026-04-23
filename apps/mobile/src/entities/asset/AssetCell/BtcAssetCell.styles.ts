@@ -4,6 +4,9 @@ export const styles = StyleSheet.create(() => ({
     cell: {
         alignItems: 'flex-start'
     },
+    image: {
+        marginTop: 6
+    },
     titleRow: {
         alignItems: 'center',
         minHeight: 24

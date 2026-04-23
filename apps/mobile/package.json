@@ -21,7 +21,7 @@
     "@formatjs/intl-numberformat": "^9.2.1",
     "@formatjs/intl-pluralrules": "^6.2.1",
     "@formatjs/intl-relativetimeformat": "^12.3.1",
-    "@gorhom/bottom-sheet": "^5.2.8",
+    "@gorhom/bottom-sheet": "^5.2.9",
     "@react-navigation/bottom-tabs": "^7.15.9",
     "@react-navigation/elements": "^2.9.14",
     "@react-navigation/native": "^7.2.2",

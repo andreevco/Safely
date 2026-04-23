@@ -17,7 +17,10 @@
     },
     "common": {
         "edit": "Edit",
+        "remove": "Remove",
+        "removed": "Removed",
         "next": "Next",
+        "save": "Save",
         "cancel": "Cancel",
         "continue": "Continue",
         "later": "Later",
@@ -359,9 +362,10 @@
         "watchAccount": {
             "title": "Watch account",
             "subtitle": "Track by wallet address",
-            "placeholder": "Enter address or XPUB",
+            "placeholder": "Enter address",
             "info": "Watch account cannot sign transactions and send funds.",
-            "invalidAddress": "Invalid Bitcoin address"
+            "invalidAddress": "Invalid Bitcoin address",
+            "unsupportedExtendedKey": "ypub and zpub are not supported yet. Use xpub."
         }
     },
     "addAccount": {
@@ -596,6 +600,35 @@
         "errors": {
             "unrecognized": "Unrecognized input",
             "unsupportedScheme": "Unsupported input type"
+        }
+    },
+    "addressBook": {
+        "title": "Address Book",
+        "subtitle": "Add trusted contacts to avoid mistakes and send faster.",
+        "subtitle_not_empty": "Send crypto safely using your saved contacts.",
+        "addContact": "Add contact"
+    },
+    "newContact": {
+        "title": "Contact",
+        "form": {
+            "name": "Name",
+            "namePlaceholder": "Name",
+            "address": "Bitcoin address",
+            "addressPlaceholder": "Address",
+            "addedOn": "Added on {{date}}",
+            "remove": "Remove contact"
+        },
+        "confirmDelete": {
+            "title": "Remove {{name}}?",
+            "message": "This contact will be removed from your address book."
+        }
+    },
+    "contactForm": {
+        "errors": {
+            "enterName": "Enter a name",
+            "enterAddress": "Enter an address",
+            "invalidAddressFormat": "Invalid address format",
+            "unsupportedBlockchain": "Unsupported blockchain"
         }
     }
 }

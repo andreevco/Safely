@@ -19,8 +19,8 @@ export const SettingsContent = () => {
     const hasPortfolio = useHasPortfolio();
     const navigation = useNavigation<SettingsStackNavigationProp>();
 
-    const openLogSandbox = useCallback(() => {
-        navigation.navigate('LogSandboxModal');
+    const openDevTools = useCallback(() => {
+        navigation.navigate('DevToolsModal');
     }, [navigation]);
 
     return (
@@ -34,7 +34,7 @@ export const SettingsContent = () => {
                     <SignOutAccountButton />
                 </List.Group>
             </List>
-            <Pressable onLongPress={openLogSandbox}>
+            <Pressable onLongPress={openDevTools}>
                 <Text variant="bodyM" color="tertiary" textAlign="center" style={styles.version}>
                     Safely · {version}
                 </Text>
