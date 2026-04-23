@@ -25,8 +25,8 @@ export const Wallet: FC<{ address: string } | { recipient: Recipient }> = props 
         [address, portfolios]
     );
     const contactMeta = useMemo(
-        () => findContactMetaByAddress(contacts, props.recipient.blockchain, address),
-        [address, contacts, props.recipient.blockchain]
+        () => findContactMetaByAddress(contacts, address),
+        [address, contacts]
     );
 
     if (portfolioMeta || contactMeta) {
