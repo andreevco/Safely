@@ -39,6 +39,7 @@ export const CellContainer = (props: CellContainerProps) => {
             <View style={[styles.container, containerStyle]}>
                 <TouchableHighlight
                     underlayColor={theme.colors.other.hover}
+                    activeOpacity={1}
                     onPressIn={() => (isPressing.value = true)}
                     onPressOut={() => (isPressing.value = false)}
                     {...rest}

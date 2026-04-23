@@ -14,7 +14,7 @@ import { SyncKeyService } from './crypto/service/sync-key-service';
 import { DeviceManagementService } from './device-manager/device-management-service';
 import { DeviceRepository } from './device-manager/device-repository';
 import { IStorage } from './I-storage';
-import { Logger } from './logger/logger';
+import { Logger } from './logger';
 import { SecretEncryptor } from './secret-encryptor';
 import { UpdateDecryptorService } from './update-encryptor/update-decryptor-service';
 import { UpdateEncryptorService } from './update-encryptor/update-encryptor-service';
@@ -74,7 +74,7 @@ export async function createSyncContainer(opts: {
     const apiSigner = new ApiSigner(ikService);
     const accountsApi = new AccountsApi(apiSigner, opts.apiConfiguration);
     const snapshotApi = new SnapshotsApi(apiSigner, opts.apiConfiguration);
-    const snapshotSse = new SnapshotsSse(syncStateRepository, snapshotApi, apiSigner);
+    const snapshotSse = new SnapshotsSse(syncStateRepository, snapshotApi, apiSigner, opts.logger);
 
     const yManager = await YManager.create(crdtRepository);
     const deviceManager = new DeviceManagementService(

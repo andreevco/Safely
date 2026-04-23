@@ -1,4 +1,4 @@
-import { useFocusEffect, useIsFocused } from '@react-navigation/native';
+import { useFocusEffect, useIsFocused, useScrollToTop } from '@react-navigation/native';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { type TFunction } from 'i18next';
 import { useCallback, useMemo, useRef } from 'react';
@@ -88,10 +88,12 @@ export const HistoryList = (props: HistoryListProps) => {
     const formatter = useDateFormatter();
 
     const isFocused = useIsFocused();
-    const listRef = useRef<ListRef<HistoryRowItem> | null>(null);
+    const listRef = useRef<ListRef<HistoryRowItem>>(null);
     const { data: historyGroups, refetch, fetchNextPage } = useGroupedHistory();
     const { atTop, onScroll } = useScrollPosition({ threshold: 100 });
     const client = useQueryClient();
+
+    useScrollToTop(listRef);
 
     useFocusEffect(
         useCallback(() => {

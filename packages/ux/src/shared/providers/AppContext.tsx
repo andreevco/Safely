@@ -1,6 +1,7 @@
 import { createContext, useContext } from 'react';
 
 import { Build, ITreeStorage, NumberFormatLocale, QrScanner, UserCountryInfo } from '@safely/core';
+import { Logger } from '@safely/sync';
 
 import { LoaderService, Security, ToastService } from '../../entities';
 import { TranslateFn } from '../i18n';
@@ -40,6 +41,8 @@ export interface IAppContext {
     };
 
     clearAllData: () => Promise<void>;
+
+    logger: Logger;
 
     security: Security;
 
