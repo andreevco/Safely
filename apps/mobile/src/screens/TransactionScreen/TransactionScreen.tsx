@@ -25,7 +25,6 @@ import {
     Text,
     TouchableOpacity
 } from '@mobile/shared/ui';
-import { useCopy } from '@mobile/shared/utils/copy';
 
 import { styles } from './TransactionScreen.styles';
 
@@ -52,7 +51,6 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
         minute: '2-digit'
     });
 
-    const handleCopy = useCopy();
     const handleOpen = useCallback(() => {
         const url = explorer.transaction(activity.transaction.raw.txid);
         void Linking.openURL(url);
@@ -112,7 +110,7 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
                 </View>
                 <List style={styles.list}>
                     <List.Group withoutBottomMargin>
-                        <TableCell onPress={() => handleCopy(addressCell.address)}>
+                        <TableCell copyable={addressCell.address}>
                             <TableCell.Column leading>
                                 <TableCell.Label>{addressCell.label}</TableCell.Label>
                             </TableCell.Column>
@@ -150,28 +148,29 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
                                 </TableCell.Value>
                             </TableCell.Column>
                         </TableCell>
-                        <TableCell>
-                            <TableCell.Column leading>
-                                <TableCell.Label>
-                                    {t('history.transactionInfo.hash')}
-                                </TableCell.Label>
-                            </TableCell.Column>
-                            <TableCell.Column>
-                                <TableCell.Value>
-                                    {ellipsisMiddle(activity.transaction.raw?.txid, 8)}
-                                </TableCell.Value>
-                            </TableCell.Column>
-                            <View style={styles.iconsContainer}>
-                                <TouchableOpacity hitSlop={12} onPress={handleOpen}>
-                                    <Icon icon={Globe16} color="secondary" />
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    onPress={() => handleCopy(activity.transaction.raw?.txid ?? '')}
-                                    hitSlop={12}
-                                >
-                                    <Icon icon={Copy16} color="secondary" />
-                                </TouchableOpacity>
-                            </View>
+                        <TableCell copyable={activity.transaction.raw?.txid}>
+                            {({ handleCopy }) => (
+                                <>
+                                    <TableCell.Column leading>
+                                        <TableCell.Label>
+                                            {t('history.transactionInfo.hash')}
+                                        </TableCell.Label>
+                                    </TableCell.Column>
+                                    <TableCell.Column>
+                                        <TableCell.Value>
+                                            {ellipsisMiddle(activity.transaction.raw?.txid, 8)}
+                                        </TableCell.Value>
+                                    </TableCell.Column>
+                                    <View style={styles.iconsContainer}>
+                                        <TouchableOpacity hitSlop={12} onPress={handleOpen}>
+                                            <Icon icon={Globe16} color="secondary" />
+                                        </TouchableOpacity>
+                                        <TouchableOpacity hitSlop={12} onPress={handleCopy}>
+                                            <Icon icon={Copy16} color="secondary" />
+                                        </TouchableOpacity>
+                                    </View>
+                                </>
+                            )}
                         </TableCell>
                     </List.Group>
                 </List>
