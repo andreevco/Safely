@@ -19,6 +19,7 @@ import { handleDuplicatePortfolio } from '@mobile/features/add-wallet/handleDupl
 import { Button, Screen, Text } from '@mobile/shared/ui';
 import { Icon, XmarkCircle16 } from '@mobile/shared/ui/Icon';
 import { TouchableOpacity } from '@mobile/shared/ui/TouchableOpacity';
+import { hasUnsupportedExtendedKeyPrefix } from '@mobile/shared/utils';
 
 import { styles } from './AddWatchOnlyScreen.styles';
 
@@ -52,6 +53,7 @@ export const AddWatchOnlyScreen = () => {
     const trimmedInput = address.trim();
     const isValidInput = BtcAddress.validate(trimmedInput) || BtcXpub.validate(trimmedInput);
     const hasError = trimmedInput.length >= 20 && !isValidInput;
+    const isUnsupportedExtendedKey = !isValidInput && hasUnsupportedExtendedKeyPrefix(trimmedInput);
 
     styles.useVariants({
         focused: isFocused,
@@ -159,7 +161,11 @@ export const AddWatchOnlyScreen = () => {
 
                 {hasError && (
                     <Text style={styles.errorText}>
-                        {t('addWallet.watchAccount.invalidAddress')}
+                        {t(
+                            isUnsupportedExtendedKey
+                                ? 'addWallet.watchAccount.unsupportedExtendedKey'
+                                : 'addWallet.watchAccount.invalidAddress'
+                        )}
                     </Text>
                 )}
 

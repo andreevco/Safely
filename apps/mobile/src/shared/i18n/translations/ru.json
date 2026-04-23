@@ -322,9 +322,10 @@
         "watchAccount": {
             "title": "Только просмотр",
             "subtitle": "Отслеживайте кошелек по адресу",
-            "placeholder": "Введите адрес или XPUB",
+            "placeholder": "Введите адрес",
             "info": "Кошелёк «Только просмотр» не может подписывать транзакции и отправлять средства.",
-            "invalidAddress": "Неверный Bitcoin адрес"
+            "invalidAddress": "Неверный Bitcoin адрес",
+            "unsupportedExtendedKey": "ypub и zpub пока не поддерживаются. Используйте xpub."
         }
     },
     "addAccount": {

@@ -359,9 +359,10 @@
         "watchAccount": {
             "title": "Watch account",
             "subtitle": "Track by wallet address",
-            "placeholder": "Enter address or XPUB",
+            "placeholder": "Enter address",
             "info": "Watch account cannot sign transactions and send funds.",
-            "invalidAddress": "Invalid Bitcoin address"
+            "invalidAddress": "Invalid Bitcoin address",
+            "unsupportedExtendedKey": "ypub and zpub are not supported yet. Use xpub."
         }
     },
     "addAccount": {
