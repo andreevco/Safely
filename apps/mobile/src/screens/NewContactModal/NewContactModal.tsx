@@ -71,11 +71,18 @@ export const NewContactModal = ({ route }: NewContactModalProps) => {
                     <Input.Field
                         value={state.values.name}
                         onChangeText={actions.setName}
+                        errored={!!state.errors.name}
                         placeholder={t('newContact.form.namePlaceholder')}
                         autoFocus={!meta.isEditMode}
                         autoCapitalize="words"
                         returnKeyType="next"
+                        withClearButton
                     />
+                    {state.errors.name && (
+                        <Input.Description color="accentRed">
+                            {t(state.errors.name)}
+                        </Input.Description>
+                    )}
                 </Input>
                 {state.values.addresses.map((address, index) => {
                     const errorKey = state.errors.addresses[index];

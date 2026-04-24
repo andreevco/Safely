@@ -10,5 +10,8 @@ export const styles = StyleSheet.create((theme, rt) => ({
     },
     button: {
         marginRight: theme.spacing[12]
+    },
+    listHeader: {
+        marginBottom: theme.spacing[24]
     }
 }));

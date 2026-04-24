@@ -640,7 +640,8 @@
             "enterName": "Enter a name",
             "enterAddress": "Enter an address",
             "invalidAddressFormat": "Invalid address format",
-            "unsupportedBlockchain": "Unsupported blockchain"
+            "unsupportedBlockchain": "Unsupported blockchain",
+            "tooLongName": "Name is too long"
         }
     }
 }
