@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 
-import { useAssets } from '../../../../entities';
+import { useAssets, useCreateContact } from '../../../../entities';
 import { useNumberFormatter } from '../../../../shared';
 import { useMaxSendAssetTransfer } from '../../../blockchain-send';
 import { SendFormError } from '../errors';
@@ -31,6 +31,7 @@ export interface UseSendFormStateParams {
 
 export function useSendFormState(params: UseSendFormStateParams) {
     const { resolvedInitialValues, onSubmit, shouldResetForm, clearDraft } = params;
+    const { mutateAsync: createContact } = useCreateContact();
 
     const [state, dispatch] = useReducer(
         sendFormReducer,
@@ -133,9 +134,14 @@ export function useSendFormState(params: UseSendFormStateParams) {
         }
     }, []);
 
+    const setAddressBookName = useCallback((name: string) => {
+        dispatch({ type: 'SET_ADDRESS_BOOK_NAME', name });
+    }, []);
+
     const setRecipient = useCallback(
         (value: string) => {
             dispatch({ type: 'SET_RECIPIENT', value });
+            dispatch({ type: 'SET_ADDRESS_BOOK_NAME', name: '' });
             validateRecipient(value);
         },
         [validateRecipient]
@@ -291,6 +297,18 @@ export function useSendFormState(params: UseSendFormStateParams) {
             isMax: state.parsed.isMax
         };
 
+        if (state.values.addressBookName) {
+            createContact({
+                name: state.values.addressBookName,
+                addresses: [
+                    {
+                        blockchain: state.parsed.recipient.blockchain,
+                        address: state.parsed.recipient.address
+                    }
+                ]
+            });
+        }
+
         setIsSubmitted(true);
         onSubmit(result, clearDraft);
 
@@ -370,6 +388,7 @@ export function useSendFormState(params: UseSendFormStateParams) {
             setRecipient,
             setAmount,
             setAmountInputType,
+            setAddressBookName,
             setIsMax,
             setAsset,
             reset,

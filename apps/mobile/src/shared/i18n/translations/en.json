@@ -40,7 +40,12 @@
         "maxHint": "All available balance will be sent. Fee included.",
         "remaining": "Remaining:",
         "pending": "Pending:",
-        "insufficientBalance": "Insufficient balance"
+        "insufficientBalance": "Insufficient balance",
+        "addressBook": {
+            "label": "Save to your address book",
+            "placeholder": "Name",
+            "description": "You can edit and organize this later in Settings → Address Book."
+        }
     },
     "passcode": {
         "title": "Create passcode",
