@@ -3,6 +3,7 @@ import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Keyboard } from 'react-native';
 
+import { CONTACT_NAME_MAX_LENGTH } from '@safely/core';
 import { useContactForm, useContacts, useDateFormatter } from '@safely/ux';
 
 import { SettingsStackNavigationProp } from '@mobile/app/navigation/types';
@@ -75,6 +76,7 @@ export const NewContactModal = ({ route }: NewContactModalProps) => {
                         placeholder={t('newContact.form.namePlaceholder')}
                         autoFocus={!meta.isEditMode}
                         autoCapitalize="words"
+                        maxLength={CONTACT_NAME_MAX_LENGTH}
                         returnKeyType="next"
                         withClearButton
                     />

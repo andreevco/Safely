@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { TextInput, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
+import { CONTACT_NAME_MAX_LENGTH } from '@safely/core';
 import { type SendSuggestions } from '@safely/ux';
 
 import { Input } from '@mobile/shared/ui';
@@ -98,6 +99,7 @@ export const RecipientStep = (props: RecipientStepProps) => {
                             onChangeText={onAddressBookNameChange}
                             withClearButton
                             placeholder={t('send.addressBook.placeholder')}
+                            maxLength={CONTACT_NAME_MAX_LENGTH}
                         />
                         <Input.Description>{t('send.addressBook.description')}</Input.Description>
                     </Input>
