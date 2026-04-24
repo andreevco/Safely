@@ -297,7 +297,7 @@ export function useSendFormState(params: UseSendFormStateParams) {
             isMax: state.parsed.isMax
         };
 
-        if (state.values.addressBookName) {
+        if (state.values.addressBookName.trim().length > 0) {
             createContact({
                 name: state.values.addressBookName,
                 addresses: [
