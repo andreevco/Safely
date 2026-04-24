@@ -83,7 +83,7 @@ export interface SendFormInitialValues {
 
 export interface SendFormValues {
     recipient: string;
-    addressBookName: string | undefined;
+    addressBookName: string;
     recipientLabel: string | undefined;
     amount: string;
     amountInputType: AmountInputType;
