@@ -60,7 +60,9 @@ export const AddressBookModal = () => {
                         navigation.navigate('NewContactModal', { contactId: contact.id.toString() })
                     }
                     ListHeaderComponent={
-                        <AddressBookHeader description={t('addressBook.subtitle_not_empty')} />
+                        <View style={styles.listHeader}>
+                            <AddressBookHeader description={t('addressBook.subtitle_not_empty')} />
+                        </View>
                     }
                 />
             </Screen.Content>

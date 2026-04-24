@@ -8,13 +8,13 @@ import { useChangePortfolioMeta, useNewPortfolioFallbackName } from '@safely/ux'
 
 import { Button, Icon, Screen, Xmark16 } from '@mobile/shared/ui';
 
-import { WALLET_COLORS, WalletIcon } from './constants';
+import { WALLET_EMOJIS, WalletIcon } from './constants';
 import { CustomizeWalletContent } from './CustomizeWalletContent';
 import { styles } from './CustomizeWalletModal.styles';
 
-const DEFAULT_ICON: WalletIcon = {
-    type: 'color',
-    value: WALLET_COLORS[0]
+const getDefaultIcon = (): WalletIcon => {
+    const randomIndex = Math.floor(Math.random() * WALLET_EMOJIS.length);
+    return { type: 'emoji', value: WALLET_EMOJIS[randomIndex] ?? '' };
 };
 
 type CustomizeWalletModalProps = StaticScreenProps<{
@@ -33,7 +33,7 @@ export const CustomizeWalletModal = (props: CustomizeWalletModalProps) => {
 
     const [walletName, setWalletName] = useState(portfolio?.meta.name ?? fallbackName);
     const [selectedIcon, setSelectedIcon] = useState<WalletIcon>(
-        portfolio?.meta.icon ?? DEFAULT_ICON
+        () => portfolio?.meta.icon ?? getDefaultIcon()
     );
 
     const handleSave = useCallback(async () => {

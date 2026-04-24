@@ -19,6 +19,7 @@ export const AddressBook = ({
 }: AddressBookProps) => {
     return (
         <FlashList
+            showsVerticalScrollIndicator={false}
             data={contacts}
             ListHeaderComponent={ListHeaderComponent}
             contentContainerStyle={styles.contentContainer}

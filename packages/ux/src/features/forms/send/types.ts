@@ -83,6 +83,7 @@ export interface SendFormInitialValues {
 
 export interface SendFormValues {
     recipient: string;
+    addressBookName: string;
     recipientLabel: string | undefined;
     amount: string;
     amountInputType: AmountInputType;
@@ -117,6 +118,7 @@ export type SendFormAction =
           recipient: Recipient | undefined;
           error: string | undefined;
       }
+    | { type: 'SET_ADDRESS_BOOK_NAME'; name: string }
     | { type: 'SET_AMOUNT'; value: string }
     | {
           type: 'SET_AMOUNT_VALIDATED';

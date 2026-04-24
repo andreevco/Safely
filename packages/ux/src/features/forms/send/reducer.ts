@@ -10,6 +10,7 @@ const LAST_STEP_INDEX = SEND_STEPS.length - 1;
 
 const DEFAULT_VALUES: SendFormValues = {
     recipient: '',
+    addressBookName: '',
     recipientLabel: undefined,
     amount: '',
     amountInputType: 'crypto',
@@ -69,6 +70,12 @@ export function sendFormReducer(state: SendFormState, action: SendFormAction): S
                 ...state,
                 parsed: { ...state.parsed, recipient: action.recipient },
                 errors: { ...state.errors, recipient: action.error }
+            };
+
+        case 'SET_ADDRESS_BOOK_NAME':
+            return {
+                ...state,
+                values: { ...state.values, addressBookName: action.name }
             };
 
         case 'SET_AMOUNT':
