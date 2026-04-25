@@ -3,9 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { TextInput, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
+import { CONTACT_NAME_MAX_LENGTH } from '@safely/core';
 import { type SendSuggestions } from '@safely/ux';
 
+import { Input } from '@mobile/shared/ui';
+
 import { AddressInput, SuggestionsList } from '../components';
+import { styles } from './RecipientStep.styles';
 import { useSuggestionSelection } from '../components/SuggestionsList/useSuggestionSelection';
 
 interface RecipientStepProps {
@@ -16,9 +20,12 @@ interface RecipientStepProps {
     suggestions: SendSuggestions;
     restoredSuggestions?: SendSuggestions;
     selectedId?: string;
+    isValidAddress: boolean;
     onSelectSuggestion: (id: string, visibleSuggestions: SendSuggestions) => void;
     onClearSuggestionSelection: () => void;
     onSubmitEditing?: () => void;
+    onAddressBookNameChange: (name: string) => void;
+    addressBookName: string;
 }
 
 export const RecipientStep = (props: RecipientStepProps) => {
@@ -26,13 +33,16 @@ export const RecipientStep = (props: RecipientStepProps) => {
         value,
         error,
         inputRef,
+        isValidAddress,
         suggestions,
         restoredSuggestions,
         selectedId,
         onChangeText,
         onSelectSuggestion,
         onClearSuggestionSelection,
-        onSubmitEditing
+        onSubmitEditing,
+        onAddressBookNameChange,
+        addressBookName
     } = props;
 
     const { t } = useTranslation();
@@ -70,6 +80,7 @@ export const RecipientStep = (props: RecipientStepProps) => {
             />
             <KeyboardAwareScrollView
                 style={{ flex: 1 }}
+                contentContainerStyle={styles.contentContainer}
                 keyboardShouldPersistTaps="handled"
                 showsVerticalScrollIndicator={false}
                 bottomOffset={16}
@@ -80,6 +91,19 @@ export const RecipientStep = (props: RecipientStepProps) => {
                     selectedId={selectedId}
                     onSelect={handleSelect}
                 />
+                {!selectedId && isValidAddress && (
+                    <Input>
+                        <Input.Label>{t('send.addressBook.label')}</Input.Label>
+                        <Input.Field
+                            value={addressBookName}
+                            onChangeText={onAddressBookNameChange}
+                            withClearButton
+                            placeholder={t('send.addressBook.placeholder')}
+                            maxLength={CONTACT_NAME_MAX_LENGTH}
+                        />
+                        <Input.Description>{t('send.addressBook.description')}</Input.Description>
+                    </Input>
+                )}
             </KeyboardAwareScrollView>
         </View>
     );

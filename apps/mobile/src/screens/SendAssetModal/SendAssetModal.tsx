@@ -211,12 +211,15 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
                             ? undefined
                             : state.errors.recipient
                     }
+                    isValidAddress={!!state.parsed.recipient}
                     onChangeText={actions.setRecipient}
                     suggestions={meta.suggestions}
                     restoredSuggestions={meta.restoredSuggestions}
                     selectedId={suggestionSelection.selectedId}
                     onSelectSuggestion={suggestionSelection.select}
                     onClearSuggestionSelection={suggestionSelection.clear}
+                    onAddressBookNameChange={actions.setAddressBookName}
+                    addressBookName={state.values.addressBookName}
                 />
                 <AmountStep
                     key="amount"
