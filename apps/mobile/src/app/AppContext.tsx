@@ -1,14 +1,21 @@
 import { getLocales } from 'expo-localization';
-import { FC, PropsWithChildren, useEffect, useMemo } from 'react';
+import { FC, PropsWithChildren, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AppState } from 'react-native';
 
-import { AppContext, IAppContext, Security, UnlockableSecuredEncryptedStorage } from '@safely/ux';
+import {
+    AppContext,
+    IAppContext,
+    Security,
+    UnlockableSecuredEncryptedStorage,
+    useAccounts,
+    useAppContext
+} from '@safely/ux';
 
 import { navigationRef } from '@mobile/app/navigation/navigationRef';
 import { useMobileSecurityCheck } from '@mobile/entities/security';
 import { build, deviceInfo } from '@mobile/shared/app-meta';
-import { logger } from '@mobile/shared/logger';
+import { loggerRegistry } from '@mobile/shared/logger';
 import { useLoaderServiceContext } from '@mobile/shared/providers/loader';
 import { useToastServiceContext } from '@mobile/shared/providers/toast';
 import { mobileStorages } from '@mobile/shared/storage';
@@ -64,7 +71,7 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
                 hide: loaderService.hide,
                 withLoader: loaderService.withLoader
             },
-            logger,
+            loggerRegistry,
             security: {
                 check: () => security.check()
             },
@@ -95,6 +102,7 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
     return (
         <AppContext value={appContext}>
             <SecurityCheckInitializer />
+            <AccountLogsCleanup />
             {children}
         </AppContext>
     );
@@ -106,6 +114,21 @@ const SecurityCheckInitializer: FC = () => {
     useEffect(() => {
         security.check = check;
     }, [check]);
+
+    return null;
+};
+
+const AccountLogsCleanup: FC = () => {
+    const accounts = useAccounts();
+    const { loggerRegistry: logRegistry } = useAppContext();
+    const hasCleaned = useRef(false);
+
+    useEffect(() => {
+        if (hasCleaned.current) return;
+
+        hasCleaned.current = true;
+        void logRegistry.keepOnlyAccountLogs(accounts.map(a => a.accountId));
+    }, [accounts, logRegistry]);
 
     return null;
 };

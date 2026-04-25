@@ -1,14 +1,14 @@
 import { File, Paths } from 'expo-file-system';
-import * as Sharing from 'expo-sharing';
 import { createMMKV } from 'react-native-mmkv';
 
 import { ILoggerTransport, LogEntry, LogLevel } from '@safely/sync';
 
-const LOG_FILENAME = 'safely-logs.ndjson';
 const DEFAULT_FLUSH_INTERVAL_MS = 30_000;
 const DEFAULT_MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024;
 
 type FileTransportConfig = {
+    mmkvId: string;
+    filename: string;
     appVersion: string;
     build: string;
     deviceInfo: { name: string; osVersion: string };
@@ -17,26 +17,33 @@ type FileTransportConfig = {
 };
 
 export class FileTransport implements ILoggerTransport {
-    private readonly mmkv = createMMKV({ id: 'logger-buffer' });
+    private readonly mmkv;
+    public readonly filename: string;
     private readonly build?: string;
     private readonly device?: string;
     private readonly appVersion?: string;
     private readonly flushIntervalMs: number;
     private readonly maxFileSizeBytes: number;
+    private readonly flushHandle: ReturnType<typeof setInterval>;
     private flushing: Promise<void> = Promise.resolve();
     private flushScheduled = false;
     private seqNo = 0;
+    private isDestroyed = false;
 
     constructor(opts: FileTransportConfig) {
+        this.mmkv = createMMKV({ id: opts.mmkvId });
+        this.filename = opts.filename;
         this.appVersion = opts.appVersion;
         this.build = opts.build;
         this.device = `${opts.deviceInfo.name}, ${opts.deviceInfo.osVersion}`;
-        this.flushIntervalMs = opts?.flushIntervalMs ?? DEFAULT_FLUSH_INTERVAL_MS;
-        this.maxFileSizeBytes = opts?.maxFileSizeBytes ?? DEFAULT_MAX_FILE_SIZE_BYTES;
-        setInterval(() => void this.flush(), this.flushIntervalMs);
+        this.flushIntervalMs = opts.flushIntervalMs ?? DEFAULT_FLUSH_INTERVAL_MS;
+        this.maxFileSizeBytes = opts.maxFileSizeBytes ?? DEFAULT_MAX_FILE_SIZE_BYTES;
+        this.flushHandle = setInterval(() => void this.flush(), this.flushIntervalMs);
     }
 
     public log(entry: LogEntry): void {
+        if (this.isDestroyed) return;
+
         const key = `e_${Date.now()}_${this.seqNo++}`;
         this.mmkv.set(
             key,
@@ -57,6 +64,8 @@ export class FileTransport implements ILoggerTransport {
     }
 
     public flush(): Promise<void> {
+        if (this.isDestroyed) return Promise.resolve();
+
         if (!this.flushScheduled) {
             this.flushScheduled = true;
             this.flushing = this.flushing.then(() => {
@@ -69,19 +78,31 @@ export class FileTransport implements ILoggerTransport {
         return this.flushing;
     }
 
-    public async shareLogs(): Promise<void> {
-        await this.flush();
+    public async destroy(): Promise<void> {
+        if (this.isDestroyed) return;
+
+        this.isDestroyed = true;
+        clearInterval(this.flushHandle);
+
+        await this.flushing;
+        this.clearState();
+    }
+
+    public async clear(): Promise<void> {
+        if (this.isDestroyed) return;
+
+        await this.flushing;
+        this.clearState();
+    }
+
+    private clearState(): void {
+        this.mmkv.clearAll();
 
         try {
-            const logFile = new File(Paths.document, LOG_FILENAME);
-            if (!logFile.exists) return;
-
-            await Sharing.shareAsync(logFile.uri, {
-                mimeType: 'application/x-ndjson',
-                dialogTitle: 'Share Safely Logs'
-            });
+            const logFile = new File(Paths.document, this.filename);
+            if (logFile.exists) logFile.delete();
         } catch (e) {
-            console.error('[FileTransport] shareLogs failed', e);
+            console.error('[FileTransport] clear: failed to delete file', e);
         }
     }
 
@@ -99,7 +120,7 @@ export class FileTransport implements ILoggerTransport {
         if (lines.length === 0) return;
 
         const content = lines.join('\n') + '\n';
-        const logFile = new File(Paths.document, LOG_FILENAME);
+        const logFile = new File(Paths.document, this.filename);
 
         try {
             if (logFile.exists && logFile.size > this.maxFileSizeBytes) {

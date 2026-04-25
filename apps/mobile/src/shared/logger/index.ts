@@ -1,24 +1,28 @@
-import { createMobileLogger } from './logger';
 import packageJson from '../../../package.json';
 import { build, deviceInfo } from '../app-meta';
+import { createSystemLogger } from './logger';
+import { LoggerRegistry } from './registry';
 
-const { logger, shareLogs } = createMobileLogger({
+const config = {
     appVersion: packageJson.version,
     build,
     deviceInfo,
     isDev: __DEV__
-});
+};
+
+const { logger: systemLogger, transport: systemTransport } = createSystemLogger(config);
+const loggerRegistry = new LoggerRegistry({ config, systemLogger, systemTransport });
 
 const prevHandler = ErrorUtils.getGlobalHandler();
 ErrorUtils.setGlobalHandler((error, isFatal) => {
-    logger.error(`[Unhandled${isFatal ? ' FATAL' : ''}]`, error);
+    systemLogger.error(`[Unhandled${isFatal ? ' FATAL' : ''}]`, error);
     prevHandler(error, isFatal);
 });
 
 if (typeof globalThis.onunhandledrejection === 'undefined') {
     globalThis.onunhandledrejection = (event: PromiseRejectionEvent) => {
-        logger.error('[Unhandled Promise Rejection]', event.reason);
+        systemLogger.error('[Unhandled Promise Rejection]', event.reason);
     };
 }
 
-export { logger, shareLogs };
+export { loggerRegistry };

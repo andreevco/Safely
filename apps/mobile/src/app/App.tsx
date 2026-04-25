@@ -4,7 +4,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { createPersister, createQueryClient, QueryProvider } from '@safely/ux';
 
-import { logger } from '@mobile/shared/logger';
+import { loggerRegistry } from '@mobile/shared/logger';
 import { LoaderProvider, LoaderServiceProvider } from '@mobile/shared/providers/loader';
 import { ToastProvider, ToastServiceProvider } from '@mobile/shared/providers/toast';
 import { mobileStorages } from '@mobile/shared/storage';
@@ -12,8 +12,8 @@ import { mobileStorages } from '@mobile/shared/storage';
 import { AppContextProvider } from './AppContext';
 import { AppNavigation } from './AppNavigation';
 
-const persister = createPersister(mobileStorages.persister.storage, logger);
-const queryClient = createQueryClient(logger);
+const persister = createPersister(mobileStorages.persister.storage, loggerRegistry.systemLogger);
+const queryClient = createQueryClient(loggerRegistry.systemLogger);
 
 export const App = () => {
     return (

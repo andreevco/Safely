@@ -45,14 +45,14 @@ export function useParsedError(
 
 export function useErrorToast(config: TranslatableErrorsConfig, options?: ParseErrorOptions) {
     const toast = useToast();
-    const { logger } = useAppContext();
+    const { loggerRegistry } = useAppContext();
     const parseError = useParseError(config, options);
 
     return useCallback(
         (e: unknown) => {
-            logger.error(e);
+            loggerRegistry.systemLogger.error(e);
             toast({ message: parseError(e), type: 'error' });
         },
-        [toast, parseError, logger]
+        [toast, parseError, loggerRegistry]
     );
 }

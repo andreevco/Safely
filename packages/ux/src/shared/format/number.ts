@@ -12,10 +12,10 @@ import {
 import { useAppContext } from '../providers';
 
 export function useNumberFormatter() {
-    const { numberFormatLocale, logger } = useAppContext();
+    const { numberFormatLocale, loggerRegistry } = useAppContext();
     return useMemo(
-        () => new NumberFormatter(numberFormatLocale, logger),
-        [numberFormatLocale, logger]
+        () => new NumberFormatter(numberFormatLocale, loggerRegistry.systemLogger),
+        [numberFormatLocale, loggerRegistry]
     );
 }
 

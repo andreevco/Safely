@@ -20,21 +20,22 @@ export class SyncAccountFactory<
     private readonly syncAccountIdRepository: SyncAccountRepository;
     private readonly accountManager: AccountManager<S>;
     private readonly apiConfiguration: Configuration;
-    private readonly logger: Logger;
+    private readonly preAccountLogger: Logger;
 
     constructor(opts: {
         storage: ITreeStorage;
         encryptedStorage: ITreeStorage;
         structure: S;
         apiConfiguration?: SyncApiConfiguration;
-        logger?: Logger;
+        preAccountLogger?: Logger;
+        createAccountLogger: (accountId: string) => Logger;
     }) {
         validateSyncDataScheme(opts.structure);
 
         this.syncAccountIdRepository = new SyncAccountRepository(opts.storage);
         this.apiConfiguration = new Configuration(opts.apiConfiguration);
-        this.logger =
-            opts.logger ??
+        this.preAccountLogger =
+            opts.preAccountLogger ??
             (() => {
                 const logger = new Logger();
                 logger.setLogsFilter(logsFilterMinSeverityLevel(LogLevel.TRACE));
@@ -47,7 +48,7 @@ export class SyncAccountFactory<
             this.syncAccountIdRepository,
             opts.structure,
             this.apiConfiguration,
-            this.logger
+            opts.createAccountLogger
         );
         this.accountManager = new AccountManager(
             opts.storage,
@@ -56,7 +57,7 @@ export class SyncAccountFactory<
             opts.structure,
             this.apiConfiguration,
             createAccountService,
-            this.logger
+            opts.createAccountLogger
         );
     }
 
@@ -74,7 +75,7 @@ export class SyncAccountFactory<
             accountsApiForOnboarding(ikKeypair, this.apiConfiguration),
             this.accountManager,
             secureEncryptedStorage,
-            this.logger
+            this.preAccountLogger
         );
         const data = onboarding.generateOnboardingData();
         const abortController = new AbortController();

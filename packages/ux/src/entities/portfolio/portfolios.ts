@@ -285,7 +285,7 @@ export function useActivePortfolioEntitiesQuery() {
     const accountQueryKey = useActiveAccountQueryKey();
     const client = useQueryClient();
     const portfoliosQuery = usePortfoliosQueryConfig();
-    const { logger } = useAppContext();
+    const { loggerRegistry } = useAppContext();
 
     return useSuspenseQuery<ActivePortfolioEntities | null>({
         queryKey: accountQueryKey.portfolios.active.toKey(),
@@ -311,7 +311,9 @@ export function useActivePortfolioEntitiesQuery() {
                 }
 
                 if (activeConfig && !activeConfig.derivationId) {
-                    logger.error('derivationId is null for derivable portfolio');
+                    loggerRegistry.systemLogger.error(
+                        'derivationId is null for derivable portfolio'
+                    );
                 }
 
                 const derivation = activeConfig?.derivationId

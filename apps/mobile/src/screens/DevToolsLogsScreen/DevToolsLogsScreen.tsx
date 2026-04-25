@@ -3,7 +3,6 @@ import { View } from 'react-native';
 
 import { useAppContext, useToast } from '@safely/ux';
 
-import { shareLogs } from '@mobile/shared/logger';
 import { Button, Input, Screen, Text } from '@mobile/shared/ui';
 
 import { styles } from './DevToolsLogsScreen.styles';
@@ -47,7 +46,8 @@ const PRESETS: Preset[] = [
 
 export const DevToolsLogsScreen = () => {
     const toast = useToast();
-    const { logger } = useAppContext();
+    const { loggerRegistry } = useAppContext();
+
     const [text, setText] = useState('');
 
     const handleLog = useCallback(
@@ -55,11 +55,11 @@ export const DevToolsLogsScreen = () => {
             const trimmed = text.trim();
             if (!trimmed) return;
 
-            logger[level]('[sandbox]', trimmed);
+            loggerRegistry.systemLogger[level]('[sandbox]', trimmed);
             setText('');
             toast({ message: 'Log saved!' });
         },
-        [logger, text, toast]
+        [loggerRegistry, text, toast]
     );
 
     const handlePreset = useCallback(
@@ -126,7 +126,12 @@ export const DevToolsLogsScreen = () => {
                     ))}
                 </View>
 
-                <Button style={styles.actionsGroup} type="primary" size="large" onPress={shareLogs}>
+                <Button
+                    size="large"
+                    type="primary"
+                    style={styles.actionsGroup}
+                    onPress={() => loggerRegistry.shareAllLogs()}
+                >
                     Share logs
                 </Button>
             </Screen.Scrollable>

@@ -8,6 +8,7 @@ import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import {
     SendFormResult,
     useActiveBtcWallet,
+    useAppContext,
     useEstimateAssetTransfer,
     useNumberFormatter,
     useSendAssetTransfer
@@ -15,7 +16,6 @@ import {
 
 import { TransactionFee } from '@mobile/screens/ConfirmationScreen/components/TransactionFee';
 import { TransactionSendResult } from '@mobile/screens/ConfirmationScreen/components/TransactionSendResult';
-import { logger } from '@mobile/shared/logger';
 import { Checkmark96, Icon, List, Screen, Text, Image } from '@mobile/shared/ui';
 
 import { Amount, ConfirmationFooter, Wallet, TransactionCell } from './components';
@@ -32,9 +32,11 @@ export type ConfirmationScreenProps = StaticScreenProps<SendConfirmationParams>;
 export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
     const { route } = props;
     const { confirmationResult, onSuccess } = route.params;
-    const navigation = useNavigation();
+
     const { t } = useTranslation();
+    const navigation = useNavigation();
     const btcWallet = useActiveBtcWallet();
+    const { loggerRegistry } = useAppContext();
 
     const [confirmationState, setConfirmationState] = useState<ConfirmationState>({ type: 'idle' });
 
@@ -55,11 +57,11 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
             notificationAsync(NotificationFeedbackType.Success);
             setConfirmationState({ type: 'success' });
         } catch (error) {
-            logger.error('[ConfirmationScreen] send failed', error);
+            loggerRegistry.systemLogger.error('[ConfirmationScreen] send failed', error);
             notificationAsync(NotificationFeedbackType.Error);
             setConfirmationState({ type: 'error', error });
         }
-    }, [send, onSuccess]);
+    }, [send, onSuccess, loggerRegistry]);
 
     const displayState = useMemo(() => {
         if (txTemplateError) {

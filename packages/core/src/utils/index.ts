@@ -1,3 +1,4 @@
+export * from './crypto';
 export * from './id';
 export * from './number';
 export * from './string';

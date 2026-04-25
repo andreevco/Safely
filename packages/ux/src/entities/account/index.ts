@@ -74,7 +74,7 @@ export function resetAccountsFactory() {
 
 export function useAccountsFactory() {
     const config = useBootConfig();
-    const { storage, encryptedStorage, logger } = useAppContext();
+    const { storage, encryptedStorage, loggerRegistry } = useAppContext();
 
     if (!_syncAccountFactory) {
         _syncAccountFactory = new SyncAccountFactory({
@@ -84,7 +84,8 @@ export function useAccountsFactory() {
             apiConfiguration: {
                 basePath: config.sync.api_url
             },
-            logger: logger.child('sync')
+            preAccountLogger: loggerRegistry.systemLogger.child('sync'),
+            createAccountLogger: (accountId: string) => loggerRegistry.getAccountLogger(accountId)
         });
     }
 
@@ -141,7 +142,7 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
     const t = useTranslate();
     const client = useQueryClient();
     const factory = useAccountsFactory();
-    const { logger } = useAppContext();
+    const { loggerRegistry } = useAppContext();
     const { mutateAsync: setActive } = useSetActiveAccount();
 
     return useMutation<
@@ -183,7 +184,7 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
             return account;
         },
         onError(e) {
-            logger.error(e);
+            loggerRegistry.systemLogger.error(e);
         }
     });
 }
@@ -233,7 +234,7 @@ export function useAccountConnectedCallback(
     options?: { setAsActive: boolean; onError?: (e: Error) => void }
 ) {
     const client = useQueryClient();
-    const { logger } = useAppContext();
+    const { loggerRegistry } = useAppContext();
     const { mutateAsync: setActive } = useSetActiveAccount();
     const { mutateAsync: updateOwnSyncedDeviceMeta } = useUpdateOwnSyncedDeviceMeta();
     const setAsActive = options?.setAsActive ?? false;
@@ -264,7 +265,7 @@ export function useAccountConnectedCallback(
                     return;
                 }
 
-                logger.error('[useAccountConnectedCallback]', e);
+                loggerRegistry.systemLogger.error('[useAccountConnectedCallback]', e);
                 options?.onError?.(e instanceof Error ? e : new Error(String(e)));
             });
         return () => {
@@ -297,7 +298,7 @@ export function useConnectAccountToNewDevice() {
     const activeKeeperId = useActiveAccount();
     const toast = useToast();
     const { withLoader } = useLoader();
-    const { qrScanner, logger } = useAppContext();
+    const { qrScanner, loggerRegistry } = useAppContext();
 
     return useMutation<void, Error, { secureEncryptedStorage: ITreeStorage }>({
         async mutationFn({ secureEncryptedStorage }) {
@@ -316,7 +317,7 @@ export function useConnectAccountToNewDevice() {
             toast(t('settings.deviceConnected'));
         },
         onError(e) {
-            logger.error(e);
+            loggerRegistry.systemLogger.error(e);
         }
     });
 }
@@ -354,7 +355,7 @@ export function useDeleteAccount() {
     const account = useActiveAccount();
     const accountFactory = useAccountsFactory();
     const client = useQueryClient();
-    const { getSecureEncryptedStorage } = useAppContext();
+    const { getSecureEncryptedStorage, loggerRegistry } = useAppContext();
     const ikPub = useCurrentDeviceIkPub();
     const devicesMeta = useSyncedDevicesMeta();
 
@@ -372,6 +373,7 @@ export function useDeleteAccount() {
             }
 
             await accountFactory.deleteLocalAccount(account.accountId, secureEncryptedStorage);
+            await loggerRegistry.destroyAccountLogger(account.accountId);
 
             const accounts = client.getQueryData<SyncAccount[]>(accountKey.list.toKey());
             const remaining = accounts?.filter(a => a.accountId !== account.accountId) ?? [];
@@ -387,13 +389,14 @@ export function useDeleteAccount() {
 }
 
 export function useEraseAllData() {
-    const { clearAllData } = useAppContext();
+    const { clearAllData, loggerRegistry } = useAppContext();
     const queryClient = useQueryClient();
 
     return useMutation({
         async mutationFn() {
             resetAccountsFactory();
             await clearAllData();
+            await loggerRegistry.destroyAllLogs();
 
             queryClient.clear();
         }
