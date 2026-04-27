@@ -36,10 +36,18 @@ export const hNil: HNil = {
   _tag: "HNil",
 };
 
-export function hCons<Head extends StorageVersion, Tail>(
-  head: Head,
+type OlderSchemaFor<Tail, Fallback extends AnySchema> =
+  Tail extends HCons<infer Older extends StorageVersion, unknown>
+    ? NewOf<Older>
+    : Fallback;
+
+export function hCons<
+  New extends AnySchema,
+  Tail extends HNil | HCons<StorageVersion, unknown>,
+>(
+  head: StorageVersion<OlderSchemaFor<Tail, New>, New>,
   tail: Tail,
-): HCons<Head, Tail> {
+): HCons<StorageVersion<OlderSchemaFor<Tail, New>, New>, Tail> {
   return {
     _tag: "HCons",
     head,
@@ -56,9 +64,6 @@ export type AssertVersionHList<List> = List extends HNil
         ? HCons<Newer, AssertVersionHList<HCons<Older, Rest>>>
         : never
       : never;
-
-export type LatestVersion<List> =
-  List extends HCons<infer Latest, unknown> ? z.output<NewOf<Latest>> : never;
 
 export function defineVersionHList<List>(
   versions: List & AssertVersionHList<List>,

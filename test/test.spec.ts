@@ -35,23 +35,19 @@ const v3 = defineVersionHList(
         key3: false,
         key4: "v3",
       },
-      migrate: (prev: unknown) => {
-        const parsed = schemaV2.parse(prev);
-
+      migrate: (prev) => {
         return {
-          key1: parsed.key1,
-          label: parsed.key2,
-          key3: parsed.key3,
+          key1: prev.key1,
+          label: prev.key2,
+          key3: prev.key3,
           key4: "v3",
         };
       },
-      reverseMigrate: (current: unknown) => {
-        const parsed = schemaV3.parse(current);
-
+      reverseMigrate: (current) => {
         return {
-          key1: parsed.key1,
-          key2: parsed.label,
-          key3: parsed.key3,
+          key1: current.key1,
+          key2: current.label,
+          key3: current.key3,
         };
       },
     },
@@ -64,21 +60,17 @@ const v3 = defineVersionHList(
           key2: "initial",
           key3: false,
         },
-        migrate: (prev: unknown) => {
-          const parsed = schemaV1.parse(prev);
-
+        migrate: (prev) => {
           return {
-            key1: parsed.key1,
-            key2: parsed.key2,
+            key1: prev.key1,
+            key2: prev.key2,
             key3: false,
           };
         },
-        reverseMigrate: (current: unknown) => {
-          const parsed = schemaV2.parse(current);
-
+        reverseMigrate: (current) => {
           return {
-            key1: parsed.key1,
-            key2: parsed.key2,
+            key1: current.key1,
+            key2: current.key2,
           };
         },
       },
@@ -90,8 +82,8 @@ const v3 = defineVersionHList(
             key1: 0,
             key2: "initial",
           },
-          migrate: (prev: unknown) => schemaV1.parse(prev),
-          reverseMigrate: (current: unknown) => schemaV1.parse(current),
+          migrate: (prev) => prev,
+          reverseMigrate: (current) => current,
         },
         hNil,
       ),
