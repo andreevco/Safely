@@ -70,20 +70,11 @@ export async function fetchBtcActivity(
 ): Promise<ActivityPage> {
     const pageNum = page >= 1 ? page : 1;
 
-    const addressData = await btcApi.getAddressInfo(
-        {
-            ...wallet,
-            derivationPath: {
-                change: 0,
-                addressIndex: '*'
-            }
-        },
-        {
-            details: 'txs',
-            page: pageNum,
-            pageSize: ON_PAGE_ELEMENTS_LIMIT
-        }
-    );
+    const addressData = await btcApi.getAddressInfo(wallet, {
+        details: 'txs',
+        page: pageNum,
+        pageSize: ON_PAGE_ELEMENTS_LIMIT
+    });
 
     if (!addressData?.transactions || addressData.transactions.length === 0) {
         return { items: [], hasNextPage: false };
