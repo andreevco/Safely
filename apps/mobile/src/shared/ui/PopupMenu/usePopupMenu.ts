@@ -110,6 +110,18 @@ export const usePopupMenu = (screenHeight: number, menuMargin = 8) => {
         [progress]
     );
 
+    const compactMenuAnimatedStyle = useAnimatedStyle(() => {
+        const menuCenterY = triggerFrame.value.y + triggerFrame.value.height / 2;
+
+        return {
+            top: menuCenterY - menuHeight.value / 2,
+            left: triggerFrame.value.x + triggerFrame.value.width,
+            opacity: progress.value,
+            transform: [{ scale: scale.value }, { translateX: '-100%' }],
+            transformOrigin: '100% 50%'
+        };
+    }, [triggerFrame, menuHeight, progress, scale]);
+
     const menuAnimatedStyle = useAnimatedStyle(() => {
         const spaceBelow = screenHeight - (triggerFrame.value.y + triggerHeight.value + menuMargin);
         const showBelow =
@@ -137,6 +149,7 @@ export const usePopupMenu = (screenHeight: number, menuMargin = 8) => {
         blurAnimatedProps,
         blurAnimatedStyle,
         opacityAnimatedStyle,
-        menuAnimatedStyle
+        menuAnimatedStyle,
+        compactMenuAnimatedStyle
     };
 };

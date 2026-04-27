@@ -65,19 +65,24 @@ function DeviceItem(props: { ikPubHex: string; meta: DeviceMeta }) {
                     <Badge>{formatOsBadge(meta.platform, meta.osVersion)}</Badge>
                 </View>
                 <Text variant="bodyM" color="secondary">
-                    {t('security.device.added', { date: formatDate.format(meta.pairedAt) })}
-                </Text>
-                <Text variant="bodyM" color="tertiary">
                     {t(isUpToDate ? 'security.device.upToDate' : 'security.device.notUpToDate')}
                     {notSyncedWalletsCount > 0 &&
                         ' · ' +
                             t('security.device.walletsNotSynced', { count: notSyncedWalletsCount })}
                 </Text>
+                <Text variant="bodyM" color="tertiary">
+                    {t('security.device.added', { date: formatDate.format(meta.pairedAt) })}
+                </Text>
             </View>
-            <PopupMenu ref={menuRef} touchable={<Icon icon={More28} color="tertiary" />}>
+            <PopupMenu
+                ref={menuRef}
+                hasBackdrop={false}
+                variant="compact"
+                touchable={<Icon icon={More28} color="tertiary" />}
+            >
                 <Pressable onPress={handleDisconnect}>
                     <View style={styles.menuItem}>
-                        <Text variant="labelL">{t('security.device.disconnect')}</Text>
+                        <Text variant="labelL">{t('security.device.unlink')}</Text>
                         <Icon icon={Block16} />
                     </View>
                 </Pressable>
