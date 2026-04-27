@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect } from 'react';
 
 import {
@@ -19,6 +19,8 @@ import {
     SyncedStorageStructure,
     useAppContext,
     useBootConfig,
+    useLogger,
+    useMutation,
     useSharedStructuredStorage,
     useSuspenseQuery,
     useTranslate
@@ -142,13 +144,13 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
     const t = useTranslate();
     const client = useQueryClient();
     const factory = useAccountsFactory();
-    const { loggerRegistry } = useAppContext();
     const { mutateAsync: setActive } = useSetActiveAccount();
 
     return useMutation<
         ISyncAccount<SyncedStorageStructure>,
         Error,
-        { name?: string; secureEncryptedStorage: ITreeStorage }
+        { name?: string; secureEncryptedStorage: ITreeStorage },
+        unknown
     >({
         async mutationFn(params) {
             await delay();
@@ -182,9 +184,6 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
             }
 
             return account;
-        },
-        onError(e) {
-            loggerRegistry.systemLogger.error(e);
         }
     });
 }
@@ -233,8 +232,8 @@ export function useAccountConnectedCallback(
     callback: (account: SyncAccount) => void,
     options?: { setAsActive: boolean; onError?: (e: Error) => void }
 ) {
+    const logger = useLogger();
     const client = useQueryClient();
-    const { loggerRegistry } = useAppContext();
     const { mutateAsync: setActive } = useSetActiveAccount();
     const { mutateAsync: updateOwnSyncedDeviceMeta } = useUpdateOwnSyncedDeviceMeta();
     const setAsActive = options?.setAsActive ?? false;
@@ -265,7 +264,7 @@ export function useAccountConnectedCallback(
                     return;
                 }
 
-                loggerRegistry.systemLogger.error('[useAccountConnectedCallback]', e);
+                logger.error('[useAccountConnectedCallback]', e);
                 options?.onError?.(e instanceof Error ? e : new Error(String(e)));
             });
         return () => {
@@ -298,9 +297,9 @@ export function useConnectAccountToNewDevice() {
     const activeKeeperId = useActiveAccount();
     const toast = useToast();
     const { withLoader } = useLoader();
-    const { qrScanner, loggerRegistry } = useAppContext();
+    const { qrScanner } = useAppContext();
 
-    return useMutation<void, Error, { secureEncryptedStorage: ITreeStorage }>({
+    return useMutation<void, Error, { secureEncryptedStorage: ITreeStorage }, unknown>({
         async mutationFn({ secureEncryptedStorage }) {
             const connectionString = await qrScanner.scan({
                 titleTranslationKey: 'qrScan.addDevice.title',
@@ -315,9 +314,6 @@ export function useConnectAccountToNewDevice() {
         },
         onSuccess() {
             toast(t('settings.deviceConnected'));
-        },
-        onError(e) {
-            loggerRegistry.systemLogger.error(e);
         }
     });
 }
@@ -355,9 +351,9 @@ export function useDeleteAccount() {
     const account = useActiveAccount();
     const accountFactory = useAccountsFactory();
     const client = useQueryClient();
-    const { getSecureEncryptedStorage, loggerRegistry } = useAppContext();
     const ikPub = useCurrentDeviceIkPub();
     const devicesMeta = useSyncedDevicesMeta();
+    const { getSecureEncryptedStorage } = useAppContext();
 
     return useMutation({
         async mutationFn() {
@@ -373,7 +369,6 @@ export function useDeleteAccount() {
             }
 
             await accountFactory.deleteLocalAccount(account.accountId, secureEncryptedStorage);
-            await loggerRegistry.destroyAccountLogger(account.accountId);
 
             const accounts = client.getQueryData<SyncAccount[]>(accountKey.list.toKey());
             const remaining = accounts?.filter(a => a.accountId !== account.accountId) ?? [];
@@ -389,14 +384,13 @@ export function useDeleteAccount() {
 }
 
 export function useEraseAllData() {
-    const { clearAllData, loggerRegistry } = useAppContext();
+    const { clearAllData } = useAppContext();
     const queryClient = useQueryClient();
 
     return useMutation({
         async mutationFn() {
             resetAccountsFactory();
             await clearAllData();
-            await loggerRegistry.destroyAllLogs();
 
             queryClient.clear();
         }

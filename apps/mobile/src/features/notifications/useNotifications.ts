@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unsafe-enum-comparison */
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import * as Notifications from 'expo-notifications';
 
-import { useSharedStructuredStorage } from '@safely/ux';
+import { useMutation, useSharedStructuredStorage } from '@safely/ux';
 
 import { notificationsKeys } from './keys';
 

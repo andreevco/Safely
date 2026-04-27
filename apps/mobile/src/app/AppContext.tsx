@@ -1,5 +1,5 @@
 import { getLocales } from 'expo-localization';
-import { FC, PropsWithChildren, useEffect, useMemo, useRef } from 'react';
+import { FC, PropsWithChildren, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AppState } from 'react-native';
 
@@ -8,8 +8,7 @@ import {
     IAppContext,
     Security,
     UnlockableSecuredEncryptedStorage,
-    useAccounts,
-    useAppContext
+    useLoggerLifecycle
 } from '@safely/ux';
 
 import { navigationRef } from '@mobile/app/navigation/navigationRef';
@@ -102,7 +101,7 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
     return (
         <AppContext value={appContext}>
             <SecurityCheckInitializer />
-            <AccountLogsCleanup />
+            <LoggerLifecycle />
             {children}
         </AppContext>
     );
@@ -118,17 +117,8 @@ const SecurityCheckInitializer: FC = () => {
     return null;
 };
 
-const AccountLogsCleanup: FC = () => {
-    const accounts = useAccounts();
-    const { loggerRegistry: logRegistry } = useAppContext();
-    const hasCleaned = useRef(false);
-
-    useEffect(() => {
-        if (hasCleaned.current) return;
-
-        hasCleaned.current = true;
-        void logRegistry.keepOnlyAccountLogs(accounts.map(a => a.accountId));
-    }, [accounts, logRegistry]);
+const LoggerLifecycle: FC = () => {
+    useLoggerLifecycle();
 
     return null;
 };

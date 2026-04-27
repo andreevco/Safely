@@ -1,63 +1,64 @@
 import { Directory, File, Paths } from 'expo-file-system';
-import * as Sharing from 'expo-sharing';
 
-import { Logger } from '@safely/sync';
+import { Logger, LoggerLifecycleContext } from '@safely/sync';
 import { ILoggerRegistry } from '@safely/ux';
 
-import { accountLogHash } from './account-hash';
+import { buildLogger } from './build-logger';
 import { FileTransport } from './file-transport';
-import { createAccountLoggerInstance, LoggerBundle, MobileLoggerConfig } from './logger';
-import { ACCOUNT_FILE_PATTERN } from './naming';
+import { accountLogHash, ACCOUNT_FILE_PATTERN } from './naming';
+import { shareAggregatedLogs } from './share-logs';
 
-type LoggerRegistryOpts = {
-    config: MobileLoggerConfig;
-    systemLogger: Logger;
+type AccountEntry = {
+    logger: Logger;
+    transport: FileTransport;
+};
+
+export type LoggerRegistryOpts = {
+    isDev: boolean;
     systemTransport: FileTransport;
+    createAccountTransport: (accountId: string) => FileTransport;
 };
 
 export class LoggerRegistry implements ILoggerRegistry {
     public readonly systemLogger: Logger;
-    private readonly accounts = new Map<string, LoggerBundle>();
+    private readonly accounts = new Map<string, AccountEntry>();
 
     constructor(private readonly opts: LoggerRegistryOpts) {
-        this.systemLogger = opts.systemLogger;
+        this.systemLogger = buildLogger(opts.systemTransport, opts.isDev);
     }
 
     public getAccountLogger(accountId: string): Logger {
         const existing = this.accounts.get(accountId);
         if (existing) return existing.logger;
 
-        const entry = createAccountLoggerInstance(accountId, this.opts.config);
-        this.accounts.set(accountId, entry);
+        const transport = this.opts.createAccountTransport(accountId);
+        const logger = buildLogger(transport, this.opts.isDev);
+        this.accounts.set(accountId, { logger, transport });
 
-        return entry.logger;
+        return logger;
     }
 
-    public async destroyAccountLogger(accountId: string): Promise<void> {
-        const entry = this.accounts.get(accountId);
-        if (!entry) return;
+    public async onAfterAppOpened(ctx: LoggerLifecycleContext): Promise<void> {
+        const validHashes = new Set(ctx.accountIds.map(accountLogHash));
 
-        this.accounts.delete(accountId);
-        await entry.transport.destroy();
-    }
+        const unusedIds = Array.from(this.accounts.keys()).filter(
+            id => !validHashes.has(accountLogHash(id))
+        );
+        await Promise.all(
+            unusedIds.map(async id => {
+                const entry = this.accounts.get(id);
+                if (!entry) return;
 
-    public async destroyAllLogs(): Promise<void> {
-        const entries = Array.from(this.accounts.values());
-
-        this.accounts.clear();
-        await Promise.all(entries.map(e => e.transport.destroy()));
-        await this.opts.systemTransport.clear();
-    }
-
-    public async keepOnlyAccountLogs(activeAccountIds: string[]): Promise<void> {
-        const keepHashes = new Set(activeAccountIds.map(accountLogHash));
+                this.accounts.delete(id);
+                await entry.transport.destroy();
+            })
+        );
 
         let files: string[];
         try {
-            const dir = new Directory(Paths.document);
-            files = dir.list().map(item => item.name);
+            files = new Directory(Paths.document).list().map(item => item.name);
         } catch (e) {
-            this.systemLogger.error('[LoggerRegistry] keepOnlyAccountLogs: list failed', e);
+            this.systemLogger.error('[LoggerRegistry] onAfterAppOpened: list failed', e);
             return;
         }
 
@@ -66,13 +67,13 @@ export class LoggerRegistry implements ILoggerRegistry {
             if (!match) continue;
 
             const hash = match[1];
-            if (keepHashes.has(hash)) continue;
+            if (validHashes.has(hash)) continue;
 
             try {
                 new File(Paths.document, name).delete();
             } catch (e) {
                 this.systemLogger.error(
-                    '[LoggerRegistry] keepOnlyAccountLogs: delete failed',
+                    '[LoggerRegistry] onAfterAppOpened: delete failed',
                     name,
                     e
                 );
@@ -80,65 +81,22 @@ export class LoggerRegistry implements ILoggerRegistry {
         }
     }
 
+    public async onBeforeAppClosed(_ctx: LoggerLifecycleContext): Promise<void> {
+        await this.flushAll();
+    }
+
     public async shareAllLogs(): Promise<void> {
-        await this.opts.systemTransport.flush();
-        await Promise.all(
-            Array.from(this.accounts.values()).map(({ transport }) => transport.flush())
-        );
-
-        const aggregate = new File(Paths.cache, `safely-logs-${Date.now()}.ndjson`);
-        try {
-            aggregate.create();
-            aggregate.write(section('system'));
-            this.appendFileIfExists(aggregate, this.opts.systemTransport.filename);
-
-            let files: string[] = [];
-            try {
-                files = new Directory(Paths.document).list().map(item => item.name);
-            } catch {
-                // directory may not exist
-            }
-
-            for (const name of files.filter(n => ACCOUNT_FILE_PATTERN.test(n))) {
-                const match = ACCOUNT_FILE_PATTERN.exec(name);
-                if (!match) continue;
-
-                appendText(aggregate, section(`account-${match[1]}`));
-                this.appendFileIfExists(aggregate, name);
-            }
-
-            await Sharing.shareAsync(aggregate.uri, {
-                mimeType: 'application/x-ndjson',
-                dialogTitle: 'Share Safely Logs'
-            });
-        } catch (e) {
-            this.systemLogger.error('[LoggerRegistry] shareAllLogs failed', e);
-        }
+        await this.flushAll();
+        await shareAggregatedLogs({
+            systemFilename: this.opts.systemTransport.filename,
+            logger: this.systemLogger
+        });
     }
 
-    private appendFileIfExists(target: File, filename: string): void {
-        try {
-            const source = new File(Paths.document, filename);
-            if (!source.exists) return;
-
-            const bytes = source.bytesSync();
-            const handle = target.open();
-            handle.offset = target.size;
-            handle.writeBytes(bytes);
-            handle.close();
-        } catch (e) {
-            this.systemLogger.error('[LoggerRegistry] appendFile failed', filename, e);
-        }
+    private async flushAll(): Promise<void> {
+        await Promise.all([
+            this.opts.systemTransport.flush(),
+            ...Array.from(this.accounts.values()).map(({ transport }) => transport.flush())
+        ]);
     }
-}
-
-function section(name: string): string {
-    return JSON.stringify({ _section: name, t: new Date().toISOString() }) + '\n';
-}
-
-function appendText(target: File, text: string): void {
-    const handle = target.open();
-    handle.offset = target.size;
-    handle.writeBytes(new TextEncoder().encode(text));
-    handle.close();
 }

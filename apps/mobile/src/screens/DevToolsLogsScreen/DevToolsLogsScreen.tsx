@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { View } from 'react-native';
 
-import { useAppContext, useToast } from '@safely/ux';
+import { useAppContext, useLogger, useToast } from '@safely/ux';
 
 import { Button, Input, Screen, Text } from '@mobile/shared/ui';
 
@@ -46,6 +46,7 @@ const PRESETS: Preset[] = [
 
 export const DevToolsLogsScreen = () => {
     const toast = useToast();
+    const logger = useLogger();
     const { loggerRegistry } = useAppContext();
 
     const [text, setText] = useState('');
@@ -55,11 +56,11 @@ export const DevToolsLogsScreen = () => {
             const trimmed = text.trim();
             if (!trimmed) return;
 
-            loggerRegistry.systemLogger[level]('[sandbox]', trimmed);
+            logger[level]('[sandbox]', trimmed);
             setText('');
             toast({ message: 'Log saved!' });
         },
-        [loggerRegistry, text, toast]
+        [logger, text, toast]
     );
 
     const handlePreset = useCallback(

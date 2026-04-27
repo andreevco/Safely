@@ -8,8 +8,8 @@ import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import {
     SendFormResult,
     useActiveBtcWallet,
-    useAppContext,
     useEstimateAssetTransfer,
+    useLogger,
     useNumberFormatter,
     useSendAssetTransfer
 } from '@safely/ux';
@@ -36,7 +36,7 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
     const { t } = useTranslation();
     const navigation = useNavigation();
     const btcWallet = useActiveBtcWallet();
-    const { loggerRegistry } = useAppContext();
+    const logger = useLogger();
 
     const [confirmationState, setConfirmationState] = useState<ConfirmationState>({ type: 'idle' });
 
@@ -57,11 +57,11 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
             notificationAsync(NotificationFeedbackType.Success);
             setConfirmationState({ type: 'success' });
         } catch (error) {
-            loggerRegistry.systemLogger.error('[ConfirmationScreen] send failed', error);
+            logger.error('[ConfirmationScreen] send failed', error);
             notificationAsync(NotificationFeedbackType.Error);
             setConfirmationState({ type: 'error', error });
         }
-    }, [send, onSuccess, loggerRegistry]);
+    }, [send, onSuccess, logger]);
 
     const displayState = useMemo(() => {
         if (txTemplateError) {

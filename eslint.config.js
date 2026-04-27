@@ -9,6 +9,7 @@ import prettierPlugin from 'eslint-plugin-prettier';
 import pluginQuery from '@tanstack/eslint-plugin-query';
 import boundaries from 'eslint-plugin-boundaries';
 import isEqPlugin from './eslint-rules/isEqPlugin.js';
+import noTanstackUseMutationPlugin from './eslint-rules/noTanstackUseMutationPlugin.js';
 
 export default [
     {
@@ -46,6 +47,7 @@ export default [
             import: importPlugin,
             'unused-imports': unusedImports,
             iseq: isEqPlugin,
+            'no-tanstack-use-mutation': noTanstackUseMutationPlugin,
             boundaries
         },
         settings: {
@@ -168,6 +170,7 @@ export default [
             '@typescript-eslint/no-floating-promises': 'off',
             /* custom */
             'iseq/no-strict-eq-when-isEq': 'error',
+            'no-tanstack-use-mutation/no-tanstack-use-mutation': 'error',
         }
     },
     /* React */

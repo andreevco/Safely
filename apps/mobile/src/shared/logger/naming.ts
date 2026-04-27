@@ -1,4 +1,7 @@
-import { ACCOUNT_LOG_HASH_HEX_LENGTH } from './account-hash';
+import { sha256Prefix } from '@safely/core';
+
+const HASH_BYTE_LENGTH = 8;
+const HASH_HEX_LENGTH = HASH_BYTE_LENGTH * 2;
 
 const FILE_SUFFIX = '.ndjson';
 const MMKV_PREFIX = 'logger-buffer-';
@@ -16,5 +19,9 @@ export function getAccountMmkvId(hash: string): string {
 }
 
 export const ACCOUNT_FILE_PATTERN = new RegExp(
-    `^${ACCOUNT_FILE_PREFIX}([a-f0-9]{${ACCOUNT_LOG_HASH_HEX_LENGTH}})${FILE_SUFFIX.replace('.', '\\.')}$`
+    `^${ACCOUNT_FILE_PREFIX}([a-f0-9]{${HASH_HEX_LENGTH}})${FILE_SUFFIX.replace('.', '\\.')}$`
 );
+
+export function accountLogHash(accountId: string): string {
+    return sha256Prefix(accountId, HASH_BYTE_LENGTH);
+}

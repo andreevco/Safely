@@ -14,6 +14,6 @@ export function xorFold16(input: Uint8Array): Buffer {
 
 export function sha256Prefix(input: string, byteLength = 8): string {
     return Buffer.from(sha256(Buffer.from(input, 'utf-8')))
-        .slice(0, byteLength)
+        .subarray(0, byteLength)
         .toString('hex');
 }
