@@ -1,6 +1,6 @@
 import { HDKey } from '@scure/bip32';
-import * as bitcoin from 'bitcoinjs-lib';
 
+import * as bitcoin from './bitcoinjs';
 import { BtcNetwork, btcNetworkConfig, BtcWalletType } from '../../entities/blockchain';
 import { assertUnreachable } from '../../utils';
 
