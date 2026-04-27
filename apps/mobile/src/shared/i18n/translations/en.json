@@ -377,7 +377,7 @@
             "placeholder": "Enter address",
             "info": "Watch account cannot sign transactions and send funds.",
             "invalidAddress": "Invalid Bitcoin address",
-            "unsupportedExtendedKey": "ypub and zpub are not supported yet. Use xpub."
+            "unsupportedExtendedKey": "ypub is not supported yet. Use xpub."
         }
     },
     "addAccount": {
