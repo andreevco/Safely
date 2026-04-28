@@ -9,6 +9,7 @@ import prettierPlugin from 'eslint-plugin-prettier';
 import pluginQuery from '@tanstack/eslint-plugin-query';
 import boundaries from 'eslint-plugin-boundaries';
 import isEqPlugin from './eslint-rules/isEqPlugin.js';
+import noDirectBitcoinjsLibPlugin from './eslint-rules/noDirectBitcoinjsLibPlugin.js';
 import noTanstackUseMutationPlugin from './eslint-rules/noTanstackUseMutationPlugin.js';
 
 export default [
@@ -47,6 +48,7 @@ export default [
             import: importPlugin,
             'unused-imports': unusedImports,
             iseq: isEqPlugin,
+            'no-direct-bitcoinjs-lib': noDirectBitcoinjsLibPlugin,
             'no-tanstack-use-mutation': noTanstackUseMutationPlugin,
             boundaries
         },
@@ -170,6 +172,7 @@ export default [
             '@typescript-eslint/no-floating-promises': 'off',
             /* custom */
             'iseq/no-strict-eq-when-isEq': 'error',
+            'no-direct-bitcoinjs-lib/no-direct-bitcoinjs-lib': 'error',
             'no-tanstack-use-mutation/no-tanstack-use-mutation': 'error',
         }
     },

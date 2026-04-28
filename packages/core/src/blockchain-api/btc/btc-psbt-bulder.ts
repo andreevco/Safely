@@ -1,7 +1,6 @@
-import { Network } from 'bitcoinjs-lib';
-import * as bitcoin from 'bitcoinjs-lib';
 import { witnessStackToScriptWitness } from 'bitcoinjs-lib/src/psbt/psbtutils';
 
+import { bitcoin, Network } from './bitcoinjs';
 import { BtcAddress } from './btc-address';
 import { BtcApi, BtcApiUtxo } from '../../api/btc';
 

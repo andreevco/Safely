@@ -1,7 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 
-import { PortfolioType } from '@safely/core';
+import { BtcXpub, PortfolioType } from '@safely/core';
 import { useActivePortfolioEntities } from '@safely/ux';
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
@@ -17,7 +17,13 @@ export const DevToolsXpubScreen = () => {
     const entities = useActivePortfolioEntities();
     const navigation = useNavigation<RootStackNavigationProp>();
 
-    const xpub = resolveXpub(entities);
+    const xpub = useMemo(() => {
+        if (entities.kind === 'bip39') {
+            return BtcXpub.toZpub(entities.btcWallet.xpub);
+        }
+
+        return entities.portfolio.wallet.xpub;
+    }, [entities]);
 
     const handleSelectWallet = useCallback(() => {
         navigation.navigate('SelectAccountModal');
@@ -86,11 +92,3 @@ export const DevToolsXpubScreen = () => {
         </Screen>
     );
 };
-
-function resolveXpub(entities: ReturnType<typeof useActivePortfolioEntities>): string | null {
-    if (entities.kind === 'bip39') {
-        return entities.btcWallet.xpub;
-    }
-
-    return entities.portfolio.wallet.xpub;
-}

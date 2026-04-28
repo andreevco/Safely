@@ -1,5 +1,4 @@
-import * as bitcoin from 'bitcoinjs-lib';
-
+import { bitcoin } from '../../../blockchain-api/btc/bitcoinjs';
 import { assertUnreachable } from '../../../utils/types';
 import { PortfolioNetworkType } from '../../portfolio/portfolio-network-type';
 

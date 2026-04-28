@@ -19,7 +19,6 @@ import { handleDuplicatePortfolio } from '@mobile/features/add-wallet/handleDupl
 import { Button, Screen, Text } from '@mobile/shared/ui';
 import { Icon, XmarkCircle16 } from '@mobile/shared/ui/Icon';
 import { TouchableOpacity } from '@mobile/shared/ui/TouchableOpacity';
-import { hasUnsupportedExtendedKeyPrefix } from '@mobile/shared/utils';
 
 import { styles } from './AddWatchOnlyScreen.styles';
 
@@ -51,13 +50,16 @@ export const AddWatchOnlyScreen = () => {
     }, []);
 
     const trimmedInput = address.trim();
-    const isValidInput = BtcAddress.validate(trimmedInput) || BtcXpub.validate(trimmedInput);
-    const hasError = trimmedInput.length >= 20 && !isValidInput;
-    const isUnsupportedExtendedKey = !isValidInput && hasUnsupportedExtendedKeyPrefix(trimmedInput);
+    const isValidAddress = BtcAddress.validate(trimmedInput);
+    const isValidPubkey = BtcXpub.validate(trimmedInput);
+    const isValidSupportedPubkey = isValidPubkey && /^[XxZz]pub/.test(trimmedInput);
+
+    const isValidInput = isValidAddress || isValidSupportedPubkey;
+    const displayError = !isValidInput && trimmedInput.length >= 20;
 
     styles.useVariants({
         focused: isFocused,
-        error: hasError
+        error: displayError
     });
 
     const handleNext = useCallback(() => {
@@ -159,10 +161,10 @@ export const AddWatchOnlyScreen = () => {
                     )}
                 </View>
 
-                {hasError && (
+                {displayError && (
                     <Text style={styles.errorText}>
                         {t(
-                            isUnsupportedExtendedKey
+                            isValidPubkey && !isValidSupportedPubkey
                                 ? 'addWallet.watchAccount.unsupportedExtendedKey'
                                 : 'addWallet.watchAccount.invalidAddress'
                         )}

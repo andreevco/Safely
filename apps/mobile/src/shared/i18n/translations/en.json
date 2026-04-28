@@ -170,23 +170,24 @@
         },
         "protectAccount": {
             "title": "No linked device",
-            "subtitle": "Link another device to protect your account. Without it, your access can't be restored if this phone is lost."
+            "subtitle": "Link another device as a redundant storage for your wallets. If this phone is lost and you don't have linked devices, you won't be able to restore your wallets.",
+            "linkDevice": "Link device"
         },
         "accountProtected": {
-            "title": "Account protected",
-            "subtitle": "Linked devices have full access to your account and can be used to restore access if another device is lost."
+            "title": "Linked devices",
+            "subtitle": "Listed devices have full access to your wallets and can be used to restore access if another device is lost."
         },
         "device": {
-            "added": "Added {{date}}",
+            "added": "Linked {{date}}",
             "upToDate": "Up to date",
             "notUpToDate": "Not up to date",
             "walletsNotSynced": "{{ count }} wallets not synced",
-            "disconnect": "Disconnect"
+            "unlink": "Unlink"
         },
-        "disconnectDevice": {
-            "title": "Disconnect {{deviceName}}",
-            "subtitle": "This will disconnect your account from this device. The account will remain on the device, but will no longer sync.",
-            "confirm": "Disconnect device"
+        "unlinkDevice": {
+            "title": "Unlink {{deviceName}}",
+            "subtitle": "This will unlink your device from this account. The account data will remain on the device but will not sync with other devices.",
+            "confirm": "Unlink {{deviceName}}"
         },
         "groups": {
             "account": {
@@ -352,7 +353,7 @@
                 "step2": "Tap \"Sign in\" to show a QR code.",
                 "step3": "Tap \"Add device\" below and scan that code — camera access will be required."
             },
-            "addDevice": "Add device",
+            "addDevice": "Link device",
             "protectLater": "Protect account later",
             "deviceNotAdded": "Device was not added. Please try again."
         }
@@ -377,7 +378,7 @@
             "placeholder": "Enter address",
             "info": "Watch account cannot sign transactions and send funds.",
             "invalidAddress": "Invalid Bitcoin address",
-            "unsupportedExtendedKey": "ypub and zpub are not supported yet. Use xpub."
+            "unsupportedExtendedKey": "ypub is not supported yet. Use xpub."
         }
     },
     "addAccount": {
