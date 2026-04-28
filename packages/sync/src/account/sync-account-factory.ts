@@ -10,7 +10,7 @@ import { Configuration } from '../api/generated';
 import { SyncApiConfiguration } from '../api/sync-api-configuration';
 import { validateSyncDataScheme } from '../crdt/deep-merge/z-schema';
 import { ed25519_keygen } from '../crypto/ed25519';
-import { Logger, logsFilterMinSeverityLevel, LogLevel } from '../logger';
+import { Logger } from '../logger';
 import { OnboardingConnector } from '../onboarding/connector';
 import { accountsApiForOnboarding, NewDeviceOnboarding } from '../onboarding/new-device-onboarding';
 
@@ -20,27 +20,21 @@ export class SyncAccountFactory<
     private readonly syncAccountIdRepository: SyncAccountRepository;
     private readonly accountManager: AccountManager<S>;
     private readonly apiConfiguration: Configuration;
-    private readonly preAccountLogger: Logger;
+    private readonly noAccountLogger: Logger;
 
     constructor(opts: {
         storage: ITreeStorage;
         encryptedStorage: ITreeStorage;
         structure: S;
         apiConfiguration?: SyncApiConfiguration;
-        preAccountLogger?: Logger;
-        createAccountLogger: (accountId: string) => Logger;
+        noAccountLogger: Logger;
+        getAccountLogger: (accountId: string) => Logger;
     }) {
         validateSyncDataScheme(opts.structure);
 
         this.syncAccountIdRepository = new SyncAccountRepository(opts.storage);
         this.apiConfiguration = new Configuration(opts.apiConfiguration);
-        this.preAccountLogger =
-            opts.preAccountLogger ??
-            (() => {
-                const logger = new Logger();
-                logger.setLogsFilter(logsFilterMinSeverityLevel(LogLevel.TRACE));
-                return logger;
-            })();
+        this.noAccountLogger = opts.noAccountLogger;
 
         const createAccountService = new CreateAccountService(
             opts.storage,
@@ -48,7 +42,7 @@ export class SyncAccountFactory<
             this.syncAccountIdRepository,
             opts.structure,
             this.apiConfiguration,
-            opts.createAccountLogger
+            opts.getAccountLogger
         );
         this.accountManager = new AccountManager(
             opts.storage,
@@ -57,7 +51,7 @@ export class SyncAccountFactory<
             opts.structure,
             this.apiConfiguration,
             createAccountService,
-            opts.createAccountLogger
+            opts.getAccountLogger
         );
     }
 
@@ -75,7 +69,7 @@ export class SyncAccountFactory<
             accountsApiForOnboarding(ikKeypair, this.apiConfiguration),
             this.accountManager,
             secureEncryptedStorage,
-            this.preAccountLogger
+            this.noAccountLogger
         );
         const data = onboarding.generateOnboardingData();
         const abortController = new AbortController();

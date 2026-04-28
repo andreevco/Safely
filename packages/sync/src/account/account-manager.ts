@@ -23,7 +23,7 @@ export class AccountManager<S extends Record<string, ZodType>> {
         private readonly structure: S,
         private readonly apiConfiguration: Configuration,
         private readonly createAccountService: CreateAccountService<S>,
-        private readonly createAccountLogger: (accountId: string) => Logger
+        private readonly getAccountLogger: (accountId: string) => Logger
     ) {}
 
     public async getAccounts(): Promise<ISyncAccount<S>[]> {
@@ -53,7 +53,7 @@ export class AccountManager<S extends Record<string, ZodType>> {
             this.encryptedStorage,
             accountInfo.accountId
         );
-        const logger = this.createAccountLogger(accountInfo.accountId);
+        const logger = this.getAccountLogger(accountInfo.accountId);
         const container = await createSyncContainer({
             accountId,
             structure: this.structure,

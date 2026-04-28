@@ -86,8 +86,8 @@ export function useAccountsFactory() {
             apiConfiguration: {
                 basePath: config.sync.api_url
             },
-            preAccountLogger: loggerRegistry.systemLogger.child('sync'),
-            createAccountLogger: (accountId: string) => loggerRegistry.getAccountLogger(accountId)
+            noAccountLogger: loggerRegistry.systemLogger.child('sync'),
+            getAccountLogger: (accountId: string) => loggerRegistry.getAccountLogger(accountId)
         });
     }
 

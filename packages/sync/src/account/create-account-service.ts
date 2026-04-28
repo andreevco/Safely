@@ -21,7 +21,7 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
         private readonly syncAccountIDRepository: SyncAccountRepository,
         private readonly structure: S,
         private readonly apiConfiguration: Configuration,
-        private readonly createAccountLogger: (accountId: string) => Logger
+        private readonly getAccountLogger: (accountId: string) => Logger
     ) {}
 
     public async createOfflineAccount(secureEncryptedStorage: ITreeStorage) {
@@ -34,7 +34,7 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
             secureEncryptedStorage,
             accountID
         );
-        const logger = this.createAccountLogger(accountID);
+        const logger = this.getAccountLogger(accountID);
         await initializeSyncAccount({
             storage,
             encryptedStorage,
@@ -89,7 +89,7 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
             secureEncryptedStorage,
             accountID
         );
-        const logger = this.createAccountLogger(accountID);
+        const logger = this.getAccountLogger(accountID);
         await initializeSyncAccount({
             storage,
             structure: this.structure,
