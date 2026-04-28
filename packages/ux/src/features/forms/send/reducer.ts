@@ -19,6 +19,7 @@ const LAST_STEP_INDEX = SEND_STEPS.length - 1;
 
 const DEFAULT_VALUES: SendFormValues = {
     recipient: '',
+    addressBookName: '',
     recipientLabel: undefined,
     amount: '',
     amountInputType: 'crypto',
@@ -49,9 +50,12 @@ export function createInitialState(
 ): SendFormState {
     if (!initialValues?.recipient) return INITIAL_STATE;
 
+    const allDraftIds = [
+        ...(draftSuggestion?.portfoliosIds ?? []),
+        ...(draftSuggestion?.contactsIds ?? [])
+    ];
     const hasValidSuggestion =
-        !!draftSuggestion?.selectedId &&
-        !!draftSuggestion.suggestionIds?.includes(draftSuggestion.selectedId);
+        !!draftSuggestion?.selectedId && allDraftIds.includes(draftSuggestion.selectedId);
 
     return {
         ...INITIAL_STATE,
@@ -74,6 +78,12 @@ export function sendFormReducer(state: SendFormState, action: SendFormAction): S
     switch (action.type) {
         case 'SET_RECIPIENT':
             return applySetRecipient(state, action);
+
+        case 'SET_ADDRESS_BOOK_NAME':
+            return {
+                ...state,
+                values: { ...state.values, addressBookName: action.name }
+            };
 
         case 'SET_AMOUNT':
             return {

@@ -9,13 +9,22 @@ export const styles = StyleSheet.create((theme, rt) => ({
         gap: theme.spacing[8],
         zIndex: 1000
     },
-    menuCentered: {
+    menuLayout: {
         left: theme.spacing[48],
-        right: theme.spacing[48]
-    },
-    menuFullWidth: {
-        left: theme.spacing[8],
-        right: theme.spacing[8]
+        right: theme.spacing[48],
+        variants: {
+            variant: {
+                fullWidth: {
+                    left: theme.spacing[8],
+                    right: theme.spacing[8]
+                },
+                compact: {
+                    left: undefined,
+                    right: undefined,
+                    alignSelf: 'flex-end' as const
+                }
+            }
+        }
     },
     footer: {
         position: 'absolute',

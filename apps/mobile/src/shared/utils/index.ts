@@ -6,3 +6,4 @@ export { MobileNumberFormatLocale } from './mobile-number-format-locale';
 export { startOfDay, diffInDays } from './dates';
 export { smoothstepGradient } from './gradient';
 export { formatLockoutTime } from './formatLockoutTime';
+export { hasUnsupportedExtendedKeyPrefix } from './extended-key';

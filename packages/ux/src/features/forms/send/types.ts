@@ -1,6 +1,7 @@
 import {
     BLOCKCHAIN_NAME,
     BtcAsset,
+    ContactMeta,
     CryptoAsset,
     CryptoAssetAmount,
     FiatAssetAmount,
@@ -9,13 +10,24 @@ import {
     Recipient
 } from '@safely/core';
 
-export interface SendSuggestion {
+export interface PortfolioSuggestion {
     id: string;
     address: string;
     meta: PortfolioMeta;
     tag?: number;
     isWatchOnly?: boolean;
 }
+
+export interface ContactSuggestion {
+    id: string;
+    address: string;
+    meta: ContactMeta;
+}
+
+export type SendSuggestions = {
+    portfolios: PortfolioSuggestion[];
+    contacts: ContactSuggestion[];
+};
 
 export type AmountInputType = 'crypto' | 'fiat';
 
@@ -71,6 +83,7 @@ export interface SendFormInitialValues {
 
 export interface SendFormValues {
     recipient: string;
+    addressBookName: string;
     recipientLabel: string | undefined;
     amount: string;
     amountInputType: AmountInputType;
@@ -93,7 +106,8 @@ export interface SendFormErrors {
 
 export interface SendSuggestionState {
     selectedId: string | undefined;
-    suggestionIds: string[] | undefined;
+    portfoliosIds: string[] | undefined;
+    contactsIds: string[] | undefined;
 }
 
 export interface SendFormState {
@@ -106,6 +120,7 @@ export interface SendFormState {
 
 export type SendFormAction =
     | { type: 'SET_RECIPIENT'; value: string; label?: string }
+    | { type: 'SET_ADDRESS_BOOK_NAME'; name: string }
     | { type: 'SET_AMOUNT'; value: string }
     | {
           type: 'SET_AMOUNT_VALIDATED';
@@ -136,7 +151,8 @@ export type SendFormAction =
               id: string;
               address: string;
               label: string;
-              suggestionIds: string[];
+              portfoliosIds: string[];
+              contactsIds: string[];
           };
       }
     | {
@@ -144,7 +160,8 @@ export type SendFormAction =
           id: string;
           address: string;
           label?: string;
-          suggestionIds: string[];
+          portfoliosIds: string[];
+          contactsIds: string[];
       }
     | { type: 'CLEAR_SUGGESTION' }
     | {

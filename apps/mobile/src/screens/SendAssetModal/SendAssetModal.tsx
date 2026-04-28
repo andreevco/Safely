@@ -154,7 +154,7 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
                             entering={FadeIn.duration(150)}
                             exiting={FadeOut.duration(150)}
                         >
-                            {meta.portfolioMetaByAddress ? (
+                            {meta.recipientMeta ? (
                                 <View style={styles.recipientRow}>
                                     <Text
                                         variant="bodyM"
@@ -162,7 +162,7 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
                                         numberOfLines={1}
                                         style={styles.recipientName}
                                     >
-                                        {meta.portfolioMetaByAddress.name}
+                                        {meta.recipientMeta.meta.name}
                                     </Text>
                                     <Text variant="bodyM" color="tertiary">
                                         {' '}
@@ -204,13 +204,20 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
                     key="recipient"
                     inputRef={recipientInputRef}
                     value={state.values.recipient}
-                    error={meta.suggestions.length > 0 ? undefined : state.errors.recipient}
+                    error={
+                        meta.suggestions.portfolios.length > 0 ||
+                        meta.suggestions.contacts.length > 0
+                            ? undefined
+                            : state.errors.recipient
+                    }
+                    isValidAddress={!!state.parsed.recipient}
                     onChangeText={actions.setRecipient}
                     suggestions={meta.suggestions}
-                    allSuggestions={meta.allSuggestions}
                     restoredSuggestions={meta.restoredSuggestions}
                     selectedId={suggestionSelection.selectedId}
                     onSelectSuggestion={suggestionSelection.select}
+                    onAddressBookNameChange={actions.setAddressBookName}
+                    addressBookName={state.values.addressBookName}
                 />
                 <AmountStep
                     key="amount"

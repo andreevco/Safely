@@ -1,15 +1,16 @@
 import { useCallback, useMemo, useReducer, useState } from 'react';
 
-import { useActiveBtcWallet, useAssets } from '../../../../entities';
+import { useActiveBtcWallet, useAssets, useCreateContact } from '../../../../entities';
 import { useNumberFormatter } from '../../../../shared';
 import { useMaxSendAssetTransfer } from '../../../blockchain-send';
 import { createInitialState, sendFormReducer } from '../reducer';
 import {
+    ContactSuggestion,
     FormStepNames,
+    PortfolioSuggestion,
     SEND_STEPS,
     SendFormInitialValues,
     SendFormResult,
-    SendSuggestion,
     SendSuggestionState
 } from '../types';
 import { useAmountActions } from './useAmountActions';
@@ -21,7 +22,8 @@ const LAST_STEP_INDEX = SEND_STEPS.length - 1;
 export interface UseSendFormStateParams {
     resolvedInitialValues: SendFormInitialValues | undefined;
     initialSuggestion?: SendSuggestionState;
-    allSuggestions: SendSuggestion[];
+    portfolioSuggestions: PortfolioSuggestion[];
+    contactSuggestions: ContactSuggestion[];
     onSubmit: (result: SendFormResult, onSuccess: () => void) => void;
     shouldResetForm: boolean;
     clearDraft: () => void;
@@ -31,7 +33,8 @@ export function useSendFormState(params: UseSendFormStateParams) {
     const {
         resolvedInitialValues,
         initialSuggestion,
-        allSuggestions,
+        portfolioSuggestions,
+        contactSuggestions,
         onSubmit,
         shouldResetForm,
         clearDraft
@@ -47,6 +50,7 @@ export function useSendFormState(params: UseSendFormStateParams) {
     const ratedAssets = assetsData ?? [];
     const formatter = useNumberFormatter();
     const activeBtcWallet = useActiveBtcWallet();
+    const { mutateAsync: createContact } = useCreateContact();
 
     const { data: maxSendValue } = useMaxSendAssetTransfer(
         state.parsed.recipient
@@ -62,7 +66,8 @@ export function useSendFormState(params: UseSendFormStateParams) {
         dispatch,
         ratedAssets,
         activeWalletAddress: activeBtcWallet.address,
-        allSuggestions
+        portfolioSuggestions,
+        contactSuggestions
     });
 
     const { setAmount, setAmountInputType, setIsMax, setAsset } = useAmountActions({
@@ -80,6 +85,13 @@ export function useSendFormState(params: UseSendFormStateParams) {
         dispatch,
         setRecipient
     });
+
+    const setAddressBookName = useCallback(
+        (name: string) => {
+            dispatch({ type: 'SET_ADDRESS_BOOK_NAME', name });
+        },
+        [dispatch]
+    );
 
     const currentStepId = SEND_STEPS[state.stepIndex];
 
@@ -136,13 +148,26 @@ export function useSendFormState(params: UseSendFormStateParams) {
             isMax: state.parsed.isMax
         };
 
+        const name = state.values.addressBookName.trim();
+        if (name.length > 0 && !state.suggestion.selectedId) {
+            void createContact({
+                name,
+                addresses: [
+                    {
+                        blockchain: state.parsed.recipient.blockchain,
+                        address: state.parsed.recipient.address
+                    }
+                ]
+            });
+        }
+
         setIsSubmitted(true);
         onSubmit(result, clearDraft);
 
         if (shouldResetForm) {
             dispatch({ type: 'RESET' });
         }
-    }, [state, onSubmit, shouldResetForm, clearDraft]);
+    }, [state, onSubmit, shouldResetForm, clearDraft, createContact]);
 
     return {
         state,
@@ -152,6 +177,7 @@ export function useSendFormState(params: UseSendFormStateParams) {
             setAmountInputType,
             setIsMax,
             setAsset,
+            setAddressBookName,
             selectSuggestion,
             clearSuggestion,
             reset,

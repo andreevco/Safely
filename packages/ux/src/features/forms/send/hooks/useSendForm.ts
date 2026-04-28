@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import { usePortfolios } from '../../../../entities';
+import { useContacts, usePortfolios } from '../../../../entities';
 import { SendFormInitialValues, SendFormResult, SendSuggestionState } from '../types';
-import { mapPortfolioToSuggestions } from '../utils';
+import { mapContactToSuggestions, mapPortfolioToSuggestions } from '../utils';
 import { useSendFormDraft } from './useSendFormDraft';
 import { useSendFormMeta } from './useSendFormMeta';
 import { useSendFormState } from './useSendFormState';
@@ -17,11 +17,17 @@ export function useSendForm(props: UseSendFormOptions) {
     const { onSubmit, shouldResetForm = true, initialValues } = props;
 
     const portfolios = usePortfolios();
+    const contacts = useContacts();
     const { initialDraft, saveDraft, clearDraft } = useSendFormDraft();
 
-    const allSuggestions = useMemo(
+    const portfolioSuggestions = useMemo(
         () => portfolios.flatMap(p => mapPortfolioToSuggestions(p)),
         [portfolios]
+    );
+
+    const contactSuggestions = useMemo(
+        () => contacts.flatMap(c => mapContactToSuggestions(c)),
+        [contacts]
     );
 
     const [resolvedInitialValues] = useState<SendFormInitialValues | undefined>(() => {
@@ -34,19 +40,25 @@ export function useSendForm(props: UseSendFormOptions) {
         const address = resolvedInitialValues?.recipient;
         if (!address) return undefined;
 
-        const match = allSuggestions.find(s => s.address === address);
+        const portfolioMatch = portfolioSuggestions.find(s => s.address === address);
+        const contactMatch = portfolioMatch
+            ? undefined
+            : contactSuggestions.find(s => s.address === address);
+        const match = portfolioMatch ?? contactMatch;
         if (!match) return undefined;
 
         return {
             selectedId: match.id,
-            suggestionIds: allSuggestions.map(s => s.id)
+            portfoliosIds: portfolioSuggestions.map(s => s.id),
+            contactsIds: contactSuggestions.map(s => s.id)
         };
     });
 
     const { state, actions, step, assetsData } = useSendFormState({
         resolvedInitialValues,
         initialSuggestion,
-        allSuggestions,
+        portfolioSuggestions,
+        contactSuggestions,
         onSubmit,
         shouldResetForm,
         clearDraft
@@ -55,7 +67,8 @@ export function useSendForm(props: UseSendFormOptions) {
     const meta = useSendFormMeta({
         state,
         assetsData,
-        allSuggestions
+        portfolioSuggestions,
+        contactSuggestions
     });
 
     useEffect(() => {

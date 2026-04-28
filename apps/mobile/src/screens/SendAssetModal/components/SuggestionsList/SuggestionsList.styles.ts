@@ -4,5 +4,8 @@ export const styles = StyleSheet.create(theme => ({
     container: {
         paddingTop: theme.spacing[8],
         paddingHorizontal: theme.spacing[8]
+    },
+    suggestionGroup: {
+        marginBottom: theme.spacing[2]
     }
 }));

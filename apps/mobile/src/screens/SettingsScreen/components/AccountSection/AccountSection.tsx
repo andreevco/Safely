@@ -1,6 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
-import { Alert, View } from 'react-native';
+import { View } from 'react-native';
 
 import { useAccounts, useActiveAccount, useChangeAccountMeta } from '@safely/ux';
 
@@ -55,7 +55,7 @@ export const AccountSection = () => {
                     </Cell.Content>
                     <Cell.Chevron />
                 </Cell>
-                <Cell onPress={() => Alert.alert('Not implemented yet')}>
+                <Cell onPress={() => navigation.navigate('AddressBookModal')}>
                     <Cell.Content>
                         <Cell.Row>
                             <Cell.Title>

@@ -2,7 +2,8 @@ import { SendFormAction, SendFormState, SendSuggestionState } from './types';
 
 export const EMPTY_SUGGESTION: SendSuggestionState = {
     selectedId: undefined,
-    suggestionIds: undefined
+    portfoliosIds: undefined,
+    contactsIds: undefined
 };
 
 export function withResetDependentFields(state: SendFormState): SendFormState {
@@ -33,7 +34,11 @@ export function applyValidateRecipientResult(
         },
         errors: { ...reset.errors, recipient: action.error },
         suggestion: action.suggestion
-            ? { selectedId: action.suggestion.id, suggestionIds: action.suggestion.suggestionIds }
+            ? {
+                  selectedId: action.suggestion.id,
+                  portfoliosIds: action.suggestion.portfoliosIds,
+                  contactsIds: action.suggestion.contactsIds
+              }
             : state.suggestion
     };
 }
@@ -50,11 +55,13 @@ export function applySelectSuggestion(
         values: {
             ...base.values,
             recipient: action.address,
-            recipientLabel: action.label ?? base.values.recipientLabel
+            recipientLabel: action.label ?? base.values.recipientLabel,
+            addressBookName: ''
         },
         suggestion: {
             selectedId: action.id,
-            suggestionIds: action.suggestionIds
+            portfoliosIds: action.portfoliosIds,
+            contactsIds: action.contactsIds
         }
     };
 }
@@ -70,7 +77,8 @@ export function applySetRecipient(
         values: {
             ...state.values,
             recipient: action.value,
-            recipientLabel: action.label
+            recipientLabel: action.label,
+            addressBookName: recipientChanged ? '' : state.values.addressBookName
         },
         suggestion: recipientChanged ? EMPTY_SUGGESTION : state.suggestion
     };

@@ -1,11 +1,11 @@
 import { IDerivation, Portfolio, PortfolioType } from '@safely/core';
 
-import { SendSuggestion } from '../types';
+import { PortfolioSuggestion } from '../types';
 
 export function mapPortfolioToSuggestions(
     portfolio: Portfolio,
     activeDerivation?: IDerivation
-): SendSuggestion[] {
+): PortfolioSuggestion[] {
     if (portfolio.type === PortfolioType.WATCH_ONLY) {
         return [
             {

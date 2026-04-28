@@ -38,10 +38,11 @@ export const styles = StyleSheet.create(theme => ({
     menuItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: theme.spacing[16],
+        gap: theme.spacing[64] + 4,
         paddingVertical: theme.spacing[12],
         paddingHorizontal: theme.spacing[16],
         backgroundColor: theme.colors.background.tertiary,
-        borderRadius: theme.radius.md
+        borderRadius: theme.radius.md,
+        transform: [{ translateX: theme.spacing[16] }]
     }
 }));

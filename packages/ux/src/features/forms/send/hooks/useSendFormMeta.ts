@@ -1,57 +1,78 @@
 import { useMemo } from 'react';
 
-import { RatedCryptoAssetAmount } from '@safely/core';
+import { ContactMeta, PortfolioMeta, RatedCryptoAssetAmount } from '@safely/core';
 
 import {
+    findContactMetaByAddress,
     findPortfolioMetaByAddress,
     useActivePortfolioEntities,
+    useContacts,
     usePortfolios
 } from '../../../../entities';
 import { fuzzySearch } from '../../../../shared';
-import { SendFormState, SendSuggestion } from '../types';
-import { mapPortfolioToSuggestions } from '../utils';
+import { ContactSuggestion, PortfolioSuggestion, SendFormState, SendSuggestions } from '../types';
+import { mapContactToSuggestions, mapPortfolioToSuggestions } from '../utils';
+
+export type RecipientMeta =
+    | { kind: 'portfolio'; meta: PortfolioMeta }
+    | { kind: 'contact'; meta: ContactMeta };
 
 interface UseSendFormMetaParams {
     state: SendFormState;
     assetsData: RatedCryptoAssetAmount[] | undefined;
-    allSuggestions: SendSuggestion[];
+    portfolioSuggestions: PortfolioSuggestion[];
+    contactSuggestions: ContactSuggestion[];
+}
+
+function filterAndOrderByIds<S extends { id: string }>(items: S[], ids: string[]): S[] {
+    if (ids.length === 0) return [];
+    const idSet = new Set(ids);
+    return items.filter(s => idSet.has(s.id)).sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id));
 }
 
 export function useSendFormMeta(params: UseSendFormMetaParams) {
-    const { state, assetsData, allSuggestions } = params;
-    const { selectedId, suggestionIds: savedSuggestionIds } = state.suggestion;
+    const { state, assetsData, portfolioSuggestions, contactSuggestions } = params;
+    const { selectedId, portfoliosIds, contactsIds } = state.suggestion;
 
     const blockchain = state.parsed.recipient?.blockchain;
     const portfolios = usePortfolios();
+    const contacts = useContacts();
     const entities = useActivePortfolioEntities();
     const activeDerivation = entities.kind === 'bip39' ? entities.derivation : undefined;
 
-    const suggestions = useMemo(() => {
+    const suggestions = useMemo<SendSuggestions>(() => {
         const query = state.values.recipient;
+        return {
+            portfolios: fuzzySearch(portfolios, query, p => p.meta.name).flatMap(p =>
+                mapPortfolioToSuggestions(p, activeDerivation)
+            ),
+            contacts: fuzzySearch(contacts, query, c => c.meta.name).flatMap(c =>
+                mapContactToSuggestions(c)
+            )
+        };
+    }, [portfolios, contacts, activeDerivation, state.values.recipient]);
 
-        return fuzzySearch(portfolios, query, s => s.meta.name).flatMap(portfolio =>
-            mapPortfolioToSuggestions(portfolio, activeDerivation)
+    const restoredSuggestions = useMemo<SendSuggestions | undefined>(() => {
+        if (!selectedId) return undefined;
+        if (!portfoliosIds && !contactsIds) return undefined;
+
+        return {
+            portfolios: filterAndOrderByIds(portfolioSuggestions, portfoliosIds ?? []),
+            contacts: filterAndOrderByIds(contactSuggestions, contactsIds ?? [])
+        };
+    }, [selectedId, portfoliosIds, contactsIds, portfolioSuggestions, contactSuggestions]);
+
+    const recipientMeta = useMemo<RecipientMeta | undefined>(() => {
+        if (!state.parsed.recipient) return undefined;
+        const portfolioMeta = findPortfolioMetaByAddress(
+            portfolios,
+            state.parsed.recipient.address
         );
-    }, [portfolios, activeDerivation, state.values.recipient]);
-
-    const restoredSuggestions = useMemo(() => {
-        if (!savedSuggestionIds || !selectedId) return undefined;
-
-        const idSet = new Set(savedSuggestionIds);
-
-        return portfolios
-            .flatMap(portfolio => mapPortfolioToSuggestions(portfolio, activeDerivation))
-            .filter(s => idSet.has(s.id))
-            .sort((a, b) => savedSuggestionIds.indexOf(a.id) - savedSuggestionIds.indexOf(b.id));
-    }, [savedSuggestionIds, selectedId, portfolios, activeDerivation]);
-
-    const portfolioMetaByAddress = useMemo(() => {
-        if (!state.parsed.recipient) {
-            return;
-        }
-
-        return findPortfolioMetaByAddress(portfolios, state.parsed.recipient.address);
-    }, [portfolios, state.parsed.recipient]);
+        if (portfolioMeta) return { kind: 'portfolio', meta: portfolioMeta };
+        const contactMeta = findContactMetaByAddress(contacts, state.parsed.recipient.address);
+        if (contactMeta) return { kind: 'contact', meta: contactMeta };
+        return undefined;
+    }, [portfolios, contacts, state.parsed.recipient]);
 
     const isMaxAvailable = useMemo(() => {
         const asset = state.parsed.asset;
@@ -69,8 +90,7 @@ export function useSendFormMeta(params: UseSendFormMetaParams) {
         isMaxAvailable,
         availableAssets,
         suggestions,
-        allSuggestions,
         restoredSuggestions,
-        portfolioMetaByAddress
+        recipientMeta
     };
 }

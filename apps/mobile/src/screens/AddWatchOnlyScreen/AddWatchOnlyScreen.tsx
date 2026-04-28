@@ -50,12 +50,16 @@ export const AddWatchOnlyScreen = () => {
     }, []);
 
     const trimmedInput = address.trim();
-    const isValidInput = BtcAddress.validate(trimmedInput) || BtcXpub.validate(trimmedInput);
-    const hasError = trimmedInput.length >= 20 && !isValidInput;
+    const isValidAddress = BtcAddress.validate(trimmedInput);
+    const isValidPubkey = BtcXpub.validate(trimmedInput);
+    const isValidSupportedPubkey = isValidPubkey && /^[XxZz]pub/.test(trimmedInput);
+
+    const isValidInput = isValidAddress || isValidSupportedPubkey;
+    const displayError = !isValidInput && trimmedInput.length >= 20;
 
     styles.useVariants({
         focused: isFocused,
-        error: hasError
+        error: displayError
     });
 
     const handleNext = useCallback(() => {
@@ -157,9 +161,13 @@ export const AddWatchOnlyScreen = () => {
                     )}
                 </View>
 
-                {hasError && (
+                {displayError && (
                     <Text style={styles.errorText}>
-                        {t('addWallet.watchAccount.invalidAddress')}
+                        {t(
+                            isValidPubkey && !isValidSupportedPubkey
+                                ? 'addWallet.watchAccount.unsupportedExtendedKey'
+                                : 'addWallet.watchAccount.invalidAddress'
+                        )}
                     </Text>
                 )}
 

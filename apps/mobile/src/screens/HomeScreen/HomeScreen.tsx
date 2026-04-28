@@ -1,3 +1,7 @@
+import { useScrollToTop } from '@react-navigation/native';
+import { useRef } from 'react';
+import { ScrollView } from 'react-native';
+
 import { useHasPortfolio } from '@safely/ux';
 
 import { Chart } from '@mobile/features/chart';
@@ -8,12 +12,15 @@ import { HomeEmptyState } from './components';
 
 export const HomeScreen = () => {
     const hasPortfolio = useHasPortfolio();
+    const scrollRef = useRef<ScrollView>(null);
+
+    useScrollToTop(scrollRef);
 
     return (
         <Screen>
             <HomeHeader />
             {hasPortfolio ? (
-                <Screen.Scrollable>
+                <Screen.Scrollable ref={scrollRef}>
                     <TotalBalance />
                     <HomeActions />
                     <AssetsList />

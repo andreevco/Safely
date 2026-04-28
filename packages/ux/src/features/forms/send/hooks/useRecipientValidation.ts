@@ -2,18 +2,20 @@ import { Dispatch, useCallback, useRef } from 'react';
 
 import { RatedCryptoAssetAmount } from '@safely/core';
 
-import { SendFormAction, SendSuggestion } from '../types';
+import { ContactSuggestion, PortfolioSuggestion, SendFormAction, SendSuggestions } from '../types';
 import { validateRecipientInput } from '../validators';
 
 interface UseRecipientValidationParams {
     dispatch: Dispatch<SendFormAction>;
     ratedAssets: RatedCryptoAssetAmount[];
     activeWalletAddress: string;
-    allSuggestions: SendSuggestion[];
+    portfolioSuggestions: PortfolioSuggestion[];
+    contactSuggestions: ContactSuggestion[];
 }
 
 export function useRecipientValidation(params: UseRecipientValidationParams) {
-    const { dispatch, ratedAssets, activeWalletAddress, allSuggestions } = params;
+    const { dispatch, ratedAssets, activeWalletAddress, portfolioSuggestions, contactSuggestions } =
+        params;
 
     const ratedAssetsRef = useRef(ratedAssets);
     ratedAssetsRef.current = ratedAssets;
@@ -21,15 +23,19 @@ export function useRecipientValidation(params: UseRecipientValidationParams) {
     const activeWalletAddressRef = useRef(activeWalletAddress);
     activeWalletAddressRef.current = activeWalletAddress;
 
-    const allSuggestionsRef = useRef(allSuggestions);
-    allSuggestionsRef.current = allSuggestions;
+    const portfolioSuggestionsRef = useRef(portfolioSuggestions);
+    portfolioSuggestionsRef.current = portfolioSuggestions;
+
+    const contactSuggestionsRef = useRef(contactSuggestions);
+    contactSuggestionsRef.current = contactSuggestions;
 
     const validateRecipient = useCallback(
         (value: string) => {
             const result = validateRecipientInput(value, {
                 ratedAssets: ratedAssetsRef.current,
                 activeWalletAddress: activeWalletAddressRef.current,
-                allSuggestions: allSuggestionsRef.current
+                portfolioSuggestions: portfolioSuggestionsRef.current,
+                contactSuggestions: contactSuggestionsRef.current
             });
             dispatch({ type: 'VALIDATE_RECIPIENT_RESULT', ...result });
         },
@@ -45,8 +51,9 @@ export function useRecipientValidation(params: UseRecipientValidationParams) {
     );
 
     const selectSuggestion = useCallback(
-        (id: string, visible: SendSuggestion[]) => {
-            const picked = visible.find(s => s.id === id);
+        (id: string, visible: SendSuggestions) => {
+            const all = [...visible.portfolios, ...visible.contacts];
+            const picked = all.find(s => s.id === id);
             if (!picked) return;
 
             dispatch({
@@ -54,7 +61,8 @@ export function useRecipientValidation(params: UseRecipientValidationParams) {
                 id,
                 address: picked.address,
                 label: picked.meta.name,
-                suggestionIds: visible.map(s => s.id)
+                portfoliosIds: visible.portfolios.map(s => s.id),
+                contactsIds: visible.contacts.map(s => s.id)
             });
             validateRecipient(picked.address);
         },

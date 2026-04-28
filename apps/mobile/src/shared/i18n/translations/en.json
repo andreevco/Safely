@@ -17,7 +17,10 @@
     },
     "common": {
         "edit": "Edit",
+        "remove": "Remove",
+        "removed": "Removed",
         "next": "Next",
+        "save": "Save",
         "cancel": "Cancel",
         "continue": "Continue",
         "later": "Later",
@@ -37,7 +40,12 @@
         "maxHint": "All available balance will be sent. Fee included.",
         "remaining": "Remaining:",
         "pending": "Pending:",
-        "insufficientBalance": "Insufficient balance"
+        "insufficientBalance": "Insufficient balance",
+        "addressBook": {
+            "label": "Save to your address book",
+            "placeholder": "Name",
+            "description": "You can edit and organize this later in Settings → Address Book."
+        }
     },
     "passcode": {
         "title": "Create passcode",
@@ -162,23 +170,24 @@
         },
         "protectAccount": {
             "title": "No linked device",
-            "subtitle": "Link another device to protect your account. Without it, your access can't be restored if this phone is lost."
+            "subtitle": "Link another device as a redundant storage for your wallets. If this phone is lost and you don't have linked devices, you won't be able to restore your wallets.",
+            "linkDevice": "Link device"
         },
         "accountProtected": {
-            "title": "Account protected",
-            "subtitle": "Linked devices have full access to your account and can be used to restore access if another device is lost."
+            "title": "Linked devices",
+            "subtitle": "Listed devices have full access to your wallets and can be used to restore access if another device is lost."
         },
         "device": {
-            "added": "Added {{date}}",
+            "added": "Linked {{date}}",
             "upToDate": "Up to date",
             "notUpToDate": "Not up to date",
             "walletsNotSynced": "{{ count }} wallets not synced",
-            "disconnect": "Disconnect"
+            "unlink": "Unlink"
         },
-        "disconnectDevice": {
-            "title": "Disconnect {{deviceName}}",
-            "subtitle": "This will disconnect your account from this device. The account will remain on the device, but will no longer sync.",
-            "confirm": "Disconnect device"
+        "unlinkDevice": {
+            "title": "Unlink {{deviceName}}",
+            "subtitle": "This will unlink your device from this account. The account data will remain on the device but will not sync with other devices.",
+            "confirm": "Unlink {{deviceName}}"
         },
         "groups": {
             "account": {
@@ -264,6 +273,13 @@
             "btc": {
                 "dust": "Transaction value is too small."
             }
+        },
+        "estimateError": {
+            "title": "Can't estimate transaction",
+            "default": "Check details and try again",
+            "btc": {
+                "outputsAreSpendingMoreThanInputs": "Insufficient balance for transfer amount and fee"
+            }
         }
     },
     "sendForm": {
@@ -336,7 +352,7 @@
                 "step2": "Tap \"Sign in\" to show a QR code.",
                 "step3": "Tap \"Add device\" below and scan that code — camera access will be required."
             },
-            "addDevice": "Add device",
+            "addDevice": "Link device",
             "protectLater": "Protect account later",
             "deviceNotAdded": "Device was not added. Please try again."
         }
@@ -358,9 +374,10 @@
         "watchAccount": {
             "title": "Watch account",
             "subtitle": "Track by wallet address",
-            "placeholder": "Enter address or XPUB",
+            "placeholder": "Enter address",
             "info": "Watch account cannot sign transactions and send funds.",
-            "invalidAddress": "Invalid Bitcoin address"
+            "invalidAddress": "Invalid Bitcoin address",
+            "unsupportedExtendedKey": "ypub is not supported yet. Use xpub."
         }
     },
     "addAccount": {
@@ -595,6 +612,35 @@
         "errors": {
             "unrecognized": "Unrecognized input",
             "unsupportedScheme": "Unsupported input type"
+        }
+    },
+    "addressBook": {
+        "title": "Address Book",
+        "subtitle": "Add trusted contacts to avoid mistakes and send faster.",
+        "subtitle_not_empty": "Send crypto safely using your saved contacts.",
+        "addContact": "Add contact"
+    },
+    "newContact": {
+        "title": "Contact",
+        "form": {
+            "name": "Name",
+            "namePlaceholder": "Name",
+            "address": "Bitcoin address",
+            "addressPlaceholder": "Address",
+            "addedOn": "Added on {{date}}",
+            "remove": "Remove contact"
+        },
+        "confirmDelete": {
+            "title": "Remove {{name}}?",
+            "message": "This contact will be removed from your address book."
+        }
+    },
+    "contactForm": {
+        "errors": {
+            "enterName": "Enter a name",
+            "enterAddress": "Enter an address",
+            "invalidAddressFormat": "Invalid address format",
+            "unsupportedBlockchain": "Unsupported blockchain"
         }
     }
 }

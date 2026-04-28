@@ -1,7 +1,7 @@
 import { RatedCryptoAssetAmount, Recipient } from '@safely/core';
 
 import { SendFormError } from '../errors';
-import { SendSuggestion } from '../types';
+import { ContactSuggestion, PortfolioSuggestion } from '../types';
 import {
     BLOCKCHAIN_DEFAULT_TOKENS,
     MIN_RECIPIENT_ADDRESS_LENGTH,
@@ -20,7 +20,8 @@ export interface RecipientValidationResult {
         id: string;
         address: string;
         label: string;
-        suggestionIds: string[];
+        portfoliosIds: string[];
+        contactsIds: string[];
     };
 }
 
@@ -29,7 +30,8 @@ export function validateRecipientInput(
     context: {
         ratedAssets: RatedCryptoAssetAmount[];
         activeWalletAddress: string;
-        allSuggestions: SendSuggestion[];
+        portfolioSuggestions: PortfolioSuggestion[];
+        contactSuggestions: ContactSuggestion[];
     }
 ): RecipientValidationResult {
     if (value.trim().length < MIN_RECIPIENT_ADDRESS_LENGTH) {
@@ -49,13 +51,21 @@ export function validateRecipientInput(
         return { recipient: undefined, error: parsedRecipient };
     }
 
-    const match = context.allSuggestions.find(s => s.address === parsedRecipient.address);
+    const portfolioMatch = context.portfolioSuggestions.find(
+        s => s.address === parsedRecipient.address
+    );
+    const contactMatch = portfolioMatch
+        ? undefined
+        : context.contactSuggestions.find(s => s.address === parsedRecipient.address);
+    const match = portfolioMatch ?? contactMatch;
+
     const suggestion = match
         ? {
               id: match.id,
               address: parsedRecipient.address,
               label: match.meta.name,
-              suggestionIds: context.allSuggestions.map(s => s.id)
+              portfoliosIds: context.portfolioSuggestions.map(s => s.id),
+              contactsIds: context.contactSuggestions.map(s => s.id)
           }
         : undefined;
 
