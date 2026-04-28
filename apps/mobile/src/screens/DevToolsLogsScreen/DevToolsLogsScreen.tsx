@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { View } from 'react-native';
 
-import { useAppContext, useLogger, useToast } from '@safely/ux';
+import { useActiveAccountQuery, useAppContext, useLogger, useToast } from '@safely/ux';
 
 import { Button, Input, Screen, Text } from '@mobile/shared/ui';
 
@@ -48,6 +48,7 @@ export const DevToolsLogsScreen = () => {
     const toast = useToast();
     const logger = useLogger();
     const { loggerRegistry } = useAppContext();
+    const { data: activeAccount } = useActiveAccountQuery();
 
     const [text, setText] = useState('');
 
@@ -131,7 +132,9 @@ export const DevToolsLogsScreen = () => {
                     size="large"
                     type="primary"
                     style={styles.actionsGroup}
-                    onPress={() => loggerRegistry.shareAllLogs()}
+                    onPress={() =>
+                        loggerRegistry.shareLogs({ accountId: activeAccount?.accountId })
+                    }
                 >
                     Share logs
                 </Button>

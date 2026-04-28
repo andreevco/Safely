@@ -99,7 +99,7 @@ export class FileTransport implements ILoggerTransport {
         this.mmkv.clearAll();
 
         try {
-            const logFile = new File(Paths.document, this.filename);
+            const logFile = new File(Paths.cache, this.filename);
             if (logFile.exists) logFile.delete();
         } catch (e) {
             console.error('[FileTransport] clear: failed to delete file', e);
@@ -120,7 +120,7 @@ export class FileTransport implements ILoggerTransport {
         if (lines.length === 0) return;
 
         const content = lines.join('\n') + '\n';
-        const logFile = new File(Paths.document, this.filename);
+        const logFile = new File(Paths.cache, this.filename);
 
         try {
             if (logFile.exists && logFile.size > this.maxFileSizeBytes) {

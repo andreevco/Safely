@@ -7,7 +7,7 @@ export interface ILoggerRegistry {
     onAfterAppOpened(ctx: LoggerLifecycleContext): Promise<void>;
     onBeforeAppClosed(ctx: LoggerLifecycleContext): Promise<void>;
 
-    shareAllLogs(): Promise<void>;
+    shareLogs(opts?: { accountId?: string }): Promise<void>;
 }
 
 export { useLogger } from './use-logger';

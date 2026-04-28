@@ -1,13 +1,12 @@
-import { Directory, File, Paths } from 'expo-file-system';
+import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 
 import { Logger } from '@safely/sync';
 
-import { ACCOUNT_FILE_PATTERN } from './naming';
-
 export async function shareAggregatedLogs(opts: {
-    systemFilename: string;
     logger: Logger;
+    systemFilename: string;
+    accountFilename: string | undefined;
 }): Promise<void> {
     const aggregate = new File(Paths.cache, `safely-logs-${Date.now()}.ndjson`);
     try {
@@ -15,19 +14,9 @@ export async function shareAggregatedLogs(opts: {
         aggregate.write(section('system'));
         appendFileIfExists(aggregate, opts.systemFilename, opts.logger);
 
-        let files: string[] = [];
-        try {
-            files = new Directory(Paths.document).list().map(item => item.name);
-        } catch {
-            // directory may not exist
-        }
-
-        for (const name of files.filter(n => ACCOUNT_FILE_PATTERN.test(n))) {
-            const match = ACCOUNT_FILE_PATTERN.exec(name);
-            if (!match) continue;
-
-            appendText(aggregate, section(`account-${match[1]}`));
-            appendFileIfExists(aggregate, name, opts.logger);
+        if (opts.accountFilename) {
+            appendText(aggregate, section('account'));
+            appendFileIfExists(aggregate, opts.accountFilename, opts.logger);
         }
 
         await Sharing.shareAsync(aggregate.uri, {
@@ -52,7 +41,7 @@ function appendText(target: File, text: string): void {
 
 function appendFileIfExists(target: File, filename: string, logger: Logger): void {
     try {
-        const source = new File(Paths.document, filename);
+        const source = new File(Paths.cache, filename);
         if (!source.exists) return;
 
         const bytes = source.bytesSync();

@@ -56,7 +56,7 @@ export class LoggerRegistry implements ILoggerRegistry {
 
         let files: string[];
         try {
-            files = new Directory(Paths.document).list().map(item => item.name);
+            files = new Directory(Paths.cache).list().map(item => item.name);
         } catch (e) {
             this.systemLogger.error('[LoggerRegistry] onAfterAppOpened: list failed', e);
             return;
@@ -70,7 +70,7 @@ export class LoggerRegistry implements ILoggerRegistry {
             if (validHashes.has(hash)) continue;
 
             try {
-                new File(Paths.document, name).delete();
+                new File(Paths.cache, name).delete();
             } catch (e) {
                 this.systemLogger.error(
                     '[LoggerRegistry] onAfterAppOpened: delete failed',
@@ -85,10 +85,17 @@ export class LoggerRegistry implements ILoggerRegistry {
         await this.flushAll();
     }
 
-    public async shareAllLogs(): Promise<void> {
+    public async shareLogs(opts?: { accountId?: string }): Promise<void> {
         await this.flushAll();
+
+        const systemFilename = this.opts.systemTransport.filename;
+        const accountFilename = opts?.accountId
+            ? this.accounts.get(opts.accountId)?.transport.filename
+            : undefined;
+
         await shareAggregatedLogs({
-            systemFilename: this.opts.systemTransport.filename,
+            systemFilename,
+            accountFilename,
             logger: this.systemLogger
         });
     }
