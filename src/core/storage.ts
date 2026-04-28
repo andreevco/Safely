@@ -18,33 +18,42 @@ import {
 } from "./version";
 import { DeepReadonly, JsonValue, Path, PathValue, WriteDraft } from "./json";
 import { MergeProtocol, MergeStats } from "./mergeProtocol";
-import { deleteJsonAtPath, setJsonAtPath } from "./write";
+import {
+  deleteJsonAtPath,
+  JsonStorageSelection,
+  selectJsonStorage,
+  setJsonAtPath,
+} from "./write";
 import { z } from "zod";
-
-const MUTATING_ARRAY_METHODS = new Set([
-  "copyWithin",
-  "fill",
-  "pop",
-  "push",
-  "reverse",
-  "shift",
-  "sort",
-  "splice",
-  "unshift",
-]);
 
 export interface Storage<T> {
   readonly version: number;
 
+  /**
+   * Returns full storage as JSON representation
+   */
   get(): T;
+
+  /**
+   * Returns readonly Proxy over storage
+   */
   read(): DeepReadonly<T>;
 
+  /**
+   * Atomic and transactional update of the storage
+   * @param fn
+   */
   update(fn: (draft: WriteDraft<T>) => void): void;
 
-  set<P extends Path<T>>(path: P, value: PathValue<T, P>): void;
-  delete<P extends Path<T>>(path: P): void;
-
+  /**
+   * Merge storage
+   * @param incoming
+   */
   merge(incoming: Slot): void;
+
+  /**
+   * Export storage to save or send to other device
+   */
   export(): Slot;
 }
 
@@ -95,52 +104,14 @@ class StorageImpl<T> implements Storage<T> {
     const workingRoot = cloneSlot(this.root);
 
     const draft = this.createWriteProxy(
-      workingRoot,
-      [],
-      timestamp,
-      author,
+      selectJsonStorage(
+        this.latestContainerInRoot(workingRoot),
+        timestamp,
+        author,
+      ),
     ) as WriteDraft<T>;
 
     fn(draft);
-
-    this.validateLatestInRoot(workingRoot);
-    this.propagateToOlderVersionsInRoot(workingRoot, timestamp, author);
-
-    this.root = workingRoot;
-  }
-
-  set<P extends Path<T>>(path: P, value: PathValue<T, P>): void {
-    const timestamp = this.protocol.tick();
-    const author = this.protocol.id;
-
-    const workingRoot = cloneSlot(this.root);
-
-    setJsonAtPath(
-      this.latestContainerInRoot(workingRoot),
-      path as string[],
-      value as JsonValue,
-      timestamp,
-      author,
-    );
-
-    this.validateLatestInRoot(workingRoot);
-    this.propagateToOlderVersionsInRoot(workingRoot, timestamp, author);
-
-    this.root = workingRoot;
-  }
-
-  delete<P extends Path<T>>(path: P): void {
-    const timestamp = this.protocol.tick();
-    const author = this.protocol.id;
-
-    const workingRoot = cloneSlot(this.root);
-
-    deleteJsonAtPath(
-      this.latestContainerInRoot(workingRoot),
-      path as string[],
-      timestamp,
-      author,
-    );
 
     this.validateLatestInRoot(workingRoot);
     this.propagateToOlderVersionsInRoot(workingRoot, timestamp, author);
@@ -165,34 +136,27 @@ class StorageImpl<T> implements Storage<T> {
     return cloneSlot(this.root);
   }
 
-  private createWriteProxy(
-    root: ContainerSlot,
-    path: string[],
-    timestamp: number,
-    author: string,
-  ): unknown {
+  private createWriteProxy(selection: JsonStorageSelection): unknown {
     return new Proxy(Object.create(null), {
       get: (_target, prop) => {
         if (typeof prop !== "string") {
           return undefined;
         }
 
-        const slot = this.slotAtPath(this.latestContainerInRoot(root), [
-          ...path,
-          prop,
-        ]);
+        const slot = selection.get(prop);
 
         if (slot === undefined || slot.d === true) {
           return undefined;
         }
 
         if (isContainerSlot(slot)) {
-          return this.createWriteProxy(
-            root,
-            [...path, prop],
-            timestamp,
-            author,
-          );
+          const childSelection = selection.select(prop);
+
+          if (childSelection === undefined) {
+            return undefined;
+          }
+
+          return this.createWriteProxy(childSelection);
         }
 
         return cloneDeep(slot.v);
@@ -203,15 +167,7 @@ class StorageImpl<T> implements Storage<T> {
           return false;
         }
 
-        const latest = this.latestContainerInRoot(root);
-
-        setJsonAtPath(
-          latest,
-          [...path, prop],
-          value as JsonValue,
-          timestamp,
-          author,
-        );
+        selection.set(prop, value as JsonValue);
 
         return true;
       },
@@ -221,9 +177,7 @@ class StorageImpl<T> implements Storage<T> {
           return false;
         }
 
-        const latest = this.latestContainerInRoot(root);
-
-        deleteJsonAtPath(latest, [...path, prop], timestamp, author);
+        selection.delete(prop);
 
         return true;
       },
@@ -305,7 +259,6 @@ class StorageImpl<T> implements Storage<T> {
           existing,
           migrated as JsonValue,
           parsedExisting as JsonValue,
-          [],
           timestamp,
           author,
           isContainerSlot(source) ? source : undefined,
@@ -320,10 +273,25 @@ class StorageImpl<T> implements Storage<T> {
     container: ContainerSlot,
     next: JsonValue,
     current: JsonValue,
-    path: string[],
     timestamp: number,
     author: string,
     source?: ContainerSlot,
+  ): void {
+    this.applyJsonDiff(
+      selectJsonStorage(container, timestamp, author),
+      next,
+      current,
+      source === undefined
+        ? undefined
+        : selectJsonStorage(source, timestamp, author),
+    );
+  }
+
+  private applyJsonDiff(
+    selection: JsonStorageSelection,
+    next: JsonValue,
+    current: JsonValue,
+    source?: JsonStorageSelection,
   ): void {
     if (this.jsonEquals(next, current)) {
       return;
@@ -337,16 +305,7 @@ class StorageImpl<T> implements Storage<T> {
       current === null ||
       Array.isArray(current)
     ) {
-      if (path.length === 0) {
-        throw new Error("Cannot replace version root during propagation");
-      }
-
-      if (this.slotAtPath(source, path)?.d === true) {
-        deleteJsonAtPath(container, path, timestamp, author);
-      } else {
-        setJsonAtPath(container, path, next, timestamp, author);
-      }
-      return;
+      throw new Error("Cannot replace version root during propagation");
     }
 
     const nextObject = next as Record<string, JsonValue>;
@@ -358,51 +317,58 @@ class StorageImpl<T> implements Storage<T> {
 
     for (const key of keys) {
       if (!(key in nextObject)) {
-        deleteJsonAtPath(container, [...path, key], timestamp, author);
+        selection.delete(key);
         continue;
       }
 
       if (!(key in currentObject)) {
-        setJsonAtPath(
-          container,
-          [...path, key],
-          nextObject[key],
-          timestamp,
-          author,
-        );
+        selection.set(key, nextObject[key]);
         continue;
       }
 
-      this.applyJsonDiffInRoot(
-        container,
+      this.applyJsonDiffProperty(
+        selection,
+        key,
         nextObject[key],
         currentObject[key],
-        [...path, key],
-        timestamp,
-        author,
         source,
       );
     }
   }
 
-  private slotAtPath(
-    container: ContainerSlot | undefined,
-    path: string[],
-  ): Slot | undefined {
-    if (container === undefined || path.length === 0) {
-      return container;
+  private applyJsonDiffProperty(
+    selection: JsonStorageSelection,
+    key: string,
+    next: JsonValue,
+    current: JsonValue,
+    source?: JsonStorageSelection,
+  ): void {
+    if (this.jsonEquals(next, current)) {
+      return;
     }
 
-    let current: Slot | undefined = container;
-    for (const key of path) {
-      if (!isContainerSlot(current)) {
-        return undefined;
-      }
-
-      current = current.v[key];
+    if (
+      typeof next === "object" &&
+      next !== null &&
+      !Array.isArray(next) &&
+      typeof current === "object" &&
+      current !== null &&
+      !Array.isArray(current)
+    ) {
+      this.applyJsonDiff(
+        selection.selectOrCreate(key),
+        next,
+        current,
+        source?.select(key),
+      );
+      return;
     }
 
-    return current;
+    if (source?.get(key)?.d === true) {
+      selection.delete(key);
+    } else {
+      selection.set(key, next);
+    }
   }
 
   private jsonEquals(left: JsonValue, right: JsonValue): boolean {
