@@ -9,11 +9,18 @@ interface UseSendFormRestorationParams {
     resolvedInitialValues: SendFormInitialValues | undefined;
     ratedAssets: RatedCryptoAssetAmount[];
     dispatch: Dispatch<SendFormAction>;
-    setRecipient: (value: string) => void;
+    validateRecipient: (value: string, preferredSuggestionId?: string) => void;
+    preferredSuggestionId: string | undefined;
 }
 
 export function useSendFormRestoration(params: UseSendFormRestorationParams) {
-    const { resolvedInitialValues, ratedAssets, dispatch, setRecipient } = params;
+    const {
+        resolvedInitialValues,
+        ratedAssets,
+        dispatch,
+        validateRecipient,
+        preferredSuggestionId
+    } = params;
 
     const ratedAssetsRef = useRef(ratedAssets);
     ratedAssetsRef.current = ratedAssets;
@@ -47,6 +54,6 @@ export function useSendFormRestoration(params: UseSendFormRestorationParams) {
             }
         }
 
-        setRecipient(resolvedInitialValues.recipient);
+        validateRecipient(resolvedInitialValues.recipient, preferredSuggestionId);
     }, []);
 }

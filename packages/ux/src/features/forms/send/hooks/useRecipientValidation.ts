@@ -30,12 +30,13 @@ export function useRecipientValidation(params: UseRecipientValidationParams) {
     contactSuggestionsRef.current = contactSuggestions;
 
     const validateRecipient = useCallback(
-        (value: string) => {
+        (value: string, preferredSuggestionId?: string) => {
             const result = validateRecipientInput(value, {
                 ratedAssets: ratedAssetsRef.current,
                 activeWalletAddress: activeWalletAddressRef.current,
                 portfolioSuggestions: portfolioSuggestionsRef.current,
-                contactSuggestions: contactSuggestionsRef.current
+                contactSuggestions: contactSuggestionsRef.current,
+                preferredSuggestionId
             });
             dispatch({ type: 'VALIDATE_RECIPIENT_RESULT', ...result });
         },
@@ -64,7 +65,7 @@ export function useRecipientValidation(params: UseRecipientValidationParams) {
                 portfoliosIds: visible.portfolios.map(s => s.id),
                 contactsIds: visible.contacts.map(s => s.id)
             });
-            validateRecipient(picked.address);
+            validateRecipient(picked.address, id);
         },
         [dispatch, validateRecipient]
     );
@@ -73,5 +74,5 @@ export function useRecipientValidation(params: UseRecipientValidationParams) {
         dispatch({ type: 'CLEAR_SUGGESTION' });
     }, [dispatch]);
 
-    return { setRecipient, selectSuggestion, clearSuggestion };
+    return { setRecipient, selectSuggestion, clearSuggestion, validateRecipient };
 }

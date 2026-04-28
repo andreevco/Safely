@@ -62,13 +62,14 @@ export function useSendFormState(params: UseSendFormStateParams) {
         { enabled: !isSubmitted }
     );
 
-    const { setRecipient, selectSuggestion, clearSuggestion } = useRecipientValidation({
-        dispatch,
-        ratedAssets,
-        activeWalletAddress: activeBtcWallet.address,
-        portfolioSuggestions,
-        contactSuggestions
-    });
+    const { setRecipient, selectSuggestion, clearSuggestion, validateRecipient } =
+        useRecipientValidation({
+            dispatch,
+            ratedAssets,
+            activeWalletAddress: activeBtcWallet.address,
+            portfolioSuggestions,
+            contactSuggestions
+        });
 
     const { setAmount, setAmountInputType, setIsMax, setAsset } = useAmountActions({
         dispatch,
@@ -83,7 +84,8 @@ export function useSendFormState(params: UseSendFormStateParams) {
         resolvedInitialValues,
         ratedAssets,
         dispatch,
-        setRecipient
+        validateRecipient,
+        preferredSuggestionId: initialSuggestion?.selectedId
     });
 
     const setAddressBookName = useCallback(

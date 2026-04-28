@@ -7,13 +7,16 @@ const sHistoricalPrice = z.object({
     prices: z.array(z.tuple([z.number(), z.number()])).describe('[timestamp, price] pair')
 });
 
-const sSendFormDraft = z.object({
+export const sSendFormDraft = z.object({
     recipient: z.string(),
     amount: z.string().optional(),
     amountInputType: z.enum(['crypto', 'fiat']).optional(),
     isMax: z.boolean().optional(),
-    stepIndex: z.number().optional()
+    stepIndex: z.number().optional(),
+    selectedId: z.string().optional()
 });
+
+export type SendFormDraft = z.infer<typeof sSendFormDraft>;
 
 const sActivityItem = z.object({
     timestamp: z.number(),

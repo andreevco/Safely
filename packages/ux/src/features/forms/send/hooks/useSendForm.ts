@@ -40,11 +40,16 @@ export function useSendForm(props: UseSendFormOptions) {
         const address = resolvedInitialValues?.recipient;
         if (!address) return undefined;
 
-        const portfolioMatch = portfolioSuggestions.find(s => s.address === address);
-        const contactMatch = portfolioMatch
-            ? undefined
-            : contactSuggestions.find(s => s.address === address);
-        const match = portfolioMatch ?? contactMatch;
+        const savedId = initialDraft?.selectedId;
+        const preferredMatch = savedId
+            ? [...portfolioSuggestions, ...contactSuggestions].find(
+                  s => s.id === savedId && s.address === address
+              )
+            : undefined;
+        const match =
+            preferredMatch ??
+            portfolioSuggestions.find(s => s.address === address) ??
+            contactSuggestions.find(s => s.address === address);
         if (!match) return undefined;
 
         return {
@@ -78,7 +83,8 @@ export function useSendForm(props: UseSendFormOptions) {
                 amount: state.values.amount || undefined,
                 amountInputType: state.values.amountInputType,
                 isMax: state.values.isMax || undefined,
-                stepIndex: state.stepIndex
+                stepIndex: state.stepIndex,
+                selectedId: state.suggestion.selectedId
             });
         } else {
             clearDraft();
@@ -89,6 +95,7 @@ export function useSendForm(props: UseSendFormOptions) {
         state.values.amountInputType,
         state.values.isMax,
         state.stepIndex,
+        state.suggestion.selectedId,
         saveDraft,
         clearDraft
     ]);

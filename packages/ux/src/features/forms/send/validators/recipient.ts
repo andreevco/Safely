@@ -32,6 +32,7 @@ export function validateRecipientInput(
         activeWalletAddress: string;
         portfolioSuggestions: PortfolioSuggestion[];
         contactSuggestions: ContactSuggestion[];
+        preferredSuggestionId?: string;
     }
 ): RecipientValidationResult {
     if (value.trim().length < MIN_RECIPIENT_ADDRESS_LENGTH) {
@@ -51,9 +52,15 @@ export function validateRecipientInput(
         return { recipient: undefined, error: parsedRecipient };
     }
 
-    const portfolioMatch = context.portfolioSuggestions.find(
-        s => s.address === parsedRecipient.address
-    );
+    const preferredMatch = context.preferredSuggestionId
+        ? [...context.portfolioSuggestions, ...context.contactSuggestions].find(
+              s => s.id === context.preferredSuggestionId && s.address === parsedRecipient.address
+          )
+        : undefined;
+
+    const portfolioMatch =
+        preferredMatch ??
+        context.portfolioSuggestions.find(s => s.address === parsedRecipient.address);
     const contactMatch = portfolioMatch
         ? undefined
         : context.contactSuggestions.find(s => s.address === parsedRecipient.address);
