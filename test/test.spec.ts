@@ -2,7 +2,8 @@ import { describe, expect, it, beforeEach } from "vitest";
 import { createStorage, Storage } from "../src";
 import { z } from "zod";
 import { defineVersionHList, hCons, hNil } from "../src/core/version";
-import { createOriginContainer, slotFromJson } from "../src/core/slots";
+import { createOriginContainer } from "../src/core/slots";
+import { slotFromJson } from "../src/core/slots/slot-json";
 
 const schemaV1 = z.object({
   key1: z.number(),
@@ -132,23 +133,15 @@ describe("test", () => {
   });
 
   it("should read current values from an update draft", () => {
-    storage1.set(["key1"], 10);
-    storage1.set(["key2"], "value");
-
     storage1.update((draft) => {
+      draft.key1 = 10;
+      draft.key2 = "value";
       draft.key1 = draft.key1 + 5;
       draft.key2 = `${draft.key2}-updated`;
     });
 
     expect(storage1.read().key1).toEqual(15);
     expect(storage1.read().key2).toEqual("value-updated");
-  });
-
-  it("should set values", () => {
-    storage1.set(["key1"], 10);
-    storage1.set(["key2"], "value2");
-    expect(storage1.read().key1).toEqual(10);
-    expect(storage1.read().key2).toEqual("value2");
   });
 
   it("should set & delete keys in record", () => {
@@ -189,8 +182,12 @@ describe("test", () => {
   });
 
   it("should merge values", () => {
-    storage1.set(["key1"], 10);
-    storage2.set(["key2"], "value2");
+    storage1.update((draft) => {
+      draft.key1 = 10;
+    });
+    storage2.update((draft) => {
+      draft.key2 = "value2";
+    });
 
     storage1.merge(storage2.export());
     expect(storage1.read().key1).toEqual(10);
@@ -213,7 +210,9 @@ describe("test", () => {
     expect(() => storage1.merge(incoming)).toThrow();
     expect(storage1.read()).toEqual({ key1: 0, key2: "initial" });
 
-    storage1.set(["key1"], 1);
+    storage1.update((draft) => {
+      draft.key1 = 1;
+    });
     const exported = storage1.export() as ReturnType<
       typeof createOriginContainer
     >;
@@ -280,7 +279,9 @@ describe("test", () => {
       root,
     });
 
-    storage.set(["label"], "updated");
+    storage.update((draft) => {
+      draft.label = "updated";
+    });
 
     const exported = storage.export() as ReturnType<
       typeof createOriginContainer

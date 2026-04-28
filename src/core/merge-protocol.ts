@@ -1,5 +1,5 @@
 import type { Slot, SlotMap } from "./slots";
-import { cloneSlot } from "./slots";
+import { cloneSlot } from "./slots/slot-json";
 
 export interface MergeStats {
   added: number;
