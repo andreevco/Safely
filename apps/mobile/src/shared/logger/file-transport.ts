@@ -1,7 +1,9 @@
-import { File, Paths } from 'expo-file-system';
+import { Directory, File, Paths } from 'expo-file-system';
 import { createMMKV } from 'react-native-mmkv';
 
-import { ILoggerTransport, LogEntry, LogLevel } from '@safely/sync';
+import { ILoggerTransport, LogEntry, Logger, LogLevel } from '@safely/sync';
+
+import { ACCOUNT_FILE_PATTERN } from './naming';
 
 const DEFAULT_FLUSH_INTERVAL_MS = 30_000;
 const DEFAULT_MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024;
@@ -88,11 +90,26 @@ export class FileTransport implements ILoggerTransport {
         this.clearState();
     }
 
-    public async clear(): Promise<void> {
-        if (this.isDestroyed) return;
+    public static clearMissedLogFiles(keepHashes: Set<string>, errorLogger: Logger): void {
+        let files: string[];
+        try {
+            files = new Directory(Paths.cache).list().map(item => item.name);
+        } catch (e) {
+            errorLogger.error('[FileTransport.pruneOrphans] list failed', e);
+            return;
+        }
 
-        await this.flushing;
-        this.clearState();
+        for (const name of files) {
+            const match = ACCOUNT_FILE_PATTERN.exec(name);
+            if (!match) continue;
+            if (keepHashes.has(match[1])) continue;
+
+            try {
+                new File(Paths.cache, name).delete();
+            } catch (e) {
+                errorLogger.error('[FileTransport.pruneOrphans] delete failed', name, e);
+            }
+        }
     }
 
     private clearState(): void {
