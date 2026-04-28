@@ -151,6 +151,43 @@ describe("test", () => {
     expect(storage1.read().key2).toEqual("value2");
   });
 
+  it("should set & delete keys in record", () => {
+    const version = defineVersionHList(
+      hCons(
+        {
+          version: 1,
+          schema: z.object({
+            objects: z.record(z.string(), z.number()),
+          }),
+          initial: {
+            objects: {
+              key1: 0,
+              key2: 1,
+            },
+          },
+          migrate: (prev) => prev,
+          reverseMigrate: (current) => current,
+        },
+        hNil,
+      ),
+    );
+
+    const storage = createStorage({
+      authorId: "device-1",
+      versions: version,
+    });
+
+    storage.update((draft) => {
+      draft.objects["key3"] = 3;
+      delete draft.objects["key1"];
+    });
+
+    expect(storage.read().objects).toEqual({
+      key2: 1,
+      key3: 3,
+    });
+  });
+
   it("should merge values", () => {
     storage1.set(["key1"], 10);
     storage2.set(["key2"], "value2");
