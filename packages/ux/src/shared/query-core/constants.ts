@@ -15,6 +15,4 @@ export const QUERIES_REFETCH_INTERVAL = {
     UTXO: 1000 * 5
 };
 
-export const QUERIES_GC_TIME = {
-    SEND_FORM_DRAFT: 1000 * 60 * 60
-};
+export const SEND_FORM_DRAFT_TTL = 1000 * 60 * 60;
