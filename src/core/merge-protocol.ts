@@ -84,24 +84,18 @@ export class MergeProtocol {
   }
 
   private mergeSlot(local: Slot, incoming: Slot, stats: MergeStats): void {
-    if (local.r === true && incoming.r === true) {
+    if (
+      local.r === true &&
+      incoming.r === true &&
+      MergeProtocol.compareClocks(local, incoming) === 0
+    ) {
       this.mergeContainerValues(local.v, incoming.v, stats);
-      if (MergeProtocol.compareClocks(incoming, local) > 0) {
-        local.t = incoming.t;
-        local.a = incoming.a;
-        stats.updated += 1;
-      } else {
-        stats.kept += 1;
-      }
+      stats.kept += 1;
       return;
     }
 
     if (MergeProtocol.compareClocks(incoming, local) > 0) {
-      const localRecord = local as unknown as Record<string, unknown>;
-      for (const key of Object.keys(localRecord)) {
-        delete localRecord[key];
-      }
-      Object.assign(localRecord, cloneSlot(incoming));
+      this.replaceSlot(local, incoming);
       stats.replaced += 1;
       return;
     }
@@ -116,11 +110,13 @@ export class MergeProtocol {
   ): void {
     for (const key of Object.keys(incomingValues)) {
       const incomingValue = incomingValues[key];
+
       if (incomingValue === undefined) {
         continue;
       }
 
       const localValue = localValues[key];
+
       if (localValue === undefined) {
         localValues[key] = cloneSlot(incomingValue);
         stats.added += 1;
@@ -129,5 +125,15 @@ export class MergeProtocol {
 
       this.mergeSlot(localValue, incomingValue, stats);
     }
+  }
+
+  private replaceSlot(local: Slot, incoming: Slot): void {
+    const localRecord = local as unknown as Record<string, unknown>;
+
+    for (const key of Object.keys(localRecord)) {
+      delete localRecord[key];
+    }
+
+    Object.assign(localRecord, cloneSlot(incoming));
   }
 }

@@ -1,6 +1,7 @@
 import type { JsonObject, JsonValue } from "../json";
 import {
   createContainerSlot,
+  createTombstoneSlot,
   isJsonObject,
   type Slot,
   type SlotMap,
@@ -56,6 +57,10 @@ export function slotFromJson(
     }
 
     return createContainerSlot(timestamp, author, values);
+  }
+
+  if (value === undefined) {
+    return createTombstoneSlot(timestamp, author);
   }
 
   return {

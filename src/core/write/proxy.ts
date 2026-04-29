@@ -34,6 +34,10 @@ export function createWriteProxy(selection: JsonStorageSelection): unknown {
         return false;
       }
 
+      if (value === undefined) {
+        selection.delete(prop);
+      }
+
       selection.set(prop, value as JsonValue);
 
       return true;
