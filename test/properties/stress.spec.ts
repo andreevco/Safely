@@ -1,17 +1,13 @@
 import { describe, expect, it } from "vitest";
 import * as fc from "fast-check";
-import { z } from "zod";
-import { createStorage, StorageVersion } from "../../src";
-import { hCons, hNil } from "../../src/core/version";
-import { Slot } from "../../src/core/slots";
+import { createStorage } from "../../src";
 import { stressVersionList } from "./stress-schema";
 import { applyOps, opsArb } from "./ops";
 
-function makeStorage(authorId: string, root?: Slot) {
+function makeStorage(authorId: string) {
   return createStorage({
     authorId,
     versions: stressVersionList,
-    root: root as any,
   });
 }
 

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { createStorage } from "../../src";
 import { z } from "zod";
 import { defineVersionHList, hCons, hNil } from "../../src/core/version";
+import { cloneSlot } from "../../src/core/slots/slot-json";
 
 describe("Storage merge findings", () => {
   /*
@@ -39,8 +40,8 @@ describe("Storage merge findings", () => {
             tick: "",
             deepMixed: {},
           },
-          migrate: (x) => x,
-          reverseMigrate: (x) => x,
+          projectUp: cloneSlot,
+          projectDown: cloneSlot,
         },
         hNil,
       ),

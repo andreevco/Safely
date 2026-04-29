@@ -22,6 +22,7 @@ export class WorkingStorageRoot {
     fn: (draft: WriteDraft<T>) => void,
     timestamp: number,
     author: string,
+    protocol: MergeProtocol,
   ): void {
     const draft = createWriteProxy(
       selectJsonStorage(this.latestContainer(), timestamp, author),
@@ -29,21 +30,31 @@ export class WorkingStorageRoot {
 
     fn(draft);
 
-    const latest = this.validateLatest();
+    this.validateLatest();
     new VersionPropagation(this.versions).propagateToOlderVersions(
       this.root,
-      latest,
-      timestamp,
-      author,
+      protocol,
     );
   }
 
   merge(protocol: MergeProtocol, incoming: Slot): MergeStats {
     validateSlot(incoming);
 
+    const before = cloneDeep(this.root);
     const stats = protocol.merge(this.root, incoming);
 
+    const propagation = new VersionPropagation(this.versions);
+    propagation.propagateChangedOlderVersionsToNewer(
+      before,
+      this.root,
+      protocol,
+    );
+
     this.validateLatest();
+    propagation.propagateToOlderVersions(
+      this.root,
+      protocol,
+    );
 
     return stats;
   }
@@ -86,4 +97,5 @@ export class WorkingStorageRoot {
   private validateLatest(): unknown {
     return this.latestVersion().schema.parse(stripSlot(this.latestContainer()));
   }
+
 }

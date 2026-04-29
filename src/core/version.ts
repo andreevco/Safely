@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { ContainerSlot } from "./slots";
 
 export type AnySchema = z.ZodTypeAny;
 
@@ -6,11 +7,12 @@ export type StorageVersion<
   Old extends AnySchema = AnySchema,
   New extends AnySchema = AnySchema,
 > = {
+  readonly __oldSchema?: Old;
   version: number;
   schema: New;
   initial: z.output<New> | (() => z.output<New>);
-  migrate: (old: z.output<Old>) => z.output<New>;
-  reverseMigrate: (newData: z.output<New>) => z.output<Old>;
+  projectUp: (old: ContainerSlot) => ContainerSlot;
+  projectDown: (newData: ContainerSlot) => ContainerSlot;
 };
 
 type OldOf<V> =

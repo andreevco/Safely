@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { defineVersionHList, hCons, hNil } from "../../src/core/version";
+import { cloneSlot } from "../../src/core/slots/slot-json";
 
 const Scalar = z.string();
 
@@ -169,8 +170,8 @@ export const stressVersionList = defineVersionHList(
       version: 1,
       schema: stressSchema,
       initial: stressInitial,
-      migrate: (x) => x,
-      reverseMigrate: (x) => x,
+      projectUp: cloneSlot,
+      projectDown: cloneSlot,
     },
     hNil,
   ),

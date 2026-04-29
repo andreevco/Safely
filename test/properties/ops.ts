@@ -247,7 +247,7 @@ type Op =
     }
   | { type: "deepMixed.deleteChild"; key: string; childKey: string };
 
-export const opArb: fc.Arbitrary<Op> = fc.oneof(
+export const opArb = fc.oneof(
   // 1. Plain nested object
   scalarArb.map((value) => ({
     type: "nested.setValue",
@@ -533,7 +533,7 @@ export const opArb: fc.Arbitrary<Op> = fc.oneof(
       key,
       childKey,
     })),
-);
+) as fc.Arbitrary<Op>;
 
 export const opsArb = fc.array(opArb, { maxLength: 50 });
 

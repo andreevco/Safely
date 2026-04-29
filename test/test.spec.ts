@@ -2,8 +2,13 @@ import { describe, expect, it, beforeEach } from "vitest";
 import { createStorage, Storage } from "../src";
 import { z } from "zod";
 import { defineVersionHList, hCons, hNil } from "../src/core/version";
-import { createOriginContainer } from "../src/core/slots";
-import { slotFromJson } from "../src/core/slots/slot-json";
+import {
+  ContainerSlot,
+  createOriginContainer,
+  Slot,
+} from "../src/core/slots";
+import { cloneSlot, slotFromJson } from "../src/core/slots/slot-json";
+import { MergeProtocol } from "../src/core/merge-protocol";
 
 const schemaV1 = z.object({
   key1: z.number(),
@@ -25,6 +30,70 @@ const schemaV3 = z.object({
 
 type StorageV3 = z.output<typeof schemaV3>;
 
+function slot(value: unknown, timestamp = 0, author = ""): Slot {
+  return slotFromJson(value as never, timestamp, author);
+}
+
+function setIfNewer(
+  values: ContainerSlot["v"],
+  key: string,
+  incoming: Slot | undefined,
+): void {
+  if (incoming === undefined) {
+    return;
+  }
+
+  const existing = values[key];
+  if (
+    existing === undefined ||
+    MergeProtocol.compareClocks(incoming, existing) > 0
+  ) {
+    values[key] = cloneSlot(incoming);
+  }
+}
+
+function copyFields(source: ContainerSlot): ContainerSlot["v"] {
+  const values: ContainerSlot["v"] = {};
+
+  for (const key of Object.keys(source.v)) {
+    const child = source.v[key];
+    if (child !== undefined) {
+      values[key] = cloneSlot(child);
+    }
+  }
+
+  return values;
+}
+
+function projectV1ToV2(source: ContainerSlot): ContainerSlot {
+  const values = copyFields(source);
+  setIfNewer(values, "key3", slot(false));
+  return { v: values, t: source.t, a: source.a, r: true };
+}
+
+function projectV2ToV1(source: ContainerSlot): ContainerSlot {
+  return { v: copyFields(source), t: source.t, a: source.a, r: true };
+}
+
+function projectV2ToV3(source: ContainerSlot): ContainerSlot {
+  const values = copyFields(source);
+  delete values.key2;
+  setIfNewer(values, "label", source.v.key2);
+  setIfNewer(values, "key4", slot("v3"));
+  return { v: values, t: source.t, a: source.a, r: true };
+}
+
+function projectV3ToV2(source: ContainerSlot): ContainerSlot {
+  const values = copyFields(source);
+  delete values.label;
+  setIfNewer(values, "key2", source.v.label);
+  return { v: values, t: source.t, a: source.a, r: true };
+}
+
+function identityProjection(source: ContainerSlot): ContainerSlot {
+  return cloneSlot(source);
+}
+
 const v3 = defineVersionHList(
   hCons(
     {
@@ -36,21 +105,8 @@ const v3 = defineVersionHList(
         key3: false,
         key4: "v3",
       },
-      migrate: (prev) => {
-        return {
-          key1: prev.key1,
-          label: prev.key2,
-          key3: prev.key3,
-          key4: "v3",
-        };
-      },
-      reverseMigrate: (current) => {
-        return {
-          key1: current.key1,
-          key2: current.label,
-          key3: current.key3,
-        };
-      },
+      projectUp: projectV2ToV3,
+      projectDown: projectV3ToV2,
     },
     hCons(
       {
@@ -61,19 +117,8 @@ const v3 = defineVersionHList(
           key2: "initial",
           key3: false,
         },
-        migrate: (prev) => {
-          return {
-            key1: prev.key1,
-            key2: prev.key2,
-            key3: false,
-          };
-        },
-        reverseMigrate: (current) => {
-          return {
-            key1: current.key1,
-            key2: current.key2,
-          };
-        },
+        projectUp: projectV1ToV2,
+        projectDown: projectV2ToV1,
       },
       hCons(
         {
@@ -83,8 +128,8 @@ const v3 = defineVersionHList(
             key1: 0,
             key2: "initial",
           },
-          migrate: (prev) => prev,
-          reverseMigrate: (current) => current,
+          projectUp: identityProjection,
+          projectDown: identityProjection,
         },
         hNil,
       ),
@@ -101,8 +146,8 @@ const v1 = defineVersionHList(
         key1: 0,
         key2: "initial",
       },
-      migrate: (prev) => prev,
-      reverseMigrate: (current) => current,
+      projectUp: identityProjection,
+      projectDown: identityProjection,
     },
     hNil,
   ),
@@ -158,8 +203,8 @@ describe("test", () => {
               key2: 1,
             },
           },
-          migrate: (prev) => prev,
-          reverseMigrate: (current) => current,
+          projectUp: identityProjection,
+          projectDown: identityProjection,
         },
         hNil,
       ),
@@ -251,15 +296,27 @@ describe("test", () => {
     expect(exported.v["2"]).toMatchObject({
       v: {
         key1: { v: 10 },
-        key2: { v: "updated" },
+        key2: { v: "updated", a: "device-1" },
         key3: { v: false, t: 0 },
       },
     });
     expect(exported.v["1"]).toMatchObject({
       v: {
         key1: { v: 10 },
-        key2: { v: "updated" },
+        key2: { v: "updated", a: "device-1" },
       },
+    });
+
+    const v3Slot = exported.v["3"] as ContainerSlot;
+    const v2Slot = exported.v["2"] as ContainerSlot;
+    const v1Slot = exported.v["1"] as ContainerSlot;
+    expect(v2Slot.v.key2).toMatchObject({
+      t: v3Slot.v.label?.t,
+      a: v3Slot.v.label?.a,
+    });
+    expect(v1Slot.v.key2).toMatchObject({
+      t: v3Slot.v.label?.t,
+      a: v3Slot.v.label?.a,
     });
   });
 
@@ -292,6 +349,152 @@ describe("test", () => {
         key1: { v: 0, t: 0 },
         key2: { v: "updated" },
       },
+    });
+  });
+
+  it("should migrate older-version edits up after merge", () => {
+    const oldDevice = createStorage({
+      authorId: "old-device",
+      versions: v1,
+    });
+    const newDevice: Storage<StorageV3> = createStorage({
+      authorId: "new-device",
+      versions: v3,
+    });
+
+    oldDevice.update((draft) => {
+      draft.key1 = 42;
+      draft.key2 = "from-v1";
+    });
+
+    newDevice.merge(oldDevice.export());
+
+    const oldExport = oldDevice.export() as ContainerSlot;
+    const newExport = newDevice.export() as ContainerSlot;
+    const oldV1 = oldExport.v["1"] as ContainerSlot;
+    const newV3 = newExport.v["3"] as ContainerSlot;
+
+    expect(newDevice.read()).toEqual({
+      key1: 42,
+      label: "from-v1",
+      key3: false,
+      key4: "v3",
+    });
+    expect(newV3.v.label).toMatchObject({
+      t: oldV1.v.key2?.t,
+      a: oldV1.v.key2?.a,
+    });
+    expect(newV3.v.key4).toMatchObject({ t: 0, a: "" });
+  });
+
+  it("should preserve tombstones through raw slot projections", () => {
+    const schemaOptionalV1 = z.object({
+      keep: z.string(),
+      optional: z.string().optional(),
+    });
+    const schemaOptionalV2 = z.object({
+      keep: z.string(),
+      renamed: z.string().optional(),
+      added: z.boolean(),
+    });
+
+    function projectOptionalV1ToV2(source: ContainerSlot): ContainerSlot {
+      const values = copyFields(source);
+      delete values.optional;
+      setIfNewer(values, "renamed", source.v.optional);
+      setIfNewer(values, "added", slot(false));
+      return { v: values, t: source.t, a: source.a, r: true };
+    }
+
+    function projectOptionalV2ToV1(source: ContainerSlot): ContainerSlot {
+      const values = copyFields(source);
+      delete values.renamed;
+      setIfNewer(values, "optional", source.v.renamed);
+      return { v: values, t: source.t, a: source.a, r: true };
+    }
+
+    const optionalV2 = defineVersionHList(
+      hCons(
+        {
+          version: 2,
+          schema: schemaOptionalV2,
+          initial: {
+            keep: "",
+            renamed: "initial",
+            added: false,
+          },
+          projectUp: projectOptionalV1ToV2,
+          projectDown: projectOptionalV2ToV1,
+        },
+        hCons(
+          {
+            version: 1,
+            schema: schemaOptionalV1,
+            initial: {
+              keep: "",
+              optional: "initial",
+            },
+            projectUp: identityProjection,
+            projectDown: identityProjection,
+          },
+          hNil,
+        ),
+      ),
+    );
+    const optionalV1 = defineVersionHList(
+      hCons(
+        {
+          version: 1,
+          schema: schemaOptionalV1,
+          initial: {
+            keep: "",
+            optional: "initial",
+          },
+          projectUp: identityProjection,
+          projectDown: identityProjection,
+        },
+        hNil,
+      ),
+    );
+
+    const oldDevice = createStorage({
+      authorId: "old-device",
+      versions: optionalV1,
+    });
+    const newDevice = createStorage({
+      authorId: "new-device",
+      versions: optionalV2,
+    });
+
+    oldDevice.update((draft) => {
+      delete draft.optional;
+    });
+
+    newDevice.merge(oldDevice.export());
+
+    const oldExport = oldDevice.export() as ContainerSlot;
+    const newExport = newDevice.export() as ContainerSlot;
+    const oldTombstone = (oldExport.v["1"] as ContainerSlot).v.optional;
+    const projectedTombstone = (newExport.v["2"] as ContainerSlot).v.renamed;
+
+    expect(projectedTombstone).toEqual(oldTombstone);
+    expect(projectedTombstone).toMatchObject({ d: true, a: "old-device" });
+  });
+
+  it("should choose the newest slot when projected fields collide", () => {
+    const projected = projectV2ToV3(
+      createOriginContainer({
+        key1: slot(0),
+        key2: slot("older-label", 10, "A"),
+        key3: slot(false),
+        label: slot("newer-label", 11, "B"),
+      }),
+    );
+
+    expect(projected.v.label).toMatchObject({
+      v: "newer-label",
+      t: 11,
+      a: "B",
     });
   });
 });

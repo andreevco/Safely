@@ -1,18 +1,54 @@
-import { JsonValue } from "./json";
+import { MergeProtocol } from "./merge-protocol";
 import { stripSlot } from "./slots/slot-json";
-import { ContainerSlot, isContainerSlot } from "./slots";
+import { ContainerSlot, isContainerSlot, Slot } from "./slots";
+import { validateSlot } from "./slots/slot-validation";
 import { StorageVersion } from "./version";
-import { JsonStorageSelection, selectJsonStorage } from "./write";
 
 export class VersionPropagation {
   constructor(private readonly versions: readonly StorageVersion[]) {}
 
-  propagateToOlderVersions(
+  propagateChangedOlderVersionsToNewer(
+    before: ContainerSlot,
     root: ContainerSlot,
-    latest: unknown,
-    timestamp: number,
-    author: string,
+    protocol: MergeProtocol,
   ): void {
+    const knownVersionsLength = Object.keys(root.v).length;
+    if (knownVersionsLength <= 1) {
+      return;
+    }
+
+    let current: ContainerSlot | undefined;
+
+    for (let index = 0; index < this.versions.length - 1; index += 1) {
+      const fromVersion = this.versions[index];
+      const toVersion = this.versions[index + 1];
+
+      if (current === undefined) {
+        const source = root.v[String(fromVersion.version)];
+        const previousSource = before.v[String(fromVersion.version)];
+
+        if (
+          !isContainerSlot(source) ||
+          this.slotEquals(source, previousSource)
+        ) {
+          continue;
+        }
+
+        current = source;
+      }
+
+      const projected = toVersion.projectUp(current);
+      this.validateProjection(toVersion, projected);
+      current = this.mergeIntoExistingVersion(
+        root,
+        toVersion,
+        projected,
+        protocol,
+      );
+    }
+  }
+
+  propagateToOlderVersions(root: ContainerSlot, protocol: MergeProtocol): void {
     const latestVersion = this.latestVersion();
     const knownVersionsLength = Object.keys(root.v).filter(
       (x) => Number(x) <= latestVersion.version,
@@ -22,31 +58,25 @@ export class VersionPropagation {
       return;
     }
 
+    const latest = root.v[String(latestVersion.version)];
+    if (!isContainerSlot(latest)) {
+      return;
+    }
+
     let current = latest;
 
     for (let index = this.versions.length - 1; index > 0; index -= 1) {
       const fromVersion = this.versions[index];
       const toVersion = this.versions[index - 1];
 
-      const migrated = toVersion.schema.parse(
-        fromVersion.reverseMigrate(current),
+      const projected = fromVersion.projectDown(current);
+      this.validateProjection(toVersion, projected);
+      current = this.mergeIntoExistingVersion(
+        root,
+        toVersion,
+        projected,
+        protocol,
       );
-
-      const existing = root.v[String(toVersion.version)];
-      const source = root.v[String(fromVersion.version)];
-      if (isContainerSlot(existing)) {
-        const parsedExisting = toVersion.schema.parse(stripSlot(existing));
-        this.applyJsonDiffInRoot(
-          existing,
-          migrated as JsonValue,
-          parsedExisting as JsonValue,
-          timestamp,
-          author,
-          isContainerSlot(source) ? source : undefined,
-        );
-      }
-
-      current = migrated;
     }
   }
 
@@ -60,109 +90,31 @@ export class VersionPropagation {
     return latest;
   }
 
-  private applyJsonDiffInRoot(
-    container: ContainerSlot,
-    next: JsonValue,
-    current: JsonValue,
-    timestamp: number,
-    author: string,
-    source?: ContainerSlot,
-  ): void {
-    this.applyJsonDiff(
-      selectJsonStorage(container, timestamp, author),
-      next,
-      current,
-      source === undefined
-        ? undefined
-        : selectJsonStorage(source, timestamp, author),
-    );
+  private mergeIntoExistingVersion(
+    root: ContainerSlot,
+    version: StorageVersion,
+    projected: ContainerSlot,
+    protocol: MergeProtocol,
+  ): ContainerSlot {
+    const target = root.v[String(version.version)];
+
+    if (isContainerSlot(target)) {
+      protocol.merge(target, projected);
+      return target;
+    }
+
+    return projected;
   }
 
-  private applyJsonDiff(
-    selection: JsonStorageSelection,
-    next: JsonValue,
-    current: JsonValue,
-    source?: JsonStorageSelection,
+  private validateProjection(
+    version: StorageVersion,
+    projected: ContainerSlot,
   ): void {
-    if (this.jsonEquals(next, current)) {
-      return;
-    }
-
-    if (
-      typeof next !== "object" ||
-      next === null ||
-      Array.isArray(next) ||
-      typeof current !== "object" ||
-      current === null ||
-      Array.isArray(current)
-    ) {
-      throw new Error("Cannot replace version root during propagation");
-    }
-
-    const nextObject = next as Record<string, JsonValue>;
-    const currentObject = current as Record<string, JsonValue>;
-    const keys = new Set([
-      ...Object.keys(nextObject),
-      ...Object.keys(currentObject),
-    ]);
-
-    for (const key of keys) {
-      if (!(key in nextObject)) {
-        selection.delete(key);
-        continue;
-      }
-
-      if (!(key in currentObject)) {
-        selection.set(key, nextObject[key]);
-        continue;
-      }
-
-      this.applyJsonDiffProperty(
-        selection,
-        key,
-        nextObject[key],
-        currentObject[key],
-        source,
-      );
-    }
+    validateSlot(projected);
+    version.schema.parse(stripSlot(projected));
   }
 
-  private applyJsonDiffProperty(
-    selection: JsonStorageSelection,
-    key: string,
-    next: JsonValue,
-    current: JsonValue,
-    source?: JsonStorageSelection,
-  ): void {
-    if (this.jsonEquals(next, current)) {
-      return;
-    }
-
-    if (
-      typeof next === "object" &&
-      next !== null &&
-      !Array.isArray(next) &&
-      typeof current === "object" &&
-      current !== null &&
-      !Array.isArray(current)
-    ) {
-      this.applyJsonDiff(
-        selection.selectOrCreate(key),
-        next,
-        current,
-        source?.select(key),
-      );
-      return;
-    }
-
-    if (source?.get(key)?.d === true) {
-      selection.delete(key);
-    } else {
-      selection.set(key, next);
-    }
-  }
-
-  private jsonEquals(left: JsonValue, right: JsonValue): boolean {
+  private slotEquals(left: Slot, right: Slot | undefined): boolean {
     return JSON.stringify(left) === JSON.stringify(right);
   }
 }

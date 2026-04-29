@@ -92,7 +92,7 @@ class StorageImpl<T> implements Storage<T> {
 
     const workingRoot = this.createWorkingRoot();
 
-    workingRoot.update(fn, timestamp, author);
+    workingRoot.update(fn, timestamp, author, this.protocol);
     this.root = workingRoot.result();
   }
 
