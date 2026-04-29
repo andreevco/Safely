@@ -62,6 +62,7 @@ export function createInitialState(
         values: {
             ...DEFAULT_VALUES,
             recipient: initialValues.recipient,
+            addressBookName: initialValues.addressBookName ?? '',
             amountInputType: initialValues.amountInputType ?? 'crypto',
             isMax: initialValues.isMax ?? false
         },

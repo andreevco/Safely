@@ -9,6 +9,7 @@ const sHistoricalPrice = z.object({
 
 export const sSendFormDraft = z.object({
     recipient: z.string(),
+    addressBookName: z.string().optional(),
     amount: z.string().optional(),
     amountInputType: z.enum(['crypto', 'fiat']).optional(),
     isMax: z.boolean().optional(),

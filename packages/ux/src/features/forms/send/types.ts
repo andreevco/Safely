@@ -80,6 +80,7 @@ export type SendStepId = (typeof SEND_STEPS)[number];
 
 export interface SendFormInitialValues {
     recipient?: string;
+    addressBookName?: string;
     amount?: string;
     amountInputType?: AmountInputType;
     isMax?: boolean;

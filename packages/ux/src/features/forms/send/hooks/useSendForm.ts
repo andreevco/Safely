@@ -80,6 +80,7 @@ export function useSendForm(props: UseSendFormOptions) {
         if (state.values.recipient) {
             saveDraft({
                 recipient: state.values.recipient,
+                addressBookName: state.values.addressBookName || undefined,
                 amount: state.values.amount || undefined,
                 amountInputType: state.values.amountInputType,
                 isMax: state.values.isMax || undefined,
@@ -91,6 +92,7 @@ export function useSendForm(props: UseSendFormOptions) {
         }
     }, [
         state.values.recipient,
+        state.values.addressBookName,
         state.values.amount,
         state.values.amountInputType,
         state.values.isMax,
