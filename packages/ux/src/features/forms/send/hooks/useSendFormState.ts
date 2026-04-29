@@ -129,10 +129,35 @@ export function useSendFormState(params: UseSendFormStateParams) {
         dispatch({ type: 'PREV_STEP' });
     }, []);
 
-    const submitOrNextStep = useCallback(() => {
+    const submitOrNextStep = useCallback(async () => {
         const isLast = state.stepIndex === LAST_STEP_INDEX;
 
         if (!isLast) {
+            const recipient = state.parsed.recipient;
+            const trimmedName = state.values.addressBookName.trim();
+
+            if (
+                state.stepIndex === 0 &&
+                recipient &&
+                !state.suggestion.selectedId &&
+                trimmedName.length > 0
+            ) {
+                const contact = await createContact({
+                    name: trimmedName,
+                    addresses: [{ blockchain: recipient.blockchain, address: recipient.address }]
+                });
+                const newSuggestionId = contact.id.toString();
+
+                dispatch({
+                    type: 'SELECT_SUGGESTION',
+                    id: newSuggestionId,
+                    address: recipient.address,
+                    label: contact.meta.name,
+                    portfoliosIds: portfolioSuggestions.map(s => s.id),
+                    contactsIds: [...contactSuggestions.map(s => s.id), newSuggestionId]
+                });
+            }
+
             dispatch({ type: 'NEXT_STEP' });
             return;
         }
@@ -155,19 +180,6 @@ export function useSendFormState(params: UseSendFormStateParams) {
                 contactSuggestions
             )
         };
-
-        const name = state.values.addressBookName.trim();
-        if (name.length > 0 && !state.suggestion.selectedId) {
-            void createContact({
-                name,
-                addresses: [
-                    {
-                        blockchain: state.parsed.recipient.blockchain,
-                        address: state.parsed.recipient.address
-                    }
-                ]
-            });
-        }
 
         setIsSubmitted(true);
         onSubmit(result, clearDraft);
