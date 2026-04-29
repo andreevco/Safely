@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo } from 'react';
 
 import { useAccounts } from '../../entities';
 import { useAppContext } from '../providers';
@@ -16,25 +16,21 @@ export function useLoggerLifecycle(): void {
         [accounts]
     );
 
-    const accountIdsRef = useRef<readonly string[]>([]);
-    accountIdsRef.current = accounts.map(a => a.accountId);
-
     useEffect(() => {
         const accountIds = accounts.map(a => a.accountId);
-        void loggerRegistry.onAfterAppOpened({ accountIds });
-        // accounts is intentionally captured via accountIdsKey to avoid array identity churn
+        void loggerRegistry.onAccountsChanged({ accountIds });
     }, [accountIdsKey, loggerRegistry]);
 
     useEffect(() => {
         return () => {
-            void loggerRegistry.onBeforeAppClosed({ accountIds: accountIdsRef.current });
+            void loggerRegistry.onBeforeAppClosed();
         };
     }, [loggerRegistry]);
 
     useEffect(() => {
         return subscribeAppStateChange(state => {
             if (state === 'background' || state === 'inactive') {
-                void loggerRegistry.onBeforeAppClosed({ accountIds: accountIdsRef.current });
+                void loggerRegistry.onBeforeAppClosed();
             }
         });
     }, [subscribeAppStateChange, loggerRegistry]);

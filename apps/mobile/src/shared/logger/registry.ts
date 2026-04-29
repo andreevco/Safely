@@ -36,7 +36,7 @@ export class LoggerRegistry implements ILoggerRegistry {
         return logger;
     }
 
-    public async onAfterAppOpened(ctx: LoggerLifecycleContext): Promise<void> {
+    public async onAccountsChanged(ctx: LoggerLifecycleContext): Promise<void> {
         const validHashes = new Set(ctx.accountIds.map(accountLogHash));
 
         const unusedIds = Array.from(this.accounts.keys()).filter(
@@ -55,7 +55,7 @@ export class LoggerRegistry implements ILoggerRegistry {
         FileTransport.clearMissedLogFiles(validHashes, this.systemLogger);
     }
 
-    public async onBeforeAppClosed(_ctx: LoggerLifecycleContext): Promise<void> {
+    public async onBeforeAppClosed(): Promise<void> {
         await this.flushAll();
     }
 
