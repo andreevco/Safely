@@ -1,21 +1,17 @@
 import { useMemo } from 'react';
 
-import { ContactMeta, PortfolioMeta, RatedCryptoAssetAmount } from '@safely/core';
+import { RatedCryptoAssetAmount } from '@safely/core';
 
-import {
-    findContactMetaByAddress,
-    findPortfolioMetaByAddress,
-    useActivePortfolioEntities,
-    useContacts,
-    usePortfolios
-} from '../../../../entities';
+import { useActivePortfolioEntities, useContacts, usePortfolios } from '../../../../entities';
 import { fuzzySearch } from '../../../../shared';
-import { ContactSuggestion, PortfolioSuggestion, SendFormState, SendSuggestions } from '../types';
-import { mapContactToSuggestions, mapPortfolioToSuggestions } from '../utils';
-
-export type RecipientMeta =
-    | { kind: 'portfolio'; meta: PortfolioMeta }
-    | { kind: 'contact'; meta: ContactMeta };
+import {
+    ContactSuggestion,
+    PortfolioSuggestion,
+    RecipientMeta,
+    SendFormState,
+    SendSuggestions
+} from '../types';
+import { computeRecipientMeta, mapContactToSuggestions, mapPortfolioToSuggestions } from '../utils';
 
 interface UseSendFormMetaParams {
     state: SendFormState;
@@ -62,17 +58,10 @@ export function useSendFormMeta(params: UseSendFormMetaParams) {
         };
     }, [selectedId, portfoliosIds, contactsIds, portfolioSuggestions, contactSuggestions]);
 
-    const recipientMeta = useMemo<RecipientMeta | undefined>(() => {
-        if (!state.parsed.recipient) return undefined;
-        const portfolioMeta = findPortfolioMetaByAddress(
-            portfolios,
-            state.parsed.recipient.address
-        );
-        if (portfolioMeta) return { kind: 'portfolio', meta: portfolioMeta };
-        const contactMeta = findContactMetaByAddress(contacts, state.parsed.recipient.address);
-        if (contactMeta) return { kind: 'contact', meta: contactMeta };
-        return undefined;
-    }, [portfolios, contacts, state.parsed.recipient]);
+    const recipientMeta = useMemo<RecipientMeta | undefined>(
+        () => computeRecipientMeta(selectedId, portfolioSuggestions, contactSuggestions),
+        [selectedId, portfolioSuggestions, contactSuggestions]
+    );
 
     const isMaxAvailable = useMemo(() => {
         const asset = state.parsed.asset;

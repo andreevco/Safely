@@ -10,6 +10,10 @@ import {
     Recipient
 } from '@safely/core';
 
+export type RecipientMeta =
+    | { kind: 'portfolio'; meta: PortfolioMeta }
+    | { kind: 'contact'; meta: ContactMeta };
+
 export interface PortfolioSuggestion {
     id: string;
     address: string;
@@ -61,6 +65,7 @@ export type SendFormResultBtc = {
     recipient: Recipient;
     amount: AmountWithInputType<BtcAsset>;
     isMax: boolean;
+    recipientMeta?: RecipientMeta;
 };
 
 export type SendFormResult = SendFormResultBtc;

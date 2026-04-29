@@ -13,6 +13,7 @@ import {
     SendFormResult,
     SendSuggestionState
 } from '../types';
+import { computeRecipientMeta } from '../utils';
 import { useAmountActions } from './useAmountActions';
 import { useRecipientValidation } from './useRecipientValidation';
 import { useSendFormRestoration } from './useSendFormRestoration';
@@ -147,7 +148,12 @@ export function useSendFormState(params: UseSendFormStateParams) {
             blockchain: state.parsed.recipient.blockchain,
             recipient: state.parsed.recipient,
             amount: state.parsed.amount,
-            isMax: state.parsed.isMax
+            isMax: state.parsed.isMax,
+            recipientMeta: computeRecipientMeta(
+                state.suggestion.selectedId,
+                portfolioSuggestions,
+                contactSuggestions
+            )
         };
 
         const name = state.values.addressBookName.trim();
@@ -169,7 +175,15 @@ export function useSendFormState(params: UseSendFormStateParams) {
         if (shouldResetForm) {
             dispatch({ type: 'RESET' });
         }
-    }, [state, onSubmit, shouldResetForm, clearDraft, createContact]);
+    }, [
+        state,
+        onSubmit,
+        shouldResetForm,
+        clearDraft,
+        createContact,
+        portfolioSuggestions,
+        contactSuggestions
+    ]);
 
     return {
         state,

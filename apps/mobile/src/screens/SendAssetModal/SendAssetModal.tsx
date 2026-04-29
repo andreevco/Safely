@@ -149,7 +149,7 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
                     <Text variant="titleS" textAlign="center">
                         {t('send.title')}
                     </Text>
-                    {state.parsed.recipient && (
+                    {!isFirstStep && state.parsed.recipient && (
                         <Animated.View
                             entering={FadeIn.duration(150)}
                             exiting={FadeOut.duration(150)}

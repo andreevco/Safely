@@ -5,6 +5,7 @@ export type {
     SendSuggestions,
     PortfolioSuggestion,
     ContactSuggestion,
+    RecipientMeta,
     SendFormResult,
     SendFormResultBtc,
     SendFormState,
