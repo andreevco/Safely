@@ -2,11 +2,7 @@ import { describe, expect, it, beforeEach } from "vitest";
 import { createStorage, Storage } from "../src";
 import { z } from "zod";
 import { defineVersionHList, hCons, hNil } from "../src/core/version";
-import {
-  ContainerSlot,
-  createOriginContainer,
-  Slot,
-} from "../src/core/slots";
+import { ContainerSlot, createOriginContainer, Slot } from "../src/core/slots";
 import { cloneSlot, slotFromJson } from "../src/core/slots/slot-json";
 import { MergeProtocol } from "../src/core/merge-protocol";
 
@@ -247,7 +243,7 @@ describe("test", () => {
     const incoming = createOriginContainer({
       "1": slotFromJson(
         { key1: "invalid", key2: "value2" },
-        1_000_000_000,
+        2_000_000_000,
         "remote",
       ),
     });
@@ -264,7 +260,7 @@ describe("test", () => {
     const versionSlot = exported.v["1"] as unknown as {
       v: { key1: { t: number } };
     };
-    expect(versionSlot.v.key1.t).toBeLessThan(1_000_000_000);
+    expect(versionSlot.v.key1.t).toBeLessThan(2_000_000_000);
   });
 
   it("should propagate latest updates to existing older versions", () => {

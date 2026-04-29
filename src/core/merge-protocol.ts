@@ -9,28 +9,16 @@ export interface MergeStats {
 }
 
 export class MergeProtocol {
-  static EPOCH_OFFSET = Math.floor(Date.now() / 1000) - 100;
-
   readonly id: string;
-  readonly skewSeconds: number;
   private clock: number;
 
-  constructor(authorId: string, skewSeconds = 0) {
+  constructor(authorId: string) {
     this.id = authorId;
-    this.skewSeconds = skewSeconds;
     this.clock = this.wallTime();
   }
 
   wallTime(): number {
-    return (
-      Math.floor(Date.now() / 1000) -
-      MergeProtocol.EPOCH_OFFSET -
-      this.skewSeconds
-    );
-  }
-
-  currentClock(): number {
-    return this.clock;
+    return Math.floor(Date.now() / 1000);
   }
 
   tick(): number {
