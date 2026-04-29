@@ -1,6 +1,14 @@
+import * as SecureStore from 'expo-secure-store';
 import { createMMKV } from 'react-native-mmkv';
 
-import { IEnumerableStorage, ISyncSingleStorage, TreeStorage } from '@safely/core';
+import {
+    EnumerableStorage,
+    IEnumerableStorage,
+    IStorage,
+    ISyncSingleStorage,
+    OptionalProperty,
+    TreeStorage
+} from '@safely/core';
 
 function createMMKVEnumerableStorage(id: string) {
     const mmkv = createMMKV({ id });
@@ -45,10 +53,52 @@ function createMMKVSyncSingleStorage(id: string) {
     };
 }
 
+function createEncryptedEnumerableStorage(
+    keychainService: string,
+    keychainAccessible: SecureStore.KeychainAccessibilityConstant
+): IEnumerableStorage {
+    const options: SecureStore.SecureStoreOptions = {
+        keychainService,
+        keychainAccessible,
+        requireAuthentication: false
+    };
+
+    const dataStorage: OptionalProperty<IStorage, 'clear'> = {
+        getItem: key => SecureStore.getItemAsync(key, options),
+        setItem: async (key, value) => {
+            await SecureStore.setItemAsync(key, value, options);
+        },
+        removeItem: async key => {
+            await SecureStore.deleteItemAsync(key, options);
+        }
+    };
+
+    const metaStorage = createMMKVTreeStorage('keychain-meta').storage.child(keychainService);
+
+    return new EnumerableStorage(dataStorage, metaStorage);
+}
+
+function createSecureStoreTreeStorage(
+    keychainService: string,
+    keychainAccessible: SecureStore.KeychainAccessibilityConstant
+) {
+    return {
+        storage: TreeStorage.root(
+            createEncryptedEnumerableStorage(keychainService, keychainAccessible)
+        )
+    };
+}
+
 export const mobileStorages = {
     app: createMMKVTreeStorage('app'),
-    encrypted: createMMKVTreeStorage('encrypted'),
-    secureEncrypted: createMMKVTreeStorage('secureEncrypted'),
+    encrypted: createSecureStoreTreeStorage(
+        'safely.encrypted',
+        SecureStore.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY
+    ),
+    secureEncrypted: createSecureStoreTreeStorage(
+        'safely.secureEncrypted',
+        SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY
+    ),
     persister: createMMKVEnumerableStorage('persister'),
     locale: createMMKVSyncSingleStorage('locale')
 };
