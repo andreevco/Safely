@@ -42,15 +42,14 @@ export class LoggerRegistry implements ILoggerRegistry {
         const unusedIds = Array.from(this.accounts.keys()).filter(
             id => !validHashes.has(accountLogHash(id))
         );
-        await Promise.all(
-            unusedIds.map(async id => {
-                const entry = this.accounts.get(id);
-                if (!entry) return;
 
-                this.accounts.delete(id);
-                await entry.transport.destroy();
-            })
-        );
+        for (const id of unusedIds) {
+            const entry = this.accounts.get(id);
+            if (!entry) continue;
+
+            this.accounts.delete(id);
+            entry.transport.destroy();
+        }
 
         FileTransport.clearMissedLogFiles(validHashes, this.systemLogger);
     }

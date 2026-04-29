@@ -80,14 +80,11 @@ export class FileTransport implements ILoggerTransport {
         return this.flushing;
     }
 
-    public async destroy(): Promise<void> {
+    public destroy(): void {
         if (this.isDestroyed) return;
 
-        this.isDestroyed = true;
-        clearInterval(this.flushHandle);
-
-        await this.flushing;
-        this.clearState();
+        this.stop();
+        this.clear();
     }
 
     public static clearMissedLogFiles(keepHashes: Set<string>, errorLogger: Logger): void {
@@ -112,12 +109,17 @@ export class FileTransport implements ILoggerTransport {
         }
     }
 
-    private clearState(): void {
+    private stop(): void {
+        this.isDestroyed = true;
+        clearInterval(this.flushHandle);
+    }
+
+    private clear(): void {
         this.mmkv.clearAll();
 
         try {
-            const logFile = new File(Paths.cache, this.filename);
-            if (logFile.exists) logFile.delete();
+            const file = new File(Paths.cache, this.filename);
+            if (file.exists) file.delete();
         } catch (e) {
             console.error('[FileTransport] clear: failed to delete file', e);
         }
