@@ -50,7 +50,7 @@ function useSetContacts() {
         async mutationFn(contacts) {
             const sorted = [...contacts].sort((a, b) => a.meta.name.localeCompare(b.meta.name));
             await set(sorted.map(c => c.toJSON()));
-            await client.invalidateQueries({ queryKey: accountQueryKey.contacts.toKey() });
+            client.setQueryData<Contact[]>(accountQueryKey.contacts.toKey(), sorted);
         }
     });
 }
