@@ -35,6 +35,7 @@ function createMMKVTreeStorage(id: string) {
 
     return {
         storage,
+        enumerable: enumerableStorage,
         mmkv
     };
 }
@@ -52,6 +53,8 @@ function createMMKVSyncSingleStorage(id: string) {
         mmkv
     };
 }
+
+const keychainMeta = createMMKVTreeStorage('keychain-meta');
 
 function createEncryptedEnumerableStorage(
     keychainService: string,
@@ -73,7 +76,7 @@ function createEncryptedEnumerableStorage(
         }
     };
 
-    const metaStorage = createMMKVTreeStorage('keychain-meta').storage.child(keychainService);
+    const metaStorage = keychainMeta.storage.child(keychainService);
 
     return new EnumerableStorage(dataStorage, metaStorage);
 }
@@ -82,10 +85,10 @@ function createSecureStoreTreeStorage(
     keychainService: string,
     keychainAccessible: SecureStore.KeychainAccessibilityConstant
 ) {
+    const enumerable = createEncryptedEnumerableStorage(keychainService, keychainAccessible);
     return {
-        storage: TreeStorage.root(
-            createEncryptedEnumerableStorage(keychainService, keychainAccessible)
-        )
+        storage: TreeStorage.root(enumerable),
+        enumerable
     };
 }
 
@@ -99,6 +102,7 @@ export const mobileStorages = {
         'safely.secureEncrypted',
         SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY
     ),
+    keychainMeta,
     persister: createMMKVEnumerableStorage('persister'),
     locale: createMMKVSyncSingleStorage('locale')
 };
