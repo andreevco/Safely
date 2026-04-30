@@ -1,14 +1,9 @@
 import * as SecureStore from 'expo-secure-store';
 import { createMMKV } from 'react-native-mmkv';
 
-import {
-    EnumerableStorage,
-    IEnumerableStorage,
-    IStorage,
-    ISyncSingleStorage,
-    OptionalProperty,
-    TreeStorage
-} from '@safely/core';
+import { IEnumerableStorage, ISyncSingleStorage, TreeStorage } from '@safely/core';
+
+import { SafelySecureStoreEnum } from '../../../modules/safely-secure-store-enum/src';
 
 function createMMKVEnumerableStorage(id: string) {
     const mmkv = createMMKV({ id });
@@ -19,7 +14,14 @@ function createMMKVEnumerableStorage(id: string) {
             mmkv.remove(key);
         },
         clear: async () => mmkv.clearAll(),
-        getAllKeys: async () => mmkv.getAllKeys()
+        getAllKeys: async () => mmkv.getAllKeys(),
+        getKeysWithPrefix: async (prefix: string) =>
+            mmkv.getAllKeys().filter(k => k.startsWith(prefix)),
+        removeItemsWithPrefix: async (prefix: string) => {
+            for (const key of mmkv.getAllKeys()) {
+                if (key.startsWith(prefix)) mmkv.remove(key);
+            }
+        }
     };
 
     return {
@@ -54,38 +56,37 @@ function createMMKVSyncSingleStorage(id: string) {
     };
 }
 
-const keychainMeta = createMMKVTreeStorage('keychain-meta');
-
-function createEncryptedEnumerableStorage(
+function createKeychainEnumerableStorage(
     keychainService: string,
     keychainAccessible: SecureStore.KeychainAccessibilityConstant
 ): IEnumerableStorage {
-    const options: SecureStore.SecureStoreOptions = {
+    const options = {
         keychainService,
         keychainAccessible,
         requireAuthentication: false
-    };
+    } satisfies SecureStore.SecureStoreOptions;
 
-    const dataStorage: OptionalProperty<IStorage, 'clear'> = {
+    return {
         getItem: key => SecureStore.getItemAsync(key, options),
         setItem: async (key, value) => {
             await SecureStore.setItemAsync(key, value, options);
         },
         removeItem: async key => {
             await SecureStore.deleteItemAsync(key, options);
-        }
+        },
+        clear: () => SafelySecureStoreEnum.clearAsync(options),
+        getAllKeys: () => SafelySecureStoreEnum.getKeysAsync(options),
+        getKeysWithPrefix: prefix => SafelySecureStoreEnum.getKeysWithPrefixAsync(prefix, options),
+        removeItemsWithPrefix: prefix =>
+            SafelySecureStoreEnum.removeItemsWithPrefixAsync(prefix, options)
     };
-
-    const metaStorage = keychainMeta.storage.child(keychainService);
-
-    return new EnumerableStorage(dataStorage, metaStorage);
 }
 
-function createSecureStoreTreeStorage(
+function createKeychainTreeStorage(
     keychainService: string,
     keychainAccessible: SecureStore.KeychainAccessibilityConstant
 ) {
-    const enumerable = createEncryptedEnumerableStorage(keychainService, keychainAccessible);
+    const enumerable = createKeychainEnumerableStorage(keychainService, keychainAccessible);
     return {
         storage: TreeStorage.root(enumerable),
         enumerable
@@ -94,15 +95,14 @@ function createSecureStoreTreeStorage(
 
 export const mobileStorages = {
     app: createMMKVTreeStorage('app'),
-    encrypted: createSecureStoreTreeStorage(
+    encrypted: createKeychainTreeStorage(
         'safely.encrypted',
         SecureStore.AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY
     ),
-    secureEncrypted: createSecureStoreTreeStorage(
+    secureEncrypted: createKeychainTreeStorage(
         'safely.secureEncrypted',
         SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY
     ),
-    keychainMeta,
     persister: createMMKVEnumerableStorage('persister'),
     locale: createMMKVSyncSingleStorage('locale')
 };

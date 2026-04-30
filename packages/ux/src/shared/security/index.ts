@@ -61,9 +61,18 @@ export class UnlockableSecuredEncryptedStorage
             getAllKeys: async () => {
                 await this.securityCheck();
                 return encryptedStorage.getAllKeys();
+            },
+            getKeysWithPrefix: async (prefix: string) => {
+                await this.securityCheck();
+                return encryptedStorage.getKeysWithPrefix(prefix);
+            },
+            removeItemsWithPrefix: async (prefix: string) => {
+                await this.securityCheck();
+                return encryptedStorage.removeItemsWithPrefix(prefix);
             }
         };
-        super([], storage, null, encryptedStorage);
+
+        super([], storage);
     }
 
     private async securityCheck() {

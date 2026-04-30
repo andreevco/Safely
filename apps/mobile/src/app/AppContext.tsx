@@ -23,7 +23,7 @@ const security: Security = {
 };
 
 const getSecureEncryptedStorage = () =>
-    new UnlockableSecuredEncryptedStorage(mobileStorages.secureEncrypted.storage, security);
+    new UnlockableSecuredEncryptedStorage(mobileStorages.secureEncrypted.enumerable, security);
 
 export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
     const {

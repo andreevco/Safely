@@ -24,4 +24,14 @@ export class InMemoryEnumerableStorage extends InMemoryStorage implements IEnume
     public async getAllKeys(): Promise<string[]> {
         return Array.from(this.map.keys());
     }
+
+    public async getKeysWithPrefix(prefix: string): Promise<string[]> {
+        return Array.from(this.map.keys()).filter(k => k.startsWith(prefix));
+    }
+
+    public async removeItemsWithPrefix(prefix: string): Promise<void> {
+        for (const key of Array.from(this.map.keys())) {
+            if (key.startsWith(prefix)) this.map.delete(key);
+        }
+    }
 }

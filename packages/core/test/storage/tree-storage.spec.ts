@@ -14,19 +14,39 @@ describe('TreeStorage', () => {
 
         // internal key should include prefix for the path
         const all = await base.getAllKeys();
-        expect(all.some(k => k.startsWith('_data..users..123') && k.endsWith('..token'))).toBe(
-            true
-        );
+        expect(all.some(k => k.startsWith('users..123') && k.endsWith('..token'))).toBe(true);
     });
 
-    it('escapes separator in path segments', async () => {
+    it('produces distinct keys for path segments that would collide under naive escaping', async () => {
         const base = new InMemoryEnumerableStorage();
         const root = TreeStorage.root(base);
-        const sub = root.child('a..b'); // internal separator should be replaced with underscore
+        const dotted = root.child('a..b');
+        const underscored = root.child('a_b');
 
-        await sub.setItem('x', '1');
-        const all = await base.getAllKeys();
-        expect(all.some(k => k.startsWith('_data..a_b') && k.endsWith('..x'))).toBe(true);
+        await dotted.setItem('x', '1');
+        await underscored.setItem('x', '2');
+
+        expect(await dotted.getItem('x')).toBe('1');
+        expect(await underscored.getItem('x')).toBe('2');
+
+        const dataKeys = await base.getAllKeys();
+        expect(dataKeys.length).toBe(2);
+        expect(new Set(dataKeys).size).toBe(2);
+    });
+
+    it('escape character itself does not collide across segments', async () => {
+        const base = new InMemoryEnumerableStorage();
+        const root = TreeStorage.root(base);
+        // `_d` is the encoded form of `.` — putting it literally in a segment must
+        // not alias a segment that actually contains `.` after encoding.
+        const dotted = root.child('a.b');
+        const literalEscape = root.child('a_db');
+
+        await dotted.setItem('x', '1');
+        await literalEscape.setItem('x', '2');
+
+        expect(await dotted.getItem('x')).toBe('1');
+        expect(await literalEscape.getItem('x')).toBe('2');
     });
 
     it('clear removes only keys under current path prefix', async () => {
@@ -42,28 +62,7 @@ describe('TreeStorage', () => {
         await p1.clear();
         const keys = await base.getAllKeys();
         expect(keys.length).toBe(1);
-        expect(keys.some(k => k.includes('_data..a..c'))).toBe(true);
-    });
-
-    it('recoverIntents triggers clear when clear intent is present', async () => {
-        const base = new InMemoryEnumerableStorage();
-        const root = TreeStorage.root(base);
-        const node = root.child(['scope']);
-
-        await node.setItem('a', '1');
-        await node.setItem('b', '2');
-        expect((await base.getAllKeys()).length).toBe(2);
-
-        // Set clear intent directly
-        await base.setItem('_intent..clear..scope', '1');
-        // Any operation should recover and clear first
-        const res = await node.getItem('a');
-        expect(res).toBeNull();
-        // All keys under the path should be cleared
-        const keysAfter = await base.getAllKeys();
-        expect(keysAfter.every(k => !k.startsWith('_data..scope..'))).toBe(true);
-        // Intent should be removed by clear()
-        expect(await base.getItem('_intent..clear..scope')).toBeNull();
+        expect(keys.some(k => k.includes('a..c'))).toBe(true);
     });
 
     it('clear does not remove keys from overlapping path names', async () => {
@@ -75,13 +74,27 @@ describe('TreeStorage', () => {
         await sync.setItem('k1', 'v1');
         await syncProvider.setItem('k2', 'v2');
 
-        // Clear only 'root/sync' subtree
         await sync.clear();
 
         const keys = await base.getAllKeys();
-        // Keys under 'root:sync' should be removed
-        expect(keys.every(k => !k.startsWith('_data..root..sync..'))).toBe(true);
-        // Keys under 'root:sync-provider' should remain
-        expect(keys.some(k => k.startsWith('_data..root..sync-provider..'))).toBe(true);
+        expect(keys.every(k => !k.startsWith('root..sync..'))).toBe(true);
+        expect(keys.some(k => k.startsWith('root..sync-provider..'))).toBe(true);
     });
+
+    it('getOwnKeys returns only direct child keys at this node, decoded', async () => {
+        const base = new InMemoryEnumerableStorage();
+        const root = TreeStorage.root(base);
+        const node = root.child(['scope']);
+
+        await node.setItem('a', '1');
+        await node.setItem('b..c', '2'); // user-facing key with separator chars
+        await node.child('nested').setItem('deep', '3'); // descendant — must not appear
+
+        const keys = await node.getOwnKeys();
+        expect(keys.sort()).toEqual(['a', 'b..c']);
+
+        // Sanity: the key with separator chars round-trips.
+        expect(await node.getItem('b..c')).toBe('2');
+    });
+
 });

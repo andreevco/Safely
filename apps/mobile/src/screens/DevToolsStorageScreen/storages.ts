@@ -16,7 +16,6 @@ export const storageViewers: StorageViewer[] = [
         kind: 'enumerable',
         storage: mobileStorages.secureEncrypted.enumerable
     },
-    { name: 'keychainMeta', kind: 'enumerable', storage: mobileStorages.keychainMeta.enumerable },
     { name: 'persister', kind: 'enumerable', storage: mobileStorages.persister.storage },
     { name: 'locale', kind: 'single', storage: mobileStorages.locale.storage }
 ];
