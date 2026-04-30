@@ -9,8 +9,10 @@ import {
     IContact
 } from '@safely/core';
 
-import { useActiveAccountSyncedStorage, useMutation, useTranslate } from '../../shared';
+import { useTranslate } from '../../shared';
 import { useActiveAccountQueryKey } from '../account';
+import { useActiveAccountSyncedStorage } from '../account/storage';
+import { useMutation } from '../query-core';
 import { useToast } from '../toast';
 
 export { contactKey } from './keys';

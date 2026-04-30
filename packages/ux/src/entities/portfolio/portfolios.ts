@@ -23,17 +23,16 @@ import {
 
 import {
     useTranslate,
-    useErrorToast,
-    useMutation,
     useSuspenseQuery,
-    useAccountLocalStorage,
     useSecurityCheck,
     useAppContext,
-    useLogger,
     SecretEncryptor
 } from '../../shared';
-import { useActiveAccountSyncedStorage } from '../../shared/storage/account/synced';
 import { useActiveAccount, useActiveAccountQueryKey } from '../account';
+import { useAccountLocalStorage, useActiveAccountSyncedStorage } from '../account/storage';
+import { useErrorToast } from '../errors';
+import { useLogger } from '../logger';
+import { useMutation } from '../query-core';
 import { useToast } from '../toast';
 
 export function usePortfoliosQuery() {

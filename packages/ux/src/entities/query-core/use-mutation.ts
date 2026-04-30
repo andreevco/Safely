@@ -6,7 +6,7 @@ import {
 
 import { Logger } from '@safely/sync';
 
-import { useLogger } from '../../logger';
+import { useLogger } from '../logger';
 
 export type MutationOptions<TData, TError, TVars, TContext> = Omit<
     UseMutationOptions<TData, TError, TVars, TContext>,

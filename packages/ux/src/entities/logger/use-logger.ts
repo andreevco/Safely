@@ -2,8 +2,8 @@ import { useMemo } from 'react';
 
 import { Logger } from '@safely/sync';
 
-import { useActiveAccountQuery } from '../../entities';
-import { useAppContext } from '../providers';
+import { useAppContext } from '../../shared';
+import { useActiveAccountQuery } from '../account/account-state';
 
 export function useLogger(): Logger {
     const { loggerRegistry } = useAppContext();

@@ -1,4 +1,4 @@
-import { defineQueryKeys, finalKey } from '../../shared';
+import { defineQueryKeys, finalKey } from '../../shared/query-core/query-key-factory';
 
 export const assetKeys = defineQueryKeys('assets', {
     all: (_walletId: string | undefined) => ({

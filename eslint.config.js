@@ -71,6 +71,17 @@ export default [
             },
             'boundaries/elements': [
                 { type: 'core', pattern: 'packages/core/**/*', mode: 'full' },
+                { type: 'ux-shared', pattern: 'packages/ux/src/shared/**/*', mode: 'full' },
+                {
+                    type: 'ux-entities',
+                    pattern: 'packages/ux/src/entities/**/*',
+                    mode: 'full'
+                },
+                {
+                    type: 'ux-features',
+                    pattern: 'packages/ux/src/features/**/*',
+                    mode: 'full'
+                },
                 { type: 'ux', pattern: 'packages/ux/**/*', mode: 'full' },
                 { type: 'sync', pattern: 'packages/sync/**/*', mode: 'full' },
                 { type: 'mobile', pattern: 'apps/mobile/**/*', mode: 'full' },
@@ -174,6 +185,25 @@ export default [
             'iseq/no-strict-eq-when-isEq': 'error',
             'no-direct-bitcoinjs-lib/no-direct-bitcoinjs-lib': 'error',
             'no-tanstack-use-mutation/no-tanstack-use-mutation': 'error',
+
+            /* FSD layering inside @safely/ux: shared cannot import entities/features;
+               entities cannot import features. */
+            'boundaries/element-types': [
+                'error',
+                {
+                    default: 'allow',
+                    rules: [
+                        {
+                            from: 'ux-shared',
+                            disallow: ['ux-entities', 'ux-features']
+                        },
+                        {
+                            from: 'ux-entities',
+                            disallow: ['ux-features']
+                        }
+                    ]
+                }
+            ],
         }
     },
     /* React */
@@ -212,6 +242,30 @@ export default [
         plugins: { prettier: prettierPlugin },
         rules: {
             'prettier/prettier': 'error'
+        }
+    },
+    /* @safely/ux: forbid re-importing query-key utils via the shared barrel
+       (they must come straight from the source module to avoid TDZ in circular
+       barrels — Metro/vitest both crash otherwise). The public package barrel
+       (packages/ux/src/index.ts) is exempt — it's a top-level re-export. */
+    {
+        files: ['packages/ux/**/*.ts', 'packages/ux/**/*.tsx'],
+        ignores: ['packages/ux/src/index.ts'],
+        rules: {
+            '@typescript-eslint/no-restricted-imports': [
+                'error',
+                {
+                    patterns: [
+                        {
+                            regex: '^(\\.{1,2}/)+shared(/index)?$',
+                            importNames: ['defineQueryKeys', 'finalKey', 'mappedParams'],
+                            message:
+                                'Import directly from "shared/query-core/query-key-factory" to avoid the shared-barrel circular cycle.'
+                        }
+                    ]
+                }
+            ],
+            'import/no-cycle': ['error', { maxDepth: 10, ignoreExternal: true }]
         }
     },
     /* logger implementations — console is the last-resort fallback */

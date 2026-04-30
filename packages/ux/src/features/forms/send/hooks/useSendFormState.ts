@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 
-import { useAssets, useCreateContact } from '../../../../entities';
-import { useNumberFormatter } from '../../../../shared';
-import { useMaxSendAssetTransfer } from '../../../blockchain-send';
+import { useAssets, useCreateContact, useNumberFormatter } from '../../../../entities';
+import { useMaxSendAssetTransfer } from '../../../blockchain-send/asset-transfer/estimate';
 import { SendFormError } from '../errors';
 import { createInitialState, sendFormReducer } from '../reducer';
 import {

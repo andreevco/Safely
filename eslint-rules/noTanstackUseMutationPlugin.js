@@ -32,8 +32,9 @@ const ruleNoTanstackUseMutation = {
     },
     create(context) {
         const filename = context.filename ?? '';
-        // Allowlist: the wrapper itself + tests.
-        if (filename.replace(/\\/g, '/').endsWith('packages/ux/src/shared/query-core/hooks/useMutation.ts')) {
+        // Allowlist: the wrapper itself.
+        const normalizedPath = filename.replace(/\\/g, '/');
+        if (normalizedPath.endsWith('packages/ux/src/entities/query-core/use-mutation.ts')) {
             return {};
         }
 

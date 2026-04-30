@@ -14,8 +14,13 @@ import {
 } from '@safely/core';
 
 import { useActiveBtcWalletUtxoForEstimation, useAssets } from '../../../entities';
-import { defineQueryKeys, finalKey, mappedParams, QUERIES_REFETCH_INTERVAL } from '../../../shared';
-import { SendFormResult } from '../../forms';
+import { QUERIES_REFETCH_INTERVAL } from '../../../shared';
+import {
+    defineQueryKeys,
+    finalKey,
+    mappedParams
+} from '../../../shared/query-core/query-key-factory';
+import type { SendFormResult } from '../../forms/send/types';
 import { useBtcEstimator } from '../btc/estimator';
 
 export const estimationKey = defineQueryKeys('estimation', {

@@ -1,5 +1,3 @@
-export { useMutation } from './useMutation';
-export type { MutationOptions } from './useMutation';
 export { usePersistQuery } from './usePersistQuery';
 export { useDerivedQuery } from './useDerivedQuery';
 export { useSuspenseQuery } from './useSuspenseQuery';

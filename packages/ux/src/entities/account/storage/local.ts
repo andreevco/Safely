@@ -1,9 +1,12 @@
 import { useCallback, useMemo } from 'react';
 import z from 'zod';
 
-import { accountLocalStorageStructure, AccountLocalStorageStructure } from './schemas';
-import { useActiveAccount } from '../../../../entities';
-import { useStorageFactory } from '../../storage-factory';
+import {
+    accountLocalStorageStructure,
+    AccountLocalStorageStructure
+} from '../../../shared/storage/account/local/schemas';
+import { useStorageFactory } from '../../../shared/storage/storage-factory';
+import { useActiveAccount } from '../account-state';
 
 export function useAccountLocalStorage<K extends keyof AccountLocalStorageStructure>(key: K) {
     const storageFactory = useStorageFactory();

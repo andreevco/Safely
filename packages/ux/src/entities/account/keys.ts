@@ -1,6 +1,6 @@
 import { FiatAsset } from '@safely/core';
 
-import { defineQueryKeys, finalKey, mappedParams } from '../../shared';
+import { defineQueryKeys, finalKey, mappedParams } from '../../shared/query-core/query-key-factory';
 
 export const accountKey = defineQueryKeys('account', {
     list: {

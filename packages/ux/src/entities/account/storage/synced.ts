@@ -3,8 +3,8 @@ import z from 'zod';
 
 import { ISyncProvider } from '@safely/sync';
 
-import { SyncedStorageStructure } from './schemas';
-import { useAccounts, useActiveAccount } from '../../../../entities';
+import { SyncedStorageStructure } from '../../../shared/storage/account/synced/schemas';
+import { useAccounts, useActiveAccount } from '../account-state';
 
 export type SyncProvider = ISyncProvider<SyncedStorageStructure>;
 

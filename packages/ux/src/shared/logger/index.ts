@@ -9,6 +9,3 @@ export interface ILoggerRegistry {
 
     shareLogs(opts?: { accountId?: string }): Promise<void>;
 }
-
-export { useLogger } from './use-logger';
-export { useLoggerLifecycle } from './use-logger-lifecycle';
