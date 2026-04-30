@@ -1,12 +1,21 @@
-import { IDerivation, Portfolio, PortfolioType } from '@safely/core';
+import { IDerivation, IPortfolioId, Portfolio, PortfolioType } from '@safely/core';
 
 import { PortfolioSuggestion } from '../types';
 
+export interface ActivePortfolioEntity {
+    portfolioId: IPortfolioId;
+    derivation?: IDerivation;
+}
+
 export function mapPortfolioToSuggestions(
     portfolio: Portfolio,
-    activeDerivation?: IDerivation
+    active?: ActivePortfolioEntity
 ): PortfolioSuggestion[] {
+    const isActivePortfolio = !!active && portfolio.id.isEq(active.portfolioId);
+
     if (portfolio.type === PortfolioType.WATCH_ONLY) {
+        if (isActivePortfolio) return [];
+
         return [
             {
                 id: portfolio.id.toString(),
@@ -19,7 +28,7 @@ export function mapPortfolioToSuggestions(
 
     const derivations = portfolio.getDerivations();
     return derivations
-        .filter(d => !activeDerivation || !d.id.isEq(activeDerivation.id))
+        .filter(d => !(isActivePortfolio && active?.derivation && d.id.isEq(active.derivation.id)))
         .map(derivation => ({
             id: portfolio.id.toString(),
             address: derivation.chains.btc.wallets[0]?.address,

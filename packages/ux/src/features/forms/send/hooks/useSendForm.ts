@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import { useContacts, usePortfolios } from '../../../../entities';
+import { useActivePortfolioEntities, useContacts, usePortfolios } from '../../../../entities';
 import { SendFormInitialValues, SendFormResult, SendSuggestionState } from '../types';
 import { mapContactToSuggestions, mapPortfolioToSuggestions } from '../utils';
 import { useSendFormDraft } from './useSendFormDraft';
@@ -18,11 +18,19 @@ export function useSendForm(props: UseSendFormOptions) {
 
     const portfolios = usePortfolios();
     const contacts = useContacts();
+    const entities = useActivePortfolioEntities();
+    const activePortfolio = useMemo(
+        () => ({
+            portfolioId: entities.portfolio.id,
+            derivation: entities.kind === 'bip39' ? entities.derivation : undefined
+        }),
+        [entities]
+    );
     const { initialDraft, saveDraft, clearDraft } = useSendFormDraft();
 
     const portfolioSuggestions = useMemo(
-        () => portfolios.flatMap(p => mapPortfolioToSuggestions(p)),
-        [portfolios]
+        () => portfolios.flatMap(p => mapPortfolioToSuggestions(p, activePortfolio)),
+        [portfolios, activePortfolio]
     );
 
     const contactSuggestions = useMemo(

@@ -22,7 +22,9 @@ interface UseSendFormMetaParams {
 
 function filterAndOrderByIds<S extends { id: string }>(items: S[], ids: string[]): S[] {
     if (ids.length === 0) return [];
+
     const idSet = new Set(ids);
+
     return items.filter(s => idSet.has(s.id)).sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id));
 }
 
@@ -34,19 +36,25 @@ export function useSendFormMeta(params: UseSendFormMetaParams) {
     const portfolios = usePortfolios();
     const contacts = useContacts();
     const entities = useActivePortfolioEntities();
-    const activeDerivation = entities.kind === 'bip39' ? entities.derivation : undefined;
+    const activePortfolio = useMemo(
+        () => ({
+            portfolioId: entities.portfolio.id,
+            derivation: entities.kind === 'bip39' ? entities.derivation : undefined
+        }),
+        [entities]
+    );
 
     const suggestions = useMemo<SendSuggestions>(() => {
         const query = state.values.recipient;
         return {
             portfolios: fuzzySearch(portfolios, query, p => p.meta.name).flatMap(p =>
-                mapPortfolioToSuggestions(p, activeDerivation)
+                mapPortfolioToSuggestions(p, activePortfolio)
             ),
             contacts: fuzzySearch(contacts, query, c => c.meta.name).flatMap(c =>
                 mapContactToSuggestions(c)
             )
         };
-    }, [portfolios, contacts, activeDerivation, state.values.recipient]);
+    }, [portfolios, contacts, activePortfolio, state.values.recipient]);
 
     const restoredSuggestions = useMemo<SendSuggestions | undefined>(() => {
         if (!selectedId) return undefined;
