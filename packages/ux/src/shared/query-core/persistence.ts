@@ -3,6 +3,7 @@ import { DehydratedState, InfiniteData } from '@tanstack/react-query';
 import { Persister } from '@tanstack/react-query-persist-client';
 
 import { IStorage } from '@safely/core';
+import { Logger } from '@safely/sync';
 
 import { cacheSchemas, isValidSchemaKey } from './cache-config';
 import { serialize, deserialize } from './serialization';
@@ -27,14 +28,14 @@ function isInfiniteData(data: unknown): data is InfiniteData<unknown, unknown> {
     );
 }
 
-function validateQuery(query: DehydratedQuery): void {
+function validateQuery(query: DehydratedQuery, logger: Logger): void {
     const schemaKey = query.meta?.schemaKey;
 
     if (!query.state?.data) return;
     if (!schemaKey || typeof schemaKey !== 'string') return;
 
     if (!isValidSchemaKey(schemaKey)) {
-        console.warn('Unknown schema key: ', schemaKey);
+        logger.warn('[persistence] unknown schema key', schemaKey);
         clearQueryState(query);
 
         return;
@@ -46,7 +47,7 @@ function validateQuery(query: DehydratedQuery): void {
     if (result.success) {
         query.state.data = result.data;
     } else {
-        console.warn('Cache validation failed for', query.queryKey, result.error);
+        logger.warn('[persistence] cache validation failed for', query.queryKey, result.error);
         clearQueryState(query);
     }
 }
@@ -66,7 +67,7 @@ function keepOnlyFirstInfinityPage(queries: DehydratedQuery[]) {
     }
 }
 
-export function createPersister(storage: IStorage): Persister {
+export function createPersister(storage: IStorage, logger: Logger): Persister {
     const basePersister = createAsyncStoragePersister({
         storage,
         serialize,
@@ -92,7 +93,7 @@ export function createPersister(storage: IStorage): Persister {
 
             if (queries?.length) {
                 queries.forEach(query => {
-                    validateQuery(query);
+                    validateQuery(query, logger);
                 });
             }
 

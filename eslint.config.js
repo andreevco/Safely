@@ -10,6 +10,7 @@ import pluginQuery from '@tanstack/eslint-plugin-query';
 import boundaries from 'eslint-plugin-boundaries';
 import isEqPlugin from './eslint-rules/isEqPlugin.js';
 import noDirectBitcoinjsLibPlugin from './eslint-rules/noDirectBitcoinjsLibPlugin.js';
+import noTanstackUseMutationPlugin from './eslint-rules/noTanstackUseMutationPlugin.js';
 
 export default [
     {
@@ -48,6 +49,7 @@ export default [
             'unused-imports': unusedImports,
             iseq: isEqPlugin,
             'no-direct-bitcoinjs-lib': noDirectBitcoinjsLibPlugin,
+            'no-tanstack-use-mutation': noTanstackUseMutationPlugin,
             boundaries
         },
         settings: {
@@ -91,12 +93,7 @@ export default [
             radix: ['error', 'as-needed'],
             'no-return-assign': 'off',
             'no-restricted-syntax': ['error', 'LabeledStatement', 'WithStatement'],
-            'no-console': [
-                'warn',
-                {
-                    allow: ['warn', 'error', 'info', 'log']
-                }
-            ],
+            'no-console': 'error',
 
             /* imports */
             'import/extensions': 'off',
@@ -176,6 +173,7 @@ export default [
             /* custom */
             'iseq/no-strict-eq-when-isEq': 'error',
             'no-direct-bitcoinjs-lib/no-direct-bitcoinjs-lib': 'error',
+            'no-tanstack-use-mutation/no-tanstack-use-mutation': 'error',
         }
     },
     /* React */
@@ -214,6 +212,23 @@ export default [
         plugins: { prettier: prettierPlugin },
         rules: {
             'prettier/prettier': 'error'
+        }
+    },
+    /* logger implementations — console is the last-resort fallback */
+    {
+        files: [
+            'apps/mobile/src/shared/logger/**/*.ts',
+            'packages/sync/src/logger/**/*.ts'
+        ],
+        rules: {
+            'no-console': 'off'
+        }
+    },
+    /* tests */
+    {
+        files: ['**/*.test.ts', '**/*.test.tsx', '**/*.spec.ts', '**/*.spec.tsx'],
+        rules: {
+            'no-console': 'off'
         }
     },
     eslintConfigPrettier

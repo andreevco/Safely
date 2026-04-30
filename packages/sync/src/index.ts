@@ -29,4 +29,4 @@ export {
     CombinedTransport,
     logsFilterMinSeverityLevel
 } from './logger';
-export type { LogEntry, ILoggerTransport, LogsFilter } from './logger';
+export type { LogEntry, ILoggerTransport, LoggerLifecycleContext, LogsFilter } from './logger';

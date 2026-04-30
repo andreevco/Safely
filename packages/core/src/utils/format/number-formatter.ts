@@ -1,5 +1,7 @@
 import Big, { BigSource } from 'big.js';
 
+import { Logger } from '@safely/sync';
+
 import type { CryptoAssetAmount, FiatAssetAmount } from '../../entities';
 import { isCryptoAsset, isFiatAsset } from '../../entities';
 import { assertUnreachable } from '../types';
@@ -36,7 +38,10 @@ interface FormatFiatOptionsNoSymbol {
 }
 
 export class NumberFormatter {
-    constructor(private readonly locale: NumberFormatLocale) {}
+    constructor(
+        private readonly locale: NumberFormatLocale,
+        private readonly logger: Logger
+    ) {}
 
     public parseInput(value: string, decimalPlaces: number): { parsed: Big; formatted: string } {
         const trimmed = value.trim();
@@ -120,7 +125,7 @@ export class NumberFormatter {
                 assertUnreachable(value.asset);
             }
         } catch (e) {
-            console.error(e);
+            this.logger.error('[NumberFormatter] formatAssetAmount failed', e);
             return '-';
         }
     }

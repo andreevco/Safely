@@ -5,4 +5,4 @@ export type { LogsFilter } from './logs-filter';
 export { ConsoleTransport } from './console-transport';
 export { CombinedTransport } from './combined-transport';
 export type { LogEntry } from './log-entry';
-export type { ILoggerTransport } from './I-logger-transport';
+export type { ILoggerTransport, LoggerLifecycleContext } from './I-logger-transport';

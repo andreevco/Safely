@@ -1,8 +1,13 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { FiatAsset } from '@safely/core';
 
-import { useAvailableFiats, useSuspenseQuery, useActiveAccountSyncedStorage } from '../../shared';
+import {
+    useAvailableFiats,
+    useMutation,
+    useSuspenseQuery,
+    useActiveAccountSyncedStorage
+} from '../../shared';
 import { useActiveAccountQueryKey } from '../account';
 
 const USD_FIAT = FiatAsset.create({ symbol: 'USD', name: 'US Dollar' });

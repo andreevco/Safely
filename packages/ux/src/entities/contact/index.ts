@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { useSuspenseQuery } from '@tanstack/react-query';
 
 import {
@@ -9,7 +9,7 @@ import {
     IContact
 } from '@safely/core';
 
-import { useActiveAccountSyncedStorage, useTranslate } from '../../shared';
+import { useActiveAccountSyncedStorage, useMutation, useTranslate } from '../../shared';
 import { useActiveAccountQueryKey } from '../account';
 import { useToast } from '../toast';
 

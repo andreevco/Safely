@@ -9,6 +9,7 @@ import {
     SendFormResult,
     useActiveBtcWallet,
     useEstimateAssetTransfer,
+    useLogger,
     useNumberFormatter,
     useSendAssetTransfer
 } from '@safely/ux';
@@ -31,9 +32,11 @@ export type ConfirmationScreenProps = StaticScreenProps<SendConfirmationParams>;
 export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
     const { route } = props;
     const { confirmationResult, onSuccess } = route.params;
-    const navigation = useNavigation();
+
     const { t } = useTranslation();
+    const navigation = useNavigation();
     const btcWallet = useActiveBtcWallet();
+    const logger = useLogger();
 
     const [confirmationState, setConfirmationState] = useState<ConfirmationState>({ type: 'idle' });
 
@@ -54,11 +57,11 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
             notificationAsync(NotificationFeedbackType.Success);
             setConfirmationState({ type: 'success' });
         } catch (error) {
-            console.error(error);
+            logger.error('[ConfirmationScreen] send failed', error);
             notificationAsync(NotificationFeedbackType.Error);
             setConfirmationState({ type: 'error', error });
         }
-    }, [send, onSuccess]);
+    }, [send, onSuccess, logger]);
 
     const displayState = useMemo(() => {
         if (txTemplateError) {

@@ -16,12 +16,15 @@ export function makeFactory() {
     const apiConfiguration = {
         basePath: 'https://dev-sync.safely.app'
     };
+    const factoryId = accountCounter++;
+
     return new SyncAccountFactory({
         storage,
         encryptedStorage,
         structure: Schema,
         apiConfiguration,
-        logger: new Logger().child(`${accountCounter++}`)
+        noAccountLogger: new Logger().child(`${factoryId}`),
+        getAccountLogger: accountId => new Logger().child(`${factoryId}:${accountId}`)
     });
 }
 

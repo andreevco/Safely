@@ -40,8 +40,7 @@ export function toBigSoft(val: BigSource | bigint | undefined): Big | null {
 
     try {
         return toBig(val);
-    } catch (e) {
-        console.log(e);
+    } catch {
         return null;
     }
 }

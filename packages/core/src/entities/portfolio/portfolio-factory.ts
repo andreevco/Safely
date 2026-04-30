@@ -116,7 +116,6 @@ export class PortfolioFactory {
                 throw error;
             }
 
-            console.error(error);
             throw new PortfolioGenerationFailedError(undefined, { cause: error });
         }
     }
