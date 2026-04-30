@@ -45,7 +45,7 @@ export function stripSlot(slot: Slot | undefined): JsonValue | undefined {
 }
 
 export function slotFromJson(
-  value: JsonValue,
+  value: JsonValue | undefined,
   timestamp: number,
   author: string,
 ): Slot {

@@ -1,7 +1,7 @@
-import { MergeProtocol } from "./merge-protocol";
-import { stripSlot } from "./slots/slot-json";
-import { ContainerSlot, isContainerSlot, Slot } from "./slots";
-import { validateSlot } from "./slots/slot-validation";
+import { MergeProtocol } from "../merge-protocol";
+import { stripSlot } from "../slots/slot-json";
+import { ContainerSlot, isContainerSlot, Slot } from "../slots";
+import { validateSlot } from "../slots/slot-validation";
 import { StorageVersion } from "./version";
 
 export class VersionPropagation {

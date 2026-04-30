@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { ContainerSlot } from "./slots";
+import type { ContainerSlot } from "../slots";
 
 export type AnySchema = z.ZodTypeAny;
 

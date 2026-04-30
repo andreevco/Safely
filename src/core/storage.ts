@@ -1,8 +1,4 @@
-import {
-  ContainerSlot,
-  createOriginContainer,
-  Slot,
-} from "./slots";
+import { ContainerSlot, createOriginContainer, Slot } from "./slots";
 import { cloneSlot, slotFromJson } from "./slots/slot-json";
 import { validateSlot } from "./slots/slot-validation";
 import {
@@ -11,7 +7,7 @@ import {
   hListToRuntimeArray,
   NewOf,
   StorageVersion,
-} from "./version";
+} from "./versioning/version";
 import { DeepReadonly, JsonValue, WriteDraft } from "./json";
 import { MergeProtocol, MergeStats } from "./merge-protocol";
 import { WorkingStorageRoot } from "./working-storage-root";

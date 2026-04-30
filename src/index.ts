@@ -9,7 +9,7 @@ export type {
   PathValue,
 } from "./core/json";
 
-export type { StorageVersion } from "./core/version";
+export type { StorageVersion } from "./core/versioning/version";
 
 export type { Storage } from "./core/storage";
 

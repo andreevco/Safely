@@ -8,9 +8,9 @@ import {
 } from "./slots";
 import { cloneDeep, stripSlot } from "./slots/slot-json";
 import { validateSlot } from "./slots/slot-validation";
-import { StorageVersion } from "./version";
+import { StorageVersion } from "./versioning/version";
 import { createWriteProxy, selectJsonStorage } from "./write";
-import { VersionPropagation } from "./version-propagation";
+import { VersionPropagation } from "./versioning/version-propagation";
 
 export class WorkingStorageRoot {
   constructor(
@@ -51,10 +51,7 @@ export class WorkingStorageRoot {
     );
 
     this.validateLatest();
-    propagation.propagateToOlderVersions(
-      this.root,
-      protocol,
-    );
+    propagation.propagateToOlderVersions(this.root, protocol);
 
     return stats;
   }
@@ -97,5 +94,4 @@ export class WorkingStorageRoot {
   private validateLatest(): unknown {
     return this.latestVersion().schema.parse(stripSlot(this.latestContainer()));
   }
-
 }

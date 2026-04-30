@@ -1,7 +1,42 @@
 import { JsonValue } from "../json";
-import { isContainerSlot } from "../slots";
+import { isContainerSlot, Slot } from "../slots";
 import { cloneDeep } from "../slots/slot-json";
 import { JsonStorageSelection } from "./selection";
+
+export type ReadSlotObserver = (slot: Slot) => void;
+
+export function createReadProxy(
+  selection: JsonStorageSelection,
+  onRead?: ReadSlotObserver,
+): unknown {
+  return new Proxy(Object.create(null), {
+    get: (_target, prop) => {
+      if (typeof prop !== "string") {
+        return undefined;
+      }
+
+      const slot = selection.get(prop);
+
+      if (slot === undefined || slot.d === true) {
+        return undefined;
+      }
+
+      onRead?.(slot);
+
+      if (isContainerSlot(slot)) {
+        const childSelection = selection.select(prop);
+
+        if (childSelection === undefined) {
+          return undefined;
+        }
+
+        return createReadProxy(childSelection, onRead);
+      }
+
+      return cloneDeep(slot.v);
+    },
+  });
+}
 
 export function createWriteProxy(selection: JsonStorageSelection): unknown {
   return new Proxy(Object.create(null), {
@@ -36,6 +71,7 @@ export function createWriteProxy(selection: JsonStorageSelection): unknown {
 
       if (value === undefined) {
         selection.delete(prop);
+        return true;
       }
 
       selection.set(prop, value as JsonValue);
