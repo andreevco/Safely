@@ -2,6 +2,7 @@ import { JsonValue } from "../json";
 import {
   ContainerSlot,
   createContainerSlot,
+  createOriginContainer,
   isContainerSlot,
   Slot,
 } from "../slots";
@@ -151,7 +152,7 @@ export class VersionController {
       return devices;
     }
 
-    const created = createContainerSlot(timestamp, author);
+    const created = createOriginContainer();
     this.root.v[DEVICES_KEY] = created;
     return created;
   }
