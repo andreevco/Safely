@@ -12,7 +12,7 @@ export class VersionPropagation {
     root: ContainerSlot,
     protocol: MergeProtocol,
   ): void {
-    const knownVersionsLength = Object.keys(root.v).length;
+    const knownVersionsLength = this.knownVersionSlots(root).length;
     if (knownVersionsLength <= 1) {
       return;
     }
@@ -78,6 +78,14 @@ export class VersionPropagation {
         protocol,
       );
     }
+  }
+
+  private knownVersionSlots(root: ContainerSlot): string[] {
+    const knownVersions = new Set(
+      this.versions.map((version) => String(version.version)),
+    );
+
+    return Object.keys(root.v).filter((key) => knownVersions.has(key));
   }
 
   private latestVersion(): StorageVersion {

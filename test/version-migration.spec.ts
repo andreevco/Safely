@@ -16,6 +16,7 @@ import {
   v1,
   v3,
 } from "./version-fixtures";
+import { DEVICES_KEY } from "../src/core/versioning/version-controller";
 
 describe("version migration", () => {
   it("initializes the latest version by migrating an existing older version", () => {
@@ -37,12 +38,20 @@ describe("version migration", () => {
     });
 
     const exported = storage.export() as ContainerSlot;
-    const v1Slot = exported.v["1"] as ContainerSlot;
     const v3Slot = exported.v["3"] as ContainerSlot;
 
+    expect(exported.v["1"]).toBeUndefined();
     expect(exported.v["2"]).toBeUndefined();
-    expect(v3Slot.v.key1).toEqual(v1Slot.v.key1);
-    expect(v3Slot.v.label).toEqual(v1Slot.v.key2);
+    expect(v3Slot.v.key1).toMatchObject({
+      v: 42,
+      t: 123,
+      a: "old-device",
+    });
+    expect(v3Slot.v.label).toMatchObject({
+      v: "from-v1",
+      t: 123,
+      a: "old-device",
+    });
     expect(v3Slot.v.key3).toMatchObject({ v: false, t: 0, a: "" });
     expect(v3Slot.v.key4).toMatchObject({ v: "v3", t: 0, a: "" });
   });
@@ -53,6 +62,15 @@ describe("version migration", () => {
       "2": slotFromJson({ key1: 0, key2: "initial", key3: false }, 0, ""),
       "3": slotFromJson(
         { key1: 0, label: "initial", key3: false, key4: "v3" },
+        0,
+        "",
+      ),
+      [DEVICES_KEY]: slotFromJson(
+        {
+          "device-1": { version: 3 },
+          "device-v1": { version: 1 },
+          "device-v2": { version: 2 },
+        },
         0,
         "",
       ),
@@ -105,6 +123,14 @@ describe("version migration", () => {
       "1": slotFromJson({ key1: 0, key2: "initial" }, 0, ""),
       "3": slotFromJson(
         { key1: 0, label: "initial", key3: false, key4: "v3" },
+        0,
+        "",
+      ),
+      [DEVICES_KEY]: slotFromJson(
+        {
+          "device-1": { version: 3 },
+          "device-v1": { version: 1 },
+        },
         0,
         "",
       ),

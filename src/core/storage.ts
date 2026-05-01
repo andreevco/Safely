@@ -68,6 +68,8 @@ class StorageImpl<T> implements Storage<T> {
         : cloneSlot(options.root);
 
     this.ensureLatestInitialized();
+    this.syncDeviceVersion();
+    this.deleteUnusedVersions();
     this.protocol.observeTree(this.root);
   }
 
@@ -146,6 +148,29 @@ class StorageImpl<T> implements Storage<T> {
     }
 
     controller.createInitialVersion();
+  }
+
+  private syncDeviceVersion(): void {
+    const latest = this.latestVersion();
+    const controller = new VersionController(this.root, this.versions);
+
+    if (controller.getDeviceVersion(this.protocol.id) === latest.version) {
+      return;
+    }
+
+    controller.setDeviceVersion(
+      this.protocol.id,
+      latest,
+      this.protocol.tick(),
+      this.protocol.id,
+    );
+  }
+
+  private deleteUnusedVersions(): void {
+    new VersionController(
+      this.root,
+      this.versions,
+    ).deleteVersionsUnusedByDevices();
   }
 }
 

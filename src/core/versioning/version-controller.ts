@@ -1,10 +1,16 @@
 import { JsonValue } from "../json";
-import { ContainerSlot, isContainerSlot, Slot } from "../slots";
+import {
+  ContainerSlot,
+  createContainerSlot,
+  isContainerSlot,
+  Slot,
+} from "../slots";
 import { slotFromJson, stripSlot } from "../slots/slot-json";
 import { validateSlot } from "../slots/slot-validation";
 import { StorageVersion } from "./version";
 
 export type VersionSelector = number | Pick<StorageVersion, "version">;
+export const DEVICES_KEY = "devices";
 
 export class VersionController {
   constructor(
@@ -58,6 +64,55 @@ export class VersionController {
     delete this.root.v[this.versionKey(version)];
   }
 
+  getDeviceVersion(authorId: string): number | undefined {
+    const devices = this.root.v[DEVICES_KEY];
+    if (!isContainerSlot(devices)) {
+      return undefined;
+    }
+
+    const device = devices.v[authorId];
+    if (!isContainerSlot(device)) {
+      return undefined;
+    }
+
+    const version = device.v.version;
+    if (version?.r === true || version?.d === true) {
+      return undefined;
+    }
+
+    return typeof version?.v === "number" ? version.v : undefined;
+  }
+
+  setDeviceVersion(
+    authorId: string,
+    version: VersionSelector,
+    timestamp: number,
+    author: string,
+  ): void {
+    const devices = this.devicesContainer(timestamp, author);
+    const existingDevice = devices.v[authorId];
+    const device = isContainerSlot(existingDevice)
+      ? existingDevice
+      : createContainerSlot(timestamp, author);
+
+    device.v.version = slotFromJson(
+      this.versionNumber(version),
+      timestamp,
+      author,
+    );
+    devices.v[authorId] = device;
+  }
+
+  deleteVersionsUnusedByDevices(): void {
+    const usedVersions = this.usedDeviceVersions();
+
+    for (const version of this.versions) {
+      if (!usedVersions.has(version.version)) {
+        this.delete(version);
+      }
+    }
+  }
+
   private latestVersion(): StorageVersion {
     const latest = this.versions[this.versions.length - 1];
 
@@ -69,8 +124,7 @@ export class VersionController {
   }
 
   private versionIndex(version: VersionSelector): number {
-    const versionNumber =
-      typeof version === "number" ? version : version.version;
+    const versionNumber = this.versionNumber(version);
     const index = this.versions.findIndex(
       (candidate) => candidate.version === versionNumber,
     );
@@ -83,7 +137,52 @@ export class VersionController {
   }
 
   private versionKey(version: VersionSelector): string {
-    return String(typeof version === "number" ? version : version.version);
+    return String(this.versionNumber(version));
+  }
+
+  private versionNumber(version: VersionSelector): number {
+    return typeof version === "number" ? version : version.version;
+  }
+
+  private devicesContainer(timestamp: number, author: string): ContainerSlot {
+    const devices = this.root.v[DEVICES_KEY];
+
+    if (isContainerSlot(devices)) {
+      return devices;
+    }
+
+    const created = createContainerSlot(timestamp, author);
+    this.root.v[DEVICES_KEY] = created;
+    return created;
+  }
+
+  private usedDeviceVersions(): Set<number> {
+    const devices = this.root.v[DEVICES_KEY];
+    const usedVersions = new Set<number>();
+
+    if (!isContainerSlot(devices)) {
+      return usedVersions;
+    }
+
+    for (const authorId of Object.keys(devices.v)) {
+      const device = devices.v[authorId];
+
+      if (!isContainerSlot(device)) {
+        continue;
+      }
+
+      const version = device.v.version;
+
+      if (version?.r === true || version?.d === true) {
+        continue;
+      }
+
+      if (typeof version?.v === "number") {
+        usedVersions.add(version.v);
+      }
+    }
+
+    return usedVersions;
   }
 
   private validateProjection(
