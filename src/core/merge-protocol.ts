@@ -67,6 +67,7 @@ export class MergeProtocol {
 
   merge(local: Slot, incoming: Slot): MergeStats {
     const stats: MergeStats = { added: 0, updated: 0, kept: 0, replaced: 0 };
+    this.observeTree(incoming);
     this.mergeSlot(local, incoming, stats);
     return stats;
   }

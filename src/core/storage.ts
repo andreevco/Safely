@@ -94,9 +94,12 @@ class StorageImpl<T> implements Storage<T> {
 
   merge(incoming: Slot): MergeStats {
     const workingRoot = this.createWorkingRoot();
-    const stats = workingRoot.merge(this.protocol, incoming);
+    const validationProtocol = new MergeProtocol(this.protocol.id);
+    validationProtocol.observeTree(this.root);
+    const stats = workingRoot.merge(validationProtocol, incoming);
 
     this.root = workingRoot.result();
+    this.protocol.observeTree(incoming);
     this.protocol.observeTree(this.root);
     return stats;
   }
