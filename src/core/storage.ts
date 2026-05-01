@@ -12,6 +12,7 @@ import { DeepReadonly, JsonValue, WriteDraft } from "./json";
 import { MergeProtocol, MergeStats } from "./merge-protocol";
 import { WorkingStorageRoot } from "./working-storage-root";
 import { z } from "zod";
+import { VersionPropagation } from "./versioning/version-propagation";
 
 export interface Storage<T> {
   readonly version: number;
@@ -131,6 +132,12 @@ class StorageImpl<T> implements Storage<T> {
     const key = String(latest.version);
 
     if (this.root.v[key] !== undefined) {
+      this.committedRoot().get<T>();
+      return;
+    }
+
+    const propagation = new VersionPropagation(this.versions);
+    if (propagation.initializeLatestFromExistingOlder(this.root)) {
       this.committedRoot().get<T>();
       return;
     }

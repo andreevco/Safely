@@ -18,6 +18,35 @@ import {
 } from "./version-fixtures";
 
 describe("version migration", () => {
+  it("initializes the latest version by migrating an existing older version", () => {
+    const root = createOriginContainer({
+      "1": slotFromJson({ key1: 42, key2: "from-v1" }, 123, "old-device"),
+    });
+
+    const storage: Storage<StorageV3> = createStorage({
+      authorId: "device-1",
+      versions: v3,
+      root,
+    });
+
+    expect(storage.read()).toEqual({
+      key1: 42,
+      label: "from-v1",
+      key3: false,
+      key4: "v3",
+    });
+
+    const exported = storage.export() as ContainerSlot;
+    const v1Slot = exported.v["1"] as ContainerSlot;
+    const v3Slot = exported.v["3"] as ContainerSlot;
+
+    expect(exported.v["2"]).toBeUndefined();
+    expect(v3Slot.v.key1).toEqual(v1Slot.v.key1);
+    expect(v3Slot.v.label).toEqual(v1Slot.v.key2);
+    expect(v3Slot.v.key3).toMatchObject({ v: false, t: 0, a: "" });
+    expect(v3Slot.v.key4).toMatchObject({ v: "v3", t: 0, a: "" });
+  });
+
   it("propagates latest updates to existing older versions", () => {
     const root = createOriginContainer({
       "1": slotFromJson({ key1: 0, key2: "initial" }, 0, ""),
