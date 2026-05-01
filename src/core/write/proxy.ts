@@ -39,29 +39,33 @@ export function createReadProxy(
 }
 
 export function createWriteProxy(selection: JsonStorageSelection): unknown {
+  const readValue = (prop: string): unknown => {
+    const slot = selection.get(prop);
+
+    if (slot === undefined || slot.d === true) {
+      return undefined;
+    }
+
+    if (isContainerSlot(slot)) {
+      const childSelection = selection.select(prop);
+
+      if (childSelection === undefined) {
+        return undefined;
+      }
+
+      return createWriteProxy(childSelection);
+    }
+
+    return cloneDeep(slot.v);
+  };
+
   return new Proxy(Object.create(null), {
     get: (_target, prop) => {
       if (typeof prop !== "string") {
         return undefined;
       }
 
-      const slot = selection.get(prop);
-
-      if (slot === undefined || slot.d === true) {
-        return undefined;
-      }
-
-      if (isContainerSlot(slot)) {
-        const childSelection = selection.select(prop);
-
-        if (childSelection === undefined) {
-          return undefined;
-        }
-
-        return createWriteProxy(childSelection);
-      }
-
-      return cloneDeep(slot.v);
+      return readValue(prop);
     },
 
     set: (_target, prop, value) => {
@@ -76,6 +80,53 @@ export function createWriteProxy(selection: JsonStorageSelection): unknown {
 
       selection.set(prop, value as JsonValue);
 
+      return true;
+    },
+
+    has: (_target, prop) => {
+      return typeof prop === "string" && selection.has(prop);
+    },
+
+    ownKeys: () => {
+      return selection.keys();
+    },
+
+    getOwnPropertyDescriptor: (_target, prop) => {
+      if (typeof prop !== "string" || !selection.has(prop)) {
+        return undefined;
+      }
+
+      return {
+        configurable: true,
+        enumerable: true,
+        writable: true,
+        value: readValue(prop),
+      };
+    },
+
+    defineProperty: (_target, prop, descriptor) => {
+      if (typeof prop !== "string") {
+        return false;
+      }
+
+      if ("get" in descriptor || "set" in descriptor || !("value" in descriptor)) {
+        return false;
+      }
+
+      if (
+        descriptor.configurable === false ||
+        descriptor.enumerable === false ||
+        descriptor.writable === false
+      ) {
+        return false;
+      }
+
+      if (descriptor.value === undefined) {
+        selection.delete(prop);
+        return true;
+      }
+
+      selection.set(prop, descriptor.value as JsonValue);
       return true;
     },
 
