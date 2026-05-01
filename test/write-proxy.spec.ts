@@ -6,6 +6,7 @@ import {
   hCons,
   hNil,
 } from "../src/core/versioning/version";
+import { type ContainerSlot } from "../src/core/slots";
 import { cloneSlot } from "../src/core/slots/slot-json";
 
 const schema = z.object({
@@ -156,6 +157,36 @@ describe("createWriteProxy", () => {
         theme: "dark",
         layout: "compact",
       },
+    });
+  });
+
+  it("treats assigning undefined as delete and creates a tombstone", () => {
+    const storage = createTestStorage();
+
+    storage.update((draft) => {
+      draft.settings.layout = "compact";
+    });
+    storage.update((draft) => {
+      draft.settings.layout = undefined;
+    });
+
+    expect(storage.read()).toEqual({
+      count: 0,
+      title: "initial",
+      users: {},
+      flags: {},
+      settings: {
+        theme: "light",
+      },
+    });
+
+    const exported = storage.export() as ContainerSlot;
+    const versionSlot = exported.v["1"] as ContainerSlot;
+    const settingsSlot = versionSlot.v.settings as ContainerSlot;
+
+    expect(settingsSlot.v.layout).toMatchObject({
+      d: true,
+      a: "device-1",
     });
   });
 
