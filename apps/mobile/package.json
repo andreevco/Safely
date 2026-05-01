@@ -1,6 +1,6 @@
 {
   "name": "@safely/mobile",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "main": "index.tsx",
   "scripts": {
     "start": "expo start --dev-client",
@@ -83,6 +83,7 @@
     "@babel/plugin-transform-explicit-resource-management": "^7.28.6",
     "@babel/plugin-transform-flow-strip-types": "^7.27.1",
     "@babel/plugin-transform-runtime": "^7.28.5",
+    "@expo/config-plugins": "~54.0.0",
     "@types/react": "~19.1.10",
     "eas-cli": "^16.32.0",
     "typescript": "~5.9.2"

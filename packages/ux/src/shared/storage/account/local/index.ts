@@ -3,15 +3,17 @@ import z from 'zod';
 
 import { accountLocalStorageStructure, AccountLocalStorageStructure } from './schemas';
 import { useActiveAccount } from '../../../../entities';
-import { useStorageFactory } from '../../storage-factory';
+import { useAppContext } from '../../../providers';
 
-export function useAccountLocalStorage<K extends keyof AccountLocalStorageStructure>(key: K) {
-    const storageFactory = useStorageFactory();
+export function useActiveAccountLocalStorage<K extends keyof AccountLocalStorageStructure>(key: K) {
+    const {
+        storage: { ux }
+    } = useAppContext();
     const activeAccountId = useActiveAccount()?.accountId;
 
     const storage = useMemo(
-        () => (activeAccountId ? storageFactory.account(activeAccountId).local : null),
-        [activeAccountId]
+        () => (activeAccountId ? ux.regular.child(['account', activeAccountId]) : null),
+        [ux.regular]
     );
 
     const set = useCallback<(val: z.input<AccountLocalStorageStructure[K]>) => Promise<void>>(

@@ -1,11 +1,10 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
-import z from 'zod';
 
-import { useSharedUnstructuredKeychainStorage, useSuspenseQuery } from '@safely/ux';
+import { useSuspenseQuery } from '@safely/ux';
 
 import { navigationRef } from '@mobile/app/navigation/navigationRef';
-import { StorageKey } from '@mobile/shared/constants';
+import { useMobileLayerEncryptedStorage } from '@mobile/shared/storage';
 
 import { passcodeKeys } from './keys';
 import { PromptAndCheckOptions } from './types';
@@ -28,15 +27,13 @@ export type UsePasscodeResult =
           set: (input: string) => Promise<void>;
       };
 
-const sPasscode = z.string();
-
 export function usePasscode(): UsePasscodeResult {
     const client = useQueryClient();
     const {
         get: storageGet,
         set: storageSet,
         remove: storageRemove
-    } = useSharedUnstructuredKeychainStorage(StorageKey.PASSCODE, sPasscode);
+    } = useMobileLayerEncryptedStorage('passcode');
 
     const passcodeQuery = useSuspenseQuery({
         queryKey: passcodeKeys.state.toKey(),

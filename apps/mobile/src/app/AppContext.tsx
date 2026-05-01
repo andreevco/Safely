@@ -11,9 +11,9 @@ import { build, deviceInfo } from '@mobile/shared/app-meta';
 import { logger } from '@mobile/shared/logger';
 import { useLoaderServiceContext } from '@mobile/shared/providers/loader';
 import { useToastServiceContext } from '@mobile/shared/providers/toast';
-import { mobileStorages } from '@mobile/shared/storage';
 import { MobileNumberFormatLocale } from '@mobile/shared/utils';
 
+import { storagesList } from './storage';
 import packageJson from '../../package.json';
 
 const security: Security = {
@@ -21,9 +21,6 @@ const security: Security = {
         throw new Error('Security check not initialized');
     }
 };
-
-const getSecureEncryptedStorage = () =>
-    new UnlockableSecuredEncryptedStorage(mobileStorages.secureEncrypted.enumerable, security);
 
 export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
     const {
@@ -43,9 +40,22 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
             build,
             deviceInfo,
             numberFormatLocale: new MobileNumberFormatLocale(getLocales()[0]),
-            storage: mobileStorages.app.storage,
-            encryptedStorage: mobileStorages.encrypted.storage,
-            getSecureEncryptedStorage,
+            storage: {
+                ux: {
+                    regular: storagesList.regular.storage.child('ux')
+                },
+                sync: {
+                    regular: storagesList.regular.storage.child('sync'),
+                    encrypted: storagesList.encrypted.storage.child('sync'),
+                    getSecureEncrypted() {
+                        return new UnlockableSecuredEncryptedStorage(
+                            storagesList.secureEncrypted.enumerable,
+                            security,
+                            ['sync']
+                        );
+                    }
+                }
+            },
             qrScanner: {
                 scan: options =>
                     new Promise<string>(resolve => {
@@ -69,7 +79,7 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
                 check: () => security.check()
             },
             async clearAllData() {
-                const storages = Object.values(mobileStorages);
+                const storages = Object.values(storagesList);
                 for (const storageConfig of storages) {
                     await storageConfig.storage.clear();
                 }

@@ -19,7 +19,7 @@ import {
     SyncedStorageStructure,
     useAppContext,
     useBootConfig,
-    useSharedStructuredStorage,
+    useSharedUxStorage,
     useSuspenseQuery,
     useTranslate
 } from '../../shared';
@@ -74,12 +74,15 @@ export function resetAccountsFactory() {
 
 export function useAccountsFactory() {
     const config = useBootConfig();
-    const { storage, encryptedStorage, logger } = useAppContext();
+    const {
+        storage: { sync },
+        logger
+    } = useAppContext();
 
     if (!_syncAccountFactory) {
         _syncAccountFactory = new SyncAccountFactory({
-            storage,
-            encryptedStorage,
+            storage: sync.regular,
+            encryptedStorage: sync.encrypted,
             structure: syncedStorageStructure,
             apiConfiguration: {
                 basePath: config.sync.api_url
@@ -111,7 +114,7 @@ export function useAccounts() {
 }
 
 export function useActiveAccountQuery() {
-    const { set, get } = useSharedStructuredStorage('activeAccount');
+    const { set, get } = useSharedUxStorage('activeAccount');
     const client = useQueryClient();
     const accountsQueryConfig = useAccountsQueryConfig();
 
@@ -322,7 +325,7 @@ export function useConnectAccountToNewDevice() {
 }
 
 export function useSetActiveAccount() {
-    const { set } = useSharedStructuredStorage('activeAccount');
+    const { set } = useSharedUxStorage('activeAccount');
     const client = useQueryClient();
 
     return useMutation<void, Error, string>({
@@ -354,13 +357,13 @@ export function useDeleteAccount() {
     const account = useActiveAccount();
     const accountFactory = useAccountsFactory();
     const client = useQueryClient();
-    const { getSecureEncryptedStorage } = useAppContext();
+    const { storage } = useAppContext();
     const ikPub = useCurrentDeviceIkPub();
     const devicesMeta = useSyncedDevicesMeta();
 
     return useMutation({
         async mutationFn() {
-            using secureEncryptedStorage = getSecureEncryptedStorage();
+            using secureEncryptedStorage = storage.sync.getSecureEncrypted();
             await secureEncryptedStorage.unlock();
 
             if (devicesMeta) {

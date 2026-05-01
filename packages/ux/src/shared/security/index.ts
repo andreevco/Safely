@@ -39,7 +39,8 @@ export class UnlockableSecuredEncryptedStorage
 
     constructor(
         encryptedStorage: IEnumerableStorage,
-        private readonly security: Security
+        private readonly security: Security,
+        public path: string[] = []
     ) {
         const storage: IEnumerableStorage = {
             getItem: async (key: string) => {
@@ -72,7 +73,7 @@ export class UnlockableSecuredEncryptedStorage
             }
         };
 
-        super([], storage);
+        super(path, storage);
     }
 
     private async securityCheck() {
@@ -155,10 +156,11 @@ export class UnlockableSecretEncryptor implements ISecretEncryptor {
 
 export function useUnlockableSecretEncryptorFactory() {
     const account = useActiveAccount();
-    const { getSecureEncryptedStorage } = useAppContext();
+    const { storage } = useAppContext();
 
     return useCallback(
-        () => new UnlockableSecretEncryptor(account.secretEncryptor, getSecureEncryptedStorage),
-        [account.secretEncryptor, getSecureEncryptedStorage]
+        () =>
+            new UnlockableSecretEncryptor(account.secretEncryptor, storage.sync.getSecureEncrypted),
+        [account.secretEncryptor, storage.sync.getSecureEncrypted]
     );
 }

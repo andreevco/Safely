@@ -6,12 +6,12 @@ import { createPersister, QueryProvider } from '@safely/ux';
 
 import { LoaderProvider, LoaderServiceProvider } from '@mobile/shared/providers/loader';
 import { ToastProvider, ToastServiceProvider } from '@mobile/shared/providers/toast';
-import { mobileStorages } from '@mobile/shared/storage';
 
 import { AppContextProvider } from './AppContext';
 import { AppNavigation } from './AppNavigation';
+import { storagesList } from './storage';
 
-const persister = createPersister(mobileStorages.persister.storage);
+const persister = createPersister(storagesList.regular.storage.child('persister'));
 
 export const App = () => {
     return (

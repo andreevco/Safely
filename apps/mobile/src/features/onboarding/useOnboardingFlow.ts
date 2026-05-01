@@ -24,7 +24,11 @@ export function useOnboardingFlow() {
     });
     const { withLoader } = useLoader();
     const { set: setPasscode } = usePasscode();
-    const { getSecureEncryptedStorage } = useAppContext();
+    const {
+        storage: {
+            sync: { getSecureEncrypted }
+        }
+    } = useAppContext();
 
     const onStartCreate = useCallback(() => {
         _isSignInFlow = false;
@@ -43,7 +47,7 @@ export function useOnboardingFlow() {
             if (!_isSignInFlow) {
                 Keyboard.dismiss();
                 await withLoader(async () => {
-                    using secureEncryptedStorage = getSecureEncryptedStorage();
+                    using secureEncryptedStorage = getSecureEncrypted();
                     secureEncryptedStorage.UNSAFE_SKIP_SECURITY_CHECK_unlock();
 
                     await createAccount({ secureEncryptedStorage });
@@ -52,7 +56,7 @@ export function useOnboardingFlow() {
 
             navigation.dispatch(CommonActions.navigate(routes.biometry));
         },
-        [navigation, setPasscode, createAccount, withLoader]
+        [navigation, setPasscode, createAccount, withLoader, getSecureEncrypted]
     );
 
     const onBiometryFinished = useCallback(() => {
