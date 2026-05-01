@@ -30,7 +30,7 @@ jobs:
        github.event.comment.user.type != 'Bot')
 
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 15
 
     env:
       CLAUDE_CODE_MAX_OUTPUT_TOKENS: '16000'
@@ -44,10 +44,10 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || format('refs/pull/{0}/head', github.event.issue.number) }}
 
       - uses: anthropics/claude-code-action@v1
-        timeout-minutes: 7
+        timeout-minutes: 14
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          claude_args: '--model claude-opus-4-7 --max-turns 6'
+          claude_args: '--model claude-opus-4-7 --max-turns 30'
           prompt: |
             You are a senior reviewer for a React Native + TypeScript mobile app.
             Your job: catch SERIOUS security vulnerabilities, real performance
