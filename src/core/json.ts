@@ -3,6 +3,10 @@ export type JsonValue = JsonPrimitive | JsonObject | JsonArray;
 export type JsonArray = JsonValue[];
 export type JsonObject = { [key: string]: JsonValue };
 
+export function createNullPrototypeRecord<T>(): Record<string, T> {
+  return Object.create(null) as Record<string, T>;
+}
+
 type JsonLeaf = string | number | boolean | null | JsonValue[];
 
 export type WriteDraft<T> = T extends JsonLeaf

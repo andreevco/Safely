@@ -1,6 +1,11 @@
-import type { JsonObject, JsonValue } from "../json";
+import {
+  createNullPrototypeRecord,
+  type JsonObject,
+  type JsonValue,
+} from "../json";
 import {
   createContainerSlot,
+  createSlotMap,
   createTombstoneSlot,
   isJsonObject,
   type Slot,
@@ -8,7 +13,27 @@ import {
 } from "./slot";
 
 export function cloneDeep<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value)) as T;
+  if (Array.isArray(value)) {
+    return value.map((item) =>
+      item === undefined ? null : cloneDeep(item),
+    ) as T;
+  }
+
+  if (value !== null && typeof value === "object") {
+    const cloned = createNullPrototypeRecord<unknown>();
+
+    for (const key of Object.keys(value)) {
+      const child = cloneDeep((value as Record<string, unknown>)[key]);
+
+      if (child !== undefined) {
+        cloned[key] = child;
+      }
+    }
+
+    return cloned as T;
+  }
+
+  return value;
 }
 
 export function cloneSlot<T extends Slot>(slot: T): T {
@@ -28,7 +53,7 @@ export function stripSlot(slot: Slot | undefined): JsonValue | undefined {
     return slot.v;
   }
 
-  const out: JsonObject = {};
+  const out = createNullPrototypeRecord<JsonValue>() as JsonObject;
   for (const key of Object.keys(slot.v)) {
     const child = slot.v[key];
     if (child === undefined) {
@@ -50,7 +75,7 @@ export function slotFromJson(
   author: string,
 ): Slot {
   if (isJsonObject(value)) {
-    const values: SlotMap = {};
+    const values: SlotMap = createSlotMap();
 
     for (const key of Object.keys(value)) {
       values[key] = slotFromJson(value[key], timestamp, author);

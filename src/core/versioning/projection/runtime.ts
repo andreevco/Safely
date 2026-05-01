@@ -1,5 +1,6 @@
 import {
   createContainerSlot,
+  createSlotMap,
   isContainerSlot,
   type ContainerSlot,
   type Slot,
@@ -7,11 +8,7 @@ import {
 } from "../../slots";
 import { cloneSlot } from "../../slots/slot-json";
 import { createProjectionBuilder } from "./builder";
-import {
-  applyMap,
-  projectionValueToSlot,
-  resolveDefaultValue,
-} from "./values";
+import { applyMap, projectionValueToSlot, resolveDefaultValue } from "./values";
 import type {
   AnyObject,
   CopyRule,
@@ -33,7 +30,7 @@ export function projectShape(
   source: ContainerSlot,
   shape: Record<string, RuntimeRule>,
 ): SlotMap {
-  const projectedValues: SlotMap = {};
+  const projectedValues: SlotMap = createSlotMap();
 
   for (const targetKey of Object.keys(shape)) {
     const rule = shape[targetKey];
@@ -126,7 +123,7 @@ function applyRule(
         );
       }
 
-      const projectedRecordValues: SlotMap = {};
+      const projectedRecordValues: SlotMap = createSlotMap();
 
       for (const recordKey of Object.keys(sourceSlot.v)) {
         const sourceRecordValue = sourceSlot.v[recordKey];

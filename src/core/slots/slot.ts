@@ -1,4 +1,8 @@
-import type { JsonObject, JsonValue } from "../json";
+import {
+  createNullPrototypeRecord,
+  type JsonObject,
+  type JsonValue,
+} from "../json";
 
 export interface AtomicSlot {
   v: JsonValue;
@@ -26,6 +30,10 @@ export interface ContainerSlot {
 export type Slot = AtomicSlot | TombstoneSlot | ContainerSlot;
 export type SlotMap = { [key: string]: Slot | undefined };
 
+export function createSlotMap(): SlotMap {
+  return createNullPrototypeRecord<Slot | undefined>();
+}
+
 export function isJsonObject(
   value: JsonValue | undefined,
 ): value is JsonObject {
@@ -44,12 +52,14 @@ export function isContainerSlot(slot: Slot | undefined): slot is ContainerSlot {
 export function createContainerSlot(
   timestamp: number,
   author: string,
-  values: SlotMap = {},
+  values: SlotMap = createSlotMap(),
 ): ContainerSlot {
   return { v: values, t: timestamp, a: author, r: true };
 }
 
-export function createOriginContainer(values: SlotMap = {}): ContainerSlot {
+export function createOriginContainer(
+  values: SlotMap = createSlotMap(),
+): ContainerSlot {
   return createContainerSlot(0, "", values);
 }
 
