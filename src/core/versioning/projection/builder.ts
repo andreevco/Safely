@@ -3,6 +3,7 @@ import type {
   CopyRule,
   DefaultRule,
   FromRule,
+  MapRule,
   NoMap,
   NonNullableObject,
   NonNullableRecordValue,
@@ -16,25 +17,36 @@ import type {
 } from "./types";
 
 export function createProjectionBuilder<From>(): ProjectionBuilder<From> {
-  const copy = ((
-    map?: ProjectionMap<unknown, ProjectionValue>,
-  ): CopyRule<NoMap> | CopyRule<ProjectionValue> => {
+  const copy = (() => {
     return {
       kind: "copy",
-      map,
-    } as CopyRule<NoMap> | CopyRule<ProjectionValue>;
+    } as CopyRule<NoMap>;
   }) as ProjectionBuilder<From>["copy"];
 
-  const from = (<K extends StringKeyOf<From>>(
-    key: K,
-    map?: ProjectionMap<From[K], ProjectionValue>,
-  ): FromRule<K, NoMap> | FromRule<K, ProjectionValue> => {
+  const from = (<K extends StringKeyOf<From>>(key: K): FromRule<K, NoMap> => {
     return {
       kind: "from",
       key,
-      map: map as ProjectionMap<unknown, ProjectionValue> | undefined,
-    } as FromRule<K, NoMap> | FromRule<K, ProjectionValue>;
+    } as FromRule<K, NoMap>;
   }) as ProjectionBuilder<From>["from"];
+
+  const map = ((
+    keyOrMap: StringKeyOf<From> | ProjectionMap<unknown, ProjectionValue>,
+    maybeMap?: ProjectionMap<unknown, ProjectionValue>,
+  ): MapRule<StringKeyOf<From> | undefined, ProjectionValue> => {
+    if (typeof keyOrMap === "function") {
+      return {
+        kind: "map",
+        map: keyOrMap,
+      };
+    }
+
+    return {
+      kind: "map",
+      key: keyOrMap,
+      map: maybeMap as ProjectionMap<unknown, ProjectionValue>,
+    };
+  }) as ProjectionBuilder<From>["map"];
 
   const defaultValue = (<Output extends ProjectionValue>(
     value: Output | (() => Output),
@@ -82,6 +94,7 @@ export function createProjectionBuilder<From>(): ProjectionBuilder<From> {
   return {
     copy,
     from,
+    map,
     default: defaultValue,
     objectFrom,
     recordFrom,

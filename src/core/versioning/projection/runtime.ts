@@ -14,14 +14,16 @@ import type {
   CopyRule,
   DefaultRule,
   FromRule,
+  MapRule,
   ObjectFromRule,
   ProjectionValue,
   RecordFromRule,
 } from "./types";
 
 export type RuntimeRule =
-  | CopyRule<unknown>
-  | FromRule<string, unknown>
+  | CopyRule
+  | FromRule<string>
+  | MapRule<string | undefined, ProjectionValue>
   | DefaultRule<ProjectionValue>
   | ObjectFromRule<string, AnyObject>
   | RecordFromRule<string, Record<string, AnyObject>>;
@@ -58,21 +60,17 @@ function applyRule(
     case "copy": {
       const sourceSlot = source.v[targetKey];
 
-      if (rule.map !== undefined) {
-        return applyMap(sourceSlot, rule.map);
-      }
-
       return sourceSlot === undefined ? undefined : cloneSlot(sourceSlot);
     }
 
     case "from": {
       const sourceSlot = source.v[rule.key];
 
-      if (rule.map !== undefined) {
-        return applyMap(sourceSlot, rule.map);
-      }
-
       return sourceSlot === undefined ? undefined : cloneSlot(sourceSlot);
+    }
+
+    case "map": {
+      return applyMap(source.v[rule.key ?? targetKey], rule.map);
     }
 
     case "default": {

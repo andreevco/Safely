@@ -45,6 +45,14 @@ const targetSchema = z.object({
   ),
 });
 
+const sameNameMapSourceSchema = z.object({
+  count: z.number(),
+});
+
+const sameNameMapTargetSchema = z.object({
+  count: z.number(),
+});
+
 type Source = z.output<typeof sourceSchema>;
 type Target = z.output<typeof targetSchema>;
 type TargetProfile = Target["profile"];
@@ -54,7 +62,7 @@ const projectSourceToTarget = projection(sourceSchema, targetSchema, (s) => ({
   title: s.copy(),
   created: s.default(true),
   name: s.from("oldName"),
-  percentComplete: s.from("metrics", (metrics) =>
+  percentComplete: s.map("metrics", (metrics) =>
     metrics.total === 0 ? 0 : metrics.completed / metrics.total,
   ),
   profile: s.objectFrom<"profile", TargetProfile>("profile", (profile) => ({
@@ -72,6 +80,14 @@ const projectSourceToTarget = projection(sourceSchema, targetSchema, (s) => ({
     }),
   ),
 }));
+
+const projectSameNameMap = projection(
+  sameNameMapSourceSchema,
+  sameNameMapTargetSchema,
+  (s) => ({
+    count: s.map((count) => count + 1),
+  }),
+);
 
 function slot(value: Source): ContainerSlot {
   const source = slotFromJson(value, 7, "device-1");
@@ -128,6 +144,20 @@ describe("projection", () => {
 
     expect(stripSlot(projected)).toMatchObject({
       percentComplete: 0.75,
+    });
+  });
+
+  it("computes a same-name value with map", () => {
+    const projected = projectSameNameMap(
+      slotFromJson({ count: 2 }, 7, "device-1") as ContainerSlot,
+    );
+
+    expect(stripSlot(projected)).toEqual({
+      count: 3,
+    });
+    expect(projected.v.count).toMatchObject({
+      t: 7,
+      a: "device-1",
     });
   });
 

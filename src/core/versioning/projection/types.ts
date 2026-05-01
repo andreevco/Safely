@@ -38,7 +38,6 @@ export type ProjectionMap<Input, Output extends ProjectionValue> = (
 
 export interface CopyRule<Output = NoMap> extends OutputBrand<Output> {
   readonly kind: "copy";
-  readonly map?: ProjectionMap<unknown, Extract<Output, ProjectionValue>>;
 }
 
 export interface FromRule<
@@ -47,7 +46,15 @@ export interface FromRule<
 > extends OutputBrand<Output> {
   readonly kind: "from";
   readonly key: Key;
-  readonly map?: ProjectionMap<unknown, Extract<Output, ProjectionValue>>;
+}
+
+export interface MapRule<
+  Key extends string | undefined,
+  Output extends ProjectionValue,
+> extends OutputBrand<Output> {
+  readonly kind: "map";
+  readonly key?: Key;
+  readonly map: ProjectionMap<unknown, Output>;
 }
 
 export interface DefaultRule<
@@ -83,16 +90,24 @@ type CopyFieldRule<
   Target,
   TargetKey extends string,
 > = TargetKey extends keyof From
-  ?
-      | ([From[TargetKey]] extends [Target] ? CopyRule<NoMap> : never)
-      | CopyRule<JsonCompatible<Target>>
+  ? [From[TargetKey]] extends [Target]
+    ? CopyRule<NoMap>
+    : never
   : never;
 
 type FromFieldRule<From, Target> = {
-  [K in StringKeyOf<From>]:
-    | ([From[K]] extends [Target] ? FromRule<K, NoMap> : never)
-    | FromRule<K, JsonCompatible<Target>>;
+  [K in StringKeyOf<From>]: [From[K]] extends [Target]
+    ? FromRule<K, NoMap>
+    : never;
 }[StringKeyOf<From>];
+
+type MapFieldRule<From, Target, TargetKey extends string> =
+  | (TargetKey extends keyof From
+      ? MapRule<undefined, JsonCompatible<Target>>
+      : never)
+  | {
+      [K in StringKeyOf<From>]: MapRule<K, JsonCompatible<Target>>;
+    }[StringKeyOf<From>];
 
 type DefaultFieldRule<Target> = DefaultRule<JsonCompatible<Target>>;
 
@@ -120,6 +135,7 @@ type RecordFromFieldRule<From, Target> =
 export type FieldProjectionRule<From, Target, TargetKey extends string> =
   | CopyFieldRule<From, Target, TargetKey>
   | FromFieldRule<From, Target>
+  | MapFieldRule<From, Target, TargetKey>
   | DefaultFieldRule<Target>
   | ObjectFromFieldRule<From, Target>
   | RecordFromFieldRule<From, Target>;
@@ -141,16 +157,16 @@ export type ProjectionShape<From, To> = {
 export interface ProjectionBuilder<From> {
   copy(): CopyRule<NoMap>;
 
-  copy<Output extends ProjectionValue>(
-    map: ProjectionMap<unknown, Output>,
-  ): CopyRule<Output>;
-
   from<K extends StringKeyOf<From>>(key: K): FromRule<K, NoMap>;
 
-  from<K extends StringKeyOf<From>, Output extends ProjectionValue>(
+  map<TargetKey extends StringKeyOf<From>, Output extends ProjectionValue>(
+    map: ProjectionMap<From[TargetKey], Output>,
+  ): MapRule<undefined, Output>;
+
+  map<K extends StringKeyOf<From>, Output extends ProjectionValue>(
     key: K,
     map: ProjectionMap<From[K], Output>,
-  ): FromRule<K, Output>;
+  ): MapRule<K, Output>;
 
   default<Output extends ProjectionValue>(
     value: Output | (() => Output),
