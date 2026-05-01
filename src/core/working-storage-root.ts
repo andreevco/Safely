@@ -9,7 +9,12 @@ import {
 import { cloneDeep, stripSlot } from "./slots/slot-json";
 import { validateSlot } from "./slots/slot-validation";
 import { StorageVersion } from "./versioning/version";
-import { createWriteProxy, selectJsonStorage } from "./write";
+import {
+  createReadProxy,
+  createWriteProxy,
+  JsonStorageSelection,
+  selectJsonStorage,
+} from "./write";
 import { VersionPropagation } from "./versioning/version-propagation";
 
 export class WorkingStorageRoot {
@@ -63,7 +68,9 @@ export class WorkingStorageRoot {
   }
 
   read<T>(): DeepReadonly<T> {
-    return cloneDeep(this.get<T>()) as DeepReadonly<T>;
+    return createReadProxy(
+      new JsonStorageSelection(this.latestContainer(), 0, ""),
+    ) as DeepReadonly<T>;
   }
 
   result(): ContainerSlot {

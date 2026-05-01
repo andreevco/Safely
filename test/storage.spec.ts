@@ -99,6 +99,147 @@ describe("storage updates", () => {
     });
   });
 
+  it("prevents runtime writes through read proxies", () => {
+    const storage = createStorage({
+      authorId: "device-1",
+      versions: v1,
+    });
+
+    const readable = storage.read();
+
+    expect(() => {
+      // @ts-expect-error intentional runtime write attempt
+      readable.key1 = 999;
+    }).toThrow(TypeError);
+    expect(() => {
+      // @ts-expect-error intentional runtime delete attempt
+      delete readable.key2;
+    }).toThrow(TypeError);
+    expect(() =>
+      Object.defineProperty(readable, "key1", {
+        value: 999,
+      }),
+    ).toThrow(TypeError);
+    expect(() => Object.setPrototypeOf(readable, {})).toThrow(TypeError);
+    expect(storage.read()).toEqual({
+      key1: 0,
+      key2: "initial",
+    });
+  });
+
+  it("supports object helpers on read proxies", () => {
+    const storage = createStorage({
+      authorId: "device-1",
+      versions: v1,
+    });
+
+    storage.update((draft) => {
+      draft.key1 = 10;
+      draft.key2 = "updated";
+    });
+
+    const readable = storage.read();
+
+    expect(Object.keys(readable)).toEqual(["key1", "key2"]);
+    expect("key1" in readable).toBe(true);
+    expect("missing" in readable).toBe(false);
+    expect({ ...readable }).toEqual({
+      key1: 10,
+      key2: "updated",
+    });
+    expect(JSON.stringify(readable)).toBe(
+      JSON.stringify({
+        key1: 10,
+        key2: "updated",
+      }),
+    );
+    expect(Object.getOwnPropertyDescriptor(readable, "key1")).toMatchObject({
+      configurable: true,
+      enumerable: true,
+      writable: false,
+      value: 10,
+    });
+  });
+
+  it("prevents runtime writes through nested read proxies", () => {
+    const schema = z.object({
+      settings: z.object({
+        theme: z.string(),
+      }),
+    });
+
+    const versions = defineVersionHList(
+      hCons(
+        {
+          version: 1,
+          schema,
+          initial: {
+            settings: {
+              theme: "light",
+            },
+          },
+          projectUp: cloneSlot,
+          projectDown: cloneSlot,
+        },
+        hNil,
+      ),
+    );
+
+    const storage = createStorage({
+      authorId: "device-1",
+      versions,
+    });
+    const readable = storage.read();
+
+    expect(() => {
+      // @ts-expect-error intentional runtime write attempt
+      readable.settings.theme = "dark";
+    }).toThrow(TypeError);
+    expect(() => {
+      // @ts-expect-error intentional runtime delete attempt
+      delete readable.settings.theme;
+    }).toThrow(TypeError);
+    expect(storage.read()).toEqual({
+      settings: {
+        theme: "light",
+      },
+    });
+  });
+
+  it("returns cloned arrays from read proxies", () => {
+    const schema = z.object({
+      items: z.array(z.string()),
+    });
+
+    const versions = defineVersionHList(
+      hCons(
+        {
+          version: 1,
+          schema,
+          initial: {
+            items: ["one"],
+          },
+          projectUp: cloneSlot,
+          projectDown: cloneSlot,
+        },
+        hNil,
+      ),
+    );
+
+    const storage = createStorage({
+      authorId: "device-1",
+      versions,
+    });
+
+    const items = storage.read().items as string[];
+    items.push("mutated clone");
+
+    expect(items).toEqual(["one", "mutated clone"]);
+    expect(storage.read()).toEqual({
+      items: ["one"],
+    });
+  });
+
   it("uses one timestamp for all writes in one transaction", () => {
     const storage = createStorage({
       authorId: "device-1",

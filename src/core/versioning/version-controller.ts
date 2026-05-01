@@ -90,7 +90,7 @@ export class VersionController {
     timestamp: number,
     author: string,
   ): void {
-    const devices = this.devicesContainer(timestamp, author);
+    const devices = this.devicesContainer();
     const existingDevice = devices.v[authorId];
     const device = isContainerSlot(existingDevice)
       ? existingDevice
@@ -145,7 +145,7 @@ export class VersionController {
     return typeof version === "number" ? version : version.version;
   }
 
-  private devicesContainer(timestamp: number, author: string): ContainerSlot {
+  private devicesContainer(): ContainerSlot {
     const devices = this.root.v[DEVICES_KEY];
 
     if (isContainerSlot(devices)) {

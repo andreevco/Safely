@@ -9,31 +9,72 @@ export function createReadProxy(
   selection: JsonStorageSelection,
   onRead?: ReadSlotObserver,
 ): unknown {
+  const readValue = (prop: string): unknown => {
+    const slot = selection.get(prop);
+
+    if (slot === undefined || slot.d === true) {
+      return undefined;
+    }
+
+    onRead?.(slot);
+
+    if (isContainerSlot(slot)) {
+      const childSelection = selection.select(prop);
+
+      if (childSelection === undefined) {
+        return undefined;
+      }
+
+      return createReadProxy(childSelection, onRead);
+    }
+
+    return cloneDeep(slot.v);
+  };
+
   return new Proxy(Object.create(null), {
     get: (_target, prop) => {
       if (typeof prop !== "string") {
         return undefined;
       }
 
-      const slot = selection.get(prop);
+      return readValue(prop);
+    },
 
-      if (slot === undefined || slot.d === true) {
+    has: (_target, prop) => {
+      return typeof prop === "string" && selection.has(prop);
+    },
+
+    ownKeys: () => {
+      return selection.keys();
+    },
+
+    getOwnPropertyDescriptor: (_target, prop) => {
+      if (typeof prop !== "string" || !selection.has(prop)) {
         return undefined;
       }
 
-      onRead?.(slot);
+      return {
+        configurable: true,
+        enumerable: true,
+        writable: false,
+        value: readValue(prop),
+      };
+    },
 
-      if (isContainerSlot(slot)) {
-        const childSelection = selection.select(prop);
+    set: () => {
+      return false;
+    },
 
-        if (childSelection === undefined) {
-          return undefined;
-        }
+    defineProperty: () => {
+      return false;
+    },
 
-        return createReadProxy(childSelection, onRead);
-      }
+    deleteProperty: () => {
+      return false;
+    },
 
-      return cloneDeep(slot.v);
+    setPrototypeOf: () => {
+      return false;
     },
   });
 }
