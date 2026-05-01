@@ -1,8 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { createStorage } from "../src";
+import { createStorage, DEVICES_KEY } from "../src";
 import { createOriginContainer, type ContainerSlot } from "../src/core/slots";
 import { slotFromJson, stripSlot } from "../src/core/slots/slot-json";
-import { DEVICES_KEY } from "../src/core/versioning/version-controller";
 import { v3 } from "./version-fixtures";
 
 const v3Initial = {

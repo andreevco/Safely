@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
-import { createStorage, type Storage } from "../src";
+import { createStorage, DEVICES_KEY, type Storage } from "../src";
 import { createOriginContainer, type ContainerSlot } from "../src/core/slots";
 import { slotFromJson } from "../src/core/slots/slot-json";
 import {
@@ -16,7 +16,6 @@ import {
   v1,
   v3,
 } from "./version-fixtures";
-import { DEVICES_KEY } from "../src/core/versioning/version-controller";
 
 describe("version migration", () => {
   it("initializes the latest version by migrating an existing older version", () => {
