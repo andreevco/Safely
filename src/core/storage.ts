@@ -1,5 +1,5 @@
 import { ContainerSlot, createOriginContainer, Slot } from "./slots";
-import { cloneSlot, slotFromJson } from "./slots/slot-json";
+import { cloneSlot } from "./slots/slot-json";
 import { validateSlot } from "./slots/slot-validation";
 import {
   AssertVersionHList,
@@ -8,11 +8,11 @@ import {
   NewOf,
   StorageVersion,
 } from "./versioning/version";
-import { DeepReadonly, JsonValue, WriteDraft } from "./json";
+import { DeepReadonly, WriteDraft } from "./json";
 import { MergeProtocol, MergeStats } from "./merge-protocol";
 import { WorkingStorageRoot } from "./working-storage-root";
 import { z } from "zod";
-import { VersionPropagation } from "./versioning/version-propagation";
+import { VersionController } from "./versioning/version-controller";
 
 export interface Storage<T> {
   readonly version: number;
@@ -129,27 +129,23 @@ class StorageImpl<T> implements Storage<T> {
 
   private ensureLatestInitialized(): void {
     const latest = this.latestVersion();
-    const key = String(latest.version);
+    const controller = new VersionController(this.root, this.versions);
 
-    if (this.root.v[key] !== undefined) {
+    if (controller.get(latest) !== undefined) {
       this.committedRoot().get<T>();
       return;
     }
 
-    const propagation = new VersionPropagation(this.versions);
-    if (propagation.initializeLatestFromExistingOlder(this.root)) {
-      this.committedRoot().get<T>();
-      return;
+    for (let index = this.versions.length - 2; index >= 0; index -= 1) {
+      const version = this.versions[index];
+
+      if (controller.createVersionFrom(version) !== undefined) {
+        this.committedRoot().get<T>();
+        return;
+      }
     }
 
-    const initial =
-      typeof latest.initial === "function"
-        ? (latest.initial as () => unknown)()
-        : latest.initial;
-
-    const parsed = latest.schema.parse(initial);
-
-    this.root.v[key] = slotFromJson(parsed as JsonValue, 0, "");
+    controller.createInitialVersion();
   }
 }
 

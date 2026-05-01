@@ -7,47 +7,6 @@ import { StorageVersion } from "./version";
 export class VersionPropagation {
   constructor(private readonly versions: readonly StorageVersion[]) {}
 
-  initializeLatestFromExistingOlder(root: ContainerSlot): boolean {
-    const latestVersion = this.latestVersion();
-    const latest = root.v[String(latestVersion.version)];
-
-    if (isContainerSlot(latest)) {
-      return true;
-    }
-
-    let current: ContainerSlot | undefined;
-    let currentIndex = -1;
-
-    for (let index = this.versions.length - 2; index >= 0; index -= 1) {
-      const version = this.versions[index];
-      const source = root.v[String(version.version)];
-
-      if (isContainerSlot(source)) {
-        current = source;
-        currentIndex = index;
-        break;
-      }
-    }
-
-    if (current === undefined) {
-      return false;
-    }
-
-    for (
-      let index = currentIndex + 1;
-      index < this.versions.length;
-      index += 1
-    ) {
-      const toVersion = this.versions[index];
-      const projected = toVersion.projectUp(current);
-      this.validateProjection(toVersion, projected);
-      current = projected;
-    }
-
-    root.v[String(latestVersion.version)] = current;
-    return true;
-  }
-
   propagateChangedOlderVersionsToNewer(
     before: ContainerSlot,
     root: ContainerSlot,

@@ -10,6 +10,8 @@ export type {
 } from "./core/json";
 
 export type { StorageVersion } from "./core/versioning/version";
+export { VersionController } from "./core/versioning/version-controller";
+export type { VersionSelector } from "./core/versioning/version-controller";
 
 export type { Storage } from "./core/storage";
 
