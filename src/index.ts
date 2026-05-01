@@ -11,6 +11,18 @@ export type {
 
 export { createStorage } from "./core/storage";
 export type { Storage } from "./core/storage";
+export {
+  getById,
+  insert,
+  orderedIds,
+  orderedMap,
+  orderedSet,
+  projectOrderedSet,
+  remove,
+  reorder,
+  toOrderedSet,
+} from "./ordered-set";
+export type { OrderedSet, ReadonlyOrderedSet } from "./ordered-set";
 
 export type { StorageVersion } from "./core/versioning/version";
 export {
