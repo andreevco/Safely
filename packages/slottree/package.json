@@ -2,7 +2,6 @@
     "name": "@safely/slottree",
     "version": "0.0.1",
     "description": "",
-    "main": "dist/index.js",
     "scripts": {
         "compile": "tsc --noEmit",
         "dev": "tsc --watch",
