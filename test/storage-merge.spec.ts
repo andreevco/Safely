@@ -1,23 +1,23 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { z } from "zod";
-import { createStorage, type Storage } from "../src";
+import { createStorage, type Storage, StorageImpl } from "../src";
 import { createOriginContainer } from "../src/core/slots";
 import { slotFromJson } from "../src/core/slots/slot-json";
 import { schemaV1, v1 } from "./version-fixtures";
 
 describe("storage merge", () => {
-  let storage1: Storage<z.output<typeof schemaV1>>;
-  let storage2: Storage<z.output<typeof schemaV1>>;
+  let storage1: StorageImpl<z.output<typeof schemaV1>>;
+  let storage2: StorageImpl<z.output<typeof schemaV1>>;
 
   beforeEach(() => {
     storage1 = createStorage({
       authorId: "device-1",
       versions: v1,
-    });
+    }) as StorageImpl<z.output<typeof schemaV1>>;
     storage2 = createStorage({
       authorId: "device-2",
       versions: v1,
-    });
+    }) as StorageImpl<z.output<typeof schemaV1>>;
   });
 
   it("merges values", () => {
@@ -72,13 +72,13 @@ describe("storage merge", () => {
       ),
     });
 
-    expect(() => storage1.merge(incoming)).toThrow();
+    expect(() => storage1.mergeSlot(incoming)).toThrow();
     expect(storage1.read()).toEqual({ key1: 0, key2: "initial" });
 
     storage1.update((draft) => {
       draft.key1 = 1;
     });
-    const exported = storage1.export() as ReturnType<
+    const exported = storage1.exportSlot() as ReturnType<
       typeof createOriginContainer
     >;
     const versionSlot = exported.v["1"] as unknown as {
@@ -100,7 +100,7 @@ describe("storage merge", () => {
       calls += 1;
     });
 
-    expect(() => storage1.merge(incoming)).toThrow();
+    expect(() => storage1.mergeSlot(incoming)).toThrow();
 
     expect(calls).toBe(0);
   });

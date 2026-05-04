@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
-import { createStorage } from "../src";
+import { createStorage, StorageImpl } from "../src";
 import {
   defineVersionHList,
   hCons,
@@ -161,7 +161,7 @@ describe("createWriteProxy", () => {
   });
 
   it("treats assigning undefined as delete and creates a tombstone", () => {
-    const storage = createTestStorage();
+    const storage = createTestStorage() as StorageImpl<z.output<typeof schema>>;
 
     storage.update((draft) => {
       draft.settings.layout = "compact";
@@ -180,7 +180,7 @@ describe("createWriteProxy", () => {
       },
     });
 
-    const exported = storage.export() as ContainerSlot;
+    const exported = storage.exportSlot() as ContainerSlot;
     const versionSlot = exported.v["1"] as ContainerSlot;
     const settingsSlot = versionSlot.v.settings as ContainerSlot;
 

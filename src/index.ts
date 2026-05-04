@@ -10,7 +10,7 @@ export type {
 } from "./core/json";
 
 export { createStorage, StorageObservers } from "./core/storage";
-export type { Storage } from "./core/storage";
+export type { Storage, StorageImpl } from "./core/storage";
 export type { StorageObserver } from "./core/storage";
 export {
   getById,

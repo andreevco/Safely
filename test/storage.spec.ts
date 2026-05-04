@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { z } from "zod";
-import { createStorage, type Storage } from "../src";
-import { schemaV1, v1 } from "./version-fixtures";
+import { createStorage, type Storage, StorageImpl } from "../src";
+import { schemaV1, StorageV1, v1 } from "./version-fixtures";
 import { ContainerSlot } from "../src/core/slots";
 import {
   defineVersionHList,
@@ -151,9 +151,9 @@ describe("storage updates", () => {
     const storage = createStorage({
       authorId: "device-1",
       versions: v1,
-    });
+    }) as StorageImpl<StorageV1>;
 
-    const exported = storage.export() as ContainerSlot;
+    const exported = storage.exportSlot() as ContainerSlot;
     const versionSlot = exported.v["1"] as ContainerSlot;
     const key1Slot = versionSlot.v.key1;
 
@@ -314,14 +314,14 @@ describe("storage updates", () => {
     const storage = createStorage({
       authorId: "device-1",
       versions: v1,
-    });
+    }) as StorageImpl<StorageV1>;
 
     storage.update((draft) => {
       draft.key1 = 10;
       draft.key2 = "updated";
     });
 
-    const exported = storage.export() as ContainerSlot;
+    const exported = storage.exportSlot() as ContainerSlot;
     const versionSlot = exported.v["1"] as ContainerSlot;
 
     expect(versionSlot.v.key1?.t).toBe(versionSlot.v.key2?.t);

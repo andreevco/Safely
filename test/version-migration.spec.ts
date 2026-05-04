@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
-import { createStorage, DEVICES_KEY, type Storage } from "../src";
+import { createStorage, DEVICES_KEY, type Storage, StorageImpl } from "../src";
 import { createOriginContainer, type ContainerSlot } from "../src/core/slots";
 import { slotFromJson } from "../src/core/slots/slot-json";
 import {
@@ -12,6 +12,7 @@ import { projection } from "../src/core/versioning/projection";
 import {
   identityProjection,
   schemaV3,
+  StorageV1,
   type StorageV3,
   v1,
   v3,
@@ -23,11 +24,11 @@ describe("version migration", () => {
       "1": slotFromJson({ key1: 42, key2: "from-v1" }, 123, "old-device"),
     });
 
-    const storage: Storage<StorageV3> = createStorage({
+    const storage = createStorage({
       authorId: "device-1",
       versions: v3,
       root,
-    });
+    }) as StorageImpl<StorageV3>;
 
     expect(storage.read()).toEqual({
       key1: 42,
@@ -36,7 +37,7 @@ describe("version migration", () => {
       key4: "v3",
     });
 
-    const exported = storage.export() as ContainerSlot;
+    const exported = storage.exportSlot() as ContainerSlot;
     const v3Slot = exported.v["3"] as ContainerSlot;
 
     expect(exported.v["1"]).toBeUndefined();
@@ -75,11 +76,11 @@ describe("version migration", () => {
       ),
     });
 
-    const storage: Storage<StorageV3> = createStorage({
+    const storage = createStorage({
       authorId: "device-1",
       versions: v3,
       root,
-    });
+    }) as StorageImpl<StorageV3>;
 
     storage.update((draft) => {
       draft.key1 = 10;
@@ -87,7 +88,7 @@ describe("version migration", () => {
       draft.key4 = "latest-only";
     });
 
-    const exported = storage.export() as ReturnType<
+    const exported = storage.exportSlot() as ReturnType<
       typeof createOriginContainer
     >;
     expect(exported.v["2"]).toMatchObject({
@@ -135,17 +136,17 @@ describe("version migration", () => {
       ),
     });
 
-    const storage: Storage<z.output<typeof schemaV3>> = createStorage({
+    const storage = createStorage({
       authorId: "device-1",
       versions: v3,
       root,
-    });
+    }) as StorageImpl<StorageV3>;
 
     storage.update((draft) => {
       draft.label = "updated";
     });
 
-    const exported = storage.export() as ReturnType<
+    const exported = storage.exportSlot() as ReturnType<
       typeof createOriginContainer
     >;
     expect(exported.v["2"]).toBeUndefined();
@@ -161,11 +162,11 @@ describe("version migration", () => {
     const oldDevice = createStorage({
       authorId: "old-device",
       versions: v1,
-    });
-    const newDevice: Storage<StorageV3> = createStorage({
+    }) as StorageImpl<StorageV1>;
+    const newDevice = createStorage({
       authorId: "new-device",
       versions: v3,
-    });
+    }) as StorageImpl<StorageV3>;
 
     oldDevice.update((draft) => {
       draft.key1 = 42;
@@ -174,8 +175,8 @@ describe("version migration", () => {
 
     newDevice.merge(oldDevice.export());
 
-    const oldExport = oldDevice.export() as ContainerSlot;
-    const newExport = newDevice.export() as ContainerSlot;
+    const oldExport = oldDevice.exportSlot() as ContainerSlot;
+    const newExport = newDevice.exportSlot() as ContainerSlot;
     const oldV1 = oldExport.v["1"] as ContainerSlot;
     const newV3 = newExport.v["3"] as ContainerSlot;
 
@@ -269,11 +270,11 @@ describe("version migration", () => {
     const oldDevice = createStorage({
       authorId: "old-device",
       versions: optionalV1,
-    });
+    }) as StorageImpl<z.output<typeof schemaOptionalV1>>;
     const newDevice = createStorage({
       authorId: "new-device",
       versions: optionalV2,
-    });
+    }) as StorageImpl<z.output<typeof schemaOptionalV2>>;
 
     oldDevice.update((draft) => {
       delete draft.optional;
@@ -281,8 +282,8 @@ describe("version migration", () => {
 
     newDevice.merge(oldDevice.export());
 
-    const oldExport = oldDevice.export() as ContainerSlot;
-    const newExport = newDevice.export() as ContainerSlot;
+    const oldExport = oldDevice.exportSlot() as ContainerSlot;
+    const newExport = newDevice.exportSlot() as ContainerSlot;
     const oldTombstone = (oldExport.v["1"] as ContainerSlot).v.optional;
     const projectedTombstone = (newExport.v["2"] as ContainerSlot).v.renamed;
 

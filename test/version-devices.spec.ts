@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { createStorage, DEVICES_KEY } from "../src";
+import { createStorage, DEVICES_KEY, StorageImpl } from "../src";
 import { createOriginContainer, type ContainerSlot } from "../src/core/slots";
 import { slotFromJson, stripSlot } from "../src/core/slots/slot-json";
-import { v3 } from "./version-fixtures";
+import { StorageV3, v3 } from "./version-fixtures";
 
 const v3Initial = {
   key1: 0,
@@ -16,9 +16,9 @@ describe("storage device versions", () => {
     const storage = createStorage({
       authorId: "device-1",
       versions: v3,
-    });
+    }) as StorageImpl<StorageV3>;
 
-    const exported = storage.export() as ContainerSlot;
+    const exported = storage.exportSlot() as ContainerSlot;
 
     expect(stripSlot(exported.v[DEVICES_KEY])).toEqual({
       "device-1": {
@@ -44,9 +44,9 @@ describe("storage device versions", () => {
       authorId: "device-1",
       versions: v3,
       root,
-    });
+    }) as StorageImpl<StorageV3>;
 
-    const exported = storage.export() as ContainerSlot;
+    const exported = storage.exportSlot() as ContainerSlot;
 
     expect(stripSlot(exported.v[DEVICES_KEY])).toEqual({
       "device-1": {
@@ -75,9 +75,9 @@ describe("storage device versions", () => {
       authorId: "device-1",
       versions: v3,
       root,
-    });
+    }) as StorageImpl<StorageV3>;
 
-    const exported = storage.export() as ContainerSlot;
+    const exported = storage.exportSlot() as ContainerSlot;
 
     expect(exported.v["1"]).toBeUndefined();
     expect(exported.v["3"]).toBeDefined();
@@ -101,9 +101,9 @@ describe("storage device versions", () => {
       authorId: "device-1",
       versions: v3,
       root,
-    });
+    }) as StorageImpl<StorageV3>;
 
-    const exported = storage.export() as ContainerSlot;
+    const exported = storage.exportSlot() as ContainerSlot;
 
     expect(exported.v["1"]).toBeDefined();
     expect(exported.v["3"]).toBeDefined();

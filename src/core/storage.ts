@@ -1,4 +1,9 @@
-import { ContainerSlot, createOriginContainer, Slot } from "./slots";
+import {
+  ContainerSlot,
+  createOriginContainer,
+  isContainerSlot,
+  Slot,
+} from "./slots";
 import { cloneSlot } from "./slots/slot-json";
 import { validateSlot } from "./slots/slot-validation";
 import {
@@ -42,7 +47,7 @@ export interface Storage<T> {
    * Merge storage
    * @param incoming
    */
-  merge(incoming: Slot): void;
+  merge(incoming: string): void;
 
   /**
    * Observe successful storage changes.
@@ -53,11 +58,12 @@ export interface Storage<T> {
   /**
    * Export storage to save or send to other device
    */
-  export(): Slot;
+  export(): string;
 }
 
-class StorageImpl<T> implements Storage<T> {
+export class StorageImpl<T> implements Storage<T> {
   private readonly protocol: MergeProtocol;
+  private readonly encoder = new Encoder();
   private root: ContainerSlot;
   private readonly versions: readonly StorageVersion[];
   private readonly observers = new StorageObservers();
@@ -111,7 +117,11 @@ class StorageImpl<T> implements Storage<T> {
     }
   }
 
-  merge(incoming: Slot): MergeStats {
+  merge(incoming: string): MergeStats {
+    return this.mergeSlot(this.encoder.decode(incoming));
+  }
+
+  mergeSlot(incoming: Slot): MergeStats {
     const workingRoot = this.createWorkingRoot();
     const validationProtocol = new MergeProtocol(this.protocol.id);
     validationProtocol.observeTree(this.root);
@@ -136,7 +146,11 @@ class StorageImpl<T> implements Storage<T> {
     };
   }
 
-  export(): Slot {
+  export(): string {
+    return this.encoder.encode(this.root);
+  }
+
+  exportSlot(): Slot {
     return cloneSlot(this.root);
   }
 
@@ -205,6 +219,23 @@ class StorageImpl<T> implements Storage<T> {
 
 function didMergeChangeStorage(stats: MergeStats): boolean {
   return stats.added > 0 || stats.updated > 0 || stats.replaced > 0;
+}
+
+class Encoder {
+  encode(root: ContainerSlot): string {
+    return JSON.stringify(root);
+  }
+
+  decode(encodedRoot: string): ContainerSlot {
+    const root: unknown = JSON.parse(encodedRoot);
+    validateSlot(root);
+
+    if (!isContainerSlot(root)) {
+      throw new Error("Encoded storage root must be a container slot");
+    }
+
+    return root;
+  }
 }
 
 export function createStorage<Latest extends StorageVersion, Rest>(options: {

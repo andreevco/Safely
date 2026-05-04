@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
-import { createStorage } from "../src";
+import { createStorage, StorageImpl } from "../src";
 import {
   defineVersionHList,
   hCons,
@@ -8,7 +8,7 @@ import {
 } from "../src/core/versioning/version";
 import { isContainerSlot, type ContainerSlot } from "../src/core/slots";
 import { stripSlot } from "../src/core/slots/slot-json";
-import { identityProjection } from "./version-fixtures";
+import { identityProjection, type StorageV3 } from "./version-fixtures";
 
 describe("records", () => {
   it("sets and deletes keys", () => {
@@ -49,18 +49,19 @@ describe("records", () => {
   });
 
   it("stores prototype-like keys as data", () => {
+    const schema = z.object({
+      objects: z.record(
+        z.string(),
+        z.object({
+          value: z.number(),
+        }),
+      ),
+    });
     const version = defineVersionHList(
       hCons(
         {
           version: 1,
-          schema: z.object({
-            objects: z.record(
-              z.string(),
-              z.object({
-                value: z.number(),
-              }),
-            ),
-          }),
+          schema: schema,
           initial: {
             objects: {},
           },
@@ -74,7 +75,7 @@ describe("records", () => {
     const storage = createStorage({
       authorId: "device-1",
       versions: version,
-    });
+    }) as StorageImpl<z.output<typeof schema>>;
 
     storage.update((draft) => {
       draft.objects["__proto__"] = { value: 1 };
@@ -82,7 +83,7 @@ describe("records", () => {
       draft.objects["prototype"] = { value: 3 };
     });
 
-    const exported = storage.export() as ContainerSlot;
+    const exported = storage.exportSlot() as ContainerSlot;
     const versionSlot = exported.v["1"];
     if (!isContainerSlot(versionSlot)) {
       throw new Error("Expected version slot to be a container");
@@ -113,18 +114,19 @@ describe("records", () => {
   });
 
   it("merges JSON-imported prototype-like keys as data", () => {
+    const schema = z.object({
+      objects: z.record(
+        z.string(),
+        z.object({
+          value: z.number(),
+        }),
+      ),
+    });
     const version = defineVersionHList(
       hCons(
         {
           version: 1,
-          schema: z.object({
-            objects: z.record(
-              z.string(),
-              z.object({
-                value: z.number(),
-              }),
-            ),
-          }),
+          schema: schema,
           initial: {
             objects: {},
           },
@@ -138,9 +140,9 @@ describe("records", () => {
     const storage = createStorage({
       authorId: "device-1",
       versions: version,
-    });
+    }) as StorageImpl<z.output<typeof schema>>;
 
-    const incoming = JSON.parse(`{
+    const incoming = `{
       "v": {
         "1": {
           "v": {
@@ -178,11 +180,11 @@ describe("records", () => {
       "t": 0,
       "a": "",
       "r": true
-    }`);
+    }`;
 
     storage.merge(incoming);
 
-    const exported = storage.export() as ContainerSlot;
+    const exported = storage.exportSlot() as ContainerSlot;
     const versionSlot = exported.v["1"];
     if (!isContainerSlot(versionSlot)) {
       throw new Error("Expected version slot to be a container");

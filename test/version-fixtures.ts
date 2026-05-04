@@ -27,6 +27,7 @@ export const schemaV3 = z.object({
 });
 
 export type StorageV3 = z.output<typeof schemaV3>;
+export type StorageV1 = z.output<typeof schemaV1>;
 
 const projectV1ToV2 = projection(schemaV1, schemaV2, (s) => ({
   key1: s.copy(),
