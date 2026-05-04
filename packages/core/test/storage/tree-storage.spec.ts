@@ -2,6 +2,10 @@ import { describe, expect, it } from 'vitest';
 
 import { InMemoryEnumerableStorage } from './mocks';
 import { TreeStorage } from '../../src';
+import {
+    decodeTreeStoragePathSegment,
+    encodeTreeStoragePathSegment
+} from '../../src/storage/tree-storage';
 
 describe('TreeStorage', () => {
     it('writes and reads values under composed path', async () => {
@@ -47,6 +51,29 @@ describe('TreeStorage', () => {
 
         expect(await dotted.getItem('x')).toBe('1');
         expect(await literalEscape.getItem('x')).toBe('2');
+    });
+
+    it('round-trips segments containing literal _u and _d sequences', async () => {
+        // `_u`/`_d` are the encoded forms of `_`/`.` — a user-provided string
+        // that already contains those byte pairs must not be misinterpreted by
+        // the decoder. Encoding escapes every `_` first, so no bare `_` survives
+        // and the regex always pairs `_` with the following `u`/`d`.
+        const base = new InMemoryEnumerableStorage();
+        const root = TreeStorage.root(base);
+        const node = root.child(['scope']);
+
+        await node.setItem('a_ub_dc', '1');
+        await node.setItem('_u', '2');
+        await node.setItem('_d', '3');
+        await node.setItem('._d', '4');
+
+        expect(await node.getItem('a_ub_dc')).toBe('1');
+        expect(await node.getItem('_u')).toBe('2');
+        expect(await node.getItem('_d')).toBe('3');
+        expect(await node.getItem('._d')).toBe('4');
+
+        const keys = await node.getOwnKeys();
+        expect(keys.sort()).toEqual(['._d', '_d', '_u', 'a_ub_dc'].sort());
     });
 
     it('clear removes only keys under current path prefix', async () => {
@@ -96,5 +123,60 @@ describe('TreeStorage', () => {
         // Sanity: the key with separator chars round-trips.
         expect(await node.getItem('b..c')).toBe('2');
     });
+});
 
+describe('encodeTreeStoragePathSegment / decodeTreeStoragePathSegment bijectivity', () => {
+    const cases: [name: string, value: string][] = [
+        ['empty', ''],
+        ['plain ascii', 'hello'],
+        ['single underscore', '_'],
+        ['single dot', '.'],
+        ['encoded form _u literally', '_u'],
+        ['encoded form _d literally', '_d'],
+        ['mixed _u and _d', 'a_ub_dc'],
+        ['dot then encoded form', '._d'],
+        ['underscore then encoded form', '__d'],
+        ['multiple dots', '...'],
+        ['multiple underscores', '___'],
+        ['separator-like substring', '..'],
+        ['unicode', 'привет🙂'],
+        ['adjacent escape pairs', '_u_d_u_d'],
+        ['only special chars', '_._._.'],
+        ['trailing underscore', 'foo_'],
+        ['leading dot', '.bar'],
+        ['url-ish', 'https://example.com/a_b']
+    ];
+
+    it.each(cases)('round-trips: %s', (_name, value) => {
+        expect(decodeTreeStoragePathSegment(encodeTreeStoragePathSegment(value))).toBe(value);
+    });
+
+    it('keeps output within SecureStore-safe alphabet for inputs from [A-Za-z0-9._-]', () => {
+        const safe = /^[A-Za-z0-9._-]*$/;
+        const inputs = ['abc', 'a.b', 'a_b', '...', '___', '_u_d', 'AZ-09'];
+        for (const input of inputs) {
+            expect(safe.test(encodeTreeStoragePathSegment(input))).toBe(true);
+        }
+    });
+
+    it('encoded output contains no bare "." (so SEPARATOR ".." is unambiguous)', () => {
+        const inputs = ['a.b', '...', '.', 'a..b', 'no-dots-here', '_d_d'];
+        for (const input of inputs) {
+            expect(encodeTreeStoragePathSegment(input).includes('.')).toBe(false);
+        }
+    });
+
+    it('distinct inputs produce distinct outputs (injectivity on tricky pairs)', () => {
+        const pairs: [string, string][] = [
+            ['_', '.'],
+            ['_u', '_'],
+            ['_d', '.'],
+            ['a..b', 'a_db'],
+            ['a.b', 'a_db'],
+            ['_u_d', '_.']
+        ];
+        for (const [a, b] of pairs) {
+            expect(encodeTreeStoragePathSegment(a)).not.toBe(encodeTreeStoragePathSegment(b));
+        }
+    });
 });

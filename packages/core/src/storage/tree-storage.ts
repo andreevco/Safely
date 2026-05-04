@@ -2,7 +2,7 @@ import { IEnumerableStorage, ITreeStorage } from '../di';
 
 const SEPARATOR = '..';
 
-function encodeSegment(segment: string): string {
+export function encodeTreeStoragePathSegment(segment: string): string {
     // `_` is the escape char. Each `_` becomes `_u`, each `.` becomes `_d`.
     // After encoding a segment never contains a bare `.`, so `..` is an
     // unambiguous delimiter and the encoding is bijective. The encoded
@@ -16,7 +16,7 @@ function encodeSegment(segment: string): string {
     return out;
 }
 
-function decodeSegment(encoded: string): string {
+export function decodeTreeStoragePathSegment(encoded: string): string {
     return encoded.replace(/_([ud])/g, (_match, ch: string) => (ch === 'u' ? '_' : '.'));
 }
 
@@ -38,7 +38,7 @@ export class TreeStorage implements ITreeStorage {
     }
 
     private pathToString(path: string[]): string {
-        return path.map(encodeSegment).join(this.separator);
+        return path.map(encodeTreeStoragePathSegment).join(this.separator);
     }
 
     private childKeyPrefix(): string {
@@ -71,7 +71,7 @@ export class TreeStorage implements ITreeStorage {
         return keys
             .map(k => k.slice(childPrefix.length))
             .filter(k => k.length > 0 && !k.includes(this.separator))
-            .map(decodeSegment);
+            .map(decodeTreeStoragePathSegment);
     }
 
     public child(path: string[] | string): ITreeStorage {
