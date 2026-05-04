@@ -9,7 +9,7 @@ const mobileLayerEncryptedStorageStructure = {
 
 type MobileLayerEncryptedStorageStructure = typeof mobileLayerEncryptedStorageStructure;
 
-const storage = storagesList.regular.storage.child('mobile');
+const storage = storagesList.encrypted.storage.child('mobile');
 
 export function useMobileLayerEncryptedStorage<
     K extends keyof MobileLayerEncryptedStorageStructure
