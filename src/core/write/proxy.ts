@@ -79,7 +79,10 @@ export function createReadProxy(
   });
 }
 
-export function createWriteProxy(selection: JsonStorageSelection): unknown {
+export function createWriteProxy(
+  selection: JsonStorageSelection,
+  onUpdate: () => void,
+): unknown {
   const readValue = (prop: string): unknown => {
     const slot = selection.get(prop);
 
@@ -94,7 +97,7 @@ export function createWriteProxy(selection: JsonStorageSelection): unknown {
         return undefined;
       }
 
-      return createWriteProxy(childSelection);
+      return createWriteProxy(childSelection, onUpdate);
     }
 
     return cloneDeep(slot.v);
@@ -116,10 +119,12 @@ export function createWriteProxy(selection: JsonStorageSelection): unknown {
 
       if (value === undefined) {
         selection.delete(prop);
+        onUpdate();
         return true;
       }
 
       selection.set(prop, value as JsonValue);
+      onUpdate();
 
       return true;
     },
@@ -150,7 +155,11 @@ export function createWriteProxy(selection: JsonStorageSelection): unknown {
         return false;
       }
 
-      if ("get" in descriptor || "set" in descriptor || !("value" in descriptor)) {
+      if (
+        "get" in descriptor ||
+        "set" in descriptor ||
+        !("value" in descriptor)
+      ) {
         return false;
       }
 
@@ -164,10 +173,12 @@ export function createWriteProxy(selection: JsonStorageSelection): unknown {
 
       if (descriptor.value === undefined) {
         selection.delete(prop);
+        onUpdate();
         return true;
       }
 
       selection.set(prop, descriptor.value as JsonValue);
+      onUpdate();
       return true;
     },
 
@@ -177,6 +188,7 @@ export function createWriteProxy(selection: JsonStorageSelection): unknown {
       }
 
       selection.delete(prop);
+      onUpdate();
 
       return true;
     },

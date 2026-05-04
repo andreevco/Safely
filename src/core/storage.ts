@@ -13,6 +13,11 @@ import { MergeProtocol, MergeStats } from "./merge-protocol";
 import { WorkingStorageRoot } from "./working-storage-root";
 import { z } from "zod";
 import { VersionController } from "./versioning/version-controller";
+import { StorageObservers } from "./storage-observer";
+import type { StorageObserver } from "./storage-observer";
+
+export { StorageObservers } from "./storage-observer";
+export type { StorageObserver } from "./storage-observer";
 
 export interface Storage<T> {
   readonly version: number;
@@ -40,6 +45,12 @@ export interface Storage<T> {
   merge(incoming: Slot): void;
 
   /**
+   * Observe successful storage changes.
+   * Returns a cleanup function that removes the observer.
+   */
+  onChange(observer: StorageObserver): () => void;
+
+  /**
    * Export storage to save or send to other device
    */
   export(): Slot;
@@ -49,6 +60,7 @@ class StorageImpl<T> implements Storage<T> {
   private readonly protocol: MergeProtocol;
   private root: ContainerSlot;
   private readonly versions: readonly StorageVersion[];
+  private readonly observers = new StorageObservers();
 
   constructor(options: {
     authorId: string;
@@ -91,8 +103,12 @@ class StorageImpl<T> implements Storage<T> {
 
     const workingRoot = this.createWorkingRoot();
 
-    workingRoot.update(fn, timestamp, author, this.protocol);
+    const updated = workingRoot.update(fn, timestamp, author, this.protocol);
     this.root = workingRoot.result();
+
+    if (updated) {
+      this.observers.notify();
+    }
   }
 
   merge(incoming: Slot): MergeStats {
@@ -104,7 +120,20 @@ class StorageImpl<T> implements Storage<T> {
     this.root = workingRoot.result();
     this.protocol.observeTree(incoming);
     this.protocol.observeTree(this.root);
+
+    if (didMergeChangeStorage(stats)) {
+      this.observers.notify();
+    }
+
     return stats;
+  }
+
+  onChange(observer: StorageObserver): () => void {
+    this.observers.add(observer);
+
+    return () => {
+      this.observers.remove(observer);
+    };
   }
 
   export(): Slot {
@@ -172,6 +201,10 @@ class StorageImpl<T> implements Storage<T> {
       this.versions,
     ).deleteVersionsUnusedByDevices();
   }
+}
+
+function didMergeChangeStorage(stats: MergeStats): boolean {
+  return stats.added > 0 || stats.updated > 0 || stats.replaced > 0;
 }
 
 export function createStorage<Latest extends StorageVersion, Rest>(options: {

@@ -9,8 +9,9 @@ export type {
   WriteDraft,
 } from "./core/json";
 
-export { createStorage } from "./core/storage";
+export { createStorage, StorageObservers } from "./core/storage";
 export type { Storage } from "./core/storage";
+export type { StorageObserver } from "./core/storage";
 export {
   getById,
   insert,

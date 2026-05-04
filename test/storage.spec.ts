@@ -30,6 +30,53 @@ describe("storage updates", () => {
     expect(storage.read().key2).toEqual("value2");
   });
 
+  it("notifies observers after successful updates", () => {
+    const calls: Array<z.output<typeof schemaV1>> = [];
+
+    storage.onChange(() => {
+      calls.push(storage.get());
+    });
+
+    storage.update((draft) => {
+      draft.key1 = 10;
+    });
+
+    expect(calls).toEqual([
+      {
+        key1: 10,
+        key2: "initial",
+      },
+    ]);
+  });
+
+  it("removes observers through the onChange cleanup function", () => {
+    let calls = 0;
+    const remove = storage.onChange(() => {
+      calls += 1;
+    });
+
+    storage.update((draft) => {
+      draft.key1 = 10;
+    });
+    remove();
+    storage.update((draft) => {
+      draft.key1 = 20;
+    });
+
+    expect(calls).toBe(1);
+  });
+
+  it("does not notify observers when an update does not change storage", () => {
+    let calls = 0;
+    storage.onChange(() => {
+      calls += 1;
+    });
+
+    storage.update(() => {});
+
+    expect(calls).toBe(0);
+  });
+
   it("reads current values from an update draft", () => {
     storage.update((draft) => {
       draft.key1 = 10;
@@ -65,6 +112,22 @@ describe("storage updates", () => {
     });
   });
 
+  it("does not notify observers when update fails", () => {
+    let calls = 0;
+    storage.onChange(() => {
+      calls += 1;
+    });
+
+    expect(() =>
+      storage.update((draft) => {
+        draft.key1 = 10;
+        throw new Error("boom");
+      }),
+    ).toThrow("boom");
+
+    expect(calls).toBe(0);
+  });
+
   it("leaves storage unchanged when update callback throws", () => {
     const storage = createStorage({
       authorId: "device-1",
@@ -90,8 +153,15 @@ describe("storage updates", () => {
       versions: v1,
     });
 
-    const exported = storage.export() as any;
-    exported.v["1"].v.key1.v = 999;
+    const exported = storage.export() as ContainerSlot;
+    const versionSlot = exported.v["1"] as ContainerSlot;
+    const key1Slot = versionSlot.v.key1;
+
+    if (key1Slot === undefined || key1Slot.r === true || key1Slot.d === true) {
+      throw new Error("Expected key1 to be an atomic slot");
+    }
+
+    key1Slot.v = 999;
 
     expect(storage.read()).toEqual({
       key1: 0,

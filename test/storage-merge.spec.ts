@@ -37,6 +37,32 @@ describe("storage merge", () => {
     expect(storage2.read().key2).toEqual("value2");
   });
 
+  it("notifies observers after successful merges that change storage", () => {
+    let calls = 0;
+    storage1.onChange(() => {
+      calls += 1;
+    });
+
+    storage2.update((draft) => {
+      draft.key2 = "value2";
+    });
+
+    storage1.merge(storage2.export());
+
+    expect(calls).toBe(1);
+  });
+
+  it("does not notify observers after no-op merges", () => {
+    let calls = 0;
+    storage1.onChange(() => {
+      calls += 1;
+    });
+
+    storage1.merge(storage1.export());
+
+    expect(calls).toBe(0);
+  });
+
   it("leaves storage unchanged when an incoming merge fails validation", () => {
     const incoming = createOriginContainer({
       "1": slotFromJson(
@@ -59,5 +85,23 @@ describe("storage merge", () => {
       v: { key1: { t: number } };
     };
     expect(versionSlot.v.key1.t).toBeLessThan(2_000_000_000);
+  });
+
+  it("does not notify observers when merge fails", () => {
+    const incoming = createOriginContainer({
+      "1": slotFromJson(
+        { key1: "invalid", key2: "value2" },
+        2_000_000_000,
+        "remote",
+      ),
+    });
+    let calls = 0;
+    storage1.onChange(() => {
+      calls += 1;
+    });
+
+    expect(() => storage1.merge(incoming)).toThrow();
+
+    expect(calls).toBe(0);
   });
 });

@@ -28,9 +28,13 @@ export class WorkingStorageRoot {
     timestamp: number,
     author: string,
     protocol: MergeProtocol,
-  ): void {
+  ): boolean {
+    let updated = false;
     const draft = createWriteProxy(
       selectJsonStorage(this.latestContainer(), timestamp, author),
+      () => {
+        updated = true;
+      },
     ) as WriteDraft<T>;
 
     fn(draft);
@@ -40,6 +44,8 @@ export class WorkingStorageRoot {
       this.root,
       protocol,
     );
+
+    return updated;
   }
 
   merge(protocol: MergeProtocol, incoming: Slot): MergeStats {
