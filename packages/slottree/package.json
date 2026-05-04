@@ -1,24 +1,21 @@
 {
-  "name": "slottree",
-  "version": "1.0.0",
-  "description": "",
-  "main": "dist/index.js",
-  "scripts": {
-    "build": "tsc",
-    "lint": "eslint .",
-    "test": "vitest run"
-  },
-  "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^8.59.0",
-    "@typescript-eslint/parser": "^8.59.0",
-    "eslint": "^10.2.1",
-    "fast-check": "^4.7.0",
-    "prettier": "^3.8.3",
-    "typescript": "^5.5.3",
-    "vitest": "^0.34.1"
-  },
-  "private": true,
-  "dependencies": {
-    "zod": "^4.3.6"
-  }
+    "name": "@safely/slottree",
+    "version": "0.0.1",
+    "description": "",
+    "main": "dist/index.js",
+    "scripts": {
+        "compile": "tsc --noEmit",
+        "dev": "tsc --watch",
+        "build": "tsc",
+        "lint": "eslint ./src",
+        "test": "vitest run"
+    },
+    "devDependencies": {
+        "fast-check": "^4.7.0",
+        "vitest": "^0.34.1"
+    },
+    "private": true,
+    "dependencies": {
+        "zod": "^4.3.6"
+    }
 }
