@@ -2,11 +2,15 @@ import { IEnumerableStorage, ITreeStorage } from '../di';
 
 const SEPARATOR = '..';
 
+const ALLOWED_SEGMENT_CHARS = /^[A-Za-z0-9._-]+$/;
+
 export function encodeTreeStoragePathSegment(segment: string): string {
     // `_` is the escape char. Each `_` becomes `_u`, each `.` becomes `_d`.
     // After encoding a segment never contains a bare `.`, so `..` is an
     // unambiguous delimiter and the encoding is bijective. The encoded
-    // alphabet stays within `[A-Za-z0-9._-]`, which SecureStore accepts.
+    // alphabet stays within `[A-Za-z0-9._-]`, which SecureStore accepts —
+    // input alphabet is enforced eagerly by `validateKey` at every
+    // TreeStorage entry point, so this function assumes valid input.
     let out = '';
     for (const ch of segment) {
         if (ch === '_') out += '_u';
@@ -30,7 +34,11 @@ export class TreeStorage implements ITreeStorage {
     constructor(
         public path: string[],
         private readonly storage: IEnumerableStorage
-    ) {}
+    ) {
+        for (const segment of path) {
+            this.validateKey(segment);
+        }
+    }
 
     private keyPath(key: string): string {
         const path = [...this.path, key];
@@ -76,15 +84,9 @@ export class TreeStorage implements ITreeStorage {
 
     public child(path: string[] | string): ITreeStorage {
         const segments = Array.isArray(path) ? path : [path];
-        for (const segment of segments) {
-            if (segment === '') {
-                throw new Error('Path segment cannot be empty');
-            }
-        }
         if (!segments.length) {
             throw new Error('Path cannot be empty');
         }
-
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         let current: TreeStorage = this;
         for (const segment of segments) {
@@ -95,7 +97,10 @@ export class TreeStorage implements ITreeStorage {
 
     private validateKey(key: string): void {
         if (key === '') {
-            throw new Error('Key cannot be empty');
+            throw new Error('Path segment cannot be empty');
+        }
+        if (!ALLOWED_SEGMENT_CHARS.test(key)) {
+            throw new Error('Path segment contains characters outside [A-Za-z0-9._-]');
         }
     }
 }

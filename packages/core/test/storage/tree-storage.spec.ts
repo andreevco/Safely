@@ -123,6 +123,50 @@ describe('TreeStorage', () => {
         // Sanity: the key with separator chars round-trips.
         expect(await node.getItem('b..c')).toBe('2');
     });
+
+    it('child() rejects path segments outside [A-Za-z0-9._-] eagerly', () => {
+        const base = new InMemoryEnumerableStorage();
+        const root = TreeStorage.root(base);
+        const invalid = [
+            'привет',
+            '🙂',
+            'a:b',
+            'a/b',
+            'a b',
+            'a+b',
+            'a%b',
+            'https://example.com',
+            'a\nb',
+            'a\\b'
+        ];
+        for (const seg of invalid) {
+            expect(() => root.child(seg)).toThrow(/outside \[A-Za-z0-9\._-]/);
+            expect(() => root.child(['ok', seg])).toThrow(/outside \[A-Za-z0-9\._-]/);
+        }
+    });
+
+    it('child() rejects empty path segments eagerly', () => {
+        const base = new InMemoryEnumerableStorage();
+        const root = TreeStorage.root(base);
+        expect(() => root.child('')).toThrow(/empty/);
+        expect(() => root.child(['ok', ''])).toThrow(/empty/);
+        expect(() => root.child([])).toThrow(/empty/);
+    });
+
+    it('TreeStorage constructor rejects invalid path segments', () => {
+        const base = new InMemoryEnumerableStorage();
+        expect(() => new TreeStorage(['valid', 'a:b'], base)).toThrow(/outside/);
+        expect(() => new TreeStorage([''], base)).toThrow(/empty/);
+    });
+
+    it('setItem / getItem / removeItem reject keys outside [A-Za-z0-9._-]', () => {
+        const base = new InMemoryEnumerableStorage();
+        const root = TreeStorage.root(base);
+        expect(() => root.setItem('a:b', 'v')).toThrow(/outside/);
+        expect(() => root.getItem('a/b')).toThrow(/outside/);
+        expect(() => root.removeItem('a b')).toThrow(/outside/);
+        expect(() => root.setItem('', 'v')).toThrow(/empty/);
+    });
 });
 
 describe('encodeTreeStoragePathSegment / decodeTreeStoragePathSegment bijectivity', () => {
@@ -139,12 +183,11 @@ describe('encodeTreeStoragePathSegment / decodeTreeStoragePathSegment bijectivit
         ['multiple dots', '...'],
         ['multiple underscores', '___'],
         ['separator-like substring', '..'],
-        ['unicode', 'привет🙂'],
         ['adjacent escape pairs', '_u_d_u_d'],
         ['only special chars', '_._._.'],
         ['trailing underscore', 'foo_'],
         ['leading dot', '.bar'],
-        ['url-ish', 'https://example.com/a_b']
+        ['hyphens and digits', 'AZ-09']
     ];
 
     it.each(cases)('round-trips: %s', (_name, value) => {
