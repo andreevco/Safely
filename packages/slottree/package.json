@@ -1,0 +1,20 @@
+{
+    "name": "@safely/slottree",
+    "version": "0.0.1",
+    "description": "",
+    "scripts": {
+        "compile": "tsc --noEmit",
+        "dev": "tsc --watch",
+        "build": "tsc",
+        "lint": "eslint ./src",
+        "test": "vitest run"
+    },
+    "devDependencies": {
+        "fast-check": "^4.7.0",
+        "vitest": "^0.34.1"
+    },
+    "private": true,
+    "dependencies": {
+        "zod": "^4.3.6"
+    }
+}
