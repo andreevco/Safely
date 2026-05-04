@@ -24,6 +24,7 @@ import {
     useTranslate
 } from '../../shared';
 import { useActiveAccountSyncedStorage } from '../../shared';
+import { useClearActiveAccountLocalStorage } from '../../shared/storage/account/local';
 import { useLoader } from '../loader';
 import {
     useCurrentDeviceIkPub,
@@ -360,6 +361,7 @@ export function useDeleteAccount() {
     const { storage } = useAppContext();
     const ikPub = useCurrentDeviceIkPub();
     const devicesMeta = useSyncedDevicesMeta();
+    const clear = useClearActiveAccountLocalStorage();
 
     return useMutation({
         async mutationFn() {
@@ -375,6 +377,7 @@ export function useDeleteAccount() {
             }
 
             await accountFactory.deleteLocalAccount(account.accountId, secureEncryptedStorage);
+            await clear();
 
             const accounts = client.getQueryData<SyncAccount[]>(accountKey.list.toKey());
             const remaining = accounts?.filter(a => a.accountId !== account.accountId) ?? [];

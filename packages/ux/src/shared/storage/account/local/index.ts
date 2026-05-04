@@ -5,22 +5,27 @@ import { accountLocalStorageStructure, AccountLocalStorageStructure } from './sc
 import { useActiveAccount } from '../../../../entities';
 import { useAppContext } from '../../../providers';
 
-export function useActiveAccountLocalStorage<K extends keyof AccountLocalStorageStructure>(key: K) {
+function useActiveAccountLocalStorageInstance() {
     const {
         storage: { ux }
     } = useAppContext();
+
     const activeAccountId = useActiveAccount()?.accountId;
 
-    const storage = useMemo(
+    return useMemo(
         () => (activeAccountId ? ux.regular.child(['account', activeAccountId]) : null),
         [ux.regular]
     );
+}
+
+export function useActiveAccountLocalStorage<K extends keyof AccountLocalStorageStructure>(key: K) {
+    const storage = useActiveAccountLocalStorageInstance();
 
     const set = useCallback<(val: z.input<AccountLocalStorageStructure[K]>) => Promise<void>>(
         val => {
             accountLocalStorageStructure[key].parse(val);
             if (!storage) {
-                throw new Error('Cannot set data to uninitialized keeper id storage');
+                throw new Error('Cannot set data to uninitialized storage');
             }
             return storage.setItem(key, JSON.stringify(val));
         },
@@ -29,7 +34,7 @@ export function useActiveAccountLocalStorage<K extends keyof AccountLocalStorage
 
     const remove = useCallback<() => Promise<void>>(() => {
         if (!storage) {
-            throw new Error('Cannot remove data from uninitialized keeper id storage');
+            throw new Error('Cannot remove data from uninitialized storage');
         }
         return storage.removeItem(key);
     }, [storage]);
@@ -44,4 +49,15 @@ export function useActiveAccountLocalStorage<K extends keyof AccountLocalStorage
     }, [storage]);
 
     return { get, set, remove };
+}
+
+export function useClearActiveAccountLocalStorage() {
+    const storage = useActiveAccountLocalStorageInstance();
+
+    return useCallback(() => {
+        if (!storage) {
+            throw new Error('Cannot clear data from uninitialized storage');
+        }
+        return storage.clear();
+    }, [storage]);
 }
