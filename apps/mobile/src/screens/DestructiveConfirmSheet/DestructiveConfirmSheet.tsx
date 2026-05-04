@@ -1,8 +1,9 @@
 import { StaticScreenProps } from '@react-navigation/native';
-import { useMutation } from '@tanstack/react-query';
 import Color from 'color';
 import { View } from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';
+
+import { useMutation } from '@safely/ux';
 
 import { BottomSheet, Button, SlideButton, Text, useBottomSheet } from '@mobile/shared/ui';
 

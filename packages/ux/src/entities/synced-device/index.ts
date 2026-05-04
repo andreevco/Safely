@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { PortfolioFactory } from '@safely/core';
 import { ISyncAccount } from '@safely/sync';
@@ -6,6 +6,7 @@ import { ISyncAccount } from '@safely/sync';
 import {
     type DeviceMeta,
     useAppContext,
+    useMutation,
     useSuspenseQuery,
     useActiveAccountSyncedStorage,
     SecretEncryptor,

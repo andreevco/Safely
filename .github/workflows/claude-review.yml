@@ -114,6 +114,51 @@ jobs:
             - Race: response from older request overwrites newer one
             - iOS-only or Android-only API used without `Platform.OS` guard
 
+            Logger correctness — the project sandboxes logs per active account
+            via a `Logger` instance that is account-specific. Using the wrong
+            logger instance writes user A's data into user B's log file, which
+            defeats sandboxing. The shape of the bug is always the same: a
+            logger reference is captured at one moment but used at another,
+            after the active account has changed underneath. Flag any call
+            site where this can happen, not just the patterns below.
+
+            - `useMutation` imported directly from `@tanstack/react-query`
+              instead of from `@safely/ux` — the wrapper provides frozen-logger
+              auto-log on error; direct import loses that guarantee. Also a
+              dedicated ESLint rule, but flag if you see it.
+            - `logger.*()` (or `useLogger()` closure) called inside
+              `useMutation` callbacks `onError` / `onSuccess` / `onMutate` /
+              `onSettled` — TanStack reads these callbacks from the latest
+              observer options on each invocation, so the closure captures
+              the LATEST logger, not the one from when the mutation started.
+              On a mid-flight account switch the log goes to the wrong
+              account's file. Solutions: (a) move logging into `mutationFn`'s
+              `try/catch` using the 2nd `logger` parameter (frozen via
+              snapshot), or (b) propagate the logger via `onMutate` context.
+              Note: the wrapper auto-logs unhandled errors in `mutationFn`
+              already — duplicate `logger.error` in onError is also wrong
+              for this reason.
+            - `loggerRegistry.systemLogger` used in account-scoped code paths
+              (anywhere user-/account-specific data is logged) — should use
+              the active-account logger via `useLogger()` in React or
+              `getAccountLogger(accountId)` outside React. `systemLogger` is
+              only correct for boot, global error handlers, and devtools.
+            - Logger reference captured in `useEffect`, `useCallback`,
+              `useMemo` whose deps array omits the captured logger — stale
+              logger when active account changes. Flag if the closure body
+              uses logger AND active account can change during the
+              component's lifetime.
+            - Logger captured at module load (`const logger =
+              registry.systemLogger` at top of file) and used inside an
+              account-scoped function — frozen at module-init, never reflects
+              account switches. Especially bad inside long-lived singletons
+              or subscriptions.
+            - Logger captured in a long-lived async chain (e.g., `setTimeout`,
+              `setInterval`, websocket / event-emitter subscription created
+              once but firing across account switches) — stale by the time it
+              writes. Either re-resolve via `getAccountLogger` at fire time,
+              or tie the subscription's lifecycle to the active account.
+
             Data integrity:
             - Critical `AsyncStorage` write without error handling
             - Migration that can run twice or leave partial state

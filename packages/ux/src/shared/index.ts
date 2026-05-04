@@ -7,5 +7,6 @@ export * from './format';
 export * from './i18n';
 export * from './storage';
 export * from './security';
+export * from './logger';
 export * from './react';
 export * from './search';

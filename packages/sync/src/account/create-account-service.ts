@@ -21,7 +21,7 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
         private readonly syncAccountIDRepository: SyncAccountRepository,
         private readonly structure: S,
         private readonly apiConfiguration: Configuration,
-        private readonly logger: Logger
+        private readonly getAccountLogger: (accountId: string) => Logger
     ) {}
 
     public async createOfflineAccount(secureEncryptedStorage: ITreeStorage) {
@@ -34,7 +34,7 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
             secureEncryptedStorage,
             accountID
         );
-        const logger = this.logger.child(accountID.slice(0, 4));
+        const logger = this.getAccountLogger(accountID);
         await initializeSyncAccount({
             storage,
             encryptedStorage,
@@ -53,7 +53,7 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
             storage,
             encryptedStorage,
             apiConfiguration: this.apiConfiguration,
-            logger: this.logger.child(accountID.slice(0, 4))
+            logger
         });
 
         await container.deviceManager.addDevice(
@@ -89,7 +89,7 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
             secureEncryptedStorage,
             accountID
         );
-        const logger = this.logger.child(accountID.slice(0, 4));
+        const logger = this.getAccountLogger(accountID);
         await initializeSyncAccount({
             storage,
             structure: this.structure,
@@ -109,7 +109,7 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
             storage,
             encryptedStorage,
             apiConfiguration: this.apiConfiguration,
-            logger: this.logger.child(accountID.slice(0, 4))
+            logger
         });
         await container.accountsApi.confirmOnboarding();
 

@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect } from 'react';
 
 import {
@@ -20,6 +20,8 @@ import {
     useAppContext,
     useBootConfig,
     useSharedUxStorage,
+    useLogger,
+    useMutation,
     useSuspenseQuery,
     useTranslate
 } from '../../shared';
@@ -77,7 +79,7 @@ export function useAccountsFactory() {
     const config = useBootConfig();
     const {
         storage: { sync },
-        logger
+        loggerRegistry
     } = useAppContext();
 
     if (!_syncAccountFactory) {
@@ -88,7 +90,8 @@ export function useAccountsFactory() {
             apiConfiguration: {
                 basePath: config.sync.api_url
             },
-            logger: logger.child('sync')
+            noAccountLogger: loggerRegistry.systemLogger.child('sync'),
+            getAccountLogger: (accountId: string) => loggerRegistry.getAccountLogger(accountId)
         });
     }
 
@@ -145,13 +148,13 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
     const t = useTranslate();
     const client = useQueryClient();
     const factory = useAccountsFactory();
-    const { logger } = useAppContext();
     const { mutateAsync: setActive } = useSetActiveAccount();
 
     return useMutation<
         ISyncAccount<SyncedStorageStructure>,
         Error,
-        { name?: string; secureEncryptedStorage: ITreeStorage }
+        { name?: string; secureEncryptedStorage: ITreeStorage },
+        unknown
     >({
         async mutationFn(params) {
             await delay();
@@ -185,9 +188,6 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
             }
 
             return account;
-        },
-        onError(e) {
-            logger.error(e);
         }
     });
 }
@@ -236,8 +236,8 @@ export function useAccountConnectedCallback(
     callback: (account: SyncAccount) => void,
     options?: { setAsActive: boolean; onError?: (e: Error) => void }
 ) {
+    const logger = useLogger();
     const client = useQueryClient();
-    const { logger } = useAppContext();
     const { mutateAsync: setActive } = useSetActiveAccount();
     const { mutateAsync: updateOwnSyncedDeviceMeta } = useUpdateOwnSyncedDeviceMeta();
     const setAsActive = options?.setAsActive ?? false;
@@ -301,9 +301,9 @@ export function useConnectAccountToNewDevice() {
     const activeKeeperId = useActiveAccount();
     const toast = useToast();
     const { withLoader } = useLoader();
-    const { qrScanner, logger } = useAppContext();
+    const { qrScanner } = useAppContext();
 
-    return useMutation<void, Error, { secureEncryptedStorage: ITreeStorage }>({
+    return useMutation<void, Error, { secureEncryptedStorage: ITreeStorage }, unknown>({
         async mutationFn({ secureEncryptedStorage }) {
             const connectionString = await qrScanner.scan({
                 titleTranslationKey: 'qrScan.addDevice.title',
@@ -318,9 +318,6 @@ export function useConnectAccountToNewDevice() {
         },
         onSuccess() {
             toast(t('settings.deviceConnected'));
-        },
-        onError(e) {
-            logger.error(e);
         }
     });
 }
@@ -361,7 +358,7 @@ export function useDeleteAccount() {
     const { storage } = useAppContext();
     const ikPub = useCurrentDeviceIkPub();
     const devicesMeta = useSyncedDevicesMeta();
-    const clear = useClearActiveAccountLocalStorage();
+    const clearActiveAccountLocalStorage = useClearActiveAccountLocalStorage();
 
     return useMutation({
         async mutationFn() {
@@ -377,7 +374,7 @@ export function useDeleteAccount() {
             }
 
             await accountFactory.deleteLocalAccount(account.accountId, secureEncryptedStorage);
-            await clear();
+            await clearActiveAccountLocalStorage();
 
             const accounts = client.getQueryData<SyncAccount[]>(accountKey.list.toKey());
             const remaining = accounts?.filter(a => a.accountId !== account.accountId) ?? [];

@@ -1,4 +1,4 @@
-import { keepPreviousData, useMutation, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useQueryClient } from '@tanstack/react-query';
 
 import {
     BtcWalletReadOnly,
@@ -24,10 +24,12 @@ import {
 import {
     useTranslate,
     useErrorToast,
+    useMutation,
     useSuspenseQuery,
     useActiveAccountLocalStorage,
     useSecurityCheck,
     useAppContext,
+    useLogger,
     SecretEncryptor
 } from '../../shared';
 import { useActiveAccountSyncedStorage } from '../../shared';
@@ -119,7 +121,8 @@ export function useGeneratePortfolio() {
     return useMutation<
         PortfolioBip39,
         Error,
-        { meta: PortfolioMeta; secretEncryptor: ISecretEncryptor }
+        { meta: PortfolioMeta; secretEncryptor: ISecretEncryptor },
+        unknown
     >({
         async mutationFn(params) {
             await delay();
@@ -160,7 +163,8 @@ export function useImportPortfolio() {
             mnemonicAccessor: IMnemonicAccessor;
             secretEncryptor: ISecretEncryptor;
             meta: PortfolioMeta;
-        }
+        },
+        unknown
     >({
         async mutationFn({ mnemonicAccessor, secretEncryptor, meta }) {
             await delay();
@@ -285,6 +289,7 @@ export function useActivePortfolioEntitiesQuery() {
     const accountQueryKey = useActiveAccountQueryKey();
     const client = useQueryClient();
     const portfoliosQuery = usePortfoliosQueryConfig();
+    const logger = useLogger();
 
     return useSuspenseQuery<ActivePortfolioEntities | null>({
         queryKey: accountQueryKey.portfolios.active.toKey(),
@@ -310,8 +315,7 @@ export function useActivePortfolioEntitiesQuery() {
                 }
 
                 if (activeConfig && !activeConfig.derivationId) {
-                    // TODO Use logger after it comes to master
-                    console.error('derivationId is null for derivable portfolio');
+                    logger.error('derivationId is null for derivable portfolio');
                 }
 
                 const derivation = activeConfig?.derivationId

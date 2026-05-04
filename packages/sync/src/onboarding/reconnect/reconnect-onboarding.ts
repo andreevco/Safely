@@ -1,5 +1,6 @@
 import { ZodType } from 'zod';
 
+import { Logger } from '../../logger';
 import { OnboardingAbortedError } from '../../sync-error';
 import { OnlineSyncProvider } from '../../sync-provider/online-sync-provider';
 import { SyncStatus } from '../../sync-provider/sync-status';
@@ -8,7 +9,8 @@ import { QRMessageCodec, QRMessageOperation } from '../onboarding-codec';
 export class ReconnectOnboarding<S extends Record<string, ZodType>> {
     constructor(
         private readonly myIkPub: Buffer,
-        private readonly syncProvider: OnlineSyncProvider<S>
+        private readonly syncProvider: OnlineSyncProvider<S>,
+        private readonly logger: Logger
     ) {}
 
     public generateOnboardingData(): Buffer {
@@ -49,7 +51,7 @@ export class ReconnectOnboarding<S extends Record<string, ZodType>> {
             if (synchronized) {
                 return;
             } else {
-                console.log('Trying to reconnect, attempt', i + 1);
+                this.logger.info('Trying to reconnect, attempt', i + 1);
             }
         }
         throw new Error('Onboarding timed out');

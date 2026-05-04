@@ -1,38 +1,20 @@
-import { Build, ILoggerTransport } from '@safely/core';
+import { ILoggerTransport } from '@safely/core';
 import {
     CombinedTransport,
     ConsoleTransport,
     Logger,
     LogLevel,
-    LogsFilter,
     logsFilterMinSeverityLevel
 } from '@safely/sync';
 
 import { FileTransport } from './file-transport';
 import { SanitizedTransport } from './sanitized-transport';
 
-type MobileLoggerConfig = {
-    appVersion: string;
-    build: Build;
-    deviceInfo: { name: string; osVersion: string };
-    isDev: boolean;
-};
-
-type MobileLogger = {
-    logger: Logger;
-    shareLogs: () => Promise<void>;
-};
-
-export function createMobileLogger(opts: MobileLoggerConfig): MobileLogger {
-    const fileTransport = new FileTransport({
-        build: opts.build,
-        appVersion: opts.appVersion,
-        deviceInfo: opts.deviceInfo
-    });
-
+export function buildLogger(fileTransport: FileTransport, isDev: boolean): Logger {
+    let filter;
     let transport: ILoggerTransport;
-    let filter: LogsFilter;
-    if (opts.isDev) {
+
+    if (isDev) {
         transport = new CombinedTransport([
             new ConsoleTransport(),
             new SanitizedTransport(fileTransport)
@@ -48,8 +30,5 @@ export function createMobileLogger(opts: MobileLoggerConfig): MobileLogger {
     const logger = new Logger(transport);
     logger.setLogsFilter(filter);
 
-    return {
-        logger,
-        shareLogs: () => fileTransport.shareLogs()
-    };
+    return logger;
 }

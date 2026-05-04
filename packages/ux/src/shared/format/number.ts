@@ -9,11 +9,17 @@ import {
     NumberFormatter
 } from '@safely/core';
 
+import { useLogger } from '../logger';
 import { useAppContext } from '../providers';
 
 export function useNumberFormatter() {
+    const logger = useLogger();
     const { numberFormatLocale } = useAppContext();
-    return useMemo(() => new NumberFormatter(numberFormatLocale), [numberFormatLocale]);
+
+    return useMemo(
+        () => new NumberFormatter(numberFormatLocale, logger),
+        [numberFormatLocale, logger]
+    );
 }
 
 export function useFormattedAmount(
