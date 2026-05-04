@@ -1,6 +1,7 @@
 export const commonTheme = {
     border: {
         hairline: 0.5,
+        hairlineAlternate: 0.75,
         border: 1,
         illustrationLine: 2
     },

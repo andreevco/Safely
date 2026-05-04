@@ -223,7 +223,7 @@
                 "recovery": {
                     "title": "Recovery phrase",
                     "subtitle": "Keep it private. View only if necessary. This phrase has never been viewed.",
-                    "revealed": "Security reduced. First viewed on {{date}} on {{device}}."
+                    "revealed": "First viewed on {{date}} on {{device}}."
                 }
             }
         }
@@ -297,7 +297,12 @@
     },
     "signIn": {
         "title": "Scan QR to sign in",
-        "description": "Scan it with your other device to add this device to your account.",
+        "description": {
+            "top": "Open Safely on another device.",
+            "iconLineStart": "Go to Settings",
+            "iconLineEnd": "tap \"Link device\"",
+            "bottom": "and scan this QR code."
+        },
         "banner": "This device will have full access to your account. It can be used if your other device is lost.",
         "timeout": "Connection timed out. Please try again.",
         "success": {
@@ -427,6 +432,7 @@
         "title": "Settings",
         "deviceConnected": "Successfully linked",
         "addAccount": "Add account",
+        "linkDevice": "Link device",
         "walletsCount_one": "{{count}} wallet",
         "walletsCount_other": "{{count}} wallets",
         "groups": {
