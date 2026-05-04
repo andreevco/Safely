@@ -1,6 +1,6 @@
 import { BtcApi, BtcWallet } from '@safely/core';
 
-import { defineQueryKeys, finalKey, mappedParams } from '../../shared/query-core/query-key-factory';
+import { defineQueryKeys, finalKey, mappedParams } from '../../shared';
 
 export const btcBlockchain = defineQueryKeys('btc-blockchain', {
     blockNumber: mappedParams(

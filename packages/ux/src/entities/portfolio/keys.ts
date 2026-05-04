@@ -1,4 +1,4 @@
-import { defineQueryKeys, finalKey } from '../../shared/query-core/query-key-factory';
+import { defineQueryKeys, finalKey } from '../../shared';
 
 export const portfolioKeys = defineQueryKeys('portfolio', {
     all: () => finalKey,

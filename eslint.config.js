@@ -244,27 +244,20 @@ export default [
             'prettier/prettier': 'error'
         }
     },
-    /* @safely/ux: forbid re-importing query-key utils via the shared barrel
-       (they must come straight from the source module to avoid TDZ in circular
-       barrels — Metro/vitest both crash otherwise). The public package barrel
-       (packages/ux/src/index.ts) is exempt — it's a top-level re-export. */
+    /* NOTE: forbid any import cycles inside the package.
+     *
+     * Why this matters: many of our modules call utilities at module-load time
+     * (e.g. "defineQueryKeys(...)" evaluated inside "keys.ts" files at import).
+     * If a cycle exists, the importer sees a half-evaluated module — the
+     * exported binding is still "undefined". Calling it throws
+     * "X is not a function" and crashes the whole app on startup.
+     *
+     * "import/no-cycle" doesn't support a custom message — if it fires, the
+     * default trace shows the cycle path; fix the cycle, don't suppress.
+     */
     {
         files: ['packages/ux/**/*.ts', 'packages/ux/**/*.tsx'],
-        ignores: ['packages/ux/src/index.ts'],
         rules: {
-            '@typescript-eslint/no-restricted-imports': [
-                'error',
-                {
-                    patterns: [
-                        {
-                            regex: '^(\\.{1,2}/)+shared(/index)?$',
-                            importNames: ['defineQueryKeys', 'finalKey', 'mappedParams'],
-                            message:
-                                'Import directly from "shared/query-core/query-key-factory" to avoid the shared-barrel circular cycle.'
-                        }
-                    ]
-                }
-            ],
             'import/no-cycle': ['error', { maxDepth: 10, ignoreExternal: true }]
         }
     },
