@@ -2,10 +2,14 @@ package expo.modules.safelysecurestoreenum
 
 import android.content.Context
 import android.content.SharedPreferences
+import expo.modules.kotlin.exception.CodedException
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
 import expo.modules.kotlin.records.Field
 import expo.modules.kotlin.records.Record
+
+internal class CommitException(operation: String) :
+    CodedException("SharedPreferences commit failed during $operation (disk write returned false)")
 
 // Enumerates and bulk-deletes entries written by `expo-secure-store` on Android.
 // `expo-secure-store` stores everything in a single SharedPreferences file
@@ -57,8 +61,9 @@ class SafelySecureStoreEnumModule : Module() {
             p.all.keys
                 .filter { it.startsWith(sp) }
                 .forEach { editor.remove(it) }
-            editor.commit()
-            Unit
+            if (!editor.commit()) {
+                throw CommitException("clearAsync")
+            }
         }
 
         AsyncFunction("removeItemsWithPrefixAsync") { prefix: String, options: Options ->
@@ -69,8 +74,9 @@ class SafelySecureStoreEnumModule : Module() {
             p.all.keys
                 .filter { it.startsWith(full) }
                 .forEach { editor.remove(it) }
-            editor.commit()
-            Unit
+            if (!editor.commit()) {
+                throw CommitException("removeItemsWithPrefixAsync")
+            }
         }
     }
 }
