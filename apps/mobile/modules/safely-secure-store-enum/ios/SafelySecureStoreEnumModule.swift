@@ -16,9 +16,12 @@ import Security
 // never raises a biometric prompt; only fetching `kSecValueData` would.
 //
 // No intent journal: `clearAsync` is a single attribute-match SecItemDelete
-// (atomic at securityd level); `removeItemsWithPrefixAsync` is a tight native loop
-// where the kill-mid-loop window is on the order of microseconds. We accept
-// that risk in exchange for not maintaining a separate journal store.
+// (atomic at securityd level). `removeItemsWithPrefixAsync` collects persistent
+// references for the matching accounts and issues a single batched SecItemDelete
+// via `kSecMatchItemList` — one IPC round-trip into securityd instead of N. Not
+// fully atomic at the securityd level, but the kill-mid-call window is the
+// duration of a single XPC call. We accept that residual risk in exchange for
+// not maintaining a separate journal store.
 public class SafelySecureStoreEnumModule: Module {
     private let queue = DispatchQueue(label: "co.safely.SafelySecureStoreEnum")
 
@@ -76,12 +79,13 @@ public class SafelySecureStoreEnumModule: Module {
 
     // MARK: - Core
 
-    private func readAccounts(service: String) throws -> [String] {
+    private func readEntries(service: String) throws -> [(account: String, ref: Data)] {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
             kSecMatchLimit as String: kSecMatchLimitAll,
             kSecReturnAttributes as String: kCFBooleanTrue!,
+            kSecReturnPersistentRef as String: kCFBooleanTrue!,
             kSecUseAuthenticationUI as String: kSecUseAuthenticationUIFail
         ]
         var result: CFTypeRef?
@@ -91,31 +95,36 @@ public class SafelySecureStoreEnumModule: Module {
             throw NSError(domain: "SafelySecureStoreEnum", code: Int(status))
         }
         guard let array = result as? [[String: Any]] else { return [] }
-        return array.compactMap { attrs -> String? in
+        return array.compactMap { attrs -> (String, Data)? in
+            guard let ref = attrs[kSecValuePersistentRef as String] as? Data else {
+                return nil
+            }
             if let data = attrs[kSecAttrAccount as String] as? Data,
                let key = String(data: data, encoding: .utf8) {
-                return key
+                return (key, ref)
             }
             if let str = attrs[kSecAttrAccount as String] as? String {
-                return str
+                return (str, ref)
             }
             return nil
         }
     }
 
+    private func readAccounts(service: String) throws -> [String] {
+        return try readEntries(service: service).map { $0.account }
+    }
+
     private func deleteByPrefix(service: String, prefix: String) throws {
-        let keys = try readAccounts(service: service).filter { $0.hasPrefix(prefix) }
-        for key in keys {
-            let encoded = Data(key.utf8)
-            let q: [String: Any] = [
-                kSecClass as String: kSecClassGenericPassword,
-                kSecAttrService as String: service,
-                kSecAttrAccount as String: encoded
-            ]
-            let status = SecItemDelete(q as CFDictionary)
-            if status != errSecSuccess && status != errSecItemNotFound {
-                throw NSError(domain: "SafelySecureStoreEnum", code: Int(status))
-            }
+        let refs = try readEntries(service: service)
+            .filter { $0.account.hasPrefix(prefix) }
+            .map { $0.ref }
+        if refs.isEmpty { return }
+        let q: [String: Any] = [
+            kSecMatchItemList as String: refs
+        ]
+        let status = SecItemDelete(q as CFDictionary)
+        if status != errSecSuccess && status != errSecItemNotFound {
+            throw NSError(domain: "SafelySecureStoreEnum", code: Int(status))
         }
     }
 
