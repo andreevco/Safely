@@ -10,7 +10,7 @@ import {
     SyncedStorageStructure,
     useAppContext,
     useBootConfig,
-    useSharedStructuredStorage,
+    useSharedUxStorage,
     useSuspenseQuery
 } from '../../shared';
 
@@ -56,12 +56,15 @@ export function resetAccountsFactory() {
 
 export function useAccountsFactory() {
     const config = useBootConfig();
-    const { storage, encryptedStorage, loggerRegistry } = useAppContext();
+    const {
+        storage: { sync },
+        loggerRegistry
+    } = useAppContext();
 
     if (!_syncAccountFactory) {
         _syncAccountFactory = new SyncAccountFactory({
-            storage,
-            encryptedStorage,
+            storage: sync.regular,
+            encryptedStorage: sync.encrypted,
             structure: syncedStorageStructure,
             apiConfiguration: {
                 basePath: config.sync.api_url
@@ -94,7 +97,7 @@ export function useAccounts() {
 }
 
 export function useActiveAccountQuery() {
-    const { set, get } = useSharedStructuredStorage('activeAccount');
+    const { set, get } = useSharedUxStorage('activeAccount');
     const client = useQueryClient();
     const accountsQueryConfig = useAccountsQueryConfig();
 

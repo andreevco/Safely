@@ -5,10 +5,11 @@ import { useActiveAccount } from '../account';
 
 export function useUnlockableSecretEncryptorFactory() {
     const account = useActiveAccount();
-    const { getSecureEncryptedStorage } = useAppContext();
+    const { storage } = useAppContext();
 
     return useCallback(
-        () => new UnlockableSecretEncryptor(account.secretEncryptor, getSecureEncryptedStorage),
-        [account.secretEncryptor, getSecureEncryptedStorage]
+        () =>
+            new UnlockableSecretEncryptor(account.secretEncryptor, storage.sync.getSecureEncrypted),
+        [account.secretEncryptor, storage.sync.getSecureEncrypted]
     );
 }

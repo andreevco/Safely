@@ -1,24 +1,25 @@
 {
-  "name": "@safely/sync",
-  "version": "0.0.1",
-  "scripts": {
-    "compile": "tsc --noEmit",
-    "dev": "tsc --watch",
-    "lint": "eslint ./src"
-  },
-  "dependencies": {
-    "@noble/ciphers": "^2.0.1",
-    "@noble/curves": "^2.0.1",
-    "@noble/hashes": "^2.0.1",
-    "eventsource": "^4.1.0",
-    "xstate": "^5.26.0",
-    "yjs": "^13.6.29",
-    "zod": "^4.1.12"
-  },
-  "devDependencies": {
-    "vitest": "^4.0.18"
-  },
-  "exports": {
-    ".": "./src/index"
-  }
+    "name": "@safely/sync",
+    "version": "0.0.1",
+    "scripts": {
+        "compile": "tsc --noEmit",
+        "dev": "tsc --watch",
+        "lint": "eslint ./src"
+    },
+    "dependencies": {
+        "@safely/slottree": "workspace:*",
+        "@noble/ciphers": "^2.0.1",
+        "@noble/curves": "^2.0.1",
+        "@noble/hashes": "^2.0.1",
+        "eventsource": "^4.1.0",
+        "xstate": "^5.26.0",
+        "yjs": "^13.6.29",
+        "zod": "^4.1.12"
+    },
+    "devDependencies": {
+        "vitest": "^4.0.18"
+    },
+    "exports": {
+        ".": "./src/index"
+    }
 }

@@ -1,16 +1,12 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 
-import {
-    useCountdownToTimestamp,
-    useSharedUnstructuredKeychainStorage,
-    useSuspenseQuery
-} from '@safely/ux';
+import { useCountdownToTimestamp, useSuspenseQuery } from '@safely/ux';
 
-import { StorageKey } from '@mobile/shared/constants';
+import { useMobileLayerRegularStorage } from '@mobile/shared/storage';
 
 import { lockoutKeys } from './keys';
-import { getLockoutDuration, LockoutState, sLockoutState } from './lockout';
+import { getLockoutDuration, LockoutState } from './lockout';
 
 export function usePasscodeLockout() {
     const client = useQueryClient();
@@ -18,7 +14,7 @@ export function usePasscodeLockout() {
         get: storageGet,
         set: storageSet,
         remove: storageRemove
-    } = useSharedUnstructuredKeychainStorage(StorageKey.PASSCODE_LOCKOUT, sLockoutState);
+    } = useMobileLayerRegularStorage('passcodeLockout');
 
     const { data } = useSuspenseQuery({
         queryKey: lockoutKeys.state.toKey(),

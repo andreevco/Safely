@@ -19,7 +19,11 @@ import { styles } from './AddAccountSheet.styles';
 
 const AddAccountContent = () => {
     const { t } = useTranslation();
-    const { getSecureEncryptedStorage } = useAppContext();
+    const {
+        storage: {
+            sync: { getSecureEncrypted }
+        }
+    } = useAppContext();
     const navigation = useNavigation<RootStackNavigationProp>();
     const signIn = useCreateExistingAccountConnector();
     const accounts = useAccounts();
@@ -37,7 +41,7 @@ const AddAccountContent = () => {
         navigation.navigate('CustomizeAccountModal', {
             defaultName,
             onSave: async (name: string) => {
-                using secureEncryptedStorage = getSecureEncryptedStorage();
+                using secureEncryptedStorage = getSecureEncrypted();
                 await secureEncryptedStorage.unlock();
 
                 Keyboard.dismiss();
@@ -58,7 +62,7 @@ const AddAccountContent = () => {
     const handleSignIn = useCallback(async () => {
         signIn.reset();
 
-        const secureEncryptedStorage = getSecureEncryptedStorage();
+        const secureEncryptedStorage = getSecureEncrypted();
 
         try {
             await secureEncryptedStorage.unlock();
@@ -71,7 +75,7 @@ const AddAccountContent = () => {
         } catch {
             secureEncryptedStorage[Symbol.dispose]();
         }
-    }, [signIn, navigation, getSecureEncryptedStorage]);
+    }, [signIn, navigation, getSecureEncrypted]);
 
     return (
         <View>

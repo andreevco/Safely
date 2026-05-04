@@ -17,7 +17,11 @@ const steps = [
 
 export const AccountCreatedScreen = () => {
     const { t } = useTranslation();
-    const { getSecureEncryptedStorage } = useAppContext();
+    const {
+        storage: {
+            sync: { getSecureEncrypted }
+        }
+    } = useAppContext();
     const { data: activeAccount } = useActiveAccountQuery();
     const { onAccountCreatedFinished } = useOnboardingFlow();
     const { mutateAsync: connectAccountToNewDevice } = useConnectAccountToNewDevice();
@@ -25,17 +29,12 @@ export const AccountCreatedScreen = () => {
     const handleAddDevice = useCallback(async () => {
         if (!activeAccount) return;
 
-        using secureEncryptedStorage = getSecureEncryptedStorage();
+        using secureEncryptedStorage = getSecureEncrypted();
         secureEncryptedStorage.UNSAFE_SKIP_SECURITY_CHECK_unlock();
 
         await connectAccountToNewDevice({ secureEncryptedStorage });
         onAccountCreatedFinished();
-    }, [
-        connectAccountToNewDevice,
-        activeAccount,
-        getSecureEncryptedStorage,
-        onAccountCreatedFinished
-    ]);
+    }, [connectAccountToNewDevice, activeAccount, getSecureEncrypted, onAccountCreatedFinished]);
 
     const handleProtectLater = useCallback(() => {
         onAccountCreatedFinished();

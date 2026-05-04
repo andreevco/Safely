@@ -1,0 +1,9 @@
+{
+  "platforms": ["ios", "android"],
+  "ios": {
+    "modules": ["SafelySecureStoreEnumModule"]
+  },
+  "android": {
+    "modules": ["expo.modules.safelysecurestoreenum.SafelySecureStoreEnumModule"]
+  }
+}

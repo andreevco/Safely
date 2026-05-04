@@ -1,4 +1,4 @@
-export { useAccountLocalStorage } from './local';
+export { useActiveAccountLocalStorage, useClearActiveAccountLocalStorage } from './local';
 export {
     useGetSyncProvider,
     useActiveAccountSyncedStorage,

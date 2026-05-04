@@ -1,14 +1,11 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import * as LocalAuthentication from 'expo-local-authentication';
-import z from 'zod';
 
-import { useMutation, useSharedUnstructuredStorage } from '@safely/ux';
+import { useMutation } from '@safely/ux';
 
-import { StorageKey } from '@mobile/shared/constants';
+import { useMobileLayerRegularStorage } from '@mobile/shared/storage';
 
 import { biometryKeys } from './keys';
-
-const sBiometryEnabled = z.boolean();
 
 export enum BiometryType {
     FACE = 'face',
@@ -41,10 +38,7 @@ async function getAvailableBiometryType(): Promise<BiometryType | null> {
 }
 
 export function useBiometryQuery() {
-    const { get: storageGet } = useSharedUnstructuredStorage(
-        StorageKey.BIOMETRY_ENABLED,
-        sBiometryEnabled
-    );
+    const { get: storageGet } = useMobileLayerRegularStorage('biometryEnabled');
 
     return useQuery({
         queryKey: biometryKeys.state.toKey(),
@@ -59,10 +53,7 @@ export function useBiometryQuery() {
 
 export function useSetBiometryEnabled() {
     const queryClient = useQueryClient();
-    const { set: storageSet } = useSharedUnstructuredStorage(
-        StorageKey.BIOMETRY_ENABLED,
-        sBiometryEnabled
-    );
+    const { set: storageSet } = useMobileLayerRegularStorage('biometryEnabled');
 
     return useMutation({
         mutationFn: async (enabled: boolean) => {

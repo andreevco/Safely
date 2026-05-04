@@ -58,13 +58,13 @@ export function useRevokeSyncedDevice() {
     const account = useActiveAccount();
     const accountQueryKey = useActiveAccountQueryKey();
     const { get, set } = useActiveAccountSyncedStorage('devicesMeta');
-    const { getSecureEncryptedStorage } = useAppContext();
+    const { storage } = useAppContext();
 
     return useMutation({
         async mutationFn(ikPubHex: string) {
             await account.revokeRemoteDevice(
                 Buffer.from(ikPubHex, 'hex'),
-                getSecureEncryptedStorage()
+                storage.sync.getSecureEncrypted()
             );
 
             const existing = get() ?? {};
@@ -78,7 +78,7 @@ export function useRevokeSyncedDevice() {
 
 export function useUpdateOwnSyncedDeviceMeta() {
     const client = useQueryClient();
-    const { version, build, deviceInfo, getSecureEncryptedStorage } = useAppContext();
+    const { version, build, deviceInfo, storage } = useAppContext();
 
     return useMutation<void, Error, ISyncAccount<SyncedStorageStructure>>({
         async mutationFn(syncAccount) {
@@ -94,7 +94,7 @@ export function useUpdateOwnSyncedDeviceMeta() {
                         PortfolioFactory.restorePortfolio(
                             new SecretEncryptor(
                                 syncAccount.secretEncryptor,
-                                getSecureEncryptedStorage()
+                                storage.sync.getSecureEncrypted()
                             ),
                             a
                         )

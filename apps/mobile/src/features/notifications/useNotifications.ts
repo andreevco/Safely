@@ -2,12 +2,12 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import * as Notifications from 'expo-notifications';
 
-import { useMutation, useSharedStructuredStorage } from '@safely/ux';
+import { useSharedUxStorage, useMutation } from '@safely/ux';
 
 import { notificationsKeys } from './keys';
 
 export function useNotificationsQuery() {
-    const { get } = useSharedStructuredStorage('notificationsEnabled');
+    const { get } = useSharedUxStorage('notificationsEnabled');
 
     return useQuery({
         queryKey: notificationsKeys.permissions.toKey(),
@@ -28,7 +28,7 @@ export function useNotificationsQuery() {
 
 export function useToggleNotifications() {
     const queryClient = useQueryClient();
-    const { set } = useSharedStructuredStorage('notificationsEnabled');
+    const { set } = useSharedUxStorage('notificationsEnabled');
 
     return useMutation({
         mutationFn: async (isEnabled: boolean) => {
@@ -47,7 +47,7 @@ export function useToggleNotifications() {
 
 export function useRequestNotificationPermission() {
     const queryClient = useQueryClient();
-    const { set } = useSharedStructuredStorage('notificationsEnabled');
+    const { set } = useSharedUxStorage('notificationsEnabled');
 
     return useMutation({
         mutationFn: async () => {

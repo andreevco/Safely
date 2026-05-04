@@ -9,8 +9,4 @@ export {
     accountLocalStorageStructure,
     type AccountLocalStorageStructure
 } from './account/local/schemas';
-export {
-    useSharedStructuredStorage,
-    useSharedUnstructuredStorage,
-    useSharedUnstructuredKeychainStorage
-} from './shared/shared-storage';
+export { useSharedUxStorage } from './shared/shared-storage';

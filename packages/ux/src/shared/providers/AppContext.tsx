@@ -22,11 +22,16 @@ export interface IAppContext {
 
     userCountryInfo?: UserCountryInfo;
 
-    storage: ITreeStorage;
-
-    encryptedStorage: ITreeStorage;
-
-    getSecureEncryptedStorage(this: void): IUnlockableSecuredEncryptedStorage;
+    storage: {
+        ux: {
+            regular: ITreeStorage;
+        };
+        sync: {
+            regular: ITreeStorage;
+            encrypted: ITreeStorage;
+            getSecureEncrypted(this: void): IUnlockableSecuredEncryptedStorage;
+        };
+    };
 
     qrScanner: QrScanner;
 

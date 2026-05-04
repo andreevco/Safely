@@ -17,9 +17,14 @@ import { build, deviceInfo } from '@mobile/shared/app-meta';
 import { loggerRegistry } from '@mobile/shared/logger';
 import { useLoaderServiceContext } from '@mobile/shared/providers/loader';
 import { useToastServiceContext } from '@mobile/shared/providers/toast';
-import { mobileStorages } from '@mobile/shared/storage';
 import { MobileNumberFormatLocale } from '@mobile/shared/utils';
 
+import {
+    CLEAR_ALL_MOBILE_STORAGE_ONLY_APP_LEVEL_USE_DANGER,
+    ENCRYPTED_MOBILE_STORAGE_ONLY_APP_LEVEL_USE,
+    REGULAR_MOBILE_STORAGE_ONLY_APP_LEVEL_USE,
+    SECURE_ENCRYPTED_MOBILE_STORAGE_ONLY_APP_LEVEL_USE
+} from './storage';
 import packageJson from '../../package.json';
 
 const security: Security = {
@@ -27,9 +32,6 @@ const security: Security = {
         throw new Error('Security check not initialized');
     }
 };
-
-const getSecureEncryptedStorage = () =>
-    new UnlockableSecuredEncryptedStorage(mobileStorages.secureEncrypted.storage, security);
 
 export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
     const {
@@ -49,9 +51,22 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
             build,
             deviceInfo,
             numberFormatLocale: new MobileNumberFormatLocale(getLocales()[0]),
-            storage: mobileStorages.app.storage,
-            encryptedStorage: mobileStorages.encrypted.storage,
-            getSecureEncryptedStorage,
+            storage: {
+                ux: {
+                    regular: REGULAR_MOBILE_STORAGE_ONLY_APP_LEVEL_USE.storage.child('ux')
+                },
+                sync: {
+                    regular: REGULAR_MOBILE_STORAGE_ONLY_APP_LEVEL_USE.storage.child('sync'),
+                    encrypted: ENCRYPTED_MOBILE_STORAGE_ONLY_APP_LEVEL_USE.storage.child('sync'),
+                    getSecureEncrypted() {
+                        return new UnlockableSecuredEncryptedStorage(
+                            SECURE_ENCRYPTED_MOBILE_STORAGE_ONLY_APP_LEVEL_USE.enumerable,
+                            security,
+                            ['sync']
+                        );
+                    }
+                }
+            },
             qrScanner: {
                 scan: options =>
                     new Promise<string>(resolve => {
@@ -74,12 +89,7 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
             security: {
                 check: () => security.check()
             },
-            async clearAllData() {
-                const storages = Object.values(mobileStorages);
-                for (const storageConfig of storages) {
-                    await storageConfig.storage.clear();
-                }
-            },
+            clearAllData: CLEAR_ALL_MOBILE_STORAGE_ONLY_APP_LEVEL_USE_DANGER,
             subscribeAppStateChange(callback) {
                 const subscription = AppState.addEventListener('change', state => {
                     switch (state) {

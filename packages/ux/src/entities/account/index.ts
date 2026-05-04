@@ -15,13 +15,13 @@ import {
     withMeta
 } from './account-state';
 import { accountKey } from './keys';
-import { useActiveAccountSyncedStorage } from './storage';
+import { useActiveAccountSyncedStorage, useClearActiveAccountLocalStorage } from './storage';
 import {
     AccountMeta,
     SecretEncryptor,
     SyncedStorageStructure,
     useAppContext,
-    useSharedStructuredStorage,
+    useSharedUxStorage,
     useTranslate
 } from '../../shared';
 import { useLoader } from '../loader';
@@ -208,7 +208,7 @@ export function useConnectAccountToNewDevice() {
 }
 
 export function useSetActiveAccount() {
-    const { set } = useSharedStructuredStorage('activeAccount');
+    const { set } = useSharedUxStorage('activeAccount');
     const client = useQueryClient();
 
     return useMutation<void, Error, string>({
@@ -240,13 +240,14 @@ export function useDeleteAccount() {
     const account = useActiveAccount();
     const accountFactory = useAccountsFactory();
     const client = useQueryClient();
+    const { storage } = useAppContext();
     const ikPub = useCurrentDeviceIkPub();
     const devicesMeta = useSyncedDevicesMeta();
-    const { getSecureEncryptedStorage } = useAppContext();
+    const clearActiveAccountLocalStorage = useClearActiveAccountLocalStorage();
 
     return useMutation({
         async mutationFn() {
-            using secureEncryptedStorage = getSecureEncryptedStorage();
+            using secureEncryptedStorage = storage.sync.getSecureEncrypted();
             await secureEncryptedStorage.unlock();
 
             if (devicesMeta) {
@@ -258,6 +259,7 @@ export function useDeleteAccount() {
             }
 
             await accountFactory.deleteLocalAccount(account.accountId, secureEncryptedStorage);
+            await clearActiveAccountLocalStorage();
 
             const accounts = client.getQueryData<SyncAccount[]>(accountKey.list.toKey());
             const remaining = accounts?.filter(a => a.accountId !== account.accountId) ?? [];

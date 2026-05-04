@@ -7,12 +7,15 @@ import { createPersister, createQueryClient, QueryProvider } from '@safely/ux';
 import { loggerRegistry } from '@mobile/shared/logger';
 import { LoaderProvider, LoaderServiceProvider } from '@mobile/shared/providers/loader';
 import { ToastProvider, ToastServiceProvider } from '@mobile/shared/providers/toast';
-import { mobileStorages } from '@mobile/shared/storage';
 
 import { AppContextProvider } from './AppContext';
 import { AppNavigation } from './AppNavigation';
+import { REGULAR_MOBILE_STORAGE_ONLY_APP_LEVEL_USE } from './storage';
 
-const persister = createPersister(mobileStorages.persister.storage, loggerRegistry.systemLogger);
+const persister = createPersister(
+    REGULAR_MOBILE_STORAGE_ONLY_APP_LEVEL_USE.storage.child('persister'),
+    loggerRegistry.systemLogger
+);
 const queryClient = createQueryClient(loggerRegistry.systemLogger);
 
 export const App = () => {
