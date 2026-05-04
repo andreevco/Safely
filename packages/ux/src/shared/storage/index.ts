@@ -1,4 +1,4 @@
-export { useAccountLocalStorage } from './account/local';
+export { useActiveAccountLocalStorage } from './account/local';
 export {
     useAccountSyncedStorage,
     useActiveAccountSyncedStorage,
@@ -11,8 +11,4 @@ export {
     type ContactMeta,
     type DeviceMeta
 } from './account/synced/schemas';
-export {
-    useSharedStructuredStorage,
-    useSharedUnstructuredStorage,
-    useSharedUnstructuredKeychainStorage
-} from './shared/shared-storage';
+export { useSharedUxStorage } from './shared/shared-storage';

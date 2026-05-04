@@ -20,13 +20,17 @@ export const WelcomeScreen = () => {
     const { onStartCreate } = useOnboardingFlow();
     const signIn = useCreateExistingAccountConnector();
     const navigation = useNavigation<RootStackNavigationProp>();
-    const { getSecureEncryptedStorage } = useAppContext();
+    const {
+        storage: {
+            sync: { getSecureEncrypted }
+        }
+    } = useAppContext();
 
     const handleSignIn = useCallback(async () => {
         signIn.reset();
 
         // resource will be closed manually in `closeStorage` because it needs to be opened on the SignInScreen
-        const secureEncryptedStorage = getSecureEncryptedStorage();
+        const secureEncryptedStorage = getSecureEncrypted();
         secureEncryptedStorage.UNSAFE_SKIP_SECURITY_CHECK_unlock();
 
         const connector = await signIn.mutateAsync({ secureEncryptedStorage });
@@ -35,7 +39,7 @@ export const WelcomeScreen = () => {
             connector,
             closeStorage: () => secureEncryptedStorage[Symbol.dispose]()
         });
-    }, [signIn, navigation, getSecureEncryptedStorage]);
+    }, [signIn, navigation, getSecureEncrypted]);
 
     return (
         <Screen background="transparent">

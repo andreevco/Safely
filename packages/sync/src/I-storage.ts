@@ -7,8 +7,15 @@ export interface IStorage {
 
 export interface IEnumerableStorage extends IStorage {
     getAllKeys(): Promise<string[]>;
+    getKeysWithPrefix(prefix: string): Promise<string[]>;
+    removeItemsWithPrefix(prefix: string): Promise<void>;
 }
 
-export interface ITreeStorage extends IEnumerableStorage {
+export interface ITreeStorage extends IStorage {
+    /** Direct-child JS-keys at this node (no cascade into descendants), decoded. */
+    getOwnKeys(): Promise<string[]>;
     child(path: string[] | string): ITreeStorage;
+
+    /** Deletes all children (including nested) records  */
+    clear(): Promise<void>;
 }

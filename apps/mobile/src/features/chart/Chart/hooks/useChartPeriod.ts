@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { defineQueryKeys, finalKey, useMutation, useSharedStructuredStorage } from '@safely/ux';
+import { defineQueryKeys, finalKey, useSharedUxStorage, useMutation } from '@safely/ux';
 
 import { ChartPeriod } from '../config';
 
@@ -11,7 +11,7 @@ const chartPeriodKeys = defineQueryKeys('chartPeriod', {
 const DEFAULT_PERIOD = ChartPeriod.ONE_MONTH;
 
 export function useChartPeriodQuery() {
-    const { get } = useSharedStructuredStorage('chartPeriod');
+    const { get } = useSharedUxStorage('chartPeriod');
 
     return useQuery({
         queryKey: chartPeriodKeys.selected.toKey(),
@@ -25,7 +25,7 @@ export function useChartPeriodQuery() {
 
 export function useSetChartPeriod() {
     const queryClient = useQueryClient();
-    const { set } = useSharedStructuredStorage('chartPeriod');
+    const { set } = useSharedUxStorage('chartPeriod');
 
     return useMutation({
         mutationFn: async (period: ChartPeriod) => {

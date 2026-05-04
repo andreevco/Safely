@@ -19,13 +19,14 @@ import {
     SyncedStorageStructure,
     useAppContext,
     useBootConfig,
+    useSharedUxStorage,
     useLogger,
     useMutation,
-    useSharedStructuredStorage,
     useSuspenseQuery,
     useTranslate
 } from '../../shared';
 import { useActiveAccountSyncedStorage } from '../../shared';
+import { useClearActiveAccountLocalStorage } from '../../shared/storage/account/local';
 import { useLoader } from '../loader';
 import {
     useCurrentDeviceIkPub,
@@ -76,12 +77,15 @@ export function resetAccountsFactory() {
 
 export function useAccountsFactory() {
     const config = useBootConfig();
-    const { storage, encryptedStorage, loggerRegistry } = useAppContext();
+    const {
+        storage: { sync },
+        loggerRegistry
+    } = useAppContext();
 
     if (!_syncAccountFactory) {
         _syncAccountFactory = new SyncAccountFactory({
-            storage,
-            encryptedStorage,
+            storage: sync.regular,
+            encryptedStorage: sync.encrypted,
             structure: syncedStorageStructure,
             apiConfiguration: {
                 basePath: config.sync.api_url
@@ -114,7 +118,7 @@ export function useAccounts() {
 }
 
 export function useActiveAccountQuery() {
-    const { set, get } = useSharedStructuredStorage('activeAccount');
+    const { set, get } = useSharedUxStorage('activeAccount');
     const client = useQueryClient();
     const accountsQueryConfig = useAccountsQueryConfig();
 
@@ -319,7 +323,7 @@ export function useConnectAccountToNewDevice() {
 }
 
 export function useSetActiveAccount() {
-    const { set } = useSharedStructuredStorage('activeAccount');
+    const { set } = useSharedUxStorage('activeAccount');
     const client = useQueryClient();
 
     return useMutation<void, Error, string>({
@@ -351,13 +355,14 @@ export function useDeleteAccount() {
     const account = useActiveAccount();
     const accountFactory = useAccountsFactory();
     const client = useQueryClient();
+    const { storage } = useAppContext();
     const ikPub = useCurrentDeviceIkPub();
     const devicesMeta = useSyncedDevicesMeta();
-    const { getSecureEncryptedStorage } = useAppContext();
+    const clearActiveAccountLocalStorage = useClearActiveAccountLocalStorage();
 
     return useMutation({
         async mutationFn() {
-            using secureEncryptedStorage = getSecureEncryptedStorage();
+            using secureEncryptedStorage = storage.sync.getSecureEncrypted();
             await secureEncryptedStorage.unlock();
 
             if (devicesMeta) {
@@ -369,6 +374,7 @@ export function useDeleteAccount() {
             }
 
             await accountFactory.deleteLocalAccount(account.accountId, secureEncryptedStorage);
+            await clearActiveAccountLocalStorage();
 
             const accounts = client.getQueryData<SyncAccount[]>(accountKey.list.toKey());
             const remaining = accounts?.filter(a => a.accountId !== account.accountId) ?? [];

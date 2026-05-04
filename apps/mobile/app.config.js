@@ -27,7 +27,8 @@ module.exports = {
                 foregroundImage: './assets/adaptive-icon.png',
                 backgroundImage: './assets/android-icon-bg.png'
             },
-            package: 'com.aco.swallet'
+            package: 'com.aco.swallet',
+            allowBackup: false
         },
         plugins: [
             [
@@ -61,7 +62,8 @@ module.exports = {
                 {
                     icon: './assets/icon.png'
                 }
-            ]
+            ],
+            './plugins/withMMKVNoBackup'
         ],
         extra: {
             eas: {

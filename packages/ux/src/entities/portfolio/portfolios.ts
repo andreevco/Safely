@@ -26,13 +26,13 @@ import {
     useErrorToast,
     useMutation,
     useSuspenseQuery,
-    useAccountLocalStorage,
+    useActiveAccountLocalStorage,
     useSecurityCheck,
     useAppContext,
     useLogger,
     SecretEncryptor
 } from '../../shared';
-import { useActiveAccountSyncedStorage } from '../../shared/storage/account/synced';
+import { useActiveAccountSyncedStorage } from '../../shared';
 import { useActiveAccount, useActiveAccountQueryKey } from '../account';
 import { useToast } from '../toast';
 
@@ -46,7 +46,7 @@ export function usePortfoliosQueryConfig() {
     const accountQueryKey = useActiveAccountQueryKey();
     const { get } = useActiveAccountSyncedStorage('portfolios');
     const account = useActiveAccount();
-    const { getSecureEncryptedStorage } = useAppContext();
+    const { storage } = useAppContext();
 
     return {
         queryKey: accountQueryKey.portfolios.toKey(),
@@ -58,7 +58,7 @@ export function usePortfoliosQueryConfig() {
 
             return data.map(p =>
                 PortfolioFactory.restorePortfolio(
-                    new SecretEncryptor(account.secretEncryptor, getSecureEncryptedStorage()),
+                    new SecretEncryptor(account.secretEncryptor, storage.sync.getSecureEncrypted()),
                     p
                 )
             );
@@ -285,7 +285,7 @@ type ActivePortfolioEntitiesWatchOnly = {
 type ActivePortfolioEntities = ActivePortfolioEntitiesBip39 | ActivePortfolioEntitiesWatchOnly;
 
 export function useActivePortfolioEntitiesQuery() {
-    const { get, set } = useAccountLocalStorage('activePortfolio');
+    const { get, set } = useActiveAccountLocalStorage('activePortfolio');
     const accountQueryKey = useActiveAccountQueryKey();
     const client = useQueryClient();
     const portfoliosQuery = usePortfoliosQueryConfig();
@@ -397,7 +397,7 @@ export function useAddWatchOnlyPortfolio() {
 }
 
 export function useSetActiveDerivation() {
-    const { set } = useAccountLocalStorage('activePortfolio');
+    const { set } = useActiveAccountLocalStorage('activePortfolio');
     const client = useQueryClient();
     const portfoliosQuery = usePortfoliosQueryConfig();
     const accountQueryKey = useActiveAccountQueryKey();
@@ -432,7 +432,7 @@ export function useSetActiveDerivation() {
 }
 
 export function useSetActivePortfolio() {
-    const { set } = useAccountLocalStorage('activePortfolio');
+    const { set } = useActiveAccountLocalStorage('activePortfolio');
     const portfoliosQuery = usePortfoliosQueryConfig();
     const client = useQueryClient();
     const accountQueryKey = useActiveAccountQueryKey();
