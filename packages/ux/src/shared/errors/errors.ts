@@ -2,7 +2,6 @@ import { useCallback, useMemo } from 'react';
 
 import { getErrorText, TranslatableErrorsConfig } from '@safely/core';
 
-import { useToast } from '../../entities';
 import { useTranslate } from '../i18n';
 
 export interface ParseErrorOptions {
@@ -40,16 +39,4 @@ export function useParsedError(
 ) {
     const parseError = useParseError(config, options);
     return useMemo(() => parseError(error), [parseError, error]);
-}
-
-export function useErrorToast(config: TranslatableErrorsConfig, options?: ParseErrorOptions) {
-    const toast = useToast();
-    const parseError = useParseError(config, options);
-
-    return useCallback(
-        (e: unknown) => {
-            toast({ message: parseError(e), type: 'error' });
-        },
-        [toast, parseError]
-    );
 }

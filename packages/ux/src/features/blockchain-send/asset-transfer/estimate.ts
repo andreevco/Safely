@@ -15,7 +15,7 @@ import {
 
 import { useActiveBtcWalletUtxoForEstimation, useAssets } from '../../../entities';
 import { defineQueryKeys, finalKey, mappedParams, QUERIES_REFETCH_INTERVAL } from '../../../shared';
-import { SendFormResult } from '../../forms';
+import type { SendFormResult } from '../../forms/send/types';
 import { useBtcEstimator } from '../btc/estimator';
 
 export const estimationKey = defineQueryKeys('estimation', {

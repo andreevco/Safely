@@ -1,26 +1,12 @@
-import { useMemo } from 'react';
-
 import {
     CryptoAssetAmount,
-    FiatAssetAmount,
-    isFiatAssetAmount,
     CryptoCurrencyDisplay,
+    FiatAssetAmount,
     FiatCurrencyDisplay,
-    NumberFormatter
+    isFiatAssetAmount
 } from '@safely/core';
 
-import { useLogger } from '../logger';
-import { useAppContext } from '../providers';
-
-export function useNumberFormatter() {
-    const logger = useLogger();
-    const { numberFormatLocale } = useAppContext();
-
-    return useMemo(
-        () => new NumberFormatter(numberFormatLocale, logger),
-        [numberFormatLocale, logger]
-    );
-}
+import { useNumberFormatter } from './use-number-formatter';
 
 export function useFormattedAmount(
     assetAmount: CryptoAssetAmount | undefined,

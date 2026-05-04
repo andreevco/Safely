@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from 'react';
 
-import { useAccounts } from '../../entities';
-import { useAppContext } from '../providers';
+import { useAppContext } from '../../shared';
+import { useAccounts } from '../account/account-state';
 
 export function useLoggerLifecycle(): void {
     const { loggerRegistry, subscribeAppStateChange } = useAppContext();

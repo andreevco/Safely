@@ -6,16 +6,16 @@ import { ISyncAccount } from '@safely/sync';
 import {
     type DeviceMeta,
     useAppContext,
-    useMutation,
     useSuspenseQuery,
-    useActiveAccountSyncedStorage,
     SecretEncryptor,
     SyncedStorageStructure
 } from '../../shared';
 import { calcSyncedStorageHash } from '../../shared/storage/account/synced/schemas';
 import { calculatePortfoliosHashes } from '../../shared/storage/account/synced/schemas/devices-meta.schema';
-import { useActiveAccount, useActiveAccountQueryKey } from '../account';
+import { useActiveAccount, useActiveAccountQueryKey } from '../account/account-state';
 import { accountKey } from '../account/keys';
+import { useActiveAccountSyncedStorage } from '../account/storage';
+import { useMutation } from '../query-core';
 
 export function useSyncedDevicesMetaQuery() {
     const accountQueryKey = useActiveAccountQueryKey();

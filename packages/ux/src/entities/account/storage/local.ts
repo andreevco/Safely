@@ -1,9 +1,12 @@
 import { useCallback, useMemo } from 'react';
 import z from 'zod';
 
-import { accountLocalStorageStructure, AccountLocalStorageStructure } from './schemas';
-import { useActiveAccount } from '../../../../entities';
-import { useAppContext } from '../../../providers';
+import { useAppContext } from '../../../shared';
+import {
+    accountLocalStorageStructure,
+    AccountLocalStorageStructure
+} from '../../../shared/storage/account/local/schemas';
+import { useActiveAccount } from '../account-state';
 
 function useActiveAccountLocalStorageInstance() {
     const {
@@ -14,7 +17,7 @@ function useActiveAccountLocalStorageInstance() {
 
     return useMemo(
         () => (activeAccountId ? ux.regular.child(['account', activeAccountId]) : null),
-        [ux.regular]
+        [ux.regular, activeAccountId]
     );
 }
 
@@ -29,7 +32,7 @@ export function useActiveAccountLocalStorage<K extends keyof AccountLocalStorage
             }
             return storage.setItem(key, JSON.stringify(val));
         },
-        [storage]
+        [storage, key]
     );
 
     const remove = useCallback<() => Promise<void>>(() => {
@@ -37,7 +40,7 @@ export function useActiveAccountLocalStorage<K extends keyof AccountLocalStorage
             throw new Error('Cannot remove data from uninitialized storage');
         }
         return storage.removeItem(key);
-    }, [storage]);
+    }, [storage, key]);
 
     const get = useCallback<() => Promise<z.output<AccountLocalStorageStructure[K]>>>(async () => {
         const data = (await storage?.getItem(key)) ?? null;
@@ -46,7 +49,7 @@ export function useActiveAccountLocalStorage<K extends keyof AccountLocalStorage
         return accountLocalStorageStructure[key].parse(structData) as z.output<
             AccountLocalStorageStructure[K]
         >;
-    }, [storage]);
+    }, [storage, key]);
 
     return { get, set, remove };
 }

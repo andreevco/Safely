@@ -1,10 +1,11 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { FC, PropsWithChildren, useEffect } from 'react';
 
-import { useActiveAccountQuery, useUpdateOwnSyncedDeviceMeta } from '../../entities';
-import { accountKey } from '../../entities/account/keys';
-import { useAppState } from '../app/useAppState';
-import { SyncedStorageStructure, syncedStorageStructure } from '../storage';
+import { useAppState } from '../../../shared/app/useAppState';
+import { SyncedStorageStructure, syncedStorageStructure } from '../../../shared/storage';
+import { useUpdateOwnSyncedDeviceMeta } from '../../synced-device';
+import { useActiveAccountQuery } from '../account-state';
+import { accountKey } from '../keys';
 
 const syncedStorageKeys = Object.keys(syncedStorageStructure) as (keyof SyncedStorageStructure)[];
 

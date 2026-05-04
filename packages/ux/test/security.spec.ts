@@ -3,9 +3,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { IEnumerableStorage, SSecretDecrypted, SSecretEncrypted } from '@safely/core';
 import type { ISecretEncryptor as ISyncSecretEncryptor, ITreeStorage } from '@safely/sync';
 
-import type { Security } from '../src/entities';
+import type { IUnlockableSecuredEncryptedStorage, Security } from '../src/shared/security';
 import {
-    IUnlockableSecuredEncryptedStorage,
     UnlockableSecretEncryptor,
     UnlockableSecuredEncryptedStorage
 } from '../src/shared/security';

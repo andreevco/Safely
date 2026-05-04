@@ -1,3 +1,2 @@
-export interface Security {
-    check(options?: { title?: string }): Promise<void>;
-}
+export type { Security } from '../../shared/security/types';
+export { useUnlockableSecretEncryptorFactory } from './use-unlockable-secret-encryptor-factory';

@@ -1,7 +1,11 @@
 import { BtcTransactionTemplate, TransactionTemplate } from '@safely/core';
 
-import { BroadcastedBtcTx, useBtcSendLocked, useSetLastBroadcastedBtcTx } from '../../../entities';
-import { useMutation } from '../../../shared';
+import {
+    BroadcastedBtcTx,
+    useBtcSendLocked,
+    useMutation,
+    useSetLastBroadcastedBtcTx
+} from '../../../entities';
 
 export function useSendAssetTransfer(transactionTemplate: TransactionTemplate | undefined) {
     const { mutateAsync: setLastBroadcastedBtcTx } = useSetLastBroadcastedBtcTx();

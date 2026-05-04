@@ -16,7 +16,8 @@ import { getBiggestBtcIOAddress } from '../activity/api';
 import { BtcActivityItem } from '../activity/types';
 import { useActiveBtcWallet } from '../portfolio';
 import { utxo } from './keys';
-import { refetchQueries, useMutation } from '../../shared';
+import { refetchQueries } from '../../shared';
+import { useMutation } from '../query-core';
 
 const lastBroadcastedBtcTxStore = createStore<Record<string, BroadcastedBtcTx>>({});
 
