@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import z from 'zod';
 
-import { storagesList } from '@mobile/app/storage';
+import { ENCRYPTED_MOBILE_STORAGE_ONLY_APP_LEVEL_USE } from '@mobile/app/storage';
 
 const mobileLayerEncryptedStorageStructure = {
     passcode: z.union([z.null(), z.string()])
@@ -9,7 +9,7 @@ const mobileLayerEncryptedStorageStructure = {
 
 type MobileLayerEncryptedStorageStructure = typeof mobileLayerEncryptedStorageStructure;
 
-const storage = storagesList.encrypted.storage.child('mobile');
+const storage = ENCRYPTED_MOBILE_STORAGE_ONLY_APP_LEVEL_USE.storage.child('mobile');
 
 export function useMobileLayerEncryptedStorage<
     K extends keyof MobileLayerEncryptedStorageStructure

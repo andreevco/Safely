@@ -9,9 +9,11 @@ import { ToastProvider, ToastServiceProvider } from '@mobile/shared/providers/to
 
 import { AppContextProvider } from './AppContext';
 import { AppNavigation } from './AppNavigation';
-import { storagesList } from './storage';
+import { REGULAR_MOBILE_STORAGE_ONLY_APP_LEVEL_USE } from './storage';
 
-const persister = createPersister(storagesList.regular.storage.child('persister'));
+const persister = createPersister(
+    REGULAR_MOBILE_STORAGE_ONLY_APP_LEVEL_USE.storage.child('persister')
+);
 
 export const App = () => {
     return (

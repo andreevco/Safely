@@ -93,7 +93,7 @@ function createKeychainTreeStorage(
     };
 }
 
-export const storagesList = {
+const storagesList = {
     regular: createMMKVTreeStorage('regular'),
     encrypted: createKeychainTreeStorage(
         'safely.encrypted',
@@ -105,3 +105,16 @@ export const storagesList = {
     ),
     mobileLayerSynchronousLocale: createMMKVSyncSingleStorage('mobile_synchronous_locale')
 };
+
+export async function CLEAR_ALL_MOBILE_STORAGE_ONLY_APP_LEVEL_USE_DANGER() {
+    const storages = Object.values(storagesList);
+    for (const storageConfig of storages) {
+        await storageConfig.storage.clear();
+    }
+}
+
+export const REGULAR_MOBILE_STORAGE_ONLY_APP_LEVEL_USE = storagesList.regular;
+export const ENCRYPTED_MOBILE_STORAGE_ONLY_APP_LEVEL_USE = storagesList.encrypted;
+export const SECURE_ENCRYPTED_MOBILE_STORAGE_ONLY_APP_LEVEL_USE = storagesList.secureEncrypted;
+
+export const mobileLayerSynchronousLocale = storagesList.mobileLayerSynchronousLocale;

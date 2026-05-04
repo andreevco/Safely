@@ -1,6 +1,11 @@
 import { IEnumerableStorage, ISyncSingleStorage } from '@safely/core';
 
-import { storagesList } from '@mobile/app/storage';
+import {
+    ENCRYPTED_MOBILE_STORAGE_ONLY_APP_LEVEL_USE,
+    mobileLayerSynchronousLocale,
+    REGULAR_MOBILE_STORAGE_ONLY_APP_LEVEL_USE,
+    SECURE_ENCRYPTED_MOBILE_STORAGE_ONLY_APP_LEVEL_USE
+} from '@mobile/app/storage';
 
 export type StorageViewer =
     | { name: string; kind: 'enumerable'; storage: IEnumerableStorage }
@@ -9,14 +14,22 @@ export type StorageViewer =
 export const SINGLE_STORAGE_KEY = '(value)';
 
 export const storageViewers: StorageViewer[] = [
-    { name: 'app', kind: 'enumerable', storage: storagesList.regular.enumerable },
-    { name: 'encrypted', kind: 'enumerable', storage: storagesList.encrypted.enumerable },
+    {
+        name: 'app',
+        kind: 'enumerable',
+        storage: REGULAR_MOBILE_STORAGE_ONLY_APP_LEVEL_USE.enumerable
+    },
+    {
+        name: 'encrypted',
+        kind: 'enumerable',
+        storage: ENCRYPTED_MOBILE_STORAGE_ONLY_APP_LEVEL_USE.enumerable
+    },
     {
         name: 'secureEncrypted',
         kind: 'enumerable',
-        storage: storagesList.secureEncrypted.enumerable
+        storage: SECURE_ENCRYPTED_MOBILE_STORAGE_ONLY_APP_LEVEL_USE.enumerable
     },
-    { name: 'locale', kind: 'single', storage: storagesList.mobileLayerSynchronousLocale.storage }
+    { name: 'locale', kind: 'single', storage: mobileLayerSynchronousLocale.storage }
 ];
 
 export const findStorageViewer = (name: string): StorageViewer | undefined =>

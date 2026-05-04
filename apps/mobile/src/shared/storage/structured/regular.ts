@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import z from 'zod';
 
-import { storagesList } from '@mobile/app/storage';
+import { REGULAR_MOBILE_STORAGE_ONLY_APP_LEVEL_USE } from '@mobile/app/storage';
 
 const mobileLayerRegularStorageStructure = {
     passcodeLockout: z.union([
@@ -17,7 +17,7 @@ const mobileLayerRegularStorageStructure = {
 
 type MobileLayerRegularStorageStructure = typeof mobileLayerRegularStorageStructure;
 
-const storage = storagesList.regular.storage.child('mobile');
+const storage = REGULAR_MOBILE_STORAGE_ONLY_APP_LEVEL_USE.storage.child('mobile');
 
 export function useMobileLayerRegularStorage<K extends keyof MobileLayerRegularStorageStructure>(
     key: K

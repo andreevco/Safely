@@ -13,7 +13,12 @@ import { useLoaderServiceContext } from '@mobile/shared/providers/loader';
 import { useToastServiceContext } from '@mobile/shared/providers/toast';
 import { MobileNumberFormatLocale } from '@mobile/shared/utils';
 
-import { storagesList } from './storage';
+import {
+    CLEAR_ALL_MOBILE_STORAGE_ONLY_APP_LEVEL_USE_DANGER,
+    ENCRYPTED_MOBILE_STORAGE_ONLY_APP_LEVEL_USE,
+    REGULAR_MOBILE_STORAGE_ONLY_APP_LEVEL_USE,
+    SECURE_ENCRYPTED_MOBILE_STORAGE_ONLY_APP_LEVEL_USE
+} from './storage';
 import packageJson from '../../package.json';
 
 const security: Security = {
@@ -42,14 +47,14 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
             numberFormatLocale: new MobileNumberFormatLocale(getLocales()[0]),
             storage: {
                 ux: {
-                    regular: storagesList.regular.storage.child('ux')
+                    regular: REGULAR_MOBILE_STORAGE_ONLY_APP_LEVEL_USE.storage.child('ux')
                 },
                 sync: {
-                    regular: storagesList.regular.storage.child('sync'),
-                    encrypted: storagesList.encrypted.storage.child('sync'),
+                    regular: REGULAR_MOBILE_STORAGE_ONLY_APP_LEVEL_USE.storage.child('sync'),
+                    encrypted: ENCRYPTED_MOBILE_STORAGE_ONLY_APP_LEVEL_USE.storage.child('sync'),
                     getSecureEncrypted() {
                         return new UnlockableSecuredEncryptedStorage(
-                            storagesList.secureEncrypted.enumerable,
+                            SECURE_ENCRYPTED_MOBILE_STORAGE_ONLY_APP_LEVEL_USE.enumerable,
                             security,
                             ['sync']
                         );
@@ -78,12 +83,7 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
             security: {
                 check: () => security.check()
             },
-            async clearAllData() {
-                const storages = Object.values(storagesList);
-                for (const storageConfig of storages) {
-                    await storageConfig.storage.clear();
-                }
-            },
+            clearAllData: CLEAR_ALL_MOBILE_STORAGE_ONLY_APP_LEVEL_USE_DANGER,
             subscribeAppStateChange(callback) {
                 const subscription = AppState.addEventListener('change', state => {
                     switch (state) {
