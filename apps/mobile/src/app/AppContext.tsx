@@ -17,7 +17,7 @@ import { build, deviceInfo } from '@mobile/shared/app-meta';
 import { loggerRegistry } from '@mobile/shared/logger';
 import { useLoaderServiceContext } from '@mobile/shared/providers/loader';
 import { useToastServiceContext } from '@mobile/shared/providers/toast';
-import { MobileNumberFormatLocale } from '@mobile/shared/utils';
+import { MobileNumberFormatLocale, MobileAppLinking } from '@mobile/shared/utils';
 
 import {
     CLEAR_ALL_MOBILE_STORAGE_ONLY_APP_LEVEL_USE_DANGER,
@@ -86,6 +86,7 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
                 withLoader: loaderService.withLoader
             },
             loggerRegistry,
+            linking: new MobileAppLinking(loggerRegistry.systemLogger),
             security: {
                 check: () => security.check()
             },

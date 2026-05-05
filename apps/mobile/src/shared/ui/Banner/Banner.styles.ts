@@ -12,7 +12,7 @@ export const styles = StyleSheet.create(theme => ({
         gap: theme.spacing[4],
         variants: {
             variant: {
-                warning: {
+                warn: {
                     backgroundColor: Color(theme.colors.accent.orange).alpha(0.16).toString()
                 },
                 danger: {
@@ -33,7 +33,7 @@ export const styles = StyleSheet.create(theme => ({
         color: theme.colors.text.primary,
         variants: {
             variant: {
-                warning: {
+                warn: {
                     color: theme.colors.accent.orange
                 },
                 danger: {
@@ -50,7 +50,7 @@ export const styles = StyleSheet.create(theme => ({
         tintColor: theme.colors.icon.secondary,
         variants: {
             variant: {
-                warning: {
+                warn: {
                     tintColor: theme.colors.accent.orange
                 },
                 danger: {

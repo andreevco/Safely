@@ -14,3 +14,4 @@ export * from './logger';
 export * from './format';
 export * from './query-core';
 export * from './errors';
+export * from './linking';

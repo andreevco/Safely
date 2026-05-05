@@ -12,3 +12,4 @@ export * from './security';
 export * from './logger';
 export * from './react';
 export * from './search';
+export * from './linking';

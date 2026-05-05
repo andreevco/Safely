@@ -38,7 +38,7 @@ export const NotificationsScreen = () => {
                 {isDenied && (
                     <View style={styles.container}>
                         <Banner
-                            variant="warning"
+                            variant="warn"
                             text={t('notifications.warning')}
                             actionText={t('notifications.openSettings')}
                             onPress={handleOpenSettings}
