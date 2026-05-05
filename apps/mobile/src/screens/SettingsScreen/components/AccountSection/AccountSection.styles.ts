@@ -4,8 +4,11 @@ export const styles = StyleSheet.create(theme => ({
     accountOptions: {
         marginTop: 2
     },
-    buttonContainer: {
+    buttonsContainer: {
         alignItems: 'center',
-        paddingBottom: theme.spacing[8]
+        flexDirection: 'row',
+        justifyContent: 'center',
+        paddingBottom: theme.spacing[8],
+        gap: theme.spacing[8]
     }
 }));

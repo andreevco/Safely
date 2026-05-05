@@ -8,7 +8,7 @@ import { OnboardingConnector, useAccountConnectedCallback, useToast } from '@saf
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { DeviceLink, Screen, Text, TouchableOpacity } from '@mobile/shared/ui';
-import { Icon } from '@mobile/shared/ui/Icon';
+import { Icon, Sliders12 } from '@mobile/shared/ui/Icon';
 import { useCopy } from '@mobile/shared/utils/copy';
 
 import { styles } from './SignInScreen.styles';
@@ -80,7 +80,21 @@ export const SignInScreen = (props: SignInScreenProps) => {
                             {t('signIn.title')}
                         </Text>
                         <Text textAlign="center" variant="bodyL" color="secondary">
-                            {t('signIn.description')}
+                            {t('signIn.description.top')}
+                        </Text>
+                        <View style={styles.iconLine}>
+                            <Text variant="bodyL" color="secondary">
+                                {t('signIn.description.iconLineStart')}
+                            </Text>
+                            <View style={styles.inlineSettingsIconContainer}>
+                                <Icon icon={Sliders12} />
+                            </View>
+                            <Text variant="bodyL" color="secondary">
+                                {t('signIn.description.iconLineEnd')}
+                            </Text>
+                        </View>
+                        <Text textAlign="center" variant="bodyL" color="secondary">
+                            {t('signIn.description.bottom')}
                         </Text>
                     </View>
                 </View>
