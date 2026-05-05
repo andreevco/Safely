@@ -21,6 +21,14 @@ export const styles = StyleSheet.create(theme => ({
             }
         }
     },
+    content: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: theme.spacing[32]
+    },
+    flex: {
+        flex: 1
+    },
     text: {
         color: theme.colors.text.primary,
         variants: {
