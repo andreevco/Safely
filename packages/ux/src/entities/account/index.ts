@@ -275,13 +275,22 @@ export function useDeleteAccount() {
 }
 
 export function useEraseAllData() {
-    const { clearAllData } = useAppContext();
+    const {
+        clearAllData,
+        i18n: { t }
+    } = useAppContext();
     const queryClient = useQueryClient();
+    const toast = useToast();
 
     return useMutation({
         async mutationFn() {
             resetAccountsFactory();
-            await clearAllData();
+            try {
+                await clearAllData();
+            } catch (e) {
+                toast({ type: 'error', message: t('logOutAllAccounts.error') });
+                throw e;
+            }
 
             queryClient.clear();
         }
