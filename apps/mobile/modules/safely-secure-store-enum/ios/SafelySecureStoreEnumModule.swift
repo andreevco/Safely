@@ -16,12 +16,32 @@ import Security
 // never raises a biometric prompt; only fetching `kSecValueData` would.
 //
 // No intent journal: `clearAsync` is a single attribute-match SecItemDelete
-// (atomic at securityd level). `removeItemsWithPrefixAsync` collects persistent
-// references for the matching accounts and issues a single batched SecItemDelete
-// via `kSecMatchItemList` — one IPC round-trip into securityd instead of N. Not
-// fully atomic at the securityd level, but the kill-mid-call window is the
-// duration of a single XPC call. We accept that residual risk in exchange for
-// not maintaining a separate journal store.
+// (atomic at securityd level). `removeItemsWithPrefixAsync` enumerates the
+// matching accounts and issues one attribute-match SecItemDelete per item.
+//
+// We previously batched via `kSecMatchItemList` with persistent refs. That
+// returned errSecParam (-50) in production on iOS 18.6.x (multiple devices).
+//
+// `Security.framework/Headers/SecItem.h` (iOS SDK, definitive source — the
+// generated web docs miss this) explicitly tags the key as macOS-only:
+//
+//   @constant kSecMatchItemList macOS only. Specifies a dictionary key
+//   whose value is a CFArray of SecKeychainItemRef items.
+//
+// And in SecItemDelete's own docblock:
+//
+//   To delete an item identified by a persistent reference, on iOS, specify
+//   kSecValuePersistentRef … On macOS, use kSecMatchItemList …
+//
+// So there is no iOS API to delete N items by ref in a single IPC — the
+// lower bound is N XPC calls (per-attribute or per-persistent-ref).
+//
+// We pick attribute-match: no persistent-ref dependency, matches the path
+// expo-secure-store uses for single-item delete. Known-good on every iOS.
+//
+// The kill-mid-call window grows to N XPC calls, but each individual delete
+// remains atomic at securityd level. We accept that residual risk in
+// exchange for not maintaining a separate journal store.
 public class SafelySecureStoreEnumModule: Module {
     private let queue = DispatchQueue(label: "co.safely.SafelySecureStoreEnum")
 
@@ -46,15 +66,7 @@ public class SafelySecureStoreEnumModule: Module {
 
         AsyncFunction("clearAsync") { (options: Options) in
             try self.runSync {
-                let svc = self.effectiveService(options)
-                let q: [String: Any] = [
-                    kSecClass as String: kSecClassGenericPassword,
-                    kSecAttrService as String: svc
-                ]
-                let status = SecItemDelete(q as CFDictionary)
-                if status != errSecSuccess && status != errSecItemNotFound {
-                    throw NSError(domain: "SafelySecureStoreEnum", code: Int(status))
-                }
+                try self.deleteItems(service: self.effectiveService(options))
             }
         }
 
@@ -79,13 +91,12 @@ public class SafelySecureStoreEnumModule: Module {
 
     // MARK: - Core
 
-    private func readEntries(service: String) throws -> [(account: String, ref: Data)] {
+    private func readAccounts(service: String) throws -> [String] {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
             kSecMatchLimit as String: kSecMatchLimitAll,
             kSecReturnAttributes as String: kCFBooleanTrue!,
-            kSecReturnPersistentRef as String: kCFBooleanTrue!,
             kSecUseAuthenticationUI as String: kSecUseAuthenticationUIFail
         ]
         var result: CFTypeRef?
@@ -95,33 +106,40 @@ public class SafelySecureStoreEnumModule: Module {
             throw NSError(domain: "SafelySecureStoreEnum", code: Int(status))
         }
         guard let array = result as? [[String: Any]] else { return [] }
-        return array.compactMap { attrs -> (String, Data)? in
-            guard let ref = attrs[kSecValuePersistentRef as String] as? Data else {
-                return nil
+        return array.compactMap { attrs -> String? in
+            // expo-secure-store writes kSecAttrAccount as UTF-8 bytes (Data);
+            // accept String too in case a different writer touched the same service.
+            if let data = attrs[kSecAttrAccount as String] as? Data {
+                return String(data: data, encoding: .utf8)
             }
-            if let data = attrs[kSecAttrAccount as String] as? Data,
-               let key = String(data: data, encoding: .utf8) {
-                return (key, ref)
-            }
-            if let str = attrs[kSecAttrAccount as String] as? String {
-                return (str, ref)
-            }
-            return nil
+            return attrs[kSecAttrAccount as String] as? String
         }
     }
 
-    private func readAccounts(service: String) throws -> [String] {
-        return try readEntries(service: service).map { $0.account }
+    private func deleteByPrefix(service: String, prefix: String) throws {
+        if prefix.isEmpty {
+            try deleteItems(service: service)
+            return
+        }
+        let accounts = try readAccounts(service: service)
+            .filter { $0.hasPrefix(prefix) }
+        for account in accounts {
+            try deleteItems(service: service, account: account)
+        }
     }
 
-    private func deleteByPrefix(service: String, prefix: String) throws {
-        let refs = try readEntries(service: service)
-            .filter { $0.account.hasPrefix(prefix) }
-            .map { $0.ref }
-        if refs.isEmpty { return }
-        let q: [String: Any] = [
-            kSecMatchItemList as String: refs
+    private func deleteItems(service: String, account: String? = nil) throws {
+        var q: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service
         ]
+        if let account = account {
+            // Match the type expo-secure-store writes — Data(key.utf8), not String.
+            // securityd's attribute match is type-sensitive; passing String here
+            // would silently miss items and return errSecItemNotFound, leaving
+            // orphaned keychain records.
+            q[kSecAttrAccount as String] = Data(account.utf8)
+        }
         let status = SecItemDelete(q as CFDictionary)
         if status != errSecSuccess && status != errSecItemNotFound {
             throw NSError(domain: "SafelySecureStoreEnum", code: Int(status))
