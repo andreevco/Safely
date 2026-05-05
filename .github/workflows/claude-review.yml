@@ -48,6 +48,7 @@ jobs:
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           claude_args: '--model claude-opus-4-7 --max-turns 30'
+          show_full_output: true
           prompt: |
             You are a senior reviewer for a React Native + TypeScript mobile app.
             Your job: catch SERIOUS security vulnerabilities, real performance
