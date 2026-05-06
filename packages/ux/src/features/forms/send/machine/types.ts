@@ -94,7 +94,6 @@ export type SendFormEvent =
     | { type: 'SET_RECIPIENT'; value: string }
     | { type: 'SET_ADDRESS_BOOK_NAME'; name: string }
     | { type: 'SELECT_SUGGESTION'; id: string; visible: SendSuggestions }
-    | { type: 'CLEAR_SUGGESTION' }
     | { type: 'SET_AMOUNT'; value: string }
     | { type: 'SET_AMOUNT_INPUT_TYPE'; value: AmountInputType }
     | { type: 'SET_ASSET'; assetId: string }

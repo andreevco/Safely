@@ -14,7 +14,6 @@ export interface SendFormDispatchers {
     enterMax: () => void;
     exitMax: () => void;
     selectSuggestion: (id: string, visible: SendSuggestions) => void;
-    clearSuggestion: () => void;
     goPrev: () => void;
     goNext: () => void;
     backToEditing: () => void;
@@ -31,7 +30,6 @@ export function useSendFormDispatchers(send: Send): SendFormDispatchers {
             enterMax: () => send({ type: 'ENTER_MAX' }),
             exitMax: () => send({ type: 'EXIT_MAX' }),
             selectSuggestion: (id, visible) => send({ type: 'SELECT_SUGGESTION', id, visible }),
-            clearSuggestion: () => send({ type: 'CLEAR_SUGGESTION' }),
             goPrev: () => send({ type: 'PREV' }),
             goNext: () => send({ type: 'NEXT' }),
             backToEditing: () => send({ type: 'BACK_TO_EDITING' })

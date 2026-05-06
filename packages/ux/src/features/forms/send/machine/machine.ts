@@ -105,7 +105,6 @@ export const createSendFormMachine = () =>
                         }
                     };
                 }),
-                clearSuggestion: assign(() => ({ suggestion: EMPTY_SUGGESTION })),
                 handleSetAmount: assign(({ context, event }) => {
                     assertEvent(event, 'SET_AMOUNT');
 
@@ -353,9 +352,6 @@ export const createSendFormMachine = () =>
                                 },
                                 SET_ADDRESS_BOOK_NAME: {
                                     actions: 'setAddressBookName'
-                                },
-                                CLEAR_SUGGESTION: {
-                                    actions: 'clearSuggestion'
                                 }
                             },
                             states: {

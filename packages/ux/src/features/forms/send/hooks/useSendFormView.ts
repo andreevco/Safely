@@ -55,7 +55,6 @@ export function useSendFormView(props: UseSendFormViewProps): SendFormView {
         enterMax,
         exitMax,
         selectSuggestion,
-        clearSuggestion,
         goPrev,
         goNext,
         backToEditing
@@ -136,8 +135,7 @@ export function useSendFormView(props: UseSendFormViewProps): SendFormView {
                 selectedSuggestionId,
                 setRecipient,
                 setAddressBookName,
-                selectSuggestion,
-                clearSuggestion
+                selectSuggestion
             };
 
             switch (status) {
@@ -212,7 +210,6 @@ export function useSendFormView(props: UseSendFormViewProps): SendFormView {
         setRecipient,
         setAddressBookName,
         selectSuggestion,
-        clearSuggestion,
         setAmount,
         setAmountInputType,
         setAsset,

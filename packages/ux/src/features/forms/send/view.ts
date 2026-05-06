@@ -37,7 +37,6 @@ interface RecipientViewBase {
     setRecipient: (value: string) => void;
     setAddressBookName: (name: string) => void;
     selectSuggestion: (id: string, visible: SendSuggestions) => void;
-    clearSuggestion: () => void;
 }
 
 type CanGoNext = { next: () => void };
