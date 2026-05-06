@@ -43,21 +43,25 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || format('refs/pull/{0}/head', github.event.issue.number) }}
 
-      - uses: anthropics/claude-code-action@v1
+      - id: claude
+        uses: anthropics/claude-code-action@v1
         timeout-minutes: 14
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           claude_args: |
-            --model claude-opus-4-7
-            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"
-          track_progress: true
+            --model claude-sonnet-4-6
+            --max-turns 15
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr view:*),Write"
           use_sticky_comment: true
           show_full_output: true
           prompt: |
             You are a senior reviewer for a React Native + TypeScript mobile app.
-            Your job: catch SERIOUS security vulnerabilities, real performance
-            problems, and obvious correctness bugs. Bias hard toward silence —
-            a clean PR gets one short approval line.
+            Your job: catch CRITICAL issues only — exploitable security holes,
+            guaranteed crashes on a normal user path, data loss / corruption,
+            and logger-sandbox cross-contamination. Anything below that bar
+            (jank, minor perf, narrow-edge correctness, defensive concerns,
+            style) MUST NOT be commented on. Bias hard toward silence — a
+            clean PR gets one short approval line.
 
             ## What to comment on
 
@@ -119,53 +123,25 @@ jobs:
             - Race: response from older request overwrites newer one
             - iOS-only or Android-only API used without `Platform.OS` guard
 
-            Logger correctness — the project sandboxes logs per active account
-            via a `Logger` instance that is account-specific. Using the wrong
-            logger instance writes user A's data into user B's log file, which
-            defeats sandboxing. The shape of the bug is always the same: a
-            logger reference is captured at one moment but used at another,
-            after the active account has changed underneath. Flag any call
-            site where this can happen, not just the patterns below.
-
-            - `useMutation` imported directly from `@tanstack/react-query`
-              instead of from `@safely/ux` — the wrapper provides frozen-logger
-              auto-log on error; direct import loses that guarantee. Also a
-              dedicated ESLint rule, but flag if you see it.
-            - `logger.*()` (or `useLogger()` closure) called inside
-              `useMutation` callbacks `onError` / `onSuccess` / `onMutate` /
-              `onSettled` — TanStack reads these callbacks from the latest
-              observer options on each invocation, so the closure captures
-              the LATEST logger, not the one from when the mutation started.
-              On a mid-flight account switch the log goes to the wrong
-              account's file. Solutions: (a) move logging into `mutationFn`'s
-              `try/catch` using the 2nd `logger` parameter (frozen via
-              snapshot), or (b) propagate the logger via `onMutate` context.
-              Note: the wrapper auto-logs unhandled errors in `mutationFn`
-              already — duplicate `logger.error` in onError is also wrong
-              for this reason.
-            - `loggerRegistry.systemLogger` used in account-scoped code paths
-              (anywhere user-/account-specific data is logged) — should use
-              the active-account logger via `useLogger()` in React or
-              `getAccountLogger(accountId)` outside React. `systemLogger` is
-              only correct for boot, global error handlers, and devtools.
-            - Logger reference captured in `useEffect`, `useCallback`,
-              `useMemo` whose deps array omits the captured logger — stale
-              logger when active account changes. Flag if the closure body
-              uses logger AND active account can change during the
-              component's lifetime.
-            - Logger captured at module load (`const logger =
-              registry.systemLogger` at top of file) and used inside an
-              account-scoped function — frozen at module-init, never reflects
-              account switches. Especially bad inside long-lived singletons
-              or subscriptions.
-            - Logger captured in a long-lived async chain (e.g., `setTimeout`,
-              `setInterval`, websocket / event-emitter subscription created
-              once but firing across account switches) — stale by the time it
-              writes. Either re-resolve via `getAccountLogger` at fire time,
-              or tie the subscription's lifecycle to the active account.
+            Logger correctness — logs are sandboxed per active account.
+            Bug shape: logger captured at one moment, used after an account
+            switch, writing user A's data into user B's file. Flag any site
+            where this can happen, including:
+            - `useMutation` from `@tanstack/react-query` instead of `@safely/ux`.
+            - `logger`/`useLogger()` used inside `useMutation` callbacks
+              (`onError`/`onSuccess`/`onMutate`/`onSettled`) — fix: log inside
+              `mutationFn` via the 2nd `logger` arg, or pass via `onMutate`
+              context. Duplicate `logger.error` in `onError` is also wrong
+              (wrapper auto-logs `mutationFn` errors).
+            - `loggerRegistry.systemLogger` in account-scoped code (use
+              `useLogger()` / `getAccountLogger(accountId)` instead;
+              `systemLogger` is only for boot / global handlers / devtools).
+            - Logger captured in `useEffect`/`useCallback`/`useMemo` with deps
+              omitting it, at module load, or in long-lived async (timers,
+              subscriptions) that survive account switches.
 
             Data integrity:
-            - Critical `AsyncStorage` write without error handling
+            - Critical `mmkv` or `keychain` or android secure storage interaction issues
             - Migration that can run twice or leave partial state
             - Optimistic update with no rollback on server error
             - Reducer mutating state instead of returning a new object
@@ -218,3 +194,44 @@ jobs:
               GitHub tools above.
             - Never list what you checked or what looks good.
             - Maximum 7 inline comments per PR — if more, keep the 7 most severe.
+
+            ## Required machine-readable summary
+
+            Every posted comment is critical by definition (per the rules
+            above). Before finishing, you MUST write a summary file using
+            the `Write` tool to `$GITHUB_WORKSPACE/.claude-review.json`
+            with this exact shape:
+
+            {
+              "critical": <int>,
+              "items": [
+                {"file": "<path>", "line": <int>, "summary": "<one sentence>"}
+              ]
+            }
+
+            `critical` equals the number of inline comments you posted.
+            Always create the file, even when there are no findings — write
+            `{"critical": 0, "items": []}` in that case. Invalid JSON or a
+            missing file fails the pipeline.
+
+      - name: Enforce critical findings gate
+        if: always() && steps.claude.outcome != 'cancelled' && steps.claude.outcome != 'skipped'
+        run: |
+          set -euo pipefail
+          f="$GITHUB_WORKSPACE/.claude-review.json"
+          if [ ! -f "$f" ]; then
+            echo "::error::Claude review did not produce $f — failing the gate."
+            exit 1
+          fi
+          if ! jq -e . "$f" >/dev/null 2>&1; then
+            echo "::error::$f is not valid JSON."
+            cat "$f" || true
+            exit 1
+          fi
+          critical=$(jq -r '.critical // 0' "$f")
+          echo "Claude review summary: critical=$critical"
+          if [ "$critical" -gt 0 ]; then
+            echo "::error::Claude review found $critical critical issue(s) — failing the pipeline."
+            jq '.items[]? | select(.severity=="critical")' "$f" || true
+            exit 1
+          fi
