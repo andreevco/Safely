@@ -1,4 +1,5 @@
-import Big, { BigSource } from 'big.js';
+import type { BigSource } from 'big.js';
+import Big from 'big.js';
 
 export function isInteger(val: BigSource | bigint): boolean {
     if (typeof val === 'bigint') {

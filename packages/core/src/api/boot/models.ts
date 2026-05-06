@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import { Build, UserCountryInfo } from '../../entities';
+import type { Build, UserCountryInfo } from '../../entities';
 
 export interface BootParams {
     build: Build;

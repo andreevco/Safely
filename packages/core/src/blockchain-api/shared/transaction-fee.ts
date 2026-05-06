@@ -1,4 +1,4 @@
-import { CryptoAsset, CryptoAssetAmount } from '../../entities';
+import type { CryptoAsset, CryptoAssetAmount } from '../../entities';
 
 export type TransactionFee = TransactionFeeCrypto<CryptoAsset>;
 

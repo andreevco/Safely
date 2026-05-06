@@ -1,8 +1,8 @@
 import { ContactId } from './contact-id';
-import { ContactMeta } from './contact-meta';
-import { SContactIn, SContactOut } from './contact.stored';
-import { IContact } from './I-contact';
-import { BLOCKCHAIN_NAME } from '../blockchain/blockchain-name';
+import type { ContactMeta } from './contact-meta';
+import type { SContactIn, SContactOut } from './contact.stored';
+import type { IContact } from './I-contact';
+import type { BLOCKCHAIN_NAME } from '../blockchain/blockchain-name';
 
 export class Contact implements IContact {
     public static restoreContact(sContact: SContactOut): Contact {

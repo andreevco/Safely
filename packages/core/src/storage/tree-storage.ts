@@ -1,4 +1,4 @@
-import { IEnumerableStorage, ITreeStorage } from '../di';
+import type { IEnumerableStorage, ITreeStorage } from '../di';
 
 const SEPARATOR = '..';
 

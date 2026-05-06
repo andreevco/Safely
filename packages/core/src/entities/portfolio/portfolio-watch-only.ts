@@ -1,11 +1,11 @@
-import { WatchOnlySource } from './I-portfolio';
-import { PortfolioIdWatchOnly } from './portfolio-id-watch-only';
-import { PortfolioMeta } from './portfolio-meta';
+import type { WatchOnlySource } from './I-portfolio';
+import type { PortfolioIdWatchOnly } from './portfolio-id-watch-only';
+import type { PortfolioMeta } from './portfolio-meta';
 import { PortfolioWatchOnlyBase } from './portfolio-watch-only-base';
-import { SPortfolioBtcWatchOnlyIn, SPortfolioBtcWatchOnlyOut } from './portfolio.stored';
+import type { SPortfolioBtcWatchOnlyIn, SPortfolioBtcWatchOnlyOut } from './portfolio.stored';
 import { btcNetworkByPortfolioNetworkType, BtcWalletType, VMType } from '../blockchain';
 import { BtcWalletId } from '../derivation/btc/btc-wallet-id';
-import { BtcWalletReadOnly } from '../derivation/btc/I-btc-wallet';
+import type { BtcWalletReadOnly } from '../derivation/btc/I-btc-wallet';
 
 export class PortfolioWatchOnlyBtc extends PortfolioWatchOnlyBase {
     public static restorePortfolio(sPortfolio: SPortfolioBtcWatchOnlyOut): PortfolioWatchOnlyBtc {

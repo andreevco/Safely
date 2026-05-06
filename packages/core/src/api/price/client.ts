@@ -1,12 +1,11 @@
-import {
+import type {
     CurrentPrice,
-    CurrentPriceSchema,
     GetCurrentPriceParams,
     HistoricalPrice,
-    HistoricalPriceSchema,
     GetHistoricalPriceParams
 } from './models';
-import { IIdentifiable } from '../../utils';
+import { CurrentPriceSchema, HistoricalPriceSchema } from './models';
+import type { IIdentifiable } from '../../utils';
 import { ApiClient } from '../../utils/fetch';
 
 export class PriceApi extends ApiClient implements IIdentifiable {

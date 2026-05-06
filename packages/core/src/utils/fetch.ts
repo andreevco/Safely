@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import type { z } from 'zod';
 
 import { BtcApiError } from '../api/btc/errors';
 import { APIErrorSchema } from '../api/btc/models';

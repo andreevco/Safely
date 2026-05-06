@@ -2,25 +2,22 @@ import { PortfolioType, WatchOnlySource } from './I-portfolio';
 import { PortfolioBip39 } from './portfolio-bip39';
 import { PortfolioIdMnemonicBased } from './portfolio-id';
 import { PortfolioIdWatchOnly } from './portfolio-id-watch-only';
-import { NoIconPortfolioMeta, PortfolioMeta } from './portfolio-meta';
-import { PortfolioNetworkType } from './portfolio-network-type';
-import { PortfolioWatchOnly, PortfolioWatchOnlyBtc } from './portfolio-watch-only';
+import type { NoIconPortfolioMeta, PortfolioMeta } from './portfolio-meta';
+import type { PortfolioNetworkType } from './portfolio-network-type';
+import type { PortfolioWatchOnly } from './portfolio-watch-only';
+import { PortfolioWatchOnlyBtc } from './portfolio-watch-only';
 import type { SPortfolioOut, SPortfolioWatchOnlyOut } from './portfolio.stored';
 import { BtcXpub } from '../../blockchain-api/btc/btc-xpub';
-import { ISecretEncryptor } from '../../di';
+import type { ISecretEncryptor } from '../../di';
 import { assertUnreachable } from '../../utils';
-import { BtcNetwork, BtcWalletType, btcNetworkByPortfolioNetworkType, VMType } from '../blockchain';
+import type { BtcNetwork } from '../blockchain';
+import { BtcWalletType, btcNetworkByPortfolioNetworkType, VMType } from '../blockchain';
 import { DerivationChainItemBtcSeed, Derivation } from '../derivation';
 import { BtcWalletId } from '../derivation/btc/btc-wallet-id';
-import { BtcWalletReadOnly } from '../derivation/btc/I-btc-wallet';
+import type { BtcWalletReadOnly } from '../derivation/btc/I-btc-wallet';
 import { InvalidMnemonicError, PortfolioGenerationFailedError } from '../errors';
-import {
-    MNEMONIC_TYPE,
-    MnemonicResource,
-    validateMnemonic,
-    IMnemonicAccessor,
-    MnemonicVault
-} from '../mnemonic';
+import type { IMnemonicAccessor } from '../mnemonic';
+import { MNEMONIC_TYPE, MnemonicResource, validateMnemonic, MnemonicVault } from '../mnemonic';
 import { BtcBip39SeedProducer } from '../seed';
 
 export class PortfolioFactory {

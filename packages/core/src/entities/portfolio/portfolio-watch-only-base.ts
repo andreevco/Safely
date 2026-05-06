@@ -1,7 +1,8 @@
-import { IPortfolioWatchOnly, PortfolioType, WatchOnlySource } from './I-portfolio';
-import { PortfolioIdWatchOnly } from './portfolio-id-watch-only';
-import { PortfolioMeta } from './portfolio-meta';
-import { VMType } from '../blockchain';
+import type { IPortfolioWatchOnly, WatchOnlySource } from './I-portfolio';
+import { PortfolioType } from './I-portfolio';
+import type { PortfolioIdWatchOnly } from './portfolio-id-watch-only';
+import type { PortfolioMeta } from './portfolio-meta';
+import type { VMType } from '../blockchain';
 import type { WalletReadOnly } from '../derivation/wallet-read-only';
 
 export abstract class PortfolioWatchOnlyBase implements IPortfolioWatchOnly {
