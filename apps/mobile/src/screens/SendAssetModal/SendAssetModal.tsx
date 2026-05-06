@@ -237,7 +237,11 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
                     isMaxAvailable={meta.isMaxAvailable}
                     formattedAlternativeAmount={alternativeAmount}
                     onSwitchFiatMode={hasPrice ? handleSwitchFiatMode : undefined}
-                    currencySymbol={amountInputType === 'fiat' ? activeFiat.id.symbol : undefined}
+                    currencySymbol={
+                        amountInputType === 'fiat'
+                            ? activeFiat.id.symbol
+                            : asset?.amount.asset.symbol
+                    }
                     remainingBalance={remainingBalance}
                     hasInsufficientBalance={hasInsufficientBalance}
                 />
