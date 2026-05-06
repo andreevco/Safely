@@ -11,16 +11,22 @@ const HIT_SLOP = { top: 8, bottom: 8, left: 8, right: 8 };
 
 type Props = {
     children: ReactNode;
+    disabled?: boolean;
     onPress?: () => void;
 };
 
-export const Action = ({ children, onPress }: Props) => {
+export const Action = ({ children, disabled, onPress }: Props) => {
     const { variant } = useBannerContext();
 
     styles.useVariants({ variant });
 
     return (
-        <TouchableOpacity style={styles.container} onPress={onPress} hitSlop={HIT_SLOP}>
+        <TouchableOpacity
+            disabled={disabled || !onPress}
+            style={styles.container}
+            onPress={onPress}
+            hitSlop={HIT_SLOP}
+        >
             <Text variant="labelM" style={styles.text}>
                 {children}
             </Text>
