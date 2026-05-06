@@ -1,21 +1,12 @@
-import { RatedCryptoAssetAmount, Recipient } from '@safely/core';
+import { Recipient } from '@safely/core';
 
 import { SendFormError } from '../errors';
 import { ContactSuggestion, PortfolioSuggestion } from '../types';
-import {
-    BLOCKCHAIN_DEFAULT_TOKENS,
-    MIN_RECIPIENT_ADDRESS_LENGTH,
-    parseRecipient,
-    recipientSchema
-} from '../utils';
+import { MIN_RECIPIENT_ADDRESS_LENGTH, parseRecipient, recipientSchema } from '../utils';
 
 export interface RecipientValidationResult {
     recipient: Recipient | undefined;
     error: string | undefined;
-    asset?: {
-        assetId: string;
-        asset: RatedCryptoAssetAmount;
-    };
     suggestion?: {
         id: string;
         address: string;
@@ -28,7 +19,6 @@ export interface RecipientValidationResult {
 export function validateRecipientInput(
     value: string,
     context: {
-        ratedAssets: RatedCryptoAssetAmount[];
         activeWalletAddress: string;
         portfolioSuggestions: PortfolioSuggestion[];
         contactSuggestions: ContactSuggestion[];
@@ -80,17 +70,9 @@ export function validateRecipientInput(
         return { recipient: undefined, error: SendFormError.SELF_TRANSFER, suggestion };
     }
 
-    const defaultAsset = BLOCKCHAIN_DEFAULT_TOKENS[parsedRecipient.blockchain];
-    const parsedAsset = context.ratedAssets.find(({ amount }) =>
-        amount.asset.id.isEq(defaultAsset.id)
-    );
-
     return {
         recipient: parsedRecipient,
         error: undefined,
-        asset: parsedAsset
-            ? { assetId: defaultAsset.id.toString(), asset: parsedAsset }
-            : undefined,
         suggestion
     };
 }

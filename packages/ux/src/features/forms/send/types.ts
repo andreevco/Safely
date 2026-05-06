@@ -83,14 +83,11 @@ export interface SendFormInitialValues {
     addressBookName?: string;
     amount?: string;
     amountInputType?: AmountInputType;
-    isMax?: boolean;
-    stepIndex?: number;
 }
 
 export interface SendFormValues {
     recipient: string;
     addressBookName: string;
-    recipientLabel: string | undefined;
     amount: string;
     amountInputType: AmountInputType;
     isMax: boolean;
@@ -115,67 +112,3 @@ export interface SendSuggestionState {
     portfoliosIds: string[] | undefined;
     contactsIds: string[] | undefined;
 }
-
-export interface SendFormState {
-    values: SendFormValues;
-    parsed: SendFormParsed;
-    errors: SendFormErrors;
-    stepIndex: number;
-    suggestion: SendSuggestionState;
-}
-
-export type SendFormAction =
-    | { type: 'SET_RECIPIENT'; value: string; label?: string }
-    | { type: 'SET_ADDRESS_BOOK_NAME'; name: string }
-    | { type: 'SET_AMOUNT'; value: string }
-    | {
-          type: 'SET_AMOUNT_VALIDATED';
-          parsed: AmountWithInputType<CryptoAsset> | undefined;
-          formatted: string;
-          error: string | undefined;
-      }
-    | { type: 'SET_AMOUNT_INPUT_TYPE'; value: AmountInputType }
-    | { type: 'SET_IS_MAX'; value: boolean }
-    | {
-          type: 'SET_ASSET';
-          assetId: string;
-          asset: RatedCryptoAssetAmount | undefined;
-          error: string | undefined;
-      }
-    | { type: 'NEXT_STEP' }
-    | { type: 'PREV_STEP' }
-    | { type: 'RESET' }
-    | {
-          type: 'VALIDATE_RECIPIENT_RESULT';
-          recipient: Recipient | undefined;
-          error: string | undefined;
-          asset?: {
-              assetId: string;
-              asset: RatedCryptoAssetAmount;
-          };
-          suggestion?: {
-              id: string;
-              address: string;
-              label: string;
-              portfoliosIds: string[];
-              contactsIds: string[];
-          };
-      }
-    | {
-          type: 'SELECT_SUGGESTION';
-          id: string;
-          address: string;
-          label?: string;
-          portfoliosIds: string[];
-          contactsIds: string[];
-      }
-    | { type: 'CLEAR_SUGGESTION' }
-    | {
-          type: 'RESTORE_DRAFT';
-          recipient: Recipient;
-          asset: RatedCryptoAssetAmount;
-          assetId: string;
-          amountInputType: AmountInputType;
-          isMax: boolean;
-          stepIndex: number;
-      };
