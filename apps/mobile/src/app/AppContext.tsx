@@ -1,15 +1,9 @@
 import { getLocales } from 'expo-localization';
-import { FC, PropsWithChildren, Suspense, useEffect, useMemo } from 'react';
+import { FC, PropsWithChildren, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AppState } from 'react-native';
 
-import {
-    AppContext,
-    IAppContext,
-    Security,
-    UnlockableSecuredEncryptedStorage,
-    useSendFormDraftLifecycle
-} from '@safely/ux';
+import { AppContext, IAppContext, Security, UnlockableSecuredEncryptedStorage } from '@safely/ux';
 
 import { navigationRef } from '@mobile/app/navigation/navigationRef';
 import { useMobileSecurityCheck } from '@mobile/entities/security';
@@ -101,9 +95,6 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
     return (
         <AppContext value={appContext}>
             <SecurityCheckInitializer />
-            <Suspense fallback={null}>
-                <SendFormDraftLifecycleInitializer />
-            </Suspense>
             {children}
         </AppContext>
     );
@@ -115,12 +106,6 @@ const SecurityCheckInitializer: FC = () => {
     useEffect(() => {
         security.check = check;
     }, [check]);
-
-    return null;
-};
-
-const SendFormDraftLifecycleInitializer: FC = () => {
-    useSendFormDraftLifecycle();
 
     return null;
 };

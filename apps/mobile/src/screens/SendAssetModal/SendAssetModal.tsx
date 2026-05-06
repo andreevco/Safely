@@ -1,31 +1,29 @@
-import {
-    useNavigation,
-    NavigationProp,
-    StaticScreenProps,
-    useFocusEffect
-} from '@react-navigation/native';
-import { useRef, useCallback, useMemo, useEffect } from 'react';
+import { useNavigation, NavigationProp, StaticScreenProps } from '@react-navigation/native';
+import { useRef, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TextInput, View } from 'react-native';
 import PagerView from 'react-native-pager-view';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
-import { BTC_ASSET, ellipsisMiddle } from '@safely/core';
+import { assertUnreachable, ellipsisMiddle } from '@safely/core';
 import {
     useSendForm,
     SendFormResult,
-    SendFormError,
     useNumberFormatter,
     useActiveFiat,
-    useAppContext
+    useAppContext,
+    type SendFormView
 } from '@safely/ux';
 
 import { SendConfirmationParams } from '@mobile/screens/ConfirmationScreen';
 import { Button, Screen, Text } from '@mobile/shared/ui';
 import { ArrowLeft16, Icon } from '@mobile/shared/ui/Icon';
 
+import { AmountPagerPage } from './AmountPagerPage';
+import { RecipientPagerPage } from './RecipientPagerPage';
 import { styles } from './SendAssetModal.styles';
-import { AmountStep, RecipientStep } from './steps';
+import { useLastSeen } from './useLastSeen';
+import { useResetSubmittedOnFocus } from './useResetSubmittedOnFocus';
 import { MaskedInputRef } from '../../../modules/safely-masked-input/src';
 
 type SendStackParamList = {
@@ -59,102 +57,61 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
     const recipientInputRef = useRef<TextInput>(null);
     const amountInputRef = useRef<MaskedInputRef>(null);
 
-    const { state, actions, step, meta, suggestionSelection } = useSendForm({
+    const view = useSendForm({
         onSubmit: handleSubmit,
         shouldResetForm: false,
-        initialValues: { recipient: address, amount }
+        initialValues: {
+            recipient: address,
+            amount
+        }
     });
 
-    useFocusEffect(actions.onBackToEditing);
+    useResetSubmittedOnFocus(view);
 
-    const amountInputType = state.values.amountInputType;
-    const asset = state.parsed.asset;
-    const hasPrice = !!asset?.price;
+    const lastAmountView = useLastSeen(view.state === 'amount' ? view : null);
 
-    const handleSwitchFiatMode = useCallback(() => {
-        const newType = amountInputType === 'fiat' ? 'crypto' : 'fiat';
-        actions.setAmountInputType(newType);
-    }, [amountInputType, actions]);
-
-    const decimals = asset?.amount.asset.decimals ?? BTC_ASSET.decimals;
-
-    const alternativeAmount = useMemo(() => {
-        const parsedAmount = state.parsed.amount;
-        const cryptoSymbol = asset?.amount.asset.symbol ?? 'BTC';
-        const fiatSymbol = activeFiat.id.symbol;
-
-        if (!parsedAmount) {
-            return amountInputType === 'crypto' ? `0 ${fiatSymbol}` : `0 ${cryptoSymbol}`;
-        }
-
-        if (amountInputType === 'crypto') {
-            const fiat = parsedAmount.fiatAssetAmount;
-            return fiat ? fiat.format(formatter, { currencyDisplay: 'code' }) : `0 ${fiatSymbol}`;
-        } else {
-            const crypto = parsedAmount.cryptoAssetAmount;
-            return crypto.format(formatter);
-        }
-    }, [state.parsed.amount, amountInputType, formatter, asset, activeFiat]);
-
-    const remainingBalance = useMemo(() => {
-        if (!asset) return '0 BTC';
-
-        const totalBalance = asset.amount;
-        const parsedAmount = state.parsed.amount;
-        const usedAmount = parsedAmount?.cryptoAssetAmount;
-
-        if (!usedAmount) {
-            return totalBalance.format(formatter);
-        }
-
-        const remaining = totalBalance.relativeAmount.minus(usedAmount.relativeAmount);
-        if (remaining.lt(0)) {
-            return totalBalance.amountMul(0).format(formatter);
-        }
-
-        return totalBalance
-            .amountSub({ relativeAmount: usedAmount.relativeAmount })
-            .format(formatter);
-    }, [asset, state.parsed.amount, formatter]);
-
-    const hasInsufficientBalance = state.errors.amount === SendFormError.INSUFFICIENT_BALANCE;
-
-    const isFirstStep = step.index === 0;
+    const stepIndex = computeStepIndex(view);
+    const isMaxApplied = view.state === 'amount' && view.status === 'max';
 
     useEffect(() => {
-        pagerRef.current?.setPage(step.index);
+        pagerRef.current?.setPage(stepIndex);
+        if (view.state === 'submitted') return;
 
         const timer =
-            state.parsed.isMax && step.index === 1
+            isMaxApplied && stepIndex === 1
                 ? setTimeout(() => amountInputRef.current?.blur(), 250)
                 : setTimeout(
-                      () => [recipientInputRef, amountInputRef][step.index]?.current?.focus(),
+                      () => [recipientInputRef, amountInputRef][stepIndex]?.current?.focus(),
                       250
                   );
 
         return () => clearTimeout(timer);
-    }, [step.index, state.parsed.isMax]);
+    }, [stepIndex, isMaxApplied, view.state]);
+
+    const next = 'next' in view ? view.next : undefined;
+    const prev = view.state === 'amount' ? view.prev : undefined;
+    const isOnAmountStep = stepIndex === 1;
 
     return (
         <Screen>
             <Screen.Header>
-                {isFirstStep ? (
-                    <Screen.Header.CloseButton />
-                ) : (
-                    <Screen.Header.Button onPress={step.prev}>
+                {isOnAmountStep ? (
+                    <Screen.Header.Button onPress={prev}>
                         <Icon icon={ArrowLeft16} />
                     </Screen.Header.Button>
+                ) : (
+                    <Screen.Header.CloseButton />
                 )}
                 <Screen.Header.Title>
                     <Text variant="titleS" textAlign="center">
                         {t('send.title')}
                     </Text>
-                    {!isFirstStep && state.parsed.recipient && (
+                    {isOnAmountStep && lastAmountView && (
                         <Animated.View
                             entering={FadeIn.duration(150)}
                             exiting={FadeOut.duration(150)}
                         >
-                            {meta.recipientMeta ? (
+                            {lastAmountView.recipientMeta ? (
                                 <View style={styles.recipientRow}>
                                     <Text
                                         variant="bodyM"
@@ -162,11 +119,11 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
                                         numberOfLines={1}
                                         style={styles.recipientName}
                                     >
-                                        {meta.recipientMeta.meta.name}
+                                        {lastAmountView.recipientMeta.meta.name}
                                     </Text>
                                     <Text variant="bodyM" color="tertiary">
                                         {' '}
-                                        {ellipsisMiddle(state.parsed.recipient.address)}
+                                        {ellipsisMiddle(lastAmountView.parsed.recipient.address)}
                                     </Text>
                                 </View>
                             ) : (
@@ -176,19 +133,14 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
                                     color="secondary"
                                     numberOfLines={1}
                                 >
-                                    {ellipsisMiddle(state.parsed.recipient.address)}
+                                    {ellipsisMiddle(lastAmountView.parsed.recipient.address)}
                                 </Text>
                             )}
                         </Animated.View>
                     )}
                 </Screen.Header.Title>
                 <View style={styles.nextButton}>
-                    <Button
-                        size="small"
-                        type="primary"
-                        disabled={!step.canGoNext}
-                        onPress={step.canGoNext ? step.next : undefined}
-                    >
+                    <Button size="small" type="primary" disabled={!next} onPress={next}>
                         {t('common.next')}
                     </Button>
                 </View>
@@ -196,50 +148,32 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
             <PagerView
                 ref={pagerRef}
                 scrollEnabled={false}
-                initialPage={step.index}
+                initialPage={stepIndex}
                 style={styles.pagerView}
             >
-                <RecipientStep
-                    onSubmitEditing={step.canGoNext ? step.next : undefined}
-                    key="recipient"
-                    inputRef={recipientInputRef}
-                    value={state.values.recipient}
-                    error={
-                        meta.suggestions.portfolios.length > 0 ||
-                        meta.suggestions.contacts.length > 0
-                            ? undefined
-                            : state.errors.recipient
-                    }
-                    isValidAddress={!!state.parsed.recipient}
-                    onChangeText={actions.setRecipient}
-                    suggestions={meta.suggestions}
-                    restoredSuggestions={meta.restoredSuggestions}
-                    selectedId={suggestionSelection.selectedId}
-                    onSelectSuggestion={suggestionSelection.select}
-                    onAddressBookNameChange={actions.setAddressBookName}
-                    addressBookName={state.values.addressBookName}
-                />
-                <AmountStep
-                    key="amount"
+                <RecipientPagerPage view={view} inputRef={recipientInputRef} />
+                <AmountPagerPage
+                    view={view}
                     inputRef={amountInputRef}
-                    decimals={decimals}
                     decimalSeparator={numberFormatLocale.decimalSeparator}
-                    value={state.values.amount}
-                    onChangeText={actions.setAmount}
-                    isMax={state.parsed.isMax}
-                    onMaxPress={() => actions.setIsMax(true)}
-                    onMaxReset={() => {
-                        actions.setIsMax(false);
-                        actions.setAmount('');
-                    }}
-                    isMaxAvailable={meta.isMaxAvailable}
-                    formattedAlternativeAmount={alternativeAmount}
-                    onSwitchFiatMode={hasPrice ? handleSwitchFiatMode : undefined}
-                    currencySymbol={amountInputType === 'fiat' ? activeFiat.id.symbol : undefined}
-                    remainingBalance={remainingBalance}
-                    hasInsufficientBalance={hasInsufficientBalance}
+                    fiatSymbol={activeFiat.id.symbol}
+                    formatter={formatter}
                 />
             </PagerView>
         </Screen>
     );
 };
+
+function computeStepIndex(view: SendFormView): number {
+    switch (view.state) {
+        case 'amount':
+        case 'submitted':
+            return 1;
+        case 'recipient':
+        case 'creatingContact':
+        case 'restoring':
+            return 0;
+        default:
+            return assertUnreachable(view);
+    }
+}
