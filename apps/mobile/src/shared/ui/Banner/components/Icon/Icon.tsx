@@ -18,7 +18,7 @@ export const Icon = ({ icon, disabled, onPress }: Props) => {
     styles.useVariants({ variant });
 
     return (
-        <TouchableOpacity disabled={disabled} onPress={onPress} hitSlop={HIT_SLOP}>
+        <TouchableOpacity disabled={disabled || !onPress} onPress={onPress} hitSlop={HIT_SLOP}>
             <UIIcon icon={icon} style={styles.icon} />
         </TouchableOpacity>
     );

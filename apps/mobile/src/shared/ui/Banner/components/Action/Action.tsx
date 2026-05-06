@@ -11,17 +11,18 @@ const HIT_SLOP = { top: 8, bottom: 8, left: 8, right: 8 };
 
 type Props = {
     children: ReactNode;
+    disabled?: boolean;
     onPress?: () => void;
 };
 
-export const Action = ({ children, onPress }: Props) => {
+export const Action = ({ children, disabled, onPress }: Props) => {
     const { variant } = useBannerContext();
 
     styles.useVariants({ variant });
 
     return (
         <TouchableOpacity
-            disabled={!onPress}
+            disabled={disabled || !onPress}
             style={styles.container}
             onPress={onPress}
             hitSlop={HIT_SLOP}

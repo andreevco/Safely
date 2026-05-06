@@ -25,12 +25,12 @@ const BANNER_ICONS: Record<string, IconProps['icon']> = {
 
 export function HomeBanners() {
     const { notices } = useBootConfig();
-    const { data: dismissedIds } = useDismissedBannerIdsQuery();
+    const { data: dismissedIds, isLoading } = useDismissedBannerIdsQuery();
 
     const dismissed = new Set(dismissedIds ?? []);
     const visible = notices.home_screen_banners.filter(b => !dismissed.has(b.id));
 
-    if (visible.length === 0) {
+    if (isLoading || visible.length === 0) {
         return null;
     }
 
