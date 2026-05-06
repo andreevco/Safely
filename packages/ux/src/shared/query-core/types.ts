@@ -1,4 +1,4 @@
-import { CacheSchemaKey } from './cache-config';
+import type { CacheSchemaKey } from './cache-config';
 
 export type WithIsActualised<T> = T & { isActualised: boolean };
 

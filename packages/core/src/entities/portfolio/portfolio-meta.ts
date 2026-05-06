@@ -1,4 +1,4 @@
-import { OptionalProperty } from '../../utils';
+import type { OptionalProperty } from '../../utils';
 
 export interface PortfolioMeta {
     name: string;

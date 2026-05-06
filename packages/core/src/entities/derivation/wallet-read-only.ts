@@ -1,3 +1,3 @@
-import { BtcWalletReadOnly } from './btc/I-btc-wallet';
+import type { BtcWalletReadOnly } from './btc/I-btc-wallet';
 
 export type WalletReadOnly = BtcWalletReadOnly;

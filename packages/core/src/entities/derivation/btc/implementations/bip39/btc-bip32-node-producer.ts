@@ -2,8 +2,8 @@ import { HDKey } from '@scure/bip32';
 
 import { assertUnreachable } from '../../../../../utils/types';
 import { BtcNetwork, BtcWalletType } from '../../../../blockchain';
-import { ISeedProducer } from '../../../../seed/I-seed-producer';
-import { IBtcNodeProducer } from '../../I-btc-node-producer';
+import type { ISeedProducer } from '../../../../seed/I-seed-producer';
+import type { IBtcNodeProducer } from '../../I-btc-node-producer';
 
 export class BtcBip32NodeProducer implements IBtcNodeProducer {
     constructor(

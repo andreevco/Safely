@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 
-import { getErrorText, TranslatableErrorsConfig } from '@safely/core';
+import type { TranslatableErrorsConfig } from '@safely/core';
+import { getErrorText } from '@safely/core';
 
 import { useTranslate } from '../i18n';
 

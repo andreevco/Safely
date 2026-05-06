@@ -1,8 +1,15 @@
 import { createContext, useContext } from 'react';
 
-import { Build, ITreeStorage, NumberFormatLocale, QrScanner, UserCountryInfo } from '@safely/core';
+import type {
+    Build,
+    ITreeStorage,
+    NumberFormatLocale,
+    QrScanner,
+    UserCountryInfo
+} from '@safely/core';
 
 import type { TranslateFn } from '../i18n/types';
+import type { Linking } from '../linking';
 import type { LoaderService } from '../loader/types';
 import type { ILoggerRegistry } from '../logger';
 import type { IUnlockableSecuredEncryptedStorage, Security } from '../security/types';
@@ -38,6 +45,8 @@ export interface IAppContext {
     numberFormatLocale: NumberFormatLocale;
 
     toast: ToastService;
+
+    linking: Linking;
 
     loader: LoaderService;
 

@@ -1,5 +1,5 @@
-import { BtcApiUtxo } from '../../api/btc';
-import { BtcAssetAmount } from '../../entities';
+import type { BtcApiUtxo } from '../../api/btc';
+import { BtcAssetAmount } from '../../entities/asset/exact-crypto-assets-amounts';
 import { isInteger } from '../../utils';
 
 export function getUtxoTotal(utxos: { value: string }[]) {

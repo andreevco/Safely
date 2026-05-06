@@ -1,12 +1,14 @@
-import Big, { BigSource } from 'big.js';
+import type { BigSource } from 'big.js';
+import Big from 'big.js';
 
-import { Logger } from '@safely/sync';
+import type { Logger } from '@safely/sync';
 
 import type { CryptoAssetAmount, FiatAssetAmount } from '../../entities';
-import { isCryptoAsset, isFiatAsset } from '../../entities';
+import { isCryptoAsset } from '../../entities/asset/crypto-asset';
+import { isFiatAsset } from '../../entities/asset/fiat-asset';
 import { assertUnreachable } from '../types';
-import { NumberFormatLocale } from './locale-adapter';
-import { CryptoCurrencyDisplay, FiatCurrencyDisplay } from './types';
+import type { NumberFormatLocale } from './locale-adapter';
+import type { CryptoCurrencyDisplay, FiatCurrencyDisplay } from './types';
 import { SPACE } from '../string';
 
 interface FormatCryptoOptions {

@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 
-import { ExternalInputScheme, ExternalInputSchemeName } from '@safely/core';
+import type { ExternalInputScheme, ExternalInputSchemeName } from '@safely/core';
 
 import { useExternalInputParser } from './useExternalInputParser';
 import { useAppContext } from '../../shared';

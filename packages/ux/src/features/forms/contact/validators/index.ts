@@ -1,6 +1,6 @@
 import { parseAddress, UnsupportedBlockchainError } from '../../../../shared/address';
 import { ContactFormError } from '../errors';
-import { ContactFormParsedAddress } from '../types';
+import type { ContactFormParsedAddress } from '../types';
 
 export interface ContactNameValidationResult {
     parsed: string | undefined;

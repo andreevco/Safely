@@ -1,7 +1,9 @@
-import { HDKey, Versions } from '@scure/bip32';
+import type { Versions } from '@scure/bip32';
+import { HDKey } from '@scure/bip32';
 
 import * as bitcoin from './bitcoinjs';
-import { BtcNetwork, btcNetworkConfig, BtcWalletType } from '../../entities';
+import type { BtcNetwork } from '../../entities';
+import { btcNetworkConfig, BtcWalletType } from '../../entities/blockchain';
 import { assertUnreachable } from '../../utils';
 
 const EXTENDED_KEY_VERSIONS: Record<string, Versions> = {

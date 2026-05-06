@@ -1,4 +1,5 @@
-import { BTC_ASSET, BtcWallet, RatedCryptoAssetAmount } from '@safely/core';
+import type { BtcWallet, RatedCryptoAssetAmount } from '@safely/core';
+import { BTC_ASSET } from '@safely/core';
 
 import { useDerivedQuery } from '../../shared';
 import { useActiveBtcWallet } from '../portfolio';

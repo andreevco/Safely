@@ -1,9 +1,9 @@
-import {
+import type {
     QueryKey,
-    useSuspenseQuery,
     UseSuspenseQueryOptions,
     UseSuspenseQueryResult
 } from '@tanstack/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 
 import { useHydratedAt } from '../../contexts';
 import { useIsActualised } from '../persist-helpers';

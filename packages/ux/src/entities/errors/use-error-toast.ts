@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 
-import { TranslatableErrorsConfig } from '@safely/core';
+import type { TranslatableErrorsConfig } from '@safely/core';
 
 import { type ParseErrorOptions, useParseError } from '../../shared';
 import { useToast } from '../toast';

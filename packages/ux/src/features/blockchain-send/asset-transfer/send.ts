@@ -1,4 +1,5 @@
-import { BtcTransactionTemplate, TransactionTemplate } from '@safely/core';
+import type { TransactionTemplate } from '@safely/core';
+import { BtcTransactionTemplate } from '@safely/core';
 
 import {
     BroadcastedBtcTx,

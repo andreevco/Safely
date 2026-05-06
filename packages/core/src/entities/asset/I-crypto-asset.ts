@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { ASSET_TYPE, IAsset, IAssetId } from './I-asset';
-import { BLOCKCHAIN_NAME } from '../blockchain/blockchain-name';
+import type { ASSET_TYPE, IAsset, IAssetId } from './I-asset';
+import type { BLOCKCHAIN_NAME } from '../blockchain/blockchain-name';
 
 export interface ICryptoAssetId extends IAssetId {
     type: ASSET_TYPE.CRYPTO;

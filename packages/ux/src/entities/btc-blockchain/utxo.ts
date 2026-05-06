@@ -1,13 +1,8 @@
 import { useMemo } from 'react';
 
-import {
-    assertUnreachable,
-    BtcAssetAmount,
-    BtcWallet,
-    PortfolioType,
-    RequiredProperties
-} from '@safely/core';
-import { BtcApiUtxoWithOptionalTx } from '@safely/core/api/btc';
+import type { BtcWallet, RequiredProperties } from '@safely/core';
+import { assertUnreachable, BtcAssetAmount, PortfolioType } from '@safely/core';
+import type { BtcApiUtxoWithOptionalTx } from '@safely/core/api/btc';
 
 import {
     QUERIES_REFETCH_INTERVAL,

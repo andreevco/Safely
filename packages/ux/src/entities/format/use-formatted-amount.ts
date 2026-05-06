@@ -1,10 +1,10 @@
-import {
+import type {
     CryptoAssetAmount,
     CryptoCurrencyDisplay,
     FiatAssetAmount,
-    FiatCurrencyDisplay,
-    isFiatAssetAmount
+    FiatCurrencyDisplay
 } from '@safely/core';
+import { isFiatAssetAmount } from '@safely/core';
 
 import { useNumberFormatter } from './use-number-formatter';
 

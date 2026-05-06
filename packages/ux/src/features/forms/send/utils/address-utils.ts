@@ -1,4 +1,5 @@
-import { BLOCKCHAIN_NAME, BtcAddress, BtcRecipient, Recipient } from '@safely/core';
+import type { Recipient } from '@safely/core';
+import { BLOCKCHAIN_NAME, BtcAddress, BtcRecipient } from '@safely/core';
 
 import { SendFormError } from '../errors';
 

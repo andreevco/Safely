@@ -1,23 +1,25 @@
 import { keepPreviousData, useQueryClient } from '@tanstack/react-query';
 
-import {
+import type {
     BtcWalletReadOnly,
     SignableBtcWallet,
-    delay,
-    Id,
     IDerivation,
     IMnemonicAccessor,
     Portfolio,
-    PortfolioAlreadyExistsError,
     PortfolioBip39,
-    PortfolioFactory,
     PortfolioMeta,
-    PortfolioNetworkType,
-    PortfolioType,
     PortfolioWatchOnly,
     IPortfolioId,
+    ISecretEncryptor
+} from '@safely/core';
+import {
+    delay,
+    Id,
+    PortfolioAlreadyExistsError,
+    PortfolioFactory,
+    PortfolioNetworkType,
+    PortfolioType,
     generateBip39Accessor,
-    ISecretEncryptor,
     VMType
 } from '@safely/core';
 

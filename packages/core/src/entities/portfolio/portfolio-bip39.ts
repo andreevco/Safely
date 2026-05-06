@@ -1,15 +1,18 @@
-import { Derivation, DerivationChainItemBtcSeed, IDerivation } from '../derivation';
-import { IPortfolioDerivable, PortfolioType } from './I-portfolio';
-import { PortfolioIdMnemonicBased } from './portfolio-id';
-import { PortfolioMeta } from './portfolio-meta';
-import { SPortfolioBip39In, SPortfolioBip39Out } from './portfolio.stored';
-import { ISecretEncryptor } from '../../di';
-import { Id } from '../../utils';
+import type { IDerivation } from '../derivation';
+import { Derivation, DerivationChainItemBtcSeed } from '../derivation';
+import type { IPortfolioDerivable } from './I-portfolio';
+import { PortfolioType } from './I-portfolio';
+import type { PortfolioIdMnemonicBased } from './portfolio-id';
+import type { PortfolioMeta } from './portfolio-meta';
+import type { SPortfolioBip39In, SPortfolioBip39Out } from './portfolio.stored';
+import type { ISecretEncryptor } from '../../di';
+import type { Id } from '../../utils';
 import { BtcWalletType } from '../blockchain';
-import { SDerivation } from '../derivation/derivation.stored';
-import { MnemonicResource, IMnemonicVaultEncryptedSecretStored, MnemonicVault } from '../mnemonic';
+import type { SDerivation } from '../derivation/derivation.stored';
+import type { IMnemonicVaultEncryptedSecretStored } from '../mnemonic';
+import { MnemonicResource, MnemonicVault } from '../mnemonic';
 import { BtcBip39SeedProducer } from '../seed';
-import { PortfolioSecretRevealedStatus } from './portfolio-secret-revealed-status';
+import type { PortfolioSecretRevealedStatus } from './portfolio-secret-revealed-status';
 
 export class PortfolioBip39 implements IPortfolioDerivable {
     public static restorePortfolio(

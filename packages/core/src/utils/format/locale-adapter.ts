@@ -1,5 +1,5 @@
 import { SPACE } from '../string';
-import { FiatCurrencyDisplay, SignedCurrencyAffixes } from './types';
+import type { FiatCurrencyDisplay, SignedCurrencyAffixes } from './types';
 
 export interface NumberFormatLocale {
     readonly decimalSeparator: string;

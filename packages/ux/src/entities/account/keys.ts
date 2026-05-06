@@ -1,4 +1,4 @@
-import { FiatAsset } from '@safely/core';
+import type { FiatAsset } from '@safely/core';
 
 import { defineQueryKeys, finalKey, mappedParams } from '../../shared';
 

@@ -1,6 +1,7 @@
-import { QueryClient } from '@tanstack/react-query';
+import type { QueryClient } from '@tanstack/react-query';
 
-import { Rate, CryptoAsset, FiatAsset, PriceApi, toBig } from '@safely/core';
+import type { CryptoAsset, FiatAsset, PriceApi } from '@safely/core';
+import { Rate, toBig } from '@safely/core';
 
 import { assetKeys } from './keys';
 

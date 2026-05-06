@@ -1,13 +1,8 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useSuspenseQuery } from '@tanstack/react-query';
 
-import {
-    allowedContactMetaColors,
-    BLOCKCHAIN_NAME,
-    Contact,
-    ContactMeta,
-    IContact
-} from '@safely/core';
+import type { BLOCKCHAIN_NAME, ContactMeta, IContact } from '@safely/core';
+import { allowedContactMetaColors, Contact } from '@safely/core';
 
 import { useTranslate } from '../../shared';
 import { useActiveAccountQueryKey } from '../account';

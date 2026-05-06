@@ -1,7 +1,11 @@
 import { useCallback, useReducer } from 'react';
 
 import { contactFormReducer, createInitialState } from '../reducer';
-import { ContactFormInitialValues, ContactFormParsedAddress, ContactFormResult } from '../types';
+import type {
+    ContactFormInitialValues,
+    ContactFormParsedAddress,
+    ContactFormResult
+} from '../types';
 import { validateContactAddress, validateContactName } from '../validators';
 
 export interface UseContactFormStateParams {

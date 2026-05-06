@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { Logger } from '@safely/sync';
+import type { Logger } from '@safely/sync';
 
 import { useAppContext } from '../../shared';
 import { useActiveAccountQuery } from '../account/account-state';

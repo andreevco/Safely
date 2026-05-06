@@ -1,4 +1,4 @@
-import { ITreeStorage } from '@safely/sync';
+import type { ITreeStorage } from '@safely/sync';
 
 export interface Security {
     check(options?: { title?: string }): Promise<void>;

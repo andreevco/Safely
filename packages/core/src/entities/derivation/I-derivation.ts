@@ -1,8 +1,8 @@
 import type { IPortfolioDerivable } from '../portfolio';
 import type { IDerivationChainItemBtc } from './btc/I-derivation-chain-item-btc';
 import type { SDerivation } from './derivation.stored';
-import { Id } from '../../utils/id';
-import { IPortfolioId } from '../portfolio/portfolio-id';
+import type { Id } from '../../utils/id';
+import type { IPortfolioId } from '../portfolio/portfolio-id';
 
 export interface IDerivationId extends Id {
     derivationIndex: number;

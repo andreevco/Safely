@@ -1,8 +1,9 @@
 import { witnessStackToScriptWitness } from 'bitcoinjs-lib/src/psbt/psbtutils';
 
-import { bitcoin, Network } from './bitcoinjs';
+import type { Network } from './bitcoinjs';
+import { bitcoin } from './bitcoinjs';
 import { BtcAddress } from './btc-address';
-import { BtcApi, BtcApiUtxo } from '../../api/btc';
+import type { BtcApi, BtcApiUtxo } from '../../api/btc';
 
 export type PsbtRequest = {
     inputs: BtcApiUtxo[];

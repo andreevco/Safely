@@ -1,12 +1,8 @@
 import * as z from 'zod';
 
 import { ASSET_ID_DOMAIN, ASSET_TYPE } from './I-asset';
-import {
-    ICryptoAsset,
-    ICryptoAssetId,
-    NATIVE_CRYPTO_ASSET_ID_DOMAIN,
-    sCryptoAssetBase
-} from './I-crypto-asset';
+import type { ICryptoAsset, ICryptoAssetId } from './I-crypto-asset';
+import { NATIVE_CRYPTO_ASSET_ID_DOMAIN, sCryptoAssetBase } from './I-crypto-asset';
 import { Id } from '../../utils/id';
 import { BLOCKCHAIN_NAME } from '../blockchain/blockchain-name';
 

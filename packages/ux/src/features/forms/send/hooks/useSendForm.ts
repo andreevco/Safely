@@ -2,7 +2,7 @@ import { useMachine } from '@xstate/react';
 
 import { useAssets } from '../../../../entities';
 import { createSendFormMachine } from '../machine/machine';
-import { SendFormInitialValues, SendFormResult } from '../types';
+import type { SendFormInitialValues, SendFormResult } from '../types';
 import type { SendFormView } from '../view';
 import { useSendFormDispatchers } from './useSendFormDispatchers';
 import { useSendFormMachineInput } from './useSendFormMachineInput';
