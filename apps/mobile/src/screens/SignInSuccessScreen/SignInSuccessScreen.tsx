@@ -18,11 +18,11 @@ export const SignInSuccessScreen = () => {
     const navigation = useNavigation<RootStackNavigationProp>();
 
     const handleSignOut = useCallback(async () => {
-        await eraseAllData();
         navigation.reset({
             index: 0,
             routes: [{ name: 'WelcomeScreen' }]
         });
+        await eraseAllData();
     }, [eraseAllData, navigation]);
 
     return (

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { InMemoryEnumerableStorage } from './mocks';
 import { TreeStorage } from '../../src';
@@ -92,6 +92,36 @@ describe('TreeStorage', () => {
         expect(keys.some(k => k.includes('a..c'))).toBe(true);
     });
 
+    it('root clear removes everything stored through any descendant', async () => {
+        const base = new InMemoryEnumerableStorage();
+        const root = TreeStorage.root(base);
+
+        await root.setItem('top', 'v0');
+        await root.child('a').setItem('k1', 'v1');
+        await root.child(['nested', 'deep']).setItem('k2', 'v2');
+        expect((await base.getAllKeys()).length).toBe(3);
+
+        await root.clear();
+
+        expect(await base.getAllKeys()).toEqual([]);
+    });
+
+    it('child clear only removes keys under that subtree', async () => {
+        const base = new InMemoryEnumerableStorage();
+        const removePrefixSpy = vi.spyOn(base, 'removeItemsWithPrefix');
+        const root = TreeStorage.root(base);
+        const child = root.child(['scope']);
+
+        await child.setItem('k', 'v');
+        await root.child('other').setItem('keep', 'v');
+        await child.clear();
+
+        expect(removePrefixSpy).toHaveBeenCalledWith('scope..');
+        const keys = await base.getAllKeys();
+        expect(keys.some(k => k.startsWith('other..'))).toBe(true);
+        expect(keys.some(k => k.startsWith('scope..'))).toBe(false);
+    });
+
     it('clear does not remove keys from overlapping path names', async () => {
         const base = new InMemoryEnumerableStorage();
         const root = TreeStorage.root(base);
@@ -166,6 +196,31 @@ describe('TreeStorage', () => {
         expect(() => root.getItem('a/b')).toThrow(/outside/);
         expect(() => root.removeItem('a b')).toThrow(/outside/);
         expect(() => root.setItem('', 'v')).toThrow(/empty/);
+    });
+});
+
+describe('IEnumerableStorage contract: removeItemsWithPrefix("") ≡ clear()', () => {
+    it('empty prefix removes every key, like clear()', async () => {
+        const a = new InMemoryEnumerableStorage();
+        const b = new InMemoryEnumerableStorage();
+
+        for (const s of [a, b]) {
+            await s.setItem('alpha', '1');
+            await s.setItem('beta..gamma', '2');
+            await s.setItem('zeta', '3');
+        }
+
+        await a.clear();
+        await b.removeItemsWithPrefix('');
+
+        expect(await a.getAllKeys()).toEqual([]);
+        expect(await b.getAllKeys()).toEqual([]);
+    });
+
+    it('empty prefix on an empty storage is a no-op', async () => {
+        const s = new InMemoryEnumerableStorage();
+        await expect(s.removeItemsWithPrefix('')).resolves.toBeUndefined();
+        expect(await s.getAllKeys()).toEqual([]);
     });
 });
 

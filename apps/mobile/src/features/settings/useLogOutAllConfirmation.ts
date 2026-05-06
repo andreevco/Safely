@@ -19,11 +19,11 @@ export function useLogOutAllConfirmation() {
             sliderDescription: t('logOutAllAccounts.slider.description'),
             cancelLabel: t('logOutAllAccounts.cancel'),
             onConfirm: async () => {
-                await eraseAllData();
                 navigation.reset({
                     index: 0,
                     routes: [{ name: 'WelcomeScreen' }]
                 });
+                await eraseAllData();
             }
         });
     }, [eraseAllData, navigation, t]);

@@ -66,6 +66,7 @@ function createKeychainEnumerableStorage(
         requireAuthentication: false
     } satisfies SecureStore.SecureStoreOptions;
 
+    const clear = () => SafelySecureStoreEnum.clearAsync(options);
     return {
         getItem: key => SecureStore.getItemAsync(key, options),
         setItem: async (key, value) => {
@@ -74,11 +75,14 @@ function createKeychainEnumerableStorage(
         removeItem: async key => {
             await SecureStore.deleteItemAsync(key, options);
         },
-        clear: () => SafelySecureStoreEnum.clearAsync(options),
+        clear,
         getAllKeys: () => SafelySecureStoreEnum.getKeysAsync(options),
         getKeysWithPrefix: prefix => SafelySecureStoreEnum.getKeysWithPrefixAsync(prefix, options),
         removeItemsWithPrefix: prefix =>
-            SafelySecureStoreEnum.removeItemsWithPrefixAsync(prefix, options)
+            // IEnumerableStorage contract: empty prefix must behave as clear()
+            prefix === ''
+                ? clear()
+                : SafelySecureStoreEnum.removeItemsWithPrefixAsync(prefix, options)
     };
 }
 
