@@ -20,7 +20,12 @@ export const Action = ({ children, onPress }: Props) => {
     styles.useVariants({ variant });
 
     return (
-        <TouchableOpacity style={styles.container} onPress={onPress} hitSlop={HIT_SLOP}>
+        <TouchableOpacity
+            disabled={!onPress}
+            style={styles.container}
+            onPress={onPress}
+            hitSlop={HIT_SLOP}
+        >
             <Text variant="labelM" style={styles.text}>
                 {children}
             </Text>
