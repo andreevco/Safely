@@ -29,7 +29,7 @@ export function assertUnreachable(_: never): never {
 }
 
 export function assertUnreachableSoft(_: never): void {
-    console.error("Didn't expect to get here", _);
+    // let callers log the error themselves
 }
 
 export function notNullish<T>(x: T | null | undefined): x is T {

@@ -1,1 +1,2 @@
-export { useTranslate, useActiveLanguage, type TranslateFn } from './translate';
+export { useTranslate, useActiveLanguage } from './translate';
+export { type TranslateFn } from './types';

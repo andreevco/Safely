@@ -94,13 +94,17 @@ function DeviceItem(props: { ikPubHex: string; meta: DeviceMeta }) {
 export const AccountProtectedModal = () => {
     const { t } = useTranslation();
     const navigation = useNavigation();
-    const { getSecureEncryptedStorage } = useAppContext();
+    const {
+        storage: {
+            sync: { getSecureEncrypted }
+        }
+    } = useAppContext();
     const { mutateAsync: connectToNewDevice } = useConnectAccountToNewDevice();
     const devicesMeta = useSyncedDevicesMeta();
     const myIkPubHex = useCurrentDeviceIkPub();
 
     const handleAddDevice = async () => {
-        using secureEncryptedStorage = getSecureEncryptedStorage();
+        using secureEncryptedStorage = getSecureEncrypted();
         await secureEncryptedStorage.unlock();
 
         await connectToNewDevice({ secureEncryptedStorage });

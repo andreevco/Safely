@@ -23,7 +23,7 @@ import {
     QUERIES_REFETCH_INTERVAL,
     QUERIES_STALE_TIME
 } from '../../../shared';
-import { SendFormResult } from '../../forms';
+import type { SendFormResult } from '../../forms/send/types';
 import { useBtcEstimator } from '../btc/estimator';
 
 export const estimationKey = defineQueryKeys('estimation', {

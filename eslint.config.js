@@ -10,6 +10,7 @@ import pluginQuery from '@tanstack/eslint-plugin-query';
 import boundaries from 'eslint-plugin-boundaries';
 import isEqPlugin from './eslint-rules/isEqPlugin.js';
 import noDirectBitcoinjsLibPlugin from './eslint-rules/noDirectBitcoinjsLibPlugin.js';
+import noTanstackUseMutationPlugin from './eslint-rules/noTanstackUseMutationPlugin.js';
 
 export default [
     {
@@ -48,6 +49,7 @@ export default [
             'unused-imports': unusedImports,
             iseq: isEqPlugin,
             'no-direct-bitcoinjs-lib': noDirectBitcoinjsLibPlugin,
+            'no-tanstack-use-mutation': noTanstackUseMutationPlugin,
             boundaries
         },
         settings: {
@@ -69,6 +71,17 @@ export default [
             },
             'boundaries/elements': [
                 { type: 'core', pattern: 'packages/core/**/*', mode: 'full' },
+                { type: 'ux-shared', pattern: 'packages/ux/src/shared/**/*', mode: 'full' },
+                {
+                    type: 'ux-entities',
+                    pattern: 'packages/ux/src/entities/**/*',
+                    mode: 'full'
+                },
+                {
+                    type: 'ux-features',
+                    pattern: 'packages/ux/src/features/**/*',
+                    mode: 'full'
+                },
                 { type: 'ux', pattern: 'packages/ux/**/*', mode: 'full' },
                 { type: 'sync', pattern: 'packages/sync/**/*', mode: 'full' },
                 { type: 'mobile', pattern: 'apps/mobile/**/*', mode: 'full' },
@@ -91,12 +104,7 @@ export default [
             radix: ['error', 'as-needed'],
             'no-return-assign': 'off',
             'no-restricted-syntax': ['error', 'LabeledStatement', 'WithStatement'],
-            'no-console': [
-                'warn',
-                {
-                    allow: ['warn', 'error', 'info', 'log']
-                }
-            ],
+            'no-console': 'error',
 
             /* imports */
             'import/extensions': 'off',
@@ -176,6 +184,26 @@ export default [
             /* custom */
             'iseq/no-strict-eq-when-isEq': 'error',
             'no-direct-bitcoinjs-lib/no-direct-bitcoinjs-lib': 'error',
+            'no-tanstack-use-mutation/no-tanstack-use-mutation': 'error',
+
+            /* FSD layering inside @safely/ux: shared cannot import entities/features;
+               entities cannot import features. */
+            'boundaries/element-types': [
+                'error',
+                {
+                    default: 'allow',
+                    rules: [
+                        {
+                            from: 'ux-shared',
+                            disallow: ['ux-entities', 'ux-features']
+                        },
+                        {
+                            from: 'ux-entities',
+                            disallow: ['ux-features']
+                        }
+                    ]
+                }
+            ],
         }
     },
     /* React */
@@ -214,6 +242,40 @@ export default [
         plugins: { prettier: prettierPlugin },
         rules: {
             'prettier/prettier': 'error'
+        }
+    },
+    /* NOTE: forbid any import cycles inside the package.
+     *
+     * Why this matters: many of our modules call utilities at module-load time
+     * (e.g. "defineQueryKeys(...)" evaluated inside "keys.ts" files at import).
+     * If a cycle exists, the importer sees a half-evaluated module — the
+     * exported binding is still "undefined". Calling it throws
+     * "X is not a function" and crashes the whole app on startup.
+     *
+     * "import/no-cycle" doesn't support a custom message — if it fires, the
+     * default trace shows the cycle path; fix the cycle, don't suppress.
+     */
+    {
+        files: ['packages/ux/**/*.ts', 'packages/ux/**/*.tsx'],
+        rules: {
+            'import/no-cycle': ['error', { maxDepth: 10, ignoreExternal: true }]
+        }
+    },
+    /* logger implementations — console is the last-resort fallback */
+    {
+        files: [
+            'apps/mobile/src/shared/logger/**/*.ts',
+            'packages/sync/src/logger/**/*.ts'
+        ],
+        rules: {
+            'no-console': 'off'
+        }
+    },
+    /* tests */
+    {
+        files: ['**/*.test.ts', '**/*.test.tsx', '**/*.spec.ts', '**/*.spec.tsx'],
+        rules: {
+            'no-console': 'off'
         }
     },
     eslintConfigPrettier

@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { createStore, useStore } from '@tanstack/react-store';
 
 import {
@@ -17,6 +17,7 @@ import { BtcActivityItem } from '../activity/types';
 import { useActiveBtcWallet } from '../portfolio';
 import { utxo } from './keys';
 import { refetchQueries } from '../../shared';
+import { useMutation } from '../query-core';
 
 const lastBroadcastedBtcTxStore = createStore<Record<string, BroadcastedBtcTx>>({});
 

@@ -1,11 +1,12 @@
 import { createContext, useContext } from 'react';
 
 import { Build, ITreeStorage, NumberFormatLocale, QrScanner, UserCountryInfo } from '@safely/core';
-import { Logger } from '@safely/sync';
 
-import { LoaderService, Security, ToastService } from '../../entities';
-import { TranslateFn } from '../i18n';
-import { IUnlockableSecuredEncryptedStorage } from '../security';
+import type { TranslateFn } from '../i18n/types';
+import type { LoaderService } from '../loader/types';
+import type { ILoggerRegistry } from '../logger';
+import type { IUnlockableSecuredEncryptedStorage, Security } from '../security/types';
+import type { ToastService } from '../toast/types';
 
 export type AppStateStatus = 'active' | 'background' | 'inactive' | 'unknown';
 
@@ -21,11 +22,16 @@ export interface IAppContext {
 
     userCountryInfo?: UserCountryInfo;
 
-    storage: ITreeStorage;
-
-    encryptedStorage: ITreeStorage;
-
-    getSecureEncryptedStorage(this: void): IUnlockableSecuredEncryptedStorage;
+    storage: {
+        ux: {
+            regular: ITreeStorage;
+        };
+        sync: {
+            regular: ITreeStorage;
+            encrypted: ITreeStorage;
+            getSecureEncrypted(this: void): IUnlockableSecuredEncryptedStorage;
+        };
+    };
 
     qrScanner: QrScanner;
 
@@ -42,7 +48,7 @@ export interface IAppContext {
 
     clearAllData: () => Promise<void>;
 
-    logger: Logger;
+    loggerRegistry: ILoggerRegistry;
 
     security: Security;
 

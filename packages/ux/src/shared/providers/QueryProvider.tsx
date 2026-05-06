@@ -2,29 +2,35 @@ import { QueryCache, QueryClient } from '@tanstack/react-query';
 import { Persister, PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import React, { FC, PropsWithChildren, ReactNode, Suspense, useEffect, useState } from 'react';
 
+import { Logger } from '@safely/sync';
+
 import { QueryHydrationProvider } from '../contexts';
 import { QUERIES_STALE_TIME, BUSTER_VERSION, CACHE_LIVE_TIME } from '../query-core';
 
-const queryClient = new QueryClient({
-    queryCache: new QueryCache({
-        onError: (error, query) => {
-            console.error('Query error:', error, 'in', query.queryKey);
+export function createQueryClient(logger: Logger): QueryClient {
+    return new QueryClient({
+        queryCache: new QueryCache({
+            onError: (error, query) => {
+                logger.error('[QueryClient] query error', error, 'in', query.queryKey);
+            }
+        }),
+        defaultOptions: {
+            queries: {
+                gcTime: CACHE_LIVE_TIME,
+                staleTime: QUERIES_STALE_TIME.DEFAULT,
+                experimental_prefetchInRender: true
+            }
         }
-    }),
-    defaultOptions: {
-        queries: {
-            gcTime: CACHE_LIVE_TIME,
-            staleTime: QUERIES_STALE_TIME.DEFAULT,
-            experimental_prefetchInRender: true
-        }
-    }
-});
+    });
+}
 
-export const QueryProvider: FC<PropsWithChildren<{ loader?: ReactNode; persister: Persister }>> = ({
-    children,
-    loader,
-    persister
-}) => {
+export const QueryProvider: FC<
+    PropsWithChildren<{
+        loader?: ReactNode;
+        persister: Persister;
+        queryClient: QueryClient;
+    }>
+> = ({ children, loader, persister, queryClient }) => {
     const [hydratedAt, setHydratedAt] = useState<number | null>(null);
     const isReady = hydratedAt !== null;
 
@@ -34,7 +40,7 @@ export const QueryProvider: FC<PropsWithChildren<{ loader?: ReactNode; persister
         void queryClient.invalidateQueries({
             predicate: q => Boolean(q.meta?.persist)
         });
-    }, [isReady]);
+    }, [isReady, queryClient]);
 
     return (
         <PersistQueryClientProvider

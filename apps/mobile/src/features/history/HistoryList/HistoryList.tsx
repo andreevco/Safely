@@ -1,5 +1,5 @@
 import { useFocusEffect, useIsFocused, useScrollToTop } from '@react-navigation/native';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { type TFunction } from 'i18next';
 import { useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -12,6 +12,7 @@ import {
     DateFormatter,
     useGroupedHistory,
     useInterval,
+    useMutation,
     assetKeys
 } from '@safely/ux';
 import { ACTIVITY_GROUP_LABEL, ActivityItemsDatedGroupMeta } from '@safely/ux';

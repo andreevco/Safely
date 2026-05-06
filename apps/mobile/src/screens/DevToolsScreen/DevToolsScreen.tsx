@@ -36,6 +36,14 @@ export const DevToolsScreen = () => {
                             </Cell.Content>
                             <Cell.Chevron />
                         </Cell>
+                        <Cell onPress={() => navigation.navigate('DevToolsStorageModal')}>
+                            <Cell.Content>
+                                <Cell.Row>
+                                    <Cell.Title>Storage Viewer</Cell.Title>
+                                </Cell.Row>
+                            </Cell.Content>
+                            <Cell.Chevron />
+                        </Cell>
                     </List.Group>
                 </List>
             </Screen.Content>

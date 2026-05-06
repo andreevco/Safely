@@ -1,10 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
+import { Logger } from '@safely/sync';
+
 import { SPACE, NumberFormatter, WebNumberFormatLocale } from '../src';
+
+const testLogger = new Logger();
 
 describe('NumberFormatter', () => {
     it('formats fiat in en-US locale with symbol (boundary values)', () => {
-        const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'));
+        const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'), testLogger);
 
         expect(formatter.formatFiat(0, { currencyDisplay: 'symbol', currency: 'USD' })).toBe('$0');
         expect(formatter.formatFiat(0.01, { currency: 'USD' })).toBe('$0.01');
@@ -24,7 +28,7 @@ describe('NumberFormatter', () => {
     });
 
     it('formats fiat in de-DE locale with code', () => {
-        const formatter = new NumberFormatter(new WebNumberFormatLocale('de-DE'));
+        const formatter = new NumberFormatter(new WebNumberFormatLocale('de-DE'), testLogger);
         expect(formatter.formatFiat(1.8051, { currency: 'EUR', currencyDisplay: 'code' })).toBe(
             `1,80${SPACE.NNBSP}EUR`
         );
@@ -43,7 +47,7 @@ describe('NumberFormatter', () => {
     });
 
     it('formats fiat with display "none"', () => {
-        const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'));
+        const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'), testLogger);
 
         expect(formatter.formatFiat(1000, { currencyDisplay: 'none' })).toBe('1,000');
         expect(formatter.formatFiat(1.001, { currencyDisplay: 'none' })).toBe('1');
@@ -53,7 +57,7 @@ describe('NumberFormatter', () => {
     });
 
     it('formats crypto above 1000 with grouping', () => {
-        const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'));
+        const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'), testLogger);
 
         expect(formatter.formatCrypto(123456.789, { symbol: 'BTC' })).toBe(
             `123,456${SPACE.NNBSP}BTC`
@@ -76,7 +80,7 @@ describe('NumberFormatter', () => {
     });
 
     it('formats crypto between 1 and 1000 with 2 decimals', () => {
-        const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'));
+        const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'), testLogger);
 
         expect(formatter.formatCrypto(123.456, { symbol: 'BTC' })).toBe(`123.45${SPACE.NNBSP}BTC`);
         expect(formatter.formatCrypto(999.999, { symbol: 'BTC' })).toBe(`999.99${SPACE.NNBSP}BTC`);
@@ -90,7 +94,7 @@ describe('NumberFormatter', () => {
     });
 
     it('formats small crypto with significant digits', () => {
-        const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'));
+        const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'), testLogger);
 
         expect(formatter.formatCrypto(0.000123456, { symbol: 'DOGE' })).toBe(
             `0.000123${SPACE.NNBSP}DOGE`
@@ -98,7 +102,7 @@ describe('NumberFormatter', () => {
     });
 
     it('formats zero with fullPrecision', () => {
-        const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'));
+        const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'), testLogger);
 
         expect(formatter.formatCrypto(0, { symbol: 'USDT', fullPrecision: true })).toBe(
             `0${SPACE.NNBSP}USDT`
@@ -106,7 +110,7 @@ describe('NumberFormatter', () => {
     });
 
     it('formats with full precision (no truncation)', () => {
-        const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'));
+        const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'), testLogger);
 
         expect(formatter.formatCrypto(0.000143945, { symbol: 'BTC', fullPrecision: true })).toBe(
             `0.000143945${SPACE.NNBSP}BTC`
@@ -120,7 +124,7 @@ describe('NumberFormatter', () => {
     });
 
     it('formats negative fiat correctly', () => {
-        const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'));
+        const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'), testLogger);
 
         expect(formatter.formatFiat(-99.99, { currency: 'USD' })).toBe('-$99.99');
         expect(
@@ -133,7 +137,7 @@ describe('NumberFormatter', () => {
     });
 
     it('formats negative crypto correctly', () => {
-        const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'));
+        const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'), testLogger);
 
         expect(formatter.formatCrypto(-0.000456, { currencyDisplay: 'none' })).toBe('-0.000456');
         expect(formatter.formatCrypto(-0.000456, { symbol: 'BTC' })).toBe(
@@ -142,14 +146,14 @@ describe('NumberFormatter', () => {
     });
 
     it('throws for non-finite values', () => {
-        const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'));
+        const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'), testLogger);
 
         expect(() => formatter.formatFiat(Infinity, { currency: 'USD' })).toThrow();
         expect(() => formatter.formatFiat(NaN, { currency: 'USD' })).toThrow();
     });
 
     it('parses input correctly', () => {
-        const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'));
+        const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'), testLogger);
 
         {
             const { parsed, formatted } = formatter.parseInput('.', 9);
@@ -176,7 +180,7 @@ describe('NumberFormatter', () => {
     });
 
     it('formats fiat in fr-FR locale with decimals', () => {
-        const formatter = new NumberFormatter(new WebNumberFormatLocale('fr-FR'));
+        const formatter = new NumberFormatter(new WebNumberFormatLocale('fr-FR'), testLogger);
         expect(formatter.formatFiat(0, { currencyDisplay: 'symbol', currency: 'EUR' })).toBe(
             `0${SPACE.NNBSP}€`
         );
@@ -192,7 +196,7 @@ describe('NumberFormatter', () => {
     });
 
     it('formats fiat in ru-RU locale with decimals', () => {
-        const formatter = new NumberFormatter(new WebNumberFormatLocale('ru-RU'));
+        const formatter = new NumberFormatter(new WebNumberFormatLocale('ru-RU'), testLogger);
 
         expect(formatter.formatFiat(0.2, { currency: 'RUB' })).toBe(`0,20${SPACE.NNBSP}₽`);
         expect(formatter.formatFiat(0.02, { currency: 'RUB' })).toBe(`0,02${SPACE.NNBSP}₽`);
@@ -208,7 +212,7 @@ describe('NumberFormatter', () => {
     });
 
     it('formats fiat in es-ES locale with decimals', () => {
-        const formatter = new NumberFormatter(new WebNumberFormatLocale('es-ES'));
+        const formatter = new NumberFormatter(new WebNumberFormatLocale('es-ES'), testLogger);
 
         expect(formatter.formatFiat(0.1, { currency: 'EUR' })).toBe(`0,10${SPACE.NNBSP}€`);
         expect(formatter.formatFiat(0.555, { currency: 'EUR' })).toBe(`0,555${SPACE.NNBSP}€`);
@@ -235,7 +239,7 @@ describe('NumberFormatter', () => {
     });
 
     it('formats KZT in kk-KZ locale with boundary values', () => {
-        const formatter = new NumberFormatter(new WebNumberFormatLocale('kk-KZ'));
+        const formatter = new NumberFormatter(new WebNumberFormatLocale('kk-KZ'), testLogger);
 
         expect(formatter.formatFiat(0, { currencyDisplay: 'symbol', currency: 'KZT' })).toBe(
             `0${SPACE.NNBSP}₸`
@@ -261,7 +265,7 @@ describe('NumberFormatter', () => {
     });
 
     it('formats UAH in uk-UA locale with boundary values', () => {
-        const formatter = new NumberFormatter(new WebNumberFormatLocale('uk-UA'));
+        const formatter = new NumberFormatter(new WebNumberFormatLocale('uk-UA'), testLogger);
 
         expect(formatter.formatFiat(0, { currencyDisplay: 'symbol', currency: 'UAH' })).toBe(
             `0${SPACE.NNBSP}₴`
@@ -287,7 +291,7 @@ describe('NumberFormatter', () => {
     });
 
     it('formats GBP in en-GB locale with boundary values', () => {
-        const formatter = new NumberFormatter(new WebNumberFormatLocale('en-GB'));
+        const formatter = new NumberFormatter(new WebNumberFormatLocale('en-GB'), testLogger);
 
         expect(formatter.formatFiat(0, { currencyDisplay: 'symbol', currency: 'GBP' })).toBe('£0');
         expect(formatter.formatFiat(0.01, { currency: 'GBP' })).toBe('£0.01');
@@ -307,7 +311,7 @@ describe('NumberFormatter', () => {
     });
 
     it('formats CNY in zh-CN locale with boundary values', () => {
-        const formatter = new NumberFormatter(new WebNumberFormatLocale('zh-CN'));
+        const formatter = new NumberFormatter(new WebNumberFormatLocale('zh-CN'), testLogger);
 
         expect(formatter.formatFiat(0, { currencyDisplay: 'symbol', currency: 'CNY' })).toBe('¥0');
         expect(formatter.formatFiat(0.01, { currency: 'CNY' })).toBe('¥0.01');
@@ -327,7 +331,7 @@ describe('NumberFormatter', () => {
     });
 
     it('formats INR in hi-IN locale with boundary values', () => {
-        const formatter = new NumberFormatter(new WebNumberFormatLocale('hi-IN'));
+        const formatter = new NumberFormatter(new WebNumberFormatLocale('hi-IN'), testLogger);
 
         expect(formatter.formatFiat(0, { currencyDisplay: 'symbol', currency: 'INR' })).toBe('₹0');
         expect(formatter.formatFiat(0.01, { currency: 'INR' })).toBe('₹0.01');
@@ -347,7 +351,7 @@ describe('NumberFormatter', () => {
     });
 
     it('formats TRY in tr-TR locale with boundary values', () => {
-        const formatter = new NumberFormatter(new WebNumberFormatLocale('tr-TR'));
+        const formatter = new NumberFormatter(new WebNumberFormatLocale('tr-TR'), testLogger);
 
         expect(formatter.formatFiat(0, { currencyDisplay: 'symbol', currency: 'TRY' })).toBe('₺0');
         expect(formatter.formatFiat(0.01, { currency: 'TRY' })).toBe('₺0,01');
@@ -367,7 +371,7 @@ describe('NumberFormatter', () => {
     });
 
     it('formats JPY (0 fraction digits) correctly', () => {
-        const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'));
+        const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'), testLogger);
 
         expect(formatter.formatFiat(0, { currency: 'JPY' })).toBe('¥0');
         expect(formatter.formatFiat(1, { currency: 'JPY' })).toBe('¥1');
@@ -378,7 +382,7 @@ describe('NumberFormatter', () => {
     });
 
     it('formats KRW (0 fraction digits) correctly', () => {
-        const formatter = new NumberFormatter(new WebNumberFormatLocale('ko-KR'));
+        const formatter = new NumberFormatter(new WebNumberFormatLocale('ko-KR'), testLogger);
 
         expect(formatter.formatFiat(0, { currency: 'KRW' })).toBe('₩0');
         expect(formatter.formatFiat(1500, { currency: 'KRW' })).toBe('₩1,500');
@@ -386,7 +390,7 @@ describe('NumberFormatter', () => {
     });
 
     it('formats BHD (3 fraction digits) correctly', () => {
-        const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'));
+        const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'), testLogger);
 
         expect(formatter.formatFiat(0, { currency: 'BHD' })).toBe(`BHD${SPACE.NNBSP}0`);
         expect(formatter.formatFiat(1, { currency: 'BHD' })).toBe(`BHD${SPACE.NNBSP}1`);
@@ -399,7 +403,7 @@ describe('NumberFormatter', () => {
 
     describe('Fiat Formatting - Different Locales and Display Options', () => {
         it('formats USD in en-US locale with symbol, code, and none display', () => {
-            const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'));
+            const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'), testLogger);
 
             expect(
                 formatter.formatFiat(1234.56, { currency: 'USD', currencyDisplay: 'symbol' })
@@ -419,7 +423,7 @@ describe('NumberFormatter', () => {
         });
 
         it('formats EUR in de-DE locale with symbol, code, and narrowSymbol display', () => {
-            const formatter = new NumberFormatter(new WebNumberFormatLocale('de-DE'));
+            const formatter = new NumberFormatter(new WebNumberFormatLocale('de-DE'), testLogger);
 
             expect(
                 formatter.formatFiat(1234.56, { currency: 'EUR', currencyDisplay: 'symbol' })
@@ -439,7 +443,7 @@ describe('NumberFormatter', () => {
         });
 
         it('formats RUB in ru-RU locale with symbol and code display', () => {
-            const formatter = new NumberFormatter(new WebNumberFormatLocale('ru-RU'));
+            const formatter = new NumberFormatter(new WebNumberFormatLocale('ru-RU'), testLogger);
 
             expect(
                 formatter.formatFiat(1234.56, { currency: 'RUB', currencyDisplay: 'symbol' })
@@ -459,7 +463,7 @@ describe('NumberFormatter', () => {
         });
 
         it('formats GBP in en-GB locale with symbol, code, and name display', () => {
-            const formatter = new NumberFormatter(new WebNumberFormatLocale('en-GB'));
+            const formatter = new NumberFormatter(new WebNumberFormatLocale('en-GB'), testLogger);
 
             expect(
                 formatter.formatFiat(1234.56, { currency: 'GBP', currencyDisplay: 'symbol' })
@@ -479,7 +483,7 @@ describe('NumberFormatter', () => {
         });
 
         it('formats JPY in ja-JP locale with symbol and code display', () => {
-            const formatter = new NumberFormatter(new WebNumberFormatLocale('ja-JP'));
+            const formatter = new NumberFormatter(new WebNumberFormatLocale('ja-JP'), testLogger);
 
             expect(
                 formatter.formatFiat(1234.56, { currency: 'JPY', currencyDisplay: 'symbol' })
@@ -499,7 +503,7 @@ describe('NumberFormatter', () => {
         });
 
         it('formats CNY in zh-CN locale with symbol and code display', () => {
-            const formatter = new NumberFormatter(new WebNumberFormatLocale('zh-CN'));
+            const formatter = new NumberFormatter(new WebNumberFormatLocale('zh-CN'), testLogger);
 
             expect(
                 formatter.formatFiat(1234.56, { currency: 'CNY', currencyDisplay: 'symbol' })
@@ -519,7 +523,7 @@ describe('NumberFormatter', () => {
         });
 
         it('formats INR in hi-IN locale with symbol and code display', () => {
-            const formatter = new NumberFormatter(new WebNumberFormatLocale('hi-IN'));
+            const formatter = new NumberFormatter(new WebNumberFormatLocale('hi-IN'), testLogger);
 
             expect(
                 formatter.formatFiat(1234.56, { currency: 'INR', currencyDisplay: 'symbol' })
@@ -539,7 +543,7 @@ describe('NumberFormatter', () => {
         });
 
         it('formats TRY in tr-TR locale with symbol and code display', () => {
-            const formatter = new NumberFormatter(new WebNumberFormatLocale('tr-TR'));
+            const formatter = new NumberFormatter(new WebNumberFormatLocale('tr-TR'), testLogger);
 
             expect(
                 formatter.formatFiat(1234.56, { currency: 'TRY', currencyDisplay: 'symbol' })
@@ -559,7 +563,7 @@ describe('NumberFormatter', () => {
         });
 
         it('formats KZT in kk-KZ locale with symbol and code display', () => {
-            const formatter = new NumberFormatter(new WebNumberFormatLocale('kk-KZ'));
+            const formatter = new NumberFormatter(new WebNumberFormatLocale('kk-KZ'), testLogger);
 
             expect(
                 formatter.formatFiat(1234.56, { currency: 'KZT', currencyDisplay: 'symbol' })
@@ -579,7 +583,7 @@ describe('NumberFormatter', () => {
         });
 
         it('formats UAH in uk-UA locale with symbol and code display', () => {
-            const formatter = new NumberFormatter(new WebNumberFormatLocale('uk-UA'));
+            const formatter = new NumberFormatter(new WebNumberFormatLocale('uk-UA'), testLogger);
 
             expect(
                 formatter.formatFiat(1234.56, { currency: 'UAH', currencyDisplay: 'symbol' })
@@ -601,7 +605,7 @@ describe('NumberFormatter', () => {
 
     describe('Crypto Formatting - Different Locales and Display Options', () => {
         it('formats crypto with symbol in en-US locale - numbers >= 1000 (integer part only)', () => {
-            const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'));
+            const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'), testLogger);
 
             expect(formatter.formatCrypto(33000.999, { symbol: 'BTC' })).toBe(
                 `33,000${SPACE.NNBSP}BTC`
@@ -619,7 +623,7 @@ describe('NumberFormatter', () => {
         });
 
         it('formats crypto with symbol in en-US locale - numbers 1 to 1000 (up to 2 decimals, drop trailing zeros)', () => {
-            const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'));
+            const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'), testLogger);
 
             expect(formatter.formatCrypto(99.999999940005, { symbol: 'BTC' })).toBe(
                 `99.99${SPACE.NNBSP}BTC`
@@ -634,7 +638,7 @@ describe('NumberFormatter', () => {
         });
 
         it('formats crypto with symbol in en-US locale - numbers 0 to 1 (up to 3 significant digits, drop trailing zeros)', () => {
-            const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'));
+            const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'), testLogger);
 
             expect(formatter.formatCrypto(0.000143945, { symbol: 'BTC' })).toBe(
                 `0.000143${SPACE.NNBSP}BTC`
@@ -652,7 +656,7 @@ describe('NumberFormatter', () => {
         });
 
         it('formats crypto without symbol in en-US locale', () => {
-            const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'));
+            const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'), testLogger);
 
             expect(formatter.formatCrypto(33000.999, { currencyDisplay: 'none' })).toBe('33,000');
             expect(formatter.formatCrypto(1.8051, { currencyDisplay: 'none' })).toBe('1.8');
@@ -666,7 +670,7 @@ describe('NumberFormatter', () => {
         });
 
         it('formats crypto with symbol in de-DE locale - different number ranges', () => {
-            const formatter = new NumberFormatter(new WebNumberFormatLocale('de-DE'));
+            const formatter = new NumberFormatter(new WebNumberFormatLocale('de-DE'), testLogger);
 
             expect(formatter.formatCrypto(33000.999, { symbol: 'BTC' })).toBe(
                 `33.000${SPACE.NNBSP}BTC`
@@ -684,7 +688,7 @@ describe('NumberFormatter', () => {
         });
 
         it('formats crypto with symbol in ru-RU locale - different number ranges', () => {
-            const formatter = new NumberFormatter(new WebNumberFormatLocale('ru-RU'));
+            const formatter = new NumberFormatter(new WebNumberFormatLocale('ru-RU'), testLogger);
 
             expect(formatter.formatCrypto(33000.999, { symbol: 'BTC' })).toBe(
                 `33${SPACE.NNBSP}000${SPACE.NNBSP}BTC`
@@ -704,7 +708,10 @@ describe('NumberFormatter', () => {
             const locales = ['en-US', 'de-DE', 'fr-FR', 'ru-RU', 'zh-CN'];
 
             locales.forEach(locale => {
-                const formatter = new NumberFormatter(new WebNumberFormatLocale(locale));
+                const formatter = new NumberFormatter(
+                    new WebNumberFormatLocale(locale),
+                    testLogger
+                );
                 expect(
                     formatter.formatFiat(0, { currency: 'USD', currencyDisplay: 'symbol' })
                 ).toBeTruthy();
@@ -717,9 +724,9 @@ describe('NumberFormatter', () => {
         });
 
         it('handles negative values across different locales', () => {
-            const formatterUS = new NumberFormatter(new WebNumberFormatLocale('en-US'));
-            const formatterDE = new NumberFormatter(new WebNumberFormatLocale('de-DE'));
-            const formatterFR = new NumberFormatter(new WebNumberFormatLocale('fr-FR'));
+            const formatterUS = new NumberFormatter(new WebNumberFormatLocale('en-US'), testLogger);
+            const formatterDE = new NumberFormatter(new WebNumberFormatLocale('de-DE'), testLogger);
+            const formatterFR = new NumberFormatter(new WebNumberFormatLocale('fr-FR'), testLogger);
 
             expect(
                 formatterUS.formatFiat(-1234.56, { currency: 'USD', currencyDisplay: 'symbol' })
@@ -737,9 +744,9 @@ describe('NumberFormatter', () => {
         });
 
         it('handles very large numbers across different locales', () => {
-            const formatterUS = new NumberFormatter(new WebNumberFormatLocale('en-US'));
-            const formatterDE = new NumberFormatter(new WebNumberFormatLocale('de-DE'));
-            const formatterIN = new NumberFormatter(new WebNumberFormatLocale('hi-IN'));
+            const formatterUS = new NumberFormatter(new WebNumberFormatLocale('en-US'), testLogger);
+            const formatterDE = new NumberFormatter(new WebNumberFormatLocale('de-DE'), testLogger);
+            const formatterIN = new NumberFormatter(new WebNumberFormatLocale('hi-IN'), testLogger);
 
             const largeNumber = 999999999.99;
 
@@ -758,7 +765,7 @@ describe('NumberFormatter', () => {
         });
 
         it('handles very small numbers with fullPrecision option', () => {
-            const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'));
+            const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'), testLogger);
 
             expect(
                 formatter.formatFiat(0.000000123, {
@@ -789,7 +796,7 @@ describe('NumberFormatter', () => {
         });
 
         it('handles numbers between 1 and 1000 with proper decimal truncation (no rounding, drop trailing zeros)', () => {
-            const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'));
+            const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'), testLogger);
 
             expect(
                 formatter.formatFiat(1.001, { currency: 'USD', currencyDisplay: 'symbol' })
@@ -811,7 +818,7 @@ describe('NumberFormatter', () => {
         });
 
         it('handles numbers exactly at 1000 boundary (fractional part dropped for >= 1000)', () => {
-            const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'));
+            const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'), testLogger);
 
             expect(
                 formatter.formatFiat(999.99, { currency: 'USD', currencyDisplay: 'symbol' })

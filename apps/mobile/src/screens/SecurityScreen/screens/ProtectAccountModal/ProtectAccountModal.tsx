@@ -17,17 +17,21 @@ const steps = [
 
 export const ProtectAccountModal = () => {
     const { t } = useTranslation();
-    const { getSecureEncryptedStorage } = useAppContext();
+    const {
+        storage: {
+            sync: { getSecureEncrypted }
+        }
+    } = useAppContext();
     const { mutateAsync: connectToNewDevice } = useConnectAccountToNewDevice();
     const navigation = useNavigation();
 
     const handleConnect = useCallback(async () => {
-        using secureEncryptedStorage = getSecureEncryptedStorage();
+        using secureEncryptedStorage = getSecureEncrypted();
         await secureEncryptedStorage.unlock();
 
         await connectToNewDevice({ secureEncryptedStorage });
         navigation.goBack();
-    }, [getSecureEncryptedStorage, connectToNewDevice, navigation]);
+    }, [getSecureEncrypted, connectToNewDevice, navigation]);
 
     return (
         <Screen>

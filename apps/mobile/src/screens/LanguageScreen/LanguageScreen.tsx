@@ -4,8 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import { SettingsStackNavigationProp } from '@mobile/app/navigation/types';
+import { mobileLayerSynchronousLocale } from '@mobile/app/storage';
 import { availableLanguages, LanguageCode } from '@mobile/shared/i18n';
-import { mobileStorages } from '@mobile/shared/storage';
 import { Cell, List, Screen, Text } from '@mobile/shared/ui';
 import { ArrowLeft16, Checkmark28, Icon } from '@mobile/shared/ui/Icon';
 
@@ -18,7 +18,9 @@ export const LanguageScreen = () => {
         (code: LanguageCode) => () => {
             if (i18n.language === code) return;
 
-            void i18n.changeLanguage(code).then(() => mobileStorages.locale.storage.set(code));
+            void i18n
+                .changeLanguage(code)
+                .then(() => mobileLayerSynchronousLocale.storage.set(code));
         },
         [i18n]
     );

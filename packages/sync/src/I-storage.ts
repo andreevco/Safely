@@ -7,8 +7,24 @@ export interface IStorage {
 
 export interface IEnumerableStorage extends IStorage {
     getAllKeys(): Promise<string[]>;
+    getKeysWithPrefix(prefix: string): Promise<string[]>;
+
+    /**
+     * Removes every key whose full key starts with `prefix`.
+     *
+     * Contract: with an empty prefix this MUST be functionally equivalent to
+     * `clear()`. Implementations should pick whichever underlying API is most
+     * efficient for the empty case (e.g. an atomic full-clear primitive); the
+     * caller is allowed to use either form interchangeably.
+     */
+    removeItemsWithPrefix(prefix: string): Promise<void>;
 }
 
-export interface ITreeStorage extends IEnumerableStorage {
+export interface ITreeStorage extends IStorage {
+    /** Direct-child JS-keys at this node (no cascade into descendants), decoded. */
+    getOwnKeys(): Promise<string[]>;
     child(path: string[] | string): ITreeStorage;
+
+    /** Deletes all children (including nested) records  */
+    clear(): Promise<void>;
 }

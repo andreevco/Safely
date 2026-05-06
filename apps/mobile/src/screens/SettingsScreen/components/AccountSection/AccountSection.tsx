@@ -1,8 +1,15 @@
 import { useNavigation } from '@react-navigation/native';
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { useAccounts, useActiveAccount, useChangeAccountMeta } from '@safely/ux';
+import {
+    useAccounts,
+    useActiveAccount,
+    useAppContext,
+    useChangeAccountMeta,
+    useConnectAccountToNewDevice
+} from '@safely/ux';
 
 import { RootStackNavigationProp, SettingsStackNavigationProp } from '@mobile/app/navigation/types';
 import { Button, Cell, List } from '@mobile/shared/ui';
@@ -18,6 +25,13 @@ export const AccountSection = () => {
     const navigation = useNavigation<SettingsStackNavigationProp>();
     const rootNavigation = useNavigation<RootStackNavigationProp>();
     const { mutateAsync: changeAccountMeta } = useChangeAccountMeta();
+
+    const {
+        storage: {
+            sync: { getSecureEncrypted }
+        }
+    } = useAppContext();
+    const { mutateAsync: connectAccountToNewDevice } = useConnectAccountToNewDevice();
 
     const handleEditAccount = () => {
         rootNavigation.navigate('CustomizeAccountModal', {
@@ -35,6 +49,13 @@ export const AccountSection = () => {
     const handleAddAccount = () => {
         rootNavigation.navigate('AddAccountSheet');
     };
+
+    const handleAddDevice = useCallback(async () => {
+        using secureEncryptedStorage = getSecureEncrypted();
+        secureEncryptedStorage.UNSAFE_SKIP_SECURITY_CHECK_unlock();
+
+        await connectAccountToNewDevice({ secureEncryptedStorage });
+    }, [connectAccountToNewDevice, getSecureEncrypted]);
 
     return (
         <List>
@@ -94,7 +115,10 @@ export const AccountSection = () => {
                     <SyncDot />
                 </Cell>
             </List.Group>
-            <View style={styles.buttonContainer}>
+            <View style={styles.buttonsContainer}>
+                <Button type="secondary" size="small" onPress={handleAddDevice}>
+                    {t('settings.linkDevice')}
+                </Button>
                 <Button type="secondary" size="small" onPress={handleAddAccount}>
                     {t('settings.addAccount')}
                 </Button>
