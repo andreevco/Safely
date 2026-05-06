@@ -62,7 +62,8 @@ export const bootConfigSchema = z.looseObject({
             terms_url: z.string()
         }),
         support: z.looseObject({
-            email: z.string()
+            email: z.string(),
+            telegram: z.string()
         })
     }),
 
