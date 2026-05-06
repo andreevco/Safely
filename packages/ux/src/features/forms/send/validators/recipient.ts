@@ -1,7 +1,7 @@
-import { Recipient } from '@safely/core';
+import type { Recipient } from '@safely/core';
 
 import { SendFormError } from '../errors';
-import { ContactSuggestion, PortfolioSuggestion } from '../types';
+import type { ContactSuggestion, PortfolioSuggestion } from '../types';
 import { MIN_RECIPIENT_ADDRESS_LENGTH, parseRecipient, recipientSchema } from '../utils';
 
 export interface RecipientValidationResult {

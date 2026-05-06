@@ -1,5 +1,5 @@
 import { fuzzySearch } from '../../../../shared';
-import { ContactSuggestion, PortfolioSuggestion, SendSuggestions } from '../types';
+import type { ContactSuggestion, PortfolioSuggestion, SendSuggestions } from '../types';
 
 const getName = (s: PortfolioSuggestion | ContactSuggestion): string => s.meta.name;
 

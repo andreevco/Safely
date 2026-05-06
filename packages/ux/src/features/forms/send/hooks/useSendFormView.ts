@@ -4,7 +4,7 @@ import type { SnapshotFrom } from 'xstate';
 import { assertUnreachable, type RatedCryptoAssetAmount } from '@safely/core';
 
 import type { createSendFormMachine } from '../machine/machine';
-import { ContactSuggestion, PortfolioSuggestion, SendSuggestions } from '../types';
+import type { ContactSuggestion, PortfolioSuggestion, SendSuggestions } from '../types';
 import { computeRecipientMeta, filterSuggestionsByQuery } from '../utils';
 import type { AmountView, RecipientView, SendFormView } from '../view';
 import type { SendFormDispatchers } from './useSendFormDispatchers';

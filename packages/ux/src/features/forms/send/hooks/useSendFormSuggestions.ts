@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
 import { useActivePortfolioEntities, useContacts, usePortfolios } from '../../../../entities';
-import { ContactSuggestion, PortfolioSuggestion } from '../types';
+import type { ContactSuggestion, PortfolioSuggestion } from '../types';
 import { mapContactToSuggestions, mapPortfolioToSuggestions } from '../utils';
 
 export interface SendFormSuggestions {

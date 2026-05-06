@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
 import type { SendFormEvent } from '../machine/types';
-import { AmountInputType, SendSuggestions } from '../types';
+import type { AmountInputType, SendSuggestions } from '../types';
 
 type Send = (event: SendFormEvent) => void;
 

@@ -1,6 +1,7 @@
-import { IDerivation, IPortfolioId, Portfolio, PortfolioType } from '@safely/core';
+import type { IDerivation, IPortfolioId, Portfolio } from '@safely/core';
+import { PortfolioType } from '@safely/core';
 
-import { PortfolioSuggestion } from '../types';
+import type { PortfolioSuggestion } from '../types';
 
 export interface ActivePortfolioEntity {
     portfolioId: IPortfolioId;

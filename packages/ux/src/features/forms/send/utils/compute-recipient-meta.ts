@@ -1,4 +1,4 @@
-import { ContactSuggestion, PortfolioSuggestion, RecipientMeta } from '../types';
+import type { ContactSuggestion, PortfolioSuggestion, RecipientMeta } from '../types';
 
 export function computeRecipientMeta(
     selectedId: string | undefined,

@@ -1,4 +1,4 @@
-import { SendFormErrors, SendFormValues, SendSuggestionState } from '../types';
+import type { SendFormErrors, SendFormValues, SendSuggestionState } from '../types';
 import type { SendFormMachineContext, SendFormMachineInput } from './types';
 
 export const EMPTY_SUGGESTION: SendSuggestionState = {

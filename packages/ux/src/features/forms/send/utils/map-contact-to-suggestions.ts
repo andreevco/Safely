@@ -1,6 +1,6 @@
-import { Contact } from '@safely/core';
+import type { Contact } from '@safely/core';
 
-import { ContactSuggestion } from '../types';
+import type { ContactSuggestion } from '../types';
 
 export function mapContactToSuggestions(contact: Contact): ContactSuggestion[] {
     return contact.addresses.map(address => ({
