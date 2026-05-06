@@ -1,8 +1,8 @@
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Linking, View } from 'react-native';
+import { View } from 'react-native';
 
-import { useBootConfig } from '@safely/ux';
+import { useBootConfig, useLinking } from '@safely/ux';
 
 import { resources } from '@mobile/shared/resources';
 import { Banner, Image, Screen, Text } from '@mobile/shared/ui';
@@ -11,11 +11,12 @@ import { styles } from './SafelyBetaScreen.styles';
 
 export const SafelyBetaScreen = () => {
     const { t } = useTranslation();
-    const supportEmail = useBootConfig().references.support.email;
+    const supportLink = useBootConfig().references.support.telegram;
+    const linking = useLinking();
 
     const handleFeedback = useCallback(() => {
-        void Linking.openURL(`mailto:${supportEmail}`);
-    }, [supportEmail]);
+        void linking.openURL(supportLink);
+    }, [supportLink, linking]);
 
     return (
         <Screen>
