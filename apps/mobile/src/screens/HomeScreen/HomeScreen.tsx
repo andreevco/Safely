@@ -25,9 +25,9 @@ export const HomeScreen = () => {
     return (
         <Screen>
             <HomeHeader />
-            <HomeBanners />
             {hasPortfolio ? (
                 <Screen.Scrollable ref={scrollRef}>
+                    <HomeBanners />
                     <TotalBalance />
                     <HomeActions />
                     <AssetsList />
