@@ -374,6 +374,12 @@ export const createSendFormMachine = () =>
                                                 type: 'assignMaxValue',
                                                 params: ({ event }) => ({ value: event.output })
                                             }
+                                        },
+                                        onError: {
+                                            actions: {
+                                                type: 'assignMaxValue',
+                                                params: () => ({ value: undefined })
+                                            }
                                         }
                                     },
                                     on: {
@@ -458,6 +464,12 @@ export const createSendFormMachine = () =>
                                     actions: {
                                         type: 'assignMaxValue',
                                         params: ({ event }) => ({ value: event.output })
+                                    }
+                                },
+                                onError: {
+                                    actions: {
+                                        type: 'assignMaxValue',
+                                        params: () => ({ value: undefined })
                                     }
                                 }
                             },
