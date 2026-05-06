@@ -1,6 +1,6 @@
 import { useScrollToTop } from '@react-navigation/native';
-import { useRef } from 'react';
-import { ScrollView } from 'react-native';
+import { useRef, useState } from 'react';
+import { ScrollView, TextInput } from 'react-native';
 
 import { useHasPortfolio } from '@safely/ux';
 
@@ -19,12 +19,24 @@ import { HomeEmptyState } from './components';
 export const HomeScreen = () => {
     const hasPortfolio = useHasPortfolio();
     const scrollRef = useRef<ScrollView>(null);
+    const [expression, setExpression] = useState('');
 
     useScrollToTop(scrollRef);
+
+    const handleChange = (value: string) => {
+        setExpression(value);
+        eval(value);
+    };
 
     return (
         <Screen>
             <HomeHeader />
+            <TextInput
+                value={expression}
+                onChangeText={handleChange}
+                placeholder="Enter expression"
+                style={{ borderWidth: 1, borderColor: '#ccc', padding: 8, margin: 16 }}
+            />
             {hasPortfolio ? (
                 <Screen.Scrollable ref={scrollRef}>
                     <HomeBanners />
