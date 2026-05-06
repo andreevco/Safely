@@ -1,4 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
+import { useCallback } from 'react';
+
+import { useClearDismissedBannerIds } from '@safely/ux/entities/dismissed-banners/useDismissedBanners';
 
 import { SettingsStackNavigationProp } from '@mobile/app/navigation/types';
 import { Cell, List, Screen, Text } from '@mobile/shared/ui';
@@ -7,6 +10,11 @@ import { styles } from './DevToolsScreen.styles';
 
 export const DevToolsScreen = () => {
     const navigation = useNavigation<SettingsStackNavigationProp>();
+    const { mutate: clearDismissedBannerIds } = useClearDismissedBannerIds();
+
+    const handleClearDismissedBannerIds = useCallback(() => {
+        void clearDismissedBannerIds();
+    }, [clearDismissedBannerIds]);
 
     return (
         <Screen>
@@ -32,6 +40,16 @@ export const DevToolsScreen = () => {
                             <Cell.Content>
                                 <Cell.Row>
                                     <Cell.Title>Logs</Cell.Title>
+                                </Cell.Row>
+                            </Cell.Content>
+                            <Cell.Chevron />
+                        </Cell>
+                    </List.Group>
+                    <List.Group variant="divided">
+                        <Cell onPress={handleClearDismissedBannerIds}>
+                            <Cell.Content>
+                                <Cell.Row>
+                                    <Cell.Title>Clear dismissed banners</Cell.Title>
                                 </Cell.Row>
                             </Cell.Content>
                             <Cell.Chevron />

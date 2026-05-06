@@ -14,6 +14,16 @@ export function useDismissedBannerIdsQuery() {
     });
 }
 
+export function useClearDismissedBannerIds() {
+    const { set } = useSharedUxStorage('dismissedBannerIds');
+
+    return useMutation({
+        mutationFn: async () => {
+            await set([]);
+        }
+    });
+}
+
 export function useDismissBanner() {
     const queryClient = useQueryClient();
     const { get, set } = useSharedUxStorage('dismissedBannerIds');
