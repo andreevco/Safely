@@ -3,9 +3,6 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { AddressBookModal } from '@mobile/screens/AddressBookModal';
 import { DevToolsLogsScreen } from '@mobile/screens/DevToolsLogsScreen';
 import { DevToolsScreen } from '@mobile/screens/DevToolsScreen';
-import { DevToolsStorageKeysScreen } from '@mobile/screens/DevToolsStorageKeysScreen';
-import { DevToolsStorageScreen } from '@mobile/screens/DevToolsStorageScreen';
-import { DevToolsStorageValueScreen } from '@mobile/screens/DevToolsStorageValueScreen';
 import { DevToolsXpubScreen } from '@mobile/screens/DevToolsXpubScreen';
 import { LanguageScreen } from '@mobile/screens/LanguageScreen';
 import { NewContactModal } from '@mobile/screens/NewContactModal';
@@ -30,10 +27,7 @@ export const SettingsStack = createNativeStackNavigator({
                 NewContactModal: NewContactModal,
                 DevToolsModal: DevToolsScreen,
                 DevToolsXpubModal: DevToolsXpubScreen,
-                DevToolsLogsModal: DevToolsLogsScreen,
-                DevToolsStorageModal: DevToolsStorageScreen,
-                DevToolsStorageKeysModal: DevToolsStorageKeysScreen,
-                DevToolsStorageValueModal: DevToolsStorageValueScreen
+                DevToolsLogsModal: DevToolsLogsScreen
             }
         },
         Sheets: {
