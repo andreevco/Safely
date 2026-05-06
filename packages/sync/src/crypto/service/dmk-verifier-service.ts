@@ -1,5 +1,5 @@
 import { ed25519_verify } from '../ed25519';
-import { EncryptedKeyRepository } from '../encrypted-key-repository';
+import type { EncryptedKeyRepository } from '../encrypted-key-repository';
 
 export class DmkVerifierService {
     constructor(private readonly encryptedKeyRepository: EncryptedKeyRepository) {}

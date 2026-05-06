@@ -2,15 +2,15 @@ import { sha256 } from '@noble/hashes/sha2.js';
 import * as Y from 'yjs';
 
 import { getSnapshotProof, getSnapshotProofFromCiphertextHash } from './snapshot-proof';
-import { SyncState } from './sync-state';
-import { SyncStateRepository } from './sync-state-repository';
-import { SnapshotsApi } from '../api/generated';
-import { EncryptedStateAndProofChain } from '../api/types';
-import { StorageVerifierService } from '../crdt/storage-verifier-service';
-import { YManager } from '../crdt/y-manager';
-import { DeviceManagementService } from '../device-manager/device-management-service';
-import { Logger } from '../logger';
-import { UpdateDecryptorService } from '../update-encryptor/update-decryptor-service';
+import type { SyncState } from './sync-state';
+import type { SyncStateRepository } from './sync-state-repository';
+import type { SnapshotsApi } from '../api/generated';
+import type { EncryptedStateAndProofChain } from '../api/types';
+import type { StorageVerifierService } from '../crdt/storage-verifier-service';
+import type { YManager } from '../crdt/y-manager';
+import type { DeviceManagementService } from '../device-manager/device-management-service';
+import type { Logger } from '../logger';
+import type { UpdateDecryptorService } from '../update-encryptor/update-decryptor-service';
 
 export class UpdateHandler {
     constructor(

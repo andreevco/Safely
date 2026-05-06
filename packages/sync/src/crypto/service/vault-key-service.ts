@@ -1,6 +1,6 @@
 import { xchacha20poly1305 } from '@noble/ciphers/chacha.js';
 
-import { SecureEncryptedKeyRepository } from '../secure-encrypted-key-repository';
+import type { SecureEncryptedKeyRepository } from '../secure-encrypted-key-repository';
 
 export class VaultKeyService {
     constructor(private readonly keyRepository: SecureEncryptedKeyRepository) {}

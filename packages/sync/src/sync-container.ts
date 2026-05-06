@@ -1,7 +1,8 @@
-import { ZodType } from 'zod';
+import type { ZodType } from 'zod';
 
 import { ApiSigner } from './api/api-signer';
-import { AccountsApi, Configuration, SnapshotsApi } from './api/generated';
+import type { Configuration } from './api/generated';
+import { AccountsApi, SnapshotsApi } from './api/generated';
 import { SnapshotsSse } from './api/snapshots-sse';
 import { StorageVerifierService } from './crdt/storage-verifier-service';
 import { YCRDTRepository } from './crdt/y-crdt-repository';
@@ -13,8 +14,8 @@ import { KeyServiceFactory } from './crypto/service/key-service-factory';
 import { SyncKeyService } from './crypto/service/sync-key-service';
 import { DeviceManagementService } from './device-manager/device-management-service';
 import { DeviceRepository } from './device-manager/device-repository';
-import { IStorage } from './I-storage';
-import { Logger } from './logger';
+import type { IStorage } from './I-storage';
+import type { Logger } from './logger';
 import { SecretEncryptor } from './secret-encryptor';
 import { UpdateDecryptorService } from './update-encryptor/update-decryptor-service';
 import { UpdateEncryptorService } from './update-encryptor/update-encryptor-service';

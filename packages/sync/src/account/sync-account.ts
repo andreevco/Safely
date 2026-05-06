@@ -1,18 +1,19 @@
-import { ZodType } from 'zod';
+import type { ZodType } from 'zod';
 
-import { ISyncAccount } from './I-sync-account';
-import { Device } from '../device-manager/device-repository';
-import { ITreeStorage } from '../I-storage';
-import { OnboardingConnector } from '../onboarding/connector';
+import type { ISyncAccount } from './I-sync-account';
+import type { Device } from '../device-manager/device-repository';
+import type { ITreeStorage } from '../I-storage';
+import type { OnboardingConnector } from '../onboarding/connector';
 import { PrimaryDeviceOnboarding } from '../onboarding/primary-device-onboarding';
 import { ReconnectOnboarding } from '../onboarding/reconnect/reconnect-onboarding';
-import { ISecretEncryptor } from '../secret-encryptor';
-import { SyncContainer } from '../sync-container';
-import { SyncAccountRepository } from './sync-account-repository';
+import type { ISecretEncryptor } from '../secret-encryptor';
+import type { SyncContainer } from '../sync-container';
+import type { SyncAccountRepository } from './sync-account-repository';
 import { SyncError } from '../sync-error';
-import { ISyncProvider } from '../sync-provider/I-sync-provider';
+import type { ISyncProvider } from '../sync-provider/I-sync-provider';
 import { OnlineSyncProvider } from '../sync-provider/online-sync-provider';
-import { SyncStatus, SyncStatusManager } from '../sync-provider/sync-status';
+import type { SyncStatusManager } from '../sync-provider/sync-status';
+import { SyncStatus } from '../sync-provider/sync-status';
 
 export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAccount<S> {
     public readonly secretEncryptor: ISecretEncryptor;

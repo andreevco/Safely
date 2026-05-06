@@ -1,8 +1,8 @@
 import * as Y from 'yjs';
-import { ZodType } from 'zod';
+import type { ZodType } from 'zod';
 
 import { YCRDT } from './y-crdt';
-import { IStorage } from '../I-storage';
+import type { IStorage } from '../I-storage';
 
 export class YCRDTRepository {
     constructor(

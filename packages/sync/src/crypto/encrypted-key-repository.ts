@@ -1,4 +1,4 @@
-import { IStorage } from '../I-storage';
+import type { IStorage } from '../I-storage';
 
 export class EncryptedKeyRepository {
     constructor(private readonly encryptedStorage: IStorage) {}

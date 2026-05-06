@@ -1,5 +1,5 @@
-import { ILoggerTransport, LoggerLifecycleContext } from './I-logger-transport';
-import { LogEntry } from './log-entry';
+import type { ILoggerTransport, LoggerLifecycleContext } from './I-logger-transport';
+import type { LogEntry } from './log-entry';
 
 export class CombinedTransport implements ILoggerTransport {
     constructor(private readonly transports: ILoggerTransport[]) {}

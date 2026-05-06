@@ -1,4 +1,4 @@
-import { SecureEncryptedKeyRepository } from '../secure-encrypted-key-repository';
+import type { SecureEncryptedKeyRepository } from '../secure-encrypted-key-repository';
 
 export class MasterKeyService {
     constructor(private readonly keyRepository: SecureEncryptedKeyRepository) {}

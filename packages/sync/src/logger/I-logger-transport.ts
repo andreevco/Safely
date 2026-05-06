@@ -1,4 +1,4 @@
-import { LogEntry } from './log-entry';
+import type { LogEntry } from './log-entry';
 
 export type LoggerLifecycleContext = {
     accountIds: readonly string[];

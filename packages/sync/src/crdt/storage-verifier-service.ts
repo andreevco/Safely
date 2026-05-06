@@ -1,7 +1,8 @@
-import * as Y from 'yjs';
+import type * as Y from 'yjs';
 
-import { DeviceOp, deviceOpIsEquals, DeviceOpSchema } from './y-manager';
-import { DeviceManagementService } from '../device-manager/device-management-service';
+import type { DeviceOp } from './y-manager';
+import { deviceOpIsEquals, DeviceOpSchema } from './y-manager';
+import type { DeviceManagementService } from '../device-manager/device-management-service';
 
 export class StorageVerifierService {
     constructor(private readonly deviceManager: DeviceManagementService) {}

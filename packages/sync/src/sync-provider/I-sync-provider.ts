@@ -1,7 +1,7 @@
-import { z, ZodType } from 'zod';
+import type { z, ZodType } from 'zod';
 
-import { SyncError } from '../sync-error';
-import { ISyncStatusManager } from './sync-status';
+import type { SyncError } from '../sync-error';
+import type { ISyncStatusManager } from './sync-status';
 
 export interface ISyncProvider<S extends Record<string, ZodType>> {
     structure: S;

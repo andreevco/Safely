@@ -1,5 +1,5 @@
 import * as Y from 'yjs';
-import { ZodType } from 'zod';
+import type { ZodType } from 'zod';
 
 import { atomicTransaction } from './atomic-transaction';
 import { deepMerge } from './deep-merge/deep-merge';
