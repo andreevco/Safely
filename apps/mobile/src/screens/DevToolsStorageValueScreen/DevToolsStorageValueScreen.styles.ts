@@ -12,7 +12,8 @@ export const styles = StyleSheet.create(theme => ({
         borderRadius: theme.spacing[8],
         backgroundColor: theme.colors.background.secondary
     },
-    copyButton: {
-        marginTop: 'auto'
+    buttons: {
+        marginTop: 'auto',
+        gap: theme.spacing[4]
     }
 }));

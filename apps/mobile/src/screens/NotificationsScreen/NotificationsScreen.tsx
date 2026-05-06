@@ -37,12 +37,12 @@ export const NotificationsScreen = () => {
             <Screen.Scrollable contentContainerStyle={styles.listContent}>
                 {isDenied && (
                     <View style={styles.container}>
-                        <Banner
-                            variant="warn"
-                            text={t('notifications.warning')}
-                            actionText={t('notifications.openSettings')}
-                            onPress={handleOpenSettings}
-                        />
+                        <Banner variant="warn" onPress={handleOpenSettings}>
+                            <Banner.Content>
+                                <Banner.Text>{t('notifications.warning')}</Banner.Text>
+                            </Banner.Content>
+                            <Banner.Action>{t('notifications.openSettings')}</Banner.Action>
+                        </Banner>
                     </View>
                 )}
                 <List style={styles.container}>

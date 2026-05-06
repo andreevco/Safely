@@ -32,12 +32,12 @@ export const SafelyBetaScreen = () => {
                         </Text>
                     </View>
                 </View>
-                <Banner
-                    style={styles.banner}
-                    text={t('safelyBeta.feedback.description')}
-                    actionText={t('safelyBeta.feedback.action')}
-                    onPress={handleFeedback}
-                />
+                <Banner style={styles.banner} onPress={handleFeedback}>
+                    <Banner.Content>
+                        <Banner.Text>{t('safelyBeta.feedback.description')}</Banner.Text>
+                    </Banner.Content>
+                    <Banner.Action>{t('safelyBeta.feedback.action')}</Banner.Action>
+                </Banner>
             </View>
         </Screen>
     );

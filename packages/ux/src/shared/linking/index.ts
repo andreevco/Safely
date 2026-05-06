@@ -8,8 +8,20 @@ export enum LinkingProtocol {
 }
 
 export abstract class Linking {
-    constructor(protected readonly logger: Logger) {}
+    constructor(protected readonly getLogger: () => Logger) {}
     protected abstract readonly authorizedOpenUrlProtocols: LinkingProtocol[];
+
+    protected abstract openWindow(url: string): void;
+
+    private isValidUrlProtocol(url: string): boolean {
+        try {
+            const u = new URL(url);
+            return this.authorizedOpenUrlProtocols.includes(u.protocol as LinkingProtocol);
+        } catch (e) {
+            this.getLogger().error('Invalid URL protocol', e);
+            return false;
+        }
+    }
 
     public openURL(url: string): void {
         if (!this.isValidUrlProtocol(url)) {
@@ -19,19 +31,7 @@ export abstract class Linking {
         try {
             this.openWindow(url);
         } catch (e) {
-            this.logger.error('Failed to open URL', e);
-        }
-    }
-
-    protected abstract openWindow(url: string): void;
-
-    private isValidUrlProtocol(url: string): boolean {
-        try {
-            const u = new URL(url);
-            return this.authorizedOpenUrlProtocols.includes(u.protocol as LinkingProtocol);
-        } catch (e) {
-            this.logger.error('Invalid URL protocol', e);
-            return false;
+            this.getLogger().error('Failed to open URL', e);
         }
     }
 }

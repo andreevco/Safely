@@ -66,6 +66,14 @@ export const DevToolsStorageValueScreen = ({ route }: Props) => {
         copy(value);
     }, [copy, value]);
 
+    const handleClear = useCallback(() => {
+        if (viewer?.kind === 'single') {
+            viewer.storage.clear();
+        } else {
+            viewer?.storage.removeItem(key);
+        }
+    }, [viewer, key]);
+
     const titleKey = viewer?.kind === 'single' ? SINGLE_STORAGE_KEY : key;
     const formatted = value === null ? null : formatValue(value);
 
@@ -115,15 +123,24 @@ export const DevToolsStorageValueScreen = ({ route }: Props) => {
                     </View>
                 )}
 
-                <Button
-                    type="primary"
-                    size="large"
-                    style={styles.copyButton}
-                    disabled={value === null}
-                    onPress={handleCopy}
-                >
-                    Copy value
-                </Button>
+                <View style={styles.buttons}>
+                    <Button
+                        type="primary"
+                        size="large"
+                        disabled={value === null}
+                        onPress={handleClear}
+                    >
+                        Clear value
+                    </Button>
+                    <Button
+                        type="primary"
+                        size="large"
+                        disabled={value === null}
+                        onPress={handleCopy}
+                    >
+                        Copy value
+                    </Button>
+                </View>
             </Screen.Scrollable>
         </Screen>
     );

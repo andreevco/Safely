@@ -20,43 +20,5 @@ export const styles = StyleSheet.create(theme => ({
                 }
             }
         }
-    },
-    content: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: theme.spacing[32]
-    },
-    flex: {
-        flex: 1
-    },
-    text: {
-        color: theme.colors.text.primary,
-        variants: {
-            variant: {
-                warn: {
-                    color: theme.colors.accent.orange
-                },
-                danger: {
-                    color: theme.colors.accent.red
-                }
-            }
-        }
-    },
-    action: {
-        flexDirection: 'row',
-        alignItems: 'center'
-    },
-    icon: {
-        tintColor: theme.colors.icon.secondary,
-        variants: {
-            variant: {
-                warn: {
-                    tintColor: theme.colors.accent.orange
-                },
-                danger: {
-                    tintColor: theme.colors.accent.red
-                }
-            }
-        }
     }
 }));
