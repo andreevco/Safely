@@ -1,4 +1,4 @@
-import { BLOCKCHAIN_NAME } from '@safely/core';
+import type { BLOCKCHAIN_NAME } from '@safely/core';
 
 export interface ContactFormParsedAddress {
     address: string;

@@ -1,13 +1,13 @@
-import {
+import type {
     IEnumerableStorage,
     SSecretDecrypted,
     SSecretEncrypted,
-    TreeStorage,
     ISecretEncryptor
 } from '@safely/core';
-import { ITreeStorage, ISecretEncryptor as ISyncSecretEncryptor } from '@safely/sync';
+import { TreeStorage } from '@safely/core';
+import type { ITreeStorage, ISecretEncryptor as ISyncSecretEncryptor } from '@safely/sync';
 
-import { IUnlockableSecuredEncryptedStorage, Security } from './types';
+import type { IUnlockableSecuredEncryptedStorage, Security } from './types';
 
 export class UnlockableSecuredEncryptedStorage
     extends TreeStorage

@@ -1,8 +1,10 @@
 import { QueryCache, QueryClient } from '@tanstack/react-query';
-import { Persister, PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
-import React, { FC, PropsWithChildren, ReactNode, Suspense, useEffect, useState } from 'react';
+import type { Persister } from '@tanstack/react-query-persist-client';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import type { FC, PropsWithChildren, ReactNode } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 
-import { Logger } from '@safely/sync';
+import type { Logger } from '@safely/sync';
 
 import { QueryHydrationProvider } from '../contexts';
 import { QUERIES_STALE_TIME, BUSTER_VERSION, CACHE_LIVE_TIME } from '../query-core';

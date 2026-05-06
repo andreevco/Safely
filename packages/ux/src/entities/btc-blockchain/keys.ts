@@ -1,4 +1,4 @@
-import { BtcApi, BtcWallet } from '@safely/core';
+import type { BtcApi, BtcWallet } from '@safely/core';
 
 import { defineQueryKeys, finalKey, mappedParams } from '../../shared';
 

@@ -4,7 +4,7 @@ import { useCallback, useMemo } from 'react';
 import { useActiveBtcWallet } from '../../../../entities';
 import { QUERIES_GC_TIME } from '../../../../shared';
 import { sendFormKeys } from '../keys';
-import { SendFormInitialValues } from '../types';
+import type { SendFormInitialValues } from '../types';
 
 type SendFormDraft = Required<Pick<SendFormInitialValues, 'recipient'>> &
     Omit<SendFormInitialValues, 'recipient'> & {

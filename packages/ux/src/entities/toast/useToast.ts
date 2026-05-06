@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 
-import { ToastOptions } from './types';
+import type { ToastOptions } from './types';
 import { useAppContext } from '../../shared';
 
 export function useToast() {

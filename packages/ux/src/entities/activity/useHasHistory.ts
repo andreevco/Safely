@@ -1,7 +1,7 @@
-import { InfiniteData } from '@tanstack/react-query';
+import type { InfiniteData } from '@tanstack/react-query';
 import { useCallback } from 'react';
 
-import { ActivityPage, IActivityPageParam } from './types';
+import type { ActivityPage, IActivityPageParam } from './types';
 import { useHistory } from './useHistory';
 
 export function useHasHistory() {

@@ -1,9 +1,9 @@
-import {
+import type {
     QueryKey,
-    useInfiniteQuery,
     UseInfiniteQueryOptions,
     UseInfiniteQueryResult
 } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 
 import { useHydratedAt } from '../../contexts';
 import { useIsActualised } from '../persist-helpers';

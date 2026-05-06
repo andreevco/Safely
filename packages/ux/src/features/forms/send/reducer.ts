@@ -1,10 +1,5 @@
-import {
-    SendFormAction,
-    SendFormInitialValues,
-    SendFormState,
-    SendFormValues,
-    SEND_STEPS
-} from './types';
+import type { SendFormAction, SendFormInitialValues, SendFormState, SendFormValues } from './types';
+import { SEND_STEPS } from './types';
 
 const LAST_STEP_INDEX = SEND_STEPS.length - 1;
 

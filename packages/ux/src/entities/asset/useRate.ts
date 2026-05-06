@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { CryptoAsset, CryptoFiatRate } from '@safely/core';
+import type { CryptoAsset, CryptoFiatRate } from '@safely/core';
 
 import { assetKeys } from './keys';
 import { getRateFn } from './rateQuery';

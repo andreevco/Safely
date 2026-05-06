@@ -1,15 +1,13 @@
-import {
+import type {
     BtcApi,
     BtcApiTx,
     BtcAsset,
-    BtcAssetAmount,
     BtcWalletReadOnly,
-    TransactionFeeCrypto,
-    toBig,
-    toBigOrZero
+    TransactionFeeCrypto
 } from '@safely/core';
+import { BtcAssetAmount, toBig, toBigOrZero } from '@safely/core';
 
-import { ActivityPage, BtcActivityItem, IActivityFilters } from './types';
+import type { ActivityPage, BtcActivityItem, IActivityFilters } from './types';
 
 const ON_PAGE_ELEMENTS_LIMIT = 25;
 

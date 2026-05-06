@@ -1,9 +1,9 @@
-import { InfiniteData, QueryKey } from '@tanstack/react-query';
+import type { InfiniteData, QueryKey } from '@tanstack/react-query';
 import { useCallback } from 'react';
 
 import { fetchBtcActivity } from './api';
 import { activityKeys } from './keys';
-import { ActivityPage, IActivityFilters, IActivityPageParam, IHistoryOptions } from './types';
+import type { ActivityPage, IActivityFilters, IActivityPageParam, IHistoryOptions } from './types';
 import { QUERIES_STALE_TIME, useInfinitePersistQuery, useBtcApi } from '../../shared';
 import { useLastBroadcastedBtcTx } from '../btc-blockchain';
 import { useActiveBtcWallet } from '../portfolio';

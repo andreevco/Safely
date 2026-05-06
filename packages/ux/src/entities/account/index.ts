@@ -1,29 +1,24 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect } from 'react';
 
-import { delay, ITreeStorage, PortfolioFactory, PortfolioNetworkType } from '@safely/core';
+import type { ITreeStorage } from '@safely/core';
+import { delay, PortfolioFactory, PortfolioNetworkType } from '@safely/core';
 import { generateBip39Accessor } from '@safely/core/entities/seed';
-import { ISyncAccount, OnboardingAbortedError } from '@safely/sync';
+import type { ISyncAccount } from '@safely/sync';
+import { OnboardingAbortedError } from '@safely/sync';
 
+import type { OnboardingConnector, SyncAccount } from './account-state';
 import {
     generateAccountMeta,
-    OnboardingConnector,
     resetAccountsFactory,
-    SyncAccount,
     useAccountsFactory,
     useActiveAccount,
     withMeta
 } from './account-state';
 import { accountKey } from './keys';
 import { useActiveAccountSyncedStorage, useClearActiveAccountLocalStorage } from './storage';
-import {
-    AccountMeta,
-    SecretEncryptor,
-    SyncedStorageStructure,
-    useAppContext,
-    useSharedUxStorage,
-    useTranslate
-} from '../../shared';
+import type { AccountMeta, SyncedStorageStructure } from '../../shared';
+import { SecretEncryptor, useAppContext, useSharedUxStorage, useTranslate } from '../../shared';
 import { useLoader } from '../loader';
 import { useLogger } from '../logger';
 import { useMutation } from '../query-core';

@@ -1,14 +1,9 @@
 import { useMemo } from 'react';
 
-import {
-    Contact,
-    IDerivation,
-    Portfolio,
-    PortfolioType,
-    RatedCryptoAssetAmount
-} from '@safely/core';
+import type { Contact, IDerivation, Portfolio, RatedCryptoAssetAmount } from '@safely/core';
+import { PortfolioType } from '@safely/core';
 
-import { SuggestionDraftState } from './useSuggestionDraft';
+import type { SuggestionDraftState } from './useSuggestionDraft';
 import {
     findContactMetaByAddress,
     findPortfolioMetaByAddress,
@@ -17,7 +12,7 @@ import {
     usePortfolios
 } from '../../../../entities';
 import { fuzzySearch } from '../../../../shared';
-import { ContactSuggestion, PortfolioSuggestion, SendFormState } from '../types';
+import type { ContactSuggestion, PortfolioSuggestion, SendFormState } from '../types';
 
 function mapContactToSuggestions(contact: Contact): ContactSuggestion[] {
     return contact.addresses.map(address => ({

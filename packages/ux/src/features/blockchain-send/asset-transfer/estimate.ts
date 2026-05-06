@@ -1,15 +1,17 @@
 import { keepPreviousData, skipToken, useQuery } from '@tanstack/react-query';
 
+import type {
+    BtcEstimator,
+    RatedCryptoAssetAmount,
+    TransactionTemplate,
+    BtcApiUtxo
+} from '@safely/core';
 import {
     assertUnreachable,
     BLOCKCHAIN_NAME,
     BTC_ASSET,
     BtcAssetAmount,
-    BtcEstimator,
     BtcFeeType,
-    RatedCryptoAssetAmount,
-    TransactionTemplate,
-    BtcApiUtxo,
     OutputsAreSpendingMoreThanInputsError
 } from '@safely/core';
 
