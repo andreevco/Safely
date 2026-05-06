@@ -1,11 +1,15 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMachine } from '@xstate/react';
 
-import { useActivePortfolioEntities, useContacts, usePortfolios } from '../../../../entities';
-import { SendFormInitialValues, SendFormResult, SendSuggestionState } from '../types';
-import { mapContactToSuggestions, mapPortfolioToSuggestions } from '../utils';
-import { useSendFormDraft } from './useSendFormDraft';
-import { useSendFormMeta } from './useSendFormMeta';
-import { useSendFormState } from './useSendFormState';
+import { useAssets } from '../../../../entities';
+import { createSendFormMachine } from '../machine/machine';
+import { SendFormInitialValues, SendFormResult } from '../types';
+import type { SendFormView } from '../view';
+import { useSendFormDispatchers } from './useSendFormDispatchers';
+import { useSendFormMachineInput } from './useSendFormMachineInput';
+import { useSendFormSuggestions } from './useSendFormSuggestions';
+import { useSendFormView } from './useSendFormView';
+
+const sendFormMachine = createSendFormMachine();
 
 export interface UseSendFormOptions {
     onSubmit: (result: SendFormResult, onSuccess: () => void) => void;
@@ -13,117 +17,30 @@ export interface UseSendFormOptions {
     initialValues?: SendFormInitialValues;
 }
 
-export function useSendForm(props: UseSendFormOptions) {
+export function useSendForm(props: UseSendFormOptions): SendFormView {
     const { onSubmit, shouldResetForm = true, initialValues } = props;
 
-    const portfolios = usePortfolios();
-    const contacts = useContacts();
-    const entities = useActivePortfolioEntities();
-    const activePortfolio = useMemo(
-        () => ({
-            portfolioId: entities.portfolio.id,
-            derivation: entities.kind === 'bip39' ? entities.derivation : undefined
-        }),
-        [entities]
-    );
-    const { initialDraft, saveDraft, clearDraft } = useSendFormDraft();
+    const { portfolioSuggestions, contactSuggestions } = useSendFormSuggestions();
+    const ratedAssets = useAssets().data ?? [];
 
-    const portfolioSuggestions = useMemo(
-        () => portfolios.flatMap(p => mapPortfolioToSuggestions(p, activePortfolio)),
-        [portfolios, activePortfolio]
-    );
-
-    const contactSuggestions = useMemo(
-        () => contacts.flatMap(c => mapContactToSuggestions(c)),
-        [contacts]
-    );
-
-    const [resolvedInitialValues] = useState<SendFormInitialValues | undefined>(() => {
-        if (initialValues?.recipient) return initialValues;
-
-        return initialDraft ?? initialValues;
-    });
-
-    const [initialSuggestion] = useState<SendSuggestionState | undefined>(() => {
-        const address = resolvedInitialValues?.recipient;
-        if (!address) return undefined;
-
-        const savedId = initialDraft?.selectedId;
-        const preferredMatch = savedId
-            ? [...portfolioSuggestions, ...contactSuggestions].find(
-                  s => s.id === savedId && s.address === address
-              )
-            : undefined;
-        const match =
-            preferredMatch ??
-            portfolioSuggestions.find(s => s.address === address) ??
-            contactSuggestions.find(s => s.address === address);
-        if (!match) return undefined;
-
-        return {
-            selectedId: match.id,
-            portfoliosIds: portfolioSuggestions.map(s => s.id),
-            contactsIds: contactSuggestions.map(s => s.id)
-        };
-    });
-
-    const { state, actions, step, assetsData } = useSendFormState({
-        resolvedInitialValues,
-        initialSuggestion,
-        portfolioSuggestions,
-        contactSuggestions,
+    const machineInput = useSendFormMachineInput({
         onSubmit,
         shouldResetForm,
-        clearDraft
-    });
-
-    const meta = useSendFormMeta({
-        state,
-        assetsData,
+        initialValues,
         portfolioSuggestions,
-        contactSuggestions
+        contactSuggestions,
+        ratedAssets
     });
 
-    useEffect(() => {
-        if (state.values.recipient) {
-            saveDraft({
-                recipient: state.values.recipient,
-                addressBookName: state.values.addressBookName || undefined,
-                amount: state.values.amount || undefined,
-                amountInputType: state.values.amountInputType,
-                isMax: state.values.isMax || undefined,
-                stepIndex: state.stepIndex,
-                selectedId: state.suggestion.selectedId
-            });
-        } else {
-            clearDraft();
-        }
-    }, [
-        state.values.recipient,
-        state.values.addressBookName,
-        state.values.amount,
-        state.values.amountInputType,
-        state.values.isMax,
-        state.stepIndex,
-        state.suggestion.selectedId,
-        saveDraft,
-        clearDraft
-    ]);
+    const [snapshot, send] = useMachine(sendFormMachine, { input: machineInput });
 
-    const suggestionSelection = useMemo(
-        () => ({
-            selectedId: state.suggestion.selectedId,
-            select: actions.selectSuggestion,
-            clear: actions.clearSuggestion
-        }),
-        [state.suggestion.selectedId, actions.selectSuggestion, actions.clearSuggestion]
-    );
+    const dispatchers = useSendFormDispatchers(send);
 
-    return {
-        state,
-        actions,
-        step,
-        meta,
-        suggestionSelection
-    };
+    return useSendFormView({
+        snapshot,
+        dispatchers,
+        portfolioSuggestions,
+        contactSuggestions,
+        ratedAssets
+    });
 }
