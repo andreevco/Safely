@@ -260,7 +260,9 @@ export default [
             'packages/ux/**/*.ts',
             'packages/ux/**/*.tsx',
             'packages/core/**/*.ts',
-            'packages/core/**/*.tsx'
+            'packages/core/**/*.tsx',
+            'packages/sync/**/*.ts',
+            'packages/slottree/**/*.tsx',
         ],
         rules: {
             'import/no-cycle': ['error', { maxDepth: 10, ignoreExternal: true }],
