@@ -8,7 +8,7 @@ export enum LinkingProtocol {
 }
 
 export abstract class Linking {
-    constructor(protected readonly getLogger: () => Logger) {}
+    constructor(protected readonly logger: Logger) {}
     protected abstract readonly authorizedOpenUrlProtocols: LinkingProtocol[];
 
     protected abstract openWindow(url: string): void;
@@ -18,7 +18,7 @@ export abstract class Linking {
             const u = new URL(url);
             return this.authorizedOpenUrlProtocols.includes(u.protocol as LinkingProtocol);
         } catch (e) {
-            this.getLogger().error('Invalid URL protocol', e);
+            this.logger.error('Invalid URL protocol', e);
             return false;
         }
     }
@@ -31,7 +31,7 @@ export abstract class Linking {
         try {
             this.openWindow(url);
         } catch (e) {
-            this.getLogger().error('Failed to open URL', e);
+            this.logger.error('Failed to open URL', e);
         }
     }
 }

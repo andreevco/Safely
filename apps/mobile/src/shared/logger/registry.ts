@@ -20,20 +20,9 @@ export type LoggerRegistryOpts = {
 export class LoggerRegistry implements ILoggerRegistry {
     public readonly systemLogger: Logger;
     private readonly accounts = new Map<string, AccountEntry>();
-    private activeAccountId: string | null = null;
 
     constructor(private readonly opts: LoggerRegistryOpts) {
         this.systemLogger = buildLogger(opts.systemTransport, opts.isDev);
-    }
-
-    public get activeLogger(): Logger {
-        return this.activeAccountId
-            ? this.getAccountLogger(this.activeAccountId)
-            : this.systemLogger;
-    }
-
-    public setActiveAccountId(accountId: string | null): void {
-        this.activeAccountId = accountId;
     }
 
     public getAccountLogger(accountId: string): Logger {
