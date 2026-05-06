@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 
 import { useAppContext } from '../providers';
-import { Security } from './types';
+import type { Security } from './types';
 
 export function useSecurityCheck() {
     const { security } = useAppContext();

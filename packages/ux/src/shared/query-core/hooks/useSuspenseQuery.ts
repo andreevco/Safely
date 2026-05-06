@@ -1,10 +1,10 @@
-import {
+import type {
     QueryKey,
-    useQuery,
     UseQueryOptions,
     UseSuspenseQueryOptions,
     UseSuspenseQueryResult
 } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 
 export function useSuspenseQuery<
     TQueryFnData = unknown,

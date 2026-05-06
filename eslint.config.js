@@ -256,9 +256,19 @@ export default [
      * default trace shows the cycle path; fix the cycle, don't suppress.
      */
     {
-        files: ['packages/ux/**/*.ts', 'packages/ux/**/*.tsx'],
+        files: [
+            'packages/ux/**/*.ts',
+            'packages/ux/**/*.tsx',
+            'packages/core/**/*.ts',
+            'packages/core/**/*.tsx'
+        ],
         rules: {
-            'import/no-cycle': ['error', { maxDepth: 10, ignoreExternal: true }]
+            'import/no-cycle': ['error', { maxDepth: 10, ignoreExternal: true }],
+            '@typescript-eslint/consistent-type-imports': [
+                'error',
+                { prefer: 'type-imports', fixStyle: 'separate-type-imports' }
+            ],
+            '@typescript-eslint/no-import-type-side-effects': 'error'
         }
     },
     /* logger implementations — console is the last-resort fallback */

@@ -9,7 +9,7 @@ export * from './portfolio-meta';
 export * from './portfolio-network-type';
 export * from './portfolio.stored';
 
-import { PortfolioBip39 } from './portfolio-bip39';
-import { PortfolioWatchOnly } from './portfolio-watch-only';
+import type { PortfolioBip39 } from './portfolio-bip39';
+import type { PortfolioWatchOnly } from './portfolio-watch-only';
 
 export type Portfolio = PortfolioBip39 | PortfolioWatchOnly;

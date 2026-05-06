@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 
-import { SendSuggestions } from '../types';
+import type { SendSuggestions } from '../types';
 
 export interface SuggestionDraftState {
     selectedId?: string;

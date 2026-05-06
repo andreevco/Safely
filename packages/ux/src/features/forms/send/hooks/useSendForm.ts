@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react';
 
-import { SendFormInitialValues, SendFormResult } from '../types';
+import type { SendFormInitialValues, SendFormResult } from '../types';
 import { useSendFormDraft } from './useSendFormDraft';
 import { useSendFormMeta } from './useSendFormMeta';
 import { useSendFormState } from './useSendFormState';

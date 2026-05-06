@@ -1,4 +1,4 @@
-import { CryptoAssetAmount } from '@safely/core';
+import type { CryptoAssetAmount } from '@safely/core';
 
 import { useDerivedQuery } from '../../shared';
 import { useRate } from '../asset/useRate';

@@ -1,6 +1,12 @@
 import { createContext, useContext } from 'react';
 
-import { Build, ITreeStorage, NumberFormatLocale, QrScanner, UserCountryInfo } from '@safely/core';
+import type {
+    Build,
+    ITreeStorage,
+    NumberFormatLocale,
+    QrScanner,
+    UserCountryInfo
+} from '@safely/core';
 
 import type { TranslateFn } from '../i18n/types';
 import type { Linking } from '../linking';

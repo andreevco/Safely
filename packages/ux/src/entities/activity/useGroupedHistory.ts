@@ -1,9 +1,8 @@
-import { InfiniteData } from '@tanstack/react-query';
+import type { InfiniteData } from '@tanstack/react-query';
 import { useCallback } from 'react';
 
 import { isBtcTransactionPending } from './blockchain-specific/btc';
-import {
-    ACTIVITY_GROUP_LABEL,
+import type {
     ActivityItem,
     ActivityItemsDatedGroup,
     ActivityItemsDatedGroupMeta,
@@ -11,6 +10,7 @@ import {
     IActivityFilters,
     IActivityPageParam
 } from './types';
+import { ACTIVITY_GROUP_LABEL } from './types';
 import { useHistory } from './useHistory';
 
 export function useGroupedHistory(filters: IActivityFilters = {}) {

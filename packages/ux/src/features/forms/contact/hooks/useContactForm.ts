@@ -1,9 +1,9 @@
 import { useCallback, useMemo } from 'react';
 
-import { Contact } from '@safely/core';
+import type { Contact } from '@safely/core';
 
 import { useCreateContact, useEditContact } from '../../../../entities';
-import { ContactFormResult } from '../types';
+import type { ContactFormResult } from '../types';
 import { useContactFormState } from './useContactFormState';
 
 export interface UseContactFormParams {

@@ -2,7 +2,7 @@ import { sha256 } from '@noble/hashes/sha2.js';
 import { bytesToHex } from '@noble/hashes/utils.js';
 import z from 'zod';
 
-import { Portfolio } from '@safely/core';
+import type { Portfolio } from '@safely/core';
 
 const sDeviceMeta = z.object({
     name: z.string(),

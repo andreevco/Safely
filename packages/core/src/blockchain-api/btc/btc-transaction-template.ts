@@ -1,15 +1,11 @@
-import { BtcPsbtBulder, PsbtRequest } from './btc-psbt-bulder';
+import type { PsbtRequest } from './btc-psbt-bulder';
+import { BtcPsbtBulder } from './btc-psbt-bulder';
 import { BtcSendDustError } from './errors';
-import { BtcEstimation, BtcTransferRequest } from './types';
+import type { BtcEstimation, BtcTransferRequest } from './types';
 import { getUtxoTotal, utxoPathToStruct } from './utils';
-import { BtcApi, BtcApiUtxo } from '../../api/btc';
-import {
-    BLOCKCHAIN_NAME,
-    BtcAssetAmount,
-    btcNetworkConfig,
-    SignableBtcWallet,
-    ExplorerFactory
-} from '../../entities';
+import type { BtcApi, BtcApiUtxo } from '../../api/btc';
+import type { BtcAssetAmount, SignableBtcWallet, ExplorerFactory } from '../../entities';
+import { BLOCKCHAIN_NAME, btcNetworkConfig } from '../../entities/blockchain';
 import { getExternalErrorText } from '../../entities/errors/errors.service';
 import { assertUnreachable, ellipsisMiddle } from '../../utils';
 

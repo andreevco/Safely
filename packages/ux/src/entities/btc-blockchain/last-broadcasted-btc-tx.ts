@@ -1,19 +1,13 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { createStore, useStore } from '@tanstack/react-store';
 
-import {
-    BtcApiUtxo,
-    BtcAssetAmount,
-    BtcTransactionTemplate,
-    BtcWallet,
-    toBig,
-    toBigOrZero
-} from '@safely/core';
-import { BtcApiTx, BtcApiUtxoWithOptionalTx } from '@safely/core/api/btc';
+import type { BtcApiUtxo, BtcTransactionTemplate, BtcWallet } from '@safely/core';
+import { BtcAssetAmount, toBig, toBigOrZero } from '@safely/core';
+import type { BtcApiTx, BtcApiUtxoWithOptionalTx } from '@safely/core/api/btc';
 
 import { useActiveAccount } from '../account';
 import { getBiggestBtcIOAddress } from '../activity/api';
-import { BtcActivityItem } from '../activity/types';
+import type { BtcActivityItem } from '../activity/types';
 import { useActiveBtcWallet } from '../portfolio';
 import { utxo } from './keys';
 import { refetchQueries } from '../../shared';

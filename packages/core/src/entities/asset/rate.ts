@@ -1,9 +1,11 @@
 import Big from 'big.js';
 import * as z from 'zod';
 
-import { CryptoAsset, sCryptoAsset } from './crypto-asset';
-import { FiatAsset, sFiatAsset } from './fiat-asset';
-import { IAsset } from './I-asset';
+import type { CryptoAsset } from './crypto-asset';
+import { sCryptoAsset } from './crypto-asset';
+import type { FiatAsset } from './fiat-asset';
+import { sFiatAsset } from './fiat-asset';
+import type { IAsset } from './I-asset';
 
 interface IRate<Base extends IAsset, Quote extends IAsset> {
     /**

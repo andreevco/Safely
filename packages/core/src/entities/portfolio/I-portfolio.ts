@@ -1,10 +1,10 @@
-import { Id } from '../../utils/id';
-import { VMType } from '../blockchain';
+import type { Id } from '../../utils/id';
+import type { VMType } from '../blockchain';
 import type { IDerivation, WalletReadOnly } from '../derivation';
-import { IPortfolioId } from './portfolio-id';
-import { PortfolioMeta } from './portfolio-meta';
-import { PortfolioNetworkType } from './portfolio-network-type';
-import { PortfolioSecretRevealedStatus } from './portfolio-secret-revealed-status';
+import type { IPortfolioId } from './portfolio-id';
+import type { PortfolioMeta } from './portfolio-meta';
+import type { PortfolioNetworkType } from './portfolio-network-type';
+import type { PortfolioSecretRevealedStatus } from './portfolio-secret-revealed-status';
 
 export enum PortfolioType {
     BIP39 = 'BIP39',

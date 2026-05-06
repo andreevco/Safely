@@ -1,10 +1,10 @@
 import * as ecc from '@bitcoinerlab/secp256k1';
 import ECPairFactory from 'ecpair';
 
-import { BtcSigningRequest, IBtcSigner } from './I-btc-signer';
+import type { BtcSigningRequest, IBtcSigner } from './I-btc-signer';
 import { btcNetworkConfig } from '../../blockchain';
-import { BtcWalletReadOnly } from '../../derivation';
-import { IBtcNodeProducer } from '../../derivation/btc/I-btc-node-producer';
+import type { BtcWalletReadOnly } from '../../derivation';
+import type { IBtcNodeProducer } from '../../derivation/btc/I-btc-node-producer';
 
 const ECPair = ECPairFactory(ecc);
 

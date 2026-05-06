@@ -1,13 +1,8 @@
-import {
-    CryptoAsset,
-    CryptoAssetAmount,
-    FiatAssetAmount,
-    NumberFormatter,
-    RatedCryptoAssetAmount
-} from '@safely/core';
+import type { CryptoAsset, NumberFormatter, RatedCryptoAssetAmount } from '@safely/core';
+import { CryptoAssetAmount, FiatAssetAmount } from '@safely/core';
 
 import { SendFormError } from '../errors';
-import {
+import type {
     AmountInputType,
     AmountValidationResult,
     AmountWithInputType,

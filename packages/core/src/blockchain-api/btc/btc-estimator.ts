@@ -2,16 +2,15 @@ import Big from 'big.js';
 
 import { BtcPsbtBulder } from './btc-psbt-bulder';
 import { BtcTransactionTemplate } from './btc-transaction-template';
-import {
-    BtcFeeType,
-    BtcTransferRequest,
-    BtcTransferRequestMax,
-    BtcTransferRequestNotMax
-} from './types';
+import type { BtcTransferRequest, BtcTransferRequestMax, BtcTransferRequestNotMax } from './types';
+import { BtcFeeType } from './types';
 import { getUtxoTotal } from './utils';
-import { BtcApi, BtcApiEstimatedFee, BtcApiUtxo } from '../../api/btc';
-import { BtcAssetAmount, btcNetworkConfig, SignableBtcWallet } from '../../entities';
-import { abs, assertUnreachable, IIdentifiable, toBig } from '../../utils';
+import type { BtcApi, BtcApiEstimatedFee, BtcApiUtxo } from '../../api/btc';
+import type { SignableBtcWallet } from '../../entities';
+import { BtcAssetAmount } from '../../entities/asset';
+import { btcNetworkConfig } from '../../entities/blockchain';
+import type { IIdentifiable } from '../../utils';
+import { abs, assertUnreachable, toBig } from '../../utils';
 
 export type SpentUtxo = { txid: string; vout: number; value: string };
 

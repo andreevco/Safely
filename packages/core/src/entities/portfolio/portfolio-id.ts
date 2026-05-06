@@ -2,11 +2,12 @@ import { hmac } from '@noble/hashes/hmac.js';
 import { sha512 } from '@noble/hashes/sha2.js';
 
 import { PortfolioType } from './I-portfolio';
-import { allowedPortfolioMetaEmojis, PortfolioMetaIconEmoji } from './portfolio-meta';
-import { PortfolioNetworkType } from './portfolio-network-type';
+import type { PortfolioMetaIconEmoji } from './portfolio-meta';
+import { allowedPortfolioMetaEmojis } from './portfolio-meta';
+import type { PortfolioNetworkType } from './portfolio-network-type';
 import { xorFold16 } from '../../utils/crypto';
 import { Id } from '../../utils/id';
-import { IMnemonicAccessor } from '../mnemonic';
+import type { IMnemonicAccessor } from '../mnemonic';
 
 export interface IPortfolioId extends Id {
     network: PortfolioNetworkType;

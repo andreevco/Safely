@@ -1,6 +1,7 @@
 import * as z from 'zod';
 
-import { ASSET_ID_DOMAIN, ASSET_TYPE, IAsset } from './I-asset';
+import type { IAsset } from './I-asset';
+import { ASSET_ID_DOMAIN, ASSET_TYPE } from './I-asset';
 import { Id } from '../../utils/id';
 
 export const sFiatAssetId = z

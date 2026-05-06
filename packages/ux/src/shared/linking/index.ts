@@ -1,4 +1,4 @@
-import { Logger } from '@safely/sync';
+import type { Logger } from '@safely/sync';
 
 export enum LinkingProtocol {
     HTTPS = 'https:',

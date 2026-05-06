@@ -4,13 +4,8 @@ import { useAssets, useCreateContact, useNumberFormatter } from '../../../../ent
 import { useMaxSendAssetTransfer } from '../../../blockchain-send/asset-transfer/estimate';
 import { SendFormError } from '../errors';
 import { createInitialState, sendFormReducer } from '../reducer';
-import {
-    AmountInputType,
-    FormStepNames,
-    SEND_STEPS,
-    SendFormInitialValues,
-    SendFormResult
-} from '../types';
+import type { AmountInputType, SendFormInitialValues, SendFormResult } from '../types';
+import { FormStepNames, SEND_STEPS } from '../types';
 import {
     assetIdSchema,
     BLOCKCHAIN_DEFAULT_TOKENS,

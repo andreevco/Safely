@@ -1,8 +1,9 @@
-import { PortfolioType, WatchOnlySource } from './I-portfolio';
-import { IPortfolioId } from './portfolio-id';
-import { PortfolioNetworkType } from './portfolio-network-type';
+import type { WatchOnlySource } from './I-portfolio';
+import { PortfolioType } from './I-portfolio';
+import type { IPortfolioId } from './portfolio-id';
+import type { PortfolioNetworkType } from './portfolio-network-type';
 import { Id } from '../../utils';
-import { VMType } from '../blockchain';
+import type { VMType } from '../blockchain';
 
 export class PortfolioIdWatchOnly extends Id implements IPortfolioId {
     constructor(

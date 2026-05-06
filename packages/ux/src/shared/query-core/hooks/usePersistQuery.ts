@@ -1,4 +1,5 @@
-import { QueryKey, useQuery, UseQueryOptions, UseQueryResult } from '@tanstack/react-query';
+import type { QueryKey, UseQueryOptions, UseQueryResult } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 
 import { useHydratedAt } from '../../contexts';
 import { useIsActualised } from '../persist-helpers';

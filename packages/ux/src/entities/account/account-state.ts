@@ -1,13 +1,13 @@
 import { useQueryClient } from '@tanstack/react-query';
 
 import { notNullish } from '@safely/core';
-import { ISyncAccount, SyncAccountFactory } from '@safely/sync';
+import type { ISyncAccount } from '@safely/sync';
+import { SyncAccountFactory } from '@safely/sync';
 
 import { accountKey } from './keys';
+import type { AccountMeta, SyncedStorageStructure } from '../../shared';
 import {
-    AccountMeta,
     syncedStorageStructure,
-    SyncedStorageStructure,
     useAppContext,
     useBootConfig,
     useSharedUxStorage,

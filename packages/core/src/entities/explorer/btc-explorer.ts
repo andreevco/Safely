@@ -1,4 +1,4 @@
-import { BootConfig } from '../../api/boot/models';
+import type { BootConfig } from '../../api/boot/models';
 
 export class BtcExplorer {
     constructor(private readonly config: BootConfig['blockchains']['bitcoin']['mainnet']) {}

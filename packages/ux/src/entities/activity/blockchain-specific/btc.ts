@@ -1,6 +1,8 @@
-import { InfiniteData, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { InfiniteData } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { BLOCKCHAIN_NAME, BtcApiTx } from '@safely/core';
+import type { BtcApiTx } from '@safely/core';
+import { BLOCKCHAIN_NAME } from '@safely/core';
 
 import { QUERIES_REFETCH_INTERVAL, useBtcApi } from '../../../shared';
 import { useActualBtcBlockNumber } from '../../btc-blockchain';
