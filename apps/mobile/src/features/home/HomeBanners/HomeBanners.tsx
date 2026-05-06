@@ -86,7 +86,7 @@ function BannerItem({ banner }: BannerItemProps) {
 
     return (
         <Banner variant={banner.type === 'default' ? undefined : banner.type} onPress={handlePress}>
-            <Banner.Content alignItems="start">
+            <Banner.Content alignItems={isDismissible ? 'start' : 'center'}>
                 <Banner.Text>{banner.text}</Banner.Text>
                 {iconComponent && <Banner.Icon icon={iconComponent} onPress={handleDismiss} />}
             </Banner.Content>
