@@ -59,7 +59,12 @@ export const RootStack = createNativeStackNavigator({
         },
         Screens: {
             screens: {
-                TabsNavigator: TabsNavigator,
+                TabsNavigator: {
+                    screen: TabsNavigator,
+                    linking: {
+                        path: 'tab'
+                    }
+                },
                 TransactionScreen: TransactionScreen,
                 PasscodeVerificationScreen: {
                     screen: PasscodeVerificationScreen,

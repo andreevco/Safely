@@ -47,6 +47,9 @@ export const TabsNavigator = createBottomTabNavigator({
         },
         SafelyBetaScreen: {
             screen: SafelyBetaScreen,
+            linking: {
+                path: 'beta'
+            },
             options: () => ({
                 title: i18next.t('tabs.about'),
                 tabBarIcon: ({ color }) => (

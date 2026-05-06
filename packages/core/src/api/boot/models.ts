@@ -22,6 +22,24 @@ export const bootConfigSchema = z.looseObject({
         })
     }),
 
+    notices: z.looseObject({
+        home_screen_banners: z.array(
+            z.looseObject({
+                id: z.string(),
+                type: z.enum(['default', 'warn', 'danger']),
+                text: z.string(),
+                icon: z.string().optional(),
+                banner_click_action_url: z.string().optional(),
+                action_button: z
+                    .looseObject({
+                        text: z.string(),
+                        url: z.string()
+                    })
+                    .optional()
+            })
+        )
+    }),
+
     currencies: z.looseObject({
         prices_api_url: z.string(),
         supported_currencies: z.array(

@@ -549,7 +549,7 @@
     },
     "safelyBeta": {
         "title": "Safely is in beta",
-        "subtitle": "Some features are still evolving. Save your recovery phrases in Settings \u2192 Security.",
+        "subtitle": "Some features are still evolving. Keep less than $100 until the public release. Save your recovery phrases in Settings → Security.",
         "feedback": {
             "description": "Found a bug or have an idea?\nYour feedback helps us improve Safely.",
             "action": "Send feedback"
