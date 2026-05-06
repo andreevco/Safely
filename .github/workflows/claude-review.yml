@@ -46,9 +46,12 @@ jobs:
       - uses: anthropics/claude-code-action@v1
         timeout-minutes: 14
         with:
-          mode: experimental-review
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          claude_args: '--model claude-opus-4-7'
+          claude_args: |
+            --model claude-opus-4-7
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"
+          track_progress: true
+          use_sticky_comment: true
           show_full_output: true
           prompt: |
             You are a senior reviewer for a React Native + TypeScript mobile app.
@@ -202,10 +205,16 @@ jobs:
 
             ## Output
 
-            - Inline comments anchored to the exact line
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
+
+            - Post inline comments via `mcp__github_inline_comment__create_inline_comment`
+              (with `confirmed: true`), anchored to the exact line.
             - Each comment: one sentence stating the issue + concrete fix
-              (short code snippet if it clarifies)
-            - If no qualifying issues found, post exactly one comment:
-              "No security, performance, or correctness issues found."
-            - Never list what you checked or what looks good
-            - Maximum 7 inline comments per PR — if more, keep the 7 most severe
+              (short code snippet if it clarifies).
+            - If no qualifying issues found, post exactly ONE top-level comment via
+              `gh pr comment`: "No security, performance, or correctness issues found."
+            - Do NOT submit the review as a plain assistant message — only via the
+              GitHub tools above.
+            - Never list what you checked or what looks good.
+            - Maximum 7 inline comments per PR — if more, keep the 7 most severe.
