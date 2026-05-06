@@ -1,8 +1,15 @@
 import { Logger } from '@safely/sync';
 
-export class Linking {
+export enum LinkingProtocol {
+    HTTPS = 'https:',
+    MAILTO = 'mailto:',
+    SAFELY_SCHEME = 'safely:',
+    TG_SCHEME = 'tg:'
+}
+
+export abstract class Linking {
     constructor(protected readonly logger: Logger) {}
-    protected readonly authorizedOpenUrlProtocols: string[] = ['https:', 'mailto:'];
+    protected abstract readonly authorizedOpenUrlProtocols: LinkingProtocol[];
 
     public openURL(url: string): void {
         if (!this.isValidUrlProtocol(url)) {
@@ -16,14 +23,12 @@ export class Linking {
         }
     }
 
-    protected openWindow(url: string): void {
-        window.open(url, '_blank', 'noreferrer,noopener');
-    }
+    protected abstract openWindow(url: string): void;
 
     private isValidUrlProtocol(url: string): boolean {
         try {
             const u = new URL(url);
-            return this.authorizedOpenUrlProtocols.includes(u.protocol);
+            return this.authorizedOpenUrlProtocols.includes(u.protocol as LinkingProtocol);
         } catch (e) {
             this.logger.error('Invalid URL protocol', e);
             return false;

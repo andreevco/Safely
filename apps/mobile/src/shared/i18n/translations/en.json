@@ -83,7 +83,6 @@
         "title": "Currency"
     },
     "home": {
-        "betaWarning": "Safely is in beta. We recommend keeping less than $100. Learn more",
         "actions": {
             "send": "Send",
             "receive": "Receive",
