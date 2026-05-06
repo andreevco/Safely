@@ -1,4 +1,4 @@
-import { ZodType } from 'zod';
+import { StorageVersion } from '@safely/slottree';
 
 import { Logger } from '../../logger';
 import { OnboardingAbortedError } from '../../sync-error';
@@ -6,10 +6,10 @@ import { OnlineSyncProvider } from '../../sync-provider/online-sync-provider';
 import { SyncStatus } from '../../sync-provider/sync-status';
 import { QRMessageCodec, QRMessageOperation } from '../onboarding-codec';
 
-export class ReconnectOnboarding<S extends Record<string, ZodType>> {
+export class ReconnectOnboarding<Latest extends StorageVersion, Rest> {
     constructor(
         private readonly myIkPub: Buffer,
-        private readonly syncProvider: OnlineSyncProvider<S>,
+        private readonly syncProvider: OnlineSyncProvider<Latest, Rest>,
         private readonly logger: Logger
     ) {}
 

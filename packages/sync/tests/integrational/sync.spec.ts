@@ -1,13 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { makeFactory, onboardDevice, Schema } from './helpers';
-import { ISyncAccount, SyncAccountFactory } from '../../src';
+import { makeFactory, onboardDevice, TestSyncAccount, TestSyncAccountFactory } from './helpers';
 import { InMemStorage } from '../impl/storage';
 
 describe('Sync', () => {
-    let factory: SyncAccountFactory<typeof Schema>;
+    let factory: TestSyncAccountFactory;
     let secureEncryptedStorage: InMemStorage;
-    let accounts: ISyncAccount<typeof Schema>[];
+    let accounts: TestSyncAccount[];
 
     beforeEach(async () => {
         factory = makeFactory();
@@ -15,7 +14,7 @@ describe('Sync', () => {
         accounts = [];
     });
 
-    async function setAndVerify(account: ISyncAccount<typeof Schema>, data: string[]) {
+    async function setAndVerify(account: TestSyncAccount, data: string[]) {
         await account.syncProvider.set('wallets', data);
         await vi.waitFor(async () => {
             // checks if all accounts synchronized

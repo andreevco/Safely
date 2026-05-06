@@ -8,11 +8,10 @@ export type ArrayMergeMeta = {
 export const crdtRegistry = z.registry<ArrayMergeMeta>();
 
 /**
- * Creates a Zod schema for an array with unique identifier.
- * @param itemSchema
- * @param getId - MUST return unique id for the item, otherwise items will overwrite each other.
+ * Compatibility wrapper for callers that still annotate arrays with merge keys.
+ * Slottree owns merge behavior now, so the metadata is retained only for validation callers.
  */
-export function zArrayWithKey<Item extends z.ZodTypeAny>(
+export function zArrayWithKey<Item extends z.ZodType>(
     itemSchema: Item,
     getId: (item: z.input<Item>) => string
 ): z.ZodArray<Item> {
@@ -23,3 +22,5 @@ export function zArrayWithKey<Item extends z.ZodTypeAny>(
     });
     return schema;
 }
+
+export const arrayById = zArrayWithKey;

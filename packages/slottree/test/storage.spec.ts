@@ -169,6 +169,27 @@ describe("storage updates", () => {
     });
   });
 
+  it("exports a stable string independent of object key insertion order", () => {
+    const storage = createStorage({
+      authorId: "device-1",
+      versions: v1,
+    });
+
+    storage.update((draft) => {
+      draft.key1 = 10;
+      draft.key2 = "updated";
+    });
+
+    const reordered = reverseSlotKeys(storage.exportSlot() as ContainerSlot);
+    const storageFromReorderedRoot = createStorage({
+      authorId: "device-1",
+      versions: v1,
+      root: reordered,
+    });
+
+    expect(storageFromReorderedRoot.export()).toBe(storage.export());
+  });
+
   it("prevents runtime writes through read proxies", () => {
     const storage = createStorage({
       authorId: "device-1",
@@ -369,3 +390,19 @@ describe("storage updates", () => {
     expect(storage.read()).toEqual({});
   });
 });
+
+function reverseSlotKeys(slot: ContainerSlot): ContainerSlot {
+  const reversed = {
+    ...slot,
+    v: Object.fromEntries(
+      Object.entries(slot.v)
+        .reverse()
+        .map(([key, value]) => [
+          key,
+          value.r === true ? reverseSlotKeys(value as ContainerSlot) : value,
+        ]),
+    ),
+  };
+
+  return reversed as ContainerSlot;
+}

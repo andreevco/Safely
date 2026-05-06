@@ -1,17 +1,21 @@
-import { z, ZodType } from 'zod';
+import { z, ZodObject } from 'zod';
 
 import { SyncError } from '../sync-error';
 import { ISyncStatusManager } from './sync-status';
 
-export interface ISyncProvider<S extends Record<string, ZodType>> {
-    structure: S;
+type ShapeOf<S extends z.ZodObject<z.ZodRawShape>> = S['shape'];
+type SchemaKey<S extends z.ZodObject<z.ZodRawShape>> = Extract<keyof ShapeOf<S>, string>;
+
+export interface ISyncProvider<S extends ZodObject> {
     syncStatusManager: ISyncStatusManager;
 
-    get<K extends keyof S>(k: K): z.output<S[K]>;
-    getAll(): { [K in keyof S]: z.output<S[K]> };
-    set<K extends keyof S>(k: K, v: z.input<S[K]> | string): Promise<void>;
-    remove(k: keyof S): Promise<void>;
-    onChange<K extends keyof S>(k: K, observer: (v: z.output<S[K]>) => void): () => void;
+    get<K extends SchemaKey<S>>(key: K): z.output<ShapeOf<S>[K]>;
+    getAll(): z.output<S>;
+    set<K extends SchemaKey<S>>(key: K, value: z.input<ShapeOf<S>[K]>): Promise<void>;
+    onChange<K extends SchemaKey<S>>(
+        key: K,
+        observer: (value: z.output<ShapeOf<S>[K]>) => void
+    ): () => void;
     onError(obs: (e: SyncError) => void): () => void;
     dispose(): void;
     restart(): void;

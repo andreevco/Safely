@@ -213,7 +213,7 @@ function didMergeChangeStorage(stats: MergeStats): boolean {
 
 class Encoder {
     public encode(root: ContainerSlot): string {
-        return JSON.stringify(root);
+        return stableStringify(root);
     }
 
     public decode(encodedRoot: string): ContainerSlot {
@@ -226,6 +226,22 @@ class Encoder {
 
         return root;
     }
+}
+
+function stableStringify(value: unknown): string {
+    if (value === null || typeof value !== 'object') {
+        return JSON.stringify(value);
+    }
+
+    if (Array.isArray(value)) {
+        return `[${value.map(stableStringify).join(',')}]`;
+    }
+
+    const record = value as Record<string, unknown>;
+    return `{${Object.keys(record)
+        .sort()
+        .map(key => `${JSON.stringify(key)}:${stableStringify(record[key])}`)
+        .join(',')}}`;
 }
 
 export function createStorage<Latest extends StorageVersion, Rest>(options: {

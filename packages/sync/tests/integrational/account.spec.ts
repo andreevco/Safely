@@ -1,12 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { makeFactory, onboardDevice, Schema } from './helpers';
-import { SyncAccountFactory } from '../../src';
+import { makeFactory, onboardDevice } from './helpers';
 import { SyncStatus } from '../../src/sync-provider/sync-status';
 import { InMemStorage } from '../impl/storage';
 
 describe('Account', () => {
-    let factory: SyncAccountFactory<typeof Schema>;
+    let factory: ReturnType<typeof makeFactory>;
     let secureEncryptedStorage: InMemStorage;
 
     beforeEach(async () => {
@@ -96,9 +95,13 @@ describe('Account', () => {
         await newAccount.syncProvider.syncStatusManager.waitForStatus(SyncStatus.DEVICE_DELETED);
         expect(await account.getDevices()).toEqual([
             {
-                ikPub: await account.getMyDeviceIkPub(),
+                info: {
+                    ikPub: await account.getMyDeviceIkPub(),
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                    addedAt: expect.any(Number)
+                },
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                addedAt: expect.any(Number)
+                sign: expect.any(Buffer)
             }
         ]);
 
@@ -109,14 +112,22 @@ describe('Account', () => {
         await newAccount.syncProvider.syncStatusManager.waitForStatus(SyncStatus.SYNCHRONIZED);
         expect(await account.getDevices()).toEqual([
             {
-                ikPub: await account.getMyDeviceIkPub(),
+                info: {
+                    ikPub: await account.getMyDeviceIkPub(),
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                    addedAt: expect.any(Number)
+                },
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                addedAt: expect.any(Number)
+                sign: expect.any(Buffer)
             },
             {
-                ikPub: await newAccount.getMyDeviceIkPub(),
+                info: {
+                    ikPub: await newAccount.getMyDeviceIkPub(),
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                    addedAt: expect.any(Number)
+                },
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                addedAt: expect.any(Number)
+                sign: expect.any(Buffer)
             }
         ]);
     }, 7000);

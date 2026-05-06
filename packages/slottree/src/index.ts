@@ -28,3 +28,7 @@ export type { OrderedSet, ReadonlyOrderedSet } from './ordered-set';
 export type { StorageVersion } from './core/versioning/version';
 export { DEVICES_KEY, VersionController } from './core/versioning/version-controller';
 export type { VersionSelector } from './core/versioning/version-controller';
+
+export type { HNil, HCons, AssertVersionHList, NewOf } from './core/versioning/version';
+export { hCons, hNil, defineVersionHList } from './core/versioning/version';
+export { cloneSlot as projectIdentity } from '../src/core/slots/slot-json';

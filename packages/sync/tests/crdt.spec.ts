@@ -1,25 +1,64 @@
-import { describe, it, expect } from 'vitest';
-import * as Y from 'yjs';
+import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
+
+import { createStorage, StorageVersion, hCons, hNil } from '@safely/slottree';
 
 import { sSecretEncrypted, zArrayWithKey } from '../src';
 import { YCRDT } from '../src/crdt/y-crdt';
 
 describe('crdt', () => {
-    let crdt1: YCRDT;
-    let crdt2: YCRDT;
+    type TestCRDT = YCRDT<Record<string, unknown>>;
 
-    function setup(schema: Record<string, z.ZodType>) {
-        crdt1 = new YCRDT(new Y.Doc(), schema);
-        crdt2 = new YCRDT(new Y.Doc(), schema);
+    let crdt1: TestCRDT;
+    let crdt2: TestCRDT;
+
+    function setup(schema: z.ZodRawShape, initial: Record<string, unknown> = {}) {
+        const peers = createPeers(schema, initial);
+        crdt1 = peers.crdt1;
+        crdt2 = peers.crdt2;
     }
 
-    function sync() {
-        const update1 = crdt1.encodeAsSnapshot();
-        const update2 = crdt2.encodeAsSnapshot();
+    function createPeers(
+        schema: z.ZodRawShape,
+        initial: Record<string, unknown> = {}
+    ): { crdt1: TestCRDT; crdt2: TestCRDT } {
+        return {
+            crdt1: createPeer('peer-1', schema, initial),
+            crdt2: createPeer('peer-2', schema, initial)
+        };
+    }
 
-        crdt1.applyUpdate(update2, 'sync');
-        crdt2.applyUpdate(update1, 'sync');
+    function createPeer(
+        authorId: string,
+        schema: z.ZodRawShape,
+        initial: Record<string, unknown>
+    ): TestCRDT {
+        return new YCRDT(
+            createStorage({
+                authorId,
+                versions: createVersions(schema, initial)
+            })
+        );
+    }
+
+    function createVersions(schema: z.ZodRawShape, initial: Record<string, unknown>) {
+        const version: StorageVersion = {
+            version: 1,
+            schema: z.object(schema).partial(),
+            initial,
+            projectUp: (slot: Parameters<StorageVersion['projectUp']>[0]) => slot,
+            projectDown: (slot: Parameters<StorageVersion['projectDown']>[0]) => slot
+        };
+
+        return hCons(version, hNil);
+    }
+
+    function sync(peer1 = crdt1, peer2 = crdt2) {
+        const update1 = peer1.encodeAsSnapshot();
+        const update2 = peer2.encodeAsSnapshot();
+
+        peer1.applyUpdate(update2);
+        peer2.applyUpdate(update1);
     }
 
     function expectContainAll(received: unknown[], expected: unknown[]) {
@@ -34,7 +73,7 @@ describe('crdt', () => {
             key2: z.number(),
             key3: z.null(),
             key4: z.object({ nested: z.string() }),
-            key5: zArrayWithKey(z.string(), item => item)
+            key5: z.array(z.string())
         });
 
         crdt1.set('key1', 'value1');
@@ -603,17 +642,19 @@ describe('crdt', () => {
 
         const sPortfolios = z.union([
             zArrayWithKey(sPortfolio, item => {
-                if (item.type === PortfolioType.BIP39) {
+                const portfolio = item as unknown as z.input<typeof sPortfolio>;
+
+                if (portfolio.type === PortfolioType.BIP39) {
                     return new PortfolioIdMnemonicBased(
-                        item.id.hash,
-                        item.id.networkType
+                        portfolio.id.hash,
+                        portfolio.id.networkType
                     ).toString();
                 }
                 return new PortfolioIdWatchOnly(
-                    item.id.identifier,
-                    item.id.source,
-                    item.id.networkType,
-                    item.id.vmType
+                    portfolio.id.identifier,
+                    portfolio.id.source,
+                    portfolio.id.networkType,
+                    portfolio.id.vmType
                 ).toString();
             }),
             z.null()
@@ -678,68 +719,12 @@ describe('crdt', () => {
         crdt1.set('key', 'value');
         sync();
 
-        expect(crdt1.equals(crdt2)).toBe(true);
+        expect(crdt1.equals(crdt2.encodeAsSnapshot().toString('utf8'))).toBe(true);
 
         crdt1.set('key', 'new value');
-        expect(crdt1.equals(crdt2)).toBe(false);
+        expect(crdt1.equals(crdt2.encodeAsSnapshot().toString('utf8'))).toBe(false);
 
         sync();
-        expect(crdt1.equals(crdt2)).toBe(true);
-    });
-
-    it('should remove keys', () => {
-        setup({
-            key: z.string().optional()
-        });
-
-        crdt1.set('key', 'value');
-        sync();
-
-        expect(crdt1.get('key')).toBe('value');
-        expect(crdt2.get('key')).toBe('value');
-
-        crdt1.remove('key');
-        sync();
-
-        expect(crdt1.get('key')).toBeNull();
-        expect(crdt2.get('key')).toBeNull();
-    });
-
-    it('should throw exception and do not apply any updates', () => {
-        const schema = {
-            value: z.object({
-                key1: z.string(),
-                key2: z.array(z.number())
-            })
-        };
-        const doc = new Y.Doc();
-        const root = doc.getMap('root');
-        root.set(
-            'value',
-            (() => {
-                const map = new Y.Map();
-                map.set('key1', 'value');
-                map.set('key2', new Y.Map());
-                return map;
-            })()
-        );
-
-        crdt1 = new YCRDT(doc, schema);
-
-        let thrown = false;
-        try {
-            crdt1.set('value', {
-                key1: 'new value',
-                key2: [1, 2, 3]
-            });
-        } catch {
-            thrown = true;
-        }
-        if (!thrown) {
-            throw new Error('Expected to throw an error');
-        }
-        // @ts-expect-error - type is unknown, but we know it's a Y.Map
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-        expect(root.get('value').get('key1')).toBe('value');
+        expect(crdt1.equals(crdt2.encodeAsSnapshot().toString('utf8'))).toBe(true);
     });
 });

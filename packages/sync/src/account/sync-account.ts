@@ -1,4 +1,4 @@
-import { ZodType } from 'zod';
+import { AssertVersionHList, HCons, NewOf, StorageVersion } from '@safely/slottree';
 
 import { ISyncAccount } from './I-sync-account';
 import { Device } from '../device-manager/device-repository';
@@ -13,24 +13,25 @@ import { SyncError } from '../sync-error';
 import { ISyncProvider } from '../sync-provider/I-sync-provider';
 import { OnlineSyncProvider } from '../sync-provider/online-sync-provider';
 import { SyncStatus, SyncStatusManager } from '../sync-provider/sync-status';
+import { encodeUpdatePayload } from '../update-handler/update-payload';
 
-export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAccount<S> {
+export class SyncAccount<Latest extends StorageVersion, Rest> implements ISyncAccount<Latest> {
     public readonly secretEncryptor: ISecretEncryptor;
     public readonly accountId: string;
 
-    private readonly structure: S;
-    private readonly container: SyncContainer;
+    private readonly structure: HCons<Latest, Rest> & AssertVersionHList<HCons<Latest, Rest>>;
+    private readonly container: SyncContainer<Latest, Rest>;
     private readonly syncAccountRepository: SyncAccountRepository;
 
     private online: boolean;
-    private syncProviderInternal: ISyncProvider<S>;
+    private syncProviderInternal: ISyncProvider<NewOf<Latest>>;
     private makeAccountOnlinePromise: Promise<void> | null = null;
 
     constructor(opts: {
         accountId: string;
-        structure: S;
-        syncProvider: ISyncProvider<S>;
-        container: SyncContainer;
+        structure: HCons<Latest, Rest> & AssertVersionHList<HCons<Latest, Rest>>;
+        syncProvider: ISyncProvider<NewOf<Latest>>;
+        container: SyncContainer<Latest, Rest>;
         syncAccountRepository: SyncAccountRepository;
         online: boolean;
     }) {
@@ -43,7 +44,7 @@ export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAcco
         this.secretEncryptor = opts.container.secretEncryptor;
     }
 
-    public get syncProvider(): ISyncProvider<S> {
+    public get syncProvider(): ISyncProvider<NewOf<Latest>> {
         return this.syncProviderInternal;
     }
 
@@ -95,11 +96,11 @@ export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAcco
         });
     }
 
-    public async reconnectToAccount(): Promise<OnboardingConnector<S>> {
+    public async reconnectToAccount(): Promise<OnboardingConnector<Latest>> {
         if (this.syncProviderInternal.syncStatusManager.getStatus() !== SyncStatus.DEVICE_DELETED) {
             const deviceList = await this.container.deviceManager.getDevices();
             const myIkPub = await this.container.ikService.getPub();
-            const isMyDeviceInList = deviceList.some(device => device.ikPub.equals(myIkPub));
+            const isMyDeviceInList = deviceList.some(device => device.info.ikPub.equals(myIkPub));
             if (isMyDeviceInList) {
                 throw new SyncError('Device was not deleted');
             }
@@ -107,7 +108,7 @@ export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAcco
 
         const onboarding = new ReconnectOnboarding(
             await this.container.ikService.getPub(),
-            this.syncProviderInternal as OnlineSyncProvider<S>,
+            this.syncProviderInternal as OnlineSyncProvider<Latest, Rest>,
             this.container.logger
         );
         const data = onboarding.generateOnboardingData();
@@ -208,7 +209,6 @@ export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAcco
 
         this.syncProviderInternal.dispose();
         this.syncProviderInternal = await OnlineSyncProvider.create(
-            this.structure,
             this.container,
             // We pass the same SyncStatusManager instance to the OnlineSyncProvider, so that the
             // subscribers to the SyncAccount's syncProvider will be notified of the status changes
@@ -219,7 +219,10 @@ export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAcco
 
     private async sendSnapshotManually(): Promise<void> {
         const encrypted = await this.container.updateEncryptor.encryptAndSign(
-            this.container.yManager.encodeAsSnapshot()
+            encodeUpdatePayload({
+                userStorage: this.container.yManager.encodeAsSnapshot(),
+                deviceStorage: this.container.deviceYManager.encodeAsSnapshot()
+            })
         );
 
         await this.container.snapshotApi.saveSnapshot({

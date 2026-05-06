@@ -1,5 +1,6 @@
 import { ed25519, x25519 } from '@noble/curves/ed25519.js';
-import { ZodType } from 'zod';
+
+import { StorageVersion } from '@safely/slottree';
 
 import { decryptOnboardingMessagePayload, deriveOnboardingKey } from './crypto';
 import { QRMessageCodec, QRMessageOperation } from './onboarding-codec';
@@ -12,13 +13,13 @@ import { ITreeStorage } from '../I-storage';
 import { Logger } from '../logger';
 import { OnboardingAbortedError } from '../sync-error';
 
-export class NewDeviceOnboarding<S extends Record<string, ZodType>> {
+export class NewDeviceOnboarding<Latest extends StorageVersion, Rest> {
     private ephemeralKeyPair: { publicKey: Buffer; secretKey: Buffer } | null = null;
 
     constructor(
         private readonly ik: { publicKey: Buffer; secretKey: Buffer },
         private readonly accountsApi: AccountsApi,
-        private readonly accountManager: AccountManager<S>,
+        private readonly accountManager: AccountManager<Latest, Rest>,
         private readonly secureEncryptedStorage: ITreeStorage,
         private readonly logger: Logger
     ) {}
@@ -37,7 +38,7 @@ export class NewDeviceOnboarding<S extends Record<string, ZodType>> {
         });
     }
 
-    public async waitForOnboarding(signal?: AbortSignal): Promise<ISyncAccount<S>> {
+    public async waitForOnboarding(signal?: AbortSignal): Promise<ISyncAccount<Latest>> {
         for (let i = 0; i < 30; i++) {
             if (signal?.aborted) {
                 throw new OnboardingAbortedError();

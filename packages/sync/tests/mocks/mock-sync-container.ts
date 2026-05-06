@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { AssertVersionHList, HCons, StorageVersion } from '@safely/slottree';
 
 import { MockSnapshotsApi, MockSnapshotsServer, MockSnapshotsSse } from './mock-snapshots-api';
 import { ApiSigner } from '../../src/api/api-signer';
@@ -13,6 +13,11 @@ import { KeyServiceFactory } from '../../src/crypto/service/key-service-factory'
 import { SyncKeyService } from '../../src/crypto/service/sync-key-service';
 import { DeviceManagementService } from '../../src/device-manager/device-management-service';
 import { DeviceRepository } from '../../src/device-manager/device-repository';
+import {
+    DevicesVersions,
+    tDevicesLatest,
+    tDevicesRest
+} from '../../src/device-manager/device-storage-schema';
 import { ITreeStorage } from '../../src/I-storage';
 import { Logger } from '../../src/logger/logger';
 import { SecretEncryptor } from '../../src/secret-encryptor';
@@ -22,24 +27,25 @@ import { UpdateEncryptorService } from '../../src/update-encryptor/update-encryp
 import { UpdateHandler } from '../../src/update-handler/handler';
 import { SyncStateRepository } from '../../src/update-handler/sync-state-repository';
 
-export type MockSyncContainer = Omit<SyncContainer, 'snapshotApi' | 'snapshotSse'> & {
+export type MockSyncContainer<Latest extends StorageVersion, Rest> = Omit<
+    SyncContainer<Latest, Rest>,
+    'snapshotApi' | 'snapshotSse'
+> & {
     snapshotApi: MockSnapshotsApi;
     snapshotSse: MockSnapshotsSse;
 };
 
-export async function createMockSyncContainer(
+export async function createMockSyncContainer<Latest extends StorageVersion, Rest>(
     storage: ITreeStorage,
     encryptedStorage: ITreeStorage,
     server: MockSnapshotsServer,
     accountId: string,
     logger: Logger,
-    structure: Record<string, z.ZodType>,
+    versions: HCons<Latest, Rest> & AssertVersionHList<HCons<Latest, Rest>>,
     apiConfiguration?: Configuration
-): Promise<MockSyncContainer> {
+): Promise<MockSyncContainer<Latest, Rest>> {
     const keyRepository = new EncryptedKeyRepository(encryptedStorage);
     const syncStateRepository = new SyncStateRepository(storage, logger);
-    const crdtRepository = new YCRDTRepository(storage, structure);
-    const deviceRepository = new DeviceRepository(storage);
 
     const ikService = new IkService(keyRepository);
     const syncKeyService = new SyncKeyService(keyRepository);
@@ -51,10 +57,20 @@ export async function createMockSyncContainer(
     const snapshotApi = new MockSnapshotsApi(server);
     const snapshotSse = new MockSnapshotsSse(server);
 
+    const crdtRepository = new YCRDTRepository(storage, await ikService.getPub(), versions);
     const yManager = await YManager.create(crdtRepository);
+    const deviceCrdtRepository = new YCRDTRepository<tDevicesLatest, tDevicesRest>(
+        storage,
+        await ikService.getPub(),
+        DevicesVersions,
+        'devices_crdt'
+    );
+    const deviceYManager = await YManager.create<tDevicesLatest, tDevicesRest>(
+        deviceCrdtRepository
+    );
+    const deviceRepository = new DeviceRepository(deviceYManager);
     const deviceManager = new DeviceManagementService(
         deviceRepository,
-        yManager,
         ikService,
         dmkVerifierService
     );
@@ -67,9 +83,10 @@ export async function createMockSyncContainer(
     const updateDecryptor = new UpdateDecryptorService(syncKeyService, deviceManager);
 
     const storageVerifierService = new StorageVerifierService(deviceManager);
-    const updateHandler = new UpdateHandler(
+    const updateHandler = new UpdateHandler<Latest, Rest>(
         syncStateRepository,
         yManager,
+        deviceYManager,
         updateDecryptor,
         storageVerifierService,
         deviceManager,
@@ -80,6 +97,7 @@ export async function createMockSyncContainer(
     const secretEncryptor = new SecretEncryptor(keyServiceFactory);
 
     return {
+        versions,
         logger,
         storage,
         encryptedStorage,
@@ -87,6 +105,7 @@ export async function createMockSyncContainer(
         keyRepository,
         syncStateRepository,
         crdtRepository,
+        deviceCrdtRepository,
         deviceRepository,
         ikService,
         syncKeyService,
@@ -95,6 +114,7 @@ export async function createMockSyncContainer(
         updateDecryptor,
         updateHandler,
         yManager,
+        deviceYManager,
         deviceManager,
         dmkVerifierService,
         apiSigner,

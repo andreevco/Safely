@@ -1,16 +1,34 @@
 import { z } from 'zod';
 
+import { defineVersionHList, hCons, hNil, projectIdentity } from '@safely/slottree';
+
 import { zArrayWithKey, ISyncAccount, SyncAccountFactory } from '../../src';
 import { Logger } from '../../src/logger/logger';
 import { InMemStorage } from '../impl/storage';
 
-export const Schema = {
-    wallets: zArrayWithKey(z.string(), v => v)
-};
+export const Schema = z
+    .object({
+        wallets: zArrayWithKey(z.string(), v => v)
+    })
+    .partial();
+
+export const AccountV1 = {
+    version: 1,
+    schema: Schema,
+    initial: {},
+    projectUp: projectIdentity,
+    projectDown: projectIdentity
+} as const;
+
+export const Versions = defineVersionHList(hCons(AccountV1, hNil));
+
+type AccountLatest = (typeof Versions)['head'];
+export type TestSyncAccount = ISyncAccount<AccountLatest>;
+export type TestSyncAccountFactory = SyncAccountFactory<typeof Versions>;
 
 let accountCounter = 0;
 
-export function makeFactory() {
+export function makeFactory(): TestSyncAccountFactory {
     const storage = new InMemStorage();
     const encryptedStorage = new InMemStorage();
     const apiConfiguration = {
@@ -21,7 +39,7 @@ export function makeFactory() {
     return new SyncAccountFactory({
         storage,
         encryptedStorage,
-        structure: Schema,
+        versions: Versions,
         apiConfiguration,
         noAccountLogger: new Logger().child(`${factoryId}`),
         getAccountLogger: accountId => new Logger().child(`${factoryId}:${accountId}`)
@@ -29,7 +47,7 @@ export function makeFactory() {
 }
 
 export async function onboardDevice(
-    existingAccount: ISyncAccount<typeof Schema>,
+    existingAccount: TestSyncAccount,
     existingAccountSecureEncryptedStorage: InMemStorage
 ) {
     const secureEncryptedStorage = new InMemStorage();

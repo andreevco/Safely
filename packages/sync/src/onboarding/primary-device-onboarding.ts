@@ -67,15 +67,12 @@ export class PrimaryDeviceOnboarding {
             info: onboardingMetadata
         });
 
-        const addOp = await this.deviceManager.makeAddOp(message.ikPub, this.dmkService);
-
         const { ciphertext, nonce } = await this.masterKeyService.withMasterKey(masterKey => {
             return encryptOnboardingMessage({
                 aad: onboardingMetadata,
                 onboardKey,
                 onboardingMessagePayload: encodeOnboardingMessagePayload({
-                    masterKey,
-                    addOp
+                    masterKey
                 })
             });
         });
@@ -94,7 +91,7 @@ export class PrimaryDeviceOnboarding {
         for (let i = 0; i < 3; i++) {
             await new Promise(resolve => setTimeout(resolve, 1000));
             const devices = await this.deviceManager.getDevices();
-            if (devices.some(d => d.ikPub.equals(message.ikPub))) {
+            if (devices.some(d => d.info.ikPub.equals(message.ikPub))) {
                 return;
             }
         }

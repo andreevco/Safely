@@ -1,6 +1,8 @@
 import * as x from 'xstate';
 import { Actor, assign } from 'xstate';
 
+import { StorageVersion } from '@safely/slottree';
+
 import { pushUpdateToServer } from './actors/push-update';
 import { updatesSubscriberActor } from './actors/updates-subscriber-actor';
 import { defaultConfig, SyncMachineConfig, SyncMachineInput } from './config';
@@ -15,6 +17,7 @@ export type SyncMachine = Awaited<Actor<ReturnType<typeof createSyncMachine>>>;
 export const createSyncMachine = () => {
     return x
         .setup({
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
             types: {} as {
                 events:
                     | { type: 'LOCAL_UPDATE' }
@@ -23,8 +26,8 @@ export const createSyncMachine = () => {
                     | { type: 'DISCONNECTED' }
                     | { type: 'CONNECTION_ERROR'; error: string }
                     | { type: 'CONNECT_RETRY' };
-                context: SyncMachineConfig;
-                input: SyncMachineInput;
+                context: SyncMachineConfig<StorageVersion, unknown>;
+                input: SyncMachineInput<StorageVersion, unknown>;
             },
             actors: {
                 updatesSubscriberActor: updatesSubscriberActor,

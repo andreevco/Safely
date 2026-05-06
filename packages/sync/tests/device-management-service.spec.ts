@@ -15,32 +15,6 @@ describe('device management service', () => {
         return Buffer.from(`ikPub${i}`);
     }
 
-    function opAdd(i: number) {
-        return {
-            type: 'add',
-            ikPub: Buffer.from(`ikPub${i}`),
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            ts: expect.any(Number),
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            kid: expect.any(Buffer),
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            sig: expect.any(Buffer)
-        };
-    }
-
-    function opRevoke(i: number) {
-        return {
-            type: 'revoke',
-            ikPub: Buffer.from(`ikPub${i}`),
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            ts: expect.any(Number),
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            kid: expect.any(Buffer),
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            sig: expect.any(Buffer)
-        };
-    }
-
     function add(ctx: MachineContext, i: number) {
         return ctx.container.deviceManager.addDevice(
             Buffer.from(`ikPub${i}`),
@@ -71,13 +45,22 @@ describe('device management service', () => {
 
     async function verifyDeviceList(ctx: MachineContext, expectedDevices: Buffer[]) {
         const devices = await ctx.container.deviceManager.getDevices();
-        expect(devices).toEqual(
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            expectedDevices.map(x => ({ ikPub: x, addedAt: expect.any(Number) }))
-        );
+        expect(devices).toHaveLength(expectedDevices.length);
+        for (const expectedDevice of expectedDevices) {
+            const device = devices.find(d => d.info.ikPub.equals(expectedDevice));
+            expect(device).toEqual({
+                info: {
+                    ikPub: expectedDevice,
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                    addedAt: expect.any(Number)
+                },
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                sign: expect.any(Buffer)
+            });
+        }
         // verify that list is sorted by addedAt
         for (let i = 1; i < devices.length; i++) {
-            expect(devices[i].addedAt).toBeGreaterThanOrEqual(devices[i - 1].addedAt);
+            expect(devices[i].info.addedAt).toBeGreaterThanOrEqual(devices[i - 1].info.addedAt);
         }
     }
 
@@ -89,8 +72,6 @@ describe('device management service', () => {
         await add(ctx, 1);
 
         await verifyDeviceList(ctx, [deviceIkPub(1)]);
-
-        expect(await ctx.container.yManager.getDeviceLog()).toEqual([opAdd(1)]);
     });
 
     it('adds 10 devices', async () => {
@@ -121,12 +102,6 @@ describe('device management service', () => {
         await revoke(ctx, 1);
 
         await verifyDeviceList(ctx, [deviceIkPub(2)]);
-
-        expect(await ctx.container.yManager.getDeviceLog()).toEqual([
-            opAdd(1),
-            opAdd(2),
-            opRevoke(1)
-        ]);
     });
 
     it('applies other device updates', async () => {
@@ -142,18 +117,18 @@ describe('device management service', () => {
 
         await verifyDeviceList(ctx1, [ik1.publicKey, ik2.publicKey]);
 
-        const deviceLog1_1 = await ctx1.container.yManager.getDeviceLog();
-
-        await ctx2.container.deviceManager.verifyDeviceOpAndApply(deviceLog1_1[0]);
-        await ctx2.container.deviceManager.verifyDeviceOpAndApply(deviceLog1_1[1]);
+        await ctx2.container.deviceManager.mergeDeviceStorage(
+            ctx1.container.deviceYManager.encodeAsSnapshot()
+        );
 
         await verifyDeviceList(ctx2, [ik1.publicKey, ik2.publicKey]);
 
         await revokePub(ctx1, ik1.publicKey);
         await verifyDeviceList(ctx1, [ik2.publicKey]);
 
-        const deviceLog2_2 = await ctx1.container.yManager.getDeviceLog();
-        await ctx2.container.deviceManager.verifyDeviceOpAndApply(deviceLog2_2[2]);
+        await ctx2.container.deviceManager.mergeDeviceStorage(
+            ctx1.container.deviceYManager.encodeAsSnapshot()
+        );
 
         await verifyDeviceList(ctx2, [ik2.publicKey]);
     });

@@ -1,24 +1,26 @@
-import * as Y from 'yjs';
 import { z } from 'zod';
+
+import { NewOf, StorageVersion } from '@safely/slottree';
 
 import { YCRDT } from './y-crdt';
 import { YCRDTRepository } from './y-crdt-repository';
 import { SyncError } from '../sync-error';
-import { BufferHexSchema } from '../utils/schemas';
 
-export class YManager {
+export class YManager<Latest extends StorageVersion, Rest> {
     private constructor(
-        private readonly yRepository: YCRDTRepository,
-        private readonly yDoc: YCRDT
+        private readonly yRepository: YCRDTRepository<Latest, Rest>,
+        private readonly yDoc: YCRDT<z.output<NewOf<Latest>>>
     ) {}
 
-    public static async create(yRepository: YCRDTRepository) {
+    public static async create<Latest extends StorageVersion, Rest>(
+        yRepository: YCRDTRepository<Latest, Rest>
+    ) {
         const yDoc = await yRepository.loadCRDT();
         return new YManager(yRepository, yDoc);
     }
 
-    public async applyUpdate(update: Buffer, origin: string): Promise<void> {
-        this.yDoc.applyUpdate(update, origin);
+    public async applyUpdate(update: Buffer, _origin: string): Promise<void> {
+        this.yDoc.applyUpdate(update);
         await this.yRepository.saveCRDT(this.yDoc);
     }
 
@@ -27,89 +29,38 @@ export class YManager {
         await this.yRepository.saveCRDT(this.yDoc);
     }
 
+    public async update(f: (v: z.output<NewOf<Latest>>) => void) {
+        this.yDoc.update(f);
+        await this.yRepository.saveCRDT(this.yDoc);
+    }
+
+    public getFull(): z.output<NewOf<Latest>> {
+        return this.yDoc.getFull();
+    }
+
     public get(key: string): unknown {
         const value = this.yDoc.get(key);
-        if (value === null) {
+        if (value === undefined) {
             throw new StorageError(`Key "${key}" does not exist.`);
         }
         return value;
     }
 
-    public async getDeviceLog(): Promise<DeviceOp[]> {
-        const deviceLog = this.yDoc.getArray('devices');
-        return deviceLog.toArray().map(x => DeviceOpSchema.parse(JSON.parse(x)));
-    }
-
-    public async addDeviceOp(op: DeviceOp): Promise<void> {
-        const deviceLog = this.yDoc.getArray('devices');
-        deviceLog.push([deviceOpToJson(op)]);
-        await this.yRepository.saveCRDT(this.yDoc);
-    }
-
-    public async remove(key: string): Promise<void> {
-        this.yDoc.remove(key);
-        await this.yRepository.saveCRDT(this.yDoc);
-    }
-
     public equalsToRemoteUpdate(snapshot: Buffer): boolean {
-        const remoteDoc = new YCRDT(new Y.Doc(), this.yDoc.schema);
-        remoteDoc.applyUpdate(snapshot, 'remote');
-
-        return this.yDoc.equals(remoteDoc);
+        return this.yDoc.equals(snapshot.toString('utf8'));
     }
 
     public encodeAsSnapshot(): Buffer {
         return this.yDoc.encodeAsSnapshot();
     }
 
-    public onChange(observer: (snapshot: Buffer) => void): () => void {
-        return this.yDoc.onUpdate((update: Buffer) => {
-            observer(update);
-        });
+    public readSnapshot(snapshot: Buffer): z.output<NewOf<Latest>> {
+        return this.yRepository.createCRDTFromSnapshot(snapshot).getFull();
     }
 
-    public getDoc(): Y.Doc {
-        return this.yDoc.toRaw();
+    public onChange(observer: () => void): () => void {
+        return this.yDoc.onUpdate(observer);
     }
 }
 
 export class StorageError extends SyncError {}
-
-export type DeviceOp = {
-    type: 'add' | 'revoke';
-    ikPub: Buffer;
-    ts: number;
-    kid: Buffer;
-    sig: Buffer;
-};
-
-export type AddDeviceOp = DeviceOp & { type: 'add' };
-export type RevokeDeviceOp = DeviceOp & { type: 'revoke' };
-
-export function deviceOpIsEquals(op1: DeviceOp, op2: DeviceOp): boolean {
-    return (
-        op1.type === op2.type &&
-        op1.ikPub.equals(op2.ikPub) &&
-        op1.ts === op2.ts &&
-        op1.kid.equals(op2.kid) &&
-        op1.sig.equals(op2.sig)
-    );
-}
-
-export function deviceOpToJson(op: DeviceOp): string {
-    return JSON.stringify({
-        type: op.type,
-        ikPub: op.ikPub.toString('hex'),
-        ts: op.ts,
-        kid: op.kid.toString('hex'),
-        sig: op.sig.toString('hex')
-    });
-}
-
-export const DeviceOpSchema = z.object({
-    type: z.enum(['add', 'revoke']),
-    ikPub: BufferHexSchema,
-    ts: z.number(),
-    kid: BufferHexSchema,
-    sig: BufferHexSchema
-});

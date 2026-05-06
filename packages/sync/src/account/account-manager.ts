@@ -1,4 +1,4 @@
-import { ZodType } from 'zod';
+import { AssertVersionHList, HCons, StorageVersion } from '@safely/slottree';
 
 import { ISyncAccount } from './I-sync-account';
 import { getSyncAccountStorage } from './sync-account-storage';
@@ -8,25 +8,25 @@ import { SyncAccount } from './sync-account';
 import { SyncAccountRepository } from './sync-account-repository';
 import { Configuration } from '../api/generated';
 import { ITreeStorage } from '../I-storage';
-import { Logger } from '../logger/logger';
+import { Logger } from '../logger';
 import { OnboardingMessagePayload } from '../onboarding/onboarding-message-payload';
 import { OfflineSyncProvider } from '../sync-provider/offline-sync-provider';
 import { OnlineSyncProvider } from '../sync-provider/online-sync-provider';
 
-export class AccountManager<S extends Record<string, ZodType>> {
-    private readonly accounts = new Map<string, ISyncAccount<S>>();
+export class AccountManager<Latest extends StorageVersion, Rest> {
+    private readonly accounts = new Map<string, ISyncAccount<Latest>>();
 
     constructor(
         private readonly storage: ITreeStorage,
         private readonly encryptedStorage: ITreeStorage,
         private readonly syncAccountIdRepository: SyncAccountRepository,
-        private readonly structure: S,
+        private readonly versions: HCons<Latest, Rest> & AssertVersionHList<HCons<Latest, Rest>>,
         private readonly apiConfiguration: Configuration,
-        private readonly createAccountService: CreateAccountService<S>,
+        private readonly createAccountService: CreateAccountService<Latest, Rest>,
         private readonly getAccountLogger: (accountId: string) => Logger
     ) {}
 
-    public async getAccounts(): Promise<ISyncAccount<S>[]> {
+    public async getAccounts(): Promise<ISyncAccount<Latest>[]> {
         if (this.accounts.size === 0) {
             await this.initializeAccounts();
         }
@@ -41,7 +41,7 @@ export class AccountManager<S extends Record<string, ZodType>> {
         }
     }
 
-    public async getSyncAccount(accountId: string): Promise<ISyncAccount<S>> {
+    public async getSyncAccount(accountId: string): Promise<ISyncAccount<Latest>> {
         if (this.accounts.has(accountId)) {
             return this.accounts.get(accountId)!;
         }
@@ -56,7 +56,7 @@ export class AccountManager<S extends Record<string, ZodType>> {
         const logger = this.getAccountLogger(accountInfo.accountId);
         const container = await createSyncContainer({
             accountId,
-            structure: this.structure,
+            versions: this.versions,
             storage,
             encryptedStorage,
             apiConfiguration: this.apiConfiguration,
@@ -64,12 +64,12 @@ export class AccountManager<S extends Record<string, ZodType>> {
         });
 
         const syncProvider = accountInfo.online
-            ? await OnlineSyncProvider.create(this.structure, container)
-            : new OfflineSyncProvider(this.structure, container);
+            ? await OnlineSyncProvider.create(container)
+            : new OfflineSyncProvider(container);
 
         return new SyncAccount({
             accountId: accountInfo.accountId,
-            structure: this.structure,
+            structure: this.versions,
             syncProvider,
             container,
             syncAccountRepository: this.syncAccountIdRepository,
@@ -79,7 +79,7 @@ export class AccountManager<S extends Record<string, ZodType>> {
 
     public async createOfflineAccount(
         secureEncryptedStorage: ITreeStorage
-    ): Promise<ISyncAccount<S>> {
+    ): Promise<ISyncAccount<Latest>> {
         const account =
             await this.createAccountService.createOfflineAccount(secureEncryptedStorage);
         this.accounts.set(account.accountId, account);
@@ -107,7 +107,7 @@ export class AccountManager<S extends Record<string, ZodType>> {
         const accountInfo = await this.syncAccountIdRepository.getSyncAccount(accountId);
 
         if (accountInfo.online) {
-            const account = (await this.getSyncAccount(accountId)) as SyncAccount<S>;
+            const account = (await this.getSyncAccount(accountId)) as SyncAccount<Latest, Rest>;
             await account.deleteThisDevice(secureEncryptedStorage);
         }
 

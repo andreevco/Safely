@@ -1,49 +1,68 @@
-import { z } from 'zod';
+import {
+    Device,
+    devicesFromJson,
+    deviceToJson,
+    revokedDeviceToJson,
+    StoredDevice,
+    StoredDevices,
+    storedDevicesFromJson,
+    tDevicesLatest,
+    tDevicesRest
+} from './device-storage-schema';
+import { YManager } from '../crdt/y-manager';
+import { getKID } from '../utils/kid';
 
-import { IStorage } from '../I-storage';
-import { BufferHexSchema } from '../utils/schemas';
+export type { Device };
 
 export class DeviceRepository {
-    constructor(private readonly storage: IStorage) {}
-
-    public async getKnownOpsAmount(): Promise<number> {
-        const amountStr = await this.storage.getItem('known_ops_amount');
-        return amountStr ? parseInt(amountStr) : 0;
-    }
-
-    public async setKnownOpsAmount(amount: number): Promise<void> {
-        await this.storage.setItem('known_ops_amount', amount.toString());
-    }
+    constructor(private readonly manager: YManager<tDevicesLatest, tDevicesRest>) {}
 
     public async getDevices(): Promise<Device[]> {
-        const devicesJson = await this.storage.getItem('devices');
-        if (!devicesJson) {
-            return [];
-        }
-        const devices = DeviceSchema.array().parse(JSON.parse(devicesJson));
-        devices.sort((a, b) => a.addedAt - b.addedAt);
-        return devices;
+        const res = this.manager.getFull();
+        const devices = devicesFromJson(res);
+        return [...Object.values(devices)].sort((a, b) => a.info.addedAt - b.info.addedAt);
     }
 
-    public async setDevices(devices: Device[]): Promise<void> {
-        const devicesJson = JSON.stringify(devices.map(deviceToJson));
-        await this.storage.setItem('devices', devicesJson);
+    public async addDevice(device: Device) {
+        const kid = getKID(device.info.ikPub);
+        await this.manager.update(draft => {
+            draft.devices[kid] = deviceToJson(device);
+        });
+    }
+
+    public async revokeDevice(ikPub: Buffer, sign: Buffer) {
+        const kid = getKID(ikPub);
+        await this.manager.update(draft => {
+            draft.devices[kid] = revokedDeviceToJson({
+                info: { ikPub },
+                sign
+            });
+        });
+    }
+
+    public async getDevice(kid: string): Promise<Device | undefined> {
+        const res = this.manager.getFull();
+        const devices = devicesFromJson(res);
+        return devices[kid];
+    }
+
+    public async getStoredDevice(kid: string) {
+        const devices = await this.getStoredDevices();
+        return devices[kid];
+    }
+
+    public async getStoredDevices(): Promise<StoredDevices> {
+        const res = this.manager.getFull();
+        return storedDevicesFromJson(res);
+    }
+
+    public readStoredDevicesFromSnapshot(snapshot: Buffer): StoredDevices {
+        return storedDevicesFromJson(this.manager.readSnapshot(snapshot));
+    }
+
+    public async applyUpdate(update: Buffer) {
+        await this.manager.applyUpdate(update, 'remote');
     }
 }
 
-export type Device = {
-    ikPub: Buffer;
-    addedAt: number;
-};
-
-function deviceToJson(device: Device) {
-    return {
-        ikPub: device.ikPub.toString('hex'),
-        addedAt: device.addedAt
-    };
-}
-
-export const DeviceSchema = z.object({
-    ikPub: BufferHexSchema,
-    addedAt: z.number()
-});
+export type { StoredDevice, StoredDevices };

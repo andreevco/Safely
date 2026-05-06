@@ -1,37 +1,44 @@
 import { createActor } from 'xstate';
 import * as z from 'zod';
-import { ZodType } from 'zod';
+
+import { NewOf, StorageVersion } from '@safely/slottree';
 
 import { ISyncProvider } from './I-sync-provider';
-import { SyncContainer } from '../sync-container';
 import { OfflineSyncProvider } from './offline-sync-provider';
 import { SyncStatus, SyncStatusManager } from './sync-status';
+import { DmkSignerService } from '../crypto/service/dmk-signer-service';
+import { SyncContainer } from '../sync-container';
 import { createSyncMachine, SyncMachine } from '../sync-machine/machine';
 
-export class OnlineSyncProvider<S extends Record<string, ZodType>>
-    extends OfflineSyncProvider<S>
-    implements ISyncProvider<S>
+export class OnlineSyncProvider<Latest extends StorageVersion, Rest>
+    extends OfflineSyncProvider<Latest, Rest>
+    implements ISyncProvider<NewOf<Latest>>
 {
     constructor(
-        structure: S,
-        container: SyncContainer,
+        container: SyncContainer<Latest, Rest>,
         private syncMachine: SyncMachine,
         public readonly syncStatusManager: SyncStatusManager
     ) {
-        super(structure, container, syncStatusManager);
+        super(container, syncStatusManager);
     }
 
-    public static async create<S extends Record<string, ZodType>>(
-        structure: S,
-        container: SyncContainer,
-        syncStatusManager = new SyncStatusManager(SyncStatus.DISCONNECTED)
-    ): Promise<OnlineSyncProvider<S>> {
+    public static async create<Latest extends StorageVersion, Rest>(
+        container: SyncContainer<Latest, Rest>,
+        syncStatusManager = new SyncStatusManager(SyncStatus.DISCONNECTED),
+        dmkSignerService?: DmkSignerService
+    ): Promise<OnlineSyncProvider<Latest, Rest>> {
         syncStatusManager.setStatus(SyncStatus.DISCONNECTED);
+
+        if (dmkSignerService) {
+            await container.deviceManager.ensureSelfDevice(dmkSignerService);
+        }
+
         const machine = createActor(createSyncMachine(), {
             input: {
                 syncStateRepository: container.syncStateRepository,
                 updateHandler: container.updateHandler,
                 yManager: container.yManager,
+                deviceYManager: container.deviceYManager,
                 updateEncryptor: container.updateEncryptor,
                 snapshotsApi: container.snapshotApi,
                 snapshotsSse: container.snapshotSse,
@@ -47,7 +54,7 @@ export class OnlineSyncProvider<S extends Record<string, ZodType>>
         });
         machine.start();
 
-        return new OnlineSyncProvider(structure, container, machine, syncStatusManager);
+        return new OnlineSyncProvider(container, machine, syncStatusManager);
     }
 
     public async waitForInitialSync(): Promise<void> {
@@ -79,13 +86,10 @@ export class OnlineSyncProvider<S extends Record<string, ZodType>>
         this.syncMachine.start();
     }
 
-    public async remove(k: keyof S): Promise<void> {
-        await super.remove(k);
-
-        this.syncMachine.send({ type: 'LOCAL_UPDATE' });
-    }
-
-    public async set<K extends keyof S>(k: K, v: z.input<S[K]> | string): Promise<void> {
+    public async set<K extends keyof NewOf<Latest>>(
+        k: K,
+        v: z.input<NewOf<Latest>[K]> | string
+    ): Promise<void> {
         await super.set(k, v);
 
         this.syncMachine.send({ type: 'LOCAL_UPDATE' });
@@ -96,12 +100,16 @@ export class OnlineSyncProvider<S extends Record<string, ZodType>>
     }
 }
 
-function machineFromContainer(container: SyncContainer, syncStatusManager: SyncStatusManager) {
+function machineFromContainer<Latest extends StorageVersion, Rest>(
+    container: SyncContainer<Latest, Rest>,
+    syncStatusManager: SyncStatusManager
+) {
     return createActor(createSyncMachine(), {
         input: {
             syncStateRepository: container.syncStateRepository,
             updateHandler: container.updateHandler,
             yManager: container.yManager,
+            deviceYManager: container.deviceYManager,
             updateEncryptor: container.updateEncryptor,
             snapshotsApi: container.snapshotApi,
             snapshotsSse: container.snapshotSse,

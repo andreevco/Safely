@@ -49,7 +49,7 @@ export class QRMessageCodec {
             throw new SyncError('Missing operation type in message');
         }
 
-        const operation = op.value[0] as QRMessageOperation;
+        const operation = QRMessageCodec.decodeOperation(op.value[0]);
         switch (operation) {
             case QRMessageOperation.NEW_DEVICE_ONBOARDING: {
                 const ephemeralPubChunk = chunks.find(d => d.type === 0x02);
@@ -73,6 +73,17 @@ export class QRMessageCodec {
                     ikPub: ikPubChunk.value
                 };
             }
+            default:
+                throw new SyncError('Unsupported operation type in message');
+        }
+    }
+
+    private static decodeOperation(value: number): QRMessageOperation {
+        switch (value) {
+            case 1:
+                return QRMessageOperation.NEW_DEVICE_ONBOARDING;
+            case 2:
+                return QRMessageOperation.RECONNECTION;
             default:
                 throw new SyncError('Unsupported operation type in message');
         }

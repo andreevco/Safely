@@ -1,15 +1,15 @@
-import { ZodType } from 'zod';
+import { StorageVersion } from '@safely/slottree';
 
 import { ISyncAccount } from './I-sync-account';
 import { ITreeStorage } from '../I-storage';
 import { OnboardingConnector } from '../onboarding/connector';
 
-export interface ISyncAccountFactory<S extends Record<string, ZodType>> {
+export interface ISyncAccountFactory<Latest extends StorageVersion> {
     connectToExistingSyncAccount(
         secureEncryptedStorage: ITreeStorage
-    ): Promise<OnboardingConnector<S>>;
-    createSyncAccount(secureEncryptedStorage: ITreeStorage): Promise<ISyncAccount<S>>;
-    getSyncAccounts(): Promise<ISyncAccount<S>[]>;
-    getSyncAccount(accountId: string): Promise<ISyncAccount<S>>;
+    ): Promise<OnboardingConnector<Latest>>;
+    createSyncAccount(secureEncryptedStorage: ITreeStorage): Promise<ISyncAccount<Latest>>;
+    getSyncAccounts(): Promise<ISyncAccount<Latest>[]>;
+    getSyncAccount(accountId: string): Promise<ISyncAccount<Latest>>;
     deleteLocalAccount(accountId: string, secureEncryptedStorage: ITreeStorage): Promise<void>;
 }
