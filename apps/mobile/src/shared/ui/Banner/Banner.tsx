@@ -1,30 +1,25 @@
 import { ReactNode } from 'react';
-import { StyleProp, ViewStyle } from 'react-native';
+import { TouchableOpacityProps } from 'react-native';
 import { UnistylesVariants } from 'react-native-unistyles';
 
-import { TouchableOpacity } from '@mobile/shared/ui/TouchableOpacity';
+import { TouchableOpacity } from '@mobile/shared/ui';
 
 import { styles } from './Banner.styles';
 import { BannerContext } from './BannerContext';
 
-export type BannerContainerProps = UnistylesVariants<typeof styles> & {
-    onPress?: () => void;
-    style?: StyleProp<ViewStyle>;
-    children: ReactNode;
-};
+export type BannerContainerProps = UnistylesVariants<typeof styles> &
+    TouchableOpacityProps & {
+        children: ReactNode;
+    };
 
 export const BannerContainer = (props: BannerContainerProps) => {
-    const { variant, onPress, style, children } = props;
+    const { variant, onPress, style, children, ...rest } = props;
 
     styles.useVariants({ variant });
 
     return (
         <BannerContext.Provider value={{ variant }}>
-            <TouchableOpacity
-                style={[styles.container, style]}
-                onPress={onPress}
-                disabled={!onPress}
-            >
+            <TouchableOpacity style={[styles.container, style]} onPress={onPress} {...rest}>
                 {children}
             </TouchableOpacity>
         </BannerContext.Provider>
