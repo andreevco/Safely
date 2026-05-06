@@ -2,8 +2,7 @@ import { useRef, useState } from 'react';
 
 import type { RatedCryptoAssetAmount } from '@safely/core';
 
-import { useActiveBtcWallet, useCreateContact } from '../../../../entities';
-import { useNumberFormatter } from '../../../../shared';
+import { useActiveBtcWallet, useCreateContact, useNumberFormatter } from '../../../../entities';
 import { useFetchMaxValue } from '../../../blockchain-send';
 import type { SendFormMachineInput } from '../machine/types';
 import {
