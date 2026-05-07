@@ -254,8 +254,8 @@ importers:
         specifier: ^0.7.1
         version: 0.7.1(@babel/core@7.28.5)(react-native@0.81.4(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
       zod:
-        specifier: ^4.3.5
-        version: 4.3.5
+        specifier: 4.4.1
+        version: 4.4.1
     devDependencies:
       '@babel/core':
         specifier: ^7.20.0
@@ -369,6 +369,9 @@ importers:
       '@noble/hashes':
         specifier: ^2.0.1
         version: 2.0.1
+      '@safely/slottree':
+        specifier: workspace:*
+        version: link:../slottree
       '@safely/sync':
         specifier: workspace:*
         version: link:../sync
@@ -391,8 +394,8 @@ importers:
         specifier: ^1.0.3
         version: 1.0.3
       zod:
-        specifier: ^4.3.5
-        version: 4.3.5
+        specifier: 4.4.1
+        version: 4.4.1
     devDependencies:
       '@types/big.js':
         specifier: ^6.2.2
@@ -404,7 +407,7 @@ importers:
   packages/slottree:
     dependencies:
       zod:
-        specifier: ^4.3.6
+        specifier: 4.4.1
         version: 4.4.1
     devDependencies:
       fast-check:
@@ -438,8 +441,8 @@ importers:
         specifier: ^13.6.29
         version: 13.6.29
       zod:
-        specifier: ^4.1.12
-        version: 4.3.5
+        specifier: 4.4.1
+        version: 4.4.1
     devDependencies:
       vitest:
         specifier: ^4.0.18
@@ -478,8 +481,8 @@ importers:
         specifier: ^19.1.0
         version: 19.1.0
       zod:
-        specifier: ^4.3.5
-        version: 4.3.5
+        specifier: 4.4.1
+        version: 4.4.1
     devDependencies:
       '@types/big.js':
         specifier: ^6.2.2
@@ -10993,7 +10996,7 @@ snapshots:
       uuid: 9.0.1
       wrap-ansi: 7.0.0
       yaml: 2.6.0
-      zod: 4.3.5
+      zod: 4.4.1
     transitivePeerDependencies:
       - '@swc/core'
       - '@swc/wasm'

@@ -12,6 +12,7 @@ import {
 } from '../../shared';
 import { calcSyncedStorageHash } from '../../shared/storage/account/synced/schemas';
 import { calculatePortfoliosHashes } from '../../shared/storage/account/synced/schemas/devices-meta.schema';
+import { portfoliosFromOrderedSet } from '../../shared/storage/account/synced/schemas/portfolios.schema';
 import { useActiveAccount, useActiveAccountQueryKey } from '../account/account-state';
 import { accountKey } from '../account/keys';
 import { useActiveAccountSyncedStorage } from '../account/storage';
@@ -87,18 +88,18 @@ export function useUpdateOwnSyncedDeviceMeta() {
 
             const existing = syncAccount.syncProvider.get('devicesMeta');
             const currentMetaExisting = existing?.[ikPubHex];
-            const portfolios =
-                syncAccount.syncProvider
-                    .get('portfolios')
-                    ?.map(a =>
-                        PortfolioFactory.restorePortfolio(
-                            new SecretEncryptor(
-                                syncAccount.secretEncryptor,
-                                storage.sync.getSecureEncrypted()
-                            ),
-                            a
-                        )
-                    ) ?? [];
+            const storedPortfolios = syncAccount.syncProvider.get('portfolios');
+            const portfolios = storedPortfolios
+                ? portfoliosFromOrderedSet(storedPortfolios).map(a =>
+                      PortfolioFactory.restorePortfolio(
+                          new SecretEncryptor(
+                              syncAccount.secretEncryptor,
+                              storage.sync.getSecureEncrypted()
+                          ),
+                          a
+                      )
+                  )
+                : [];
 
             const currentMeta: DeviceMeta = {
                 name: deviceInfo.name,

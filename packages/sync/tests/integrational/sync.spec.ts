@@ -1,6 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { makeFactory, onboardDevice, TestSyncAccount, TestSyncAccountFactory } from './helpers';
+import {
+    makeFactory,
+    onboardDevice,
+    TestSyncAccount,
+    TestSyncAccountFactory,
+    walletsFromOrderedSet,
+    walletsToOrderedSet
+} from './helpers';
 import { InMemStorage } from '../impl/storage';
 
 describe('Sync', () => {
@@ -15,25 +22,25 @@ describe('Sync', () => {
     });
 
     async function setAndVerify(account: TestSyncAccount, data: string[]) {
-        await account.syncProvider.set('wallets', data);
+        await account.syncProvider.set('wallets', walletsToOrderedSet(data));
         await vi.waitFor(async () => {
             // checks if all accounts synchronized
             for (const acc of accounts) {
                 const wallets = acc.syncProvider.get('wallets');
-                expect(wallets).toEqual(data);
+                expect(walletsFromOrderedSet(wallets)).toEqual(data);
             }
         });
     }
 
     async function updateAndVerify(account: TestSyncAccount, data: string[]) {
         await account.syncProvider.update(draft => {
-            draft.wallets = data;
+            draft.wallets = walletsToOrderedSet(data);
         });
         await vi.waitFor(async () => {
             // checks if all accounts synchronized
             for (const acc of accounts) {
                 const wallets = acc.syncProvider.get('wallets');
-                expect(wallets).toEqual(data);
+                expect(walletsFromOrderedSet(wallets)).toEqual(data);
             }
         });
     }
@@ -160,7 +167,7 @@ describe('Sync', () => {
 
         await vi.waitFor(async () => {
             const walletsB = accountB.syncProvider.get('wallets');
-            expect(walletsB).toEqual(['wallet1', 'wallet2']);
+            expect(walletsFromOrderedSet(walletsB)).toEqual(['wallet1', 'wallet2']);
         });
     });
 });

@@ -1,3 +1,5 @@
+import { orderedIds, toOrderedSet } from '@safely/slottree';
+
 import { BtcBip32NodeProducer } from './btc-bip32-node-producer';
 import { BtcXpub } from '../../../../../blockchain-api';
 import {
@@ -52,11 +54,7 @@ export class DerivationChainItemBtcSeed implements IDerivationChainItemBtc {
         return new DerivationChainItemBtcSeed({
             derivationRef,
             sDerivation: {
-                wallets: [
-                    {
-                        type: walletType
-                    }
-                ],
+                wallets: toOrderedSet([{ type: walletType }], item => item.type),
                 xpub
             },
             seedProducer,
@@ -87,7 +85,8 @@ export class DerivationChainItemBtcSeed implements IDerivationChainItemBtc {
         this.xpub = sDerivation.xpub;
         this.derivationIndex = derivationIndex;
 
-        this.wallets = sDerivation.wallets.map(w => {
+        this.wallets = orderedIds(sDerivation.wallets).map(id => {
+            const w = sDerivation.wallets.setById[id];
             const address = BtcXpub.deriveAddress(this.xpub, this.network, w.type);
             const signer = this.createSigner(seedProducer, { type: w.type, address });
 
@@ -122,9 +121,12 @@ export class DerivationChainItemBtcSeed implements IDerivationChainItemBtc {
     public toJSON(): SBtcAccountChainItem {
         return {
             xpub: this.xpub,
-            wallets: this.wallets.map(w => ({
-                type: w.type
-            }))
+            wallets: toOrderedSet(
+                this.wallets.map(w => ({
+                    type: w.type
+                })),
+                item => item.type
+            )
         };
     }
 }

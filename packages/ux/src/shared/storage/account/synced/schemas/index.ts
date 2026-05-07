@@ -36,9 +36,7 @@ export const syncedStorageV1 = {
 
 export const syncedStorageVersions = defineVersionHList(hCons(syncedStorageV1, hNil));
 
-export function calcSyncedStorageHash(storage: {
-    [K in keyof SyncedStorageShape]: z.output<SyncedStorageShape[K]>;
-}) {
+export function calcSyncedStorageHash(storage: Record<string, unknown>) {
     const { devicesMeta: _, ...rest } = storage;
     const string = JSON.stringify(rest);
     return bytesToHex(sha256(Buffer.from(string, 'utf8')));

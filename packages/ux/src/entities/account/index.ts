@@ -24,6 +24,7 @@ import {
     useSharedUxStorage,
     useTranslate
 } from '../../shared';
+import { portfoliosToOrderedSet } from '../../shared/storage/account/synced/schemas/portfolios.schema';
 import { useLoader } from '../loader';
 import { useLogger } from '../logger';
 import { useMutation } from '../query-core';
@@ -82,7 +83,10 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
                     meta: { name: t('security.groups.wallet.defaultName', { number: 1 }) }
                 });
 
-                await account.syncProvider.set('portfolios', [portfolio.toJSON()]);
+                await account.syncProvider.set(
+                    'portfolios',
+                    portfoliosToOrderedSet([portfolio.toJSON()])
+                );
             }
 
             await client.invalidateQueries({ queryKey: accountKey.list.toKey() });

@@ -1,3 +1,5 @@
+import { orderedIds, toOrderedSet } from '@safely/slottree';
+
 import { Derivation, DerivationChainItemBtcSeed, IDerivation } from '../derivation';
 import { IPortfolioDerivable, PortfolioType } from './I-portfolio';
 import { PortfolioIdMnemonicBased } from './portfolio-id';
@@ -27,7 +29,9 @@ export class PortfolioBip39 implements IPortfolioDerivable {
                   }
                 : null,
             derivations: self =>
-                sPortfolio.derivations.map(d => this.restoreDerivation(mnemonicVault, self, d)),
+                orderedIds(sPortfolio.derivations).map(id =>
+                    this.restoreDerivation(mnemonicVault, self, sPortfolio.derivations.setById[id])
+                ),
             mnemonicVault
         });
     }
@@ -155,7 +159,10 @@ export class PortfolioBip39 implements IPortfolioDerivable {
                       revealedFromDevice: this.secretRevealedStatus.revealedFromDevice
                   }
                 : null,
-            derivations: this.derivations.map(d => d.toJSON())
+            derivations: toOrderedSet(
+                this.derivations.map(d => d.toJSON()),
+                d => String(d.index)
+            )
         };
     }
 }

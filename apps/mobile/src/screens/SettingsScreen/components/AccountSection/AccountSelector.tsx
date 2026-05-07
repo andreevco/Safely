@@ -25,7 +25,8 @@ export const AccountSelector = (props: AccountSelectorProps) => {
     const popupMenuRef = useRef<PopupMenuRef>(null);
 
     const accountCount = accounts.length;
-    const activeWalletsCount = account.syncProvider.get('portfolios')?.length ?? 0;
+    const activePortfolios = account.syncProvider.get('portfolios');
+    const activeWalletsCount = activePortfolios ? Object.keys(activePortfolios.setById).length : 0;
 
     const handleSwitchAccount = async (accountId: string) => {
         popupMenuRef.current?.close();

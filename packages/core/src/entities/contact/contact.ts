@@ -1,3 +1,5 @@
+import { orderedIds, toOrderedSet } from '@safely/slottree';
+
 import { ContactId } from './contact-id';
 import { ContactMeta } from './contact-meta';
 import { SContactIn, SContactOut } from './contact.stored';
@@ -8,7 +10,7 @@ export class Contact implements IContact {
     public static restoreContact(sContact: SContactOut): Contact {
         return new Contact({
             id: sContact.id,
-            addresses: sContact.addresses,
+            addresses: orderedIds(sContact.addresses).map(id => sContact.addresses.setById[id]),
             meta: sContact.meta,
             createdAt: new Date(sContact.createdAt)
         });
@@ -42,7 +44,7 @@ export class Contact implements IContact {
     public toJSON(): SContactIn {
         return {
             id: this.id.toJSON(),
-            addresses: this.addresses,
+            addresses: toOrderedSet(this.addresses, item => item.address),
             meta: this.meta,
             createdAt: this.createdAt.getTime()
         };

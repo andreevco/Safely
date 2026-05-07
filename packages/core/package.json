@@ -9,6 +9,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@safely/slottree": "workspace:*",
     "@safely/sync": "workspace:*",
     "@bitcoinerlab/secp256k1": "^1.2.0",
     "@noble/hashes": "^2.0.1",
@@ -18,7 +19,7 @@
     "bitcoinjs-lib": "^7.0.1",
     "ecpair": "^3.0.0",
     "tweetnacl": "^1.0.3",
-    "zod": "^4.3.5"
+    "zod": "4.4.1"
   },
   "devDependencies": {
     "@types/big.js": "^6.2.2",

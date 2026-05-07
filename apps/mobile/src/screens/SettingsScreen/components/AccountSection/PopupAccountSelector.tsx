@@ -48,7 +48,8 @@ export const PopupAccountSelector = (props: PopupAccountSelectorProps) => {
             <List.Group withoutBottomMargin variant="divided">
                 {accounts.map(acc => {
                     const isActive = acc.accountId === activeAccountId;
-                    const accWalletsCount = acc.syncProvider.get('portfolios')?.length ?? 0;
+                    const portfolios = acc.syncProvider.get('portfolios');
+                    const accWalletsCount = portfolios ? Object.keys(portfolios.setById).length : 0;
 
                     return (
                         <Cell key={acc.accountId} onPress={() => onSwitchAccount(acc.accountId)}>

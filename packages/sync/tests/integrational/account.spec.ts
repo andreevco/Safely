@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { makeFactory, onboardDevice } from './helpers';
+import { makeFactory, onboardDevice, walletsFromOrderedSet, walletsToOrderedSet } from './helpers';
 import { SyncStatus } from '../../src/sync-provider/sync-status';
 import { InMemStorage } from '../impl/storage';
 
@@ -29,7 +29,7 @@ describe('Account', () => {
         const account = await factory.createSyncAccount(secureEncryptedStorage);
         await onboardDevice(account, secureEncryptedStorage);
 
-        await account.syncProvider.set('wallets', ['wallet']);
+        await account.syncProvider.set('wallets', walletsToOrderedSet(['wallet']));
 
         await new Promise(resolve => setTimeout(resolve, 1000));
     });
@@ -38,18 +38,18 @@ describe('Account', () => {
         const account = await factory.createSyncAccount(secureEncryptedStorage);
         const { newAccount } = await onboardDevice(account, secureEncryptedStorage);
 
-        await account.syncProvider.set('wallets', ['wallet']);
+        await account.syncProvider.set('wallets', walletsToOrderedSet(['wallet']));
 
         await vi.waitFor(async () => {
             const wallets = newAccount.syncProvider.get('wallets');
-            expect(wallets).toEqual(['wallet']);
+            expect(walletsFromOrderedSet(wallets)).toEqual(['wallet']);
         });
 
-        await newAccount.syncProvider.set('wallets', ['wallet2']);
+        await newAccount.syncProvider.set('wallets', walletsToOrderedSet(['wallet2']));
 
         await vi.waitFor(async () => {
             const wallets = account.syncProvider.get('wallets');
-            expect(wallets).toEqual(['wallet2']);
+            expect(walletsFromOrderedSet(wallets)).toEqual(['wallet2']);
         });
     });
 
@@ -57,21 +57,21 @@ describe('Account', () => {
         const account = await factory.createSyncAccount(secureEncryptedStorage);
         const { newAccount } = await onboardDevice(account, secureEncryptedStorage);
 
-        await account.syncProvider.set('wallets', ['wallet']);
+        await account.syncProvider.set('wallets', walletsToOrderedSet(['wallet']));
 
         await vi.waitFor(async () => {
             const wallets = newAccount.syncProvider.get('wallets');
-            expect(wallets).toEqual(['wallet']);
+            expect(walletsFromOrderedSet(wallets)).toEqual(['wallet']);
         });
 
         account.syncProvider.restart();
         await account.syncProvider.syncStatusManager.waitForStatus(SyncStatus.SYNCHRONIZED);
 
-        await account.syncProvider.set('wallets', ['wallet2']);
+        await account.syncProvider.set('wallets', walletsToOrderedSet(['wallet2']));
 
         await vi.waitFor(async () => {
             const wallets = newAccount.syncProvider.get('wallets');
-            expect(wallets).toEqual(['wallet2']);
+            expect(walletsFromOrderedSet(wallets)).toEqual(['wallet2']);
         });
     });
 

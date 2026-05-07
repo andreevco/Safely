@@ -1,14 +1,22 @@
 import { z } from 'zod';
 
-import { defineVersionHList, hCons, hNil, projectIdentity } from '@safely/slottree';
+import {
+    defineVersionHList,
+    hCons,
+    hNil,
+    orderedIds,
+    orderedSet,
+    projectIdentity,
+    toOrderedSet
+} from '@safely/slottree';
 
-import { zArrayWithKey, ISyncAccount, SyncAccountFactory } from '../../src';
+import { ISyncAccount, SyncAccountFactory } from '../../src';
 import { Logger } from '../../src/logger/logger';
 import { InMemStorage } from '../impl/storage';
 
 export const Schema = z
     .object({
-        wallets: zArrayWithKey(z.string(), v => v)
+        wallets: orderedSet(z.string())
     })
     .partial();
 
@@ -25,6 +33,20 @@ export const Versions = defineVersionHList(hCons(AccountV1, hNil));
 type AccountLatest = (typeof Versions)['head'];
 export type TestSyncAccount = ISyncAccount<AccountLatest>;
 export type TestSyncAccountFactory = SyncAccountFactory<typeof Versions>;
+
+export function walletsToOrderedSet(wallets: readonly string[]) {
+    return toOrderedSet(wallets, wallet => wallet);
+}
+
+export function walletsFromOrderedSet(
+    wallets: ReturnType<typeof walletsToOrderedSet> | undefined
+): string[] {
+    if (wallets === undefined) {
+        return [];
+    }
+
+    return orderedIds(wallets).map(id => wallets.setById[id]);
+}
 
 let accountCounter = 0;
 

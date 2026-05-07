@@ -28,6 +28,10 @@ import {
     useAppContext,
     SecretEncryptor
 } from '../../shared';
+import {
+    portfoliosFromOrderedSet,
+    portfoliosToOrderedSet
+} from '../../shared/storage/account/synced/schemas/portfolios.schema';
 import { useActiveAccount, useActiveAccountQueryKey } from '../account';
 import { useActiveAccountLocalStorage, useActiveAccountSyncedStorage } from '../account/storage';
 import { useErrorToast } from '../errors';
@@ -55,7 +59,7 @@ export function usePortfoliosQueryConfig() {
                 return null;
             }
 
-            return data.map(p =>
+            return portfoliosFromOrderedSet(data).map(p =>
                 PortfolioFactory.restorePortfolio(
                     new SecretEncryptor(account.secretEncryptor, storage.sync.getSecureEncrypted()),
                     p
@@ -83,7 +87,7 @@ function useSetPortfolios() {
 
     return useMutation<void, Error, Portfolio[]>({
         async mutationFn(accounts) {
-            await set(accounts.map(a => a.toJSON()));
+            await set(portfoliosToOrderedSet(accounts.map(a => a.toJSON())));
             await client.invalidateQueries({ queryKey: accountQueryKey.portfolios.toKey() });
         }
     });

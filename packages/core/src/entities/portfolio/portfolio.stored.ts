@@ -1,6 +1,6 @@
 import * as z from 'zod';
 
-import { zArrayWithKey } from '@safely/sync';
+import { orderedSet } from '@safely/slottree';
 
 import { PortfolioType, WatchOnlySource } from './I-portfolio';
 import { PortfolioIdMnemonicBased } from './portfolio-id';
@@ -23,7 +23,7 @@ export const sPortfolioBip39 = z.object({
     type: z.literal(PortfolioType.BIP39),
     secretRevealedStatus: sPortfolioSecretRevealedStatus,
     encryptedSecret: sSecretEncrypted,
-    derivations: zArrayWithKey(sDerivation, item => String(item.index))
+    derivations: orderedSet(sDerivation)
 });
 export type SPortfolioBip39Out = z.output<typeof sPortfolioBip39>;
 export type SPortfolioBip39In = z.input<typeof sPortfolioBip39>;

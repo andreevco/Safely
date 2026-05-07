@@ -76,49 +76,30 @@ describe('Test portfolio generation (Bitcoin)', () => {
         const serialized = JSON.stringify(portfolio);
         const parsed: unknown = JSON.parse(serialized);
 
-        const expectedStructure: SPortfolioBip39In = {
-            id: {
-                hash: portfolio.id.toJSON().hash,
-                networkType: PortfolioNetworkType.MAINNET
-            },
-            type: PortfolioType.BIP39,
-            meta: {
-                name: portfolioName,
-                icon: portfolio.meta.icon
-            },
-            secretRevealedStatus: null,
-            derivations: [
-                {
-                    index: 0,
-                    chains: {
-                        btc: {
-                            xpub: portfolio.derivations[0].chains.btc.xpub,
-                            wallets: [
-                                {
-                                    type: BtcWalletType.NATIVE_SEGWIT
-                                }
-                            ]
-                        }
-                    }
-                }
-            ],
-            encryptedSecret: portfolio.toJSON().encryptedSecret
-        };
+        const expectedStructure: SPortfolioBip39In = portfolio.toJSON();
 
         expect(parsed).toMatchObject({
             id: { networkType: PortfolioNetworkType.MAINNET },
             type: PortfolioType.BIP39,
             meta: { name: portfolioName },
-            derivations: [
-                {
-                    index: 0,
-                    chains: {
-                        btc: {
-                            wallets: [{ type: BtcWalletType.NATIVE_SEGWIT }]
+            derivations: {
+                setById: {
+                    0: {
+                        index: 0,
+                        chains: {
+                            btc: {
+                                wallets: {
+                                    setById: {
+                                        [BtcWalletType.NATIVE_SEGWIT]: {
+                                            type: BtcWalletType.NATIVE_SEGWIT
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
-            ]
+            }
         });
 
         const portfolioRestored = PortfolioFactory.restorePortfolio(
@@ -150,53 +131,31 @@ describe('Test portfolio generation (Bitcoin)', () => {
         const serialized = JSON.stringify(portfolio);
         const parsed: unknown = JSON.parse(serialized);
 
-        const expectedStructure: SPortfolioBip39In = {
-            id: {
-                hash: portfolio.id.toJSON().hash,
-                networkType: PortfolioNetworkType.MAINNET
-            },
-            type: PortfolioType.BIP39,
-            meta: {
-                name: portfolioName,
-                icon: portfolio.meta.icon
-            },
-            secretRevealedStatus: {
-                revealedAt: portfolio.secretRevealedStatus!.revealedAt.getTime(),
-                revealedFromDevice: 'TEST_DEVICE_NAME'
-            },
-            derivations: [
-                {
-                    index: 0,
-                    chains: {
-                        btc: {
-                            xpub: portfolio.derivations[0].chains.btc.xpub,
-                            wallets: [
-                                {
-                                    type: BtcWalletType.NATIVE_SEGWIT
-                                }
-                            ]
-                        }
-                    }
-                }
-            ],
-            encryptedSecret: portfolio.toJSON().encryptedSecret
-        };
+        const expectedStructure: SPortfolioBip39In = portfolio.toJSON();
 
         expect(parsed).toMatchObject({
             id: { networkType: PortfolioNetworkType.MAINNET },
             type: PortfolioType.BIP39,
             meta: { name: portfolioName },
             secretRevealedStatus: { revealedFromDevice: 'TEST_DEVICE_NAME' },
-            derivations: [
-                {
-                    index: 0,
-                    chains: {
-                        btc: {
-                            wallets: [{ type: BtcWalletType.NATIVE_SEGWIT }]
+            derivations: {
+                setById: {
+                    0: {
+                        index: 0,
+                        chains: {
+                            btc: {
+                                wallets: {
+                                    setById: {
+                                        [BtcWalletType.NATIVE_SEGWIT]: {
+                                            type: BtcWalletType.NATIVE_SEGWIT
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
-            ]
+            }
         });
 
         const portfolioRestored = PortfolioFactory.restorePortfolio(
@@ -423,32 +382,7 @@ describe('Extended tests for portfolio operations (Bitcoin)', () => {
         expect(portfolio.derivations[0].chains.btc.network).toBe(BtcNetwork.TESTNET);
         expect(portfolio.derivations[0].chains.btc.wallets.length).toBe(1);
 
-        const storedPortfolio: SPortfolioBip39In = {
-            type: PortfolioType.BIP39,
-            id: portfolio.id.toJSON(),
-            meta: {
-                name: portfolio.meta.name,
-                icon: portfolio.meta.icon
-            },
-            secretRevealedStatus: portfolio.secretRevealedStatus
-                ? {
-                      revealedAt: portfolio.secretRevealedStatus.revealedAt.getTime(),
-                      revealedFromDevice: portfolio.secretRevealedStatus.revealedFromDevice
-                  }
-                : null,
-            derivations: portfolio.derivations.map(d => ({
-                index: d.index,
-                chains: {
-                    btc: {
-                        wallets: d.chains.btc.wallets.map(w => ({
-                            type: w.type
-                        })),
-                        xpub: d.chains.btc.xpub
-                    }
-                }
-            })),
-            encryptedSecret: portfolio.toJSON().encryptedSecret
-        };
+        const storedPortfolio: SPortfolioBip39In = portfolio.toJSON();
 
         const portfolioRestored = PortfolioFactory.restorePortfolio(
             encryptor,

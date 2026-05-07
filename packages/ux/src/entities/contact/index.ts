@@ -10,6 +10,10 @@ import {
 } from '@safely/core';
 
 import { useTranslate } from '../../shared';
+import {
+    contactsFromOrderedSet,
+    contactsToOrderedSet
+} from '../../shared/storage/account/synced/schemas/contacts.schema';
 import { useActiveAccountQueryKey } from '../account';
 import { useActiveAccountSyncedStorage } from '../account/storage';
 import { useMutation } from '../query-core';
@@ -33,7 +37,7 @@ function useContactsQuery() {
                 return [];
             }
 
-            return data.map(c => Contact.restoreContact(c));
+            return contactsFromOrderedSet(data).map(c => Contact.restoreContact(c));
         },
         staleTime: Infinity
     });
@@ -51,7 +55,7 @@ function useSetContacts() {
     return useMutation<void, Error, Contact[]>({
         async mutationFn(contacts) {
             const sorted = [...contacts].sort((a, b) => a.meta.name.localeCompare(b.meta.name));
-            await set(sorted.map(c => c.toJSON()));
+            await set(contactsToOrderedSet(sorted.map(c => c.toJSON())));
             await client.invalidateQueries({ queryKey: accountQueryKey.contacts.toKey() });
         }
     });

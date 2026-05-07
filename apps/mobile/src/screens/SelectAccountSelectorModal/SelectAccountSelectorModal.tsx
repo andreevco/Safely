@@ -43,7 +43,10 @@ export const SelectAccountSelectorModal = () => {
                 <List.Group variant="divided">
                     {accounts?.map(acc => {
                         const isActive = acc.accountId === account.accountId;
-                        const walletsCount = acc.syncProvider.get('portfolios')?.length ?? 0;
+                        const portfolios = acc.syncProvider.get('portfolios');
+                        const walletsCount = portfolios
+                            ? Object.keys(portfolios.setById).length
+                            : 0;
                         return (
                             <Cell
                                 key={acc.accountId}

@@ -5,9 +5,9 @@
     "baseUrl": "./src",
     "rootDir": "../",
     "paths": {
+      "@safely/slottree": ["../../slottree/src"],
       "@safely/sync": ["../../sync/src"]
-    },
-
+    }
   },
   "include": ["src/**/*", "test/**/*"],
   "exclude": ["dist", "node_modules"]

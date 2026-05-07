@@ -1,15 +1,14 @@
 import { z } from 'zod';
 
-import { zArrayWithKey } from '@safely/sync';
+import { orderedSet } from '@safely/slottree';
 
 import { BtcWalletType } from '../blockchain';
 
 export const sBtcAccountChainItem = z.object({
-    wallets: zArrayWithKey(
+    wallets: orderedSet(
         z.object({
             type: z.enum(BtcWalletType)
-        }),
-        item => item.type
+        })
     ),
     xpub: z.string()
 });
