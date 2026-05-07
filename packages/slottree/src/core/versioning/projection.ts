@@ -10,7 +10,7 @@ import {
     type ProjectionShape,
     type RuntimeRule,
     type SlotProjection
-} from './projection';
+} from './projection/index';
 import { stripSlot } from '../slots/slot-json';
 import { validateSlot } from '../slots/slot-validation';
 
