@@ -1,9 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createActor } from 'xstate';
 
-import { SendFormError } from '../../errors';
-import { calculateMaxAmount } from '../../validators/amount';
-import { createSendFormMachine } from '../machine';
 import {
     BTC_ASSET_ID,
     INVALID_ADDRESS,
@@ -21,6 +18,9 @@ import {
     setupAtAmountWithMax,
     startActor as start
 } from './test-helpers';
+import { SendFormError } from '../../../src/features/forms/send/errors';
+import { createSendFormMachine } from '../../../src/features/forms/send/machine/machine';
+import { calculateMaxAmount } from '../../../src/features/forms/send/validators/amount';
 
 describe('sendFormMachine — restoring (initial state)', () => {
     it('lands in editing.recipient.empty when input is fresh', () => {

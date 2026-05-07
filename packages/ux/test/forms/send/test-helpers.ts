@@ -15,12 +15,18 @@ import {
 } from '@safely/core';
 import { Logger } from '@safely/sync';
 
-import type { ContactSuggestion, PortfolioSuggestion } from '../../types';
-import { computeRecipientMeta } from '../../utils';
-import { calculateMaxAmount, validateAmount } from '../../validators/amount';
-import { validateRecipientInput } from '../../validators/recipient';
-import { createSendFormMachine } from '../machine';
-import type { SendFormMachineInput } from '../types';
+import { createSendFormMachine } from '../../../src/features/forms/send/machine/machine';
+import type { SendFormMachineInput } from '../../../src/features/forms/send/machine/types';
+import type {
+    ContactSuggestion,
+    PortfolioSuggestion
+} from '../../../src/features/forms/send/types';
+import { computeRecipientMeta } from '../../../src/features/forms/send/utils';
+import {
+    calculateMaxAmount,
+    validateAmount
+} from '../../../src/features/forms/send/validators/amount';
+import { validateRecipientInput } from '../../../src/features/forms/send/validators/recipient';
 
 export const VALID_ADDRESS = 'bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4';
 export const SELF_ADDRESS = 'bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq';
