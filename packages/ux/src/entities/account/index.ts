@@ -28,11 +28,7 @@ import { portfoliosToOrderedSet } from '../../shared/storage/account/synced/sche
 import { useLoader } from '../loader';
 import { useLogger } from '../logger';
 import { useMutation } from '../query-core';
-import {
-    useCurrentDeviceIkPub,
-    useSyncedDevicesMeta,
-    useUpdateOwnSyncedDeviceMeta
-} from '../synced-device';
+import { useCurrentDeviceIkPub, useUpdateOwnSyncedDeviceMeta } from '../synced-device';
 import { useToast } from '../toast';
 
 export {
@@ -65,13 +61,11 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
             await delay();
 
             const account = await factory.createSyncAccount(params.secureEncryptedStorage);
-            await account.syncProvider.set(
-                'meta',
-                generateAccountMeta(
-                    account.accountId,
-                    params?.name ?? t('security.groups.wallet.main')
-                )
+            const meta = generateAccountMeta(
+                account.accountId,
+                params?.name ?? t('security.groups.wallet.main')
             );
+            let portfolios: ReturnType<typeof portfoliosToOrderedSet> | null = null;
 
             if (options?.createWallet || options?.setActive) {
                 const portfolioFactory = new PortfolioFactory(
@@ -83,11 +77,15 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
                     meta: { name: t('security.groups.wallet.defaultName', { number: 1 }) }
                 });
 
-                await account.syncProvider.set(
-                    'portfolios',
-                    portfoliosToOrderedSet([portfolio.toJSON()])
-                );
+                portfolios = portfoliosToOrderedSet([portfolio.toJSON()]);
             }
+
+            await account.syncProvider.update(draft => {
+                draft.meta = meta;
+                if (portfolios) {
+                    (draft as { portfolios: unknown }).portfolios = portfolios;
+                }
+            });
 
             await client.invalidateQueries({ queryKey: accountKey.list.toKey() });
 
@@ -230,11 +228,17 @@ export function useSetActiveAccount() {
 export function useChangeAccountMeta() {
     const account = useActiveAccount();
     const client = useQueryClient();
-    const { set } = useActiveAccountSyncedStorage('meta');
+    const { update } = useActiveAccountSyncedStorage('meta');
 
     return useMutation<void, Error, Partial<AccountMeta>>({
         async mutationFn(meta) {
-            await set({ ...account.meta, ...meta });
+            await update(draft => {
+                if (draft.meta) {
+                    draft.meta = { ...draft.meta, ...meta };
+                } else {
+                    draft.meta = { ...account.meta, ...meta };
+                }
+            });
             await client.refetchQueries({ queryKey: accountKey.list.toKey() });
         }
     });
@@ -246,7 +250,6 @@ export function useDeleteAccount() {
     const client = useQueryClient();
     const { storage } = useAppContext();
     const ikPub = useCurrentDeviceIkPub();
-    const devicesMeta = useSyncedDevicesMeta();
     const clearActiveAccountLocalStorage = useClearActiveAccountLocalStorage();
 
     return useMutation({
@@ -254,13 +257,16 @@ export function useDeleteAccount() {
             using secureEncryptedStorage = storage.sync.getSecureEncrypted();
             await secureEncryptedStorage.unlock();
 
-            if (devicesMeta) {
-                const { [ikPub]: _, ...rest } = devicesMeta;
-                await account.syncProvider.set(
-                    'devicesMeta',
-                    Object.keys(rest).length > 0 ? rest : null
-                );
-            }
+            await account.syncProvider.update(draft => {
+                if (!draft.devicesMeta) {
+                    return;
+                }
+
+                delete draft.devicesMeta[ikPub];
+                if (Object.keys(draft.devicesMeta).length === 0) {
+                    draft.devicesMeta = null;
+                }
+            });
 
             await accountFactory.deleteLocalAccount(account.accountId, secureEncryptedStorage);
             await clearActiveAccountLocalStorage();

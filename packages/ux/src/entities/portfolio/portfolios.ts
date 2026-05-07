@@ -20,6 +20,7 @@ import {
     ISecretEncryptor,
     VMType
 } from '@safely/core';
+import { orderedIds } from '@safely/slottree';
 
 import {
     useTranslate,
@@ -28,10 +29,7 @@ import {
     useAppContext,
     SecretEncryptor
 } from '../../shared';
-import {
-    portfoliosFromOrderedSet,
-    portfoliosToOrderedSet
-} from '../../shared/storage/account/synced/schemas/portfolios.schema';
+import { portfoliosFromOrderedSet } from '../../shared/storage/account/synced/schemas/portfolios.schema';
 import { useActiveAccount, useActiveAccountQueryKey } from '../account';
 import { useActiveAccountLocalStorage, useActiveAccountSyncedStorage } from '../account/storage';
 import { useErrorToast } from '../errors';
@@ -80,26 +78,37 @@ export function usePortfolios() {
     return portfolios;
 }
 
-function useSetPortfolios() {
-    const { set } = useActiveAccountSyncedStorage('portfolios');
+export function useAddPortfolio() {
+    const { update } = useActiveAccountSyncedStorage('portfolios');
     const client = useQueryClient();
     const accountQueryKey = useActiveAccountQueryKey();
 
-    return useMutation<void, Error, Portfolio[]>({
-        async mutationFn(accounts) {
-            await set(portfoliosToOrderedSet(accounts.map(a => a.toJSON())));
-            await client.invalidateQueries({ queryKey: accountQueryKey.portfolios.toKey() });
-        }
-    });
-}
-
-export function useAddPortfolio() {
-    const { mutateAsync } = useSetPortfolios();
-    const { data: accounts } = usePortfoliosQuery();
-
     return useMutation<void, Error, Portfolio>({
-        async mutationFn(account) {
-            await mutateAsync((accounts ?? []).concat(account));
+        async mutationFn(portfolio) {
+            const portfolioJson = portfolio.toJSON();
+            const portfolioId = portfolio.id.toString();
+
+            await update(draft => {
+                if (!draft.portfolios) {
+                    const portfolios = createEmptyOrderedSet<typeof portfolioJson>();
+                    portfolios.setById[portfolioId] = portfolioJson;
+                    rewriteOrder(portfolios, [portfolioId]);
+                    (draft as { portfolios: unknown }).portfolios = portfolios;
+                    return;
+                }
+
+                const portfolios = draft.portfolios as unknown as MutableOrderedSet<
+                    typeof portfolioJson
+                >;
+
+                if (portfolios.setById[portfolioId]) {
+                    throw new PortfolioAlreadyExistsError();
+                }
+
+                portfolios.setById[portfolioId] = portfolioJson;
+                rewriteOrder(portfolios, [...sortByCurrentOrder(portfolios), portfolioId]);
+            });
+            await client.invalidateQueries({ queryKey: accountQueryKey.portfolios.toKey() });
         }
     });
 }
@@ -206,20 +215,33 @@ export function useImportPortfolio() {
 }
 
 export function useDeletePortfolio() {
-    const portfolios = usePortfolios();
-    const { mutateAsync } = useSetPortfolios();
+    const { update } = useActiveAccountSyncedStorage('portfolios');
+    const client = useQueryClient();
+    const accountQueryKey = useActiveAccountQueryKey();
     const check = useSecurityCheck();
 
     return useMutation<void, Error, { id: IPortfolioId }>({
         async mutationFn({ id }) {
             await check();
-            await mutateAsync(portfolios.filter(p => !p.id.isEq(id)));
+            const portfolioId = id.toString();
+
+            await update(draft => {
+                if (!draft.portfolios) {
+                    return;
+                }
+
+                const portfolios = draft.portfolios as MutableOrderedSet<unknown>;
+                delete portfolios.setById[portfolioId];
+                delete portfolios.setOrder[portfolioId];
+                rewriteOrder(portfolios, sortByCurrentOrder(portfolios));
+            });
+            await client.invalidateQueries({ queryKey: accountQueryKey.portfolios.toKey() });
         }
     });
 }
 
 export function useReorderPortfolios() {
-    const { mutateAsync } = useSetPortfolios();
+    const { update } = useActiveAccountSyncedStorage('portfolios');
     const client = useQueryClient();
     const accountQueryKey = useActiveAccountQueryKey();
 
@@ -228,15 +250,31 @@ export function useReorderPortfolios() {
             client.setQueryData(accountQueryKey.portfolios.toKey(), nextPortfoliosOrder);
         },
         async mutationFn(nextPortfoliosOrder) {
-            await mutateAsync(nextPortfoliosOrder);
+            const nextIds = nextPortfoliosOrder.map(portfolio => portfolio.id.toString());
+
+            await update(draft => {
+                if (!draft.portfolios) {
+                    return;
+                }
+
+                const portfolios = draft.portfolios as MutableOrderedSet<unknown>;
+                const existingNextIds = nextIds.filter(id => portfolios.setById[id] !== undefined);
+                const remainingIds = sortByCurrentOrder(portfolios).filter(
+                    id => !existingNextIds.includes(id)
+                );
+
+                rewriteOrder(portfolios, [...existingNextIds, ...remainingIds]);
+            });
+            await client.invalidateQueries({ queryKey: accountQueryKey.portfolios.toKey() });
         }
     });
 }
 
 export function useAddBip39Derivation() {
     const portfolio = useActivePortfolio();
-    const portfolios = usePortfolios();
-    const { mutateAsync } = useSetPortfolios();
+    const { update } = useActiveAccountSyncedStorage('portfolios');
+    const client = useQueryClient();
+    const accountQueryKey = useActiveAccountQueryKey();
 
     return useMutation<void, Error, { index: number | undefined }>({
         async mutationFn({ index }) {
@@ -250,15 +288,27 @@ export function useAddBip39Derivation() {
                 await portfolio.addDerivation(index);
             }
 
-            await mutateAsync(portfolios);
+            const portfolioJson = portfolio.toJSON();
+            const portfolioId = portfolio.id.toString();
+
+            await update(draft => {
+                const stored = draft.portfolios?.setById[portfolioId];
+                if (!stored || stored.type !== PortfolioType.BIP39) {
+                    throw new Error('Portfolio not found or not derivable');
+                }
+
+                stored.derivations = portfolioJson.derivations;
+            });
+            await client.invalidateQueries({ queryKey: accountQueryKey.portfolios.toKey() });
         }
     });
 }
 
 export function useRemoveBip39Derivation() {
     const portfolio = useActivePortfolio();
-    const portfolios = usePortfolios();
-    const { mutateAsync } = useSetPortfolios();
+    const { update } = useActiveAccountSyncedStorage('portfolios');
+    const client = useQueryClient();
+    const accountQueryKey = useActiveAccountQueryKey();
 
     return useMutation<void, Error, { index: number }>({
         async mutationFn({ index }) {
@@ -268,7 +318,18 @@ export function useRemoveBip39Derivation() {
 
             portfolio.removeDerivation(index);
 
-            await mutateAsync(portfolios);
+            const portfolioJson = portfolio.toJSON();
+            const portfolioId = portfolio.id.toString();
+
+            await update(draft => {
+                const stored = draft.portfolios?.setById[portfolioId];
+                if (!stored || stored.type !== PortfolioType.BIP39) {
+                    throw new Error('Portfolio not found or not derivable');
+                }
+
+                stored.derivations = portfolioJson.derivations;
+            });
+            await client.invalidateQueries({ queryKey: accountQueryKey.portfolios.toKey() });
         }
     });
 }
@@ -286,6 +347,32 @@ type ActivePortfolioEntitiesWatchOnly = {
 };
 
 type ActivePortfolioEntities = ActivePortfolioEntitiesBip39 | ActivePortfolioEntitiesWatchOnly;
+
+type MutableOrderedSet<T> = {
+    setById: Record<string, T>;
+    setOrder: Record<string, number>;
+};
+
+function createEmptyOrderedSet<T>(): MutableOrderedSet<T> {
+    return { setById: {}, setOrder: {} };
+}
+
+function rewriteOrder<T>(set: MutableOrderedSet<T>, ids: string[]) {
+    const nextIds = new Set(ids);
+    for (const id of Object.keys(set.setOrder)) {
+        if (!nextIds.has(id)) {
+            delete set.setOrder[id];
+        }
+    }
+
+    ids.forEach((id, index) => {
+        set.setOrder[id] = index;
+    });
+}
+
+function sortByCurrentOrder<T>(set: MutableOrderedSet<T>): string[] {
+    return orderedIds(set);
+}
 
 export function useActivePortfolioEntitiesQuery() {
     const { get, set } = useActiveAccountLocalStorage('activePortfolio');
@@ -471,7 +558,8 @@ export function useSetActivePortfolio() {
 export function useChangePortfolioMeta() {
     const client = useQueryClient();
     const portfoliosQuery = usePortfoliosQueryConfig();
-    const { mutateAsync } = useSetPortfolios();
+    const accountQueryKey = useActiveAccountQueryKey();
+    const { update } = useActiveAccountSyncedStorage('portfolios');
 
     return useMutation<
         Portfolio,
@@ -485,8 +573,18 @@ export function useChangePortfolioMeta() {
                 throw new Error('Portfolio not found');
             }
 
+            const portfolioId = id.toString();
+            await update(draft => {
+                const stored = draft.portfolios?.setById[portfolioId];
+                if (!stored) {
+                    throw new Error('Portfolio not found');
+                }
+
+                stored.meta = { ...stored.meta, ...meta };
+            });
+            await client.invalidateQueries({ queryKey: accountQueryKey.portfolios.toKey() });
+
             portfolio.updateMeta(meta);
-            await mutateAsync(portfolios);
             return portfolio;
         }
     });
@@ -494,9 +592,9 @@ export function useChangePortfolioMeta() {
 
 export function useRecordActivePortfolioSecretReveal() {
     const client = useQueryClient();
-    const portfoliosQuery = usePortfoliosQueryConfig();
     const activePortfolio = useActivePortfolio();
-    const { mutateAsync } = useSetPortfolios();
+    const accountQueryKey = useActiveAccountQueryKey();
+    const { update } = useActiveAccountSyncedStorage('portfolios');
     const { deviceInfo } = useAppContext();
 
     return useMutation({
@@ -505,13 +603,21 @@ export function useRecordActivePortfolioSecretReveal() {
                 return;
             }
 
-            const portfolios: Portfolio[] = await client.fetchQuery(portfoliosQuery);
-            const portfolio = portfolios.find(p => p.id.isEq(activePortfolio.id));
-            if (!portfolio || portfolio.type !== PortfolioType.BIP39) {
-                return;
-            }
-            portfolio.recordSecretReveal(deviceInfo.name);
-            await mutateAsync(portfolios);
+            const revealedAt = Date.now();
+            const portfolioId = activePortfolio.id.toString();
+
+            await update(draft => {
+                const stored = draft.portfolios?.setById[portfolioId];
+                if (!stored || stored.type !== PortfolioType.BIP39) {
+                    return;
+                }
+
+                stored.secretRevealedStatus = {
+                    revealedAt,
+                    revealedFromDevice: deviceInfo.name
+                };
+            });
+            await client.invalidateQueries({ queryKey: accountQueryKey.portfolios.toKey() });
         }
     });
 }

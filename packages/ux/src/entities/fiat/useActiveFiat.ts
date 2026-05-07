@@ -38,11 +38,13 @@ export function useActiveFiat() {
 export function useSetActiveFiat() {
     const client = useQueryClient();
     const accountQueryKey = useActiveAccountQueryKey();
-    const { set } = useActiveAccountSyncedStorage('preferredFiat');
+    const { update } = useActiveAccountSyncedStorage('preferredFiat');
 
     return useMutation<void, Error, { fiat: FiatAsset }>({
         mutationFn: async ({ fiat }) => {
-            await set(fiat.toJSON());
+            await update(draft => {
+                (draft as { preferredFiat: unknown }).preferredFiat = fiat.toJSON();
+            });
             await client.invalidateQueries({
                 queryKey: accountQueryKey.preferredFiat.toKey()
             });

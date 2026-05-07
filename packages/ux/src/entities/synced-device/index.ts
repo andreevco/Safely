@@ -58,7 +58,7 @@ export function useRevokeSyncedDevice() {
     const client = useQueryClient();
     const account = useActiveAccount();
     const accountQueryKey = useActiveAccountQueryKey();
-    const { get, set } = useActiveAccountSyncedStorage('devicesMeta');
+    const { update } = useActiveAccountSyncedStorage('devicesMeta');
     const { storage } = useAppContext();
 
     return useMutation({
@@ -68,9 +68,16 @@ export function useRevokeSyncedDevice() {
                 storage.sync.getSecureEncrypted()
             );
 
-            const existing = get() ?? {};
-            const { [ikPubHex]: _, ...rest } = existing;
-            await set(Object.keys(rest).length > 0 ? rest : null);
+            await update(draft => {
+                if (!draft.devicesMeta) {
+                    return;
+                }
+
+                delete draft.devicesMeta[ikPubHex];
+                if (Object.keys(draft.devicesMeta).length === 0) {
+                    draft.devicesMeta = null;
+                }
+            });
 
             await client.invalidateQueries({ queryKey: accountQueryKey.devices.meta.toKey() });
         }
@@ -113,9 +120,13 @@ export function useUpdateOwnSyncedDeviceMeta() {
                 }
             };
 
-            await syncAccount.syncProvider.set('devicesMeta', {
-                ...existing,
-                [ikPubHex]: currentMeta
+            await syncAccount.syncProvider.update(draft => {
+                if (!draft.devicesMeta) {
+                    draft.devicesMeta = { [ikPubHex]: currentMeta };
+                    return;
+                }
+
+                draft.devicesMeta[ikPubHex] = currentMeta;
             });
             await client.invalidateQueries({
                 queryKey: accountKey.accountId(syncAccount.accountId).devices.meta.toKey()

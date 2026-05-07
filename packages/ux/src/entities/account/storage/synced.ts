@@ -1,5 +1,4 @@
 import { useCallback } from 'react';
-import z from 'zod';
 
 import { ISyncProvider } from '@safely/sync';
 
@@ -13,7 +12,7 @@ export type SyncProvider = ISyncProvider<SyncedStorageSchema>;
 
 export function useGetSyncProvider(
     accountId: string | null
-): () => Pick<SyncProvider, 'get' | 'set'> {
+): () => Pick<SyncProvider, 'get' | 'update'> {
     const accounts = useAccounts();
 
     return useCallback(() => {
@@ -22,8 +21,8 @@ export function useGetSyncProvider(
                 get() {
                     throw new Error('Cannot get data from uninitialized account storage');
                 },
-                set() {
-                    throw new Error('Cannot set data to uninitialized account storage');
+                update() {
+                    throw new Error('Cannot update data in uninitialized account storage');
                 }
             };
         }
@@ -52,16 +51,12 @@ export function useAccountSyncedStorage<K extends keyof SyncedStorageShape>(
         return getSyncProvider().get(key);
     }, [getSyncProvider, key]);
 
-    const set = useCallback<(val: z.input<SyncedStorageShape[K]>) => Promise<void>>(
+    const update = useCallback<SyncProvider['update']>(
         val => {
-            return getSyncProvider().set(key, val);
+            return getSyncProvider().update(val);
         },
-        [getSyncProvider, key]
+        [getSyncProvider]
     );
 
-    const remove = useCallback<() => Promise<void>>(() => {
-        return getSyncProvider().set(key, null as z.input<SyncedStorageShape[K]>);
-    }, [getSyncProvider, key]);
-
-    return { get, set, remove };
+    return { get, update };
 }
