@@ -60,8 +60,6 @@ export function useSendFormMachineInput(props: UseSendFormMachineInputProps): Se
     const activeBtcWallet = useActiveBtcWallet();
     const { mutateAsync: createContact } = useCreateContact();
 
-    const portfolioSuggestionsRef = useRef(portfolioSuggestions);
-    portfolioSuggestionsRef.current = portfolioSuggestions;
     const contactSuggestionsRef = useRef(contactSuggestions);
     contactSuggestionsRef.current = contactSuggestions;
 
@@ -79,7 +77,7 @@ export function useSendFormMachineInput(props: UseSendFormMachineInputProps): Se
         validateRecipient: (value, preferredSuggestionId) =>
             validateRecipientInput(value, {
                 activeWalletAddress: activeBtcWallet.address,
-                portfolioSuggestions: portfolioSuggestionsRef.current,
+                portfolioSuggestions,
                 contactSuggestions: contactSuggestionsRef.current,
                 preferredSuggestionId
             }),
@@ -89,11 +87,7 @@ export function useSendFormMachineInput(props: UseSendFormMachineInputProps): Se
             calculateMaxAmount({ amount, price }, inputType, formatter),
         findAssetById: id => ratedAssets.find(({ amount }) => amount.asset.id.toString() === id),
         getRecipientMeta: selectedId =>
-            computeRecipientMeta(
-                selectedId,
-                portfolioSuggestionsRef.current,
-                contactSuggestionsRef.current
-            ),
+            computeRecipientMeta(selectedId, portfolioSuggestions, contactSuggestionsRef.current),
         fetchMaxValue
     };
 }
