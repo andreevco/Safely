@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
-import { createStorage, StorageImpl } from '../src';
-import { type ContainerSlot } from '../src/core/slots';
+import type { StorageImpl } from '../src';
+import { createStorage } from '../src';
+import type { ContainerSlot } from '../src/core/slots';
 import { cloneSlot } from '../src/core/slots/slot-json';
 import { defineVersionHList, hCons, hNil } from '../src/core/versioning/version';
 

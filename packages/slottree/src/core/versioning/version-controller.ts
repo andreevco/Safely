@@ -1,12 +1,7 @@
-import { JsonValue } from '../json';
-import {
-    ContainerSlot,
-    createContainerSlot,
-    createOriginContainer,
-    isContainerSlot,
-    Slot
-} from '../slots';
-import { StorageVersion } from './version';
+import type { JsonValue } from '../json';
+import type { ContainerSlot, Slot } from '../slots';
+import { createContainerSlot, createOriginContainer, isContainerSlot } from '../slots';
+import type { StorageVersion } from './version';
 import { slotFromJson, stripSlot } from '../slots/slot-json';
 import { validateSlot } from '../slots/slot-validation';
 

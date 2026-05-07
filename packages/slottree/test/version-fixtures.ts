@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { type ContainerSlot } from '../src/core/slots';
+import type { ContainerSlot } from '../src/core/slots';
 import { cloneSlot } from '../src/core/slots/slot-json';
 import { projection } from '../src/core/versioning/projection';
 import { defineVersionHList, hCons, hNil } from '../src/core/versioning/version';

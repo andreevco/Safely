@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
-import { createStorage, DEVICES_KEY, StorageImpl } from '../src';
-import { identityProjection, StorageV1, type StorageV3, v1, v3 } from './version-fixtures';
+import type { StorageImpl } from '../src';
+import { createStorage, DEVICES_KEY } from '../src';
+import type { StorageV1 } from './version-fixtures';
+import { identityProjection, type StorageV3, v1, v3 } from './version-fixtures';
 import { createOriginContainer, type ContainerSlot } from '../src/core/slots';
 import { slotFromJson } from '../src/core/slots/slot-json';
 import { projection } from '../src/core/versioning/projection';
