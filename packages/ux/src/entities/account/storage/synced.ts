@@ -3,14 +3,17 @@ import z from 'zod';
 
 import { ISyncProvider } from '@safely/sync';
 
-import { SyncedStorageStructure } from '../../../shared/storage/account/synced/schemas';
+import {
+    SyncedStorageSchema,
+    SyncedStorageShape
+} from '../../../shared/storage/account/synced/schemas';
 import { useAccounts, useActiveAccount } from '../account-state';
 
-export type SyncProvider = ISyncProvider<SyncedStorageStructure>;
+export type SyncProvider = ISyncProvider<SyncedStorageSchema>;
 
 export function useGetSyncProvider(
     accountId: string | null
-): () => Pick<SyncProvider, 'get' | 'set' | 'remove'> {
+): () => Pick<SyncProvider, 'get' | 'set'> {
     const accounts = useAccounts();
 
     return useCallback(() => {
@@ -21,9 +24,6 @@ export function useGetSyncProvider(
                 },
                 set() {
                     throw new Error('Cannot set data to uninitialized account storage');
-                },
-                remove() {
-                    throw new Error('Cannot remove data from uninitialized account storage');
                 }
             };
         }
@@ -37,12 +37,12 @@ export function useGetSyncProvider(
     }, [accounts, accountId]);
 }
 
-export function useActiveAccountSyncedStorage<K extends keyof SyncedStorageStructure>(key: K) {
+export function useActiveAccountSyncedStorage<K extends keyof SyncedStorageShape>(key: K) {
     const account = useActiveAccount();
     return useAccountSyncedStorage(account.accountId, key);
 }
 
-export function useAccountSyncedStorage<K extends keyof SyncedStorageStructure>(
+export function useAccountSyncedStorage<K extends keyof SyncedStorageShape>(
     accountId: string | null,
     key: K
 ) {
@@ -52,7 +52,7 @@ export function useAccountSyncedStorage<K extends keyof SyncedStorageStructure>(
         return getSyncProvider().get(key);
     }, [getSyncProvider, key]);
 
-    const set = useCallback<(val: z.input<SyncedStorageStructure[K]>) => Promise<void>>(
+    const set = useCallback<(val: z.input<SyncedStorageShape[K]>) => Promise<void>>(
         val => {
             return getSyncProvider().set(key, val);
         },
@@ -60,7 +60,7 @@ export function useAccountSyncedStorage<K extends keyof SyncedStorageStructure>(
     );
 
     const remove = useCallback<() => Promise<void>>(() => {
-        return getSyncProvider().remove(key);
+        return getSyncProvider().set(key, null as z.input<SyncedStorageShape[K]>);
     }, [getSyncProvider, key]);
 
     return { get, set, remove };

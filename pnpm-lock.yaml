@@ -453,6 +453,9 @@ importers:
       '@safely/core':
         specifier: workspace:*
         version: link:../core
+      '@safely/slottree':
+        specifier: workspace:*
+        version: link:../slottree
       '@safely/sync':
         specifier: workspace:*
         version: link:../sync

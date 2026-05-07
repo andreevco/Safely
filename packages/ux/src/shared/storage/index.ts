@@ -1,6 +1,10 @@
 export {
     type SyncedStorageStructure,
+    type SyncedStorageShape,
+    type SyncedStorageSchema,
     syncedStorageStructure,
+    syncedStorageSchema,
+    syncedStorageVersions,
     type AccountMeta,
     type ContactMeta,
     type DeviceMeta

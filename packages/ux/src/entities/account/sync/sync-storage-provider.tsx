@@ -2,12 +2,12 @@ import { useQueryClient } from '@tanstack/react-query';
 import { FC, PropsWithChildren, useEffect } from 'react';
 
 import { useAppState } from '../../../shared/app/useAppState';
-import { SyncedStorageStructure, syncedStorageStructure } from '../../../shared/storage';
+import { SyncedStorageShape, syncedStorageStructure } from '../../../shared/storage';
 import { useUpdateOwnSyncedDeviceMeta } from '../../synced-device';
 import { useActiveAccountQuery } from '../account-state';
 import { accountKey } from '../keys';
 
-const syncedStorageKeys = Object.keys(syncedStorageStructure) as (keyof SyncedStorageStructure)[];
+const syncedStorageKeys = Object.keys(syncedStorageStructure) as (keyof SyncedStorageShape)[];
 
 function useSyncChangeObserver() {
     const client = useQueryClient();
@@ -20,7 +20,7 @@ function useSyncChangeObserver() {
         const syncProvider = activeAccount.syncProvider;
         const accountQueryKey = accountKey.accountId(activeAccount.accountId);
 
-        const queryKeysToInvalidate: Record<keyof SyncedStorageStructure, readonly unknown[]> = {
+        const queryKeysToInvalidate: Record<keyof SyncedStorageShape, readonly unknown[]> = {
             portfolios: accountQueryKey.portfolios.toKey(),
             preferredFiat: accountQueryKey.preferredFiat.toKey(),
             meta: accountKey.list.toKey(),

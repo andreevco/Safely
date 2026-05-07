@@ -1,12 +1,12 @@
 import { useQueryClient } from '@tanstack/react-query';
 
 import { notNullish } from '@safely/core';
-import { ISyncAccount, SyncAccountFactory } from '@safely/sync';
+import { ISyncAccount, ISyncAccountFactory, SyncAccountFactory } from '@safely/sync';
 
 import { accountKey } from './keys';
 import {
     AccountMeta,
-    syncedStorageStructure,
+    syncedStorageVersions,
     SyncedStorageStructure,
     useAppContext,
     useBootConfig,
@@ -48,7 +48,7 @@ export function withMeta(account: ISyncAccount<SyncedStorageStructure>): SyncAcc
     return account as SyncAccount;
 }
 
-let _syncAccountFactory: SyncAccountFactory<SyncedStorageStructure> | null = null;
+let _syncAccountFactory: ISyncAccountFactory<SyncedStorageStructure> | null = null;
 
 export function resetAccountsFactory() {
     _syncAccountFactory = null;
@@ -65,7 +65,7 @@ export function useAccountsFactory() {
         _syncAccountFactory = new SyncAccountFactory({
             storage: sync.regular,
             encryptedStorage: sync.encrypted,
-            structure: syncedStorageStructure,
+            versions: syncedStorageVersions,
             apiConfiguration: {
                 basePath: config.sync.api_url
             },

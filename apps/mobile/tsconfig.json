@@ -5,6 +5,7 @@
     "baseUrl": ".",
     "paths": {
       "@safely/sync": ["../../packages/sync/src"],
+      "@safely/slottree": ["../../packages/slottree/src"],
       "@safely/core": ["../../packages/core/src"],
       "@safely/core/*": ["../../packages/core/src/*"],
       "@safely/ux": ["../../packages/ux/src"],
