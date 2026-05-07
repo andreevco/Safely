@@ -1,6 +1,6 @@
-import { ZodType } from 'zod';
+import type { ZodType } from 'zod';
 
-import { ISyncAccount } from '../account/I-sync-account';
+import type { ISyncAccount } from '../account/I-sync-account';
 
 export type OnboardingConnector<S extends Record<string, ZodType>> = {
     /**

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { KeyServiceFactory } from './crypto/service/key-service-factory';
-import { ITreeStorage } from './I-storage';
+import type { KeyServiceFactory } from './crypto/service/key-service-factory';
+import type { ITreeStorage } from './I-storage';
 import { hex } from './utils/buffer';
 
 export const sSecretEncrypted = z.string();

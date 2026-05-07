@@ -2,7 +2,7 @@ import * as Y from 'yjs';
 import { z } from 'zod';
 
 import { YCRDT } from './y-crdt';
-import { YCRDTRepository } from './y-crdt-repository';
+import type { YCRDTRepository } from './y-crdt-repository';
 import { SyncError } from '../sync-error';
 import { BufferHexSchema } from '../utils/schemas';
 

@@ -1,9 +1,9 @@
 import { sha256 } from '@noble/hashes/sha2.js';
 
-import { EncryptedState } from '../api/types';
-import { IkService } from '../crypto/service/ik-service';
-import { SyncKeyService } from '../crypto/service/sync-key-service';
-import { SyncStateRepository } from '../update-handler/sync-state-repository';
+import type { EncryptedState } from '../api/types';
+import type { IkService } from '../crypto/service/ik-service';
+import type { SyncKeyService } from '../crypto/service/sync-key-service';
+import type { SyncStateRepository } from '../update-handler/sync-state-repository';
 
 export class UpdateEncryptorService {
     constructor(

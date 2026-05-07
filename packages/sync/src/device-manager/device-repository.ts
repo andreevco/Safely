@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { IStorage } from '../I-storage';
+import type { IStorage } from '../I-storage';
 import { BufferHexSchema } from '../utils/schemas';
 
 export class DeviceRepository {

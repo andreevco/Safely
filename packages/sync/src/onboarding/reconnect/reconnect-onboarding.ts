@@ -1,8 +1,8 @@
-import { ZodType } from 'zod';
+import type { ZodType } from 'zod';
 
-import { Logger } from '../../logger';
+import type { Logger } from '../../logger';
 import { OnboardingAbortedError } from '../../sync-error';
-import { OnlineSyncProvider } from '../../sync-provider/online-sync-provider';
+import type { OnlineSyncProvider } from '../../sync-provider/online-sync-provider';
 import { SyncStatus } from '../../sync-provider/sync-status';
 import { QRMessageCodec, QRMessageOperation } from '../onboarding-codec';
 

@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-import { ApiSigner } from '../api-signer';
+import type { HTTPMethod, RequestSigner } from '../request-signer';
 
 /**
  * Safely Sync
@@ -104,7 +104,7 @@ export class BaseAPI {
 
     constructor(
         // MARK - written by hand
-        private readonly apiSigner: ApiSigner,
+        private readonly apiSigner: RequestSigner,
         // MARK END
         public configuration = DefaultConfig
     ) {
@@ -352,7 +352,7 @@ export const COLLECTION_FORMATS = {
 export type FetchAPI = WindowOrWorkerGlobalScope['fetch'];
 
 export type Json = any;
-export type HTTPMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'OPTIONS' | 'HEAD';
+export type { HTTPMethod };
 export type HTTPHeaders = { [key: string]: string };
 export type HTTPQuery = {
     [key: string]:

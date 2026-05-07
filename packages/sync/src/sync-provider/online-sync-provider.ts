@@ -1,12 +1,13 @@
 import { createActor } from 'xstate';
-import * as z from 'zod';
-import { ZodType } from 'zod';
+import type * as z from 'zod';
+import type { ZodType } from 'zod';
 
-import { ISyncProvider } from './I-sync-provider';
-import { SyncContainer } from '../sync-container';
+import type { ISyncProvider } from './I-sync-provider';
+import type { SyncContainer } from '../sync-container';
 import { OfflineSyncProvider } from './offline-sync-provider';
 import { SyncStatus, SyncStatusManager } from './sync-status';
-import { createSyncMachine, SyncMachine } from '../sync-machine/machine';
+import type { SyncMachine } from '../sync-machine/machine';
+import { createSyncMachine } from '../sync-machine/machine';
 
 export class OnlineSyncProvider<S extends Record<string, ZodType>>
     extends OfflineSyncProvider<S>

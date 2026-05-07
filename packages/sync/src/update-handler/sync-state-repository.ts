@@ -1,6 +1,7 @@
-import { IStorage } from '../I-storage';
-import { SyncState, SyncStateSchema, syncStateToJson } from './sync-state';
-import { Logger } from '../logger/logger';
+import type { IStorage } from '../I-storage';
+import type { SyncState } from './sync-state';
+import { SyncStateSchema, syncStateToJson } from './sync-state';
+import type { Logger } from '../logger/logger';
 
 export class SyncStateRepository {
     constructor(

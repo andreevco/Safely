@@ -1,8 +1,8 @@
-import { ZodType } from 'zod';
+import type { ZodType } from 'zod';
 
-import { ISyncAccount } from './I-sync-account';
-import { ITreeStorage } from '../I-storage';
-import { OnboardingConnector } from '../onboarding/connector';
+import type { ISyncAccount } from './I-sync-account';
+import type { ITreeStorage } from '../I-storage';
+import type { OnboardingConnector } from '../onboarding/connector';
 
 export interface ISyncAccountFactory<S extends Record<string, ZodType>> {
     connectToExistingSyncAccount(

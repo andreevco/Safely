@@ -1,10 +1,10 @@
-import { Device, DeviceRepository } from './device-repository';
-import { AddDeviceOp, DeviceOp, YManager } from '../crdt/y-manager';
+import type { Device, DeviceRepository } from './device-repository';
+import type { AddDeviceOp, DeviceOp, YManager } from '../crdt/y-manager';
 import { ed25519_verify } from '../crypto/ed25519';
 import { generateKID } from '../crypto/generate-kid';
-import { DmkSignerService } from '../crypto/service/dmk-signer-service';
-import { DmkVerifierService } from '../crypto/service/dmk-verifier-service';
-import { IkService } from '../crypto/service/ik-service';
+import type { DmkSignerService } from '../crypto/service/dmk-signer-service';
+import type { DmkVerifierService } from '../crypto/service/dmk-verifier-service';
+import type { IkService } from '../crypto/service/ik-service';
 import { SyncError } from '../sync-error';
 import { u64be, utf8 } from '../utils/buffer';
 
