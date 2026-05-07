@@ -1,9 +1,9 @@
-import { output, z, ZodType } from 'zod';
+import type { output, z, ZodType } from 'zod';
 
-import { ISyncProvider } from './I-sync-provider';
+import type { ISyncProvider } from './I-sync-provider';
 import { StorageError } from '../crdt/y-manager';
-import { SyncContainer } from '../sync-container';
-import { SyncError } from '../sync-error';
+import type { SyncContainer } from '../sync-container';
+import type { SyncError } from '../sync-error';
 import { SyncStatus, SyncStatusManager } from './sync-status';
 
 export class OfflineSyncProvider<S extends Record<string, ZodType>> implements ISyncProvider<S> {

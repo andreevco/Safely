@@ -1,6 +1,7 @@
-import { MergeProtocol } from '../merge-protocol';
-import { ContainerSlot, isContainerSlot, Slot } from '../slots';
-import { StorageVersion } from './version';
+import type { MergeProtocol } from '../merge-protocol';
+import type { ContainerSlot, Slot } from '../slots';
+import { isContainerSlot } from '../slots';
+import type { StorageVersion } from './version';
 import { stripSlot } from '../slots/slot-json';
 import { validateSlot } from '../slots/slot-validation';
 

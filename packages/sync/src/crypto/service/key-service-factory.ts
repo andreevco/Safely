@@ -1,5 +1,5 @@
 import { DmkSignerService } from './dmk-signer-service';
-import { ITreeStorage } from '../../I-storage';
+import type { ITreeStorage } from '../../I-storage';
 import { SecureEncryptedKeyRepository } from '../secure-encrypted-key-repository';
 import { MasterKeyService } from './master-key-service';
 import { VaultKeyService } from './vault-key-service';

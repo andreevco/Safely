@@ -203,7 +203,7 @@ export default [
                         }
                     ]
                 }
-            ],
+            ]
         }
     },
     /* React */
@@ -260,7 +260,9 @@ export default [
             'packages/ux/**/*.ts',
             'packages/ux/**/*.tsx',
             'packages/core/**/*.ts',
-            'packages/core/**/*.tsx'
+            'packages/core/**/*.tsx',
+            'packages/sync/**/*.ts',
+            'packages/slottree/**/*.ts'
         ],
         rules: {
             'import/no-cycle': ['error', { maxDepth: 10, ignoreExternal: true }],
@@ -273,10 +275,7 @@ export default [
     },
     /* logger implementations — console is the last-resort fallback */
     {
-        files: [
-            'apps/mobile/src/shared/logger/**/*.ts',
-            'packages/sync/src/logger/**/*.ts'
-        ],
+        files: ['apps/mobile/src/shared/logger/**/*.ts', 'packages/sync/src/logger/**/*.ts'],
         rules: {
             'no-console': 'off'
         }

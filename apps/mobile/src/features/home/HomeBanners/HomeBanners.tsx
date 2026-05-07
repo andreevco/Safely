@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useMemo } from 'react';
 import { View } from 'react-native';
 
 import { BootConfig } from '@safely/core';
@@ -9,27 +9,28 @@ import {
     useLinking
 } from '@safely/ux';
 
-import { Banner, Xmark16 } from '@mobile/shared/ui';
+import { Banner, InformationCircle28, Xmark16 } from '@mobile/shared/ui';
 import { IconProps } from '@mobile/shared/ui/Icon';
 
 import { styles } from './HomeBanners.styles';
 
 type HomeScreenBanner = NonNullable<BootConfig['notices']>['home_screen_banners'][number];
 
-const DISMISS_ICON = 'info';
+const DISMISS_ICON = 'dismiss';
 
 const BANNER_ICONS: Record<string, IconProps['icon']> = {
+    info: InformationCircle28,
     [DISMISS_ICON]: Xmark16
 };
 
 export function HomeBanners() {
     const { notices } = useBootConfig();
-    const { data: dismissedIds } = useDismissedBannerIdsQuery();
+    const { data: dismissedIds, isLoading } = useDismissedBannerIdsQuery();
 
     const dismissed = new Set(dismissedIds ?? []);
     const visible = notices.home_screen_banners.filter(b => !dismissed.has(b.id));
 
-    if (visible.length === 0) {
+    if (isLoading || visible.length === 0) {
         return null;
     }
 
@@ -53,35 +54,41 @@ function BannerItem({ banner }: BannerItemProps) {
     const isDismissible = banner.icon === DISMISS_ICON;
     const iconComponent = banner.icon ? BANNER_ICONS[banner.icon] : undefined;
 
-    const handlePress = useCallback(() => {
-        if (banner.banner_click_action_url) {
-            void linking.openURL(banner.banner_click_action_url);
-        }
-    }, [banner.banner_click_action_url, linking]);
+    const clickUrl = banner.banner_click_action_url;
+    const actionUrl = banner.action_button?.url;
 
-    const handleActionPress = useCallback(() => {
-        if (banner.action_button?.url) {
-            void linking.openURL(banner.action_button.url);
+    const handlePress = useMemo(() => {
+        if (!clickUrl) {
+            return undefined;
         }
-    }, [banner.action_button?.url, linking]);
+        return () => {
+            void linking.openURL(clickUrl);
+        };
+    }, [clickUrl, linking]);
 
-    const handleDismiss = useCallback(() => {
-        dismissBanner(banner.id);
-    }, [banner.id, dismissBanner]);
+    const handleActionPress = useMemo(() => {
+        if (!actionUrl) {
+            return undefined;
+        }
+        return () => {
+            void linking.openURL(actionUrl);
+        };
+    }, [actionUrl, linking]);
+
+    const handleDismiss = useMemo(() => {
+        if (!isDismissible) {
+            return undefined;
+        }
+        return () => {
+            dismissBanner(banner.id);
+        };
+    }, [banner.id, dismissBanner, isDismissible]);
 
     return (
-        <Banner
-            variant={banner.type === 'default' ? undefined : banner.type}
-            onPress={banner.banner_click_action_url ? handlePress : undefined}
-        >
+        <Banner variant={banner.type === 'default' ? undefined : banner.type} onPress={handlePress}>
             <Banner.Content alignItems={isDismissible ? 'start' : 'center'}>
                 <Banner.Text>{banner.text}</Banner.Text>
-                {iconComponent && (
-                    <Banner.Icon
-                        icon={iconComponent}
-                        onPress={isDismissible ? handleDismiss : undefined}
-                    />
-                )}
+                {iconComponent && <Banner.Icon icon={iconComponent} onPress={handleDismiss} />}
             </Banner.Content>
             {banner.action_button && (
                 <Banner.Action onPress={handleActionPress}>

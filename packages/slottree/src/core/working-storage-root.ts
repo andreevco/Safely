@@ -1,9 +1,10 @@
-import { DeepReadonly, WriteDraft } from './json';
-import { MergeProtocol, MergeStats } from './merge-protocol';
-import { ContainerSlot, createOriginContainer, isContainerSlot, Slot } from './slots';
+import type { DeepReadonly, WriteDraft } from './json';
+import type { MergeProtocol, MergeStats } from './merge-protocol';
+import type { ContainerSlot, Slot } from './slots';
+import { createOriginContainer, isContainerSlot } from './slots';
 import { cloneDeep, stripSlot } from './slots/slot-json';
 import { validateSlot } from './slots/slot-validation';
-import { StorageVersion } from './versioning/version';
+import type { StorageVersion } from './versioning/version';
 import { VersionPropagation } from './versioning/version-propagation';
 import {
     createReadProxy,

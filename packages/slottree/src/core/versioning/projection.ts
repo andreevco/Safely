@@ -1,8 +1,6 @@
-import { z } from 'zod';
+import type { z } from 'zod';
 
 import { createContainerSlot, type ContainerSlot } from '../slots';
-import { stripSlot } from '../slots/slot-json';
-import { validateSlot } from '../slots/slot-validation';
 import {
     createProjectionBuilder,
     projectShape,
@@ -13,6 +11,8 @@ import {
     type RuntimeRule,
     type SlotProjection
 } from './projection/index';
+import { stripSlot } from '../slots/slot-json';
+import { validateSlot } from '../slots/slot-validation';
 
 export type {
     CopyRule,

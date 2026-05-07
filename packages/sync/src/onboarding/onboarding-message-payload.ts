@@ -1,4 +1,5 @@
-import { AddDeviceOp, DeviceOpSchema, deviceOpToJson } from '../crdt/y-manager';
+import type { AddDeviceOp } from '../crdt/y-manager';
+import { DeviceOpSchema, deviceOpToJson } from '../crdt/y-manager';
 import { u16be, u8be } from '../utils/buffer';
 
 export type OnboardingMessagePayload = {

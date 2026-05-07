@@ -1,17 +1,13 @@
 import { x25519 } from '@noble/curves/ed25519.js';
 
 import { deriveOnboardingKey, encryptOnboardingMessage } from './crypto';
-import {
-    QRMessageCodec,
-    QRMessageNewDeviceOnboarding,
-    QRMessageOperation,
-    QRMessageReconnection
-} from './onboarding-codec';
+import type { QRMessageNewDeviceOnboarding, QRMessageReconnection } from './onboarding-codec';
+import { QRMessageCodec, QRMessageOperation } from './onboarding-codec';
 import { encodeOnboardingMessagePayload } from './onboarding-message-payload';
-import { AccountsApi } from '../api/generated';
-import { DmkSignerService } from '../crypto/service/dmk-signer-service';
-import { MasterKeyService } from '../crypto/service/master-key-service';
-import { DeviceManagementService } from '../device-manager/device-management-service';
+import type { AccountsApi } from '../api/generated';
+import type { DmkSignerService } from '../crypto/service/dmk-signer-service';
+import type { MasterKeyService } from '../crypto/service/master-key-service';
+import type { DeviceManagementService } from '../device-manager/device-management-service';
 import { SyncError } from '../sync-error';
 import { u8be, utf8 } from '../utils/buffer';
 

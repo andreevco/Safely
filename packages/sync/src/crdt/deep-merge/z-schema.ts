@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
-import { ArrayMergeMeta, crdtRegistry } from './array-registry';
+import type { ArrayMergeMeta } from './array-registry';
+import { crdtRegistry } from './array-registry';
 
 export function unwrapSchema(schema: z.ZodTypeAny): z.ZodTypeAny {
     let current = schema;

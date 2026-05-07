@@ -1,5 +1,5 @@
-import { LogEntry } from './log-entry';
-import { LogLevel } from './log-level';
+import type { LogEntry } from './log-entry';
+import type { LogLevel } from './log-level';
 
 export type LogsFilter = (entry: LogEntry) => boolean;
 

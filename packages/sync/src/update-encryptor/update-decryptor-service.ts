@@ -1,6 +1,6 @@
-import { EncryptedState } from '../api/types';
-import { SyncKeyService } from '../crypto/service/sync-key-service';
-import { DeviceManagementService } from '../device-manager/device-management-service';
+import type { EncryptedState } from '../api/types';
+import type { SyncKeyService } from '../crypto/service/sync-key-service';
+import type { DeviceManagementService } from '../device-manager/device-management-service';
 
 export class UpdateDecryptorService {
     constructor(

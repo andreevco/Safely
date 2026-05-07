@@ -1,11 +1,6 @@
-import { JsonValue } from '../json';
-import {
-    ContainerSlot,
-    createContainerSlot,
-    createTombstoneSlot,
-    isContainerSlot,
-    Slot
-} from '../slots';
+import type { JsonValue } from '../json';
+import type { ContainerSlot, Slot } from '../slots';
+import { createContainerSlot, createTombstoneSlot, isContainerSlot } from '../slots';
 import { slotFromJson } from '../slots/slot-json';
 
 export class JsonStorageSelection {

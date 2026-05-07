@@ -1,11 +1,6 @@
-import { useNavigation } from '@react-navigation/native';
-import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { useEraseAllData } from '@safely/ux';
-
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { useOnboardingFlow } from '@mobile/features/onboarding';
 import { Button, Checkmark96, Icon, Screen, Text } from '@mobile/shared/ui';
 
@@ -13,28 +8,11 @@ import { styles } from './SignInSuccessScreen.styles';
 
 export const SignInSuccessScreen = () => {
     const { t } = useTranslation();
-    const { mutateAsync: eraseAllData } = useEraseAllData();
     const { onStartSignIn: onContinue } = useOnboardingFlow();
-    const navigation = useNavigation<RootStackNavigationProp>();
-
-    const handleSignOut = useCallback(async () => {
-        navigation.reset({
-            index: 0,
-            routes: [{ name: 'WelcomeScreen' }]
-        });
-        await eraseAllData();
-    }, [eraseAllData, navigation]);
 
     return (
         <Screen>
-            <Screen.Header variant="left">
-                <Screen.Header.Title />
-                <Screen.Header.Button type="small" onPress={handleSignOut}>
-                    <Text variant="labelM" color="primary">
-                        {t('passcode.lockout.signOut')}
-                    </Text>
-                </Screen.Header.Button>
-            </Screen.Header>
+            <Screen.Header />
             <Screen.Content>
                 <View style={styles.content}>
                     <Icon icon={Checkmark96} />

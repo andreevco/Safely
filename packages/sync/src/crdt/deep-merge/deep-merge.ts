@@ -1,7 +1,7 @@
 import * as Y from 'yjs';
-import { z } from 'zod';
+import type { z } from 'zod';
 
-import { ArrayMergeMeta } from './array-registry';
+import type { ArrayMergeMeta } from './array-registry';
 import { cloneJson, isArray, isPlainObject } from './helpers';
 import { yValueToJs } from './y-value-to-js';
 import {

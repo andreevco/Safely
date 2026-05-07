@@ -1,5 +1,5 @@
-import { ILoggerTransport } from './I-logger-transport';
-import { LogEntry } from './log-entry';
+import type { ILoggerTransport } from './I-logger-transport';
+import type { LogEntry } from './log-entry';
 import { LogLevel } from './log-level';
 
 export class ConsoleTransport implements ILoggerTransport {

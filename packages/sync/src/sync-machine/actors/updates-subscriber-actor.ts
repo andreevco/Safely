@@ -1,6 +1,7 @@
-import { AnyEventObject, fromCallback } from 'xstate';
+import type { AnyEventObject } from 'xstate';
+import { fromCallback } from 'xstate';
 
-import { SyncMachineConfig } from '../config';
+import type { SyncMachineConfig } from '../config';
 
 export const updatesSubscriberActor = fromCallback(
     (opts: { sendBack: (event: AnyEventObject) => void; input: SyncMachineConfig }) => {

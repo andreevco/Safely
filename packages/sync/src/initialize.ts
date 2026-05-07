@@ -3,14 +3,14 @@ import { ed25519 } from '@noble/curves/ed25519.js';
 import { hkdf } from '@noble/hashes/hkdf.js';
 import { sha256 } from '@noble/hashes/sha2.js';
 import * as Y from 'yjs';
-import { ZodType } from 'zod';
+import type { ZodType } from 'zod';
 
 import { YCRDT } from './crdt/y-crdt';
 import { YCRDTRepository } from './crdt/y-crdt-repository';
 import { EncryptedKeyRepository } from './crypto/encrypted-key-repository';
 import { SecureEncryptedKeyRepository } from './crypto/secure-encrypted-key-repository';
-import { IStorage } from './I-storage';
-import { Logger } from './logger/logger';
+import type { IStorage } from './I-storage';
+import type { Logger } from './logger/logger';
 import { SyncStateRepository } from './update-handler/sync-state-repository';
 import { utf8 } from './utils/buffer';
 
