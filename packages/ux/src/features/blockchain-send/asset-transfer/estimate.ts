@@ -130,24 +130,35 @@ async function computeMaxSendValue(params: {
     assertUnreachable(form.blockchain);
 }
 
-export function useFetchMaxValue(): (recipient: Recipient) => Promise<BtcAssetAmount | undefined> {
-    const queryClient = useQueryClient();
+export function useMaxSendValueQueryConfig() {
     const btcEstimator = useBtcEstimator();
     const { data: assets } = useAssets();
     const { data: utxos } = useActiveBtcWalletUtxoForEstimation();
 
     return useCallback(
-        async (recipient: Recipient): Promise<BtcAssetAmount | undefined> => {
+        (form: Pick<SendFormResult, 'blockchain' | 'recipient'>) => {
             if (!utxos || !assets) return undefined;
 
-            const form = { blockchain: recipient.blockchain, recipient };
-
-            return queryClient.fetchQuery({
+            return {
                 queryKey: maxSendKey.form(form).params({ btcEstimator, assets, utxos }).toKey(),
                 queryFn: () => computeMaxSendValue({ form, btcEstimator, assets, utxos }),
                 staleTime: QUERIES_STALE_TIME.MAX_SEND
-            });
+            };
         },
-        [queryClient, btcEstimator, assets, utxos]
+        [btcEstimator, assets, utxos]
+    );
+}
+
+export function useFetchMaxValue(): (recipient: Recipient) => Promise<BtcAssetAmount | undefined> {
+    const queryClient = useQueryClient();
+    const buildConfig = useMaxSendValueQueryConfig();
+
+    return useCallback(
+        async (recipient: Recipient): Promise<BtcAssetAmount | undefined> => {
+            const config = buildConfig({ blockchain: recipient.blockchain, recipient });
+
+            return config ? queryClient.fetchQuery(config) : undefined;
+        },
+        [queryClient, buildConfig]
     );
 }
