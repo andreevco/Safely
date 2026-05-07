@@ -13,14 +13,22 @@ export { createStorage, StorageObservers } from './core/storage';
 export type { Storage, StorageImpl } from './core/storage';
 export type { StorageObserver } from './core/storage';
 export {
+    emptyOrderedSet,
     getById,
+    hasById,
     insert,
+    insertById,
     orderedIds,
     orderedMap,
     orderedSet,
+    orderedValues,
     projectOrderedSet,
     remove,
+    removeById,
     reorder,
+    reorderById,
+    setOrderedIds,
+    sortOrderedSet,
     toOrderedSet
 } from './ordered-set';
 export type { OrderedSet, ReadonlyOrderedSet } from './ordered-set';

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import { ContactId, sContact } from '@safely/core';
-import { orderedIds, orderedSet, toOrderedSet } from '@safely/slottree';
+import { orderedSet, orderedValues, toOrderedSet } from '@safely/slottree';
 
 export { sContact, type SContactOut, type SContactIn } from '@safely/core';
 
@@ -21,5 +21,5 @@ export function contactsToOrderedSet(items: readonly SContactIn[]): Exclude<SCon
 }
 
 export function contactsFromOrderedSet(items: Exclude<SContactsOut, null>): SContactOut[] {
-    return orderedIds(items).map(id => items.setById[id]);
+    return orderedValues(items);
 }

@@ -7,7 +7,7 @@ import {
     PortfolioType,
     sPortfolio
 } from '@safely/core';
-import { orderedIds, orderedSet, toOrderedSet } from '@safely/slottree';
+import { orderedSet, orderedValues, toOrderedSet } from '@safely/slottree';
 
 export const sPortfolios = z.union([orderedSet(sPortfolio), z.null()]);
 
@@ -39,5 +39,5 @@ export function portfoliosToOrderedSet(
 }
 
 export function portfoliosFromOrderedSet(items: Exclude<SPortfoliosOut, null>): SPortfolioOut[] {
-    return orderedIds(items).map(id => items.setById[id]);
+    return orderedValues(items);
 }

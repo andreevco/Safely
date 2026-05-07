@@ -8,7 +8,15 @@ import {
     ContactMeta,
     IContact
 } from '@safely/core';
-import { orderedIds, toOrderedSet } from '@safely/slottree';
+import {
+    emptyOrderedSet,
+    getById,
+    insertById,
+    removeById,
+    sortOrderedSet,
+    toOrderedSet
+} from '@safely/slottree';
+import type { OrderedSet } from '@safely/slottree';
 
 import { useTranslate } from '../../shared';
 import { contactsFromOrderedSet } from '../../shared/storage/account/synced/schemas/contacts.schema';
@@ -45,35 +53,8 @@ export function useContacts() {
     return useContactsQuery().data;
 }
 
-type MutableOrderedSet<T> = {
-    setById: Record<string, T>;
-    setOrder: Record<string, number>;
-};
-
-function createEmptyOrderedSet<T>(): MutableOrderedSet<T> {
-    return { setById: {}, setOrder: {} };
-}
-
-function rewriteOrder<T>(set: MutableOrderedSet<T>, ids: string[]) {
-    const nextIds = new Set(ids);
-    for (const id of Object.keys(set.setOrder)) {
-        if (!nextIds.has(id)) {
-            delete set.setOrder[id];
-        }
-    }
-
-    ids.forEach((id, index) => {
-        set.setOrder[id] = index;
-    });
-}
-
-function sortContactsByName<T extends { meta: ContactMeta }>(contacts: MutableOrderedSet<T>) {
-    rewriteOrder(
-        contacts,
-        Object.keys(contacts.setById).sort((left, right) =>
-            contacts.setById[left].meta.name.localeCompare(contacts.setById[right].meta.name)
-        )
-    );
+function sortContactsByName<T extends { meta: ContactMeta }>(contacts: OrderedSet<T>) {
+    sortOrderedSet(contacts, (left, right) => left.meta.name.localeCompare(right.meta.name));
 }
 
 export function useCreateContact() {
@@ -97,15 +78,15 @@ export function useCreateContact() {
 
             await update(draft => {
                 if (!draft.contacts) {
-                    const contacts = createEmptyOrderedSet<typeof contactJson>();
-                    contacts.setById[contactId] = contactJson;
+                    const contacts = emptyOrderedSet<typeof contactJson>();
+                    insertById(contacts, contactJson, undefined, () => contactId);
                     sortContactsByName(contacts);
                     (draft as { contacts: unknown }).contacts = contacts;
                     return;
                 }
 
-                const contacts = draft.contacts as MutableOrderedSet<typeof contactJson>;
-                contacts.setById[contactId] = contactJson;
+                const contacts = draft.contacts as unknown as OrderedSet<typeof contactJson>;
+                insertById(contacts, contactJson, undefined, () => contactId);
                 sortContactsByName(contacts);
             });
             await client.invalidateQueries({ queryKey: accountQueryKey.contacts.toKey() });
@@ -141,7 +122,7 @@ export function useEditContact() {
             const nextAddresses = addresses ?? target.addresses;
 
             await update(draft => {
-                const stored = draft.contacts?.setById[contactId];
+                const stored = draft.contacts ? getById(draft.contacts, contactId) : null;
                 if (!stored) {
                     throw new Error(`Contact not found: ${id.toString()}`);
                 }
@@ -149,7 +130,7 @@ export function useEditContact() {
                 stored.meta = nextMeta;
                 stored.addresses = toOrderedSet(nextAddresses, item => item.address);
                 if (meta && 'name' in meta) {
-                    sortContactsByName(draft.contacts as MutableOrderedSet<typeof stored>);
+                    sortContactsByName(draft.contacts as OrderedSet<typeof stored>);
                 }
             });
             await client.invalidateQueries({ queryKey: accountQueryKey.contacts.toKey() });
@@ -178,10 +159,7 @@ export function useDeleteContact() {
                     return;
                 }
 
-                const contacts = draft.contacts as MutableOrderedSet<unknown>;
-                delete contacts.setById[contactId];
-                delete contacts.setOrder[contactId];
-                rewriteOrder(contacts, orderedIds(contacts));
+                removeById(draft.contacts as OrderedSet<unknown>, contactId);
             });
             await client.invalidateQueries({ queryKey: accountQueryKey.contacts.toKey() });
         },

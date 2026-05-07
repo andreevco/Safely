@@ -20,7 +20,15 @@ import {
     ISecretEncryptor,
     VMType
 } from '@safely/core';
-import { orderedIds } from '@safely/slottree';
+import {
+    emptyOrderedSet,
+    getById,
+    hasById,
+    insertById,
+    removeById,
+    setOrderedIds
+} from '@safely/slottree';
+import type { OrderedSet } from '@safely/slottree';
 
 import {
     useTranslate,
@@ -90,23 +98,19 @@ export function useAddPortfolio() {
 
             await update(draft => {
                 if (!draft.portfolios) {
-                    const portfolios = createEmptyOrderedSet<typeof portfolioJson>();
-                    portfolios.setById[portfolioId] = portfolioJson;
-                    rewriteOrder(portfolios, [portfolioId]);
+                    const portfolios = emptyOrderedSet<typeof portfolioJson>();
+                    insertById(portfolios, portfolioJson, undefined, () => portfolioId);
                     (draft as { portfolios: unknown }).portfolios = portfolios;
                     return;
                 }
 
-                const portfolios = draft.portfolios as unknown as MutableOrderedSet<
-                    typeof portfolioJson
-                >;
+                const portfolios = draft.portfolios as unknown as OrderedSet<typeof portfolioJson>;
 
-                if (portfolios.setById[portfolioId]) {
+                if (hasById(portfolios, portfolioId)) {
                     throw new PortfolioAlreadyExistsError();
                 }
 
-                portfolios.setById[portfolioId] = portfolioJson;
-                rewriteOrder(portfolios, [...sortByCurrentOrder(portfolios), portfolioId]);
+                insertById(portfolios, portfolioJson, undefined, () => portfolioId);
             });
             await client.invalidateQueries({ queryKey: accountQueryKey.portfolios.toKey() });
         }
@@ -230,10 +234,7 @@ export function useDeletePortfolio() {
                     return;
                 }
 
-                const portfolios = draft.portfolios as MutableOrderedSet<unknown>;
-                delete portfolios.setById[portfolioId];
-                delete portfolios.setOrder[portfolioId];
-                rewriteOrder(portfolios, sortByCurrentOrder(portfolios));
+                removeById(draft.portfolios as OrderedSet<unknown>, portfolioId);
             });
             await client.invalidateQueries({ queryKey: accountQueryKey.portfolios.toKey() });
         }
@@ -257,13 +258,7 @@ export function useReorderPortfolios() {
                     return;
                 }
 
-                const portfolios = draft.portfolios as MutableOrderedSet<unknown>;
-                const existingNextIds = nextIds.filter(id => portfolios.setById[id] !== undefined);
-                const remainingIds = sortByCurrentOrder(portfolios).filter(
-                    id => !existingNextIds.includes(id)
-                );
-
-                rewriteOrder(portfolios, [...existingNextIds, ...remainingIds]);
+                setOrderedIds(draft.portfolios as OrderedSet<unknown>, nextIds);
             });
             await client.invalidateQueries({ queryKey: accountQueryKey.portfolios.toKey() });
         }
@@ -292,7 +287,7 @@ export function useAddBip39Derivation() {
             const portfolioId = portfolio.id.toString();
 
             await update(draft => {
-                const stored = draft.portfolios?.setById[portfolioId];
+                const stored = draft.portfolios ? getById(draft.portfolios, portfolioId) : null;
                 if (!stored || stored.type !== PortfolioType.BIP39) {
                     throw new Error('Portfolio not found or not derivable');
                 }
@@ -322,7 +317,7 @@ export function useRemoveBip39Derivation() {
             const portfolioId = portfolio.id.toString();
 
             await update(draft => {
-                const stored = draft.portfolios?.setById[portfolioId];
+                const stored = draft.portfolios ? getById(draft.portfolios, portfolioId) : null;
                 if (!stored || stored.type !== PortfolioType.BIP39) {
                     throw new Error('Portfolio not found or not derivable');
                 }
@@ -347,32 +342,6 @@ type ActivePortfolioEntitiesWatchOnly = {
 };
 
 type ActivePortfolioEntities = ActivePortfolioEntitiesBip39 | ActivePortfolioEntitiesWatchOnly;
-
-type MutableOrderedSet<T> = {
-    setById: Record<string, T>;
-    setOrder: Record<string, number>;
-};
-
-function createEmptyOrderedSet<T>(): MutableOrderedSet<T> {
-    return { setById: {}, setOrder: {} };
-}
-
-function rewriteOrder<T>(set: MutableOrderedSet<T>, ids: string[]) {
-    const nextIds = new Set(ids);
-    for (const id of Object.keys(set.setOrder)) {
-        if (!nextIds.has(id)) {
-            delete set.setOrder[id];
-        }
-    }
-
-    ids.forEach((id, index) => {
-        set.setOrder[id] = index;
-    });
-}
-
-function sortByCurrentOrder<T>(set: MutableOrderedSet<T>): string[] {
-    return orderedIds(set);
-}
 
 export function useActivePortfolioEntitiesQuery() {
     const { get, set } = useActiveAccountLocalStorage('activePortfolio');
@@ -575,7 +544,7 @@ export function useChangePortfolioMeta() {
 
             const portfolioId = id.toString();
             await update(draft => {
-                const stored = draft.portfolios?.setById[portfolioId];
+                const stored = draft.portfolios ? getById(draft.portfolios, portfolioId) : null;
                 if (!stored) {
                     throw new Error('Portfolio not found');
                 }
@@ -607,7 +576,7 @@ export function useRecordActivePortfolioSecretReveal() {
             const portfolioId = activePortfolio.id.toString();
 
             await update(draft => {
-                const stored = draft.portfolios?.setById[portfolioId];
+                const stored = draft.portfolios ? getById(draft.portfolios, portfolioId) : null;
                 if (!stored || stored.type !== PortfolioType.BIP39) {
                     return;
                 }

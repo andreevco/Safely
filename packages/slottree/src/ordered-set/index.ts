@@ -39,6 +39,10 @@ export function orderedIds<T>(set: ReadonlyOrderedSet<T>): string[] {
         .map(([id]) => id);
 }
 
+export function orderedValues<T>(set: ReadonlyOrderedSet<T>): T[] {
+    return orderedIds(set).map(id => set.setById[id]);
+}
+
 function fromEntries<T>(entries: readonly (readonly [string, T])[]): OrderedSet<T> {
     const setById: Record<string, T> = {};
     const setOrder: Record<string, number> = {};
@@ -49,6 +53,10 @@ function fromEntries<T>(entries: readonly (readonly [string, T])[]): OrderedSet<
     });
 
     return { setById, setOrder };
+}
+
+export function emptyOrderedSet<T>(): OrderedSet<T> {
+    return fromEntries<T>([]);
 }
 
 export function toOrderedSet<T>(
@@ -99,6 +107,67 @@ export function reorder<T>(set: ReadonlyOrderedSet<T>, id: string, index: number
 
 export function getById<T>(set: ReadonlyOrderedSet<T>, id: string): T | undefined {
     return set.setById[id];
+}
+
+export function hasById<T>(set: ReadonlyOrderedSet<T>, id: string): boolean {
+    return getById(set, id) !== undefined;
+}
+
+function replaceWith<T>(target: OrderedSet<T>, next: OrderedSet<T>): void {
+    for (const id of Object.keys(target.setById)) {
+        delete target.setById[id];
+    }
+    for (const id of Object.keys(target.setOrder)) {
+        delete target.setOrder[id];
+    }
+
+    for (const [id, item] of Object.entries(next.setById)) {
+        target.setById[id] = item;
+    }
+    for (const [id, index] of Object.entries(next.setOrder)) {
+        target.setOrder[id] = index;
+    }
+}
+
+export function insertById<T>(
+    set: OrderedSet<T>,
+    item: T,
+    index = orderedIds(set).length,
+    getId: (item: T) => string = getItemId
+): void {
+    replaceWith(set, insert(set, item, index, getId));
+}
+
+export function removeById<T>(set: OrderedSet<T>, id: string): void {
+    replaceWith(set, remove(set, id));
+}
+
+export function reorderById<T>(set: OrderedSet<T>, id: string, index: number): void {
+    replaceWith(set, reorder(set, id, index));
+}
+
+export function setOrderedIds<T>(set: OrderedSet<T>, ids: readonly string[]): void {
+    const orderedExistingIds = new Set(ids.filter(id => getById(set, id) !== undefined));
+    const entries = [
+        ...ids
+            .filter(id => getById(set, id) !== undefined)
+            .map(id => [id, getById(set, id)] as const),
+        ...orderedIds(set)
+            .filter(id => !orderedExistingIds.has(id))
+            .map(id => [id, getById(set, id)] as const)
+    ].filter((entry): entry is readonly [string, T] => entry[1] !== undefined);
+
+    replaceWith(set, fromEntries(entries));
+}
+
+export function sortOrderedSet<T>(
+    set: OrderedSet<T>,
+    compare: (left: T, right: T) => number
+): void {
+    replaceWith(
+        set,
+        fromEntries(Object.entries(set.setById).sort(([, left], [, right]) => compare(left, right)))
+    );
 }
 
 // Contract: order indexes are copied unchanged; only setById item shape changes.
