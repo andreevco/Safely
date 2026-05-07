@@ -214,7 +214,8 @@
                     "title": "Lock screen",
                     "subtitle": "Require passcode to view wallet contents."
                 },
-                "changePasscode": "Change passcode"
+                "changePasscode": "Change passcode",
+                "eraseAndLogout": "Erase this device and log out"
             },
             "wallet": {
                 "title": "Wallet",
