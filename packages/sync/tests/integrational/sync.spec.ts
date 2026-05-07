@@ -25,6 +25,19 @@ describe('Sync', () => {
         });
     }
 
+    async function updateAndVerify(account: TestSyncAccount, data: string[]) {
+        await account.syncProvider.update(draft => {
+            draft.wallets = data;
+        });
+        await vi.waitFor(async () => {
+            // checks if all accounts synchronized
+            for (const acc of accounts) {
+                const wallets = acc.syncProvider.get('wallets');
+                expect(wallets).toEqual(data);
+            }
+        });
+    }
+
     it('should sync 2 devices', async () => {
         const account = await factory.createSyncAccount(secureEncryptedStorage);
         const { newAccount } = await onboardDevice(account, secureEncryptedStorage);
@@ -44,6 +57,17 @@ describe('Sync', () => {
         await setAndVerify(account, ['wallet6']);
         await setAndVerify(newAccount, ['wallet7']);
         await setAndVerify(account, ['wallet8']);
+    });
+
+    it('should sync local update mutations', async () => {
+        const account = await factory.createSyncAccount(secureEncryptedStorage);
+        const { newAccount } = await onboardDevice(account, secureEncryptedStorage);
+
+        accounts.push(account);
+        accounts.push(newAccount);
+
+        await updateAndVerify(account, ['wallet1']);
+        await updateAndVerify(newAccount, ['wallet1', 'wallet2']);
     });
 
     it('should sync 3 devices', async () => {
