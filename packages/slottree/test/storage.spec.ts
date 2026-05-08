@@ -298,7 +298,7 @@ describe('storage updates', () => {
         const schema = z.object({
             items: z.array(
                 z.object({
-                    id: z.string(),
+                    __setId: z.string(),
                     value: z.string()
                 })
             )
@@ -310,7 +310,7 @@ describe('storage updates', () => {
                     version: 1,
                     schema,
                     initial: {
-                        items: [{ id: 'one', value: 'one' }]
+                        items: [{ __setId: 'one', value: 'one' }]
                     },
                     projectUp: cloneSlot,
                     projectDown: cloneSlot
@@ -324,15 +324,15 @@ describe('storage updates', () => {
             versions
         });
 
-        const items = storage.read().items as Array<{ id: string; value: string }>;
-        items.push({ id: 'mutated', value: 'mutated clone' });
+        const items = storage.read().items as Array<{ __setId: string; value: string }>;
+        items.push({ __setId: 'mutated', value: 'mutated clone' });
 
         expect(items).toEqual([
-            { id: 'one', value: 'one' },
-            { id: 'mutated', value: 'mutated clone' }
+            { __setId: 'one', value: 'one' },
+            { __setId: 'mutated', value: 'mutated clone' }
         ]);
         expect(storage.read()).toEqual({
-            items: [{ id: 'one', value: 'one' }]
+            items: [{ __setId: 'one', value: 'one' }]
         });
     });
 

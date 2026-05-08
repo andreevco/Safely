@@ -17,7 +17,7 @@ const RichObject = z.object({
 });
 
 const ArrayRichObject = RichObject.extend({
-  id: Scalar,
+  __setId: Scalar,
 });
 
 const DiscriminatedItem = z.discriminatedUnion("type", [
@@ -39,12 +39,12 @@ const DiscriminatedItem = z.discriminatedUnion("type", [
 
 const ArrayDiscriminatedItem = z.discriminatedUnion("type", [
   z.object({
-    id: Scalar,
+    __setId: Scalar,
     type: z.literal("text"),
     value: Scalar,
   }),
   z.object({
-    id: Scalar,
+    __setId: Scalar,
     type: z.literal("ref"),
     refId: Scalar,
     meta: z.object({
@@ -52,7 +52,7 @@ const ArrayDiscriminatedItem = z.discriminatedUnion("type", [
     }),
   }),
   z.object({
-    id: Scalar,
+    __setId: Scalar,
     type: z.literal("empty"),
   }),
 ]);
@@ -165,21 +165,21 @@ export const stressInitial: StressState = {
   arrayOfUnions: [],
   tuple: [
     {
-      id: "tuple-a",
+      __setId: "tuple-a",
       value: "",
       nested: {
         nullableNote: null,
       },
     },
     {
-      id: "tuple-b",
+      __setId: "tuple-b",
       value: "",
       nested: {
         nullableNote: null,
       },
     },
     {
-      id: "tuple-c",
+      __setId: "tuple-c",
       type: "empty",
     },
   ],

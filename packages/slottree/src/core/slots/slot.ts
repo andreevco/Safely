@@ -7,6 +7,8 @@ export const SlotKind = {
     OrderedArray: 3
 } as const;
 
+export const ORDERED_ARRAY_ITEM_ID_KEY = '__setId';
+
 export interface AtomicSlot {
     s: typeof SlotKind.Atomic;
     v: JsonValue;

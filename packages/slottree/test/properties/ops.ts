@@ -32,7 +32,7 @@ const richObjectArb = fc.record({
 });
 
 const arrayRichObjectArb = fc.record({
-    id: arrayIdArb,
+    __setId: arrayIdArb,
     value: scalarArb,
     nested: fc.record(
         {
@@ -66,13 +66,13 @@ const discriminatedItemArb = fc.oneof(
 
 const arrayDiscriminatedItemArb = fc.oneof(
     fc.record({
-        id: arrayIdArb,
+        __setId: arrayIdArb,
         type: fc.constant('text' as const),
         value: scalarArb
     }),
 
     fc.record({
-        id: arrayIdArb,
+        __setId: arrayIdArb,
         type: fc.constant('ref' as const),
         refId: scalarArb,
         meta: fc.record({
@@ -81,7 +81,7 @@ const arrayDiscriminatedItemArb = fc.oneof(
     }),
 
     fc.record({
-        id: arrayIdArb,
+        __setId: arrayIdArb,
         type: fc.constant('empty' as const)
     })
 );
@@ -102,18 +102,18 @@ const ambiguousUnionArb = fc.oneof(
 
 const arrayOfObjectsArb = fc.uniqueArray(arrayRichObjectArb, {
     maxLength: 4,
-    selector: item => item.id
+    selector: item => item.__setId
 });
 
 const arrayOfUnionsArb = fc.uniqueArray(fc.oneof(arrayRichObjectArb, arrayDiscriminatedItemArb), {
     maxLength: 4,
-    selector: item => item.id
+    selector: item => item.__setId
 });
 
 const tupleArb = fc.tuple(
-    richObjectArb.map(value => ({ id: 'tuple-a', ...value })),
-    richObjectArb.map(value => ({ id: 'tuple-b', ...value })),
-    discriminatedItemArb.map(value => ({ id: 'tuple-c', ...value }))
+    richObjectArb.map(value => ({ __setId: 'tuple-a', ...value })),
+    richObjectArb.map(value => ({ __setId: 'tuple-b', ...value })),
+    discriminatedItemArb.map(value => ({ __setId: 'tuple-c', ...value }))
 );
 
 const catchallValueArb = fc.oneof(
@@ -128,7 +128,7 @@ const deepMixedValueArb = fc.record({
     maybeObject: fc.option(richObjectArb, { nil: null }),
     items: fc.uniqueArray(fc.oneof(arrayRichObjectArb, arrayDiscriminatedItemArb), {
         maxLength: 4,
-        selector: item => item.id
+        selector: item => item.__setId
     }),
     children: fc.dictionary(
         nestedKeyArb,

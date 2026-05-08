@@ -1,5 +1,5 @@
 import type { JsonValue } from '../json';
-import { SlotKind, type Slot } from './slot';
+import { ORDERED_ARRAY_ITEM_ID_KEY, SlotKind, type Slot } from './slot';
 import { stripSlot } from './slot-json';
 
 export function validateSlot(slot: unknown): asserts slot is Slot {
@@ -104,10 +104,12 @@ function validateOrderedArrayItem(key: string, item: unknown): void {
         stripped !== null &&
         typeof stripped === 'object' &&
         !Array.isArray(stripped) &&
-        typeof stripped.id === 'string' &&
-        stripped.id !== key
+        typeof stripped[ORDERED_ARRAY_ITEM_ID_KEY] === 'string' &&
+        stripped[ORDERED_ARRAY_ITEM_ID_KEY] !== key
     ) {
-        throw new Error(`Ordered array item "${key}" value id must match its map key`);
+        throw new Error(
+            `Ordered array item "${key}" value ${ORDERED_ARRAY_ITEM_ID_KEY} must match its map key`
+        );
     }
 }
 

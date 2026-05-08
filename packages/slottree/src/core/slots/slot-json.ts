@@ -7,6 +7,7 @@ import {
     isJsonObject,
     isOrderedArraySlot,
     isTombstoneSlot,
+    ORDERED_ARRAY_ITEM_ID_KEY,
     type ContainerSlot,
     type OrderedArraySlot,
     type Slot,
@@ -207,18 +208,21 @@ export function orderedArraySlotFromJson(
     const usedIds = new Set<string>();
 
     value.forEach((item, index) => {
-        if (!isJsonObject(item) || typeof item.id !== 'string') {
+        if (!isJsonObject(item) || typeof item[ORDERED_ARRAY_ITEM_ID_KEY] !== 'string') {
             throw new Error(
-                `Ordered array item at index ${index} must be an object with a string id`
+                `Ordered array item at index ${index} must be an object with a string ${ORDERED_ARRAY_ITEM_ID_KEY}`
             );
         }
 
-        if (usedIds.has(item.id)) {
-            throw new Error(`Ordered array item id "${item.id}" must be unique`);
+        const id = item[ORDERED_ARRAY_ITEM_ID_KEY];
+        if (usedIds.has(id)) {
+            throw new Error(
+                `Ordered array item ${ORDERED_ARRAY_ITEM_ID_KEY} "${id}" must be unique`
+            );
         }
 
-        usedIds.add(item.id);
-        values[item.id] = createOrderedArrayItemSlot(index, item, timestamp, author);
+        usedIds.add(id);
+        values[id] = createOrderedArrayItemSlot(index, item, timestamp, author);
     });
 
     return createOrderedArraySlot(timestamp, author, values);
