@@ -1,10 +1,13 @@
+import { useState } from 'react';
 import Animated, {
     Easing,
     type SharedValue,
     useAnimatedProps,
+    useAnimatedReaction,
     useAnimatedStyle,
     withTiming
 } from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
 
 import { useTranslate } from '@safely/ux';
 
@@ -18,18 +21,32 @@ import {
     SHOW_TRANSLATE_DURATION,
     styles
 } from './NewTransactionsBubble.styles';
+import { NewTransactionsBubbleMode } from './useNewTransactionsBubble';
 
 export type NewTransactionsBubbleProps = {
-    visible: SharedValue<boolean>;
+    mode: SharedValue<NewTransactionsBubbleMode>;
     onPress: () => void;
 };
 
 export const NewTransactionsBubble = (props: NewTransactionsBubbleProps) => {
-    const { visible, onPress } = props;
+    const { mode, onPress } = props;
     const t = useTranslate();
 
+    const [labelState, setLabelState] = useState<NewTransactionsBubbleMode>(
+        NewTransactionsBubbleMode.HIDDEN
+    );
+
+    useAnimatedReaction(
+        () => mode.value,
+        (current, previous) => {
+            if (current !== previous) {
+                scheduleOnRN(setLabelState, current);
+            }
+        }
+    );
+
     const animatedStyle = useAnimatedStyle(() => {
-        if (visible.value) {
+        if (mode.value !== NewTransactionsBubbleMode.HIDDEN) {
             return {
                 opacity: withTiming(1, {
                     duration: SHOW_DURATION,
@@ -62,12 +79,18 @@ export const NewTransactionsBubble = (props: NewTransactionsBubbleProps) => {
     });
 
     const animatedProps = useAnimatedProps(() => ({
-        pointerEvents: visible.value ? ('auto' as const) : ('none' as const)
+        pointerEvents:
+            mode.value !== NewTransactionsBubbleMode.HIDDEN ? ('auto' as const) : ('none' as const)
     }));
+
+    const message =
+        labelState === NewTransactionsBubbleMode.MANY
+            ? t('history.bubble.many')
+            : t('history.bubble.one');
 
     return (
         <Animated.View style={[styles.container, animatedStyle]} animatedProps={animatedProps}>
-            <Toast message={t('history.bubble.one')} onPress={onPress} />
+            <Toast message={message} onPress={onPress} />
         </Animated.View>
     );
 };
