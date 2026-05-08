@@ -198,7 +198,6 @@ export const HistoryList = (props: HistoryListProps) => {
                 renderItem={renderItem}
                 onScroll={scrollHandler}
                 scrollEventThrottle={50}
-                maintainVisibleContentPosition={{ autoscrollToTopThreshold: 20 }}
             />
             <NewTransactionsBubble mode={bubbleMode} onPress={onBubblePress} />
         </View>
