@@ -1,6 +1,6 @@
-import { Storage } from '@safely/slottree';
+import { Draft, JsonValue, ObjectDraft, Storage } from '@safely/slottree';
 
-export class YCRDT<T> {
+export class YCRDT<T extends object> {
     constructor(private readonly doc: Storage<T>) {}
 
     public applyUpdate(update: Buffer): void {
@@ -25,16 +25,17 @@ export class YCRDT<T> {
         });
     }
 
-    public set(key: string, value: unknown): void {
+    public set(key: Extract<keyof T, string>, value: unknown): void {
         this.doc.update(draft => {
-            (draft as Record<string, unknown>)[key] = value;
+            (draft as ObjectDraft<Record<string, JsonValue | undefined>>).set(
+                key,
+                value as JsonValue
+            );
         });
     }
 
-    public update(fn: (v: T) => void) {
-        this.doc.update(draft => {
-            fn(draft as T);
-        });
+    public update(fn: (draft: Draft<T>) => void): void {
+        this.doc.update(fn);
     }
 
     public equals(other: string): boolean {

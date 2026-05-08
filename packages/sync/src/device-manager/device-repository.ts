@@ -26,17 +26,20 @@ export class DeviceRepository {
     public async addDevice(device: Device) {
         const kid = getKID(device.info.ikPub);
         await this.manager.update(draft => {
-            draft.devices[kid] = deviceToJson(device);
+            draft.at('devices').set(kid, deviceToJson(device));
         });
     }
 
     public async revokeDevice(ikPub: Buffer, sign: Buffer) {
         const kid = getKID(ikPub);
         await this.manager.update(draft => {
-            draft.devices[kid] = revokedDeviceToJson({
-                info: { ikPub },
-                sign
-            });
+            draft.at('devices').set(
+                kid,
+                revokedDeviceToJson({
+                    info: { ikPub },
+                    sign
+                })
+            );
         });
     }
 

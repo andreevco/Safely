@@ -6,7 +6,10 @@ import { DeviceManagementService } from '../device-manager/device-management-ser
 export class StorageVerifierService<_Latest extends StorageVersion, _Rest> {
     constructor(private readonly deviceManager: DeviceManagementService) {}
 
-    public async verifyUpdate<T>(_local: YCRDT<T>, _remote: YCRDT<T>): Promise<VerifyResult> {
+    public async verifyUpdate<T extends object>(
+        _local: YCRDT<T>,
+        _remote: YCRDT<T>
+    ): Promise<VerifyResult> {
         void this.deviceManager;
 
         return {};

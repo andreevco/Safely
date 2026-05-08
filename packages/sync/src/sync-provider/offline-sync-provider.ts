@@ -1,6 +1,6 @@
 import { output, z } from 'zod';
 
-import { NewOf, StorageVersion } from '@safely/slottree';
+import { Draft, NewOf, StorageVersion } from '@safely/slottree';
 
 import { ISyncProvider } from './I-sync-provider';
 import { StorageError } from '../crdt/y-manager';
@@ -51,7 +51,7 @@ export class OfflineSyncProvider<Latest extends StorageVersion, Rest> implements
         await this.container.yManager.set(k.toString(), v);
     }
 
-    public async update(f: (v: z.output<NewOf<Latest>>) => void): Promise<void> {
+    public async update(f: (draft: Draft<z.output<NewOf<Latest>>>) => void): Promise<void> {
         this.container.logger.info('SyncProvider.update');
         await this.container.yManager.update(f);
     }

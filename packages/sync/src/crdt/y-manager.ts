@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { NewOf, StorageVersion } from '@safely/slottree';
+import { Draft, NewOf, StorageVersion } from '@safely/slottree';
 
 import { YCRDT } from './y-crdt';
 import { YCRDTRepository } from './y-crdt-repository';
@@ -25,11 +25,11 @@ export class YManager<Latest extends StorageVersion, Rest> {
     }
 
     public async set(key: string, value: unknown): Promise<void> {
-        this.yDoc.set(key, value);
+        this.yDoc.set(key as Extract<keyof z.output<NewOf<Latest>>, string>, value);
         await this.yRepository.saveCRDT(this.yDoc);
     }
 
-    public async update(f: (v: z.output<NewOf<Latest>>) => void) {
+    public async update(f: (draft: Draft<z.output<NewOf<Latest>>>) => void) {
         this.yDoc.update(f);
         await this.yRepository.saveCRDT(this.yDoc);
     }

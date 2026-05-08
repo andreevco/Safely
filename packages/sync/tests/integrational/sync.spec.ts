@@ -1,14 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import {
-    makeFactory,
-    onboardDevice,
-    TestSyncAccount,
-    TestSyncAccountFactory,
-    walletsFromOrderedSet,
-    walletsToOrderedSet
-} from './helpers';
+import { makeFactory, onboardDevice, TestSyncAccount, TestSyncAccountFactory } from './helpers';
 import { InMemStorage } from '../impl/storage';
+
+type WalletItem = {
+    __setId: string;
+    value: string;
+};
 
 describe('Sync', () => {
     let factory: TestSyncAccountFactory;
@@ -21,26 +19,26 @@ describe('Sync', () => {
         accounts = [];
     });
 
-    async function setAndVerify(account: TestSyncAccount, data: string[]) {
-        await account.syncProvider.set('wallets', walletsToOrderedSet(data));
+    async function setAndVerify(account: TestSyncAccount, data: WalletItem[]) {
+        await account.syncProvider.set('wallets', data);
         await vi.waitFor(async () => {
             // checks if all accounts synchronized
             for (const acc of accounts) {
                 const wallets = acc.syncProvider.get('wallets');
-                expect(walletsFromOrderedSet(wallets)).toEqual(data);
+                expect(wallets).toEqual(data);
             }
         });
     }
 
-    async function updateAndVerify(account: TestSyncAccount, data: string[]) {
+    async function updateAndVerify(account: TestSyncAccount, data: WalletItem[]) {
         await account.syncProvider.update(draft => {
-            draft.wallets = walletsToOrderedSet(data);
+            draft.set('wallets', data);
         });
         await vi.waitFor(async () => {
             // checks if all accounts synchronized
             for (const acc of accounts) {
                 const wallets = acc.syncProvider.get('wallets');
-                expect(walletsFromOrderedSet(wallets)).toEqual(data);
+                expect(wallets).toEqual(data);
             }
         });
     }
@@ -52,18 +50,18 @@ describe('Sync', () => {
         accounts.push(account);
         accounts.push(newAccount);
 
-        await setAndVerify(account, ['wallet1']);
-        await setAndVerify(newAccount, ['wallet1', 'wallet2']);
-        await setAndVerify(account, ['wallet2', 'wallet3']);
-        await setAndVerify(newAccount, ['wallet4']);
+        await setAndVerify(account, walletItems('wallet1'));
+        await setAndVerify(newAccount, walletItems('wallet1', 'wallet2'));
+        await setAndVerify(account, walletItems('wallet2', 'wallet3'));
+        await setAndVerify(newAccount, walletItems('wallet4'));
 
         account.syncProvider.restart();
         newAccount.syncProvider.restart();
 
-        await setAndVerify(account, ['wallet5']);
-        await setAndVerify(account, ['wallet6']);
-        await setAndVerify(newAccount, ['wallet7']);
-        await setAndVerify(account, ['wallet8']);
+        await setAndVerify(account, walletItems('wallet5'));
+        await setAndVerify(account, walletItems('wallet6'));
+        await setAndVerify(newAccount, walletItems('wallet7'));
+        await setAndVerify(account, walletItems('wallet8'));
     });
 
     it('should sync local update mutations', async () => {
@@ -73,8 +71,8 @@ describe('Sync', () => {
         accounts.push(account);
         accounts.push(newAccount);
 
-        await updateAndVerify(account, ['wallet1']);
-        await updateAndVerify(newAccount, ['wallet1', 'wallet2']);
+        await updateAndVerify(account, walletItems('wallet1'));
+        await updateAndVerify(newAccount, walletItems('wallet1', 'wallet2'));
     });
 
     it('should sync 3 devices', async () => {
@@ -86,9 +84,9 @@ describe('Sync', () => {
         accounts.push(account2);
         accounts.push(account3);
 
-        await setAndVerify(account, ['wallet1']);
-        await setAndVerify(account2, ['wallet1', 'wallet2']);
-        await setAndVerify(account3, ['wallet1', 'wallet2', 'wallet3']);
+        await setAndVerify(account, walletItems('wallet1'));
+        await setAndVerify(account2, walletItems('wallet1', 'wallet2'));
+        await setAndVerify(account3, walletItems('wallet1', 'wallet2', 'wallet3'));
     });
 
     it('should sync device list when 1 device is onboarded', async () => {
@@ -161,13 +159,20 @@ describe('Sync', () => {
         accounts.push(accountA);
         accounts.push(accountC);
 
-        await setAndVerify(accountC, ['wallet1', 'wallet2']);
+        await setAndVerify(accountC, walletItems('wallet1', 'wallet2'));
 
         accountB.syncProvider.restart();
 
         await vi.waitFor(async () => {
             const walletsB = accountB.syncProvider.get('wallets');
-            expect(walletsFromOrderedSet(walletsB)).toEqual(['wallet1', 'wallet2']);
+            expect(walletsB).toEqual(walletItems('wallet1', 'wallet2'));
         });
     });
 });
+
+function walletItems(...values: string[]): WalletItem[] {
+    return values.map(value => ({
+        __setId: value,
+        value
+    }));
+}

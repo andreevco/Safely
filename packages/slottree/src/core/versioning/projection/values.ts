@@ -1,8 +1,15 @@
 import { createClockTracker, maxClockInTree, type SlotClock } from './clock';
 import type { ProjectionMap, ProjectionValue } from './types';
 import type { DeepReadonly } from '../../json';
-import { createTombstoneSlot, isContainerSlot, type Slot } from '../../slots';
-import { slotFromJson } from '../../slots/slot-json';
+import {
+    createTombstoneSlot,
+    isContainerSlot,
+    isOrderedArraySlot,
+    isRecursiveSlot,
+    isTombstoneSlot,
+    type Slot
+} from '../../slots';
+import { cloneDeep, slotFromJson, stripSlot } from '../../slots/slot-json';
 import { createReadProxy, selectJsonStorage } from '../../write';
 
 export function applyMap(
@@ -38,12 +45,17 @@ export function projectionValueToSlot(value: ProjectionValue, clock: SlotClock):
 }
 
 function readValueFromSlot(slot: Slot | undefined, onRead: (slot: Slot) => void): unknown {
-    if (slot === undefined || slot.d === true) {
+    if (slot === undefined || isTombstoneSlot(slot)) {
         return undefined;
     }
 
     if (isContainerSlot(slot)) {
         return createReadProxy(selectJsonStorage(slot, 0, ''), onRead);
+    }
+
+    if (isOrderedArraySlot(slot)) {
+        observeSlotTree(slot, onRead);
+        return cloneDeep(stripSlot(slot));
     }
 
     onRead(slot);
@@ -52,4 +64,17 @@ function readValueFromSlot(slot: Slot | undefined, onRead: (slot: Slot) => void)
 
 function cloneJson<T>(value: T): T {
     return JSON.parse(JSON.stringify(value)) as T;
+}
+
+function observeSlotTree(slot: Slot | undefined, onRead: (slot: Slot) => void): void {
+    if (slot === undefined) {
+        return;
+    }
+
+    onRead(slot);
+    if (isRecursiveSlot(slot)) {
+        for (const key of Object.keys(slot.v)) {
+            observeSlotTree(slot.v[key], onRead);
+        }
+    }
 }

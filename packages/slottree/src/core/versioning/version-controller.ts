@@ -4,6 +4,7 @@ import {
     createContainerSlot,
     createOriginContainer,
     isContainerSlot,
+    isTombstoneSlot,
     Slot
 } from '../slots';
 import { StorageVersion } from './version';
@@ -77,7 +78,7 @@ export class VersionController {
         }
 
         const version = device.v.version;
-        if (version?.r === true || version?.d === true) {
+        if (version === undefined || isContainerSlot(version) || isTombstoneSlot(version)) {
             return undefined;
         }
 
@@ -168,7 +169,7 @@ export class VersionController {
 
             const version = device.v.version;
 
-            if (version?.r === true || version?.d === true) {
+            if (version === undefined || isContainerSlot(version) || isTombstoneSlot(version)) {
                 continue;
             }
 

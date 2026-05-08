@@ -4,6 +4,7 @@ import {
     createContainerSlot,
     createTombstoneSlot,
     isContainerSlot,
+    isTombstoneSlot,
     Slot
 } from '../slots';
 import { slotFromJson } from '../slots/slot-json';
@@ -15,6 +16,18 @@ export class JsonStorageSelection {
         private readonly author: string
     ) {}
 
+    public containerSlot(): ContainerSlot {
+        return this.container;
+    }
+
+    public currentTimestamp(): number {
+        return this.timestamp;
+    }
+
+    public currentAuthor(): string {
+        return this.author;
+    }
+
     public get(prop: string): Slot | undefined {
         return this.container.v[prop];
     }
@@ -23,14 +36,14 @@ export class JsonStorageSelection {
         return Object.keys(this.container.v).filter(key => {
             const slot = this.container.v[key];
 
-            return slot !== undefined && slot.d !== true;
+            return slot !== undefined && !isTombstoneSlot(slot);
         });
     }
 
     public has(prop: string): boolean {
         const slot = this.container.v[prop];
 
-        return slot !== undefined && slot.d !== true;
+        return slot !== undefined && !isTombstoneSlot(slot);
     }
 
     public select(prop: string): JsonStorageSelection | undefined {
@@ -45,6 +58,10 @@ export class JsonStorageSelection {
 
     public set(prop: string, value: JsonValue): void {
         this.container.v[prop] = slotFromJson(value, this.timestamp, this.author);
+    }
+
+    public setSlot(prop: string, slot: Slot): void {
+        this.container.v[prop] = slot;
     }
 
     public delete(prop: string): void {
