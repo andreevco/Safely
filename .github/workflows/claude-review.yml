@@ -43,6 +43,24 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || format('refs/pull/{0}/head', github.event.issue.number) }}
 
+      - name: Prepare PR diff for the reviewer
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
+          REPO_FULL: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          gh pr diff "$PR_NUMBER" --repo "$REPO_FULL" \
+            > "$GITHUB_WORKSPACE/.pr-diff.patch"
+          gh pr view "$PR_NUMBER" --repo "$REPO_FULL" \
+            --json title,body,files,additions,deletions \
+            > "$GITHUB_WORKSPACE/.pr-meta.json"
+          ADDITIONS=$(jq -r '.additions' "$GITHUB_WORKSPACE/.pr-meta.json")
+          DELETIONS=$(jq -r '.deletions' "$GITHUB_WORKSPACE/.pr-meta.json")
+          TOTAL=$((ADDITIONS + DELETIONS))
+          echo "PR_DIFF_SIZE=$TOTAL" >> "$GITHUB_ENV"
+          echo "Diff size: $TOTAL lines (additions=$ADDITIONS, deletions=$DELETIONS)"
+
       - id: claude
         uses: anthropics/claude-code-action@v1
         timeout-minutes: 14
@@ -50,169 +68,109 @@ jobs:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           claude_args: |
             --model claude-sonnet-4-6
-            --max-turns 15
-            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr view:*),Write"
+            --max-turns 8
+            --setting-sources project
+            --allowedTools "Read,Write,mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr view:*),Bash(git show:*),Bash(git diff:*),Bash(git log:*)"
+            --disallowedTools "Task,Agent,Skill,WebSearch,WebFetch,ToolSearch,ScheduleWakeup,EnterPlanMode,ExitPlanMode,EnterWorktree,ExitWorktree,CronCreate,CronDelete,CronList,Monitor,RemoteTrigger,PushNotification,NotebookEdit,AskUserQuestion"
           use_sticky_comment: true
           show_full_output: true
           prompt: |
             You are a senior reviewer for a React Native + TypeScript mobile app.
-            Your job: catch CRITICAL issues only — exploitable security holes,
-            guaranteed crashes on a normal user path, data loss / corruption,
-            and logger-sandbox cross-contamination. Anything below that bar
-            (jank, minor perf, narrow-edge correctness, defensive concerns,
-            style) MUST NOT be commented on. Bias hard toward silence — a
-            clean PR gets one short approval line.
+            Job: catch CRITICAL issues only. Bias hard toward silence —
+            a clean PR gets one short approval line.
 
-            ## What to comment on
+            ## Diff source (do NOT fetch it yourself)
+            The full PR diff is on disk at $GITHUB_WORKSPACE/.pr-diff.patch.
+            PR metadata (files, additions, deletions, title, body) is at
+            $GITHUB_WORKSPACE/.pr-meta.json. Read these with the `Read` tool.
+            Do NOT call `gh pr diff` or `gh api` — the data is already local.
 
-            Comment on any issue in these categories, whether or not it appears
-            in the examples below. The examples illustrate the SEVERITY BAR, not
-            an exhaustive list — use judgment to identify equivalent issues.
+            ## Comment ONLY on these
+            SECURITY — data leaks, code exec, auth bypass, weak transport,
+              hardcoded secrets, missing auth/session check on sensitive screen.
+            PERFORMANCE — jank, freezes, leaks, JS-thread blocking, bridge
+              thrashing, unbounded list rendering, missing cleanup.
+            CORRECTNESS — wrong logic, races, `!`/`as` that hides a real
+              null/cast bug, conditional hooks, stale closures, floating
+              promises in user-facing flows, iOS/Android API w/o Platform.OS.
+            DATA INTEGRITY — mmkv/keychain bugs, broken or re-runnable
+              migrations, optimistic updates without rollback, state mutation.
+            LOGGER SANDBOX — each account has its own logger; logger captured
+              and used after account switch writes user A's data to user B's
+              file. Flag:
+              - `useMutation` from `@tanstack/react-query` instead of `@safely/ux`
+              - `logger`/`useLogger()` inside `onError`/`onSuccess`/`onMutate`/
+                `onSettled` (fix: log in `mutationFn` via 2nd arg, or pass via
+                `onMutate` context). Duplicate `logger.error` in `onError` is
+                also wrong — wrapper already auto-logs `mutationFn` errors.
+              - `loggerRegistry.systemLogger` in account-scoped code (use
+                `useLogger()` / `getAccountLogger(accountId)`; systemLogger is
+                only for boot / global handlers / devtools).
+              - Logger captured in `useEffect`/`useCallback`/`useMemo` with deps
+                omitting it, at module load, or in long-lived async (timers,
+                subscriptions) that survive account switches.
 
-            **Security vulnerabilities** — anything that could leak user data,
-            allow unauthorized actions, expose credentials, enable code execution,
-            or weaken the app's trust boundary. Pay special attention to mobile-
-            specific surfaces: native bridge, deep links, WebViews, storage,
-            permissions, network transport, third-party SDKs.
+            Mobile surfaces of concern: native bridge, deep links, WebViews,
+            async storage, permissions, network transport, third-party SDKs.
 
-            **Serious performance problems** — anything that will cause noticeable
-            jank, freezes, memory leaks, battery drain, or crashes under realistic
-            load. On mobile this includes JS-thread blocking, bridge thrashing,
-            unbounded list rendering, and resource leaks across navigation.
-
-            **Correctness bugs that will hit users** — logic that produces wrong
-            results, crashes on edge cases, races, or silently corrupts state.
-            Include TypeScript-specific traps where the type system is being
-            actively defeated in a way that hides a real runtime issue.
-
-            **Data loss or corruption risks** — anything that can lose, duplicate,
-            or corrupt user data, including async storage failures, broken
-            migrations, and non-atomic updates.
-
-            ## Severity bar — examples of issues at the right level
-
-            Security:
-            - Secrets / API keys / tokens hardcoded in JS source or bundled .env
-            - Auth tokens or PII in AsyncStorage instead of Keychain / SecureStore
+            ## Severity bar (examples — not exhaustive)
+            - Secrets/tokens hardcoded in JS or bundled .env
+            - Auth tokens / PII in AsyncStorage instead of Keychain/SecureStore
             - WebView with `originWhitelist={['*']}`, `allowFileAccess`, or
               `injectedJavaScript` on untrusted content
-            - Deep link handler navigating / opening WebView / executing actions
-              without validating host or scheme
+            - Deep link handler executing actions w/o scheme/host validation
             - HTTP endpoints, disabled SSL pinning, `cleartextTrafficPermitted=true`
-            - `console.log` of tokens, full request/response bodies, or PII in
-              production builds
-            - Missing auth/session check on a screen reading sensitive data
-
-            Performance:
-            - `ScrollView` + `.map()` over a list that grows with data
-            - `FlatList` without stable `keyExtractor`, or new function/object
-              created inline in `renderItem` / context value every render
-            - `Animated` on transform/opacity without `useNativeDriver: true`
-            - `useEffect` with object/array literal in deps (re-fires every render)
-            - Subscription / timer / listener / `AppState` handler without cleanup
-            - Per-frame JS↔Native calls in gestures instead of Reanimated worklets
-            - Heavy synchronous work on the JS thread in render or event handlers
-
-            Correctness:
-            - `!` non-null assertion or `as Type` cast that hides a real
-              null/undefined or type mismatch visible in the diff
-            - Floating promise — async function fired and forgotten where failure
-              matters (event handlers, effects, navigation actions)
-            - `setState` after unmount; stale closure in handler due to wrong deps
-            - Conditional hook call (hook inside `if` / early return)
-            - Race: response from older request overwrites newer one
-            - iOS-only or Android-only API used without `Platform.OS` guard
-
-            Logger correctness — logs are sandboxed per active account.
-            Bug shape: logger captured at one moment, used after an account
-            switch, writing user A's data into user B's file. Flag any site
-            where this can happen, including:
-            - `useMutation` from `@tanstack/react-query` instead of `@safely/ux`.
-            - `logger`/`useLogger()` used inside `useMutation` callbacks
-              (`onError`/`onSuccess`/`onMutate`/`onSettled`) — fix: log inside
-              `mutationFn` via the 2nd `logger` arg, or pass via `onMutate`
-              context. Duplicate `logger.error` in `onError` is also wrong
-              (wrapper auto-logs `mutationFn` errors).
-            - `loggerRegistry.systemLogger` in account-scoped code (use
-              `useLogger()` / `getAccountLogger(accountId)` instead;
-              `systemLogger` is only for boot / global handlers / devtools).
-            - Logger captured in `useEffect`/`useCallback`/`useMemo` with deps
-              omitting it, at module load, or in long-lived async (timers,
-              subscriptions) that survive account switches.
-
-            Data integrity:
-            - Critical `mmkv` or `keychain` or android secure storage interaction issues
-            - Migration that can run twice or leave partial state
-            - Optimistic update with no rollback on server error
-            - Reducer mutating state instead of returning a new object
+            - `console.log` of tokens / full bodies / PII in production
+            - `ScrollView` + `.map()` over growing data; `FlatList` w/o stable
+              `keyExtractor`; inline functions in `renderItem` / context value
+            - `Animated` transform/opacity without `useNativeDriver: true`
+            - `useEffect` with object/array literal in deps
+            - Subscription/timer/listener/AppState handler without cleanup
+            - Per-frame JS↔Native calls in gestures instead of worklets
+            - Migration that can run twice; optimistic update w/o rollback
+            - Reducer mutating state instead of returning new object
 
             ## Skip these files
-            Do not analyze: *.test.ts, *.test.tsx, *.spec.ts, *.spec.tsx,
-            *.snap, *.generated.ts, *.generated.tsx, locales/**, __mocks__/**,
-            ios/Pods/**, android/build/**, node_modules/**
+            *.test.ts(x), *.spec.ts(x), *.snap, *.generated.ts(x), locales/**,
+            __mocks__/**, ios/Pods/**, android/build/**, node_modules/**
 
-            ## Do NOT comment on
+            ## DO NOT comment on
+            Naming/casing/formatting/import order/ESLint, "consider renaming/
+            extracting/refactoring", readability/JSDoc, `React.memo`/`useMemo`/
+            `useCallback` w/o evidence of a real perf hit, test coverage,
+            `any` or `type` vs `interface` (unless actively hiding a bug),
+            Nit/Minor/Optional, praise, summaries of what code does,
+            architecture opinions, library choice, StyleSheet vs inline.
+            Anything you are not >85% confident is real → silent.
 
-            - Naming, casing, formatting, import order, style guide, ESLint/Prettier
-            - "Consider renaming / extracting / refactoring / splitting"
-            - Readability, comments, JSDoc
-            - Adding `React.memo` / `useMemo` / `useCallback` without concrete
-              evidence of a perf problem in this PR
-            - Test coverage suggestions
-            - `any` or type-style preferences (`type` vs `interface`) unless
-              actively hiding a bug visible in the diff
-            - "Nit:" / "Minor:" / "Optional:" anything
-            - Praise, encouragement, summary of what the code does
-            - Architecture opinions, "this could be cleaner", design pattern advice
-            - Library / framework choice
-            - StyleSheet vs inline styles
-            - Anything you are not >85% confident is a real, user-impacting issue
+            ## Decide before posting
+            1. Will this cause real harm to a user (data, crash, jank, corruption)?
+            2. >85% confident it's real, not a preference or speculation?
+            3. ≥ severity of examples above?
+            Any "no" → silent.
 
-            ## How to decide
-
-            Before posting any comment, ask yourself:
-            1. Will this cause real harm to a user, leak data, crash the app,
-               cause noticeable jank, or corrupt state?
-            2. Am I >85% confident it's a real issue, not a stylistic preference
-               or speculation?
-            3. Is it at least as severe as the examples above?
-
-            If any answer is no — stay silent.
-
-            ## Output
-
-            REPO: ${{ github.repository }}
-            PR NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
-
-            - Post inline comments via `mcp__github_inline_comment__create_inline_comment`
-              (with `confirmed: true`), anchored to the exact line.
-            - Each comment: one sentence stating the issue + concrete fix
-              (short code snippet if it clarifies).
-            - If no qualifying issues found, post exactly ONE top-level comment via
+            ## Output rules
+            - Inline: `mcp__github_inline_comment__create_inline_comment`
+              (with `confirmed: true`), anchored to exact line.
+              One sentence: issue + concrete fix (short snippet if it helps).
+            - Max 7 inline comments — keep the 7 most severe.
+            - If no qualifying issues, post exactly ONE top-level comment via
               `gh pr comment`: "No security, performance, or correctness issues found."
-            - Do NOT submit the review as a plain assistant message — only via the
-              GitHub tools above.
+            - Do NOT submit the review as a plain assistant message.
             - Never list what you checked or what looks good.
-            - Maximum 7 inline comments per PR — if more, keep the 7 most severe.
 
-            ## Required machine-readable summary
+            ## Required summary file
+            Before finishing, `Write` to $GITHUB_WORKSPACE/.claude-review.json:
+            { "critical": <int>, "items": [ {"file":"<path>","line":<int>,"summary":"<one sentence>"} ] }
+            `critical` = number of inline comments posted. Always create the
+            file; empty case is `{"critical": 0, "items": []}`. Invalid JSON
+            or a missing file fails the pipeline.
 
-            Every posted comment is critical by definition (per the rules
-            above). Before finishing, you MUST write a summary file using
-            the `Write` tool to `$GITHUB_WORKSPACE/.claude-review.json`
-            with this exact shape:
-
-            {
-              "critical": <int>,
-              "items": [
-                {"file": "<path>", "line": <int>, "summary": "<one sentence>"}
-              ]
-            }
-
-            `critical` equals the number of inline comments you posted.
-            Always create the file, even when there are no findings — write
-            `{"critical": 0, "items": []}` in that case. Invalid JSON or a
-            missing file fails the pipeline.
+            ## Run context (last — keep above stable for prompt cache)
+            REPO: ${{ github.repository }}
+            PR: ${{ github.event.pull_request.number || github.event.issue.number }}
+            DIFF_FILE: $GITHUB_WORKSPACE/.pr-diff.patch
+            META_FILE: $GITHUB_WORKSPACE/.pr-meta.json
 
       - name: Enforce critical findings gate
         if: always() && steps.claude.outcome != 'cancelled' && steps.claude.outcome != 'skipped'
