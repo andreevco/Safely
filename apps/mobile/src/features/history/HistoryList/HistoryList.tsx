@@ -1,4 +1,4 @@
-import { useFocusEffect, useIsFocused, useScrollToTop } from '@react-navigation/native';
+import { useIsFocused, useScrollToTop } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
 import { type TFunction } from 'i18next';
 import { useCallback, useMemo, useRef } from 'react';
@@ -21,9 +21,9 @@ import { ActivityItem } from '@mobile/entities/activity';
 import { ActivityItemTimeFormatDetails } from '@mobile/entities/activity/ActivityItem/ActivityItem';
 import { Screen, Text } from '@mobile/shared/ui';
 import { ListRef } from '@mobile/shared/ui/Screen/components/List';
-import { useScrollPosition } from '@mobile/shared/utils';
 
 import { HistoryEmptyPlaceholder } from '../HistoryEmptyPlaceholder';
+import { NewTransactionsBubble, useNewTransactionsBubble } from './components';
 import { styles } from './HistoryList.styles';
 
 type HistoryRowItem =
@@ -91,20 +91,20 @@ export const HistoryList = (props: HistoryListProps) => {
     const isFocused = useIsFocused();
     const listRef = useRef<ListRef<HistoryRowItem>>(null);
     const { data: historyGroups, refetch, fetchNextPage } = useGroupedHistory();
-    const { atTop, onScroll } = useScrollPosition({ threshold: 100 });
     const client = useQueryClient();
 
     useScrollToTop(listRef);
 
-    useFocusEffect(
-        useCallback(() => {
-            return () => {
-                if (!atTop) {
-                    listRef.current?.scrollToOffset({ offset: 0, animated: false });
-                }
-            };
-        }, [atTop])
-    );
+    const {
+        scrollHandler,
+        mode: bubbleMode,
+        onPress: onBubblePress,
+        show: showBubble
+    } = useNewTransactionsBubble({
+        listRef,
+        // height of one history item + group label, but should think about better way maybe
+        topThreshold: 128
+    });
 
     const { mutate: runIntervalRefetch } = useMutation({
         async mutationFn() {
@@ -112,15 +112,13 @@ export const HistoryList = (props: HistoryListProps) => {
             const result = await refetch();
             const newFirstKey = getFirstActivityKey(result.data);
             if (currentFirstKey !== newFirstKey) {
-                setTimeout(() => {
-                    listRef.current?.scrollToOffset({ offset: 0, animated: true });
-                }, 50);
                 client.invalidateQueries({ queryKey: assetKeys.all.toKey() });
+                showBubble();
             }
         }
     });
 
-    useInterval(() => runIntervalRefetch(), atTop && isFocused ? 2000 : null);
+    useInterval(() => runIntervalRefetch(), isFocused ? 3000 : null);
 
     const getItemType = useCallback((item: HistoryRowItem) => item.type, []);
 
@@ -186,18 +184,23 @@ export const HistoryList = (props: HistoryListProps) => {
     };
 
     return (
-        <Screen.List
-            ref={listRef}
-            contentContainerStyle={styles.contentContainer}
-            onScroll={onScroll}
-            data={rows}
-            keyExtractor={item => item.key}
-            getItemType={getItemType}
-            drawDistance={600}
-            onEndReached={fetchNextPage}
-            onEndReachedThreshold={0.5}
-            ItemSeparatorComponent={renderSeparator}
-            renderItem={renderItem}
-        />
+        <View style={styles.container}>
+            <Screen.List
+                ref={listRef}
+                contentContainerStyle={styles.contentContainer}
+                data={rows}
+                keyExtractor={item => item.key}
+                getItemType={getItemType}
+                drawDistance={600}
+                onEndReached={fetchNextPage}
+                onEndReachedThreshold={0.5}
+                ItemSeparatorComponent={renderSeparator}
+                renderItem={renderItem}
+                onScroll={scrollHandler}
+                scrollEventThrottle={50}
+                maintainVisibleContentPosition={{ autoscrollToTopThreshold: 20 }}
+            />
+            <NewTransactionsBubble mode={bubbleMode} onPress={onBubblePress} />
+        </View>
     );
 };

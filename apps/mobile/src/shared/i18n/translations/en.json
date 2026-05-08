@@ -558,6 +558,10 @@
     },
     "history": {
         "title": "History",
+        "bubble": {
+            "one": "New transaction",
+            "many": "New transactions"
+        },
         "empty": {
             "title": "Transaction history",
             "subtitle": "Your transactions will appear here.",
