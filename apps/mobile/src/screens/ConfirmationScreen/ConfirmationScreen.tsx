@@ -107,9 +107,7 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
                         exiting={FadeOut.duration(150)}
                         style={styles.titleWithLogoContainer}
                     >
-                        <View style={styles.assetLogoContainer}>
-                            <Icon icon={Checkmark96} color="accentGreen" />
-                        </View>
+                        <Icon icon={Checkmark96} color="accentGreen" />
                         <Text style={styles.title} variant="titleM">
                             {t('confirmation.success')}
                         </Text>
