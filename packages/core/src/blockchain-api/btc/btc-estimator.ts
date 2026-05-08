@@ -1,18 +1,34 @@
 import Big from 'big.js';
 
+import { BtcAddress } from './btc-address';
 import { BtcPsbtBuilder } from './btc-psbt-builder';
 import { BtcTransactionTemplate } from './btc-transaction-template';
 import type { BtcTransferRequest, BtcTransferRequestMax, BtcTransferRequestNotMax } from './types';
 import { BtcFeeType } from './types';
 import { getUtxoTotal } from './utils';
 import type { BtcApi, BtcApiEstimatedFee, BtcApiUtxo } from '../../api/btc';
-import type { SignableBtcWallet } from '../../entities';
+import type { BtcAsset, CryptoAssetAmount, SignableBtcWallet } from '../../entities';
 import { BtcAssetAmount } from '../../entities/asset';
 import { btcNetworkConfig } from '../../entities/blockchain';
 import type { IIdentifiable } from '../../utils';
 import { abs, assertUnreachable, toBig } from '../../utils';
 
 export type SpentUtxo = { txid: string; vout: number; value: string };
+
+// Bitcoin Core's GetDustThreshold for a P2WPKH output at the default
+// dustRelayFee of 3000 sat/kvB: (31 + 67) * 3 = 294 sat. Outputs strictly
+// below this are rejected by the node with reject reason "dust" (-26).
+const P2WPKH_CHANGE_DUST_SAT = 294n;
+
+function getDustSat(walletAddress: string) {
+    const type = BtcAddress.type(walletAddress);
+    switch (type) {
+        case 'P2WPKH':
+            return P2WPKH_CHANGE_DUST_SAT;
+        default:
+            throw new Error('Unsupported address type');
+    }
+}
 
 export class BtcEstimator implements IIdentifiable {
     public readonly id: string;
@@ -85,7 +101,7 @@ export class BtcEstimator implements IIdentifiable {
 
         const totalBalance = getUtxoTotal(utxos);
 
-        const vSize = this.psbtBuilder.calculateTransactionVSize({
+        const vSizeWithChange = this.psbtBuilder.calculateTransactionVSize({
             inputs: utxos,
             outputs: [
                 { address: request.recipientAddress, value: request.amount.weiAmount },
@@ -93,18 +109,40 @@ export class BtcEstimator implements IIdentifiable {
             ]
         });
 
-        const feeSat = feeSatVb.mul(toBig(vSize)).round(0, Big.roundUp);
-        const fee = BtcAssetAmount.fromWeiAmount(feeSat);
+        const feeForWithChangeCaseSat = feeSatVb.mul(toBig(vSizeWithChange)).round(0, Big.roundUp);
+        const feeForWithChangeCase = BtcAssetAmount.fromWeiAmount(feeForWithChangeCaseSat);
 
-        if (totalBalance.lt(request.amount.add(fee))) {
+        if (totalBalance.lt(request.amount.add(feeForWithChangeCase))) {
             throw new Error('Not enough funds');
         }
 
-        return new BtcTransactionTemplate(this.btcApi, this.wallet, request, utxos, {
-            fee: { amount: fee, type: 'crypto' },
-            feeType: request.feeType,
-            txTargetBlock: targetBlock
-        });
+        let fee: CryptoAssetAmount<BtcAsset>;
+        let hasChange: boolean;
+
+        const change = totalBalance.sub(request.amount).sub(feeForWithChangeCase).weiAmount;
+        if (change < getDustSat(this.wallet.address)) {
+            fee = totalBalance.sub(request.amount);
+            hasChange = false;
+        } else {
+            fee = feeForWithChangeCase;
+            hasChange = true;
+        }
+
+        return new BtcTransactionTemplate(
+            this.btcApi,
+            this.wallet,
+            {
+                recipientAddress: request.recipientAddress,
+                amount: request.amount,
+                hasChange
+            },
+            utxos,
+            {
+                fee: { amount: fee, type: 'crypto' },
+                feeType: request.feeType,
+                txTargetBlock: targetBlock
+            }
+        );
     }
 
     private async estimateSendFee(
@@ -149,7 +187,11 @@ export class BtcEstimator implements IIdentifiable {
         return new BtcTransactionTemplate(
             this.btcApi,
             this.wallet,
-            { amount: totalBalance.sub(fee), ...request },
+            {
+                recipientAddress: request.recipientAddress,
+                amount: totalBalance.sub(fee),
+                hasChange: false
+            },
             utxos,
             {
                 fee: { amount: fee, type: 'crypto' },

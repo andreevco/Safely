@@ -1,12 +1,12 @@
 import { type PsbtRequest, BtcPsbtBuilder } from './btc-psbt-builder';
 import { BtcSendDustError } from './errors';
-import type { BtcEstimation, BtcTransferRequest } from './types';
+import type { BtcEstimation } from './types';
 import { getUtxoTotal, utxoPathToStruct } from './utils';
 import type { BtcApi, BtcApiUtxo } from '../../api/btc';
 import type { BtcAssetAmount, SignableBtcWallet, ExplorerFactory } from '../../entities';
 import { BLOCKCHAIN_NAME, btcNetworkConfig } from '../../entities/blockchain';
 import { getExternalErrorText } from '../../entities/errors/errors.service';
-import { assertUnreachable, ellipsisMiddle } from '../../utils';
+import { ellipsisMiddle } from '../../utils';
 
 export class BtcTransactionTemplate {
     public readonly blockchain = BLOCKCHAIN_NAME.BTC;
@@ -22,20 +22,16 @@ export class BtcTransactionTemplate {
             value: this.request.amount.weiAmount
         };
 
-        switch (this.request.type) {
-            case 'max':
-                return [recipientOutput];
-            case 'not-max':
-                return [
-                    recipientOutput,
-                    {
-                        address: this.wallet.address,
-                        value: total.sub(this.request.amount).sub(this.estimation.fee.amount)
-                            .weiAmount
-                    }
-                ];
-            default:
-                assertUnreachable(this.request);
+        if (this.request.hasChange) {
+            return [recipientOutput];
+        } else {
+            return [
+                recipientOutput,
+                {
+                    address: this.wallet.address,
+                    value: total.sub(this.request.amount).sub(this.estimation.fee.amount).weiAmount
+                }
+            ];
         }
     }
 
@@ -46,7 +42,11 @@ export class BtcTransactionTemplate {
     constructor(
         private readonly btcApi: BtcApi,
         public readonly wallet: SignableBtcWallet,
-        public readonly request: BtcTransferRequest & { amount: BtcAssetAmount },
+        public readonly request: {
+            amount: BtcAssetAmount;
+            recipientAddress: string;
+            hasChange: boolean;
+        },
         private readonly utxos: BtcApiUtxo[],
         public readonly estimation: BtcEstimation
     ) {
