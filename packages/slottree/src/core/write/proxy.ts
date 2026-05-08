@@ -1,5 +1,5 @@
 import { JsonValue } from '../json';
-import { isContainerSlot, Slot } from '../slots';
+import { isContainerSlot, isTombstoneSlot, Slot } from '../slots';
 import { JsonStorageSelection } from './selection';
 import { cloneDeep } from '../slots/slot-json';
 
@@ -12,7 +12,7 @@ export function createReadProxy(
     const readValue = (prop: string): unknown => {
         const slot = selection.get(prop);
 
-        if (slot === undefined || slot.d === true) {
+        if (slot === undefined || isTombstoneSlot(slot)) {
             return undefined;
         }
 
@@ -83,7 +83,7 @@ export function createWriteProxy(selection: JsonStorageSelection, onUpdate: () =
     const readValue = (prop: string): unknown => {
         const slot = selection.get(prop);
 
-        if (slot === undefined || slot.d === true) {
+        if (slot === undefined || isTombstoneSlot(slot)) {
             return undefined;
         }
 

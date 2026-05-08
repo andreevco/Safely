@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 import { createStorage, DEVICES_KEY, type Storage, StorageImpl } from "../src";
-import { createOriginContainer, type ContainerSlot } from "../src/core/slots";
+import {
+  createOriginContainer,
+  SlotKind,
+  type ContainerSlot,
+} from "../src/core/slots";
 import { slotFromJson } from "../src/core/slots/slot-json";
 import {
   defineVersionHList,
@@ -288,6 +292,9 @@ describe("version migration", () => {
     const projectedTombstone = (newExport.v["2"] as ContainerSlot).v.renamed;
 
     expect(projectedTombstone).toEqual(oldTombstone);
-    expect(projectedTombstone).toMatchObject({ d: true, a: "old-device" });
+    expect(projectedTombstone).toMatchObject({
+      s: SlotKind.Tombstone,
+      a: "old-device",
+    });
   });
 });

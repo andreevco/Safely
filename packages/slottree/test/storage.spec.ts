@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { z } from "zod";
 import { createStorage, type Storage, StorageImpl } from "../src";
 import { schemaV1, StorageV1, v1 } from "./version-fixtures";
-import { ContainerSlot } from "../src/core/slots";
+import { ContainerSlot, isContainerSlot, isTombstoneSlot } from "../src/core/slots";
 import {
   defineVersionHList,
   hCons,
@@ -157,7 +157,11 @@ describe("storage updates", () => {
     const versionSlot = exported.v["1"] as ContainerSlot;
     const key1Slot = versionSlot.v.key1;
 
-    if (key1Slot === undefined || key1Slot.r === true || key1Slot.d === true) {
+    if (
+      key1Slot === undefined ||
+      isContainerSlot(key1Slot) ||
+      isTombstoneSlot(key1Slot)
+    ) {
       throw new Error("Expected key1 to be an atomic slot");
     }
 
@@ -399,7 +403,7 @@ function reverseSlotKeys(slot: ContainerSlot): ContainerSlot {
         .reverse()
         .map(([key, value]) => [
           key,
-          value.r === true ? reverseSlotKeys(value as ContainerSlot) : value,
+          isContainerSlot(value) ? reverseSlotKeys(value) : value,
         ]),
     ),
   };

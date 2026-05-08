@@ -149,37 +149,37 @@ describe("records", () => {
             "objects": {
               "v": {
                 "__proto__": {
-                  "v": { "value": { "v": 1, "t": 1, "a": "remote" } },
+                  "s": 1,
+                  "v": { "value": { "s": 0, "v": 1, "t": 1, "a": "remote" } },
                   "t": 1,
-                  "a": "remote",
-                  "r": true
+                  "a": "remote"
                 },
                 "constructor": {
-                  "v": { "value": { "v": 2, "t": 1, "a": "remote" } },
+                  "s": 1,
+                  "v": { "value": { "s": 0, "v": 2, "t": 1, "a": "remote" } },
                   "t": 1,
-                  "a": "remote",
-                  "r": true
+                  "a": "remote"
                 },
                 "prototype": {
-                  "v": { "value": { "v": 3, "t": 1, "a": "remote" } },
+                  "s": 1,
+                  "v": { "value": { "s": 0, "v": 3, "t": 1, "a": "remote" } },
                   "t": 1,
-                  "a": "remote",
-                  "r": true
+                  "a": "remote"
                 }
               },
+              "s": 1,
               "t": 1,
-              "a": "remote",
-              "r": true
+              "a": "remote"
             }
           },
+          "s": 1,
           "t": 0,
-          "a": "",
-          "r": true
+          "a": ""
         }
       },
+      "s": 1,
       "t": 0,
-      "a": "",
-      "r": true
+      "a": ""
     }`;
 
     storage.merge(incoming);

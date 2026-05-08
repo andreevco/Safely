@@ -4,7 +4,9 @@ import {
     createSlotMap,
     createTombstoneSlot,
     isJsonObject,
+    isTombstoneSlot,
     type Slot,
+    SlotKind,
     type SlotMap
 } from './slot';
 
@@ -41,11 +43,11 @@ export function stripSlot(slot: Slot | undefined): JsonValue | undefined {
         return undefined;
     }
 
-    if (slot.d === true) {
+    if (isTombstoneSlot(slot)) {
         return undefined;
     }
 
-    if (slot.r !== true) {
+    if (slot.s === SlotKind.Atomic) {
         return slot.v;
     }
 
@@ -85,6 +87,7 @@ export function slotFromJson(
     }
 
     return {
+        s: SlotKind.Atomic,
         v: cloneDeep(value),
         t: timestamp,
         a: author

@@ -1,5 +1,5 @@
 import { MergeProtocol } from '../../merge-protocol';
-import type { Slot } from '../../slots';
+import { isContainerSlot, type Slot } from '../../slots';
 
 export type SlotClock = {
     t: number;
@@ -40,7 +40,7 @@ export function maxClockInTree(slot: Slot | undefined): SlotClock | undefined {
         a: slot.a
     };
 
-    if (slot.r === true) {
+    if (isContainerSlot(slot)) {
         for (const key of Object.keys(slot.v)) {
             const childClock = maxClockInTree(slot.v[key]);
 

@@ -6,7 +6,7 @@ import {
   hCons,
   hNil,
 } from "../src/core/versioning/version";
-import { type ContainerSlot } from "../src/core/slots";
+import { SlotKind, type ContainerSlot } from "../src/core/slots";
 import { cloneSlot } from "../src/core/slots/slot-json";
 
 const schema = z.object({
@@ -185,7 +185,7 @@ describe("createWriteProxy", () => {
     const settingsSlot = versionSlot.v.settings as ContainerSlot;
 
     expect(settingsSlot.v.layout).toMatchObject({
-      d: true,
+      s: SlotKind.Tombstone,
       a: "device-1",
     });
   });

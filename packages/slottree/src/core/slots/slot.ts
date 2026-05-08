@@ -1,26 +1,31 @@
 import { createNullPrototypeRecord, type JsonObject, type JsonValue } from '../json';
 
+export const SlotKind = {
+    Atomic: 0,
+    Container: 1,
+    Tombstone: 2
+} as const;
+
+export type SlotKindValue = (typeof SlotKind)[keyof typeof SlotKind];
+
 export interface AtomicSlot {
+    s: typeof SlotKind.Atomic;
     v: JsonValue;
     t: number;
     a: string;
-    r?: false;
-    d?: false;
 }
 
 export interface TombstoneSlot {
-    d: true;
+    s: typeof SlotKind.Tombstone;
     t: number;
     a: string;
-    r?: false;
 }
 
 export interface ContainerSlot {
+    s: typeof SlotKind.Container;
     v: SlotMap;
     t: number;
     a: string;
-    r: true;
-    d?: false;
 }
 
 export type Slot = AtomicSlot | TombstoneSlot | ContainerSlot;
@@ -37,7 +42,11 @@ export function isJsonObject(value: JsonValue | undefined): value is JsonObject 
 }
 
 export function isContainerSlot(slot: Slot | undefined): slot is ContainerSlot {
-    return slot !== undefined && slot.r === true;
+    return slot !== undefined && slot.s === SlotKind.Container;
+}
+
+export function isTombstoneSlot(slot: Slot | undefined): slot is TombstoneSlot {
+    return slot !== undefined && slot.s === SlotKind.Tombstone;
 }
 
 export function createContainerSlot(
@@ -45,7 +54,7 @@ export function createContainerSlot(
     author: string,
     values: SlotMap = createSlotMap()
 ): ContainerSlot {
-    return { v: values, t: timestamp, a: author, r: true };
+    return { s: SlotKind.Container, v: values, t: timestamp, a: author };
 }
 
 export function createOriginContainer(values: SlotMap = createSlotMap()): ContainerSlot {
@@ -53,5 +62,5 @@ export function createOriginContainer(values: SlotMap = createSlotMap()): Contai
 }
 
 export function createTombstoneSlot(timestamp: number, author: string): TombstoneSlot {
-    return { d: true, t: timestamp, a: author };
+    return { s: SlotKind.Tombstone, t: timestamp, a: author };
 }

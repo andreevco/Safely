@@ -1,7 +1,7 @@
 import { createClockTracker, maxClockInTree, type SlotClock } from './clock';
 import type { ProjectionMap, ProjectionValue } from './types';
 import type { DeepReadonly } from '../../json';
-import { createTombstoneSlot, isContainerSlot, type Slot } from '../../slots';
+import { createTombstoneSlot, isContainerSlot, isTombstoneSlot, type Slot } from '../../slots';
 import { slotFromJson } from '../../slots/slot-json';
 import { createReadProxy, selectJsonStorage } from '../../write';
 
@@ -38,7 +38,7 @@ export function projectionValueToSlot(value: ProjectionValue, clock: SlotClock):
 }
 
 function readValueFromSlot(slot: Slot | undefined, onRead: (slot: Slot) => void): unknown {
-    if (slot === undefined || slot.d === true) {
+    if (slot === undefined || isTombstoneSlot(slot)) {
         return undefined;
     }
 

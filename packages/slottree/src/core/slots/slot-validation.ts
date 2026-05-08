@@ -1,5 +1,5 @@
 import type { JsonValue } from '../json';
-import type { Slot } from './slot';
+import { SlotKind, type Slot } from './slot';
 
 export function validateSlot(slot: unknown): asserts slot is Slot {
     validateSlotInner(slot, 0);
@@ -18,10 +18,15 @@ function validateSlotInner(slot: unknown, depth: number): void {
         throw new Error('Slot author must be a string');
     }
 
-    if (record.r === true) {
-        if (record.d === true) {
-            throw new Error('Container slot cannot also be a tombstone');
-        }
+    if (
+        record.s !== SlotKind.Atomic &&
+        record.s !== SlotKind.Container &&
+        record.s !== SlotKind.Tombstone
+    ) {
+        throw new Error('Slot kind must be a known numeric discriminant');
+    }
+
+    if (record.s === SlotKind.Container) {
         if (record.v === null || typeof record.v !== 'object') {
             throw new Error('Container slot value must be an object');
         }
@@ -35,7 +40,7 @@ function validateSlotInner(slot: unknown, depth: number): void {
         return;
     }
 
-    if (record.d === true) {
+    if (record.s === SlotKind.Tombstone) {
         return;
     }
 

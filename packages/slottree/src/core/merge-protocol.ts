@@ -1,4 +1,4 @@
-import type { Slot, SlotMap } from './slots';
+import { isContainerSlot, type Slot, type SlotMap } from './slots';
 import { cloneSlot } from './slots/slot-json';
 
 export interface MergeStats {
@@ -39,7 +39,7 @@ export class MergeProtocol {
         }
 
         this.observe(slot.t);
-        if (slot.r === true) {
+        if (isContainerSlot(slot)) {
             for (const key of Object.keys(slot.v)) {
                 this.observeTree(slot.v[key]);
             }
@@ -71,8 +71,8 @@ export class MergeProtocol {
 
     private mergeSlot(local: Slot, incoming: Slot, stats: MergeStats): void {
         if (
-            local.r === true &&
-            incoming.r === true &&
+            isContainerSlot(local) &&
+            isContainerSlot(incoming) &&
             MergeProtocol.compareClocks(local, incoming) === 0
         ) {
             this.mergeContainerValues(local.v, incoming.v, stats);
