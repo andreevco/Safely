@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { DeepReadonly, WriteDraft } from './json';
+import { DeepReadonly } from './json';
 import { MergeProtocol, MergeStats } from './merge-protocol';
 import { ContainerSlot, createOriginContainer, isContainerSlot, Slot } from './slots';
 import { cloneSlot } from './slots/slot-json';
@@ -16,6 +16,7 @@ import {
 } from './versioning/version';
 import { VersionController } from './versioning/version-controller';
 import { WorkingStorageRoot } from './working-storage-root';
+import type { Draft } from './write';
 
 export { StorageObservers } from './storage-observer';
 export type { StorageObserver } from './storage-observer';
@@ -37,7 +38,7 @@ export interface Storage<T> {
      * Atomic and transactional update of the storage
      * @param fn
      */
-    update(fn: (draft: WriteDraft<T>) => void): void;
+    update(fn: (draft: Draft<T>) => void): void;
 
     /**
      * Merge storage
@@ -96,7 +97,7 @@ export class StorageImpl<T> implements Storage<T> {
         return this.committedRoot().read<T>();
     }
 
-    public update(fn: (draft: WriteDraft<T>) => void): void {
+    public update(fn: (draft: Draft<T>) => void): void {
         const timestamp = this.protocol.tick();
         const author = this.protocol.id;
 

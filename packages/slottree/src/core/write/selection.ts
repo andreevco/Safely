@@ -16,6 +16,10 @@ export class JsonStorageSelection {
         private readonly author: string
     ) {}
 
+    public containerSlot(): ContainerSlot {
+        return this.container;
+    }
+
     public get(prop: string): Slot | undefined {
         return this.container.v[prop];
     }

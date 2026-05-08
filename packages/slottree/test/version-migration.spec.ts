@@ -87,9 +87,9 @@ describe("version migration", () => {
     }) as StorageImpl<StorageV3>;
 
     storage.update((draft) => {
-      draft.key1 = 10;
-      draft.label = "updated";
-      draft.key4 = "latest-only";
+      draft.set("key1", 10);
+      draft.set("label", "updated");
+      draft.set("key4", "latest-only");
     });
 
     const exported = storage.exportSlot() as ReturnType<
@@ -147,7 +147,7 @@ describe("version migration", () => {
     }) as StorageImpl<StorageV3>;
 
     storage.update((draft) => {
-      draft.label = "updated";
+      draft.set("label", "updated");
     });
 
     const exported = storage.exportSlot() as ReturnType<
@@ -173,8 +173,8 @@ describe("version migration", () => {
     }) as StorageImpl<StorageV3>;
 
     oldDevice.update((draft) => {
-      draft.key1 = 42;
-      draft.key2 = "from-v1";
+      draft.set("key1", 42);
+      draft.set("key2", "from-v1");
     });
 
     newDevice.merge(oldDevice.export());
@@ -281,7 +281,7 @@ describe("version migration", () => {
     }) as StorageImpl<z.output<typeof schemaOptionalV2>>;
 
     oldDevice.update((draft) => {
-      delete draft.optional;
+      draft.delete("optional");
     });
 
     newDevice.merge(oldDevice.export());

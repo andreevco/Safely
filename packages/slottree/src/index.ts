@@ -5,9 +5,9 @@ export type {
     JsonPrimitive,
     JsonValue,
     Path,
-    PathValue,
-    WriteDraft
+    PathValue
 } from './core/json';
+export type { AtomicDraft, Draft, ObjectDraft } from './core/write';
 
 export { createStorage, StorageObservers } from './core/storage';
 export type { Storage, StorageImpl } from './core/storage';
