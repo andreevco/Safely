@@ -12,18 +12,6 @@ export type { ArrayDraft, AtomicDraft, Draft, ObjectDraft } from './core/write';
 export { createStorage, StorageObservers } from './core/storage';
 export type { Storage, StorageImpl } from './core/storage';
 export type { StorageObserver } from './core/storage';
-export {
-    getById,
-    insert,
-    orderedIds,
-    orderedMap,
-    orderedSet,
-    projectOrderedSet,
-    remove,
-    reorder,
-    toOrderedSet
-} from './ordered-set';
-export type { OrderedSet, ReadonlyOrderedSet } from './ordered-set';
 
 export type { StorageVersion } from './core/versioning/version';
 export { DEVICES_KEY, VersionController } from './core/versioning/version-controller';
