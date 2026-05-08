@@ -1,4 +1,5 @@
 import ExpoModulesCore
+import LocalAuthentication
 import Security
 
 // Enumerates and bulk-deletes generic-password keychain items written by
@@ -12,8 +13,10 @@ import Security
 // options. We mirror that exact rule here so enumeration matches what the
 // package wrote. See SecureStoreModule.swift `query(...)` in that package.
 //
-// Listing uses `kSecUseAuthenticationUI: kSecUseAuthenticationUIFail` so it
-// never raises a biometric prompt; only fetching `kSecValueData` would.
+// Listing passes an `LAContext` with `interactionNotAllowed = true` via
+// `kSecUseAuthenticationContext` so it never raises a biometric prompt; only
+// fetching `kSecValueData` would. (`kSecUseAuthenticationUI` was deprecated in
+// iOS 14 — this is the documented replacement for the "fail without UI" path.)
 //
 // No intent journal: `clearAsync` is a single attribute-match SecItemDelete
 // (atomic at securityd level). `removeItemsWithPrefixAsync` enumerates the
@@ -92,12 +95,15 @@ public class SafelySecureStoreEnumModule: Module {
     // MARK: - Core
 
     private func readAccounts(service: String) throws -> [String] {
+        let context = LAContext()                                                                     
+        context.interactionNotAllowed = true     
+
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
             kSecMatchLimit as String: kSecMatchLimitAll,
             kSecReturnAttributes as String: kCFBooleanTrue!,
-            kSecUseAuthenticationUI as String: kSecUseAuthenticationUIFail
+            kSecUseAuthenticationContext as String: context
         ]
         var result: CFTypeRef?
         let status = SecItemCopyMatching(query as CFDictionary, &result)
