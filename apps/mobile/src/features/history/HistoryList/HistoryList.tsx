@@ -102,8 +102,8 @@ export const HistoryList = (props: HistoryListProps) => {
         show: showBubble
     } = useNewTransactionsBubble({
         listRef,
-        // height of one history item, but should think about better way
-        topThreshold: 64 - 1
+        // height of one history item + group label, but should think about better way maybe
+        topThreshold: 128
     });
 
     const { mutate: runIntervalRefetch } = useMutation({
@@ -197,6 +197,8 @@ export const HistoryList = (props: HistoryListProps) => {
                 ItemSeparatorComponent={renderSeparator}
                 renderItem={renderItem}
                 onScroll={scrollHandler}
+                scrollEventThrottle={50}
+                maintainVisibleContentPosition={{ autoscrollToTopThreshold: 20 }}
             />
             <NewTransactionsBubble mode={bubbleMode} onPress={onBubblePress} />
         </View>
