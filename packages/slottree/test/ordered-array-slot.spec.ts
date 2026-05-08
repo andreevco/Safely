@@ -1,0 +1,236 @@
+import { describe, expect, it } from 'vitest';
+import { z } from 'zod';
+
+import { createStorage, StorageImpl } from '../src';
+import {
+    isContainerSlot,
+    isOrderedArraySlot,
+    isTombstoneSlot,
+    SlotKind,
+    type ContainerSlot
+} from '../src/core/slots';
+import { cloneSlot, slotFromJson } from '../src/core/slots/slot-json';
+import { defineVersionHList, hCons, hNil } from '../src/core/versioning/version';
+
+const sPortfolio = z.object({
+    id: z.string(),
+    name: z.string()
+});
+
+const schema = z.object({
+    portfolios: z.array(sPortfolio)
+});
+
+const versions = defineVersionHList(
+    hCons(
+        {
+            version: 1,
+            schema,
+            initial: {
+                portfolios: []
+            },
+            projectUp: cloneSlot,
+            projectDown: cloneSlot
+        },
+        hNil
+    )
+);
+
+type State = z.output<typeof schema>;
+
+function createPortfolioStorage(authorId: string): StorageImpl<State> {
+    return createStorage({
+        authorId,
+        versions
+    }) as StorageImpl<State>;
+}
+
+function latest(storage: StorageImpl<State>): ContainerSlot {
+    const root = storage.exportSlot();
+    if (!isContainerSlot(root)) {
+        throw new Error('Expected root container');
+    }
+
+    const versionSlot = root.v['1'];
+    if (!isContainerSlot(versionSlot)) {
+        throw new Error('Expected version container');
+    }
+
+    return versionSlot;
+}
+
+describe('ordered array slots', () => {
+    it('stores an initial empty array as an ordered array but exposes an external array', () => {
+        const storage = createPortfolioStorage('device-1');
+
+        expect(storage.get().portfolios).toEqual([]);
+
+        const portfolios = latest(storage).v.portfolios;
+        expect(portfolios?.s).toBe(SlotKind.OrderedArray);
+    });
+
+    it('pushes items into an ordered array slot', () => {
+        const storage = createPortfolioStorage('device-1');
+
+        storage.update(draft => {
+            draft.at('portfolios').push({ id: 'p1', name: 'Main' });
+        });
+
+        expect(storage.get().portfolios).toEqual([{ id: 'p1', name: 'Main' }]);
+
+        const portfolios = latest(storage).v.portfolios;
+        expect(isOrderedArraySlot(portfolios)).toBe(true);
+        expect(isOrderedArraySlot(portfolios) ? portfolios.v.p1 : undefined).toBeDefined();
+    });
+
+    it('inserts and moves by id while preserving external order', () => {
+        const storage = createPortfolioStorage('device-1');
+
+        storage.update(draft => {
+            draft.at('portfolios').push({ id: 'p1', name: 'One' });
+            draft.at('portfolios').push({ id: 'p2', name: 'Two' });
+            draft.at('portfolios').insert(2, { id: 'p3', name: 'Three' });
+            draft.at('portfolios').move('p3', 0);
+        });
+
+        expect(storage.get().portfolios.map(item => item.id)).toEqual(['p3', 'p1', 'p2']);
+        expect(storage.read().portfolios.map(item => item.id)).toEqual(['p3', 'p1', 'p2']);
+    });
+
+    it('removes items with tombstones', () => {
+        const storage = createPortfolioStorage('device-1');
+
+        storage.update(draft => {
+            draft.at('portfolios').push({ id: 'p1', name: 'One' });
+            draft.at('portfolios').push({ id: 'p2', name: 'Two' });
+            draft.at('portfolios').remove('p2');
+        });
+
+        expect(storage.get().portfolios).toEqual([{ id: 'p1', name: 'One' }]);
+
+        const portfolios = latest(storage).v.portfolios;
+        if (!isOrderedArraySlot(portfolios)) {
+            throw new Error('Expected ordered array');
+        }
+
+        expect(isTombstoneSlot(portfolios.v.p2)).toBe(true);
+    });
+
+    it('replaces and updates items by id', () => {
+        const storage = createPortfolioStorage('device-1');
+
+        storage.update(draft => {
+            draft.at('portfolios').push({ id: 'p1', name: 'One' });
+            draft.at('portfolios').push({ id: 'p2', name: 'Two' });
+            draft.at('portfolios').replace('p1', { id: 'p1', name: 'Main' });
+            draft.at('portfolios').update('p2', item => ({
+                ...item,
+                name: 'Second'
+            }));
+        });
+
+        expect(storage.get().portfolios).toEqual([
+            { id: 'p1', name: 'Main' },
+            { id: 'p2', name: 'Second' }
+        ]);
+    });
+
+    it('rejects duplicate live ids', () => {
+        const storage = createPortfolioStorage('device-1');
+
+        storage.update(draft => {
+            draft.at('portfolios').push({ id: 'p1', name: 'One' });
+        });
+
+        expect(() =>
+            storage.update(draft => {
+                draft.at('portfolios').push({ id: 'p1', name: 'Duplicate' });
+            })
+        ).toThrow('already exists');
+    });
+
+    it('merges concurrent pushes into an initially empty array', () => {
+        const a = createPortfolioStorage('device-a');
+        const b = createPortfolioStorage('device-b');
+
+        a.update(draft => {
+            draft.at('portfolios').push({ id: 'p1', name: 'One' });
+        });
+        b.update(draft => {
+            draft.at('portfolios').push({ id: 'p2', name: 'Two' });
+        });
+
+        a.merge(b.export());
+        b.merge(a.export());
+
+        expect(a.get().portfolios).toEqual([
+            { id: 'p1', name: 'One' },
+            { id: 'p2', name: 'Two' }
+        ]);
+        expect(b.get()).toEqual(a.get());
+    });
+
+    it('merges a concurrent update and move on the same item', () => {
+        const seed = createPortfolioStorage('seed');
+        seed.update(draft => {
+            draft.at('portfolios').push({ id: 'p1', name: 'One' });
+            draft.at('portfolios').push({ id: 'p2', name: 'Two' });
+        });
+
+        const a = createStorage({
+            authorId: 'device-a',
+            versions,
+            root: seed.exportSlot() as ContainerSlot
+        }) as StorageImpl<State>;
+        const b = createStorage({
+            authorId: 'device-b',
+            versions,
+            root: seed.exportSlot() as ContainerSlot
+        }) as StorageImpl<State>;
+
+        a.update(draft => {
+            draft.at('portfolios').move('p2', 0);
+        });
+        b.update(draft => {
+            draft.at('portfolios').update('p2', item => ({
+                ...item,
+                name: 'Second'
+            }));
+        });
+
+        a.merge(b.export());
+        b.merge(a.export());
+
+        expect(a.get().portfolios).toEqual([
+            { id: 'p2', name: 'Second' },
+            { id: 'p1', name: 'One' }
+        ]);
+        expect(b.get()).toEqual(a.get());
+    });
+
+    it('roundtrips ordered arrays through export and import', () => {
+        const storage = createPortfolioStorage('device-1');
+        storage.update(draft => {
+            draft.at('portfolios').push({ id: 'p1', name: 'One' });
+            draft.at('portfolios').push({ id: 'p2', name: 'Two' });
+            draft.at('portfolios').move('p2', 0);
+            draft.at('portfolios').update('p2', item => ({
+                ...item,
+                name: 'Second'
+            }));
+        });
+
+        const imported = createStorage({
+            authorId: 'device-2',
+            versions,
+            root: JSON.parse(storage.export()) as ContainerSlot
+        });
+
+        expect(imported.get()).toEqual(storage.get());
+    });
+
+    it('rejects array items without string ids', () => {
+        expect(() => slotFromJson(['tag'], 0, '')).toThrow('string id');
+        expect(() => slotFromJson([{ name: 'Missing id' }], 0, '')).toThrow('string id');
+    });
+});

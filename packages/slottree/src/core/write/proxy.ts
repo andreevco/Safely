@@ -1,6 +1,6 @@
-import { isContainerSlot, isTombstoneSlot, Slot } from '../slots';
+import { isContainerSlot, isOrderedArraySlot, isTombstoneSlot, Slot } from '../slots';
 import { JsonStorageSelection } from './selection';
-import { cloneDeep } from '../slots/slot-json';
+import { cloneDeep, stripSlot } from '../slots/slot-json';
 
 export type ReadSlotObserver = (slot: Slot) => void;
 
@@ -25,6 +25,10 @@ export function createReadProxy(
             }
 
             return createReadProxy(childSelection, onRead);
+        }
+
+        if (isOrderedArraySlot(slot)) {
+            return cloneDeep(stripSlot(slot));
         }
 
         return cloneDeep(slot.v);

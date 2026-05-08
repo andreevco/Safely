@@ -14,10 +14,25 @@ const safeString = fc.string({ maxLength: 20 });
 
 const keyArb = fc.constantFrom('a', 'b', 'c');
 const nestedKeyArb = fc.constantFrom('x', 'y', 'z');
+const arrayIdArb = fc.constantFrom('i1', 'i2', 'i3', 'i4');
 
 const scalarArb = safeString;
 
 const richObjectArb = fc.record({
+    value: scalarArb,
+    nested: fc.record(
+        {
+            note: scalarArb,
+            nullableNote: fc.option(scalarArb, { nil: null })
+        },
+        {
+            requiredKeys: ['nullableNote']
+        }
+    )
+});
+
+const arrayRichObjectArb = fc.record({
+    id: arrayIdArb,
     value: scalarArb,
     nested: fc.record(
         {
@@ -49,6 +64,28 @@ const discriminatedItemArb = fc.oneof(
     })
 );
 
+const arrayDiscriminatedItemArb = fc.oneof(
+    fc.record({
+        id: arrayIdArb,
+        type: fc.constant('text' as const),
+        value: scalarArb
+    }),
+
+    fc.record({
+        id: arrayIdArb,
+        type: fc.constant('ref' as const),
+        refId: scalarArb,
+        meta: fc.record({
+            label: fc.option(scalarArb, { nil: undefined })
+        })
+    }),
+
+    fc.record({
+        id: arrayIdArb,
+        type: fc.constant('empty' as const)
+    })
+);
+
 const objectStringNullUnionArb = fc.oneof(richObjectArb, scalarArb, fc.constant(null));
 
 const ambiguousUnionArb = fc.oneof(
@@ -63,14 +100,21 @@ const ambiguousUnionArb = fc.oneof(
     })
 );
 
-const arrayOfObjectsArb = fc.array(richObjectArb, { maxLength: 4 });
+const arrayOfObjectsArb = fc.uniqueArray(arrayRichObjectArb, {
+    maxLength: 4,
+    selector: item => item.id
+});
 
-const arrayOfUnionsArb = fc.array(
-    fc.oneof(scalarArb, fc.constant(null), richObjectArb, discriminatedItemArb),
-    { maxLength: 4 }
+const arrayOfUnionsArb = fc.uniqueArray(fc.oneof(arrayRichObjectArb, arrayDiscriminatedItemArb), {
+    maxLength: 4,
+    selector: item => item.id
+});
+
+const tupleArb = fc.tuple(
+    richObjectArb.map(value => ({ id: 'tuple-a', ...value })),
+    richObjectArb.map(value => ({ id: 'tuple-b', ...value })),
+    discriminatedItemArb.map(value => ({ id: 'tuple-c', ...value }))
 );
-
-const tupleArb = fc.tuple(scalarArb, richObjectArb, fc.option(discriminatedItemArb, { nil: null }));
 
 const catchallValueArb = fc.oneof(
     scalarArb,
@@ -82,8 +126,9 @@ const catchallValueArb = fc.oneof(
 const deepMixedValueArb = fc.record({
     object: richObjectArb,
     maybeObject: fc.option(richObjectArb, { nil: null }),
-    items: fc.array(fc.oneof(richObjectArb, discriminatedItemArb, scalarArb, fc.constant(null)), {
-        maxLength: 4
+    items: fc.uniqueArray(fc.oneof(arrayRichObjectArb, arrayDiscriminatedItemArb), {
+        maxLength: 4,
+        selector: item => item.id
     }),
     children: fc.dictionary(
         nestedKeyArb,

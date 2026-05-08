@@ -3,10 +3,9 @@ import { createNullPrototypeRecord, type JsonObject, type JsonValue } from '../j
 export const SlotKind = {
     Atomic: 0,
     Container: 1,
-    Tombstone: 2
+    Tombstone: 2,
+    OrderedArray: 3
 } as const;
-
-export type SlotKindValue = (typeof SlotKind)[keyof typeof SlotKind];
 
 export interface AtomicSlot {
     s: typeof SlotKind.Atomic;
@@ -28,7 +27,14 @@ export interface ContainerSlot {
     a: string;
 }
 
-export type Slot = AtomicSlot | TombstoneSlot | ContainerSlot;
+export interface OrderedArraySlot {
+    s: typeof SlotKind.OrderedArray;
+    v: SlotMap;
+    t: number;
+    a: string;
+}
+
+export type Slot = AtomicSlot | TombstoneSlot | ContainerSlot | OrderedArraySlot;
 export type SlotMap = { [key: string]: Slot | undefined };
 
 export function createSlotMap(): SlotMap {
@@ -45,6 +51,14 @@ export function isContainerSlot(slot: Slot | undefined): slot is ContainerSlot {
     return slot !== undefined && slot.s === SlotKind.Container;
 }
 
+export function isOrderedArraySlot(slot: Slot | undefined): slot is OrderedArraySlot {
+    return slot !== undefined && slot.s === SlotKind.OrderedArray;
+}
+
+export function isRecursiveSlot(slot: Slot | undefined): slot is ContainerSlot | OrderedArraySlot {
+    return isContainerSlot(slot) || isOrderedArraySlot(slot);
+}
+
 export function isTombstoneSlot(slot: Slot | undefined): slot is TombstoneSlot {
     return slot !== undefined && slot.s === SlotKind.Tombstone;
 }
@@ -59,6 +73,18 @@ export function createContainerSlot(
 
 export function createOriginContainer(values: SlotMap = createSlotMap()): ContainerSlot {
     return createContainerSlot(0, '', values);
+}
+
+export function createOrderedArraySlot(
+    timestamp: number,
+    author: string,
+    values: SlotMap = createSlotMap()
+): OrderedArraySlot {
+    return { s: SlotKind.OrderedArray, v: values, t: timestamp, a: author };
+}
+
+export function createOriginOrderedArray(values: SlotMap = createSlotMap()): OrderedArraySlot {
+    return createOrderedArraySlot(0, '', values);
 }
 
 export function createTombstoneSlot(timestamp: number, author: string): TombstoneSlot {

@@ -16,6 +16,10 @@ const RichObject = z.object({
   }),
 });
 
+const ArrayRichObject = RichObject.extend({
+  id: Scalar,
+});
+
 const DiscriminatedItem = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("text"),
@@ -29,6 +33,26 @@ const DiscriminatedItem = z.discriminatedUnion("type", [
     }),
   }),
   z.object({
+    type: z.literal("empty"),
+  }),
+]);
+
+const ArrayDiscriminatedItem = z.discriminatedUnion("type", [
+  z.object({
+    id: Scalar,
+    type: z.literal("text"),
+    value: Scalar,
+  }),
+  z.object({
+    id: Scalar,
+    type: z.literal("ref"),
+    refId: Scalar,
+    meta: z.object({
+      label: Scalar.optional(),
+    }),
+  }),
+  z.object({
+    id: Scalar,
     type: z.literal("empty"),
   }),
 ]);
@@ -66,11 +90,9 @@ export const stressSchema = z.object({
     item: DiscriminatedItem,
   }),
   recordOfDiscriminatedUnions: z.record(z.string(), DiscriminatedItem),
-  arrayOfObjects: z.array(RichObject),
-  arrayOfUnions: z.array(
-    z.union([Scalar, z.null(), RichObject, DiscriminatedItem]),
-  ),
-  tuple: z.tuple([Scalar, RichObject, DiscriminatedItem.nullable()]),
+  arrayOfObjects: z.array(ArrayRichObject),
+  arrayOfUnions: z.array(z.union([ArrayRichObject, ArrayDiscriminatedItem])),
+  tuple: z.tuple([ArrayRichObject, ArrayRichObject, ArrayDiscriminatedItem]),
   ambiguousUnion: z.union([AmbiguousA, AmbiguousB]),
   intersectionObject: z.intersection(
     z.object({
@@ -103,9 +125,7 @@ export const stressSchema = z.object({
     z.object({
       object: RichObject,
       maybeObject: RichObject.nullable().optional(),
-      items: z.array(
-        z.union([RichObject, DiscriminatedItem, Scalar, z.null()]),
-      ),
+      items: z.array(z.union([ArrayRichObject, ArrayDiscriminatedItem])),
       children: z.record(
         z.string(),
         z.object({
@@ -144,14 +164,24 @@ export const stressInitial: StressState = {
   arrayOfObjects: [],
   arrayOfUnions: [],
   tuple: [
-    "",
     {
+      id: "tuple-a",
       value: "",
       nested: {
         nullableNote: null,
       },
     },
-    null,
+    {
+      id: "tuple-b",
+      value: "",
+      nested: {
+        nullableNote: null,
+      },
+    },
+    {
+      id: "tuple-c",
+      type: "empty",
+    },
   ],
   ambiguousUnion: {
     value: "",

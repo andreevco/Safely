@@ -296,7 +296,12 @@ describe('storage updates', () => {
 
     it('returns cloned arrays from read proxies', () => {
         const schema = z.object({
-            items: z.array(z.string())
+            items: z.array(
+                z.object({
+                    id: z.string(),
+                    value: z.string()
+                })
+            )
         });
 
         const versions = defineVersionHList(
@@ -305,7 +310,7 @@ describe('storage updates', () => {
                     version: 1,
                     schema,
                     initial: {
-                        items: ['one']
+                        items: [{ id: 'one', value: 'one' }]
                     },
                     projectUp: cloneSlot,
                     projectDown: cloneSlot
@@ -319,12 +324,15 @@ describe('storage updates', () => {
             versions
         });
 
-        const items = storage.read().items as string[];
-        items.push('mutated clone');
+        const items = storage.read().items as Array<{ id: string; value: string }>;
+        items.push({ id: 'mutated', value: 'mutated clone' });
 
-        expect(items).toEqual(['one', 'mutated clone']);
+        expect(items).toEqual([
+            { id: 'one', value: 'one' },
+            { id: 'mutated', value: 'mutated clone' }
+        ]);
         expect(storage.read()).toEqual({
-            items: ['one']
+            items: [{ id: 'one', value: 'one' }]
         });
     });
 

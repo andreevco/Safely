@@ -1,4 +1,4 @@
-import { isContainerSlot, type Slot, type SlotMap } from './slots';
+import { isRecursiveSlot, type Slot, type SlotMap } from './slots';
 import { cloneSlot } from './slots/slot-json';
 
 export interface MergeStats {
@@ -39,7 +39,7 @@ export class MergeProtocol {
         }
 
         this.observe(slot.t);
-        if (isContainerSlot(slot)) {
+        if (isRecursiveSlot(slot)) {
             for (const key of Object.keys(slot.v)) {
                 this.observeTree(slot.v[key]);
             }
@@ -71,8 +71,9 @@ export class MergeProtocol {
 
     private mergeSlot(local: Slot, incoming: Slot, stats: MergeStats): void {
         if (
-            isContainerSlot(local) &&
-            isContainerSlot(incoming) &&
+            isRecursiveSlot(local) &&
+            isRecursiveSlot(incoming) &&
+            local.s === incoming.s &&
             MergeProtocol.compareClocks(local, incoming) === 0
         ) {
             this.mergeContainerValues(local.v, incoming.v, stats);

@@ -7,7 +7,7 @@ export type {
     Path,
     PathValue
 } from './core/json';
-export type { AtomicDraft, Draft, ObjectDraft } from './core/write';
+export type { ArrayDraft, AtomicDraft, Draft, ObjectDraft } from './core/write';
 
 export { createStorage, StorageObservers } from './core/storage';
 export type { Storage, StorageImpl } from './core/storage';
