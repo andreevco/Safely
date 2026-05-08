@@ -1,7 +1,7 @@
 import { ArrayDraftNode } from './array-node';
 import { DraftCursor } from './cursor';
-import type { Draft } from './types';
 import { ObjectDraftNode } from './object-node';
+import type { Draft } from './types';
 import { JsonStorageSelection } from '../selection';
 
 export type { ArrayDraft, AtomicDraft, Draft, DraftInput, ObjectDraft } from './types';

@@ -10,6 +10,8 @@ type StorageLike = {
     update(fn: (draft: Draft<StressState>) => void): void;
 };
 
+type StressDraft = Draft<StressState>;
+
 const safeString = fc.string({ maxLength: 20 });
 
 const keyArb = fc.constantFrom('a', 'b', 'c');
@@ -576,236 +578,273 @@ export const opsArb = fc.array(opArb, { maxLength: 50 });
 
 export function applyOp(storage: StorageLike, op: Op): void {
     storage.update(draft => {
-        switch (op.type) {
-            case 'nested.setValue': {
-                draft.at('nested').set('value', op.value);
-                return;
-            }
-
-            case 'nested.setChildValue': {
-                draft.at('nested').at('child').set('value', op.value);
-                return;
-            }
-
-            case 'optionalObject.set': {
-                if (op.value === undefined) {
-                    draft.delete('optionalObject');
-                } else {
-                    draft.set('optionalObject', op.value);
-                }
-                return;
-            }
-
-            case 'optionalObject.delete': {
-                draft.delete('optionalObject');
-                return;
-            }
-
-            case 'nullableObject.set': {
-                draft.set('nullableObject', op.value);
-                return;
-            }
-
-            case 'optionalNullableObject.set': {
-                if (op.value === undefined) {
-                    draft.delete('optionalNullableObject');
-                } else {
-                    draft.set('optionalNullableObject', op.value);
-                }
-                return;
-            }
-
-            case 'optionalNullableObject.delete': {
-                draft.delete('optionalNullableObject');
-                return;
-            }
-
-            case 'recordOfObjects.setEntry': {
-                draft.at('recordOfObjects').set(op.key, op.value);
-                return;
-            }
-
-            case 'recordOfObjects.deleteEntry': {
-                draft.at('recordOfObjects').delete(op.key);
-                return;
-            }
-
-            case 'nestedRecordOfObjects.setEntry': {
-                draft.at('nestedRecordOfObjects').at(op.outerKey).set(op.innerKey, op.value);
-                return;
-            }
-
-            case 'nestedRecordOfObjects.deleteEntry': {
-                const outer = draft.at('nestedRecordOfObjects').at(op.outerKey);
-                if (outer.get() !== undefined) {
-                    outer.delete(op.innerKey);
-                }
-                return;
-            }
-
-            case 'nestedRecordOfObjects.deleteOuter': {
-                draft.at('nestedRecordOfObjects').delete(op.outerKey);
-                return;
-            }
-
-            case 'nestedRecordOfNullableObjects.setEntry': {
-                draft
-                    .at('nestedRecordOfNullableObjects')
-                    .at(op.outerKey)
-                    .set(op.innerKey, op.value);
-                return;
-            }
-
-            case 'nestedRecordOfNullableObjects.deleteEntry': {
-                const outer = draft.at('nestedRecordOfNullableObjects').at(op.outerKey);
-                if (outer.get() !== undefined) {
-                    outer.delete(op.innerKey);
-                }
-                return;
-            }
-
-            case 'objectStringNullUnion.set': {
-                draft.set('objectStringNullUnion', op.value);
-                return;
-            }
-
-            case 'discriminatedUnion.set': {
-                draft.set('discriminatedUnion', op.value);
-                return;
-            }
-
-            case 'nestedDiscriminatedUnion.setItem': {
-                draft.at('nestedDiscriminatedUnion').set('item', op.value);
-                return;
-            }
-
-            case 'nestedDiscriminatedUnion.setId': {
-                draft.at('nestedDiscriminatedUnion').set('id', op.value);
-                return;
-            }
-
-            case 'recordOfDiscriminatedUnions.setEntry': {
-                draft.at('recordOfDiscriminatedUnions').set(op.key, op.value);
-                return;
-            }
-
-            case 'recordOfDiscriminatedUnions.deleteEntry': {
-                draft.at('recordOfDiscriminatedUnions').delete(op.key);
-                return;
-            }
-
-            case 'arrayOfObjects.set': {
-                draft.set('arrayOfObjects', op.value);
-                return;
-            }
-
-            case 'arrayOfUnions.set': {
-                draft.set('arrayOfUnions', op.value);
-                return;
-            }
-
-            case 'tuple.set': {
-                draft.set('tuple', op.value);
-                return;
-            }
-
-            case 'ambiguousUnion.set': {
-                draft.set('ambiguousUnion', op.value);
-                return;
-            }
-
-            case 'intersectionObject.setId': {
-                draft.at('intersectionObject').set('id', op.value);
-                return;
-            }
-
-            case 'intersectionObject.setValue': {
-                draft.at('intersectionObject').set('value', op.value);
-                return;
-            }
-
-            case 'intersectionObject.setMetaNote': {
-                draft.at('intersectionObject').at('meta').set('note', op.value);
-                return;
-            }
-
-            case 'intersectionObject.deleteMetaNote': {
-                draft.at('intersectionObject').at('meta').delete('note');
-                return;
-            }
-
-            case 'catchallObject.setKnown': {
-                draft.at('catchallObject').set('known', op.value);
-                return;
-            }
-
-            case 'catchallObject.setExtra': {
-                draft.at('catchallObject').set(op.key, op.value);
-                return;
-            }
-
-            case 'catchallObject.deleteExtra': {
-                if (op.key !== 'known') {
-                    draft.at('catchallObject').delete(op.key);
-                }
-                return;
-            }
-
-            case 'partialObject.setA': {
-                draft.at('partialObject').set('a', op.value);
-                return;
-            }
-
-            case 'partialObject.deleteA': {
-                draft.at('partialObject').delete('a');
-                return;
-            }
-
-            case 'partialObject.setChild': {
-                draft.at('partialObject').set('child', op.value);
-                return;
-            }
-
-            case 'partialObject.deleteChild': {
-                draft.at('partialObject').delete('child');
-                return;
-            }
-
-            case 'deepMixed.setEntry': {
-                draft.at('deepMixed').set(op.key, op.value);
-                return;
-            }
-
-            case 'deepMixed.deleteEntry': {
-                draft.at('deepMixed').delete(op.key);
-                return;
-            }
-
-            case 'deepMixed.setChild': {
-                draft.at('deepMixed').set(op.key, {
-                    object: {
-                        value: '',
-                        nested: {
-                            nullableNote: null
-                        }
-                    },
-                    maybeObject: null,
-                    items: [],
-                    children: {}
-                });
-                draft.at('deepMixed').at(op.key).at('children').set(op.childKey, op.value);
-                return;
-            }
-
-            case 'deepMixed.deleteChild': {
-                const entry = draft.at('deepMixed').at(op.key);
-                if (entry.get() !== undefined) {
-                    entry.at('children').delete(op.childKey);
-                }
-                return;
-            }
+        if (applyObjectOp(draft, op)) {
+            return;
         }
+
+        if (applyCollectionOp(draft, op)) {
+            return;
+        }
+
+        if (applyValueOp(draft, op)) {
+            return;
+        }
+
+        applyRemainingOp(draft, op);
     });
+}
+
+function applyObjectOp(draft: StressDraft, op: Op): boolean {
+    switch (op.type) {
+        case 'nested.setValue': {
+            draft.at('nested').set('value', op.value);
+            return true;
+        }
+
+        case 'nested.setChildValue': {
+            draft.at('nested').at('child').set('value', op.value);
+            return true;
+        }
+
+        case 'optionalObject.set': {
+            if (op.value === undefined) {
+                draft.delete('optionalObject');
+            } else {
+                draft.set('optionalObject', op.value);
+            }
+            return true;
+        }
+
+        case 'optionalObject.delete': {
+            draft.delete('optionalObject');
+            return true;
+        }
+
+        case 'nullableObject.set': {
+            draft.set('nullableObject', op.value);
+            return true;
+        }
+
+        case 'optionalNullableObject.set': {
+            if (op.value === undefined) {
+                draft.delete('optionalNullableObject');
+            } else {
+                draft.set('optionalNullableObject', op.value);
+            }
+            return true;
+        }
+
+        case 'optionalNullableObject.delete': {
+            draft.delete('optionalNullableObject');
+            return true;
+        }
+
+        case 'recordOfObjects.setEntry': {
+            draft.at('recordOfObjects').set(op.key, op.value);
+            return true;
+        }
+
+        case 'recordOfObjects.deleteEntry': {
+            draft.at('recordOfObjects').delete(op.key);
+            return true;
+        }
+
+        default:
+            return false;
+    }
+}
+
+function applyCollectionOp(draft: StressDraft, op: Op): boolean {
+    switch (op.type) {
+        case 'nestedRecordOfObjects.setEntry': {
+            draft.at('nestedRecordOfObjects').at(op.outerKey).set(op.innerKey, op.value);
+            return true;
+        }
+
+        case 'nestedRecordOfObjects.deleteEntry': {
+            const outer = draft.at('nestedRecordOfObjects').at(op.outerKey);
+            if (outer.get() !== undefined) {
+                outer.delete(op.innerKey);
+            }
+            return true;
+        }
+
+        case 'nestedRecordOfObjects.deleteOuter': {
+            draft.at('nestedRecordOfObjects').delete(op.outerKey);
+            return true;
+        }
+
+        case 'nestedRecordOfNullableObjects.setEntry': {
+            draft.at('nestedRecordOfNullableObjects').at(op.outerKey).set(op.innerKey, op.value);
+            return true;
+        }
+
+        case 'nestedRecordOfNullableObjects.deleteEntry': {
+            const outer = draft.at('nestedRecordOfNullableObjects').at(op.outerKey);
+            if (outer.get() !== undefined) {
+                outer.delete(op.innerKey);
+            }
+            return true;
+        }
+
+        case 'recordOfDiscriminatedUnions.setEntry': {
+            draft.at('recordOfDiscriminatedUnions').set(op.key, op.value);
+            return true;
+        }
+
+        case 'recordOfDiscriminatedUnions.deleteEntry': {
+            draft.at('recordOfDiscriminatedUnions').delete(op.key);
+            return true;
+        }
+
+        case 'arrayOfObjects.set': {
+            draft.set('arrayOfObjects', op.value);
+            return true;
+        }
+
+        case 'arrayOfUnions.set': {
+            draft.set('arrayOfUnions', op.value);
+            return true;
+        }
+
+        case 'tuple.set': {
+            draft.set('tuple', op.value);
+            return true;
+        }
+
+        default:
+            return false;
+    }
+}
+
+function applyValueOp(draft: StressDraft, op: Op): boolean {
+    switch (op.type) {
+        case 'objectStringNullUnion.set': {
+            draft.set('objectStringNullUnion', op.value);
+            return true;
+        }
+
+        case 'discriminatedUnion.set': {
+            draft.set('discriminatedUnion', op.value);
+            return true;
+        }
+
+        case 'nestedDiscriminatedUnion.setItem': {
+            draft.at('nestedDiscriminatedUnion').set('item', op.value);
+            return true;
+        }
+
+        case 'nestedDiscriminatedUnion.setId': {
+            draft.at('nestedDiscriminatedUnion').set('id', op.value);
+            return true;
+        }
+
+        case 'ambiguousUnion.set': {
+            draft.set('ambiguousUnion', op.value);
+            return true;
+        }
+
+        case 'intersectionObject.setId': {
+            draft.at('intersectionObject').set('id', op.value);
+            return true;
+        }
+
+        case 'intersectionObject.setValue': {
+            draft.at('intersectionObject').set('value', op.value);
+            return true;
+        }
+
+        case 'intersectionObject.setMetaNote': {
+            draft.at('intersectionObject').at('meta').set('note', op.value);
+            return true;
+        }
+
+        case 'intersectionObject.deleteMetaNote': {
+            draft.at('intersectionObject').at('meta').delete('note');
+            return true;
+        }
+
+        default:
+            return false;
+    }
+}
+
+function applyRemainingOp(draft: StressDraft, op: Op): void {
+    switch (op.type) {
+        case 'catchallObject.setKnown': {
+            draft.at('catchallObject').set('known', op.value);
+            return;
+        }
+
+        case 'catchallObject.setExtra': {
+            draft.at('catchallObject').set(op.key, op.value);
+            return;
+        }
+
+        case 'catchallObject.deleteExtra': {
+            if (op.key !== 'known') {
+                draft.at('catchallObject').delete(op.key);
+            }
+            return;
+        }
+
+        case 'partialObject.setA': {
+            draft.at('partialObject').set('a', op.value);
+            return;
+        }
+
+        case 'partialObject.deleteA': {
+            draft.at('partialObject').delete('a');
+            return;
+        }
+
+        case 'partialObject.setChild': {
+            draft.at('partialObject').set('child', op.value);
+            return;
+        }
+
+        case 'partialObject.deleteChild': {
+            draft.at('partialObject').delete('child');
+            return;
+        }
+
+        case 'deepMixed.setEntry': {
+            draft.at('deepMixed').set(op.key, op.value);
+            return;
+        }
+
+        case 'deepMixed.deleteEntry': {
+            draft.at('deepMixed').delete(op.key);
+            return;
+        }
+
+        case 'deepMixed.setChild': {
+            draft.at('deepMixed').set(op.key, {
+                object: {
+                    value: '',
+                    nested: {
+                        nullableNote: null
+                    }
+                },
+                maybeObject: null,
+                items: [],
+                children: {}
+            });
+            draft.at('deepMixed').at(op.key).at('children').set(op.childKey, op.value);
+            return;
+        }
+
+        case 'deepMixed.deleteChild': {
+            const entry = draft.at('deepMixed').at(op.key);
+            if (entry.get() !== undefined) {
+                entry.at('children').delete(op.childKey);
+            }
+            return;
+        }
+
+        default:
+            return;
+    }
 }
 
 export function applyOps(storage: StorageLike, ops: Op[]): void {

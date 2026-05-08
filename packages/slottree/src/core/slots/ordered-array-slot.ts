@@ -205,9 +205,7 @@ function validateArrayItem(item: JsonValue): string {
 
     const id = item[ORDERED_ARRAY_ITEM_ID_KEY];
     if (typeof id !== 'string') {
-        throw new Error(
-            `Ordered array draft item must have a string ${ORDERED_ARRAY_ITEM_ID_KEY}`
-        );
+        throw new Error(`Ordered array draft item must have a string ${ORDERED_ARRAY_ITEM_ID_KEY}`);
     }
 
     return id;

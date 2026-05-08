@@ -7,55 +7,17 @@ export function validateSlot(slot: unknown): asserts slot is Slot {
 }
 
 function validateSlotInner(slot: unknown, depth: number): void {
-    if (slot === null || typeof slot !== 'object') {
-        throw new Error('Slot must be an object');
-    }
-
-    const record = slot as Record<string, unknown>;
-    if (typeof record.t !== 'number' || !Number.isFinite(record.t)) {
-        throw new Error('Slot timestamp must be a finite number');
-    }
-    if (typeof record.a !== 'string') {
-        throw new Error('Slot author must be a string');
-    }
-
-    if (
-        record.s !== SlotKind.Atomic &&
-        record.s !== SlotKind.Container &&
-        record.s !== SlotKind.Tombstone &&
-        record.s !== SlotKind.OrderedArray
-    ) {
-        throw new Error('Slot kind must be a known numeric discriminant');
-    }
+    const record = validateSlotRecord(slot);
+    validateSlotMetadata(record);
+    validateSlotKind(record.s);
 
     if (record.s === SlotKind.Container) {
-        if (record.v === null || typeof record.v !== 'object') {
-            throw new Error('Container slot value must be an object');
-        }
-
-        for (const key of Object.keys(record.v)) {
-            const child = (record.v as Record<string, unknown>)[key];
-            if (child !== undefined) {
-                validateSlotInner(child, depth + 1);
-            }
-        }
+        validateContainerSlotValue(record.v, depth);
         return;
     }
 
     if (record.s === SlotKind.OrderedArray) {
-        if (record.v === null || typeof record.v !== 'object' || Array.isArray(record.v)) {
-            throw new Error('Ordered array slot value must be an object');
-        }
-
-        for (const key of Object.keys(record.v)) {
-            const child = (record.v as Record<string, unknown>)[key];
-            if (child === undefined) {
-                continue;
-            }
-
-            validateSlotInner(child, depth + 1);
-            validateOrderedArrayItem(key, child);
-        }
+        validateOrderedArraySlotValue(record.v, depth);
         return;
     }
 
@@ -63,7 +25,69 @@ function validateSlotInner(slot: unknown, depth: number): void {
         return;
     }
 
-    if (!isJsonValue(record.v, depth + 1)) {
+    validateAtomicSlotValue(record.v, depth);
+}
+
+function validateSlotRecord(slot: unknown): Record<string, unknown> {
+    if (slot === null || typeof slot !== 'object') {
+        throw new Error('Slot must be an object');
+    }
+
+    return slot as Record<string, unknown>;
+}
+
+function validateSlotMetadata(record: Record<string, unknown>): void {
+    if (typeof record.t !== 'number' || !Number.isFinite(record.t)) {
+        throw new Error('Slot timestamp must be a finite number');
+    }
+
+    if (typeof record.a !== 'string') {
+        throw new Error('Slot author must be a string');
+    }
+}
+
+function validateSlotKind(kind: unknown): asserts kind is Slot['s'] {
+    if (
+        kind !== SlotKind.Atomic &&
+        kind !== SlotKind.Container &&
+        kind !== SlotKind.Tombstone &&
+        kind !== SlotKind.OrderedArray
+    ) {
+        throw new Error('Slot kind must be a known numeric discriminant');
+    }
+}
+
+function validateContainerSlotValue(value: unknown, depth: number): void {
+    if (value === null || typeof value !== 'object') {
+        throw new Error('Container slot value must be an object');
+    }
+
+    for (const key of Object.keys(value)) {
+        const child = (value as Record<string, unknown>)[key];
+        if (child !== undefined) {
+            validateSlotInner(child, depth + 1);
+        }
+    }
+}
+
+function validateOrderedArraySlotValue(value: unknown, depth: number): void {
+    if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+        throw new Error('Ordered array slot value must be an object');
+    }
+
+    for (const key of Object.keys(value)) {
+        const child = (value as Record<string, unknown>)[key];
+        if (child === undefined) {
+            continue;
+        }
+
+        validateSlotInner(child, depth + 1);
+        validateOrderedArrayItem(key, child);
+    }
+}
+
+function validateAtomicSlotValue(value: unknown, depth: number): void {
+    if (!isJsonValue(value, depth + 1)) {
         throw new Error('Atomic slot value must be JSON-compatible');
     }
 }
