@@ -24,7 +24,7 @@ export class BtcEstimator implements IIdentifiable {
         private readonly wallet: SignableBtcWallet
     ) {
         this.id = `${this.constructor.name}:${this.btcApi.id}:${this.wallet.id.toString()}`;
-        this.psbtBuilder = new BtcPsbtBuilder(btcApi, btcNetworkConfig[this.wallet.network]);
+        this.psbtBuilder = new BtcPsbtBuilder(btcNetworkConfig[this.wallet.network]);
     }
 
     private async getFeeValue(
@@ -85,7 +85,7 @@ export class BtcEstimator implements IIdentifiable {
 
         const totalBalance = getUtxoTotal(utxos);
 
-        const vSize = await this.psbtBuilder.calculateTransactionVSize({
+        const vSize = this.psbtBuilder.calculateTransactionVSize({
             inputs: utxos,
             outputs: [
                 { address: request.recipientAddress, value: request.amount.weiAmount },
@@ -119,7 +119,7 @@ export class BtcEstimator implements IIdentifiable {
 
         const totalBalance = getUtxoTotal(utxos);
 
-        const vSize = await this.psbtBuilder.calculateTransactionVSize({
+        const vSize = this.psbtBuilder.calculateTransactionVSize({
             inputs: utxos,
             outputs: [{ address: request.recipientAddress, value: 1n }]
         });

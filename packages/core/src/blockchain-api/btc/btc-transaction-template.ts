@@ -50,7 +50,7 @@ export class BtcTransactionTemplate {
         private readonly utxos: BtcApiUtxo[],
         public readonly estimation: BtcEstimation
     ) {
-        this.psbtBuilder = new BtcPsbtBuilder(btcApi, btcNetworkConfig[this.wallet.network]);
+        this.psbtBuilder = new BtcPsbtBuilder(btcNetworkConfig[this.wallet.network]);
     }
 
     public async send(): Promise<BtcSendResult> {
@@ -58,7 +58,7 @@ export class BtcTransactionTemplate {
             throw new Error(`Tx is already published, ${this.sendResult.txId}`);
         }
 
-        const psbt = await this.psbtBuilder.buildPsbt({
+        const psbt = this.psbtBuilder.buildPsbt({
             inputs: this.utxos,
             outputs: this.outputs
         });
