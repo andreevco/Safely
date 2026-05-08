@@ -1,60 +1,59 @@
 import { type RefObject, useCallback } from 'react';
-import {
-    type SharedValue,
-    useAnimatedScrollHandler,
-    useDerivedValue,
-    useSharedValue
-} from 'react-native-reanimated';
+import { type NativeScrollEvent, type NativeSyntheticEvent } from 'react-native';
+import { type SharedValue, useDerivedValue, useSharedValue } from 'react-native-reanimated';
 
 import { type ListRef } from '@mobile/shared/ui/Screen/components/List';
 
-const TOP_THRESHOLD = 24;
-
-export type UseNewTransactionsBubbleArgs = {
+type UseNewTransactionsBubbleOptions = {
     listRef: RefObject<Pick<ListRef<unknown>, 'scrollToOffset'> | null>;
+    topThreshold?: number;
 };
 
-export type UseNewTransactionsBubbleReturn = {
-    scrollHandler: ReturnType<typeof useAnimatedScrollHandler>;
-    bubbleProps: { visibleSV: SharedValue<boolean>; onPress: () => void };
-    markUnread: () => void;
+type UseNewTransactionsBubbleReturn = {
+    scrollHandler: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
+    visible: SharedValue<boolean>;
+    onPress: () => void;
+    show: () => void;
 };
 
 export function useNewTransactionsBubble(
-    args: UseNewTransactionsBubbleArgs
+    options: UseNewTransactionsBubbleOptions
 ): UseNewTransactionsBubbleReturn {
-    const { listRef } = args;
+    const { listRef, topThreshold = 24 } = options;
 
-    const hasUnreadSV = useSharedValue(false);
-    const atTopSV = useSharedValue(true);
+    const showBubble = useSharedValue(false);
+    const atTop = useSharedValue(true);
 
-    const visibleSV = useDerivedValue(() => hasUnreadSV.value && !atTopSV.value);
+    const visible = useDerivedValue(() => showBubble.value && !atTop.value);
 
-    const scrollHandler = useAnimatedScrollHandler({
-        onScroll: event => {
-            'worklet';
-            const nextAtTop = event.contentOffset.y <= TOP_THRESHOLD;
-            atTopSV.value = nextAtTop;
-            if (nextAtTop) {
-                hasUnreadSV.value = false;
+    const scrollHandler = useCallback(
+        (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+            const nextAtTop = event.nativeEvent.contentOffset.y <= topThreshold;
+            if (atTop.value !== nextAtTop) {
+                atTop.value = nextAtTop;
             }
-        }
-    });
+            if (nextAtTop && showBubble.value) {
+                showBubble.value = false;
+            }
+        },
+        [atTop, showBubble, topThreshold]
+    );
 
-    const markUnread = useCallback(() => {
-        if (!atTopSV.value) {
-            hasUnreadSV.value = true;
+    const show = useCallback(() => {
+        if (!atTop.value) {
+            showBubble.value = true;
         }
-    }, [atTopSV, hasUnreadSV]);
+    }, [atTop, showBubble]);
 
     const onPress = useCallback(() => {
-        hasUnreadSV.value = false;
+        showBubble.value = false;
         listRef.current?.scrollToOffset({ offset: 0, animated: true });
-    }, [hasUnreadSV, listRef]);
+    }, [showBubble, listRef]);
 
     return {
         scrollHandler,
-        bubbleProps: { visibleSV, onPress },
-        markUnread
+        visible,
+        onPress,
+        show
     };
 }
