@@ -1,7 +1,7 @@
 import { createActor } from 'xstate';
 import * as z from 'zod';
 
-import { NewOf, StorageVersion } from '@safely/slottree';
+import { Draft, NewOf, StorageVersion } from '@safely/slottree';
 
 import { ISyncProvider } from './I-sync-provider';
 import { OfflineSyncProvider } from './offline-sync-provider';
@@ -95,7 +95,7 @@ export class OnlineSyncProvider<Latest extends StorageVersion, Rest>
         this.syncMachine.send({ type: 'LOCAL_UPDATE' });
     }
 
-    public async update(f: (v: z.output<NewOf<Latest>>) => void): Promise<void> {
+    public async update(f: (draft: Draft<z.output<NewOf<Latest>>>) => void): Promise<void> {
         await super.update(f);
 
         this.syncMachine.send({ type: 'LOCAL_UPDATE' });

@@ -2,13 +2,18 @@ import { z } from 'zod';
 
 import { defineVersionHList, hCons, hNil, projectIdentity } from '@safely/slottree';
 
-import { zArrayWithKey, ISyncAccount, SyncAccountFactory } from '../../src';
+import { ISyncAccount, SyncAccountFactory } from '../../src';
 import { Logger } from '../../src/logger/logger';
 import { InMemStorage } from '../impl/storage';
 
 export const Schema = z
     .object({
-        wallets: zArrayWithKey(z.string(), v => v)
+        wallets: z.array(
+            z.object({
+                __setId: z.string(),
+                value: z.string()
+            })
+        )
     })
     .partial();
 

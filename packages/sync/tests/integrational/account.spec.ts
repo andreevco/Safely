@@ -29,7 +29,7 @@ describe('Account', () => {
         const account = await factory.createSyncAccount(secureEncryptedStorage);
         await onboardDevice(account, secureEncryptedStorage);
 
-        await account.syncProvider.set('wallets', ['wallet']);
+        await account.syncProvider.set('wallets', walletItems('wallet'));
 
         await new Promise(resolve => setTimeout(resolve, 1000));
     });
@@ -38,18 +38,18 @@ describe('Account', () => {
         const account = await factory.createSyncAccount(secureEncryptedStorage);
         const { newAccount } = await onboardDevice(account, secureEncryptedStorage);
 
-        await account.syncProvider.set('wallets', ['wallet']);
+        await account.syncProvider.set('wallets', walletItems('wallet'));
 
         await vi.waitFor(async () => {
             const wallets = newAccount.syncProvider.get('wallets');
-            expect(wallets).toEqual(['wallet']);
+            expect(wallets).toEqual(walletItems('wallet'));
         });
 
-        await newAccount.syncProvider.set('wallets', ['wallet2']);
+        await newAccount.syncProvider.set('wallets', walletItems('wallet2'));
 
         await vi.waitFor(async () => {
             const wallets = account.syncProvider.get('wallets');
-            expect(wallets).toEqual(['wallet2']);
+            expect(wallets).toEqual(walletItems('wallet2'));
         });
     });
 
@@ -57,21 +57,21 @@ describe('Account', () => {
         const account = await factory.createSyncAccount(secureEncryptedStorage);
         const { newAccount } = await onboardDevice(account, secureEncryptedStorage);
 
-        await account.syncProvider.set('wallets', ['wallet']);
+        await account.syncProvider.set('wallets', walletItems('wallet'));
 
         await vi.waitFor(async () => {
             const wallets = newAccount.syncProvider.get('wallets');
-            expect(wallets).toEqual(['wallet']);
+            expect(wallets).toEqual(walletItems('wallet'));
         });
 
         account.syncProvider.restart();
         await account.syncProvider.syncStatusManager.waitForStatus(SyncStatus.SYNCHRONIZED);
 
-        await account.syncProvider.set('wallets', ['wallet2']);
+        await account.syncProvider.set('wallets', walletItems('wallet2'));
 
         await vi.waitFor(async () => {
             const wallets = newAccount.syncProvider.get('wallets');
-            expect(wallets).toEqual(['wallet2']);
+            expect(wallets).toEqual(walletItems('wallet2'));
         });
     });
 
@@ -176,3 +176,10 @@ describe('Account', () => {
         });
     });
 });
+
+function walletItems(...values: string[]) {
+    return values.map(value => ({
+        __setId: value,
+        value
+    }));
+}
