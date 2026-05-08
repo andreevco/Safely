@@ -554,5 +554,11 @@
             "invalidMnemonic": "Неверная фраза восстановления",
             "failedToGenerate": "Не удалось создать кошелёк"
         }
+    },
+    "linking": {
+        "errors": {
+            "unsafeProtocol": "Небезопасный протокол",
+            "failedToOpen": "Не удалось открыть ссылку"
+        }
     }
 }

@@ -1,9 +1,9 @@
 import { FC, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Linking, View } from 'react-native';
+import { View } from 'react-native';
 
 import { SendResult } from '@safely/core';
-import { useExplorerFactory } from '@safely/ux';
+import { useExplorerFactory, useLinking } from '@safely/ux';
 
 import { TransactionCell } from '@mobile/screens/ConfirmationScreen/components';
 import { Copy16, Globe16, Icon, Text, TouchableOpacity } from '@mobile/shared/ui';
@@ -16,10 +16,11 @@ export const TransactionSendResult: FC<{ sendResult: SendResult }> = ({ sendResu
     const explorerFactory = useExplorerFactory();
 
     const handleCopy = useCopy();
+    const { openURL } = useLinking();
     const handleOpen = useCallback(() => {
         const url = sendResult.toExplorerUrl(explorerFactory);
-        void Linking.openURL(url);
-    }, [sendResult, explorerFactory]);
+        openURL(url);
+    }, [sendResult, explorerFactory, openURL]);
 
     return (
         <>
