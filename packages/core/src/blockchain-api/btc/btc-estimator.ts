@@ -1,6 +1,6 @@
 import Big from 'big.js';
 
-import { BtcPsbtBulder } from './btc-psbt-bulder';
+import { BtcPsbtBuilder } from './btc-psbt-builder';
 import { BtcTransactionTemplate } from './btc-transaction-template';
 import type { BtcTransferRequest, BtcTransferRequestMax, BtcTransferRequestNotMax } from './types';
 import { BtcFeeType } from './types';
@@ -17,14 +17,14 @@ export type SpentUtxo = { txid: string; vout: number; value: string };
 export class BtcEstimator implements IIdentifiable {
     public readonly id: string;
 
-    private readonly psbtBulder: BtcPsbtBulder;
+    private readonly psbtBuilder: BtcPsbtBuilder;
 
     constructor(
         private readonly btcApi: BtcApi,
         private readonly wallet: SignableBtcWallet
     ) {
         this.id = `${this.constructor.name}:${this.btcApi.id}:${this.wallet.id.toString()}`;
-        this.psbtBulder = new BtcPsbtBulder(btcApi, btcNetworkConfig[this.wallet.network]);
+        this.psbtBuilder = new BtcPsbtBuilder(btcApi, btcNetworkConfig[this.wallet.network]);
     }
 
     private async getFeeValue(
@@ -85,7 +85,7 @@ export class BtcEstimator implements IIdentifiable {
 
         const totalBalance = getUtxoTotal(utxos);
 
-        const vSize = await this.psbtBulder.calculateTransactionVSize({
+        const vSize = await this.psbtBuilder.calculateTransactionVSize({
             inputs: utxos,
             outputs: [
                 { address: request.recipientAddress, value: request.amount.weiAmount },
@@ -119,7 +119,7 @@ export class BtcEstimator implements IIdentifiable {
 
         const totalBalance = getUtxoTotal(utxos);
 
-        const vSize = await this.psbtBulder.calculateTransactionVSize({
+        const vSize = await this.psbtBuilder.calculateTransactionVSize({
             inputs: utxos,
             outputs: [{ address: request.recipientAddress, value: 1n }]
         });

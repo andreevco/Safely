@@ -1,5 +1,4 @@
-import type { PsbtRequest } from './btc-psbt-bulder';
-import { BtcPsbtBulder } from './btc-psbt-bulder';
+import { type PsbtRequest, BtcPsbtBuilder } from './btc-psbt-builder';
 import { BtcSendDustError } from './errors';
 import type { BtcEstimation, BtcTransferRequest } from './types';
 import { getUtxoTotal, utxoPathToStruct } from './utils';
@@ -14,7 +13,7 @@ export class BtcTransactionTemplate {
 
     public sendResult: BtcSendResult | undefined;
 
-    private readonly psbtBuilder: BtcPsbtBulder;
+    private readonly psbtBuilder: BtcPsbtBuilder;
 
     public get outputs(): PsbtRequest['outputs'] {
         const total = getUtxoTotal(this.utxos);
@@ -51,7 +50,7 @@ export class BtcTransactionTemplate {
         private readonly utxos: BtcApiUtxo[],
         public readonly estimation: BtcEstimation
     ) {
-        this.psbtBuilder = new BtcPsbtBulder(btcApi, btcNetworkConfig[this.wallet.network]);
+        this.psbtBuilder = new BtcPsbtBuilder(btcApi, btcNetworkConfig[this.wallet.network]);
     }
 
     public async send(): Promise<BtcSendResult> {
