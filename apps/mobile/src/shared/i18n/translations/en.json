@@ -285,10 +285,9 @@
     },
     "sendForm": {
         "errors": {
-            "enterRecipientAddress": "Enter recipient address",
-            "invalidAddressFormat": "Invalid address format",
-            "invalidRecipientAddress": "Invalid recipient address",
-            "unsupportedBlockchain": "Unsupported blockchain",
+            "invalidWalletAddress": "Invalid wallet address.",
+            "selfTransfer": "This is your active wallet.",
+            "unsupportedBlockchain": "Unsupported blockchain.",
             "selectToken": "Select token",
             "selectTokenFirst": "Select token first",
             "unableToValidateToken": "Unable to validate token",
@@ -650,8 +649,6 @@
     },
     "contactForm": {
         "errors": {
-            "enterName": "Enter a name",
-            "enterAddress": "Enter an address",
             "invalidAddressFormat": "Invalid address format",
             "unsupportedBlockchain": "Unsupported blockchain"
         }

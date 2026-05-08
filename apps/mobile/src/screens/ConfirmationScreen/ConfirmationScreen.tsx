@@ -8,6 +8,7 @@ import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import {
     SendFormResult,
     useActiveBtcWallet,
+    useActivePortfolio,
     useEstimateAssetTransfer,
     useLogger,
     useNumberFormatter,
@@ -36,6 +37,7 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
     const { t } = useTranslation();
     const navigation = useNavigation();
     const btcWallet = useActiveBtcWallet();
+    const activePortfolio = useActivePortfolio();
     const logger = useLogger();
 
     const [confirmationState, setConfirmationState] = useState<ConfirmationState>({ type: 'idle' });
@@ -119,7 +121,7 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
     }, [confirmationState.type, asset, t]);
 
     return (
-        <Screen background="primary">
+        <Screen>
             <Screen.Header>
                 {confirmationState.type !== 'success' && <Screen.Header.BackButton />}
                 <Screen.Header.Title />
@@ -130,11 +132,21 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
                     <List.Group style={styles.listGroup}>
                         <TransactionCell
                             title={t('confirmation.from')}
-                            value={<Wallet address={btcWallet.address} />}
+                            value={
+                                <Wallet
+                                    address={btcWallet.address}
+                                    meta={{ kind: 'portfolio', meta: activePortfolio.meta }}
+                                />
+                            }
                         />
                         <TransactionCell
                             title={t('confirmation.to')}
-                            value={<Wallet recipient={confirmationResult.recipient} />}
+                            value={
+                                <Wallet
+                                    address={confirmationResult.recipient.address}
+                                    meta={confirmationResult.recipientMeta}
+                                />
+                            }
                         />
                     </List.Group>
                     <List.Group style={styles.listGroup}>

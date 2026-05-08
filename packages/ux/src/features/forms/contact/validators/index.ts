@@ -1,7 +1,6 @@
 import { parseAddress, UnsupportedBlockchainError } from '../../../../shared/address';
 import { ContactFormError } from '../errors';
 import type { ContactFormParsedAddress } from '../types';
-import { addressSchema, nameSchema } from '../utils';
 
 export interface ContactNameValidationResult {
     parsed: string | undefined;
@@ -9,16 +8,9 @@ export interface ContactNameValidationResult {
 }
 
 export function validateContactName(value: string): ContactNameValidationResult {
-    const zodResult = nameSchema.safeParse(value);
+    const trimmed = value.trim();
 
-    if (!zodResult.success) {
-        return {
-            parsed: undefined,
-            error: zodResult.error.issues[0]?.message ?? ContactFormError.ENTER_NAME
-        };
-    }
-
-    return { parsed: zodResult.data, error: undefined };
+    return { parsed: trimmed.length > 0 ? trimmed : undefined, error: undefined };
 }
 
 export interface ContactAddressValidationResult {
@@ -27,17 +19,13 @@ export interface ContactAddressValidationResult {
 }
 
 export function validateContactAddress(value: string): ContactAddressValidationResult {
-    const zodResult = addressSchema.safeParse(value);
-
-    if (!zodResult.success) {
-        return {
-            parsed: undefined,
-            error: zodResult.error.issues[0]?.message ?? ContactFormError.ENTER_ADDRESS
-        };
+    const trimmed = value.trim();
+    if (trimmed.length === 0) {
+        return { parsed: undefined, error: undefined };
     }
 
     try {
-        const parsed = parseAddress(zodResult.data);
+        const parsed = parseAddress(trimmed);
         return {
             parsed: { address: parsed.address, blockchain: parsed.blockchain },
             error: undefined

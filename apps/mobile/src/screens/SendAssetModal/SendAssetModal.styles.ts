@@ -14,5 +14,8 @@ export const styles = StyleSheet.create(theme => ({
     },
     recipientName: {
         flexShrink: 1
+    },
+    page: {
+        flex: 1
     }
 }));

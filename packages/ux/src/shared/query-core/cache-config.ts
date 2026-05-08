@@ -7,16 +7,6 @@ const sHistoricalPrice = z.object({
     prices: z.array(z.tuple([z.number(), z.number()])).describe('[timestamp, price] pair')
 });
 
-const sSendFormDraft = z.object({
-    recipient: z.string(),
-    amount: z.string().optional(),
-    amountInputType: z.enum(['crypto', 'fiat']).optional(),
-    isMax: z.boolean().optional(),
-    stepIndex: z.number().optional(),
-    selectedId: z.string().optional(),
-    suggestionIds: z.array(z.string()).optional()
-});
-
 const sActivityItem = z.object({
     timestamp: z.number(),
     key: z.string(),
@@ -58,8 +48,7 @@ export const cacheSchemas = {
     }),
     bootConfig: bootConfigSchema,
     infiniteActivityData: sInfiniteActivityData,
-    sHistoricalPrice: sHistoricalPrice,
-    sendFormDraft: sSendFormDraft
+    sHistoricalPrice: sHistoricalPrice
 } satisfies Record<string, z.ZodType>;
 
 export type CacheSchemaKey = keyof typeof cacheSchemas;

@@ -4,7 +4,7 @@ import { TextInput, View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
 import { CONTACT_NAME_MAX_LENGTH } from '@safely/core';
-import { type SendSuggestions } from '@safely/ux';
+import type { RecipientView } from '@safely/ux';
 
 import { Input } from '@mobile/shared/ui';
 
@@ -13,65 +13,56 @@ import { styles } from './RecipientStep.styles';
 import { useSuggestionSelection } from '../components/SuggestionsList/useSuggestionSelection';
 
 interface RecipientStepProps {
-    value: string;
-    error: string | undefined;
-    onChangeText: (value: string, label?: string) => void;
+    view: RecipientView;
     inputRef?: Ref<TextInput>;
-    suggestions: SendSuggestions;
-    restoredSuggestions?: SendSuggestions;
-    selectedId?: string;
-    isValidAddress: boolean;
-    onSelectSuggestion: (id: string, visibleSuggestions: SendSuggestions) => void;
-    onClearSuggestionSelection: () => void;
     onSubmitEditing?: () => void;
-    onAddressBookNameChange: (name: string) => void;
-    addressBookName: string;
 }
 
 export const RecipientStep = (props: RecipientStepProps) => {
-    const {
-        value,
-        error,
-        inputRef,
-        isValidAddress,
-        suggestions,
-        restoredSuggestions,
-        selectedId,
-        onChangeText,
-        onSelectSuggestion,
-        onClearSuggestionSelection,
-        onSubmitEditing,
-        onAddressBookNameChange,
-        addressBookName
-    } = props;
+    const { view, inputRef, onSubmitEditing } = props;
 
     const { t } = useTranslation();
+
+    const {
+        values,
+        errors,
+        suggestions,
+        restoredSuggestions,
+        selectedSuggestionId,
+        setRecipient,
+        setAddressBookName,
+        selectSuggestion,
+        status
+    } = view;
 
     const { displaySuggestions, handleSelect, handleChangeText } = useSuggestionSelection({
         suggestions,
         restoredSuggestions,
-        selectedId,
-        onChangeText,
-        onSelectSuggestion,
-        onClearSuggestionSelection
+        selectedId: selectedSuggestionId,
+        onChangeText: setRecipient,
+        onSelectSuggestion: selectSuggestion
     });
 
     const selectedPortfolioMeta = useMemo(
-        () => displaySuggestions.portfolios.find(s => s.id === selectedId)?.meta,
-        [displaySuggestions, selectedId]
+        () => displaySuggestions.portfolios.find(s => s.id === selectedSuggestionId)?.meta,
+        [displaySuggestions, selectedSuggestionId]
     );
     const selectedContactMeta = useMemo(
-        () => displaySuggestions.contacts.find(s => s.id === selectedId)?.meta,
-        [displaySuggestions, selectedId]
+        () => displaySuggestions.contacts.find(s => s.id === selectedSuggestionId)?.meta,
+        [displaySuggestions, selectedSuggestionId]
     );
+
+    const hasSearchMatches = suggestions.portfolios.length > 0 || suggestions.contacts.length > 0;
+    const visibleError = hasSearchMatches ? undefined : errors.recipient;
+    const isValid = status === 'valid';
 
     return (
         <View style={{ flex: 1 }}>
             <AddressInput
                 onSubmitEditing={onSubmitEditing}
-                value={value}
+                value={values.recipient}
                 onChangeText={handleChangeText}
-                error={error}
+                error={visibleError}
                 inputRef={inputRef}
                 label={t('send.recipient.label')}
                 placeholder={t('send.recipient.placeholder')}
@@ -88,15 +79,15 @@ export const RecipientStep = (props: RecipientStepProps) => {
             >
                 <SuggestionsList
                     suggestions={displaySuggestions}
-                    selectedId={selectedId}
+                    selectedId={selectedSuggestionId}
                     onSelect={handleSelect}
                 />
-                {!selectedId && isValidAddress && (
+                {!selectedSuggestionId && isValid && (
                     <Input>
                         <Input.Label>{t('send.addressBook.label')}</Input.Label>
                         <Input.Field
-                            value={addressBookName}
-                            onChangeText={onAddressBookNameChange}
+                            value={values.addressBookName}
+                            onChangeText={setAddressBookName}
                             withClearButton
                             placeholder={t('send.addressBook.placeholder')}
                             maxLength={CONTACT_NAME_MAX_LENGTH}

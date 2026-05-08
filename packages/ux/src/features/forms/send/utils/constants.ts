@@ -6,3 +6,5 @@ export const BLOCKCHAIN_DEFAULT_TOKENS: Record<BLOCKCHAIN_NAME, CryptoAsset> = {
 };
 
 export const DEFAULT_FIAT_DECIMALS = 2;
+
+export const MIN_RECIPIENT_ADDRESS_LENGTH = 5;

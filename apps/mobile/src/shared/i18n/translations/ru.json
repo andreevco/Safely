@@ -243,10 +243,9 @@
     },
     "sendForm": {
         "errors": {
-            "enterRecipientAddress": "Введите адрес получателя",
-            "invalidAddressFormat": "Неверный формат адреса",
-            "invalidRecipientAddress": "Неверный адрес получателя",
-            "unsupportedBlockchain": "Неподдерживаемый блокчейн",
+            "invalidWalletAddress": "Неверный адрес кошелька.",
+            "selfTransfer": "Это ваш активный кошелёк.",
+            "unsupportedBlockchain": "Неподдерживаемый блокчейн.",
             "selectToken": "Выберите токен",
             "selectTokenFirst": "Сначала выберите токен",
             "unableToValidateToken": "Не удалось проверить токен",
