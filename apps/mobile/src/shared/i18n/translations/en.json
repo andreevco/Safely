@@ -202,6 +202,11 @@
                     "badge": "Enabled",
                     "subtitle_one": "Protected with {{count}} device",
                     "subtitle_other": "Protected with {{count}} devices"
+                },
+                "unlinked": {
+                    "title": "Device link",
+                    "badge": "OFF",
+                    "subtitle": "Re-link this device to your account."
                 }
             },
             "application": {
@@ -300,7 +305,7 @@
         "description": {
             "top": "Open Safely on another device.",
             "iconLineStart": "Go to Settings",
-            "iconLineEnd": "tap \"Link device\"",
+            "iconLineEnd": "tap “Link device”",
             "bottom": "and scan this QR code."
         },
         "banner": "This device will have full access to your account. It can be used if your other device is lost.",
@@ -309,6 +314,20 @@
             "title": "Signed in",
             "subtitle": "This device now has full access\nto your account.",
             "continue": "Continue"
+        }
+    },
+    "deviceUnlinked": {
+        "banner": {
+            "text": "This device is unlinked from your account and does not synchronise with other devices."
+        },
+        "reconnect": {
+            "title": "Scan to link again",
+            "description": {
+                "beforeIcon": "Open Safely on another device where this account is active. Go to ",
+                "afterIcon": " Settings, tap “Link device” and scan this QR code."
+            },
+            "timeout": "Connection timed out. Please try again.",
+            "successToast": "Device re-linked"
         }
     },
     "welcome": {
