@@ -7,8 +7,11 @@ export const styles = StyleSheet.create(theme => ({
         alignItems: 'center',
         gap: theme.spacing[4]
     },
-    shrinkable: {
+    shrinkableHalf: {
         flexShrink: 1,
-        maxWidth: '40%'
+        maxWidth: '30%'
+    },
+    shrinkableFull: {
+        flexShrink: 1
     }
 }));

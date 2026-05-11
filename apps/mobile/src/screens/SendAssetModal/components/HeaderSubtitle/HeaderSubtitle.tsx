@@ -22,7 +22,7 @@ export const RecipientHeaderSubtitle = ({ fromMeta }: { fromMeta: PortfolioMeta 
             <Text variant="bodyM" color="secondary">
                 {t('send.from')}
             </Text>
-            <Text variant="bodyM" color="secondary" numberOfLines={1} style={styles.shrinkable}>
+            <Text variant="bodyM" color="secondary" numberOfLines={1} style={styles.shrinkableFull}>
                 {fromMeta.name}
             </Text>
         </Animated.View>
@@ -38,14 +38,19 @@ export const AmountHeaderSubtitle = ({ view }: { view: AmountView }) => {
             exiting={FadeOut.duration(FADE_DURATION_MS)}
             style={styles.row}
         >
-            <Text variant="bodyM" color="secondary" numberOfLines={1} style={styles.shrinkable}>
+            <Text variant="bodyM" color="secondary" numberOfLines={1} style={styles.shrinkableHalf}>
                 {view.fromMeta.name}
             </Text>
             <Text variant="bodyM" color="tertiary">
                 →
             </Text>
             {recipientAlias && (
-                <Text variant="bodyM" color="secondary" numberOfLines={1} style={styles.shrinkable}>
+                <Text
+                    variant="bodyM"
+                    color="secondary"
+                    numberOfLines={1}
+                    style={styles.shrinkableHalf}
+                >
                     {recipientAlias}
                 </Text>
             )}
