@@ -20,6 +20,10 @@ const P2WPKH_ESTIMATION_WITNESS = [
     Buffer.alloc(COMPRESSED_PUBKEY_SIZE, 0)
 ];
 
+// BIP125 opt-in Replace-By-Fee: any sequence <= 0xfffffffd signals to relays
+// that this tx may be replaced by a higher-fee version while still in mempool.
+const RBF_SEQUENCE = 0xfffffffd;
+
 export class BtcPsbtBuilder {
     constructor(private readonly bitcoinNetwork: Network) {}
 
@@ -40,6 +44,7 @@ export class BtcPsbtBuilder {
             psbt.addInput({
                 hash: utxo.txid,
                 index: utxo.vout,
+                sequence: RBF_SEQUENCE,
                 witnessUtxo: { script, value: BigInt(utxo.value) }
             });
         });

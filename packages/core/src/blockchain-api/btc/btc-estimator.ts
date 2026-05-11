@@ -15,16 +15,14 @@ import { abs, assertUnreachable, toBig } from '../../utils';
 
 export type SpentUtxo = { txid: string; vout: number; value: string };
 
-// Bitcoin Core's GetDustThreshold for a P2WPKH output at the default
-// dustRelayFee of 3000 sat/kvB: (31 + 67) * 3 = 294 sat. Outputs strictly
-// below this are rejected by the node with reject reason "dust" (-26).
-const P2WPKH_CHANGE_DUST_SAT = 294n;
-
 function getDustSat(walletAddress: string) {
     const type = BtcAddress.type(walletAddress);
     switch (type) {
+        // Bitcoin Core's GetDustThreshold for a P2WPKH output at the default
+        // dustRelayFee of 3000 sat/kvB: (31 + 67) * 3 = 294 sat. Outputs strictly
+        // below this are rejected by the node with reject reason "dust" (-26).
         case 'P2WPKH':
-            return P2WPKH_CHANGE_DUST_SAT;
+            return 294n;
         default:
             throw new Error('Unsupported address type');
     }
