@@ -18,7 +18,7 @@ describe('storage updates', () => {
     });
 
     it('updates values', () => {
-        storage.update(draft => {
+        storage.transaction(draft => {
             draft.set('key1', 10);
             draft.set('key2', 'value2');
         });
@@ -34,7 +34,7 @@ describe('storage updates', () => {
             calls.push(storage.get());
         });
 
-        storage.update(draft => {
+        storage.transaction(draft => {
             draft.set('key1', 10);
         });
 
@@ -52,11 +52,11 @@ describe('storage updates', () => {
             calls += 1;
         });
 
-        storage.update(draft => {
+        storage.transaction(draft => {
             draft.set('key1', 10);
         });
         remove();
-        storage.update(draft => {
+        storage.transaction(draft => {
             draft.set('key1', 20);
         });
 
@@ -69,13 +69,13 @@ describe('storage updates', () => {
             calls += 1;
         });
 
-        storage.update(() => {});
+        storage.transaction(() => {});
 
         expect(calls).toBe(0);
     });
 
     it('reads current values from an update draft', () => {
-        storage.update(draft => {
+        storage.transaction(draft => {
             draft.set('key1', 10);
             draft.set('key2', 'value');
             draft.set('key1', (draft.at('key1').get() ?? 0) + 5);
@@ -92,12 +92,12 @@ describe('storage updates', () => {
             versions: v1
         });
 
-        isolatedStorage.update(draft => {
+        isolatedStorage.transaction(draft => {
             draft.set('key1', 10);
         });
 
         expect(() =>
-            isolatedStorage.update(draft => {
+            isolatedStorage.transaction(draft => {
                 // @ts-expect-error intentional invalid runtime write
                 draft.set('key1', 'invalid');
             })
@@ -116,7 +116,7 @@ describe('storage updates', () => {
         });
 
         expect(() =>
-            storage.update(draft => {
+            storage.transaction(draft => {
                 draft.set('key1', 10);
                 throw new Error('boom');
             })
@@ -132,7 +132,7 @@ describe('storage updates', () => {
         });
 
         expect(() =>
-            isolatedStorage.update(draft => {
+            isolatedStorage.transaction(draft => {
                 draft.set('key1', 10);
                 throw new Error('boom');
             })
@@ -172,7 +172,7 @@ describe('storage updates', () => {
             versions: v1
         }) as StorageImpl<StorageV1>;
 
-        isolatedStorage.update(draft => {
+        isolatedStorage.transaction(draft => {
             draft.set('key1', 10);
             draft.set('key2', 'updated');
         });
@@ -223,7 +223,7 @@ describe('storage updates', () => {
             versions: v1
         });
 
-        isolatedStorage.update(draft => {
+        isolatedStorage.transaction(draft => {
             draft.set('key1', 10);
             draft.set('key2', 'updated');
         });
@@ -344,7 +344,7 @@ describe('storage updates', () => {
             versions: v1
         }) as StorageImpl<StorageV1>;
 
-        isolatedStorage.update(draft => {
+        isolatedStorage.transaction(draft => {
             draft.set('key1', 10);
             draft.set('key2', 'updated');
         });
@@ -382,7 +382,7 @@ describe('storage updates', () => {
             versions
         });
 
-        isolatedStorage.update(draft => {
+        isolatedStorage.transaction(draft => {
             draft.set('maybe', null);
         });
 
@@ -390,7 +390,7 @@ describe('storage updates', () => {
             maybe: null
         });
 
-        isolatedStorage.update(draft => {
+        isolatedStorage.transaction(draft => {
             draft.delete('maybe');
         });
 

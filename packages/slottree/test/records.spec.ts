@@ -34,7 +34,7 @@ describe('records', () => {
             versions: version
         });
 
-        storage.update(draft => {
+        storage.transaction(draft => {
             draft.at('objects').set('key3', 3);
             draft.at('objects').delete('key1');
         });
@@ -74,7 +74,7 @@ describe('records', () => {
             versions: version
         }) as StorageImpl<z.output<typeof schema>>;
 
-        storage.update(draft => {
+        storage.transaction(draft => {
             draft.at('objects').set('__proto__', { value: 1 });
             draft.at('objects').set('constructor', { value: 2 });
             draft.at('objects').set('prototype', { value: 3 });

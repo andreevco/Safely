@@ -72,7 +72,7 @@ describe('ordered array slots', () => {
     it('pushes items into an ordered array slot', () => {
         const storage = createPortfolioStorage('device-1');
 
-        storage.update(draft => {
+        storage.transaction(draft => {
             draft.at('portfolios').push({ __setId: 'p1', name: 'Main' });
         });
 
@@ -86,7 +86,7 @@ describe('ordered array slots', () => {
     it('inserts and moves by id while preserving external order', () => {
         const storage = createPortfolioStorage('device-1');
 
-        storage.update(draft => {
+        storage.transaction(draft => {
             draft.at('portfolios').push({ __setId: 'p1', name: 'One' });
             draft.at('portfolios').push({ __setId: 'p2', name: 'Two' });
             draft.at('portfolios').insert(2, { __setId: 'p3', name: 'Three' });
@@ -100,7 +100,7 @@ describe('ordered array slots', () => {
     it('removes items with tombstones', () => {
         const storage = createPortfolioStorage('device-1');
 
-        storage.update(draft => {
+        storage.transaction(draft => {
             draft.at('portfolios').push({ __setId: 'p1', name: 'One' });
             draft.at('portfolios').push({ __setId: 'p2', name: 'Two' });
             draft.at('portfolios').remove('p2');
@@ -119,7 +119,7 @@ describe('ordered array slots', () => {
     it('updates items by id', () => {
         const storage = createPortfolioStorage('device-1');
 
-        storage.update(draft => {
+        storage.transaction(draft => {
             draft.at('portfolios').push({ __setId: 'p1', name: 'One' });
             draft.at('portfolios').push({ __setId: 'p2', name: 'Two' });
             draft.at('portfolios').update('p1', item => ({
@@ -141,7 +141,7 @@ describe('ordered array slots', () => {
     it('reads items by id', () => {
         const storage = createPortfolioStorage('device-1');
 
-        storage.update(draft => {
+        storage.transaction(draft => {
             draft.at('portfolios').push({ __setId: 'p1', name: 'One' });
             expect(draft.at('portfolios').getById('p1')).toEqual({
                 __setId: 'p1',
@@ -154,7 +154,7 @@ describe('ordered array slots', () => {
     it('reorders items by full id list', () => {
         const storage = createPortfolioStorage('device-1');
 
-        storage.update(draft => {
+        storage.transaction(draft => {
             draft.at('portfolios').push({ __setId: 'p1', name: 'One' });
             draft.at('portfolios').push({ __setId: 'p2', name: 'Two' });
             draft.at('portfolios').push({ __setId: 'p3', name: 'Three' });
@@ -167,19 +167,19 @@ describe('ordered array slots', () => {
     it('rejects reorder lists that do not match live items', () => {
         const storage = createPortfolioStorage('device-1');
 
-        storage.update(draft => {
+        storage.transaction(draft => {
             draft.at('portfolios').push({ __setId: 'p1', name: 'One' });
             draft.at('portfolios').push({ __setId: 'p2', name: 'Two' });
         });
 
         expect(() =>
-            storage.update(draft => {
+            storage.transaction(draft => {
                 draft.at('portfolios').reorder(['p1']);
             })
         ).toThrow('expected 2 ids');
 
         expect(() =>
-            storage.update(draft => {
+            storage.transaction(draft => {
                 draft.at('portfolios').reorder(['p1', 'missing']);
             })
         ).toThrow('unknown id');
@@ -188,12 +188,12 @@ describe('ordered array slots', () => {
     it('rejects duplicate live ids', () => {
         const storage = createPortfolioStorage('device-1');
 
-        storage.update(draft => {
+        storage.transaction(draft => {
             draft.at('portfolios').push({ __setId: 'p1', name: 'One' });
         });
 
         expect(() =>
-            storage.update(draft => {
+            storage.transaction(draft => {
                 draft.at('portfolios').push({ __setId: 'p1', name: 'Duplicate' });
             })
         ).toThrow('already exists');
@@ -203,10 +203,10 @@ describe('ordered array slots', () => {
         const a = createPortfolioStorage('device-a');
         const b = createPortfolioStorage('device-b');
 
-        a.update(draft => {
+        a.transaction(draft => {
             draft.at('portfolios').push({ __setId: 'p1', name: 'One' });
         });
-        b.update(draft => {
+        b.transaction(draft => {
             draft.at('portfolios').push({ __setId: 'p2', name: 'Two' });
         });
 
@@ -222,7 +222,7 @@ describe('ordered array slots', () => {
 
     it('merges a concurrent update and move on the same item', () => {
         const seed = createPortfolioStorage('seed');
-        seed.update(draft => {
+        seed.transaction(draft => {
             draft.at('portfolios').push({ __setId: 'p1', name: 'One' });
             draft.at('portfolios').push({ __setId: 'p2', name: 'Two' });
         });
@@ -238,10 +238,10 @@ describe('ordered array slots', () => {
             root: seed.exportSlot() as ContainerSlot
         }) as StorageImpl<State>;
 
-        a.update(draft => {
+        a.transaction(draft => {
             draft.at('portfolios').move('p2', 0);
         });
-        b.update(draft => {
+        b.transaction(draft => {
             draft.at('portfolios').update('p2', item => ({
                 ...item,
                 name: 'Second'
@@ -260,7 +260,7 @@ describe('ordered array slots', () => {
 
     it('roundtrips ordered arrays through export and import', () => {
         const storage = createPortfolioStorage('device-1');
-        storage.update(draft => {
+        storage.transaction(draft => {
             draft.at('portfolios').push({ __setId: 'p1', name: 'One' });
             draft.at('portfolios').push({ __setId: 'p2', name: 'Two' });
             draft.at('portfolios').move('p2', 0);

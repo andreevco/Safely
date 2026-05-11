@@ -26,7 +26,7 @@ export class YCRDT<T extends object> {
     }
 
     public set(key: Extract<keyof T, string>, value: unknown): void {
-        this.doc.update(draft => {
+        this.doc.transaction(draft => {
             (draft as ObjectDraft<Record<string, JsonValue | undefined>>).set(
                 key,
                 value as JsonValue
@@ -34,8 +34,8 @@ export class YCRDT<T extends object> {
         });
     }
 
-    public update(fn: (draft: Draft<T>) => void): void {
-        this.doc.update(fn);
+    public transaction(fn: (draft: Draft<T>) => void): void {
+        this.doc.transaction(fn);
     }
 
     public equals(other: string): boolean {

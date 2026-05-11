@@ -22,10 +22,10 @@ describe('storage merge', () => {
     });
 
     it('merges values', () => {
-        storage1.update(draft => {
+        storage1.transaction(draft => {
             draft.set('key1', 10);
         });
-        storage2.update(draft => {
+        storage2.transaction(draft => {
             draft.set('key2', 'value2');
         });
 
@@ -44,7 +44,7 @@ describe('storage merge', () => {
             calls += 1;
         });
 
-        storage2.update(draft => {
+        storage2.transaction(draft => {
             draft.set('key2', 'value2');
         });
 
@@ -72,7 +72,7 @@ describe('storage merge', () => {
         expect(() => storage1.mergeSlot(incoming)).toThrow();
         expect(storage1.read()).toEqual({ key1: 0, key2: 'initial' });
 
-        storage1.update(draft => {
+        storage1.transaction(draft => {
             draft.set('key1', 1);
         });
         const exported = storage1.exportSlot() as ReturnType<typeof createOriginContainer>;

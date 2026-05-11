@@ -29,8 +29,8 @@ export class YManager<Latest extends StorageVersion, Rest> {
         await this.yRepository.saveCRDT(this.yDoc);
     }
 
-    public async update(f: (draft: Draft<z.output<NewOf<Latest>>>) => void) {
-        this.yDoc.update(f);
+    public async transaction(f: (draft: Draft<z.output<NewOf<Latest>>>) => void) {
+        this.yDoc.transaction(f);
         await this.yRepository.saveCRDT(this.yDoc);
     }
 

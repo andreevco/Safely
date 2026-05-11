@@ -31,7 +31,7 @@ describe('Sync', () => {
     }
 
     async function updateAndVerify(account: TestSyncAccount, data: WalletItem[]) {
-        await account.syncProvider.update(draft => {
+        await account.syncProvider.transaction(draft => {
             draft.set('wallets', data);
         });
         await vi.waitFor(async () => {

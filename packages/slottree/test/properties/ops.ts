@@ -7,7 +7,7 @@ import type { Draft } from '../../src';
 type StressState = z.output<typeof stressSchema>;
 
 type StorageLike = {
-    update(fn: (draft: Draft<StressState>) => void): void;
+    transaction(fn: (draft: Draft<StressState>) => void): void;
 };
 
 type StressDraft = Draft<StressState>;
@@ -577,7 +577,7 @@ export const opArb = fc.oneof(
 export const opsArb = fc.array(opArb, { maxLength: 50 });
 
 export function applyOp(storage: StorageLike, op: Op): void {
-    storage.update(draft => {
+    storage.transaction(draft => {
         if (applyObjectOp(draft, op)) {
             return;
         }

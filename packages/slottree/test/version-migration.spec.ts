@@ -68,7 +68,7 @@ describe('version migration', () => {
             root
         }) as StorageImpl<StorageV3>;
 
-        storage.update(draft => {
+        storage.transaction(draft => {
             draft.set('key1', 10);
             draft.set('label', 'updated');
             draft.set('key4', 'latest-only');
@@ -122,7 +122,7 @@ describe('version migration', () => {
             root
         }) as StorageImpl<StorageV3>;
 
-        storage.update(draft => {
+        storage.transaction(draft => {
             draft.set('label', 'updated');
         });
 
@@ -146,7 +146,7 @@ describe('version migration', () => {
             versions: v3
         }) as StorageImpl<StorageV3>;
 
-        oldDevice.update(draft => {
+        oldDevice.transaction(draft => {
             draft.set('key1', 42);
             draft.set('key2', 'from-v1');
         });
@@ -246,7 +246,7 @@ describe('version migration', () => {
             versions: optionalV2
         }) as StorageImpl<z.output<typeof schemaOptionalV2>>;
 
-        oldDevice.update(draft => {
+        oldDevice.transaction(draft => {
             draft.delete('optional');
         });
 

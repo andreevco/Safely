@@ -55,7 +55,7 @@ describe('Draft', () => {
     it('sets, deletes, and reads nested object fields', () => {
         const storage = createTestStorage();
 
-        storage.update(draft => {
+        storage.transaction(draft => {
             const users = draft.at('users');
 
             users.set('alice', { name: 'Alice', active: true });
@@ -89,7 +89,7 @@ describe('Draft', () => {
     it('supports explicit nested writes', () => {
         const storage = createTestStorage();
 
-        storage.update(draft => {
+        storage.transaction(draft => {
             draft.at('settings').set('theme', 'dark');
             draft.at('settings').set('layout', 'compact');
             draft.at('users').set('carol', { name: 'Carol', active: true });
@@ -123,10 +123,10 @@ describe('Draft', () => {
     it('creates a tombstone through delete', () => {
         const storage = createTestStorage() as StorageImpl<z.output<typeof schema>>;
 
-        storage.update(draft => {
+        storage.transaction(draft => {
             draft.at('settings').set('layout', 'compact');
         });
-        storage.update(draft => {
+        storage.transaction(draft => {
             draft.at('settings').delete('layout');
         });
 
@@ -153,7 +153,7 @@ describe('Draft', () => {
     it('reads atomic fields through get', () => {
         const storage = createTestStorage();
 
-        storage.update(draft => {
+        storage.transaction(draft => {
             draft.set('count', (draft.at('count').get() ?? 0) + 1);
             draft.set('title', `${draft.at('title').get()}-updated`);
 
@@ -187,7 +187,7 @@ describe('Draft', () => {
     it('maps atomic fields from returned drafts', () => {
         const storage = createTestStorage();
 
-        storage.update(draft => {
+        storage.transaction(draft => {
             draft.at('settings').set('theme', 'copied-title');
             draft.set('title', title => {
                 expect(title.get()).toBe('initial');
@@ -207,7 +207,7 @@ describe('Draft', () => {
     it('maps object fields from returned drafts', () => {
         const storage = createTestStorage();
 
-        storage.update(draft => {
+        storage.transaction(draft => {
             draft.set('settings', settings => {
                 expect(settings.get()).toEqual({
                     theme: 'light'

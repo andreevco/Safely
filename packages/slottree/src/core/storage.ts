@@ -35,10 +35,10 @@ export interface Storage<T> {
     read(): DeepReadonly<T>;
 
     /**
-     * Atomic and transactional update of the storage
+     * Atomic storage transaction
      * @param fn
      */
-    update(fn: (draft: Draft<T>) => void): void;
+    transaction(fn: (draft: Draft<T>) => void): void;
 
     /**
      * Merge storage
@@ -97,7 +97,7 @@ export class StorageImpl<T> implements Storage<T> {
         return this.committedRoot().read<T>();
     }
 
-    public update(fn: (draft: Draft<T>) => void): void {
+    public transaction(fn: (draft: Draft<T>) => void): void {
         const timestamp = this.protocol.tick();
         const author = this.protocol.id;
 

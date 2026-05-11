@@ -95,8 +95,8 @@ export class OnlineSyncProvider<Latest extends StorageVersion, Rest>
         this.syncMachine.send({ type: 'LOCAL_UPDATE' });
     }
 
-    public async update(f: (draft: Draft<z.output<NewOf<Latest>>>) => void): Promise<void> {
-        await super.update(f);
+    public async transaction(f: (draft: Draft<z.output<NewOf<Latest>>>) => void): Promise<void> {
+        await super.transaction(f);
 
         this.syncMachine.send({ type: 'LOCAL_UPDATE' });
     }

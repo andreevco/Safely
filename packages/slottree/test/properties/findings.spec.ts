@@ -59,14 +59,14 @@ describe('Storage merge findings', () => {
         const b = makeStorage('B');
         const c = makeStorage('C');
 
-        a.update(draft => {
+        a.transaction(draft => {
             draft.set('tick', '');
         });
-        a.update(draft => {
+        a.transaction(draft => {
             draft.at('deepMixed').delete('c');
         });
 
-        b.update(draft => {
+        b.transaction(draft => {
             draft.at('deepMixed').set(
                 'c',
                 draft.at('deepMixed').at('c').get() ?? {
@@ -79,10 +79,10 @@ describe('Storage merge findings', () => {
             });
         });
 
-        c.update(draft => {
+        c.transaction(draft => {
             draft.set('tick', '');
         });
-        c.update(draft => {
+        c.transaction(draft => {
             draft.at('deepMixed').set('c', {
                 children: {}
             });
