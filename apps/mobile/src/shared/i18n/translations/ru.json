@@ -424,7 +424,7 @@
             }
         },
         "signOutAccount": {
-            "title": "Выйти из аккаунта \"{{name}}\"",
+            "title": "Выйти из аккаунта “{{name}}”",
             "sheet": {
                 "title": "Выйти из {{name}}?",
                 "noDevices": {
@@ -445,7 +445,7 @@
             "toastAccountRemoved": "Аккаунт удалён с этого устройства"
         },
         "removePortfolio": {
-            "title": "Удалить кошелек \"{{name}}\"",
+            "title": "Удалить кошелек “{{name}}”",
             "confirm": {
                 "title": "Удалить этот кошелёк?",
                 "message": "Кошелек “{{name}}” будет удален. Это действие нельзя отменить.",
@@ -458,7 +458,7 @@
         }
     },
     "removeWallet": {
-        "title": "Удалить кошелёк \"{{name}}\"?",
+        "title": "Удалить кошелёк “{{name}}”?",
         "backUpLink": "Сохранить фразу восстановления",
         "removeButton": "Всё равно удалить",
         "cancelButton": "Отмена",
@@ -572,6 +572,12 @@
             "alreadyExists": "Кошелёк уже существует",
             "invalidMnemonic": "Неверная фраза восстановления",
             "failedToGenerate": "Не удалось создать кошелёк"
+        }
+    },
+    "linking": {
+        "errors": {
+            "unsafeProtocol": "Небезопасный протокол",
+            "failedToOpen": "Не удалось открыть ссылку"
         }
     }
 }

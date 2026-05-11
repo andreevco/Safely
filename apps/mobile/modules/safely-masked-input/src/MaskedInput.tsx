@@ -74,6 +74,8 @@ export const MaskedInput = forwardRef<MaskedInputRef, MaskedInputProps>((props, 
         decimalColor,
         placeholderDigitColor,
         suffixColor,
+        placeholder,
+        suffix,
         ...rest
     } = props;
     const nativeRef = useRef<{ nativeTag?: number }>(null);
@@ -102,6 +104,8 @@ export const MaskedInput = forwardRef<MaskedInputRef, MaskedInputProps>((props, 
         <NativeView
             ref={nativeRef}
             {...rest}
+            placeholder={placeholder ?? ''}
+            suffix={suffix ?? ''}
             textColor={toHex(textColor)}
             placeholderTextColor={toHex(placeholderTextColor)}
             integerColor={toHex(integerColor)}

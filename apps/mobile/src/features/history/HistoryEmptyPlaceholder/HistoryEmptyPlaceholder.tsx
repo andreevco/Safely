@@ -18,10 +18,6 @@ export const HistoryEmptyPlaceholder = () => {
         navigation.navigate('ReceiveAssetModal', { asset: BTC_ASSET });
     }, [navigation]);
 
-    const handleSend = useCallback(() => {
-        navigation.navigate('SendAssetModal');
-    }, [navigation]);
-
     return (
         <View style={styles.emptyContainer}>
             <Text variant="titleM">{t('history.empty.title')}</Text>
@@ -31,9 +27,6 @@ export const HistoryEmptyPlaceholder = () => {
             <View style={styles.emptyActions}>
                 <Button type="secondary" size="small" onPress={handleReceive}>
                     {t('history.empty.receive')}
-                </Button>
-                <Button type="secondary" size="small" onPress={handleSend}>
-                    {t('history.empty.send')}
                 </Button>
             </View>
         </View>

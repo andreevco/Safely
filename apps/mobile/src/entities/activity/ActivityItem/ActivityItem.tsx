@@ -1,5 +1,5 @@
 /* eslint-disable no-irregular-whitespace */
-import { useMemo } from 'react';
+import { Suspense, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
@@ -30,7 +30,7 @@ type ActivityItemProps = {
     onNavigateToTransaction: (activity: BtcActivityItem) => void;
 };
 
-export const ActivityItem = (props: ActivityItemProps) => {
+const ActivityItemContent = (props: ActivityItemProps) => {
     const { activity, onNavigateToTransaction, timeFormatDetails } = props;
     const formatter = useNumberFormatter();
     const rate = useRate(BTC_ASSET);
@@ -91,39 +91,61 @@ export const ActivityItem = (props: ActivityItemProps) => {
     }, [counterpartyPortfolioMeta, counterpartyContactMeta, counterpartyAddress]);
 
     return (
-        <View style={styles.border}>
-            <Cell
-                background={status.type === 'pending' ? 'tertiary' : 'secondary'}
-                showDivider={false}
-                onPress={() => onNavigateToTransaction(activity)}
-            >
-                <Cell.Content>
-                    <Cell.Row>
-                        <View style={styles.titleWithTimestamp}>
-                            <Cell.Title>{title}</Cell.Title>
-                            {status.type !== 'pending' && (
-                                <Text color="tertiary" style={styles.timestamp}>
-                                    {timeFormatDetails === 'time'
-                                        ? dateFormatter.format(activity.timestamp)
-                                        : dateFormatter({ day: 'numeric', month: 'short' }).format(
-                                              activity.timestamp
-                                          )}
-                                </Text>
-                            )}
-                        </View>
-                        <Cell.Value color={isInitiator ? 'primary' : 'accentGreen'}>
-                            {isInitiator ? '−' : '+'} {activity.transaction.value.format(formatter)}
-                        </Cell.Value>
-                    </Cell.Row>
-                    <Cell.Row>
-                        {CounterpartyName}
-                        <Cell.Subvalue>
-                            {rate.data &&
-                                activity.transaction.value.convert(rate.data).format(formatter)}
-                        </Cell.Subvalue>
-                    </Cell.Row>
-                </Cell.Content>
-            </Cell>
-        </View>
+        <Cell
+            containerStyle={styles.border}
+            background={status.type === 'pending' ? 'tertiary' : 'secondary'}
+            showDivider={false}
+            onPress={() => onNavigateToTransaction(activity)}
+        >
+            <Cell.Content>
+                <Cell.Row>
+                    <View style={styles.titleWithTimestamp}>
+                        <Cell.Title>{title}</Cell.Title>
+                        {status.type !== 'pending' && (
+                            <Text color="tertiary" style={styles.timestamp}>
+                                {timeFormatDetails === 'time'
+                                    ? dateFormatter.format(activity.timestamp)
+                                    : dateFormatter({ day: 'numeric', month: 'short' }).format(
+                                          activity.timestamp
+                                      )}
+                            </Text>
+                        )}
+                    </View>
+                    <Cell.Value color={isInitiator ? 'primary' : 'accentGreen'}>
+                        {isInitiator ? '−' : '+'} {activity.transaction.value.format(formatter)}
+                    </Cell.Value>
+                </Cell.Row>
+                <Cell.Row>
+                    {CounterpartyName}
+                    <Cell.Subvalue>
+                        {rate.data &&
+                            activity.transaction.value.convert(rate.data).format(formatter)}
+                    </Cell.Subvalue>
+                </Cell.Row>
+            </Cell.Content>
+        </Cell>
+    );
+};
+
+export const ActivityItem = (props: ActivityItemProps) => {
+    return (
+        <Suspense
+            fallback={
+                <Cell containerStyle={styles.border} skeleton showDivider={false}>
+                    <Cell.Content>
+                        <Cell.Row>
+                            <Cell.Title />
+                            <Cell.Value />
+                        </Cell.Row>
+                        <Cell.Row>
+                            <Cell.Subtitle />
+                            <Cell.Subvalue />
+                        </Cell.Row>
+                    </Cell.Content>
+                </Cell>
+            }
+        >
+            <ActivityItemContent {...props} />
+        </Suspense>
     );
 };

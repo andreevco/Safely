@@ -60,7 +60,7 @@ export function useNewTransactionsBubble(
 
     const onPress = useCallback(() => {
         mode.value = NewTransactionsBubbleMode.HIDDEN;
-        listRef.current?.scrollToOffset({ offset: 0, animated: true });
+        listRef.current?.scrollToOffset({ offset: 0, animated: true, viewPosition: 0 });
     }, [mode, listRef]);
 
     return {

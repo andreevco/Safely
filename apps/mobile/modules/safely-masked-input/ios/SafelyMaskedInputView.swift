@@ -268,11 +268,10 @@ class SafelyMaskedInputView: ExpoView, UITextFieldDelegate {
             let size = suffixFontSize > 0 ? suffixFontSize : resolvedMainFont().pointSize
             let suffixFont = UIFont.systemFont(ofSize: size, weight: .regular)
             result.append(NSAttributedString(
-                string: "  " + suffix,
+                string: " " + suffix,
                 attributes: [
                     .foregroundColor: suffixColor.withAlphaComponent(suffixOpacity),
-                    .font: suffixFont,
-                    .baselineOffset: 2.0,
+                    .font: suffixFont
                 ]
             ))
         }
@@ -300,11 +299,10 @@ class SafelyMaskedInputView: ExpoView, UITextFieldDelegate {
             let size = suffixFontSize > 0 ? suffixFontSize : font.pointSize
             let suffixFont = UIFont.systemFont(ofSize: size, weight: .regular)
             result.append(NSAttributedString(
-                string: "  " + suffix,
+                string: " " + suffix,
                 attributes: [
                     .foregroundColor: suffixColor.withAlphaComponent(suffixOpacity),
-                    .font: suffixFont,
-                    .baselineOffset: 2.0,
+                    .font: suffixFont
                 ]
             ))
         }
