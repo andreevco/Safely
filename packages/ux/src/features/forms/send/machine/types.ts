@@ -10,6 +10,8 @@ import type {
 import type {
     AmountInputType,
     AmountWithInputType,
+    ContactSuggestion,
+    PortfolioSuggestion,
     SendFormErrors,
     SendFormInitialValues,
     SendFormResult,
@@ -17,8 +19,6 @@ import type {
     SendSuggestionState,
     SendSuggestions
 } from '../types';
-import type { calculateMaxAmount, validateAmount } from '../validators/amount';
-import type { validateRecipientInput } from '../validators/recipient';
 
 export interface CreateContactInput {
     name: string;
@@ -28,25 +28,6 @@ export interface CreateContactInput {
     }[];
 }
 
-export type RecipientValidator = (
-    value: string,
-    preferredSuggestionId?: string
-) => ReturnType<typeof validateRecipientInput>;
-
-export type AmountValidator = (
-    value: string,
-    inputType: SendFormValues['amountInputType'],
-    asset: RatedCryptoAssetAmount | undefined
-) => ReturnType<typeof validateAmount>;
-
-export type MaxAmountComputer = (
-    amount: BtcAssetAmount,
-    price: RatedCryptoAssetAmount['price'],
-    inputType: SendFormValues['amountInputType']
-) => ReturnType<typeof calculateMaxAmount>;
-
-export type AssetByIdLookup = (id: string) => RatedCryptoAssetAmount | undefined;
-
 export type FetchMaxValue = (recipient: Recipient) => Promise<BtcAssetAmount | undefined>;
 
 export interface SendFormMachineInput {
@@ -54,15 +35,14 @@ export interface SendFormMachineInput {
     initialSuggestion: SendSuggestionState | undefined;
     formatter: NumberFormatter;
 
+    portfolioSuggestions: PortfolioSuggestion[];
+    contactSuggestions: ContactSuggestion[];
+    ratedAssets: RatedCryptoAssetAmount[];
+    activeWallet: PortfolioSuggestion;
+
     shouldResetForm: () => boolean;
     onSubmit: (result: SendFormResult, onSuccess: () => void) => void;
     createContact: (input: CreateContactInput) => Promise<Contact>;
-
-    validateRecipient: RecipientValidator;
-    validateAmount: AmountValidator;
-    computeMaxAmount: MaxAmountComputer;
-    findAssetById: AssetByIdLookup;
-    getRecipientMeta: (selectedId: string | undefined) => SendFormResult['recipientMeta'];
     fetchMaxValue: FetchMaxValue;
 }
 
@@ -79,14 +59,14 @@ export interface SendFormMachineContext {
 
     formatter: NumberFormatter;
 
+    portfolioSuggestions: PortfolioSuggestion[];
+    contactSuggestions: ContactSuggestion[];
+    ratedAssets: RatedCryptoAssetAmount[];
+    activeWallet: PortfolioSuggestion;
+
     shouldResetForm: SendFormMachineInput['shouldResetForm'];
     onSubmit: SendFormMachineInput['onSubmit'];
     createContact: SendFormMachineInput['createContact'];
-    validateRecipient: RecipientValidator;
-    validateAmount: AmountValidator;
-    computeMaxAmount: MaxAmountComputer;
-    findAssetById: AssetByIdLookup;
-    getRecipientMeta: SendFormMachineInput['getRecipientMeta'];
     fetchMaxValue: FetchMaxValue;
 }
 

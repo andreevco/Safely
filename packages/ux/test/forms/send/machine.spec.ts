@@ -11,7 +11,8 @@ import {
     VALID_ADDRESS,
     makeContactSuggestion,
     makeMaxSendValue,
-    makeMockFormatter,
+    makeMockContact,
+    makePortfolioSuggestion,
     makeMockInput,
     makeSuggestions,
     setupAtAmountIdle,
@@ -20,7 +21,6 @@ import {
 } from './test-helpers';
 import { SendFormError } from '../../../src/features/forms/send/errors';
 import { createSendFormMachine } from '../../../src/features/forms/send/machine/machine';
-import { calculateMaxAmount } from '../../../src/features/forms/send/validators/amount';
 
 describe('sendFormMachine — restoring (initial state)', () => {
     it('lands in editing.recipient.empty when input is fresh', () => {
@@ -252,12 +252,7 @@ describe('sendFormMachine — addressBookName flow', () => {
     });
 
     it('NEXT with addressBookName + no selected suggestion → creatingContact, then onDone → amount.idle', async () => {
-        const createdContact = {
-            id: { toString: () => 'new-contact-id' },
-            addresses: [{ blockchain: 'btc', address: VALID_ADDRESS }],
-            meta: { name: 'My Friend', color: 'red' }
-        };
-        const createContact = vi.fn().mockResolvedValue(createdContact);
+        const createContact = vi.fn().mockResolvedValue(makeMockContact({ name: 'My Friend' }));
         const actor = createActor(createSendFormMachine(), {
             input: makeMockInput({
                 createContact: createContact as never
@@ -273,6 +268,75 @@ describe('sendFormMachine — addressBookName flow', () => {
         expect(createContact).toHaveBeenCalledTimes(1);
         expect(s.matches({ editing: { amount: 'idle' } })).toBe(true);
         expect(s.context.suggestion.selectedId).toBe('new-contact-id');
+    });
+
+    it('createContact action pushes the new contact into context.contactSuggestions', async () => {
+        const createContact = vi.fn().mockResolvedValue(makeMockContact({ name: 'My Friend' }));
+        const actor = createActor(createSendFormMachine(), {
+            input: makeMockInput({
+                createContact: createContact as never
+            })
+        });
+        actor.start();
+        expect(actor.getSnapshot().context.contactSuggestions).toHaveLength(0);
+
+        actor.send({ type: 'SET_RECIPIENT', value: VALID_ADDRESS });
+        actor.send({ type: 'SET_ADDRESS_BOOK_NAME', name: 'My Friend' });
+        actor.send({ type: 'NEXT' });
+        await new Promise(resolve => setTimeout(resolve, 0));
+
+        const s = actor.getSnapshot();
+        expect(s.context.contactSuggestions).toHaveLength(1);
+        expect(s.context.contactSuggestions[0]).toMatchObject({
+            id: 'new-contact-id',
+            address: VALID_ADDRESS,
+            meta: { name: 'My Friend' }
+        });
+    });
+
+    it('after createContact, re-entering the same address recognizes the new contact', async () => {
+        const createContact = vi.fn().mockResolvedValue(makeMockContact({ name: 'My Friend' }));
+        const actor = createActor(createSendFormMachine(), {
+            input: makeMockInput({
+                createContact: createContact as never
+            })
+        });
+        actor.start();
+        actor.send({ type: 'SET_RECIPIENT', value: VALID_ADDRESS });
+        actor.send({ type: 'SET_ADDRESS_BOOK_NAME', name: 'My Friend' });
+        actor.send({ type: 'NEXT' });
+        await new Promise(resolve => setTimeout(resolve, 0));
+
+        actor.send({ type: 'RESET' });
+        expect(actor.getSnapshot().context.suggestion.selectedId).toBeUndefined();
+
+        actor.send({ type: 'SET_RECIPIENT', value: VALID_ADDRESS });
+        expect(actor.getSnapshot().context.suggestion.selectedId).toBe('new-contact-id');
+    });
+});
+
+describe('sendFormMachine — context snapshots', () => {
+    it('portfolioSuggestions/contactSuggestions/activeWallet snapshot from input into context at start', () => {
+        const portfolio = makePortfolioSuggestion({ id: 'p1', address: VALID_ADDRESS });
+        const contact = makeContactSuggestion({ id: 'c1', address: SUGGESTION_ADDRESS });
+        const activeWallet = {
+            id: 'active-wallet',
+            address: SELF_ADDRESS,
+            meta: { name: 'Snapshot Name', icon: { type: 'emoji' as const, value: '🐱' } }
+        };
+        const actor = createActor(createSendFormMachine(), {
+            input: makeMockInput({
+                portfolioSuggestions: [portfolio],
+                contactSuggestions: [contact],
+                activeWallet
+            })
+        });
+        actor.start();
+        const s = actor.getSnapshot();
+
+        expect(s.context.portfolioSuggestions).toEqual([portfolio]);
+        expect(s.context.contactSuggestions).toEqual([contact]);
+        expect(s.context.activeWallet).toEqual(activeWallet);
     });
 });
 
@@ -332,7 +396,7 @@ describe('sendFormMachine — amount transitions', () => {
             const actor = createActor(createSendFormMachine(), {
                 input: makeMockInput({
                     resolvedInitialValues: { recipient: VALID_ADDRESS },
-                    findAssetById: () => undefined
+                    ratedAssets: []
                 })
             });
             actor.start();
@@ -387,39 +451,22 @@ describe('sendFormMachine — amount transitions', () => {
     });
 
     it('EXIT_MAX then ENTER_MAX recomputes from current maxValue', async () => {
-        const formatter = makeMockFormatter();
-        const computeMaxAmount = vi.fn(
-            (
-                amount: Parameters<typeof calculateMaxAmount>[0]['amount'],
-                price: Parameters<typeof calculateMaxAmount>[0]['price'],
-                inputType: Parameters<typeof calculateMaxAmount>[1]
-            ) => calculateMaxAmount({ amount, price }, inputType, formatter)
-        );
-
         const maxValue = makeMaxSendValue();
-        const actor = createActor(createSendFormMachine(), {
-            input: makeMockInput({
-                resolvedInitialValues: { recipient: VALID_ADDRESS },
-                formatter,
-                computeMaxAmount,
-                fetchMaxValue: async () => maxValue
-            })
-        });
-        actor.start();
-        actor.send({ type: 'NEXT' });
-        await vi.waitFor(() => {
-            if (actor.getSnapshot().context.parsed.maxValue === undefined) {
-                throw new Error('maxValue not yet set');
-            }
-        });
+        const actor = await setupAtAmountWithMax(maxValue);
+
         actor.send({ type: 'ENTER_MAX' });
+        const amountAfterFirstMax = actor.getSnapshot().context.values.amount;
+
         actor.send({ type: 'EXIT_MAX' });
-        const callsBeforeReMax = computeMaxAmount.mock.calls.length;
+        expect(actor.getSnapshot().context.values.amount).toBe('');
+        expect(actor.getSnapshot().context.values.isMax).toBe(false);
+
         actor.send({ type: 'ENTER_MAX' });
         const s = actor.getSnapshot();
 
         expect(s.matches({ editing: { amount: 'max' } })).toBe(true);
-        expect(computeMaxAmount.mock.calls.length).toBeGreaterThan(callsBeforeReMax);
+        expect(s.context.values.isMax).toBe(true);
+        expect(s.context.values.amount).toBe(amountAfterFirstMax);
     });
 
     it('PREV from max then NEXT restores max (form navigation preserves MAX)', async () => {

@@ -1,5 +1,6 @@
 import type { SendFormErrors, SendFormValues, SendSuggestionState } from '../types';
 import type { SendFormMachineContext, SendFormMachineInput } from './types';
+import { type RecipientValidationResult, validateRecipientInput } from '../validators/recipient';
 
 export const EMPTY_SUGGESTION: SendSuggestionState = {
     selectedId: undefined,
@@ -56,7 +57,7 @@ export function withResetDependentErrors(errors: SendFormErrors): SendFormErrors
 }
 
 export function suggestionFromValidatorResult(
-    result: ReturnType<SendFormMachineInput['validateRecipient']>
+    result: RecipientValidationResult
 ): SendSuggestionState | undefined {
     if (!result.suggestion) return undefined;
 
@@ -91,7 +92,12 @@ export function buildInitialContext(input: SendFormMachineInput): SendFormMachin
         return baseContext;
     }
 
-    const result = input.validateRecipient(initialValues.recipient, initialSuggestion?.selectedId);
+    const result = validateRecipientInput(initialValues.recipient, {
+        activeWalletAddress: input.activeWallet.address,
+        portfolioSuggestions: input.portfolioSuggestions,
+        contactSuggestions: input.contactSuggestions,
+        preferredSuggestionId: initialSuggestion?.selectedId
+    });
 
     const allDraftIds = [
         ...(initialSuggestion?.portfoliosIds ?? []),

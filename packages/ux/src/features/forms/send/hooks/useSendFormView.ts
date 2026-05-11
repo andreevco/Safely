@@ -1,10 +1,10 @@
 import { useMemo } from 'react';
 import type { SnapshotFrom } from 'xstate';
 
-import { assertUnreachable, type RatedCryptoAssetAmount } from '@safely/core';
+import { assertUnreachable } from '@safely/core';
 
 import type { createSendFormMachine } from '../machine/machine';
-import type { ContactSuggestion, PortfolioSuggestion, SendSuggestions } from '../types';
+import type { SendSuggestions } from '../types';
 import { computeRecipientMeta, filterSuggestionsByQuery } from '../utils';
 import type { AmountView, RecipientView, SendFormView } from '../view';
 import type { SendFormDispatchers } from './useSendFormDispatchers';
@@ -14,9 +14,6 @@ type Snapshot = SnapshotFrom<ReturnType<typeof createSendFormMachine>>;
 interface UseSendFormViewProps {
     snapshot: Snapshot;
     dispatchers: SendFormDispatchers;
-    portfolioSuggestions: PortfolioSuggestion[];
-    contactSuggestions: ContactSuggestion[];
-    ratedAssets: RatedCryptoAssetAmount[];
 }
 
 function filterAndOrderByIds<S extends { id: string }>(items: S[], ids: string[]): S[] {
@@ -44,7 +41,7 @@ function resolveAmountStatus(snapshot: Snapshot): AmountView['status'] {
 }
 
 export function useSendFormView(props: UseSendFormViewProps): SendFormView {
-    const { snapshot, dispatchers, portfolioSuggestions, contactSuggestions, ratedAssets } = props;
+    const { snapshot, dispatchers } = props;
 
     const {
         setRecipient,
@@ -59,6 +56,10 @@ export function useSendFormView(props: UseSendFormViewProps): SendFormView {
         goNext,
         backToEditing
     } = dispatchers;
+
+    const ratedAssets = snapshot.context.ratedAssets;
+    const contactSuggestions = snapshot.context.contactSuggestions;
+    const portfolioSuggestions = snapshot.context.portfolioSuggestions;
 
     const visibleSuggestions = useMemo<SendSuggestions>(
         () =>
