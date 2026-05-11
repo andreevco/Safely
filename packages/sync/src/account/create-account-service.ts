@@ -60,6 +60,7 @@ export class CreateAccountService<Latest extends StorageVersion, Rest> {
             await container.ikService.getPub(),
             container.keyServiceFactory.createDmkSignerService(secureEncryptedStorage)
         );
+        await container.deviceManager.activate();
 
         return new SyncAccount({
             accountId: accountID,

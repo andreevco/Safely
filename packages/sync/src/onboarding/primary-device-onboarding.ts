@@ -50,6 +50,7 @@ export class PrimaryDeviceOnboarding {
 
         await this.deviceManager.addDevice(message.ikPub, this.dmkService);
         this.triggerSync();
+        await this.waitUntilDeviceActive(message.ikPub);
     }
 
     private async onboardNewDevice(message: QRMessageNewDeviceOnboarding): Promise<void> {
@@ -90,6 +91,8 @@ export class PrimaryDeviceOnboarding {
                 signature: signature.toString('hex')
             }
         });
+
+        await this.waitUntilDeviceActive(message.ikPub);
     }
 
     private async signOnboardingMessage(newIkPub: Buffer): Promise<Buffer> {
@@ -99,6 +102,19 @@ export class PrimaryDeviceOnboarding {
             newIkPub
         ]);
         return await this.dmkService.sign(toSign);
+    }
+
+    private async waitUntilDeviceActive(ikPub: Buffer): Promise<void> {
+        for (let i = 0; i < 3; i++) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            const devices = await this.deviceManager.getDevices();
+            if (devices.some(d => d.info.ikPub.equals(ikPub))) {
+                return;
+            }
+        }
+
+        throw new PrimaryDeviceOnboardingError('Device did not become active after onboarding');
     }
 }
 

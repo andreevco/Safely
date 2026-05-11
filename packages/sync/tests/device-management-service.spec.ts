@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { MockSnapshotsServer } from './mocks/mock-snapshots-api';
 import { createMachineContext, getMasterKey, MachineContext } from './mocks/mock-sync-context';
 import { ed25519_keygen } from '../src/crypto/ed25519';
+import { getKID } from '../src/utils/kid';
 
 describe('device management service', () => {
     let server: MockSnapshotsServer;
@@ -25,13 +26,6 @@ describe('device management service', () => {
     function addPub(ctx: MachineContext, ikPub: Buffer) {
         return ctx.container.deviceManager.addDevice(
             ikPub,
-            ctx.container.keyServiceFactory.createDmkSignerService(ctx.secureEncryptedStorage)
-        );
-    }
-
-    function revoke(ctx: MachineContext, i: number) {
-        return ctx.container.deviceManager.revokeDevice(
-            Buffer.from(`ikPub${i}`),
             ctx.container.keyServiceFactory.createDmkSignerService(ctx.secureEncryptedStorage)
         );
     }
@@ -64,44 +58,68 @@ describe('device management service', () => {
         }
     }
 
-    it('adds 1 device', async () => {
+    async function verifyStoredDeviceState(
+        ctx: MachineContext,
+        ikPub: Buffer,
+        expectedType: 'active' | 'added' | 'revoked'
+    ) {
+        const devices = await ctx.container.deviceRepository.getStoredDevices();
+        expect(devices[getKID(ikPub)]?.type).toBe(expectedType);
+    }
+
+    it('adds device as added and hides it from public list', async () => {
         const ctx = await createMachineContext(server);
 
         expect(await ctx.container.deviceManager.getDevices()).toEqual([]);
 
         await add(ctx, 1);
 
-        await verifyDeviceList(ctx, [deviceIkPub(1)]);
+        expect(await ctx.container.deviceManager.getDevices()).toEqual([]);
+        await verifyStoredDeviceState(ctx, deviceIkPub(1), 'added');
+    });
+
+    it('activates this device', async () => {
+        const ctx = await createMachineContext(server);
+        const ikPub = await ctx.container.ikService.getPub();
+
+        await addPub(ctx, ikPub);
+        await verifyStoredDeviceState(ctx, ikPub, 'added');
+
+        await ctx.container.deviceManager.activate();
+
+        await verifyDeviceList(ctx, [ikPub]);
+        await verifyStoredDeviceState(ctx, ikPub, 'active');
     });
 
     it('adds 10 devices', async () => {
         const ctx = await createMachineContext(server);
 
-        expect(await ctx.container.deviceManager.getDevices()).toEqual([]);
-
         for (let i = 0; i < 10; i++) {
             await add(ctx, i);
         }
 
-        await verifyDeviceList(
-            ctx,
-            Array.from({ length: 10 }, (_, i) => deviceIkPub(i))
-        );
+        expect(await ctx.container.deviceManager.getDevices()).toEqual([]);
+        for (let i = 0; i < 10; i++) {
+            await verifyStoredDeviceState(ctx, deviceIkPub(i), 'added');
+        }
     });
 
     it('adds 2 devices and revokes 1', async () => {
         const ctx = await createMachineContext(server);
+        const ikPub = await ctx.container.ikService.getPub();
 
         expect(await ctx.container.deviceManager.getDevices()).toEqual([]);
 
-        for (let i = 1; i <= 2; i++) {
-            await add(ctx, i);
-        }
+        await addPub(ctx, ikPub);
+        await ctx.container.deviceManager.activate();
+        await add(ctx, 2);
 
-        await verifyDeviceList(ctx, [deviceIkPub(1), deviceIkPub(2)]);
-        await revoke(ctx, 1);
+        await verifyDeviceList(ctx, [ikPub]);
+        await verifyStoredDeviceState(ctx, deviceIkPub(2), 'added');
+        await revokePub(ctx, ikPub);
 
-        await verifyDeviceList(ctx, [deviceIkPub(2)]);
+        await verifyDeviceList(ctx, []);
+        await verifyStoredDeviceState(ctx, ikPub, 'revoked');
     });
 
     it('applies other device updates', async () => {
@@ -113,15 +131,23 @@ describe('device management service', () => {
         const ctx2 = await createMachineContext(server, masterKey, ik2);
 
         await addPub(ctx1, ik1.publicKey);
+        await ctx1.container.deviceManager.activate();
         await addPub(ctx1, ik2.publicKey);
 
-        await verifyDeviceList(ctx1, [ik1.publicKey, ik2.publicKey]);
+        await verifyDeviceList(ctx1, [ik1.publicKey]);
+        await verifyStoredDeviceState(ctx1, ik2.publicKey, 'added');
 
         await ctx2.container.deviceManager.mergeDeviceStorage(
             ctx1.container.deviceYManager.encodeAsSnapshot()
         );
+        await ctx2.container.deviceManager.activate();
 
         await verifyDeviceList(ctx2, [ik1.publicKey, ik2.publicKey]);
+        await verifyStoredDeviceState(ctx2, ik2.publicKey, 'active');
+
+        await ctx1.container.deviceManager.mergeDeviceStorage(
+            ctx2.container.deviceYManager.encodeAsSnapshot()
+        );
 
         await revokePub(ctx1, ik1.publicKey);
         await verifyDeviceList(ctx1, [ik2.publicKey]);

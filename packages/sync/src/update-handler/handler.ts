@@ -34,7 +34,7 @@ export class UpdateHandler<Latest extends StorageVersion, Rest> {
 
         if (upd.snapshotProof.equals(syncState.snapshotProof)) {
             this.logger.info('Update already received');
-            return { hasLocalChanges: this.hasLocalChanges(payload) }; // Already have this update
+            return { hasLocalChanges: await this.hasLocalChanges(payload) }; // Already have this update
         }
 
         if (syncState.snapshotProof.length !== 0) {
@@ -68,6 +68,7 @@ export class UpdateHandler<Latest extends StorageVersion, Rest> {
         await this.deviceManagementService.mergeDeviceStorage(
             Buffer.from(payload.deviceStorage, 'utf8')
         );
+        await this.deviceManagementService.activate();
 
         // Suppose following scenario:
         // - User has two devices A (online) and B (offline)
@@ -87,7 +88,7 @@ export class UpdateHandler<Latest extends StorageVersion, Rest> {
         syncState.snapshotProof = upd.snapshotProof;
         await this.syncStateRepository.saveState(syncState);
 
-        const hasLocalChanges = this.hasLocalChanges(payload);
+        const hasLocalChanges = await this.hasLocalChanges(payload);
         this.logger.info('Update applied, hasLocalChanges:', hasLocalChanges);
         return { hasLocalChanges };
     }
@@ -125,7 +126,11 @@ export class UpdateHandler<Latest extends StorageVersion, Rest> {
         );
     }
 
-    private hasLocalChanges(upd: UpdatePayload): boolean {
+    private async hasLocalChanges(upd: UpdatePayload): Promise<boolean> {
+        if (!(await this.deviceManagementService.isThisDeviceActive())) {
+            return false;
+        }
+
         return (
             !this.yManager.equalsToRemoteUpdate(Buffer.from(upd.userStorage, 'utf8')) ||
             !this.deviceYManager.equalsToRemoteUpdate(Buffer.from(upd.deviceStorage, 'utf8'))

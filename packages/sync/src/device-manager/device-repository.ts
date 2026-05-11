@@ -1,7 +1,7 @@
 import {
+    addedDeviceToJson,
     Device,
     devicesFromJson,
-    deviceToJson,
     revokedDeviceToJson,
     StoredDevice,
     StoredDevices,
@@ -26,7 +26,14 @@ export class DeviceRepository {
     public async addDevice(device: Device) {
         const kid = getKID(device.info.ikPub);
         await this.manager.transaction(draft => {
-            draft.at('devices').set(kid, deviceToJson(device));
+            draft.at('devices').set(kid, addedDeviceToJson(device));
+        });
+    }
+
+    public async activateDevice(device: Device) {
+        const kid = getKID(device.info.ikPub);
+        await this.manager.transaction(draft => {
+            draft.at('devices').at(kid).set('type', 'active');
         });
     }
 

@@ -23,6 +23,23 @@ export class DeviceManagementService {
         await this.deviceRepository.addDevice(await this.makeDevice(ikPub, dmkSignerService));
     }
 
+    public async activate(): Promise<void> {
+        const device = await this.getThisStoredDevice();
+        if (!device || device.type !== 'added') {
+            return;
+        }
+
+        await this.deviceRepository.activateDevice({
+            info: device.info,
+            sign: device.sign
+        });
+    }
+
+    public async isThisDeviceActive(): Promise<boolean> {
+        const device = await this.getThisStoredDevice();
+        return device?.type === 'active';
+    }
+
     public async revokeDevice(ikPub: Buffer, dmkSignerService: DmkSignerService): Promise<void> {
         const devices = await this.getDevices();
         if (!devices.some(d => d.info.ikPub.equals(ikPub))) {
@@ -86,8 +103,8 @@ export class DeviceManagementService {
     }
 
     public async makeDevice(ikPub: Buffer, dmkSignerService: DmkSignerService): Promise<Device> {
-        const devices = await this.getDevices();
-        if (devices.some(d => d.info.ikPub.equals(ikPub))) {
+        const devices = await this.deviceRepository.getStoredDevices();
+        if (Object.values(devices).some(d => d.type !== 'revoked' && d.info.ikPub.equals(ikPub))) {
             throw new Error('Device with the same ikPub already exists.');
         }
         const addedAt = Date.now();
@@ -133,8 +150,13 @@ export class DeviceManagementService {
         return await opts.dmkSignerService.sign(dataToSign);
     }
 
+    private async getThisStoredDevice(): Promise<StoredDevice | undefined> {
+        const ikPub = await this.ikService.getPub();
+        return await this.deviceRepository.getStoredDevice(getKID(ikPub));
+    }
+
     private getStoredDeviceSignData(device: StoredDevice): Buffer {
-        if (device.type === 'active') {
+        if (device.type === 'active' || device.type === 'added') {
             return Buffer.concat([
                 utf8(`safely/sync/v1/device/add`),
                 Buffer.from([0x00]),

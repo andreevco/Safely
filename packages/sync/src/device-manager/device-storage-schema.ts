@@ -23,11 +23,15 @@ export type StoredActiveDevice = Device & {
     type: 'active';
 };
 
+export type StoredAddedDevice = Device & {
+    type: 'added';
+};
+
 export type StoredRevokedDevice = RevokedDevice & {
     type: 'revoked';
 };
 
-export type StoredDevice = StoredActiveDevice | StoredRevokedDevice;
+export type StoredDevice = StoredActiveDevice | StoredAddedDevice | StoredRevokedDevice;
 export type StoredDevices = Record<string, StoredDevice>;
 export type Devices = Record<string, Device>;
 
@@ -43,6 +47,10 @@ const sStoredActiveDevice = z.object({
     sign: z.string()
 });
 
+const sAddedDevice = sStoredActiveDevice.extend({
+    type: z.literal('added')
+});
+
 const sStoredRevokedDevice = z.object({
     type: z.literal('revoked'),
     info: z.object({
@@ -51,7 +59,7 @@ const sStoredRevokedDevice = z.object({
     sign: z.string()
 });
 
-const sStoredDevice = z.union([sStoredActiveDevice, sStoredRevokedDevice]);
+const sStoredDevice = z.union([sStoredActiveDevice, sAddedDevice, sStoredRevokedDevice]);
 
 export const sDevices = z.object({
     devices: z.record(z.string(), sStoredDevice)
@@ -88,6 +96,17 @@ export function devicesToJson(devices: Devices) {
 export function deviceToJson(device: Device) {
     return {
         type: 'active',
+        info: {
+            ikPub: device.info.ikPub.toString('hex'),
+            addedAt: device.info.addedAt
+        },
+        sign: device.sign.toString('hex')
+    } as const;
+}
+
+export function addedDeviceToJson(device: Device) {
+    return {
+        type: 'added',
         info: {
             ikPub: device.info.ikPub.toString('hex'),
             addedAt: device.info.addedAt
@@ -137,9 +156,9 @@ export function storedDevicesFromJson(input: unknown): StoredDevices {
     const devices: StoredDevices = {};
 
     for (const [kid, deviceJson] of Object.entries(parsed.devices)) {
-        if (deviceJson.type === 'active') {
+        if (deviceJson.type === 'active' || deviceJson.type === 'added') {
             devices[kid] = {
-                type: 'active',
+                type: deviceJson.type,
                 info: {
                     ikPub: hex(deviceJson.info.ikPub),
                     addedAt: deviceJson.info.addedAt
