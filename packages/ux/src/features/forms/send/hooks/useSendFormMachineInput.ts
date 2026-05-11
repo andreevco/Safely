@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 
 import type { RatedCryptoAssetAmount } from '@safely/core';
 
@@ -60,9 +60,6 @@ export function useSendFormMachineInput(props: UseSendFormMachineInputProps): Se
     const activeBtcWallet = useActiveBtcWallet();
     const { mutateAsync: createContact } = useCreateContact();
 
-    const contactSuggestionsRef = useRef(contactSuggestions);
-    contactSuggestionsRef.current = contactSuggestions;
-
     const [initialSuggestion] = useState(() =>
         computeInitialSuggestion(initialValues, portfolioSuggestions, contactSuggestions)
     );
@@ -78,7 +75,7 @@ export function useSendFormMachineInput(props: UseSendFormMachineInputProps): Se
             validateRecipientInput(value, {
                 activeWalletAddress: activeBtcWallet.address,
                 portfolioSuggestions,
-                contactSuggestions: contactSuggestionsRef.current,
+                contactSuggestions,
                 preferredSuggestionId
             }),
         validateAmount: (value, inputType, asset) =>
@@ -87,7 +84,7 @@ export function useSendFormMachineInput(props: UseSendFormMachineInputProps): Se
             calculateMaxAmount({ amount, price }, inputType, formatter),
         findAssetById: id => ratedAssets.find(({ amount }) => amount.asset.id.toString() === id),
         getRecipientMeta: selectedId =>
-            computeRecipientMeta(selectedId, portfolioSuggestions, contactSuggestionsRef.current),
+            computeRecipientMeta(selectedId, portfolioSuggestions, contactSuggestions),
         fetchMaxValue
     };
 }
