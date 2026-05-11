@@ -5,7 +5,12 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Image, View } from 'react-native';
 import QRCode from 'react-native-qrcode-skia';
 
-import { useActiveAccountQueryKey, useCreateReconnectConnector, useToast } from '@safely/ux';
+import {
+    useActiveAccountQueryKey,
+    useCreateReconnectConnector,
+    useLogger,
+    useToast
+} from '@safely/ux';
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { resources } from '@mobile/shared/resources';
@@ -18,6 +23,7 @@ export const ReconnectDeviceModal = () => {
     const { t } = useTranslation();
     const copy = useCopy();
     const toast = useToast();
+    const logger = useLogger();
     const navigation = useNavigation<RootStackNavigationProp>();
     const queryClient = useQueryClient();
     const accountQueryKey = useActiveAccountQueryKey();
@@ -33,22 +39,29 @@ export const ReconnectDeviceModal = () => {
 
         let isAlive = true;
 
-        data.accountPromise.then(async () => {
-            if (!isAlive) return;
+        data.accountPromise
+            .then(async () => {
+                if (!isAlive) return;
 
-            await queryClient.invalidateQueries({
-                queryKey: accountQueryKey.devices.meta.toKey()
+                await queryClient.invalidateQueries({
+                    queryKey: accountQueryKey.devices.meta.toKey()
+                });
+
+                navigation.goBack();
+                toast(t('deviceUnlinked.reconnect.successToast'));
+            })
+            .catch(e => {
+                if (!isAlive) return;
+
+                logger.error('[ReconnectDeviceModal]', e);
+                navigation.goBack();
             });
-
-            navigation.goBack();
-            toast(t('deviceUnlinked.reconnect.successToast'));
-        });
 
         return () => {
             isAlive = false;
             data.abort();
         };
-    }, [data, queryClient, accountQueryKey.devices.meta, navigation, toast, t]);
+    }, [data, queryClient, accountQueryKey.devices.meta, navigation, toast, t, logger]);
 
     useEffect(() => {
         if (isError) navigation.goBack();
