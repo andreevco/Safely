@@ -12,6 +12,7 @@ import {
     HomeHeader,
     TotalBalance
 } from '@mobile/features/home';
+import { Banners } from '@mobile/features/notices';
 import { Screen } from '@mobile/shared/ui';
 
 import { HomeEmptyState } from './components';
@@ -28,6 +29,7 @@ export const HomeScreen = () => {
             {hasPortfolio ? (
                 <Screen.Scrollable ref={scrollRef}>
                     <HomeBanners />
+                    <Banners />
                     <TotalBalance />
                     <HomeActions />
                     <AssetsList />
