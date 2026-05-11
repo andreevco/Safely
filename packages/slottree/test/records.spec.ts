@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
-import { createStorage, StorageImpl } from '../src';
+import type { StorageImpl } from '../src';
+import { createStorage } from '../src';
 import { identityProjection } from './version-fixtures';
 import { isContainerSlot, type ContainerSlot } from '../src/core/slots';
 import { stripSlot } from '../src/core/slots/slot-json';

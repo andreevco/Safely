@@ -1,11 +1,10 @@
-import { JsonValue } from '../json';
+import type { JsonValue } from '../json';
+import type { ContainerSlot, Slot } from '../slots';
 import {
-    ContainerSlot,
     createContainerSlot,
     createTombstoneSlot,
     isContainerSlot,
-    isTombstoneSlot,
-    Slot
+    isTombstoneSlot
 } from '../slots';
 import { slotFromJson } from '../slots/slot-json';
 

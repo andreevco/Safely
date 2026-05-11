@@ -1,6 +1,6 @@
 import type { output, z } from 'zod';
 
-import { Draft, NewOf, StorageVersion } from '@safely/slottree';
+import type { Draft, NewOf, StorageVersion } from '@safely/slottree';
 
 import type { ISyncProvider } from './I-sync-provider';
 import { StorageError } from '../crdt/y-manager';

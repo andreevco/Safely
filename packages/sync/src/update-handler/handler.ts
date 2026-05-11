@@ -1,18 +1,19 @@
 import { sha256 } from '@noble/hashes/sha2.js';
 
-import { StorageVersion } from '@safely/slottree';
+import type { StorageVersion } from '@safely/slottree';
 
 import { getSnapshotProof, getSnapshotProofFromCiphertextHash } from './snapshot-proof';
-import { SyncState } from './sync-state';
-import { SyncStateRepository } from './sync-state-repository';
-import { decodeUpdatePayload, UpdatePayload } from './update-payload';
-import { SnapshotsApi } from '../api/generated';
-import { EncryptedStateAndProofChain } from '../api/types';
-import { YManager } from '../crdt/y-manager';
-import { DeviceManagementService } from '../device-manager/device-management-service';
-import { tDevicesLatest, tDevicesRest } from '../device-manager/device-storage-schema';
-import { Logger } from '../logger';
-import { UpdateDecryptorService } from '../update-encryptor/update-decryptor-service';
+import type { SyncState } from './sync-state';
+import type { SyncStateRepository } from './sync-state-repository';
+import type { UpdatePayload } from './update-payload';
+import { decodeUpdatePayload } from './update-payload';
+import type { SnapshotsApi } from '../api/generated';
+import type { EncryptedStateAndProofChain } from '../api/types';
+import type { YManager } from '../crdt/y-manager';
+import type { DeviceManagementService } from '../device-manager/device-management-service';
+import type { tDevicesLatest, tDevicesRest } from '../device-manager/device-storage-schema';
+import type { Logger } from '../logger';
+import type { UpdateDecryptorService } from '../update-encryptor/update-decryptor-service';
 
 export class UpdateHandler<Latest extends StorageVersion, Rest> {
     constructor(

@@ -13,11 +13,8 @@ import { KeyServiceFactory } from './crypto/service/key-service-factory';
 import { SyncKeyService } from './crypto/service/sync-key-service';
 import { DeviceManagementService } from './device-manager/device-management-service';
 import { DeviceRepository } from './device-manager/device-repository';
-import {
-    DevicesVersions,
-    tDevicesLatest,
-    tDevicesRest
-} from './device-manager/device-storage-schema';
+import type { tDevicesLatest, tDevicesRest } from './device-manager/device-storage-schema';
+import { DevicesVersions } from './device-manager/device-storage-schema';
 import type { IStorage } from './I-storage';
 import type { Logger } from './logger';
 import { SecretEncryptor } from './secret-encryptor';

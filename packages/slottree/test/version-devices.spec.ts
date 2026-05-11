@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { createStorage, DEVICES_KEY, StorageImpl } from '../src';
-import { StorageV3, v3 } from './version-fixtures';
+import type { StorageImpl } from '../src';
+import { createStorage, DEVICES_KEY } from '../src';
+import type { StorageV3 } from './version-fixtures';
+import { v3 } from './version-fixtures';
 import { createOriginContainer, type ContainerSlot } from '../src/core/slots';
 import { slotFromJson, stripSlot } from '../src/core/slots/slot-json';
 

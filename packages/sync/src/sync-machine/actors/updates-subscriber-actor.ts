@@ -1,7 +1,7 @@
 import type { AnyEventObject } from 'xstate';
 import { fromCallback } from 'xstate';
 
-import { StorageVersion } from '@safely/slottree';
+import type { StorageVersion } from '@safely/slottree';
 
 import type { SyncMachineConfig } from '../config';
 

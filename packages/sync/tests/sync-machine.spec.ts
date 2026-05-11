@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { MockSnapshotsServer } from './mocks/mock-snapshots-api';
+import type { TestMockSyncContainer } from './mocks/mock-sync-context';
 import {
     createMachineContext,
     getMasterKey,
     sendLocalUpdate,
-    TestMockSyncContainer,
     waitFor,
     waitForSnapshotSync
 } from './mocks/mock-sync-context';

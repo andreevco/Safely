@@ -4,16 +4,13 @@ import { hkdf } from '@noble/hashes/hkdf.js';
 import { sha256 } from '@noble/hashes/sha2.js';
 import type { ZodType } from 'zod';
 
-import { AssertVersionHList, HCons, StorageVersion } from '@safely/slottree';
+import type { AssertVersionHList, HCons, StorageVersion } from '@safely/slottree';
 
 import { YCRDTRepository } from './crdt/y-crdt-repository';
 import { EncryptedKeyRepository } from './crypto/encrypted-key-repository';
 import { SecureEncryptedKeyRepository } from './crypto/secure-encrypted-key-repository';
-import {
-    DevicesVersions,
-    tDevicesLatest,
-    tDevicesRest
-} from './device-manager/device-storage-schema';
+import type { tDevicesLatest, tDevicesRest } from './device-manager/device-storage-schema';
+import { DevicesVersions } from './device-manager/device-storage-schema';
 import type { IStorage } from './I-storage';
 import type { Logger } from './logger/logger';
 import { SyncStateRepository } from './update-handler/sync-state-repository';

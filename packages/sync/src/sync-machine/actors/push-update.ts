@@ -1,6 +1,6 @@
 import { fromPromise } from 'xstate';
 
-import { StorageVersion } from '@safely/slottree';
+import type { StorageVersion } from '@safely/slottree';
 
 import { encodeUpdatePayload } from '../../update-handler/update-payload';
 import type { SyncMachineConfig } from '../config';

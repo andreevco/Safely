@@ -1,7 +1,7 @@
 import fc from 'fast-check';
-import { z } from 'zod';
+import type { z } from 'zod';
 
-import { stressSchema } from './stress-schema';
+import type { stressSchema } from './stress-schema';
 import type { Draft } from '../../src';
 
 type StressState = z.output<typeof stressSchema>;

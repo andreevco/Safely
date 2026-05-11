@@ -1,8 +1,10 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { z } from 'zod';
 
-import { createStorage, StorageImpl } from '../src';
-import { schemaV1, v1 } from './version-fixtures';
+import type { StorageImpl } from '../src';
+import { createStorage } from '../src';
+import type { schemaV1 } from './version-fixtures';
+import { v1 } from './version-fixtures';
 import { createOriginContainer } from '../src/core/slots';
 import { slotFromJson } from '../src/core/slots/slot-json';
 

@@ -12,7 +12,8 @@ import type { SyncAccountRepository } from './sync-account-repository';
 import { SyncError } from '../sync-error';
 import type { ISyncProvider } from '../sync-provider/I-sync-provider';
 import { OnlineSyncProvider } from '../sync-provider/online-sync-provider';
-import { SyncStatus, SyncStatusManager } from '../sync-provider/sync-status';
+import type { SyncStatusManager } from '../sync-provider/sync-status';
+import { SyncStatus } from '../sync-provider/sync-status';
 import { encodeUpdatePayload } from '../update-handler/update-payload';
 
 export class SyncAccount<Latest extends StorageVersion, Rest> implements ISyncAccount<Latest> {

@@ -1,4 +1,4 @@
-import { Draft, JsonValue, ObjectDraft, Storage } from '@safely/slottree';
+import type { Draft, JsonValue, ObjectDraft, Storage } from '@safely/slottree';
 
 export class YCRDT<T extends object> {
     constructor(private readonly doc: Storage<T>) {}

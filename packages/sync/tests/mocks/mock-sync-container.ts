@@ -1,8 +1,10 @@
-import { AssertVersionHList, HCons, StorageVersion } from '@safely/slottree';
+import type { AssertVersionHList, HCons, StorageVersion } from '@safely/slottree';
 
-import { MockSnapshotsApi, MockSnapshotsServer, MockSnapshotsSse } from './mock-snapshots-api';
+import type { MockSnapshotsServer } from './mock-snapshots-api';
+import { MockSnapshotsApi, MockSnapshotsSse } from './mock-snapshots-api';
 import { ApiSigner } from '../../src/api/api-signer';
-import { AccountsApi, Configuration, SnapshotsApi } from '../../src/api/generated';
+import type { Configuration, SnapshotsApi } from '../../src/api/generated';
+import { AccountsApi } from '../../src/api/generated';
 import { YCRDTRepository } from '../../src/crdt/y-crdt-repository';
 import { YManager } from '../../src/crdt/y-manager';
 import { EncryptedKeyRepository } from '../../src/crypto/encrypted-key-repository';
@@ -12,15 +14,12 @@ import { KeyServiceFactory } from '../../src/crypto/service/key-service-factory'
 import { SyncKeyService } from '../../src/crypto/service/sync-key-service';
 import { DeviceManagementService } from '../../src/device-manager/device-management-service';
 import { DeviceRepository } from '../../src/device-manager/device-repository';
-import {
-    DevicesVersions,
-    tDevicesLatest,
-    tDevicesRest
-} from '../../src/device-manager/device-storage-schema';
-import { ITreeStorage } from '../../src/I-storage';
-import { Logger } from '../../src/logger/logger';
+import type { tDevicesLatest, tDevicesRest } from '../../src/device-manager/device-storage-schema';
+import { DevicesVersions } from '../../src/device-manager/device-storage-schema';
+import type { ITreeStorage } from '../../src/I-storage';
+import type { Logger } from '../../src/logger/logger';
 import { SecretEncryptor } from '../../src/secret-encryptor';
-import { SyncContainer } from '../../src/sync-container';
+import type { SyncContainer } from '../../src/sync-container';
 import { UpdateDecryptorService } from '../../src/update-encryptor/update-decryptor-service';
 import { UpdateEncryptorService } from '../../src/update-encryptor/update-encryptor-service';
 import { UpdateHandler } from '../../src/update-handler/handler';

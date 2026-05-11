@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { makeFactory, onboardDevice, TestSyncAccount, TestSyncAccountFactory } from './helpers';
+import type { TestSyncAccount, TestSyncAccountFactory } from './helpers';
+import { makeFactory, onboardDevice } from './helpers';
 import { InMemStorage } from '../impl/storage';
 
 type WalletItem = {

@@ -3,10 +3,10 @@ import type * as z from 'zod';
 
 import type { Draft, NewOf, StorageVersion } from '@safely/slottree';
 
-import { ISyncProvider } from './I-sync-provider';
+import type { ISyncProvider } from './I-sync-provider';
 import { OfflineSyncProvider } from './offline-sync-provider';
 import { SyncStatus, SyncStatusManager } from './sync-status';
-import { SyncContainer } from '../sync-container';
+import type { SyncContainer } from '../sync-container';
 import type { SyncMachine } from '../sync-machine/machine';
 import { createSyncMachine } from '../sync-machine/machine';
 

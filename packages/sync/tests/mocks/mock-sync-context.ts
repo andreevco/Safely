@@ -3,14 +3,16 @@ import { z } from 'zod';
 
 import { defineVersionHList, hCons, hNil, projectIdentity } from '@safely/slottree';
 
-import { MockSnapshotsServer } from './mock-snapshots-api';
-import { createMockSyncContainer, MockSyncContainer } from './mock-sync-container';
+import type { MockSnapshotsServer } from './mock-snapshots-api';
+import type { MockSyncContainer } from './mock-sync-container';
+import { createMockSyncContainer } from './mock-sync-container';
 import { SyncStatus } from '../../src';
-import { SnapshotsApi } from '../../src/api/generated';
-import { SnapshotsSse } from '../../src/api/snapshots-sse';
+import type { SnapshotsApi } from '../../src/api/generated';
+import type { SnapshotsSse } from '../../src/api/snapshots-sse';
 import { generateAccountID, initializeSyncAccount } from '../../src/initialize';
 import { Logger } from '../../src/logger/logger';
-import { createSyncMachine, SyncMachine } from '../../src/sync-machine/machine';
+import type { SyncMachine } from '../../src/sync-machine/machine';
+import { createSyncMachine } from '../../src/sync-machine/machine';
 import { SyncStatusManager } from '../../src/sync-provider/sync-status';
 import { encodeUpdatePayload } from '../../src/update-handler/update-payload';
 import { InMemStorage } from '../impl/storage';

@@ -1,5 +1,6 @@
-import { isContainerSlot, isOrderedArraySlot, isTombstoneSlot, Slot } from '../slots';
-import { JsonStorageSelection } from './selection';
+import type { Slot } from '../slots';
+import { isContainerSlot, isOrderedArraySlot, isTombstoneSlot } from '../slots';
+import type { JsonStorageSelection } from './selection';
 import { cloneDeep, stripSlot } from '../slots/slot-json';
 
 export type ReadSlotObserver = (slot: Slot) => void;

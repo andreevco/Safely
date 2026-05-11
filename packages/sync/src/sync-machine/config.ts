@@ -1,4 +1,4 @@
-import { StorageVersion } from '@safely/slottree';
+import type { StorageVersion } from '@safely/slottree';
 
 import type { ErrorDisposition } from './error-handler';
 import type { SnapshotsApi } from '../api/generated';
@@ -6,7 +6,7 @@ import type { SnapshotsSse } from '../api/snapshots-sse';
 import type { EncryptedState } from '../api/types';
 import type { YManager } from '../crdt/y-manager';
 import type { IkService } from '../crypto/service/ik-service';
-import { tDevicesLatest, tDevicesRest } from '../device-manager/device-storage-schema';
+import type { tDevicesLatest, tDevicesRest } from '../device-manager/device-storage-schema';
 import type { Logger } from '../logger/logger';
 import type { SyncStatusManager } from '../sync-provider/sync-status';
 import type { UpdateEncryptorService } from '../update-encryptor/update-encryptor-service';

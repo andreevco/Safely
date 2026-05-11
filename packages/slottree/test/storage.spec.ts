@@ -1,9 +1,12 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
-import { createStorage, type Storage, StorageImpl } from '../src';
-import { schemaV1, StorageV1, v1 } from './version-fixtures';
-import { ContainerSlot, isContainerSlot, isTombstoneSlot } from '../src/core/slots';
+import type { StorageImpl } from '../src';
+import { createStorage, type Storage } from '../src';
+import type { schemaV1, StorageV1 } from './version-fixtures';
+import { v1 } from './version-fixtures';
+import type { ContainerSlot } from '../src/core/slots';
+import { isContainerSlot, isTombstoneSlot } from '../src/core/slots';
 import { cloneSlot } from '../src/core/slots/slot-json';
 import { defineVersionHList, hCons, hNil } from '../src/core/versioning/version';
 

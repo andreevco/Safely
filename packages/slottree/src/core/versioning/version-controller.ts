@@ -1,13 +1,12 @@
-import { JsonValue } from '../json';
+import type { JsonValue } from '../json';
+import type { ContainerSlot, Slot } from '../slots';
 import {
-    ContainerSlot,
     createContainerSlot,
     createOriginContainer,
     isContainerSlot,
-    isTombstoneSlot,
-    Slot
+    isTombstoneSlot
 } from '../slots';
-import { StorageVersion } from './version';
+import type { StorageVersion } from './version';
 import { slotFromJson, stripSlot } from '../slots/slot-json';
 import { validateSlot } from '../slots/slot-validation';
 

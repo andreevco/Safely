@@ -2,7 +2,7 @@ import type { Actor } from 'xstate';
 import * as x from 'xstate';
 import { assign } from 'xstate';
 
-import { StorageVersion } from '@safely/slottree';
+import type { StorageVersion } from '@safely/slottree';
 
 import { pushUpdateToServer } from './actors/push-update';
 import { updatesSubscriberActor } from './actors/updates-subscriber-actor';

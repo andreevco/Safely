@@ -1,6 +1,6 @@
 import type { Slot } from '../../slots';
 import { cloneDeep, stripSlot } from '../../slots/slot-json';
-import { JsonStorageSelection } from '../selection';
+import type { JsonStorageSelection } from '../selection';
 
 type DraftContext = {
     timestamp: number;

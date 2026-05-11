@@ -1,12 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { MockSnapshotsServer } from './mocks/mock-snapshots-api';
-import {
-    createMachineContext,
-    getMasterKey,
-    MachineContext,
-    waitFor
-} from './mocks/mock-sync-context';
+import type { MachineContext } from './mocks/mock-sync-context';
+import { createMachineContext, getMasterKey, waitFor } from './mocks/mock-sync-context';
 import { ed25519_keygen } from '../src/crypto/ed25519';
 import { OfflineSyncProvider } from '../src/sync-provider/offline-sync-provider';
 import { getKID } from '../src/utils/kid';

@@ -1,8 +1,8 @@
-import { z } from 'zod';
+import type { z } from 'zod';
 
-import { Draft, NewOf, StorageVersion } from '@safely/slottree';
+import type { Draft, NewOf, StorageVersion } from '@safely/slottree';
 
-import { YCRDT } from './y-crdt';
+import type { YCRDT } from './y-crdt';
 import type { YCRDTRepository } from './y-crdt-repository';
 import { SyncError } from '../sync-error';
 

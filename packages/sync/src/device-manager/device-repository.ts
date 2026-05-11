@@ -1,19 +1,18 @@
-import {
-    addedDeviceToJson,
+import type {
     Device,
-    devicesFromJson,
-    revokedDeviceToJson,
     StoredDevice,
     StoredDevices,
-    storedDevicesFromJson,
     tDevicesLatest,
     tDevicesRest
 } from './device-storage-schema';
-import { YManager } from '../crdt/y-manager';
+import {
+    addedDeviceToJson,
+    devicesFromJson,
+    revokedDeviceToJson,
+    storedDevicesFromJson
+} from './device-storage-schema';
+import type { YManager } from '../crdt/y-manager';
 import { getKID } from '../utils/kid';
-
-import type { IStorage } from '../I-storage';
-import { BufferHexSchema } from '../utils/schemas';
 export type { Device };
 
 export class DeviceRepository {

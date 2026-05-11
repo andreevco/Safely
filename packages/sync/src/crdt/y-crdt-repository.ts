@@ -1,6 +1,7 @@
-import { z } from 'zod';
+import type { z } from 'zod';
 
-import type { AssertVersionHList, createStorage, HCons, NewOf, StorageVersion } from '@safely/slottree';
+import type { AssertVersionHList, HCons, NewOf, StorageVersion } from '@safely/slottree';
+import { createStorage } from '@safely/slottree';
 
 import { YCRDT } from './y-crdt';
 import type { IStorage } from '../I-storage';

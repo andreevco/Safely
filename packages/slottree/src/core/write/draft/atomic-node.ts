@@ -1,4 +1,4 @@
-import { DraftCursor } from './cursor';
+import type { DraftCursor } from './cursor';
 
 export class AtomicDraftNode {
     constructor(protected readonly cursor: DraftCursor) {}

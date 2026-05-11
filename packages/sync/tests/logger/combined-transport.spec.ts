@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 
-import { CombinedTransport, ILoggerTransport, LogEntry, LogLevel } from '../../src';
+import type { ILoggerTransport, LogEntry } from '../../src';
+import { CombinedTransport, LogLevel } from '../../src';
 
 function makeEntry(overrides: Partial<LogEntry> = {}): LogEntry {
     return {

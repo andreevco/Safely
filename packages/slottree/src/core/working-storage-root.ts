@@ -6,13 +6,8 @@ import { cloneDeep, stripSlot } from './slots/slot-json';
 import { validateSlot } from './slots/slot-validation';
 import type { StorageVersion } from './versioning/version';
 import { VersionPropagation } from './versioning/version-propagation';
-import {
-    createDraft,
-    createReadProxy,
-    Draft,
-    JsonStorageSelection,
-    selectJsonStorage
-} from './write';
+import type { Draft } from './write';
+import { createDraft, createReadProxy, JsonStorageSelection, selectJsonStorage } from './write';
 
 export class WorkingStorageRoot {
     constructor(

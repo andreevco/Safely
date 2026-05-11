@@ -2,7 +2,8 @@ import { z } from 'zod';
 
 import { defineVersionHList, hCons, hNil, projectIdentity } from '@safely/slottree';
 
-import { ISyncAccount, SyncAccountFactory } from '../../src';
+import type { ISyncAccount } from '../../src';
+import { SyncAccountFactory } from '../../src';
 import { Logger } from '../../src/logger/logger';
 import { InMemStorage } from '../impl/storage';
 
