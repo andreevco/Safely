@@ -67,8 +67,12 @@ export const AmountStep = (props: AmountStepProps) => {
                 errored={hasInsufficientBalance}
                 formattedAlternativeAmount={alternativeAmount}
                 onSwitchFiatMode={hasPrice ? handleSwitchFiatMode : undefined}
-                currencySymbol={inputType === 'fiat' ? fiatSymbol : undefined}
-                RightComponent={<AssetSelector />}
+                currencySymbol={
+                    inputType === 'fiat' ? fiatSymbol : view.parsed.asset?.amount.asset.symbol
+                }
+                RightComponent={
+                    view.parsed.asset && <AssetSelector asset={view.parsed.asset.amount.asset} />
+                }
             />
             <View style={styles.remainingContainer}>
                 <AmountStatus
