@@ -13,6 +13,8 @@ export class BtcTransactionTemplate {
 
     public sendResult: BtcSendResult | undefined;
 
+    private isSending = false;
+
     private readonly psbtBuilder: BtcPsbtBuilder;
 
     public get outputs(): PsbtRequest['outputs'] {
@@ -58,6 +60,21 @@ export class BtcTransactionTemplate {
             throw new Error(`Tx is already published, ${this.sendResult.txId}`);
         }
 
+        if (this.isSending) {
+            throw new Error('Tx in progress');
+        }
+
+        this.isSending = true;
+
+        try {
+            this.sendResult = await this._send();
+            return this.sendResult;
+        } finally {
+            this.isSending = false;
+        }
+    }
+
+    private async _send(): Promise<BtcSendResult> {
         const psbt = this.psbtBuilder.buildPsbt({
             inputs: this.utxos,
             outputs: this.outputs
@@ -80,7 +97,7 @@ export class BtcTransactionTemplate {
             throw error;
         }
 
-        this.sendResult = {
+        return {
             blockchain: BLOCKCHAIN_NAME.BTC,
             txId: result.txid,
             toString() {
@@ -90,8 +107,6 @@ export class BtcTransactionTemplate {
                 return explorerFactory.createExplorer(BLOCKCHAIN_NAME.BTC).transaction(result.txid);
             }
         };
-
-        return this.sendResult;
     }
 }
 
