@@ -1,4 +1,4 @@
-import { IActivityFilters } from './types';
+import type { IActivityFilters } from './types';
 import { defineQueryKeys, finalKey } from '../../shared';
 
 export const activityKeys = defineQueryKeys('activity', {

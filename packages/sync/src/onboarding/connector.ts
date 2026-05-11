@@ -1,6 +1,6 @@
-import { StorageVersion } from '@safely/slottree';
+import type { StorageVersion } from '@safely/slottree';
 
-import { ISyncAccount } from '../account/I-sync-account';
+import type { ISyncAccount } from '../account/I-sync-account';
 
 export type OnboardingConnector<Latest extends StorageVersion> = {
     /**

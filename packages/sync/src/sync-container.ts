@@ -1,7 +1,8 @@
-import { AssertVersionHList, HCons, StorageVersion } from '@safely/slottree';
+import type { AssertVersionHList, HCons, StorageVersion } from '@safely/slottree';
 
 import { ApiSigner } from './api/api-signer';
-import { AccountsApi, Configuration, SnapshotsApi } from './api/generated';
+import type { Configuration } from './api/generated';
+import { AccountsApi, SnapshotsApi } from './api/generated';
 import { SnapshotsSse } from './api/snapshots-sse';
 import { YCRDTRepository } from './crdt/y-crdt-repository';
 import { YManager } from './crdt/y-manager';
@@ -17,8 +18,8 @@ import {
     tDevicesLatest,
     tDevicesRest
 } from './device-manager/device-storage-schema';
-import { IStorage } from './I-storage';
-import { Logger } from './logger';
+import type { IStorage } from './I-storage';
+import type { Logger } from './logger';
 import { SecretEncryptor } from './secret-encryptor';
 import { UpdateDecryptorService } from './update-encryptor/update-decryptor-service';
 import { UpdateEncryptorService } from './update-encryptor/update-encryptor-service';

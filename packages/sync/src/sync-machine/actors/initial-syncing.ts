@@ -3,7 +3,7 @@ import { fromPromise } from 'xstate';
 import { StorageVersion } from '@safely/slottree';
 
 import { hex } from '../../utils/buffer';
-import { SyncMachineConfig } from '../config';
+import type { SyncMachineConfig } from '../config';
 import { classifyError } from '../error-handler';
 
 export const initialSyncing = fromPromise(

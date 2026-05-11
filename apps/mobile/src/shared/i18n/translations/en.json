@@ -214,7 +214,8 @@
                     "title": "Lock screen",
                     "subtitle": "Require passcode to view wallet contents."
                 },
-                "changePasscode": "Change passcode"
+                "changePasscode": "Change passcode",
+                "eraseAndLogout": "Erase this device and log out"
             },
             "wallet": {
                 "title": "Wallet",
@@ -223,7 +224,7 @@
                 "recovery": {
                     "title": "Recovery phrase",
                     "subtitle": "Keep it private. View only if necessary. This phrase has never been viewed.",
-                    "revealed": "Security reduced. First viewed on {{date}} on {{device}}."
+                    "revealed": "First viewed on {{date}} on {{device}}."
                 }
             }
         }
@@ -284,10 +285,9 @@
     },
     "sendForm": {
         "errors": {
-            "enterRecipientAddress": "Enter recipient address",
-            "invalidAddressFormat": "Invalid address format",
-            "invalidRecipientAddress": "Invalid recipient address",
-            "unsupportedBlockchain": "Unsupported blockchain",
+            "invalidWalletAddress": "Invalid wallet address.",
+            "selfTransfer": "This is your active wallet.",
+            "unsupportedBlockchain": "Unsupported blockchain.",
             "selectToken": "Select token",
             "selectTokenFirst": "Select token first",
             "unableToValidateToken": "Unable to validate token",
@@ -297,7 +297,12 @@
     },
     "signIn": {
         "title": "Scan QR to sign in",
-        "description": "Scan it with your other device to add this device to your account.",
+        "description": {
+            "top": "Open Safely on another device.",
+            "iconLineStart": "Go to Settings",
+            "iconLineEnd": "tap \"Link device\"",
+            "bottom": "and scan this QR code."
+        },
         "banner": "This device will have full access to your account. It can be used if your other device is lost.",
         "timeout": "Connection timed out. Please try again.",
         "success": {
@@ -427,6 +432,7 @@
         "title": "Settings",
         "deviceConnected": "Successfully linked",
         "addAccount": "Add account",
+        "linkDevice": "Link device",
         "walletsCount_one": "{{count}} wallet",
         "walletsCount_other": "{{count}} wallets",
         "groups": {
@@ -459,7 +465,7 @@
             }
         },
         "signOutAccount": {
-            "title": "Sign out account \"{{name}}\"",
+            "title": "Sign out account “{{name}}”",
             "sheet": {
                 "title": "Sign out of {{name}}?",
                 "noDevices": {
@@ -480,7 +486,7 @@
             "toastAccountRemoved": "Account removed from this device"
         },
         "removePortfolio": {
-            "title": "Remove wallet \"{{name}}\"",
+            "title": "Remove wallet “{{name}}”",
             "confirm": {
                 "title": "Remove this wallet?",
                 "message": "This will remove wallet “{{name}}”. This action cannot be undone.",
@@ -499,10 +505,11 @@
             "label": "Erase device",
             "description": "Slide to erase"
         },
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "error": "Couldn't erase all data. Please try again."
     },
     "removeWallet": {
-        "title": "Remove wallet {{name}}?",
+        "title": "Remove wallet “{{name}}”?",
         "backUpLink": "Back up recovery phrase",
         "removeButton": "Remove anyway",
         "cancelButton": "Cancel",
@@ -542,7 +549,7 @@
     },
     "safelyBeta": {
         "title": "Safely is in beta",
-        "subtitle": "Some features are still evolving. Save your recovery phrases in Settings \u2192 Security.",
+        "subtitle": "Some features are still evolving. Keep less than $100 until the public release. Save your recovery phrases in Settings → Security.",
         "feedback": {
             "description": "Found a bug or have an idea?\nYour feedback helps us improve Safely.",
             "action": "Send feedback"
@@ -550,6 +557,10 @@
     },
     "history": {
         "title": "History",
+        "bubble": {
+            "one": "New transaction",
+            "many": "New transactions"
+        },
         "empty": {
             "title": "Transaction history",
             "subtitle": "Your transactions will appear here.",
@@ -638,8 +649,6 @@
     },
     "contactForm": {
         "errors": {
-            "enterName": "Enter a name",
-            "enterAddress": "Enter an address",
             "invalidAddressFormat": "Invalid address format",
             "unsupportedBlockchain": "Unsupported blockchain"
         }

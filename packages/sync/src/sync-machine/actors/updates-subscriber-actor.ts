@@ -1,8 +1,9 @@
-import { AnyEventObject, fromCallback } from 'xstate';
+import type { AnyEventObject } from 'xstate';
+import { fromCallback } from 'xstate';
 
 import { StorageVersion } from '@safely/slottree';
 
-import { SyncMachineConfig } from '../config';
+import type { SyncMachineConfig } from '../config';
 
 export const updatesSubscriberActor = fromCallback(
     (opts: {

@@ -38,6 +38,11 @@ class SafelyMaskedInputView: ExpoView, UITextFieldDelegate {
     private var suffixOpacity: CGFloat = 1.0
     private var suffixFontSize: CGFloat = 0
 
+    // MARK: - Placeholder
+
+    private var placeholderText: String = ""
+    private var placeholderColor: UIColor = .placeholderText
+
     // MARK: - Init
 
     required init(appContext: AppContext? = nil) {
@@ -81,18 +86,21 @@ class SafelyMaskedInputView: ExpoView, UITextFieldDelegate {
         mainFontSize = size
         textField.font = resolvedMainFont()
         applyMask()
+        applyPlaceholder()
     }
 
     func setFontFamilyValue(_ family: String) {
         mainFontFamily = family
         textField.font = resolvedMainFont()
         applyMask()
+        applyPlaceholder()
     }
 
     func setFontWeightValue(_ weight: String) {
         mainFontWeight = .semibold
         textField.font = resolvedMainFont()
         applyMask()
+        applyPlaceholder()
     }
 
     func setTextColorValue(_ value: String) {
@@ -102,12 +110,14 @@ class SafelyMaskedInputView: ExpoView, UITextFieldDelegate {
     }
 
     func setPlaceholderValue(_ placeholder: String) {
-        textField.placeholder = placeholder
+        placeholderText = placeholder
+        applyPlaceholder()
     }
 
     func setPlaceholderTextColorValue(_ value: String) {
-        guard let color = UIColor(colorString: value), let placeholder = textField.placeholder else { return }
-        textField.attributedPlaceholder = NSAttributedString(string: placeholder, attributes: [.foregroundColor: color])
+        guard let color = UIColor(colorString: value) else { return }
+        placeholderColor = color
+        applyPlaceholder()
     }
 
     func setKeyboardTypeValue(_ type: String) {
@@ -165,22 +175,26 @@ class SafelyMaskedInputView: ExpoView, UITextFieldDelegate {
     func setSuffixValue(_ value: String) {
         suffix = value
         applyMask()
+        applyPlaceholder()
     }
 
     func setSuffixColorValue(_ value: String) {
         guard let color = UIColor(colorString: value) else { return }
         suffixColor = color
         applyMask()
+        applyPlaceholder()
     }
 
     func setSuffixOpacityValue(_ opacity: Double) {
         suffixOpacity = CGFloat(opacity)
         applyMask()
+        applyPlaceholder()
     }
 
     func setSuffixFontSizeValue(_ size: CGFloat) {
         suffixFontSize = size
         applyMask()
+        applyPlaceholder()
     }
 
     // MARK: - Imperative commands
@@ -236,6 +250,34 @@ class SafelyMaskedInputView: ExpoView, UITextFieldDelegate {
             return font
         }
         return UIFont.systemFont(ofSize: mainFontSize, weight: mainFontWeight)
+    }
+
+    private func applyPlaceholder() {
+        guard !placeholderText.isEmpty else {
+            textField.attributedPlaceholder = nil
+            textField.placeholder = nil
+            return
+        }
+
+        let result = NSMutableAttributedString(
+            string: placeholderText,
+            attributes: [.foregroundColor: placeholderColor, .font: resolvedMainFont()]
+        )
+
+        if !suffix.isEmpty {
+            let size = suffixFontSize > 0 ? suffixFontSize : resolvedMainFont().pointSize
+            let suffixFont = UIFont.systemFont(ofSize: size, weight: .regular)
+            result.append(NSAttributedString(
+                string: "  " + suffix,
+                attributes: [
+                    .foregroundColor: suffixColor.withAlphaComponent(suffixOpacity),
+                    .font: suffixFont,
+                    .baselineOffset: 2.0,
+                ]
+            ))
+        }
+
+        textField.attributedPlaceholder = result
     }
 
     private func buildAttributedString(from segments: [StyledSegment], withSuffix: Bool) -> NSAttributedString {

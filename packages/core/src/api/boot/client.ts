@@ -1,5 +1,6 @@
-import { BootConfig, bootConfigSchema, BootParams } from './models';
-import { IIdentifiable } from '../../utils';
+import type { BootConfig, BootParams } from './models';
+import { bootConfigSchema } from './models';
+import type { IIdentifiable } from '../../utils';
 import { ApiClient } from '../../utils/fetch';
 
 export class BootApi extends ApiClient implements IIdentifiable {

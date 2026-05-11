@@ -2,7 +2,7 @@ import { randomBytes } from '@noble/ciphers/utils.js';
 import { ed25519 } from '@noble/curves/ed25519.js';
 import { hkdf } from '@noble/hashes/hkdf.js';
 import { sha256 } from '@noble/hashes/sha2.js';
-import { ZodType } from 'zod';
+import type { ZodType } from 'zod';
 
 import { AssertVersionHList, HCons, StorageVersion } from '@safely/slottree';
 
@@ -14,8 +14,8 @@ import {
     tDevicesLatest,
     tDevicesRest
 } from './device-manager/device-storage-schema';
-import { IStorage } from './I-storage';
-import { Logger } from './logger/logger';
+import type { IStorage } from './I-storage';
+import type { Logger } from './logger/logger';
 import { SyncStateRepository } from './update-handler/sync-state-repository';
 import { utf8 } from './utils/buffer';
 

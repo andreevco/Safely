@@ -1,16 +1,17 @@
 import { ed25519, x25519 } from '@noble/curves/ed25519.js';
 
-import { StorageVersion } from '@safely/slottree';
+import type { StorageVersion } from '@safely/slottree';
 
 import { decryptOnboardingMessagePayload, deriveOnboardingKey } from './crypto';
 import { QRMessageCodec, QRMessageOperation } from './onboarding-codec';
 import { decodeOnboardingMessagePayload } from './onboarding-message-payload';
-import { AccountManager } from '../account/account-manager';
-import { ISyncAccount } from '../account/I-sync-account';
+import type { AccountManager } from '../account/account-manager';
+import type { ISyncAccount } from '../account/I-sync-account';
 import { ApiSigner } from '../api/api-signer';
-import { AccountsApi, Configuration, OnboardingMessage } from '../api/generated';
-import { ITreeStorage } from '../I-storage';
-import { Logger } from '../logger';
+import type { Configuration, OnboardingMessage } from '../api/generated';
+import { AccountsApi } from '../api/generated';
+import type { ITreeStorage } from '../I-storage';
+import type { Logger } from '../logger';
 import { OnboardingAbortedError } from '../sync-error';
 
 export class NewDeviceOnboarding<Latest extends StorageVersion, Rest> {

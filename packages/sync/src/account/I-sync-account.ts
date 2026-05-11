@@ -1,10 +1,10 @@
-import { NewOf, StorageVersion } from '@safely/slottree';
+import type { NewOf, StorageVersion } from '@safely/slottree';
 
-import { Device } from '../device-manager/device-repository';
-import { ITreeStorage } from '../I-storage';
-import { OnboardingConnector } from '../onboarding/connector';
-import { ISecretEncryptor } from '../secret-encryptor';
-import { ISyncProvider } from '../sync-provider/I-sync-provider';
+import type { Device } from '../device-manager/device-repository';
+import type { ITreeStorage } from '../I-storage';
+import type { OnboardingConnector } from '../onboarding/connector';
+import type { ISecretEncryptor } from '../secret-encryptor';
+import type { ISyncProvider } from '../sync-provider/I-sync-provider';
 
 export interface ISyncAccount<Latest extends StorageVersion> {
     /**

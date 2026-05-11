@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
 
-import { DerivedQueryResult } from './types';
+import type { DerivedQueryResult } from './types';
 
 export function aggregateFlags(queries: readonly DerivedQueryResult[]) {
     const isError = queries.some(q => q.isError);

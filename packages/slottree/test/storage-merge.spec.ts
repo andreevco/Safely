@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { z } from 'zod';
+import type { z } from 'zod';
 
 import { createStorage, StorageImpl } from '../src';
 import { schemaV1, v1 } from './version-fixtures';

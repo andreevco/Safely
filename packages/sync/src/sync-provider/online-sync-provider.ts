@@ -1,13 +1,14 @@
 import { createActor } from 'xstate';
-import * as z from 'zod';
+import type * as z from 'zod';
 
-import { Draft, NewOf, StorageVersion } from '@safely/slottree';
+import type { Draft, NewOf, StorageVersion } from '@safely/slottree';
 
 import { ISyncProvider } from './I-sync-provider';
 import { OfflineSyncProvider } from './offline-sync-provider';
 import { SyncStatus, SyncStatusManager } from './sync-status';
 import { SyncContainer } from '../sync-container';
-import { createSyncMachine, SyncMachine } from '../sync-machine/machine';
+import type { SyncMachine } from '../sync-machine/machine';
+import { createSyncMachine } from '../sync-machine/machine';
 
 export class OnlineSyncProvider<Latest extends StorageVersion, Rest>
     extends OfflineSyncProvider<Latest, Rest>

@@ -1,9 +1,9 @@
-import { z, ZodObject } from 'zod';
+import type { z, ZodObject } from 'zod';
 
 import type { Draft } from '@safely/slottree';
 
-import { SyncError } from '../sync-error';
-import { ISyncStatusManager } from './sync-status';
+import type { SyncError } from '../sync-error';
+import type { ISyncStatusManager } from './sync-status';
 import type { Device } from '../device-manager/device-repository';
 
 type ShapeOf<S extends z.ZodObject<z.ZodRawShape>> = S['shape'];

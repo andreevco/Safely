@@ -1,7 +1,8 @@
 import { useCallback, useMemo } from 'react';
-import z from 'zod';
+import type z from 'zod';
 
-import { sharedStorageStructure, SharedStorageStructure } from './schemas';
+import type { SharedStorageStructure } from './schemas';
+import { sharedStorageStructure } from './schemas';
 import { useAppContext } from '../../providers';
 
 export function useSharedUxStorage<K extends keyof SharedStorageStructure>(key: K) {

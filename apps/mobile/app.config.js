@@ -9,7 +9,7 @@ module.exports = {
         icon: './assets/icon.png',
         userInterfaceStyle: 'dark',
         newArchEnabled: true,
-        scheme: 'aco-swalet',
+        scheme: 'safely',
         ios: {
             infoPlist: {
                 UIDesignRequiresCompatibility: true,

@@ -1,17 +1,17 @@
 import { StorageVersion } from '@safely/slottree';
 
-import { ErrorDisposition } from './error-handler';
-import { SnapshotsApi } from '../api/generated';
-import { SnapshotsSse } from '../api/snapshots-sse';
-import { EncryptedState } from '../api/types';
-import { YManager } from '../crdt/y-manager';
-import { IkService } from '../crypto/service/ik-service';
+import type { ErrorDisposition } from './error-handler';
+import type { SnapshotsApi } from '../api/generated';
+import type { SnapshotsSse } from '../api/snapshots-sse';
+import type { EncryptedState } from '../api/types';
+import type { YManager } from '../crdt/y-manager';
+import type { IkService } from '../crypto/service/ik-service';
 import { tDevicesLatest, tDevicesRest } from '../device-manager/device-storage-schema';
-import { Logger } from '../logger/logger';
-import { SyncStatusManager } from '../sync-provider/sync-status';
-import { UpdateEncryptorService } from '../update-encryptor/update-encryptor-service';
-import { UpdateHandler } from '../update-handler/handler';
-import { SyncStateRepository } from '../update-handler/sync-state-repository';
+import type { Logger } from '../logger/logger';
+import type { SyncStatusManager } from '../sync-provider/sync-status';
+import type { UpdateEncryptorService } from '../update-encryptor/update-encryptor-service';
+import type { UpdateHandler } from '../update-handler/handler';
+import type { SyncStateRepository } from '../update-handler/sync-state-repository';
 
 export type SyncMachineInput<Latest extends StorageVersion, Rest> = {
     syncStateRepository: SyncStateRepository;

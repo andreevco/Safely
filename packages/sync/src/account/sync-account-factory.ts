@@ -1,16 +1,16 @@
-import { AssertVersionHList, HCons, StorageVersion } from '@safely/slottree';
+import type { AssertVersionHList, HCons, StorageVersion } from '@safely/slottree';
 
 import { AccountManager } from './account-manager';
-import { ISyncAccount } from './I-sync-account';
-import { ISyncAccountFactory } from './I-sync-account-factory';
-import { ITreeStorage } from '../I-storage';
+import type { ISyncAccount } from './I-sync-account';
+import type { ISyncAccountFactory } from './I-sync-account-factory';
+import type { ITreeStorage } from '../I-storage';
 import { CreateAccountService } from './create-account-service';
 import { SyncAccountRepository } from './sync-account-repository';
 import { Configuration } from '../api/generated';
-import { SyncApiConfiguration } from '../api/sync-api-configuration';
+import type { SyncApiConfiguration } from '../api/sync-api-configuration';
 import { ed25519_keygen } from '../crypto/ed25519';
-import { Logger } from '../logger';
-import { OnboardingConnector } from '../onboarding/connector';
+import type { Logger } from '../logger';
+import type { OnboardingConnector } from '../onboarding/connector';
 import { accountsApiForOnboarding, NewDeviceOnboarding } from '../onboarding/new-device-onboarding';
 
 type VersionHList = HCons<StorageVersion, unknown>;

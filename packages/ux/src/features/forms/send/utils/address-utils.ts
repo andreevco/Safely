@@ -1,4 +1,5 @@
-import { BLOCKCHAIN_NAME, BtcAddress, BtcRecipient, Recipient } from '@safely/core';
+import type { Recipient } from '@safely/core';
+import { BLOCKCHAIN_NAME, BtcAddress, BtcRecipient } from '@safely/core';
 
 import { SendFormError } from '../errors';
 
@@ -20,7 +21,7 @@ export function parseRecipient(input: string): Recipient | SendFormError {
     const detectedType = detectAddressType(input);
 
     if (!detectedType) {
-        return SendFormError.INVALID_ADDRESS_FORMAT;
+        return SendFormError.INVALID_WALLET_ADDRESS;
     }
 
     switch (detectedType.blockchain) {

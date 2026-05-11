@@ -1,18 +1,16 @@
 import { BtcBip32NodeProducer } from './btc-bip32-node-producer';
 import { BtcXpub } from '../../../../../blockchain-api';
-import {
-    BtcNetwork,
-    btcNetworkByPortfolioNetworkType,
-    BtcWalletType
-} from '../../../../blockchain';
-import { PortfolioNetworkType } from '../../../../portfolio';
-import { ISeedProducer } from '../../../../seed/I-seed-producer';
-import { BtcKeypairSigner, BtcSigningRequest } from '../../../../signer';
-import { Derivation } from '../../../derivation';
-import { SBtcAccountChainItem } from '../../../derivation.stored';
+import type { BtcNetwork } from '../../../../blockchain';
+import { btcNetworkByPortfolioNetworkType, BtcWalletType } from '../../../../blockchain';
+import type { PortfolioNetworkType } from '../../../../portfolio';
+import type { ISeedProducer } from '../../../../seed/I-seed-producer';
+import type { BtcSigningRequest } from '../../../../signer';
+import { BtcKeypairSigner } from '../../../../signer';
+import type { Derivation } from '../../../derivation';
+import type { SBtcAccountChainItem } from '../../../derivation.stored';
 import { BtcWalletId } from '../../btc-wallet-id';
-import { SignableBtcWallet } from '../../I-btc-wallet';
-import { IDerivationChainItemBtc } from '../../I-derivation-chain-item-btc';
+import type { SignableBtcWallet } from '../../I-btc-wallet';
+import type { IDerivationChainItemBtc } from '../../I-derivation-chain-item-btc';
 
 export class DerivationChainItemBtcSeed implements IDerivationChainItemBtc {
     public static async getXpub({

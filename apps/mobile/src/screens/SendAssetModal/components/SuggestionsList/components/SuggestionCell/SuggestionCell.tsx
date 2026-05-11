@@ -12,14 +12,14 @@ type SuggestionCellProps =
           suggestion: PortfolioSuggestion;
           isSelected: boolean;
           showDivider?: boolean;
-          onSelect: (id: string, address: string, label: string) => void;
+          onSelect: (id: string) => void;
       }
     | {
           type: 'contact';
           suggestion: ContactSuggestion;
           isSelected: boolean;
           showDivider?: boolean;
-          onSelect: (id: string, address: string, label: string) => void;
+          onSelect: (id: string) => void;
       };
 
 export const SuggestionCell = (props: SuggestionCellProps) => {
@@ -31,9 +31,7 @@ export const SuggestionCell = (props: SuggestionCellProps) => {
                 <Cell
                     style={styles.cell}
                     showDivider={showDivider}
-                    onPress={() =>
-                        onSelect(suggestion.id, suggestion.address, suggestion.meta.name)
-                    }
+                    onPress={() => onSelect(suggestion.id)}
                 >
                     <Cell.Content>
                         <Cell.Row>
@@ -57,9 +55,7 @@ export const SuggestionCell = (props: SuggestionCellProps) => {
                     meta={suggestion.meta}
                     showDivider={showDivider}
                     isSelected={isSelected}
-                    onPress={() =>
-                        onSelect(suggestion.id, suggestion.address, suggestion.meta.name)
-                    }
+                    onPress={() => onSelect(suggestion.id)}
                 />
             );
     }

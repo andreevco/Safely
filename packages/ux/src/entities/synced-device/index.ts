@@ -1,15 +1,10 @@
 import { useQueryClient } from '@tanstack/react-query';
 
 import { PortfolioFactory } from '@safely/core';
-import { ISyncAccount } from '@safely/sync';
+import type { ISyncAccount } from '@safely/sync';
 
-import {
-    type DeviceMeta,
-    useAppContext,
-    useSuspenseQuery,
-    SecretEncryptor,
-    SyncedStorageStructure
-} from '../../shared';
+import type { SyncedStorageStructure } from '../../shared';
+import { type DeviceMeta, useAppContext, useSuspenseQuery, SecretEncryptor } from '../../shared';
 import { calcSyncedStorageHash } from '../../shared/storage/account/synced/schemas';
 import { calculatePortfoliosHashes } from '../../shared/storage/account/synced/schemas/devices-meta.schema';
 import { useActiveAccount, useActiveAccountQueryKey } from '../account/account-state';

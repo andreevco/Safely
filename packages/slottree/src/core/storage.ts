@@ -1,19 +1,16 @@
-import { z } from 'zod';
+import type { z } from 'zod';
 
-import { DeepReadonly } from './json';
-import { MergeProtocol, MergeStats } from './merge-protocol';
-import { ContainerSlot, createOriginContainer, isContainerSlot, Slot } from './slots';
+import type { DeepReadonly } from './json';
+import type { MergeStats } from './merge-protocol';
+import { MergeProtocol } from './merge-protocol';
+import type { ContainerSlot, Slot } from './slots';
+import { createOriginContainer, isContainerSlot } from './slots';
 import { cloneSlot } from './slots/slot-json';
 import { validateSlot } from './slots/slot-validation';
 import { StorageObservers } from './storage-observer';
 import type { StorageObserver } from './storage-observer';
-import {
-    AssertVersionHList,
-    HCons,
-    hListToRuntimeArray,
-    NewOf,
-    StorageVersion
-} from './versioning/version';
+import type { AssertVersionHList, HCons, NewOf, StorageVersion } from './versioning/version';
+import { hListToRuntimeArray } from './versioning/version';
 import { VersionController } from './versioning/version-controller';
 import { WorkingStorageRoot } from './working-storage-root';
 import type { Draft } from './write';

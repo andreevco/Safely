@@ -1,9 +1,9 @@
-import { DeviceRepository } from './device-repository';
-import { Device, StoredDevice } from './device-storage-schema';
+import type { DeviceRepository } from './device-repository';
+import type { Device, StoredDevice } from './device-storage-schema';
 import { ed25519_verify } from '../crypto/ed25519';
-import { DmkSignerService } from '../crypto/service/dmk-signer-service';
-import { DmkVerifierService } from '../crypto/service/dmk-verifier-service';
-import { IkService } from '../crypto/service/ik-service';
+import type { DmkSignerService } from '../crypto/service/dmk-signer-service';
+import type { DmkVerifierService } from '../crypto/service/dmk-verifier-service';
+import type { IkService } from '../crypto/service/ik-service';
 import { SyncError } from '../sync-error';
 import { u64be, utf8 } from '../utils/buffer';
 import { getKID } from '../utils/kid';

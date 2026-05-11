@@ -1,9 +1,9 @@
 import { z } from 'zod';
 
-import { AssertVersionHList, createStorage, HCons, NewOf, StorageVersion } from '@safely/slottree';
+import type { AssertVersionHList, createStorage, HCons, NewOf, StorageVersion } from '@safely/slottree';
 
 import { YCRDT } from './y-crdt';
-import { IStorage } from '../I-storage';
+import type { IStorage } from '../I-storage';
 
 export class YCRDTRepository<Latest extends StorageVersion, Rest> {
     constructor(

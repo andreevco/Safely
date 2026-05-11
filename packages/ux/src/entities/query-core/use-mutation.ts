@@ -1,10 +1,7 @@
-import {
-    useMutation as useTanstackMutation,
-    UseMutationOptions,
-    UseMutationResult
-} from '@tanstack/react-query';
+import type { UseMutationOptions, UseMutationResult } from '@tanstack/react-query';
+import { useMutation as useTanstackMutation } from '@tanstack/react-query';
 
-import { Logger } from '@safely/sync';
+import type { Logger } from '@safely/sync';
 
 import { useLogger } from '../logger';
 

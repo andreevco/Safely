@@ -1,13 +1,8 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useSuspenseQuery } from '@tanstack/react-query';
 
-import {
-    allowedContactMetaColors,
-    BLOCKCHAIN_NAME,
-    Contact,
-    ContactMeta,
-    IContact
-} from '@safely/core';
+import type { BLOCKCHAIN_NAME, ContactMeta, IContact } from '@safely/core';
+import { allowedContactMetaColors, Contact } from '@safely/core';
 
 import { useTranslate } from '../../shared';
 import { useActiveAccountQueryKey } from '../account';
@@ -52,7 +47,7 @@ function useSetContacts() {
         async mutationFn(contacts) {
             const sorted = [...contacts].sort((a, b) => a.meta.name.localeCompare(b.meta.name));
             await set(sorted.map(c => c.toJSON()));
-            await client.invalidateQueries({ queryKey: accountQueryKey.contacts.toKey() });
+            client.setQueryData<Contact[]>(accountQueryKey.contacts.toKey(), sorted);
         }
     });
 }

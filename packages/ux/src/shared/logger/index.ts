@@ -1,4 +1,4 @@
-import { Logger, LoggerLifecycleContext } from '@safely/sync';
+import type { Logger, LoggerLifecycleContext } from '@safely/sync';
 
 export interface ILoggerRegistry {
     readonly systemLogger: Logger;

@@ -1,15 +1,15 @@
-import { AssertVersionHList, HCons, StorageVersion } from '@safely/slottree';
+import type { AssertVersionHList, HCons, StorageVersion } from '@safely/slottree';
 
-import { ISyncAccount } from './I-sync-account';
+import type { ISyncAccount } from './I-sync-account';
 import { getSyncAccountStorage } from './sync-account-storage';
 import { createSyncContainer } from '../sync-container';
-import { CreateAccountService } from './create-account-service';
+import type { CreateAccountService } from './create-account-service';
 import { SyncAccount } from './sync-account';
-import { SyncAccountRepository } from './sync-account-repository';
-import { Configuration } from '../api/generated';
-import { ITreeStorage } from '../I-storage';
-import { Logger } from '../logger';
-import { OnboardingMessagePayload } from '../onboarding/onboarding-message-payload';
+import type { SyncAccountRepository } from './sync-account-repository';
+import type { Configuration } from '../api/generated';
+import type { ITreeStorage } from '../I-storage';
+import type { Logger } from '../logger';
+import type { OnboardingMessagePayload } from '../onboarding/onboarding-message-payload';
 import { OfflineSyncProvider } from '../sync-provider/offline-sync-provider';
 import { OnlineSyncProvider } from '../sync-provider/online-sync-provider';
 

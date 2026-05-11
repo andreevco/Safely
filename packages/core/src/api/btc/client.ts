@@ -10,7 +10,7 @@ import {
 } from './models';
 import { BtcWalletType } from '../../entities/blockchain/btc';
 import { ApiClient } from '../../utils/fetch';
-import { IIdentifiable } from '../../utils/types';
+import type { IIdentifiable } from '../../utils/types';
 
 export { BtcApiError } from './errors';
 

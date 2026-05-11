@@ -12,6 +12,8 @@ import {
 import { YManager } from '../crdt/y-manager';
 import { getKID } from '../utils/kid';
 
+import type { IStorage } from '../I-storage';
+import { BufferHexSchema } from '../utils/schemas';
 export type { Device };
 
 export class DeviceRepository {

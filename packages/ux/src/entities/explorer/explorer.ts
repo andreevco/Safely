@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 
-import { BLOCKCHAIN_NAME, BtcExplorer, Explorer, ExplorerFactory } from '@safely/core';
+import type { BLOCKCHAIN_NAME, BtcExplorer, Explorer } from '@safely/core';
+import { ExplorerFactory } from '@safely/core';
 
 import { useBootConfig } from '../../shared';
 

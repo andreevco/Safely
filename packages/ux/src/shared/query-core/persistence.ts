@@ -1,9 +1,9 @@
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
-import { DehydratedState, InfiniteData } from '@tanstack/react-query';
-import { Persister } from '@tanstack/react-query-persist-client';
+import type { DehydratedState, InfiniteData } from '@tanstack/react-query';
+import type { Persister } from '@tanstack/react-query-persist-client';
 
-import { IStorage } from '@safely/core';
-import { Logger } from '@safely/sync';
+import type { IStorage } from '@safely/core';
+import type { Logger } from '@safely/sync';
 
 import { cacheSchemas, isValidSchemaKey } from './cache-config';
 import { serialize, deserialize } from './serialization';

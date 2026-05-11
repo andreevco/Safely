@@ -1,12 +1,14 @@
+import type { Actor } from 'xstate';
 import * as x from 'xstate';
-import { Actor, assign } from 'xstate';
+import { assign } from 'xstate';
 
 import { StorageVersion } from '@safely/slottree';
 
 import { pushUpdateToServer } from './actors/push-update';
 import { updatesSubscriberActor } from './actors/updates-subscriber-actor';
-import { defaultConfig, SyncMachineConfig, SyncMachineInput } from './config';
-import { EncryptedState } from '../api/types';
+import type { SyncMachineConfig, SyncMachineInput } from './config';
+import { defaultConfig } from './config';
+import type { EncryptedState } from '../api/types';
 import { SyncStatus } from '../sync-provider/sync-status';
 import { applyUpdate } from './actors/apply-update';
 import { initialSyncing } from './actors/initial-syncing';

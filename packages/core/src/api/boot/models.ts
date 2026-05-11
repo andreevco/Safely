@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import { Build, UserCountryInfo } from '../../entities';
+import type { Build, UserCountryInfo } from '../../entities';
 
 export interface BootParams {
     build: Build;
@@ -20,6 +20,24 @@ export const bootConfigSchema = z.looseObject({
                 explorer_tx_url: z.string()
             })
         })
+    }),
+
+    notices: z.looseObject({
+        home_screen_banners: z.array(
+            z.looseObject({
+                id: z.string(),
+                type: z.enum(['default', 'warn', 'danger']),
+                text: z.string(),
+                icon: z.string().optional(),
+                banner_click_action_url: z.string().optional(),
+                action_button: z
+                    .looseObject({
+                        text: z.string(),
+                        url: z.string()
+                    })
+                    .optional()
+            })
+        )
     }),
 
     currencies: z.looseObject({
@@ -44,7 +62,8 @@ export const bootConfigSchema = z.looseObject({
             terms_url: z.string()
         }),
         support: z.looseObject({
-            email: z.string()
+            email: z.string(),
+            telegram: z.string()
         })
     }),
 

@@ -1,4 +1,4 @@
-import { Psbt } from '../../../blockchain-api/btc/bitcoinjs';
+import type { Psbt } from '../../../blockchain-api/btc/bitcoinjs';
 
 export interface BtcSigningRequest {
     psbt: Psbt;

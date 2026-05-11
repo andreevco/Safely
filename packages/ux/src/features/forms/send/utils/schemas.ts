@@ -8,12 +8,9 @@ export const recipientSchema = z
     .string()
     .transform(val => val.trim())
     .pipe(
-        z
-            .string()
-            .min(5, SendFormError.ENTER_RECIPIENT_ADDRESS)
-            .refine(val => BtcAddress.validate(val), {
-                message: SendFormError.INVALID_ADDRESS_FORMAT
-            })
+        z.string().refine(val => BtcAddress.validate(val), {
+            message: SendFormError.INVALID_WALLET_ADDRESS
+        })
     );
 
 export const assetIdSchema = z

@@ -1,6 +1,6 @@
 import { sha256 } from '@noble/hashes/sha2.js';
 import { bytesToHex } from '@noble/hashes/utils.js';
-import { z, ZodType } from 'zod';
+import type { z, ZodType } from 'zod';
 
 import { sAccountMeta } from './account-meta.schema';
 import { sContacts } from './contacts.schema';

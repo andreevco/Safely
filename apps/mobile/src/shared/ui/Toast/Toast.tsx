@@ -10,7 +10,7 @@ export type ToastProps = {
 } & Omit<PressableProps, 'style'>;
 
 export const Toast = ({ message, style, ...pressableProps }: ToastProps) => (
-    <Pressable {...pressableProps}>
+    <Pressable hitSlop={8} {...pressableProps}>
         <View style={[styles.container, style]}>
             <Text variant="labelM" textAlign="center" numberOfLines={1}>
                 {message}

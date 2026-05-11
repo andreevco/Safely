@@ -1,14 +1,14 @@
-import { AssertVersionHList, HCons, StorageVersion } from '@safely/slottree';
+import type { AssertVersionHList, HCons, StorageVersion } from '@safely/slottree';
 
 import { generateAccountID, generateMasterKey, initializeSyncAccount } from '../initialize';
 import { getSyncAccountStorage } from './sync-account-storage';
 import { createSyncContainer } from '../sync-container';
 import { SyncAccount } from './sync-account';
-import { SyncAccountRepository } from './sync-account-repository';
-import { Configuration } from '../api/generated';
-import { ITreeStorage } from '../I-storage';
-import { Logger } from '../logger/logger';
-import { OnboardingMessagePayload } from '../onboarding/onboarding-message-payload';
+import type { SyncAccountRepository } from './sync-account-repository';
+import type { Configuration } from '../api/generated';
+import type { ITreeStorage } from '../I-storage';
+import type { Logger } from '../logger/logger';
+import type { OnboardingMessagePayload } from '../onboarding/onboarding-message-payload';
 import { AccountAlreadyExistsError } from '../sync-error';
 import { OfflineSyncProvider } from '../sync-provider/offline-sync-provider';
 import { OnlineSyncProvider } from '../sync-provider/online-sync-provider';

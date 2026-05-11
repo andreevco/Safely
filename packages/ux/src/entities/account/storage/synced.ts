@@ -1,9 +1,9 @@
 import { useCallback } from 'react';
-import z from 'zod';
+import type z from 'zod';
 
-import { ISyncProvider } from '@safely/sync';
+import type { ISyncProvider } from '@safely/sync';
 
-import { SyncedStorageStructure } from '../../../shared/storage/account/synced/schemas';
+import type { SyncedStorageStructure } from '../../../shared/storage/account/synced/schemas';
 import { useAccounts, useActiveAccount } from '../account-state';
 
 export type SyncProvider = ISyncProvider<SyncedStorageStructure>;

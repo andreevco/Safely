@@ -1,3 +1,3 @@
-import { BtcExplorer } from './btc-explorer';
+import type { BtcExplorer } from './btc-explorer';
 
 export type Explorer = BtcExplorer;

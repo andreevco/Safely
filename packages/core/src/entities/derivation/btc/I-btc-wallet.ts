@@ -1,5 +1,5 @@
-import { BtcWalletId } from './btc-wallet-id';
-import { BtcNetwork, BtcWalletType } from '../../blockchain';
+import type { BtcWalletId } from './btc-wallet-id';
+import type { BtcNetwork, BtcWalletType } from '../../blockchain';
 import type { BtcSigningRequest } from '../../signer';
 import type { Derivation } from '../derivation';
 

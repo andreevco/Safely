@@ -178,7 +178,8 @@
                     "title": "Экран блокировки",
                     "subtitle": "Требовать код-пароль для просмотра содержимого кошелька."
                 },
-                "changePasscode": "Изменить код-пароль"
+                "changePasscode": "Изменить код-пароль",
+                "eraseAndLogout": "Стереть это устройство и выйти"
             },
             "wallet": {
                 "title": "Кошелёк",
@@ -242,10 +243,9 @@
     },
     "sendForm": {
         "errors": {
-            "enterRecipientAddress": "Введите адрес получателя",
-            "invalidAddressFormat": "Неверный формат адреса",
-            "invalidRecipientAddress": "Неверный адрес получателя",
-            "unsupportedBlockchain": "Неподдерживаемый блокчейн",
+            "invalidWalletAddress": "Неверный адрес кошелька.",
+            "selfTransfer": "Это ваш активный кошелёк.",
+            "unsupportedBlockchain": "Неподдерживаемый блокчейн.",
             "selectToken": "Выберите токен",
             "selectTokenFirst": "Сначала выберите токен",
             "unableToValidateToken": "Не удалось проверить токен",
@@ -405,7 +405,7 @@
             }
         },
         "signOutAccount": {
-            "title": "Выйти из аккаунта \"{{name}}\"",
+            "title": "Выйти из аккаунта “{{name}}”",
             "sheet": {
                 "title": "Выйти из {{name}}?",
                 "noDevices": {
@@ -426,7 +426,7 @@
             "toastAccountRemoved": "Аккаунт удалён с этого устройства"
         },
         "removePortfolio": {
-            "title": "Удалить кошелек \"{{name}}\"",
+            "title": "Удалить кошелек “{{name}}”",
             "confirm": {
                 "title": "Удалить этот кошелёк?",
                 "message": "Кошелек “{{name}}” будет удален. Это действие нельзя отменить.",
@@ -439,7 +439,7 @@
         }
     },
     "removeWallet": {
-        "title": "Удалить кошелёк \"{{name}}\"?",
+        "title": "Удалить кошелёк “{{name}}”?",
         "backUpLink": "Сохранить фразу восстановления",
         "removeButton": "Всё равно удалить",
         "cancelButton": "Отмена",
@@ -474,6 +474,10 @@
     },
     "history": {
         "title": "История",
+        "bubble": {
+            "one": "Новая транзакция",
+            "many": "Новые транзакции"
+        },
         "empty": {
             "title": "История транзакций",
             "subtitle": "Ваши транзакции появятся здесь.",
@@ -519,7 +523,8 @@
             "label": "Стереть устройство",
             "description": "Сдвиньте для удаления"
         },
-        "cancel": "Отмена"
+        "cancel": "Отмена",
+        "error": "Не удалось стереть все данные. Попробуйте ещё раз."
     },
     "tabs": {
         "home": "Главная",

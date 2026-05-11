@@ -1,37 +1,27 @@
-import { StyleProp, ViewStyle, View } from 'react-native';
+import { ReactNode } from 'react';
+import { TouchableOpacityProps } from 'react-native';
 import { UnistylesVariants } from 'react-native-unistyles';
 
-import { ChevronRight16, Icon } from '@mobile/shared/ui/Icon';
-import { Text } from '@mobile/shared/ui/Text';
-import { TouchableOpacity } from '@mobile/shared/ui/TouchableOpacity';
+import { TouchableOpacity } from '@mobile/shared/ui';
 
 import { styles } from './Banner.styles';
+import { BannerContext } from './BannerContext';
 
-export type BannerProps = UnistylesVariants<typeof styles> & {
-    text: string;
-    onPress?: () => void;
-    actionText?: string;
-    style?: StyleProp<ViewStyle>;
-};
+export type BannerContainerProps = UnistylesVariants<typeof styles> &
+    TouchableOpacityProps & {
+        children: ReactNode;
+    };
 
-export const Banner = (props: BannerProps) => {
-    const { variant, text, onPress, actionText, style, ...rest } = props;
+export const BannerContainer = (props: BannerContainerProps) => {
+    const { variant, onPress, style, children, ...rest } = props;
 
-    styles.useVariants({ variant, ...rest });
+    styles.useVariants({ variant });
 
     return (
-        <TouchableOpacity style={[styles.container, style]} onPress={onPress}>
-            <Text variant="bodyM" style={styles.text}>
-                {text}
-            </Text>
-            {actionText && (
-                <View style={styles.action}>
-                    <Text variant="labelM" style={styles.text}>
-                        {actionText}
-                    </Text>
-                    <Icon icon={ChevronRight16} style={styles.icon} />
-                </View>
-            )}
-        </TouchableOpacity>
+        <BannerContext.Provider value={{ variant }}>
+            <TouchableOpacity style={[styles.container, style]} onPress={onPress} {...rest}>
+                {children}
+            </TouchableOpacity>
+        </BannerContext.Provider>
     );
 };

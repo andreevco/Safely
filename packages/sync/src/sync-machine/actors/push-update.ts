@@ -3,7 +3,7 @@ import { fromPromise } from 'xstate';
 import { StorageVersion } from '@safely/slottree';
 
 import { encodeUpdatePayload } from '../../update-handler/update-payload';
-import { SyncMachineConfig } from '../config';
+import type { SyncMachineConfig } from '../config';
 import { classifyError } from '../error-handler';
 
 export const pushUpdateToServer = fromPromise(

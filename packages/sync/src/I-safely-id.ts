@@ -1,6 +1,6 @@
-import { ZodObject } from 'zod';
+import type { ZodObject } from 'zod';
 
-import { ISyncProvider } from './sync-provider/I-sync-provider';
+import type { ISyncProvider } from './sync-provider/I-sync-provider';
 
 export interface ISafelyId<S extends ZodObject> {
     id: string;

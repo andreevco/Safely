@@ -203,7 +203,7 @@ export default [
                         }
                     ]
                 }
-            ],
+            ]
         }
     },
     /* React */
@@ -256,17 +256,26 @@ export default [
      * default trace shows the cycle path; fix the cycle, don't suppress.
      */
     {
-        files: ['packages/ux/**/*.ts', 'packages/ux/**/*.tsx'],
+        files: [
+            'packages/ux/**/*.ts',
+            'packages/ux/**/*.tsx',
+            'packages/core/**/*.ts',
+            'packages/core/**/*.tsx',
+            'packages/sync/**/*.ts',
+            'packages/slottree/**/*.ts'
+        ],
         rules: {
-            'import/no-cycle': ['error', { maxDepth: 10, ignoreExternal: true }]
+            'import/no-cycle': ['error', { maxDepth: 10, ignoreExternal: true }],
+            '@typescript-eslint/consistent-type-imports': [
+                'error',
+                { prefer: 'type-imports', fixStyle: 'separate-type-imports' }
+            ],
+            '@typescript-eslint/no-import-type-side-effects': 'error'
         }
     },
     /* logger implementations — console is the last-resort fallback */
     {
-        files: [
-            'apps/mobile/src/shared/logger/**/*.ts',
-            'packages/sync/src/logger/**/*.ts'
-        ],
+        files: ['apps/mobile/src/shared/logger/**/*.ts', 'packages/sync/src/logger/**/*.ts'],
         rules: {
             'no-console': 'off'
         }

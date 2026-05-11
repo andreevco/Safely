@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { Draft, NewOf, StorageVersion } from '@safely/slottree';
 
 import { YCRDT } from './y-crdt';
-import { YCRDTRepository } from './y-crdt-repository';
+import type { YCRDTRepository } from './y-crdt-repository';
 import { SyncError } from '../sync-error';
 
 export class YManager<Latest extends StorageVersion, Rest> {

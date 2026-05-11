@@ -1,8 +1,9 @@
 import { ConsoleTransport } from './console-transport';
-import { ILoggerTransport } from './I-logger-transport';
-import { LogEntry } from './log-entry';
+import type { ILoggerTransport } from './I-logger-transport';
+import type { LogEntry } from './log-entry';
 import { LogLevel } from './log-level';
-import { LogsFilter, logsFilterMinSeverityLevel } from './logs-filter';
+import type { LogsFilter } from './logs-filter';
+import { logsFilterMinSeverityLevel } from './logs-filter';
 
 export class Logger {
     private readonly path: string[] = [];

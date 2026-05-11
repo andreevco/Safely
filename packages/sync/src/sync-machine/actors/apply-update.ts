@@ -2,7 +2,7 @@ import { fromPromise } from 'xstate';
 
 import { StorageVersion } from '@safely/slottree';
 
-import { SyncMachineConfig } from '../config';
+import type { SyncMachineConfig } from '../config';
 import { classifyError } from '../error-handler';
 
 export const applyUpdate = fromPromise(

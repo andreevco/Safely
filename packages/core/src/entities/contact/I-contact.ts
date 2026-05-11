@@ -1,6 +1,6 @@
-import { ContactId } from './contact-id';
-import { ContactMeta } from './contact-meta';
-import { BLOCKCHAIN_NAME } from '../blockchain/blockchain-name';
+import type { ContactId } from './contact-id';
+import type { ContactMeta } from './contact-meta';
+import type { BLOCKCHAIN_NAME } from '../blockchain/blockchain-name';
 
 export interface IContact {
     id: ContactId;

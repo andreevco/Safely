@@ -13,6 +13,7 @@ import {
     useBiometryQuery,
     useSetBiometryEnabled
 } from '@mobile/features/biometry';
+import { useLogOutAllConfirmation } from '@mobile/features/settings/useLogOutAllConfirmation';
 import { Badge, Cell, List, Screen, Switch } from '@mobile/shared/ui';
 import { ArrowLeft16, Icon } from '@mobile/shared/ui/Icon';
 
@@ -50,6 +51,8 @@ export const SecurityScreen = () => {
         await check({ title: t('changePasscode.verify.title') });
         rootNavigation.navigate('ChangePasscodeScreen');
     };
+
+    const eraseAllData = useLogOutAllConfirmation();
 
     return (
         <Screen>
@@ -111,7 +114,7 @@ export const SecurityScreen = () => {
 
                     <List>
                         <List.Title>{t('security.groups.application.title')}</List.Title>
-                        <List.Group variant="divided">
+                        <List.Group variant="divided" style={styles.listGroupMargin}>
                             {biometry && biometry.availableType && (
                                 <Cell>
                                     <Cell.Content>
@@ -159,6 +162,18 @@ export const SecurityScreen = () => {
                                     <Cell.Row>
                                         <Cell.Title>
                                             {t('security.groups.application.changePasscode')}
+                                        </Cell.Title>
+                                    </Cell.Row>
+                                </Cell.Content>
+                                <Cell.Chevron />
+                            </Cell>
+                        </List.Group>
+                        <List.Group>
+                            <Cell onPress={eraseAllData}>
+                                <Cell.Content>
+                                    <Cell.Row>
+                                        <Cell.Title>
+                                            {t('security.groups.application.eraseAndLogout')}
                                         </Cell.Title>
                                     </Cell.Row>
                                 </Cell.Content>
