@@ -14,7 +14,11 @@ export function useScrollToTopOnNewBroadcastedTx<TItem>(
         const prev = prevBroadcastedTxIdRef.current;
         const next = broadcastedTx?.txId;
         if (next && next !== prev) {
-            listRef.current?.scrollToTop();
+            void listRef.current?.scrollToIndex({
+                index: 0,
+                animated: true,
+                viewPosition: 0
+            });
         }
         prevBroadcastedTxIdRef.current = next;
     }, [broadcastedTx?.txId, listRef]);

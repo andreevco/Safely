@@ -3,7 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { type TFunction } from 'i18next';
 import { useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
+import { useWindowDimensions, View } from 'react-native';
 
 import {
     type ActivityItemsDatedGroup,
@@ -93,6 +93,7 @@ export const HistoryList = (props: HistoryListProps) => {
     const listRef = useRef<ListRef<HistoryRowItem>>(null);
     const { data: historyGroups, refetch, fetchNextPage } = useGroupedHistory();
     const client = useQueryClient();
+    const windowHeight = useWindowDimensions().height;
 
     useScrollToTop(listRef);
     useScrollToTopOnNewBroadcastedTx(listRef);
@@ -104,8 +105,7 @@ export const HistoryList = (props: HistoryListProps) => {
         show: showBubble
     } = useNewTransactionsBubble({
         listRef,
-        // height of one history item + group label, but should think about better way maybe
-        topThreshold: 128
+        topThreshold: windowHeight * 0.2
     });
 
     const { mutate: runIntervalRefetch } = useMutation({
@@ -193,7 +193,7 @@ export const HistoryList = (props: HistoryListProps) => {
                 data={rows}
                 keyExtractor={item => item.key}
                 getItemType={getItemType}
-                drawDistance={600}
+                drawDistance={windowHeight * 2}
                 onEndReached={fetchNextPage}
                 onEndReachedThreshold={0.5}
                 ItemSeparatorComponent={renderSeparator}
