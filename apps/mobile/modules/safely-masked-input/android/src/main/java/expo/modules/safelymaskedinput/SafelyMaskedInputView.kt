@@ -189,7 +189,7 @@ class SafelyMaskedInputView(context: Context, appContext: AppContext) : ExpoView
 
         if (suffix.isNotEmpty()) {
             val start = builder.length
-            builder.append("  $suffix")
+            builder.append(" $suffix")
             builder.setSpan(ForegroundColorSpan(colorWithOpacity(suffixColor, suffixOpacity)), start, builder.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
             builder.setSpan(NormalTypefaceSpan(), start, builder.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
             val size = if (suffixFontSize > 0) suffixFontSize else editText.textSize / resources.displayMetrics.scaledDensity
@@ -249,7 +249,7 @@ class SafelyMaskedInputView(context: Context, appContext: AppContext) : ExpoView
 
         if (suffix.isNotEmpty() && segments.isNotEmpty()) {
             val start = builder.length
-            builder.append("  $suffix")
+            builder.append(" $suffix")
             builder.setSpan(ForegroundColorSpan(colorWithOpacity(suffixColor, suffixOpacity)), start, builder.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
             builder.setSpan(NormalTypefaceSpan(), start, builder.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
             val size = if (suffixFontSize > 0) suffixFontSize else editText.textSize / resources.displayMetrics.scaledDensity
@@ -261,7 +261,7 @@ class SafelyMaskedInputView(context: Context, appContext: AppContext) : ExpoView
 
     // MARK: - Suffix helpers
 
-    private fun suffixDisplayLength(): Int = if (suffix.isEmpty()) 0 else suffix.length + 2
+    private fun suffixDisplayLength(): Int = if (suffix.isEmpty()) 0 else suffix.length + 1
 
     private fun maxEditablePosition(): Int {
         val textLen = editText.text?.length ?: 0
@@ -270,7 +270,7 @@ class SafelyMaskedInputView(context: Context, appContext: AppContext) : ExpoView
 
     private fun stripSuffix(text: String): String {
         if (suffix.isEmpty()) return text
-        val suffixPart = "  $suffix"
+        val suffixPart = " $suffix"
         return if (text.endsWith(suffixPart)) text.dropLast(suffixPart.length) else text
     }
 
