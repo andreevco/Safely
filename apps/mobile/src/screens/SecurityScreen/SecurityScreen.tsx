@@ -2,8 +2,12 @@ import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { useSyncedDevicesMeta } from '@safely/ux';
-import { useHasPortfolio } from '@safely/ux';
+import {
+    AccountLinkState,
+    useAccountLinkState,
+    useHasPortfolio,
+    useSyncedDevicesMeta
+} from '@safely/ux';
 import { useSecurityCheck } from '@safely/ux/shared/security';
 
 import { RootStackNavigationProp, SettingsStackNavigationProp } from '@mobile/app/navigation/types';
@@ -34,7 +38,7 @@ export const SecurityScreen = () => {
 
     const devicesMeta = useSyncedDevicesMeta();
     const otherDeviceCount = devicesMeta ? Object.keys(devicesMeta).length - 1 : 0;
-    const hasLinkedDevices = otherDeviceCount > 0;
+    const linkState = useAccountLinkState();
 
     const handleBiometryToggle = async () => {
         if (biometry) {
@@ -68,7 +72,29 @@ export const SecurityScreen = () => {
                     <List>
                         <List.Title>{t('security.groups.account.title')}</List.Title>
                         <List.Group>
-                            {hasLinkedDevices ? (
+                            {linkState === AccountLinkState.UNLINKED && (
+                                <Cell
+                                    onPress={() => rootNavigation.navigate('ReconnectDeviceModal')}
+                                >
+                                    <Cell.Content>
+                                        <View style={styles.badgeRow}>
+                                            <Cell.Title>
+                                                {t('security.groups.account.unlinked.title')}
+                                            </Cell.Title>
+                                            <Badge type="error" isUppercase>
+                                                {t('security.groups.account.unlinked.badge')}
+                                            </Badge>
+                                        </View>
+                                        <Cell.Row>
+                                            <Cell.Subtitle numberOfLines={0}>
+                                                {t('security.groups.account.unlinked.subtitle')}
+                                            </Cell.Subtitle>
+                                        </Cell.Row>
+                                    </Cell.Content>
+                                    <Cell.Chevron />
+                                </Cell>
+                            )}
+                            {linkState === AccountLinkState.PROTECTED && (
                                 <Cell onPress={() => navigation.navigate('AccountProtectedModal')}>
                                     <Cell.Content>
                                         <View style={styles.badgeRow}>
@@ -89,7 +115,8 @@ export const SecurityScreen = () => {
                                     </Cell.Content>
                                     <Cell.Chevron />
                                 </Cell>
-                            ) : (
+                            )}
+                            {linkState === AccountLinkState.SOLO && (
                                 <Cell onPress={() => navigation.navigate('ProtectAccountModal')}>
                                     <Cell.Content>
                                         <View style={styles.badgeRow}>
