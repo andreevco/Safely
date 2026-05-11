@@ -8,7 +8,6 @@ import { SyncStateRepository } from './sync-state-repository';
 import { decodeUpdatePayload, UpdatePayload } from './update-payload';
 import { SnapshotsApi } from '../api/generated';
 import { EncryptedStateAndProofChain } from '../api/types';
-import { StorageVerifierService } from '../crdt/storage-verifier-service';
 import { YManager } from '../crdt/y-manager';
 import { DeviceManagementService } from '../device-manager/device-management-service';
 import { tDevicesLatest, tDevicesRest } from '../device-manager/device-storage-schema';
@@ -21,7 +20,6 @@ export class UpdateHandler<Latest extends StorageVersion, Rest> {
         private readonly yManager: YManager<Latest, Rest>,
         private readonly deviceYManager: YManager<tDevicesLatest, tDevicesRest>,
         private readonly updateDecryptor: UpdateDecryptorService,
-        private readonly storageVerifierService: StorageVerifierService<Latest, Rest>,
         private readonly deviceManagementService: DeviceManagementService,
         private readonly snapshotsApi: SnapshotsApi,
         private readonly logger: Logger
@@ -66,8 +64,6 @@ export class UpdateHandler<Latest extends StorageVersion, Rest> {
                 }
             }
         }
-
-        void this.storageVerifierService;
 
         await this.deviceManagementService.mergeDeviceStorage(
             Buffer.from(payload.deviceStorage, 'utf8')

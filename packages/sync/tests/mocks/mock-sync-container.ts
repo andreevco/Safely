@@ -3,7 +3,6 @@ import { AssertVersionHList, HCons, StorageVersion } from '@safely/slottree';
 import { MockSnapshotsApi, MockSnapshotsServer, MockSnapshotsSse } from './mock-snapshots-api';
 import { ApiSigner } from '../../src/api/api-signer';
 import { AccountsApi, Configuration, SnapshotsApi } from '../../src/api/generated';
-import { StorageVerifierService } from '../../src/crdt/storage-verifier-service';
 import { YCRDTRepository } from '../../src/crdt/y-crdt-repository';
 import { YManager } from '../../src/crdt/y-manager';
 import { EncryptedKeyRepository } from '../../src/crypto/encrypted-key-repository';
@@ -82,13 +81,11 @@ export async function createMockSyncContainer<Latest extends StorageVersion, Res
     );
     const updateDecryptor = new UpdateDecryptorService(syncKeyService, deviceManager);
 
-    const storageVerifierService = new StorageVerifierService(deviceManager);
     const updateHandler = new UpdateHandler<Latest, Rest>(
         syncStateRepository,
         yManager,
         deviceYManager,
         updateDecryptor,
-        storageVerifierService,
         deviceManager,
         snapshotApi as unknown as SnapshotsApi,
         logger
@@ -101,7 +98,6 @@ export async function createMockSyncContainer<Latest extends StorageVersion, Res
         logger,
         storage,
         encryptedStorage,
-        storageVerifierService,
         keyRepository,
         syncStateRepository,
         crdtRepository,

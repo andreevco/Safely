@@ -3,7 +3,6 @@ import { AssertVersionHList, HCons, StorageVersion } from '@safely/slottree';
 import { ApiSigner } from './api/api-signer';
 import { AccountsApi, Configuration, SnapshotsApi } from './api/generated';
 import { SnapshotsSse } from './api/snapshots-sse';
-import { StorageVerifierService } from './crdt/storage-verifier-service';
 import { YCRDTRepository } from './crdt/y-crdt-repository';
 import { YManager } from './crdt/y-manager';
 import { EncryptedKeyRepository } from './crypto/encrypted-key-repository';
@@ -42,8 +41,6 @@ export type SyncContainer<Latest extends StorageVersion, Rest> = {
     dmkVerifierService: DmkVerifierService;
     ikService: IkService;
     syncKeyService: SyncKeyService;
-
-    storageVerifierService: StorageVerifierService<Latest, Rest>;
 
     updateEncryptor: UpdateEncryptorService;
     updateDecryptor: UpdateDecryptorService;
@@ -111,13 +108,11 @@ export async function createSyncContainer<Latest extends StorageVersion, Rest>(o
     );
     const updateDecryptor = new UpdateDecryptorService(syncKeyService, deviceManager);
 
-    const storageVerifierService = new StorageVerifierService(deviceManager);
     const updateHandler = new UpdateHandler<Latest, Rest>(
         syncStateRepository,
         yManager,
         deviceYManager,
         updateDecryptor,
-        storageVerifierService,
         deviceManager,
         snapshotApi,
         opts.logger
@@ -132,7 +127,6 @@ export async function createSyncContainer<Latest extends StorageVersion, Rest>(o
         keyServiceFactory,
         storage: opts.storage,
         encryptedStorage: opts.encryptedStorage,
-        storageVerifierService,
         keyRepository,
         syncStateRepository,
         crdtRepository,

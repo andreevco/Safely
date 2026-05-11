@@ -35,8 +35,6 @@ export class SyncAccountFactory<Versions extends VersionHList> implements ISyncA
     private readonly noAccountLogger: Logger;
 
     constructor(opts: SyncAccountFactoryOptions<Versions>) {
-        //validateSyncDataScheme(opts.structure);
-
         this.syncAccountIdRepository = new SyncAccountRepository(opts.storage);
         this.apiConfiguration = new Configuration(opts.apiConfiguration);
         this.noAccountLogger = opts.noAccountLogger;
