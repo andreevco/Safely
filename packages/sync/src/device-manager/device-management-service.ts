@@ -23,19 +23,6 @@ export class DeviceManagementService {
         await this.deviceRepository.addDevice(await this.makeDevice(ikPub, dmkSignerService));
     }
 
-    public async ensureSelfDevice(dmkSignerService: DmkSignerService): Promise<boolean> {
-        const ikPub = await this.ikService.getPub();
-        const kid = getKID(ikPub);
-        const device = await this.deviceRepository.getDevice(kid);
-
-        if (device) {
-            return false;
-        }
-
-        await this.addDevice(ikPub, dmkSignerService);
-        return true;
-    }
-
     public async revokeDevice(ikPub: Buffer, dmkSignerService: DmkSignerService): Promise<void> {
         const devices = await this.getDevices();
         if (!devices.some(d => d.info.ikPub.equals(ikPub))) {
@@ -98,11 +85,6 @@ export class DeviceManagementService {
         }
     }
 
-    /**
-     * In onboarding flow, primary device creates add operation and sends it to the new device, which then applies it.
-     * @param ikPub
-     * @param dmkSignerService
-     */
     public async makeDevice(ikPub: Buffer, dmkSignerService: DmkSignerService): Promise<Device> {
         const devices = await this.getDevices();
         if (devices.some(d => d.info.ikPub.equals(ikPub))) {

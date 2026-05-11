@@ -6,7 +6,6 @@ import { Draft, NewOf, StorageVersion } from '@safely/slottree';
 import { ISyncProvider } from './I-sync-provider';
 import { OfflineSyncProvider } from './offline-sync-provider';
 import { SyncStatus, SyncStatusManager } from './sync-status';
-import { DmkSignerService } from '../crypto/service/dmk-signer-service';
 import { SyncContainer } from '../sync-container';
 import { createSyncMachine, SyncMachine } from '../sync-machine/machine';
 
@@ -24,14 +23,9 @@ export class OnlineSyncProvider<Latest extends StorageVersion, Rest>
 
     public static async create<Latest extends StorageVersion, Rest>(
         container: SyncContainer<Latest, Rest>,
-        syncStatusManager = new SyncStatusManager(SyncStatus.DISCONNECTED),
-        dmkSignerService?: DmkSignerService
+        syncStatusManager = new SyncStatusManager(SyncStatus.DISCONNECTED)
     ): Promise<OnlineSyncProvider<Latest, Rest>> {
         syncStatusManager.setStatus(SyncStatus.DISCONNECTED);
-
-        if (dmkSignerService) {
-            await container.deviceManager.ensureSelfDevice(dmkSignerService);
-        }
 
         const machine = createActor(createSyncMachine(), {
             input: {

@@ -59,8 +59,9 @@ export class SyncAccount<Latest extends StorageVersion, Rest> implements ISyncAc
             this.container.keyServiceFactory.createDmkSignerService(secureEncryptedStorage),
             this.container.accountsApi,
             this.container.deviceManager,
-            () => {
+            async () => {
                 this.syncProvider.triggerSync();
+                await this.syncProvider.syncStatusManager.waitForStatus(SyncStatus.SYNCHRONIZED);
             }
         );
         await onboarding.onboard(data);

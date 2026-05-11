@@ -78,6 +78,9 @@ export class PrimaryDeviceOnboarding {
         });
         const signature = await this.signOnboardingMessage(message.ikPub);
 
+        await this.deviceManager.addDevice(message.ikPub, this.dmkService);
+        this.triggerSync();
+
         await this.accountsApi.postOnboardingMessage({
             onboardingMessage: {
                 newIdentityPubKey: message.ikPub.toString('hex'),
@@ -87,18 +90,6 @@ export class PrimaryDeviceOnboarding {
                 signature: signature.toString('hex')
             }
         });
-
-        for (let i = 0; i < 3; i++) {
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            const devices = await this.deviceManager.getDevices();
-            if (devices.some(d => d.info.ikPub.equals(message.ikPub))) {
-                return;
-            }
-        }
-
-        throw new PrimaryDeviceOnboardingError(
-            'New device did not appear after onboarding message was sent'
-        );
     }
 
     private async signOnboardingMessage(newIkPub: Buffer): Promise<Buffer> {

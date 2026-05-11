@@ -116,11 +116,7 @@ export class CreateAccountService<Latest extends StorageVersion, Rest> {
         const account = new SyncAccount({
             accountId: accountID,
             structure: this.versions,
-            syncProvider: await OnlineSyncProvider.create(
-                container,
-                undefined,
-                container.keyServiceFactory.createDmkSignerService(secureEncryptedStorage)
-            ),
+            syncProvider: await OnlineSyncProvider.create(container),
             container,
             syncAccountRepository: this.syncAccountIDRepository,
             online: true
