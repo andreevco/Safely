@@ -25,6 +25,7 @@ import { ListRef } from '@mobile/shared/ui/Screen/components/List';
 import { HistoryEmptyPlaceholder } from '../HistoryEmptyPlaceholder';
 import { NewTransactionsBubble, useNewTransactionsBubble } from './components';
 import { styles } from './HistoryList.styles';
+import { useScrollToTopOnNewBroadcastedTx } from './hooks';
 
 type HistoryRowItem =
     | { key: string; type: 'header'; title: string }
@@ -94,6 +95,7 @@ export const HistoryList = (props: HistoryListProps) => {
     const client = useQueryClient();
 
     useScrollToTop(listRef);
+    useScrollToTopOnNewBroadcastedTx(listRef);
 
     const {
         scrollHandler,
