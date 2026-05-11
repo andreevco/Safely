@@ -511,6 +511,29 @@ describe('sendFormMachine — amount input type', () => {
         expect(s.context.values.amountInputType).toBe('fiat');
         expect(s.matches({ editing: { amount: 'idle' } })).toBe(true);
     });
+
+    it('SET_AMOUNT_INPUT_TYPE with parsed amount reformats value for the new input type', () => {
+        const actor = setupAtAmountIdle();
+        actor.send({ type: 'SET_AMOUNT', value: '0.5' });
+
+        const before = actor.getSnapshot();
+        expect(before.context.values.amountInputType).toBe('crypto');
+        expect(before.context.parsed.amount?.inputType).toBe('crypto');
+        expect(before.context.parsed.amount?.cryptoAssetAmount).toBeDefined();
+        expect(before.context.parsed.amount?.fiatAssetAmount).toBeDefined();
+
+        actor.send({ type: 'SET_AMOUNT_INPUT_TYPE', value: 'fiat' });
+
+        const after = actor.getSnapshot();
+        expect(after.context.values.amountInputType).toBe('fiat');
+        expect(after.context.parsed.amount?.inputType).toBe('fiat');
+        expect(
+            after.context.parsed.amount?.cryptoAssetAmount.relativeAmount.eq(
+                before.context.parsed.amount!.cryptoAssetAmount.relativeAmount
+            )
+        ).toBe(true);
+        expect(after.context.values.amount).not.toBe('0.5');
+    });
 });
 
 describe('sendFormMachine — fetchMaxValue actor', () => {
