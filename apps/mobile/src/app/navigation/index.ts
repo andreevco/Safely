@@ -16,6 +16,7 @@ import { PasscodeVerificationScreen } from '@mobile/screens/PasscodeVerification
 import { PendingFundsSheet } from '@mobile/screens/PendingFundsSheet';
 import { QRScanModal } from '@mobile/screens/QRScanModal';
 import { ReceiveAssetModal } from '@mobile/screens/ReceiveAssetModal';
+import { ReconnectDeviceModal } from '@mobile/screens/ReconnectDeviceModal';
 import { RemoveWalletSheet } from '@mobile/screens/RemoveWalletSheet';
 import {
     DisconnectDeviceSheet,
@@ -97,6 +98,7 @@ export const RootStack = createNativeStackNavigator({
                 SelectAccountModal: SelectAccountModal,
                 SelectAccountSelectorModal: SelectAccountSelectorModal,
                 ReceiveAssetModal: ReceiveAssetModal,
+                ReconnectDeviceModal: ReconnectDeviceModal,
                 SendAssetModal: SendStack
             },
             screenOptions: {
