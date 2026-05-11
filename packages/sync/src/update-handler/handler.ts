@@ -65,6 +65,8 @@ export class UpdateHandler<Latest extends StorageVersion, Rest> {
             }
         }
 
+        // TODO: merge remote devices into temporal storage first and verify on temp storage
+        // this is minor security bug
         await this.deviceManagementService.mergeDeviceStorage(
             Buffer.from(payload.deviceStorage, 'utf8')
         );

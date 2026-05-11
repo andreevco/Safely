@@ -17,7 +17,6 @@ export type SyncMachine = Awaited<Actor<ReturnType<typeof createSyncMachine>>>;
 export const createSyncMachine = () => {
     return x
         .setup({
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
             types: {} as {
                 events:
                     | { type: 'LOCAL_UPDATE' }
@@ -175,10 +174,17 @@ export const createSyncMachine = () => {
                                 input: ({ context }) => {
                                     return { config: context };
                                 },
-                                onDone: {
-                                    actions: 'clearRemoteUpdate',
-                                    target: 'connected'
-                                },
+                                onDone: [
+                                    {
+                                        guard: ({ event }) => event.output.hasLocalChanges,
+                                        actions: ['clearRemoteUpdate', 'markDirty'],
+                                        target: 'connected'
+                                    },
+                                    {
+                                        actions: 'clearRemoteUpdate',
+                                        target: 'connected'
+                                    }
+                                ],
                                 onError: {
                                     actions: ['clearRemoteUpdate', 'handleError'],
                                     target: '#syncMachine.errorHandling'
