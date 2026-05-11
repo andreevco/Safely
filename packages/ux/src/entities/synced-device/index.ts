@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { useCallback, useSyncExternalStore } from 'react';
 
 import { PortfolioFactory } from '@safely/core';
 import type { ISyncAccount } from '@safely/sync';
@@ -54,13 +54,10 @@ export function useAccountLinkState(): AccountLinkState {
     const selfIkPub = useCurrentDeviceIkPub();
     const devicesMeta = useSyncedDevicesMeta();
 
-    const [syncStatus, setSyncStatus] = useState(() =>
-        account.syncProvider.syncStatusManager.getStatus()
+    const syncStatus = useSyncExternalStore(
+        useCallback(cb => account.syncProvider.syncStatusManager.subscribe(cb), [account]),
+        () => account.syncProvider.syncStatusManager.getStatus()
     );
-
-    useEffect(() => {
-        return account.syncProvider.syncStatusManager.subscribe(setSyncStatus);
-    }, [account]);
 
     if (syncStatus === SyncStatus.DEVICE_DELETED) {
         return AccountLinkState.UNLINKED;
