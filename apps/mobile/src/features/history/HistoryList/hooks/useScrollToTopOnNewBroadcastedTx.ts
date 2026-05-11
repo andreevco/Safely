@@ -11,14 +11,18 @@ export function useScrollToTopOnNewBroadcastedTx<TItem>(
     const prevBroadcastedTxIdRef = useRef<string | undefined>(broadcastedTx?.txId);
 
     useEffect(() => {
-        const prev = prevBroadcastedTxIdRef.current;
-        const next = broadcastedTx?.txId;
-        if (next && next !== prev) {
-            void listRef.current?.scrollToIndex({
+        async function scrollAndRecordInteraction() {
+            await listRef.current?.scrollToIndex({
                 index: 0,
                 animated: true,
                 viewPosition: 0
             });
+            listRef.current?.recordInteraction();
+        }
+        const prev = prevBroadcastedTxIdRef.current;
+        const next = broadcastedTx?.txId;
+        if (next && next !== prev) {
+            void scrollAndRecordInteraction();
         }
         prevBroadcastedTxIdRef.current = next;
     }, [broadcastedTx?.txId, listRef]);
