@@ -74,7 +74,7 @@ export class BtcTransactionTemplate {
         try {
             result = await this.btcApi.sendTransaction(signed.toString('hex'));
         } catch (error) {
-            if (getExternalErrorText(error).trim().startsWith('-26')) {
+            if (getExternalErrorText(error).includes('dust')) {
                 throw new BtcSendDustError();
             }
             throw error;
