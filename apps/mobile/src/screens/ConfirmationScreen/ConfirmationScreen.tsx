@@ -158,6 +158,7 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
                                 formatter,
                                 { fullPrecision: true }
                             )}
+                            inputType={confirmationResult.amount.inputType}
                         />
                         <TransactionFee estimation={txTemplate?.estimation} />
                     </List.Group>
