@@ -10,8 +10,8 @@ export enum NewTransactionsBubbleMode {
     MANY = 2
 }
 
-type UseNewTransactionsBubbleOptions = {
-    listRef: RefObject<Pick<ListRef<unknown>, 'scrollToOffset'> | null>;
+type UseNewTransactionsBubbleOptions<TItem> = {
+    listRef: RefObject<ListRef<TItem> | null>;
     topThreshold: number;
 };
 
@@ -22,8 +22,8 @@ type UseNewTransactionsBubbleReturn = {
     show: () => void;
 };
 
-export function useNewTransactionsBubble(
-    options: UseNewTransactionsBubbleOptions
+export function useNewTransactionsBubble<TItem>(
+    options: UseNewTransactionsBubbleOptions<TItem>
 ): UseNewTransactionsBubbleReturn {
     const { listRef, topThreshold } = options;
 
@@ -60,7 +60,7 @@ export function useNewTransactionsBubble(
 
     const onPress = useCallback(() => {
         mode.value = NewTransactionsBubbleMode.HIDDEN;
-        listRef.current?.scrollToOffset({ offset: 0, animated: true });
+        listRef.current?.scrollToTop();
     }, [mode, listRef]);
 
     return {
