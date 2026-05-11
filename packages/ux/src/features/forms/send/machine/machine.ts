@@ -160,7 +160,7 @@ export const createSendFormMachine = () =>
                         amountInputType: event.value
                     };
                     const currentParsed = context.parsed.amount;
-                    if (!currentParsed?.fiatAssetAmount) {
+                    if (!currentParsed) {
                         return { values: baseValues };
                     }
 
@@ -169,7 +169,6 @@ export const createSendFormMachine = () =>
                         event.value,
                         context.formatter
                     );
-                    if (!result) return { values: baseValues };
 
                     return {
                         values: { ...baseValues, amount: result.formatted },
