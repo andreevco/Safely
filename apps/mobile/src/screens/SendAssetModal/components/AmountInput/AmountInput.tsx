@@ -109,7 +109,12 @@ export const AmountInput = forwardRef<MaskedInputRef, AmountInputProps>((props, 
                                 style={styles.switchButton}
                             >
                                 <Animated.View style={styles.secondaryCurrencyContainer}>
-                                    <Text variant="bodyM" color="tertiary" monospace>
+                                    <Text
+                                        numberOfLines={1}
+                                        variant="bodyM"
+                                        color="tertiary"
+                                        monospace
+                                    >
                                         {formattedAlternativeAmount ?? '0'}
                                     </Text>
                                     <Icon icon={SwapVertical20} color="secondary" />

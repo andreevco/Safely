@@ -1,9 +1,9 @@
 import { useNavigation } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
-import { ImageBackground, Linking, View } from 'react-native';
+import { ImageBackground, View } from 'react-native';
 
-import { useAppContext, useCreateExistingAccountConnector } from '@safely/ux';
+import { useAppContext, useCreateExistingAccountConnector, useLinking } from '@safely/ux';
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { useOnboardingFlow } from '@mobile/features/onboarding';
@@ -25,6 +25,7 @@ export const WelcomeScreen = () => {
             sync: { getSecureEncrypted }
         }
     } = useAppContext();
+    const { openURL } = useLinking();
 
     const handleSignIn = useCallback(async () => {
         signIn.reset();
@@ -75,14 +76,14 @@ export const WelcomeScreen = () => {
                                         <Text
                                             variant="bodyS"
                                             color="secondary"
-                                            onPress={() => Linking.openURL(TERMS_URL)}
+                                            onPress={() => openURL(TERMS_URL)}
                                         />
                                     ),
                                     privacy: (
                                         <Text
                                             variant="bodyS"
                                             color="secondary"
-                                            onPress={() => Linking.openURL(PRIVACY_URL)}
+                                            onPress={() => openURL(PRIVACY_URL)}
                                         />
                                     )
                                 }}
