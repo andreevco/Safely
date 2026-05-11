@@ -1,8 +1,14 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { MockSnapshotsServer } from './mocks/mock-snapshots-api';
-import { createMachineContext, getMasterKey, MachineContext } from './mocks/mock-sync-context';
+import {
+    createMachineContext,
+    getMasterKey,
+    MachineContext,
+    waitFor
+} from './mocks/mock-sync-context';
 import { ed25519_keygen } from '../src/crypto/ed25519';
+import { OfflineSyncProvider } from '../src/sync-provider/offline-sync-provider';
 import { getKID } from '../src/utils/kid';
 
 describe('device management service', () => {
@@ -89,6 +95,30 @@ describe('device management service', () => {
 
         await verifyDeviceList(ctx, [ikPub]);
         await verifyStoredDeviceState(ctx, ikPub, 'active');
+    });
+
+    it('notifies when devices change', async () => {
+        const ctx = await createMachineContext(server);
+        const provider = new OfflineSyncProvider(ctx.container as never);
+        const ikPub = await ctx.container.ikService.getPub();
+        const seen: Buffer[][] = [];
+        const unsubscribe = provider.onDevicesChange(devices => {
+            seen.push(devices.map(device => device.info.ikPub));
+        });
+
+        await addPub(ctx, ikPub);
+        await waitFor(() => seen.length === 1);
+        expect(seen[0]).toEqual([]);
+
+        await ctx.container.deviceManager.activate();
+        await waitFor(() => seen.length === 2);
+        expect(seen[1]).toHaveLength(1);
+        expect(seen[1][0].equals(ikPub)).toBe(true);
+
+        unsubscribe();
+        await revokePub(ctx, ikPub);
+        await new Promise(resolve => setTimeout(resolve, 20));
+        expect(seen).toHaveLength(2);
     });
 
     it('adds 10 devices', async () => {

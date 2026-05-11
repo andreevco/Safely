@@ -4,6 +4,7 @@ import type { Draft } from '@safely/slottree';
 
 import { SyncError } from '../sync-error';
 import { ISyncStatusManager } from './sync-status';
+import type { Device } from '../device-manager/device-repository';
 
 type ShapeOf<S extends z.ZodObject<z.ZodRawShape>> = S['shape'];
 type SchemaKey<S extends z.ZodObject<z.ZodRawShape>> = Extract<keyof ShapeOf<S>, string>;
@@ -19,6 +20,7 @@ export interface ISyncProvider<S extends ZodObject> {
         key: K,
         observer: (value: z.output<ShapeOf<S>[K]>) => void
     ): () => void;
+    onDevicesChange(observer: (devices: Device[]) => void): () => void;
     onError(obs: (e: SyncError) => void): () => void;
     dispose(): void;
     restart(): void;

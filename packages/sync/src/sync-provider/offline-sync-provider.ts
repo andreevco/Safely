@@ -4,6 +4,7 @@ import { Draft, NewOf, StorageVersion } from '@safely/slottree';
 
 import { ISyncProvider } from './I-sync-provider';
 import { StorageError } from '../crdt/y-manager';
+import type { Device } from '../device-manager/device-repository';
 import { SyncContainer } from '../sync-container';
 import { SyncError } from '../sync-error';
 import { SyncStatus, SyncStatusManager } from './sync-status';
@@ -81,6 +82,14 @@ export class OfflineSyncProvider<Latest extends StorageVersion, Rest> implements
 
             lastStored = currentStored;
             observer(v as z.output<NewOf<Latest>[K]>);
+        });
+    }
+
+    public onDevicesChange(observer: (devices: Device[]) => void): () => void {
+        return this.container.deviceYManager.onChange(() => {
+            void this.container.deviceManager.getDevices().then(devices => {
+                observer(devices);
+            });
         });
     }
 
