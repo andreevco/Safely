@@ -57,6 +57,7 @@ export function useSendFormView(props: UseSendFormViewProps): SendFormView {
         backToEditing
     } = dispatchers;
 
+    const fromMeta = snapshot.context.activeWallet.meta;
     const ratedAssets = snapshot.context.ratedAssets;
     const contactSuggestions = snapshot.context.contactSuggestions;
     const portfolioSuggestions = snapshot.context.portfolioSuggestions;
@@ -134,6 +135,7 @@ export function useSendFormView(props: UseSendFormViewProps): SendFormView {
                 suggestions: visibleSuggestions,
                 restoredSuggestions,
                 selectedSuggestionId,
+                fromMeta,
                 setRecipient,
                 setAddressBookName,
                 selectSuggestion
@@ -172,6 +174,7 @@ export function useSendFormView(props: UseSendFormViewProps): SendFormView {
                     asset: ctxParsedAsset
                 },
                 recipientMeta,
+                fromMeta,
                 availableAssets,
                 isMaxAvailable,
                 setAmount,
@@ -207,6 +210,7 @@ export function useSendFormView(props: UseSendFormViewProps): SendFormView {
         visibleSuggestions,
         restoredSuggestions,
         recipientMeta,
+        fromMeta,
         availableAssets,
         setRecipient,
         setAddressBookName,
