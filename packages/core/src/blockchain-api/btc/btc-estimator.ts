@@ -177,6 +177,7 @@ export class BtcEstimator implements IIdentifiable {
         const { fee, targetBlock } = await this.estimateSendFee(request, utxos);
         const totalBalance = getUtxoTotal(utxos);
 
+        // Balance changed significantly since max amount was calculated initially in the form
         const amount = totalBalance.sub(fee);
         if (abs(request.estimatedAmount.weiAmount - amount.weiAmount) * 2n > fee.weiAmount) {
             throw new Error('Amount changed since it was estimated');
