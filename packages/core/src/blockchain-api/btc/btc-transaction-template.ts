@@ -23,8 +23,6 @@ export class BtcTransactionTemplate {
         };
 
         if (this.request.hasChange) {
-            return [recipientOutput];
-        } else {
             return [
                 recipientOutput,
                 {
@@ -32,6 +30,8 @@ export class BtcTransactionTemplate {
                     value: total.sub(this.request.amount).sub(this.estimation.fee.amount).weiAmount
                 }
             ];
+        } else {
+            return [recipientOutput];
         }
     }
 
