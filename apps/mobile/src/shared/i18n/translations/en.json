@@ -653,5 +653,11 @@
             "invalidAddressFormat": "Invalid address format",
             "unsupportedBlockchain": "Unsupported blockchain"
         }
+    },
+    "linking": {
+        "errors": {
+            "unsafeProtocol": "Unsafe protocol",
+            "failedToOpen": "Couldn't open the link"
+        }
     }
 }
