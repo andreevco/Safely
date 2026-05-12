@@ -1,3 +1,4 @@
+import { RouteProp } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
@@ -9,7 +10,16 @@ import { styles } from './LockScreen.styles';
 
 const SHOW_SIGN_OUT_THRESHOLD = 3;
 
-export const LockScreen = () => {
+interface LockScreenProps {
+    route: RouteProp<{
+        params?: {
+            withLogoutButton?: boolean;
+        };
+    }>;
+}
+
+export const LockScreen = (props: LockScreenProps) => {
+    const { withLogoutButton } = props.route.params ?? {};
     const { t } = useTranslation();
     const { unlock } = useLockScreenControl();
     const handleLogOut = useLogOutAllConfirmation();
@@ -25,7 +35,7 @@ export const LockScreen = () => {
         handleInputChange
     } = usePasscodeVerification({ onSuccess: unlock });
 
-    const isSignOutVisible = failedAttempts >= SHOW_SIGN_OUT_THRESHOLD;
+    const isSignOutVisible = withLogoutButton || failedAttempts >= SHOW_SIGN_OUT_THRESHOLD;
 
     if (isLocked) {
         return <LockoutContent remainingSeconds={remainingSeconds} onSignOut={handleLogOut} />;
