@@ -48,7 +48,7 @@ export const LockScreenProvider: FC<PropsWithChildren> = ({ children }) => {
         // or showing Face ID, notifications, calls, etc.
         // We should consider locking the app only when it has transitioned to the background.
         // - https://reactnative.dev/docs/appstate
-        if (isEnabled && previous === 'active' && current === 'background') {
+        if (isEnabled && previous !== 'background' && current === 'background') {
             setIsLocked(true);
         }
     }, [isEnabled, current, previous]);
