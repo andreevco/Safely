@@ -132,8 +132,52 @@ describe('BtcEstimator', () => {
             const utxos = [makeUtxo()];
             const amount = 50_000n;
             const feeIfChange = feeWithChangeSat(utxos, amount, FAST_FEE_SAT_VB);
-            // Pick a balance so that change = balance - amount - feeIfChange = 100 sat (< 294 dust).
-            const balance = amount + feeIfChange + 100n;
+            // Pick a balance so that change = balance - amount - feeIfChange = 293 sat (< 294 dust).
+            const balance = amount + feeIfChange + 293n;
+            utxos[0].value = balance.toString();
+
+            const tpl = await estimator.estimate(
+                {
+                    type: 'not-max',
+                    recipientAddress: RECIPIENT_ADDR,
+                    amount: BtcAssetAmount.fromWeiAmount(amount),
+                    feeType: BtcFeeType.FAST
+                },
+                utxos
+            );
+
+            expect(tpl.request.hasChange).toBe(false);
+            // fee is now whatever the remaining balance is after sending `amount`
+            expect(tpl.estimation.fee.amount.weiAmount).toBe(balance - amount);
+        });
+
+        it('use no-change fee if balance - amount < feeWithChange', async () => {
+            const utxos = [makeUtxo()];
+            const amount = 50_000n;
+            const feeNoChange = feeNoChangeSat(utxos, FAST_FEE_SAT_VB);
+            const balance = amount + feeNoChange + 1n;
+            utxos[0].value = balance.toString();
+
+            const tpl = await estimator.estimate(
+                {
+                    type: 'not-max',
+                    recipientAddress: RECIPIENT_ADDR,
+                    amount: BtcAssetAmount.fromWeiAmount(amount),
+                    feeType: BtcFeeType.FAST
+                },
+                utxos
+            );
+
+            expect(tpl.request.hasChange).toBe(false);
+            // fee is now whatever the remaining balance is after sending `amount`
+            expect(tpl.estimation.fee.amount.weiAmount).toBe(balance - amount);
+        });
+
+        it('can send max amount without max flag is amount is specified precisely as balance - feeNoChange', async () => {
+            const utxos = [makeUtxo()];
+            const amount = 50_000n;
+            const feeNoChange = feeNoChangeSat(utxos, FAST_FEE_SAT_VB);
+            const balance = amount + feeNoChange;
             utxos[0].value = balance.toString();
 
             const tpl = await estimator.estimate(

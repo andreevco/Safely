@@ -18,7 +18,7 @@ export type SpentUtxo = { txid: string; vout: number; value: string };
 function getDustSat(walletAddress: string) {
     const type = BtcAddress.type(walletAddress);
     switch (type) {
-        // Bitcoin Core's GetDustThreshold for a P2WPKH output at the default
+        // Bitcoin Core's GetDustThreshold (policy/policy.cpp) for a P2WPKH output at the default
         // dustRelayFee of 3000 sat/kvB: (31 + 67) * 3 = 294 sat. Outputs strictly
         // below this are rejected by the node with reject reason "dust" (-26).
         case 'P2WPKH':
@@ -99,30 +99,38 @@ export class BtcEstimator implements IIdentifiable {
 
         const totalBalance = getUtxoTotal(utxos);
 
+        const vSizeNoChange = this.psbtBuilder.calculateTransactionVSize({
+            inputs: utxos,
+            outputs: [{ address: request.recipientAddress, value: request.amount.weiAmount }]
+        });
+        const feeNoChange = BtcAssetAmount.fromWeiAmount(
+            feeSatVb.mul(toBig(vSizeNoChange)).round(0, Big.roundUp)
+        );
+
+        if (totalBalance.lt(request.amount.add(feeNoChange))) {
+            throw new Error('Not enough funds');
+        }
+
         const vSizeWithChange = this.psbtBuilder.calculateTransactionVSize({
             inputs: utxos,
             outputs: [
                 { address: request.recipientAddress, value: request.amount.weiAmount },
-                { address: this.wallet.address, value: 1n } // value doesn't affect vSize
+                { address: this.wallet.address, value: 1n }
             ]
         });
-
-        const feeForWithChangeCaseSat = feeSatVb.mul(toBig(vSizeWithChange)).round(0, Big.roundUp);
-        const feeForWithChangeCase = BtcAssetAmount.fromWeiAmount(feeForWithChangeCaseSat);
-
-        if (totalBalance.lt(request.amount.add(feeForWithChangeCase))) {
-            throw new Error('Not enough funds');
-        }
+        const feeWithChange = BtcAssetAmount.fromWeiAmount(
+            feeSatVb.mul(toBig(vSizeWithChange)).round(0, Big.roundUp)
+        );
 
         let fee: CryptoAssetAmount<BtcAsset>;
         let hasChange: boolean;
 
-        const change = totalBalance.sub(request.amount).sub(feeForWithChangeCase).weiAmount;
+        const change = totalBalance.weiAmount - request.amount.weiAmount - feeWithChange.weiAmount; // might be negative
         if (change < getDustSat(this.wallet.address)) {
             fee = totalBalance.sub(request.amount);
             hasChange = false;
         } else {
-            fee = feeForWithChangeCase;
+            fee = feeWithChange;
             hasChange = true;
         }
 
