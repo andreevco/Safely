@@ -178,7 +178,7 @@ export function useAccountConnectedCallback(
 
 export function useConnectAccountToNewDevice() {
     const t = useTranslate();
-    const activeKeeperId = useActiveAccount();
+    const activeAccount = useActiveAccount();
     const toast = useToast();
     const { withLoader } = useLoader();
     const { qrScanner } = useAppContext();
@@ -190,7 +190,7 @@ export function useConnectAccountToNewDevice() {
                 subTranslationKey: 'qrScan.addDevice.subtitle'
             });
             await withLoader(() =>
-                activeKeeperId.connectToNewDevice(
+                activeAccount.connectToNewDevice(
                     Buffer.from(connectionString, 'base64url'),
                     secureEncryptedStorage
                 )
