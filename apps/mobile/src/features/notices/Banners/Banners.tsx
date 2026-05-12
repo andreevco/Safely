@@ -12,9 +12,9 @@ import {
 import { Banner, InformationCircle28, Xmark16 } from '@mobile/shared/ui';
 import { IconProps } from '@mobile/shared/ui/Icon';
 
-import { styles } from './HomeBanners.styles';
+import { styles } from './Banners.styles';
 
-type HomeScreenBanner = NonNullable<BootConfig['notices']>['home_screen_banners'][number];
+type NoticeBanner = NonNullable<BootConfig['notices']>['home_screen_banners'][number];
 
 const DISMISS_ICON = 'dismiss';
 
@@ -23,7 +23,7 @@ const BANNER_ICONS: Record<string, IconProps['icon']> = {
     [DISMISS_ICON]: Xmark16
 };
 
-export function HomeBanners() {
+export function Banners() {
     const { notices } = useBootConfig();
     const { data: dismissedIds, isLoading } = useDismissedBannerIdsQuery();
 
@@ -44,7 +44,7 @@ export function HomeBanners() {
 }
 
 type BannerItemProps = {
-    banner: HomeScreenBanner;
+    banner: NoticeBanner;
 };
 
 function BannerItem({ banner }: BannerItemProps) {

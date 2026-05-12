@@ -1,7 +1,9 @@
 import { useQueryClient } from '@tanstack/react-query';
+import { useCallback, useSyncExternalStore } from 'react';
 
 import { PortfolioFactory } from '@safely/core';
 import type { ISyncAccount } from '@safely/sync';
+import { SyncStatus } from '@safely/sync';
 
 import type { SyncedStorageStructure } from '../../shared';
 import { type DeviceMeta, useAppContext, useSuspenseQuery, SecretEncryptor } from '../../shared';
@@ -39,6 +41,41 @@ export function useCurrentDeviceIkPub() {
         },
         staleTime: Infinity
     }).data;
+}
+
+export enum AccountLinkState {
+    SOLO = 'solo',
+    PROTECTED = 'protected',
+    UNLINKED = 'unlinked'
+}
+
+export function useAccountLinkState(): AccountLinkState {
+    const account = useActiveAccount();
+    const selfIkPub = useCurrentDeviceIkPub();
+    const devicesMeta = useSyncedDevicesMeta();
+
+    const syncStatus = useSyncExternalStore(
+        useCallback(cb => account.syncProvider.syncStatusManager.subscribe(cb), [account]),
+        () => account.syncProvider.syncStatusManager.getStatus()
+    );
+
+    if (syncStatus === SyncStatus.DEVICE_DELETED) {
+        return AccountLinkState.UNLINKED;
+    }
+
+    if (devicesMeta === null) {
+        return AccountLinkState.SOLO;
+    }
+
+    const keys = Object.keys(devicesMeta);
+
+    if (!(selfIkPub in devicesMeta)) {
+        return keys.length === 0 ? AccountLinkState.SOLO : AccountLinkState.UNLINKED;
+    }
+
+    const hasPeer = keys.some(k => k !== selfIkPub);
+
+    return hasPeer ? AccountLinkState.PROTECTED : AccountLinkState.SOLO;
 }
 
 export function useCurrentDeviceMetaSyncedState() {
