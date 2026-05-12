@@ -95,14 +95,13 @@ jobs:
             2. Form a concrete opinion. Pick a side. If the current code is fine,
                say so. If the reviewer is right, say so. If both options are
                reasonable, name the trade-off and pick one.
-            3. Post exactly ONE reply to the thread. Build the body in a tmp
-               file and post via gh api:
-                 BODY_FILE=$GITHUB_WORKSPACE/.reply.md
-                 cat > "$BODY_FILE" <<'EOF'
+            3. Post exactly ONE reply to the thread. Pipe the body straight
+               into `gh api` via stdin — do NOT write any file (the sandbox
+               blocks writes to `.*` paths in the workspace):
+                 gh api "repos/$REPO_FULL/pulls/$PR_NUMBER/comments/${{ env.ROOT_COMMENT_ID }}/replies" \
+                   -F body=@- <<'EOF'
                  ...your reply text...
                  EOF
-                 gh api "repos/$REPO_FULL/pulls/$PR_NUMBER/comments/${{ env.ROOT_COMMENT_ID }}/replies" \
-                   -F body=@"$BODY_FILE"
 
             ## Reply style
             - 1–4 sentences. No headers. No bullet salad unless truly listing items.
