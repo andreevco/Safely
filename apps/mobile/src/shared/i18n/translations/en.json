@@ -30,6 +30,7 @@
     },
     "send": {
         "title": "Send",
+        "from": "From",
         "recipient": {
             "label": "Recipient",
             "placeholder": "Address or name",

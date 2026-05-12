@@ -151,13 +151,12 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
                     </List.Group>
                     <List.Group style={styles.listGroup}>
                         <Amount
-                            fiatAmount={confirmationResult.amount.fiatAssetAmount?.format(
-                                formatter
-                            )}
-                            cryptoAmount={confirmationResult.amount.cryptoAssetAmount?.format(
+                            fiatAmount={confirmationResult.amount.fiatAssetAmount.format(formatter)}
+                            cryptoAmount={confirmationResult.amount.cryptoAssetAmount.format(
                                 formatter,
                                 { fullPrecision: true }
                             )}
+                            inputType={confirmationResult.amount.inputType}
                         />
                         <TransactionFee estimation={txTemplate?.estimation} />
                     </List.Group>

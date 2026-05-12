@@ -1,6 +1,7 @@
 import type {
     CryptoAsset,
     CryptoAssetAmount,
+    PortfolioMeta,
     RatedCryptoAssetAmount,
     Recipient
 } from '@safely/core';
@@ -34,6 +35,7 @@ interface RecipientViewBase {
     suggestions: SendSuggestions;
     restoredSuggestions: SendSuggestions | undefined;
     selectedSuggestionId: string | undefined;
+    fromMeta: PortfolioMeta;
     setRecipient: (value: string) => void;
     setAddressBookName: (name: string) => void;
     selectSuggestion: (id: string, visible: SendSuggestions) => void;
@@ -63,6 +65,7 @@ interface AmountViewBase {
         asset: RatedCryptoAssetAmount | undefined;
     };
     recipientMeta: RecipientMeta | undefined;
+    fromMeta: PortfolioMeta;
     availableAssets: CryptoAssetAmount[];
     isMaxAvailable: boolean;
     setAmount: (value: string) => void;

@@ -1,20 +1,19 @@
-import { useRef, useState } from 'react';
-
 import type { RatedCryptoAssetAmount } from '@safely/core';
 
-import { useActiveBtcWallet, useCreateContact, useNumberFormatter } from '../../../../entities';
+import {
+    useActiveBtcWallet,
+    useActivePortfolio,
+    useCreateContact,
+    useNumberFormatter
+} from '../../../../entities';
 import { useFetchMaxValue } from '../../../blockchain-send';
 import type { SendFormMachineInput } from '../machine/types';
 import type {
     ContactSuggestion,
     PortfolioSuggestion,
     SendFormInitialValues,
-    SendFormResult,
-    SendSuggestionState
+    SendFormResult
 } from '../types';
-import { computeRecipientMeta } from '../utils';
-import { calculateMaxAmount, validateAmount } from '../validators/amount';
-import { validateRecipientInput } from '../validators/recipient';
 
 export interface UseSendFormMachineInputProps {
     onSubmit: (result: SendFormResult, onSuccess: () => void) => void;
@@ -23,26 +22,6 @@ export interface UseSendFormMachineInputProps {
     portfolioSuggestions: PortfolioSuggestion[];
     contactSuggestions: ContactSuggestion[];
     ratedAssets: RatedCryptoAssetAmount[];
-}
-
-function computeInitialSuggestion(
-    initialValues: SendFormInitialValues | undefined,
-    portfolioSuggestions: PortfolioSuggestion[],
-    contactSuggestions: ContactSuggestion[]
-): SendSuggestionState | undefined {
-    const address = initialValues?.recipient;
-    if (!address) return undefined;
-
-    const match =
-        portfolioSuggestions.find(s => s.address === address) ??
-        contactSuggestions.find(s => s.address === address);
-    if (!match) return undefined;
-
-    return {
-        selectedId: match.id,
-        portfoliosIds: portfolioSuggestions.map(s => s.id),
-        contactsIds: contactSuggestions.map(s => s.id)
-    };
 }
 
 export function useSendFormMachineInput(props: UseSendFormMachineInputProps): SendFormMachineInput {
@@ -58,36 +37,23 @@ export function useSendFormMachineInput(props: UseSendFormMachineInputProps): Se
     const formatter = useNumberFormatter();
     const fetchMaxValue = useFetchMaxValue();
     const activeBtcWallet = useActiveBtcWallet();
+    const activePortfolio = useActivePortfolio();
     const { mutateAsync: createContact } = useCreateContact();
-
-    const contactSuggestionsRef = useRef(contactSuggestions);
-    contactSuggestionsRef.current = contactSuggestions;
-
-    const [initialSuggestion] = useState(() =>
-        computeInitialSuggestion(initialValues, portfolioSuggestions, contactSuggestions)
-    );
 
     return {
         resolvedInitialValues: initialValues,
-        initialSuggestion,
         formatter,
+        portfolioSuggestions,
+        contactSuggestions,
+        ratedAssets,
+        activeWallet: {
+            id: activePortfolio.id.toString(),
+            address: activeBtcWallet.address,
+            meta: activePortfolio.meta
+        },
         shouldResetForm: () => shouldResetForm,
         onSubmit,
         createContact,
-        validateRecipient: (value, preferredSuggestionId) =>
-            validateRecipientInput(value, {
-                activeWalletAddress: activeBtcWallet.address,
-                portfolioSuggestions,
-                contactSuggestions: contactSuggestionsRef.current,
-                preferredSuggestionId
-            }),
-        validateAmount: (value, inputType, asset) =>
-            validateAmount(value, inputType, asset, formatter),
-        computeMaxAmount: (amount, price, inputType) =>
-            calculateMaxAmount({ amount, price }, inputType, formatter),
-        findAssetById: id => ratedAssets.find(({ amount }) => amount.asset.id.toString() === id),
-        getRecipientMeta: selectedId =>
-            computeRecipientMeta(selectedId, portfolioSuggestions, contactSuggestionsRef.current),
         fetchMaxValue
     };
 }
