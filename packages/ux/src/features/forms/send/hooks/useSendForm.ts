@@ -38,9 +38,6 @@ export function useSendForm(props: UseSendFormOptions): SendFormView {
 
     return useSendFormView({
         snapshot,
-        dispatchers,
-        portfolioSuggestions,
-        contactSuggestions,
-        ratedAssets
+        dispatchers
     });
 }

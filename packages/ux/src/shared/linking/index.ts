@@ -1,3 +1,4 @@
+import { LinkingFailedToOpenError, LinkingUnsafeProtocolError } from '@safely/core';
 import type { Logger } from '@safely/sync';
 
 export enum LinkingProtocol {
@@ -11,7 +12,7 @@ export abstract class Linking {
     constructor(protected readonly logger: Logger) {}
     protected abstract readonly authorizedOpenUrlProtocols: LinkingProtocol[];
 
-    protected abstract openWindow(url: string): void;
+    protected abstract openWindow(url: string): Promise<void>;
 
     private isValidUrlProtocol(url: string): boolean {
         try {
@@ -23,15 +24,16 @@ export abstract class Linking {
         }
     }
 
-    public openURL(url: string): void {
+    public async openURL(url: string): Promise<void> {
         if (!this.isValidUrlProtocol(url)) {
-            throw new Error('Unsafe protocol');
+            throw new LinkingUnsafeProtocolError();
         }
 
         try {
-            this.openWindow(url);
+            await this.openWindow(url);
         } catch (e) {
             this.logger.error('Failed to open URL', e);
+            throw new LinkingFailedToOpenError();
         }
     }
 }

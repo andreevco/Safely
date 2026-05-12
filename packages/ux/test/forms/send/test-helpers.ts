@@ -21,12 +21,6 @@ import type {
     ContactSuggestion,
     PortfolioSuggestion
 } from '../../../src/features/forms/send/types';
-import { computeRecipientMeta } from '../../../src/features/forms/send/utils';
-import {
-    calculateMaxAmount,
-    validateAmount
-} from '../../../src/features/forms/send/validators/amount';
-import { validateRecipientInput } from '../../../src/features/forms/send/validators/recipient';
 
 export const VALID_ADDRESS = 'bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4';
 export const SELF_ADDRESS = 'bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq';
@@ -116,11 +110,13 @@ export async function setupAtAmountWithMax(maxValue: BtcAssetAmount, opts: MockI
     return actor;
 }
 
-export function makeMockContact(): Contact {
+export function makeMockContact(
+    opts: { id?: string; address?: string; name?: string; color?: string } = {}
+): Contact {
     return {
-        id: { toString: () => 'new-contact-id' },
-        addresses: [{ blockchain: 'BTC', address: VALID_ADDRESS }],
-        meta: { name: 'Test Contact', color: 'red' }
+        id: { toString: () => opts.id ?? 'new-contact-id' },
+        addresses: [{ blockchain: 'BTC', address: opts.address ?? VALID_ADDRESS }],
+        meta: { name: opts.name ?? 'Test Contact', color: opts.color ?? 'red' }
     } as unknown as Contact;
 }
 
@@ -133,44 +129,28 @@ export interface MockInputOptions extends Partial<Omit<SendFormMachineInput, 'sh
 
 export function makeMockInput(opts: MockInputOptions = {}): SendFormMachineInput {
     const formatter = opts.formatter ?? makeMockFormatter();
-    const activeWalletAddress = opts.activeWalletAddress ?? SELF_ADDRESS;
+    const activeWallet = opts.activeWallet ?? {
+        id: 'active-wallet',
+        address: opts.activeWalletAddress ?? SELF_ADDRESS,
+        meta: { name: 'My Wallet', icon: { type: 'emoji', value: '🙂' } }
+    };
     const portfolioSuggestions = opts.portfolioSuggestions ?? [];
     const contactSuggestions = opts.contactSuggestions ?? [];
-    const asset = makeMockAsset();
+    const ratedAssets = opts.ratedAssets ?? [makeMockAsset()];
     const onSubmit = opts.onSubmit ?? (() => {});
     const createContact = opts.createContact ?? (async () => makeMockContact());
     const shouldResetFormValue = opts.shouldResetForm ?? true;
 
     return {
         resolvedInitialValues: opts.resolvedInitialValues,
-        initialSuggestion: opts.initialSuggestion,
         formatter,
+        portfolioSuggestions,
+        contactSuggestions,
+        ratedAssets,
+        activeWallet,
         shouldResetForm: () => shouldResetFormValue,
         onSubmit,
         createContact,
-        validateRecipient:
-            opts.validateRecipient ??
-            ((value, preferredSuggestionId) =>
-                validateRecipientInput(value, {
-                    activeWalletAddress,
-                    portfolioSuggestions,
-                    contactSuggestions,
-                    preferredSuggestionId
-                })),
-        validateAmount:
-            opts.validateAmount ??
-            ((value, inputType, a) => validateAmount(value, inputType, a, formatter)),
-        computeMaxAmount:
-            opts.computeMaxAmount ??
-            ((amount, price, inputType) =>
-                calculateMaxAmount({ amount, price }, inputType, formatter)),
-        findAssetById:
-            opts.findAssetById ??
-            (id => (id === asset.amount.asset.id.toString() ? asset : undefined)),
-        getRecipientMeta:
-            opts.getRecipientMeta ??
-            (selectedId =>
-                computeRecipientMeta(selectedId, portfolioSuggestions, contactSuggestions)),
         fetchMaxValue: opts.fetchMaxValue ?? (async () => undefined)
     };
 }

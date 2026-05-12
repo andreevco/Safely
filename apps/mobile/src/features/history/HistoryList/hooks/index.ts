@@ -1,0 +1,1 @@
+export { useScrollToTopOnNewBroadcastedTx } from './useScrollToTopOnNewBroadcastedTx';

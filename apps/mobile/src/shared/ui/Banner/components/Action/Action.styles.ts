@@ -3,7 +3,8 @@ import { StyleSheet } from 'react-native-unistyles';
 export const styles = StyleSheet.create(theme => ({
     container: {
         flexDirection: 'row',
-        alignItems: 'center'
+        alignItems: 'center',
+        alignSelf: 'flex-start'
     },
     text: {
         color: theme.colors.text.primary,

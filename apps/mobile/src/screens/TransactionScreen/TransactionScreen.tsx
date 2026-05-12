@@ -2,7 +2,7 @@
 import { StaticScreenProps } from '@react-navigation/native';
 import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Linking, View } from 'react-native';
+import { View } from 'react-native';
 
 import { BLOCKCHAIN_NAME, BTC_ASSET, ellipsisMiddle } from '@safely/core';
 import {
@@ -10,6 +10,7 @@ import {
     isBtcTransactionPending,
     useDateFormatter,
     useExplorer,
+    useLinking,
     useNumberFormatter,
     useRate
 } from '@safely/ux';
@@ -50,11 +51,12 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
         hour: '2-digit',
         minute: '2-digit'
     });
+    const { openURL } = useLinking();
 
     const handleOpen = useCallback(() => {
         const url = explorer.transaction(activity.transaction.raw.txid);
-        void Linking.openURL(url);
-    }, [activity.transaction.raw.txid, explorer]);
+        openURL(url);
+    }, [activity.transaction.raw.txid, explorer, openURL]);
 
     const confirmedAt = useMemo(
         () => dateFormatter.format(activity.timestamp),
