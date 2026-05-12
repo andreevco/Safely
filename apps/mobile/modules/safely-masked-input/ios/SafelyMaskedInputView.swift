@@ -1,12 +1,22 @@
 import ExpoModulesCore
 import UIKit
 
+private class InsetCaretTextField: UITextField {
+    override func caretRect(for position: UITextPosition) -> CGRect {
+        var rect = super.caretRect(for: position)
+        let inset: CGFloat = 4
+        rect.origin.y += inset
+        rect.size.height = max(rect.size.height - inset * 2, 0)
+        return rect
+    }
+}
+
 class SafelyMaskedInputView: ExpoView, UITextFieldDelegate {
 
     let onChangeText = EventDispatcher()
     let onFocusChange = EventDispatcher()
 
-    private let textField = UITextField()
+    private let textField = InsetCaretTextField()
     private var isUpdatingFromCode = false
     private var rawValue = ""
     private var lastEmittedValue: String?
