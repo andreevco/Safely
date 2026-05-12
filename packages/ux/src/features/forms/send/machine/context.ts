@@ -1,4 +1,11 @@
-import type { SendFormErrors, SendFormValues, SendSuggestionState } from '../types';
+import type {
+    ContactSuggestion,
+    PortfolioSuggestion,
+    SendFormErrors,
+    SendFormInitialValues,
+    SendFormValues,
+    SendSuggestionState
+} from '../types';
 import type { SendFormMachineContext, SendFormMachineInput } from './types';
 import { type RecipientValidationResult, validateRecipientInput } from '../validators/recipient';
 
@@ -56,6 +63,26 @@ export function withResetDependentErrors(errors: SendFormErrors): SendFormErrors
     };
 }
 
+function computeInitialSuggestion(
+    initialValues: SendFormInitialValues | undefined,
+    portfolioSuggestions: PortfolioSuggestion[],
+    contactSuggestions: ContactSuggestion[]
+): SendSuggestionState | undefined {
+    const address = initialValues?.recipient;
+    if (!address) return undefined;
+
+    const match =
+        portfolioSuggestions.find(s => s.address === address) ??
+        contactSuggestions.find(s => s.address === address);
+    if (!match) return undefined;
+
+    return {
+        selectedId: match.id,
+        portfoliosIds: portfolioSuggestions.map(s => s.id),
+        contactsIds: contactSuggestions.map(s => s.id)
+    };
+}
+
 export function suggestionFromValidatorResult(
     result: RecipientValidationResult
 ): SendSuggestionState | undefined {
@@ -86,11 +113,16 @@ export function buildInitialContext(input: SendFormMachineInput): SendFormMachin
     const baseContext = buildEmptyContext(input);
 
     const initialValues = input.resolvedInitialValues;
-    const initialSuggestion = input.initialSuggestion;
 
     if (!initialValues?.recipient) {
         return baseContext;
     }
+
+    const initialSuggestion = computeInitialSuggestion(
+        initialValues,
+        input.portfolioSuggestions,
+        input.contactSuggestions
+    );
 
     const result = validateRecipientInput(initialValues.recipient, {
         activeWalletAddress: input.activeWallet.address,

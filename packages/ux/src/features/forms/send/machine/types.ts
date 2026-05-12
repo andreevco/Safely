@@ -32,7 +32,6 @@ export type FetchMaxValue = (recipient: Recipient) => Promise<BtcAssetAmount | u
 
 export interface SendFormMachineInput {
     resolvedInitialValues: SendFormInitialValues | undefined;
-    initialSuggestion: SendSuggestionState | undefined;
     formatter: NumberFormatter;
 
     portfolioSuggestions: PortfolioSuggestion[];

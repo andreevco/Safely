@@ -143,7 +143,6 @@ export function makeMockInput(opts: MockInputOptions = {}): SendFormMachineInput
 
     return {
         resolvedInitialValues: opts.resolvedInitialValues,
-        initialSuggestion: opts.initialSuggestion,
         formatter,
         portfolioSuggestions,
         contactSuggestions,

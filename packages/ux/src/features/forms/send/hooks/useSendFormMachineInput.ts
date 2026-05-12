@@ -12,8 +12,7 @@ import type {
     ContactSuggestion,
     PortfolioSuggestion,
     SendFormInitialValues,
-    SendFormResult,
-    SendSuggestionState
+    SendFormResult
 } from '../types';
 
 export interface UseSendFormMachineInputProps {
@@ -23,26 +22,6 @@ export interface UseSendFormMachineInputProps {
     portfolioSuggestions: PortfolioSuggestion[];
     contactSuggestions: ContactSuggestion[];
     ratedAssets: RatedCryptoAssetAmount[];
-}
-
-function computeInitialSuggestion(
-    initialValues: SendFormInitialValues | undefined,
-    portfolioSuggestions: PortfolioSuggestion[],
-    contactSuggestions: ContactSuggestion[]
-): SendSuggestionState | undefined {
-    const address = initialValues?.recipient;
-    if (!address) return undefined;
-
-    const match =
-        portfolioSuggestions.find(s => s.address === address) ??
-        contactSuggestions.find(s => s.address === address);
-    if (!match) return undefined;
-
-    return {
-        selectedId: match.id,
-        portfoliosIds: portfolioSuggestions.map(s => s.id),
-        contactsIds: contactSuggestions.map(s => s.id)
-    };
 }
 
 export function useSendFormMachineInput(props: UseSendFormMachineInputProps): SendFormMachineInput {
@@ -63,11 +42,6 @@ export function useSendFormMachineInput(props: UseSendFormMachineInputProps): Se
 
     return {
         resolvedInitialValues: initialValues,
-        initialSuggestion: computeInitialSuggestion(
-            initialValues,
-            portfolioSuggestions,
-            contactSuggestions
-        ),
         formatter,
         portfolioSuggestions,
         contactSuggestions,
