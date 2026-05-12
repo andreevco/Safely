@@ -42,13 +42,6 @@ export const RootStack = createNativeStackNavigator({
         Onboarding: {
             screens: {
                 WelcomeScreen: WelcomeScreen,
-                LockScreen: {
-                    screen: LockScreen,
-                    options: {
-                        gestureEnabled: false,
-                        animation: 'none' as const
-                    }
-                },
                 OnboardingPasscodeScreen: OnboardingPasscodeScreen,
                 BiometryScreen: BiometryScreen,
                 OnboardingNotificationsScreen: OnboardingNotificationsScreen,
@@ -66,6 +59,14 @@ export const RootStack = createNativeStackNavigator({
                     }
                 },
                 TransactionScreen: TransactionScreen,
+                LockScreen: {
+                    screen: LockScreen,
+                    options: {
+                        presentation: 'fullScreenModal',
+                        gestureEnabled: false,
+                        animation: 'fade' as const
+                    }
+                },
                 PasscodeVerificationScreen: {
                     screen: PasscodeVerificationScreen,
                     options: {
