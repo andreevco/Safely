@@ -12,6 +12,7 @@ import { ed25519_keygen } from '../crypto/ed25519';
 import type { Logger } from '../logger';
 import type { OnboardingConnector } from '../onboarding/connector';
 import { accountsApiForOnboarding, NewDeviceOnboarding } from '../onboarding/new-device-onboarding';
+import type { SyncApiImplementations } from '../sync-container';
 
 type VersionHList = HCons<StorageVersion, unknown>;
 type LatestOf<Versions extends VersionHList> = Versions['head'];
@@ -22,6 +23,7 @@ export type SyncAccountFactoryOptions<Versions extends VersionHList> = {
     encryptedStorage: ITreeStorage;
     versions: Versions & AssertVersionHList<Versions>;
     apiConfiguration?: SyncApiConfiguration;
+    apiImplementations?: SyncApiImplementations;
     noAccountLogger: Logger;
     getAccountLogger: (accountId: string) => Logger;
 };
@@ -32,11 +34,13 @@ export class SyncAccountFactory<Versions extends VersionHList> implements ISyncA
     private readonly syncAccountIdRepository: SyncAccountRepository;
     private readonly accountManager: AccountManager<LatestOf<Versions>, RestOf<Versions>>;
     private readonly apiConfiguration: Configuration;
+    private readonly apiImplementations?: SyncApiImplementations;
     private readonly noAccountLogger: Logger;
 
     constructor(opts: SyncAccountFactoryOptions<Versions>) {
         this.syncAccountIdRepository = new SyncAccountRepository(opts.storage);
         this.apiConfiguration = new Configuration(opts.apiConfiguration);
+        this.apiImplementations = opts.apiImplementations;
         this.noAccountLogger = opts.noAccountLogger;
 
         const createAccountService = new CreateAccountService(
@@ -45,6 +49,7 @@ export class SyncAccountFactory<Versions extends VersionHList> implements ISyncA
             this.syncAccountIdRepository,
             opts.versions,
             this.apiConfiguration,
+            this.apiImplementations,
             opts.getAccountLogger
         );
         this.accountManager = new AccountManager(
@@ -53,6 +58,7 @@ export class SyncAccountFactory<Versions extends VersionHList> implements ISyncA
             this.syncAccountIdRepository,
             opts.versions,
             this.apiConfiguration,
+            this.apiImplementations,
             createAccountService,
             opts.getAccountLogger
         );
@@ -67,9 +73,12 @@ export class SyncAccountFactory<Versions extends VersionHList> implements ISyncA
         secureEncryptedStorage: ITreeStorage
     ): Promise<OnboardingConnector<LatestOf<Versions>>> {
         const ikKeypair = ed25519_keygen();
+        const accountsApi =
+            this.apiImplementations?.accountsApi ??
+            accountsApiForOnboarding(ikKeypair, this.apiConfiguration);
         const onboarding = new NewDeviceOnboarding(
             ikKeypair,
-            accountsApiForOnboarding(ikKeypair, this.apiConfiguration),
+            accountsApi,
             this.accountManager,
             secureEncryptedStorage,
             this.noAccountLogger

@@ -30,7 +30,9 @@ export type SyncMachineConfig<Latest extends StorageVersion, Rest> = SyncMachine
     Latest,
     Rest
 > & {
-    shouldSendUpdate: boolean;
+    localUpdateVersion: number;
+    transmittingLocalUpdateVersion: number;
+    acknowledgedLocalUpdateVersion: number;
     remoteUpdates: EncryptedState[];
     lastError?: ErrorDisposition;
 };
@@ -40,7 +42,9 @@ export function defaultConfig<Latest extends StorageVersion, Rest>(
 ): SyncMachineConfig<Latest, Rest> {
     return {
         ...input,
-        shouldSendUpdate: false,
+        localUpdateVersion: 0,
+        transmittingLocalUpdateVersion: 0,
+        acknowledgedLocalUpdateVersion: 0,
         remoteUpdates: []
     };
 }

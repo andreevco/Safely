@@ -18,6 +18,10 @@ export type { Device };
 export class DeviceRepository {
     constructor(private readonly manager: YManager<tDevicesLatest, tDevicesRest>) {}
 
+    public onChange(observer: () => void): () => void {
+        return this.manager.onChange(observer);
+    }
+
     public async getDevices(): Promise<Device[]> {
         const res = this.manager.getFull();
         const devices = devicesFromJson(res);

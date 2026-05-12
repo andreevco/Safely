@@ -7,6 +7,7 @@ import type { IkService } from '../crypto/service/ik-service';
 import { SyncError } from '../sync-error';
 import { u64be, utf8 } from '../utils/buffer';
 import { getKID } from '../utils/kid';
+import { waitForChange } from '../utils/wait-for-change';
 
 export class DeviceManagementService {
     constructor(
@@ -15,8 +16,35 @@ export class DeviceManagementService {
         private readonly dmkVerifierService: DmkVerifierService
     ) {}
 
+    public onChange(observer: () => void): () => void {
+        return this.deviceRepository.onChange(observer);
+    }
+
     public async getDevices(): Promise<Device[]> {
         return await this.deviceRepository.getDevices();
+    }
+
+    public async isDeviceVisible(ikPub: Buffer): Promise<boolean> {
+        const devices = await this.getDevices();
+        return devices.some(d => d.info.ikPub.equals(ikPub));
+    }
+
+    public async waitUntilDeviceVisible(
+        ikPub: Buffer,
+        opts: {
+            timeoutMs?: number;
+            timeoutError?: () => Error;
+        } = {}
+    ): Promise<void> {
+        const timeoutError =
+            opts.timeoutError ?? (() => new DeviceManagerError('Device did not become visible'));
+
+        await waitForChange({
+            subscribe: observer => this.onChange(observer),
+            predicate: () => this.isDeviceVisible(ikPub),
+            timeoutMs: opts.timeoutMs ?? 3000,
+            timeoutError
+        });
     }
 
     public async addDevice(ikPub: Buffer, dmkSignerService: DmkSignerService): Promise<void> {

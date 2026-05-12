@@ -1,8 +1,7 @@
 import type { AssertVersionHList, HCons, StorageVersion } from '@safely/slottree';
 
 import { ApiSigner } from './api/api-signer';
-import type { Configuration } from './api/generated';
-import { AccountsApi, SnapshotsApi } from './api/generated';
+import { AccountsApi, type Configuration, SnapshotsApi } from './api/generated';
 import { SnapshotsSse } from './api/snapshots-sse';
 import { YCRDTRepository } from './crdt/y-crdt-repository';
 import { YManager } from './crdt/y-manager';
@@ -22,6 +21,12 @@ import { UpdateDecryptorService } from './update-encryptor/update-decryptor-serv
 import { UpdateEncryptorService } from './update-encryptor/update-encryptor-service';
 import { UpdateHandler } from './update-handler/handler';
 import { SyncStateRepository } from './update-handler/sync-state-repository';
+
+export type SyncApiImplementations = {
+    accountsApi: AccountsApi;
+    snapshotsApi: SnapshotsApi;
+    snapshotsSse: SnapshotsSse;
+};
 
 export type SyncContainer<Latest extends StorageVersion, Rest> = {
     versions: HCons<Latest, Rest> & AssertVersionHList<HCons<Latest, Rest>>;
@@ -63,6 +68,7 @@ export async function createSyncContainer<Latest extends StorageVersion, Rest>(o
     encryptedStorage: IStorage;
     logger: Logger;
     apiConfiguration?: Configuration;
+    apiImplementations?: SyncApiImplementations;
 }): Promise<SyncContainer<Latest, Rest>> {
     const keyRepository = new EncryptedKeyRepository(opts.encryptedStorage);
     const syncStateRepository = new SyncStateRepository(opts.storage, opts.logger);
@@ -73,9 +79,13 @@ export async function createSyncContainer<Latest extends StorageVersion, Rest>(o
     const keyServiceFactory = new KeyServiceFactory(opts.accountId);
 
     const apiSigner = new ApiSigner(ikService);
-    const accountsApi = new AccountsApi(apiSigner, opts.apiConfiguration);
-    const snapshotApi = new SnapshotsApi(apiSigner, opts.apiConfiguration);
-    const snapshotSse = new SnapshotsSse(syncStateRepository, snapshotApi, apiSigner, opts.logger);
+    const accountsApi =
+        opts.apiImplementations?.accountsApi ?? new AccountsApi(apiSigner, opts.apiConfiguration);
+    const snapshotsApi =
+        opts.apiImplementations?.snapshotsApi ?? new SnapshotsApi(apiSigner, opts.apiConfiguration);
+    const snapshotSse =
+        opts.apiImplementations?.snapshotsSse ??
+        new SnapshotsSse(syncStateRepository, snapshotsApi, apiSigner, opts.logger);
 
     const crdtRepository = new YCRDTRepository(
         opts.storage,
@@ -112,7 +122,7 @@ export async function createSyncContainer<Latest extends StorageVersion, Rest>(o
         deviceYManager,
         updateDecryptor,
         deviceManager,
-        snapshotApi,
+        snapshotsApi,
         opts.logger
     );
 
@@ -140,7 +150,7 @@ export async function createSyncContainer<Latest extends StorageVersion, Rest>(o
         deviceManager,
         apiSigner,
         accountsApi,
-        snapshotApi,
+        snapshotApi: snapshotsApi,
         snapshotSse,
         secretEncryptor
     };

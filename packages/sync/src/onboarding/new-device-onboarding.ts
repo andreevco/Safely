@@ -45,17 +45,19 @@ export class NewDeviceOnboarding<Latest extends StorageVersion, Rest> {
                 throw new OnboardingAbortedError();
             }
 
-            await new Promise<void>((resolve, reject) => {
-                const timer = setTimeout(resolve, 1000);
-                signal?.addEventListener(
-                    'abort',
-                    () => {
-                        clearTimeout(timer);
-                        reject(new OnboardingAbortedError());
-                    },
-                    { once: true }
-                );
-            });
+            if (i > 0) {
+                await new Promise<void>((resolve, reject) => {
+                    const timer = setTimeout(resolve, 1000);
+                    signal?.addEventListener(
+                        'abort',
+                        () => {
+                            clearTimeout(timer);
+                            reject(new OnboardingAbortedError());
+                        },
+                        { once: true }
+                    );
+                });
+            }
 
             let message: OnboardingMessage;
             try {

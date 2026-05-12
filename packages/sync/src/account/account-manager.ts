@@ -2,7 +2,7 @@ import type { AssertVersionHList, HCons, StorageVersion } from '@safely/slottree
 
 import type { ISyncAccount } from './I-sync-account';
 import { getSyncAccountStorage } from './sync-account-storage';
-import { createSyncContainer } from '../sync-container';
+import { createSyncContainer, type SyncApiImplementations } from '../sync-container';
 import type { CreateAccountService } from './create-account-service';
 import { SyncAccount } from './sync-account';
 import type { SyncAccountRepository } from './sync-account-repository';
@@ -22,6 +22,7 @@ export class AccountManager<Latest extends StorageVersion, Rest> {
         private readonly syncAccountIdRepository: SyncAccountRepository,
         private readonly versions: HCons<Latest, Rest> & AssertVersionHList<HCons<Latest, Rest>>,
         private readonly apiConfiguration: Configuration,
+        private readonly apiImplementations: SyncApiImplementations | undefined,
         private readonly createAccountService: CreateAccountService<Latest, Rest>,
         private readonly getAccountLogger: (accountId: string) => Logger
     ) {}
@@ -60,6 +61,7 @@ export class AccountManager<Latest extends StorageVersion, Rest> {
             storage,
             encryptedStorage,
             apiConfiguration: this.apiConfiguration,
+            apiImplementations: this.apiImplementations,
             logger
         });
 

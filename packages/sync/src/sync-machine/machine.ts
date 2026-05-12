@@ -37,7 +37,8 @@ export const createSyncMachine = () => {
                 applyUpdate: applyUpdate
             },
             guards: {
-                shouldSendUpdate: ({ context }) => context.shouldSendUpdate,
+                shouldSendUpdate: ({ context }) =>
+                    context.localUpdateVersion > context.acknowledgedLocalUpdateVersion,
                 shouldHandleUpdate: ({ context }) => context.remoteUpdates.length > 0,
                 isFatalError: ({ context }) => context.lastError?.type === 'fatal'
             },
@@ -71,13 +72,18 @@ export const createSyncMachine = () => {
                     }
                 },
                 markDirty: assign({
-                    shouldSendUpdate: () => {
-                        return true;
+                    localUpdateVersion: ({ context }) => {
+                        return context.localUpdateVersion + 1;
                     }
                 }),
-                clearDirty: assign({
-                    shouldSendUpdate: () => {
-                        return false;
+                startTransmitting: assign({
+                    transmittingLocalUpdateVersion: ({ context }) => {
+                        return context.localUpdateVersion;
+                    }
+                }),
+                acknowledgeTransmittedVersion: assign({
+                    acknowledgedLocalUpdateVersion: ({ context }) => {
+                        return context.transmittingLocalUpdateVersion;
                     }
                 }),
                 setRemoteUpdate: assign({
@@ -194,17 +200,17 @@ export const createSyncMachine = () => {
                             }
                         },
                         transmitting: {
-                            entry: ['setStatusSynchronizing'],
+                            entry: ['setStatusSynchronizing', 'startTransmitting'],
                             invoke: {
                                 id: 'pushUpdateToServer',
                                 src: 'pushUpdateToServer',
                                 input: ({ context }) => context,
                                 onDone: {
-                                    actions: 'clearDirty',
+                                    actions: 'acknowledgeTransmittedVersion',
                                     target: 'connected'
                                 },
                                 onError: {
-                                    actions: ['clearDirty', 'handleError'],
+                                    actions: ['handleError'],
                                     target: '#syncMachine.errorHandling'
                                 }
                             }
