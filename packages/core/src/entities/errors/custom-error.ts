@@ -1,4 +1,6 @@
 import { InvalidMnemonicError } from './invalid-mnemonic.error';
+import { LinkingFailedToOpenError } from './linking-failed-to-open.error';
+import { LinkingUnsafeProtocolError } from './linking-unsafe-protocol.error';
 import { OutputsAreSpendingMoreThanInputsError } from './outputs-are-spending-more-than-inputs.error';
 import { PortfolioAlreadyExistsError } from './portfolio-already-exists.error';
 import { PortfolioGenerationFailedError } from './portfolio-generation-failed.error';
@@ -9,7 +11,9 @@ export const customErrors = {
     PortfolioAlreadyExistsError,
     PortfolioGenerationFailedError,
     BtcSendDustError,
-    OutputsAreSpendingMoreThanInputsError
+    OutputsAreSpendingMoreThanInputsError,
+    LinkingUnsafeProtocolError,
+    LinkingFailedToOpenError
 } as const;
 export type CustomError = InstanceType<(typeof customErrors)[keyof typeof customErrors]>;
 

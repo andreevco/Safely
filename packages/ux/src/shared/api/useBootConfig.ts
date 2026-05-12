@@ -1,3 +1,4 @@
+import { keepPreviousData } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
 import { BootApi } from '@safely/core';
@@ -28,7 +29,8 @@ export function useBootConfigQuery() {
     return usePersistSuspenseQuery<BootConfig>({
         queryKey: apiKeys.bootConfig(bootApi.id).toKey(),
         queryFn: () => bootApi.boot(),
-        schemaKey: 'bootConfig'
+        schemaKey: 'bootConfig',
+        placeholderData: keepPreviousData
     });
 }
 

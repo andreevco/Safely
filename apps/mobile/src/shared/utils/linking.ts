@@ -8,7 +8,7 @@ export class MobileAppLinking extends Linking {
         LinkingProtocol.MAILTO,
         LinkingProtocol.SAFELY_SCHEME
     ];
-    protected override openWindow(url: string): void {
-        void RNLinking.openURL(url);
+    protected override async openWindow(url: string): Promise<void> {
+        await RNLinking.openURL(url);
     }
 }

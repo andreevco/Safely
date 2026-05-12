@@ -43,11 +43,12 @@ export const LockScreenProvider: FC<PropsWithChildren> = ({ children }) => {
     const isInitialRender = useRef(true);
 
     useEffect(() => {
-        if (
-            isEnabled &&
-            previous === 'active' &&
-            (current === 'inactive' || current === 'background')
-        ) {
+        // "inactive" state indicates that the app is still in the foreground,
+        // but is either transitioning to the background
+        // or showing Face ID, notifications, calls, etc.
+        // We should consider locking the app only when it has transitioned to the background.
+        // - https://reactnative.dev/docs/appstate
+        if (isEnabled && previous !== 'background' && current === 'background') {
             setIsLocked(true);
         }
     }, [isEnabled, current, previous]);

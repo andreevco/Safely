@@ -5,7 +5,7 @@ import { ApiClient } from '../../utils/fetch';
 
 export class BootApi extends ApiClient implements IIdentifiable {
     constructor(private readonly params: BootParams) {
-        super('https://dev-config.safely.app/v1');
+        super('https://config.safely.app/v1');
     }
 
     public get id() {
