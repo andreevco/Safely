@@ -19,6 +19,8 @@ export type SyncTestDevice = {
     factory: MockFactory;
     secureEncryptedStorage: InMemStorage;
     online: boolean;
+    deleted: boolean;
+    reconnectable: boolean;
 };
 
 type RemoveDeviceSelector = {
@@ -44,6 +46,10 @@ export type Op =
     | {
           type: 'data.changeOnActiveDevice';
           actorIndex: number;
+      }
+    | {
+          type: 'data.changeOnOfflineDevice';
+          targetIndex: number;
       }
     | {
           type: 'device.returnOfflineOnline';
@@ -90,6 +96,11 @@ export const opArb = fc.oneof(
     })),
 
     deviceIndexArb.map(targetIndex => ({
+        type: 'data.changeOnOfflineDevice',
+        targetIndex
+    })),
+
+    deviceIndexArb.map(targetIndex => ({
         type: 'device.returnOfflineOnline',
         targetIndex
     })),
@@ -124,6 +135,12 @@ export async function applyOp(devices: SyncTestDevice[], op: Op): Promise<void> 
 
         case 'data.changeOnActiveDevice': {
             await changeDataOnActiveDevice(devices, op);
+            await waitForOnlineDevicesSynced(devices);
+            return;
+        }
+
+        case 'data.changeOnOfflineDevice': {
+            await changeDataOnOfflineDevice(devices, op);
             await waitForOnlineDevicesSynced(devices);
             return;
         }
@@ -163,7 +180,9 @@ export async function makeInitialDevices(): Promise<SyncTestDevice[]> {
         account: primaryAccount,
         factory: primaryFactory,
         secureEncryptedStorage: primarySecureEncryptedStorage,
-        online: false
+        online: false,
+        deleted: false,
+        reconnectable: false
     };
 
     const secondaryDevice = await onboardMockDevice(primaryDevice);
@@ -174,7 +193,7 @@ export async function makeInitialDevices(): Promise<SyncTestDevice[]> {
 }
 
 export async function waitForOnlineDevicesSynced(devices: SyncTestDevice[]): Promise<void> {
-    const onlineDevices = devices.filter(device => device.online);
+    const onlineDevices = devices.filter(device => device.online && !device.deleted);
     if (onlineDevices.length === 0) {
         return;
     }
@@ -223,6 +242,36 @@ async function waitForStatusWithTimeout(
     );
 }
 
+async function waitForNextSynchronizationCycle<T>(
+    device: SyncTestDevice,
+    label: string,
+    action: () => Promise<T>
+): Promise<T> {
+    let sawSynchronizing =
+        device.account.syncProvider.syncStatusManager.getStatus() === SyncStatus.SYNCHRONIZING;
+    let unsubscribe: (() => void) | undefined;
+
+    const synchronized = new Promise<void>(resolve => {
+        unsubscribe = device.account.syncProvider.syncStatusManager.subscribe(status => {
+            if (status === SyncStatus.SYNCHRONIZING) {
+                sawSynchronizing = true;
+            }
+
+            if (sawSynchronizing && status === SyncStatus.SYNCHRONIZED) {
+                resolve();
+            }
+        });
+    });
+
+    try {
+        const result = await action();
+        await waitWithTimeout(synchronized, label);
+        return result;
+    } finally {
+        unsubscribe?.();
+    }
+}
+
 async function waitWithTimeout<T>(promise: Promise<T>, label: string): Promise<T> {
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
     const timeout = new Promise<never>((_, reject) => {
@@ -258,30 +307,30 @@ async function removeDeviceFromOnlineDevice(
     devices: SyncTestDevice[],
     selector: RemoveDeviceSelector
 ): Promise<void> {
-    const onlineDevices = devices.filter(device => device.online);
+    const onlineDevices = devices.filter(device => device.online && !device.deleted);
     const actor = pickByIndex(onlineDevices, selector.actorIndex);
     if (!actor) {
         return;
     }
 
-    const candidates = devices.filter(device => device !== actor);
+    const candidates = devices.filter(device => device !== actor && !device.deleted);
     const target = pickByIndex(candidates, selector.targetIndex);
     if (!target) {
         return;
     }
 
     await setRequesterIk(actor);
-    await actor.account.revokeRemoteDevice(
-        await target.account.getMyDeviceIkPub(),
-        actor.secureEncryptedStorage
+    await waitForNextSynchronizationCycle(actor, 'device revocation synchronized', async () =>
+        actor.account.revokeRemoteDevice(
+            await target.account.getMyDeviceIkPub(),
+            actor.secureEncryptedStorage
+        )
     );
 
     target.account.syncProvider.dispose();
-
-    const targetIndex = devices.indexOf(target);
-    if (targetIndex !== -1) {
-        devices.splice(targetIndex, 1);
-    }
+    target.online = false;
+    target.deleted = true;
+    target.reconnectable = true;
 }
 
 async function changeDataOnActiveDevice(
@@ -293,14 +342,28 @@ async function changeDataOnActiveDevice(
         return;
     }
 
-    await actor.account.syncProvider.transaction(draft => {
-        const wallets = draft.at('wallets');
-        const id = nextWalletId();
-        wallets.push({
-            __setId: id,
-            value: id
+    await waitForNextSynchronizationCycle(actor, 'wallet change synchronized', async () => {
+        await actor.account.syncProvider.transaction(draft => {
+            const wallets = draft.at('wallets');
+            const id = nextWalletId();
+            wallets.push({
+                __setId: id,
+                value: id
+            });
         });
     });
+}
+
+async function changeDataOnOfflineDevice(
+    devices: SyncTestDevice[],
+    op: Extract<Op, { type: 'data.changeOnOfflineDevice' }>
+): Promise<void> {
+    const device = pickOfflineDevice(devices, op.targetIndex);
+    if (!device) {
+        return;
+    }
+
+    await addWallet(device);
 }
 
 async function returnOfflineDeviceOnline(
@@ -332,14 +395,14 @@ function takeOnlineDeviceOffline(
 
 function pickOnlineDevice(devices: SyncTestDevice[], index: number): SyncTestDevice | undefined {
     return pickByIndex(
-        devices.filter(device => device.online),
+        devices.filter(device => device.online && !device.deleted),
         index
     );
 }
 
 function pickOfflineDevice(devices: SyncTestDevice[], index: number): SyncTestDevice | undefined {
     return pickByIndex(
-        devices.filter(device => !device.online),
+        devices.filter(device => !device.online && !device.deleted),
         index
     );
 }
@@ -366,6 +429,17 @@ function nextWalletId(): string {
     return `wallet-${nextWalletIndex++}`;
 }
 
+async function addWallet(device: SyncTestDevice): Promise<void> {
+    await device.account.syncProvider.transaction(draft => {
+        const wallets = draft.at('wallets');
+        const id = nextWalletId();
+        wallets.push({
+            __setId: id,
+            value: id
+        });
+    });
+}
+
 async function onboardMockDevice(actor: SyncTestDevice): Promise<SyncTestDevice> {
     const newDeviceFactory = makeFactory();
     const newDeviceSecureEncryptedStorage = new InMemStorage();
@@ -376,9 +450,10 @@ async function onboardMockDevice(actor: SyncTestDevice): Promise<SyncTestDevice>
     newDeviceFactory.setRequesterIkFromOnboardingData(connector.data);
     await setRequesterIk(actor);
 
-    const connectActor = actor.account.connectToNewDevice(
-        connector.data,
-        actor.secureEncryptedStorage
+    const connectActor = waitForNextSynchronizationCycle(
+        actor,
+        'new device addition synchronized',
+        async () => actor.account.connectToNewDevice(connector.data, actor.secureEncryptedStorage)
     );
     const [, newAccount] = await waitWithTimeout(
         Promise.all([connectActor, connector.waitForCompletion()]),
@@ -395,7 +470,9 @@ async function onboardMockDevice(actor: SyncTestDevice): Promise<SyncTestDevice>
         account: newAccount,
         factory: newDeviceFactory,
         secureEncryptedStorage: newDeviceSecureEncryptedStorage,
-        online: true
+        online: true,
+        deleted: false,
+        reconnectable: false
     };
 }
 
