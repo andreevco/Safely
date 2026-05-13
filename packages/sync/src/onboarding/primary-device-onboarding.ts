@@ -17,7 +17,7 @@ export class PrimaryDeviceOnboarding {
         private readonly dmkService: DmkSignerService,
         private readonly accountsApi: AccountsApi,
         private readonly deviceManager: DeviceManagementService,
-        private readonly triggerSync: () => void
+        private readonly triggerSync: () => Promise<void>
     ) {}
 
     public async onboard(data: Buffer): Promise<void> {
@@ -45,7 +45,7 @@ export class PrimaryDeviceOnboarding {
         });
 
         await this.deviceManager.addDevice(message.ikPub, this.dmkService);
-        this.triggerSync();
+        await this.triggerSync();
     }
 
     private async onboardNewDevice(message: QRMessageNewDeviceOnboarding): Promise<void> {

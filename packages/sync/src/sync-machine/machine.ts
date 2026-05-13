@@ -46,8 +46,10 @@ export const createSyncMachine = () => {
                 setStatusSynchronizing: ({ context }) => {
                     context.syncStatusManager.setStatus(SyncStatus.SYNCHRONIZING);
                 },
-                setStatusSynchronized: ({ context }) => {
-                    context.syncStatusManager.setStatus(SyncStatus.SYNCHRONIZED);
+                setStatusSynchronizedIfIdle: ({ context }) => {
+                    if (!context.shouldSendUpdate && context.remoteUpdates.length === 0) {
+                        context.syncStatusManager.setStatus(SyncStatus.SYNCHRONIZED);
+                    }
                 },
                 handleError: assign({
                     lastError: ({ event }: { event: unknown }) => {
@@ -134,7 +136,7 @@ export const createSyncMachine = () => {
                     on: {
                         DISCONNECTED: { target: '#syncMachine.waitingForRetry' },
                         CONNECTION_ERROR: { target: '#syncMachine.waitingForRetry' },
-                        REMOTE_UPDATE: { actions: 'setRemoteUpdate' }
+                        REMOTE_UPDATE: { actions: ['setRemoteUpdate', 'setStatusSynchronizing'] }
                     },
                     states: {
                         connecting: {
@@ -144,7 +146,7 @@ export const createSyncMachine = () => {
                             }
                         },
                         connected: {
-                            entry: ['setStatusSynchronized'],
+                            entry: ['setStatusSynchronizedIfIdle'],
                             always: [
                                 {
                                     guard: 'shouldHandleUpdate',
@@ -157,11 +159,11 @@ export const createSyncMachine = () => {
                             ],
                             on: {
                                 LOCAL_UPDATE: {
-                                    actions: ['markDirty'],
+                                    actions: ['markDirty', 'setStatusSynchronizing'],
                                     target: 'transmitting'
                                 },
                                 REMOTE_UPDATE: {
-                                    actions: ['setRemoteUpdate'],
+                                    actions: ['setRemoteUpdate', 'setStatusSynchronizing'],
                                     target: 'applyingUpdate'
                                 }
                             }

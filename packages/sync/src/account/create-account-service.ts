@@ -128,6 +128,7 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
         await container.yManager.addDeviceOp(payload.addOp);
         await container.deviceManager.verifyDeviceOpAndApply(payload.addOp);
         account.syncProvider.triggerSync();
+        await account.syncProvider.syncStatusManager.waitForStatus(SyncStatus.SYNCHRONIZED);
 
         return account;
     }
