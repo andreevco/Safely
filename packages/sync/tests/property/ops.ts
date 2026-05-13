@@ -52,6 +52,15 @@ export type Op =
           targetIndex: number;
       }
     | {
+          type: 'device.reconnectDeletedDevice';
+          actorIndex: number;
+          targetIndex: number;
+      }
+    | {
+          type: 'device.deleteLocalOnlineSelf';
+          targetIndex: number;
+      }
+    | {
           type: 'device.returnOfflineOnline';
           targetIndex: number;
       }
@@ -100,6 +109,22 @@ export const opArb = fc.oneof(
         targetIndex
     })),
 
+    fc
+        .record({
+            actorIndex: deviceIndexArb,
+            targetIndex: deviceIndexArb
+        })
+        .map(({ actorIndex, targetIndex }) => ({
+            type: 'device.reconnectDeletedDevice',
+            actorIndex,
+            targetIndex
+        })),
+
+    deviceIndexArb.map(targetIndex => ({
+        type: 'device.deleteLocalOnlineSelf',
+        targetIndex
+    })),
+
     deviceIndexArb.map(targetIndex => ({
         type: 'device.returnOfflineOnline',
         targetIndex
@@ -141,6 +166,18 @@ export async function applyOp(devices: SyncTestDevice[], op: Op): Promise<void> 
 
         case 'data.changeOnOfflineDevice': {
             await changeDataOnOfflineDevice(devices, op);
+            await waitForOnlineDevicesSynced(devices);
+            return;
+        }
+
+        case 'device.reconnectDeletedDevice': {
+            await reconnectDeletedDevice(devices, op);
+            await waitForOnlineDevicesSynced(devices);
+            return;
+        }
+
+        case 'device.deleteLocalOnlineSelf': {
+            await deleteLocalOnlineSelfDevice(devices, op);
             await waitForOnlineDevicesSynced(devices);
             return;
         }
@@ -364,6 +401,72 @@ async function changeDataOnOfflineDevice(
     }
 
     await addWallet(device);
+}
+
+async function reconnectDeletedDevice(
+    devices: SyncTestDevice[],
+    op: Extract<Op, { type: 'device.reconnectDeletedDevice' }>
+): Promise<void> {
+    const actor = pickOnlineDevice(devices, op.actorIndex);
+    if (!actor) {
+        return;
+    }
+
+    const target = pickByIndex(
+        devices.filter(device => device.deleted && device.reconnectable),
+        op.targetIndex
+    );
+    if (!target) {
+        return;
+    }
+
+    if (target.account.syncProvider.syncStatusManager.getStatus() !== SyncStatus.DEVICE_DELETED) {
+        target.account.syncProvider.restart();
+    }
+
+    try {
+        await waitForStatusWithTimeout(target, SyncStatus.DEVICE_DELETED, 'deleted device status');
+    } catch {
+        return;
+    }
+
+    const connector = await target.account.reconnectToAccount();
+    target.factory.setRequesterIkFromOnboardingData(connector.data);
+    await setRequesterIk(actor);
+
+    await waitForNextSynchronizationCycle(actor, 'device reconnection synchronized', async () => {
+        const connectActor = actor.account.connectToNewDevice(
+            connector.data,
+            actor.secureEncryptedStorage
+        );
+        await waitWithTimeout(
+            Promise.all([connectActor, connector.waitForCompletion()]),
+            'mock device reconnection'
+        );
+    });
+    await waitForStatusWithTimeout(target, SyncStatus.SYNCHRONIZED, 'reconnected device synced');
+    target.deleted = false;
+    target.online = true;
+    target.reconnectable = false;
+}
+
+async function deleteLocalOnlineSelfDevice(
+    devices: SyncTestDevice[],
+    op: Extract<Op, { type: 'device.deleteLocalOnlineSelf' }>
+): Promise<void> {
+    const target = pickOnlineDevice(devices, op.targetIndex);
+    if (!target) {
+        return;
+    }
+
+    await setRequesterIk(target);
+    await target.factory.factory.deleteLocalAccount(
+        target.account.accountId,
+        target.secureEncryptedStorage
+    );
+    target.online = false;
+    target.deleted = true;
+    target.reconnectable = false;
 }
 
 async function returnOfflineDeviceOnline(

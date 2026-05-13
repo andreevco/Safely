@@ -66,6 +66,15 @@ export class UpdateHandler<Latest extends StorageVersion, Rest> {
             }
         }
 
+        let isIkSigValid = false;
+
+        try {
+            await this.updateDecryptor.verifyIKSig(upd);
+            isIkSigValid = true;
+        } catch {
+            // See explanation in `if (!isIkSigValid) {` block
+        }
+
         // TODO: merge remote devices into temporal storage first and verify on temp storage
         // this is minor security bug
         await this.deviceManagementService.mergeDeviceStorage(
@@ -83,7 +92,27 @@ export class UpdateHandler<Latest extends StorageVersion, Rest> {
         // - If the attacker can create a valid device update, then they can get access to all the private keys from compromised
         //   device (including wallet secrets) at which point they can do much more harm than just sending invalid snapshots.
         //   At this point we cant really protect user, so this is acceptable scenario.
-        await this.updateDecryptor.verifyIKSig(upd);
+        try {
+            await this.updateDecryptor.verifyIKSig(upd);
+            isIkSigValid = true;
+        } catch {
+            // See explanation in `if (!isIkSigValid) {` block
+        }
+
+        if (!isIkSigValid) {
+            /*
+             * The reasoning behind 2 separate checks:
+             * - When device deletes itself it creates "revoked" entry in the storage, so other devices are perceiving
+             *   deleted device as non-existent and the later signature verification fails
+             * - We could resolve this by putting check before merging device list but we need to check after merging
+             *   device lists (see the reasoning in the comment above)
+             * - So, we validate signature before and after merging
+             *
+             * Our threat model does not cover cases when attack gets access to the DMK key so there is no security
+             * problems here.
+             */
+            throw new Error('Invalid snapshot IK signature');
+        }
 
         this.logger.info('Applying update to local CRDT document...');
         await this.yManager.applyUpdate(Buffer.from(payload.userStorage, 'utf8'), 'remote');
