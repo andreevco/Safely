@@ -29,7 +29,7 @@ export class ReconnectOnboarding<S extends Record<string, ZodType>> {
             this.syncProvider.restart();
 
             await new Promise<void>((resolve, reject) => {
-                const timer = setTimeout(resolve, 1000);
+                const timer = setTimeout(resolve, 3000);
                 signal?.addEventListener(
                     'abort',
                     () => {
