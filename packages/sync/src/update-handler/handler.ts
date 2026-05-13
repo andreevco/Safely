@@ -1,7 +1,6 @@
-import { sha256 } from '@noble/hashes/sha2.js';
 import * as Y from 'yjs';
 
-import { getSnapshotProof, getSnapshotProofFromCiphertextHash } from './snapshot-proof';
+import { getSnapshotProofFromCiphertextHash } from './snapshot-proof';
 import type { SyncState } from './sync-state';
 import type { SyncStateRepository } from './sync-state-repository';
 import type { SnapshotsApi } from '../api/generated';
@@ -34,33 +33,41 @@ export class UpdateHandler {
             return { hasLocalChanges: this.hasLocalChanges(update) }; // Already have this update
         }
 
-        if (syncState.snapshotProof.length !== 0) {
-            let proof = syncState.snapshotProof;
-            if (upd.snapshotProofChain.length >= 1) {
-                for (const proofItem of upd.snapshotProofChain.slice(
-                    0,
-                    upd.snapshotProofChain.length - 1
-                )) {
-                    proof = getSnapshotProofFromCiphertextHash(proof, proofItem);
-                }
-            }
+        // TODO
+        // Snapshot proof chain verification is intentionally disabled for now. It was originally used to
+        // detect server-side history rewrites, but the current slottree-backed storage already prevents
+        // overwriting accepted history. Keeping this check strict creates availability issues when the
+        // server loses or drops snapshot/proof-chain data, because the client currently has no resync
+        // mechanism for that case. Until resync is implemented, snapshot proof is treated as a cursor/id
+        // rather than an enforced integrity boundary.
 
-            const expectedProof = getSnapshotProof(proof, upd.ciphertext);
-
-            if (!upd.snapshotProof.equals(expectedProof)) {
-                this.logger.info(
-                    `Expected proof ${expectedProof.toString('hex')}, but got ${upd.snapshotProof.toString('hex')}`
-                );
-                const isProofCorrect = await this.fetchProofChainAndVerify(
-                    syncState,
-                    upd.snapshotProof,
-                    Buffer.from(sha256(upd.ciphertext)).toString('hex')
-                );
-                if (!isProofCorrect) {
-                    throw new Error('Invalid snapshot proof');
-                }
-            }
-        }
+        // if (syncState.snapshotProof.length !== 0) {
+        //     let proof = syncState.snapshotProof;
+        //     if (upd.snapshotProofChain.length >= 1) {
+        //         for (const proofItem of upd.snapshotProofChain.slice(
+        //             0,
+        //             upd.snapshotProofChain.length - 1
+        //         )) {
+        //             proof = getSnapshotProofFromCiphertextHash(proof, proofItem);
+        //         }
+        //     }
+        //
+        //     const expectedProof = getSnapshotProof(proof, upd.ciphertext);
+        //
+        //     if (!upd.snapshotProof.equals(expectedProof)) {
+        //         this.logger.info(
+        //             `Expected proof ${expectedProof.toString('hex')}, but got ${upd.snapshotProof.toString('hex')}`
+        //         );
+        //         const isProofCorrect = await this.fetchProofChainAndVerify(
+        //             syncState,
+        //             upd.snapshotProof,
+        //             Buffer.from(sha256(upd.ciphertext)).toString('hex')
+        //         );
+        //         if (!isProofCorrect) {
+        //             throw new Error('Invalid snapshot proof');
+        //         }
+        //     }
+        // }
 
         const tempDoc = new Y.Doc();
         Y.applyUpdateV2(tempDoc, this.yManager.encodeAsSnapshot());
@@ -75,6 +82,7 @@ export class UpdateHandler {
             await this.deviceManagementService.verifyDeviceOpAndApply(deviceOp);
         }
 
+        // TODO
         // Suppose following scenario:
         // - User has two devices A (online) and B (offline)
         // - User adds device C from A, and then send snapshots to server from C
