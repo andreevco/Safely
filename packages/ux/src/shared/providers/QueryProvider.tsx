@@ -2,7 +2,7 @@ import { QueryCache, QueryClient } from '@tanstack/react-query';
 import type { Persister } from '@tanstack/react-query-persist-client';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import type { FC, PropsWithChildren, ReactNode } from 'react';
-import React, { Suspense, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import type { Logger } from '@safely/sync';
 
@@ -65,11 +65,7 @@ export const QueryProvider: FC<
             onSuccess={() => setHydratedAt(Date.now())}
         >
             <QueryHydrationProvider value={{ hydratedAt }}>
-                {isReady ? (
-                    <Suspense fallback={loader ?? null}>{children}</Suspense>
-                ) : (
-                    (loader ?? null)
-                )}
+                {isReady ? children : (loader ?? null)}
             </QueryHydrationProvider>
         </PersistQueryClientProvider>
     );

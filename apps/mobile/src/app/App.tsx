@@ -8,8 +8,9 @@ import { loggerRegistry } from '@mobile/shared/logger';
 import { LoaderProvider, LoaderServiceProvider } from '@mobile/shared/providers/loader';
 import { ToastProvider, ToastServiceProvider } from '@mobile/shared/providers/toast';
 
-import { AppContextProvider } from './AppContext';
+import { AppContextProvider, LoggerLifecycle, SecurityCheckInitializer } from './AppContext';
 import { AppNavigation } from './AppNavigation';
+import { BootGate } from './boot';
 import { REGULAR_MOBILE_STORAGE_ONLY_APP_LEVEL_USE } from './storage';
 
 const persister = createPersister(
@@ -27,10 +28,14 @@ export const App = () => {
                         <ToastServiceProvider>
                             <LoaderServiceProvider>
                                 <AppContextProvider>
-                                    <LoaderProvider>
-                                        <AppNavigation />
-                                        <ToastProvider />
-                                    </LoaderProvider>
+                                    <BootGate>
+                                        <SecurityCheckInitializer />
+                                        <LoggerLifecycle />
+                                        <LoaderProvider>
+                                            <AppNavigation />
+                                            <ToastProvider />
+                                        </LoaderProvider>
+                                    </BootGate>
                                 </AppContextProvider>
                             </LoaderServiceProvider>
                         </ToastServiceProvider>

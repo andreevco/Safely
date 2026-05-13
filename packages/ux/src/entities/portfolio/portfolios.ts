@@ -1,4 +1,4 @@
-import { keepPreviousData, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import type {
     BtcWalletReadOnly,
@@ -40,7 +40,10 @@ import { useToast } from '../toast';
 export function usePortfoliosQuery() {
     const config = usePortfoliosQueryConfig();
 
-    return useSuspenseQuery(config);
+    return useQuery({
+        ...config,
+        initialData: () => config.queryFn()
+    });
 }
 
 export function usePortfoliosQueryConfig() {
@@ -51,11 +54,9 @@ export function usePortfoliosQueryConfig() {
 
     return {
         queryKey: accountQueryKey.portfolios.toKey(),
-        async queryFn() {
+        queryFn(): Portfolio[] {
             const data = get();
-            if (data === null) {
-                return null;
-            }
+            if (data === null) return [];
 
             return data.map(p =>
                 PortfolioFactory.restorePortfolio(
@@ -70,12 +71,7 @@ export function usePortfoliosQueryConfig() {
 }
 
 export function usePortfolios() {
-    const portfolios = usePortfoliosQuery().data;
-    if (!portfolios) {
-        throw new Error('Unexpected portfolios query');
-    }
-
-    return portfolios;
+    return usePortfoliosQuery().data;
 }
 
 function useSetPortfolios() {

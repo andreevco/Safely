@@ -1,8 +1,8 @@
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { FiatAsset } from '@safely/core';
 
-import { useAvailableFiats, useSuspenseQuery } from '../../shared';
+import { useAvailableFiats } from '../../shared';
 import { useActiveAccountQueryKey } from '../account';
 import { useActiveAccountSyncedStorage } from '../account/storage';
 import { useMutation } from '../query-core';
@@ -14,19 +14,20 @@ export function useActiveFiatQuery() {
     const accountQueryKey = useActiveAccountQueryKey();
     const { get } = useActiveAccountSyncedStorage('preferredFiat');
 
-    return useSuspenseQuery<FiatAsset>({
+    const resolve = (): FiatAsset => {
+        const stored = get();
+
+        if (stored && availableFiats.some(fiat => fiat.id.isEq(stored.id))) {
+            return stored;
+        }
+
+        return USD_FIAT;
+    };
+
+    return useQuery({
         queryKey: accountQueryKey.preferredFiat.deps({ availableFiats }).toKey(),
-        queryFn: async () => {
-            const stored = get();
-
-            if (stored) {
-                const isSupported = availableFiats.some(fiat => fiat.id.isEq(stored.id));
-
-                if (isSupported) return stored;
-            }
-
-            return USD_FIAT;
-        },
+        queryFn: resolve,
+        initialData: resolve,
         staleTime: Infinity
     });
 }
