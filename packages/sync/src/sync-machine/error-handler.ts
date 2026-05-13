@@ -12,24 +12,33 @@ export type ErrorDisposition =
 
 export async function classifyError(error: unknown): Promise<SyncMachineError> {
     if (error instanceof ResponseError) {
-        const body = (await error.response.json()) as { code: number };
-        if (body.code === 403001) {
-            return new SyncMachineError({
-                type: 'fatal',
-                status: SyncStatus.DEVICE_DELETED
-            });
+        if (error.code === 403001) {
+            return new SyncMachineError(
+                {
+                    type: 'fatal',
+                    status: SyncStatus.DEVICE_DELETED
+                },
+                error
+            );
         }
     }
 
-    return new SyncMachineError({
-        type: 'reconnect'
-    });
+    return new SyncMachineError(
+        {
+            type: 'reconnect'
+        },
+        error
+    );
 }
 
 export class SyncMachineError extends Error {
-    constructor(public readonly disposition: ErrorDisposition) {
+    constructor(
+        public readonly disposition: ErrorDisposition,
+        public override readonly cause?: unknown
+    ) {
         super(
-            `Sync machine error: ${disposition.type}, status: ${disposition.type === 'fatal' ? disposition.status : 'n/a'}`
+            `Sync machine error: ${disposition.type}, status: ${disposition.type === 'fatal' ? disposition.status : 'n/a'}`,
+            { cause }
         );
     }
 }

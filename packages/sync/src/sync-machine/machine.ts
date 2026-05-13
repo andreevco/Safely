@@ -54,11 +54,18 @@ export const createSyncMachine = () => {
                     context.syncStatusManager.setStatus(SyncStatus.SYNCHRONIZED);
                 },
                 handleError: assign({
-                    lastError: ({ event }: { event: unknown }) => {
+                    lastError: ({
+                        context,
+                        event
+                    }: {
+                        context: SyncMachineConfig;
+                        event: unknown;
+                    }) => {
                         const error = (event as { error?: unknown }).error;
                         if (error instanceof SyncMachineError) {
                             return error.disposition;
                         } else {
+                            context.logger.error('Unhandled sync machine error', error);
                             return { type: 'reconnect' };
                         }
                     }
