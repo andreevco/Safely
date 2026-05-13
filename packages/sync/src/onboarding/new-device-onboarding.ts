@@ -45,7 +45,7 @@ export class NewDeviceOnboarding<S extends Record<string, ZodType>> {
             }
 
             await new Promise<void>((resolve, reject) => {
-                const timer = setTimeout(resolve, 1000);
+                const timer = setTimeout(resolve, 3000);
                 signal?.addEventListener(
                     'abort',
                     () => {
