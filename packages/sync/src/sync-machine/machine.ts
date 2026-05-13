@@ -11,6 +11,7 @@ import { SyncStatus } from '../sync-provider/sync-status';
 import { applyUpdate } from './actors/apply-update';
 import { initialSyncing } from './actors/initial-syncing';
 import { SyncMachineError } from './error-handler';
+import { getReconnectDelayMs } from './reconnect-backoff';
 
 export type SyncMachine = Awaited<Actor<ReturnType<typeof createSyncMachine>>>;
 
@@ -33,6 +34,9 @@ export const createSyncMachine = () => {
                 pushUpdateToServer: pushUpdateToServer,
                 initialSyncing: initialSyncing,
                 applyUpdate: applyUpdate
+            },
+            delays: {
+                reconnectDelay: ({ context }) => getReconnectDelayMs(context.reconnectAttempt)
             },
             guards: {
                 shouldSendUpdate: ({ context }) => context.shouldSendUpdate,
@@ -76,6 +80,18 @@ export const createSyncMachine = () => {
                 clearDirty: assign({
                     shouldSendUpdate: () => {
                         return false;
+                    }
+                }),
+                incrementReconnectAttempt: assign({
+                    reconnectAttempt: ({ context }) => context.reconnectAttempt + 1
+                }),
+                resetReconnectAttemptIfSynced: assign({
+                    reconnectAttempt: ({ context }) => {
+                        if (context.shouldSendUpdate || context.remoteUpdates.length > 0) {
+                            return context.reconnectAttempt;
+                        }
+
+                        return 0;
                     }
                 }),
                 setRemoteUpdate: assign({
@@ -144,7 +160,7 @@ export const createSyncMachine = () => {
                             }
                         },
                         connected: {
-                            entry: ['setStatusSynchronized'],
+                            entry: ['setStatusSynchronized', 'resetReconnectAttemptIfSynced'],
                             always: [
                                 {
                                     guard: 'shouldHandleUpdate',
@@ -218,9 +234,9 @@ export const createSyncMachine = () => {
                 },
 
                 waitingForRetry: {
-                    entry: ['setStatusDisconnected'],
+                    entry: ['setStatusDisconnected', 'incrementReconnectAttempt'],
                     after: {
-                        1000: { target: '#syncMachine.initialSyncing' }
+                        reconnectDelay: { target: '#syncMachine.initialSyncing' }
                     },
                     on: {
                         CONNECT_RETRY: { target: '#syncMachine.initialSyncing' }
