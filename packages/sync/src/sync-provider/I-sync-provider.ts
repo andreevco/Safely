@@ -14,7 +14,7 @@ export interface ISyncProvider<S extends Record<string, ZodType>> {
     onChange<K extends keyof S>(k: K, observer: (v: z.output<S[K]>) => void): () => void;
     onError(obs: (e: SyncError) => void): () => void;
     dispose(): void;
-    restart(): void;
+    restart(options?: { preserveStatus?: boolean }): void;
 
     /**
      * This method forces sending update to the server.

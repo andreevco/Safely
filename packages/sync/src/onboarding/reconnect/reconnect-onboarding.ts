@@ -26,7 +26,7 @@ export class ReconnectOnboarding<S extends Record<string, ZodType>> {
                 throw new OnboardingAbortedError();
             }
 
-            this.syncProvider.restart();
+            this.syncProvider.restart({ preserveStatus: true });
 
             await new Promise<void>((resolve, reject) => {
                 const timer = setTimeout(resolve, 3000);
