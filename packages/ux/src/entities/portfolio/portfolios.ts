@@ -1,4 +1,4 @@
-import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, notifyManager, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import type {
     BtcWalletReadOnly,
@@ -81,6 +81,14 @@ function useSetPortfolios() {
 
     return useMutation<void, Error, Portfolio[]>({
         async mutationFn(accounts) {
+            notifyManager.batch(() => {
+                client.setQueryData(accountQueryKey.portfolios.toKey(), accounts);
+
+                if (accounts.length === 0) {
+                    client.setQueryData(accountQueryKey.portfolios.active.toKey(), null);
+                }
+            });
+
             await set(accounts.map(a => a.toJSON()));
             await client.invalidateQueries({ queryKey: accountQueryKey.portfolios.toKey() });
         }
