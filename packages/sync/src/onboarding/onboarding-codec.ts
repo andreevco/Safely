@@ -34,7 +34,7 @@ export class QRMessageCodec {
                 writer.write(0x02, payload.ikPub);
                 break;
             default:
-                throw new SyncError('Unsupported operation type in message');
+                throw new UnsupportedQRCodeOperationError();
         }
 
         return writer.concat();
@@ -46,7 +46,7 @@ export class QRMessageCodec {
 
         const op = chunks.find(d => d.type === 0x01);
         if (!op) {
-            throw new SyncError('Missing operation type in message');
+            throw new CorruptedQRCodeOperationError();
         }
 
         const operation = QRMessageCodec.decodeOperation(op.value[0]);
@@ -55,7 +55,7 @@ export class QRMessageCodec {
                 const ephemeralPubChunk = chunks.find(d => d.type === 0x02);
                 const ikPubChunk = chunks.find(d => d.type === 0x03);
                 if (!ephemeralPubChunk || !ikPubChunk) {
-                    throw new SyncError('Missing fields for new device onboarding message');
+                    throw new CorruptedQRCodeOperationError();
                 }
                 return {
                     type: QRMessageOperation.NEW_DEVICE_ONBOARDING,
@@ -66,7 +66,7 @@ export class QRMessageCodec {
             case QRMessageOperation.RECONNECTION: {
                 const ikPubChunk = chunks.find(d => d.type === 0x02);
                 if (!ikPubChunk) {
-                    throw new SyncError('Missing IK public key for reconnection message');
+                    throw new CorruptedQRCodeOperationError();
                 }
                 return {
                     type: QRMessageOperation.RECONNECTION,
@@ -74,7 +74,7 @@ export class QRMessageCodec {
                 };
             }
             default:
-                throw new SyncError('Unsupported operation type in message');
+                throw new UnsupportedQRCodeOperationError();
         }
     }
 
@@ -85,7 +85,10 @@ export class QRMessageCodec {
             case 2:
                 return QRMessageOperation.RECONNECTION;
             default:
-                throw new SyncError('Unsupported operation type in message');
+                throw new UnsupportedQRCodeOperationError();
         }
     }
 }
+
+export class UnsupportedQRCodeOperationError extends SyncError {}
+export class CorruptedQRCodeOperationError extends SyncError {}
