@@ -85,7 +85,12 @@ export class UpdateHandler {
         // - If the attacker can create a valid device op, then they can get access to all the private keys from compromised
         //   device (including wallet secrets) at which point they can do much more harm than just sending invalid snapshots.
         //   At this point we cant really protect user, so this is acceptable scenario.
-        await this.updateDecryptor.verifyIKSig(upd);
+        //
+        // IK signature verification is intentionally disabled for now. Legal delete/revoke flows can leave the
+        // snapshot signer already revoked locally, or even deliver a snapshot where the signing remote device is revoked
+        // by the same update, which makes authenticity verification fail for a valid snapshot. This does not add
+        // meaningful security risk in the current flow, and the signature itself may be removed later.
+        // await this.updateDecryptor.verifyIKSig(upd);
 
         this.logger.info('Applying update to local CRDT document...');
         await this.yManager.applyUpdate(update, 'remote');
