@@ -30,7 +30,7 @@ import {
     useAppContext,
     SecretEncryptor
 } from '../../shared';
-import { useActiveAccount, useActiveAccountQueryKey } from '../account';
+import { useActiveAccountQuery, useActiveAccountQueryKey } from '../account';
 import { useActiveAccountLocalStorage, useActiveAccountSyncedStorage } from '../account/storage';
 import { useErrorToast } from '../errors';
 import { useLogger } from '../logger';
@@ -49,12 +49,14 @@ export function usePortfoliosQuery() {
 export function usePortfoliosQueryConfig() {
     const accountQueryKey = useActiveAccountQueryKey();
     const { get } = useActiveAccountSyncedStorage('portfolios');
-    const account = useActiveAccount();
+    const { data: account } = useActiveAccountQuery();
     const { storage } = useAppContext();
 
     return {
         queryKey: accountQueryKey.portfolios.toKey(),
         queryFn(): Portfolio[] {
+            if (!account) return [];
+
             const data = get();
             if (data === null) return [];
 
@@ -292,6 +294,7 @@ type ActivePortfolioEntities = ActivePortfolioEntitiesBip39 | ActivePortfolioEnt
 export function useActivePortfolioEntitiesQuery() {
     const { get, set } = useActiveAccountLocalStorage('activePortfolio');
     const accountQueryKey = useActiveAccountQueryKey();
+    const { data: activeAccount } = useActiveAccountQuery();
     const client = useQueryClient();
     const portfoliosQuery = usePortfoliosQueryConfig();
     const logger = useLogger();
@@ -299,6 +302,10 @@ export function useActivePortfolioEntitiesQuery() {
     return useSuspenseQuery<ActivePortfolioEntities | null>({
         queryKey: accountQueryKey.portfolios.active.toKey(),
         async queryFn() {
+            if (!activeAccount) {
+                return null;
+            }
+
             const portfolios: ReturnType<typeof usePortfoliosQuery>['data'] =
                 await client.fetchQuery(portfoliosQuery);
             if (!portfolios?.length) {

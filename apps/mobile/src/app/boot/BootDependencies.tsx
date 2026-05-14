@@ -8,22 +8,12 @@ import {
 import { useLockScreenQuery, usePasscode, usePasscodeLockout } from '@mobile/entities/security';
 
 export function BootDependencies() {
-    const { data: activeAccount } = useActiveAccountQuery();
-
     useBootConfigQuery();
     useAccounts();
+    useActiveAccountQuery();
     usePasscode();
     useLockScreenQuery();
     usePasscodeLockout();
-
-    if (activeAccount) {
-        return <AccountBootDependencies />;
-    }
-
-    return null;
-}
-
-function AccountBootDependencies() {
     useActivePortfolioEntitiesQuery();
 
     return null;
