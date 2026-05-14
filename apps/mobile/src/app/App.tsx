@@ -10,7 +10,7 @@ import { ToastProvider, ToastServiceProvider } from '@mobile/shared/providers/to
 
 import { AppContextProvider, LoggerLifecycle, SecurityCheckInitializer } from './AppContext';
 import { AppNavigation } from './AppNavigation';
-import { BootGate } from './boot';
+import { RootSuspenseGate } from './root-suspense';
 import { REGULAR_MOBILE_STORAGE_ONLY_APP_LEVEL_USE } from './storage';
 
 const persister = createPersister(
@@ -28,14 +28,14 @@ export const App = () => {
                         <ToastServiceProvider>
                             <LoaderServiceProvider>
                                 <AppContextProvider>
-                                    <BootGate>
+                                    <RootSuspenseGate>
                                         <SecurityCheckInitializer />
                                         <LoggerLifecycle />
                                         <LoaderProvider>
                                             <AppNavigation />
                                             <ToastProvider />
                                         </LoaderProvider>
-                                    </BootGate>
+                                    </RootSuspenseGate>
                                 </AppContextProvider>
                             </LoaderServiceProvider>
                         </ToastServiceProvider>
