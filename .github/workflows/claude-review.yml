@@ -165,6 +165,10 @@ jobs:
               `onSubmit` / reset, or vice versa.
             - Symmetric ops: subscribe/unsubscribe, add/remove, push/pop,
               lock/unlock, migration up/down.
+            - pnpm catalog: dep added to a workspace `package.json` while
+              the same name exists in another workspace or in
+              `pnpm-workspace.yaml` `catalog:` — must be `"catalog:"` (or
+              moved to the catalog), not a raw version.
             Procedure: for each twin-candidate file in the diff, `Glob` the
             same dir and platform/theme variants, `Read` the matched
             non-test files only, verify parallel change. Never open

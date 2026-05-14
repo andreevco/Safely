@@ -1,10 +1,11 @@
 import Big from 'big.js';
 import * as z from 'zod';
 
+import { sFiatAsset } from '@safely/sync-storage';
+
 import type { CryptoAsset } from './crypto-asset';
 import { sCryptoAsset } from './crypto-asset';
-import type { FiatAsset } from './fiat-asset';
-import { sFiatAsset } from './fiat-asset';
+import { FiatAsset } from './fiat-asset';
 import type { IAsset } from './I-asset';
 
 interface IRate<Base extends IAsset, Quote extends IAsset> {
@@ -60,5 +61,12 @@ export const sCryptoFiatRate = z
             return val;
         }
 
-        return new Rate(val.base, val.quote, Big(val.value), val.diff7d, val.diff24h, val.diff30d);
+        return new Rate(
+            val.base,
+            FiatAsset.restore(val.quote),
+            Big(val.value),
+            val.diff7d,
+            val.diff24h,
+            val.diff30d
+        );
     });

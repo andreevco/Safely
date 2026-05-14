@@ -1,31 +1,36 @@
-import { ContactId } from './contact-id';
+import { v7 as uuid7 } from 'uuid';
+
+import { type SContact, ArraySchemaIdKey } from '@safely/sync-storage';
+
 import type { ContactMeta } from './contact-meta';
-import type { SContactIn, SContactOut } from './contact.stored';
 import type { IContact } from './I-contact';
-import type { BLOCKCHAIN_NAME } from '../blockchain/blockchain-name';
+import { VM_TYPE } from '../blockchain';
 
 export class Contact implements IContact {
-    public static restoreContact(sContact: SContactOut): Contact {
+    public static restoreContact(sContact: SContact): Contact {
         return new Contact({
             id: sContact.id,
-            addresses: sContact.addresses,
+            addresses: sContact.addresses.map(item => ({
+                address: item.address,
+                blockchain: VM_TYPE.BTC
+            })),
             meta: sContact.meta,
             createdAt: new Date(sContact.createdAt)
         });
     }
 
-    public readonly id: ContactId;
-    public addresses: { blockchain: BLOCKCHAIN_NAME; address: string }[];
+    public readonly id: string;
+    public addresses: { blockchain: VM_TYPE; address: string }[];
     public meta: ContactMeta;
     public readonly createdAt: Date;
 
     constructor(params: {
-        id?: ContactId;
-        addresses: { blockchain: BLOCKCHAIN_NAME; address: string }[];
+        id?: string;
+        addresses: { blockchain: VM_TYPE; address: string }[];
         meta: ContactMeta;
         createdAt?: Date;
     }) {
-        this.id = params.id ?? ContactId.create();
+        this.id = params.id ?? this.generateId();
         this.addresses = params.addresses;
         this.meta = params.meta;
         this.createdAt = params.createdAt ?? new Date();
@@ -35,16 +40,24 @@ export class Contact implements IContact {
         this.meta = { ...this.meta, ...meta };
     }
 
-    public setAddresses(addresses: { blockchain: BLOCKCHAIN_NAME; address: string }[]): void {
+    public setAddresses(addresses: { blockchain: VM_TYPE; address: string }[]): void {
         this.addresses = addresses;
     }
 
-    public toJSON(): SContactIn {
+    private generateId() {
+        return uuid7();
+    }
+
+    public toJSON(): SContact {
         return {
-            id: this.id.toJSON(),
-            addresses: this.addresses,
+            id: this.id,
+            addresses: this.addresses.map(item => ({
+                address: item.address,
+                [ArraySchemaIdKey]: item.address
+            })),
             meta: this.meta,
-            createdAt: this.createdAt.getTime()
+            createdAt: this.createdAt.getTime(),
+            [ArraySchemaIdKey]: this.id
         };
     }
 }

@@ -1,0 +1,19 @@
+{
+  "name": "@safely/sync-storage",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "compile": "tsc --noEmit",
+    "dev": "tsc --watch",
+    "lint": "eslint ./src",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@safely/sync": "workspace:*",
+    "@safely/slottree": "workspace:*",
+    "zod": "catalog:"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}

@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 import { createNullPrototypeRecord, type JsonObject, type JsonValue } from '../json';
 
 export const SlotKind = {
@@ -8,6 +10,7 @@ export const SlotKind = {
 } as const;
 
 export const ORDERED_ARRAY_ITEM_ID_KEY = '__setId';
+export const ORDERED_ARRAY_ITEM_ID_KEY_TYPE = z.string();
 
 export interface AtomicSlot {
     s: typeof SlotKind.Atomic;

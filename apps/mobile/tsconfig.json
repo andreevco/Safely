@@ -4,11 +4,6 @@
     "strict": true,
     "baseUrl": ".",
     "paths": {
-      "@safely/sync": ["../../packages/sync/src"],
-      "@safely/core": ["../../packages/core/src"],
-      "@safely/core/*": ["../../packages/core/src/*"],
-      "@safely/ux": ["../../packages/ux/src"],
-      "@safely/ux/*": ["../../packages/ux/src/*"],
       "@mobile/shared": ["./src/shared"],
       "@mobile/shared/*": ["./src/shared/*"],
       "@mobile/app": ["./src/app"],

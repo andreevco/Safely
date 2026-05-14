@@ -20,3 +20,8 @@ export type { VersionSelector } from './core/versioning/version-controller';
 export type { HNil, HCons, AssertVersionHList, NewOf } from './core/versioning/version';
 export { hCons, hNil, defineVersionHList } from './core/versioning/version';
 export { cloneSlot as projectIdentity } from '../src/core/slots/slot-json';
+export { zIndexedObject, zIndexedArray } from './core/schemas';
+export {
+    ORDERED_ARRAY_ITEM_ID_KEY as ArraySchemaIdKey,
+    ORDERED_ARRAY_ITEM_ID_KEY_TYPE as ArraySchemaIdType
+} from './core/slots/slot';

@@ -1,3 +1,3 @@
-export enum VMType {
+export enum VM_TYPE {
     BTC = 'BTC'
 }

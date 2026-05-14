@@ -1,35 +1,27 @@
-import type { IPortfolioWatchOnly, WatchOnlySource } from './I-portfolio';
+import type { IPortfolioWatchOnly } from './I-portfolio';
 import { PortfolioType } from './I-portfolio';
-import type { PortfolioIdWatchOnly } from './portfolio-id-watch-only';
 import type { PortfolioMeta } from './portfolio-meta';
-import type { VMType } from '../blockchain';
+import type { VM_TYPE } from '../blockchain';
+import type { IPortfolioId } from './portfolio-id-bip39';
+import type { PortfolioNetworkType } from './portfolio-network-type';
 import type { WalletReadOnly } from '../derivation/wallet-read-only';
 
 export abstract class PortfolioWatchOnlyBase implements IPortfolioWatchOnly {
-    public readonly id: PortfolioIdWatchOnly;
+    public readonly id: IPortfolioId;
 
     public meta: PortfolioMeta;
 
     public readonly type = PortfolioType.WATCH_ONLY;
 
-    public abstract readonly vmType: VMType;
-
-    public readonly source: WatchOnlySource;
+    public abstract readonly vmType: VM_TYPE;
 
     public abstract readonly wallet: WalletReadOnly;
 
-    public get networkType() {
-        return this.id.network;
-    }
+    public abstract readonly networkType: PortfolioNetworkType;
 
-    constructor(params: {
-        id: PortfolioIdWatchOnly;
-        meta: PortfolioMeta;
-        source: WatchOnlySource;
-    }) {
+    protected constructor(params: { id: IPortfolioId; meta: PortfolioMeta }) {
         this.id = params.id;
         this.meta = params.meta;
-        this.source = params.source;
     }
 
     public updateMeta(meta: Partial<PortfolioMeta>): void {

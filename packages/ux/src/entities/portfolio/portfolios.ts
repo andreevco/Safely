@@ -20,7 +20,7 @@ import {
     PortfolioNetworkType,
     PortfolioType,
     generateBip39Accessor,
-    VMType
+    VM_TYPE
 } from '@safely/core';
 
 import {
@@ -45,14 +45,13 @@ export function usePortfoliosQuery() {
 
 export function usePortfoliosQueryConfig() {
     const accountQueryKey = useActiveAccountQueryKey();
-    const { get } = useActiveAccountSyncedStorage('portfolios');
     const account = useActiveAccount();
     const { storage } = useAppContext();
 
     return {
         queryKey: accountQueryKey.portfolios.toKey(),
         async queryFn() {
-            const data = get();
+            const data = account.syncProvider.get('portfolios');
             if (data === null) {
                 return null;
             }
@@ -379,7 +378,7 @@ export function useAddWatchOnlyPortfolio() {
             const portfolio = PortfolioFactory.generateWatchOnlyPortfolio(input, {
                 network: PortfolioNetworkType.MAINNET,
                 meta,
-                vmType: VMType.BTC
+                vmType: VM_TYPE.BTC
             });
 
             const portfolios: Portfolio[] = await client.fetchQuery(portfoliosQuery);
