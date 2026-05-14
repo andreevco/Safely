@@ -36,8 +36,8 @@ export function useCurrentDeviceIkPub() {
 
     return useQuery({
         queryKey: accountQueryKey.devices.currentIkPub.toKey(),
-        queryFn: async () => {
-            const ikPub = await account.getMyDeviceIkPub();
+        queryFn: () => {
+            const ikPub = account.getMyDeviceIkPub();
             return ikPub.toString('hex');
         },
         staleTime: Infinity
@@ -123,7 +123,7 @@ export function useUpdateOwnSyncedDeviceMeta() {
 
     return useMutation<void, Error, ISyncAccount<SyncedStorageStructure>>({
         async mutationFn(syncAccount) {
-            const ikPub = await syncAccount.getMyDeviceIkPub();
+            const ikPub = syncAccount.getMyDeviceIkPub();
             const ikPubHex = ikPub.toString('hex');
 
             const existing = syncAccount.syncProvider.get('devicesMeta');

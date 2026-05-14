@@ -59,7 +59,7 @@ export class DeviceManagementService {
         time?: number;
     }) {
         const ts = opts.time ?? Date.now();
-        const kid = await this.ikService.getKID();
+        const kid = this.ikService.getKID();
         const sig = await this.signDeviceOp({
             ...opts,
             ts
@@ -85,7 +85,7 @@ export class DeviceManagementService {
         dmkSignerService: DmkSignerService
     ): Promise<AddDeviceOp> {
         const ts = Date.now();
-        const kid = await this.ikService.getKID();
+        const kid = this.ikService.getKID();
         const sig = await this.signDeviceOp({
             type: 'add',
             ikPub,
@@ -155,7 +155,7 @@ export class DeviceManagementService {
             u64be(op.ts)
         ]);
 
-        const isValid = await this.dmkVerifierService.verify(op.sig, dataToVerify);
+        const isValid = this.dmkVerifierService.verify(op.sig, dataToVerify);
         if (!isValid) {
             throw new InvalidDMKSignatureError('Invalid device operation signature.');
         }
@@ -174,7 +174,7 @@ export class DeviceManagementService {
         ts: number;
         dmkSignerService: DmkSignerService;
     }): Promise<Buffer> {
-        const selfKID = await this.ikService.getKID();
+        const selfKID = this.ikService.getKID();
         const dataToSign = Buffer.concat([
             utf8(`safely/sync/v1/device/${opts.type}`),
             Buffer.from([0x00]),

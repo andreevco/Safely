@@ -62,7 +62,7 @@ export async function createSyncContainer(opts: {
     logger: Logger;
     apiConfiguration?: Configuration;
 }): Promise<SyncContainer> {
-    const keyRepository = new EncryptedKeyRepository(opts.encryptedStorage);
+    const keyRepository = await EncryptedKeyRepository.initialize(opts.encryptedStorage);
     const syncStateRepository = new SyncStateRepository(opts.storage, opts.logger);
     const crdtRepository = new YCRDTRepository(opts.storage, opts.structure);
     const deviceRepository = new DeviceRepository(opts.storage);

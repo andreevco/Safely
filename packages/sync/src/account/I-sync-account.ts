@@ -51,5 +51,5 @@ export interface ISyncAccount<S extends Record<string, ZodType>> {
     /**
      * Returns the IK public key of the current device.
      */
-    getMyDeviceIkPub(): Promise<Buffer>;
+    getMyDeviceIkPub(): Buffer;
 }
