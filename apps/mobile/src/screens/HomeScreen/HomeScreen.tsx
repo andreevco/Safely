@@ -1,5 +1,5 @@
 import { useScrollToTop } from '@react-navigation/native';
-import { Suspense, useRef } from 'react';
+import { useRef } from 'react';
 import { ScrollView } from 'react-native';
 
 import { useHasPortfolio } from '@safely/ux';
@@ -23,9 +23,7 @@ export const HomeScreen = () => {
             <HomeHeader />
             {hasPortfolio ? (
                 <Screen.Scrollable ref={scrollRef}>
-                    <Suspense fallback={null}>
-                        <DeviceUnlinkedBanner />
-                    </Suspense>
+                    <DeviceUnlinkedBanner />
                     <Banners />
                     <TotalBalance />
                     <HomeActions />
