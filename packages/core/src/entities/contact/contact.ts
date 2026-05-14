@@ -1,21 +1,21 @@
 import { v7 as uuid7 } from 'uuid';
 
-import { type SContact, ArraySchemaIdKey } from '@safely/sync-storage';
+import { type SContact, sContact, sContactAddress } from '@safely/sync-storage';
 
 import type { ContactMeta } from './contact-meta';
 import type { IContact } from './I-contact';
 import { VM_TYPE } from '../blockchain';
 
 export class Contact implements IContact {
-    public static restoreContact(sContact: SContact): Contact {
+    public static restoreContact(contact: SContact): Contact {
         return new Contact({
-            id: sContact.id,
-            addresses: sContact.addresses.map(item => ({
+            id: contact.id,
+            addresses: contact.addresses.map(item => ({
                 address: item.address,
                 blockchain: VM_TYPE.BTC
             })),
-            meta: sContact.meta,
-            createdAt: new Date(sContact.createdAt)
+            meta: contact.meta,
+            createdAt: new Date(contact.createdAt)
         });
     }
 
@@ -49,15 +49,13 @@ export class Contact implements IContact {
     }
 
     public toJSON(): SContact {
-        return {
+        return sContact.toJson({
             id: this.id,
-            addresses: this.addresses.map(item => ({
-                address: item.address,
-                [ArraySchemaIdKey]: item.address
-            })),
+            addresses: this.addresses.map(item =>
+                sContactAddress.toJson({ address: item.address })
+            ),
             meta: this.meta,
-            createdAt: this.createdAt.getTime(),
-            [ArraySchemaIdKey]: this.id
-        };
+            createdAt: this.createdAt.getTime()
+        });
     }
 }

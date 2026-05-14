@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { defineVersionHList, hCons, hNil, projectIdentity } from '@safely/slottree';
+import { projectIdentity } from '@safely/slottree';
 
 import { sAccountMeta } from './schemas/account-meta.schema';
 import { sContacts } from './schemas/contacts.schema';
@@ -29,7 +29,3 @@ export const syncedStorageV1 = {
     projectUp: projectIdentity,
     projectDown: projectIdentity
 } as const;
-
-export const syncedStorageVersions = defineVersionHList(hCons(syncedStorageV1, hNil));
-
-export type SyncedStorageStructure = (typeof syncedStorageVersions)['head'];

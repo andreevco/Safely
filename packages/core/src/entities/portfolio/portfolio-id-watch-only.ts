@@ -3,9 +3,9 @@ import type {
     SPortfolioWatchOnlyIdAddress,
     SPortfolioWatchOnlyIdXpub
 } from '@safely/sync-storage';
+import { portfolioWatchOnlyIdToString } from '@safely/sync-storage';
 
 import { WatchOnlySource } from './I-portfolio';
-import { PortfolioType } from './I-portfolio';
 import type { IPortfolioId } from './portfolio-id-bip39';
 import type { PortfolioNetworkType } from './portfolio-network-type';
 import { assertUnreachable, Id } from '../../utils';
@@ -24,7 +24,7 @@ export class PortfolioIdWatchOnlyXpub extends Id implements IPortfolioId {
     }
 
     public toString(): string {
-        return this.of('portfolio', PortfolioType.WATCH_ONLY, this.source, this.xpub, this.network);
+        return portfolioWatchOnlyIdToString(this.toJSON());
     }
 
     public toJSON(): SPortfolioWatchOnlyIdXpub {
@@ -50,13 +50,7 @@ export class PortfolioIdWatchOnlyAddress extends Id implements IPortfolioId {
     }
 
     public toString(): string {
-        return this.of(
-            'portfolio',
-            PortfolioType.WATCH_ONLY,
-            this.source,
-            this.address,
-            this.network
-        );
+        return portfolioWatchOnlyIdToString(this.toJSON());
     }
 
     public toJSON(): SPortfolioWatchOnlyIdAddress {

@@ -30,4 +30,6 @@ export {
     type SPortfolioWatchOnlyIdXpub
 } from './portfolio-watch-only.schema';
 
+export { portfolioWatchOnlyIdToString, portfolioBip39IdToString } from './portfolio-id-string';
+
 export { sPortfolio, sPortfolios, type SPortfolio, type SPortfolios } from './portfolios.schema';

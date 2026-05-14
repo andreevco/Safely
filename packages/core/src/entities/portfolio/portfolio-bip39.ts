@@ -1,4 +1,4 @@
-import { type SDerivation, type SPortfolioBip39, ArraySchemaIdKey } from '@safely/sync-storage';
+import { type SDerivation, type SPortfolioBip39, sPortfolioBip39 } from '@safely/sync-storage';
 
 import type { IDerivation } from '../derivation';
 import { Derivation, DerivationChainItemBtcSeed } from '../derivation';
@@ -144,7 +144,7 @@ export class PortfolioBip39 implements IPortfolioDerivable {
     }
 
     public toJSON(): SPortfolioBip39 {
-        return {
+        return sPortfolioBip39.toJson({
             type: this.type,
             id: this.id.toJSON(),
             encryptedSecret: this.mnemonicVault.encryptedSecret,
@@ -155,8 +155,7 @@ export class PortfolioBip39 implements IPortfolioDerivable {
                       revealedFromDevice: this.secretRevealedStatus.revealedFromDevice
                   }
                 : null,
-            derivations: this.derivations.map(d => d.toJSON()),
-            [ArraySchemaIdKey]: this.id.toString()
-        };
+            derivations: this.derivations.map(d => d.toJSON())
+        });
     }
 }

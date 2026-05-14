@@ -7,18 +7,25 @@ export const sContactMeta = z.object({
     color: z.string()
 });
 
-export const sContact = zIndexedObject({
-    id: z.string(),
-    addresses: zIndexedArray(
-        zIndexedObject({
-            address: z.string()
-        })
-    ),
-    meta: sContactMeta,
-    createdAt: z.number()
-});
+export const sContactAddress = zIndexedObject(
+    {
+        address: z.string()
+    },
+    value => value.address
+);
+
+export const sContact = zIndexedObject(
+    {
+        id: z.string(),
+        addresses: zIndexedArray(sContactAddress),
+        meta: sContactMeta,
+        createdAt: z.number()
+    },
+    value => value.id
+);
 
 export type SContact = z.infer<typeof sContact>;
+export type SContactAddress = z.infer<typeof sContactAddress>;
 
 export const sContacts = zIndexedArray(sContact).nullable();
 export type SContacts = z.infer<typeof sContacts>;

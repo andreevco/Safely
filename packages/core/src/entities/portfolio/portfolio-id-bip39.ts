@@ -6,8 +6,9 @@ import type {
     SPortfolioBip39IdImported,
     SPortfolioBip39IdMasterKeyDerived
 } from '@safely/sync-storage';
+import { portfolioBip39IdToString } from '@safely/sync-storage';
 
-import { Bip39Source, PortfolioType } from './I-portfolio';
+import { Bip39Source } from './I-portfolio';
 import type { PortfolioMetaIconEmoji } from './portfolio-meta';
 import { allowedPortfolioMetaEmojis } from './portfolio-meta';
 import type { PortfolioNetworkType } from './portfolio-network-type';
@@ -41,13 +42,7 @@ export class PortfolioIdBip39MasterKeyDerived extends Id implements IPortfolioId
     }
 
     public toString(): string {
-        return this.of(
-            'portfolio',
-            PortfolioType.BIP39,
-            this.source,
-            this.derivationIndex,
-            this.network
-        );
+        return portfolioBip39IdToString(this.toJSON());
     }
 
     public toJSON(): SPortfolioBip39IdMasterKeyDerived {
@@ -101,7 +96,7 @@ export class PortfolioIdBip39Imported extends Id implements IPortfolioId {
     }
 
     public toString(): string {
-        return this.of('portfolio', PortfolioType.BIP39, this.source, this.seedHash, this.network);
+        return portfolioBip39IdToString(this.toJSON());
     }
 
     public toJSON(): SPortfolioBip39IdImported {

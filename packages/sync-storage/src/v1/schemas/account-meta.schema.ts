@@ -18,3 +18,5 @@ export const sAccountMeta = z
         icon: sAccountMetaIcon
     })
     .nullable();
+
+export type SAccountMeta = z.infer<typeof sAccountMeta>;

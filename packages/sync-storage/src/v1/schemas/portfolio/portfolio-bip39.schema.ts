@@ -3,6 +3,7 @@ import z from 'zod';
 import { zIndexedObject } from '@safely/slottree';
 
 import { sPortfolioMeta, sPortfolioNetworkType } from './portfolio-common.schema';
+import { portfolioBip39IdToString } from './portfolio-id-string';
 import { sDerivation } from '../derivation';
 
 export const sPortfolioBip39Source = z.enum(['MASTER_KEY_DERIVED', 'IMPORTED']);
@@ -35,12 +36,15 @@ export const sPortfolioSecretRevealedStatus = z
     })
     .nullable();
 
-export const sPortfolioBip39 = zIndexedObject({
-    type: z.literal('BIP39'),
-    id: sPortfolioBip39Id,
-    meta: sPortfolioMeta,
-    secretRevealedStatus: sPortfolioSecretRevealedStatus,
-    encryptedSecret: z.string(),
-    derivations: z.array(sDerivation)
-});
+export const sPortfolioBip39 = zIndexedObject(
+    {
+        type: z.literal('BIP39'),
+        id: sPortfolioBip39Id,
+        meta: sPortfolioMeta,
+        secretRevealedStatus: sPortfolioSecretRevealedStatus,
+        encryptedSecret: z.string(),
+        derivations: z.array(sDerivation)
+    },
+    value => portfolioBip39IdToString(value.id)
+);
 export type SPortfolioBip39 = z.infer<typeof sPortfolioBip39>;

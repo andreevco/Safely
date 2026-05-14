@@ -1,5 +1,5 @@
 import type { SPortfolioMeta, SPortfolioWatchOnlyId } from '@safely/sync-storage';
-import { type SPortfolioWatchOnly, ArraySchemaIdKey } from '@safely/sync-storage';
+import { type SPortfolioWatchOnly, sPortfolioWatchOnly } from '@safely/sync-storage';
 
 import { WatchOnlySource } from './I-portfolio';
 import type { PortfolioIdWatchOnly } from './portfolio-id-watch-only';
@@ -70,12 +70,11 @@ export class PortfolioWatchOnlyBtc extends PortfolioWatchOnlyBase {
     }
 
     public toJSON(): SPortfolioWatchOnly {
-        return {
+        return sPortfolioWatchOnly.toJson({
             id: this.id.toJSON(),
             type: this.type,
-            meta: this.meta,
-            [ArraySchemaIdKey]: this.id.toString()
-        };
+            meta: this.meta
+        });
     }
 }
 

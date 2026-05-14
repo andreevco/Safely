@@ -3,7 +3,7 @@ import { wordlist } from '@scure/bip39/wordlists/english.js';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import type { SPortfolioBip39, SPortfolioBip39IdImported } from '@safely/sync-storage';
-import { ArraySchemaIdKey, sPortfolio } from '@safely/sync-storage';
+import { sDerivation, sPortfolio, sPortfolioBip39 } from '@safely/sync-storage';
 
 import type { PortfolioBip39 } from '../src';
 import {
@@ -426,7 +426,7 @@ describe('Extended tests for portfolio operations (Bitcoin)', () => {
         expect(portfolio.derivations[0].chains.btc.network).toBe(BtcNetwork.TESTNET);
         expect(portfolio.derivations[0].chains.btc.wallets.length).toBe(1);
 
-        const storedPortfolio: SPortfolioBip39 = {
+        const storedPortfolio: SPortfolioBip39 = sPortfolioBip39.toJson({
             type: PortfolioType.BIP39,
             id: portfolio.id.toJSON(),
             meta: {
@@ -439,17 +439,18 @@ describe('Extended tests for portfolio operations (Bitcoin)', () => {
                       revealedFromDevice: portfolio.secretRevealedStatus.revealedFromDevice
                   }
                 : null,
-            derivations: portfolio.derivations.map(d => ({
-                index: d.index,
-                chains: {
-                    btc: {
-                        xpub: d.chains.btc.xpub
+            derivations: portfolio.derivations.map(d =>
+                sDerivation.toJson({
+                    index: d.index,
+                    chains: {
+                        btc: {
+                            xpub: d.chains.btc.xpub
+                        }
                     }
-                },
-                [ArraySchemaIdKey]: d.id.toString()
-            })),
+                })
+            ),
             encryptedSecret: portfolio.toJSON().encryptedSecret
-        };
+        });
 
         const portfolioRestored = PortfolioFactory.restorePortfolio(
             encryptor,
