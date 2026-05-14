@@ -132,6 +132,33 @@ describe('Account', () => {
         ]);
     }, 7000);
 
+    it('should keep deleted status while waiting for reconnect onboarding', async () => {
+        const account = await factory.createSyncAccount(secureEncryptedStorage);
+        const { newAccount } = await onboardDevice(account, secureEncryptedStorage);
+
+        await account.revokeRemoteDevice(
+            await newAccount.getMyDeviceIkPub(),
+            secureEncryptedStorage
+        );
+        await newAccount.syncProvider.syncStatusManager.waitForStatus(SyncStatus.DEVICE_DELETED);
+
+        const statuses: SyncStatus[] = [];
+        const unsubscribe = newAccount.syncProvider.syncStatusManager.subscribe(status => {
+            statuses.push(status);
+        });
+
+        const connector = await newAccount.reconnectToAccount();
+        const reconnectPromise = connector.waitForCompletion().catch(() => undefined);
+
+        await new Promise(resolve => setTimeout(resolve, 1200));
+
+        connector.abort();
+        unsubscribe();
+        await reconnectPromise;
+
+        expect(statuses).toEqual([SyncStatus.DEVICE_DELETED]);
+    }, 7000);
+
     // TODO: this test emits error
     it('should delete online account', async () => {
         const account = await factory.createSyncAccount(secureEncryptedStorage);

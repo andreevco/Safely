@@ -17,6 +17,8 @@ import {
 
 import { TransactionConfirmationStatusBtc } from '@mobile/screens/TransactionScreen/TransactionConfirmationStatusBtc';
 import {
+    ArrowDown16,
+    ArrowTop16,
     Copy16,
     Globe16,
     Icon,
@@ -24,7 +26,8 @@ import {
     Screen,
     TableCell,
     Text,
-    TouchableOpacity
+    TouchableOpacity,
+    Image
 } from '@mobile/shared/ui';
 
 import { styles } from './TransactionScreen.styles';
@@ -100,15 +103,26 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
                 </Screen.Header.Title>
             </Screen.Header>
             <Screen.Scrollable>
-                <View style={styles.amountContainer}>
-                    <Text variant="titleL" color="primary">
-                        {isInitiator ? '−' : '+'} {activity.transaction.value.format(formatter)}
-                    </Text>
-                    {rate && (
-                        <Text variant="bodyL" color="secondary">
-                            ≈ {activity.transaction.value.convert(rate).format(formatter)}
+                <View style={styles.headerContainer}>
+                    <View style={styles.assetImageContainer}>
+                        <Image
+                            source={activity.transaction.value.asset.image}
+                            style={styles.assetImage}
+                        />
+                        <View style={styles.assetBadge}>
+                            <Icon icon={isInitiator ? ArrowTop16 : ArrowDown16} color="primary" />
+                        </View>
+                    </View>
+                    <View style={styles.amountContainer}>
+                        <Text variant="titleL" color="primary" textAlign="center">
+                            {isInitiator ? '−' : '+'} {activity.transaction.value.format(formatter)}
                         </Text>
-                    )}
+                        {rate && (
+                            <Text variant="bodyL" color="secondary" textAlign="center">
+                                ≈ {activity.transaction.value.convert(rate).format(formatter)}
+                            </Text>
+                        )}
+                    </View>
                 </View>
                 <List style={styles.list}>
                     <List.Group withoutBottomMargin>

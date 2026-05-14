@@ -31,7 +31,7 @@ export class ApiSigner implements RequestSigner {
 
         const signature = await this.ikService.sign(toSign);
 
-        const pub = await this.ikService.getPub();
+        const pub = this.ikService.getPub();
 
         return `ED25519 pub=${toHex(pub)},nonce=${nonce},timestamp=${timestamp},sig=${toHex(signature)}`;
     }

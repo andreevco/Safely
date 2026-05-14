@@ -23,7 +23,7 @@ export interface ISyncProvider<S extends ZodObject> {
     onDevicesChange(observer: (devices: Device[]) => void): () => void;
     onError(obs: (e: SyncError) => void): () => void;
     dispose(): void;
-    restart(): void;
+    restart(options?: { preserveStatus?: boolean }): void;
 
     /**
      * This method forces sending update to the server.

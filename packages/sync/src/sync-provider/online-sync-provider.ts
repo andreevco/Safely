@@ -74,9 +74,11 @@ export class OnlineSyncProvider<Latest extends StorageVersion, Rest>
         this.syncStatusManager.setStatus(SyncStatus.DISABLED);
     }
 
-    public restart(): void {
+    public restart(options?: { preserveStatus?: boolean }): void {
         this.syncMachine.stop();
-        this.syncStatusManager.setStatus(SyncStatus.DISCONNECTED);
+        if (!options?.preserveStatus) {
+            this.syncStatusManager.setStatus(SyncStatus.DISCONNECTED);
+        }
         this.syncMachine = machineFromContainer(this.container, this.syncStatusManager);
         this.syncMachine.start();
     }

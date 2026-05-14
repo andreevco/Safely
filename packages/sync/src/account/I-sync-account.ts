@@ -51,5 +51,5 @@ export interface ISyncAccount<Latest extends StorageVersion> {
     /**
      * Returns the IK public key of the current device.
      */
-    getMyDeviceIkPub(): Promise<Buffer>;
+    getMyDeviceIkPub(): Buffer;
 }

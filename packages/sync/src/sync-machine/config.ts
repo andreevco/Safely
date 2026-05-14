@@ -34,6 +34,7 @@ export type SyncMachineConfig<Latest extends StorageVersion, Rest> = SyncMachine
     transmittingLocalUpdateVersion: number;
     acknowledgedLocalUpdateVersion: number;
     remoteUpdates: EncryptedState[];
+    reconnectAttempt: number;
     lastError?: ErrorDisposition;
 };
 
@@ -45,6 +46,7 @@ export function defaultConfig<Latest extends StorageVersion, Rest>(
         localUpdateVersion: 0,
         transmittingLocalUpdateVersion: 0,
         acknowledgedLocalUpdateVersion: 0,
+        reconnectAttempt: 0,
         remoteUpdates: []
     };
 }

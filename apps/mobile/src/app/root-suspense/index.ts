@@ -1,0 +1,1 @@
+export { RootSuspenseGate } from './RootSuspenseGate';

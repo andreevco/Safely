@@ -1,4 +1,4 @@
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useSyncExternalStore } from 'react';
 
 import { PortfolioFactory } from '@safely/core';
@@ -6,7 +6,7 @@ import type { ISyncAccount } from '@safely/sync';
 import { SyncStatus } from '@safely/sync';
 
 import type { SyncedStorageStructure } from '../../shared';
-import { type DeviceMeta, useAppContext, useSuspenseQuery, SecretEncryptor } from '../../shared';
+import { type DeviceMeta, useAppContext, SecretEncryptor } from '../../shared';
 import { calcSyncedStorageHash } from '../../shared/storage/account/synced/schemas';
 import { calculatePortfoliosHashes } from '../../shared/storage/account/synced/schemas/devices-meta.schema';
 import { useActiveAccount, useActiveAccountQueryKey } from '../account/account-state';
@@ -18,9 +18,10 @@ export function useSyncedDevicesMetaQuery() {
     const accountQueryKey = useActiveAccountQueryKey();
     const { get } = useActiveAccountSyncedStorage('devicesMeta');
 
-    return useSuspenseQuery({
+    return useQuery({
         queryKey: accountQueryKey.devices.meta.toKey(),
         queryFn: get,
+        initialData: get,
         staleTime: Infinity
     });
 }
@@ -33,10 +34,10 @@ export function useCurrentDeviceIkPub() {
     const account = useActiveAccount();
     const accountQueryKey = useActiveAccountQueryKey();
 
-    return useSuspenseQuery({
+    return useQuery({
         queryKey: accountQueryKey.devices.currentIkPub.toKey(),
-        queryFn: async () => {
-            const ikPub = await account.getMyDeviceIkPub();
+        queryFn: () => {
+            const ikPub = account.getMyDeviceIkPub();
             return ikPub.toString('hex');
         },
         staleTime: Infinity
@@ -49,7 +50,7 @@ export enum AccountLinkState {
     UNLINKED = 'unlinked'
 }
 
-export function useAccountLinkState(): AccountLinkState {
+export function useAccountLinkState(): AccountLinkState | undefined {
     const account = useActiveAccount();
     const selfIkPub = useCurrentDeviceIkPub();
     const devicesMeta = useSyncedDevicesMeta();
@@ -61,6 +62,10 @@ export function useAccountLinkState(): AccountLinkState {
 
     if (syncStatus === SyncStatus.DEVICE_DELETED) {
         return AccountLinkState.UNLINKED;
+    }
+
+    if (selfIkPub === undefined) {
+        return undefined;
     }
 
     if (devicesMeta === null) {
@@ -82,7 +87,11 @@ export function useCurrentDeviceMetaSyncedState() {
     const currentIkPub = useCurrentDeviceIkPub();
     const syncedDevicesMeta = useSyncedDevicesMeta();
 
-    return syncedDevicesMeta?.[currentIkPub].syncState;
+    if (currentIkPub === undefined || !syncedDevicesMeta) {
+        return undefined;
+    }
+
+    return syncedDevicesMeta[currentIkPub]?.syncState;
 }
 
 export function useRevokeSyncedDevice() {
@@ -114,7 +123,7 @@ export function useUpdateOwnSyncedDeviceMeta() {
 
     return useMutation<void, Error, ISyncAccount<SyncedStorageStructure>>({
         async mutationFn(syncAccount) {
-            const ikPub = await syncAccount.getMyDeviceIkPub();
+            const ikPub = syncAccount.getMyDeviceIkPub();
             const ikPubHex = ikPub.toString('hex');
 
             const existing = syncAccount.syncProvider.get('devicesMeta');

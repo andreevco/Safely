@@ -1,7 +1,7 @@
-import { useQueryClient } from '@tanstack/react-query';
+import { notifyManager, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect } from 'react';
 
-import type { ITreeStorage } from '@safely/core';
+import type { ITreeStorage, PortfolioBip39 } from '@safely/core';
 import { delay, PortfolioFactory, PortfolioNetworkType } from '@safely/core';
 import { generateBip39Accessor } from '@safely/core/entities/seed';
 import type { ISyncAccount, OnboardingConnector as RawOnboardingConnector } from '@safely/sync';
@@ -22,11 +22,7 @@ import { SecretEncryptor, useAppContext, useSharedUxStorage, useTranslate } from
 import { useLoader } from '../loader';
 import { useLogger } from '../logger';
 import { useMutation } from '../query-core';
-import {
-    useCurrentDeviceIkPub,
-    useSyncedDevicesMeta,
-    useUpdateOwnSyncedDeviceMeta
-} from '../synced-device';
+import { useUpdateOwnSyncedDeviceMeta } from '../synced-device';
 import { useToast } from '../toast';
 
 export {
@@ -67,22 +63,40 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
                 )
             );
 
+            let createdPortfolio: PortfolioBip39 | null = null;
+
             if (options?.createWallet || options?.setActive) {
                 const portfolioFactory = new PortfolioFactory(
                     new SecretEncryptor(account.secretEncryptor, params.secureEncryptedStorage)
                 );
                 using accessorVault = generateBip39Accessor();
-                const portfolio = await portfolioFactory.generatePortfolioBip39(accessorVault, {
+                createdPortfolio = await portfolioFactory.generatePortfolioBip39(accessorVault, {
                     network: PortfolioNetworkType.MAINNET,
                     meta: { name: t('security.groups.wallet.defaultName', { number: 1 }) }
                 });
 
-                await account.syncProvider.set('portfolios', [portfolio.toJSON()]);
+                await account.syncProvider.set('portfolios', [createdPortfolio.toJSON()]);
             }
 
             await client.invalidateQueries({ queryKey: accountKey.list.toKey() });
 
             if (options?.setActive) {
+                const newAccountKey = accountKey.accountId(account.accountId);
+
+                if (createdPortfolio) {
+                    const derivation = createdPortfolio.getDerivations()[0];
+
+                    notifyManager.batch(() => {
+                        client.setQueryData(newAccountKey.portfolios.toKey(), [createdPortfolio]);
+                        client.setQueryData(newAccountKey.portfolios.active.toKey(), {
+                            kind: 'bip39' as const,
+                            portfolio: createdPortfolio,
+                            btcWallet: derivation.chains.btc.wallets[0],
+                            derivation
+                        });
+                    });
+                }
+
                 await setActive(account.accountId);
             }
 
@@ -243,14 +257,17 @@ export function useDeleteAccount() {
     const accountFactory = useAccountsFactory();
     const client = useQueryClient();
     const { storage } = useAppContext();
-    const ikPub = useCurrentDeviceIkPub();
-    const devicesMeta = useSyncedDevicesMeta();
     const clearActiveAccountLocalStorage = useClearActiveAccountLocalStorage();
 
     return useMutation({
         async mutationFn() {
             using secureEncryptedStorage = storage.sync.getSecureEncrypted();
             await secureEncryptedStorage.unlock();
+
+            // TODO: use hooks when p0lunin makes it sync
+            const ikPubBuf = account.getMyDeviceIkPub();
+            const ikPub = ikPubBuf.toString('hex');
+            const devicesMeta = account.syncProvider.get('devicesMeta');
 
             if (devicesMeta) {
                 const { [ikPub]: _, ...rest } = devicesMeta;

@@ -22,7 +22,7 @@ export const pushUpdateToServer = fromPromise(
         try {
             await input.snapshotsApi.saveSnapshot({
                 snapshot: {
-                    kid: (await input.ikService.getKID()).toString('hex'),
+                    kid: input.ikService.getKID().toString('hex'),
                     ciphertext: encrypted.ciphertext.toString('hex'),
                     nonce: encrypted.nonce.toString('hex'),
                     snapshotProof: encrypted.snapshotProof.toString('hex'),

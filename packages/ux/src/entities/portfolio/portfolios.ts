@@ -1,4 +1,4 @@
-import { keepPreviousData, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, notifyManager, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import type {
     BtcWalletReadOnly,
@@ -30,7 +30,7 @@ import {
     useAppContext,
     SecretEncryptor
 } from '../../shared';
-import { useActiveAccount, useActiveAccountQueryKey } from '../account';
+import { useActiveAccountQuery, useActiveAccountQueryKey } from '../account';
 import { useActiveAccountLocalStorage, useActiveAccountSyncedStorage } from '../account/storage';
 import { useErrorToast } from '../errors';
 import { useLogger } from '../logger';
@@ -40,21 +40,25 @@ import { useToast } from '../toast';
 export function usePortfoliosQuery() {
     const config = usePortfoliosQueryConfig();
 
-    return useSuspenseQuery(config);
+    return useQuery({
+        ...config,
+        initialData: () => config.queryFn()
+    });
 }
 
 export function usePortfoliosQueryConfig() {
     const accountQueryKey = useActiveAccountQueryKey();
-    const account = useActiveAccount();
+    const { get } = useActiveAccountSyncedStorage('portfolios');
+    const { data: account } = useActiveAccountQuery();
     const { storage } = useAppContext();
 
     return {
         queryKey: accountQueryKey.portfolios.toKey(),
-        async queryFn() {
-            const data = account.syncProvider.get('portfolios');
-            if (data === null) {
-                return null;
-            }
+        queryFn(): Portfolio[] {
+            if (!account) return [];
+
+            const data = get();
+            if (data === null) return [];
 
             return data.map(p =>
                 PortfolioFactory.restorePortfolio(
@@ -69,12 +73,7 @@ export function usePortfoliosQueryConfig() {
 }
 
 export function usePortfolios() {
-    const portfolios = usePortfoliosQuery().data;
-    if (!portfolios) {
-        throw new Error('Unexpected portfolios query');
-    }
-
-    return portfolios;
+    return usePortfoliosQuery().data;
 }
 
 function useSetPortfolios() {
@@ -84,6 +83,14 @@ function useSetPortfolios() {
 
     return useMutation<void, Error, Portfolio[]>({
         async mutationFn(accounts) {
+            notifyManager.batch(() => {
+                client.setQueryData(accountQueryKey.portfolios.toKey(), accounts);
+
+                if (accounts.length === 0) {
+                    client.setQueryData(accountQueryKey.portfolios.active.toKey(), null);
+                }
+            });
+
             await set(accounts.map(a => a.toJSON()));
             await client.invalidateQueries({ queryKey: accountQueryKey.portfolios.toKey() });
         }
@@ -287,6 +294,7 @@ type ActivePortfolioEntities = ActivePortfolioEntitiesBip39 | ActivePortfolioEnt
 export function useActivePortfolioEntitiesQuery() {
     const { get, set } = useActiveAccountLocalStorage('activePortfolio');
     const accountQueryKey = useActiveAccountQueryKey();
+    const { data: activeAccount } = useActiveAccountQuery();
     const client = useQueryClient();
     const portfoliosQuery = usePortfoliosQueryConfig();
     const logger = useLogger();
@@ -294,6 +302,10 @@ export function useActivePortfolioEntitiesQuery() {
     return useSuspenseQuery<ActivePortfolioEntities | null>({
         queryKey: accountQueryKey.portfolios.active.toKey(),
         async queryFn() {
+            if (!activeAccount) {
+                return null;
+            }
+
             const portfolios: ReturnType<typeof usePortfoliosQuery>['data'] =
                 await client.fetchQuery(portfoliosQuery);
             if (!portfolios?.length) {

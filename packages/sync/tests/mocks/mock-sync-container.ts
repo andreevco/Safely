@@ -42,7 +42,7 @@ export async function createMockSyncContainer<Latest extends StorageVersion, Res
     versions: HCons<Latest, Rest> & AssertVersionHList<HCons<Latest, Rest>>,
     apiConfiguration?: Configuration
 ): Promise<MockSyncContainer<Latest, Rest>> {
-    const keyRepository = new EncryptedKeyRepository(encryptedStorage);
+    const keyRepository = await EncryptedKeyRepository.initialize(encryptedStorage);
     const syncStateRepository = new SyncStateRepository(storage, logger);
 
     const ikService = new IkService(keyRepository);

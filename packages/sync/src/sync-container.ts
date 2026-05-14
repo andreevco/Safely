@@ -70,7 +70,7 @@ export async function createSyncContainer<Latest extends StorageVersion, Rest>(o
     apiConfiguration?: Configuration;
     apiImplementations?: SyncApiImplementations;
 }): Promise<SyncContainer<Latest, Rest>> {
-    const keyRepository = new EncryptedKeyRepository(opts.encryptedStorage);
+    const keyRepository = await EncryptedKeyRepository.initialize(opts.encryptedStorage);
     const syncStateRepository = new SyncStateRepository(opts.storage, opts.logger);
 
     const ikService = new IkService(keyRepository);

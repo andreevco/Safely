@@ -109,16 +109,10 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
         [t, toastService, loaderService, language]
     );
 
-    return (
-        <AppContext value={appContext}>
-            <SecurityCheckInitializer />
-            <LoggerLifecycle />
-            {children}
-        </AppContext>
-    );
+    return <AppContext value={appContext}>{children}</AppContext>;
 };
 
-const SecurityCheckInitializer: FC = () => {
+export const SecurityCheckInitializer: FC = () => {
     const check = useMobileSecurityCheck();
 
     useEffect(() => {
@@ -128,7 +122,7 @@ const SecurityCheckInitializer: FC = () => {
     return null;
 };
 
-const LoggerLifecycle: FC = () => {
+export const LoggerLifecycle: FC = () => {
     useLoggerLifecycle();
 
     return null;
