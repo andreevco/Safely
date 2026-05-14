@@ -3,7 +3,7 @@ import type { ZodType } from 'zod';
 import type { Logger } from '../../logger';
 import { OnboardingAbortedError } from '../../sync-error';
 import type { OnlineSyncProvider } from '../../sync-provider/online-sync-provider';
-import { SyncStatus } from '../../sync-provider/sync-status';
+import { SyncStatus, SyncStatusTimeoutError } from '../../sync-provider/sync-status';
 import { QRMessageCodec, QRMessageOperation } from '../onboarding-codec';
 
 export class ReconnectOnboarding<S extends Record<string, ZodType>> {
@@ -40,14 +40,24 @@ export class ReconnectOnboarding<S extends Record<string, ZodType>> {
                 );
             });
 
-            const synchronized = await Promise.any([
-                this.syncProvider.syncStatusManager
-                    .waitForStatus(SyncStatus.SYNCHRONIZED)
-                    .then(() => true),
-                this.syncProvider.syncStatusManager
-                    .waitForStatus(SyncStatus.DEVICE_DELETED)
-                    .then(() => false)
-            ]);
+            let synchronized: boolean;
+            try {
+                synchronized = await Promise.any([
+                    this.syncProvider.syncStatusManager
+                        .waitForStatus(SyncStatus.SYNCHRONIZED, { timeout: 1000 })
+                        .then(() => true),
+                    this.syncProvider.syncStatusManager
+                        .waitForStatus(SyncStatus.DEVICE_DELETED, { timeout: 1000 })
+                        .then(() => false)
+                ]);
+            } catch (e) {
+                if (e instanceof SyncStatusTimeoutError) {
+                    this.logger.info('Trying to reconnect, attempt', i + 1);
+                    continue;
+                } else {
+                    throw e;
+                }
+            }
             if (synchronized) {
                 return;
             } else {
