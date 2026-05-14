@@ -22,7 +22,11 @@ import { SecretEncryptor, useAppContext, useSharedUxStorage, useTranslate } from
 import { useLoader } from '../loader';
 import { useLogger } from '../logger';
 import { useMutation } from '../query-core';
-import { useUpdateOwnSyncedDeviceMeta } from '../synced-device';
+import {
+    useCurrentDeviceIkPub,
+    useSyncedDevicesMeta,
+    useUpdateOwnSyncedDeviceMeta
+} from '../synced-device';
 import { useToast } from '../toast';
 
 export {
@@ -257,17 +261,14 @@ export function useDeleteAccount() {
     const accountFactory = useAccountsFactory();
     const client = useQueryClient();
     const { storage } = useAppContext();
+    const ikPub = useCurrentDeviceIkPub();
+    const devicesMeta = useSyncedDevicesMeta();
     const clearActiveAccountLocalStorage = useClearActiveAccountLocalStorage();
 
     return useMutation({
         async mutationFn() {
             using secureEncryptedStorage = storage.sync.getSecureEncrypted();
             await secureEncryptedStorage.unlock();
-
-            // TODO: use hooks when p0lunin makes it sync
-            const ikPubBuf = account.getMyDeviceIkPub();
-            const ikPub = ikPubBuf.toString('hex');
-            const devicesMeta = account.syncProvider.get('devicesMeta');
 
             if (devicesMeta) {
                 const { [ikPub]: _, ...rest } = devicesMeta;

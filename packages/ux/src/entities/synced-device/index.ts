@@ -30,16 +30,16 @@ export function useSyncedDevicesMeta(): Record<string, DeviceMeta> | null {
     return useSyncedDevicesMetaQuery().data;
 }
 
-export function useCurrentDeviceIkPub() {
+export function useCurrentDeviceIkPub(): string {
     const account = useActiveAccount();
     const accountQueryKey = useActiveAccountQueryKey();
 
+    const resolve = () => account.getMyDeviceIkPub().toString('hex');
+
     return useQuery({
         queryKey: accountQueryKey.devices.currentIkPub.toKey(),
-        queryFn: () => {
-            const ikPub = account.getMyDeviceIkPub();
-            return ikPub.toString('hex');
-        },
+        queryFn: resolve,
+        initialData: resolve,
         staleTime: Infinity
     }).data;
 }
@@ -50,7 +50,7 @@ export enum AccountLinkState {
     UNLINKED = 'unlinked'
 }
 
-export function useAccountLinkState(): AccountLinkState | undefined {
+export function useAccountLinkState(): AccountLinkState {
     const account = useActiveAccount();
     const selfIkPub = useCurrentDeviceIkPub();
     const devicesMeta = useSyncedDevicesMeta();
@@ -62,10 +62,6 @@ export function useAccountLinkState(): AccountLinkState | undefined {
 
     if (syncStatus === SyncStatus.DEVICE_DELETED) {
         return AccountLinkState.UNLINKED;
-    }
-
-    if (selfIkPub === undefined) {
-        return undefined;
     }
 
     if (devicesMeta === null) {
@@ -87,7 +83,7 @@ export function useCurrentDeviceMetaSyncedState() {
     const currentIkPub = useCurrentDeviceIkPub();
     const syncedDevicesMeta = useSyncedDevicesMeta();
 
-    if (currentIkPub === undefined || !syncedDevicesMeta) {
+    if (!syncedDevicesMeta) {
         return undefined;
     }
 
