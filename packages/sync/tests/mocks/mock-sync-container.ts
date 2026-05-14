@@ -17,6 +17,8 @@ import { ITreeStorage } from '../../src/I-storage';
 import { Logger } from '../../src/logger/logger';
 import { SecretEncryptor } from '../../src/secret-encryptor';
 import { SyncContainer } from '../../src/sync-container';
+import { SnapshotSender } from '../../src/sync-operations/snapshot-sender';
+import { SyncOperations } from '../../src/sync-operations/sync-operations';
 import { UpdateDecryptorService } from '../../src/update-encryptor/update-decryptor-service';
 import { UpdateEncryptorService } from '../../src/update-encryptor/update-encryptor-service';
 import { UpdateHandler } from '../../src/update-handler/handler';
@@ -76,6 +78,18 @@ export async function createMockSyncContainer(
         snapshotApi as unknown as SnapshotsApi,
         logger
     );
+    const snapshotSender = new SnapshotSender(
+        updateEncryptor,
+        yManager,
+        syncStateRepository,
+        snapshotApi as unknown as SnapshotsApi,
+        ikService
+    );
+    const syncOperations = new SyncOperations(
+        updateHandler,
+        snapshotSender,
+        deviceManager
+    );
 
     const secretEncryptor = new SecretEncryptor(keyServiceFactory);
 
@@ -94,6 +108,8 @@ export async function createMockSyncContainer(
         updateEncryptor,
         updateDecryptor,
         updateHandler,
+        snapshotSender,
+        syncOperations,
         yManager,
         deviceManager,
         dmkVerifierService,

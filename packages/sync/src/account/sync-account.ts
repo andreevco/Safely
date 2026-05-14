@@ -59,6 +59,7 @@ export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAcco
             this.container.keyServiceFactory.createDmkSignerService(secureEncryptedStorage),
             this.container.accountsApi,
             this.container.deviceManager,
+            this.container.syncOperations,
             () => {
                 this.syncProvider.triggerSync();
             }
@@ -80,7 +81,7 @@ export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAcco
                 'Cannot revoke self device with revokeRemoteDevice, use SyncAccountFactory.deleteLocalAccount instead'
             );
         }
-        await this.container.deviceManager.revokeDevice(
+        await this.container.syncOperations.revokeDevice(
             ikPub,
             this.container.keyServiceFactory.createDmkSignerService(secureEncryptedStorage)
         );
@@ -134,7 +135,7 @@ export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAcco
 
         // Revoke self device in doc
         const myIkPub = await this.container.ikService.getPub();
-        await this.container.deviceManager.revokeDevice(
+        await this.container.syncOperations.revokeDevice(
             myIkPub,
             this.container.keyServiceFactory.createDmkSignerService(secureEncryptedStorage)
         );
@@ -219,22 +220,6 @@ export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAcco
     }
 
     private async sendSnapshotManually(): Promise<void> {
-        const encrypted = await this.container.updateEncryptor.encryptAndSign(
-            this.container.yManager.encodeAsSnapshot()
-        );
-
-        await this.container.snapshotApi.saveSnapshot({
-            snapshot: {
-                kid: (await this.container.ikService.getKID()).toString('hex'),
-                ciphertext: encrypted.ciphertext.toString('hex'),
-                nonce: encrypted.nonce.toString('hex'),
-                snapshotProof: encrypted.snapshotProof.toString('hex'),
-                signature: encrypted.signature.toString('hex')
-            }
-        });
-
-        await this.container.syncStateRepository.saveState({
-            snapshotProof: encrypted.snapshotProof
-        });
+        await this.container.syncOperations.pushLocalSnapshot();
     }
 }
