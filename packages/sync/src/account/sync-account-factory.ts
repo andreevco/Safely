@@ -13,6 +13,7 @@ import { ed25519_keygen } from '../crypto/ed25519';
 import type { Logger } from '../logger';
 import type { OnboardingConnector } from '../onboarding/connector';
 import { accountsApiForOnboarding, NewDeviceOnboarding } from '../onboarding/new-device-onboarding';
+import { SingleActiveOnboardingCoordinator } from '../onboarding/single-active-onboarding-coordinator';
 
 export class SyncAccountFactory<
     S extends Record<string, ZodType>
@@ -21,6 +22,8 @@ export class SyncAccountFactory<
     private readonly accountManager: AccountManager<S>;
     private readonly apiConfiguration: Configuration;
     private readonly noAccountLogger: Logger;
+    private readonly connectToExistingAccountCoordinator =
+        new SingleActiveOnboardingCoordinator<S>();
 
     constructor(opts: {
         storage: ITreeStorage;
@@ -63,6 +66,12 @@ export class SyncAccountFactory<
     public async connectToExistingSyncAccount(
         secureEncryptedStorage: ITreeStorage
     ): Promise<OnboardingConnector<S>> {
+        return await this.connectToExistingAccountCoordinator.getConnector(() =>
+            this.createConnectToExistingAccountSession(secureEncryptedStorage)
+        );
+    }
+
+    private async createConnectToExistingAccountSession(secureEncryptedStorage: ITreeStorage) {
         const ikKeypair = ed25519_keygen();
         const onboarding = new NewDeviceOnboarding(
             ikKeypair,
@@ -71,16 +80,10 @@ export class SyncAccountFactory<
             secureEncryptedStorage,
             this.noAccountLogger
         );
-        const data = onboarding.generateOnboardingData();
-        const abortController = new AbortController();
+
         return {
-            data,
-            waitForCompletion: async () => {
-                return await onboarding.waitForOnboarding(abortController.signal);
-            },
-            abort: () => {
-                abortController.abort();
-            }
+            data: onboarding.generateOnboardingData(),
+            waitForCompletion: (signal: AbortSignal) => onboarding.waitForOnboarding(signal)
         };
     }
 

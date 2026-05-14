@@ -10,10 +10,10 @@ import type { ISyncProvider } from '../../sync-provider/I-sync-provider';
 import type { OnlineSyncProvider } from '../../sync-provider/online-sync-provider';
 import { SyncStatus } from '../../sync-provider/sync-status';
 import type { OnboardingConnector } from '../connector';
+import { SingleActiveOnboardingCoordinator } from '../single-active-onboarding-coordinator';
 
 export class ReconnectOnboardingCoordinator<S extends Record<string, ZodType>> {
-    private activeConnector: OnboardingConnector<S> | null = null;
-    private activeConnectorPromise: Promise<OnboardingConnector<S>> | null = null;
+    private readonly coordinator = new SingleActiveOnboardingCoordinator<S>();
 
     constructor(
         private readonly account: ISyncAccount<S>,
@@ -24,27 +24,10 @@ export class ReconnectOnboardingCoordinator<S extends Record<string, ZodType>> {
     ) {}
 
     public async getConnector(): Promise<OnboardingConnector<S>> {
-        if (this.activeConnector) {
-            return this.activeConnector;
-        }
-
-        if (this.activeConnectorPromise) {
-            return await this.activeConnectorPromise;
-        }
-
-        const connectorPromise = this.createConnector();
-        this.activeConnectorPromise = connectorPromise;
-        try {
-            return await connectorPromise;
-        } catch (error) {
-            if (this.activeConnectorPromise === connectorPromise) {
-                this.activeConnectorPromise = null;
-            }
-            throw error;
-        }
+        return await this.coordinator.getConnector(() => this.createSession());
     }
 
-    private async createConnector(): Promise<OnboardingConnector<S>> {
+    private async createSession() {
         await this.ensureDeviceCanReconnect();
 
         const onboarding = new ReconnectOnboarding(
@@ -52,13 +35,14 @@ export class ReconnectOnboardingCoordinator<S extends Record<string, ZodType>> {
             this.getSyncProvider() as OnlineSyncProvider<S>,
             this.logger
         );
-        const connector = new ReconnectOnboardingConnector(onboarding, this.account, () => {
-            this.clearConnector(connector);
-        });
 
-        this.activeConnector = connector;
-        this.activeConnectorPromise = null;
-        return connector;
+        return {
+            data: onboarding.generateOnboardingData(),
+            waitForCompletion: async (signal: AbortSignal) => {
+                await onboarding.waitForOnboarding(signal);
+                return this.account;
+            }
+        };
     }
 
     private async ensureDeviceCanReconnect(): Promise<void> {
@@ -72,44 +56,5 @@ export class ReconnectOnboardingCoordinator<S extends Record<string, ZodType>> {
         if (isMyDeviceInList) {
             throw new SyncError('Device was not deleted');
         }
-    }
-
-    private clearConnector(connector: OnboardingConnector<S>): void {
-        if (this.activeConnector === connector) {
-            this.activeConnector = null;
-        }
-    }
-}
-
-class ReconnectOnboardingConnector<
-    S extends Record<string, ZodType>
-> implements OnboardingConnector<S> {
-    public readonly data: Buffer;
-
-    private readonly abortController = new AbortController();
-    private readonly completionPromise: Promise<ISyncAccount<S>>;
-
-    constructor(
-        private readonly onboarding: ReconnectOnboarding<S>,
-        private readonly account: ISyncAccount<S>,
-        private readonly onComplete: () => void
-    ) {
-        this.data = onboarding.generateOnboardingData();
-        this.completionPromise = this.onboarding
-            .waitForOnboarding(this.abortController.signal)
-            .then(() => this.account)
-            .finally(() => {
-                this.onComplete();
-            });
-        this.completionPromise.catch(() => undefined);
-    }
-
-    public waitForCompletion(): Promise<ISyncAccount<S>> {
-        return this.completionPromise;
-    }
-
-    public abort(): void {
-        this.abortController.abort();
-        this.onComplete();
     }
 }
