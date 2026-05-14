@@ -1,17 +1,17 @@
 import { PropsWithChildren, ReactNode, Suspense } from 'react';
 
-import { BootDependencies } from './BootDependencies';
+import { RootSuspenseDependencies } from './RootSuspenseDependencies';
 
-type BootGateProps = PropsWithChildren<{
+type RootSuspenseGateProps = PropsWithChildren<{
     fallback?: ReactNode;
 }>;
 
-export function BootGate(props: BootGateProps) {
+export function RootSuspenseGate(props: RootSuspenseGateProps) {
     const { children, fallback = null } = props;
 
     return (
         <Suspense fallback={fallback}>
-            <BootDependencies />
+            <RootSuspenseDependencies />
             {children}
         </Suspense>
     );

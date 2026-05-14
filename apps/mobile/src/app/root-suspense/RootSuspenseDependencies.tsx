@@ -7,7 +7,7 @@ import {
 
 import { useLockScreenQuery, usePasscode, usePasscodeLockout } from '@mobile/entities/security';
 
-export function BootDependencies() {
+export function RootSuspenseDependencies() {
     useBootConfigQuery();
     useAccounts();
     useActiveAccountQuery();

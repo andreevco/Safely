@@ -264,6 +264,7 @@ export function useDeleteAccount() {
             using secureEncryptedStorage = storage.sync.getSecureEncrypted();
             await secureEncryptedStorage.unlock();
 
+            // TODO: use hooks when p0lunin makes it sync
             const ikPubBuf = await account.getMyDeviceIkPub();
             const ikPub = ikPubBuf.toString('hex');
             const devicesMeta = account.syncProvider.get('devicesMeta');
