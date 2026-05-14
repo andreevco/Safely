@@ -13,7 +13,7 @@ export const pushUpdateToServer = fromPromise(async ({ input }: { input: SyncMac
     try {
         await input.snapshotsApi.saveSnapshot({
             snapshot: {
-                kid: (await input.ikService.getKID()).toString('hex'),
+                kid: input.ikService.getKID().toString('hex'),
                 ciphertext: encrypted.ciphertext.toString('hex'),
                 nonce: encrypted.nonce.toString('hex'),
                 snapshotProof: encrypted.snapshotProof.toString('hex'),
