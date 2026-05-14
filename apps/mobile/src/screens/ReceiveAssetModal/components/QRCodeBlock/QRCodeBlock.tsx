@@ -9,8 +9,8 @@ import { useIsActiveWalletWatchOnly } from '@safely/ux';
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { Badge, Text, Image, TouchableOpacity } from '@mobile/shared/ui';
-import { useCopy } from '@mobile/shared/utils/copy';
 
+import { ReceiveCopyToast, useReceiveCopy } from '../ReceiveCopyToastProvider';
 import { styles } from './QRCodeBlock.styles';
 
 type QRCodeBlockProps = {
@@ -20,7 +20,7 @@ type QRCodeBlockProps = {
 
 export const QRCodeBlock = (props: QRCodeBlockProps) => {
     const { address, asset } = props;
-    const copy = useCopy();
+    const copy = useReceiveCopy();
     const { t } = useTranslation();
     const navigation = useNavigation<RootStackNavigationProp>();
     const isWatchOnly = useIsActiveWalletWatchOnly();
@@ -46,6 +46,7 @@ export const QRCodeBlock = (props: QRCodeBlockProps) => {
                     value={address}
                     size={198}
                 />
+                <ReceiveCopyToast />
             </View>
             <TouchableOpacity onPress={handleCopyAddress}>
                 <Text

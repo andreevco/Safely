@@ -7,10 +7,24 @@ export const styles = StyleSheet.create(theme => ({
         paddingHorizontal: theme.spacing[16],
         paddingVertical: theme.spacing[8],
         gap: theme.spacing[8],
-        borderWidth: StyleSheet.hairlineWidth,
-        borderColor: theme.colors.other.transparentElement,
         borderRadius: theme.radius.full,
-        backgroundColor: theme.colors.button.tertiary.background,
-        maxWidth: '80%'
+        maxWidth: '80%',
+        variants: {
+            variant: {
+                default: {
+                    borderWidth: StyleSheet.hairlineWidth,
+                    borderColor: theme.colors.other.transparentElement,
+                    backgroundColor: theme.colors.button.tertiary.background
+                },
+                white: {
+                    backgroundColor: theme.colors.other.constant.white,
+                    shadowColor: theme.colors.other.constant.black,
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.24,
+                    shadowRadius: 16,
+                    elevation: 8
+                }
+            }
+        }
     }
 }));

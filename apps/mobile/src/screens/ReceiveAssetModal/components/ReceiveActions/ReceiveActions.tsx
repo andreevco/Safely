@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { Share } from 'react-native';
 
 import { Actions, ArrowTop28, Copy28 } from '@mobile/shared/ui';
-import { useCopy } from '@mobile/shared/utils/copy';
 
+import { useReceiveCopy } from '../ReceiveCopyToastProvider';
 import { styles } from './ReceiveActions.styles';
 
 type ReceiveActionsProps = {
@@ -16,7 +16,7 @@ export const ReceiveActions = (props: ReceiveActionsProps) => {
 
     const { t } = useTranslation();
 
-    const copy = useCopy();
+    const copy = useReceiveCopy();
 
     const handleCopyAddress = useCallback(() => {
         copy(address);
