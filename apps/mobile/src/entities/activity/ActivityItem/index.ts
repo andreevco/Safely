@@ -1,1 +1,1 @@
-export { ActivityItem } from './ActivityItem';
+export { ActivityItem, type ActivityItemProps } from './ActivityItem';
