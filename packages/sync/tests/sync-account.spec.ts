@@ -8,12 +8,14 @@ import { ReconnectOnboarding } from '../src/onboarding/reconnect/reconnect-onboa
 import type { ISecretEncryptor } from '../src/secret-encryptor';
 import type { SyncContainer } from '../src/sync-container';
 import type { ISyncProvider } from '../src/sync-provider/I-sync-provider';
+import type { OnlineSyncProvider } from '../src/sync-provider/online-sync-provider';
 import { SyncStatus, SyncStatusManager } from '../src/sync-provider/sync-status';
 
 const structure = { value: z.string() };
 
 describe('SyncAccount reconnect onboarding', () => {
     afterEach(() => {
+        vi.useRealTimers();
         vi.restoreAllMocks();
     });
 
@@ -70,6 +72,32 @@ describe('SyncAccount reconnect onboarding', () => {
         connector.abort();
 
         await expect(account.reconnectToAccount()).resolves.not.toBe(connector);
+    });
+
+    it('retries when reconnect status waits time out', async () => {
+        vi.useFakeTimers();
+
+        const syncStatusManager = new SyncStatusManager(SyncStatus.DEVICE_DELETED);
+        const restart = vi.fn();
+        const syncProvider = {
+            syncStatusManager,
+            restart
+        } as unknown as OnlineSyncProvider<typeof structure>;
+        const info = vi.fn();
+        const logger = { info } as unknown as Logger;
+        const onboarding = new ReconnectOnboarding({} as Buffer, syncProvider, logger);
+
+        const promise = onboarding.waitForOnboarding();
+
+        await vi.advanceTimersByTimeAsync(4000);
+
+        expect(restart).toHaveBeenCalledTimes(2);
+        expect(info).toHaveBeenCalledWith('Trying to reconnect, attempt', 1);
+
+        syncStatusManager.setStatus(SyncStatus.SYNCHRONIZED);
+        await vi.advanceTimersByTimeAsync(3000);
+
+        await expect(promise).resolves.toBeUndefined();
     });
 });
 

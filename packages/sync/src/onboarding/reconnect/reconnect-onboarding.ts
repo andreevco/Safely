@@ -51,7 +51,7 @@ export class ReconnectOnboarding<S extends Record<string, ZodType>> {
                         .then(() => false)
                 ]);
             } catch (e) {
-                if (e instanceof SyncStatusTimeoutError) {
+                if (isSyncStatusTimeoutError(e)) {
                     this.logger.info('Trying to reconnect, attempt', i + 1);
                     continue;
                 } else {
@@ -66,4 +66,15 @@ export class ReconnectOnboarding<S extends Record<string, ZodType>> {
         }
         throw new Error('Onboarding timed out');
     }
+}
+
+function isSyncStatusTimeoutError(error: unknown): boolean {
+    if (error instanceof SyncStatusTimeoutError) {
+        return true;
+    }
+
+    return (
+        error instanceof AggregateError &&
+        error.errors.every((innerError: unknown) => innerError instanceof SyncStatusTimeoutError)
+    );
 }
