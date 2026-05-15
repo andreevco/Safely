@@ -1,4 +1,4 @@
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useSyncExternalStore } from 'react';
 
 import { PortfolioFactory } from '@safely/core';
@@ -6,7 +6,7 @@ import type { ISyncAccount } from '@safely/sync';
 import { SyncStatus } from '@safely/sync';
 
 import type { SyncedStorageStructure } from '../../shared';
-import { type DeviceMeta, useAppContext, useSuspenseQuery, SecretEncryptor } from '../../shared';
+import { type DeviceMeta, useAppContext, SecretEncryptor } from '../../shared';
 import { calcSyncedStorageHash } from '../../shared/storage/account/synced/schemas';
 import { calculatePortfoliosHashes } from '../../shared/storage/account/synced/schemas/devices-meta.schema';
 import { useActiveAccount, useActiveAccountQueryKey } from '../account/account-state';
@@ -18,9 +18,10 @@ export function useSyncedDevicesMetaQuery() {
     const accountQueryKey = useActiveAccountQueryKey();
     const { get } = useActiveAccountSyncedStorage('devicesMeta');
 
-    return useSuspenseQuery({
+    return useQuery({
         queryKey: accountQueryKey.devices.meta.toKey(),
         queryFn: get,
+        initialData: get,
         staleTime: Infinity
     });
 }
@@ -29,16 +30,16 @@ export function useSyncedDevicesMeta(): Record<string, DeviceMeta> | null {
     return useSyncedDevicesMetaQuery().data;
 }
 
-export function useCurrentDeviceIkPub() {
+export function useCurrentDeviceIkPub(): string {
     const account = useActiveAccount();
     const accountQueryKey = useActiveAccountQueryKey();
 
-    return useSuspenseQuery({
+    const resolve = () => account.getMyDeviceIkPub().toString('hex');
+
+    return useQuery({
         queryKey: accountQueryKey.devices.currentIkPub.toKey(),
-        queryFn: async () => {
-            const ikPub = await account.getMyDeviceIkPub();
-            return ikPub.toString('hex');
-        },
+        queryFn: resolve,
+        initialData: resolve,
         staleTime: Infinity
     }).data;
 }
@@ -82,7 +83,11 @@ export function useCurrentDeviceMetaSyncedState() {
     const currentIkPub = useCurrentDeviceIkPub();
     const syncedDevicesMeta = useSyncedDevicesMeta();
 
-    return syncedDevicesMeta?.[currentIkPub].syncState;
+    if (!syncedDevicesMeta) {
+        return undefined;
+    }
+
+    return syncedDevicesMeta[currentIkPub]?.syncState;
 }
 
 export function useRevokeSyncedDevice() {
@@ -114,7 +119,7 @@ export function useUpdateOwnSyncedDeviceMeta() {
 
     return useMutation<void, Error, ISyncAccount<SyncedStorageStructure>>({
         async mutationFn(syncAccount) {
-            const ikPub = await syncAccount.getMyDeviceIkPub();
+            const ikPub = syncAccount.getMyDeviceIkPub();
             const ikPubHex = ikPub.toString('hex');
 
             const existing = syncAccount.syncProvider.get('devicesMeta');

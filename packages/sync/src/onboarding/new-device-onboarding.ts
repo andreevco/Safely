@@ -45,7 +45,7 @@ export class NewDeviceOnboarding<S extends Record<string, ZodType>> {
             }
 
             await new Promise<void>((resolve, reject) => {
-                const timer = setTimeout(resolve, 1000);
+                const timer = setTimeout(resolve, 3000);
                 signal?.addEventListener(
                     'abort',
                     () => {
@@ -139,10 +139,10 @@ export function accountsApiForOnboarding(
                 const signature = ed25519.sign(data, ikKeypair.secretKey);
                 return Buffer.from(signature);
             },
-            verify(_: Buffer, __: Buffer): Promise<boolean> {
+            verify(_: Buffer, __: Buffer): boolean {
                 throw new Error('is not used in this context');
             },
-            getPub: async () => {
+            getPub: () => {
                 return Buffer.from(ikKeypair.publicKey);
             }
         }),

@@ -1,5 +1,5 @@
 /* eslint-disable no-irregular-whitespace */
-import { Suspense, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
@@ -128,24 +128,5 @@ const ActivityItemContent = (props: ActivityItemProps) => {
 };
 
 export const ActivityItem = (props: ActivityItemProps) => {
-    return (
-        <Suspense
-            fallback={
-                <Cell containerStyle={styles.border} skeleton showDivider={false}>
-                    <Cell.Content>
-                        <Cell.Row>
-                            <Cell.Title />
-                            <Cell.Value />
-                        </Cell.Row>
-                        <Cell.Row>
-                            <Cell.Subtitle />
-                            <Cell.Subvalue />
-                        </Cell.Row>
-                    </Cell.Content>
-                </Cell>
-            }
-        >
-            <ActivityItemContent {...props} />
-        </Suspense>
-    );
+    return <ActivityItemContent {...props} />;
 };

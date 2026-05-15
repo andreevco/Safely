@@ -1,5 +1,4 @@
-import { useQueryClient } from '@tanstack/react-query';
-import { useSuspenseQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import type { BLOCKCHAIN_NAME, ContactMeta, IContact } from '@safely/core';
 import { allowedContactMetaColors, Contact } from '@safely/core';
@@ -16,20 +15,22 @@ function pickRandomContactColor(): string {
     return allowedContactMetaColors[Math.floor(Math.random() * allowedContactMetaColors.length)];
 }
 
-function useContactsQuery() {
+export function useContactsQuery() {
     const accountQueryKey = useActiveAccountQueryKey();
     const { get } = useActiveAccountSyncedStorage('contacts');
 
-    return useSuspenseQuery({
-        queryKey: accountQueryKey.contacts.toKey(),
-        async queryFn() {
-            const data = get();
-            if (data === null) {
-                return [];
-            }
+    const resolve = (): Contact[] => {
+        const data = get();
 
-            return data.map(c => Contact.restoreContact(c));
-        },
+        if (data === null) return [];
+
+        return data.map(c => Contact.restoreContact(c));
+    };
+
+    return useQuery({
+        queryKey: accountQueryKey.contacts.toKey(),
+        queryFn: resolve,
+        initialData: resolve,
         staleTime: Infinity
     });
 }

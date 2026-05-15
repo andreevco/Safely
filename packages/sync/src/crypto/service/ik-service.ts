@@ -5,12 +5,16 @@ import type { EncryptedKeyRepository } from '../encrypted-key-repository';
 
 export interface IIkService {
     sign(data: Buffer): Promise<Buffer>;
-    verify(data: Buffer, sig: Buffer): Promise<boolean>;
-    getPub(): Promise<Buffer>;
+    verify(data: Buffer, sig: Buffer): boolean;
+    getPub(): Buffer;
 }
 
 export class IkService implements IIkService {
-    constructor(private readonly keyRepository: EncryptedKeyRepository) {}
+    private readonly kid: Buffer;
+
+    constructor(private readonly keyRepository: EncryptedKeyRepository) {
+        this.kid = Buffer.from(sha256(this.keyRepository.getIKPub())).slice(0, 16);
+    }
 
     public async sign(data: Buffer): Promise<Buffer> {
         const ik = await this.keyRepository.getIKPrv();
@@ -22,17 +26,16 @@ export class IkService implements IIkService {
         return Buffer.from(sig);
     }
 
-    public async verify(data: Buffer, sig: Buffer): Promise<boolean> {
-        const ikPub = await this.keyRepository.getIKPub();
+    public verify(data: Buffer, sig: Buffer): boolean {
+        const ikPub = this.keyRepository.getIKPub();
         return ed25519_verify(sig, data, ikPub);
     }
 
-    public async getPub(): Promise<Buffer> {
+    public getPub(): Buffer {
         return this.keyRepository.getIKPub();
     }
 
-    public async getKID(): Promise<Buffer> {
-        const ikPub = await this.keyRepository.getIKPub();
-        return Buffer.from(sha256(ikPub)).slice(0, 16);
+    public getKID(): Buffer {
+        return Buffer.from(this.kid);
     }
 }

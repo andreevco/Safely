@@ -25,6 +25,7 @@ export type SyncMachineInput = {
 export type SyncMachineConfig = SyncMachineInput & {
     shouldSendUpdate: boolean;
     remoteUpdates: EncryptedState[];
+    reconnectAttempt: number;
     lastError?: ErrorDisposition;
 };
 
@@ -32,6 +33,7 @@ export function defaultConfig(input: SyncMachineInput): SyncMachineConfig {
     return {
         ...input,
         shouldSendUpdate: false,
+        reconnectAttempt: 0,
         remoteUpdates: []
     };
 }

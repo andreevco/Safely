@@ -12,7 +12,8 @@ export const styles = StyleSheet.create(theme => ({
     },
     qrCodeContainer: {
         width: 198,
-        height: 198
+        height: 198,
+        position: 'relative'
     },
     address: {
         width: 198,

@@ -4,14 +4,14 @@ import type z from 'zod';
 import { useAppContext } from '../../../shared';
 import type { AccountLocalStorageStructure } from '../../../shared/storage/account/local/schemas';
 import { accountLocalStorageStructure } from '../../../shared/storage/account/local/schemas';
-import { useActiveAccount } from '../account-state';
+import { useActiveAccountQuery } from '../account-state';
 
 function useActiveAccountLocalStorageInstance() {
     const {
         storage: { ux }
     } = useAppContext();
 
-    const activeAccountId = useActiveAccount()?.accountId;
+    const activeAccountId = useActiveAccountQuery().data?.accountId;
 
     return useMemo(
         () => (activeAccountId ? ux.regular.child(['account', activeAccountId]) : null),
