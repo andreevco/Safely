@@ -11,6 +11,10 @@ export const styles = StyleSheet.create(theme => ({
                 },
                 danger: {
                     color: theme.colors.accent.red
+                },
+                alternate: {
+                    color: theme.colors.accent.orange,
+                    textAlign: 'center'
                 }
             }
         }
