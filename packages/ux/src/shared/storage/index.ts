@@ -3,7 +3,8 @@ export {
     syncedStorageStructure,
     type AccountMeta,
     type ContactMeta,
-    type DeviceMeta
+    type DeviceMeta,
+    type WalletDerivation
 } from './account/synced/schemas';
 export {
     accountLocalStorageStructure,

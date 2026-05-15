@@ -3,7 +3,6 @@ import { useCallback, useEffect } from 'react';
 
 import type { ITreeStorage, PortfolioBip39 } from '@safely/core';
 import { delay, PortfolioFactory, PortfolioNetworkType } from '@safely/core';
-import { generateBip39Accessor } from '@safely/core/entities/seed';
 import type { ISyncAccount, OnboardingConnector as RawOnboardingConnector } from '@safely/sync';
 import { OnboardingAbortedError } from '@safely/sync';
 
@@ -28,6 +27,7 @@ import {
     useUpdateOwnSyncedDeviceMeta
 } from '../synced-device';
 import { useToast } from '../toast';
+import { WalletSeedFactory } from '../wallet-seed';
 
 export {
     type SyncAccount,
@@ -59,6 +59,8 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
             await delay();
 
             const account = await factory.createSyncAccount(params.secureEncryptedStorage);
+            const walletSeedFactory = new WalletSeedFactory(account.syncProvider);
+
             await account.syncProvider.set(
                 'meta',
                 generateAccountMeta(
@@ -66,6 +68,7 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
                     params?.name ?? t('security.groups.wallet.main')
                 )
             );
+            await walletSeedFactory.createWalletDerivation();
 
             let createdPortfolio: PortfolioBip39 | null = null;
 
@@ -73,7 +76,7 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
                 const portfolioFactory = new PortfolioFactory(
                     new SecretEncryptor(account.secretEncryptor, params.secureEncryptedStorage)
                 );
-                using accessorVault = generateBip39Accessor();
+                using accessorVault = await walletSeedFactory.generateBip39SeedAccessor();
                 createdPortfolio = await portfolioFactory.generatePortfolioBip39(accessorVault, {
                     network: PortfolioNetworkType.MAINNET,
                     meta: { name: t('security.groups.wallet.defaultName', { number: 1 }) }

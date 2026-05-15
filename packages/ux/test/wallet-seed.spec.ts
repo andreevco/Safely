@@ -1,0 +1,93 @@
+import { describe, expect, it } from 'vitest';
+
+import type { WalletDerivation } from '../src';
+import { WalletSeedFactory } from '../src';
+
+class WalletDerivationStorage {
+    public value: WalletDerivation | null = null;
+
+    public get() {
+        return this.value;
+    }
+
+    public async set(_key: 'walletDerivation', value: WalletDerivation) {
+        this.value = value;
+    }
+}
+
+describe('WalletSeedFactory', () => {
+    it('initializes wallet derivation state', async () => {
+        const storage = new WalletDerivationStorage();
+        const factory = new WalletSeedFactory(storage);
+
+        const walletDerivation = await factory.createWalletDerivation();
+
+        expect(walletDerivation.root_seed_key).toMatch(/^[0-9a-f]{64}$/);
+        expect(walletDerivation.bip39_256_wallet_index).toBe(0);
+        expect(storage.value).toEqual(walletDerivation);
+    });
+
+    it('does not overwrite an existing wallet derivation state', async () => {
+        const storage = new WalletDerivationStorage();
+        storage.value = {
+            root_seed_key: '0000000000000000000000000000000000000000000000000000000000000000',
+            bip39_256_wallet_index: 0
+        };
+        const factory = new WalletSeedFactory(storage);
+
+        await expect(factory.createWalletDerivation()).rejects.toThrow(
+            'Wallet derivation is already initialized'
+        );
+    });
+
+    it('throws when seed generation is requested before wallet derivation initialization', async () => {
+        const storage = new WalletDerivationStorage();
+        const factory = new WalletSeedFactory(storage);
+
+        await expect(factory.generateBip39SeedAccessor()).rejects.toThrow(
+            'Wallet derivation is not initialized'
+        );
+    });
+
+    it('derives BIP39 seed accessors and advances the wallet index', async () => {
+        const storage = new WalletDerivationStorage();
+        storage.value = {
+            root_seed_key: '0000000000000000000000000000000000000000000000000000000000000000',
+            bip39_256_wallet_index: 0
+        };
+        const factory = new WalletSeedFactory(storage);
+
+        using first = await factory.generateBip39SeedAccessor();
+        using second = await factory.generateBip39SeedAccessor();
+
+        expect(first.value).toEqual([
+            'bring',
+            'grocery',
+            'method',
+            'crime',
+            'clever',
+            'awake',
+            'bitter',
+            'liberty',
+            'armed',
+            'essence',
+            'squirrel',
+            'easily'
+        ]);
+        expect(second.value).toEqual([
+            'also',
+            'glimpse',
+            'another',
+            'add',
+            'farm',
+            'siren',
+            'inner',
+            'add',
+            'noise',
+            'grant',
+            'almost',
+            'example'
+        ]);
+        expect(storage.value.bip39_256_wallet_index).toBe(2);
+    });
+});

@@ -27,7 +27,8 @@ function useSyncChangeObserver() {
             preferredFiat: accountQueryKey.preferredFiat.toKey(),
             meta: accountKey.list.toKey(),
             devicesMeta: accountQueryKey.devices.meta.toKey(),
-            contacts: accountQueryKey.contacts.toKey()
+            contacts: accountQueryKey.contacts.toKey(),
+            wallet_derivation: accountQueryKey.portfolios.toKey()
         };
 
         const unsubscribes = syncedStorageKeys.map(field =>

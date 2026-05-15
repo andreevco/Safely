@@ -7,13 +7,15 @@ import { sContacts } from './contacts.schema';
 import { sDevicesMeta } from './devices-meta.schema';
 import { sPortfolios } from './portfolios.schema';
 import { sPreferredFiat } from './preferred-fiat';
+import { sWalletDerivation } from './wallet-derivation.schema';
 
 export const syncedStorageStructure = {
     preferredFiat: sPreferredFiat,
     portfolios: sPortfolios,
     meta: sAccountMeta,
     devicesMeta: sDevicesMeta,
-    contacts: sContacts
+    contacts: sContacts,
+    walletDerivation: sWalletDerivation
 } as const satisfies Record<string, ZodType>;
 
 export function calcSyncedStorageHash(storage: {
@@ -29,3 +31,4 @@ export { type AccountMeta } from './account-meta.schema';
 export { Contact, type ContactMeta, type SContactOut } from '@safely/core';
 export { type DeviceMeta } from './devices-meta.schema';
 export { type SeedRevealInfo } from './last-seed-revealed.schema';
+export { type WalletDerivation } from './wallet-derivation.schema';

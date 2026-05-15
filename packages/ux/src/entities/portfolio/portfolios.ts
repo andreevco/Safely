@@ -19,7 +19,6 @@ import {
     PortfolioFactory,
     PortfolioNetworkType,
     PortfolioType,
-    generateBip39Accessor,
     VMType
 } from '@safely/core';
 
@@ -36,6 +35,7 @@ import { useErrorToast } from '../errors';
 import { useLogger } from '../logger';
 import { useMutation } from '../query-core';
 import { useToast } from '../toast';
+import { WalletSeedFactory } from '../wallet-seed';
 
 export function usePortfoliosQuery() {
     const config = usePortfoliosQueryConfig();
@@ -120,6 +120,7 @@ export function useNewPortfolioFallbackName() {
 export function useGeneratePortfolio() {
     const { mutateAsync: setActivePortfolio } = useSetActivePortfolio();
     const { mutateAsync: addAccount } = useAddPortfolio();
+    const { data: account } = useActiveAccountQuery();
 
     const errorToast = useErrorToast({
         PortfolioGenerationFailedError: 'importWalletScreen.errors.failedToGenerate'
@@ -134,7 +135,12 @@ export function useGeneratePortfolio() {
         async mutationFn(params) {
             await delay();
 
-            using accessorVault = generateBip39Accessor();
+            if (!account) {
+                throw new Error('Cannot generate portfolio without active account');
+            }
+
+            const walletSeedFactory = new WalletSeedFactory(account.syncProvider);
+            using accessorVault = await walletSeedFactory.generateBip39SeedAccessor();
             const factory = new PortfolioFactory(params.secretEncryptor);
 
             const portfolio = await factory.generatePortfolioBip39(accessorVault, {
