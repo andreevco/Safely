@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
-import { zArrayWithKey, ISyncAccount, SyncAccountFactory } from '../../src';
+import type { ISyncAccount } from '../../src';
+import { zArrayWithKey, SyncAccountFactory } from '../../src';
 import { Logger } from '../../src/logger/logger';
 import { InMemStorage } from '../impl/storage';
 
@@ -23,6 +24,7 @@ export function makeFactory() {
         encryptedStorage,
         structure: Schema,
         apiConfiguration,
+        pollingTimeout: 500,
         noAccountLogger: new Logger().child(`${factoryId}`),
         getAccountLogger: accountId => new Logger().child(`${factoryId}:${accountId}`)
     });

@@ -22,6 +22,7 @@ export class SyncAccountFactory<
     private readonly accountManager: AccountManager<S>;
     private readonly apiConfiguration: Configuration;
     private readonly noAccountLogger: Logger;
+    private readonly pollingTimeout: number;
     private readonly connectToExistingAccountCoordinator =
         new SingleActiveOnboardingCoordinator<S>();
 
@@ -30,6 +31,7 @@ export class SyncAccountFactory<
         encryptedStorage: ITreeStorage;
         structure: S;
         apiConfiguration?: SyncApiConfiguration;
+        pollingTimeout?: number;
         noAccountLogger: Logger;
         getAccountLogger: (accountId: string) => Logger;
     }) {
@@ -38,6 +40,7 @@ export class SyncAccountFactory<
         this.syncAccountIdRepository = new SyncAccountRepository(opts.storage);
         this.apiConfiguration = new Configuration(opts.apiConfiguration);
         this.noAccountLogger = opts.noAccountLogger;
+        this.pollingTimeout = opts.pollingTimeout ?? 2500;
 
         const createAccountService = new CreateAccountService(
             opts.storage,
@@ -45,6 +48,7 @@ export class SyncAccountFactory<
             this.syncAccountIdRepository,
             opts.structure,
             this.apiConfiguration,
+            this.pollingTimeout,
             opts.getAccountLogger
         );
         this.accountManager = new AccountManager(
@@ -54,6 +58,7 @@ export class SyncAccountFactory<
             opts.structure,
             this.apiConfiguration,
             createAccountService,
+            this.pollingTimeout,
             opts.getAccountLogger
         );
     }
@@ -78,7 +83,8 @@ export class SyncAccountFactory<
             accountsApiForOnboarding(ikKeypair, this.apiConfiguration),
             this.accountManager,
             secureEncryptedStorage,
-            this.noAccountLogger
+            this.noAccountLogger,
+            this.pollingTimeout
         );
 
         return {

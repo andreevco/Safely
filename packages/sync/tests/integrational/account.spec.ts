@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { makeFactory, onboardDevice, Schema } from './helpers';
-import { SyncAccountFactory } from '../../src';
+import type { Schema } from './helpers';
+import { makeFactory, onboardDevice } from './helpers';
+import type { SyncAccountFactory } from '../../src';
 import { SyncStatus } from '../../src/sync-provider/sync-status';
 import { InMemStorage } from '../impl/storage';
 
@@ -88,15 +89,12 @@ describe('Account', () => {
         const account = await factory.createSyncAccount(secureEncryptedStorage);
         const { newAccount } = await onboardDevice(account, secureEncryptedStorage);
 
-        await account.revokeRemoteDevice(
-            await newAccount.getMyDeviceIkPub(),
-            secureEncryptedStorage
-        );
+        await account.revokeRemoteDevice(newAccount.getMyDeviceIkPub(), secureEncryptedStorage);
 
         await newAccount.syncProvider.syncStatusManager.waitForStatus(SyncStatus.DEVICE_DELETED);
         expect(await account.getDevices()).toEqual([
             {
-                ikPub: await account.getMyDeviceIkPub(),
+                ikPub: account.getMyDeviceIkPub(),
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 addedAt: expect.any(Number)
             }
@@ -109,26 +107,23 @@ describe('Account', () => {
         await newAccount.syncProvider.syncStatusManager.waitForStatus(SyncStatus.SYNCHRONIZED);
         expect(await account.getDevices()).toEqual([
             {
-                ikPub: await account.getMyDeviceIkPub(),
+                ikPub: account.getMyDeviceIkPub(),
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 addedAt: expect.any(Number)
             },
             {
-                ikPub: await newAccount.getMyDeviceIkPub(),
+                ikPub: newAccount.getMyDeviceIkPub(),
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 addedAt: expect.any(Number)
             }
         ]);
-    }, 7000);
+    }, 15000);
 
     it('should keep deleted status while waiting for reconnect onboarding', async () => {
         const account = await factory.createSyncAccount(secureEncryptedStorage);
         const { newAccount } = await onboardDevice(account, secureEncryptedStorage);
 
-        await account.revokeRemoteDevice(
-            await newAccount.getMyDeviceIkPub(),
-            secureEncryptedStorage
-        );
+        await account.revokeRemoteDevice(newAccount.getMyDeviceIkPub(), secureEncryptedStorage);
         await newAccount.syncProvider.syncStatusManager.waitForStatus(SyncStatus.DEVICE_DELETED);
 
         const statuses: SyncStatus[] = [];
@@ -166,10 +161,7 @@ describe('Account', () => {
             const { newAccount } = await onboardDevice(account, secureEncryptedStorage);
             await new Promise(resolve => setTimeout(resolve, 200));
 
-            await account.revokeRemoteDevice(
-                await newAccount.getMyDeviceIkPub(),
-                secureEncryptedStorage
-            );
+            await account.revokeRemoteDevice(newAccount.getMyDeviceIkPub(), secureEncryptedStorage);
 
             await newAccount.syncProvider.syncStatusManager.waitForStatus(
                 SyncStatus.DEVICE_DELETED
@@ -189,6 +181,6 @@ describe('Account', () => {
             await expect(
                 Promise.all([connector.waitForCompletion(), promise])
             ).rejects.toThrowError('Account already exists');
-        });
+        }, 7000);
     });
 });

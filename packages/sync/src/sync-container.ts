@@ -28,6 +28,7 @@ export type SyncContainer = {
     storage: IStorage;
     encryptedStorage: IStorage;
     logger: Logger;
+    pollingTimeout: number;
 
     keyRepository: EncryptedKeyRepository;
     crdtRepository: YCRDTRepository;
@@ -65,6 +66,7 @@ export async function createSyncContainer(opts: {
     encryptedStorage: IStorage;
     logger: Logger;
     apiConfiguration?: Configuration;
+    pollingTimeout: number;
 }): Promise<SyncContainer> {
     const keyRepository = await EncryptedKeyRepository.initialize(opts.encryptedStorage);
     const syncStateRepository = new SyncStateRepository(opts.storage, opts.logger);
@@ -119,6 +121,7 @@ export async function createSyncContainer(opts: {
 
     return {
         logger: opts.logger,
+        pollingTimeout: opts.pollingTimeout,
         dmkVerifierService,
         keyServiceFactory,
         storage: opts.storage,

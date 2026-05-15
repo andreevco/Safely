@@ -1,11 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 
+import { InMemStorage } from './impl/storage';
 import type { ISyncAccount } from '../src/account/I-sync-account';
 import { SyncAccountFactory } from '../src/account/sync-account-factory';
 import { Logger } from '../src/logger/logger';
 import { NewDeviceOnboarding } from '../src/onboarding/new-device-onboarding';
-import { InMemStorage } from './impl/storage';
 
 const structure = { value: z.string() };
 
