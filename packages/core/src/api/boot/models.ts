@@ -26,7 +26,7 @@ export const bootConfigSchema = z.looseObject({
         home_screen_banners: z.array(
             z.looseObject({
                 id: z.string(),
-                type: z.enum(['default', 'warn', 'danger', 'alternate']),
+                type: z.enum(['default', 'warn', 'danger', 'alternate']).catch('default'),
                 text: z.string(),
                 icon: z.string().optional(),
                 banner_click_action_url: z.string().optional(),
