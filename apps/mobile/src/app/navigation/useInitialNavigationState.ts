@@ -18,7 +18,7 @@ export function useInitialNavigationState(): NavigationContainerProps['initialSt
 
             if (isLockScreenEnabled) {
                 return {
-                    routes: [{ name: 'LockScreen' as const, params: { withLogoutButton: true } }]
+                    routes: [{ name: 'LockScreen' as const }]
                 };
             }
 

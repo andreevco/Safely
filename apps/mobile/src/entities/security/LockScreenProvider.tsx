@@ -65,9 +65,7 @@ export const LockScreenProvider: FC<PropsWithChildren> = ({ children }) => {
             navigationRef.isReady() &&
             navigationRef.getCurrentRoute()?.name !== 'LockScreen'
         ) {
-            navigationRef.dispatch(
-                CommonActions.navigate('LockScreen', { withLogoutButton: true })
-            );
+            navigationRef.dispatch(CommonActions.navigate('LockScreen'));
         }
     }, [isLocked, isEnabled]);
 
