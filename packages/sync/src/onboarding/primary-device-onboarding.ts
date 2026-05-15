@@ -9,6 +9,7 @@ import type { DmkSignerService } from '../crypto/service/dmk-signer-service';
 import type { MasterKeyService } from '../crypto/service/master-key-service';
 import type { DeviceManagementService } from '../device-manager/device-management-service';
 import { SyncError } from '../sync-error';
+import type { SyncOperations } from '../sync-operations/sync-operations';
 import { u8be, utf8 } from '../utils/buffer';
 
 export class PrimaryDeviceOnboarding {
@@ -17,6 +18,7 @@ export class PrimaryDeviceOnboarding {
         private readonly dmkService: DmkSignerService,
         private readonly accountsApi: AccountsApi,
         private readonly deviceManager: DeviceManagementService,
+        private readonly syncOperations: SyncOperations,
         private readonly triggerSync: () => Promise<void>
     ) {}
 
@@ -44,7 +46,7 @@ export class PrimaryDeviceOnboarding {
             }
         });
 
-        await this.deviceManager.addDevice(message.ikPub, this.dmkService);
+        await this.syncOperations.addDevice(message.ikPub, this.dmkService);
         await this.triggerSync();
     }
 

@@ -31,12 +31,9 @@ export class OnlineSyncProvider<S extends Record<string, ZodType>>
         const machine = createActor(createSyncMachine(), {
             input: {
                 syncStateRepository: container.syncStateRepository,
-                updateHandler: container.updateHandler,
-                yManager: container.yManager,
-                updateEncryptor: container.updateEncryptor,
                 snapshotsApi: container.snapshotApi,
                 snapshotsSse: container.snapshotSse,
-                ikService: container.ikService,
+                syncOperations: container.syncOperations,
                 syncStatusManager,
                 logger: container.logger
             },
@@ -103,12 +100,9 @@ function machineFromContainer(container: SyncContainer, syncStatusManager: SyncS
     return createActor(createSyncMachine(), {
         input: {
             syncStateRepository: container.syncStateRepository,
-            updateHandler: container.updateHandler,
-            yManager: container.yManager,
-            updateEncryptor: container.updateEncryptor,
             snapshotsApi: container.snapshotApi,
             snapshotsSse: container.snapshotSse,
-            ikService: container.ikService,
+            syncOperations: container.syncOperations,
             syncStatusManager,
             logger: container.logger
         },

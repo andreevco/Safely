@@ -5,11 +5,10 @@ import type { Device } from '../device-manager/device-repository';
 import type { ITreeStorage } from '../I-storage';
 import type { OnboardingConnector } from '../onboarding/connector';
 import { PrimaryDeviceOnboarding } from '../onboarding/primary-device-onboarding';
-import { ReconnectOnboarding } from '../onboarding/reconnect/reconnect-onboarding';
+import { ReconnectOnboardingCoordinator } from '../onboarding/reconnect/reconnect-onboarding-coordinator';
 import type { ISecretEncryptor } from '../secret-encryptor';
 import type { SyncContainer } from '../sync-container';
 import type { SyncAccountRepository } from './sync-account-repository';
-import { SyncError } from '../sync-error';
 import type { ISyncProvider } from '../sync-provider/I-sync-provider';
 import { OnlineSyncProvider } from '../sync-provider/online-sync-provider';
 import type { SyncStatusManager } from '../sync-provider/sync-status';
@@ -22,6 +21,7 @@ export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAcco
     private readonly structure: S;
     private readonly container: SyncContainer;
     private readonly syncAccountRepository: SyncAccountRepository;
+    private readonly reconnectOnboardingCoordinator: ReconnectOnboardingCoordinator<S>;
 
     private online: boolean;
     private syncProviderInternal: ISyncProvider<S>;
@@ -42,6 +42,13 @@ export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAcco
         this.syncProviderInternal = opts.syncProvider;
         this.online = opts.online;
         this.secretEncryptor = opts.container.secretEncryptor;
+        this.reconnectOnboardingCoordinator = new ReconnectOnboardingCoordinator(
+            this,
+            () => this.syncProviderInternal,
+            opts.container.ikService,
+            opts.container.deviceManager,
+            opts.container.logger
+        );
     }
 
     public get syncProvider(): ISyncProvider<S> {
@@ -59,6 +66,7 @@ export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAcco
             this.container.keyServiceFactory.createDmkSignerService(secureEncryptedStorage),
             this.container.accountsApi,
             this.container.deviceManager,
+            this.container.syncOperations,
             async () => {
                 this.syncProvider.triggerSync();
                 await this.syncProvider.syncStatusManager.waitForStatus(SyncStatus.SYNCHRONIZED);
@@ -81,7 +89,7 @@ export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAcco
                 'Cannot revoke self device with revokeRemoteDevice, use SyncAccountFactory.deleteLocalAccount instead'
             );
         }
-        await this.container.deviceManager.revokeDevice(
+        await this.container.syncOperations.revokeDevice(
             ikPub,
             this.container.keyServiceFactory.createDmkSignerService(secureEncryptedStorage)
         );
@@ -98,32 +106,7 @@ export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAcco
     }
 
     public async reconnectToAccount(): Promise<OnboardingConnector<S>> {
-        if (this.syncProviderInternal.syncStatusManager.getStatus() !== SyncStatus.DEVICE_DELETED) {
-            const deviceList = await this.container.deviceManager.getDevices();
-            const myIkPub = this.container.ikService.getPub();
-            const isMyDeviceInList = deviceList.some(device => device.ikPub.equals(myIkPub));
-            if (isMyDeviceInList) {
-                throw new SyncError('Device was not deleted');
-            }
-        }
-
-        const onboarding = new ReconnectOnboarding(
-            this.container.ikService.getPub(),
-            this.syncProviderInternal as OnlineSyncProvider<S>,
-            this.container.logger
-        );
-        const data = onboarding.generateOnboardingData();
-        const abortController = new AbortController();
-        return {
-            data,
-            waitForCompletion: async () => {
-                await onboarding.waitForOnboarding(abortController.signal);
-                return this;
-            },
-            abort: () => {
-                abortController.abort();
-            }
-        };
+        return await this.reconnectOnboardingCoordinator.getConnector();
     }
 
     public getMyDeviceIkPub(): Buffer {
@@ -135,7 +118,7 @@ export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAcco
 
         // Revoke self device in doc
         const myIkPub = this.container.ikService.getPub();
-        await this.container.deviceManager.revokeDevice(
+        await this.container.syncOperations.revokeDevice(
             myIkPub,
             this.container.keyServiceFactory.createDmkSignerService(secureEncryptedStorage)
         );
@@ -220,22 +203,6 @@ export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAcco
     }
 
     private async sendSnapshotManually(): Promise<void> {
-        const encrypted = await this.container.updateEncryptor.encryptAndSign(
-            this.container.yManager.encodeAsSnapshot()
-        );
-
-        await this.container.snapshotApi.saveSnapshot({
-            snapshot: {
-                kid: this.container.ikService.getKID().toString('hex'),
-                ciphertext: encrypted.ciphertext.toString('hex'),
-                nonce: encrypted.nonce.toString('hex'),
-                snapshotProof: encrypted.snapshotProof.toString('hex'),
-                signature: encrypted.signature.toString('hex')
-            }
-        });
-
-        await this.container.syncStateRepository.saveState({
-            snapshotProof: encrypted.snapshotProof
-        });
+        await this.container.syncOperations.pushLocalSnapshot();
     }
 }
