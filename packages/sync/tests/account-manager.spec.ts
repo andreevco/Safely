@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
+import { InMemStorage } from './impl/storage';
 import { AccountManager } from '../src/account/account-manager';
 import type { CreateAccountService } from '../src/account/create-account-service';
-import { getSyncAccountStorage } from '../src/account/sync-account-storage';
 import { SyncAccountRepository } from '../src/account/sync-account-repository';
+import { getSyncAccountStorage } from '../src/account/sync-account-storage';
 import { Configuration } from '../src/api/generated';
 import { generateAccountID, generateMasterKey, initializeSyncAccount } from '../src/initialize';
 import { Logger } from '../src/logger/logger';
-import { InMemStorage } from './impl/storage';
 
 describe('AccountManager', () => {
     it('returns the same account instance for concurrent getSyncAccount calls', async () => {

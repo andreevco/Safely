@@ -89,15 +89,12 @@ describe('Account', () => {
         const account = await factory.createSyncAccount(secureEncryptedStorage);
         const { newAccount } = await onboardDevice(account, secureEncryptedStorage);
 
-        await account.revokeRemoteDevice(
-            await newAccount.getMyDeviceIkPub(),
-            secureEncryptedStorage
-        );
+        await account.revokeRemoteDevice(newAccount.getMyDeviceIkPub(), secureEncryptedStorage);
 
         await newAccount.syncProvider.syncStatusManager.waitForStatus(SyncStatus.DEVICE_DELETED);
         expect(await account.getDevices()).toEqual([
             {
-                ikPub: await account.getMyDeviceIkPub(),
+                ikPub: account.getMyDeviceIkPub(),
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 addedAt: expect.any(Number)
             }
@@ -110,12 +107,12 @@ describe('Account', () => {
         await newAccount.syncProvider.syncStatusManager.waitForStatus(SyncStatus.SYNCHRONIZED);
         expect(await account.getDevices()).toEqual([
             {
-                ikPub: await account.getMyDeviceIkPub(),
+                ikPub: account.getMyDeviceIkPub(),
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 addedAt: expect.any(Number)
             },
             {
-                ikPub: await newAccount.getMyDeviceIkPub(),
+                ikPub: newAccount.getMyDeviceIkPub(),
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 addedAt: expect.any(Number)
             }
@@ -126,10 +123,7 @@ describe('Account', () => {
         const account = await factory.createSyncAccount(secureEncryptedStorage);
         const { newAccount } = await onboardDevice(account, secureEncryptedStorage);
 
-        await account.revokeRemoteDevice(
-            await newAccount.getMyDeviceIkPub(),
-            secureEncryptedStorage
-        );
+        await account.revokeRemoteDevice(newAccount.getMyDeviceIkPub(), secureEncryptedStorage);
         await newAccount.syncProvider.syncStatusManager.waitForStatus(SyncStatus.DEVICE_DELETED);
 
         const statuses: SyncStatus[] = [];
@@ -167,10 +161,7 @@ describe('Account', () => {
             const { newAccount } = await onboardDevice(account, secureEncryptedStorage);
             await new Promise(resolve => setTimeout(resolve, 200));
 
-            await account.revokeRemoteDevice(
-                await newAccount.getMyDeviceIkPub(),
-                secureEncryptedStorage
-            );
+            await account.revokeRemoteDevice(newAccount.getMyDeviceIkPub(), secureEncryptedStorage);
 
             await newAccount.syncProvider.syncStatusManager.waitForStatus(
                 SyncStatus.DEVICE_DELETED

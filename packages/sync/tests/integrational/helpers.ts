@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
-import { zArrayWithKey, ISyncAccount, SyncAccountFactory } from '../../src';
+import type { ISyncAccount } from '../../src';
+import { zArrayWithKey, SyncAccountFactory } from '../../src';
 import { Logger } from '../../src/logger/logger';
 import { InMemStorage } from '../impl/storage';
 
