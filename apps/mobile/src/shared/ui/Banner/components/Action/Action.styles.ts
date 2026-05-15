@@ -15,6 +15,9 @@ export const styles = StyleSheet.create(theme => ({
                 },
                 danger: {
                     color: theme.colors.accent.red
+                },
+                alternate: {
+                    color: theme.colors.accent.orange
                 }
             }
         }
@@ -28,6 +31,9 @@ export const styles = StyleSheet.create(theme => ({
                 },
                 danger: {
                     tintColor: theme.colors.accent.red
+                },
+                alternate: {
+                    tintColor: theme.colors.accent.orange
                 }
             }
         }

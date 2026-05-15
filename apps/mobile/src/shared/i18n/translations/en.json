@@ -221,7 +221,7 @@
                     "subtitle": "Require passcode to view wallet contents."
                 },
                 "changePasscode": "Change passcode",
-                "eraseAndLogout": "Erase this device and log out"
+                "eraseAndLogout": "Erase app data and log out"
             },
             "wallet": {
                 "title": "Wallet",
@@ -519,10 +519,10 @@
         }
     },
     "logOutAllAccounts": {
-        "title": "Erase this device?",
-        "message": "All accounts and data will be permanently removed from this device. Only accounts with a backup can be restored.",
+        "title": "Erase all app data on this device?",
+        "message": "All accounts, wallets, and app data stored in Safely on this device will be permanently removed. Only backed up accounts can be restored.",
         "slider": {
-            "label": "Erase device",
+            "label": "Erase all app data",
             "description": "Slide to erase"
         },
         "cancel": "Cancel",
