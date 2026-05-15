@@ -49,9 +49,9 @@ export class PortfolioBip39 implements IPortfolioDerivable {
 
     public readonly id: PortfolioIdBip39;
 
-    public meta: PortfolioMeta;
+    public readonly meta: PortfolioMeta;
 
-    public secretRevealedStatus: PortfolioSecretRevealedStatus;
+    public readonly secretRevealedStatus: PortfolioSecretRevealedStatus;
 
     public readonly type = PortfolioType.BIP39;
 
@@ -59,7 +59,7 @@ export class PortfolioBip39 implements IPortfolioDerivable {
         return this.id.network;
     }
 
-    public derivations: IDerivation[];
+    public readonly derivations: IDerivation[];
 
     private readonly mnemonicVault: IMnemonicVaultEncryptedSecretStored;
 
@@ -70,10 +70,6 @@ export class PortfolioBip39 implements IPortfolioDerivable {
         derivations: IDerivation[] | ((self: PortfolioBip39) => IDerivation[]);
         mnemonicVault: IMnemonicVaultEncryptedSecretStored;
     }) {
-        if (!params.derivations.length) {
-            throw new Error('Derivations cannot be empty.');
-        }
-
         this.id = params.id;
         this.meta = params.meta;
         this.secretRevealedStatus = params.secretRevealedStatus;
@@ -81,22 +77,32 @@ export class PortfolioBip39 implements IPortfolioDerivable {
             ? params.derivations
             : params.derivations(this);
         this.mnemonicVault = params.mnemonicVault;
+
+        if (!this.derivations.length) {
+            throw new Error('Derivations cannot be empty.');
+        }
     }
 
-    public removeDerivation(index: number): void {
+    public withoutDerivation(index: number): PortfolioBip39 {
         if (this.derivations.length === 1) {
             throw new Error('Cannot remove last derivation.');
         }
 
-        this.derivations = this.derivations.filter(d => d.index !== index);
+        return new PortfolioBip39({
+            id: this.id,
+            meta: this.meta,
+            secretRevealedStatus: this.secretRevealedStatus,
+            mnemonicVault: this.mnemonicVault,
+            derivations: this.derivations.filter(d => d.index !== index)
+        });
     }
 
-    public async addNextDerivation() {
+    public async withAddedNextDerivation(): Promise<PortfolioBip39> {
         const nextIndex = Math.max(...this.derivations.map(d => d.index)) + 1;
-        return this.addDerivation(nextIndex);
+        return this.withAddedDerivation(nextIndex);
     }
 
-    public async addDerivation(index: number) {
+    public async withAddedDerivation(index: number): Promise<PortfolioBip39> {
         const mnemonic = await this.mnemonicVault.getMnemonic();
         using mnemonicResource = new MnemonicResource(mnemonic);
 
@@ -108,16 +114,24 @@ export class PortfolioBip39 implements IPortfolioDerivable {
             derivationIndex: index,
             walletType: BtcWalletType.NATIVE_SEGWIT
         });
-        const derivation = new Derivation(this, index, derivationRef => ({
-            btc: DerivationChainItemBtcSeed.generate({
-                xpub,
-                seedProducer,
-                derivationIndex: index,
-                derivationRef
-            })
-        }));
 
-        this.derivations = [...this.derivations, derivation].sort((a, b) => a.index - b.index);
+        return new PortfolioBip39({
+            id: this.id,
+            meta: this.meta,
+            secretRevealedStatus: this.secretRevealedStatus,
+            mnemonicVault: this.mnemonicVault,
+            derivations: self => {
+                const newDerivation = new Derivation(self, index, derivationRef => ({
+                    btc: DerivationChainItemBtcSeed.generate({
+                        xpub,
+                        seedProducer,
+                        derivationIndex: index,
+                        derivationRef
+                    })
+                }));
+                return [...this.derivations, newDerivation].sort((a, b) => a.index - b.index);
+            }
+        });
     }
 
     public getDerivation(id: Id): IDerivation | undefined {
@@ -128,15 +142,27 @@ export class PortfolioBip39 implements IPortfolioDerivable {
         return this.derivations;
     }
 
-    public updateMeta(meta: Partial<PortfolioMeta>) {
-        this.meta = { ...this.meta, ...meta };
+    public withMeta(meta: Partial<PortfolioMeta>): PortfolioBip39 {
+        return new PortfolioBip39({
+            id: this.id,
+            meta: { ...this.meta, ...meta },
+            secretRevealedStatus: this.secretRevealedStatus,
+            mnemonicVault: this.mnemonicVault,
+            derivations: this.derivations
+        });
     }
 
-    public recordSecretReveal(fromDevice: string) {
-        this.secretRevealedStatus = {
-            revealedAt: new Date(),
-            revealedFromDevice: fromDevice
-        };
+    public withRecordedSecretReveal(fromDevice: string): PortfolioBip39 {
+        return new PortfolioBip39({
+            id: this.id,
+            meta: this.meta,
+            secretRevealedStatus: {
+                revealedAt: new Date(),
+                revealedFromDevice: fromDevice
+            },
+            mnemonicVault: this.mnemonicVault,
+            derivations: this.derivations
+        });
     }
 
     public getMnemonic(): Promise<string[]> {

@@ -20,8 +20,8 @@ export class Contact implements IContact {
     }
 
     public readonly id: string;
-    public addresses: { blockchain: VM_TYPE; address: string }[];
-    public meta: ContactMeta;
+    public readonly addresses: { blockchain: VM_TYPE; address: string }[];
+    public readonly meta: ContactMeta;
     public readonly createdAt: Date;
 
     constructor(params: {
@@ -36,12 +36,22 @@ export class Contact implements IContact {
         this.createdAt = params.createdAt ?? new Date();
     }
 
-    public updateMeta(meta: Partial<ContactMeta>): void {
-        this.meta = { ...this.meta, ...meta };
+    public withMeta(meta: Partial<ContactMeta>): Contact {
+        return new Contact({
+            id: this.id,
+            addresses: this.addresses,
+            meta: { ...this.meta, ...meta },
+            createdAt: this.createdAt
+        });
     }
 
-    public setAddresses(addresses: { blockchain: VM_TYPE; address: string }[]): void {
-        this.addresses = addresses;
+    public withAddresses(addresses: { blockchain: VM_TYPE; address: string }[]): Contact {
+        return new Contact({
+            id: this.id,
+            addresses,
+            meta: this.meta,
+            createdAt: this.createdAt
+        });
     }
 
     private generateId() {

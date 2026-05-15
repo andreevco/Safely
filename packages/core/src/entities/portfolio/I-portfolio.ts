@@ -30,7 +30,7 @@ export interface IPortfolioBase {
     meta: PortfolioMeta;
     type: PortfolioType;
     networkType: PortfolioNetworkType;
-    updateMeta(meta: Partial<PortfolioMeta>): void;
+    withMeta(meta: Partial<PortfolioMeta>): IPortfolioBase;
     toJSON(): unknown;
 }
 
@@ -40,12 +40,13 @@ export interface IPortfolioDerivable extends IPortfolioBase {
 
     derivations: IDerivation[];
 
-    addDerivation(index: number): Promise<void>;
-    addNextDerivation(): Promise<void>;
-    removeDerivation(index: number): void;
+    withMeta(meta: Partial<PortfolioMeta>): IPortfolioDerivable;
+    withAddedDerivation(index: number): Promise<IPortfolioDerivable>;
+    withAddedNextDerivation(): Promise<IPortfolioDerivable>;
+    withoutDerivation(index: number): IPortfolioDerivable;
     getDerivation(id: Id): IDerivation | undefined;
     getDerivations(): IDerivation[];
-    recordSecretReveal(fromDevice: string): void;
+    withRecordedSecretReveal(fromDevice: string): IPortfolioDerivable;
 }
 
 export interface IPortfolioWatchOnly extends IPortfolioBase {

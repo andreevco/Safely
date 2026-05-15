@@ -9,7 +9,7 @@ import type { WalletReadOnly } from '../derivation/wallet-read-only';
 export abstract class PortfolioWatchOnlyBase implements IPortfolioWatchOnly {
     public readonly id: IPortfolioId;
 
-    public meta: PortfolioMeta;
+    public readonly meta: PortfolioMeta;
 
     public readonly type = PortfolioType.WATCH_ONLY;
 
@@ -24,9 +24,7 @@ export abstract class PortfolioWatchOnlyBase implements IPortfolioWatchOnly {
         this.meta = params.meta;
     }
 
-    public updateMeta(meta: Partial<PortfolioMeta>): void {
-        this.meta = { ...this.meta, ...meta };
-    }
+    public abstract withMeta(meta: Partial<PortfolioMeta>): PortfolioWatchOnlyBase;
 
     public abstract toJSON(): unknown;
 }

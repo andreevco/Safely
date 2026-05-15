@@ -395,7 +395,7 @@ describe('Extended tests for portfolio operations (Bitcoin)', () => {
         expect(portfolio).not.toBeNull();
 
         expect(() => {
-            portfolio.removeDerivation(0);
+            portfolio.withoutDerivation(0);
         }).toThrow();
 
         expect(portfolio.derivations.length).toBe(1);
