@@ -20,7 +20,8 @@ export class ReconnectOnboardingCoordinator<S extends Record<string, ZodType>> {
         private readonly getSyncProvider: () => ISyncProvider<S>,
         private readonly ikService: IkService,
         private readonly deviceManager: DeviceManagementService,
-        private readonly logger: Logger
+        private readonly logger: Logger,
+        private readonly pollingTimeout: number
     ) {}
 
     public async getConnector(): Promise<OnboardingConnector<S>> {
@@ -33,7 +34,8 @@ export class ReconnectOnboardingCoordinator<S extends Record<string, ZodType>> {
         const onboarding = new ReconnectOnboarding(
             this.ikService.getPub(),
             this.getSyncProvider() as OnlineSyncProvider<S>,
-            this.logger
+            this.logger,
+            this.pollingTimeout
         );
 
         return {

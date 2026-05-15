@@ -89,7 +89,7 @@ export class PrimaryDeviceOnboarding {
             }
         });
 
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < 6; i++) {
             await new Promise(resolve => setTimeout(resolve, 1000));
             const devices = await this.deviceManager.getDevices();
             if (devices.some(d => d.ikPub.equals(message.ikPub))) {

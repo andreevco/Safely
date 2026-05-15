@@ -4,6 +4,7 @@
     "scripts": {
         "compile": "tsc --noEmit",
         "dev": "tsc --watch",
+        "test": "vitest run",
         "lint": "eslint ./src"
     },
     "dependencies": {

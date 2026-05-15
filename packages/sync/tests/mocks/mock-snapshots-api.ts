@@ -1,17 +1,13 @@
 import { sha256 } from '@noble/hashes/sha2.js';
 
-import {
-    Configuration,
-    Snapshot,
-    SnapshotProofChain,
-    SnapshotWithProofs
-} from '../../src/api/generated';
+import type { Snapshot, SnapshotProofChain, SnapshotWithProofs } from '../../src/api/generated';
+import { Configuration } from '../../src/api/generated';
 import type {
     GetActualSnapshotRequest,
     GetSnapshotProofChainRequest,
     SaveSnapshotRequest
 } from '../../src/api/generated/apis/SnapshotsApi';
-import { EncryptedState } from '../../src/api/types';
+import type { EncryptedState } from '../../src/api/types';
 
 export class MockSnapshotsServer {
     private snapshots: SnapshotRecord[] = [];

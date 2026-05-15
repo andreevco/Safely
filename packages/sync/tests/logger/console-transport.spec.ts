@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 
-import { ConsoleTransport, LogEntry, LogLevel } from '../../src';
+import type { LogEntry } from '../../src';
+import { ConsoleTransport, LogLevel } from '../../src';
 
 function makeEntry(overrides: Partial<LogEntry> = {}): LogEntry {
     return {

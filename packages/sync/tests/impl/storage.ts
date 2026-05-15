@@ -1,4 +1,4 @@
-import { ITreeStorage } from '../../src/I-storage';
+import type { ITreeStorage } from '../../src';
 
 export class InMemStorage implements ITreeStorage {
     constructor(
@@ -43,5 +43,9 @@ export class InMemStorage implements ITreeStorage {
 
     public async clear(): Promise<void> {
         this.data.clear();
+    }
+
+    public async getOwnKeys(): Promise<string[]> {
+        return [...this.data.keys()];
     }
 }
