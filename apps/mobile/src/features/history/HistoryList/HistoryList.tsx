@@ -196,6 +196,7 @@ export const HistoryList = (props: HistoryListProps) => {
                 ItemSeparatorComponent={renderSeparator}
                 renderItem={renderItem}
                 onScroll={scrollHandler}
+                scrollEventThrottle={50}
             />
             <NewTransactionsBubble mode={bubbleMode} onPress={onBubblePress} />
         </View>
