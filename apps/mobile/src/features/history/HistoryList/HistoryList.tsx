@@ -158,19 +158,7 @@ export const HistoryList = (props: HistoryListProps) => {
                     </View>
                 );
             case 'activity':
-                return (
-                    <ActivityItem
-                        title={item.title}
-                        amountSign={item.amountSign}
-                        formattedValue={item.formattedValue}
-                        valueColor={item.valueColor}
-                        formattedFiat={item.formattedFiat}
-                        timestampLabel={item.timestampLabel}
-                        background={item.background}
-                        counterparty={item.counterparty}
-                        onPress={item.onPress}
-                    />
-                );
+                return <ActivityItem {...item} />;
         }
     }, []);
 

@@ -1,6 +1,6 @@
 import { type TFunction } from 'i18next';
 
-import { ellipsisMiddle } from '@safely/core';
+import { ContactMeta, PortfolioMeta, ellipsisMiddle } from '@safely/core';
 import {
     type ActivityItemsDatedGroupMeta,
     type BtcActivityItem,
@@ -16,30 +16,31 @@ import {
     useRate
 } from '@safely/ux';
 
-import { type ActivityItemProps } from '@mobile/entities/activity';
-
 export type HistoryHeaderRow = {
     key: string;
     type: 'header';
     title: string;
 };
 
-export type HistoryActivityRow = {
+export type ActivityRow = {
     key: string;
     type: 'activity';
     activity: BtcActivityItem;
     title: string;
-    amountSign: ActivityItemProps['amountSign'];
+    amountSign: '+' | '−';
     formattedValue: string;
-    valueColor: ActivityItemProps['valueColor'];
+    valueColor: 'primary' | 'accentGreen';
     formattedFiat: string | null;
     timestampLabel: string | null;
-    background: ActivityItemProps['background'];
-    counterparty: ActivityItemProps['counterparty'];
-    onPress: () => void;
+    background: 'tertiary' | 'secondary';
+    counterparty:
+        | { kind: 'contact'; meta: ContactMeta }
+        | { kind: 'portfolio'; meta: PortfolioMeta }
+        | { kind: 'address'; label: string };
+    onNavigateToTransaction: (activity: BtcActivityItem) => void;
 };
 
-export type HistoryRowItem = HistoryHeaderRow | HistoryActivityRow;
+export type HistoryRowItem = HistoryHeaderRow | ActivityRow;
 
 export type ActivityRowContext = {
     t: TFunction;
@@ -109,7 +110,7 @@ export const buildActivityRow = (
     groupKey: string,
     timeFormatDetails: TimeFormatDetails,
     context: ActivityRowContext
-): HistoryActivityRow => {
+): ActivityRow => {
     const isInitiator = activity.transaction.isInitiator;
     const displayStatus = getBtcTransactionDisplayStatus(
         activity.transaction.raw,
@@ -125,12 +126,12 @@ export const buildActivityRow = (
           ? context.t('history.transactionInfo.sent')
           : context.t('history.transactionInfo.received');
 
-    const amountSign: ActivityItemProps['amountSign'] = isInitiator ? '−' : '+';
+    const amountSign: ActivityRow['amountSign'] = isInitiator ? '−' : '+';
     const formattedValue = activity.transaction.value.format(context.numberFormatter);
     const formattedFiat = context.rateData
         ? activity.transaction.value.convert(context.rateData).format(context.numberFormatter)
         : null;
-    const valueColor: ActivityItemProps['valueColor'] = isInitiator ? 'primary' : 'accentGreen';
+    const valueColor: ActivityRow['valueColor'] = isInitiator ? 'primary' : 'accentGreen';
 
     const timestampLabel = isPending
         ? null
@@ -143,13 +144,13 @@ export const buildActivityRow = (
         : activity.transaction.fromAddress;
     const portfolioMeta = findPortfolioMetaByAddress(context.portfolios, counterpartyAddress);
     const contactMeta = findContactMetaByAddress(context.contacts, counterpartyAddress);
-    const counterparty: ActivityItemProps['counterparty'] = contactMeta
+    const counterparty: ActivityRow['counterparty'] = contactMeta
         ? { kind: 'contact', meta: contactMeta }
         : portfolioMeta
           ? { kind: 'portfolio', meta: portfolioMeta }
           : { kind: 'address', label: ellipsisMiddle(counterpartyAddress, 6) };
 
-    const background: ActivityItemProps['background'] = isPending ? 'tertiary' : 'secondary';
+    const background: ActivityRow['background'] = isPending ? 'tertiary' : 'secondary';
 
     return {
         key: `activity-${groupKey}-${activity.key}`,
@@ -163,6 +164,6 @@ export const buildActivityRow = (
         timestampLabel,
         background,
         counterparty,
-        onPress: () => context.onNavigateToTransaction(activity)
+        onNavigateToTransaction: context.onNavigateToTransaction
     };
 };

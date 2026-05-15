@@ -1,32 +1,14 @@
 import { memo } from 'react';
 import { View } from 'react-native';
 
-import type { ContactMeta, PortfolioMeta } from '@safely/core';
-
 import { ContactName } from '@mobile/entities/contact';
 import { PortfolioName } from '@mobile/entities/portfolio';
+import { ActivityRow } from '@mobile/features/history/HistoryList/utils/rows';
 import { Cell, Text } from '@mobile/shared/ui';
 
 import { styles } from './ActivityItem.styles';
 
-export type ActivityItemCounterparty =
-    | { kind: 'contact'; meta: ContactMeta }
-    | { kind: 'portfolio'; meta: PortfolioMeta }
-    | { kind: 'address'; label: string };
-
-export type ActivityItemProps = {
-    title: string;
-    amountSign: '+' | '−';
-    formattedValue: string;
-    valueColor: 'primary' | 'accentGreen';
-    formattedFiat: string | null;
-    timestampLabel: string | null;
-    background: 'tertiary' | 'secondary';
-    counterparty: ActivityItemCounterparty;
-    onPress: () => void;
-};
-
-const Counterparty = ({ counterparty }: { counterparty: ActivityItemCounterparty }) => {
+const Counterparty = ({ counterparty }: { counterparty: ActivityRow['counterparty'] }) => {
     switch (counterparty.kind) {
         case 'contact':
             return (
@@ -53,8 +35,9 @@ const Counterparty = ({ counterparty }: { counterparty: ActivityItemCounterparty
     }
 };
 
-export const ActivityItem = memo((props: ActivityItemProps) => {
+export const ActivityItem = memo((props: ActivityRow) => {
     const {
+        activity,
         title,
         amountSign,
         formattedValue,
@@ -63,7 +46,7 @@ export const ActivityItem = memo((props: ActivityItemProps) => {
         timestampLabel,
         background,
         counterparty,
-        onPress
+        onNavigateToTransaction
     } = props;
 
     return (
@@ -71,7 +54,7 @@ export const ActivityItem = memo((props: ActivityItemProps) => {
             containerStyle={styles.border}
             background={background}
             showDivider={false}
-            onPress={onPress}
+            onPress={() => onNavigateToTransaction(activity)}
         >
             <Cell.Content>
                 <Cell.Row>
