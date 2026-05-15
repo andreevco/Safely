@@ -47,7 +47,8 @@ export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAcco
             () => this.syncProviderInternal,
             opts.container.ikService,
             opts.container.deviceManager,
-            opts.container.logger
+            opts.container.logger,
+            opts.container.pollingTimeout
         );
     }
 

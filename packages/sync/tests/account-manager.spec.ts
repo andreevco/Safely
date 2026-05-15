@@ -38,6 +38,7 @@ describe('AccountManager', () => {
             structure,
             new Configuration({ basePath: 'mock://sync' }),
             {} as CreateAccountService<typeof structure>,
+            2500,
             () => logger
         );
 

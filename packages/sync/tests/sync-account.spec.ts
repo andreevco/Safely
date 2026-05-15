@@ -85,17 +85,17 @@ describe('SyncAccount reconnect onboarding', () => {
         } as unknown as OnlineSyncProvider<typeof structure>;
         const info = vi.fn();
         const logger = { info } as unknown as Logger;
-        const onboarding = new ReconnectOnboarding({} as Buffer, syncProvider, logger);
+        const onboarding = new ReconnectOnboarding({} as Buffer, syncProvider, logger, 1000);
 
         const promise = onboarding.waitForOnboarding();
 
-        await vi.advanceTimersByTimeAsync(4000);
+        await vi.advanceTimersByTimeAsync(1000);
 
         expect(restart).toHaveBeenCalledTimes(2);
         expect(info).toHaveBeenCalledWith('Trying to reconnect, attempt', 1);
 
         syncStatusManager.setStatus(SyncStatus.SYNCHRONIZED);
-        await vi.advanceTimersByTimeAsync(3000);
+        await vi.advanceTimersByTimeAsync(1000);
 
         await expect(promise).resolves.toBeUndefined();
     });
@@ -119,7 +119,7 @@ function createDeletedAccount(): {
         triggerSync: vi.fn()
     } as unknown as ISyncProvider<typeof structure>;
     const container = {
-        ikService: { getPub: vi.fn().mockResolvedValue(Buffer.from('01', 'hex')) },
+        ikService: { getPub: vi.fn().mockReturnValue(Buffer.from('01', 'hex')) },
         logger: new Logger({ log: () => undefined }),
         secretEncryptor: {} as ISecretEncryptor
     } as unknown as SyncContainer & { ikService: { getPub: ReturnType<typeof vi.fn> } };

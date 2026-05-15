@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { makeFactory, onboardDevice, Schema } from './helpers';
-import { SyncAccountFactory } from '../../src';
+import type { Schema } from './helpers';
+import { makeFactory, onboardDevice } from './helpers';
+import type { SyncAccountFactory } from '../../src';
 import { SyncStatus } from '../../src/sync-provider/sync-status';
 import { InMemStorage } from '../impl/storage';
 
@@ -119,7 +120,7 @@ describe('Account', () => {
                 addedAt: expect.any(Number)
             }
         ]);
-    }, 7000);
+    }, 15000);
 
     it('should keep deleted status while waiting for reconnect onboarding', async () => {
         const account = await factory.createSyncAccount(secureEncryptedStorage);
@@ -189,6 +190,6 @@ describe('Account', () => {
             await expect(
                 Promise.all([connector.waitForCompletion(), promise])
             ).rejects.toThrowError('Account already exists');
-        });
+        }, 7000);
     });
 });

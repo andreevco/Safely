@@ -21,6 +21,7 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
         private readonly syncAccountIDRepository: SyncAccountRepository,
         private readonly structure: S,
         private readonly apiConfiguration: Configuration,
+        private readonly pollingTimeout: number,
         private readonly getAccountLogger: (accountId: string) => Logger
     ) {}
 
@@ -53,6 +54,7 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
             storage,
             encryptedStorage,
             apiConfiguration: this.apiConfiguration,
+            pollingTimeout: this.pollingTimeout,
             logger
         });
 
@@ -109,6 +111,7 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
             storage,
             encryptedStorage,
             apiConfiguration: this.apiConfiguration,
+            pollingTimeout: this.pollingTimeout,
             logger
         });
         await container.accountsApi.confirmOnboarding();

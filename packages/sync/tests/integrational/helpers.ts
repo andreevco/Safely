@@ -23,6 +23,7 @@ export function makeFactory() {
         encryptedStorage,
         structure: Schema,
         apiConfiguration,
+        pollingTimeout: 500,
         noAccountLogger: new Logger().child(`${factoryId}`),
         getAccountLogger: accountId => new Logger().child(`${factoryId}:${accountId}`)
     });

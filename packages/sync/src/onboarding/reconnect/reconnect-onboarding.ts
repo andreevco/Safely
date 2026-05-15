@@ -10,7 +10,8 @@ export class ReconnectOnboarding<S extends Record<string, ZodType>> {
     constructor(
         private readonly myIkPub: Buffer,
         private readonly syncProvider: OnlineSyncProvider<S>,
-        private readonly logger: Logger
+        private readonly logger: Logger,
+        private readonly pollingTimeout: number
     ) {}
 
     public generateOnboardingData(): Buffer {
@@ -29,7 +30,7 @@ export class ReconnectOnboarding<S extends Record<string, ZodType>> {
             this.syncProvider.restart({ preserveStatus: true });
 
             await new Promise<void>((resolve, reject) => {
-                const timer = setTimeout(resolve, 3000);
+                const timer = setTimeout(resolve, this.pollingTimeout);
                 signal?.addEventListener(
                     'abort',
                     () => {
