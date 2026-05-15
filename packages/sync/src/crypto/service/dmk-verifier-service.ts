@@ -4,8 +4,8 @@ import type { EncryptedKeyRepository } from '../encrypted-key-repository';
 export class DmkVerifierService {
     constructor(private readonly encryptedKeyRepository: EncryptedKeyRepository) {}
 
-    public async verify(sig: Buffer, data: Buffer): Promise<boolean> {
-        const ikPub = await this.encryptedKeyRepository.getDMKPub();
+    public verify(sig: Buffer, data: Buffer): boolean {
+        const ikPub = this.encryptedKeyRepository.getDMKPub();
         return ed25519_verify(sig, data, ikPub);
     }
 }

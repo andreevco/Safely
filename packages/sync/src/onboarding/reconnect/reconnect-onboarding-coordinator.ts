@@ -31,7 +31,7 @@ export class ReconnectOnboardingCoordinator<S extends Record<string, ZodType>> {
         await this.ensureDeviceCanReconnect();
 
         const onboarding = new ReconnectOnboarding(
-            await this.ikService.getPub(),
+            this.ikService.getPub(),
             this.getSyncProvider() as OnlineSyncProvider<S>,
             this.logger
         );
@@ -51,7 +51,7 @@ export class ReconnectOnboardingCoordinator<S extends Record<string, ZodType>> {
         }
 
         const deviceList = await this.deviceManager.getDevices();
-        const myIkPub = await this.ikService.getPub();
+        const myIkPub = this.ikService.getPub();
         const isMyDeviceInList = deviceList.some(device => device.ikPub.equals(myIkPub));
         if (isMyDeviceInList) {
             throw new SyncError('Device was not deleted');

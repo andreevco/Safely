@@ -38,7 +38,7 @@ export async function createMockSyncContainer(
     structure: Record<string, z.ZodType>,
     apiConfiguration?: Configuration
 ): Promise<MockSyncContainer> {
-    const keyRepository = new EncryptedKeyRepository(encryptedStorage);
+    const keyRepository = await EncryptedKeyRepository.initialize(encryptedStorage);
     const syncStateRepository = new SyncStateRepository(storage, logger);
     const crdtRepository = new YCRDTRepository(storage, structure);
     const deviceRepository = new DeviceRepository(storage);

@@ -24,7 +24,7 @@ export class SnapshotSender {
     private async saveEncryptedSnapshot(encrypted: EncryptedState): Promise<void> {
         await this.snapshotsApi.saveSnapshot({
             snapshot: {
-                kid: (await this.ikService.getKID()).toString('hex'),
+                kid: this.ikService.getKID().toString('hex'),
                 ciphertext: encrypted.ciphertext.toString('hex'),
                 nonce: encrypted.nonce.toString('hex'),
                 snapshotProof: encrypted.snapshotProof.toString('hex'),

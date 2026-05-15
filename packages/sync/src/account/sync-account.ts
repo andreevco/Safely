@@ -82,7 +82,7 @@ export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAcco
         ikPub: Buffer,
         secureEncryptedStorage: ITreeStorage
     ): Promise<void> {
-        const myIkPub = await this.container.ikService.getPub();
+        const myIkPub = this.container.ikService.getPub();
         if (ikPub.equals(myIkPub)) {
             throw new Error(
                 'Cannot revoke self device with revokeRemoteDevice, use SyncAccountFactory.deleteLocalAccount instead'
@@ -108,7 +108,7 @@ export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAcco
         return await this.reconnectOnboardingCoordinator.getConnector();
     }
 
-    public async getMyDeviceIkPub(): Promise<Buffer> {
+    public getMyDeviceIkPub(): Buffer {
         return this.container.ikService.getPub();
     }
 
@@ -116,7 +116,7 @@ export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAcco
         this.syncProvider.dispose();
 
         // Revoke self device in doc
-        const myIkPub = await this.container.ikService.getPub();
+        const myIkPub = this.container.ikService.getPub();
         await this.container.syncOperations.revokeDevice(
             myIkPub,
             this.container.keyServiceFactory.createDmkSignerService(secureEncryptedStorage)
@@ -167,8 +167,8 @@ export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAcco
 
     private async makeAccountOnline(): Promise<void> {
         const keyRepository = this.container.keyRepository;
-        const dmkPub = await keyRepository.getDMKPub();
-        const ikPub = await keyRepository.getIKPub();
+        const dmkPub = keyRepository.getDMKPub();
+        const ikPub = keyRepository.getIKPub();
 
         await this.container.accountsApi.createAccount({
             newAccount: {

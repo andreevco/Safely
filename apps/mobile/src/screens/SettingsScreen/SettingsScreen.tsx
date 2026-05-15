@@ -1,4 +1,3 @@
-import { Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
@@ -21,9 +20,7 @@ export const SettingsScreen = () => {
                 </Screen.Header.Title>
                 <Screen.Header.CloseButton />
             </Screen.Header>
-            <Suspense fallback={null}>
-                <SettingsContent />
-            </Suspense>
+            <SettingsContent />
         </Screen>
     );
 };
