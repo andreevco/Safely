@@ -75,6 +75,10 @@ export class AnalyticsService {
     }
 
     public async trackOnboardingOpen(props: { onboardingId: string }): Promise<void> {
+        const key = `onboarding_open:${this.accountUuid ?? 'anon'}`;
+        if (this.oncePerSessionFired.has(key)) return;
+
+        this.oncePerSessionFired.add(key);
         await this.send({
             eventName: 'onboarding_open',
             props
@@ -89,9 +93,10 @@ export class AnalyticsService {
         const bucket = await this.computeBucket(input.fiatAmount, 'wallet_open');
         if (bucket === null) return;
 
-        if (this.oncePerSessionFired.has('wallet_open')) return;
+        const key = `wallet_open:${this.accountUuid ?? 'anon'}`;
+        if (this.oncePerSessionFired.has(key)) return;
 
-        this.oncePerSessionFired.add('wallet_open');
+        this.oncePerSessionFired.add(key);
         await this.send({
             eventName: 'wallet_open',
             props: {

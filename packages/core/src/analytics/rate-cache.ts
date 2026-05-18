@@ -14,6 +14,10 @@ export class RateCache {
         const promise = this.rateApi.getRate({ currency }).then(r => r.rate);
         this.cache.set(currency, promise);
 
+        promise.catch(() => {
+            if (this.cache.get(currency) === promise) this.cache.delete(currency);
+        });
+
         return promise;
     }
 }
