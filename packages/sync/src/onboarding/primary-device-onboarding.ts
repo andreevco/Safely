@@ -80,7 +80,7 @@ export class PrimaryDeviceOnboarding {
         const signature = await this.signOnboardingMessage(message.ikPub);
 
         await this.deviceManager.addDevice(message.ikPub, this.dmkService);
-        this.triggerSync();
+        await this.triggerSync();
 
         await this.accountsApi.postOnboardingMessage({
             onboardingMessage: {
