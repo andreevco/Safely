@@ -28,6 +28,6 @@ export const Blur = ({ blurAnimatedProps, style }: BlurProps) => {
             animatedProps={blurAnimatedProps}
         />
     ) : (
-        <Animated.View style={[style, blurAnimatedStyle]} pointerEvents="none" />
+        <Animated.View style={style} pointerEvents="none" />
     );
 };
