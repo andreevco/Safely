@@ -406,6 +406,9 @@
             "unsupportedExtendedKey": "ypub is not supported yet. Use xpub."
         }
     },
+    "account": {
+        "unnamed": "Unnamed"
+    },
     "addAccount": {
         "title": "Add account",
         "subtitle": "Add another account to keep things separate — personal, family, or work.",

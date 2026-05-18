@@ -4,11 +4,11 @@ import { useTranslation } from 'react-i18next';
 import { Keyboard, View } from 'react-native';
 
 import {
-    useAccounts,
     useAppContext,
     useCreateAccount,
     useCreateExistingAccountConnector,
     useLoader,
+    useNewAccountDefaultName,
     useToast
 } from '@safely/ux';
 
@@ -26,7 +26,6 @@ const AddAccountContent = () => {
     } = useAppContext();
     const navigation = useNavigation<RootStackNavigationProp>();
     const signIn = useCreateExistingAccountConnector();
-    const accounts = useAccounts();
     const { mutateAsync: createAccount } = useCreateAccount({
         createWallet: true,
         setActive: true
@@ -34,10 +33,10 @@ const AddAccountContent = () => {
     const { withLoader } = useLoader();
     const toast = useToast();
     const markNavigated = useCloseOnReturn();
+    const defaultName = useNewAccountDefaultName();
 
     const handleCreateNew = () => {
         markNavigated();
-        const defaultName = t('addAccount.defaultName', { number: (accounts?.length ?? 0) + 1 });
         navigation.navigate('CustomizeAccountModal', {
             defaultName,
             onSave: async (name: string) => {

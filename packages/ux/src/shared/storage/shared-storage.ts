@@ -3,7 +3,7 @@ import type z from 'zod';
 
 import type { SharedStorageStructure } from './schemas';
 import { sharedStorageStructure } from './schemas';
-import { useAppContext } from '../../providers';
+import { useAppContext } from '../providers';
 
 export function useSharedUxStorage<K extends keyof SharedStorageStructure>(key: K) {
     const { storage } = useAppContext();

@@ -12,7 +12,7 @@ export {
     type SFiatAsset,
     type SFiatAssetId
 } from './preferred-fiat.schema';
-export { sDevicesMeta } from './devices-meta.schema';
+export { sDevicesMeta, type SDevicesMeta, type SDeviceMeta } from './devices-meta.schema';
 export { sAccountMeta, sAccountMetaIcon, type SAccountMeta } from './account-meta.schema';
 export * from './portfolio';
 export * from './derivation';

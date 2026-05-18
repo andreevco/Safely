@@ -17,6 +17,7 @@ catalog:
   '@tanstack/react-query-persist-client': '^5.90.18'
   xstate: '^5.26.0'
   '@xstate/react': '^6.1.0'
+  zustand: '^5.0.0'
   typescript: '~5.9.3'
   eslint: '^9.39.2'
   '@eslint/js': '^9.39.2'

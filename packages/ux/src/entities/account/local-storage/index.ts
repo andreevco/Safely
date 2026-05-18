@@ -1,9 +1,9 @@
 import { useCallback, useMemo } from 'react';
 import type z from 'zod';
 
+import type { AccountLocalStorageStructure } from './schemas';
+import { accountLocalStorageStructure } from './schemas';
 import { useAppContext } from '../../../shared';
-import type { AccountLocalStorageStructure } from '../../../shared/storage/account/local/schemas';
-import { accountLocalStorageStructure } from '../../../shared/storage/account/local/schemas';
 import { useActiveAccountQuery } from '../account-state';
 
 function useActiveAccountLocalStorageInstance() {

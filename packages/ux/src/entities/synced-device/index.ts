@@ -1,47 +1,22 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useCallback, useSyncExternalStore } from 'react';
+import { useCallback, useMemo, useSyncExternalStore } from 'react';
 
-import { PortfolioFactory } from '@safely/core';
 import type { ISyncAccount } from '@safely/sync';
 import { SyncStatus } from '@safely/sync';
+import type { SDeviceMeta, SyncedStorageStructure } from '@safely/sync-storage';
 
-import type { SyncedStorageStructure } from '../../shared';
-import { type DeviceMeta, useAppContext, SecretEncryptor } from '../../shared';
-import { calcSyncedStorageHash } from '../../shared/storage/account/synced/schemas';
-import { calculatePortfoliosHashes } from '../../shared/storage/account/synced/schemas/devices-meta.schema';
-import { useActiveAccount, useActiveAccountQueryKey } from '../account/account-state';
-import { accountKey } from '../account/keys';
-import { useActiveAccountSyncedStorage } from '../account/storage';
+import { useAppContext } from '../../shared';
+import { useActiveAccount } from '../account/account-state';
+import { useAccountStore } from '../account/sync-storage/useAccountStore';
 import { useMutation } from '../query-core';
 
-export function useSyncedDevicesMetaQuery() {
-    const accountQueryKey = useActiveAccountQueryKey();
-    const { get } = useActiveAccountSyncedStorage('devicesMeta');
-
-    return useQuery({
-        queryKey: accountQueryKey.devices.meta.toKey(),
-        queryFn: get,
-        initialData: get,
-        staleTime: Infinity
-    });
-}
-
-export function useSyncedDevicesMeta(): Record<string, DeviceMeta> | null {
-    return useSyncedDevicesMetaQuery().data;
+export function useSyncedDevicesMeta(): Record<string, SDeviceMeta> | null {
+    return useAccountStore(s => s.active?.devicesMeta ?? null);
 }
 
 export function useCurrentDeviceIkPub(): string {
     const account = useActiveAccount();
-    const accountQueryKey = useActiveAccountQueryKey();
 
-    const resolve = () => account.getMyDeviceIkPub().toString('hex');
-
-    return useQuery({
-        queryKey: accountQueryKey.devices.currentIkPub.toKey(),
-        queryFn: resolve,
-        initialData: resolve,
-        staleTime: Infinity
-    }).data;
+    return useMemo(() => account.getMyDeviceIkPub().toString('hex'), [account]);
 }
 
 export enum AccountLinkState {
@@ -79,23 +54,10 @@ export function useAccountLinkState(): AccountLinkState {
     return hasPeer ? AccountLinkState.PROTECTED : AccountLinkState.SOLO;
 }
 
-export function useCurrentDeviceMetaSyncedState() {
-    const currentIkPub = useCurrentDeviceIkPub();
-    const syncedDevicesMeta = useSyncedDevicesMeta();
-
-    if (!syncedDevicesMeta) {
-        return undefined;
-    }
-
-    return syncedDevicesMeta[currentIkPub]?.syncState;
-}
-
 export function useRevokeSyncedDevice() {
-    const client = useQueryClient();
     const account = useActiveAccount();
-    const accountQueryKey = useActiveAccountQueryKey();
-    const { get, set } = useActiveAccountSyncedStorage('devicesMeta');
     const { storage } = useAppContext();
+    const devicesMeta = useSyncedDevicesMeta() ?? {};
 
     return useMutation({
         async mutationFn(ikPubHex: string) {
@@ -104,18 +66,17 @@ export function useRevokeSyncedDevice() {
                 storage.sync.getSecureEncrypted()
             );
 
-            const existing = get() ?? {};
-            const { [ikPubHex]: _, ...rest } = existing;
-            await set(Object.keys(rest).length > 0 ? rest : null);
-
-            await client.invalidateQueries({ queryKey: accountQueryKey.devices.meta.toKey() });
+            const { [ikPubHex]: _, ...rest } = devicesMeta;
+            await account.syncProvider.set(
+                'devicesMeta',
+                Object.keys(rest).length > 0 ? rest : null
+            );
         }
     });
 }
 
-export function useUpdateOwnSyncedDeviceMeta() {
-    const client = useQueryClient();
-    const { version, build, deviceInfo, storage } = useAppContext();
+export function useSetOwnSyncedDeviceMeta() {
+    const { version, build, deviceInfo } = useAppContext();
 
     return useMutation<void, Error, ISyncAccount<SyncedStorageStructure>>({
         async mutationFn(syncAccount) {
@@ -124,37 +85,18 @@ export function useUpdateOwnSyncedDeviceMeta() {
 
             const existing = syncAccount.syncProvider.get('devicesMeta');
             const currentMetaExisting = existing?.[ikPubHex];
-            const portfolios =
-                syncAccount.syncProvider
-                    .get('portfolios')
-                    ?.map(a =>
-                        PortfolioFactory.restorePortfolio(
-                            new SecretEncryptor(
-                                syncAccount.secretEncryptor,
-                                storage.sync.getSecureEncrypted()
-                            ),
-                            a
-                        )
-                    ) ?? [];
 
-            const currentMeta: DeviceMeta = {
+            const currentMeta: SDeviceMeta = {
                 name: deviceInfo.name,
                 platform: build as 'ios' | 'android',
                 osVersion: deviceInfo.osVersion,
                 appVersion: version,
-                pairedAt: currentMetaExisting?.pairedAt ?? Date.now(),
-                syncState: {
-                    stateHash: calcSyncedStorageHash(syncAccount.syncProvider.getAll()),
-                    portfoliosHashes: calculatePortfoliosHashes(portfolios)
-                }
+                pairedAt: currentMetaExisting?.pairedAt ?? Date.now()
             };
 
             await syncAccount.syncProvider.set('devicesMeta', {
                 ...existing,
                 [ikPubHex]: currentMeta
-            });
-            await client.invalidateQueries({
-                queryKey: accountKey.accountId(syncAccount.accountId).devices.meta.toKey()
             });
         }
     });
