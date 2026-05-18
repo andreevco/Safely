@@ -52,7 +52,6 @@ export const PopupMenu = forwardRef<PopupMenuRef, PopupMenuProps>((props, ref) =
             {hasBackdrop && (
                 <Blur
                     blurAnimatedProps={menu.blurAnimatedProps}
-                    blurAnimatedStyle={menu.blurAnimatedStyle}
                     style={[StyleSheet.absoluteFill, menu.blurAnimatedStyle]}
                 />
             )}
