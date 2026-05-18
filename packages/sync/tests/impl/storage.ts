@@ -49,8 +49,4 @@ export class InMemStorage implements ITreeStorage {
         this.data.clear();
         this.children.clear();
     }
-
-    public async getOwnKeys(): Promise<string[]> {
-        return [...this.data.keys()];
-    }
 }
