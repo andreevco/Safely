@@ -10,6 +10,7 @@ import { CustomizeAccountModal } from '@mobile/screens/CustomizeAccountModal';
 import { CustomizeWalletModal } from '@mobile/screens/CustomizeWalletModal';
 import { DestructiveConfirmSheet } from '@mobile/screens/DestructiveConfirmSheet';
 import { LockScreen } from '@mobile/screens/LockScreen';
+import { NewContactModal } from '@mobile/screens/NewContactModal';
 import { OnboardingNotificationsScreen } from '@mobile/screens/OnboardingNotificationsScreen';
 import { OnboardingPasscodeScreen } from '@mobile/screens/OnboardingPasscodeScreen';
 import { PasscodeVerificationScreen } from '@mobile/screens/PasscodeVerificationScreen';
@@ -95,6 +96,7 @@ export const RootStack = createNativeStackNavigator({
                 CustomizeAccountModal: CustomizeAccountModal,
                 CustomizeWalletModal: CustomizeWalletModal,
                 QRScanModal: QRScanModal,
+                NewContactModal: NewContactModal,
                 AddWalletModal: AddWalletStack,
                 SelectAccountModal: SelectAccountModal,
                 SelectAccountSelectorModal: SelectAccountSelectorModal,
