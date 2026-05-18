@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
-import { useParseError } from '@safely/ux/shared/errors/errors';
+import { useParseError } from '@safely/ux';
 
 import { Button, SlideButton, Text } from '@mobile/shared/ui';
 

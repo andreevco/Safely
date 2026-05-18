@@ -1,11 +1,11 @@
 import { useQueryClient } from '@tanstack/react-query';
 
+import type { SDeviceMeta } from '@safely/sync-storage';
 import { useActiveAccountQueryKey } from '@safely/ux';
-import type { DeviceMeta } from '@safely/ux/shared/storage/account/synced/schemas';
 
 export type AccountSyncState = 'noDevices' | 'fullCopy' | 'partialCopy';
 
-type DevicesMetaMap = Record<string, DeviceMeta> | null;
+type DevicesMetaMap = Record<string, SDeviceMeta> | null;
 
 export function useAccountSyncState(): AccountSyncState {
     const queryClient = useQueryClient();
@@ -24,10 +24,5 @@ export function useAccountSyncState(): AccountSyncState {
         return 'noDevices';
     }
 
-    const currentSyncState = devicesMeta?.[myIkPubHex]?.syncState;
-    const hasFullCopy = otherDevices.some(
-        ([, meta]) => meta.syncState.stateHash === currentSyncState?.stateHash
-    );
-
-    return hasFullCopy ? 'fullCopy' : 'partialCopy';
+    return 'fullCopy';
 }

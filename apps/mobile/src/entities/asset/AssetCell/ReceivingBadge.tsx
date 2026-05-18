@@ -4,8 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import { BtcApiUtxoWithOptionalTx, BtcAssetAmount } from '@safely/core';
-import { useNumberFormatter } from '@safely/ux';
-import { btcTxToActivityItem } from '@safely/ux/entities/activity/api';
+import { useNumberFormatter, btcTxToActivityItem } from '@safely/ux';
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { Text, TouchableOpacity } from '@mobile/shared/ui';

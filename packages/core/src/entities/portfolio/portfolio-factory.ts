@@ -1,4 +1,4 @@
-import type { SPortfolio } from '@safely/sync-storage';
+import type { SPortfolio, SPortfolioWatchOnlyId } from '@safely/sync-storage';
 
 import { PortfolioType, WatchOnlySource } from './I-portfolio';
 import { PortfolioBip39 } from './portfolio-bip39';
@@ -9,7 +9,6 @@ import { PortfolioWatchOnlyBtc } from './portfolio-watch-only';
 import { BtcXpub } from '../../blockchain-api/btc/btc-xpub';
 import type { ISecretEncryptor } from '../../di';
 import { assertUnreachable } from '../../utils';
-import type { BtcNetwork } from '../blockchain';
 import { BtcWalletType, VM_TYPE } from '../blockchain';
 import { DerivationChainItemBtcSeed, Derivation } from '../derivation';
 import { InvalidMnemonicError, PortfolioGenerationFailedError } from '../errors';
@@ -30,21 +29,15 @@ export class PortfolioFactory {
         }
     }
 
-    private static resolveBtcWatchOnlyInput(
+    public static resolveBtcWatchOnlyInput(
         input: string,
-        source: WatchOnlySource,
-        btcNetwork: BtcNetwork
-    ): { address: string; xpub: string | null } {
-        switch (source) {
-            case WatchOnlySource.XPUB:
-                return {
-                    address: BtcXpub.deriveAddress(input, btcNetwork, BtcWalletType.NATIVE_SEGWIT),
-                    xpub: input
-                };
-            case WatchOnlySource.ADDRESS:
-                return { address: input, xpub: null };
-            default:
-                assertUnreachable(source);
+        networkType: PortfolioNetworkType
+    ): SPortfolioWatchOnlyId {
+        const source = BtcXpub.validate(input) ? WatchOnlySource.XPUB : WatchOnlySource.ADDRESS;
+        if (source === WatchOnlySource.XPUB) {
+            return { source, xpub: input, networkType };
+        } else {
+            return { source, address: input, networkType };
         }
     }
 
@@ -134,15 +127,7 @@ export class PortfolioFactory {
     ): PortfolioWatchOnly {
         switch (options.vmType) {
             case VM_TYPE.BTC: {
-                const source = BtcXpub.validate(input)
-                    ? WatchOnlySource.XPUB
-                    : WatchOnlySource.ADDRESS;
-                let id;
-                if (source === WatchOnlySource.XPUB) {
-                    id = { source, xpub: input, networkType: options.network };
-                } else {
-                    id = { source, address: input, networkType: options.network };
-                }
+                const id = PortfolioFactory.resolveBtcWatchOnlyInput(input, options.network);
 
                 return PortfolioWatchOnlyBtc.create(id, options.meta);
             }

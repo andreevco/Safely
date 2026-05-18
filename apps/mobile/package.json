@@ -87,7 +87,8 @@
     "@expo/config-plugins": "~54.0.0",
     "@types/react": "catalog:",
     "eas-cli": "^16.32.0",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "@safely/sync-storage": "workspace:*"
   },
   "private": true
 }
