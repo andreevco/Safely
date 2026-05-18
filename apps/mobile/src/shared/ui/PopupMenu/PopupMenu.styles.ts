@@ -1,9 +1,6 @@
 import { StyleSheet } from 'react-native-unistyles';
 
 export const styles = StyleSheet.create((theme, rt) => ({
-    backdrop: {
-        ...StyleSheet.absoluteFillObject
-    },
     menu: {
         position: 'absolute',
         gap: theme.spacing[8],
