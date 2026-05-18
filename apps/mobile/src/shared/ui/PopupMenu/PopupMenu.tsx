@@ -5,7 +5,7 @@ import { Platform, Pressable, useWindowDimensions } from 'react-native';
 import Animated, { SharedValue } from 'react-native-reanimated';
 import { StyleSheet } from 'react-native-unistyles';
 
-import { TouchableOpacity } from '@mobile/shared/ui';
+import { TouchableOpacity } from '@mobile/shared/ui/TouchableOpacity';
 
 import { OverlayContainer } from './OverlayContainer';
 import { styles } from './PopupMenu.styles';

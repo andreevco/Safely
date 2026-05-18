@@ -1,4 +1,4 @@
-import { Text, type TextProps } from '@mobile/shared/ui';
+import { Text, type TextProps } from '@mobile/shared/ui/Text';
 
 import { styles } from './Description.styles';
 
