@@ -120,7 +120,7 @@ export class DeviceManagementService {
     }
 
     public async verifyStoredDevice(device: StoredDevice): Promise<void> {
-        const isValid = await this.dmkVerifierService.verify(
+        const isValid = this.dmkVerifierService.verify(
             device.sign,
             this.getStoredDeviceSignData(device)
         );
@@ -179,7 +179,7 @@ export class DeviceManagementService {
     }
 
     private async getThisStoredDevice(): Promise<StoredDevice | undefined> {
-        const ikPub = await this.ikService.getPub();
+        const ikPub = this.ikService.getPub();
         return await this.deviceRepository.getStoredDevice(getKID(ikPub));
     }
 

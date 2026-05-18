@@ -17,6 +17,10 @@ import { getReconnectDelayMs } from './reconnect-backoff';
 
 export type SyncMachine = Awaited<Actor<ReturnType<typeof createSyncMachine>>>;
 
+function shouldSendUpdate(context: SyncMachineConfig<StorageVersion, unknown>): boolean {
+    return context.localUpdateVersion > context.acknowledgedLocalUpdateVersion;
+}
+
 export const createSyncMachine = () => {
     return x
         .setup({
@@ -41,8 +45,7 @@ export const createSyncMachine = () => {
                 reconnectDelay: ({ context }) => getReconnectDelayMs(context.reconnectAttempt)
             },
             guards: {
-                shouldSendUpdate: ({ context }) =>
-                    context.localUpdateVersion > context.acknowledgedLocalUpdateVersion,
+                shouldSendUpdate: ({ context }) => shouldSendUpdate(context),
                 shouldHandleUpdate: ({ context }) => context.remoteUpdates.length > 0,
                 isFatalError: ({ context }) => context.lastError?.type === 'fatal'
             },
@@ -53,15 +56,17 @@ export const createSyncMachine = () => {
                 setStatusSynchronizing: ({ context }) => {
                     context.syncStatusManager.setStatus(SyncStatus.SYNCHRONIZING);
                 },
-                setStatusSynchronized: ({ context }) => {
-                    context.syncStatusManager.setStatus(SyncStatus.SYNCHRONIZED);
+                setStatusSynchronizedIfIdle: ({ context }) => {
+                    if (!shouldSendUpdate(context) && context.remoteUpdates.length === 0) {
+                        context.syncStatusManager.setStatus(SyncStatus.SYNCHRONIZED);
+                    }
                 },
                 handleError: assign({
                     lastError: ({
                         context,
                         event
                     }: {
-                        context: SyncMachineConfig;
+                        context: SyncMachineConfig<StorageVersion, unknown>;
                         event: unknown;
                     }) => {
                         const error = (event as { error?: unknown }).error;
@@ -102,7 +107,7 @@ export const createSyncMachine = () => {
                 }),
                 resetReconnectAttemptIfSynced: assign({
                     reconnectAttempt: ({ context }) => {
-                        if (context.shouldSendUpdate || context.remoteUpdates.length > 0) {
+                        if (shouldSendUpdate(context) || context.remoteUpdates.length > 0) {
                             return context.reconnectAttempt;
                         }
 
@@ -165,7 +170,7 @@ export const createSyncMachine = () => {
                     on: {
                         DISCONNECTED: { target: '#syncMachine.waitingForRetry' },
                         CONNECTION_ERROR: { target: '#syncMachine.waitingForRetry' },
-                        REMOTE_UPDATE: { actions: 'setRemoteUpdate' }
+                        REMOTE_UPDATE: { actions: ['setRemoteUpdate', 'setStatusSynchronizing'] }
                     },
                     states: {
                         connecting: {
@@ -175,7 +180,7 @@ export const createSyncMachine = () => {
                             }
                         },
                         connected: {
-                            entry: ['setStatusSynchronized', 'resetReconnectAttemptIfSynced'],
+                            entry: ['setStatusSynchronizedIfIdle', 'resetReconnectAttemptIfSynced'],
                             always: [
                                 {
                                     guard: 'shouldHandleUpdate',
@@ -188,11 +193,11 @@ export const createSyncMachine = () => {
                             ],
                             on: {
                                 LOCAL_UPDATE: {
-                                    actions: ['markDirty'],
+                                    actions: ['markDirty', 'setStatusSynchronizing'],
                                     target: 'transmitting'
                                 },
                                 REMOTE_UPDATE: {
-                                    actions: ['setRemoteUpdate'],
+                                    actions: ['setRemoteUpdate', 'setStatusSynchronizing'],
                                     target: 'applyingUpdate'
                                 }
                             }

@@ -5,23 +5,18 @@ import type { SnapshotsApi } from '../api/generated';
 import type { SnapshotsSse } from '../api/snapshots-sse';
 import type { EncryptedState } from '../api/types';
 import type { YManager } from '../crdt/y-manager';
-import type { IkService } from '../crypto/service/ik-service';
 import type { tDevicesLatest, tDevicesRest } from '../device-manager/device-storage-schema';
 import type { Logger } from '../logger/logger';
+import type { SyncOperations } from '../sync-operations/sync-operations';
 import type { SyncStatusManager } from '../sync-provider/sync-status';
-import type { UpdateEncryptorService } from '../update-encryptor/update-encryptor-service';
-import type { UpdateHandler } from '../update-handler/handler';
 import type { SyncStateRepository } from '../update-handler/sync-state-repository';
 
 export type SyncMachineInput<Latest extends StorageVersion, Rest> = {
     syncStateRepository: SyncStateRepository;
-    updateEncryptor: UpdateEncryptorService;
-    updateHandler: UpdateHandler<Latest, Rest>;
-    yManager: YManager<Latest, Rest>;
     deviceYManager: YManager<tDevicesLatest, tDevicesRest>;
     snapshotsApi: SnapshotsApi;
     snapshotsSse: SnapshotsSse;
-    ikService: IkService;
+    syncOperations: SyncOperations<Latest, Rest>;
     syncStatusManager: SyncStatusManager;
     logger: Logger;
 };

@@ -18,15 +18,14 @@ async function expectOpsToKeepOnlineDevicesConverged(ops: Op[]): Promise<void> {
 
 describe('Sync online/offline properties', () => {
     // This test is super heavy for CI
-    // To run it - increase numRuns to 10000 and lower waitingForRetry to 1ms and
-    // reconnect onboarding timeout to 1ms
+    // To run it - increase numRuns to 10000
     it('applies random online/offline operations and keeps online devices converged', async () => {
         await fc.assert(
             fc.asyncProperty(opsArb, async ops => {
                 await expectOpsToKeepOnlineDevicesConverged(ops);
             }),
             {
-                numRuns: 0
+                numRuns: 1
             }
         );
     }, 3000000);

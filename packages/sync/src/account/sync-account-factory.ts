@@ -12,6 +12,7 @@ import { ed25519_keygen } from '../crypto/ed25519';
 import type { Logger } from '../logger';
 import type { OnboardingConnector } from '../onboarding/connector';
 import { accountsApiForOnboarding, NewDeviceOnboarding } from '../onboarding/new-device-onboarding';
+import { SingleActiveOnboardingCoordinator } from '../onboarding/single-active-onboarding-coordinator';
 import type { SyncApiImplementations } from '../sync-container';
 
 type VersionHList = HCons<StorageVersion, unknown>;
@@ -24,6 +25,7 @@ export type SyncAccountFactoryOptions<Versions extends VersionHList> = {
     versions: Versions & AssertVersionHList<Versions>;
     apiConfiguration?: SyncApiConfiguration;
     apiImplementations?: SyncApiImplementations;
+    pollingTimeout?: number;
     noAccountLogger: Logger;
     getAccountLogger: (accountId: string) => Logger;
 };
@@ -36,12 +38,17 @@ export class SyncAccountFactory<Versions extends VersionHList> implements ISyncA
     private readonly apiConfiguration: Configuration;
     private readonly apiImplementations?: SyncApiImplementations;
     private readonly noAccountLogger: Logger;
+    private readonly pollingTimeout: number;
+    private readonly connectToExistingAccountCoordinator = new SingleActiveOnboardingCoordinator<
+        LatestOf<Versions>
+    >();
 
     constructor(opts: SyncAccountFactoryOptions<Versions>) {
         this.syncAccountIdRepository = new SyncAccountRepository(opts.storage);
         this.apiConfiguration = new Configuration(opts.apiConfiguration);
         this.apiImplementations = opts.apiImplementations;
         this.noAccountLogger = opts.noAccountLogger;
+        this.pollingTimeout = opts.pollingTimeout ?? 2500;
 
         const createAccountService = new CreateAccountService(
             opts.storage,
@@ -49,6 +56,7 @@ export class SyncAccountFactory<Versions extends VersionHList> implements ISyncA
             this.syncAccountIdRepository,
             opts.versions,
             this.apiConfiguration,
+            this.pollingTimeout,
             this.apiImplementations,
             opts.getAccountLogger
         );
@@ -60,6 +68,7 @@ export class SyncAccountFactory<Versions extends VersionHList> implements ISyncA
             this.apiConfiguration,
             this.apiImplementations,
             createAccountService,
+            this.pollingTimeout,
             opts.getAccountLogger
         );
     }
@@ -72,6 +81,12 @@ export class SyncAccountFactory<Versions extends VersionHList> implements ISyncA
     public async connectToExistingSyncAccount(
         secureEncryptedStorage: ITreeStorage
     ): Promise<OnboardingConnector<LatestOf<Versions>>> {
+        return await this.connectToExistingAccountCoordinator.getConnector(() =>
+            this.createConnectToExistingAccountSession(secureEncryptedStorage)
+        );
+    }
+
+    private async createConnectToExistingAccountSession(secureEncryptedStorage: ITreeStorage) {
         const ikKeypair = ed25519_keygen();
         const accountsApi =
             this.apiImplementations?.accountsApi ??
@@ -81,18 +96,13 @@ export class SyncAccountFactory<Versions extends VersionHList> implements ISyncA
             accountsApi,
             this.accountManager,
             secureEncryptedStorage,
-            this.noAccountLogger
+            this.noAccountLogger,
+            this.pollingTimeout
         );
-        const data = onboarding.generateOnboardingData();
-        const abortController = new AbortController();
+
         return {
-            data,
-            waitForCompletion: async () => {
-                return await onboarding.waitForOnboarding(abortController.signal);
-            },
-            abort: () => {
-                abortController.abort();
-            }
+            data: onboarding.generateOnboardingData(),
+            waitForCompletion: (signal: AbortSignal) => onboarding.waitForOnboarding(signal)
         };
     }
 

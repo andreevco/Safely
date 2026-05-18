@@ -22,7 +22,8 @@ export class NewDeviceOnboarding<Latest extends StorageVersion, Rest> {
         private readonly accountsApi: AccountsApi,
         private readonly accountManager: AccountManager<Latest, Rest>,
         private readonly secureEncryptedStorage: ITreeStorage,
-        private readonly logger: Logger
+        private readonly logger: Logger,
+        private readonly pollingTimeout: number
     ) {}
 
     public generateOnboardingData(): Buffer {
@@ -45,20 +46,6 @@ export class NewDeviceOnboarding<Latest extends StorageVersion, Rest> {
                 throw new OnboardingAbortedError();
             }
 
-            if (i > 0) {
-                await new Promise<void>((resolve, reject) => {
-                    const timer = setTimeout(resolve, 3000);
-                    signal?.addEventListener(
-                        'abort',
-                        () => {
-                            clearTimeout(timer);
-                            reject(new OnboardingAbortedError());
-                        },
-                        { once: true }
-                    );
-                });
-            }
-
             let message: OnboardingMessage;
             try {
                 message = await this.accountsApi.getOnboardingMessage({
@@ -70,6 +57,7 @@ export class NewDeviceOnboarding<Latest extends StorageVersion, Rest> {
                 }
 
                 this.logger.info('No onboarding message yet, retrying...', err);
+                await this.waitBeforeRetry(signal);
                 continue;
             }
 
@@ -80,6 +68,20 @@ export class NewDeviceOnboarding<Latest extends StorageVersion, Rest> {
             return await this.handleOnboardingMessage(message);
         }
         throw new Error('Onboarding timed out');
+    }
+
+    private async waitBeforeRetry(signal?: AbortSignal): Promise<void> {
+        await new Promise<void>((resolve, reject) => {
+            const timer = setTimeout(resolve, this.pollingTimeout);
+            signal?.addEventListener(
+                'abort',
+                () => {
+                    clearTimeout(timer);
+                    reject(new OnboardingAbortedError());
+                },
+                { once: true }
+            );
+        });
     }
 
     private async handleOnboardingMessage(msg: OnboardingMessage) {

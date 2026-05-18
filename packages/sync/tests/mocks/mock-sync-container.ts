@@ -20,6 +20,8 @@ import type { ITreeStorage } from '../../src/I-storage';
 import type { Logger } from '../../src/logger/logger';
 import { SecretEncryptor } from '../../src/secret-encryptor';
 import type { SyncContainer } from '../../src/sync-container';
+import { SnapshotSender } from '../../src/sync-operations/snapshot-sender';
+import { SyncOperations } from '../../src/sync-operations/sync-operations';
 import { UpdateDecryptorService } from '../../src/update-encryptor/update-decryptor-service';
 import { UpdateEncryptorService } from '../../src/update-encryptor/update-encryptor-service';
 import { UpdateHandler } from '../../src/update-handler/handler';
@@ -40,7 +42,8 @@ export async function createMockSyncContainer<Latest extends StorageVersion, Res
     accountId: string,
     logger: Logger,
     versions: HCons<Latest, Rest> & AssertVersionHList<HCons<Latest, Rest>>,
-    apiConfiguration?: Configuration
+    apiConfiguration?: Configuration,
+    pollingTimeout = 500
 ): Promise<MockSyncContainer<Latest, Rest>> {
     const keyRepository = await EncryptedKeyRepository.initialize(encryptedStorage);
     const syncStateRepository = new SyncStateRepository(storage, logger);
@@ -55,11 +58,11 @@ export async function createMockSyncContainer<Latest extends StorageVersion, Res
     const snapshotApi = new MockSnapshotsApi(server);
     const snapshotSse = new MockSnapshotsSse(server);
 
-    const crdtRepository = new YCRDTRepository(storage, await ikService.getPub(), versions);
+    const crdtRepository = new YCRDTRepository(storage, ikService.getPub(), versions);
     const yManager = await YManager.create(crdtRepository);
     const deviceCrdtRepository = new YCRDTRepository<tDevicesLatest, tDevicesRest>(
         storage,
-        await ikService.getPub(),
+        ikService.getPub(),
         DevicesVersions,
         'devices_crdt'
     );
@@ -89,12 +92,26 @@ export async function createMockSyncContainer<Latest extends StorageVersion, Res
         snapshotApi as unknown as SnapshotsApi,
         logger
     );
+    const snapshotSender = new SnapshotSender(
+        updateEncryptor,
+        yManager,
+        deviceYManager,
+        syncStateRepository,
+        snapshotApi as unknown as SnapshotsApi,
+        ikService
+    );
+    const syncOperations = new SyncOperations<Latest, Rest>(
+        updateHandler,
+        snapshotSender,
+        deviceManager
+    );
 
     const secretEncryptor = new SecretEncryptor(keyServiceFactory);
 
     return {
         versions,
         logger,
+        pollingTimeout,
         storage,
         encryptedStorage,
         keyRepository,
@@ -108,6 +125,8 @@ export async function createMockSyncContainer<Latest extends StorageVersion, Res
         updateEncryptor,
         updateDecryptor,
         updateHandler,
+        snapshotSender,
+        syncOperations,
         yManager,
         deviceYManager,
         deviceManager,

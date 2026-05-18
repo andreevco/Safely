@@ -30,6 +30,7 @@ export function makeFactory() {
                 basePath: 'sync-server://mock'
             },
             apiImplementations,
+            pollingTimeout: 1,
             noAccountLogger: new Logger().child(`property:${factoryId}`),
             getAccountLogger: accountId => new Logger().child(`property:${factoryId}:${accountId}`)
         }),

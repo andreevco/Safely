@@ -21,6 +21,7 @@ export class CreateAccountService<Latest extends StorageVersion, Rest> {
         private readonly syncAccountIDRepository: SyncAccountRepository,
         private readonly versions: HCons<Latest, Rest> & AssertVersionHList<HCons<Latest, Rest>>,
         private readonly apiConfiguration: Configuration,
+        private readonly pollingTimeout: number,
         private readonly apiImplementations: SyncApiImplementations | undefined,
         private readonly getAccountLogger: (accountId: string) => Logger
     ) {}
@@ -54,6 +55,7 @@ export class CreateAccountService<Latest extends StorageVersion, Rest> {
             storage,
             encryptedStorage,
             apiConfiguration: this.apiConfiguration,
+            pollingTimeout: this.pollingTimeout,
             apiImplementations: this.apiImplementations,
             logger
         });
@@ -112,6 +114,7 @@ export class CreateAccountService<Latest extends StorageVersion, Rest> {
             storage,
             encryptedStorage,
             apiConfiguration: this.apiConfiguration,
+            pollingTimeout: this.pollingTimeout,
             apiImplementations: this.apiImplementations,
             logger
         });

@@ -356,12 +356,10 @@ async function removeDeviceFromOnlineDevice(
         return;
     }
 
+    const targetIkPub = target.account.getMyDeviceIkPub();
     await setRequesterIk(actor);
     await waitForNextSynchronizationCycle(actor, 'device revocation synchronized', async () =>
-        actor.account.revokeRemoteDevice(
-            await target.account.getMyDeviceIkPub(),
-            actor.secureEncryptedStorage
-        )
+        actor.account.revokeRemoteDevice(targetIkPub, actor.secureEncryptedStorage)
     );
 
     target.account.syncProvider.dispose();
@@ -580,5 +578,5 @@ async function onboardMockDevice(actor: SyncTestDevice): Promise<SyncTestDevice>
 }
 
 async function setRequesterIk(device: SyncTestDevice): Promise<void> {
-    device.factory.setRequesterIk((await device.account.getMyDeviceIkPub()).toString('hex'));
+    device.factory.setRequesterIk(device.account.getMyDeviceIkPub().toString('hex'));
 }

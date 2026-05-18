@@ -17,6 +17,8 @@ import { DevicesVersions } from './device-manager/device-storage-schema';
 import type { IStorage } from './I-storage';
 import type { Logger } from './logger';
 import { SecretEncryptor } from './secret-encryptor';
+import { SnapshotSender } from './sync-operations/snapshot-sender';
+import { SyncOperations } from './sync-operations/sync-operations';
 import { UpdateDecryptorService } from './update-encryptor/update-decryptor-service';
 import { UpdateEncryptorService } from './update-encryptor/update-encryptor-service';
 import { UpdateHandler } from './update-handler/handler';
@@ -33,6 +35,7 @@ export type SyncContainer<Latest extends StorageVersion, Rest> = {
     storage: IStorage;
     encryptedStorage: IStorage;
     logger: Logger;
+    pollingTimeout: number;
 
     keyRepository: EncryptedKeyRepository;
     crdtRepository: YCRDTRepository<Latest, Rest>;
@@ -48,6 +51,8 @@ export type SyncContainer<Latest extends StorageVersion, Rest> = {
     updateEncryptor: UpdateEncryptorService;
     updateDecryptor: UpdateDecryptorService;
     updateHandler: UpdateHandler<Latest, Rest>;
+    snapshotSender: SnapshotSender<Latest, Rest>;
+    syncOperations: SyncOperations<Latest, Rest>;
 
     yManager: YManager<Latest, Rest>;
     deviceYManager: YManager<tDevicesLatest, tDevicesRest>;
@@ -68,6 +73,7 @@ export async function createSyncContainer<Latest extends StorageVersion, Rest>(o
     encryptedStorage: IStorage;
     logger: Logger;
     apiConfiguration?: Configuration;
+    pollingTimeout: number;
     apiImplementations?: SyncApiImplementations;
 }): Promise<SyncContainer<Latest, Rest>> {
     const keyRepository = await EncryptedKeyRepository.initialize(opts.encryptedStorage);
@@ -87,15 +93,11 @@ export async function createSyncContainer<Latest extends StorageVersion, Rest>(o
         opts.apiImplementations?.snapshotsSse ??
         new SnapshotsSse(syncStateRepository, snapshotsApi, apiSigner, opts.logger);
 
-    const crdtRepository = new YCRDTRepository(
-        opts.storage,
-        await ikService.getPub(),
-        opts.versions
-    );
+    const crdtRepository = new YCRDTRepository(opts.storage, ikService.getPub(), opts.versions);
     const yManager = await YManager.create(crdtRepository);
     const deviceCrdtRepository = new YCRDTRepository<tDevicesLatest, tDevicesRest>(
         opts.storage,
-        await ikService.getPub(),
+        ikService.getPub(),
         DevicesVersions,
         'devices_crdt'
     );
@@ -125,12 +127,26 @@ export async function createSyncContainer<Latest extends StorageVersion, Rest>(o
         snapshotsApi,
         opts.logger
     );
+    const snapshotSender = new SnapshotSender(
+        updateEncryptor,
+        yManager,
+        deviceYManager,
+        syncStateRepository,
+        snapshotsApi,
+        ikService
+    );
+    const syncOperations = new SyncOperations<Latest, Rest>(
+        updateHandler,
+        snapshotSender,
+        deviceManager
+    );
 
     const secretEncryptor = new SecretEncryptor(keyServiceFactory);
 
     return {
         versions: opts.versions,
         logger: opts.logger,
+        pollingTimeout: opts.pollingTimeout,
         dmkVerifierService,
         keyServiceFactory,
         storage: opts.storage,
@@ -145,6 +161,8 @@ export async function createSyncContainer<Latest extends StorageVersion, Rest>(o
         updateEncryptor,
         updateDecryptor,
         updateHandler,
+        snapshotSender,
+        syncOperations,
         yManager,
         deviceYManager,
         deviceManager,

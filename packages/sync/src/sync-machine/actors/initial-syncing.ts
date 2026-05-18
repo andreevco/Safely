@@ -7,7 +7,13 @@ import type { SyncMachineConfig } from '../config';
 import { classifyError } from '../error-handler';
 
 export const initialSyncing = fromPromise(
-    async ({ input }: { input: SyncMachineConfig<StorageVersion, unknown> }) => {
+    async ({
+        input,
+        signal
+    }: {
+        input: SyncMachineConfig<StorageVersion, unknown>;
+        signal: AbortSignal;
+    }) => {
         input.logger.info('Initial syncing: fetching latest snapshot from server...');
         const knownState = await input.syncStateRepository.getState();
 
@@ -25,16 +31,19 @@ export const initialSyncing = fromPromise(
         );
 
         try {
-            return await input.updateHandler.handle({
-                kid: hex(lastState.snapshot.kid),
-                ciphertext: hex(lastState.snapshot.ciphertext),
-                nonce: hex(lastState.snapshot.nonce),
-                signature: hex(lastState.snapshot.signature),
-                snapshotProof: hex(lastState.snapshot.snapshotProof),
-                snapshotProofChain: lastState.proofChain
-                    ? lastState.proofChain.proofChain.map(proof => hex(proof))
-                    : []
-            });
+            return await input.syncOperations.applyRemoteUpdate(
+                {
+                    kid: hex(lastState.snapshot.kid),
+                    ciphertext: hex(lastState.snapshot.ciphertext),
+                    nonce: hex(lastState.snapshot.nonce),
+                    signature: hex(lastState.snapshot.signature),
+                    snapshotProof: hex(lastState.snapshot.snapshotProof),
+                    snapshotProofChain: lastState.proofChain
+                        ? lastState.proofChain.proofChain.map(proof => hex(proof))
+                        : []
+                },
+                signal
+            );
         } catch (e) {
             input.logger.error('Error during initial syncing', e);
             throw await classifyError(e);

@@ -13,7 +13,9 @@ function makeEntry(overrides: Partial<LogEntry> = {}): LogEntry {
     };
 }
 
-function createMockTransport(): ILoggerTransport & { log: ReturnType<typeof vi.fn> } {
+function createMockTransport(): ILoggerTransport & {
+    log: ReturnType<typeof vi.fn<(entry: LogEntry) => void>>;
+} {
     return { log: vi.fn<(entry: LogEntry) => void>() };
 }
 

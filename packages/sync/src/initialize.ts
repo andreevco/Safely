@@ -83,14 +83,11 @@ export async function initializeSyncAccount<Latest extends StorageVersion, Rest>
         opts.masterKey,
         opts.ik
     );
-    const ycrdtRepository = new YCRDTRepository(
-        opts.storage,
-        await encryptedKeyRepository.getIKPub(),
-        opts.versions
-    );
+    const ikPub = encryptedKeyRepository.getIKPub();
+    const ycrdtRepository = new YCRDTRepository(opts.storage, ikPub, opts.versions);
     const deviceCrdtRepository = new YCRDTRepository<tDevicesLatest, tDevicesRest>(
         opts.storage,
-        await encryptedKeyRepository.getIKPub(),
+        ikPub,
         DevicesVersions,
         'devices_crdt'
     );

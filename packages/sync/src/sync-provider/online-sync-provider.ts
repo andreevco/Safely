@@ -31,13 +31,11 @@ export class OnlineSyncProvider<Latest extends StorageVersion, Rest>
         const machine = createActor(createSyncMachine(), {
             input: {
                 syncStateRepository: container.syncStateRepository,
-                updateHandler: container.updateHandler,
-                yManager: container.yManager,
                 deviceYManager: container.deviceYManager,
-                updateEncryptor: container.updateEncryptor,
+
                 snapshotsApi: container.snapshotApi,
                 snapshotsSse: container.snapshotSse,
-                ikService: container.ikService,
+                syncOperations: container.syncOperations,
                 syncStatusManager,
                 logger: container.logger
             },
@@ -110,13 +108,11 @@ function machineFromContainer<Latest extends StorageVersion, Rest>(
     return createActor(createSyncMachine(), {
         input: {
             syncStateRepository: container.syncStateRepository,
-            updateHandler: container.updateHandler,
-            yManager: container.yManager,
             deviceYManager: container.deviceYManager,
-            updateEncryptor: container.updateEncryptor,
+
             snapshotsApi: container.snapshotApi,
             snapshotsSse: container.snapshotSse,
-            ikService: container.ikService,
+            syncOperations: container.syncOperations,
             syncStatusManager,
             logger: container.logger
         },

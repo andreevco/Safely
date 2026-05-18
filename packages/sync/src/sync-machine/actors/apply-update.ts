@@ -6,7 +6,13 @@ import type { SyncMachineConfig } from '../config';
 import { classifyError } from '../error-handler';
 
 export const applyUpdate = fromPromise(
-    async ({ input }: { input: { config: SyncMachineConfig<StorageVersion, unknown> } }) => {
+    async ({
+        input,
+        signal
+    }: {
+        input: { config: SyncMachineConfig<StorageVersion, unknown> };
+        signal: AbortSignal;
+    }) => {
         const upd = input.config.remoteUpdates[0] ?? null;
         if (upd === null) return { hasLocalChanges: false };
         input.config.logger.info(
@@ -14,10 +20,13 @@ export const applyUpdate = fromPromise(
             upd.snapshotProof.toString('hex').slice(0, 16) + '...'
         );
         try {
-            const result = await input.config.updateHandler.handle({
-                snapshotProofChain: [],
-                ...upd
-            });
+            const result = await input.config.syncOperations.applyRemoteUpdate(
+                {
+                    snapshotProofChain: [],
+                    ...upd
+                },
+                signal
+            );
             input.config.logger.info('Remote update applied successfully');
             return result;
         } catch (e) {

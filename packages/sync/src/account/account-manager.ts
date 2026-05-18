@@ -15,6 +15,7 @@ import { OnlineSyncProvider } from '../sync-provider/online-sync-provider';
 
 export class AccountManager<Latest extends StorageVersion, Rest> {
     private readonly accounts = new Map<string, ISyncAccount<Latest>>();
+    private readonly loadingAccounts = new Map<string, Promise<ISyncAccount<Latest>>>();
 
     constructor(
         private readonly storage: ITreeStorage,
@@ -24,6 +25,7 @@ export class AccountManager<Latest extends StorageVersion, Rest> {
         private readonly apiConfiguration: Configuration,
         private readonly apiImplementations: SyncApiImplementations | undefined,
         private readonly createAccountService: CreateAccountService<Latest, Rest>,
+        private readonly pollingTimeout: number,
         private readonly getAccountLogger: (accountId: string) => Logger
     ) {}
 
@@ -37,16 +39,31 @@ export class AccountManager<Latest extends StorageVersion, Rest> {
     private async initializeAccounts(): Promise<void> {
         const accountInfos = await this.syncAccountIdRepository.getSyncAccounts();
         for (const accountInfo of accountInfos) {
-            const acc = await this.getSyncAccount(accountInfo.accountId);
-            this.accounts.set(acc.accountId, acc);
+            await this.getSyncAccount(accountInfo.accountId);
         }
     }
 
     public async getSyncAccount(accountId: string): Promise<ISyncAccount<Latest>> {
-        if (this.accounts.has(accountId)) {
-            return this.accounts.get(accountId)!;
+        const account = this.accounts.get(accountId);
+        if (account) {
+            return account;
         }
 
+        const loadingAccount = this.loadingAccounts.get(accountId);
+        if (loadingAccount) {
+            return await loadingAccount;
+        }
+
+        const promise = this.initializeSyncAccount(accountId).finally(() => {
+            if (this.loadingAccounts.get(accountId) === promise) {
+                this.loadingAccounts.delete(accountId);
+            }
+        });
+        this.loadingAccounts.set(accountId, promise);
+        return await promise;
+    }
+
+    private async initializeSyncAccount(accountId: string): Promise<ISyncAccount<Latest>> {
         const accountInfo = await this.syncAccountIdRepository.getSyncAccount(accountId);
 
         const storage = getSyncAccountStorage(this.storage, accountInfo.accountId);
@@ -61,6 +78,7 @@ export class AccountManager<Latest extends StorageVersion, Rest> {
             storage,
             encryptedStorage,
             apiConfiguration: this.apiConfiguration,
+            pollingTimeout: this.pollingTimeout,
             apiImplementations: this.apiImplementations,
             logger
         });
@@ -69,7 +87,7 @@ export class AccountManager<Latest extends StorageVersion, Rest> {
             ? await OnlineSyncProvider.create(container)
             : new OfflineSyncProvider(container);
 
-        return new SyncAccount({
+        const acc = new SyncAccount({
             accountId: accountInfo.accountId,
             structure: this.versions,
             syncProvider,
@@ -77,6 +95,8 @@ export class AccountManager<Latest extends StorageVersion, Rest> {
             syncAccountRepository: this.syncAccountIdRepository,
             online: accountInfo.online
         });
+        this.accounts.set(accountId, acc);
+        return acc;
     }
 
     public async createOfflineAccount(
@@ -106,6 +126,8 @@ export class AccountManager<Latest extends StorageVersion, Rest> {
         accountId: string,
         secureEncryptedStorage: ITreeStorage
     ): Promise<void> {
+        await this.loadingAccounts.get(accountId);
+
         const accountInfo = await this.syncAccountIdRepository.getSyncAccount(accountId);
 
         if (accountInfo.online) {

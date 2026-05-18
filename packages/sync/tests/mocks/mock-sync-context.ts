@@ -87,13 +87,10 @@ export async function createMachineContext(
     const machine = createActor(createSyncMachine(), {
         input: {
             syncStateRepository: container.syncStateRepository,
-            updateHandler: container.updateHandler,
-            yManager: container.yManager,
             deviceYManager: container.deviceYManager,
-            updateEncryptor: container.updateEncryptor,
             snapshotsApi: container.snapshotApi as unknown as SnapshotsApi,
             snapshotsSse: container.snapshotSse as unknown as SnapshotsSse,
-            ikService: container.ikService,
+            syncOperations: container.syncOperations,
             syncStatusManager,
             logger: logger
         }

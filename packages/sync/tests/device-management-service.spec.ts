@@ -82,7 +82,7 @@ describe('device management service', () => {
 
     it('activates this device', async () => {
         const ctx = await createMachineContext(server);
-        const ikPub = await ctx.container.ikService.getPub();
+        const ikPub = ctx.container.ikService.getPub();
 
         await addPub(ctx, ikPub);
         await verifyStoredDeviceState(ctx, ikPub, 'added');
@@ -96,7 +96,7 @@ describe('device management service', () => {
     it('notifies when devices change', async () => {
         const ctx = await createMachineContext(server);
         const provider = new OfflineSyncProvider(ctx.container as never);
-        const ikPub = await ctx.container.ikService.getPub();
+        const ikPub = ctx.container.ikService.getPub();
         const seen: Buffer[][] = [];
         const unsubscribe = provider.onDevicesChange(devices => {
             seen.push(devices.map(device => device.info.ikPub));
@@ -132,7 +132,7 @@ describe('device management service', () => {
 
     it('adds 2 devices and revokes 1', async () => {
         const ctx = await createMachineContext(server);
-        const ikPub = await ctx.container.ikService.getPub();
+        const ikPub = ctx.container.ikService.getPub();
 
         expect(await ctx.container.deviceManager.getDevices()).toEqual([]);
 

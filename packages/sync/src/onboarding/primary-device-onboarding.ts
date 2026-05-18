@@ -1,5 +1,7 @@
 import { x25519 } from '@noble/curves/ed25519.js';
 
+import type { StorageVersion } from '@safely/slottree';
+
 import { deriveOnboardingKey, encryptOnboardingMessage } from './crypto';
 import type { QRMessageNewDeviceOnboarding, QRMessageReconnection } from './onboarding-codec';
 import { QRMessageCodec, QRMessageOperation } from './onboarding-codec';
@@ -9,6 +11,7 @@ import type { DmkSignerService } from '../crypto/service/dmk-signer-service';
 import type { MasterKeyService } from '../crypto/service/master-key-service';
 import type { DeviceManagementService } from '../device-manager/device-management-service';
 import { SyncError } from '../sync-error';
+import type { SyncOperations } from '../sync-operations/sync-operations';
 import { u8be, utf8 } from '../utils/buffer';
 
 export class PrimaryDeviceOnboarding {
@@ -17,7 +20,8 @@ export class PrimaryDeviceOnboarding {
         private readonly dmkService: DmkSignerService,
         private readonly accountsApi: AccountsApi,
         private readonly deviceManager: DeviceManagementService,
-        private readonly triggerSync: () => void
+        private readonly syncOperations: SyncOperations<StorageVersion, unknown>,
+        private readonly triggerSync: () => Promise<void>
     ) {}
 
     public async onboard(data: Buffer): Promise<void> {
@@ -44,8 +48,8 @@ export class PrimaryDeviceOnboarding {
             }
         });
 
-        await this.deviceManager.addDevice(message.ikPub, this.dmkService);
-        this.triggerSync();
+        await this.syncOperations.addDevice(message.ikPub, this.dmkService);
+        await this.triggerSync();
         await this.waitUntilDeviceVisible(message.ikPub);
     }
 
