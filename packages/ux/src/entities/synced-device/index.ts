@@ -5,8 +5,7 @@ import { SyncStatus } from '@safely/sync';
 import type { SDeviceMeta, SyncedStorageStructure } from '@safely/sync-storage';
 
 import { useAppContext } from '../../shared';
-import { useActiveAccount } from '../account/account-state';
-import { useAccountStore } from '../account/sync-storage/useAccountStore';
+import { useActiveAccount, useAccountSyncStorageUpdate, useAccountStore } from '../account';
 import { useMutation } from '../query-core';
 
 export function useSyncedDevicesMeta(): Record<string, SDeviceMeta> | null {
@@ -57,7 +56,7 @@ export function useAccountLinkState(): AccountLinkState {
 export function useRevokeSyncedDevice() {
     const account = useActiveAccount();
     const { storage } = useAppContext();
-    const devicesMeta = useSyncedDevicesMeta() ?? {};
+    const update = useAccountSyncStorageUpdate('devicesMeta');
 
     return useMutation({
         async mutationFn(ikPubHex: string) {
@@ -66,17 +65,14 @@ export function useRevokeSyncedDevice() {
                 storage.sync.getSecureEncrypted()
             );
 
-            const { [ikPubHex]: _, ...rest } = devicesMeta;
-            await account.syncProvider.set(
-                'devicesMeta',
-                Object.keys(rest).length > 0 ? rest : null
-            );
+            update(draft => draft.delete(ikPubHex));
         }
     });
 }
 
 export function useSetOwnSyncedDeviceMeta() {
     const { version, build, deviceInfo } = useAppContext();
+    const update = useAccountSyncStorageUpdate('devicesMeta');
 
     return useMutation<void, Error, ISyncAccount<SyncedStorageStructure>>({
         async mutationFn(syncAccount) {
@@ -86,18 +82,15 @@ export function useSetOwnSyncedDeviceMeta() {
             const existing = syncAccount.syncProvider.get('devicesMeta');
             const currentMetaExisting = existing?.[ikPubHex];
 
-            const currentMeta: SDeviceMeta = {
-                name: deviceInfo.name,
-                platform: build as 'ios' | 'android',
-                osVersion: deviceInfo.osVersion,
-                appVersion: version,
-                pairedAt: currentMetaExisting?.pairedAt ?? Date.now()
-            };
-
-            await syncAccount.syncProvider.set('devicesMeta', {
-                ...existing,
-                [ikPubHex]: currentMeta
-            });
+            update(draft =>
+                draft.set(ikPubHex, {
+                    name: deviceInfo.name,
+                    platform: build as 'ios' | 'android',
+                    osVersion: deviceInfo.osVersion,
+                    appVersion: version,
+                    pairedAt: currentMetaExisting?.pairedAt ?? Date.now()
+                })
+            );
         }
     });
 }

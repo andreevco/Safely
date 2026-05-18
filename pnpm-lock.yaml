@@ -562,6 +562,9 @@ importers:
         specifier: 'catalog:'
         version: 5.0.13(@types/react@19.1.17)(react@19.1.0)(use-sync-external-store@1.6.0(react@19.1.0))
     devDependencies:
+      '@safely/slottree':
+        specifier: workspace:*
+        version: link:../slottree
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.90.16(react@19.1.0)

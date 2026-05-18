@@ -1,23 +1,22 @@
 import type { DeepReadonly, JsonValue } from '../../json';
 
-type JsonLeaf = string | number | boolean | null;
 type DraftValue<T> = Exclude<T, undefined>;
 export type DraftInput<T> = DraftValue<T> extends JsonValue ? DraftValue<T> : JsonValue;
 type DraftMap<T> = (input: Draft<T>) => Draft<T>;
 
-export type Draft<T> =
-    DraftValue<T> extends readonly (infer Item)[]
-        ? Item extends { __setId: string }
-            ? ArrayDraft<Item>
-            : never
-        : DraftValue<T> extends JsonLeaf
-          ? AtomicDraft<T>
-          : DraftValue<T> extends object
-            ? ObjectDraft<DraftValue<T>>
-            : never;
+export type Draft<T> = [Extract<DraftValue<T>, readonly unknown[]>] extends [never]
+    ? [Exclude<DraftValue<T>, object | null>] extends [never]
+        ? ObjectDraft<Extract<DraftValue<T>, object>>
+        : AtomicDraft<DraftValue<T>>
+    : Extract<DraftValue<T>, readonly unknown[]> extends readonly (infer Item)[]
+      ? [Item] extends [{ __setId: string }]
+          ? ArrayDraft<Item>
+          : never
+      : never;
 
 export interface AtomicDraft<T> {
     get(): DeepReadonly<T> | undefined;
+    set(value: DraftInput<T>): void;
 }
 
 export interface ObjectDraft<T extends object> {

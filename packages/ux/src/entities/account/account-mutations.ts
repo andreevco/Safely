@@ -15,25 +15,11 @@ import { SecretEncryptor, useAppContext, useSharedUxStorage, useTranslate } from
 import { useLoader } from '../loader';
 import { useLogger } from '../logger';
 import { useMutation } from '../query-core';
-import {
-    useCurrentDeviceIkPub,
-    useSyncedDevicesMeta,
-    useSetOwnSyncedDeviceMeta
-} from '../synced-device';
+import { useCurrentDeviceIkPub, useSetOwnSyncedDeviceMeta } from '../synced-device';
 import { useToast } from '../toast';
+import { useAccountSyncStorageUpdate } from './hooks';
 import { useClearActiveAccountLocalStorage } from './local-storage';
 
-export {
-    type SyncAccount,
-    type OnboardingConnector,
-    resetAccountsFactory,
-    useAccountsFactory,
-    useAccounts,
-    useActiveAccountQuery,
-    useHasAccount,
-    useActiveAccount,
-    useActiveAccountQueryKey
-} from './account-state';
 export * from './local-storage';
 export * from './sync-storage';
 
@@ -65,7 +51,9 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
             await delay();
 
             const account = await factory.createSyncAccount(params.secureEncryptedStorage);
-            await account.syncProvider.set('meta', { name: params?.name ?? newAccountName });
+            await account.syncProvider.transaction(draft =>
+                draft.set('meta', { name: params?.name ?? newAccountName })
+            );
 
             let createdPortfolio: PortfolioBip39 | null = null;
 
@@ -79,7 +67,9 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
                     meta: { name: t('security.groups.wallet.defaultName', { number: 1 }) }
                 });
 
-                await account.syncProvider.set('portfolios', [createdPortfolio.toJSON()]);
+                await account.syncProvider.transaction(draft =>
+                    draft.set('portfolios', [createdPortfolio!.toJSON()])
+                );
             }
 
             await client.invalidateQueries({ queryKey: accountKey.list.toKey() });
@@ -249,10 +239,13 @@ export function useSetActiveAccount() {
 export function useChangeAccountMeta() {
     const account = useActiveAccount();
     const client = useQueryClient();
+    const update = useAccountSyncStorageUpdate('meta');
 
     return useMutation<void, Error, Partial<AccountMeta>>({
         async mutationFn(meta) {
-            await account.syncProvider.set('meta', { ...account.meta, ...meta });
+            await update((_, storeDraft) => {
+                storeDraft.set('meta', { ...account.meta, ...meta });
+            });
             await client.refetchQueries({ queryKey: accountKey.list.toKey() });
         }
     });
@@ -264,21 +257,15 @@ export function useDeleteAccount() {
     const client = useQueryClient();
     const { storage } = useAppContext();
     const ikPub = useCurrentDeviceIkPub();
-    const devicesMeta = useSyncedDevicesMeta();
     const clearActiveAccountLocalStorage = useClearActiveAccountLocalStorage();
+    const update = useAccountSyncStorageUpdate('devicesMeta');
 
     return useMutation({
         async mutationFn() {
             using secureEncryptedStorage = storage.sync.getSecureEncrypted();
             await secureEncryptedStorage.unlock();
 
-            if (devicesMeta) {
-                const { [ikPub]: _, ...rest } = devicesMeta;
-                await account.syncProvider.set(
-                    'devicesMeta',
-                    Object.keys(rest).length > 0 ? rest : null
-                );
-            }
+            await update(draft => draft.delete(ikPub));
 
             await accountFactory.deleteLocalAccount(account.accountId, secureEncryptedStorage);
             await clearActiveAccountLocalStorage();

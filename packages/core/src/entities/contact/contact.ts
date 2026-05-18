@@ -68,4 +68,8 @@ export class Contact implements IContact {
             createdAt: this.createdAt.getTime()
         });
     }
+
+    public jsonArrayId(): string {
+        return sContact.jsonArrayId(this.toJSON());
+    }
 }

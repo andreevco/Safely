@@ -142,29 +142,6 @@ export class PortfolioBip39 implements IPortfolioDerivable {
         return this.derivations;
     }
 
-    public withMeta(meta: Partial<PortfolioMeta>): PortfolioBip39 {
-        return new PortfolioBip39({
-            id: this.id,
-            meta: { ...this.meta, ...meta },
-            secretRevealedStatus: this.secretRevealedStatus,
-            mnemonicVault: this.mnemonicVault,
-            derivations: this.derivations
-        });
-    }
-
-    public withRecordedSecretReveal(fromDevice: string): PortfolioBip39 {
-        return new PortfolioBip39({
-            id: this.id,
-            meta: this.meta,
-            secretRevealedStatus: {
-                revealedAt: new Date(),
-                revealedFromDevice: fromDevice
-            },
-            mnemonicVault: this.mnemonicVault,
-            derivations: this.derivations
-        });
-    }
-
     public getMnemonic(): Promise<string[]> {
         return this.mnemonicVault.getMnemonic();
     }
@@ -183,5 +160,9 @@ export class PortfolioBip39 implements IPortfolioDerivable {
                 : null,
             derivations: this.derivations.map(d => d.toJSON())
         });
+    }
+
+    public jsonArrayId(): string {
+        return sPortfolioBip39.jsonArrayId(this.toJSON());
     }
 }

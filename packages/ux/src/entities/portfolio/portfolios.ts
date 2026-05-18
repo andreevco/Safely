@@ -10,7 +10,6 @@ import type {
     PortfolioBip39,
     PortfolioMeta,
     PortfolioWatchOnly,
-    IPortfolioId,
     ISecretEncryptor
 } from '@safely/core';
 import {
@@ -23,16 +22,18 @@ import {
     generateBip39Accessor,
     VM_TYPE
 } from '@safely/core';
+import type { SPortfolio } from '@safely/sync-storage';
 
 import { useTranslate, useSecurityCheck, useAppContext } from '../../shared';
 import { useSuspenseQuery } from '../../shared';
-import { useAccountStore, useActiveAccountLocalStorage } from '../account';
+import type { SActivePortfolioSchema } from '../account';
 import {
-    useActiveAccount,
+    useAccountStore,
+    useActiveAccountLocalStorage,
     useActiveAccountQuery,
-    useActiveAccountQueryKey
-} from '../account/account-state';
-import type { SActivePortfolioSchema } from '../account/local-storage/schemas/active-portfolio.schema';
+    useActiveAccountQueryKey,
+    useAccountSyncStorageUpdate
+} from '../account';
 import { useErrorToast } from '../errors';
 import { useLogger } from '../logger';
 import { useMutation } from '../query-core';
@@ -44,32 +45,12 @@ export function usePortfolios(): Portfolio[] {
     return useAccountStore(s => s.active?.portfolios ?? EMPTY_PORTFOLIOS);
 }
 
-function useSetPortfolios() {
-    const account = useActiveAccount();
-    const client = useQueryClient();
-    const accountQueryKey = useActiveAccountQueryKey();
-
-    return useMutation<void, Error, Portfolio[]>({
-        async mutationFn(portfolios) {
-            await account.syncProvider.set(
-                'portfolios',
-                portfolios.map(p => p.toJSON())
-            );
-
-            if (portfolios.length === 0) {
-                client.setQueryData(accountQueryKey.portfolios.active.toKey(), null);
-            }
-        }
-    });
-}
-
 export function useAddPortfolio() {
-    const { mutateAsync } = useSetPortfolios();
-    const portfolios = usePortfolios();
+    const update = useAccountSyncStorageUpdate('portfolios');
 
     return useMutation<void, Error, Portfolio>({
         async mutationFn(portfolio) {
-            await mutateAsync(portfolios.concat(portfolio));
+            update(draft => draft.push(portfolio.toJSON()));
         }
     });
 }
@@ -174,24 +155,23 @@ export function useImportPortfolio() {
 }
 
 export function useDeletePortfolio() {
-    const { mutateAsync } = useSetPortfolios();
+    const update = useAccountSyncStorageUpdate('portfolios');
     const check = useSecurityCheck();
-    const portfolios = usePortfolios();
 
-    return useMutation<void, Error, { id: IPortfolioId }>({
-        async mutationFn({ id }) {
+    return useMutation<void, Error, Portfolio>({
+        async mutationFn(portfolio) {
             await check();
-            await mutateAsync(portfolios.filter(p => !p.id.isEq(id)));
+            update(draft => draft.remove(portfolio.jsonArrayId()));
         }
     });
 }
 
 export function useReorderPortfolios() {
-    const { mutateAsync } = useSetPortfolios();
+    const update = useAccountSyncStorageUpdate('portfolios');
 
     return useMutation<void, Error, Portfolio[]>({
         async mutationFn(nextPortfoliosOrder) {
-            await mutateAsync(nextPortfoliosOrder);
+            update(draft => draft.reorder(nextPortfoliosOrder.map(p => p.jsonArrayId())));
         }
     });
 }
@@ -335,46 +315,50 @@ export function useSetActivePortfolio() {
 }
 
 export function useChangePortfolioMeta() {
-    const { mutateAsync } = useSetPortfolios();
-    const portfolios = usePortfolios();
+    const update = useAccountSyncStorageUpdate('portfolios');
 
-    return useMutation<
-        Portfolio,
-        Error,
-        { portfolio: { id: IPortfolioId }; meta: Partial<PortfolioMeta> }
-    >({
-        async mutationFn({ portfolio: { id }, meta }) {
-            const portfolio = portfolios.find(p => p.id.isEq(id));
-            if (!portfolio) {
-                throw new Error('Portfolio not found');
-            }
-
-            const updated = portfolio.withMeta(meta);
-            await mutateAsync(portfolios.map(p => (p.id.isEq(updated.id) ? updated : p)));
-            return updated;
+    return useMutation<void, Error, { portfolio: Portfolio; meta: Partial<PortfolioMeta> }>({
+        async mutationFn({ portfolio, meta }) {
+            update(draft =>
+                draft.update(portfolio.jsonArrayId(), item => {
+                    const p = item as SPortfolio;
+                    return {
+                        ...p,
+                        meta: {
+                            ...p.meta,
+                            ...meta
+                        }
+                    };
+                })
+            );
         }
     });
 }
 
 export function useRecordActivePortfolioSecretReveal() {
     const activePortfolio = useActivePortfolio();
-    const { mutateAsync } = useSetPortfolios();
+    const update = useAccountSyncStorageUpdate('portfolios');
     const { deviceInfo } = useAppContext();
-    const portfolios = usePortfolios();
 
     return useMutation({
         async mutationFn() {
-            if (activePortfolio.type !== PortfolioType.BIP39) {
-                return;
-            }
+            update(draft =>
+                draft.update(activePortfolio.jsonArrayId(), item => {
+                    const p = item as SPortfolio;
 
-            const portfolio = portfolios.find(p => p.id.isEq(activePortfolio.id));
-            if (!portfolio || portfolio.type !== PortfolioType.BIP39) {
-                return;
-            }
+                    if (p.type === PortfolioType.WATCH_ONLY) {
+                        return p;
+                    }
 
-            const updated = portfolio.withRecordedSecretReveal(deviceInfo.name);
-            await mutateAsync(portfolios.map(p => (p.id.isEq(updated.id) ? updated : p)));
+                    return {
+                        ...p,
+                        secretRevealedStatus: {
+                            revealedAt: new Date().getTime(),
+                            revealedFromDevice: deviceInfo.name
+                        }
+                    };
+                })
+            );
         }
     });
 }

@@ -24,7 +24,5 @@ export abstract class PortfolioWatchOnlyBase implements IPortfolioWatchOnly {
         this.meta = params.meta;
     }
 
-    public abstract withMeta(meta: Partial<PortfolioMeta>): PortfolioWatchOnlyBase;
-
     public abstract toJSON(): unknown;
 }

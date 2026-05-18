@@ -13,6 +13,7 @@ type Indexed<Bare> = Bare & { [K in typeof ORDERED_ARRAY_ITEM_ID_KEY]: string };
 export interface ZIndexedSerializer<Bare> {
     readonly [INDEXED_SCHEMA_BRAND]: true;
     toJson(value: Bare): Indexed<Bare>;
+    jsonArrayId(value: Bare): z.infer<typeof ORDERED_ARRAY_ITEM_ID_KEY_TYPE>;
 }
 
 export type ZIndexedObject<Shape extends z.ZodRawShape = z.ZodRawShape> = z.ZodObject<
@@ -36,7 +37,11 @@ export const zIndexedObject = <Shape extends z.ZodRawShape>(
 
     Object.defineProperties(schema, {
         [INDEXED_SCHEMA_BRAND]: { value: true, enumerable: false },
-        toJson: { value: toJson, enumerable: false }
+        toJson: { value: toJson, enumerable: false },
+        jsonArrayId: {
+            value: (value: z.input<z.ZodObject<Shape>>) => idFactory(value),
+            enumerable: false
+        }
     });
 
     return schema;

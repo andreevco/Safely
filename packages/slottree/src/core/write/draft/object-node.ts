@@ -18,7 +18,17 @@ export class ObjectDraftNode extends AtomicDraftNode {
         return this.createChildNode(this.cursor.child(key));
     }
 
-    public set(key: string, value: JsonValue | RuntimeDraftMap): void {
+    public set(value: JsonValue): void;
+    public set(key: string, value: JsonValue | RuntimeDraftMap): void;
+    public set(keyOrValue: string | JsonValue, maybeValue?: JsonValue | RuntimeDraftMap): void {
+        if (arguments.length < 2) {
+            super.set(keyOrValue);
+            return;
+        }
+
+        const key = keyOrValue as string;
+        const value = maybeValue as JsonValue | RuntimeDraftMap;
+
         if (typeof value === 'function') {
             const mapped = value(this.at(key)).get();
 

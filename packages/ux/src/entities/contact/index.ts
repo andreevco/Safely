@@ -2,10 +2,10 @@ import type { ContactMeta, IContact } from '@safely/core';
 import type { BLOCKCHAIN_NAME } from '@safely/core';
 import { vmTypeByBlockchainName } from '@safely/core';
 import { allowedContactMetaColors, Contact } from '@safely/core';
+import type { SContact } from '@safely/sync-storage';
 
 import { useTranslate } from '../../shared';
-import { useAccountStore } from '../account';
-import { useActiveAccount } from '../account/account-state';
+import { useAccountStore, useAccountSyncStorageUpdate } from '../account';
 import { useMutation } from '../query-core';
 import { useToast } from '../toast';
 
@@ -21,23 +21,8 @@ export function useContacts(): Contact[] {
     return useAccountStore(s => s.active?.contacts ?? EMPTY_CONTACTS);
 }
 
-function useSetContacts() {
-    const account = useActiveAccount();
-
-    return useMutation<void, Error, Contact[]>({
-        async mutationFn(contacts) {
-            const sorted = [...contacts].sort((a, b) => a.meta.name.localeCompare(b.meta.name));
-            await account.syncProvider.set(
-                'contacts',
-                sorted.map(c => c.toJSON())
-            );
-        }
-    });
-}
-
 export function useCreateContact() {
-    const { mutateAsync: setContacts } = useSetContacts();
-    const contacts = useContacts();
+    const update = useAccountSyncStorageUpdate('contacts');
 
     return useMutation<
         Contact,
@@ -52,8 +37,7 @@ export function useCreateContact() {
                 })),
                 meta: { name, color: pickRandomContactColor() }
             });
-
-            await setContacts(contacts.concat(contact));
+            update(draft => draft.push(contact.toJSON()));
 
             return contact;
         }
@@ -61,7 +45,7 @@ export function useCreateContact() {
 }
 
 export function useEditContact() {
-    const { mutateAsync: setContacts } = useSetContacts();
+    const update = useAccountSyncStorageUpdate('contacts');
     const contacts = useContacts();
 
     return useMutation<
@@ -78,33 +62,40 @@ export function useEditContact() {
             if (!target) {
                 throw new Error(`Contact not found: ${String(id)}`);
             }
+            if (!addresses && !meta) {
+                throw new Error('No changes provided');
+            }
 
-            let updated = target;
-            if (meta) updated = updated.withMeta(meta);
-            if (addresses)
-                updated = updated.withAddresses(
-                    addresses.map(a => ({
-                        blockchain: vmTypeByBlockchainName(a.blockchain),
-                        address: a.address
-                    }))
-                );
+            return new Promise(resolve => {
+                update(draft => {
+                    draft.update(target.jsonArrayId(), sContact => {
+                        let updated = Contact.restoreContact(sContact as SContact);
+                        if (meta) updated = updated.withMeta(meta);
+                        if (addresses)
+                            updated = updated.withAddresses(
+                                addresses.map(a => ({
+                                    blockchain: vmTypeByBlockchainName(a.blockchain),
+                                    address: a.address
+                                }))
+                            );
 
-            await setContacts(contacts.map(c => (c.id === updated.id ? updated : c)));
-
-            return updated;
+                        resolve(updated);
+                        return updated.toJSON();
+                    });
+                });
+            });
         }
     });
 }
 
 export function useDeleteContact() {
-    const { mutateAsync: setContacts } = useSetContacts();
+    const update = useAccountSyncStorageUpdate('contacts');
     const toast = useToast();
     const t = useTranslate();
-    const contacts = useContacts();
 
-    return useMutation<void, Error, IContact>({
+    return useMutation<void, Error, Contact>({
         async mutationFn(contact) {
-            await setContacts(contacts.filter(c => c.id !== contact.id));
+            update(draft => draft.remove(contact.jsonArrayId()));
         },
         onSuccess() {
             toast({ message: t('common.removed') });

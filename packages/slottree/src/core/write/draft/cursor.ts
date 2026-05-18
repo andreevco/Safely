@@ -1,3 +1,4 @@
+import type { JsonValue } from '../../json';
 import type { Slot } from '../../slots';
 import { cloneDeep, stripSlot } from '../../slots/slot-json';
 import type { JsonStorageSelection } from '../selection';
@@ -61,6 +62,14 @@ export class DraftCursor {
         }
 
         this.target.parent.ensureContainer().setSlot(this.target.key, slot);
+    }
+
+    public writeValue(value: JsonValue): void {
+        if (this.target.kind === 'root') {
+            throw new Error('Cannot replace the root draft slot');
+        }
+
+        this.target.parent.ensureContainer().set(this.target.key, value);
     }
 
     public readExistingSelection(): JsonStorageSelection | undefined {

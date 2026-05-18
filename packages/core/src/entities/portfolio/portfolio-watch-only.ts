@@ -69,20 +69,16 @@ export class PortfolioWatchOnlyBtc extends PortfolioWatchOnlyBase {
         this.wallet = params.wallet;
     }
 
-    public withMeta(meta: Partial<PortfolioMeta>): PortfolioWatchOnlyBtc {
-        return new PortfolioWatchOnlyBtc({
-            id: this.id,
-            meta: { ...this.meta, ...meta },
-            wallet: this.wallet
-        });
-    }
-
     public toJSON(): SPortfolioWatchOnly {
         return sPortfolioWatchOnly.toJson({
             id: this.id.toJSON(),
             type: this.type,
             meta: this.meta
         });
+    }
+
+    public jsonArrayId(): string {
+        return sPortfolioWatchOnly.jsonArrayId(this.toJSON());
     }
 }
 

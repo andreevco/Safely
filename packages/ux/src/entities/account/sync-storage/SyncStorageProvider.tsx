@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { SecretEncryptor, useAppContext } from '../../../shared';
 import { useAppState } from '../../../shared/app/useAppState';
 import { useActiveAccountQuery } from '../account-state';
-import { accountStore, SYNCED_SLOT_KEYS } from './account-store';
+import { accountStore, accountStoreActions, SYNCED_SLOT_KEYS } from './account-store';
 import { AccountStoreTransform } from './account-store-transform';
 
 function useSyncObserver() {
@@ -13,7 +13,7 @@ function useSyncObserver() {
 
     useEffect(() => {
         if (!activeAccount) {
-            accountStore.getState().clear();
+            accountStoreActions.clear();
             return;
         }
 
@@ -25,18 +25,16 @@ function useSyncObserver() {
                 )
         );
 
-        accountStore
-            .getState()
-            .attachSnapshot(
-                transform.restoreAll(activeAccount.accountId, activeAccount.syncProvider.getAll())
-            );
+        accountStoreActions.attachSnapshot(
+            transform.restoreAll(activeAccount.accountId, activeAccount.syncProvider.getAll())
+        );
 
         const unsubscribes = SYNCED_SLOT_KEYS.map(key =>
             activeAccount.syncProvider.onChange(key, () => {
                 const slotJson = activeAccount.syncProvider.get(key);
                 const prev = accountStore.getState().active;
                 const next = transform.restore(key, slotJson, prev);
-                accountStore.getState().setSlot(key, next);
+                accountStoreActions.setSlot(key, next);
             })
         );
 

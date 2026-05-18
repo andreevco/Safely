@@ -25,33 +25,37 @@ export type SyncedSlotKey = (typeof SYNCED_SLOT_KEYS)[number];
 
 export type AccountState = {
     active: AccountStoreData | null;
-
-    attachSnapshot(snapshot: AccountStoreData): void;
-    setSlot<K extends SyncedSlotKey>(key: K, value: AccountStoreData[K]): void;
-    clear(): void;
 };
 
 export type AccountStore = StoreApi<AccountState>;
 
 export function createAccountStore(): AccountStore {
-    return createStore<AccountState>(set => ({
-        active: null,
-
-        attachSnapshot(snapshot) {
-            set({ active: snapshot });
-        },
-
-        setSlot(key, value) {
-            set(state => {
-                if (!state.active) return state;
-                return { active: { ...state.active, [key]: value } };
-            });
-        },
-
-        clear() {
-            set({ active: null });
-        }
+    return createStore<AccountState>(() => ({
+        active: null
     }));
 }
 
 export const accountStore: AccountStore = createAccountStore();
+
+export type AccountStoreActions = {
+    attachSnapshot(snapshot: AccountStoreData): void;
+    setSlot<K extends SyncedSlotKey>(key: K, value: AccountStoreData[K]): void;
+    clear(): void;
+};
+
+export const accountStoreActions: AccountStoreActions = {
+    attachSnapshot(snapshot) {
+        accountStore.setState({ active: snapshot });
+    },
+
+    setSlot(key, value) {
+        accountStore.setState(state => {
+            if (!state.active) return state;
+            return { active: { ...state.active, [key]: value } };
+        });
+    },
+
+    clear() {
+        accountStore.setState({ active: null });
+    }
+};

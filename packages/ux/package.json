@@ -25,7 +25,8 @@
     "@types/react": "catalog:",
     "@xstate/react": "catalog:",
     "react": "catalog:",
-    "vitest": "^4.0.16"
+    "vitest": "^4.0.16",
+    "@safely/slottree": "workspace:*"
   },
   "peerDependencies": {
     "@tanstack/react-query": "catalog:",
