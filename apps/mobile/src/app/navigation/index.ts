@@ -11,6 +11,7 @@ import { CustomizeWalletModal } from '@mobile/screens/CustomizeWalletModal';
 import { DestructiveConfirmSheet } from '@mobile/screens/DestructiveConfirmSheet';
 import { LockScreen } from '@mobile/screens/LockScreen';
 import { NewContactModal } from '@mobile/screens/NewContactModal';
+import { ConfirmDeleteContactSheet } from '@mobile/screens/NewContactModal/screens/ConfirmDeleteContactSheet';
 import { OnboardingNotificationsScreen } from '@mobile/screens/OnboardingNotificationsScreen';
 import { OnboardingPasscodeScreen } from '@mobile/screens/OnboardingPasscodeScreen';
 import { PasscodeVerificationScreen } from '@mobile/screens/PasscodeVerificationScreen';
@@ -117,7 +118,8 @@ export const RootStack = createNativeStackNavigator({
                 RemoveWalletSheet: RemoveWalletSheet,
                 SignOutAccountSheet: SignOutAccountSheet,
                 WatchOnlySheet: WatchOnlySheet,
-                PendingFundsSheet: PendingFundsSheet
+                PendingFundsSheet: PendingFundsSheet,
+                ConfirmDeleteContactSheet: ConfirmDeleteContactSheet
             },
             screenOptions: {
                 animationDuration: 0,
