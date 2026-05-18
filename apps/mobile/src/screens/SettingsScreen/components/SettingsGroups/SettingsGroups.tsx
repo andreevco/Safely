@@ -26,14 +26,6 @@ export const SettingsGroups = () => {
                 <Cell>
                     <Cell.Content>
                         <Cell.Row>
-                            <Cell.Title>{t('settings.groups.info.options.rate')}</Cell.Title>
-                        </Cell.Row>
-                    </Cell.Content>
-                    <Cell.Chevron />
-                </Cell>
-                <Cell>
-                    <Cell.Content>
-                        <Cell.Row>
                             <Cell.Title>{t('settings.groups.info.options.legal')}</Cell.Title>
                         </Cell.Row>
                     </Cell.Content>
