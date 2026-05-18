@@ -7,3 +7,4 @@ export type {
 } from './models';
 export { TxSchema } from './models';
 export { BtcApi } from './client';
+export { BtcApiError } from './errors';

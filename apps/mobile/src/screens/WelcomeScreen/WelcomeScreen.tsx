@@ -3,7 +3,12 @@ import { useCallback } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { ImageBackground, View } from 'react-native';
 
-import { useAppContext, useCreateExistingAccountConnector, useLinking } from '@safely/ux';
+import {
+    useAppContext,
+    useCreateExistingAccountConnector,
+    useLinking,
+    useTrackOnboardingOpen
+} from '@safely/ux';
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { useOnboardingFlow } from '@mobile/features/onboarding';
@@ -26,6 +31,8 @@ export const WelcomeScreen = () => {
         }
     } = useAppContext();
     const { openURL } = useLinking();
+
+    useTrackOnboardingOpen();
 
     const handleSignIn = useCallback(async () => {
         signIn.reset();

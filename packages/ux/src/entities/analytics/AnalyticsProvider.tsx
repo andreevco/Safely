@@ -76,7 +76,11 @@ export function AnalyticsProvider(props: { children: ReactNode }) {
     return (
         <AnalyticsContext.Provider value={service}>
             {activeAccount ? (
-                <AccountWiring service={service} activeAccount={activeAccount} />
+                <AccountWiring
+                    key={activeAccount.accountId}
+                    service={service}
+                    activeAccount={activeAccount}
+                />
             ) : null}
             {children}
         </AnalyticsContext.Provider>

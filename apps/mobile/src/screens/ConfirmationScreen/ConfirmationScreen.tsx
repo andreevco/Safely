@@ -9,6 +9,7 @@ import {
     SendFormResult,
     useActiveBtcWallet,
     useActivePortfolio,
+    useAnalytics,
     useEstimateAssetTransfer,
     useLogger,
     useNumberFormatter,
@@ -19,6 +20,7 @@ import { TransactionFee } from '@mobile/screens/ConfirmationScreen/components/Tr
 import { TransactionSendResult } from '@mobile/screens/ConfirmationScreen/components/TransactionSendResult';
 import { Checkmark96, Icon, List, Screen, Text, Image } from '@mobile/shared/ui';
 
+import { classifyError } from './classify-error';
 import { Amount, ConfirmationFooter, Wallet, TransactionCell } from './components';
 import { styles } from './ConfirmationScreen.styles';
 import { ConfirmationState } from './ConfirmationScreen.types';
@@ -35,6 +37,7 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
     const { confirmationResult, onSuccess } = route.params;
 
     const { t } = useTranslation();
+    const analytics = useAnalytics();
     const navigation = useNavigation();
     const btcWallet = useActiveBtcWallet();
     const activePortfolio = useActivePortfolio();
@@ -52,18 +55,27 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
     const formatter = useNumberFormatter();
 
     const onSend = useCallback(async () => {
+        const fiatAmount = confirmationResult.amount.fiatAssetAmount.amount.toNumber();
+        const cryptoCurrency = confirmationResult.amount.cryptoAssetAmount.asset.symbol;
+
         try {
             setConfirmationState({ type: 'sending' });
             await send();
             onSuccess?.();
             notificationAsync(NotificationFeedbackType.Success);
             setConfirmationState({ type: 'success' });
+            void analytics.trackSendFinish({ cryptoCurrency, fiatAmount, errorType: null });
         } catch (error) {
             logger.error('[ConfirmationScreen] send failed', error);
             notificationAsync(NotificationFeedbackType.Error);
             setConfirmationState({ type: 'error', error });
+            void analytics.trackSendFinish({
+                cryptoCurrency,
+                fiatAmount,
+                errorType: classifyError(error)
+            });
         }
-    }, [send, onSuccess, logger]);
+    }, [send, onSuccess, logger, confirmationResult, analytics]);
 
     const displayState = useMemo(() => {
         if (txTemplateError) {
