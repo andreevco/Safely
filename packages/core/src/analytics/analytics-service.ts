@@ -13,46 +13,65 @@ import { generateUuidV4 } from '../utils/uuid';
 
 export interface AnalyticsDeps {
     logger: Logger;
+    sessionId: string;
     eventsApi: EventsApi;
     rateApi: Pick<RateApi, 'getRate'>;
     systemProps: {
         environment: Environment;
         platform: Build;
         appVersion: string;
-        getLang: () => string;
+        lang: string;
     };
-    sessionId: string;
-    getActiveFiatSymbol: () => string | null;
 }
 
 export class AnalyticsService {
-    private readonly logger: Logger;
+    private logger: Logger;
 
     private readonly eventsApi: EventsApi;
 
     private readonly rateCache: RateCache;
 
-    private readonly systemPropsSource: AnalyticsDeps['systemProps'];
+    private readonly environment: Environment;
+
+    private readonly platform: Build;
+
+    private readonly appVersion: string;
 
     private readonly sessionId: string;
-
-    private readonly getActiveFiatSymbol: () => string | null;
 
     private readonly oncePerSessionFired = new Set<string>();
 
     private accountUuid: string | null = null;
 
+    private fiatSymbol: string | null = null;
+
+    private lang: string;
+
     constructor(deps: AnalyticsDeps) {
         this.logger = deps.logger;
         this.eventsApi = deps.eventsApi;
         this.sessionId = deps.sessionId;
-        this.systemPropsSource = deps.systemProps;
+        this.lang = deps.systemProps.lang;
+        this.platform = deps.systemProps.platform;
+        this.appVersion = deps.systemProps.appVersion;
+        this.environment = deps.systemProps.environment;
         this.rateCache = new RateCache(deps.rateApi);
-        this.getActiveFiatSymbol = deps.getActiveFiatSymbol;
     }
 
-    public setAccountUuid(uuid: string): void {
+    public setLogger(logger: Logger): void {
+        this.logger = logger;
+    }
+
+    public setLang(lang: string): void {
+        this.lang = lang;
+    }
+
+    public setAccountUuid(uuid: string | null): void {
         this.accountUuid = uuid;
+    }
+
+    public setFiatSymbol(symbol: string | null): void {
+        this.fiatSymbol = symbol;
     }
 
     public async trackOnboardingOpen(props: { onboardingId: string }): Promise<void> {
@@ -106,8 +125,7 @@ export class AnalyticsService {
     }
 
     private async computeBucket(fiatAmount: number, eventName: string): Promise<Bucket | null> {
-        const activeFiatSymbol = this.getActiveFiatSymbol();
-        if (activeFiatSymbol === null) {
+        if (this.fiatSymbol === null) {
             this.logger.warn('[analytics] no fiat configured, dropping event', { eventName });
 
             return null;
@@ -115,11 +133,11 @@ export class AnalyticsService {
 
         let rate: number;
         try {
-            rate = await this.rateCache.get(activeFiatSymbol);
+            rate = await this.rateCache.get(this.fiatSymbol);
         } catch (err) {
             this.logger.warn('[analytics] no rate available, dropping event', {
                 eventName,
-                currency: activeFiatSymbol,
+                currency: this.fiatSymbol,
                 err
             });
 
@@ -160,10 +178,10 @@ export class AnalyticsService {
     private buildSystemProps(): SystemProps {
         return {
             ...(this.accountUuid !== null && { accountUuid: this.accountUuid }),
-            environment: this.systemPropsSource.environment,
-            lang: this.systemPropsSource.getLang(),
-            platform: this.systemPropsSource.platform,
-            appVersion: this.systemPropsSource.appVersion,
+            lang: this.lang,
+            platform: this.platform,
+            appVersion: this.appVersion,
+            environment: this.environment,
             sdkVersion: SDK_VERSION
         };
     }

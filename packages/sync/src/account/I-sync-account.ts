@@ -52,4 +52,16 @@ export interface ISyncAccount<S extends Record<string, ZodType>> {
      * Returns the IK public key of the current device.
      */
     getMyDeviceIkPub(): Buffer;
+
+    /**
+     * Provides access to the unwrapped master key inside the callback for derivations that
+     * need raw key material (e.g. analytics account UUID). The key is zeroed after the
+     * callback resolves; do not retain references to it.
+     * @param secureEncryptedStorage - unlocked secure encrypted storage
+     * @param fn - callback receiving the master key
+     */
+    withMasterKey<T>(
+        secureEncryptedStorage: ITreeStorage,
+        fn: (masterKey: Buffer) => Promise<T> | T
+    ): Promise<T>;
 }

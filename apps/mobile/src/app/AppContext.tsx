@@ -3,6 +3,7 @@ import { FC, PropsWithChildren, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AppState } from 'react-native';
 
+import { generateUuidV4 } from '@safely/core';
 import {
     AppContext,
     IAppContext,
@@ -13,7 +14,7 @@ import {
 
 import { navigationRef } from '@mobile/app/navigation/navigationRef';
 import { useMobileSecurityCheck } from '@mobile/entities/security';
-import { build, deviceInfo } from '@mobile/shared/app-meta';
+import { build, deviceInfo, environment } from '@mobile/shared/app-meta';
 import { loggerRegistry } from '@mobile/shared/logger';
 import { useLoaderServiceContext } from '@mobile/shared/providers/loader';
 import { useToastServiceContext } from '@mobile/shared/providers/toast';
@@ -33,6 +34,8 @@ const security: Security = {
     }
 };
 
+const SESSION_ID = generateUuidV4();
+
 export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
     const {
         t,
@@ -49,6 +52,8 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
             },
             version: packageJson.version,
             build,
+            environment,
+            sessionId: SESSION_ID,
             deviceInfo,
             numberFormatLocale: new MobileNumberFormatLocale(getLocales()[0]),
             storage: {

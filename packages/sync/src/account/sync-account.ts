@@ -129,6 +129,15 @@ export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAcco
         return this.container.ikService.getPub();
     }
 
+    public async withMasterKey<T>(
+        secureEncryptedStorage: ITreeStorage,
+        fn: (masterKey: Buffer) => Promise<T> | T
+    ): Promise<T> {
+        return this.container.keyServiceFactory
+            .createMasterKeyService(secureEncryptedStorage)
+            .withMasterKey(fn);
+    }
+
     public async deleteThisDevice(secureEncryptedStorage: ITreeStorage): Promise<void> {
         this.syncProvider.dispose();
 
