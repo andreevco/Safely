@@ -69,5 +69,13 @@ export const bootConfigSchema = z.looseObject({
 
     sync: z.object({
         api_url: z.string()
+    }),
+
+    telemetry: z.looseObject({
+        analytics: z.looseObject({
+            url: z.string(),
+            token: z.string()
+        }),
+        events: z.looseObject({}).optional()
     })
 });

@@ -14,3 +14,5 @@ export const deviceInfo = {
     name: Device.modelName ?? (Platform.OS === 'ios' ? 'iPhone' : 'Android device'),
     osVersion: Device.osVersion ?? String(Platform.Version)
 };
+
+export const environment: 'production' | 'development' = __DEV__ ? 'development' : 'production';
