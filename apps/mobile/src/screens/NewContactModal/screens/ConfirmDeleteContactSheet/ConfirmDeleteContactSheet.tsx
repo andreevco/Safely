@@ -3,7 +3,7 @@ import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { IContact } from '@safely/core';
+import { Contact } from '@safely/core';
 import { useDeleteContact } from '@safely/ux';
 
 import { SettingsStackNavigationProp } from '@mobile/app/navigation/types';
@@ -13,7 +13,7 @@ import { BottomSheetContextType } from '@mobile/shared/ui/BottomSheet/context';
 import { styles } from './ConfirmDeleteContactSheet.styles';
 
 type ConfirmDeleteContactSheetProps = StaticScreenProps<{
-    contact: IContact;
+    contact: Contact;
 }>;
 
 export const ConfirmDeleteContactSheet = ({ route }: ConfirmDeleteContactSheetProps) => {
