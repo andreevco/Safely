@@ -162,11 +162,7 @@ export function reformatForInputType(
     currentParsed: AmountWithInputType<CryptoAsset>,
     newInputType: AmountInputType,
     formatter: NumberFormatter
-): AmountWithOutputType | null {
-    if (!currentParsed.fiatAssetAmount) {
-        return null;
-    }
-
+): AmountWithOutputType {
     const formatted = formatAmountForDisplay(
         newInputType,
         currentParsed.fiatAssetAmount,

@@ -3,9 +3,8 @@ import { useRef, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TextInput, View } from 'react-native';
 import PagerView from 'react-native-pager-view';
-import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
-import { assertUnreachable, ellipsisMiddle } from '@safely/core';
+import { assertUnreachable } from '@safely/core';
 import {
     useSendForm,
     SendFormResult,
@@ -20,6 +19,7 @@ import { Button, Screen, Text } from '@mobile/shared/ui';
 import { ArrowLeft16, Icon } from '@mobile/shared/ui/Icon';
 
 import { AmountPagerPage } from './AmountPagerPage';
+import { AmountHeaderSubtitle, RecipientHeaderSubtitle } from './components';
 import { RecipientPagerPage } from './RecipientPagerPage';
 import { styles } from './SendAssetModal.styles';
 import { useLastSeen } from './useLastSeen';
@@ -91,10 +91,11 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
     const next = 'next' in view ? view.next : undefined;
     const prev = view.state === 'amount' ? view.prev : undefined;
     const isOnAmountStep = stepIndex === 1;
+    const recipientFromMeta = view.state === 'recipient' ? view.fromMeta : undefined;
 
     return (
         <Screen>
-            <Screen.Header>
+            <Screen.Header variant="left">
                 {isOnAmountStep ? (
                     <Screen.Header.Button onPress={prev}>
                         <Icon icon={ArrowLeft16} />
@@ -107,36 +108,10 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
                         {t('send.title')}
                     </Text>
                     {isOnAmountStep && lastAmountView && (
-                        <Animated.View
-                            entering={FadeIn.duration(150)}
-                            exiting={FadeOut.duration(150)}
-                        >
-                            {lastAmountView.recipientMeta ? (
-                                <View style={styles.recipientRow}>
-                                    <Text
-                                        variant="bodyM"
-                                        color="secondary"
-                                        numberOfLines={1}
-                                        style={styles.recipientName}
-                                    >
-                                        {lastAmountView.recipientMeta.meta.name}
-                                    </Text>
-                                    <Text variant="bodyM" color="tertiary">
-                                        {' '}
-                                        {ellipsisMiddle(lastAmountView.parsed.recipient.address)}
-                                    </Text>
-                                </View>
-                            ) : (
-                                <Text
-                                    textAlign="center"
-                                    variant="bodyM"
-                                    color="secondary"
-                                    numberOfLines={1}
-                                >
-                                    {ellipsisMiddle(lastAmountView.parsed.recipient.address)}
-                                </Text>
-                            )}
-                        </Animated.View>
+                        <AmountHeaderSubtitle view={lastAmountView} />
+                    )}
+                    {!isOnAmountStep && recipientFromMeta && (
+                        <RecipientHeaderSubtitle fromMeta={recipientFromMeta} />
                     )}
                 </Screen.Header.Title>
                 <View style={styles.nextButton}>

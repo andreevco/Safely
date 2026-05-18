@@ -4,7 +4,7 @@ import type z from 'zod';
 import type { ISyncProvider } from '@safely/sync';
 
 import type { SyncedStorageStructure } from '../../../shared/storage/account/synced/schemas';
-import { useAccounts, useActiveAccount } from '../account-state';
+import { useAccounts, useActiveAccountQuery } from '../account-state';
 
 export type SyncProvider = ISyncProvider<SyncedStorageStructure>;
 
@@ -38,8 +38,8 @@ export function useGetSyncProvider(
 }
 
 export function useActiveAccountSyncedStorage<K extends keyof SyncedStorageStructure>(key: K) {
-    const account = useActiveAccount();
-    return useAccountSyncedStorage(account.accountId, key);
+    const { data: account } = useActiveAccountQuery();
+    return useAccountSyncedStorage(account?.accountId ?? null, key);
 }
 
 export function useAccountSyncedStorage<K extends keyof SyncedStorageStructure>(

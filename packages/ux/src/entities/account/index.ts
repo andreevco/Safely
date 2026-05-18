@@ -1,10 +1,10 @@
-import { useQueryClient } from '@tanstack/react-query';
+import { notifyManager, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect } from 'react';
 
-import type { ITreeStorage } from '@safely/core';
+import type { ITreeStorage, PortfolioBip39 } from '@safely/core';
 import { delay, PortfolioFactory, PortfolioNetworkType } from '@safely/core';
 import { generateBip39Accessor } from '@safely/core/entities/seed';
-import type { ISyncAccount } from '@safely/sync';
+import type { ISyncAccount, OnboardingConnector as RawOnboardingConnector } from '@safely/sync';
 import { OnboardingAbortedError } from '@safely/sync';
 
 import type { OnboardingConnector, SyncAccount } from './account-state';
@@ -67,22 +67,40 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
                 )
             );
 
+            let createdPortfolio: PortfolioBip39 | null = null;
+
             if (options?.createWallet || options?.setActive) {
                 const portfolioFactory = new PortfolioFactory(
                     new SecretEncryptor(account.secretEncryptor, params.secureEncryptedStorage)
                 );
                 using accessorVault = generateBip39Accessor();
-                const portfolio = await portfolioFactory.generatePortfolioBip39(accessorVault, {
+                createdPortfolio = await portfolioFactory.generatePortfolioBip39(accessorVault, {
                     network: PortfolioNetworkType.MAINNET,
                     meta: { name: t('security.groups.wallet.defaultName', { number: 1 }) }
                 });
 
-                await account.syncProvider.set('portfolios', [portfolio.toJSON()]);
+                await account.syncProvider.set('portfolios', [createdPortfolio.toJSON()]);
             }
 
             await client.invalidateQueries({ queryKey: accountKey.list.toKey() });
 
             if (options?.setActive) {
+                const newAccountKey = accountKey.accountId(account.accountId);
+
+                if (createdPortfolio) {
+                    const derivation = createdPortfolio.getDerivations()[0];
+
+                    notifyManager.batch(() => {
+                        client.setQueryData(newAccountKey.portfolios.toKey(), [createdPortfolio]);
+                        client.setQueryData(newAccountKey.portfolios.active.toKey(), {
+                            kind: 'bip39' as const,
+                            portfolio: createdPortfolio,
+                            btcWallet: derivation.chains.btc.wallets[0],
+                            derivation
+                        });
+                    });
+                }
+
                 await setActive(account.accountId);
             }
 
@@ -91,21 +109,13 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
     });
 }
 
-export function useCreateExistingAccountConnector() {
-    const factory = useAccountsFactory();
-
-    const mutation = useMutation<
-        {
-            connectionString: string;
-            accountPromise: Promise<ISyncAccount<SyncedStorageStructure>>;
-            abort: () => void;
-        },
-        Error,
-        { secureEncryptedStorage: ITreeStorage }
-    >({
-        async mutationFn({ secureEncryptedStorage }) {
+function useConnectorMutation<TVars>(
+    createConnector: (vars: TVars) => Promise<RawOnboardingConnector<SyncedStorageStructure>>
+) {
+    const mutation = useMutation<OnboardingConnector, Error, TVars>({
+        async mutationFn(vars) {
             await delay();
-            const connector = await factory.connectToExistingSyncAccount(secureEncryptedStorage);
+            const connector = await createConnector(vars);
 
             return {
                 connectionString: connector.data.toString('base64url'),
@@ -128,6 +138,21 @@ export function useCreateExistingAccountConnector() {
         ...mutation,
         reset
     };
+}
+
+export function useCreateExistingAccountConnector() {
+    const factory = useAccountsFactory();
+
+    return useConnectorMutation(
+        ({ secureEncryptedStorage }: { secureEncryptedStorage: ITreeStorage }) =>
+            factory.connectToExistingSyncAccount(secureEncryptedStorage)
+    );
+}
+
+export function useCreateReconnectConnector() {
+    const account = useActiveAccount();
+
+    return useConnectorMutation<void>(() => account.reconnectToAccount());
 }
 
 export function useAccountConnectedCallback(
@@ -178,7 +203,7 @@ export function useAccountConnectedCallback(
 
 export function useConnectAccountToNewDevice() {
     const t = useTranslate();
-    const activeKeeperId = useActiveAccount();
+    const activeAccount = useActiveAccount();
     const toast = useToast();
     const { withLoader } = useLoader();
     const { qrScanner } = useAppContext();
@@ -190,7 +215,7 @@ export function useConnectAccountToNewDevice() {
                 subTranslationKey: 'qrScan.addDevice.subtitle'
             });
             await withLoader(() =>
-                activeKeeperId.connectToNewDevice(
+                activeAccount.connectToNewDevice(
                     Buffer.from(connectionString, 'base64url'),
                     secureEncryptedStorage
                 )

@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { MockSnapshotsServer } from './mocks/mock-snapshots-api';
-import { createMachineContext, getMasterKey, MachineContext } from './mocks/mock-sync-context';
+import type { MachineContext } from './mocks/mock-sync-context';
+import { createMachineContext, getMasterKey } from './mocks/mock-sync-context';
 import { ed25519_keygen } from '../src/crypto/ed25519';
 
 describe('device management service', () => {

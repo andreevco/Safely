@@ -4,7 +4,12 @@ import { assertEvent, assign } from 'xstate';
 import type { BtcAssetAmount, Contact } from '@safely/core';
 
 import { SendFormError } from '../errors';
-import { BLOCKCHAIN_DEFAULT_TOKENS, assetIdSchema } from '../utils';
+import {
+    BLOCKCHAIN_DEFAULT_TOKENS,
+    assetIdSchema,
+    computeRecipientMeta,
+    mapContactToSuggestions
+} from '../utils';
 import { actors } from './actors';
 import {
     EMPTY_SUGGESTION,
@@ -17,7 +22,8 @@ import {
 } from './context';
 import { guards } from './guards';
 import type { SendFormEvent, SendFormMachineContext, SendFormMachineInput } from './types';
-import { reformatForInputType } from '../validators/amount';
+import { calculateMaxAmount, reformatForInputType, validateAmount } from '../validators/amount';
+import { validateRecipientInput } from '../validators/recipient';
 
 export const createSendFormMachine = () =>
     x
@@ -39,10 +45,12 @@ export const createSendFormMachine = () =>
                         ? ''
                         : context.values.addressBookName;
 
-                    const result = context.validateRecipient(
-                        event.value,
-                        baseSuggestion.selectedId
-                    );
+                    const result = validateRecipientInput(event.value, {
+                        activeWalletAddress: context.activeWallet.address,
+                        portfolioSuggestions: context.portfolioSuggestions,
+                        contactSuggestions: context.contactSuggestions,
+                        preferredSuggestionId: baseSuggestion.selectedId
+                    });
 
                     return {
                         values: {
@@ -70,7 +78,12 @@ export const createSendFormMachine = () =>
 
                     if (!picked) return {};
 
-                    const result = context.validateRecipient(picked.address, event.id);
+                    const result = validateRecipientInput(picked.address, {
+                        activeWalletAddress: context.activeWallet.address,
+                        portfolioSuggestions: context.portfolioSuggestions,
+                        contactSuggestions: context.contactSuggestions,
+                        preferredSuggestionId: event.id
+                    });
 
                     const newSuggestion = suggestionFromValidatorResult(result) ?? {
                         selectedId: event.id,
@@ -126,10 +139,11 @@ export const createSendFormMachine = () =>
                         };
                     }
 
-                    const result = context.validateAmount(
+                    const result = validateAmount(
                         event.value,
                         context.values.amountInputType,
-                        context.parsed.asset
+                        context.parsed.asset,
+                        context.formatter
                     );
 
                     return {
@@ -146,7 +160,7 @@ export const createSendFormMachine = () =>
                         amountInputType: event.value
                     };
                     const currentParsed = context.parsed.amount;
-                    if (!currentParsed?.fiatAssetAmount) {
+                    if (!currentParsed) {
                         return { values: baseValues };
                     }
 
@@ -155,7 +169,6 @@ export const createSendFormMachine = () =>
                         event.value,
                         context.formatter
                     );
-                    if (!result) return { values: baseValues };
 
                     return {
                         values: { ...baseValues, amount: result.formatted },
@@ -178,7 +191,9 @@ export const createSendFormMachine = () =>
                         };
                     }
 
-                    const parsedAsset = context.findAssetById(zodResult.data);
+                    const parsedAsset = context.ratedAssets.find(
+                        ({ amount }) => amount.asset.id.toString() === zodResult.data
+                    );
 
                     if (!parsedAsset) {
                         return {
@@ -215,10 +230,13 @@ export const createSendFormMachine = () =>
                 enterMax: assign(({ context }) => {
                     if (!context.parsed.asset || !context.parsed.maxValue) return {};
 
-                    const result = context.computeMaxAmount(
-                        context.parsed.maxValue,
-                        context.parsed.asset.price,
-                        context.values.amountInputType
+                    const result = calculateMaxAmount(
+                        {
+                            amount: context.parsed.maxValue,
+                            price: context.parsed.asset.price
+                        },
+                        context.values.amountInputType,
+                        context.formatter
                     );
                     if (!result) return {};
 
@@ -236,12 +254,14 @@ export const createSendFormMachine = () =>
                 assignCreatedContactSuggestion: assign(
                     ({ context }, params: { contact: Contact }) => {
                         const newSuggestionId = params.contact.id.toString();
+                        const newSuggestions = mapContactToSuggestions(params.contact);
 
                         return {
                             values: {
                                 ...context.values,
                                 addressBookName: ''
                             },
+                            contactSuggestions: [...context.contactSuggestions, ...newSuggestions],
                             suggestion: {
                                 selectedId: newSuggestionId,
                                 portfoliosIds: context.suggestion.portfoliosIds,
@@ -263,7 +283,11 @@ export const createSendFormMachine = () =>
                             recipient: parsed.recipient,
                             amount: parsed.amount,
                             isMax: context.values.isMax,
-                            recipientMeta: context.getRecipientMeta(suggestion.selectedId)
+                            recipientMeta: computeRecipientMeta(
+                                suggestion.selectedId,
+                                context.portfolioSuggestions,
+                                context.contactSuggestions
+                            )
                         },
                         () => undefined
                     );
@@ -277,7 +301,10 @@ export const createSendFormMachine = () =>
                         BLOCKCHAIN_DEFAULT_TOKENS[context.parsed.recipient.blockchain];
                     if (!defaultAsset) return {};
 
-                    const ratedAsset = context.findAssetById(defaultAsset.id.toString());
+                    const defaultAssetId = defaultAsset.id.toString();
+                    const ratedAsset = context.ratedAssets.find(
+                        ({ amount }) => amount.asset.id.toString() === defaultAssetId
+                    );
                     if (!ratedAsset) return {};
 
                     return {
@@ -291,10 +318,11 @@ export const createSendFormMachine = () =>
                     if (context.parsed.amount) return {};
                     if (context.values.isMax) return {};
 
-                    const result = context.validateAmount(
+                    const result = validateAmount(
                         context.values.amount,
                         context.values.amountInputType,
-                        context.parsed.asset
+                        context.parsed.asset,
+                        context.formatter
                     );
 
                     return {

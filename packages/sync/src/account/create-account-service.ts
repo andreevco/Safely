@@ -21,6 +21,7 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
         private readonly syncAccountIDRepository: SyncAccountRepository,
         private readonly structure: S,
         private readonly apiConfiguration: Configuration,
+        private readonly pollingTimeout: number,
         private readonly getAccountLogger: (accountId: string) => Logger
     ) {}
 
@@ -53,11 +54,12 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
             storage,
             encryptedStorage,
             apiConfiguration: this.apiConfiguration,
+            pollingTimeout: this.pollingTimeout,
             logger
         });
 
         await container.deviceManager.addDevice(
-            await container.ikService.getPub(),
+            container.ikService.getPub(),
             container.keyServiceFactory.createDmkSignerService(secureEncryptedStorage)
         );
 
@@ -109,6 +111,7 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
             storage,
             encryptedStorage,
             apiConfiguration: this.apiConfiguration,
+            pollingTimeout: this.pollingTimeout,
             logger
         });
         await container.accountsApi.confirmOnboarding();
@@ -128,6 +131,7 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
         await container.yManager.addDeviceOp(payload.addOp);
         await container.deviceManager.verifyDeviceOpAndApply(payload.addOp);
         account.syncProvider.triggerSync();
+        await account.syncProvider.syncStatusManager.waitForStatus(SyncStatus.SYNCHRONIZED);
 
         return account;
     }

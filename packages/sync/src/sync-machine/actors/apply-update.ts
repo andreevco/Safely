@@ -4,7 +4,7 @@ import type { SyncMachineConfig } from '../config';
 import { classifyError } from '../error-handler';
 
 export const applyUpdate = fromPromise(
-    async ({ input }: { input: { config: SyncMachineConfig } }) => {
+    async ({ input, signal }: { input: { config: SyncMachineConfig }; signal: AbortSignal }) => {
         const upd = input.config.remoteUpdates[0] ?? null;
         if (upd === null) return;
         input.config.logger.info(
@@ -12,10 +12,13 @@ export const applyUpdate = fromPromise(
             upd.snapshotProof.toString('hex').slice(0, 16) + '...'
         );
         try {
-            await input.config.updateHandler.handle({
-                snapshotProofChain: [],
-                ...upd
-            });
+            await input.config.syncOperations.applyRemoteUpdate(
+                {
+                    snapshotProofChain: [],
+                    ...upd
+                },
+                signal
+            );
             input.config.logger.info('Remote update applied successfully');
         } catch (e) {
             input.config.logger.error('Error applying update', e);

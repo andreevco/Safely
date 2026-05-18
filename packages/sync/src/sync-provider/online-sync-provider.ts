@@ -31,12 +31,9 @@ export class OnlineSyncProvider<S extends Record<string, ZodType>>
         const machine = createActor(createSyncMachine(), {
             input: {
                 syncStateRepository: container.syncStateRepository,
-                updateHandler: container.updateHandler,
-                yManager: container.yManager,
-                updateEncryptor: container.updateEncryptor,
                 snapshotsApi: container.snapshotApi,
                 snapshotsSse: container.snapshotSse,
-                ikService: container.ikService,
+                syncOperations: container.syncOperations,
                 syncStatusManager,
                 logger: container.logger
             },
@@ -73,9 +70,11 @@ export class OnlineSyncProvider<S extends Record<string, ZodType>>
         this.syncStatusManager.setStatus(SyncStatus.DISABLED);
     }
 
-    public restart(): void {
+    public restart(options?: { preserveStatus?: boolean }): void {
         this.syncMachine.stop();
-        this.syncStatusManager.setStatus(SyncStatus.DISCONNECTED);
+        if (!options?.preserveStatus) {
+            this.syncStatusManager.setStatus(SyncStatus.DISCONNECTED);
+        }
         this.syncMachine = machineFromContainer(this.container, this.syncStatusManager);
         this.syncMachine.start();
     }
@@ -101,12 +100,9 @@ function machineFromContainer(container: SyncContainer, syncStatusManager: SyncS
     return createActor(createSyncMachine(), {
         input: {
             syncStateRepository: container.syncStateRepository,
-            updateHandler: container.updateHandler,
-            yManager: container.yManager,
-            updateEncryptor: container.updateEncryptor,
             snapshotsApi: container.snapshotApi,
             snapshotsSse: container.snapshotSse,
-            ikService: container.ikService,
+            syncOperations: container.syncOperations,
             syncStatusManager,
             logger: container.logger
         },

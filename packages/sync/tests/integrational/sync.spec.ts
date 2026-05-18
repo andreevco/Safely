@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { makeFactory, onboardDevice, Schema } from './helpers';
-import { ISyncAccount, SyncAccountFactory } from '../../src';
+import type { Schema } from './helpers';
+import { makeFactory, onboardDevice } from './helpers';
+import type { ISyncAccount, SyncAccountFactory } from '../../src';
 import { InMemStorage } from '../impl/storage';
 
 describe('Sync', () => {

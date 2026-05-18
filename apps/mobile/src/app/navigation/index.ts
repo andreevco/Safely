@@ -16,6 +16,7 @@ import { PasscodeVerificationScreen } from '@mobile/screens/PasscodeVerification
 import { PendingFundsSheet } from '@mobile/screens/PendingFundsSheet';
 import { QRScanModal } from '@mobile/screens/QRScanModal';
 import { ReceiveAssetModal } from '@mobile/screens/ReceiveAssetModal';
+import { ReconnectDeviceModal } from '@mobile/screens/ReconnectDeviceModal';
 import { RemoveWalletSheet } from '@mobile/screens/RemoveWalletSheet';
 import {
     DisconnectDeviceSheet,
@@ -42,13 +43,6 @@ export const RootStack = createNativeStackNavigator({
         Onboarding: {
             screens: {
                 WelcomeScreen: WelcomeScreen,
-                LockScreen: {
-                    screen: LockScreen,
-                    options: {
-                        gestureEnabled: false,
-                        animation: 'none' as const
-                    }
-                },
                 OnboardingPasscodeScreen: OnboardingPasscodeScreen,
                 BiometryScreen: BiometryScreen,
                 OnboardingNotificationsScreen: OnboardingNotificationsScreen,
@@ -66,6 +60,14 @@ export const RootStack = createNativeStackNavigator({
                     }
                 },
                 TransactionScreen: TransactionScreen,
+                LockScreen: {
+                    screen: LockScreen,
+                    options: {
+                        presentation: 'fullScreenModal',
+                        gestureEnabled: false,
+                        animation: 'fade' as const
+                    }
+                },
                 PasscodeVerificationScreen: {
                     screen: PasscodeVerificationScreen,
                     options: {
@@ -97,6 +99,7 @@ export const RootStack = createNativeStackNavigator({
                 SelectAccountModal: SelectAccountModal,
                 SelectAccountSelectorModal: SelectAccountSelectorModal,
                 ReceiveAssetModal: ReceiveAssetModal,
+                ReconnectDeviceModal: ReconnectDeviceModal,
                 SendAssetModal: SendStack
             },
             screenOptions: {

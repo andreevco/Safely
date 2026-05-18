@@ -1,20 +1,21 @@
-import type { PsbtRequest } from './btc-psbt-bulder';
-import { BtcPsbtBulder } from './btc-psbt-bulder';
+import { type PsbtRequest, BtcPsbtBuilder } from './btc-psbt-builder';
 import { BtcSendDustError } from './errors';
-import type { BtcEstimation, BtcTransferRequest } from './types';
+import type { BtcEstimation } from './types';
 import { getUtxoTotal, utxoPathToStruct } from './utils';
 import type { BtcApi, BtcApiUtxo } from '../../api/btc';
 import type { BtcAssetAmount, SignableBtcWallet, ExplorerFactory } from '../../entities';
 import { BLOCKCHAIN_NAME, btcNetworkConfig } from '../../entities/blockchain';
 import { getExternalErrorText } from '../../entities/errors/errors.service';
-import { assertUnreachable, ellipsisMiddle } from '../../utils';
+import { ellipsisMiddle } from '../../utils';
 
 export class BtcTransactionTemplate {
     public readonly blockchain = BLOCKCHAIN_NAME.BTC;
 
     public sendResult: BtcSendResult | undefined;
 
-    private readonly psbtBuilder: BtcPsbtBulder;
+    private isSending = false;
+
+    private readonly psbtBuilder: BtcPsbtBuilder;
 
     public get outputs(): PsbtRequest['outputs'] {
         const total = getUtxoTotal(this.utxos);
@@ -23,20 +24,16 @@ export class BtcTransactionTemplate {
             value: this.request.amount.weiAmount
         };
 
-        switch (this.request.type) {
-            case 'max':
-                return [recipientOutput];
-            case 'not-max':
-                return [
-                    recipientOutput,
-                    {
-                        address: this.wallet.address,
-                        value: total.sub(this.request.amount).sub(this.estimation.fee.amount)
-                            .weiAmount
-                    }
-                ];
-            default:
-                assertUnreachable(this.request);
+        if (this.request.hasChange) {
+            return [
+                recipientOutput,
+                {
+                    address: this.wallet.address,
+                    value: total.sub(this.request.amount).sub(this.estimation.fee.amount).weiAmount
+                }
+            ];
+        } else {
+            return [recipientOutput];
         }
     }
 
@@ -47,11 +44,15 @@ export class BtcTransactionTemplate {
     constructor(
         private readonly btcApi: BtcApi,
         public readonly wallet: SignableBtcWallet,
-        public readonly request: BtcTransferRequest & { amount: BtcAssetAmount },
+        public readonly request: {
+            amount: BtcAssetAmount;
+            recipientAddress: string;
+            hasChange: boolean;
+        },
         private readonly utxos: BtcApiUtxo[],
         public readonly estimation: BtcEstimation
     ) {
-        this.psbtBuilder = new BtcPsbtBulder(btcApi, btcNetworkConfig[this.wallet.network]);
+        this.psbtBuilder = new BtcPsbtBuilder(btcNetworkConfig[this.wallet.network]);
     }
 
     public async send(): Promise<BtcSendResult> {
@@ -59,7 +60,22 @@ export class BtcTransactionTemplate {
             throw new Error(`Tx is already published, ${this.sendResult.txId}`);
         }
 
-        const psbt = await this.psbtBuilder.buildPsbt({
+        if (this.isSending) {
+            throw new Error('Tx in progress');
+        }
+
+        this.isSending = true;
+
+        try {
+            this.sendResult = await this._send();
+            return this.sendResult;
+        } finally {
+            this.isSending = false;
+        }
+    }
+
+    private async _send(): Promise<BtcSendResult> {
+        const psbt = this.psbtBuilder.buildPsbt({
             inputs: this.utxos,
             outputs: this.outputs
         });
@@ -75,13 +91,13 @@ export class BtcTransactionTemplate {
         try {
             result = await this.btcApi.sendTransaction(signed.toString('hex'));
         } catch (error) {
-            if (getExternalErrorText(error).trim().startsWith('-26')) {
+            if (getExternalErrorText(error).includes('dust')) {
                 throw new BtcSendDustError();
             }
             throw error;
         }
 
-        this.sendResult = {
+        return {
             blockchain: BLOCKCHAIN_NAME.BTC,
             txId: result.txid,
             toString() {
@@ -91,8 +107,6 @@ export class BtcTransactionTemplate {
                 return explorerFactory.createExplorer(BLOCKCHAIN_NAME.BTC).transaction(result.txid);
             }
         };
-
-        return this.sendResult;
     }
 }
 

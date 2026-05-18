@@ -21,7 +21,8 @@ export class NewDeviceOnboarding<S extends Record<string, ZodType>> {
         private readonly accountsApi: AccountsApi,
         private readonly accountManager: AccountManager<S>,
         private readonly secureEncryptedStorage: ITreeStorage,
-        private readonly logger: Logger
+        private readonly logger: Logger,
+        private readonly pollingTimeout: number
     ) {}
 
     public generateOnboardingData(): Buffer {
@@ -44,18 +45,6 @@ export class NewDeviceOnboarding<S extends Record<string, ZodType>> {
                 throw new OnboardingAbortedError();
             }
 
-            await new Promise<void>((resolve, reject) => {
-                const timer = setTimeout(resolve, 1000);
-                signal?.addEventListener(
-                    'abort',
-                    () => {
-                        clearTimeout(timer);
-                        reject(new OnboardingAbortedError());
-                    },
-                    { once: true }
-                );
-            });
-
             let message: OnboardingMessage;
             try {
                 message = await this.accountsApi.getOnboardingMessage({
@@ -67,6 +56,7 @@ export class NewDeviceOnboarding<S extends Record<string, ZodType>> {
                 }
 
                 this.logger.info('No onboarding message yet, retrying...', err);
+                await this.waitBeforeRetry(signal);
                 continue;
             }
 
@@ -77,6 +67,20 @@ export class NewDeviceOnboarding<S extends Record<string, ZodType>> {
             return await this.handleOnboardingMessage(message);
         }
         throw new Error('Onboarding timed out');
+    }
+
+    private async waitBeforeRetry(signal?: AbortSignal): Promise<void> {
+        await new Promise<void>((resolve, reject) => {
+            const timer = setTimeout(resolve, this.pollingTimeout);
+            signal?.addEventListener(
+                'abort',
+                () => {
+                    clearTimeout(timer);
+                    reject(new OnboardingAbortedError());
+                },
+                { once: true }
+            );
+        });
     }
 
     private async handleOnboardingMessage(msg: OnboardingMessage) {
@@ -139,10 +143,10 @@ export function accountsApiForOnboarding(
                 const signature = ed25519.sign(data, ikKeypair.secretKey);
                 return Buffer.from(signature);
             },
-            verify(_: Buffer, __: Buffer): Promise<boolean> {
+            verify(_: Buffer, __: Buffer): boolean {
                 throw new Error('is not used in this context');
             },
-            getPub: async () => {
+            getPub: () => {
                 return Buffer.from(ikKeypair.publicKey);
             }
         }),

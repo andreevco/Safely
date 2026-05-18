@@ -13,6 +13,7 @@ import { ed25519_keygen } from '../crypto/ed25519';
 import type { Logger } from '../logger';
 import type { OnboardingConnector } from '../onboarding/connector';
 import { accountsApiForOnboarding, NewDeviceOnboarding } from '../onboarding/new-device-onboarding';
+import { SingleActiveOnboardingCoordinator } from '../onboarding/single-active-onboarding-coordinator';
 
 export class SyncAccountFactory<
     S extends Record<string, ZodType>
@@ -21,12 +22,16 @@ export class SyncAccountFactory<
     private readonly accountManager: AccountManager<S>;
     private readonly apiConfiguration: Configuration;
     private readonly noAccountLogger: Logger;
+    private readonly pollingTimeout: number;
+    private readonly connectToExistingAccountCoordinator =
+        new SingleActiveOnboardingCoordinator<S>();
 
     constructor(opts: {
         storage: ITreeStorage;
         encryptedStorage: ITreeStorage;
         structure: S;
         apiConfiguration?: SyncApiConfiguration;
+        pollingTimeout?: number;
         noAccountLogger: Logger;
         getAccountLogger: (accountId: string) => Logger;
     }) {
@@ -35,6 +40,7 @@ export class SyncAccountFactory<
         this.syncAccountIdRepository = new SyncAccountRepository(opts.storage);
         this.apiConfiguration = new Configuration(opts.apiConfiguration);
         this.noAccountLogger = opts.noAccountLogger;
+        this.pollingTimeout = opts.pollingTimeout ?? 2500;
 
         const createAccountService = new CreateAccountService(
             opts.storage,
@@ -42,6 +48,7 @@ export class SyncAccountFactory<
             this.syncAccountIdRepository,
             opts.structure,
             this.apiConfiguration,
+            this.pollingTimeout,
             opts.getAccountLogger
         );
         this.accountManager = new AccountManager(
@@ -51,6 +58,7 @@ export class SyncAccountFactory<
             opts.structure,
             this.apiConfiguration,
             createAccountService,
+            this.pollingTimeout,
             opts.getAccountLogger
         );
     }
@@ -63,24 +71,25 @@ export class SyncAccountFactory<
     public async connectToExistingSyncAccount(
         secureEncryptedStorage: ITreeStorage
     ): Promise<OnboardingConnector<S>> {
+        return await this.connectToExistingAccountCoordinator.getConnector(() =>
+            this.createConnectToExistingAccountSession(secureEncryptedStorage)
+        );
+    }
+
+    private async createConnectToExistingAccountSession(secureEncryptedStorage: ITreeStorage) {
         const ikKeypair = ed25519_keygen();
         const onboarding = new NewDeviceOnboarding(
             ikKeypair,
             accountsApiForOnboarding(ikKeypair, this.apiConfiguration),
             this.accountManager,
             secureEncryptedStorage,
-            this.noAccountLogger
+            this.noAccountLogger,
+            this.pollingTimeout
         );
-        const data = onboarding.generateOnboardingData();
-        const abortController = new AbortController();
+
         return {
-            data,
-            waitForCompletion: async () => {
-                return await onboarding.waitForOnboarding(abortController.signal);
-            },
-            abort: () => {
-                abortController.abort();
-            }
+            data: onboarding.generateOnboardingData(),
+            waitForCompletion: (signal: AbortSignal) => onboarding.waitForOnboarding(signal)
         };
     }
 

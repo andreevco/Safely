@@ -17,7 +17,7 @@ export class UpdateEncryptorService {
     }
 
     private async createSnapshot(update: Buffer): Promise<EncryptedState> {
-        const kid = await this.ikService.getKID();
+        const kid = this.ikService.getKID();
         const { ciphertext, nonce } = await this.syncKeyService.encrypt(update);
 
         const snapshotProof = await this.makeSnapshotProof(Buffer.from(ciphertext));
