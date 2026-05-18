@@ -1,10 +1,11 @@
-import type {
-    ContactSuggestion,
-    PortfolioSuggestion,
-    SendFormErrors,
-    SendFormInitialValues,
-    SendFormValues,
-    SendSuggestionState
+import {
+    type ContactSuggestion,
+    type PortfolioSuggestion,
+    type SendFormErrors,
+    type SendFormInitialValues,
+    type SendFormValues,
+    type SendSuggestionState,
+    SuggestionSource
 } from '../types';
 import type { SendFormMachineContext, SendFormMachineInput } from './types';
 import { type RecipientValidationResult, validateRecipientInput } from '../validators/recipient';
@@ -12,7 +13,8 @@ import { type RecipientValidationResult, validateRecipientInput } from '../valid
 export const EMPTY_SUGGESTION: SendSuggestionState = {
     selectedId: undefined,
     portfoliosIds: undefined,
-    contactsIds: undefined
+    contactsIds: undefined,
+    source: undefined
 };
 
 export const DEFAULT_VALUES: SendFormValues = {
@@ -79,12 +81,14 @@ function computeInitialSuggestion(
     return {
         selectedId: match.id,
         portfoliosIds: portfolioSuggestions.map(s => s.id),
-        contactsIds: contactSuggestions.map(s => s.id)
+        contactsIds: contactSuggestions.map(s => s.id),
+        source: initialValues?.source ?? SuggestionSource.USER_DEFINED
     };
 }
 
 export function suggestionFromValidatorResult(
-    result: RecipientValidationResult
+    result: RecipientValidationResult,
+    source: SuggestionSource
 ): SendSuggestionState | undefined {
     if (!result.suggestion) return undefined;
 
@@ -93,7 +97,8 @@ export function suggestionFromValidatorResult(
     return {
         selectedId,
         contactsIds,
-        portfoliosIds
+        portfoliosIds,
+        source
     };
 }
 
@@ -138,7 +143,10 @@ export function buildInitialContext(input: SendFormMachineInput): SendFormMachin
     const draftSuggestionValid =
         !!initialSuggestion?.selectedId && allDraftIds.includes(initialSuggestion.selectedId);
 
-    const validatorSuggestion = suggestionFromValidatorResult(result);
+    const validatorSuggestion = suggestionFromValidatorResult(
+        result,
+        initialValues.source ?? SuggestionSource.USER_DEFINED
+    );
 
     return {
         ...baseContext,

@@ -6,7 +6,13 @@ import type {
     Recipient
 } from '@safely/core';
 
-import type { AmountInputType, AmountWithInputType, RecipientMeta, SendSuggestions } from './types';
+import type {
+    AmountInputType,
+    AmountWithInputType,
+    RecipientMeta,
+    SendSuggestions,
+    SuggestionSource
+} from './types';
 
 export type SendFormView =
     | RestoringView
@@ -35,6 +41,7 @@ interface RecipientViewBase {
     suggestions: SendSuggestions;
     restoredSuggestions: SendSuggestions | undefined;
     selectedSuggestionId: string | undefined;
+    selectedSuggestionSource: SuggestionSource | undefined;
     fromMeta: PortfolioMeta;
     setRecipient: (value: string) => void;
     setAddressBookName: (name: string) => void;

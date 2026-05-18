@@ -4,6 +4,7 @@ import { assertEvent, assign } from 'xstate';
 import type { BtcAssetAmount, Contact } from '@safely/core';
 
 import { SendFormError } from '../errors';
+import { SuggestionSource } from '../types';
 import {
     BLOCKCHAIN_DEFAULT_TOKENS,
     assetIdSchema,
@@ -66,7 +67,9 @@ export const createSendFormMachine = () =>
                             ...withResetDependentErrors(context.errors),
                             recipient: result.error
                         },
-                        suggestion: suggestionFromValidatorResult(result) ?? baseSuggestion
+                        suggestion:
+                            suggestionFromValidatorResult(result, SuggestionSource.USER_DEFINED) ??
+                            baseSuggestion
                     };
                 }),
                 handleSelectSuggestion: assign(({ context, event }) => {
@@ -85,10 +88,14 @@ export const createSendFormMachine = () =>
                         preferredSuggestionId: event.id
                     });
 
-                    const newSuggestion = suggestionFromValidatorResult(result) ?? {
+                    const newSuggestion = suggestionFromValidatorResult(
+                        result,
+                        SuggestionSource.SUGGESTIONS
+                    ) ?? {
                         selectedId: event.id,
                         contactsIds: visible.contacts.map(s => s.id),
-                        portfoliosIds: visible.portfolios.map(s => s.id)
+                        portfoliosIds: visible.portfolios.map(s => s.id),
+                        source: SuggestionSource.SUGGESTIONS
                     };
 
                     return {
@@ -268,7 +275,8 @@ export const createSendFormMachine = () =>
                                 contactsIds: [
                                     ...(context.suggestion.contactsIds ?? []),
                                     newSuggestionId
-                                ]
+                                ],
+                                source: SuggestionSource.USER_DEFINED
                             }
                         };
                     }
