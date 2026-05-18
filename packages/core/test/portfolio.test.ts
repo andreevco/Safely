@@ -7,6 +7,7 @@ import { sDerivation, sPortfolio, sPortfolioBip39 } from '@safely/sync-storage';
 
 import type { PortfolioBip39 } from '../src';
 import {
+    Bip39Source,
     BtcNetwork,
     BtcWalletType,
     BtcXpub,
@@ -77,9 +78,10 @@ describe('Test portfolio generation (Bitcoin)', () => {
         const serialized = JSON.stringify(portfolio);
         const parsed: unknown = JSON.parse(serialized);
 
-        const expectedStructure: SPortfolioBip39 = {
+        const expectedStructure: SPortfolioBip39 = sPortfolioBip39.toJson({
             id: {
-                hash: portfolio.id.toJSON().hash,
+                source: Bip39Source.IMPORTED,
+                seedHash: (portfolio.id.toJSON() as SPortfolioBip39IdImported).seedHash,
                 networkType: PortfolioNetworkType.MAINNET
             },
             type: PortfolioType.BIP39,
@@ -89,25 +91,24 @@ describe('Test portfolio generation (Bitcoin)', () => {
             },
             secretRevealedStatus: null,
             derivations: [
-                {
+                sDerivation.toJson({
                     index: 0,
                     chains: {
                         btc: {
-                            xpub: portfolio.derivations[0].chains.btc.xpub,
-                            wallets: [
-                                {
-                                    type: BtcWalletType.NATIVE_SEGWIT
-                                }
-                            ]
+                            xpub: portfolio.derivations[0].chains.btc.xpub
                         }
                     }
-                }
+                })
             ],
             encryptedSecret: portfolio.toJSON().encryptedSecret
-        };
+        });
 
         expect(parsed).toMatchObject({
-            id: { networkType: PortfolioNetworkType.MAINNET },
+            id: {
+                source: Bip39Source.IMPORTED,
+                seedHash: (portfolio.id.toJSON() as SPortfolioBip39IdImported).seedHash,
+                networkType: PortfolioNetworkType.MAINNET
+            },
             type: PortfolioType.BIP39,
             meta: { name: portfolioName },
             derivations: [
@@ -115,7 +116,7 @@ describe('Test portfolio generation (Bitcoin)', () => {
                     index: 0,
                     chains: {
                         btc: {
-                            wallets: [{ type: BtcWalletType.NATIVE_SEGWIT }]
+                            xpub: portfolio.derivations[0].chains.btc.xpub
                         }
                     }
                 }
@@ -151,9 +152,10 @@ describe('Test portfolio generation (Bitcoin)', () => {
         const serialized = JSON.stringify(portfolio);
         const parsed: unknown = JSON.parse(serialized);
 
-        const expectedStructure: SPortfolioBip39 = {
+        const expectedStructure: SPortfolioBip39 = sPortfolioBip39.toJson({
             id: {
-                hash: portfolio.id.toJSON().hash,
+                source: Bip39Source.IMPORTED,
+                seedHash: (portfolio.id.toJSON() as SPortfolioBip39IdImported).seedHash,
                 networkType: PortfolioNetworkType.MAINNET
             },
             type: PortfolioType.BIP39,
@@ -166,25 +168,24 @@ describe('Test portfolio generation (Bitcoin)', () => {
                 revealedFromDevice: 'TEST_DEVICE_NAME'
             },
             derivations: [
-                {
+                sDerivation.toJson({
                     index: 0,
                     chains: {
                         btc: {
-                            xpub: portfolio.derivations[0].chains.btc.xpub,
-                            wallets: [
-                                {
-                                    type: BtcWalletType.NATIVE_SEGWIT
-                                }
-                            ]
+                            xpub: portfolio.derivations[0].chains.btc.xpub
                         }
                     }
-                }
+                })
             ],
             encryptedSecret: portfolio.toJSON().encryptedSecret
-        };
+        });
 
         expect(parsed).toMatchObject({
-            id: { networkType: PortfolioNetworkType.MAINNET },
+            id: {
+                source: Bip39Source.IMPORTED,
+                seedHash: (portfolio.id.toJSON() as SPortfolioBip39IdImported).seedHash,
+                networkType: PortfolioNetworkType.MAINNET
+            },
             type: PortfolioType.BIP39,
             meta: { name: portfolioName },
             secretRevealedStatus: { revealedFromDevice: 'TEST_DEVICE_NAME' },
@@ -193,7 +194,7 @@ describe('Test portfolio generation (Bitcoin)', () => {
                     index: 0,
                     chains: {
                         btc: {
-                            wallets: [{ type: BtcWalletType.NATIVE_SEGWIT }]
+                            xpub: portfolio.derivations[0].chains.btc.xpub
                         }
                     }
                 }
