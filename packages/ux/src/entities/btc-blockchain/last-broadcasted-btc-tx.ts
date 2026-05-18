@@ -1,5 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { createStore, useStore } from '@tanstack/react-store';
+import { useStore } from 'zustand';
+import { createStore } from 'zustand/vanilla';
 
 import type { BtcApiUtxo, BtcTransactionTemplate, BtcWallet } from '@safely/core';
 import { BtcAssetAmount, toBig, toBigOrZero } from '@safely/core';
@@ -13,7 +14,7 @@ import { utxo } from './keys';
 import { refetchQueries } from '../../shared';
 import { useMutation } from '../query-core';
 
-const lastBroadcastedBtcTxStore = createStore<Record<string, BroadcastedBtcTx>>({});
+const lastBroadcastedBtcTxStore = createStore<Record<string, BroadcastedBtcTx>>(() => ({}));
 
 function selectLastBroadcastedBtcTxForWallet(
     tx: BroadcastedBtcTx | undefined,
@@ -38,7 +39,10 @@ export function getLastBroadcastedBtcTxForWallet(
     accountId: string,
     wallet: BtcWallet
 ): BroadcastedBtcTx | null {
-    return selectLastBroadcastedBtcTxForWallet(lastBroadcastedBtcTxStore.state[accountId], wallet);
+    return selectLastBroadcastedBtcTxForWallet(
+        lastBroadcastedBtcTxStore.getState()[accountId],
+        wallet
+    );
 }
 
 export function useSetLastBroadcastedBtcTx() {
@@ -54,11 +58,11 @@ export function useSetLastBroadcastedBtcTx() {
             void refetchQueries(queryClient, utxo.toKey());
 
             setTimeout(() => {
-                if (lastBroadcastedBtcTxStore.state[accountId]?.txId === tx.txId) {
+                if (lastBroadcastedBtcTxStore.getState()[accountId]?.txId === tx.txId) {
                     lastBroadcastedBtcTxStore.setState(s => {
                         const { [accountId]: _, ...rest } = s;
                         return rest;
-                    });
+                    }, true);
                 }
             }, 20_000);
         }
