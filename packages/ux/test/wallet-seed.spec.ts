@@ -1,7 +1,18 @@
 import { describe, expect, it } from 'vitest';
 
+import type { ISecretEncryptor } from '@safely/core';
+
 import type { WalletDerivation } from '../src';
 import { WalletSeedFactory } from '../src';
+
+const passthroughEncryptor: ISecretEncryptor = {
+    async encrypt(secret) {
+        return secret;
+    },
+    async decrypt(secret) {
+        return secret;
+    }
+};
 
 class WalletDerivationStorage {
     public value: WalletDerivation | null = null;
@@ -20,7 +31,7 @@ describe('WalletSeedFactory', () => {
         const storage = new WalletDerivationStorage();
         const factory = new WalletSeedFactory(storage);
 
-        const walletDerivation = await factory.createWalletDerivation();
+        const walletDerivation = await factory.createWalletDerivation(passthroughEncryptor);
 
         expect(walletDerivation.root_seed_key).toMatch(/^[0-9a-f]{64}$/);
         expect(walletDerivation.bip39_256_wallet_index).toBe(0);
@@ -35,7 +46,7 @@ describe('WalletSeedFactory', () => {
         };
         const factory = new WalletSeedFactory(storage);
 
-        await expect(factory.createWalletDerivation()).rejects.toThrow(
+        await expect(factory.createWalletDerivation(passthroughEncryptor)).rejects.toThrow(
             'Wallet derivation is already initialized'
         );
     });
@@ -44,7 +55,7 @@ describe('WalletSeedFactory', () => {
         const storage = new WalletDerivationStorage();
         const factory = new WalletSeedFactory(storage);
 
-        await expect(factory.generateBip39SeedAccessor()).rejects.toThrow(
+        await expect(factory.generateBip39SeedAccessor(passthroughEncryptor)).rejects.toThrow(
             'Wallet derivation is not initialized'
         );
     });
@@ -57,8 +68,8 @@ describe('WalletSeedFactory', () => {
         };
         const factory = new WalletSeedFactory(storage);
 
-        using first = await factory.generateBip39SeedAccessor();
-        using second = await factory.generateBip39SeedAccessor();
+        using first = await factory.generateBip39SeedAccessor(passthroughEncryptor);
+        using second = await factory.generateBip39SeedAccessor(passthroughEncryptor);
 
         expect(first.value).toEqual([
             'bring',

@@ -3,6 +3,7 @@ import { bytesToHex, hexToBytes } from '@noble/hashes/utils.js';
 import {
     deriveBip39WalletSeedAccessor,
     generateWalletRootSeedKey,
+    type ISecretEncryptor,
     type MnemonicResource
 } from '@safely/core';
 
@@ -16,14 +17,15 @@ type WalletDerivationStorage = {
 export class WalletSeedFactory {
     constructor(private readonly storage: WalletDerivationStorage) {}
 
-    public async createWalletDerivation(): Promise<WalletDerivation> {
+    public async createWalletDerivation(encryptor: ISecretEncryptor): Promise<WalletDerivation> {
         const existing = this.storage.get('walletDerivation');
         if (existing) {
             throw new Error('Wallet derivation is already initialized');
         }
 
+        const encryptedRoot = await encryptor.encrypt(bytesToHex(generateWalletRootSeedKey()));
         const walletDerivation: WalletDerivation = {
-            root_seed_key: bytesToHex(generateWalletRootSeedKey()),
+            root_seed_key: encryptedRoot,
             bip39_256_wallet_index: 0
         };
 
@@ -32,7 +34,7 @@ export class WalletSeedFactory {
         return walletDerivation;
     }
 
-    public async generateBip39SeedAccessor(): Promise<MnemonicResource> {
+    public async generateBip39SeedAccessor(encryptor: ISecretEncryptor): Promise<MnemonicResource> {
         const walletDerivation = this.storage.get('walletDerivation');
         if (!walletDerivation) {
             throw new Error('Wallet derivation is not initialized');
@@ -45,7 +47,8 @@ export class WalletSeedFactory {
             bip39_256_wallet_index: walletIndex + 1
         });
 
-        return deriveBip39WalletSeedAccessor(hexToBytes(walletDerivation.root_seed_key), {
+        const rootSeedKey = await encryptor.decrypt(walletDerivation.root_seed_key);
+        return deriveBip39WalletSeedAccessor(hexToBytes(rootSeedKey), {
             schema: 'bip39',
             walletIndex,
             entropyBits: 128

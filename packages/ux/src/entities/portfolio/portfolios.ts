@@ -140,7 +140,9 @@ export function useGeneratePortfolio() {
             }
 
             const walletSeedFactory = new WalletSeedFactory(account.syncProvider);
-            using accessorVault = await walletSeedFactory.generateBip39SeedAccessor();
+            using accessorVault = await walletSeedFactory.generateBip39SeedAccessor(
+                params.secretEncryptor
+            );
             const factory = new PortfolioFactory(params.secretEncryptor);
 
             const portfolio = await factory.generatePortfolioBip39(accessorVault, {

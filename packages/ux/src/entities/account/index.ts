@@ -68,15 +68,18 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
                     params?.name ?? t('security.groups.wallet.main')
                 )
             );
-            await walletSeedFactory.createWalletDerivation();
+            const secretEncryptor = new SecretEncryptor(
+                account.secretEncryptor,
+                params.secureEncryptedStorage
+            );
+            await walletSeedFactory.createWalletDerivation(secretEncryptor);
 
             let createdPortfolio: PortfolioBip39 | null = null;
 
             if (options?.createWallet || options?.setActive) {
-                const portfolioFactory = new PortfolioFactory(
-                    new SecretEncryptor(account.secretEncryptor, params.secureEncryptedStorage)
-                );
-                using accessorVault = await walletSeedFactory.generateBip39SeedAccessor();
+                const portfolioFactory = new PortfolioFactory(secretEncryptor);
+                using accessorVault =
+                    await walletSeedFactory.generateBip39SeedAccessor(secretEncryptor);
                 createdPortfolio = await portfolioFactory.generatePortfolioBip39(accessorVault, {
                     network: PortfolioNetworkType.MAINNET,
                     meta: { name: t('security.groups.wallet.defaultName', { number: 1 }) }
