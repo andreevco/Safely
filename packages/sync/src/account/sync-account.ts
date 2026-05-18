@@ -68,8 +68,9 @@ export class SyncAccount<S extends Record<string, ZodType>> implements ISyncAcco
             this.container.accountsApi,
             this.container.deviceManager,
             this.container.syncOperations,
-            () => {
+            async () => {
                 this.syncProvider.triggerSync();
+                await this.syncProvider.syncStatusManager.waitForStatus(SyncStatus.SYNCHRONIZED);
             }
         );
         await onboarding.onboard(data);
