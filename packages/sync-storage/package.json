@@ -5,8 +5,7 @@
   "scripts": {
     "compile": "tsc --noEmit",
     "dev": "tsc --watch",
-    "lint": "eslint ./src",
-    "test": "vitest run"
+    "lint": "eslint ./src"
   },
   "dependencies": {
     "@safely/sync": "workspace:*",
