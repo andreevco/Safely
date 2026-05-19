@@ -3,14 +3,14 @@ import { useCallback } from 'react';
 import type { Draft } from '@safely/slottree';
 import type { SyncedStorageSchema } from '@safely/sync-storage';
 
+import type { SyncAccount } from './account-state';
 import { useActiveAccount } from './account-state';
 import type { SyncedSlotKey } from './sync-storage/account-store';
 import { accountStore, accountStoreActions } from './sync-storage/account-store';
 import { SecretEncryptor, useAppContext } from '../../shared';
 import { AccountStoreTransform } from './sync-storage/account-store-transform';
 
-export function useActiveAccountSyncStorageUpdate<T extends SyncedSlotKey>(slot: T) {
-    const account = useActiveAccount();
+export function useAccountSyncStorageUpdate<T extends SyncedSlotKey>(slot: T) {
     const {
         storage: {
             sync: { getSecureEncrypted }
@@ -19,6 +19,7 @@ export function useActiveAccountSyncStorageUpdate<T extends SyncedSlotKey>(slot:
 
     return useCallback(
         async (
+            account: SyncAccount,
             f: (
                 draft: Draft<SyncedStorageSchema[T]>,
                 storeDraft: Draft<SyncedStorageSchema>
@@ -56,6 +57,21 @@ export function useActiveAccountSyncStorageUpdate<T extends SyncedSlotKey>(slot:
                 throw e;
             }
         },
-        [account.accountId, account.secretEncryptor, slot, getSecureEncrypted]
+        [slot, getSecureEncrypted]
+    );
+}
+
+export function useActiveAccountSyncStorageUpdate<T extends SyncedSlotKey>(slot: T) {
+    const account = useActiveAccount();
+    const update = useAccountSyncStorageUpdate(slot);
+
+    return useCallback(
+        async (
+            f: (
+                draft: Draft<SyncedStorageSchema[T]>,
+                storeDraft: Draft<SyncedStorageSchema>
+            ) => void
+        ) => update(account, f),
+        [account, update]
     );
 }

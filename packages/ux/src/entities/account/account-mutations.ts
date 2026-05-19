@@ -19,7 +19,7 @@ import { useMutation } from '../query-core';
 import { useCurrentDeviceIkPub, useSetOwnSyncedDeviceMeta } from '../synced-device';
 import { useToast } from '../toast';
 import { useClearActiveAccountLocalStorage } from './local-storage';
-import { useActiveAccountSyncStorageUpdate } from './useActiveAccountSyncStorageUpdate';
+import { useActiveAccountSyncStorageUpdate } from './useAccountSyncStorageUpdate';
 
 export * from './local-storage';
 export * from './sync-storage';

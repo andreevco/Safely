@@ -253,7 +253,7 @@ export function useActivePortfolioEntities(): ActivePortfolioEntities {
 }
 
 export function useHasPortfolio() {
-    return useActivePortfolioEntitiesQuery() !== null;
+    return useActivePortfolioEntitiesQuery().data !== null;
 }
 
 export function useIsActiveWalletWatchOnly(): boolean {

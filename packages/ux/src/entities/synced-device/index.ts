@@ -6,7 +6,10 @@ import type { SDeviceMeta, SyncedStorageStructure } from '@safely/sync-storage';
 
 import { useAppContext } from '../../shared';
 import { useActiveAccount, useActiveAccountStoreSlot } from '../account/account-state';
-import { useActiveAccountSyncStorageUpdate } from '../account/useActiveAccountSyncStorageUpdate';
+import {
+    useAccountSyncStorageUpdate,
+    useActiveAccountSyncStorageUpdate
+} from '../account/useAccountSyncStorageUpdate';
 import { useMutation } from '../query-core';
 
 export function useSyncedDevicesMeta(): Record<string, SDeviceMeta> | null {
@@ -73,7 +76,7 @@ export function useRevokeSyncedDevice() {
 
 export function useSetOwnSyncedDeviceMeta() {
     const { version, build, deviceInfo } = useAppContext();
-    const update = useActiveAccountSyncStorageUpdate('devicesMeta');
+    const update = useAccountSyncStorageUpdate('devicesMeta');
 
     return useMutation<void, Error, ISyncAccount<SyncedStorageStructure>>({
         async mutationFn(syncAccount) {
@@ -83,7 +86,7 @@ export function useSetOwnSyncedDeviceMeta() {
             const existing = syncAccount.syncProvider.get('devicesMeta');
             const currentMetaExisting = existing?.[ikPubHex];
 
-            update(draft =>
+            update(syncAccount, draft =>
                 draft.set(ikPubHex, {
                     name: deviceInfo.name,
                     platform: build as 'ios' | 'android',
