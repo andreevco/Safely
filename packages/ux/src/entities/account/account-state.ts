@@ -12,7 +12,7 @@ import type {
 import { syncedStorageVersions } from '@safely/sync-storage';
 
 import { accountKey } from './keys';
-import { useAccountStoreSlot } from './sync-storage';
+import { useAccountStoreSlot } from './sync-storage/useAccountStore';
 import {
     useAppContext,
     useBootConfig,
