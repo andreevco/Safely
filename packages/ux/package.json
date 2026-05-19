@@ -36,6 +36,6 @@
   },
   "exports": {
     ".": "./src/index.ts",
-    "./assets/icons/**": "./src/assets/icons/**"
+    "./assets/icons/*": "./src/shared/assets/icons/*"
   }
 }
