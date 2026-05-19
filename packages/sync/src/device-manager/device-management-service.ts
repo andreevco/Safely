@@ -42,7 +42,7 @@ export class DeviceManagementService {
         await waitForChange({
             subscribe: observer => this.onChange(observer),
             predicate: () => this.isDeviceVisible(ikPub),
-            timeoutMs: opts.timeoutMs ?? 3000,
+            timeoutMs: opts.timeoutMs ?? 5000,
             timeoutError
         });
     }

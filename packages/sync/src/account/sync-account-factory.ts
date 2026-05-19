@@ -48,7 +48,7 @@ export class SyncAccountFactory<Versions extends VersionHList> implements ISyncA
         this.apiConfiguration = new Configuration(opts.apiConfiguration);
         this.apiImplementations = opts.apiImplementations;
         this.noAccountLogger = opts.noAccountLogger;
-        this.pollingTimeout = opts.pollingTimeout ?? 2500;
+        this.pollingTimeout = opts.pollingTimeout ?? 2000;
 
         const createAccountService = new CreateAccountService(
             opts.storage,
