@@ -14,7 +14,7 @@ export function useTrackOnboardingOpen() {
         tracked.current = true;
 
         void (async () => {
-            const onboardingId = await getOnboardingId();
+            const onboardingId = await getOnboardingId(true);
             await analytics.trackOnboardingOpen({ onboardingId });
         })();
     }, [analytics, getOnboardingId]);

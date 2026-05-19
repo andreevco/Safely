@@ -7,13 +7,29 @@ import { useSharedUxStorage } from '../storage';
 export function useOnboardingId() {
     const { get, set } = useSharedUxStorage('analyticsOnboardingId');
 
-    return useCallback(async (): Promise<string> => {
-        const stored = await get();
-        if (stored) return stored;
+    return useCallback(
+        async (isOnboarding = false): Promise<string> => {
+            const stored = await get();
 
-        const fresh = generateUuidV4();
-        await set(fresh);
+            if (isOnboarding) {
+                const fresh = generateUuidV4();
+                await set(`onboarding:${fresh}`);
 
-        return fresh;
-    }, [get, set]);
+                return fresh;
+            }
+
+            if (stored?.startsWith('onboarding:')) {
+                const inherited = stored.slice('onboarding:'.length);
+                await set(`account:${inherited}`);
+
+                return inherited;
+            }
+
+            const fresh = generateUuidV4();
+            await set(`account:${fresh}`);
+
+            return fresh;
+        },
+        [get, set]
+    );
 }
