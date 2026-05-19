@@ -35,6 +35,7 @@
     "react": "catalog:"
   },
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./assets/icons/**": "./src/assets/icons/**"
   }
 }

@@ -25,6 +25,7 @@ export interface ObjectDraft<T extends object> {
     set<K extends Extract<keyof T, string>>(key: K, map: DraftMap<T[K]>): void;
     delete<K extends Extract<keyof T, string>>(key: K): void;
     get(): DeepReadonly<T> | undefined;
+    narrow<S extends T>(guard: (value: T) => value is S): ObjectDraft<S> | undefined;
 }
 
 export interface ArrayDraft<T extends { __setId: string }> {

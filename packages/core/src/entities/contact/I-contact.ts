@@ -7,7 +7,5 @@ export interface IContact {
     meta: ContactMeta;
     createdAt: Date;
 
-    withMeta(meta: Partial<ContactMeta>): IContact;
-    withAddresses(addresses: { blockchain: VM_TYPE; address: string }[]): IContact;
     toJSON(): unknown;
 }

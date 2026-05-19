@@ -36,24 +36,6 @@ export class Contact implements IContact {
         this.createdAt = params.createdAt ?? new Date();
     }
 
-    public withMeta(meta: Partial<ContactMeta>): Contact {
-        return new Contact({
-            id: this.id,
-            addresses: this.addresses,
-            meta: { ...this.meta, ...meta },
-            createdAt: this.createdAt
-        });
-    }
-
-    public withAddresses(addresses: { blockchain: VM_TYPE; address: string }[]): Contact {
-        return new Contact({
-            id: this.id,
-            addresses,
-            meta: this.meta,
-            createdAt: this.createdAt
-        });
-    }
-
     private generateId() {
         return uuid7();
     }

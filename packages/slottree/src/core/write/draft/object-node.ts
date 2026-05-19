@@ -47,4 +47,9 @@ export class ObjectDraftNode extends AtomicDraftNode {
         this.cursor.ensureContainer().delete(key);
         this.cursor.notifyUpdate();
     }
+
+    public narrow(guard: (value: unknown) => boolean): ObjectDraftNode | undefined {
+        const value = this.get();
+        return value !== undefined && guard(value) ? this : undefined;
+    }
 }

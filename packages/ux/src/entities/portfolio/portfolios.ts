@@ -22,7 +22,6 @@ import {
     generateBip39Accessor,
     VM_TYPE
 } from '@safely/core';
-import type { SPortfolio } from '@safely/sync-storage';
 
 import { useTranslate, useSecurityCheck, useAppContext } from '../../shared';
 import { useSuspenseQuery } from '../../shared';
@@ -320,15 +319,11 @@ export function useChangePortfolioMeta() {
     return useMutation<void, Error, { portfolio: Portfolio; meta: Partial<PortfolioMeta> }>({
         async mutationFn({ portfolio, meta }) {
             update(draft =>
-                draft.update(portfolio.jsonArrayId(), item => {
-                    const p = item as SPortfolio;
-                    return {
-                        ...p,
-                        meta: {
-                            ...p.meta,
-                            ...meta
-                        }
-                    };
+                draft.update(portfolio.jsonArrayId(), activePortfolioDraft => {
+                    activePortfolioDraft.set('meta', {
+                        ...activePortfolioDraft.get()!.meta,
+                        ...meta
+                    });
                 })
             );
         }
@@ -343,20 +338,16 @@ export function useRecordActivePortfolioSecretReveal() {
     return useMutation({
         async mutationFn() {
             update(draft =>
-                draft.update(activePortfolio.jsonArrayId(), item => {
-                    const p = item as SPortfolio;
+                draft.update(activePortfolio.jsonArrayId(), activePortfolioDraft => {
+                    const bip39Draft = activePortfolioDraft.narrow(
+                        (p): p is Extract<typeof p, { type: typeof PortfolioType.BIP39 }> =>
+                            p.type === PortfolioType.BIP39
+                    );
 
-                    if (p.type === PortfolioType.WATCH_ONLY) {
-                        return p;
-                    }
-
-                    return {
-                        ...p,
-                        secretRevealedStatus: {
-                            revealedAt: new Date().getTime(),
-                            revealedFromDevice: deviceInfo.name
-                        }
-                    };
+                    bip39Draft?.set('secretRevealedStatus', {
+                        revealedAt: new Date().getTime(),
+                        revealedFromDevice: deviceInfo.name
+                    });
                 })
             );
         }

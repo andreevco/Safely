@@ -3,6 +3,7 @@ import type { BLOCKCHAIN_NAME } from '@safely/core';
 import { vmTypeByBlockchainName } from '@safely/core';
 import { allowedContactMetaColors, Contact } from '@safely/core';
 import type { SContact } from '@safely/sync-storage';
+import { sContactAddress } from '@safely/sync-storage';
 
 import { useTranslate } from '../../shared';
 import { useActiveAccountSyncStorageUpdate, useActiveAccountStoreSlot } from '../account';
@@ -68,19 +69,18 @@ export function useEditContact() {
 
             return new Promise(resolve => {
                 update(draft => {
-                    draft.update(target.jsonArrayId(), sContact => {
-                        let updated = Contact.restoreContact(sContact as SContact);
-                        if (meta) updated = updated.withMeta(meta);
-                        if (addresses)
-                            updated = updated.withAddresses(
-                                addresses.map(a => ({
-                                    blockchain: vmTypeByBlockchainName(a.blockchain),
-                                    address: a.address
-                                }))
+                    draft.update(target.jsonArrayId(), sContactDraft => {
+                        if (meta) {
+                            sContactDraft.set('meta', { ...sContactDraft.get()!.meta, ...meta });
+                        }
+                        if (addresses) {
+                            sContactDraft.set(
+                                'addresses',
+                                addresses.map(({ address }) => sContactAddress.toJson({ address }))
                             );
+                        }
 
-                        resolve(updated);
-                        return updated.toJSON();
+                        resolve(Contact.restoreContact(sContactDraft.get() as SContact));
                     });
                 });
             });
