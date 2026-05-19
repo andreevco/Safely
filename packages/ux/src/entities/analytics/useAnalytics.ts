@@ -21,10 +21,12 @@ export interface AnalyticsApi {
 }
 
 export function useAnalytics(): AnalyticsApi {
-    const service = useContext(AnalyticsContext);
-    if (!service) {
+    const ctx = useContext(AnalyticsContext);
+    if (!ctx) {
         throw new Error('useAnalytics must be used within AnalyticsProvider');
     }
+
+    const { service, sessionId } = ctx;
 
     const lang = useActiveLanguage();
     const { data: accountUuid } = useAccountUuid();
@@ -34,23 +36,36 @@ export function useAnalytics(): AnalyticsApi {
 
     return useMemo<AnalyticsApi>(
         () => ({
-            trackOnboardingOpen: input => service.trackOnboardingOpen({ ...input, lang }),
+            trackOnboardingOpen: input =>
+                service.trackOnboardingOpen({ ...input, lang, sessionId }),
             trackWalletOpen: async input => {
                 if (!accountUuid) return;
 
-                await service.trackWalletOpen({ ...input, accountUuid, fiatSymbol, lang });
+                await service.trackWalletOpen({
+                    ...input,
+                    accountUuid,
+                    sessionId,
+                    fiatSymbol,
+                    lang
+                });
             },
             trackSendStart: async () => {
                 if (!accountUuid) return;
 
-                await service.trackSendStart({ accountUuid, lang });
+                await service.trackSendStart({ accountUuid, sessionId, lang });
             },
             trackSendFinish: async input => {
                 if (!accountUuid) return;
 
-                await service.trackSendFinish({ ...input, accountUuid, fiatSymbol, lang });
+                await service.trackSendFinish({
+                    ...input,
+                    accountUuid,
+                    sessionId,
+                    fiatSymbol,
+                    lang
+                });
             }
         }),
-        [service, accountUuid, fiatSymbol, lang]
+        [service, sessionId, accountUuid, fiatSymbol, lang]
     );
 }

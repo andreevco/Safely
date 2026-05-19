@@ -1,23 +1,28 @@
 import type { ReactNode } from 'react';
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 
-import { AnalyticsService, EventsApi, RateApi } from '@safely/core';
+import { AnalyticsService, EventsApi, RateApi, generateUuidV4 } from '@safely/core';
 
+import type { AnalyticsContextValue } from './AnalyticsContext';
 import { AnalyticsContext } from './AnalyticsContext';
+import { useAccountUuid } from './useAccountUuid';
 import { useBootConfig } from '../../shared/api/useBootConfig';
 import { useAppContext } from '../../shared/providers';
+
+type SessionKey = string | null;
 
 export function AnalyticsProvider(props: { children: ReactNode }) {
     const { children } = props;
 
     const appContext = useAppContext();
     const bootConfig = useBootConfig();
+    const { data: accountUuid } = useAccountUuid();
+    const accountKey: SessionKey = accountUuid ?? null;
 
     const service = useMemo(
         () =>
             new AnalyticsService({
                 logger: appContext.loggerRegistry.systemLogger.child('analytics'),
-                sessionId: appContext.sessionId,
                 eventsApi: new EventsApi({
                     baseUrl: bootConfig.telemetry.analytics.url,
                     projectToken: bootConfig.telemetry.analytics.token
@@ -29,7 +34,6 @@ export function AnalyticsProvider(props: { children: ReactNode }) {
             }),
         [
             appContext.loggerRegistry.systemLogger,
-            appContext.sessionId,
             appContext.environment,
             appContext.build,
             appContext.version,
@@ -39,5 +43,21 @@ export function AnalyticsProvider(props: { children: ReactNode }) {
         ]
     );
 
-    return <AnalyticsContext.Provider value={service}>{children}</AnalyticsContext.Provider>;
+    const sessionRef = useRef<{ key: SessionKey; id: string }>({
+        key: null,
+        id: generateUuidV4()
+    });
+
+    if (sessionRef.current.key !== accountKey) {
+        sessionRef.current = { key: accountKey, id: generateUuidV4() };
+    }
+
+    const sessionId = sessionRef.current.id;
+
+    const value = useMemo<AnalyticsContextValue>(
+        () => ({ service, sessionId }),
+        [service, sessionId]
+    );
+
+    return <AnalyticsContext.Provider value={value}>{children}</AnalyticsContext.Provider>;
 }

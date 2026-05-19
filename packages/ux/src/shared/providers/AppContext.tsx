@@ -24,8 +24,6 @@ export interface IAppContext {
 
     environment: 'production' | 'development';
 
-    sessionId: string;
-
     deviceInfo: {
         name: string;
         osVersion: string;

@@ -3,7 +3,6 @@ import { FC, PropsWithChildren, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AppState } from 'react-native';
 
-import { generateUuidV4 } from '@safely/core';
 import {
     AppContext,
     IAppContext,
@@ -34,8 +33,6 @@ const security: Security = {
     }
 };
 
-const SESSION_ID = generateUuidV4();
-
 export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
     const {
         t,
@@ -53,7 +50,6 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
             version: packageJson.version,
             build,
             environment,
-            sessionId: SESSION_ID,
             deviceInfo,
             numberFormatLocale: new MobileNumberFormatLocale(getLocales()[0]),
             storage: {
