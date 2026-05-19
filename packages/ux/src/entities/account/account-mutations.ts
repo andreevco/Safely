@@ -44,7 +44,8 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
     const factory = useAccountsFactory();
     const { mutateAsync: setActive } = useSetActiveAccount();
     const newAccountName = useNewAccountDefaultName();
-    const update = useAccountSyncStorageUpdate('portfolios');
+    const updatePortfolios = useAccountSyncStorageUpdate('portfolios');
+    const updateMeta = useAccountSyncStorageUpdate('meta');
 
     return useMutation<
         ISyncAccount<SyncedStorageStructure>,
@@ -56,8 +57,8 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
             await delay();
 
             const account = await factory.createSyncAccount(params.secureEncryptedStorage);
-            await account.syncProvider.transaction(draft =>
-                draft.set('meta', { name: params?.name ?? newAccountName })
+            await updateMeta(account, (_, storeDraft) =>
+                storeDraft.set('meta', { name: params?.name ?? newAccountName })
             );
 
             let createdPortfolio: PortfolioBip39 | null = null;
@@ -72,7 +73,7 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
                     meta: { name: t('security.groups.wallet.defaultName', { number: 1 }) }
                 });
 
-                await update(account, (_, storeDraft) =>
+                await updatePortfolios(account, (_, storeDraft) =>
                     storeDraft.set('portfolios', [createdPortfolio!.toJSON()])
                 );
             }

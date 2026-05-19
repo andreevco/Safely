@@ -80,11 +80,7 @@ export function useSetOwnSyncedDeviceMeta() {
 
     return useMutation<void, Error, ISyncAccount<SyncedStorageStructure>>({
         async mutationFn(syncAccount) {
-            const ikPub = syncAccount.getMyDeviceIkPub();
-            const ikPubHex = ikPub.toString('hex');
-
-            const existing = syncAccount.syncProvider.get('devicesMeta');
-            const currentMetaExisting = existing?.[ikPubHex];
+            const ikPubHex = syncAccount.getMyDeviceIkPub().toString('hex');
 
             update(syncAccount, draft =>
                 draft.set(ikPubHex, {
@@ -92,7 +88,7 @@ export function useSetOwnSyncedDeviceMeta() {
                     platform: build as 'ios' | 'android',
                     osVersion: deviceInfo.osVersion,
                     appVersion: version,
-                    pairedAt: currentMetaExisting?.pairedAt ?? Date.now()
+                    pairedAt: draft.get()?.[ikPubHex]?.pairedAt ?? Date.now()
                 })
             );
         }
