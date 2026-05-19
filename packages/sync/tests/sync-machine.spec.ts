@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { MockSnapshotsServer } from './mocks/mock-snapshots-api';
-import { MockSyncContainer } from './mocks/mock-sync-container';
+import type { MockSyncContainer } from './mocks/mock-sync-container';
 import {
     createMachineContext,
     getMasterKey,

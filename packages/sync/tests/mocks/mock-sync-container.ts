@@ -1,8 +1,10 @@
-import { z } from 'zod';
+import type { z } from 'zod';
 
-import { MockSnapshotsApi, MockSnapshotsServer, MockSnapshotsSse } from './mock-snapshots-api';
+import type { MockSnapshotsServer } from './mock-snapshots-api';
+import { MockSnapshotsApi, MockSnapshotsSse } from './mock-snapshots-api';
 import { ApiSigner } from '../../src/api/api-signer';
-import { AccountsApi, Configuration, SnapshotsApi } from '../../src/api/generated';
+import type { Configuration, SnapshotsApi } from '../../src/api/generated';
+import { AccountsApi } from '../../src/api/generated';
 import { StorageVerifierService } from '../../src/crdt/storage-verifier-service';
 import { YCRDTRepository } from '../../src/crdt/y-crdt-repository';
 import { YManager } from '../../src/crdt/y-manager';
@@ -13,10 +15,12 @@ import { KeyServiceFactory } from '../../src/crypto/service/key-service-factory'
 import { SyncKeyService } from '../../src/crypto/service/sync-key-service';
 import { DeviceManagementService } from '../../src/device-manager/device-management-service';
 import { DeviceRepository } from '../../src/device-manager/device-repository';
-import { ITreeStorage } from '../../src/I-storage';
-import { Logger } from '../../src/logger/logger';
+import type { ITreeStorage } from '../../src/I-storage';
+import type { Logger } from '../../src/logger/logger';
 import { SecretEncryptor } from '../../src/secret-encryptor';
-import { SyncContainer } from '../../src/sync-container';
+import type { SyncContainer } from '../../src/sync-container';
+import { SnapshotSender } from '../../src/sync-operations/snapshot-sender';
+import { SyncOperations } from '../../src/sync-operations/sync-operations';
 import { UpdateDecryptorService } from '../../src/update-encryptor/update-decryptor-service';
 import { UpdateEncryptorService } from '../../src/update-encryptor/update-encryptor-service';
 import { UpdateHandler } from '../../src/update-handler/handler';
@@ -34,7 +38,8 @@ export async function createMockSyncContainer(
     accountId: string,
     logger: Logger,
     structure: Record<string, z.ZodType>,
-    apiConfiguration?: Configuration
+    apiConfiguration?: Configuration,
+    pollingTimeout = 500
 ): Promise<MockSyncContainer> {
     const keyRepository = await EncryptedKeyRepository.initialize(encryptedStorage);
     const syncStateRepository = new SyncStateRepository(storage, logger);
@@ -76,11 +81,20 @@ export async function createMockSyncContainer(
         snapshotApi as unknown as SnapshotsApi,
         logger
     );
+    const snapshotSender = new SnapshotSender(
+        updateEncryptor,
+        yManager,
+        syncStateRepository,
+        snapshotApi as unknown as SnapshotsApi,
+        ikService
+    );
+    const syncOperations = new SyncOperations(updateHandler, snapshotSender, deviceManager);
 
     const secretEncryptor = new SecretEncryptor(keyServiceFactory);
 
     return {
         logger,
+        pollingTimeout,
         storage,
         encryptedStorage,
         storageVerifierService,
@@ -94,6 +108,8 @@ export async function createMockSyncContainer(
         updateEncryptor,
         updateDecryptor,
         updateHandler,
+        snapshotSender,
+        syncOperations,
         yManager,
         deviceManager,
         dmkVerifierService,

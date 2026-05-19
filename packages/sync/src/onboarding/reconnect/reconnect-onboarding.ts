@@ -3,14 +3,15 @@ import type { ZodType } from 'zod';
 import type { Logger } from '../../logger';
 import { OnboardingAbortedError } from '../../sync-error';
 import type { OnlineSyncProvider } from '../../sync-provider/online-sync-provider';
-import { SyncStatus } from '../../sync-provider/sync-status';
+import { SyncStatus, SyncStatusTimeoutError } from '../../sync-provider/sync-status';
 import { QRMessageCodec, QRMessageOperation } from '../onboarding-codec';
 
 export class ReconnectOnboarding<S extends Record<string, ZodType>> {
     constructor(
         private readonly myIkPub: Buffer,
         private readonly syncProvider: OnlineSyncProvider<S>,
-        private readonly logger: Logger
+        private readonly logger: Logger,
+        private readonly pollingTimeout: number
     ) {}
 
     public generateOnboardingData(): Buffer {
@@ -29,7 +30,7 @@ export class ReconnectOnboarding<S extends Record<string, ZodType>> {
             this.syncProvider.restart({ preserveStatus: true });
 
             await new Promise<void>((resolve, reject) => {
-                const timer = setTimeout(resolve, 3000);
+                const timer = setTimeout(resolve, this.pollingTimeout);
                 signal?.addEventListener(
                     'abort',
                     () => {
@@ -40,14 +41,24 @@ export class ReconnectOnboarding<S extends Record<string, ZodType>> {
                 );
             });
 
-            const synchronized = await Promise.any([
-                this.syncProvider.syncStatusManager
-                    .waitForStatus(SyncStatus.SYNCHRONIZED)
-                    .then(() => true),
-                this.syncProvider.syncStatusManager
-                    .waitForStatus(SyncStatus.DEVICE_DELETED)
-                    .then(() => false)
-            ]);
+            let synchronized: boolean;
+            try {
+                synchronized = await Promise.any([
+                    this.syncProvider.syncStatusManager
+                        .waitForStatus(SyncStatus.SYNCHRONIZED, { timeout: 1000 })
+                        .then(() => true),
+                    this.syncProvider.syncStatusManager
+                        .waitForStatus(SyncStatus.DEVICE_DELETED, { timeout: 1000 })
+                        .then(() => false)
+                ]);
+            } catch (e) {
+                if (isSyncStatusTimeoutError(e)) {
+                    this.logger.info('Trying to reconnect, attempt', i + 1);
+                    continue;
+                } else {
+                    throw e;
+                }
+            }
             if (synchronized) {
                 return;
             } else {
@@ -56,4 +67,15 @@ export class ReconnectOnboarding<S extends Record<string, ZodType>> {
         }
         throw new Error('Onboarding timed out');
     }
+}
+
+function isSyncStatusTimeoutError(error: unknown): boolean {
+    if (error instanceof SyncStatusTimeoutError) {
+        return true;
+    }
+
+    return (
+        error instanceof AggregateError &&
+        error.errors.every((innerError: unknown) => innerError instanceof SyncStatusTimeoutError)
+    );
 }

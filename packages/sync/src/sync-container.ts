@@ -17,6 +17,8 @@ import { DeviceRepository } from './device-manager/device-repository';
 import type { IStorage } from './I-storage';
 import type { Logger } from './logger';
 import { SecretEncryptor } from './secret-encryptor';
+import { SnapshotSender } from './sync-operations/snapshot-sender';
+import { SyncOperations } from './sync-operations/sync-operations';
 import { UpdateDecryptorService } from './update-encryptor/update-decryptor-service';
 import { UpdateEncryptorService } from './update-encryptor/update-encryptor-service';
 import { UpdateHandler } from './update-handler/handler';
@@ -26,6 +28,7 @@ export type SyncContainer = {
     storage: IStorage;
     encryptedStorage: IStorage;
     logger: Logger;
+    pollingTimeout: number;
 
     keyRepository: EncryptedKeyRepository;
     crdtRepository: YCRDTRepository;
@@ -42,6 +45,8 @@ export type SyncContainer = {
     updateEncryptor: UpdateEncryptorService;
     updateDecryptor: UpdateDecryptorService;
     updateHandler: UpdateHandler;
+    snapshotSender: SnapshotSender;
+    syncOperations: SyncOperations;
 
     yManager: YManager;
     deviceManager: DeviceManagementService;
@@ -61,6 +66,7 @@ export async function createSyncContainer(opts: {
     encryptedStorage: IStorage;
     logger: Logger;
     apiConfiguration?: Configuration;
+    pollingTimeout: number;
 }): Promise<SyncContainer> {
     const keyRepository = await EncryptedKeyRepository.initialize(opts.encryptedStorage);
     const syncStateRepository = new SyncStateRepository(opts.storage, opts.logger);
@@ -102,11 +108,20 @@ export async function createSyncContainer(opts: {
         snapshotApi,
         opts.logger
     );
+    const snapshotSender = new SnapshotSender(
+        updateEncryptor,
+        yManager,
+        syncStateRepository,
+        snapshotApi,
+        ikService
+    );
+    const syncOperations = new SyncOperations(updateHandler, snapshotSender, deviceManager);
 
     const secretEncryptor = new SecretEncryptor(keyServiceFactory);
 
     return {
         logger: opts.logger,
+        pollingTimeout: opts.pollingTimeout,
         dmkVerifierService,
         keyServiceFactory,
         storage: opts.storage,
@@ -121,6 +136,8 @@ export async function createSyncContainer(opts: {
         updateEncryptor,
         updateDecryptor,
         updateHandler,
+        snapshotSender,
+        syncOperations,
         yManager,
         deviceManager,
         apiSigner,
