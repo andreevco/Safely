@@ -2,7 +2,7 @@ import { useEffect, useMemo } from 'react';
 
 import { BTC_ASSET, PortfolioType } from '@safely/core';
 
-import { useAnalytics } from '../../shared/analytics/useAnalytics';
+import { useAnalytics } from './useAnalytics';
 import { useOnboardingId } from '../../shared/analytics/useOnboardingId';
 import { useRate } from '../asset/useRate';
 import { useBtcBalances } from '../btc-blockchain';

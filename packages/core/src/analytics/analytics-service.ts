@@ -1,5 +1,9 @@
 import type { Logger } from '@safely/sync';
 
+import { BtcApiError } from '../api/btc/errors';
+import type { RateApi } from '../api/rate/client';
+import type { Build } from '../entities/application/build.schema';
+import { generateUuidV4 } from '../utils/uuid';
 import type { EventsApi } from './api/events';
 import type { AnalyticsEvent, Environment, SystemProps } from './api/events/models';
 import { sAnalyticsEvent } from './api/events/models';
@@ -7,29 +11,25 @@ import type { Bucket } from './bucket/bucket-types';
 import { getBucket } from './bucket/get-bucket';
 import { RateCache } from './rate-cache';
 import { SDK_VERSION } from './sdk-version';
-import type { RateApi } from '../api/rate/client';
-import type { Build } from '../entities/application/build.schema';
-import { generateUuidV4 } from '../utils/uuid';
 
 export interface AnalyticsDeps {
     logger: Logger;
     sessionId: string;
     eventsApi: EventsApi;
     rateApi: Pick<RateApi, 'getRate'>;
-    systemProps: {
-        environment: Environment;
-        platform: Build;
-        appVersion: string;
-        lang: string;
-    };
+    environment: Environment;
+    platform: Build;
+    appVersion: string;
 }
 
 export class AnalyticsService {
-    private logger: Logger;
+    private readonly logger: Logger;
 
     private readonly eventsApi: EventsApi;
 
     private readonly rateCache: RateCache;
+
+    private readonly sessionId: string;
 
     private readonly environment: Environment;
 
@@ -37,86 +37,72 @@ export class AnalyticsService {
 
     private readonly appVersion: string;
 
-    private readonly sessionId: string;
-
-    private readonly oncePerSessionFired = new Set<string>();
-
-    private accountUuid: string | null = null;
-
-    private fiatSymbol: string | null = null;
-
-    private lang: string;
+    private readonly fired = new Set<string>();
 
     constructor(deps: AnalyticsDeps) {
         this.logger = deps.logger;
         this.eventsApi = deps.eventsApi;
         this.sessionId = deps.sessionId;
-        this.lang = deps.systemProps.lang;
-        this.platform = deps.systemProps.platform;
-        this.appVersion = deps.systemProps.appVersion;
-        this.environment = deps.systemProps.environment;
+        this.environment = deps.environment;
+        this.platform = deps.platform;
+        this.appVersion = deps.appVersion;
         this.rateCache = new RateCache(deps.rateApi);
     }
 
-    public setLogger(logger: Logger): void {
-        this.logger = logger;
-    }
-
-    public setLang(lang: string): void {
-        this.lang = lang;
-    }
-
-    public setAccountUuid(uuid: string | null): void {
-        this.accountUuid = uuid;
-    }
-
-    public setFiatSymbol(symbol: string | null): void {
-        this.fiatSymbol = symbol;
-    }
-
-    public async trackOnboardingOpen(props: { onboardingId: string }): Promise<void> {
-        const key = `onboarding_open:${this.accountUuid ?? 'anon'}`;
-        if (this.oncePerSessionFired.has(key)) return;
-
-        this.oncePerSessionFired.add(key);
+    public async trackOnboardingOpen(input: { onboardingId: string; lang: string }): Promise<void> {
         await this.send({
             eventName: 'onboarding_open',
-            props
+            props: { onboardingId: input.onboardingId },
+            lang: input.lang,
+            accountUuid: null
         });
     }
 
     public async trackWalletOpen(input: {
+        accountUuid: string;
+        fiatSymbol: string | null;
+        lang: string;
         onboardingId: string;
         fiatAmount: number;
         sync: boolean;
     }): Promise<void> {
-        const bucket = await this.computeBucket(input.fiatAmount, 'wallet_open');
+        const bucket = await this.computeBucket(input.fiatAmount, input.fiatSymbol, 'wallet_open');
         if (bucket === null) return;
 
-        const key = `wallet_open:${this.accountUuid ?? 'anon'}`;
-        if (this.oncePerSessionFired.has(key)) return;
+        const key = `${input.accountUuid}:wallet_open`;
+        if (this.fired.has(key)) return;
 
-        this.oncePerSessionFired.add(key);
-        await this.send({
+        const isSent = await this.send({
             eventName: 'wallet_open',
             props: {
                 bucket,
                 sync: input.sync,
                 onboardingId: input.onboardingId
-            }
+            },
+            lang: input.lang,
+            accountUuid: input.accountUuid
+        });
+        if (isSent) this.fired.add(key);
+    }
+
+    public async trackSendStart(input: { accountUuid: string; lang: string }): Promise<void> {
+        await this.send({
+            eventName: 'send_start',
+            props: {},
+            lang: input.lang,
+            accountUuid: input.accountUuid
         });
     }
 
-    public async trackSendStart(): Promise<void> {
-        await this.send({ eventName: 'send_start', props: {} });
-    }
-
     public async trackSendFinish(input: {
+        accountUuid: string;
+        fiatSymbol: string | null;
+        lang: string;
         cryptoCurrency: string;
         fiatAmount: number;
         errorType: string | null;
     }): Promise<void> {
-        const bucket = await this.computeBucket(input.fiatAmount, 'send_finish');
+        const bucket = await this.computeBucket(input.fiatAmount, input.fiatSymbol, 'send_finish');
         if (bucket === null) return;
 
         await this.send({
@@ -125,12 +111,18 @@ export class AnalyticsService {
                 bucket,
                 currency: input.cryptoCurrency,
                 errorType: input.errorType ?? 'none'
-            }
+            },
+            lang: input.lang,
+            accountUuid: input.accountUuid
         });
     }
 
-    private async computeBucket(fiatAmount: number, eventName: string): Promise<Bucket | null> {
-        if (this.fiatSymbol === null) {
+    private async computeBucket(
+        fiatAmount: number,
+        fiatSymbol: string | null,
+        eventName: string
+    ): Promise<Bucket | null> {
+        if (fiatSymbol === null) {
             this.logger.warn('[analytics] no fiat configured, dropping event', { eventName });
 
             return null;
@@ -138,12 +130,12 @@ export class AnalyticsService {
 
         let rate: number;
         try {
-            rate = await this.rateCache.get(this.fiatSymbol);
+            rate = await this.rateCache.get(fiatSymbol);
         } catch (err) {
             this.logger.warn('[analytics] no rate available, dropping event', {
                 eventName,
-                currency: this.fiatSymbol,
-                err
+                currency: fiatSymbol,
+                status: err instanceof BtcApiError ? err.status : null
             });
 
             return null;
@@ -152,38 +144,46 @@ export class AnalyticsService {
         return getBucket(fiatAmount * rate);
     }
 
-    private async send(payload: Pick<AnalyticsEvent, 'eventName' | 'props'>): Promise<void> {
+    private async send(payload: {
+        eventName: AnalyticsEvent['eventName'];
+        props: object;
+        lang: string;
+        accountUuid: string | null;
+    }): Promise<boolean> {
         const parsedPayload = sAnalyticsEvent.safeParse({
             eventId: generateUuidV4(),
             sessionId: this.sessionId,
-            systemProps: this.buildSystemProps(),
+            systemProps: this.buildSystemProps(payload.lang, payload.accountUuid),
             eventName: payload.eventName,
             props: payload.props
         });
 
         if (!parsedPayload.success) {
             this.logger.warn('[analytics] payload failed validation, dropping event', {
-                eventName: payload.eventName,
-                error: parsedPayload.error.message
+                eventName: payload.eventName
             });
 
-            return;
+            return false;
         }
 
         try {
             await this.eventsApi.send([parsedPayload.data]);
+
+            return true;
         } catch (err) {
             this.logger.warn('[analytics] failed to deliver event', {
                 eventName: payload.eventName,
-                err
+                status: err instanceof BtcApiError ? err.status : null
             });
+
+            return false;
         }
     }
 
-    private buildSystemProps(): SystemProps {
+    private buildSystemProps(lang: string, accountUuid: string | null): SystemProps {
         return {
-            ...(this.accountUuid !== null && { accountUuid: this.accountUuid }),
-            lang: this.lang,
+            ...(accountUuid !== null && { accountUuid }),
+            lang,
             platform: this.platform,
             appVersion: this.appVersion,
             environment: this.environment,

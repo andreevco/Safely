@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { FiatAsset } from '@safely/core';
 
 import { useAvailableFiats } from '../../shared';
-import { useActiveAccountQueryKey } from '../account';
+import { useActiveAccountQuery, useActiveAccountQueryKey } from '../account';
 import { useActiveAccountSyncedStorage } from '../account/storage';
 import { useMutation } from '../query-core';
 
@@ -12,9 +12,12 @@ const USD_FIAT = FiatAsset.create({ symbol: 'USD', name: 'US Dollar' });
 export function useActiveFiatQuery() {
     const availableFiats = useAvailableFiats();
     const accountQueryKey = useActiveAccountQueryKey();
+    const { data: activeAccount } = useActiveAccountQuery();
     const { get } = useActiveAccountSyncedStorage('preferredFiat');
 
     const resolve = (): FiatAsset => {
+        if (!activeAccount) return USD_FIAT;
+
         const stored = get();
 
         if (stored && availableFiats.some(fiat => fiat.id.isEq(stored.id))) {
