@@ -250,6 +250,7 @@ type Op =
     // 12. Arrays and tuple
     | { type: 'arrayOfObjects.set'; value: StressState['arrayOfObjects'] }
     | { type: 'arrayOfUnions.set'; value: StressState['arrayOfUnions'] }
+    | { type: 'arrayOfObjects.update'; id: string; value: string }
     | { type: 'tuple.set'; value: StressState['tuple'] }
 
     // 13. Ambiguous union
@@ -446,6 +447,17 @@ export const opArb = fc.oneof(
         type: 'arrayOfUnions.set',
         value
     })),
+
+    fc
+        .record({
+            id: arrayIdArb,
+            value: scalarArb
+        })
+        .map(({ id, value }) => ({
+            type: 'arrayOfObjects.update',
+            id,
+            value
+        })),
 
     tupleArb.map(value => ({
         type: 'tuple.set',
@@ -704,6 +716,16 @@ function applyCollectionOp(draft: StressDraft, op: Op): boolean {
 
         case 'arrayOfUnions.set': {
             draft.set('arrayOfUnions', op.value);
+            return true;
+        }
+
+        case 'arrayOfObjects.update': {
+            const array = draft.at('arrayOfObjects');
+            if (array.getById(op.id) !== undefined) {
+                array.update(op.id, item => {
+                    item.set('value', op.value);
+                });
+            }
             return true;
         }
 

@@ -123,20 +123,36 @@ describe('ordered array slots', () => {
         storage.transaction(draft => {
             draft.at('portfolios').push({ __setId: 'p1', name: 'One' });
             draft.at('portfolios').push({ __setId: 'p2', name: 'Two' });
-            draft.at('portfolios').update('p1', item => ({
-                ...item,
-                name: 'Main'
-            }));
-            draft.at('portfolios').update('p2', item => ({
-                ...item,
-                name: 'Second'
-            }));
+            draft.at('portfolios').update('p1', item => {
+                item.set('name', 'Main');
+            });
+            draft.at('portfolios').update('p2', item => {
+                item.set('name', 'Second');
+            });
         });
 
         expect(storage.get().portfolios).toEqual([
             { __setId: 'p1', name: 'Main' },
             { __setId: 'p2', name: 'Second' }
         ]);
+    });
+
+    it('rejects updates that change item id', () => {
+        const storage = createPortfolioStorage('device-1');
+
+        storage.transaction(draft => {
+            draft.at('portfolios').push({ __setId: 'p1', name: 'One' });
+        });
+
+        expect(() =>
+            storage.transaction(draft => {
+                draft.at('portfolios').update('p1', item => {
+                    item.set('__setId', 'p2');
+                });
+            })
+        ).toThrow('Updated item id must remain "p1"');
+
+        expect(storage.get().portfolios).toEqual([{ __setId: 'p1', name: 'One' }]);
     });
 
     it('reads items by id', () => {
@@ -243,10 +259,9 @@ describe('ordered array slots', () => {
             draft.at('portfolios').move('p2', 0);
         });
         b.transaction(draft => {
-            draft.at('portfolios').update('p2', item => ({
-                ...item,
-                name: 'Second'
-            }));
+            draft.at('portfolios').update('p2', item => {
+                item.set('name', 'Second');
+            });
         });
 
         a.merge(b.export());
@@ -265,10 +280,9 @@ describe('ordered array slots', () => {
             draft.at('portfolios').push({ __setId: 'p1', name: 'One' });
             draft.at('portfolios').push({ __setId: 'p2', name: 'Two' });
             draft.at('portfolios').move('p2', 0);
-            draft.at('portfolios').update('p2', item => ({
-                ...item,
-                name: 'Second'
-            }));
+            draft.at('portfolios').update('p2', item => {
+                item.set('name', 'Second');
+            });
         });
 
         const imported = createStorage({

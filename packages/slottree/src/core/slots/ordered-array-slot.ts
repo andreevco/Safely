@@ -1,5 +1,6 @@
 import type { JsonValue } from '../json';
 import {
+    type ContainerSlot,
     createOrderedArraySlot,
     createOriginOrderedArray,
     createTombstoneSlot,
@@ -7,17 +8,15 @@ import {
     isOrderedArraySlot,
     isTombstoneSlot,
     ORDERED_ARRAY_ITEM_ID_KEY,
-    SlotKind,
-    type ContainerSlot,
     type OrderedArraySlot,
-    type Slot
+    type Slot,
+    SlotKind
 } from './slot';
 import {
     cloneDeep,
     createOrderedArrayItemSlot,
     orderedArrayItemValue,
     orderedArrayLiveIds,
-    slotFromJson,
     stripSlot
 } from './slot-json';
 
@@ -34,6 +33,15 @@ export function orderedArrayIds(slot: Slot | undefined): string[] {
 }
 
 export function orderedArrayValueById(slot: Slot | undefined, id: string): JsonValue | undefined {
+    const item = orderedArraySlotById(slot, id);
+    if (item === undefined || isTombstoneSlot(item)) {
+        return undefined;
+    }
+
+    return cloneDeep(stripSlot(orderedArrayItemValue(item, id)));
+}
+
+export function orderedArraySlotById(slot: Slot | undefined, id: string): Slot | undefined {
     if (slot === undefined || isTombstoneSlot(slot)) {
         return undefined;
     }
@@ -42,12 +50,7 @@ export function orderedArrayValueById(slot: Slot | undefined, id: string): JsonV
         throw new Error('Draft value is not an ordered array slot');
     }
 
-    const item = slot.v[id];
-    if (item === undefined || isTombstoneSlot(item)) {
-        return undefined;
-    }
-
-    return cloneDeep(stripSlot(orderedArrayItemValue(item, id)));
+    return slot.v[id];
 }
 
 export function reorderOrderedArrayItems(
@@ -163,22 +166,6 @@ export function removeOrderedArrayItem(
     }
 
     slot.v[id] = createTombstoneSlot(timestamp, author);
-}
-
-export function updateOrderedArrayItem(
-    slot: OrderedArraySlot,
-    id: string,
-    item: JsonValue,
-    timestamp: number,
-    author: string
-): void {
-    const itemId = validateArrayItem(item);
-    if (itemId !== id) {
-        throw new Error(`Updated item id "${itemId}" must match "${id}"`);
-    }
-
-    const itemSlot = expectLiveItem(slot, id);
-    itemSlot.v.value = slotFromJson(item, timestamp, author);
 }
 
 function addOrderedArrayItem(

@@ -38,5 +38,5 @@ export interface ArrayDraft<T extends { __setId: string }> {
     move(id: string, index: number): void;
     reorder(ids: readonly string[]): void;
     remove(id: string): void;
-    update(id: string, map: (item: DeepReadonly<T>) => DraftInput<T>): void;
+    update(id: string, map: (item: Draft<T>) => void): void;
 }

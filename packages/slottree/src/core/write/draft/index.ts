@@ -12,7 +12,7 @@ export function createDraft<T>(selection: JsonStorageSelection, onUpdate: () => 
     };
 
     return new ObjectDraftNode(
-        DraftCursor.root(selection, onUpdate),
+        DraftCursor.fromSelection(selection, onUpdate),
         createChildNode
     ) as unknown as Draft<T>;
 }

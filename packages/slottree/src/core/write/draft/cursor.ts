@@ -11,7 +11,7 @@ type DraftContext = {
 
 type DraftCursorTarget =
     | {
-          kind: 'root';
+          kind: 'selection';
           selection: JsonStorageSelection;
       }
     | {
@@ -26,7 +26,10 @@ export class DraftCursor {
         private readonly target: DraftCursorTarget
     ) {}
 
-    public static root(selection: JsonStorageSelection, onUpdate: () => void): DraftCursor {
+    public static fromSelection(
+        selection: JsonStorageSelection,
+        onUpdate: () => void
+    ): DraftCursor {
         return new DraftCursor(
             {
                 timestamp: selection.currentTimestamp(),
@@ -34,7 +37,7 @@ export class DraftCursor {
                 onUpdate
             },
             {
-                kind: 'root',
+                kind: 'selection',
                 selection
             }
         );
@@ -49,7 +52,7 @@ export class DraftCursor {
     }
 
     public readSlot(): Slot | undefined {
-        if (this.target.kind === 'root') {
+        if (this.target.kind === 'selection') {
             return this.target.selection.containerSlot();
         }
 
@@ -57,23 +60,23 @@ export class DraftCursor {
     }
 
     public writeSlot(slot: Slot): void {
-        if (this.target.kind === 'root') {
-            throw new Error('Cannot replace the root draft slot');
+        if (this.target.kind === 'selection') {
+            throw new Error('Cannot replace the selected draft slot');
         }
 
         this.target.parent.ensureContainer().setSlot(this.target.key, slot);
     }
 
     public writeValue(value: JsonValue): void {
-        if (this.target.kind === 'root') {
-            throw new Error('Cannot replace the root draft slot');
+        if (this.target.kind === 'selection') {
+            throw new Error('Cannot replace the selected draft slot');
         }
 
         this.target.parent.ensureContainer().set(this.target.key, value);
     }
 
     public readExistingSelection(): JsonStorageSelection | undefined {
-        if (this.target.kind === 'root') {
+        if (this.target.kind === 'selection') {
             return this.target.selection;
         }
 
@@ -81,7 +84,7 @@ export class DraftCursor {
     }
 
     public ensureContainer(): JsonStorageSelection {
-        if (this.target.kind === 'root') {
+        if (this.target.kind === 'selection') {
             return this.target.selection;
         }
 

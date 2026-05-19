@@ -1,22 +1,28 @@
-import type { DraftCursor } from './cursor';
+import { DraftCursor } from './cursor';
 import { ObjectDraftNode, type DraftNodeFactory } from './object-node';
 import type { JsonValue } from '../../json';
+import { isContainerSlot, isJsonObject, ORDERED_ARRAY_ITEM_ID_KEY } from '../../slots';
 import {
     ensureOrderedArraySlot,
     expectOrderedArraySlot,
     insertOrderedArrayItem,
     moveOrderedArrayItem,
     orderedArrayIds,
+    orderedArraySlotById,
     orderedArrayValueById,
     pushOrderedArrayItem,
     reorderOrderedArrayItems,
-    removeOrderedArrayItem,
-    updateOrderedArrayItem
+    removeOrderedArrayItem
 } from '../../slots/ordered-array-slot';
+import { orderedArrayItemValue } from '../../slots/slot-json';
+import { selectJsonStorage } from '../selection';
 
 export class ArrayDraftNode extends ObjectDraftNode {
-    constructor(cursor: DraftCursor, createChildNode: DraftNodeFactory) {
-        super(cursor, createChildNode);
+    constructor(
+        cursor: DraftCursor,
+        private readonly childNodeFactory: DraftNodeFactory
+    ) {
+        super(cursor, childNodeFactory);
     }
 
     public list(): readonly unknown[] {
@@ -77,20 +83,32 @@ export class ArrayDraftNode extends ObjectDraftNode {
         this.cursor.notifyUpdate();
     }
 
-    public update(id: string, map: (item: unknown) => JsonValue): void {
-        const current = this.getById(id);
-        if (current === undefined) {
+    public update(id: string, map: (item: unknown) => void): void {
+        const arraySlot = this.expectOrderedArraySlot();
+        const item = orderedArraySlotById(arraySlot, id);
+        if (item === undefined) {
             throw new Error(`Ordered array item "${id}" does not exist`);
         }
 
-        const arraySlot = this.expectOrderedArraySlot();
-        updateOrderedArrayItem(
-            arraySlot,
-            id,
-            map(current),
-            this.cursor.timestamp(),
-            this.cursor.author()
+        const value = orderedArrayItemValue(item, id);
+        if (!isContainerSlot(value)) {
+            throw new Error(`Ordered array item "${id}" value must be a container slot`);
+        }
+
+        map(
+            this.childNodeFactory(
+                DraftCursor.fromSelection(
+                    selectJsonStorage(value, this.cursor.timestamp(), this.cursor.author()),
+                    () => this.cursor.notifyUpdate()
+                )
+            )
         );
+
+        const updated = orderedArrayValueById(arraySlot, id);
+        if (!isJsonObject(updated) || updated[ORDERED_ARRAY_ITEM_ID_KEY] !== id) {
+            throw new Error(`Updated item id must remain "${id}"`);
+        }
+
         this.cursor.notifyUpdate();
     }
 
