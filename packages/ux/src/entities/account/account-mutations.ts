@@ -19,7 +19,10 @@ import { useMutation } from '../query-core';
 import { useCurrentDeviceIkPub, useSetOwnSyncedDeviceMeta } from '../synced-device';
 import { useToast } from '../toast';
 import { useClearActiveAccountLocalStorage } from './local-storage';
-import { useActiveAccountSyncStorageUpdate } from './useAccountSyncStorageUpdate';
+import {
+    useAccountSyncStorageUpdate,
+    useActiveAccountSyncStorageUpdate
+} from './useAccountSyncStorageUpdate';
 
 export * from './local-storage';
 export * from './sync-storage';
@@ -41,6 +44,7 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
     const factory = useAccountsFactory();
     const { mutateAsync: setActive } = useSetActiveAccount();
     const newAccountName = useNewAccountDefaultName();
+    const update = useAccountSyncStorageUpdate('portfolios');
 
     return useMutation<
         ISyncAccount<SyncedStorageStructure>,
@@ -68,8 +72,8 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
                     meta: { name: t('security.groups.wallet.defaultName', { number: 1 }) }
                 });
 
-                await account.syncProvider.transaction(draft =>
-                    draft.set('portfolios', [createdPortfolio!.toJSON()])
+                await update(account, (_, storeDraft) =>
+                    storeDraft.set('portfolios', [createdPortfolio!.toJSON()])
                 );
             }
 

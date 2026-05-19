@@ -34,7 +34,6 @@ import {
     useActiveAccountSyncStorageUpdate
 } from '../account';
 import { useErrorToast } from '../errors';
-import { useLogger } from '../logger';
 import { useMutation } from '../query-core';
 import { useToast } from '../toast';
 
@@ -209,7 +208,6 @@ export function useActivePortfolioEntitiesIdsQuery<TData = SActivePortfolioSchem
 
 export function useActivePortfolioEntitiesQuery() {
     const portfolios = usePortfolios();
-    const logger = useLogger();
 
     return useActivePortfolioEntitiesIdsQuery<ActivePortfolioEntities | null>(
         useCallback(
@@ -239,7 +237,7 @@ export function useActivePortfolioEntitiesQuery() {
                     derivation
                 };
             },
-            [logger, portfolios]
+            [portfolios]
         )
     );
 }
