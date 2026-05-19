@@ -27,5 +27,5 @@ export const sContact = zIndexedObject(
 export type SContact = z.infer<typeof sContact>;
 export type SContactAddress = z.infer<typeof sContactAddress>;
 
-export const sContacts = zIndexedArray(sContact).nullable();
+export const sContacts = zIndexedArray(sContact);
 export type SContacts = z.infer<typeof sContacts>;
