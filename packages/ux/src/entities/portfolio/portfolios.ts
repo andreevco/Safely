@@ -27,12 +27,12 @@ import type { SPortfolio } from '@safely/sync-storage';
 import { useTranslate, useSecurityCheck, useAppContext } from '../../shared';
 import { useSuspenseQuery } from '../../shared';
 import type { SActivePortfolioSchema } from '../account';
+import { useActiveAccountStoreSlot } from '../account';
 import {
-    useAccountStore,
     useActiveAccountLocalStorage,
     useActiveAccountQuery,
     useActiveAccountQueryKey,
-    useAccountSyncStorageUpdate
+    useActiveAccountSyncStorageUpdate
 } from '../account';
 import { useErrorToast } from '../errors';
 import { useLogger } from '../logger';
@@ -42,11 +42,11 @@ import { useToast } from '../toast';
 const EMPTY_PORTFOLIOS: Portfolio[] = Object.freeze([]) as unknown as Portfolio[];
 
 export function usePortfolios(): Portfolio[] {
-    return useAccountStore(s => s.active?.portfolios ?? EMPTY_PORTFOLIOS);
+    return useActiveAccountStoreSlot('portfolios') ?? EMPTY_PORTFOLIOS;
 }
 
 export function useAddPortfolio() {
-    const update = useAccountSyncStorageUpdate('portfolios');
+    const update = useActiveAccountSyncStorageUpdate('portfolios');
 
     return useMutation<void, Error, Portfolio>({
         async mutationFn(portfolio) {
@@ -155,7 +155,7 @@ export function useImportPortfolio() {
 }
 
 export function useDeletePortfolio() {
-    const update = useAccountSyncStorageUpdate('portfolios');
+    const update = useActiveAccountSyncStorageUpdate('portfolios');
     const check = useSecurityCheck();
 
     return useMutation<void, Error, Portfolio>({
@@ -167,7 +167,7 @@ export function useDeletePortfolio() {
 }
 
 export function useReorderPortfolios() {
-    const update = useAccountSyncStorageUpdate('portfolios');
+    const update = useActiveAccountSyncStorageUpdate('portfolios');
 
     return useMutation<void, Error, Portfolio[]>({
         async mutationFn(nextPortfoliosOrder) {
@@ -315,7 +315,7 @@ export function useSetActivePortfolio() {
 }
 
 export function useChangePortfolioMeta() {
-    const update = useAccountSyncStorageUpdate('portfolios');
+    const update = useActiveAccountSyncStorageUpdate('portfolios');
 
     return useMutation<void, Error, { portfolio: Portfolio; meta: Partial<PortfolioMeta> }>({
         async mutationFn({ portfolio, meta }) {
@@ -337,7 +337,7 @@ export function useChangePortfolioMeta() {
 
 export function useRecordActivePortfolioSecretReveal() {
     const activePortfolio = useActivePortfolio();
-    const update = useAccountSyncStorageUpdate('portfolios');
+    const update = useActiveAccountSyncStorageUpdate('portfolios');
     const { deviceInfo } = useAppContext();
 
     return useMutation({

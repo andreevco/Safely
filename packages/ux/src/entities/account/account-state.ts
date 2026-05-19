@@ -1,4 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
+import { useMemo } from 'react';
 
 import { notNullish } from '@safely/core';
 import type { ISyncAccount } from '@safely/sync';
@@ -11,38 +12,25 @@ import type {
 import { syncedStorageVersions } from '@safely/sync-storage';
 
 import { accountKey } from './keys';
+import { useAccountStoreSlot } from './sync-storage';
 import {
-    type TranslateFn,
     useAppContext,
     useBootConfig,
     useSharedUxStorage,
     useSuspenseQuery,
     useTranslate
 } from '../../shared';
+import type { AccountStoreData, SyncedSlotKey } from './sync-storage/account-store';
 
 export type AccountMeta = Exclude<SAccountMeta, null>;
 
-export type SyncAccount = ISyncAccount<SyncedStorageStructure> & {
-    meta: AccountMeta;
-};
+export type SyncAccount = ISyncAccount<SyncedStorageStructure>;
 
 export type OnboardingConnector = {
     connectionString: string;
     accountPromise: Promise<ISyncAccount<SyncedStorageStructure>>;
     abort: () => void;
 };
-
-export const withMeta =
-    (t: TranslateFn) =>
-    (account: ISyncAccount<SyncedStorageStructure>): SyncAccount => {
-        let meta = account.syncProvider.get('meta');
-        if (!meta) {
-            meta = { name: t('account.unnamed') };
-        }
-
-        (account as SyncAccount).meta = meta;
-        return account as SyncAccount;
-    };
 
 let _syncAccountFactory: SyncAccountFactory<SyncedStorageVersions> | null = null;
 
@@ -75,13 +63,11 @@ export function useAccountsFactory() {
 
 export function useAccountsQueryConfig() {
     const factory = useAccountsFactory();
-    const t = useTranslate();
 
     return {
         queryKey: accountKey.list.toKey(),
         async queryFn(): Promise<SyncAccount[]> {
-            const accounts = await factory.getSyncAccounts();
-            return accounts.map(withMeta(t));
+            return factory.getSyncAccounts();
         },
         staleTime: Infinity
     };
@@ -137,4 +123,21 @@ export function useActiveAccount() {
 export function useActiveAccountQueryKey() {
     const { data: activeAccount } = useActiveAccountQuery();
     return accountKey.accountId(activeAccount?.accountId);
+}
+
+export function useActiveAccountStoreSlot<K extends SyncedSlotKey>(
+    key: K
+): AccountStoreData[K] | undefined {
+    const account = useActiveAccount();
+    return useAccountStoreSlot(account.accountId, key);
+}
+
+export function useAccountMeta(accountId: string | null | undefined): AccountMeta {
+    const stored = useAccountStoreSlot(accountId ?? null, 'meta');
+    const t = useTranslate();
+    return useMemo(() => stored ?? { name: t('account.unnamed') }, [stored, t]);
+}
+
+export function useActiveAccountMeta(): AccountMeta {
+    return useAccountMeta(useActiveAccount().accountId);
 }

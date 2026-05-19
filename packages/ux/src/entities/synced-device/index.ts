@@ -5,11 +5,12 @@ import { SyncStatus } from '@safely/sync';
 import type { SDeviceMeta, SyncedStorageStructure } from '@safely/sync-storage';
 
 import { useAppContext } from '../../shared';
-import { useActiveAccount, useAccountSyncStorageUpdate, useAccountStore } from '../account';
+import { useActiveAccount, useActiveAccountStoreSlot } from '../account/account-state';
+import { useActiveAccountSyncStorageUpdate } from '../account/useActiveAccountSyncStorageUpdate';
 import { useMutation } from '../query-core';
 
 export function useSyncedDevicesMeta(): Record<string, SDeviceMeta> | null {
-    return useAccountStore(s => s.active?.devicesMeta ?? null);
+    return useActiveAccountStoreSlot('devicesMeta') ?? null;
 }
 
 export function useCurrentDeviceIkPub(): string {
@@ -56,7 +57,7 @@ export function useAccountLinkState(): AccountLinkState {
 export function useRevokeSyncedDevice() {
     const account = useActiveAccount();
     const { storage } = useAppContext();
-    const update = useAccountSyncStorageUpdate('devicesMeta');
+    const update = useActiveAccountSyncStorageUpdate('devicesMeta');
 
     return useMutation({
         async mutationFn(ikPubHex: string) {
@@ -72,7 +73,7 @@ export function useRevokeSyncedDevice() {
 
 export function useSetOwnSyncedDeviceMeta() {
     const { version, build, deviceInfo } = useAppContext();
-    const update = useAccountSyncStorageUpdate('devicesMeta');
+    const update = useActiveAccountSyncStorageUpdate('devicesMeta');
 
     return useMutation<void, Error, ISyncAccount<SyncedStorageStructure>>({
         async mutationFn(syncAccount) {

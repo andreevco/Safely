@@ -1,47 +1,54 @@
 import type { FC, PropsWithChildren } from 'react';
 import { useEffect } from 'react';
 
+import type { ISyncAccount } from '@safely/sync';
+import type { SyncedStorageStructure } from '@safely/sync-storage';
+
 import { SecretEncryptor, useAppContext } from '../../../shared';
 import { useAppState } from '../../../shared/app/useAppState';
-import { useActiveAccountQuery } from '../account-state';
+import { useAccounts, useActiveAccountQuery } from '../account-state';
 import { accountStore, accountStoreActions, SYNCED_SLOT_KEYS } from './account-store';
 import { AccountStoreTransform } from './account-store-transform';
 
 function useSyncObserver() {
     const { storage } = useAppContext();
-    const { data: activeAccount } = useActiveAccountQuery();
+    const accounts = useAccounts();
 
     useEffect(() => {
-        if (!activeAccount) {
+        if (!accounts || accounts.length === 0) {
             accountStoreActions.clear();
             return;
         }
 
-        const transform = new AccountStoreTransform(
-            () =>
-                new SecretEncryptor(
-                    activeAccount.secretEncryptor,
-                    storage.sync.getSecureEncrypted()
-                )
-        );
+        accountStoreActions.retainAccounts(new Set(accounts.map(a => a.accountId)));
 
-        accountStoreActions.attachSnapshot(
-            transform.restoreAll(activeAccount.accountId, activeAccount.syncProvider.getAll())
-        );
+        const unsubscribes: (() => void)[] = [];
 
-        const unsubscribes = SYNCED_SLOT_KEYS.map(key =>
-            activeAccount.syncProvider.onChange(key, () => {
-                const slotJson = activeAccount.syncProvider.get(key);
-                const prev = accountStore.getState().active;
-                const next = transform.restore(key, slotJson, prev);
-                accountStoreActions.setSlot(key, next);
-            })
-        );
+        accounts.forEach((account: ISyncAccount<SyncedStorageStructure>) => {
+            const transform = new AccountStoreTransform(
+                () =>
+                    new SecretEncryptor(account.secretEncryptor, storage.sync.getSecureEncrypted())
+            );
+
+            accountStoreActions.attachSnapshot(
+                transform.restoreAll(account.accountId, account.syncProvider.getAll())
+            );
+
+            SYNCED_SLOT_KEYS.forEach(key => {
+                const unsub = account.syncProvider.onChange(key, () => {
+                    const slotJson = account.syncProvider.get(key);
+                    const prev = accountStore.getState().accountsData.get(account.accountId);
+                    const next = transform.restore(key, slotJson, prev ?? null);
+                    accountStoreActions.setSlot(account.accountId, key, next);
+                });
+                unsubscribes.push(unsub);
+            });
+        });
 
         return () => {
             unsubscribes.forEach(fn => fn());
         };
-    }, [activeAccount, storage.sync]);
+    }, [accounts, storage.sync]);
 }
 
 function useSyncRestartOnForeground() {

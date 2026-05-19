@@ -8,6 +8,7 @@ import { OnboardingAbortedError } from '@safely/sync';
 import type { SyncedStorageStructure } from '@safely/sync-storage';
 
 import type { AccountMeta, OnboardingConnector, SyncAccount } from './account-state';
+import { useActiveAccountMeta } from './account-state';
 import { useAccounts } from './account-state';
 import { resetAccountsFactory, useAccountsFactory, useActiveAccount } from './account-state';
 import { accountKey } from './keys';
@@ -17,8 +18,8 @@ import { useLogger } from '../logger';
 import { useMutation } from '../query-core';
 import { useCurrentDeviceIkPub, useSetOwnSyncedDeviceMeta } from '../synced-device';
 import { useToast } from '../toast';
-import { useAccountSyncStorageUpdate } from './hooks';
 import { useClearActiveAccountLocalStorage } from './local-storage';
+import { useActiveAccountSyncStorageUpdate } from './useActiveAccountSyncStorageUpdate';
 
 export * from './local-storage';
 export * from './sync-storage';
@@ -155,7 +156,6 @@ export function useAccountConnectedCallback(
     const { mutateAsync: setActive } = useSetActiveAccount();
     const { mutateAsync: updateOwnSyncedDeviceMeta } = useSetOwnSyncedDeviceMeta();
     const setAsActive = options?.setAsActive ?? false;
-    const newAccountName = useNewAccountDefaultName();
 
     useEffect(() => {
         let isReset = false;
@@ -175,8 +175,6 @@ export function useAccountConnectedCallback(
                 if (setAsActive) {
                     await setActive(account.accountId);
                 }
-
-                (account as SyncAccount).meta = { name: newAccountName };
 
                 callback(account as SyncAccount);
             })
@@ -237,16 +235,14 @@ export function useSetActiveAccount() {
 }
 
 export function useChangeAccountMeta() {
-    const account = useActiveAccount();
-    const client = useQueryClient();
-    const update = useAccountSyncStorageUpdate('meta');
+    const currentMeta = useActiveAccountMeta();
+    const update = useActiveAccountSyncStorageUpdate('meta');
 
     return useMutation<void, Error, Partial<AccountMeta>>({
         async mutationFn(meta) {
             await update((_, storeDraft) => {
-                storeDraft.set('meta', { ...account.meta, ...meta });
+                storeDraft.set('meta', { ...currentMeta, ...meta });
             });
-            await client.refetchQueries({ queryKey: accountKey.list.toKey() });
         }
     });
 }
@@ -258,7 +254,7 @@ export function useDeleteAccount() {
     const { storage } = useAppContext();
     const ikPub = useCurrentDeviceIkPub();
     const clearActiveAccountLocalStorage = useClearActiveAccountLocalStorage();
-    const update = useAccountSyncStorageUpdate('devicesMeta');
+    const update = useActiveAccountSyncStorageUpdate('devicesMeta');
 
     return useMutation({
         async mutationFn() {

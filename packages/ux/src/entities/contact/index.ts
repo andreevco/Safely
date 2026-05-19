@@ -5,7 +5,7 @@ import { allowedContactMetaColors, Contact } from '@safely/core';
 import type { SContact } from '@safely/sync-storage';
 
 import { useTranslate } from '../../shared';
-import { useAccountStore, useAccountSyncStorageUpdate } from '../account';
+import { useActiveAccountSyncStorageUpdate, useActiveAccountStoreSlot } from '../account';
 import { useMutation } from '../query-core';
 import { useToast } from '../toast';
 
@@ -18,11 +18,11 @@ function pickRandomContactColor(): string {
 }
 
 export function useContacts(): Contact[] {
-    return useAccountStore(s => s.active?.contacts ?? EMPTY_CONTACTS);
+    return useActiveAccountStoreSlot('contacts') ?? EMPTY_CONTACTS;
 }
 
 export function useCreateContact() {
-    const update = useAccountSyncStorageUpdate('contacts');
+    const update = useActiveAccountSyncStorageUpdate('contacts');
 
     return useMutation<
         Contact,
@@ -45,7 +45,7 @@ export function useCreateContact() {
 }
 
 export function useEditContact() {
-    const update = useAccountSyncStorageUpdate('contacts');
+    const update = useActiveAccountSyncStorageUpdate('contacts');
     const contacts = useContacts();
 
     return useMutation<
@@ -89,7 +89,7 @@ export function useEditContact() {
 }
 
 export function useDeleteContact() {
-    const update = useAccountSyncStorageUpdate('contacts');
+    const update = useActiveAccountSyncStorageUpdate('contacts');
     const toast = useToast();
     const t = useTranslate();
 

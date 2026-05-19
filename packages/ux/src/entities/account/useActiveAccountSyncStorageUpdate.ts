@@ -5,12 +5,11 @@ import type { SyncedStorageSchema } from '@safely/sync-storage';
 
 import { useActiveAccount } from './account-state';
 import type { SyncedSlotKey } from './sync-storage/account-store';
-import { accountStore } from './sync-storage/account-store';
-import { accountStoreActions } from './sync-storage/account-store';
-import { AccountStoreTransform } from './sync-storage/account-store-transform';
+import { accountStore, accountStoreActions } from './sync-storage/account-store';
 import { SecretEncryptor, useAppContext } from '../../shared';
+import { AccountStoreTransform } from './sync-storage/account-store-transform';
 
-export function useAccountSyncStorageUpdate<T extends SyncedSlotKey>(slot: T) {
+export function useActiveAccountSyncStorageUpdate<T extends SyncedSlotKey>(slot: T) {
     const account = useActiveAccount();
     const {
         storage: {
@@ -28,29 +27,30 @@ export function useAccountSyncStorageUpdate<T extends SyncedSlotKey>(slot: T) {
             const transformer = new AccountStoreTransform(
                 () => new SecretEncryptor(account.secretEncryptor, getSecureEncrypted())
             );
-            const prevStoreData = accountStore.getState().active;
+            const prevStoreData = accountStore.getState().accountsData.get(account.accountId);
 
             try {
                 await account.syncProvider.transaction(draft => {
                     f(draft.at(slot), draft);
 
-                    const currentStoreData = accountStore.getState().active;
-                    if (currentStoreData && currentStoreData.accountId === account.accountId) {
+                    const currentStoreData = accountStore
+                        .getState()
+                        .accountsData.get(account.accountId);
+                    if (currentStoreData) {
                         const optimistic = draft.get()![slot] as SyncedStorageSchema[T];
                         accountStoreActions.setSlot(
+                            account.accountId,
                             slot,
                             transformer.restore(slot, optimistic, currentStoreData)
                         );
                     }
                 });
             } catch (e) {
-                const currentStoreData = accountStore.getState().active;
-                if (
-                    currentStoreData &&
-                    prevStoreData &&
-                    currentStoreData.accountId === account.accountId
-                ) {
-                    accountStoreActions.setSlot(slot, prevStoreData[slot]);
+                const currentStoreData = accountStore
+                    .getState()
+                    .accountsData.get(account.accountId);
+                if (currentStoreData && prevStoreData) {
+                    accountStoreActions.setSlot(account.accountId, slot, prevStoreData[slot]);
                 }
 
                 throw e;

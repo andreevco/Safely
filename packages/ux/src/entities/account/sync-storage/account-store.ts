@@ -24,14 +24,14 @@ export const SYNCED_SLOT_KEYS = [
 export type SyncedSlotKey = (typeof SYNCED_SLOT_KEYS)[number];
 
 export type AccountState = {
-    active: AccountStoreData | null;
+    accountsData: ReadonlyMap<string, AccountStoreData>;
 };
 
 export type AccountStore = StoreApi<AccountState>;
 
 export function createAccountStore(): AccountStore {
     return createStore<AccountState>(() => ({
-        active: null
+        accountsData: new Map()
     }));
 }
 
@@ -39,23 +39,56 @@ export const accountStore: AccountStore = createAccountStore();
 
 export type AccountStoreActions = {
     attachSnapshot(snapshot: AccountStoreData): void;
-    setSlot<K extends SyncedSlotKey>(key: K, value: AccountStoreData[K]): void;
+    setSlot<K extends SyncedSlotKey>(accountId: string, key: K, value: AccountStoreData[K]): void;
+    retainAccounts(accountIds: ReadonlySet<string>): void;
+    removeAccount(accountId: string): void;
     clear(): void;
 };
 
 export const accountStoreActions: AccountStoreActions = {
     attachSnapshot(snapshot) {
-        accountStore.setState({ active: snapshot });
+        accountStore.setState(state => {
+            const next = new Map(state.accountsData);
+            next.set(snapshot.accountId, snapshot);
+            return { accountsData: next };
+        });
     },
 
-    setSlot(key, value) {
+    setSlot(accountId, key, value) {
         accountStore.setState(state => {
-            if (!state.active) return state;
-            return { active: { ...state.active, [key]: value } };
+            const current = state.accountsData.get(accountId);
+            if (!current) return state;
+            const next = new Map(state.accountsData);
+            next.set(accountId, { ...current, [key]: value });
+            return { accountsData: next };
+        });
+    },
+
+    retainAccounts(accountIds) {
+        accountStore.setState(state => {
+            let changed = false;
+            const next = new Map(state.accountsData);
+            for (const id of next.keys()) {
+                if (!accountIds.has(id)) {
+                    next.delete(id);
+                    changed = true;
+                }
+            }
+            if (!changed) return state;
+            return { accountsData: next };
+        });
+    },
+
+    removeAccount(accountId) {
+        accountStore.setState(state => {
+            if (!state.accountsData.has(accountId)) return state;
+            const next = new Map(state.accountsData);
+            next.delete(accountId);
+            return { accountsData: next };
         });
     },
 
     clear() {
-        accountStore.setState({ active: null });
+        accountStore.setState({ accountsData: new Map() });
     }
 };
