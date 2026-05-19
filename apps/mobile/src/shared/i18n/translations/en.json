@@ -568,12 +568,18 @@
         "about": "About"
     },
     "safelyBeta": {
-        "title": "Safely is in beta",
-        "subtitle": "Some features are still evolving. Keep less than $100 until the public release. Save your recovery phrases in Settings → Security.",
-        "feedback": {
-            "description": "Found a bug or have an idea?\nYour feedback helps us improve Safely.",
-            "action": "Send feedback"
+        "title": "Safely",
+        "subtitle": "Beta · {{version}}",
+        "cards": {
+            "betaNotice": "Safely is in beta. Keep under 0.002 BTC and back up your recovery phrase.",
+            "follow": "Follow updates in <tg>Telegram</tg> or <wa>WhatsApp</wa>",
+            "feedback": "Found a bug or have an idea? Your feedback helps us improve Safely. <action>Send feedback</action>"
         }
+    },
+    "dateGroups": {
+        "pending": "Pending",
+        "today": "Today",
+        "yesterday": "Yesterday"
     },
     "history": {
         "title": "History",
@@ -586,11 +592,6 @@
             "subtitle": "Your transactions will appear here.",
             "receive": "Receive BTC",
             "send": "Send"
-        },
-        "dateHeaders": {
-            "pending": "Pending",
-            "today": "Today",
-            "yesterday": "Yesterday"
         },
         "transactionInfo": {
             "sending": "Sending",

@@ -1,45 +1,25 @@
-import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
 
-import { useBootConfig, useLinking } from '@safely/ux';
+import { useAppContext } from '@safely/ux';
 
-import { resources } from '@mobile/shared/resources';
-import { Banner, Image, Screen, Text } from '@mobile/shared/ui';
-
-import { styles } from './SafelyBetaScreen.styles';
+import { AboutFeed } from '@mobile/features/about';
+import { Screen, Text } from '@mobile/shared/ui';
 
 export const SafelyBetaScreen = () => {
     const { t } = useTranslation();
-    const supportLink = useBootConfig().references.support.telegram;
-    const linking = useLinking();
-
-    const handleFeedback = useCallback(() => {
-        void linking.openURL(supportLink);
-    }, [supportLink, linking]);
+    const { version } = useAppContext();
 
     return (
         <Screen>
-            <Screen.Header />
-            <View style={styles.container}>
-                <View style={styles.centerBlock}>
-                    <Image source={resources.safelyLogoWithBg} style={styles.logo} />
-                    <View style={styles.titleBox}>
-                        <Text variant="titleM" textAlign="center">
-                            {t('safelyBeta.title')}
-                        </Text>
-                        <Text variant="bodyL" color="secondary" textAlign="center">
-                            {t('safelyBeta.subtitle')}
-                        </Text>
-                    </View>
-                </View>
-                <Banner style={styles.banner} onPress={handleFeedback}>
-                    <Banner.Content>
-                        <Banner.Text>{t('safelyBeta.feedback.description')}</Banner.Text>
-                    </Banner.Content>
-                    <Banner.Action>{t('safelyBeta.feedback.action')}</Banner.Action>
-                </Banner>
-            </View>
+            <Screen.Header variant="left">
+                <Screen.Header.Title>
+                    <Text variant="titleS">{t('safelyBeta.title')}</Text>
+                    <Text variant="bodyM" color="secondary">
+                        {t('safelyBeta.subtitle', { version })}
+                    </Text>
+                </Screen.Header.Title>
+            </Screen.Header>
+            <AboutFeed />
         </Screen>
     );
 };
