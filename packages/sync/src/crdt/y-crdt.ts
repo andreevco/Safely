@@ -7,6 +7,15 @@ export class YCRDT<T extends object> {
         this.doc.merge(update.toString('utf8'));
     }
 
+    public async unsafeAsyncApplyUpdate(
+        update: Buffer,
+        commit: (snapshot: Buffer) => Promise<boolean>
+    ): Promise<boolean> {
+        return await this.doc.unsafeAsyncMerge(update.toString('utf8'), async snapshot => {
+            return await commit(Buffer.from(snapshot, 'utf8'));
+        });
+    }
+
     public encodeAsSnapshot(): Buffer {
         return Buffer.from(this.doc.export(), 'utf8');
     }
@@ -36,6 +45,15 @@ export class YCRDT<T extends object> {
 
     public transaction(fn: (draft: Draft<T>) => void): void {
         this.doc.transaction(fn);
+    }
+
+    public async unsafeAsyncTransaction(
+        fn: (draft: Draft<T>) => void,
+        commit: (snapshot: Buffer) => Promise<boolean>
+    ): Promise<boolean> {
+        return await this.doc.unsafeAsyncTransaction(fn, async snapshot => {
+            return await commit(Buffer.from(snapshot, 'utf8'));
+        });
     }
 
     public equals(other: string): boolean {

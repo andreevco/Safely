@@ -1,12 +1,14 @@
 import type { z } from 'zod';
 
-import type { Draft, NewOf, StorageVersion } from '@safely/slottree';
+import type { Draft, JsonValue, NewOf, ObjectDraft, StorageVersion } from '@safely/slottree';
 
 import type { YCRDT } from './y-crdt';
 import type { YCRDTRepository } from './y-crdt-repository';
 import { SyncError } from '../sync-error';
 
 export class YManager<Latest extends StorageVersion, Rest> {
+    private writeQueue: Promise<void> = Promise.resolve();
+
     private constructor(
         private readonly yRepository: YCRDTRepository<Latest, Rest>,
         private readonly yDoc: YCRDT<z.output<NewOf<Latest>>>
@@ -20,18 +22,44 @@ export class YManager<Latest extends StorageVersion, Rest> {
     }
 
     public async applyUpdate(update: Buffer, _origin: string): Promise<void> {
-        this.yDoc.applyUpdate(update);
-        await this.yRepository.saveCRDT(this.yDoc);
+        await this.enqueueWrite(async () => {
+            // unsafeAsyncApplyUpdate can race when called concurrently; YManager
+            // serializes all writes through enqueueWrite before using it.
+            await this.yDoc.unsafeAsyncApplyUpdate(update, async snapshot => {
+                await this.yRepository.saveSnapshot(snapshot);
+                return true;
+            });
+        });
     }
 
     public async set(key: string, value: unknown): Promise<void> {
-        this.yDoc.set(key as Extract<keyof z.output<NewOf<Latest>>, string>, value);
-        await this.yRepository.saveCRDT(this.yDoc);
+        await this.enqueueWrite(async () => {
+            // unsafeAsyncTransaction can race when called concurrently; YManager
+            // serializes all writes through enqueueWrite before using it.
+            await this.yDoc.unsafeAsyncTransaction(
+                draft => {
+                    (draft as ObjectDraft<Record<string, JsonValue | undefined>>).set(
+                        key,
+                        value as JsonValue
+                    );
+                },
+                async snapshot => {
+                    await this.yRepository.saveSnapshot(snapshot);
+                    return true;
+                }
+            );
+        });
     }
 
     public async transaction(f: (draft: Draft<z.output<NewOf<Latest>>>) => void) {
-        this.yDoc.transaction(f);
-        await this.yRepository.saveCRDT(this.yDoc);
+        await this.enqueueWrite(async () => {
+            // unsafeAsyncTransaction can race when called concurrently; YManager
+            // serializes all writes through enqueueWrite before using it.
+            await this.yDoc.unsafeAsyncTransaction(f, async snapshot => {
+                await this.yRepository.saveSnapshot(snapshot);
+                return true;
+            });
+        });
     }
 
     public getFull(): z.output<NewOf<Latest>> {
@@ -60,6 +88,15 @@ export class YManager<Latest extends StorageVersion, Rest> {
 
     public onChange(observer: () => void): () => void {
         return this.yDoc.onUpdate(observer);
+    }
+
+    private async enqueueWrite<T>(operation: () => Promise<T>): Promise<T> {
+        const result = this.writeQueue.then(operation, operation);
+        this.writeQueue = result.then(
+            () => undefined,
+            () => undefined
+        );
+        return await result;
     }
 }
 

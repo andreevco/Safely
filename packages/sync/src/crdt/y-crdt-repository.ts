@@ -37,8 +37,14 @@ export class YCRDTRepository<Latest extends StorageVersion, Rest> {
     }
 
     public async saveCRDT(crdt: YCRDT<z.output<NewOf<Latest>>>): Promise<void> {
-        const crdt_buffer = crdt.encodeAsSnapshot();
-        await this.storage.setItem(this.storageKey, crdt_buffer.toString('utf8'));
+        await this.saveSnapshot(crdt.encodeAsSnapshot());
+    }
+
+    public async saveSnapshot(snapshot: Buffer | string): Promise<void> {
+        await this.storage.setItem(
+            this.storageKey,
+            Buffer.isBuffer(snapshot) ? snapshot.toString('utf8') : snapshot
+        );
     }
 
     public async initialize(): Promise<void> {

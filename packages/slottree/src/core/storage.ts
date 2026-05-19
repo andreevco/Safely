@@ -38,10 +38,38 @@ export interface Storage<T> {
     transaction(fn: (draft: Draft<T>) => void): void;
 
     /**
+     * Unsafe atomic async storage transaction.
+     * Prepares the next state, passes its encoded snapshot to commit, and only
+     * publishes the state in memory when commit resolves to true.
+     *
+     * Unsafe because concurrent calls can race: each call prepares state from the
+     * root visible at its start, then awaits commit before publishing. Callers
+     * must serialize calls externally when lost updates are not acceptable.
+     */
+    unsafeAsyncTransaction(
+        fn: (draft: Draft<T>) => void,
+        commit: (snapshot: string) => Promise<boolean>
+    ): Promise<boolean>;
+
+    /**
      * Merge storage
      * @param incoming
      */
     merge(incoming: string): void;
+
+    /**
+     * Unsafe async storage merge.
+     * Prepares the merged state, passes its encoded snapshot to commit, and
+     * only publishes the state in memory when commit resolves to true.
+     *
+     * Unsafe because concurrent calls can race: each call prepares state from the
+     * root visible at its start, then awaits commit before publishing. Callers
+     * must serialize calls externally when lost updates are not acceptable.
+     */
+    unsafeAsyncMerge(
+        incoming: string,
+        commit: (snapshot: string) => Promise<boolean>
+    ): Promise<boolean>;
 
     /**
      * Observe successful storage changes.
@@ -108,8 +136,40 @@ export class StorageImpl<T> implements Storage<T> {
         }
     }
 
+    public async unsafeAsyncTransaction(
+        fn: (draft: Draft<T>) => void,
+        commit: (snapshot: string) => Promise<boolean>
+    ): Promise<boolean> {
+        const timestamp = this.protocol.tick();
+        const author = this.protocol.id;
+
+        const workingRoot = this.createWorkingRoot();
+
+        const updated = workingRoot.update(fn, timestamp, author, this.protocol);
+        if (!updated) {
+            return false;
+        }
+
+        const nextRoot = workingRoot.result();
+        const shouldCommit = await commit(this.encoder.encode(nextRoot));
+        if (!shouldCommit) {
+            return false;
+        }
+
+        this.root = nextRoot;
+        this.observers.notify();
+        return true;
+    }
+
     public merge(incoming: string): MergeStats {
         return this.mergeSlot(this.encoder.decode(incoming));
+    }
+
+    public async unsafeAsyncMerge(
+        incoming: string,
+        commit: (snapshot: string) => Promise<boolean>
+    ): Promise<boolean> {
+        return await this.unsafeAsyncMergeSlot(this.encoder.decode(incoming), commit);
     }
 
     public mergeSlot(incoming: Slot): MergeStats {
@@ -127,6 +187,32 @@ export class StorageImpl<T> implements Storage<T> {
         }
 
         return stats;
+    }
+
+    private async unsafeAsyncMergeSlot(
+        incoming: Slot,
+        commit: (snapshot: string) => Promise<boolean>
+    ): Promise<boolean> {
+        const workingRoot = this.createWorkingRoot();
+        const validationProtocol = new MergeProtocol(this.protocol.id);
+        validationProtocol.observeTree(this.root);
+        const stats = workingRoot.merge(validationProtocol, incoming);
+
+        if (!didMergeChangeStorage(stats)) {
+            return false;
+        }
+
+        const nextRoot = workingRoot.result();
+        const shouldCommit = await commit(this.encoder.encode(nextRoot));
+        if (!shouldCommit) {
+            return false;
+        }
+
+        this.root = nextRoot;
+        this.protocol.observeTree(incoming);
+        this.protocol.observeTree(this.root);
+        this.observers.notify();
+        return true;
     }
 
     public onChange(observer: StorageObserver): () => void {
