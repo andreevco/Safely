@@ -8,4 +8,4 @@ export { smoothstepGradient } from './gradient';
 export { formatLockoutTime } from './formatLockoutTime';
 export { hasUnsupportedExtendedKeyPrefix } from './extended-key';
 export { MobileAppLinking } from './linking';
-export { useGroupedItems } from './date-groups';
+export { useGroupedRows, getGroupedRowType, type GroupedRow } from './date-groups';
