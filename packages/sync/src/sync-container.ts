@@ -3,6 +3,7 @@ import type { AssertVersionHList, HCons, StorageVersion } from '@safely/slottree
 import { ApiSigner } from './api/api-signer';
 import { AccountsApi, type Configuration, SnapshotsApi } from './api/generated';
 import { SnapshotsSse } from './api/snapshots-sse';
+import { CrdtController } from './crdt/crdt-controller';
 import { YCRDTRepository } from './crdt/y-crdt-repository';
 import { YManager } from './crdt/y-manager';
 import { EncryptedKeyRepository } from './crypto/encrypted-key-repository';
@@ -53,6 +54,7 @@ export type SyncContainer<Latest extends StorageVersion, Rest> = {
     updateHandler: UpdateHandler<Latest, Rest>;
     snapshotSender: SnapshotSender<Latest, Rest>;
     syncOperations: SyncOperations<Latest, Rest>;
+    crdtController: CrdtController;
 
     yManager: YManager<Latest, Rest>;
     deviceYManager: YManager<tDevicesLatest, tDevicesRest>;
@@ -104,6 +106,10 @@ export async function createSyncContainer<Latest extends StorageVersion, Rest>(o
     const deviceYManager = await YManager.create<tDevicesLatest, tDevicesRest>(
         deviceCrdtRepository
     );
+    const crdtController = new CrdtController();
+    crdtController.addManager(yManager);
+    crdtController.addManager(deviceYManager);
+
     const deviceRepository = new DeviceRepository(deviceYManager);
     const deviceManager = new DeviceManagementService(
         deviceRepository,
@@ -138,7 +144,8 @@ export async function createSyncContainer<Latest extends StorageVersion, Rest>(o
     const syncOperations = new SyncOperations<Latest, Rest>(
         updateHandler,
         snapshotSender,
-        deviceManager
+        deviceManager,
+        crdtController
     );
 
     const secretEncryptor = new SecretEncryptor(keyServiceFactory);
@@ -163,6 +170,7 @@ export async function createSyncContainer<Latest extends StorageVersion, Rest>(o
         updateHandler,
         snapshotSender,
         syncOperations,
+        crdtController,
         yManager,
         deviceYManager,
         deviceManager,

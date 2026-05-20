@@ -5,6 +5,7 @@ import { MockSnapshotsApi, MockSnapshotsSse } from './mock-snapshots-api';
 import { ApiSigner } from '../../src/api/api-signer';
 import type { Configuration, SnapshotsApi } from '../../src/api/generated';
 import { AccountsApi } from '../../src/api/generated';
+import { CrdtController } from '../../src/crdt/crdt-controller';
 import { YCRDTRepository } from '../../src/crdt/y-crdt-repository';
 import { YManager } from '../../src/crdt/y-manager';
 import { EncryptedKeyRepository } from '../../src/crypto/encrypted-key-repository';
@@ -69,6 +70,10 @@ export async function createMockSyncContainer<Latest extends StorageVersion, Res
     const deviceYManager = await YManager.create<tDevicesLatest, tDevicesRest>(
         deviceCrdtRepository
     );
+    const crdtController = new CrdtController();
+    crdtController.addManager(yManager);
+    crdtController.addManager(deviceYManager);
+
     const deviceRepository = new DeviceRepository(deviceYManager);
     const deviceManager = new DeviceManagementService(
         deviceRepository,
@@ -103,7 +108,8 @@ export async function createMockSyncContainer<Latest extends StorageVersion, Res
     const syncOperations = new SyncOperations<Latest, Rest>(
         updateHandler,
         snapshotSender,
-        deviceManager
+        deviceManager,
+        crdtController
     );
 
     const secretEncryptor = new SecretEncryptor(keyServiceFactory);
@@ -127,6 +133,7 @@ export async function createMockSyncContainer<Latest extends StorageVersion, Res
         updateHandler,
         snapshotSender,
         syncOperations,
+        crdtController,
         yManager,
         deviceYManager,
         deviceManager,

@@ -34,6 +34,14 @@ export class YCRDT<T extends object> {
         });
     }
 
+    public addAuthor(authorId: string, storageVersion: number): void {
+        this.doc.addAuthor(authorId, storageVersion);
+    }
+
+    public deleteAuthor(authorId: string): void {
+        this.doc.removeAuthor(authorId);
+    }
+
     public set(key: Extract<keyof T, string>, value: unknown): void {
         this.doc.transaction(draft => {
             (draft as ObjectDraft<Record<string, JsonValue | undefined>>).set(

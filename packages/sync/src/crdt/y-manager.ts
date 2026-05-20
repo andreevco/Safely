@@ -62,6 +62,20 @@ export class YManager<Latest extends StorageVersion, Rest> {
         });
     }
 
+    public async addAuthor(authorId: string, storageVersion: number): Promise<void> {
+        await this.enqueueWrite(async () => {
+            this.yDoc.addAuthor(authorId, storageVersion);
+            await this.yRepository.saveSnapshot(this.yDoc.encodeAsSnapshot());
+        });
+    }
+
+    public async deleteAuthor(authorId: string): Promise<void> {
+        await this.enqueueWrite(async () => {
+            this.yDoc.deleteAuthor(authorId);
+            await this.yRepository.saveSnapshot(this.yDoc.encodeAsSnapshot());
+        });
+    }
+
     public getFull(): z.output<NewOf<Latest>> {
         return this.yDoc.getFull();
     }

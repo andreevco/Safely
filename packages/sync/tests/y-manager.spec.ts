@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
-import { defineVersionHList, hCons, hNil, projectIdentity } from '@safely/slottree';
+import { defineVersionHList, DEVICES_KEY, hCons, hNil, projectIdentity } from '@safely/slottree';
 
 import { InMemStorage } from './impl/storage';
+import { CrdtController } from '../src/crdt/crdt-controller';
 import { YCRDTRepository } from '../src/crdt/y-crdt-repository';
 import { YManager } from '../src/crdt/y-manager';
 
@@ -87,11 +88,73 @@ describe('YManager', () => {
 
         expect(manager.getFull()).toEqual({ a: 'after' });
     });
+
+    it('persists author add and delete operations', async () => {
+        const storage = new InMemStorage();
+        const manager = await createManager(storage, 'device-1');
+
+        await manager.addAuthor('device-2', 1);
+
+        expect(await deviceVersion(storage, 'crdt', 'device-2')).toBe(1);
+
+        await manager.deleteAuthor('device-2');
+
+        expect(await deviceVersion(storage, 'crdt', 'device-2')).toBeUndefined();
+    });
+
+    it('controller applies author deletion to all registered managers', async () => {
+        const storage = new InMemStorage();
+        const manager = await createManager(storage, 'device-1');
+        const deviceManager = await createManager(storage, 'device-1', 'devices_crdt');
+        const controller = new CrdtController();
+        controller.addManager(manager);
+        controller.addManager(deviceManager);
+
+        await controller.addAuthor('device-2', 1);
+        expect(await deviceVersion(storage, 'crdt', 'device-2')).toBe(1);
+        expect(await deviceVersion(storage, 'devices_crdt', 'device-2')).toBe(1);
+
+        await controller.deleteAuthor('device-2');
+
+        expect(await deviceVersion(storage, 'crdt', 'device-2')).toBeUndefined();
+        expect(await deviceVersion(storage, 'devices_crdt', 'device-2')).toBeUndefined();
+    });
 });
 
-async function createManager(storage: InMemStorage, authorId = 'device') {
-    const repository = new YCRDTRepository(storage, Buffer.from(authorId), Versions);
+async function createManager(storage: InMemStorage, authorId = 'device', storageKey = 'crdt') {
+    const repository = new YCRDTRepository(storage, Buffer.from(authorId), Versions, storageKey);
     return await YManager.create(repository);
+}
+
+async function deviceVersion(
+    storage: InMemStorage,
+    storageKey: string,
+    authorId: string
+): Promise<number | undefined> {
+    const raw = await storage.getItem(storageKey);
+    if (raw === null) {
+        throw new Error(`Missing ${storageKey} snapshot`);
+    }
+
+    const snapshot = JSON.parse(raw) as {
+        v?: Record<
+            string,
+            {
+                v?: Record<
+                    string,
+                    {
+                        v?: {
+                            version?: {
+                                v?: unknown;
+                            };
+                        };
+                    }
+                >;
+            }
+        >;
+    };
+    const version = snapshot.v?.[DEVICES_KEY]?.v?.[authorId]?.v?.version?.v;
+    return typeof version === 'number' ? version : undefined;
 }
 
 class FailingSetStorage extends InMemStorage {
