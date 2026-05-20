@@ -36,6 +36,11 @@ export class AnalyticsService {
 
     private readonly fired = new Set<string>();
 
+    private session: { accountKey: string | null; id: string } = {
+        accountKey: null,
+        id: generateUuidV4()
+    };
+
     constructor(deps: AnalyticsDeps) {
         this.logger = deps.logger;
         this.eventsApi = deps.eventsApi;
@@ -45,23 +50,26 @@ export class AnalyticsService {
         this.rateCache = new RateCache(deps.rateApi);
     }
 
-    public async trackOnboardingOpen(input: {
-        onboardingId: string;
-        lang: string;
-        sessionId: string;
-    }): Promise<void> {
+    private resolveSessionId(accountUuid: string | null): string {
+        if (this.session.accountKey !== accountUuid) {
+            this.session = { accountKey: accountUuid, id: generateUuidV4() };
+        }
+
+        return this.session.id;
+    }
+
+    public async trackOnboardingOpen(input: { onboardingId: string; lang: string }): Promise<void> {
         await this.send({
             eventName: 'onboarding_open',
             props: { onboardingId: input.onboardingId },
             lang: input.lang,
-            sessionId: input.sessionId,
+            sessionId: this.resolveSessionId(null),
             accountUuid: null
         });
     }
 
     public async trackWalletOpen(input: {
         accountUuid: string;
-        sessionId: string;
         fiatSymbol: string | null;
         lang: string;
         onboardingId: string;
@@ -71,7 +79,8 @@ export class AnalyticsService {
         const bucket = await this.computeBucket(input.fiatAmount, input.fiatSymbol, 'wallet_open');
         if (bucket === null) return;
 
-        const key = `${input.sessionId}:wallet_open`;
+        const sessionId = this.resolveSessionId(input.accountUuid);
+        const key = `${sessionId}:wallet_open`;
         if (this.fired.has(key)) return;
 
         const isSent = await this.send({
@@ -82,29 +91,24 @@ export class AnalyticsService {
                 onboardingId: input.onboardingId
             },
             lang: input.lang,
-            sessionId: input.sessionId,
+            sessionId,
             accountUuid: input.accountUuid
         });
         if (isSent) this.fired.add(key);
     }
 
-    public async trackSendStart(input: {
-        accountUuid: string;
-        sessionId: string;
-        lang: string;
-    }): Promise<void> {
+    public async trackSendStart(input: { accountUuid: string; lang: string }): Promise<void> {
         await this.send({
             eventName: 'send_start',
             props: {},
             lang: input.lang,
-            sessionId: input.sessionId,
+            sessionId: this.resolveSessionId(input.accountUuid),
             accountUuid: input.accountUuid
         });
     }
 
     public async trackSendFinish(input: {
         accountUuid: string;
-        sessionId: string;
         fiatSymbol: string | null;
         lang: string;
         cryptoCurrency: string;
@@ -122,7 +126,7 @@ export class AnalyticsService {
                 errorType: input.errorType ?? 'none'
             },
             lang: input.lang,
-            sessionId: input.sessionId,
+            sessionId: this.resolveSessionId(input.accountUuid),
             accountUuid: input.accountUuid
         });
     }

@@ -23,7 +23,6 @@ export function useAccountUuid() {
                 deriveAnalyticsAccountUuid(mk)
             );
         },
-        enabled: !!activeAccount,
         staleTime: Infinity
     });
 }

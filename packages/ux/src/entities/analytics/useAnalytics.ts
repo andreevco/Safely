@@ -21,12 +21,10 @@ export interface AnalyticsApi {
 }
 
 export function useAnalytics(): AnalyticsApi {
-    const ctx = useContext(AnalyticsContext);
-    if (!ctx) {
+    const service = useContext(AnalyticsContext);
+    if (!service) {
         throw new Error('useAnalytics must be used within AnalyticsProvider');
     }
-
-    const { service, sessionId } = ctx;
 
     const lang = useActiveLanguage();
     const { data: accountUuid } = useAccountUuid();
@@ -36,15 +34,13 @@ export function useAnalytics(): AnalyticsApi {
 
     return useMemo<AnalyticsApi>(
         () => ({
-            trackOnboardingOpen: input =>
-                service.trackOnboardingOpen({ ...input, lang, sessionId }),
+            trackOnboardingOpen: input => service.trackOnboardingOpen({ ...input, lang }),
             trackWalletOpen: async input => {
                 if (!accountUuid) return;
 
                 await service.trackWalletOpen({
                     ...input,
                     accountUuid,
-                    sessionId,
                     fiatSymbol,
                     lang
                 });
@@ -52,7 +48,7 @@ export function useAnalytics(): AnalyticsApi {
             trackSendStart: async () => {
                 if (!accountUuid) return;
 
-                await service.trackSendStart({ accountUuid, sessionId, lang });
+                await service.trackSendStart({ accountUuid, lang });
             },
             trackSendFinish: async input => {
                 if (!accountUuid) return;
@@ -60,12 +56,11 @@ export function useAnalytics(): AnalyticsApi {
                 await service.trackSendFinish({
                     ...input,
                     accountUuid,
-                    sessionId,
                     fiatSymbol,
                     lang
                 });
             }
         }),
-        [service, sessionId, accountUuid, fiatSymbol, lang]
+        [service, accountUuid, fiatSymbol, lang]
     );
 }
