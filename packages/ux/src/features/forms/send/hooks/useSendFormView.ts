@@ -75,6 +75,7 @@ export function useSendFormView(props: UseSendFormViewProps): SendFormView {
     );
 
     const selectedSuggestionId = snapshot.context.suggestion.selectedId;
+    const selectedSuggestionSource = snapshot.context.suggestion.source;
     const portfoliosSuggestionIds = snapshot.context.suggestion.portfoliosIds;
     const contactsSuggestionIds = snapshot.context.suggestion.contactsIds;
 
@@ -135,6 +136,7 @@ export function useSendFormView(props: UseSendFormViewProps): SendFormView {
                 suggestions: visibleSuggestions,
                 restoredSuggestions,
                 selectedSuggestionId,
+                selectedSuggestionSource,
                 fromMeta,
                 setRecipient,
                 setAddressBookName,
@@ -207,6 +209,7 @@ export function useSendFormView(props: UseSendFormViewProps): SendFormView {
         ctxParsedAsset,
         ctxParsedMaxValue,
         selectedSuggestionId,
+        selectedSuggestionSource,
         visibleSuggestions,
         restoredSuggestions,
         recipientMeta,

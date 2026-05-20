@@ -1,6 +1,7 @@
 {
   "name": "@safely/mobile",
   "version": "1.0.8",
+  "main": "index.tsx",
   "scripts": {
     "start": "expo start --dev-client",
     "web": "expo start --web",
