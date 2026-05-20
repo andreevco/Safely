@@ -12,7 +12,7 @@ export interface UseAccountSyncStorageUpdateOptions {
     showErrorToast?: boolean;
 }
 
-export function useAccountSyncStorageUpdate<T extends SyncedSlotKey>(
+export function useAccountSyncStorageSlotUpdate<T extends SyncedSlotKey>(
     slot: T,
     options?: UseAccountSyncStorageUpdateOptions
 ) {
@@ -20,17 +20,9 @@ export function useAccountSyncStorageUpdate<T extends SyncedSlotKey>(
     const errorToast = useErrorToast({}, { fallback: 'account.sync.errors.updateFailed' });
 
     return useCallback(
-        async (
-            account: SyncAccount,
-            f: (
-                draft: Draft<SyncedStorageSchema[T]>,
-                storeDraft: Draft<SyncedStorageSchema>
-            ) => void
-        ) => {
+        async (account: SyncAccount, f: (draft: Draft<SyncedStorageSchema[T]>) => void) => {
             try {
-                await account.syncProvider.transaction(draft => {
-                    f(draft.at(slot), draft);
-                });
+                await account.syncProvider.transaction(draft => f(draft.at(slot)));
             } catch (e) {
                 if (showErrorToast) {
                     errorToast(e);
@@ -42,21 +34,44 @@ export function useAccountSyncStorageUpdate<T extends SyncedSlotKey>(
         [slot, errorToast, showErrorToast]
     );
 }
+export function useAccountSyncStorageUpdate(options?: UseAccountSyncStorageUpdateOptions) {
+    const showErrorToast = options?.showErrorToast ?? true;
+    const errorToast = useErrorToast({}, { fallback: 'account.sync.errors.updateFailed' });
 
-export function useActiveAccountSyncStorageUpdate<T extends SyncedSlotKey>(
+    return useCallback(
+        async (account: SyncAccount, f: (draft: Draft<SyncedStorageSchema>) => void) => {
+            try {
+                await account.syncProvider.transaction(f);
+            } catch (e) {
+                if (showErrorToast) {
+                    errorToast(e);
+                }
+
+                throw e;
+            }
+        },
+        [errorToast, showErrorToast]
+    );
+}
+
+export function useActiveAccountSyncStorageSlotUpdate<T extends SyncedSlotKey>(
     slot: T,
     options?: UseAccountSyncStorageUpdateOptions
 ) {
     const account = useActiveAccount();
-    const update = useAccountSyncStorageUpdate(slot, options);
+    const update = useAccountSyncStorageSlotUpdate(slot, options);
 
     return useCallback(
-        async (
-            f: (
-                draft: Draft<SyncedStorageSchema[T]>,
-                storeDraft: Draft<SyncedStorageSchema>
-            ) => void
-        ) => update(account, f),
+        (f: (draft: Draft<SyncedStorageSchema[T]>) => void) => update(account, f),
+        [account, update]
+    );
+}
+export function useActiveAccountSyncStorageUpdate(options?: UseAccountSyncStorageUpdateOptions) {
+    const account = useActiveAccount();
+    const update = useAccountSyncStorageUpdate(options);
+
+    return useCallback(
+        (f: (draft: Draft<SyncedStorageSchema>) => void) => update(account, f),
         [account, update]
     );
 }

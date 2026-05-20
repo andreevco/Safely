@@ -13,12 +13,10 @@ import { AccountStoreTransform } from './account-store-transform';
 function useSyncObserver() {
     const { storage } = useAppContext();
     const accounts = useAccounts();
-    console.log('useSyncObserver');
 
     useEffect(() => {
         if (!accounts || accounts.length === 0) {
             accountStoreActions.clear();
-            console.log('useSyncObserver no accounts', accounts);
             return;
         }
 
@@ -32,11 +30,9 @@ function useSyncObserver() {
                     new SecretEncryptor(account.secretEncryptor, storage.sync.getSecureEncrypted())
             );
 
-            const sp = transform.restoreAll(account.accountId, account.syncProvider.getAll())
             accountStoreActions.attachSnapshot(
-                sp
+                transform.restoreAll(account.accountId, account.syncProvider.getAll())
             );
-            console.log('useSyncObserver attached', account.accountId, sp);
 
             SYNCED_SLOT_KEYS.forEach(key => {
                 const unsub = account.syncProvider.onChange(key, () => {

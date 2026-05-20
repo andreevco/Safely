@@ -6,7 +6,7 @@ import type { SContact } from '@safely/sync-storage';
 import { sContactAddress } from '@safely/sync-storage';
 
 import { useTranslate } from '../../shared';
-import { useActiveAccountSyncStorageUpdate, useActiveAccountStoreSlot } from '../account';
+import { useActiveAccountStoreSlot, useActiveAccountSyncStorageSlotUpdate } from '../account';
 import { useMutation } from '../query-core';
 import { useToast } from '../toast';
 
@@ -23,7 +23,7 @@ export function useContacts(): Contact[] {
 }
 
 export function useCreateContact() {
-    const update = useActiveAccountSyncStorageUpdate('contacts');
+    const update = useActiveAccountSyncStorageSlotUpdate('contacts');
 
     return useMutation<
         Contact,
@@ -46,7 +46,7 @@ export function useCreateContact() {
 }
 
 export function useEditContact() {
-    const update = useActiveAccountSyncStorageUpdate('contacts');
+    const update = useActiveAccountSyncStorageSlotUpdate('contacts');
     const contacts = useContacts();
 
     return useMutation<
@@ -93,7 +93,7 @@ export function useEditContact() {
 }
 
 export function useDeleteContact() {
-    const update = useActiveAccountSyncStorageUpdate('contacts');
+    const update = useActiveAccountSyncStorageSlotUpdate('contacts');
     const toast = useToast();
     const t = useTranslate();
 

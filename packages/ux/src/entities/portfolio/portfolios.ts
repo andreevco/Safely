@@ -26,12 +26,12 @@ import {
 import { useTranslate, useSecurityCheck, useAppContext } from '../../shared';
 import { useSuspenseQuery } from '../../shared';
 import type { SActivePortfolioSchema, UseAccountSyncStorageUpdateOptions } from '../account';
+import { useActiveAccountSyncStorageSlotUpdate } from '../account';
 import { useActiveAccountStoreSlot } from '../account';
 import {
     useActiveAccountLocalStorage,
     useActiveAccountQuery,
-    useActiveAccountQueryKey,
-    useActiveAccountSyncStorageUpdate
+    useActiveAccountQueryKey
 } from '../account';
 import { useErrorToast } from '../errors';
 import { useMutation } from '../query-core';
@@ -44,7 +44,7 @@ export function usePortfolios(): Portfolio[] {
 }
 
 export function useAddPortfolio(options?: UseAccountSyncStorageUpdateOptions) {
-    const update = useActiveAccountSyncStorageUpdate('portfolios', options);
+    const update = useActiveAccountSyncStorageSlotUpdate('portfolios', options);
 
     return useMutation<void, Error, Portfolio>({
         async mutationFn(portfolio) {
@@ -153,7 +153,7 @@ export function useImportPortfolio() {
 }
 
 export function useDeletePortfolio() {
-    const update = useActiveAccountSyncStorageUpdate('portfolios');
+    const update = useActiveAccountSyncStorageSlotUpdate('portfolios');
     const check = useSecurityCheck();
 
     return useMutation<void, Error, Portfolio>({
@@ -165,7 +165,7 @@ export function useDeletePortfolio() {
 }
 
 export function useReorderPortfolios() {
-    const update = useActiveAccountSyncStorageUpdate('portfolios');
+    const update = useActiveAccountSyncStorageSlotUpdate('portfolios');
 
     return useMutation<void, Error, Portfolio[]>({
         async mutationFn(nextPortfoliosOrder) {
@@ -312,7 +312,7 @@ export function useSetActivePortfolio() {
 }
 
 export function useChangePortfolioMeta() {
-    const update = useActiveAccountSyncStorageUpdate('portfolios');
+    const update = useActiveAccountSyncStorageSlotUpdate('portfolios');
 
     return useMutation<void, Error, { portfolio: Portfolio; meta: Partial<PortfolioMeta> }>({
         mutationFn({ portfolio, meta }) {
@@ -330,7 +330,7 @@ export function useChangePortfolioMeta() {
 
 export function useRecordActivePortfolioSecretReveal() {
     const activePortfolio = useActivePortfolio();
-    const update = useActiveAccountSyncStorageUpdate('portfolios');
+    const update = useActiveAccountSyncStorageSlotUpdate('portfolios');
     const { deviceInfo } = useAppContext();
 
     return useMutation({
