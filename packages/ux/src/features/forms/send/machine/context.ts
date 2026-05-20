@@ -82,7 +82,7 @@ function computeInitialSuggestion(
         selectedId: match.id,
         portfoliosIds: portfolioSuggestions.map(s => s.id),
         contactsIds: contactSuggestions.map(s => s.id),
-        source: initialValues?.source ?? SuggestionSource.USER_DEFINED
+        source: SuggestionSource.USER_DEFINED
     };
 }
 
@@ -145,7 +145,7 @@ export function buildInitialContext(input: SendFormMachineInput): SendFormMachin
 
     const validatorSuggestion = suggestionFromValidatorResult(
         result,
-        initialValues.source ?? SuggestionSource.USER_DEFINED
+        SuggestionSource.USER_DEFINED
     );
 
     return {

@@ -83,7 +83,6 @@ export interface SendFormInitialValues {
     addressBookName?: string;
     amount?: string;
     amountInputType?: AmountInputType;
-    source?: SuggestionSource;
 }
 
 export interface SendFormValues {

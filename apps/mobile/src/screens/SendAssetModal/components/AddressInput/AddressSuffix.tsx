@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { Platform, Text, TextLayoutEvent } from 'react-native';
-import Animated, { FadeIn, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import { useUnistyles } from 'react-native-unistyles';
 
 import { ContactMeta, PortfolioMeta } from '@safely/core';
@@ -50,11 +50,7 @@ export const AddressSuffix = ({ value, portfolioMeta, contactMeta }: AddressSuff
             <Text style={[styles.input, styles.measure]} onTextLayout={handleTextLayout}>
                 {value}
             </Text>
-            <Animated.View
-                entering={FadeIn}
-                pointerEvents="none"
-                style={[styles.inputSuffix, animatedStyle]}
-            >
+            <Animated.View pointerEvents="none" style={[styles.inputSuffix, animatedStyle]}>
                 {portfolioMeta ? (
                     <PortfolioName
                         gap={8}
