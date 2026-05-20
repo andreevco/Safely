@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 import type { StorageImpl } from '../src';
 import { createStorage } from '../src';
-import type { ContainerSlot } from '../src/core/slots';
+import { SlotKind, type ContainerSlot } from '../src/core/slots';
 import { cloneSlot } from '../src/core/slots/slot-json';
 import { defineVersionHList, hCons, hNil } from '../src/core/versioning/version';
 
@@ -23,8 +23,6 @@ const schema = z.object({
         layout: z.string().optional()
     })
 });
-
-type TestState = z.output<typeof schema>;
 
 const versions = defineVersionHList(
     hCons(
@@ -54,43 +52,23 @@ function createTestStorage() {
     });
 }
 
-describe('createWriteProxy', () => {
-    it('supports TypeScript object rest and spread patterns on drafts', () => {
+describe('Draft', () => {
+    it('sets, deletes, and reads nested object fields', () => {
         const storage = createTestStorage();
 
-        storage.update(draft => {
-            draft.users.alice = { name: 'Alice', active: true };
-            draft.users.bob = { name: 'Bob' };
-            delete draft.users.alice;
+        storage.transaction(draft => {
+            const users = draft.at('users');
 
-            expect(Object.keys(draft.users)).toEqual(['bob']);
-            expect('bob' in draft.users).toBe(true);
-            expect('alice' in draft.users).toBe(false);
-            expect(Object.prototype.hasOwnProperty.call(draft.users, 'bob')).toBe(true);
-            expect(Object.prototype.hasOwnProperty.call(draft.users, 'alice')).toBe(false);
+            users.set('alice', { name: 'Alice', active: true });
+            users.set('bob', { name: 'Bob' });
+            users.delete('alice');
 
-            const iterated: string[] = [];
-            for (const key in draft.users) {
-                iterated.push(key);
-            }
-            expect(iterated).toEqual(['bob']);
-
-            const spread = { ...draft.users };
-            expect(spread.bob.name).toBe('Bob');
-
-            const { bob, ...rest } = draft.users;
-            expect(bob.name).toBe('Bob');
-            expect(Object.keys(rest)).toEqual([]);
-            expect(JSON.parse(JSON.stringify(draft.users))).toEqual({
+            expect(users.get()).toEqual({
                 bob: {
                     name: 'Bob'
                 }
             });
-
-            draft.settings = {
-                ...draft.settings,
-                layout: 'dense'
-            };
+            draft.at('settings').set('layout', 'dense');
         });
 
         expect(storage.read()).toEqual({
@@ -109,33 +87,19 @@ describe('createWriteProxy', () => {
         });
     });
 
-    it('supports descriptor and Object.assign write patterns on drafts', () => {
+    it('supports explicit nested writes', () => {
         const storage = createTestStorage();
 
-        storage.update(draft => {
-            Object.assign(draft.settings, {
-                theme: 'dark',
-                layout: 'compact'
-            });
+        storage.transaction(draft => {
+            draft.at('settings').set('theme', 'dark');
+            draft.at('settings').set('layout', 'compact');
+            draft.at('users').set('carol', { name: 'Carol', active: true });
+            draft.at('flags').set('ready', true);
 
-            Object.defineProperty(draft.users, 'carol', {
-                value: { name: 'Carol', active: true },
-                enumerable: true,
-                configurable: true,
-                writable: true
+            expect(draft.at('users').at('carol').get()).toEqual({
+                name: 'Carol',
+                active: true
             });
-            Object.defineProperty(draft.flags, 'ready', {
-                value: true
-            });
-
-            const descriptor = Object.getOwnPropertyDescriptor(draft.users, 'carol');
-            expect(descriptor).toMatchObject({
-                configurable: true,
-                enumerable: true,
-                writable: true
-            });
-            const descriptorValue = descriptor?.value as TestState['users'][string] | undefined;
-            expect(descriptorValue?.name).toBe('Carol');
         });
 
         expect(storage.read()).toEqual({
@@ -157,14 +121,14 @@ describe('createWriteProxy', () => {
         });
     });
 
-    it('treats assigning undefined as delete and creates a tombstone', () => {
+    it('creates a tombstone through delete', () => {
         const storage = createTestStorage() as StorageImpl<z.output<typeof schema>>;
 
-        storage.update(draft => {
-            draft.settings.layout = 'compact';
+        storage.transaction(draft => {
+            draft.at('settings').set('layout', 'compact');
         });
-        storage.update(draft => {
-            draft.settings.layout = undefined;
+        storage.transaction(draft => {
+            draft.at('settings').delete('layout');
         });
 
         expect(storage.read()).toEqual({
@@ -182,26 +146,21 @@ describe('createWriteProxy', () => {
         const settingsSlot = versionSlot.v.settings as ContainerSlot;
 
         expect(settingsSlot.v.layout).toMatchObject({
-            d: true,
+            s: SlotKind.Tombstone,
             a: 'device-1'
         });
     });
 
-    it('keeps primitive properties as plain values through object helpers', () => {
+    it('reads atomic fields through get', () => {
         const storage = createTestStorage();
 
-        storage.update(draft => {
-            draft.count = draft.count + 1;
-            draft.title = `${draft.title}-updated`;
+        storage.transaction(draft => {
+            draft.set('count', (draft.at('count').get() ?? 0) + 1);
+            draft.set('title', `${draft.at('title').get()}-updated`);
 
-            expect(Object.entries(draft)).toEqual([
-                ['count', 1],
-                ['title', 'initial-updated'],
-                ['users', {}],
-                ['flags', {}],
-                ['settings', { theme: 'light' }]
-            ]);
-            expect({ ...draft }).toEqual({
+            expect(draft.at('count').get()).toBe(1);
+            expect(draft.at('title').get()).toBe('initial-updated');
+            expect(draft.get()).toEqual({
                 count: 1,
                 title: 'initial-updated',
                 users: {},
@@ -211,10 +170,8 @@ describe('createWriteProxy', () => {
                 }
             });
 
-            Object.assign(draft, {
-                count: 2,
-                title: 'assigned'
-            });
+            draft.set('count', 2);
+            draft.set('title', 'assigned');
         });
 
         expect(storage.read()).toEqual({
@@ -224,6 +181,52 @@ describe('createWriteProxy', () => {
             flags: {},
             settings: {
                 theme: 'light'
+            }
+        });
+    });
+
+    it('maps atomic fields from returned drafts', () => {
+        const storage = createTestStorage();
+
+        storage.transaction(draft => {
+            draft.at('settings').set('theme', 'copied-title');
+            draft.set('title', title => {
+                expect(title.get()).toBe('initial');
+
+                return draft.at('settings').at('theme');
+            });
+        });
+
+        expect(storage.read()).toMatchObject({
+            title: 'copied-title',
+            settings: {
+                theme: 'copied-title'
+            }
+        });
+    });
+
+    it('maps object fields from returned drafts', () => {
+        const storage = createTestStorage();
+
+        storage.transaction(draft => {
+            draft.set('settings', settings => {
+                expect(settings.get()).toEqual({
+                    theme: 'light'
+                });
+                settings.set('layout', 'mapped');
+
+                return settings;
+            });
+        });
+
+        expect(storage.read()).toEqual({
+            count: 0,
+            title: 'initial',
+            users: {},
+            flags: {},
+            settings: {
+                theme: 'light',
+                layout: 'mapped'
             }
         });
     });

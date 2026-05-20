@@ -6,7 +6,7 @@
         "compile": "tsc --noEmit",
         "dev": "tsc --watch",
         "build": "tsc",
-        "lint": "eslint ./src",
+        "lint": "eslint .",
         "test": "vitest run"
     },
     "devDependencies": {
@@ -15,6 +15,9 @@
     },
     "private": true,
     "dependencies": {
-        "zod": "^4.3.6"
+        "zod": "catalog:"
+    },
+    "exports": {
+        ".": "./src/index.ts"
     }
 }

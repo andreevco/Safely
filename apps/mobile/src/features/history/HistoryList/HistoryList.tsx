@@ -1,24 +1,26 @@
 import { useIsFocused, useScrollToTop } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
-import { type TFunction } from 'i18next';
 import { useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useWindowDimensions, View } from 'react-native';
 
+import { BTC_ASSET } from '@safely/core';
 import {
     type ActivityItemsDatedGroup,
     type BtcActivityItem,
+    assetKeys,
+    useActualBtcBlockNumber,
+    useContacts,
     useDateFormatter,
-    DateFormatter,
     useGroupedHistory,
     useInterval,
     useMutation,
-    assetKeys
+    useNumberFormatter,
+    usePortfolios,
+    useRate
 } from '@safely/ux';
-import { ACTIVITY_GROUP_LABEL, ActivityItemsDatedGroupMeta } from '@safely/ux';
 
 import { ActivityItem } from '@mobile/entities/activity';
-import { ActivityItemTimeFormatDetails } from '@mobile/entities/activity/ActivityItem/ActivityItem';
 import { Screen, Text } from '@mobile/shared/ui';
 import { ListRef } from '@mobile/shared/ui/Screen/components/List';
 
@@ -26,68 +28,37 @@ import { HistoryEmptyPlaceholder } from '../HistoryEmptyPlaceholder';
 import { NewTransactionsBubble, useNewTransactionsBubble } from './components';
 import { styles } from './HistoryList.styles';
 import { useScrollToTopOnNewBroadcastedTx } from './hooks';
+import {
+    type ActivityRowContext,
+    type HistoryRowItem,
+    buildActivityRow,
+    buildHeaderRow,
+    getGroupKey,
+    timeFormatDetailsByGroupLabel
+} from './utils/rows';
 
-type HistoryRowItem =
-    | { key: string; type: 'header'; title: string }
-    | {
-          key: string;
-          type: 'activity';
-          activity: BtcActivityItem;
-          timeFormatDetails: ActivityItemTimeFormatDetails;
-      };
-
-const getGroupKey = (meta: ActivityItemsDatedGroupMeta) => {
-    return JSON.stringify(meta);
-};
+const TIME_FORMAT_OPTIONS = { hour: 'numeric', minute: 'numeric' } as const;
+const DAY_MONTH_FORMAT_OPTIONS = { day: 'numeric', month: 'short' } as const;
 
 const getFirstActivityKey = (groups: ActivityItemsDatedGroup[] | undefined): string | undefined =>
     groups?.[0]?.items?.[0]?.key;
 
-const getGroupTitle = (
-    meta: ActivityItemsDatedGroupMeta,
-    t: TFunction,
-    formatter: DateFormatter
-): string => {
-    switch (meta.label) {
-        case ACTIVITY_GROUP_LABEL.PENDING:
-            return t('history.dateHeaders.pending');
-        case ACTIVITY_GROUP_LABEL.TODAY:
-            return t('history.dateHeaders.today');
-        case ACTIVITY_GROUP_LABEL.YESTERDAY:
-            return t('history.dateHeaders.yesterday');
-        case ACTIVITY_GROUP_LABEL.THIS_MONTH: {
-            const date = new Date(meta.year, meta.month, meta.day);
-            return formatter({ month: 'long', day: 'numeric' }).format(date);
-        }
-        case ACTIVITY_GROUP_LABEL.THIS_YEAR: {
-            const date = new Date(meta.year, meta.month, 1);
-            return formatter({ month: 'long' }).format(date);
-        }
-        case ACTIVITY_GROUP_LABEL.PAST_YEAR: {
-            const date = new Date(meta.year, meta.month, 1);
-            return formatter({ month: 'long', year: 'numeric' }).format(date);
-        }
-    }
-};
-
 type HistoryListProps = {
     onNavigateToTransaction: (activity: BtcActivityItem) => void;
-};
-
-const timeFormatDetailsMap: Record<ACTIVITY_GROUP_LABEL, ActivityItemTimeFormatDetails> = {
-    [ACTIVITY_GROUP_LABEL.PENDING]: 'time',
-    [ACTIVITY_GROUP_LABEL.TODAY]: 'time',
-    [ACTIVITY_GROUP_LABEL.YESTERDAY]: 'time',
-    [ACTIVITY_GROUP_LABEL.THIS_MONTH]: 'time',
-    [ACTIVITY_GROUP_LABEL.THIS_YEAR]: 'day-month-time',
-    [ACTIVITY_GROUP_LABEL.PAST_YEAR]: 'day-month-time'
 };
 
 export const HistoryList = (props: HistoryListProps) => {
     const { onNavigateToTransaction } = props;
     const { t } = useTranslation();
 
-    const formatter = useDateFormatter();
+    const groupFormatter = useDateFormatter();
+    const dateFormatterTime = useDateFormatter(TIME_FORMAT_OPTIONS);
+    const dateFormatterDayMonth = useDateFormatter(DAY_MONTH_FORMAT_OPTIONS);
+    const numberFormatter = useNumberFormatter();
+    const portfolios = usePortfolios();
+    const contacts = useContacts();
+    const { data: rateData } = useRate(BTC_ASSET);
+    const { data: currentBlockNumber } = useActualBtcBlockNumber();
 
     const isFocused = useIsFocused();
     const listRef = useRef<ListRef<HistoryRowItem>>(null);
@@ -125,39 +96,53 @@ export const HistoryList = (props: HistoryListProps) => {
     const getItemType = useCallback((item: HistoryRowItem) => item.type, []);
 
     const rows = useMemo<HistoryRowItem[] | undefined>(() => {
-        return historyGroups?.flatMap(item => {
-            const { items: groupActivity, ...meta } = item;
+        if (!historyGroups) {
+            return undefined;
+        }
+
+        const context: ActivityRowContext = {
+            t,
+            dateFormatterTime,
+            dateFormatterDayMonth,
+            numberFormatter,
+            portfolios,
+            contacts,
+            rateData,
+            currentBlockNumber,
+            onNavigateToTransaction
+        };
+
+        return historyGroups.flatMap(group => {
+            const { items: groupActivities, ...meta } = group;
             const groupKey = getGroupKey(meta);
+            const timeFormatDetails = timeFormatDetailsByGroupLabel[meta.label];
 
-            const header = {
-                key: `header-${groupKey}`,
-                type: 'header' as const,
-                title: getGroupTitle(meta, t, formatter)
-            };
+            const header = buildHeaderRow(meta, groupKey, t, groupFormatter);
+            const activityRows = groupActivities.map(activity =>
+                buildActivityRow(activity, groupKey, timeFormatDetails, context)
+            );
 
-            const activity = groupActivity.map(a => ({
-                type: 'activity' as const,
-                key: `activity-${groupKey}-${a.key}`,
-                activity: a,
-                timeFormatDetails: timeFormatDetailsMap[meta.label]
-            }));
-            return [header, ...activity];
+            return [header, ...activityRows];
         });
-    }, [formatter, historyGroups, t]);
+    }, [
+        historyGroups,
+        t,
+        groupFormatter,
+        dateFormatterTime,
+        dateFormatterDayMonth,
+        numberFormatter,
+        rateData,
+        portfolios,
+        contacts,
+        currentBlockNumber,
+        onNavigateToTransaction
+    ]);
 
-    if (!rows) {
-        return null;
-    }
-
-    if (rows.length === 0) {
-        return <HistoryEmptyPlaceholder />;
-    }
-
-    const renderSeparator = () => {
+    const renderSeparator = useCallback(() => {
         return <View style={styles.separator} />;
-    };
+    }, []);
 
-    const renderItem = ({ item, index }: { item: HistoryRowItem; index: number }) => {
+    const renderItem = useCallback(({ item, index }: { item: HistoryRowItem; index: number }) => {
         switch (item.type) {
             case 'header':
                 return (
@@ -173,17 +158,17 @@ export const HistoryList = (props: HistoryListProps) => {
                     </View>
                 );
             case 'activity':
-                return (
-                    <ActivityItem
-                        timeFormatDetails={item.timeFormatDetails}
-                        activity={item.activity}
-                        onNavigateToTransaction={onNavigateToTransaction}
-                    />
-                );
-            default:
-                return null;
+                return <ActivityItem {...item} />;
         }
-    };
+    }, []);
+
+    if (!rows) {
+        return null;
+    }
+
+    if (rows.length === 0) {
+        return <HistoryEmptyPlaceholder />;
+    }
 
     return (
         <View style={styles.container}>
@@ -193,7 +178,7 @@ export const HistoryList = (props: HistoryListProps) => {
                 data={rows}
                 keyExtractor={item => item.key}
                 getItemType={getItemType}
-                drawDistance={windowHeight * 2}
+                drawDistance={windowHeight * 4}
                 onEndReached={fetchNextPage}
                 onEndReachedThreshold={0.5}
                 ItemSeparatorComponent={renderSeparator}

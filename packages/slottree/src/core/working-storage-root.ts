@@ -1,4 +1,4 @@
-import type { DeepReadonly, WriteDraft } from './json';
+import type { DeepReadonly } from './json';
 import type { MergeProtocol, MergeStats } from './merge-protocol';
 import type { ContainerSlot, Slot } from './slots';
 import { createOriginContainer, isContainerSlot } from './slots';
@@ -6,12 +6,8 @@ import { cloneDeep, stripSlot } from './slots/slot-json';
 import { validateSlot } from './slots/slot-validation';
 import type { StorageVersion } from './versioning/version';
 import { VersionPropagation } from './versioning/version-propagation';
-import {
-    createReadProxy,
-    createWriteProxy,
-    JsonStorageSelection,
-    selectJsonStorage
-} from './write';
+import type { Draft } from './write';
+import { createDraft, createReadProxy, JsonStorageSelection, selectJsonStorage } from './write';
 
 export class WorkingStorageRoot {
     constructor(
@@ -20,18 +16,18 @@ export class WorkingStorageRoot {
     ) {}
 
     public update<T>(
-        fn: (draft: WriteDraft<T>) => void,
+        fn: (draft: Draft<T>) => void,
         timestamp: number,
         author: string,
         protocol: MergeProtocol
     ): boolean {
         let updated = false;
-        const draft = createWriteProxy(
+        const draft = createDraft<T>(
             selectJsonStorage(this.latestContainer(), timestamp, author),
             () => {
                 updated = true;
             }
-        ) as WriteDraft<T>;
+        );
 
         fn(draft);
 

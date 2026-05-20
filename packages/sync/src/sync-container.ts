@@ -1,10 +1,9 @@
-import type { ZodType } from 'zod';
+import type { AssertVersionHList, HCons, StorageVersion } from '@safely/slottree';
 
 import { ApiSigner } from './api/api-signer';
-import type { Configuration } from './api/generated';
-import { AccountsApi, SnapshotsApi } from './api/generated';
+import { AccountsApi, type Configuration, SnapshotsApi } from './api/generated';
 import { SnapshotsSse } from './api/snapshots-sse';
-import { StorageVerifierService } from './crdt/storage-verifier-service';
+import { CrdtController } from './crdt/crdt-controller';
 import { YCRDTRepository } from './crdt/y-crdt-repository';
 import { YManager } from './crdt/y-manager';
 import { EncryptedKeyRepository } from './crypto/encrypted-key-repository';
@@ -14,6 +13,8 @@ import { KeyServiceFactory } from './crypto/service/key-service-factory';
 import { SyncKeyService } from './crypto/service/sync-key-service';
 import { DeviceManagementService } from './device-manager/device-management-service';
 import { DeviceRepository } from './device-manager/device-repository';
+import type { tDevicesLatest, tDevicesRest } from './device-manager/device-storage-schema';
+import { DevicesVersions } from './device-manager/device-storage-schema';
 import type { IStorage } from './I-storage';
 import type { Logger } from './logger';
 import { SecretEncryptor } from './secret-encryptor';
@@ -24,14 +25,22 @@ import { UpdateEncryptorService } from './update-encryptor/update-encryptor-serv
 import { UpdateHandler } from './update-handler/handler';
 import { SyncStateRepository } from './update-handler/sync-state-repository';
 
-export type SyncContainer = {
+export type SyncApiImplementations = {
+    accountsApi: AccountsApi;
+    snapshotsApi: SnapshotsApi;
+    snapshotsSse: SnapshotsSse;
+};
+
+export type SyncContainer<Latest extends StorageVersion, Rest> = {
+    versions: HCons<Latest, Rest> & AssertVersionHList<HCons<Latest, Rest>>;
     storage: IStorage;
     encryptedStorage: IStorage;
     logger: Logger;
     pollingTimeout: number;
 
     keyRepository: EncryptedKeyRepository;
-    crdtRepository: YCRDTRepository;
+    crdtRepository: YCRDTRepository<Latest, Rest>;
+    deviceCrdtRepository: YCRDTRepository<tDevicesLatest, tDevicesRest>;
     syncStateRepository: SyncStateRepository;
     deviceRepository: DeviceRepository;
 
@@ -40,15 +49,15 @@ export type SyncContainer = {
     ikService: IkService;
     syncKeyService: SyncKeyService;
 
-    storageVerifierService: StorageVerifierService;
-
     updateEncryptor: UpdateEncryptorService;
     updateDecryptor: UpdateDecryptorService;
-    updateHandler: UpdateHandler;
-    snapshotSender: SnapshotSender;
-    syncOperations: SyncOperations;
+    updateHandler: UpdateHandler<Latest, Rest>;
+    snapshotSender: SnapshotSender<Latest, Rest>;
+    syncOperations: SyncOperations<Latest, Rest>;
+    crdtController: CrdtController;
 
-    yManager: YManager;
+    yManager: YManager<Latest, Rest>;
+    deviceYManager: YManager<tDevicesLatest, tDevicesRest>;
     deviceManager: DeviceManagementService;
 
     apiSigner: ApiSigner;
@@ -59,19 +68,18 @@ export type SyncContainer = {
     secretEncryptor: SecretEncryptor;
 };
 
-export async function createSyncContainer(opts: {
+export async function createSyncContainer<Latest extends StorageVersion, Rest>(opts: {
     accountId: string;
-    structure: Record<string, ZodType>;
+    versions: HCons<Latest, Rest> & AssertVersionHList<HCons<Latest, Rest>>;
     storage: IStorage;
     encryptedStorage: IStorage;
     logger: Logger;
     apiConfiguration?: Configuration;
     pollingTimeout: number;
-}): Promise<SyncContainer> {
+    apiImplementations?: SyncApiImplementations;
+}): Promise<SyncContainer<Latest, Rest>> {
     const keyRepository = await EncryptedKeyRepository.initialize(opts.encryptedStorage);
     const syncStateRepository = new SyncStateRepository(opts.storage, opts.logger);
-    const crdtRepository = new YCRDTRepository(opts.storage, opts.structure);
-    const deviceRepository = new DeviceRepository(opts.storage);
 
     const ikService = new IkService(keyRepository);
     const syncKeyService = new SyncKeyService(keyRepository);
@@ -79,14 +87,32 @@ export async function createSyncContainer(opts: {
     const keyServiceFactory = new KeyServiceFactory(opts.accountId);
 
     const apiSigner = new ApiSigner(ikService);
-    const accountsApi = new AccountsApi(apiSigner, opts.apiConfiguration);
-    const snapshotApi = new SnapshotsApi(apiSigner, opts.apiConfiguration);
-    const snapshotSse = new SnapshotsSse(syncStateRepository, snapshotApi, apiSigner, opts.logger);
+    const accountsApi =
+        opts.apiImplementations?.accountsApi ?? new AccountsApi(apiSigner, opts.apiConfiguration);
+    const snapshotsApi =
+        opts.apiImplementations?.snapshotsApi ?? new SnapshotsApi(apiSigner, opts.apiConfiguration);
+    const snapshotSse =
+        opts.apiImplementations?.snapshotsSse ??
+        new SnapshotsSse(syncStateRepository, snapshotsApi, apiSigner, opts.logger);
 
+    const crdtRepository = new YCRDTRepository(opts.storage, ikService.getPub(), opts.versions);
     const yManager = await YManager.create(crdtRepository);
+    const deviceCrdtRepository = new YCRDTRepository<tDevicesLatest, tDevicesRest>(
+        opts.storage,
+        ikService.getPub(),
+        DevicesVersions,
+        'devices_crdt'
+    );
+    const deviceYManager = await YManager.create<tDevicesLatest, tDevicesRest>(
+        deviceCrdtRepository
+    );
+    const crdtController = new CrdtController();
+    crdtController.addManager(yManager);
+    crdtController.addManager(deviceYManager);
+
+    const deviceRepository = new DeviceRepository(deviceYManager);
     const deviceManager = new DeviceManagementService(
         deviceRepository,
-        yManager,
         ikService,
         dmkVerifierService
     );
@@ -98,38 +124,44 @@ export async function createSyncContainer(opts: {
     );
     const updateDecryptor = new UpdateDecryptorService(syncKeyService, deviceManager);
 
-    const storageVerifierService = new StorageVerifierService(deviceManager);
-    const updateHandler = new UpdateHandler(
+    const updateHandler = new UpdateHandler<Latest, Rest>(
         syncStateRepository,
         yManager,
+        deviceYManager,
         updateDecryptor,
-        storageVerifierService,
         deviceManager,
-        snapshotApi,
+        snapshotsApi,
         opts.logger
     );
     const snapshotSender = new SnapshotSender(
         updateEncryptor,
         yManager,
+        deviceYManager,
         syncStateRepository,
-        snapshotApi,
+        snapshotsApi,
         ikService
     );
-    const syncOperations = new SyncOperations(updateHandler, snapshotSender, deviceManager);
+    const syncOperations = new SyncOperations<Latest, Rest>(
+        updateHandler,
+        snapshotSender,
+        deviceManager,
+        crdtController
+    );
 
     const secretEncryptor = new SecretEncryptor(keyServiceFactory);
 
     return {
+        versions: opts.versions,
         logger: opts.logger,
         pollingTimeout: opts.pollingTimeout,
         dmkVerifierService,
         keyServiceFactory,
         storage: opts.storage,
         encryptedStorage: opts.encryptedStorage,
-        storageVerifierService,
         keyRepository,
         syncStateRepository,
         crdtRepository,
+        deviceCrdtRepository,
         deviceRepository,
         ikService,
         syncKeyService,
@@ -138,11 +170,13 @@ export async function createSyncContainer(opts: {
         updateHandler,
         snapshotSender,
         syncOperations,
+        crdtController,
         yManager,
+        deviceYManager,
         deviceManager,
         apiSigner,
         accountsApi,
-        snapshotApi,
+        snapshotApi: snapshotsApi,
         snapshotSse,
         secretEncryptor
     };

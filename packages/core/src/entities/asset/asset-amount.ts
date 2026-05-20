@@ -2,10 +2,12 @@ import type { BigSource } from 'big.js';
 import Big from 'big.js';
 import * as z from 'zod';
 
+import { sFiatAsset } from '@safely/sync-storage';
+
 import type { CryptoAsset } from './crypto-asset';
 import { isCryptoAsset, sCryptoAsset } from './crypto-asset';
-import type { FiatAsset } from './fiat-asset';
-import { isFiatAsset, sFiatAsset } from './fiat-asset';
+import { FiatAsset } from './fiat-asset';
+import { isFiatAsset } from './fiat-asset';
 import type { IAsset } from './I-asset';
 import type { Rate } from './rate';
 import { sCryptoFiatRate } from './rate';
@@ -157,7 +159,7 @@ export const sFiatAssetAmount = z
     .transform(
         val =>
             new FiatAssetAmount({
-                asset: val.asset,
+                asset: FiatAsset.restore(val.asset),
                 amount: val.amount
             })
     );

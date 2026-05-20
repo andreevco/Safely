@@ -17,7 +17,9 @@ export function useInitialNavigationState(): NavigationContainerProps['initialSt
             }
 
             if (isLockScreenEnabled) {
-                return { routes: [{ name: 'LockScreen' as const }] };
+                return {
+                    routes: [{ name: 'LockScreen' as const }]
+                };
             }
 
             return undefined;

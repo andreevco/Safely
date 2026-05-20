@@ -1,4 +1,4 @@
-import type { ZodType } from 'zod';
+import type { NewOf, StorageVersion } from '@safely/slottree';
 
 import { ReconnectOnboarding } from './reconnect-onboarding';
 import type { ISyncAccount } from '../../account/I-sync-account';
@@ -12,19 +12,20 @@ import { SyncStatus } from '../../sync-provider/sync-status';
 import type { OnboardingConnector } from '../connector';
 import { SingleActiveOnboardingCoordinator } from '../single-active-onboarding-coordinator';
 
-export class ReconnectOnboardingCoordinator<S extends Record<string, ZodType>> {
-    private readonly coordinator = new SingleActiveOnboardingCoordinator<S>();
+export class ReconnectOnboardingCoordinator<Latest extends StorageVersion, Rest> {
+    private readonly coordinator = new SingleActiveOnboardingCoordinator<Latest>();
 
     constructor(
-        private readonly account: ISyncAccount<S>,
-        private readonly getSyncProvider: () => ISyncProvider<S>,
+        private readonly account: ISyncAccount<Latest>,
+        private readonly getSyncProvider: () => ISyncProvider<NewOf<Latest>>,
         private readonly ikService: IkService,
         private readonly deviceManager: DeviceManagementService,
         private readonly logger: Logger,
-        private readonly pollingTimeout: number
+        private readonly pollingTimeout: number,
+        private readonly storageVersion: number
     ) {}
 
-    public async getConnector(): Promise<OnboardingConnector<S>> {
+    public async getConnector(): Promise<OnboardingConnector<Latest>> {
         return await this.coordinator.getConnector(() => this.createSession());
     }
 
@@ -33,9 +34,10 @@ export class ReconnectOnboardingCoordinator<S extends Record<string, ZodType>> {
 
         const onboarding = new ReconnectOnboarding(
             this.ikService.getPub(),
-            this.getSyncProvider() as OnlineSyncProvider<S>,
+            this.getSyncProvider() as OnlineSyncProvider<Latest, Rest>,
             this.logger,
-            this.pollingTimeout
+            this.pollingTimeout,
+            this.storageVersion
         );
 
         return {
@@ -54,7 +56,7 @@ export class ReconnectOnboardingCoordinator<S extends Record<string, ZodType>> {
 
         const deviceList = await this.deviceManager.getDevices();
         const myIkPub = this.ikService.getPub();
-        const isMyDeviceInList = deviceList.some(device => device.ikPub.equals(myIkPub));
+        const isMyDeviceInList = deviceList.some(device => device.info.ikPub.equals(myIkPub));
         if (isMyDeviceInList) {
             throw new SyncError('Device was not deleted');
         }
