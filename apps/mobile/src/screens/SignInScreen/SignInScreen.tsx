@@ -16,10 +16,11 @@ import { styles } from './SignInScreen.styles';
 type SignInScreenProps = StaticScreenProps<{
     connector: OnboardingConnector;
     closeStorage: () => void;
+    onSuccess: () => void;
 }>;
 
 export const SignInScreen = (props: SignInScreenProps) => {
-    const { connector, closeStorage } = props.route.params;
+    const { connector, closeStorage, onSuccess } = props.route.params;
 
     const { t } = useTranslation();
     const copy = useCopy();
@@ -44,8 +45,8 @@ export const SignInScreen = (props: SignInScreenProps) => {
 
     const handleConnected = useCallback(() => {
         connectedRef.current = true;
-        navigation.navigate('SignInSuccessScreen');
-    }, [navigation]);
+        onSuccess();
+    }, [onSuccess]);
 
     const handleError = useCallback(() => {
         navigation.goBack();

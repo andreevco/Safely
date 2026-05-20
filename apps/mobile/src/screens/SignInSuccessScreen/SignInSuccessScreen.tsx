@@ -1,14 +1,18 @@
+import { StaticScreenProps } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { useOnboardingFlow } from '@mobile/features/onboarding';
 import { Button, Checkmark96, Icon, Screen, Text } from '@mobile/shared/ui';
 
 import { styles } from './SignInSuccessScreen.styles';
 
-export const SignInSuccessScreen = () => {
+type SignInSuccessScreenProps = StaticScreenProps<{
+    onContinue: () => void;
+}>;
+
+export const SignInSuccessScreen = (props: SignInSuccessScreenProps) => {
     const { t } = useTranslation();
-    const { onStartSignIn: onContinue } = useOnboardingFlow();
+    const { onContinue } = props.route.params;
 
     return (
         <Screen>

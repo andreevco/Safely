@@ -67,14 +67,25 @@ const AddAccountContent = () => {
             await secureEncryptedStorage.unlock();
             const connector = await signIn.mutateAsync({ secureEncryptedStorage });
 
+            markNavigated();
             navigation.navigate('SignInModal', {
-                connector,
-                closeStorage: () => secureEncryptedStorage[Symbol.dispose]()
+                screen: 'SignInQRModal',
+                params: {
+                    connector,
+                    closeStorage: () => secureEncryptedStorage[Symbol.dispose](),
+                    onSuccess: () =>
+                        navigation.navigate('SignInModal', {
+                            screen: 'SignInSuccessModal',
+                            params: {
+                                onContinue: () => navigation.goBack()
+                            }
+                        })
+                }
             });
         } catch {
             secureEncryptedStorage[Symbol.dispose]();
         }
-    }, [signIn, navigation, getSecureEncrypted]);
+    }, [signIn, navigation, getSecureEncrypted, markNavigated]);
 
     return (
         <View>
