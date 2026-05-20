@@ -40,9 +40,6 @@ export const PasscodeSetup = ({
         if (passcodeState.isSuccess.value) return;
 
         if (!isReenterStep) {
-            await notificationAsync(NotificationFeedbackType.Success);
-            passcodeState.isSuccess.value = true;
-
             setTimeout(() => {
                 setFirstPasscode(passcodeState.inputValue);
                 passcodeState.reset();

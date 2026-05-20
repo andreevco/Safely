@@ -54,6 +54,7 @@ export const PasscodeVerificationScreen = (props: PasscodeVerificationScreenProp
     return (
         <Screen>
             <Screen.Header variant="left">
+                <Screen.Header.Title />
                 <Screen.Header.CloseButton />
             </Screen.Header>
 
