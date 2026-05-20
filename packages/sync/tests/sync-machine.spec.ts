@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { MockSnapshotsServer } from './mocks/mock-snapshots-api';
-import type { MockSyncContainer } from './mocks/mock-sync-container';
+import type { TestMockSyncContainer } from './mocks/mock-sync-context';
 import {
     createMachineContext,
     getMasterKey,
@@ -114,7 +114,7 @@ describe('sync machine', () => {
     });
 });
 
-function getValue(container: MockSyncContainer, key: string): string | undefined {
-    const map = container.yManager.getDoc().getMap<string>('root');
-    return map.get(key) ?? undefined;
+function getValue(container: TestMockSyncContainer, key: string): string | undefined {
+    const value = container.yManager.get(key);
+    return typeof value === 'string' ? value : undefined;
 }

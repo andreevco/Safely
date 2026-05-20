@@ -1,13 +1,22 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 
+import { defineVersionHList, hCons, hNil, projectIdentity } from '@safely/slottree';
+
 import { InMemStorage } from './impl/storage';
 import type { ISyncAccount } from '../src/account/I-sync-account';
 import { SyncAccountFactory } from '../src/account/sync-account-factory';
 import { Logger } from '../src/logger/logger';
 import { NewDeviceOnboarding } from '../src/onboarding/new-device-onboarding';
 
-const structure = { value: z.string() };
+const AccountV1 = {
+    version: 1,
+    schema: z.object({ value: z.string() }),
+    initial: { value: '' },
+    projectUp: projectIdentity,
+    projectDown: projectIdentity
+} as const;
+const versions = defineVersionHList(hCons(AccountV1, hNil));
 
 describe('SyncAccountFactory onboarding', () => {
     afterEach(() => {
@@ -15,14 +24,14 @@ describe('SyncAccountFactory onboarding', () => {
     });
 
     it('starts new-device onboarding eagerly and reuses its completion promise', async () => {
-        const connectedAccount = {} as ISyncAccount<typeof structure>;
+        const connectedAccount = {} as ISyncAccount<(typeof versions)['head']>;
         const waitForOnboarding = vi
             .spyOn(NewDeviceOnboarding.prototype, 'waitForOnboarding')
             .mockResolvedValue(connectedAccount);
         const factory = new SyncAccountFactory({
             storage: new InMemStorage(),
             encryptedStorage: new InMemStorage(),
-            structure,
+            versions,
             noAccountLogger: new Logger({ log: () => undefined }),
             getAccountLogger: () => new Logger({ log: () => undefined })
         });

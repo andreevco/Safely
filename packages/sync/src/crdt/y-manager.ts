@@ -1,115 +1,117 @@
-import * as Y from 'yjs';
-import { z } from 'zod';
+import type { z } from 'zod';
 
-import { YCRDT } from './y-crdt';
+import type { Draft, JsonValue, NewOf, ObjectDraft, StorageVersion } from '@safely/slottree';
+
+import type { YCRDT } from './y-crdt';
 import type { YCRDTRepository } from './y-crdt-repository';
 import { SyncError } from '../sync-error';
-import { BufferHexSchema } from '../utils/schemas';
 
-export class YManager {
+export class YManager<Latest extends StorageVersion, Rest> {
+    private writeQueue: Promise<void> = Promise.resolve();
+
     private constructor(
-        private readonly yRepository: YCRDTRepository,
-        private readonly yDoc: YCRDT
+        private readonly yRepository: YCRDTRepository<Latest, Rest>,
+        private readonly yDoc: YCRDT<z.output<NewOf<Latest>>>
     ) {}
 
-    public static async create(yRepository: YCRDTRepository) {
+    public static async create<Latest extends StorageVersion, Rest>(
+        yRepository: YCRDTRepository<Latest, Rest>
+    ) {
         const yDoc = await yRepository.loadCRDT();
         return new YManager(yRepository, yDoc);
     }
 
-    public async applyUpdate(update: Buffer, origin: string): Promise<void> {
-        this.yDoc.applyUpdate(update, origin);
-        await this.yRepository.saveCRDT(this.yDoc);
+    public async applyUpdate(update: Buffer, _origin: string): Promise<void> {
+        await this.enqueueWrite(async () => {
+            // unsafeAsyncApplyUpdate can race when called concurrently; YManager
+            // serializes all writes through enqueueWrite before using it.
+            await this.yDoc.unsafeAsyncApplyUpdate(update, async snapshot => {
+                await this.yRepository.saveSnapshot(snapshot);
+                return true;
+            });
+        });
     }
 
     public async set(key: string, value: unknown): Promise<void> {
-        this.yDoc.set(key, value);
-        await this.yRepository.saveCRDT(this.yDoc);
+        await this.enqueueWrite(async () => {
+            // unsafeAsyncTransaction can race when called concurrently; YManager
+            // serializes all writes through enqueueWrite before using it.
+            await this.yDoc.unsafeAsyncTransaction(
+                draft => {
+                    (draft as ObjectDraft<Record<string, JsonValue | undefined>>).set(
+                        key,
+                        value as JsonValue
+                    );
+                },
+                async snapshot => {
+                    await this.yRepository.saveSnapshot(snapshot);
+                    return true;
+                }
+            );
+        });
+    }
+
+    public async transaction(f: (draft: Draft<z.output<NewOf<Latest>>>) => void) {
+        await this.enqueueWrite(async () => {
+            // unsafeAsyncTransaction can race when called concurrently; YManager
+            // serializes all writes through enqueueWrite before using it.
+            await this.yDoc.unsafeAsyncTransaction(f, async snapshot => {
+                await this.yRepository.saveSnapshot(snapshot);
+                return true;
+            });
+        });
+    }
+
+    public async addAuthor(authorId: string, storageVersion: number): Promise<void> {
+        await this.enqueueWrite(async () => {
+            this.yDoc.addAuthor(authorId, storageVersion);
+            await this.yRepository.saveSnapshot(this.yDoc.encodeAsSnapshot());
+        });
+    }
+
+    public async deleteAuthor(authorId: string): Promise<void> {
+        await this.enqueueWrite(async () => {
+            this.yDoc.deleteAuthor(authorId);
+            await this.yRepository.saveSnapshot(this.yDoc.encodeAsSnapshot());
+        });
+    }
+
+    public getFull(): z.output<NewOf<Latest>> {
+        return this.yDoc.getFull();
     }
 
     public get(key: string): unknown {
         const value = this.yDoc.get(key);
-        if (value === null) {
+        if (value === undefined) {
             throw new StorageError(`Key "${key}" does not exist.`);
         }
         return value;
     }
 
-    public async getDeviceLog(): Promise<DeviceOp[]> {
-        const deviceLog = this.yDoc.getArray('devices');
-        return deviceLog.toArray().map(x => DeviceOpSchema.parse(JSON.parse(x)));
-    }
-
-    public async addDeviceOp(op: DeviceOp): Promise<void> {
-        const deviceLog = this.yDoc.getArray('devices');
-        deviceLog.push([deviceOpToJson(op)]);
-        await this.yRepository.saveCRDT(this.yDoc);
-    }
-
-    public async remove(key: string): Promise<void> {
-        this.yDoc.remove(key);
-        await this.yRepository.saveCRDT(this.yDoc);
-    }
-
     public equalsToRemoteUpdate(snapshot: Buffer): boolean {
-        const remoteDoc = new YCRDT(new Y.Doc(), this.yDoc.schema);
-        remoteDoc.applyUpdate(snapshot, 'remote');
-
-        return this.yDoc.equals(remoteDoc);
+        return this.yDoc.equals(snapshot.toString('utf8'));
     }
 
     public encodeAsSnapshot(): Buffer {
         return this.yDoc.encodeAsSnapshot();
     }
 
-    public onChange(observer: (snapshot: Buffer) => void): () => void {
-        return this.yDoc.onUpdate((update: Buffer) => {
-            observer(update);
-        });
+    public readSnapshot(snapshot: Buffer): z.output<NewOf<Latest>> {
+        return this.yRepository.createCRDTFromSnapshot(snapshot).getFull();
     }
 
-    public getDoc(): Y.Doc {
-        return this.yDoc.toRaw();
+    public onChange(observer: () => void): () => void {
+        return this.yDoc.onUpdate(observer);
+    }
+
+    private async enqueueWrite<T>(operation: () => Promise<T>): Promise<T> {
+        const result = this.writeQueue.then(operation, operation);
+        this.writeQueue = result.then(
+            () => undefined,
+            () => undefined
+        );
+        return await result;
     }
 }
 
 export class StorageError extends SyncError {}
-
-export type DeviceOp = {
-    type: 'add' | 'revoke';
-    ikPub: Buffer;
-    ts: number;
-    kid: Buffer;
-    sig: Buffer;
-};
-
-export type AddDeviceOp = DeviceOp & { type: 'add' };
-export type RevokeDeviceOp = DeviceOp & { type: 'revoke' };
-
-export function deviceOpIsEquals(op1: DeviceOp, op2: DeviceOp): boolean {
-    return (
-        op1.type === op2.type &&
-        op1.ikPub.equals(op2.ikPub) &&
-        op1.ts === op2.ts &&
-        op1.kid.equals(op2.kid) &&
-        op1.sig.equals(op2.sig)
-    );
-}
-
-export function deviceOpToJson(op: DeviceOp): string {
-    return JSON.stringify({
-        type: op.type,
-        ikPub: op.ikPub.toString('hex'),
-        ts: op.ts,
-        kid: op.kid.toString('hex'),
-        sig: op.sig.toString('hex')
-    });
-}
-
-export const DeviceOpSchema = z.object({
-    type: z.enum(['add', 'revoke']),
-    ikPub: BufferHexSchema,
-    ts: z.number(),
-    kid: BufferHexSchema,
-    sig: BufferHexSchema
-});

@@ -1,13 +1,6 @@
 {
     "extends": "../../tsconfig.json",
-    "compilerOptions": {
-        "outDir": "./dist",
-        "baseUrl": "./src",
-        "rootDir": "../",
-        "paths": {
-            "@safely/slottree": ["../../slottree/src"]
-        }
-    },
+    "compilerOptions": { },
     "include": ["src/**/*", "tests/**/*"],
     "exclude": ["dist", "node_modules"]
 }

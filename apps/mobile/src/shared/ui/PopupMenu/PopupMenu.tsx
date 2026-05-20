@@ -1,17 +1,15 @@
-import { BlurView } from 'expo-blur';
 import { impactAsync, ImpactFeedbackStyle } from 'expo-haptics';
 import { forwardRef, useImperativeHandle } from 'react';
-import { Platform, Pressable, useWindowDimensions } from 'react-native';
+import { Pressable, useWindowDimensions } from 'react-native';
 import Animated, { SharedValue } from 'react-native-reanimated';
 import { StyleSheet } from 'react-native-unistyles';
 
+import { Blur } from '@mobile/shared/ui/Blur';
 import { TouchableOpacity } from '@mobile/shared/ui/TouchableOpacity';
 
 import { OverlayContainer } from './OverlayContainer';
 import { styles } from './PopupMenu.styles';
 import { usePopupMenu } from './usePopupMenu';
-
-const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 
 export type PopupMenuRef = {
     close: () => void;
@@ -51,16 +49,12 @@ export const PopupMenu = forwardRef<PopupMenuRef, PopupMenuProps>((props, ref) =
 
     const overlayContent = (
         <>
-            {hasBackdrop &&
-                (Platform.OS === 'ios' ? (
-                    <AnimatedBlurView
-                        animatedProps={menu.blurAnimatedProps}
-                        style={[styles.backdrop, menu.blurAnimatedStyle]}
-                        pointerEvents="none"
-                    />
-                ) : (
-                    <Animated.View style={[styles.backdrop, menu.blurAnimatedStyle]} />
-                ))}
+            {hasBackdrop && (
+                <Blur
+                    blurAnimatedProps={menu.blurAnimatedProps}
+                    style={[StyleSheet.absoluteFill, menu.blurAnimatedStyle]}
+                />
+            )}
             {header}
             <Pressable style={StyleSheet.absoluteFill} onPress={menu.close} />
             <Animated.View style={menu.triggerFrameStyle} pointerEvents="none">

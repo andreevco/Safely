@@ -1,6 +1,11 @@
 import type { JsonValue } from '../json';
 import type { ContainerSlot, Slot } from '../slots';
-import { createContainerSlot, createOriginContainer, isContainerSlot } from '../slots';
+import {
+    createContainerSlot,
+    createOriginContainer,
+    isContainerSlot,
+    isTombstoneSlot
+} from '../slots';
 import type { StorageVersion } from './version';
 import { slotFromJson, stripSlot } from '../slots/slot-json';
 import { validateSlot } from '../slots/slot-validation';
@@ -72,7 +77,7 @@ export class VersionController {
         }
 
         const version = device.v.version;
-        if (version?.r === true || version?.d === true) {
+        if (version === undefined || isContainerSlot(version) || isTombstoneSlot(version)) {
             return undefined;
         }
 
@@ -81,10 +86,11 @@ export class VersionController {
 
     public setDeviceVersion(
         authorId: string,
-        version: VersionSelector,
+        version: number,
         timestamp: number,
         author: string
     ): void {
+        this.versionIndex(version);
         const devices = this.devicesContainer();
         const existingDevice = devices.v[authorId];
         const device = isContainerSlot(existingDevice)
@@ -93,6 +99,16 @@ export class VersionController {
 
         device.v.version = slotFromJson(this.versionNumber(version), timestamp, author);
         devices.v[authorId] = device;
+    }
+
+    public deleteAuthor(authorId: string): boolean {
+        const devices = this.root.v[DEVICES_KEY];
+        if (!isContainerSlot(devices) || devices.v[authorId] === undefined) {
+            return false;
+        }
+
+        delete devices.v[authorId];
+        return true;
     }
 
     public deleteVersionsUnusedByDevices(): void {
@@ -163,7 +179,7 @@ export class VersionController {
 
             const version = device.v.version;
 
-            if (version?.r === true || version?.d === true) {
+            if (version === undefined || isContainerSlot(version) || isTombstoneSlot(version)) {
                 continue;
             }
 

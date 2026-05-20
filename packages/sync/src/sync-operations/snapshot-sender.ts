@@ -1,14 +1,19 @@
+import type { StorageVersion } from '@safely/slottree';
+
 import type { SnapshotsApi } from '../api/generated';
 import type { EncryptedState } from '../api/types';
 import type { YManager } from '../crdt/y-manager';
 import type { IkService } from '../crypto/service/ik-service';
+import type { tDevicesLatest, tDevicesRest } from '../device-manager/device-storage-schema';
 import type { UpdateEncryptorService } from '../update-encryptor/update-encryptor-service';
 import type { SyncStateRepository } from '../update-handler/sync-state-repository';
+import { encodeUpdatePayload } from '../update-handler/update-payload';
 
-export class SnapshotSender {
+export class SnapshotSender<Latest extends StorageVersion, Rest> {
     constructor(
         private readonly updateEncryptor: UpdateEncryptorService,
-        private readonly yManager: YManager,
+        private readonly yManager: YManager<Latest, Rest>,
+        private readonly deviceYManager: YManager<tDevicesLatest, tDevicesRest>,
         private readonly syncStateRepository: SyncStateRepository,
         private readonly snapshotsApi: SnapshotsApi,
         private readonly ikService: IkService
@@ -16,7 +21,10 @@ export class SnapshotSender {
 
     public async sendCurrentSnapshot(): Promise<void> {
         const encrypted = await this.updateEncryptor.encryptAndSign(
-            this.yManager.encodeAsSnapshot()
+            encodeUpdatePayload({
+                userStorage: this.yManager.encodeAsSnapshot(),
+                deviceStorage: this.deviceYManager.encodeAsSnapshot()
+            })
         );
         await this.saveEncryptedSnapshot(encrypted);
     }

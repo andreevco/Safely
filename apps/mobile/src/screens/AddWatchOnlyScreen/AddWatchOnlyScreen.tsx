@@ -11,7 +11,7 @@ import {
     PortfolioFactory,
     PortfolioMeta,
     PortfolioNetworkType,
-    VMType
+    toPortfolioIdWatchOnly
 } from '@safely/core';
 import { useAddWatchOnlyPortfolio, useLoader, usePortfolios } from '@safely/ux';
 
@@ -63,10 +63,8 @@ export const AddWatchOnlyScreen = () => {
     });
 
     const handleNext = useCallback(() => {
-        const portfolioId = PortfolioFactory.resolveWatchOnlyId(
-            trimmedInput,
-            PortfolioNetworkType.MAINNET,
-            VMType.BTC
+        const portfolioId = toPortfolioIdWatchOnly(
+            PortfolioFactory.resolveBtcWatchOnlyInput(trimmedInput, PortfolioNetworkType.MAINNET)
         );
 
         const existingPortfolio = portfolios.find(p => p.id.isEq(portfolioId));

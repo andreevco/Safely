@@ -84,6 +84,8 @@ export default [
                 },
                 { type: 'ux', pattern: 'packages/ux/**/*', mode: 'full' },
                 { type: 'sync', pattern: 'packages/sync/**/*', mode: 'full' },
+                { type: 'sync-storage', pattern: 'packages/sync-storage/**/*', mode: 'full' },
+                { type: 'slottree', pattern: 'packages/slottree/**/*', mode: 'full' },
                 { type: 'mobile', pattern: 'apps/mobile/**/*', mode: 'full' },
                 { type: 'web-common', pattern: 'apps/web/common/**/*', mode: 'full' },
                 { type: 'web-browser', pattern: 'apps/web/browser/**/*', mode: 'full' }
@@ -261,6 +263,7 @@ export default [
             'packages/ux/**/*.tsx',
             'packages/core/**/*.ts',
             'packages/core/**/*.tsx',
+            'packages/sync-storage/**/*.ts',
             'packages/sync/**/*.ts',
             'packages/slottree/**/*.ts'
         ],

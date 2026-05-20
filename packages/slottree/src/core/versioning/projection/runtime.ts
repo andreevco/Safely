@@ -14,6 +14,7 @@ import {
     createContainerSlot,
     createSlotMap,
     isContainerSlot,
+    isTombstoneSlot,
     type ContainerSlot,
     type Slot,
     type SlotMap
@@ -91,7 +92,7 @@ function applyObjectFromRule(
         return undefined;
     }
 
-    if (sourceSlot.d === true) {
+    if (isTombstoneSlot(sourceSlot)) {
         return cloneSlot(sourceSlot);
     }
 
@@ -118,7 +119,7 @@ function applyRecordFromRule(
         return undefined;
     }
 
-    if (sourceSlot.d === true) {
+    if (isTombstoneSlot(sourceSlot)) {
         return cloneSlot(sourceSlot);
     }
 
@@ -156,7 +157,7 @@ function projectRecordValue(
         return undefined;
     }
 
-    if (sourceRecordValue.d === true) {
+    if (isTombstoneSlot(sourceRecordValue)) {
         return cloneSlot(sourceRecordValue);
     }
 

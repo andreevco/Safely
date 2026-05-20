@@ -1,20 +1,20 @@
-import type { ZodType } from 'zod';
+import type { StorageVersion } from '@safely/slottree';
 
 import type { OnboardingConnector } from './connector';
 import type { ISyncAccount } from '../account/I-sync-account';
 
 export class EagerOnboardingConnector<
-    S extends Record<string, ZodType>
-> implements OnboardingConnector<S> {
+    Latest extends StorageVersion
+> implements OnboardingConnector<Latest> {
     public readonly data: Buffer;
 
     private readonly abortController = new AbortController();
-    private readonly completionPromise: Promise<ISyncAccount<S>>;
+    private readonly completionPromise: Promise<ISyncAccount<Latest>>;
     private completed = false;
 
     constructor(
         data: Buffer,
-        waitForCompletion: (signal: AbortSignal) => Promise<ISyncAccount<S>>,
+        waitForCompletion: (signal: AbortSignal) => Promise<ISyncAccount<Latest>>,
         private readonly onComplete: () => void = () => undefined
     ) {
         this.data = data;
@@ -24,7 +24,7 @@ export class EagerOnboardingConnector<
         this.completionPromise.catch(() => undefined);
     }
 
-    public waitForCompletion(): Promise<ISyncAccount<S>> {
+    public waitForCompletion(): Promise<ISyncAccount<Latest>> {
         return this.completionPromise;
     }
 

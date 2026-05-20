@@ -37,6 +37,7 @@ import { WelcomeScreen } from '@mobile/screens/WelcomeScreen';
 import { AddWalletStack } from './stacks/AddWalletStack';
 import { SendStack } from './stacks/SendStack';
 import { SettingsStack } from './stacks/SettingsStack';
+import { SignInStack } from './stacks/SignInStack';
 import { TabsNavigator } from './tabs';
 
 export const RootStack = createNativeStackNavigator({
@@ -93,7 +94,7 @@ export const RootStack = createNativeStackNavigator({
                 SettingsModal: SettingsStack,
                 CurrencyModal: CurrencyScreen,
                 RecoveryPhraseModal: RecoveryPhraseSheet,
-                SignInModal: SignInScreen,
+                SignInModal: SignInStack,
                 CustomizeAccountModal: CustomizeAccountModal,
                 CustomizeWalletModal: CustomizeWalletModal,
                 QRScanModal: QRScanModal,
