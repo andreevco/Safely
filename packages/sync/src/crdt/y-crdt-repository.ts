@@ -24,7 +24,12 @@ export class YCRDTRepository<Latest extends StorageVersion, Rest> {
                 throw new Error('CRDT not found in storage');
             }
         }
-        return this.createCRDTFromSnapshot(crdtRaw);
+        const crdt = this.createCRDTFromSnapshot(crdtRaw);
+        const snapshot = crdt.encodeAsSnapshot();
+        if (!snapshot.equals(Buffer.from(crdtRaw, 'utf8'))) {
+            await this.saveSnapshot(snapshot);
+        }
+        return crdt;
     }
 
     public createCRDTFromSnapshot(snapshot: Buffer | string): YCRDT<z.output<NewOf<Latest>>> {
