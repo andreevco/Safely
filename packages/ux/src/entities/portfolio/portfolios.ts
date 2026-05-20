@@ -196,7 +196,7 @@ export function useActivePortfolioEntitiesIdsQuery<TData = SActivePortfolioSchem
     const { data: activeAccount } = useActiveAccountQuery();
 
     return useSuspenseQuery<SActivePortfolioSchema, unknown, TData>({
-        queryKey: accountQueryKey.portfolios.active.toKey(),
+        queryKey: accountQueryKey.activePortfolio.toKey(),
         async queryFn() {
             if (!activeAccount) return null;
             return get();
@@ -303,7 +303,7 @@ export function useSetActivePortfolio() {
             });
 
             await client.invalidateQueries({
-                queryKey: accountQueryKey.portfolios.active.toKey()
+                queryKey: accountQueryKey.activePortfolio.toKey()
             });
 
             return portfolioToSet;

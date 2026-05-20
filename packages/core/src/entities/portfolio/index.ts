@@ -7,6 +7,7 @@ export * from './portfolio-watch-only';
 export * from './portfolio-factory';
 export * from './portfolio-meta';
 export * from './portfolio-network-type';
+export * from './portfolio-id';
 
 import type { PortfolioBip39 } from './portfolio-bip39';
 import type { PortfolioWatchOnly } from './portfolio-watch-only';

@@ -6,13 +6,7 @@ export const accountKey = defineQueryKeys('account', {
     },
     accountId: (_id: string | undefined) => {
         return {
-            portfolios: {
-                active: finalKey
-            },
-            devices: {
-                meta: finalKey,
-                currentIkPub: finalKey
-            }
+            activePortfolio: finalKey
         };
     }
 });

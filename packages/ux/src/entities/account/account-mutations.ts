@@ -1,13 +1,15 @@
-import { notifyManager, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo } from 'react';
 
 import type { ITreeStorage, PortfolioBip39 } from '@safely/core';
+import { toPortfolioId } from '@safely/core';
 import { delay, PortfolioFactory, PortfolioNetworkType, generateBip39Accessor } from '@safely/core';
 import type { ISyncAccount, OnboardingConnector as RawOnboardingConnector } from '@safely/sync';
 import { OnboardingAbortedError } from '@safely/sync';
 import type { SyncedStorageStructure } from '@safely/sync-storage';
 
 import type { AccountMeta, OnboardingConnector, SyncAccount } from './account-state';
+import { useAccountsQueryConfig } from './account-state';
 import { useActiveAccountMeta } from './account-state';
 import { useAccounts } from './account-state';
 import { resetAccountsFactory, useAccountsFactory, useActiveAccount } from './account-state';
@@ -18,6 +20,7 @@ import { useLogger } from '../logger';
 import { useMutation } from '../query-core';
 import { useCurrentDeviceIkPub, useSetOwnSyncedDeviceMeta } from '../synced-device';
 import { useToast } from '../toast';
+import type { SActivePortfolioSchema } from './local-storage';
 import { useClearActiveAccountLocalStorage } from './local-storage';
 import {
     useAccountSyncStorageUpdate,
@@ -81,22 +84,6 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
             await client.invalidateQueries({ queryKey: accountKey.list.toKey() });
 
             if (options?.setActive) {
-                const newAccountKey = accountKey.accountId(account.accountId);
-
-                if (createdPortfolio) {
-                    const derivation = createdPortfolio.getDerivations()[0];
-
-                    notifyManager.batch(() => {
-                        client.setQueryData(newAccountKey.portfolios.toKey(), [createdPortfolio]);
-                        client.setQueryData(newAccountKey.portfolios.active.toKey(), {
-                            kind: 'bip39' as const,
-                            portfolio: createdPortfolio,
-                            btcWallet: derivation.chains.btc.wallets[0],
-                            derivation
-                        });
-                    });
-                }
-
                 await setActive(account.accountId);
             }
 
@@ -226,11 +213,31 @@ export function useConnectAccountToNewDevice() {
 export function useSetActiveAccount() {
     const { set } = useSharedUxStorage('activeAccount');
     const client = useQueryClient();
+    const accountsQuery = useAccountsQueryConfig();
 
     return useMutation<void, Error, string>({
         async mutationFn(id) {
             await delay();
             await set(id);
+
+            const activePortfolioKey = accountKey.accountId(id).activePortfolio.toKey();
+            if (client.getQueryData(activePortfolioKey) === undefined) {
+                const accounts = await client.fetchQuery(accountsQuery);
+                const account = accounts.find(a => a.accountId === id);
+                if (!account) {
+                    throw new Error('Account not found');
+                }
+
+                const portfolio = account.syncProvider.get('portfolios')[0];
+                client.setQueryData<SActivePortfolioSchema>(
+                    activePortfolioKey,
+                    portfolio
+                        ? {
+                              portfolioId: toPortfolioId(portfolio).toString()
+                          }
+                        : null
+                );
+            }
 
             await client.refetchQueries({
                 queryKey: accountKey.list.active.toKey()
