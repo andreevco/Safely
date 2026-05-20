@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import { bootConfigSchema, sCryptoAssetAmount } from '@safely/core';
-import { UtxoSchema, UtxoWithOptionalTxSchema } from '@safely/core/api/btc/models';
+import { UtxoSchema, UtxoWithOptionalTxSchema } from '@safely/core/api/btc';
 
 const sHistoricalPrice = z.object({
     prices: z.array(z.tuple([z.number(), z.number()])).describe('[timestamp, price] pair')

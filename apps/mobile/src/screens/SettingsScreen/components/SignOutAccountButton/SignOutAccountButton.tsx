@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
-import { useActiveAccount } from '@safely/ux';
+import { useActiveAccountMeta } from '@safely/ux';
 
 import { useSignOutAccountConfirmation } from '@mobile/features/settings/useSignOutAccountConfirmation';
 import { Cell, Text } from '@mobile/shared/ui';
@@ -14,7 +14,7 @@ type SignOutAccountButtonProps = {
 export const SignOutAccountButton = (props: SignOutAccountButtonProps) => {
     const { showDivider = true } = props;
     const { t } = useTranslation();
-    const accountName = useActiveAccount().meta.name;
+    const accountName = useActiveAccountMeta().name;
     const handleSignOut = useSignOutAccountConfirmation();
 
     return (

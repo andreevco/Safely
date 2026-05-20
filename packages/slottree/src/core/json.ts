@@ -7,16 +7,6 @@ export function createNullPrototypeRecord<T>(): Record<string, T> {
     return Object.create(null) as Record<string, T>;
 }
 
-type JsonLeaf = string | number | boolean | null | JsonValue[];
-
-export type WriteDraft<T> = T extends JsonLeaf
-    ? T
-    : T extends object
-      ? {
-            -readonly [K in keyof T]: WriteDraft<T[K]>;
-        }
-      : never;
-
 export type DeepReadonly<T> = T extends JsonPrimitive
     ? T
     : T extends readonly (infer U)[]

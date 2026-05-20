@@ -17,7 +17,7 @@ const PRIVACY_URL = 'https://google.com';
 
 export const WelcomeScreen = () => {
     const { t } = useTranslation();
-    const { onStartCreate } = useOnboardingFlow();
+    const { onSuccessCreate, onSuccessSignIn } = useOnboardingFlow();
     const signIn = useCreateExistingAccountConnector();
     const navigation = useNavigation<RootStackNavigationProp>();
     const {
@@ -38,9 +38,11 @@ export const WelcomeScreen = () => {
 
         navigation.navigate('SignInScreen', {
             connector,
-            closeStorage: () => secureEncryptedStorage[Symbol.dispose]()
+            closeStorage: () => secureEncryptedStorage[Symbol.dispose](),
+            onSuccess: () =>
+                navigation.navigate('SignInSuccessScreen', { onContinue: onSuccessSignIn })
         });
-    }, [signIn, navigation, getSecureEncrypted]);
+    }, [signIn, navigation, getSecureEncrypted, onSuccessSignIn]);
 
     return (
         <Screen background="transparent">
@@ -56,7 +58,7 @@ export const WelcomeScreen = () => {
                     </View>
 
                     <View style={styles.buttonsContainer}>
-                        <Button type="primary" size="large" onPress={onStartCreate}>
+                        <Button type="primary" size="large" onPress={onSuccessCreate}>
                             {t('welcome.createNew')}
                         </Button>
                         <Button type="secondary" size="large" onPress={handleSignIn}>
