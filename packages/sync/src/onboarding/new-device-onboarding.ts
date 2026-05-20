@@ -43,7 +43,7 @@ export class NewDeviceOnboarding<Latest extends StorageVersion, Rest> {
     }
 
     public async waitForOnboarding(signal?: AbortSignal): Promise<ISyncAccount<Latest>> {
-        for (let i = 0; i < 30; i++) {
+        for (let i = 0; i < 150; i++) {
             if (signal?.aborted) {
                 throw new OnboardingAbortedError();
             }

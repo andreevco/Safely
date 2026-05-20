@@ -24,29 +24,17 @@ export class ReconnectOnboarding<Latest extends StorageVersion, Rest> {
     }
 
     public async waitForOnboarding(signal?: AbortSignal): Promise<void> {
-        for (let i = 0; i < 30; i++) {
+        for (let i = 0; i < 150; i++) {
             if (signal?.aborted) {
                 throw new OnboardingAbortedError();
             }
 
             this.syncProvider.restart({ preserveStatus: true });
 
-            await new Promise<void>((resolve, reject) => {
-                const timer = setTimeout(resolve, this.pollingTimeout);
-                signal?.addEventListener(
-                    'abort',
-                    () => {
-                        clearTimeout(timer);
-                        reject(new OnboardingAbortedError());
-                    },
-                    { once: true }
-                );
-            });
-
             let synchronized: boolean;
             try {
                 synchronized = await this.syncProvider.syncStatusManager
-                    .waitForStatus(SyncStatus.SYNCHRONIZED, { timeout: 1000 })
+                    .waitForStatus(SyncStatus.SYNCHRONIZED, { timeout: 2000 })
                     .then(() => true);
             } catch (e) {
                 if (isSyncStatusTimeoutError(e)) {

@@ -119,6 +119,7 @@ export class PrimaryDeviceOnboarding {
 
     private async waitUntilDeviceVisible(ikPub: Buffer): Promise<void> {
         await this.deviceManager.waitUntilDeviceVisible(ikPub, {
+            timeoutMs: 30000,
             timeoutError: () =>
                 new PrimaryDeviceOnboardingError('Device did not become active after onboarding')
         });
