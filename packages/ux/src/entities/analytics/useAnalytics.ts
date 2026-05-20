@@ -3,19 +3,20 @@ import { useContext, useMemo } from 'react';
 import { AnalyticsContext } from './AnalyticsContext';
 import { useAccountUuid } from './useAccountUuid';
 import { useActiveLanguage } from '../../shared/i18n/translate';
-import { useActiveFiat } from '../fiat/useActiveFiat';
 
 export interface AnalyticsApi {
     trackOnboardingOpen(input: { onboardingId: string }): Promise<void>;
     trackWalletOpen(input: {
         onboardingId: string;
         fiatAmount: number;
+        fiatSymbol: string;
         sync: boolean;
     }): Promise<void>;
     trackSendStart(): Promise<void>;
     trackSendFinish(input: {
         cryptoCurrency: string;
         fiatAmount: number;
+        fiatSymbol: string;
         errorType: string | null;
     }): Promise<void>;
 }
@@ -28,9 +29,6 @@ export function useAnalytics(): AnalyticsApi {
 
     const lang = useActiveLanguage();
     const { data: accountUuid } = useAccountUuid();
-    const fiat = useActiveFiat();
-
-    const fiatSymbol = fiat.id.symbol;
 
     return useMemo<AnalyticsApi>(
         () => ({
@@ -41,7 +39,6 @@ export function useAnalytics(): AnalyticsApi {
                 await service.trackWalletOpen({
                     ...input,
                     accountUuid,
-                    fiatSymbol,
                     lang
                 });
             },
@@ -56,11 +53,10 @@ export function useAnalytics(): AnalyticsApi {
                 await service.trackSendFinish({
                     ...input,
                     accountUuid,
-                    fiatSymbol,
                     lang
                 });
             }
         }),
-        [service, accountUuid, fiatSymbol, lang]
+        [service, accountUuid, lang]
     );
 }

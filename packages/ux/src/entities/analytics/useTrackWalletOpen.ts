@@ -6,10 +6,12 @@ import { useAnalytics } from './useAnalytics';
 import { useOnboardingId } from '../../shared/analytics/useOnboardingId';
 import { useRate } from '../asset/useRate';
 import { useBtcBalances } from '../btc-blockchain';
+import { useActiveFiat } from '../fiat/useActiveFiat';
 import { resolveBtcWallet, usePortfolios } from '../portfolio';
 import { AccountLinkState, useAccountLinkState } from '../synced-device';
 
 export function useTrackWalletOpen() {
+    const fiat = useActiveFiat();
     const analytics = useAnalytics();
     const portfolios = usePortfolios();
     const wallets = useMemo(
@@ -37,8 +39,9 @@ export function useTrackWalletOpen() {
             await analytics.trackWalletOpen({
                 onboardingId,
                 fiatAmount,
+                fiatSymbol: fiat.id.symbol,
                 sync: linkState === AccountLinkState.PROTECTED
             });
         })();
-    }, [fiatAmount, analytics, linkState, getOnboardingId]);
+    }, [fiatAmount, fiat.id.symbol, analytics, linkState, getOnboardingId]);
 }

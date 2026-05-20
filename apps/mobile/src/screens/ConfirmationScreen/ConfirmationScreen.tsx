@@ -8,6 +8,7 @@ import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import {
     SendFormResult,
     useActiveBtcWallet,
+    useActiveFiat,
     useActivePortfolio,
     useAnalytics,
     useEstimateAssetTransfer,
@@ -38,6 +39,7 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
 
     const { t } = useTranslation();
     const analytics = useAnalytics();
+    const fiat = useActiveFiat();
     const navigation = useNavigation();
     const btcWallet = useActiveBtcWallet();
     const activePortfolio = useActivePortfolio();
@@ -64,7 +66,12 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
             onSuccess?.();
             notificationAsync(NotificationFeedbackType.Success);
             setConfirmationState({ type: 'success' });
-            void analytics.trackSendFinish({ cryptoCurrency, fiatAmount, errorType: null });
+            void analytics.trackSendFinish({
+                cryptoCurrency,
+                fiatAmount,
+                fiatSymbol: fiat.id.symbol,
+                errorType: null
+            });
         } catch (error) {
             logger.error('[ConfirmationScreen] send failed', error);
             notificationAsync(NotificationFeedbackType.Error);
@@ -72,10 +79,11 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
             void analytics.trackSendFinish({
                 cryptoCurrency,
                 fiatAmount,
+                fiatSymbol: fiat.id.symbol,
                 errorType: classifyError(error)
             });
         }
-    }, [send, onSuccess, logger, confirmationResult, analytics]);
+    }, [send, onSuccess, logger, confirmationResult, analytics, fiat.id.symbol]);
 
     const displayState = useMemo(() => {
         if (txTemplateError) {
