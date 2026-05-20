@@ -1,3 +1,5 @@
+import type { SBtcAccountChainItem } from '@safely/sync-storage';
+
 import { BtcBip32NodeProducer } from './btc-bip32-node-producer';
 import { BtcXpub } from '../../../../../blockchain-api';
 import type { BtcNetwork } from '../../../../blockchain';
@@ -7,7 +9,6 @@ import type { ISeedProducer } from '../../../../seed/I-seed-producer';
 import type { BtcSigningRequest } from '../../../../signer';
 import { BtcKeypairSigner } from '../../../../signer';
 import type { Derivation } from '../../../derivation';
-import type { SBtcAccountChainItem } from '../../../derivation.stored';
 import { BtcWalletId } from '../../btc-wallet-id';
 import type { SignableBtcWallet } from '../../I-btc-wallet';
 import type { IDerivationChainItemBtc } from '../../I-derivation-chain-item-btc';
@@ -45,16 +46,9 @@ export class DerivationChainItemBtcSeed implements IDerivationChainItemBtc {
         derivationIndex: number;
         derivationRef: Derivation;
     }): DerivationChainItemBtcSeed {
-        const walletType = BtcWalletType.NATIVE_SEGWIT;
-
         return new DerivationChainItemBtcSeed({
             derivationRef,
             sDerivation: {
-                wallets: [
-                    {
-                        type: walletType
-                    }
-                ],
                 xpub
             },
             seedProducer,
@@ -81,17 +75,21 @@ export class DerivationChainItemBtcSeed implements IDerivationChainItemBtc {
         seedProducer: ISeedProducer;
         derivationRef: Derivation;
     }) {
-        this.network = btcNetworkByPortfolioNetworkType(derivationRef.portfolioRef.id.network);
+        this.network = btcNetworkByPortfolioNetworkType(derivationRef.portfolioRef.networkType);
         this.xpub = sDerivation.xpub;
         this.derivationIndex = derivationIndex;
 
-        this.wallets = sDerivation.wallets.map(w => {
-            const address = BtcXpub.deriveAddress(this.xpub, this.network, w.type);
-            const signer = this.createSigner(seedProducer, { type: w.type, address });
+        const walletType = BtcWalletType.NATIVE_SEGWIT;
+        const address = BtcXpub.deriveAddress(this.xpub, this.network, walletType);
+        const signer = this.createSigner(seedProducer, {
+            type: walletType,
+            address
+        });
 
-            return {
+        this.wallets = [
+            {
                 id: new BtcWalletId(derivationRef.id, address),
-                type: w.type,
+                type: walletType,
                 address,
                 network: this.network,
                 xpub: this.xpub,
@@ -99,8 +97,8 @@ export class DerivationChainItemBtcSeed implements IDerivationChainItemBtc {
                 sign(tx: BtcSigningRequest) {
                     return signer.sign(tx);
                 }
-            };
-        });
+            }
+        ];
     }
 
     private createSigner(
@@ -119,10 +117,7 @@ export class DerivationChainItemBtcSeed implements IDerivationChainItemBtc {
 
     public toJSON(): SBtcAccountChainItem {
         return {
-            xpub: this.xpub,
-            wallets: this.wallets.map(w => ({
-                type: w.type
-            }))
+            xpub: this.xpub
         };
     }
 }

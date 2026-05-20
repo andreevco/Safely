@@ -1,6 +1,7 @@
+import { type SDerivation, sDerivation } from '@safely/sync-storage';
+
 import type { IPortfolioDerivable } from '../portfolio';
 import { DerivationId } from './derivation-id';
-import type { SDerivationChains, SDerivation } from './derivation.stored';
 import type { IDerivation, IDerivationChains } from './I-derivation';
 
 export class Derivation implements IDerivation {
@@ -22,13 +23,13 @@ export class Derivation implements IDerivation {
     }
 
     public toJSON(): SDerivation {
-        return {
+        return sDerivation.toJson({
             index: this.index,
             chains: derivationChainsToJSON(this.chains)
-        };
+        });
     }
 }
-function derivationChainsToJSON(chains: IDerivationChains): SDerivationChains {
+function derivationChainsToJSON(chains: IDerivationChains): SDerivation['chains'] {
     return {
         btc: chains.btc.toJSON()
     };

@@ -1,4 +1,4 @@
-import type { ZodType } from 'zod';
+import type { NewOf, StorageVersion } from '@safely/slottree';
 
 import type { Device } from '../device-manager/device-repository';
 import type { ITreeStorage } from '../I-storage';
@@ -6,7 +6,7 @@ import type { OnboardingConnector } from '../onboarding/connector';
 import type { ISecretEncryptor } from '../secret-encryptor';
 import type { ISyncProvider } from '../sync-provider/I-sync-provider';
 
-export interface ISyncAccount<S extends Record<string, ZodType>> {
+export interface ISyncAccount<Latest extends StorageVersion> {
     /**
      * The unique identifier of the sync account.
      */
@@ -14,7 +14,7 @@ export interface ISyncAccount<S extends Record<string, ZodType>> {
     /**
      * The sync provider associated with this account, used to update storage.
      */
-    readonly syncProvider: ISyncProvider<S>;
+    readonly syncProvider: ISyncProvider<NewOf<Latest>>;
     /**
      * The secret encryptor associated with this account, used to encrypt and decrypt secrets
      * before putting them into storage.
@@ -32,7 +32,7 @@ export interface ISyncAccount<S extends Record<string, ZodType>> {
     /**
      * Initiates the process of reconnecting to an existing sync account.
      */
-    reconnectToAccount(): Promise<OnboardingConnector<S>>;
+    reconnectToAccount(): Promise<OnboardingConnector<Latest>>;
 
     /**
      * Retrieves the list of devices currently connected to the sync account.

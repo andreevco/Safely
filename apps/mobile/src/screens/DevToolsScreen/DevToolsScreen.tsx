@@ -1,7 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import { useCallback } from 'react';
 
-import { useClearDismissedBannerIds } from '@safely/ux/entities/dismissed-banners/useDismissedBanners';
+import { useClearDismissedBannerIds } from '@safely/ux';
 
 import { SettingsStackNavigationProp } from '@mobile/app/navigation/types';
 import { Cell, List, Screen, Text } from '@mobile/shared/ui';

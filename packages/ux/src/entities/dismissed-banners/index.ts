@@ -1,2 +1,6 @@
 export { dismissedBannersKeys } from './keys';
-export { useDismissedBannerIdsQuery, useDismissBanner } from './useDismissedBanners';
+export {
+    useDismissedBannerIdsQuery,
+    useDismissBanner,
+    useClearDismissedBannerIds
+} from './useDismissedBanners';

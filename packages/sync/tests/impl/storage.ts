@@ -25,6 +25,10 @@ export class InMemStorage implements ITreeStorage {
         return Array.from(this.data.keys());
     }
 
+    public async getOwnKeys(): Promise<string[]> {
+        return Array.from(new Set([...this.data.keys(), ...this.children.keys()]));
+    }
+
     public child(path: string[] | string): ITreeStorage {
         if (typeof path === 'string') {
             path = [path];
@@ -43,9 +47,6 @@ export class InMemStorage implements ITreeStorage {
 
     public async clear(): Promise<void> {
         this.data.clear();
-    }
-
-    public async getOwnKeys(): Promise<string[]> {
-        return [...this.data.keys()];
+        this.children.clear();
     }
 }

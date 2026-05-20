@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
+import { defineVersionHList, hCons, hNil, projectIdentity } from '@safely/slottree';
+
 import { InMemStorage } from './impl/storage';
 import { AccountManager } from '../src/account/account-manager';
 import type { CreateAccountService } from '../src/account/create-account-service';
@@ -16,7 +18,14 @@ describe('AccountManager', () => {
         const encryptedStorage = new InMemStorage();
         const secureEncryptedStorage = new InMemStorage();
         const repository = new SyncAccountRepository(storage);
-        const structure = { value: z.string() };
+        const AccountV1 = {
+            version: 1,
+            schema: z.object({ value: z.string() }),
+            initial: { value: '' },
+            projectUp: projectIdentity,
+            projectDown: projectIdentity
+        } as const;
+        const versions = defineVersionHList(hCons(AccountV1, hNil));
         const logger = new Logger({ log: () => {} });
         const masterKey = await generateMasterKey();
         const accountId = await generateAccountID(masterKey);
@@ -25,7 +34,7 @@ describe('AccountManager', () => {
             storage: getSyncAccountStorage(storage, accountId),
             encryptedStorage: getSyncAccountStorage(encryptedStorage, accountId),
             secureEncryptedStorage: getSyncAccountStorage(secureEncryptedStorage, accountId),
-            structure,
+            versions,
             masterKey,
             logger
         });
@@ -35,9 +44,10 @@ describe('AccountManager', () => {
             storage,
             encryptedStorage,
             repository,
-            structure,
+            versions,
             new Configuration({ basePath: 'mock://sync' }),
-            {} as CreateAccountService<typeof structure>,
+            undefined,
+            {} as CreateAccountService<(typeof versions)['head'], (typeof versions)['tail']>,
             2500,
             () => logger
         );

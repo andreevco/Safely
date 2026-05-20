@@ -2,19 +2,21 @@ import { generateMnemonic } from '@scure/bip39';
 import { wordlist } from '@scure/bip39/wordlists/english.js';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import type { SPortfolioBip39In } from '../src';
+import type { SPortfolioBip39, SPortfolioBip39IdImported } from '@safely/sync-storage';
+import { sDerivation, sPortfolio, sPortfolioBip39 } from '@safely/sync-storage';
+
+import type { PortfolioBip39 } from '../src';
 import {
+    Bip39Source,
     BtcNetwork,
     BtcWalletType,
     BtcXpub,
     InvalidMnemonicError,
-    PortfolioBip39,
     PortfolioFactory,
     PortfolioNetworkType,
     PortfolioType,
-    VMType,
-    WatchOnlySource,
-    sPortfolio
+    VM_TYPE,
+    WatchOnlySource
 } from '../src';
 import { ClosableMnemonicAccessorVault, MockSecretEncryptor } from './utils/mocks';
 import { BtcAddress } from '../src/blockchain-api/btc/btc-address';
@@ -76,9 +78,10 @@ describe('Test portfolio generation (Bitcoin)', () => {
         const serialized = JSON.stringify(portfolio);
         const parsed: unknown = JSON.parse(serialized);
 
-        const expectedStructure: SPortfolioBip39In = {
+        const expectedStructure: SPortfolioBip39 = sPortfolioBip39.toJson({
             id: {
-                hash: portfolio.id.toJSON().hash,
+                source: Bip39Source.IMPORTED,
+                seedHash: (portfolio.id.toJSON() as SPortfolioBip39IdImported).seedHash,
                 networkType: PortfolioNetworkType.MAINNET
             },
             type: PortfolioType.BIP39,
@@ -88,25 +91,24 @@ describe('Test portfolio generation (Bitcoin)', () => {
             },
             secretRevealedStatus: null,
             derivations: [
-                {
+                sDerivation.toJson({
                     index: 0,
                     chains: {
                         btc: {
-                            xpub: portfolio.derivations[0].chains.btc.xpub,
-                            wallets: [
-                                {
-                                    type: BtcWalletType.NATIVE_SEGWIT
-                                }
-                            ]
+                            xpub: portfolio.derivations[0].chains.btc.xpub
                         }
                     }
-                }
+                })
             ],
             encryptedSecret: portfolio.toJSON().encryptedSecret
-        };
+        });
 
         expect(parsed).toMatchObject({
-            id: { networkType: PortfolioNetworkType.MAINNET },
+            id: {
+                source: Bip39Source.IMPORTED,
+                seedHash: (portfolio.id.toJSON() as SPortfolioBip39IdImported).seedHash,
+                networkType: PortfolioNetworkType.MAINNET
+            },
             type: PortfolioType.BIP39,
             meta: { name: portfolioName },
             derivations: [
@@ -114,7 +116,7 @@ describe('Test portfolio generation (Bitcoin)', () => {
                     index: 0,
                     chains: {
                         btc: {
-                            wallets: [{ type: BtcWalletType.NATIVE_SEGWIT }]
+                            xpub: portfolio.derivations[0].chains.btc.xpub
                         }
                     }
                 }
@@ -150,9 +152,10 @@ describe('Test portfolio generation (Bitcoin)', () => {
         const serialized = JSON.stringify(portfolio);
         const parsed: unknown = JSON.parse(serialized);
 
-        const expectedStructure: SPortfolioBip39In = {
+        const expectedStructure: SPortfolioBip39 = sPortfolioBip39.toJson({
             id: {
-                hash: portfolio.id.toJSON().hash,
+                source: Bip39Source.IMPORTED,
+                seedHash: (portfolio.id.toJSON() as SPortfolioBip39IdImported).seedHash,
                 networkType: PortfolioNetworkType.MAINNET
             },
             type: PortfolioType.BIP39,
@@ -165,25 +168,24 @@ describe('Test portfolio generation (Bitcoin)', () => {
                 revealedFromDevice: 'TEST_DEVICE_NAME'
             },
             derivations: [
-                {
+                sDerivation.toJson({
                     index: 0,
                     chains: {
                         btc: {
-                            xpub: portfolio.derivations[0].chains.btc.xpub,
-                            wallets: [
-                                {
-                                    type: BtcWalletType.NATIVE_SEGWIT
-                                }
-                            ]
+                            xpub: portfolio.derivations[0].chains.btc.xpub
                         }
                     }
-                }
+                })
             ],
             encryptedSecret: portfolio.toJSON().encryptedSecret
-        };
+        });
 
         expect(parsed).toMatchObject({
-            id: { networkType: PortfolioNetworkType.MAINNET },
+            id: {
+                source: Bip39Source.IMPORTED,
+                seedHash: (portfolio.id.toJSON() as SPortfolioBip39IdImported).seedHash,
+                networkType: PortfolioNetworkType.MAINNET
+            },
             type: PortfolioType.BIP39,
             meta: { name: portfolioName },
             secretRevealedStatus: { revealedFromDevice: 'TEST_DEVICE_NAME' },
@@ -192,7 +194,7 @@ describe('Test portfolio generation (Bitcoin)', () => {
                     index: 0,
                     chains: {
                         btc: {
-                            wallets: [{ type: BtcWalletType.NATIVE_SEGWIT }]
+                            xpub: portfolio.derivations[0].chains.btc.xpub
                         }
                     }
                 }
@@ -289,7 +291,9 @@ describe('Extended tests for portfolio operations (Bitcoin)', () => {
             expect(portfolio1).not.toBeNull();
             expect(portfolio2).not.toBeNull();
 
-            expect(portfolio1.id.toJSON().hash).toEqual(portfolio2.id.toJSON().hash);
+            expect((portfolio1.id.toJSON() as SPortfolioBip39IdImported).seedHash).toEqual(
+                (portfolio2.id.toJSON() as SPortfolioBip39IdImported).seedHash
+            );
             expect(portfolio1.type).toBe(PortfolioType.BIP39);
             expect(portfolio2.type).toBe(PortfolioType.BIP39);
             expect(portfolio1.id.network).toBe(PortfolioNetworkType.TESTNET);
@@ -392,7 +396,7 @@ describe('Extended tests for portfolio operations (Bitcoin)', () => {
         expect(portfolio).not.toBeNull();
 
         expect(() => {
-            portfolio.removeDerivation(0);
+            portfolio.withoutDerivation(0);
         }).toThrow();
 
         expect(portfolio.derivations.length).toBe(1);
@@ -423,7 +427,7 @@ describe('Extended tests for portfolio operations (Bitcoin)', () => {
         expect(portfolio.derivations[0].chains.btc.network).toBe(BtcNetwork.TESTNET);
         expect(portfolio.derivations[0].chains.btc.wallets.length).toBe(1);
 
-        const storedPortfolio: SPortfolioBip39In = {
+        const storedPortfolio: SPortfolioBip39 = sPortfolioBip39.toJson({
             type: PortfolioType.BIP39,
             id: portfolio.id.toJSON(),
             meta: {
@@ -436,19 +440,18 @@ describe('Extended tests for portfolio operations (Bitcoin)', () => {
                       revealedFromDevice: portfolio.secretRevealedStatus.revealedFromDevice
                   }
                 : null,
-            derivations: portfolio.derivations.map(d => ({
-                index: d.index,
-                chains: {
-                    btc: {
-                        wallets: d.chains.btc.wallets.map(w => ({
-                            type: w.type
-                        })),
-                        xpub: d.chains.btc.xpub
+            derivations: portfolio.derivations.map(d =>
+                sDerivation.toJson({
+                    index: d.index,
+                    chains: {
+                        btc: {
+                            xpub: d.chains.btc.xpub
+                        }
                     }
-                }
-            })),
+                })
+            ),
             encryptedSecret: portfolio.toJSON().encryptedSecret
-        };
+        });
 
         const portfolioRestored = PortfolioFactory.restorePortfolio(
             encryptor,
@@ -734,7 +737,7 @@ describe('Negative scenarios (Bitcoin)', () => {
             const portfolio = PortfolioFactory.generateWatchOnlyPortfolio(testAddress, {
                 network: PortfolioNetworkType.MAINNET,
                 meta: testMeta,
-                vmType: VMType.BTC
+                vmType: VM_TYPE.BTC
             });
 
             expect(portfolio.type).toBe(PortfolioType.WATCH_ONLY);
@@ -748,7 +751,7 @@ describe('Negative scenarios (Bitcoin)', () => {
             const portfolio = PortfolioFactory.generateWatchOnlyPortfolio(testAddress, {
                 network: PortfolioNetworkType.MAINNET,
                 meta: testMeta,
-                vmType: VMType.BTC
+                vmType: VM_TYPE.BTC
             });
 
             const json = portfolio.toJSON();
@@ -765,12 +768,12 @@ describe('Negative scenarios (Bitcoin)', () => {
             const p1 = PortfolioFactory.generateWatchOnlyPortfolio(testAddress, {
                 network: PortfolioNetworkType.MAINNET,
                 meta: testMeta,
-                vmType: VMType.BTC
+                vmType: VM_TYPE.BTC
             });
             const p2 = PortfolioFactory.generateWatchOnlyPortfolio(testAddress, {
                 network: PortfolioNetworkType.MAINNET,
                 meta: testMeta,
-                vmType: VMType.BTC
+                vmType: VM_TYPE.BTC
             });
 
             expect(p1.id.toString()).toBe(p2.id.toString());
@@ -790,11 +793,11 @@ describe('Negative scenarios (Bitcoin)', () => {
             const portfolio = PortfolioFactory.generateWatchOnlyPortfolio(xpub, {
                 network: PortfolioNetworkType.MAINNET,
                 meta: testMeta,
-                vmType: VMType.BTC
+                vmType: VM_TYPE.BTC
             });
 
             expect(portfolio.type).toBe(PortfolioType.WATCH_ONLY);
-            expect(portfolio.source).toBe(WatchOnlySource.XPUB);
+            expect(portfolio.id.source).toBe(WatchOnlySource.XPUB);
             expect(portfolio.wallet.xpub).toBe(xpub);
             expect(portfolio.wallet.address.startsWith('bc1')).toBe(true);
         });
@@ -811,7 +814,7 @@ describe('Negative scenarios (Bitcoin)', () => {
             const portfolio = PortfolioFactory.generateWatchOnlyPortfolio(xpub, {
                 network: PortfolioNetworkType.MAINNET,
                 meta: testMeta,
-                vmType: VMType.BTC
+                vmType: VM_TYPE.BTC
             });
 
             const json = portfolio.toJSON();
@@ -834,10 +837,10 @@ describe('Negative scenarios (Bitcoin)', () => {
             const addressPortfolio = PortfolioFactory.generateWatchOnlyPortfolio(testAddress, {
                 network: PortfolioNetworkType.MAINNET,
                 meta: testMeta,
-                vmType: VMType.BTC
+                vmType: VM_TYPE.BTC
             });
 
-            expect(addressPortfolio.source).toBe(WatchOnlySource.ADDRESS);
+            expect(addressPortfolio.id.source).toBe(WatchOnlySource.ADDRESS);
 
             const mnemonic = generateMnemonic(wordlist, 128).split(' ');
             const accessor = new ClosableMnemonicAccessorVault(mnemonic);
@@ -850,10 +853,10 @@ describe('Negative scenarios (Bitcoin)', () => {
             const xpubPortfolio = PortfolioFactory.generateWatchOnlyPortfolio(xpub, {
                 network: PortfolioNetworkType.MAINNET,
                 meta: testMeta,
-                vmType: VMType.BTC
+                vmType: VM_TYPE.BTC
             });
 
-            expect(xpubPortfolio.source).toBe(WatchOnlySource.XPUB);
+            expect(xpubPortfolio.id.source).toBe(WatchOnlySource.XPUB);
             expect(addressPortfolio.id.toString()).not.toBe(xpubPortfolio.id.toString());
         });
     });

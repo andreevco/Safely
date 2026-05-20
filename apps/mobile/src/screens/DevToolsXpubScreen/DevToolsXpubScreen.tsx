@@ -18,7 +18,7 @@ export const DevToolsXpubScreen = () => {
     const navigation = useNavigation<RootStackNavigationProp>();
 
     const xpub = useMemo(() => {
-        if (entities.kind === 'bip39') {
+        if (entities.type === 'bip39') {
             return BtcXpub.toZpub(entities.btcWallet.xpub);
         }
 
