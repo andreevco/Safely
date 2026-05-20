@@ -86,10 +86,11 @@ export class VersionController {
 
     public setDeviceVersion(
         authorId: string,
-        version: VersionSelector,
+        version: number,
         timestamp: number,
         author: string
     ): void {
+        this.versionIndex(version);
         const devices = this.devicesContainer();
         const existingDevice = devices.v[authorId];
         const device = isContainerSlot(existingDevice)
@@ -98,6 +99,16 @@ export class VersionController {
 
         device.v.version = slotFromJson(this.versionNumber(version), timestamp, author);
         devices.v[authorId] = device;
+    }
+
+    public deleteAuthor(authorId: string): boolean {
+        const devices = this.root.v[DEVICES_KEY];
+        if (!isContainerSlot(devices) || devices.v[authorId] === undefined) {
+            return false;
+        }
+
+        delete devices.v[authorId];
+        return true;
     }
 
     public deleteVersionsUnusedByDevices(): void {

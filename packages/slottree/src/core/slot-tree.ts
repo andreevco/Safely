@@ -12,6 +12,7 @@ import type { StorageObserver } from './storage-observer';
 import type { AssertVersionHList, HCons, NewOf, StorageVersion } from './versioning/version';
 import { hListToRuntimeArray } from './versioning/version';
 import { VersionController } from './versioning/version-controller';
+import { VersionPropagation } from './versioning/version-propagation';
 import { WorkingStorageRoot } from './working-storage-root';
 import type { Draft } from './write';
 
@@ -81,6 +82,21 @@ export interface SlotTree<T> {
      * Export storage to save or send to other device
      */
     export(): string;
+
+    /**
+     * Adds new author with selected storage versions and automatically adds migration to the
+     * selected storage version
+     * @param authorId
+     * @param storageVersion
+     */
+    addAuthor(authorId: string, storageVersion: number): void;
+
+    /**
+     * Removes author and deletes version related to the author if there are no other authors
+     * using that version
+     * @param authorId
+     */
+    removeAuthor(authorId: string): void;
 }
 
 export class StorageImpl<T> implements SlotTree<T> {
@@ -108,6 +124,30 @@ export class StorageImpl<T> implements SlotTree<T> {
         this.syncDeviceVersion();
         this.deleteUnusedVersions();
         this.protocol.observeTree(this.root);
+    }
+
+    public addAuthor(authorId: string, storageVersion: number): void {
+        const controller = new VersionController(this.root, this.versions);
+        controller.setDeviceVersion(
+            authorId,
+            storageVersion,
+            this.protocol.tick(),
+            this.protocol.id
+        );
+        const propagation = new VersionPropagation(this.versions);
+        propagation.propagateToOlderVersions(this.root, this.protocol);
+        this.observers.notify();
+    }
+
+    public removeAuthor(authorId: string): void {
+        const controller = new VersionController(this.root, this.versions);
+        const deleted = controller.deleteAuthor(authorId);
+        if (!deleted) {
+            return;
+        }
+
+        controller.deleteVersionsUnusedByDevices();
+        this.observers.notify();
     }
 
     public get version(): number {
@@ -280,7 +320,7 @@ export class StorageImpl<T> implements SlotTree<T> {
 
         controller.setDeviceVersion(
             this.protocol.id,
-            latest,
+            latest.version,
             this.protocol.tick(),
             this.protocol.id
         );
