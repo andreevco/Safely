@@ -19,6 +19,7 @@ module.exports = {
                 ITSAppUsesNonExemptEncryption: false
             },
             supportsTablet: true,
+            requireFullScreen: true,
             bundleIdentifier: 'com.aco.swallet',
             appleTeamId: '9N49283836'
         },
