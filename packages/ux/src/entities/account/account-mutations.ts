@@ -26,6 +26,7 @@ import {
 import { useToast } from '../toast';
 import type { SActivePortfolioSchema } from './local-storage';
 import { useClearActiveAccountLocalStorage } from './local-storage';
+import { accountStoreActions } from './sync-storage';
 import {
     useAccountSyncStorageUpdate,
     useActiveAccountSyncStorageSlotUpdate,
@@ -309,7 +310,6 @@ export function useEraseAllData() {
 
     return useMutation({
         async mutationFn() {
-            resetAccountsFactory();
             try {
                 await clearAllData();
             } catch (e) {
@@ -318,6 +318,8 @@ export function useEraseAllData() {
             }
 
             queryClient.clear();
+            accountStoreActions.clear();
+            resetAccountsFactory();
         }
     });
 }
