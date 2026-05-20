@@ -69,7 +69,7 @@ export function useRevokeSyncedDevice() {
                 storage.sync.getSecureEncrypted()
             );
 
-            update(draft => draft.delete(ikPubHex));
+            await update(draft => draft.delete(ikPubHex));
         }
     });
 }
@@ -82,7 +82,7 @@ export function useSetOwnSyncedDeviceMeta() {
         async mutationFn(syncAccount) {
             const ikPubHex = syncAccount.getMyDeviceIkPub().toString('hex');
 
-            update(syncAccount, draft =>
+            await update(syncAccount, draft =>
                 draft.set(ikPubHex, {
                     name: deviceInfo.name,
                     platform: build as 'ios' | 'android',

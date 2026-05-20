@@ -38,7 +38,7 @@ export function useCreateContact() {
                 })),
                 meta: { name, color: pickRandomContactColor() }
             });
-            update(draft => draft.push(contact.toJSON()));
+            await update(draft => draft.push(contact.toJSON()));
 
             return contact;
         }
@@ -67,23 +67,27 @@ export function useEditContact() {
                 throw new Error('No changes provided');
             }
 
-            return new Promise(resolve => {
-                update(draft => {
-                    draft.update(target.jsonArrayId(), sContactDraft => {
-                        if (meta) {
-                            sContactDraft.set('meta', { ...sContactDraft.get()!.meta, ...meta });
-                        }
-                        if (addresses) {
-                            sContactDraft.set(
-                                'addresses',
-                                addresses.map(({ address }) => sContactAddress.toJson({ address }))
-                            );
-                        }
+            let restored: Contact | undefined;
+            await update(draft => {
+                draft.update(target.jsonArrayId(), sContactDraft => {
+                    if (meta) {
+                        sContactDraft.set('meta', { ...sContactDraft.get()!.meta, ...meta });
+                    }
+                    if (addresses) {
+                        sContactDraft.set(
+                            'addresses',
+                            addresses.map(({ address }) => sContactAddress.toJson({ address }))
+                        );
+                    }
 
-                        resolve(Contact.restoreContact(sContactDraft.get() as SContact));
-                    });
+                    restored = Contact.restoreContact(sContactDraft.get() as SContact);
                 });
             });
+
+            if (!restored) {
+                throw new Error(`Contact not found: ${String(id)}`);
+            }
+            return restored;
         }
     });
 }
@@ -95,7 +99,7 @@ export function useDeleteContact() {
 
     return useMutation<void, Error, Contact>({
         async mutationFn(contact) {
-            update(draft => draft.remove(contact.jsonArrayId()));
+            await update(draft => draft.remove(contact.jsonArrayId()));
         },
         onSuccess() {
             toast({ message: t('common.removed') });

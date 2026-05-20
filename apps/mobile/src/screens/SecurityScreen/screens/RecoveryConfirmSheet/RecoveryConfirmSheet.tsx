@@ -23,12 +23,12 @@ const RecoveryConfirmContent = () => {
     const navigation = useNavigation<RootStackNavigationProp>();
     const markNavigated = useCloseOnReturn();
 
-    const { mutateAsync: recordSeedReveal } = useRecordActivePortfolioSecretReveal();
+    const { mutate: recordSeedReveal } = useRecordActivePortfolioSecretReveal();
 
     const handleReveal = async () => {
         try {
             const mnemonic = await portfolio.getMnemonic();
-            await recordSeedReveal();
+            recordSeedReveal();
             markNavigated();
             navigation.navigate('RecoveryPhraseModal', { mnemonic });
         } catch {

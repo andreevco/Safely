@@ -6,17 +6,19 @@ import type { SyncedStorageStructure } from '@safely/sync-storage';
 
 import { SecretEncryptor, useAppContext } from '../../../shared';
 import { useAppState } from '../../../shared/app/useAppState';
-import { useAccounts, useActiveAccountQuery } from '../account-state';
+import { useAccounts } from '../account-state';
 import { accountStore, accountStoreActions, SYNCED_SLOT_KEYS } from './account-store';
 import { AccountStoreTransform } from './account-store-transform';
 
 function useSyncObserver() {
     const { storage } = useAppContext();
     const accounts = useAccounts();
+    console.log('useSyncObserver');
 
     useEffect(() => {
         if (!accounts || accounts.length === 0) {
             accountStoreActions.clear();
+            console.log('useSyncObserver no accounts', accounts);
             return;
         }
 
@@ -30,9 +32,11 @@ function useSyncObserver() {
                     new SecretEncryptor(account.secretEncryptor, storage.sync.getSecureEncrypted())
             );
 
+            const sp = transform.restoreAll(account.accountId, account.syncProvider.getAll())
             accountStoreActions.attachSnapshot(
-                transform.restoreAll(account.accountId, account.syncProvider.getAll())
+                sp
             );
+            console.log('useSyncObserver attached', account.accountId, sp);
 
             SYNCED_SLOT_KEYS.forEach(key => {
                 const unsub = account.syncProvider.onChange(key, () => {
@@ -52,16 +56,14 @@ function useSyncObserver() {
 }
 
 function useSyncRestartOnForeground() {
-    const { data: activeAccount } = useActiveAccountQuery();
+    const accounts = useAccounts();
     const { current, previous } = useAppState();
 
     useEffect(() => {
-        if (!activeAccount) return;
-
         if (previous === 'inactive' || (previous === 'background' && current === 'active')) {
-            activeAccount.syncProvider.restart();
+            accounts.forEach(a => a.syncProvider.restart());
         }
-    }, [activeAccount, current, previous]);
+    }, [accounts, current, previous]);
 }
 
 export const SyncStorageProvider: FC<PropsWithChildren> = ({ children }) => {

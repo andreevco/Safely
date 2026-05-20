@@ -407,7 +407,12 @@
         }
     },
     "account": {
-        "unnamed": "Unnamed"
+        "unnamed": "Unnamed",
+        "sync": {
+            "errors": {
+                "updateFailed": "Couldn't save changes. Changes have been reverted."
+            }
+        }
     },
     "addAccount": {
         "title": "Add account",
