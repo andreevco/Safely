@@ -4,7 +4,7 @@ import { getSyncServer } from './sync-server-registry';
 import { SyncAccountFactory } from '../../src';
 import { Logger } from '../../src/logger/logger';
 import { QRMessageCodec, QRMessageOperation } from '../../src/onboarding/onboarding-codec';
-import { Versions } from '../integrational/helpers';
+import { Versions } from '../e2e/helpers';
 
 let factoryCounter = 0;
 

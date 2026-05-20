@@ -21,7 +21,8 @@ export class ReconnectOnboardingCoordinator<Latest extends StorageVersion, Rest>
         private readonly ikService: IkService,
         private readonly deviceManager: DeviceManagementService,
         private readonly logger: Logger,
-        private readonly pollingTimeout: number
+        private readonly pollingTimeout: number,
+        private readonly storageVersion: number
     ) {}
 
     public async getConnector(): Promise<OnboardingConnector<Latest>> {
@@ -35,7 +36,8 @@ export class ReconnectOnboardingCoordinator<Latest extends StorageVersion, Rest>
             this.ikService.getPub(),
             this.getSyncProvider() as OnlineSyncProvider<Latest, Rest>,
             this.logger,
-            this.pollingTimeout
+            this.pollingTimeout,
+            this.storageVersion
         );
 
         return {

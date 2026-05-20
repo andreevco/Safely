@@ -21,6 +21,7 @@ export class PrimaryDeviceOnboarding {
         private readonly accountsApi: AccountsApi,
         private readonly deviceManager: DeviceManagementService,
         private readonly syncOperations: SyncOperations<StorageVersion, unknown>,
+        private readonly storageVersion: number,
         private readonly triggerSync: () => Promise<void>
     ) {}
 
@@ -48,7 +49,11 @@ export class PrimaryDeviceOnboarding {
             }
         });
 
-        await this.syncOperations.addDevice(message.ikPub, this.dmkService);
+        await this.syncOperations.addDevice(
+            message.ikPub,
+            this.knownStorageVersion(message.storageVersion),
+            this.dmkService
+        );
         await this.triggerSync();
         await this.waitUntilDeviceVisible(message.ikPub);
     }
@@ -79,7 +84,11 @@ export class PrimaryDeviceOnboarding {
         });
         const signature = await this.signOnboardingMessage(message.ikPub);
 
-        await this.deviceManager.addDevice(message.ikPub, this.dmkService);
+        await this.syncOperations.addDevice(
+            message.ikPub,
+            this.knownStorageVersion(message.storageVersion),
+            this.dmkService
+        );
         await this.triggerSync();
 
         await this.accountsApi.postOnboardingMessage({
@@ -102,6 +111,10 @@ export class PrimaryDeviceOnboarding {
             newIkPub
         ]);
         return await this.dmkService.sign(toSign);
+    }
+
+    private knownStorageVersion(version: number): number | undefined {
+        return version <= this.storageVersion ? version : undefined;
     }
 
     private async waitUntilDeviceVisible(ikPub: Buffer): Promise<void> {

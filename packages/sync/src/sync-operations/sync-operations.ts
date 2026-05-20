@@ -37,12 +37,16 @@ export class SyncOperations<Latest extends StorageVersion, Rest> {
 
     public async addDevice(
         ikPub: Buffer,
+        storageVersion: number | undefined,
         dmkSignerService: DmkSignerService,
         signal?: AbortSignal
     ): Promise<void> {
         await this.queue.run(async () => {
             this.throwIfAborted(signal);
             await this.deviceManager.addDevice(ikPub, dmkSignerService);
+            if (storageVersion !== undefined) {
+                await this.crdtController.addAuthor(ikPub.toString('hex'), storageVersion);
+            }
         });
     }
 

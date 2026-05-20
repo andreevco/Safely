@@ -11,13 +11,15 @@ export class ReconnectOnboarding<Latest extends StorageVersion, Rest> {
         private readonly myIkPub: Buffer,
         private readonly syncProvider: OnlineSyncProvider<Latest, Rest>,
         private readonly logger: Logger,
-        private readonly pollingTimeout: number
+        private readonly pollingTimeout: number,
+        private readonly storageVersion: number
     ) {}
 
     public generateOnboardingData(): Buffer {
         return QRMessageCodec.encode({
             type: QRMessageOperation.RECONNECTION,
-            ikPub: this.myIkPub
+            ikPub: this.myIkPub,
+            storageVersion: this.storageVersion
         });
     }
 

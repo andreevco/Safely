@@ -39,6 +39,7 @@ export class SyncAccountFactory<Versions extends VersionHList> implements ISyncA
     private readonly apiImplementations?: SyncApiImplementations;
     private readonly noAccountLogger: Logger;
     private readonly pollingTimeout: number;
+    private readonly storageVersion: number;
     private readonly connectToExistingAccountCoordinator = new SingleActiveOnboardingCoordinator<
         LatestOf<Versions>
     >();
@@ -71,6 +72,7 @@ export class SyncAccountFactory<Versions extends VersionHList> implements ISyncA
             this.pollingTimeout,
             opts.getAccountLogger
         );
+        this.storageVersion = opts.versions.head.version;
     }
 
     /**
@@ -97,7 +99,8 @@ export class SyncAccountFactory<Versions extends VersionHList> implements ISyncA
             this.accountManager,
             secureEncryptedStorage,
             this.noAccountLogger,
-            this.pollingTimeout
+            this.pollingTimeout,
+            this.storageVersion
         );
 
         return {

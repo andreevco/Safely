@@ -23,7 +23,8 @@ export class NewDeviceOnboarding<Latest extends StorageVersion, Rest> {
         private readonly accountManager: AccountManager<Latest, Rest>,
         private readonly secureEncryptedStorage: ITreeStorage,
         private readonly logger: Logger,
-        private readonly pollingTimeout: number
+        private readonly pollingTimeout: number,
+        private readonly storageVersion: number
     ) {}
 
     public generateOnboardingData(): Buffer {
@@ -36,7 +37,8 @@ export class NewDeviceOnboarding<Latest extends StorageVersion, Rest> {
         return QRMessageCodec.encode({
             type: QRMessageOperation.NEW_DEVICE_ONBOARDING,
             ephemeralPub: this.ephemeralKeyPair.publicKey,
-            ikPub: this.ik.publicKey
+            ikPub: this.ik.publicKey,
+            storageVersion: this.storageVersion
         });
     }
 

@@ -48,7 +48,8 @@ export class SyncAccount<Latest extends StorageVersion, Rest> implements ISyncAc
             opts.container.ikService,
             opts.container.deviceManager,
             opts.container.logger,
-            opts.container.pollingTimeout
+            opts.container.pollingTimeout,
+            this.structure.head.version
         );
     }
 
@@ -68,6 +69,7 @@ export class SyncAccount<Latest extends StorageVersion, Rest> implements ISyncAc
             this.container.accountsApi,
             this.container.deviceManager,
             this.container.syncOperations,
+            this.structure.head.version,
             async () => {
                 this.syncProvider.triggerSync();
                 await this.syncProvider.syncStatusManager.waitForStatus(SyncStatus.SYNCHRONIZED);
