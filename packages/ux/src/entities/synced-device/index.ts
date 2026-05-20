@@ -65,10 +65,10 @@ export function useRevokeSyncedDevice() {
 
     return useMutation({
         async mutationFn(ikPubHex: string) {
-            await account.revokeRemoteDevice(
-                Buffer.from(ikPubHex, 'hex'),
-                storage.sync.getSecureEncrypted()
-            );
+            using secureStorage = storage.sync.getSecureEncrypted();
+            await secureStorage.unlock();
+
+            await account.revokeRemoteDevice(Buffer.from(ikPubHex, 'hex'), secureStorage);
 
             await update(draft => draft.delete(ikPubHex));
         }
