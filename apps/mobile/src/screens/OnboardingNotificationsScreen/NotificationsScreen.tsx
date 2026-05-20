@@ -6,7 +6,6 @@ import {
     useRequestNotificationPermission,
     useToggleNotifications
 } from '@mobile/features/notifications';
-import { useOnboardingFlow } from '@mobile/features/onboarding';
 import { Button, Icon, Notifications96, Screen, Text } from '@mobile/shared/ui';
 
 import { styles } from './NotificationsScreen.styles';
@@ -15,17 +14,14 @@ export const OnboardingNotificationsScreen = () => {
     const { t } = useTranslation();
     const { mutateAsync: toggleNotifications } = useToggleNotifications();
     const { mutateAsync: requestPermission } = useRequestNotificationPermission();
-    const { onNotificationsFinished } = useOnboardingFlow();
 
     const handleEnable = useCallback(async () => {
         await requestPermission();
-        onNotificationsFinished();
-    }, [requestPermission, onNotificationsFinished]);
+    }, [requestPermission]);
 
     const handleSkip = useCallback(async () => {
         await toggleNotifications(false);
-        onNotificationsFinished();
-    }, [toggleNotifications, onNotificationsFinished]);
+    }, [toggleNotifications]);
 
     return (
         <Screen>
