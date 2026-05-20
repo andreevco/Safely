@@ -68,6 +68,21 @@ export class DeviceManagementService {
         return device?.type === 'active';
     }
 
+    public async assertDeviceCanReconnect(ikPub: Buffer): Promise<void> {
+        const device = await this.deviceRepository.getStoredDevice(getKID(ikPub));
+        if (!device) {
+            throw new UnknownDeviceError(
+                `Device with the given IK ${ikPub.toString('hex')} not found.`
+            );
+        }
+
+        if (device.type !== 'revoked') {
+            throw new DeviceAlreadyExistsError(
+                `Device with the given IK ${ikPub.toString('hex')} already exists.`
+            );
+        }
+    }
+
     public async revokeDevice(ikPub: Buffer, dmkSignerService: DmkSignerService): Promise<void> {
         const devices = await this.getDevices();
         if (!devices.some(d => d.info.ikPub.equals(ikPub))) {
@@ -133,7 +148,7 @@ export class DeviceManagementService {
     public async makeDevice(ikPub: Buffer, dmkSignerService: DmkSignerService): Promise<Device> {
         const devices = await this.deviceRepository.getStoredDevices();
         if (Object.values(devices).some(d => d.type !== 'revoked' && d.info.ikPub.equals(ikPub))) {
-            throw new Error('Device with the same ikPub already exists.');
+            throw new DeviceAlreadyExistsError('Device with the same ikPub already exists.');
         }
         const addedAt = Date.now();
         const sign = await this.signDevice({
@@ -220,3 +235,4 @@ function storedDeviceEquals(left: StoredDevice, right: StoredDevice): boolean {
 export class DeviceManagerError extends SyncError {}
 export class InvalidDMKSignatureError extends DeviceManagerError {}
 export class UnknownDeviceError extends DeviceManagerError {}
+export class DeviceAlreadyExistsError extends DeviceManagerError {}

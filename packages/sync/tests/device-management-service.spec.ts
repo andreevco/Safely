@@ -4,6 +4,10 @@ import { MockSnapshotsServer } from './mocks/mock-snapshots-api';
 import type { MachineContext } from './mocks/mock-sync-context';
 import { createMachineContext, getMasterKey, waitFor } from './mocks/mock-sync-context';
 import { ed25519_keygen } from '../src/crypto/ed25519';
+import {
+    DeviceAlreadyExistsError,
+    UnknownDeviceError
+} from '../src/device-manager/device-management-service';
 import { OfflineSyncProvider } from '../src/sync-provider/offline-sync-provider';
 import { getKID } from '../src/utils/kid';
 
@@ -146,6 +150,32 @@ describe('device management service', () => {
 
         await verifyDeviceList(ctx, []);
         await verifyStoredDeviceState(ctx, ikPub, 'revoked');
+    });
+
+    it('allows reconnect only for revoked devices', async () => {
+        const ctx = await createMachineContext(server);
+        const ikPub = ctx.container.ikService.getPub();
+        const addedIkPub = deviceIkPub(2);
+
+        await expect(ctx.container.deviceManager.assertDeviceCanReconnect(ikPub)).rejects.toThrow(
+            UnknownDeviceError
+        );
+
+        await addPub(ctx, addedIkPub);
+        await expect(
+            ctx.container.deviceManager.assertDeviceCanReconnect(addedIkPub)
+        ).rejects.toThrow(DeviceAlreadyExistsError);
+
+        await addPub(ctx, ikPub);
+        await ctx.container.deviceManager.activate();
+        await expect(ctx.container.deviceManager.assertDeviceCanReconnect(ikPub)).rejects.toThrow(
+            DeviceAlreadyExistsError
+        );
+
+        await revokePub(ctx, ikPub);
+        await expect(ctx.container.deviceManager.assertDeviceCanReconnect(ikPub)).resolves.toBe(
+            undefined
+        );
     });
 
     it('applies other device updates', async () => {

@@ -41,6 +41,8 @@ export class PrimaryDeviceOnboarding {
     }
 
     private async reconnectExistingDevice(message: QRMessageReconnection): Promise<void> {
+        await this.deviceManager.assertDeviceCanReconnect(message.ikPub);
+
         const signature = await this.signOnboardingMessage(message.ikPub);
         await this.accountsApi.addDeviceToAccount({
             signedDeviceIdentity: {
