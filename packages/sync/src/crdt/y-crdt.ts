@@ -1,7 +1,7 @@
-import type { Draft, JsonValue, ObjectDraft, Storage } from '@safely/slottree';
+import type { Draft, JsonValue, ObjectDraft, SlotTree } from '@safely/slottree';
 
 export class YCRDT<T extends object> {
-    constructor(private readonly doc: Storage<T>) {}
+    constructor(private readonly doc: SlotTree<T>) {}
 
     public applyUpdate(update: Buffer): void {
         this.doc.merge(update.toString('utf8'));

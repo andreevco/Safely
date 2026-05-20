@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
 import type { StorageImpl } from '../src';
-import { createStorage, type Storage } from '../src';
+import { createStorage, type SlotTree } from '../src';
 import type { schemaV1, StorageV1 } from './version-fixtures';
 import { v1 } from './version-fixtures';
 import type { ContainerSlot } from '../src/core/slots';
@@ -11,7 +11,7 @@ import { cloneSlot } from '../src/core/slots/slot-json';
 import { defineVersionHList, hCons, hNil } from '../src/core/versioning/version';
 
 describe('storage updates', () => {
-    let storage: Storage<z.output<typeof schemaV1>>;
+    let storage: SlotTree<z.output<typeof schemaV1>>;
 
     beforeEach(() => {
         storage = createStorage({

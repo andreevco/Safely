@@ -18,7 +18,7 @@ import type { Draft } from './write';
 export { StorageObservers } from './storage-observer';
 export type { StorageObserver } from './storage-observer';
 
-export interface Storage<T> {
+export interface SlotTree<T> {
     readonly version: number;
 
     /**
@@ -83,7 +83,7 @@ export interface Storage<T> {
     export(): string;
 }
 
-export class StorageImpl<T> implements Storage<T> {
+export class StorageImpl<T> implements SlotTree<T> {
     private readonly protocol: MergeProtocol;
     private readonly encoder = new Encoder();
     private root: ContainerSlot;
@@ -332,10 +332,10 @@ export function createStorage<Latest extends StorageVersion, Rest>(options: {
     authorId: string;
     versions: HCons<Latest, Rest> & AssertVersionHList<HCons<Latest, Rest>>;
     root?: ContainerSlot;
-}): Storage<z.output<NewOf<Latest>>> {
+}): SlotTree<z.output<NewOf<Latest>>> {
     return new StorageImpl({
         authorId: options.authorId,
         versions: hListToRuntimeArray(options.versions),
         root: options.root
-    }) as Storage<z.output<NewOf<Latest>>>;
+    }) as SlotTree<z.output<NewOf<Latest>>>;
 }
