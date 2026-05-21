@@ -27,12 +27,8 @@ import {
 
 import { styles } from './AccountProtectedModal.styles';
 
-function formatOsBadge(platform: 'ios' | 'android', osVersion: string): string {
-    return platform === 'ios' ? `iOS ${osVersion}` : `Android ${osVersion}`;
-}
-
-function DeviceItem(props: { ikPubHex: string; meta: SDeviceMeta }) {
-    const { ikPubHex, meta } = props;
+function DeviceItem(props: { ikPubHex: string; meta: SDeviceMeta; isCurrent: boolean }) {
+    const { ikPubHex, meta, isCurrent } = props;
 
     const { t } = useTranslation();
     const rootNavigation = useNavigation<RootStackNavigationProp>();
@@ -52,25 +48,27 @@ function DeviceItem(props: { ikPubHex: string; meta: SDeviceMeta }) {
             <View style={styles.deviceInfo}>
                 <View style={styles.deviceNameRow}>
                     <Text variant="labelL">{meta.name}</Text>
-                    <Badge>{formatOsBadge(meta.platform, meta.osVersion)}</Badge>
+                    {isCurrent && <Badge isUppercase>{t('security.device.current')}</Badge>}
                 </View>
                 <Text variant="bodyM" color="tertiary">
                     {t('security.device.added', { date: formatDate.format(meta.pairedAt) })}
                 </Text>
             </View>
-            <PopupMenu
-                ref={menuRef}
-                hasBackdrop={false}
-                variant="compact"
-                touchable={<Icon icon={More28} color="tertiary" />}
-            >
-                <Pressable onPress={handleDisconnect}>
-                    <View style={styles.menuItem}>
-                        <Text variant="labelL">{t('security.device.unlink')}</Text>
-                        <Icon icon={Block16} />
-                    </View>
-                </Pressable>
-            </PopupMenu>
+            {!isCurrent && (
+                <PopupMenu
+                    ref={menuRef}
+                    hasBackdrop={false}
+                    variant="compact"
+                    touchable={<Icon icon={More28} color="tertiary" />}
+                >
+                    <Pressable onPress={handleDisconnect}>
+                        <View style={styles.menuItem}>
+                            <Text variant="labelL">{t('security.device.unlink')}</Text>
+                            <Icon icon={Block16} />
+                        </View>
+                    </Pressable>
+                </PopupMenu>
+            )}
         </View>
     );
 }
@@ -94,15 +92,19 @@ export const AccountProtectedModal = () => {
         await connectToNewDevice({ secureEncryptedStorage });
     };
 
-    const devices = Object.entries(devicesMeta ?? {}).filter(
+    const currentDevice = devicesMeta?.[myIkPubHex];
+    const otherDevices = Object.entries(devicesMeta ?? {}).filter(
         ([ikPubHex]) => ikPubHex !== myIkPubHex
     );
+    const devices = currentDevice
+        ? [[myIkPubHex, currentDevice] as const, ...otherDevices]
+        : otherDevices;
 
     useEffect(() => {
-        if (devices.length === 0) {
+        if (otherDevices.length === 0) {
             navigation.goBack();
         }
-    }, [devices.length, navigation]);
+    }, [otherDevices.length, navigation]);
 
     return (
         <Screen>
@@ -128,7 +130,12 @@ export const AccountProtectedModal = () => {
                     </View>
                     <View style={styles.deviceList}>
                         {devices.map(([ikPubHex, meta]) => (
-                            <DeviceItem key={ikPubHex} ikPubHex={ikPubHex} meta={meta} />
+                            <DeviceItem
+                                key={ikPubHex}
+                                ikPubHex={ikPubHex}
+                                meta={meta}
+                                isCurrent={ikPubHex === myIkPubHex}
+                            />
                         ))}
                     </View>
                 </View>
