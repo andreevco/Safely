@@ -6,16 +6,16 @@ import {
     type ISecretEncryptor,
     type MnemonicResource
 } from '@safely/core';
+import type { Draft } from '@safely/slottree';
 import type { StorageVersion } from '@safely/slottree';
 import type { ISyncAccount } from '@safely/sync';
 import { MKDerivationDomain } from '@safely/sync';
-import type { WalletDerivation } from '@safely/sync-storage';
+import type { SyncedStorageSchema, WalletDerivation } from '@safely/sync-storage';
 
 export type { WalletDerivation } from '@safely/sync-storage';
 
 type WalletDerivationStorage = {
-    get(key: 'walletDerivation'): WalletDerivation | null;
-    set(key: 'walletDerivation', value: WalletDerivation): Promise<void>;
+    transaction(f: (draft: Draft<SyncedStorageSchema>) => void): Promise<void>;
 };
 
 export class WalletSeedFactory {
@@ -25,44 +25,61 @@ export class WalletSeedFactory {
         encryptor: ISecretEncryptor,
         rootSeedKey: Buffer
     ): Promise<WalletDerivation> {
-        const existing = this.storage.get('walletDerivation');
-        if (existing) {
-            throw new Error('Wallet derivation is already initialized');
-        }
-
         let encryptedRoot: string;
         try {
             encryptedRoot = await encryptor.encrypt(bytesToHex(rootSeedKey));
         } finally {
             rootSeedKey.fill(0);
         }
-        const walletDerivation: WalletDerivation = {
-            root_seed_key: encryptedRoot,
-            bip39_256_wallet_index: 0
-        };
+        let walletDerivation: WalletDerivation | undefined;
 
-        await this.storage.set('walletDerivation', walletDerivation);
+        await this.storage.transaction(draft => {
+            const existing = draft.at('walletDerivation').get();
+            if (existing) {
+                throw new Error('Wallet derivation is already initialized');
+            }
+
+            walletDerivation = {
+                root_seed_key: encryptedRoot,
+                bip39_256_wallet_index: 0
+            };
+            draft.set('walletDerivation', walletDerivation);
+        });
+
+        if (!walletDerivation) {
+            throw new Error('Wallet derivation is not initialized');
+        }
 
         return walletDerivation;
     }
 
     public async generateBip39SeedAccessor(encryptor: ISecretEncryptor): Promise<MnemonicResource> {
-        const walletDerivation = this.storage.get('walletDerivation');
+        let walletDerivation: WalletDerivation | undefined;
+
+        await this.storage.transaction(draft => {
+            const current = draft.at('walletDerivation').get();
+            if (!current) {
+                throw new Error('Wallet derivation is not initialized');
+            }
+
+            walletDerivation = {
+                root_seed_key: current.root_seed_key,
+                bip39_256_wallet_index: current.bip39_256_wallet_index
+            };
+            draft
+                .at('walletDerivation')
+                .at('bip39_256_wallet_index')
+                .set(current.bip39_256_wallet_index + 1);
+        });
+
         if (!walletDerivation) {
             throw new Error('Wallet derivation is not initialized');
         }
 
-        const walletIndex = walletDerivation.bip39_256_wallet_index;
-
-        await this.storage.set('walletDerivation', {
-            ...walletDerivation,
-            bip39_256_wallet_index: walletIndex + 1
-        });
-
         const rootSeedKey = await encryptor.decrypt(walletDerivation.root_seed_key);
         return deriveBip39WalletSeedAccessor(hexToBytes(rootSeedKey), {
             schema: 'bip39',
-            walletIndex,
+            walletIndex: walletDerivation.bip39_256_wallet_index,
             entropyBits: 128
         });
     }
