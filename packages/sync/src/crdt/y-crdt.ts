@@ -1,4 +1,4 @@
-import type { Draft, JsonValue, ObjectDraft, SlotTree } from '@safely/slottree';
+import type { Draft, SlotTree } from '@safely/slottree';
 
 export class YCRDT<T extends object> {
     constructor(private readonly doc: SlotTree<T>) {}
@@ -40,15 +40,6 @@ export class YCRDT<T extends object> {
 
     public deleteAuthor(authorId: string): void {
         this.doc.removeAuthor(authorId);
-    }
-
-    public set(key: Extract<keyof T, string>, value: unknown): void {
-        this.doc.transaction(draft => {
-            (draft as ObjectDraft<Record<string, JsonValue | undefined>>).set(
-                key,
-                value as JsonValue
-            );
-        });
     }
 
     public transaction(fn: (draft: Draft<T>) => void): void {

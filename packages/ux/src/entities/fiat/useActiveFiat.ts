@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { FiatAsset } from '@safely/core';
 
 import { useAvailableFiats } from '../../shared';
-import { useActiveAccountSyncStorageUpdate, useActiveAccountStoreSlot } from '../account';
+import { useActiveAccountStoreSlot, useActiveAccountSyncStorageSlotUpdate } from '../account';
 import { useMutation } from '../query-core';
 
 const USD_FIAT = FiatAsset.create({ symbol: 'USD', name: 'US Dollar' });
@@ -21,12 +21,9 @@ export function useActiveFiat(): FiatAsset {
 }
 
 export function useSetActiveFiat() {
-    const update = useActiveAccountSyncStorageUpdate();
+    const update = useActiveAccountSyncStorageSlotUpdate('preferredFiat');
 
     return useMutation<void, Error, { fiat: FiatAsset }>({
-        mutationFn: ({ fiat }) =>
-            update(draft => {
-                draft.set('preferredFiat', fiat.toJSON());
-            })
+        mutationFn: ({ fiat }) => update(draft => draft.set(fiat.toJSON()))
     });
 }

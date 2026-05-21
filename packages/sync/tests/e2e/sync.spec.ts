@@ -21,7 +21,9 @@ describe('Sync', () => {
     });
 
     async function setAndVerify(account: TestSyncAccount, data: WalletItem[]) {
-        await account.syncProvider.set('wallets', data);
+        await account.syncProvider.transaction(draft => {
+            draft.set('wallets', data);
+        });
         await vi.waitFor(async () => {
             // checks if all accounts synchronized
             for (const acc of accounts) {

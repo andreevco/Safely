@@ -319,7 +319,7 @@ export function useChangePortfolioMeta() {
             return update(draft =>
                 draft.update(portfolio.jsonArrayId(), activePortfolioDraft => {
                     activePortfolioDraft.set('meta', {
-                        ...activePortfolioDraft.get()!.meta,
+                        ...activePortfolioDraft.get().meta,
                         ...meta
                     });
                 })

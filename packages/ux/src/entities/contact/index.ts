@@ -71,7 +71,7 @@ export function useEditContact() {
             await update(draft => {
                 draft.update(target.jsonArrayId(), sContactDraft => {
                     if (meta) {
-                        sContactDraft.set('meta', { ...sContactDraft.get()!.meta, ...meta });
+                        sContactDraft.set('meta', { ...sContactDraft.get().meta, ...meta });
                     }
                     if (addresses) {
                         sContactDraft.set(

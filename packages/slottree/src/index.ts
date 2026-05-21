@@ -7,7 +7,14 @@ export type {
     Path,
     PathValue
 } from './core/json';
-export type { ArrayDraft, AtomicDraft, Draft, ObjectDraft } from './core/write';
+export type {
+    ArrayDraft,
+    AtomicDraft,
+    Draft,
+    EntryDraft,
+    NullableDraft,
+    ObjectDraft
+} from './core/write';
 
 export { createStorage, StorageObservers } from './core/slot-tree';
 export type { SlotTree, StorageImpl } from './core/slot-tree';
