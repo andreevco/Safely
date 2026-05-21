@@ -4,6 +4,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { createPersister, createQueryClient, QueryProvider } from '@safely/ux';
 
+import { BlurOverlay } from '@mobile/entities/security';
 import { loggerRegistry } from '@mobile/shared/logger';
 import { LoaderProvider, LoaderServiceProvider } from '@mobile/shared/providers/loader';
 import { ToastProvider, ToastServiceProvider } from '@mobile/shared/providers/toast';
@@ -36,6 +37,7 @@ export const App = () => {
                                             <ToastProvider />
                                         </LoaderProvider>
                                     </RootSuspenseGate>
+                                    <BlurOverlay />
                                 </AppContextProvider>
                             </LoaderServiceProvider>
                         </ToastServiceProvider>
