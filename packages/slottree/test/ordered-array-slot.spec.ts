@@ -395,6 +395,7 @@ describe('ordered array slots', () => {
             expect(portfolios.get()).toBeNull();
             expect(portfolios.isNull()).toBe(true);
             expect(() => portfolios.unwrap()).toThrow('Nullable draft value is null');
+            expect(portfolios.ifPresent(() => {})).toBe(false);
 
             // @ts-expect-error nullable array draft must be unwrapped or defaulted first
             expectAssignable<{ push(item: unknown): void }>(portfolios);
@@ -402,9 +403,13 @@ describe('ordered array slots', () => {
             const arrayDraft = portfolios.orDefault([]);
             expectAssignable<readonly ReadonlyPortfolio[]>(arrayDraft.get());
             arrayDraft.push({ __setId: 'p1', name: 'One' });
-            arrayDraft.entry('p1').update(item => {
-                item.set('name', 'Main');
-            });
+            expect(
+                portfolios.ifPresent(present =>
+                    present.entry('p1').update(item => {
+                        item.set('name', 'Main');
+                    })
+                )
+            ).toBe(true);
 
             expect(portfolios.get()).toEqual([{ __setId: 'p1', name: 'Main' }]);
 

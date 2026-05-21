@@ -21,6 +21,15 @@ export class AtomicDraftNode {
         this.set(null);
     }
 
+    public ifPresent(map: (draft: this) => void): boolean {
+        if (this.isNull()) {
+            return false;
+        }
+
+        map(this);
+        return true;
+    }
+
     public unwrap(): this {
         if (this.isNull()) {
             throw new Error('Nullable draft value is null');

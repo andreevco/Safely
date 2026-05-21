@@ -343,6 +343,7 @@ describe('Draft', () => {
             expect(users.get()).toBeNull();
             expect(users.isNull()).toBe(true);
             expect(() => users.unwrap()).toThrow('Nullable draft value is null');
+            expect(users.ifPresent(() => {})).toBe(false);
 
             // @ts-expect-error nullable object draft must be unwrapped or defaulted first
             expectAssignable<{ entry(key: string): unknown }>(users);
@@ -350,10 +351,13 @@ describe('Draft', () => {
             const objectDraft = users.orDefault({});
             expectAssignable<Record<string, ReadonlyNullableUser>>(objectDraft.get());
             objectDraft.entry('alice').set({ name: 'Alice' });
+            expect(
+                users.ifPresent(present => present.entry('alice').set({ name: 'Alice Present' }))
+            ).toBe(true);
 
             expect(users.get()).toEqual({
                 alice: {
-                    name: 'Alice'
+                    name: 'Alice Present'
                 }
             });
             expect(users.isNull()).toBe(false);

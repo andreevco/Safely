@@ -70,9 +70,7 @@ export function useRevokeSyncedDevice() {
             );
 
             update(draft => {
-                if (!draft.isNull()) {
-                    draft.unwrap().delete(ikPubHex);
-                }
+                draft.ifPresent(devicesMeta => devicesMeta.delete(ikPubHex));
             });
         }
     });

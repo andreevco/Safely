@@ -24,6 +24,7 @@ export interface NullableDraft<T> {
     isNull(): boolean;
     setNull(): void;
     set(value: DraftInput<T> | null): void;
+    ifPresent(map: (draft: Draft<T>) => void): boolean;
     unwrap(): Draft<T>;
     orDefault(value: DraftInput<T>): Draft<T>;
 }

@@ -274,9 +274,7 @@ export function useDeleteAccount() {
             await secureEncryptedStorage.unlock();
 
             await update(draft => {
-                if (!draft.isNull()) {
-                    draft.unwrap().delete(ikPub);
-                }
+                draft.ifPresent(devicesMeta => devicesMeta.delete(ikPub));
             });
 
             await accountFactory.deleteLocalAccount(account.accountId, secureEncryptedStorage);
