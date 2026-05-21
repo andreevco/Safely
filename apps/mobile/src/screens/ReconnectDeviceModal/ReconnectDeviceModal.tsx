@@ -8,7 +8,8 @@ import { useAccountConnectedCallback, useCreateReconnectConnector, useToast } fr
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { resources } from '@mobile/shared/resources';
-import { Screen, Text, TouchableOpacity } from '@mobile/shared/ui';
+import { DeviceLink, Screen, Text, TouchableOpacity } from '@mobile/shared/ui';
+import { Icon } from '@mobile/shared/ui/Icon';
 import { useCopy } from '@mobile/shared/utils/copy';
 
 import { styles } from './ReconnectDeviceModal.styles';
@@ -77,6 +78,12 @@ export const ReconnectDeviceModal = () => {
                             {t('deviceUnlinked.reconnect.description.afterIcon')}
                         </Text>
                     </View>
+                </View>
+                <View style={styles.banner}>
+                    <Text variant="bodyM" style={styles.bannerText}>
+                        {t('deviceUnlinked.reconnect.banner')}
+                    </Text>
+                    <Icon style={styles.bannerIcon} icon={DeviceLink} />
                 </View>
             </Screen.Content>
         </Screen>
