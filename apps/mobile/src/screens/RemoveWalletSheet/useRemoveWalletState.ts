@@ -1,9 +1,6 @@
-import { PortfolioType } from '@safely/core';
-import { useActivePortfolio } from '@safely/ux';
+import { Portfolio, PortfolioType } from '@safely/core';
 
-export function useRemoveWalletState() {
-    const portfolio = useActivePortfolio();
-
+export function useRemoveWalletState(portfolio: Portfolio) {
     if (portfolio.type === PortfolioType.WATCH_ONLY) {
         return {
             subtitleKey: 'removeWallet.watchOnly.subtitle',
