@@ -21,12 +21,12 @@ export function useActiveFiat(): FiatAsset {
 }
 
 export function useSetActiveFiat() {
-    const update = useActiveAccountSyncStorageUpdate('preferredFiat');
+    const update = useActiveAccountSyncStorageUpdate();
 
     return useMutation<void, Error, { fiat: FiatAsset }>({
         mutationFn: ({ fiat }) =>
-            update((_, storeDraft) => {
-                storeDraft.set('preferredFiat', fiat.toJSON());
+            update(draft => {
+                draft.set('preferredFiat', fiat.toJSON());
             })
     });
 }

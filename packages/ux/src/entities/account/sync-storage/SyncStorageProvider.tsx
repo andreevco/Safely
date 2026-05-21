@@ -6,7 +6,7 @@ import type { SyncedStorageStructure } from '@safely/sync-storage';
 
 import { SecretEncryptor, useAppContext } from '../../../shared';
 import { useAppState } from '../../../shared/app/useAppState';
-import { useAccounts, useActiveAccountQuery } from '../account-state';
+import { useAccounts } from '../account-state';
 import { accountStore, accountStoreActions, SYNCED_SLOT_KEYS } from './account-store';
 import { AccountStoreTransform } from './account-store-transform';
 
@@ -52,16 +52,14 @@ function useSyncObserver() {
 }
 
 function useSyncRestartOnForeground() {
-    const { data: activeAccount } = useActiveAccountQuery();
+    const accounts = useAccounts();
     const { current, previous } = useAppState();
 
     useEffect(() => {
-        if (!activeAccount) return;
-
         if (previous === 'inactive' || (previous === 'background' && current === 'active')) {
-            activeAccount.syncProvider.restart();
+            accounts.forEach(a => a.syncProvider.restart());
         }
-    }, [activeAccount, current, previous]);
+    }, [accounts, current, previous]);
 }
 
 export const SyncStorageProvider: FC<PropsWithChildren> = ({ children }) => {

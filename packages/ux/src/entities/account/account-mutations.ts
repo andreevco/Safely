@@ -18,12 +18,18 @@ import { SecretEncryptor, useAppContext, useSharedUxStorage, useTranslate } from
 import { useLoader } from '../loader';
 import { useLogger } from '../logger';
 import { useMutation } from '../query-core';
-import { useCurrentDeviceIkPub, useSetOwnSyncedDeviceMeta } from '../synced-device';
+import {
+    useCurrentDeviceIkPub,
+    useGenerateOwnSyncedDeviceMeta,
+    useSetOwnSyncedDeviceMeta
+} from '../synced-device';
 import { useToast } from '../toast';
 import type { SActivePortfolioSchema } from './local-storage';
 import { useClearActiveAccountLocalStorage } from './local-storage';
+import { accountStoreActions } from './sync-storage';
 import {
     useAccountSyncStorageUpdate,
+    useActiveAccountSyncStorageSlotUpdate,
     useActiveAccountSyncStorageUpdate
 } from './useAccountSyncStorageUpdate';
 
@@ -47,8 +53,8 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
     const factory = useAccountsFactory();
     const { mutateAsync: setActive } = useSetActiveAccount();
     const newAccountName = useNewAccountDefaultName();
-    const updatePortfolios = useAccountSyncStorageUpdate('portfolios');
-    const updateMeta = useAccountSyncStorageUpdate('meta');
+    const updateSyncStorage = useAccountSyncStorageUpdate();
+    const generateOwnMeta = useGenerateOwnSyncedDeviceMeta();
 
     return useMutation<
         ISyncAccount<SyncedStorageStructure>,
@@ -60,12 +66,8 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
             await delay();
 
             const account = await factory.createSyncAccount(params.secureEncryptedStorage);
-            await updateMeta(account, (_, storeDraft) =>
-                storeDraft.set('meta', { name: params?.name ?? newAccountName })
-            );
 
             let createdPortfolio: PortfolioBip39 | null = null;
-
             if (options?.createWallet || options?.setActive) {
                 const portfolioFactory = new PortfolioFactory(
                     new SecretEncryptor(account.secretEncryptor, params.secureEncryptedStorage)
@@ -75,11 +77,18 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
                     network: PortfolioNetworkType.MAINNET,
                     meta: { name: t('security.groups.wallet.defaultName', { number: 1 }) }
                 });
-
-                await updatePortfolios(account, (_, storeDraft) =>
-                    storeDraft.set('portfolios', [createdPortfolio!.toJSON()])
-                );
             }
+
+            await updateSyncStorage(account, draft => {
+                draft.set('meta', { name: params?.name ?? newAccountName });
+
+                const ownMeta = generateOwnMeta(account);
+                draft.at('devicesMeta').set(...ownMeta);
+
+                if (createdPortfolio) {
+                    draft.set('portfolios', [createdPortfolio.toJSON()]);
+                }
+            });
 
             await client.invalidateQueries({ queryKey: accountKey.list.toKey() });
 
@@ -248,12 +257,12 @@ export function useSetActiveAccount() {
 
 export function useChangeAccountMeta() {
     const currentMeta = useActiveAccountMeta();
-    const update = useActiveAccountSyncStorageUpdate('meta');
+    const update = useActiveAccountSyncStorageUpdate();
 
     return useMutation<void, Error, Partial<AccountMeta>>({
         async mutationFn(meta) {
-            await update((_, storeDraft) => {
-                storeDraft.set('meta', { ...currentMeta, ...meta });
+            await update(draft => {
+                draft.set('meta', { ...currentMeta, ...meta });
             });
         }
     });
@@ -266,7 +275,7 @@ export function useDeleteAccount() {
     const { storage } = useAppContext();
     const ikPub = useCurrentDeviceIkPub();
     const clearActiveAccountLocalStorage = useClearActiveAccountLocalStorage();
-    const update = useActiveAccountSyncStorageUpdate('devicesMeta');
+    const update = useActiveAccountSyncStorageSlotUpdate('devicesMeta');
 
     return useMutation({
         async mutationFn() {
@@ -301,7 +310,6 @@ export function useEraseAllData() {
 
     return useMutation({
         async mutationFn() {
-            resetAccountsFactory();
             try {
                 await clearAllData();
             } catch (e) {
@@ -310,6 +318,8 @@ export function useEraseAllData() {
             }
 
             queryClient.clear();
+            accountStoreActions.clear();
+            resetAccountsFactory();
         }
     });
 }

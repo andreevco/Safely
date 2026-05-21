@@ -25,13 +25,13 @@ import {
 
 import { useTranslate, useSecurityCheck, useAppContext } from '../../shared';
 import { useSuspenseQuery } from '../../shared';
-import type { SActivePortfolioSchema } from '../account';
+import type { SActivePortfolioSchema, UseAccountSyncStorageUpdateOptions } from '../account';
+import { useActiveAccountSyncStorageSlotUpdate } from '../account';
 import { useActiveAccountStoreSlot } from '../account';
 import {
     useActiveAccountLocalStorage,
     useActiveAccountQuery,
-    useActiveAccountQueryKey,
-    useActiveAccountSyncStorageUpdate
+    useActiveAccountQueryKey
 } from '../account';
 import { useErrorToast } from '../errors';
 import { useMutation } from '../query-core';
@@ -43,12 +43,12 @@ export function usePortfolios(): Portfolio[] {
     return useActiveAccountStoreSlot('portfolios') ?? EMPTY_PORTFOLIOS;
 }
 
-export function useAddPortfolio() {
-    const update = useActiveAccountSyncStorageUpdate('portfolios');
+export function useAddPortfolio(options?: UseAccountSyncStorageUpdateOptions) {
+    const update = useActiveAccountSyncStorageSlotUpdate('portfolios', options);
 
     return useMutation<void, Error, Portfolio>({
         async mutationFn(portfolio) {
-            update(draft => draft.push(portfolio.toJSON()));
+            return update(draft => draft.push(portfolio.toJSON()));
         }
     });
 }
@@ -62,7 +62,7 @@ export function useNewPortfolioFallbackName() {
 
 export function useGeneratePortfolio() {
     const { mutateAsync: setActivePortfolio } = useSetActivePortfolio();
-    const { mutateAsync: addAccount } = useAddPortfolio();
+    const { mutateAsync: addAccount } = useAddPortfolio({ showErrorToast: false });
 
     const errorToast = useErrorToast({
         PortfolioGenerationFailedError: 'importWalletScreen.errors.failedToGenerate'
@@ -96,7 +96,7 @@ export function useGeneratePortfolio() {
 }
 
 export function useImportPortfolio() {
-    const { mutateAsync: addPortfolio } = useAddPortfolio();
+    const { mutateAsync: addPortfolio } = useAddPortfolio({ showErrorToast: false });
     const { mutateAsync: setActivePortfolio } = useSetActivePortfolio();
     const toast = useToast();
     const t = useTranslate();
@@ -153,23 +153,23 @@ export function useImportPortfolio() {
 }
 
 export function useDeletePortfolio() {
-    const update = useActiveAccountSyncStorageUpdate('portfolios');
+    const update = useActiveAccountSyncStorageSlotUpdate('portfolios');
     const check = useSecurityCheck();
 
     return useMutation<void, Error, Portfolio>({
         async mutationFn(portfolio) {
             await check();
-            update(draft => draft.remove(portfolio.jsonArrayId()));
+            await update(draft => draft.remove(portfolio.jsonArrayId()));
         }
     });
 }
 
 export function useReorderPortfolios() {
-    const update = useActiveAccountSyncStorageUpdate('portfolios');
+    const update = useActiveAccountSyncStorageSlotUpdate('portfolios');
 
     return useMutation<void, Error, Portfolio[]>({
         async mutationFn(nextPortfoliosOrder) {
-            update(draft => draft.reorder(nextPortfoliosOrder.map(p => p.jsonArrayId())));
+            await update(draft => draft.reorder(nextPortfoliosOrder.map(p => p.jsonArrayId())));
         }
     });
 }
@@ -312,11 +312,11 @@ export function useSetActivePortfolio() {
 }
 
 export function useChangePortfolioMeta() {
-    const update = useActiveAccountSyncStorageUpdate('portfolios');
+    const update = useActiveAccountSyncStorageSlotUpdate('portfolios');
 
     return useMutation<void, Error, { portfolio: Portfolio; meta: Partial<PortfolioMeta> }>({
-        async mutationFn({ portfolio, meta }) {
-            update(draft =>
+        mutationFn({ portfolio, meta }) {
+            return update(draft =>
                 draft.update(portfolio.jsonArrayId(), activePortfolioDraft => {
                     activePortfolioDraft.set('meta', {
                         ...activePortfolioDraft.get()!.meta,
@@ -330,12 +330,12 @@ export function useChangePortfolioMeta() {
 
 export function useRecordActivePortfolioSecretReveal() {
     const activePortfolio = useActivePortfolio();
-    const update = useActiveAccountSyncStorageUpdate('portfolios');
+    const update = useActiveAccountSyncStorageSlotUpdate('portfolios');
     const { deviceInfo } = useAppContext();
 
     return useMutation({
-        async mutationFn() {
-            update(draft =>
+        mutationFn() {
+            return update(draft =>
                 draft.update(activePortfolio.jsonArrayId(), activePortfolioDraft => {
                     const bip39Draft = activePortfolioDraft.narrow(
                         (p): p is Extract<typeof p, { type: typeof PortfolioType.BIP39 }> =>
