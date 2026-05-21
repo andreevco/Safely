@@ -401,6 +401,7 @@
         "title": "Настройки",
         "deviceConnected": "Успешно привязано",
         "addAccount": "Добавить аккаунт",
+        "linkDevice": "Привязать устройство",
         "walletsCount_one": "{{count}} кошелёк",
         "walletsCount_few": "{{count}} кошелька",
         "walletsCount_many": "{{count}} кошельков",
