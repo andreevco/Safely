@@ -20,9 +20,14 @@ export const initialSyncing = fromPromise(
 
         let lastState;
         try {
-            lastState = await input.snapshotsApi.getActualSnapshot({
-                withProofChainTo: knownState.snapshotProof.toString('hex')
-            });
+            lastState = await input.snapshotsApi.getActualSnapshot(
+                {
+                    withProofChainTo: knownState.snapshotProof.toString('hex')
+                },
+                {
+                    signal
+                }
+            );
         } catch (e) {
             throw await classifyError(e);
         }
