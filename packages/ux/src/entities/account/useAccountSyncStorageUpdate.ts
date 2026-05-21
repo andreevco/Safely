@@ -38,7 +38,7 @@ export function useAccountSyncStorageUpdate<T extends SyncedSlotKey>(slot: T) {
                         .getState()
                         .accountsData.get(account.accountId);
                     if (currentStoreData) {
-                        const optimistic = draft.get()![slot] as SyncedStorageSchema[T];
+                        const optimistic = draft.get()[slot] as SyncedStorageSchema[T];
                         accountStoreActions.setSlot(
                             account.accountId,
                             slot,

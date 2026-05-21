@@ -669,7 +669,8 @@ function applyObjectOp(draft: StressDraft, op: Op): boolean {
 function applyCollectionOp(draft: StressDraft, op: Op): boolean {
     switch (op.type) {
         case 'nestedRecordOfObjects.setEntry': {
-            draft.at('nestedRecordOfObjects')
+            draft
+                .at('nestedRecordOfObjects')
                 .entry(op.outerKey)
                 .orDefault({})
                 .set(op.innerKey, op.value);
@@ -690,7 +691,8 @@ function applyCollectionOp(draft: StressDraft, op: Op): boolean {
         }
 
         case 'nestedRecordOfNullableObjects.setEntry': {
-            draft.at('nestedRecordOfNullableObjects')
+            draft
+                .at('nestedRecordOfNullableObjects')
                 .entry(op.outerKey)
                 .orDefault({})
                 .set(op.innerKey, op.value);

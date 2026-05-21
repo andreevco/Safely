@@ -273,7 +273,11 @@ export function useDeleteAccount() {
             using secureEncryptedStorage = storage.sync.getSecureEncrypted();
             await secureEncryptedStorage.unlock();
 
-            await update(draft => draft.delete(ikPub));
+            await update(draft => {
+                if (!draft.isNull()) {
+                    draft.unwrap().delete(ikPub);
+                }
+            });
 
             await accountFactory.deleteLocalAccount(account.accountId, secureEncryptedStorage);
             await clearActiveAccountLocalStorage();

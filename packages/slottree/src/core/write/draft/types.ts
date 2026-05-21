@@ -10,11 +10,22 @@ export type Draft<T> = [DraftValue<T>] extends [readonly (infer Item)[]]
         : never
     : [DraftValue<T>] extends [object]
       ? ObjectDraft<T>
-      : AtomicDraft<T>;
+      : [Extract<T, null>] extends [never]
+        ? AtomicDraft<T>
+        : NullableDraft<Exclude<T, null>>;
 
 export interface AtomicDraft<T> {
     get(): DraftRead<T>;
     set(value: DraftInput<T>): void;
+}
+
+export interface NullableDraft<T> {
+    get(): DraftRead<T> | null;
+    isNull(): boolean;
+    setNull(): void;
+    set(value: DraftInput<T> | null): void;
+    unwrap(): Draft<T>;
+    orDefault(value: DraftInput<T>): Draft<T>;
 }
 
 type ObjectValue<T> = Extract<DraftValue<T>, object>;

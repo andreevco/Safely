@@ -42,7 +42,27 @@ const versions = defineVersionHList(
     )
 );
 
+const nullableArraySchema = z.object({
+    portfolios: z.array(sPortfolio).nullable()
+});
+
+const nullableArrayVersions = defineVersionHList(
+    hCons(
+        {
+            version: 1,
+            schema: nullableArraySchema,
+            initial: {
+                portfolios: null
+            },
+            projectUp: cloneSlot,
+            projectDown: cloneSlot
+        },
+        hNil
+    )
+);
+
 type State = z.output<typeof schema>;
+type NullableArrayState = z.output<typeof nullableArraySchema>;
 
 function createPortfolioStorage(authorId: string): StorageImpl<State> {
     return createStorage({
@@ -51,7 +71,16 @@ function createPortfolioStorage(authorId: string): StorageImpl<State> {
     }) as StorageImpl<State>;
 }
 
-function expectAssignable<T>(_value: T): void {}
+function createNullablePortfolioStorage(authorId: string): StorageImpl<NullableArrayState> {
+    return createStorage({
+        authorId,
+        versions: nullableArrayVersions
+    }) as StorageImpl<NullableArrayState>;
+}
+
+function expectAssignable<T>(_value: T): void {
+    return undefined;
+}
 
 function latest(storage: StorageImpl<State>): ContainerSlot {
     const root = storage.exportSlot();
@@ -355,5 +384,40 @@ describe('ordered array slots', () => {
     it('rejects array items without string __setIds', () => {
         expect(() => slotFromJson(['tag'], 0, '')).toThrow('string __setId');
         expect(() => slotFromJson([{ name: 'Missing id' }], 0, '')).toThrow('string __setId');
+    });
+
+    it('requires nullable array drafts to be unwrapped or defaulted', () => {
+        const storage = createNullablePortfolioStorage('device-1');
+
+        storage.transaction(draft => {
+            const portfolios = draft.at('portfolios');
+
+            expect(portfolios.get()).toBeNull();
+            expect(portfolios.isNull()).toBe(true);
+            expect(() => portfolios.unwrap()).toThrow('Nullable draft value is null');
+
+            // @ts-expect-error nullable array draft must be unwrapped or defaulted first
+            expectAssignable<{ push(item: unknown): void }>(portfolios);
+
+            const arrayDraft = portfolios.orDefault([]);
+            expectAssignable<readonly ReadonlyPortfolio[]>(arrayDraft.get());
+            arrayDraft.push({ __setId: 'p1', name: 'One' });
+            arrayDraft.entry('p1').update(item => {
+                item.set('name', 'Main');
+            });
+
+            expect(portfolios.get()).toEqual([{ __setId: 'p1', name: 'Main' }]);
+
+            portfolios.setNull();
+            expect(portfolios.get()).toBeNull();
+
+            portfolios.set([{ __setId: 'p2', name: 'Two' }]);
+            expect(portfolios.unwrap().entry('p2').get()).toEqual({
+                __setId: 'p2',
+                name: 'Two'
+            });
+        });
+
+        expect(storage.get().portfolios).toEqual([{ __setId: 'p2', name: 'Two' }]);
     });
 });

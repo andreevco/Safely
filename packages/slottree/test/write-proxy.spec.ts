@@ -50,6 +50,10 @@ type ReadonlyUser = {
     readonly active?: boolean | undefined;
 };
 
+type ReadonlyNullableUser = {
+    readonly name: string;
+};
+
 function createTestStorage() {
     return createStorage({
         authorId: 'device-1',
@@ -57,7 +61,44 @@ function createTestStorage() {
     });
 }
 
-function expectAssignable<T>(_value: T): void {}
+const nullableSchema = z.object({
+    users: z
+        .record(
+            z.string(),
+            z.object({
+                name: z.string()
+            })
+        )
+        .nullable(),
+    title: z.string().nullable()
+});
+
+const nullableVersions = defineVersionHList(
+    hCons(
+        {
+            version: 1,
+            schema: nullableSchema,
+            initial: {
+                users: null,
+                title: null
+            },
+            projectUp: cloneSlot,
+            projectDown: cloneSlot
+        },
+        hNil
+    )
+);
+
+function createNullableStorage() {
+    return createStorage({
+        authorId: 'device-1',
+        versions: nullableVersions
+    });
+}
+
+function expectAssignable<T>(_value: T): void {
+    return undefined;
+}
 
 describe('Draft', () => {
     it('sets, deletes, and reads nested object fields', () => {
@@ -290,6 +331,72 @@ describe('Draft', () => {
                 theme: 'light',
                 layout: 'mapped'
             }
+        });
+    });
+
+    it('requires nullable object drafts to be unwrapped or defaulted', () => {
+        const storage = createNullableStorage();
+
+        storage.transaction(draft => {
+            const users = draft.at('users');
+
+            expect(users.get()).toBeNull();
+            expect(users.isNull()).toBe(true);
+            expect(() => users.unwrap()).toThrow('Nullable draft value is null');
+
+            // @ts-expect-error nullable object draft must be unwrapped or defaulted first
+            expectAssignable<{ entry(key: string): unknown }>(users);
+
+            const objectDraft = users.orDefault({});
+            expectAssignable<Record<string, ReadonlyNullableUser>>(objectDraft.get());
+            objectDraft.entry('alice').set({ name: 'Alice' });
+
+            expect(users.get()).toEqual({
+                alice: {
+                    name: 'Alice'
+                }
+            });
+            expect(users.isNull()).toBe(false);
+
+            users.setNull();
+            expect(users.get()).toBeNull();
+
+            users.set({ bob: { name: 'Bob' } });
+            expect(users.unwrap().entry('bob').get()).toEqual({ name: 'Bob' });
+        });
+
+        expect(storage.read()).toEqual({
+            users: {
+                bob: {
+                    name: 'Bob'
+                }
+            },
+            title: null
+        });
+    });
+
+    it('wraps nullable atomic drafts explicitly', () => {
+        const storage = createNullableStorage();
+
+        storage.transaction(draft => {
+            const title = draft.at('title');
+
+            expectAssignable<string | null>(title.get());
+            expect(title.get()).toBeNull();
+
+            title.orDefault('initial').set('updated');
+            expect(title.get()).toBe('updated');
+
+            title.setNull();
+            expect(title.get()).toBeNull();
+
+            title.set('assigned');
+            expect(title.unwrap().get()).toBe('assigned');
+        });
+
+        expect(storage.read()).toEqual({
+            users: null,
+            title: 'assigned'
         });
     });
 });
