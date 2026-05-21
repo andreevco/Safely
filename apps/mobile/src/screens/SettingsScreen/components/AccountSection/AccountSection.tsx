@@ -86,16 +86,6 @@ export const AccountSection = () => {
                     </Cell.Content>
                     <Cell.Chevron />
                 </Cell>
-                <Cell onPress={() => navigation.navigate('NotificationsModal')}>
-                    <Cell.Content>
-                        <Cell.Row>
-                            <Cell.Title>
-                                {t('settings.groups.account.options.notifications')}
-                            </Cell.Title>
-                        </Cell.Row>
-                    </Cell.Content>
-                    <Cell.Chevron />
-                </Cell>
                 <Cell onPress={() => navigation.navigate('LanguageModal')}>
                     <Cell.Content>
                         <Cell.Row>

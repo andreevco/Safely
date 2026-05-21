@@ -62,10 +62,6 @@ export function useOnboardingFlow() {
     );
 
     const onBiometryFinished = useCallback(() => {
-        navigation.dispatch(CommonActions.navigate(routes.notifications));
-    }, [navigation]);
-
-    const onNotificationsFinished = useCallback(() => {
         if (_isSignInFlow) {
             navigation.dispatch(
                 CommonActions.reset({
@@ -92,7 +88,6 @@ export function useOnboardingFlow() {
         onSuccessSignIn,
         onPasscodeReady,
         onBiometryFinished,
-        onNotificationsFinished,
         onAccountCreatedFinished
     };
 }
