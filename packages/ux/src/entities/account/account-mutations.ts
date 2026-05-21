@@ -12,7 +12,7 @@ import type { AccountMeta, OnboardingConnector, SyncAccount } from './account-st
 import { useAccountsQueryConfig } from './account-state';
 import { useActiveAccountMeta } from './account-state';
 import { useAccounts } from './account-state';
-import { resetAccountsFactory, useAccountsFactory, useActiveAccount } from './account-state';
+import { useAccountsFactory, useActiveAccount } from './account-state';
 import { accountKey } from './keys';
 import { SecretEncryptor, useAppContext, useSharedUxStorage, useTranslate } from '../../shared';
 import { useLoader } from '../loader';
@@ -26,7 +26,6 @@ import {
 import { useToast } from '../toast';
 import type { SActivePortfolioSchema } from './local-storage';
 import { useClearActiveAccountLocalStorage } from './local-storage';
-import { accountStoreActions } from './sync-storage';
 import {
     useAccountSyncStorageUpdate,
     useActiveAccountSyncStorageSlotUpdate,
@@ -148,7 +147,7 @@ export function useCreateReconnectConnector() {
 }
 
 export function useAccountConnectedCallback(
-    connector: OnboardingConnector,
+    connector: OnboardingConnector | undefined,
     callback: (account: SyncAccount) => void,
     options?: { setAsActive: boolean; onError?: (e: Error) => void }
 ) {
@@ -160,7 +159,7 @@ export function useAccountConnectedCallback(
 
     useEffect(() => {
         let isReset = false;
-        connector.accountPromise
+        connector?.accountPromise
             .then(async account => {
                 if (isReset) {
                     return;
@@ -188,9 +187,10 @@ export function useAccountConnectedCallback(
                 options?.onError?.(e instanceof Error ? e : new Error(String(e)));
             });
         return () => {
+            connector?.abort();
             isReset = true;
         };
-    }, [connector.accountPromise, callback, client, setAsActive]);
+    }, [connector?.accountPromise, callback, client, setAsActive]);
 }
 
 export function useConnectAccountToNewDevice() {
@@ -303,9 +303,9 @@ export function useDeleteAccount() {
 export function useEraseAllData() {
     const {
         clearAllData,
+        reloadApp,
         i18n: { t }
     } = useAppContext();
-    const queryClient = useQueryClient();
     const toast = useToast();
 
     return useMutation({
@@ -315,11 +315,9 @@ export function useEraseAllData() {
             } catch (e) {
                 toast({ type: 'error', message: t('logOutAllAccounts.error') });
                 throw e;
+            } finally {
+                reloadApp();
             }
-
-            queryClient.clear();
-            accountStoreActions.clear();
-            resetAccountsFactory();
         }
     });
 }

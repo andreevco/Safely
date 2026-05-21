@@ -1,7 +1,7 @@
 import { getLocales } from 'expo-localization';
 import { FC, PropsWithChildren, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AppState } from 'react-native';
+import { AppState, DevSettings } from 'react-native';
 
 import {
     AppContext,
@@ -26,6 +26,16 @@ import {
     SECURE_ENCRYPTED_MOBILE_STORAGE_ONLY_APP_LEVEL_USE
 } from './storage';
 import packageJson from '../../package.json';
+
+const reloadApp = (): void => {
+    if (__DEV__) {
+        DevSettings.reload();
+        return;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { reloadAsync } = require('expo-updates') as typeof import('expo-updates');
+    void reloadAsync();
+};
 
 const security: Security = {
     check() {
@@ -91,6 +101,7 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
                 check: () => security.check()
             },
             clearAllData: CLEAR_ALL_MOBILE_STORAGE_ONLY_APP_LEVEL_USE_DANGER,
+            reloadApp,
             subscribeAppStateChange(callback) {
                 const subscription = AppState.addEventListener('change', state => {
                     switch (state) {

@@ -1,11 +1,10 @@
 import { useNavigation } from '@react-navigation/native';
-import { useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Image, View } from 'react-native';
 import QRCode from 'react-native-qrcode-skia';
 
-import { useCreateReconnectConnector, useLogger, useToast } from '@safely/ux';
+import { useAccountConnectedCallback, useCreateReconnectConnector, useToast } from '@safely/ux';
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { resources } from '@mobile/shared/resources';
@@ -18,40 +17,24 @@ export const ReconnectDeviceModal = () => {
     const { t } = useTranslation();
     const copy = useCopy();
     const toast = useToast();
-    const logger = useLogger();
     const navigation = useNavigation<RootStackNavigationProp>();
-    const queryClient = useQueryClient();
 
     const { mutate, data, isPending, isError } = useCreateReconnectConnector();
+    useAccountConnectedCallback(
+        data,
+        useCallback(() => {
+            navigation.goBack();
+            toast(t('deviceUnlinked.reconnect.successToast'));
+        }, [navigation, t, toast]),
+        {
+            setAsActive: true,
+            onError: useCallback(() => navigation.goBack(), [navigation])
+        }
+    );
 
     useEffect(() => {
         mutate();
     }, [mutate]);
-
-    useEffect(() => {
-        if (!data) return;
-
-        let isAlive = true;
-
-        data.accountPromise
-            .then(async () => {
-                if (!isAlive) return;
-
-                navigation.goBack();
-                toast(t('deviceUnlinked.reconnect.successToast'));
-            })
-            .catch(e => {
-                if (!isAlive) return;
-
-                logger.error('[ReconnectDeviceModal]', e);
-                navigation.goBack();
-            });
-
-        return () => {
-            isAlive = false;
-            data.abort();
-        };
-    }, [data, queryClient, navigation, toast, t, logger]);
 
     useEffect(() => {
         if (isError) navigation.goBack();

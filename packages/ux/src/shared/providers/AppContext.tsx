@@ -57,6 +57,8 @@ export interface IAppContext {
 
     clearAllData: () => Promise<void>;
 
+    reloadApp: () => void;
+
     loggerRegistry: ILoggerRegistry;
 
     security: Security;
