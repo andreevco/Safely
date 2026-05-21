@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import type { ISecretEncryptor } from '@safely/core';
+import type { Draft } from '@safely/slottree';
+import type { SyncedStorageSchema } from '@safely/sync-storage';
 
 import type { WalletDerivation } from '../src';
 import { WalletSeedFactory } from '../src';
@@ -23,6 +25,30 @@ class WalletDerivationStorage {
 
     public async set(_key: 'walletDerivation', value: WalletDerivation) {
         this.value = value;
+    }
+
+    public async transaction(f: (draft: Draft<SyncedStorageSchema>) => void) {
+        const draft = {
+            at: () => ({
+                get: () => this.value,
+                at: (key: 'bip39_256_wallet_index') => ({
+                    set: (value: WalletDerivation[typeof key]) => {
+                        if (!this.value) {
+                            throw new Error('Wallet derivation is not initialized');
+                        }
+                        this.value = {
+                            ...this.value,
+                            [key]: value
+                        };
+                    }
+                })
+            }),
+            set: (_key: 'walletDerivation', value: WalletDerivation) => {
+                this.value = value;
+            }
+        } as unknown as Draft<SyncedStorageSchema>;
+
+        f(draft);
     }
 }
 
