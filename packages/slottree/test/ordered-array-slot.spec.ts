@@ -18,6 +18,11 @@ const sPortfolio = z.object({
     name: z.string()
 });
 
+type ReadonlyPortfolio = {
+    readonly __setId: string;
+    readonly name: string;
+};
+
 const schema = z.object({
     portfolios: z.array(sPortfolio)
 });
@@ -45,6 +50,8 @@ function createPortfolioStorage(authorId: string): StorageImpl<State> {
         versions
     }) as StorageImpl<State>;
 }
+
+function expectAssignable<T>(_value: T): void {}
 
 function latest(storage: StorageImpl<State>): ContainerSlot {
     const root = storage.exportSlot();
@@ -160,12 +167,63 @@ describe('ordered array slots', () => {
 
         storage.transaction(draft => {
             draft.at('portfolios').push({ __setId: 'p1', name: 'One' });
+            expectAssignable<readonly ReadonlyPortfolio[]>(draft.at('portfolios').get());
+            expectAssignable<ReadonlyPortfolio | undefined>(
+                draft.at('portfolios').getById('missing')
+            );
+            expectAssignable<ReadonlyPortfolio | undefined>(
+                draft.at('portfolios').entry('missing').get()
+            );
+            // @ts-expect-error array lookup by id can be missing
+            expectAssignable<ReadonlyPortfolio>(draft.at('portfolios').getById('missing'));
+
             expect(draft.at('portfolios').getById('p1')).toEqual({
                 __setId: 'p1',
                 name: 'One'
             });
             expect(draft.at('portfolios').getById('missing')).toBeUndefined();
         });
+    });
+
+    it('uses entry for possibly missing array items', () => {
+        const storage = createPortfolioStorage('device-1');
+
+        storage.transaction(draft => {
+            const p1 = draft.at('portfolios').entry('p1');
+
+            expect(p1.exists()).toBe(false);
+            expect(p1.get()).toBeUndefined();
+            expect(() => p1.unwrap()).toThrow('Ordered array item "p1" does not exist');
+
+            p1.orDefault({ __setId: 'p1', name: 'One' }).set('name', 'Main');
+            expect(p1.exists()).toBe(true);
+
+            expect(p1.get()).toEqual({
+                __setId: 'p1',
+                name: 'Main'
+            });
+
+            p1.set({ __setId: 'p1', name: 'Replaced' });
+            expect(p1.get()).toEqual({
+                __setId: 'p1',
+                name: 'Replaced'
+            });
+
+            p1.update(item => {
+                item.set('name', 'Updated');
+            });
+            expect(p1.get()).toEqual({
+                __setId: 'p1',
+                name: 'Updated'
+            });
+
+            p1.delete();
+            expect(p1.exists()).toBe(false);
+            expect(() => p1.update(() => {})).toThrow('Ordered array item "p1" does not exist');
+            p1.set({ __setId: 'p1', name: 'Restored' });
+        });
+
+        expect(storage.get().portfolios).toEqual([{ __setId: 'p1', name: 'Restored' }]);
     });
 
     it('reorders items by full id list', () => {

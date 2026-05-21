@@ -18,6 +18,18 @@ export class ObjectDraftNode extends AtomicDraftNode {
         return this.createChildNode(this.cursor.child(key));
     }
 
+    public entry(key: string): ObjectEntryDraftNode {
+        return new ObjectEntryDraftNode(key, this, this.at(key));
+    }
+
+    public override get(key?: string): unknown {
+        if (key !== undefined) {
+            return this.at(key).get();
+        } else {
+            return super.get();
+        }
+    }
+
     public set(value: JsonValue): void;
     public set(key: string, value: JsonValue | RuntimeDraftMap): void;
     public set(keyOrValue: string | JsonValue, maybeValue?: JsonValue | RuntimeDraftMap): void {
@@ -51,5 +63,49 @@ export class ObjectDraftNode extends AtomicDraftNode {
     public narrow(guard: (value: unknown) => boolean): ObjectDraftNode | undefined {
         const value = this.get();
         return value !== undefined && guard(value) ? this : undefined;
+    }
+}
+
+export class ObjectEntryDraftNode {
+    constructor(
+        public readonly key: string,
+        public readonly parent: ObjectDraftNode,
+        public readonly draft: ArrayDraftNode
+    ) {}
+
+    public get(): unknown {
+        return this.draft.get();
+    }
+
+    public exists(): boolean {
+        return this.get() !== undefined;
+    }
+
+    public set(value: JsonValue): void {
+        this.parent.set(this.key, value);
+    }
+
+    public delete(): void {
+        this.parent.delete(this.key);
+    }
+
+    public update(map: (draft: unknown) => void): void {
+        map(this.unwrap());
+    }
+
+    public unwrap(): ArrayDraftNode {
+        if (!this.exists()) {
+            throw new Error(`Draft entry "${this.key}" does not exist`);
+        }
+
+        return this.draft;
+    }
+
+    public orDefault(value: JsonValue): ArrayDraftNode {
+        if (!this.exists()) {
+            this.set(value);
+        }
+
+        return this.draft;
     }
 }

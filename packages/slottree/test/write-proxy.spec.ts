@@ -45,12 +45,19 @@ const versions = defineVersionHList(
     )
 );
 
+type ReadonlyUser = {
+    readonly name: string;
+    readonly active?: boolean | undefined;
+};
+
 function createTestStorage() {
     return createStorage({
         authorId: 'device-1',
         versions
     });
 }
+
+function expectAssignable<T>(_value: T): void {}
 
 describe('Draft', () => {
     it('sets, deletes, and reads nested object fields', () => {
@@ -96,7 +103,7 @@ describe('Draft', () => {
             draft.at('users').set('carol', { name: 'Carol', active: true });
             draft.at('flags').set('ready', true);
 
-            expect(draft.at('users').at('carol').get()).toEqual({
+            expect(draft.at('users').entry('carol').unwrap().get()).toEqual({
                 name: 'Carol',
                 active: true
             });
@@ -158,6 +165,17 @@ describe('Draft', () => {
             draft.set('count', (draft.at('count').get() ?? 0) + 1);
             draft.set('title', `${draft.at('title').get()}-updated`);
 
+            expectAssignable<number>(draft.at('count').get());
+            expectAssignable<string>(draft.at('title').get());
+            // @ts-expect-error record lookup should use entry()
+            draft.at('users').at('missing');
+            expectAssignable<ReadonlyUser | undefined>(draft.at('users').entry('missing').get());
+            // @ts-expect-error record lookup can be missing
+            expectAssignable<ReadonlyUser>(draft.at('users').entry('missing').get());
+            expectAssignable<string | undefined>(draft.at('settings').at('layout').get());
+            // @ts-expect-error optional field lookup can be missing
+            expectAssignable<string>(draft.at('settings').at('layout').get());
+
             expect(draft.at('count').get()).toBe(1);
             expect(draft.at('title').get()).toBe('initial-updated');
             expect(draft.get()).toEqual({
@@ -181,6 +199,50 @@ describe('Draft', () => {
             flags: {},
             settings: {
                 theme: 'light'
+            }
+        });
+    });
+
+    it('uses entry for possibly missing object fields', () => {
+        const storage = createTestStorage();
+
+        storage.transaction(draft => {
+            const alice = draft.at('users').entry('alice');
+
+            expect(alice.exists()).toBe(false);
+            expect(alice.get()).toBeUndefined();
+            expect(() => alice.unwrap()).toThrow('Draft entry "alice" does not exist');
+
+            alice.orDefault({ name: 'Alice' }).set('active', true);
+            expect(alice.exists()).toBe(true);
+
+            expect(alice.get()).toEqual({
+                name: 'Alice',
+                active: true
+            });
+
+            alice.set({ name: 'Alice Updated' });
+            expect(alice.get()).toEqual({
+                name: 'Alice Updated'
+            });
+
+            alice.update(user => {
+                user.set('active', false);
+            });
+            expect(alice.get()).toEqual({
+                name: 'Alice Updated',
+                active: false
+            });
+
+            alice.delete();
+            expect(alice.exists()).toBe(false);
+            expect(() => alice.update(() => {})).toThrow('Draft entry "alice" does not exist');
+            alice.set({ name: 'Alice Restored' });
+        });
+
+        expect(storage.read().users).toEqual({
+            alice: {
+                name: 'Alice Restored'
             }
         });
     });

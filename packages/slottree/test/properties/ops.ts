@@ -669,14 +669,17 @@ function applyObjectOp(draft: StressDraft, op: Op): boolean {
 function applyCollectionOp(draft: StressDraft, op: Op): boolean {
     switch (op.type) {
         case 'nestedRecordOfObjects.setEntry': {
-            draft.at('nestedRecordOfObjects').at(op.outerKey).set(op.innerKey, op.value);
+            draft.at('nestedRecordOfObjects')
+                .entry(op.outerKey)
+                .orDefault({})
+                .set(op.innerKey, op.value);
             return true;
         }
 
         case 'nestedRecordOfObjects.deleteEntry': {
-            const outer = draft.at('nestedRecordOfObjects').at(op.outerKey);
+            const outer = draft.at('nestedRecordOfObjects').entry(op.outerKey);
             if (outer.get() !== undefined) {
-                outer.delete(op.innerKey);
+                outer.unwrap().delete(op.innerKey);
             }
             return true;
         }
@@ -687,14 +690,17 @@ function applyCollectionOp(draft: StressDraft, op: Op): boolean {
         }
 
         case 'nestedRecordOfNullableObjects.setEntry': {
-            draft.at('nestedRecordOfNullableObjects').at(op.outerKey).set(op.innerKey, op.value);
+            draft.at('nestedRecordOfNullableObjects')
+                .entry(op.outerKey)
+                .orDefault({})
+                .set(op.innerKey, op.value);
             return true;
         }
 
         case 'nestedRecordOfNullableObjects.deleteEntry': {
-            const outer = draft.at('nestedRecordOfNullableObjects').at(op.outerKey);
+            const outer = draft.at('nestedRecordOfNullableObjects').entry(op.outerKey);
             if (outer.get() !== undefined) {
-                outer.delete(op.innerKey);
+                outer.unwrap().delete(op.innerKey);
             }
             return true;
         }
@@ -852,14 +858,14 @@ function applyRemainingOp(draft: StressDraft, op: Op): void {
                 items: [],
                 children: {}
             });
-            draft.at('deepMixed').at(op.key).at('children').set(op.childKey, op.value);
+            draft.at('deepMixed').entry(op.key).unwrap().at('children').set(op.childKey, op.value);
             return;
         }
 
         case 'deepMixed.deleteChild': {
-            const entry = draft.at('deepMixed').at(op.key);
+            const entry = draft.at('deepMixed').entry(op.key);
             if (entry.get() !== undefined) {
-                entry.at('children').delete(op.childKey);
+                entry.unwrap().at('children').delete(op.childKey);
             }
             return;
         }
