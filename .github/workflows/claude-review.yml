@@ -146,6 +146,12 @@ jobs:
               - Logger captured in `useEffect`/`useCallback`/`useMemo` with deps
                 omitting it, at module load, or in long-lived async (timers,
                 subscriptions) that survive account switches.
+              - Account-scoped `useQuery`/`useSuspenseQuery`/`useInfiniteQuery`
+                (incl. `usePersistQuery` etc.) missing `meta: { accountId }` —
+                without it `QueryCache.onError` and persister `validateQuery`
+                fall back to systemLogger, leaking per-account errors. Treat as
+                account-scoped if the query depends on active account / wallet
+                / portfolio context.
 
             Mobile surfaces of concern: native bridge, deep links, WebViews,
             async storage, permissions, network transport, third-party SDKs.
