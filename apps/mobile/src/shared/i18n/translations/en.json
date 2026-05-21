@@ -200,6 +200,11 @@
                     "title": "Linked devices",
                     "badge": "Enabled",
                     "subtitle": "Wallet keys are stored on your linked devices."
+                },
+                "unlinked": {
+                    "title": "Device link",
+                    "badge": "OFF",
+                    "subtitle": "Re-link this device to your account."
                 }
             },
             "application": {

@@ -168,6 +168,11 @@
                     "title": "Привязанные устройства",
                     "badge": "Enabled",
                     "subtitle": "Ключи кошелька хранятся на ваших привязанных устройствах."
+                },
+                "unlinked": {
+                    "title": "Привязка устройства",
+                    "badge": "OFF",
+                    "subtitle": "Привяжите это устройство к вашему аккаунту заново."
                 }
             },
             "application": {
@@ -398,6 +403,7 @@
         "deviceConnected": "Успешно привязано",
         "qrCodeFromAnotherAccount": "QR-код от другого аккаунта. Используйте один и тот же аккаунт на обоих устройствах.",
         "addAccount": "Добавить аккаунт",
+        "linkDevice": "Привязать устройство",
         "walletsCount_one": "{{count}} кошелёк",
         "walletsCount_few": "{{count}} кошелька",
         "walletsCount_many": "{{count}} кошельков",
