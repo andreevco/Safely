@@ -39,6 +39,8 @@ export function useAccountLinkState(): AccountLinkState {
         () => account.syncProvider.syncStatusManager.getStatus()
     );
 
+    console.log('syncStatus', account.syncProvider.syncStatusManager.getStatus());
+
     if (syncStatus === SyncStatus.DEVICE_DELETED) {
         return AccountLinkState.UNLINKED;
     }
