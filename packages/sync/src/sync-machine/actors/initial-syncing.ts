@@ -2,9 +2,10 @@ import { fromPromise } from 'xstate';
 
 import type { StorageVersion } from '@safely/slottree';
 
+import { SyncStatus } from '../../sync-provider/sync-status';
 import { hex } from '../../utils/buffer';
 import type { SyncMachineConfig } from '../config';
-import { classifyError } from '../error-handler';
+import { classifyError, SyncMachineError } from '../error-handler';
 
 export const initialSyncing = fromPromise(
     async ({
@@ -30,8 +31,9 @@ export const initialSyncing = fromPromise(
             lastState.snapshot.snapshotProof.slice(0, 16) + '...'
         );
 
+        let result;
         try {
-            return await input.syncOperations.applyRemoteUpdate(
+            result = await input.syncOperations.applyRemoteUpdate(
                 {
                     kid: hex(lastState.snapshot.kid),
                     ciphertext: hex(lastState.snapshot.ciphertext),
@@ -48,5 +50,12 @@ export const initialSyncing = fromPromise(
             input.logger.error('Error during initial syncing', e);
             throw await classifyError(e);
         }
+        if (result.revoked) {
+            throw new SyncMachineError({
+                type: 'fatal',
+                status: SyncStatus.DEVICE_DELETED
+            });
+        }
+        return result;
     }
 );
