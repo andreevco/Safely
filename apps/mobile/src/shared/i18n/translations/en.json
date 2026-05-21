@@ -24,6 +24,7 @@
         "cancel": "Cancel",
         "continue": "Continue",
         "later": "Later",
+        "comingSoon": "Coming soon",
         "errors": {
             "unknown": "Something went wrong"
         }
