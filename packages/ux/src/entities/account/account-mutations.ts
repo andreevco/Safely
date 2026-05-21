@@ -14,7 +14,10 @@ import { useActiveAccountMeta } from './account-state';
 import { useAccounts } from './account-state';
 import { useAccountsFactory, useActiveAccount } from './account-state';
 import { accountKey } from './keys';
+import type { SActivePortfolioSchema } from './local-storage';
+import { useClearActiveAccountLocalStorage } from './local-storage';
 import { SecretEncryptor, useAppContext, useSharedUxStorage, useTranslate } from '../../shared';
+import { useErrorToast } from '../errors';
 import { useLoader } from '../loader';
 import { useLogger } from '../logger';
 import { useMutation } from '../query-core';
@@ -24,8 +27,6 @@ import {
     useSetOwnSyncedDeviceMeta
 } from '../synced-device';
 import { useToast } from '../toast';
-import type { SActivePortfolioSchema } from './local-storage';
-import { useClearActiveAccountLocalStorage } from './local-storage';
 import {
     useAccountSyncStorageUpdate,
     useActiveAccountSyncStorageSlotUpdate,
@@ -197,6 +198,9 @@ export function useConnectAccountToNewDevice() {
     const t = useTranslate();
     const activeAccount = useActiveAccount();
     const toast = useToast();
+    const errorToast = useErrorToast({
+        ReconnectFromAnotherAccountError: 'settings.qrCodeFromAnotherAccount'
+    });
     const { withLoader } = useLoader();
     const { qrScanner } = useAppContext();
 
@@ -215,7 +219,8 @@ export function useConnectAccountToNewDevice() {
         },
         onSuccess() {
             toast(t('settings.deviceConnected'));
-        }
+        },
+        onError: errorToast
     });
 }
 

@@ -327,6 +327,7 @@
                 "beforeIcon": "Open Safely on another device where this account is active. Go to ",
                 "afterIcon": " Settings, tap “Link device” and scan this QR code."
             },
+            "banner": "This device will have full access to your account. It can be used if your other device is lost.",
             "timeout": "Connection timed out. Please try again.",
             "successToast": "Device re-linked"
         }
@@ -459,6 +460,7 @@
     "settings": {
         "title": "Settings",
         "deviceConnected": "Successfully linked",
+        "qrCodeFromAnotherAccount": "QR code is from another account.\nUse the same account on both devices.",
         "addAccount": "Add account",
         "linkDevice": "Link device",
         "walletsCount_one": "{{count}} wallet",

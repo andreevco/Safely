@@ -71,8 +71,8 @@ export class DeviceManagementService {
     public async assertDeviceCanReconnect(ikPub: Buffer): Promise<void> {
         const device = await this.deviceRepository.getStoredDevice(getKID(ikPub));
         if (!device) {
-            throw new UnknownDeviceError(
-                `Device with the given IK ${ikPub.toString('hex')} not found.`
+            throw new ReconnectFromAnotherAccountError(
+                `Device with the given IK ${ikPub.toString('hex')} does not belong to this account.`
             );
         }
 
@@ -236,3 +236,4 @@ export class DeviceManagerError extends SyncError {}
 export class InvalidDMKSignatureError extends DeviceManagerError {}
 export class UnknownDeviceError extends DeviceManagerError {}
 export class DeviceAlreadyExistsError extends DeviceManagerError {}
+export class ReconnectFromAnotherAccountError extends DeviceManagerError {}
