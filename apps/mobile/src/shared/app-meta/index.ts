@@ -6,9 +6,8 @@ import { Build } from '@safely/core';
 export const build: Build =
     Platform.select({
         ios: 'ios' as const,
-        android: 'android' as const,
-        web: 'web' as const
-    }) ?? ('web' as const);
+        android: 'android' as const
+    }) ?? ('ios' as const);
 
 export const deviceInfo = {
     name: Device.modelName ?? (Platform.OS === 'ios' ? 'iPhone' : 'Android device'),

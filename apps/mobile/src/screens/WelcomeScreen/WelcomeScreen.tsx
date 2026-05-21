@@ -32,6 +32,8 @@ export const WelcomeScreen = () => {
 
         // resource will be closed manually in `closeStorage` because it needs to be opened on the SignInScreen
         const secureEncryptedStorage = getSecureEncrypted();
+
+        // don't ask for the password while setting app initially after first account creation during onboarding to provide smooth user experience
         secureEncryptedStorage.UNSAFE_SKIP_SECURITY_CHECK_unlock();
 
         const connector = await signIn.mutateAsync({ secureEncryptedStorage });

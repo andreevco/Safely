@@ -5,10 +5,11 @@ import { SyncStatus } from '@safely/sync';
 import type { SDeviceMeta, SyncedStorageStructure } from '@safely/sync-storage';
 
 import { useAppContext } from '../../shared';
+import type { SyncAccount } from '../account/account-state';
 import { useActiveAccount, useActiveAccountStoreSlot } from '../account/account-state';
 import {
-    useAccountSyncStorageUpdate,
-    useActiveAccountSyncStorageUpdate
+    useAccountSyncStorageSlotUpdate,
+    useActiveAccountSyncStorageSlotUpdate
 } from '../account/useAccountSyncStorageUpdate';
 import { useMutation } from '../query-core';
 
@@ -60,16 +61,16 @@ export function useAccountLinkState(): AccountLinkState {
 export function useRevokeSyncedDevice() {
     const account = useActiveAccount();
     const { storage } = useAppContext();
-    const update = useActiveAccountSyncStorageUpdate('devicesMeta');
+    const update = useActiveAccountSyncStorageSlotUpdate('devicesMeta');
 
     return useMutation({
         async mutationFn(ikPubHex: string) {
-            await account.revokeRemoteDevice(
-                Buffer.from(ikPubHex, 'hex'),
-                storage.sync.getSecureEncrypted()
-            );
+            using secureStorage = storage.sync.getSecureEncrypted();
+            await secureStorage.unlock();
 
-            update(draft => {
+            await account.revokeRemoteDevice(Buffer.from(ikPubHex, 'hex'), secureStorage);
+
+            await update(draft => {
                 draft.ifPresent(devicesMeta => devicesMeta.delete(ikPubHex));
             });
         }
@@ -77,22 +78,39 @@ export function useRevokeSyncedDevice() {
 }
 
 export function useSetOwnSyncedDeviceMeta() {
-    const { version, build, deviceInfo } = useAppContext();
-    const update = useAccountSyncStorageUpdate('devicesMeta');
+    const update = useAccountSyncStorageSlotUpdate('devicesMeta');
+    const generate = useGenerateOwnSyncedDeviceMeta();
 
     return useMutation<void, Error, ISyncAccount<SyncedStorageStructure>>({
         async mutationFn(syncAccount) {
-            const ikPubHex = syncAccount.getMyDeviceIkPub().toString('hex');
-
-            update(syncAccount, draft =>
-                draft.orDefault({}).set(ikPubHex, {
-                    name: deviceInfo.name,
-                    platform: build as 'ios' | 'android',
-                    osVersion: deviceInfo.osVersion,
-                    appVersion: version,
-                    pairedAt: draft.get()?.[ikPubHex]?.pairedAt ?? Date.now()
-                })
-            );
+            await update(syncAccount, draft => {
+                const [key, value] = generate(syncAccount);
+                if (!draft.get()?.[key]) {
+                    draft.set(key, value);
+                }
+            });
         }
     });
+}
+
+export function useGenerateOwnSyncedDeviceMeta() {
+    const { version, build, deviceInfo } = useAppContext();
+
+    return useCallback(
+        (account: SyncAccount) => {
+            const ikPubHex = account.getMyDeviceIkPub().toString('hex');
+
+            return [
+                ikPubHex,
+                {
+                    name: deviceInfo.name,
+                    platform: build,
+                    osVersion: deviceInfo.osVersion,
+                    appVersion: version,
+                    pairedAt: Date.now()
+                }
+            ] as const;
+        },
+        [version, build, deviceInfo]
+    );
 }
