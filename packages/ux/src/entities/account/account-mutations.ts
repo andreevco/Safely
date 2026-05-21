@@ -29,8 +29,7 @@ import { useClearActiveAccountLocalStorage } from './local-storage';
 import { accountStoreActions } from './sync-storage';
 import {
     useAccountSyncStorageUpdate,
-    useActiveAccountSyncStorageSlotUpdate,
-    useActiveAccountSyncStorageUpdate
+    useActiveAccountSyncStorageSlotUpdate
 } from './useAccountSyncStorageUpdate';
 
 export * from './local-storage';
@@ -82,8 +81,8 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
             await updateSyncStorage(account, draft => {
                 draft.set('meta', { name: params?.name ?? newAccountName });
 
-                const ownMeta = generateOwnMeta(account);
-                draft.at('devicesMeta').orDefault({}).set(ownMeta[0], ownMeta[1]);
+                const { key, value } = generateOwnMeta(account);
+                draft.at('devicesMeta').orDefault({}).set(key, value);
 
                 if (createdPortfolio) {
                     draft.set('portfolios', [createdPortfolio.toJSON()]);
@@ -257,13 +256,11 @@ export function useSetActiveAccount() {
 
 export function useChangeAccountMeta() {
     const currentMeta = useActiveAccountMeta();
-    const update = useActiveAccountSyncStorageUpdate();
+    const update = useActiveAccountSyncStorageSlotUpdate('meta');
 
     return useMutation<void, Error, Partial<AccountMeta>>({
         async mutationFn(meta) {
-            await update(draft => {
-                draft.set('meta', { ...currentMeta, ...meta });
-            });
+            await update(draft => draft.set({ ...currentMeta, ...meta }));
         }
     });
 }

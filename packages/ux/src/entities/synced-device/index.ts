@@ -84,7 +84,7 @@ export function useSetOwnSyncedDeviceMeta() {
     return useMutation<void, Error, ISyncAccount<SyncedStorageStructure>>({
         async mutationFn(syncAccount) {
             await update(syncAccount, draft => {
-                const [key, value] = generate(syncAccount);
+                const { key, value } = generate(syncAccount);
                 draft.orDefault({}).entry(key).orDefault(value);
             });
         }
@@ -98,16 +98,16 @@ export function useGenerateOwnSyncedDeviceMeta() {
         (account: SyncAccount) => {
             const ikPubHex = account.getMyDeviceIkPub().toString('hex');
 
-            return [
-                ikPubHex,
-                {
+            return {
+                key: ikPubHex,
+                value: {
                     name: deviceInfo.name,
                     platform: build,
                     osVersion: deviceInfo.osVersion,
                     appVersion: version,
                     pairedAt: Date.now()
                 }
-            ] as const;
+            };
         },
         [version, build, deviceInfo]
     );
