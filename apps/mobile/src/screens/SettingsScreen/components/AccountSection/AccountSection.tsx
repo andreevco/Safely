@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import {
+    AccountLinkState,
+    useAccountLinkState,
     useAccounts,
     useActiveAccountMeta,
     useAppContext,
@@ -21,6 +23,7 @@ import { AccountSelector } from './AccountSelector';
 export const AccountSection = () => {
     const { t } = useTranslation();
     const accounts = useAccounts();
+    const linkState = useAccountLinkState();
     const activeAccountName = useActiveAccountMeta().name;
     const navigation = useNavigation<SettingsStackNavigationProp>();
     const rootNavigation = useNavigation<RootStackNavigationProp>();
@@ -106,9 +109,11 @@ export const AccountSection = () => {
                 </Cell>
             </List.Group>
             <View style={styles.buttonsContainer}>
-                <Button type="secondary" size="small" onPress={handleAddDevice}>
-                    {t('settings.linkDevice')}
-                </Button>
+                {linkState !== AccountLinkState.UNLINKED && (
+                    <Button type="secondary" size="small" onPress={handleAddDevice}>
+                        {t('settings.linkDevice')}
+                    </Button>
+                )}
                 <Button type="secondary" size="small" onPress={handleAddAccount}>
                     {t('settings.addAccount')}
                 </Button>

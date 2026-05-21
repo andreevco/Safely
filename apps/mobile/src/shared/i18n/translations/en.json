@@ -181,29 +181,26 @@
         },
         "device": {
             "added": "Linked {{date}}",
-            "upToDate": "Up to date",
-            "notUpToDate": "Not up to date",
-            "walletsNotSynced": "{{ count }} wallets not synced",
-            "unlink": "Unlink"
+            "unlink": "Unlink",
+            "current": "Current"
         },
         "unlinkDevice": {
             "title": "Unlink {{deviceName}}",
-            "subtitle": "This will unlink your device from this account. The account data will remain on the device but will not sync with other devices.",
+            "subtitle": "This device will be removed from your linked devices and will no longer sync with this account.",
             "confirm": "Unlink {{deviceName}}"
         },
         "groups": {
             "account": {
-                "title": "Account",
+                "title": "Data safety",
                 "protect": {
-                    "title": "Protect your account",
-                    "badge": "Set up required",
-                    "subtitle": "Link another device to protect your account. Without it, your access can't be restored if this phone is lost."
+                    "title": "Linked devices",
+                    "badge": "Required",
+                    "subtitle": "Link another device as a redundant storage for your wallet keys and other data."
                 },
                 "protection": {
-                    "title": "Account Protection",
+                    "title": "Linked devices",
                     "badge": "Enabled",
-                    "subtitle_one": "Protected with {{count}} device",
-                    "subtitle_other": "Protected with {{count}} devices"
+                    "subtitle": "Wallet keys are stored on your linked devices."
                 },
                 "unlinked": {
                     "title": "Device link",
@@ -328,6 +325,7 @@
                 "beforeIcon": "Open Safely on another device where this account is active. Go to ",
                 "afterIcon": " Settings, tap “Link device” and scan this QR code."
             },
+            "banner": "This device will have full access to your account. It can be used if your other device is lost.",
             "timeout": "Connection timed out. Please try again.",
             "successToast": "Device re-linked"
         }
@@ -460,6 +458,7 @@
     "settings": {
         "title": "Settings",
         "deviceConnected": "Successfully linked",
+        "qrCodeFromAnotherAccount": "QR code is from another account.\nUse the same account on both devices.",
         "addAccount": "Add account",
         "linkDevice": "Link device",
         "walletsCount_one": "{{count}} wallet",

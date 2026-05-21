@@ -6,7 +6,6 @@ import {
     AccountLinkState,
     useAccountLinkState,
     useHasPortfolio,
-    useSyncedDevicesMeta,
     useSecurityCheck
 } from '@safely/ux';
 
@@ -36,8 +35,6 @@ export const SecurityScreen = () => {
     const { data: lockScreenEnabled } = useLockScreenQuery();
     const { mutateAsync: setLockScreenEnabled } = useSetLockScreenEnabled();
 
-    const devicesMeta = useSyncedDevicesMeta();
-    const otherDeviceCount = devicesMeta ? Object.keys(devicesMeta).length - 1 : 0;
     const linkState = useAccountLinkState();
 
     const handleBiometryToggle = async () => {
@@ -107,9 +104,7 @@ export const SecurityScreen = () => {
                                         </View>
                                         <Cell.Row>
                                             <Cell.Subtitle numberOfLines={0}>
-                                                {t('security.groups.account.protection.subtitle', {
-                                                    count: otherDeviceCount
-                                                })}
+                                                {t('security.groups.account.protection.subtitle')}
                                             </Cell.Subtitle>
                                         </Cell.Row>
                                     </Cell.Content>

@@ -86,11 +86,11 @@
     "@babel/plugin-transform-flow-strip-types": "^7.27.1",
     "@babel/plugin-transform-runtime": "^7.28.5",
     "@expo/config-plugins": "~54.0.0",
-    "babel-preset-expo": "^54.0.0",
+    "@safely/sync-storage": "workspace:*",
     "@types/react": "catalog:",
+    "babel-preset-expo": "^54.0.0",
     "eas-cli": "^16.32.0",
-    "typescript": "catalog:",
-    "@safely/sync-storage": "workspace:*"
+    "typescript": "catalog:"
   },
   "private": true
 }
