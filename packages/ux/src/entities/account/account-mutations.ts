@@ -312,11 +312,10 @@ export function useEraseAllData() {
         async mutationFn() {
             try {
                 await clearAllData();
+                reloadApp();
             } catch (e) {
                 toast({ type: 'error', message: t('logOutAllAccounts.error') });
                 throw e;
-            } finally {
-                reloadApp();
             }
         }
     });
