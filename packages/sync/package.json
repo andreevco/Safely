@@ -1,26 +1,28 @@
 {
     "name": "@safely/sync",
     "version": "0.0.1",
+    "main": "./src/index.ts",
+    "types": "./src/index.ts",
     "scripts": {
         "compile": "tsc --noEmit",
         "dev": "tsc --watch",
-        "test": "vitest run",
-        "lint": "eslint ./src"
+        "lint": "eslint",
+        "test": "vitest run"
     },
     "dependencies": {
         "@safely/slottree": "workspace:*",
         "@noble/ciphers": "^2.0.1",
         "@noble/curves": "^2.0.1",
-        "@noble/hashes": "^2.0.1",
+        "@noble/hashes": "catalog:",
         "eventsource": "^4.1.0",
-        "xstate": "^5.26.0",
-        "yjs": "^13.6.29",
-        "zod": "^4.1.12"
+        "xstate": "catalog:",
+        "zod": "catalog:"
     },
     "devDependencies": {
-        "vitest": "^4.0.18"
+        "vitest": "^4.0.18",
+        "fast-check": "^4.7.0"
     },
     "exports": {
-        ".": "./src/index"
+        ".": "./src/index.ts"
     }
 }

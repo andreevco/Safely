@@ -6,9 +6,9 @@ import {
     AccountLinkState,
     useAccountLinkState,
     useHasPortfolio,
-    useSyncedDevicesMeta
+    useSyncedDevicesMeta,
+    useSecurityCheck
 } from '@safely/ux';
-import { useSecurityCheck } from '@safely/ux/shared/security';
 
 import { RootStackNavigationProp, SettingsStackNavigationProp } from '@mobile/app/navigation/types';
 import { useLockScreenQuery, useSetLockScreenEnabled } from '@mobile/entities/security';

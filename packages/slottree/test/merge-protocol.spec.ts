@@ -5,12 +5,13 @@ import {
     createContainerSlot,
     createOriginContainer,
     createTombstoneSlot,
+    SlotKind,
     type Slot
 } from '../src/core/slots';
 
 describe('MergeProtocol', () => {
     function atomicSlot(value: string, timestamp: number, author: string): Slot {
-        return { v: value, t: timestamp, a: author };
+        return { s: SlotKind.Atomic, v: value, t: timestamp, a: author };
     }
 
     function mergeSlots(local: Slot, incoming: Slot) {
@@ -23,7 +24,12 @@ describe('MergeProtocol', () => {
 
         const stats = mergeSlots(local, incoming);
 
-        expect(local).toEqual({ v: 'incoming', t: 2, a: 'remote' });
+        expect(local).toEqual({
+            s: SlotKind.Atomic,
+            v: 'incoming',
+            t: 2,
+            a: 'remote'
+        });
         expect(stats).toEqual({ added: 0, updated: 0, kept: 0, replaced: 1 });
     });
 
@@ -33,7 +39,12 @@ describe('MergeProtocol', () => {
 
         const stats = mergeSlots(local, incoming);
 
-        expect(local).toEqual({ v: 'local', t: 2, a: 'local' });
+        expect(local).toEqual({
+            s: SlotKind.Atomic,
+            v: 'local',
+            t: 2,
+            a: 'local'
+        });
         expect(stats).toEqual({ added: 0, updated: 0, kept: 1, replaced: 0 });
     });
 
@@ -43,14 +54,19 @@ describe('MergeProtocol', () => {
 
         mergeSlots(localAtomic, incomingTombstone);
 
-        expect(localAtomic).toEqual({ d: true, t: 2, a: 'remote' });
+        expect(localAtomic).toEqual({ s: SlotKind.Tombstone, t: 2, a: 'remote' });
 
         const localTombstone = createTombstoneSlot(2, 'local');
         const incomingAtomic = atomicSlot('incoming', 3, 'remote');
 
         mergeSlots(localTombstone, incomingAtomic);
 
-        expect(localTombstone).toEqual({ v: 'incoming', t: 3, a: 'remote' });
+        expect(localTombstone).toEqual({
+            s: SlotKind.Atomic,
+            v: 'incoming',
+            t: 3,
+            a: 'remote'
+        });
     });
 
     it('replaces between container slots and tombstones by clock order', () => {
@@ -61,7 +77,11 @@ describe('MergeProtocol', () => {
 
         mergeSlots(localContainer, incomingTombstone);
 
-        expect(localContainer).toEqual({ d: true, t: 2, a: 'remote' });
+        expect(localContainer).toEqual({
+            s: SlotKind.Tombstone,
+            t: 2,
+            a: 'remote'
+        });
 
         const localTombstone = createTombstoneSlot(2, 'local');
         const incomingContainer = createContainerSlot(3, 'remote', {
@@ -71,10 +91,17 @@ describe('MergeProtocol', () => {
         mergeSlots(localTombstone, incomingContainer);
 
         expect(localTombstone).toEqual({
-            v: { child: { v: 'remote child', t: 3, a: 'remote' } },
+            s: SlotKind.Container,
+            v: {
+                child: {
+                    s: SlotKind.Atomic,
+                    v: 'remote child',
+                    t: 3,
+                    a: 'remote'
+                }
+            },
             t: 3,
-            a: 'remote',
-            r: true
+            a: 'remote'
         });
     });
 
@@ -96,16 +123,36 @@ describe('MergeProtocol', () => {
 
         const stats = mergeSlots(local, incoming);
 
-        expect(local.v.localOnly).toEqual({ v: 'local', t: 11, a: 'local' });
-        expect(local.v.remoteOnly).toEqual({ v: 'remote', t: 12, a: 'remote' });
+        expect(local.v.localOnly).toEqual({
+            s: SlotKind.Atomic,
+            v: 'local',
+            t: 11,
+            a: 'local'
+        });
+        expect(local.v.remoteOnly).toEqual({
+            s: SlotKind.Atomic,
+            v: 'remote',
+            t: 12,
+            a: 'remote'
+        });
         expect(local.v.nested).toMatchObject({
-            r: true,
+            s: SlotKind.Container,
             t: 20,
             a: 'same-author',
             v: {
-                localNested: { v: 'local nested', t: 21, a: 'local' },
-                remoteNested: { v: 'remote nested', t: 22, a: 'remote' },
-                conflict: { v: 'newer', t: 23, a: 'remote' }
+                localNested: {
+                    s: SlotKind.Atomic,
+                    v: 'local nested',
+                    t: 21,
+                    a: 'local'
+                },
+                remoteNested: {
+                    s: SlotKind.Atomic,
+                    v: 'remote nested',
+                    t: 22,
+                    a: 'remote'
+                },
+                conflict: { s: SlotKind.Atomic, v: 'newer', t: 23, a: 'remote' }
             }
         });
         expect(stats).toEqual({ added: 2, updated: 0, kept: 2, replaced: 1 });
@@ -124,13 +171,18 @@ describe('MergeProtocol', () => {
         const stats = mergeSlots(local, incoming);
 
         expect(local).toEqual({
+            s: SlotKind.Container,
             v: {
-                shared: { v: 'remote shared', t: 12, a: 'remote' },
-                remoteOnly: { v: 'remote', t: 12, a: 'remote' }
+                shared: {
+                    s: SlotKind.Atomic,
+                    v: 'remote shared',
+                    t: 12,
+                    a: 'remote'
+                },
+                remoteOnly: { s: SlotKind.Atomic, v: 'remote', t: 12, a: 'remote' }
             },
             t: 12,
-            a: 'remote',
-            r: true
+            a: 'remote'
         });
         expect('localOnly' in local.v).toBe(false);
         expect(stats).toEqual({ added: 0, updated: 0, kept: 0, replaced: 1 });
@@ -149,13 +201,18 @@ describe('MergeProtocol', () => {
         const stats = mergeSlots(local, incoming);
 
         expect(local).toEqual({
+            s: SlotKind.Container,
             v: {
-                shared: { v: 'remote shared', t: 10, a: 'author-b' },
-                remoteOnly: { v: 'remote', t: 10, a: 'author-b' }
+                shared: {
+                    s: SlotKind.Atomic,
+                    v: 'remote shared',
+                    t: 10,
+                    a: 'author-b'
+                },
+                remoteOnly: { s: SlotKind.Atomic, v: 'remote', t: 10, a: 'author-b' }
             },
             t: 10,
-            a: 'author-b',
-            r: true
+            a: 'author-b'
         });
         expect('localOnly' in local.v).toBe(false);
         expect(stats).toEqual({ added: 0, updated: 0, kept: 0, replaced: 1 });
@@ -167,14 +224,24 @@ describe('MergeProtocol', () => {
 
         mergeSlots(local, incoming);
 
-        expect(local).toEqual({ v: 'from-b', t: 10, a: 'author-b' });
+        expect(local).toEqual({
+            s: SlotKind.Atomic,
+            v: 'from-b',
+            t: 10,
+            a: 'author-b'
+        });
 
         const winner = atomicSlot('from-b', 10, 'author-b');
         const loser = atomicSlot('from-a', 10, 'author-a');
 
         const stats = mergeSlots(winner, loser);
 
-        expect(winner).toEqual({ v: 'from-b', t: 10, a: 'author-b' });
+        expect(winner).toEqual({
+            s: SlotKind.Atomic,
+            v: 'from-b',
+            t: 10,
+            a: 'author-b'
+        });
         expect(stats).toEqual({ added: 0, updated: 0, kept: 1, replaced: 0 });
     });
 
@@ -189,6 +256,7 @@ describe('MergeProtocol', () => {
         const incoming = createOriginContainer({
             record: createContainerSlot(1, 'remote', {
                 child: {
+                    s: SlotKind.Atomic,
                     v: 'hidden but observed',
                     t: hiddenIncomingTimestamp,
                     a: 'remote'
@@ -199,7 +267,7 @@ describe('MergeProtocol', () => {
         protocol.merge(local, incoming);
 
         expect(local.v.record).toMatchObject({
-            d: true,
+            s: SlotKind.Tombstone,
             t: hiddenIncomingTimestamp - 1,
             a: 'local'
         });

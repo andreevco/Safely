@@ -5,7 +5,7 @@ import type { StorageImpl } from '../src';
 import { createStorage, DEVICES_KEY } from '../src';
 import type { StorageV1 } from './version-fixtures';
 import { identityProjection, type StorageV3, v1, v3 } from './version-fixtures';
-import { createOriginContainer, type ContainerSlot } from '../src/core/slots';
+import { createOriginContainer, SlotKind, type ContainerSlot } from '../src/core/slots';
 import { slotFromJson } from '../src/core/slots/slot-json';
 import { projection } from '../src/core/versioning/projection';
 import { defineVersionHList, hCons, hNil } from '../src/core/versioning/version';
@@ -70,10 +70,10 @@ describe('version migration', () => {
             root
         }) as StorageImpl<StorageV3>;
 
-        storage.update(draft => {
-            draft.key1 = 10;
-            draft.label = 'updated';
-            draft.key4 = 'latest-only';
+        storage.transaction(draft => {
+            draft.set('key1', 10);
+            draft.set('label', 'updated');
+            draft.set('key4', 'latest-only');
         });
 
         const exported = storage.exportSlot() as ReturnType<typeof createOriginContainer>;
@@ -124,8 +124,8 @@ describe('version migration', () => {
             root
         }) as StorageImpl<StorageV3>;
 
-        storage.update(draft => {
-            draft.label = 'updated';
+        storage.transaction(draft => {
+            draft.set('label', 'updated');
         });
 
         const exported = storage.exportSlot() as ReturnType<typeof createOriginContainer>;
@@ -148,9 +148,9 @@ describe('version migration', () => {
             versions: v3
         }) as StorageImpl<StorageV3>;
 
-        oldDevice.update(draft => {
-            draft.key1 = 42;
-            draft.key2 = 'from-v1';
+        oldDevice.transaction(draft => {
+            draft.set('key1', 42);
+            draft.set('key2', 'from-v1');
         });
 
         newDevice.merge(oldDevice.export());
@@ -248,8 +248,8 @@ describe('version migration', () => {
             versions: optionalV2
         }) as StorageImpl<z.output<typeof schemaOptionalV2>>;
 
-        oldDevice.update(draft => {
-            delete draft.optional;
+        oldDevice.transaction(draft => {
+            draft.delete('optional');
         });
 
         newDevice.merge(oldDevice.export());
@@ -260,6 +260,9 @@ describe('version migration', () => {
         const projectedTombstone = (newExport.v['2'] as ContainerSlot).v.renamed;
 
         expect(projectedTombstone).toEqual(oldTombstone);
-        expect(projectedTombstone).toMatchObject({ d: true, a: 'old-device' });
+        expect(projectedTombstone).toMatchObject({
+            s: SlotKind.Tombstone,
+            a: 'old-device'
+        });
     });
 });

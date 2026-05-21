@@ -17,7 +17,7 @@ export function useSendFormSuggestions(): SendFormSuggestions {
     const activePortfolio = useMemo(
         () => ({
             portfolioId: entities.portfolio.id,
-            derivation: entities.kind === 'bip39' ? entities.derivation : undefined
+            derivation: entities.type === 'bip39' ? entities.derivation : undefined
         }),
         [entities]
     );

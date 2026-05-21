@@ -3,15 +3,14 @@ import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
 
+import type { SDeviceMeta } from '@safely/sync-storage';
 import {
     useAppContext,
     useConnectAccountToNewDevice,
     useCurrentDeviceIkPub,
-    useCurrentDeviceMetaSyncedState,
     useSyncedDevicesMeta
 } from '@safely/ux';
-import { useDateFormatter } from '@safely/ux/shared/format/date';
-import { DeviceMeta } from '@safely/ux/shared/storage/account/synced/schemas';
+import { useDateFormatter } from '@safely/ux';
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import {
@@ -32,22 +31,13 @@ function formatOsBadge(platform: 'ios' | 'android', osVersion: string): string {
     return platform === 'ios' ? `iOS ${osVersion}` : `Android ${osVersion}`;
 }
 
-function DeviceItem(props: { ikPubHex: string; meta: DeviceMeta }) {
+function DeviceItem(props: { ikPubHex: string; meta: SDeviceMeta }) {
     const { ikPubHex, meta } = props;
 
     const { t } = useTranslation();
     const rootNavigation = useNavigation<RootStackNavigationProp>();
     const menuRef = useRef<PopupMenuRef>(null);
     const formatDate = useDateFormatter({ month: 'short', day: 'numeric', year: 'numeric' });
-
-    const devicePortfolioHashes = Object.entries(meta.syncState.portfoliosHashes);
-    const currentDeviceMeta = useCurrentDeviceMetaSyncedState();
-    const isUpToDate = currentDeviceMeta?.stateHash === meta.syncState.stateHash;
-    const notSyncedWalletsCount = currentDeviceMeta
-        ? Object.entries(currentDeviceMeta.portfoliosHashes).filter(([id, hash]) =>
-              devicePortfolioHashes.every(([id2, hash2]) => id !== id2 || hash !== hash2)
-          ).length
-        : 0;
 
     const handleDisconnect = () => {
         menuRef.current?.close();
@@ -64,12 +54,6 @@ function DeviceItem(props: { ikPubHex: string; meta: DeviceMeta }) {
                     <Text variant="labelL">{meta.name}</Text>
                     <Badge>{formatOsBadge(meta.platform, meta.osVersion)}</Badge>
                 </View>
-                <Text variant="bodyM" color="secondary">
-                    {t(isUpToDate ? 'security.device.upToDate' : 'security.device.notUpToDate')}
-                    {notSyncedWalletsCount > 0 &&
-                        ' · ' +
-                            t('security.device.walletsNotSynced', { count: notSyncedWalletsCount })}
-                </Text>
                 <Text variant="bodyM" color="tertiary">
                     {t('security.device.added', { date: formatDate.format(meta.pairedAt) })}
                 </Text>

@@ -30,12 +30,12 @@ export function useOnboardingFlow() {
         }
     } = useAppContext();
 
-    const onStartCreate = useCallback(() => {
+    const onSuccessCreate = useCallback(() => {
         _isSignInFlow = false;
         navigation.dispatch(CommonActions.navigate(routes.passcode));
     }, [navigation]);
 
-    const onStartSignIn = useCallback(() => {
+    const onSuccessSignIn = useCallback(() => {
         _isSignInFlow = true;
         navigation.dispatch(CommonActions.navigate(routes.passcode));
     }, [navigation]);
@@ -82,8 +82,8 @@ export function useOnboardingFlow() {
     }, [navigation]);
 
     return {
-        onStartCreate,
-        onStartSignIn,
+        onSuccessCreate,
+        onSuccessSignIn,
         onPasscodeReady,
         onBiometryFinished,
         onAccountCreatedFinished

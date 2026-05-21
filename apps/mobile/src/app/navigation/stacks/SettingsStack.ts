@@ -5,8 +5,6 @@ import { DevToolsLogsScreen } from '@mobile/screens/DevToolsLogsScreen';
 import { DevToolsScreen } from '@mobile/screens/DevToolsScreen';
 import { DevToolsXpubScreen } from '@mobile/screens/DevToolsXpubScreen';
 import { LanguageScreen } from '@mobile/screens/LanguageScreen';
-import { NewContactModal } from '@mobile/screens/NewContactModal';
-import { ConfirmDeleteContactSheet } from '@mobile/screens/NewContactModal/screens/ConfirmDeleteContactSheet';
 import { NotificationsScreen } from '@mobile/screens/NotificationsScreen';
 import { SecurityScreen } from '@mobile/screens/SecurityScreen';
 import { AccountProtectedModal, ProtectAccountModal } from '@mobile/screens/SecurityScreen/screens';
@@ -24,23 +22,9 @@ export const SettingsStack = createNativeStackNavigator({
                 ProtectAccountModal: ProtectAccountModal,
                 AccountProtectedModal: AccountProtectedModal,
                 AddressBookModal: AddressBookModal,
-                NewContactModal: NewContactModal,
                 DevToolsModal: DevToolsScreen,
                 DevToolsXpubModal: DevToolsXpubScreen,
                 DevToolsLogsModal: DevToolsLogsScreen
-            }
-        },
-        Sheets: {
-            screens: {
-                ConfirmDeleteContactSheet: ConfirmDeleteContactSheet
-            },
-            screenOptions: {
-                animationDuration: 0,
-                presentation: 'transparentModal',
-                animation: 'none',
-                contentStyle: {
-                    backgroundColor: 'transparent'
-                }
             }
         }
     },

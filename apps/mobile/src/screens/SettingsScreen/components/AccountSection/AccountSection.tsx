@@ -5,7 +5,7 @@ import { View } from 'react-native';
 
 import {
     useAccounts,
-    useActiveAccount,
+    useActiveAccountMeta,
     useAppContext,
     useChangeAccountMeta,
     useConnectAccountToNewDevice
@@ -21,7 +21,7 @@ import { AccountSelector } from './AccountSelector';
 export const AccountSection = () => {
     const { t } = useTranslation();
     const accounts = useAccounts();
-    const account = useActiveAccount();
+    const activeAccountName = useActiveAccountMeta().name;
     const navigation = useNavigation<SettingsStackNavigationProp>();
     const rootNavigation = useNavigation<RootStackNavigationProp>();
     const { mutateAsync: changeAccountMeta } = useChangeAccountMeta();
@@ -35,7 +35,7 @@ export const AccountSection = () => {
 
     const handleEditAccount = () => {
         rootNavigation.navigate('CustomizeAccountModal', {
-            defaultName: account.meta.name,
+            defaultName: activeAccountName,
             onSave: async (name: string) => {
                 await changeAccountMeta({ name });
                 rootNavigation.pop();

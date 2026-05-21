@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
 
 import { BTC_ASSET } from '@safely/core';
-import { useChart } from '@safely/ux/entities/asset/useChart';
+import { useChart } from '@safely/ux';
 
 import type { ChartPoint } from '@mobile/shared/utils/chart';
 

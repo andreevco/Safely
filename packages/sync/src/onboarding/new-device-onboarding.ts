@@ -1,5 +1,6 @@
 import { ed25519, x25519 } from '@noble/curves/ed25519.js';
-import type { ZodType } from 'zod';
+
+import type { StorageVersion } from '@safely/slottree';
 
 import { decryptOnboardingMessagePayload, deriveOnboardingKey } from './crypto';
 import { QRMessageCodec, QRMessageOperation } from './onboarding-codec';
@@ -13,16 +14,17 @@ import type { ITreeStorage } from '../I-storage';
 import type { Logger } from '../logger';
 import { OnboardingAbortedError } from '../sync-error';
 
-export class NewDeviceOnboarding<S extends Record<string, ZodType>> {
+export class NewDeviceOnboarding<Latest extends StorageVersion, Rest> {
     private ephemeralKeyPair: { publicKey: Buffer; secretKey: Buffer } | null = null;
 
     constructor(
         private readonly ik: { publicKey: Buffer; secretKey: Buffer },
         private readonly accountsApi: AccountsApi,
-        private readonly accountManager: AccountManager<S>,
+        private readonly accountManager: AccountManager<Latest, Rest>,
         private readonly secureEncryptedStorage: ITreeStorage,
         private readonly logger: Logger,
-        private readonly pollingTimeout: number
+        private readonly pollingTimeout: number,
+        private readonly storageVersion: number
     ) {}
 
     public generateOnboardingData(): Buffer {
@@ -35,12 +37,13 @@ export class NewDeviceOnboarding<S extends Record<string, ZodType>> {
         return QRMessageCodec.encode({
             type: QRMessageOperation.NEW_DEVICE_ONBOARDING,
             ephemeralPub: this.ephemeralKeyPair.publicKey,
-            ikPub: this.ik.publicKey
+            ikPub: this.ik.publicKey,
+            storageVersion: this.storageVersion
         });
     }
 
-    public async waitForOnboarding(signal?: AbortSignal): Promise<ISyncAccount<S>> {
-        for (let i = 0; i < 30; i++) {
+    public async waitForOnboarding(signal?: AbortSignal): Promise<ISyncAccount<Latest>> {
+        for (let i = 0; i < 150; i++) {
             if (signal?.aborted) {
                 throw new OnboardingAbortedError();
             }

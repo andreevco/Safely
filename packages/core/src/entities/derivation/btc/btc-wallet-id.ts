@@ -5,7 +5,7 @@ export class BtcWalletId extends Id {
     public readonly blockchain = BLOCKCHAIN_NAME.BTC;
 
     constructor(
-        private readonly ownerId: Id,
+        private readonly ownerId: string | Id,
         private readonly walletAddress: string
     ) {
         super();
