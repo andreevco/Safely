@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { TestSyncAccount, TestSyncAccountFactory } from './helpers';
 import { makeFactory, onboardDevice } from './helpers';
+import { SyncStatus } from '../../src';
 import { InMemStorage } from '../impl/storage';
 
 type WalletItem = {
@@ -22,6 +23,8 @@ describe('Sync', () => {
 
     async function setAndVerify(account: TestSyncAccount, data: WalletItem[]) {
         await account.syncProvider.set('wallets', data);
+        await account.syncProvider.syncStatusManager.waitForStatus(SyncStatus.SYNCHRONIZED);
+
         await vi.waitFor(async () => {
             // checks if all accounts synchronized
             for (const acc of accounts) {
