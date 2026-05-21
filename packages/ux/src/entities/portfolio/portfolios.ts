@@ -202,6 +202,7 @@ export function useActivePortfolioEntitiesIdsQuery<TData = SActivePortfolioSchem
             return get();
         },
         staleTime: Infinity,
+        meta: { accountId: activeAccount?.accountId },
         select
     });
 }

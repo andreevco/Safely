@@ -106,6 +106,7 @@ export function useBtcWalletUtxo(btcWallet: BtcWallet) {
                 hasLocalNotBroadcastedCache: service.hasLocalNotBroadcastedCache
             };
         },
+        meta: { accountId: account.accountId },
         schemaKey: 'sBtcWalletUtxos',
         refetchInterval: QUERIES_REFETCH_INTERVAL.UTXO
     });

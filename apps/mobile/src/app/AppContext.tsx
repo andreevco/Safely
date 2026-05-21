@@ -86,7 +86,7 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
                 withLoader: loaderService.withLoader
             },
             loggerRegistry,
-            linking: new MobileAppLinking(loggerRegistry.systemLogger),
+            linking: new MobileAppLinking(),
             security: {
                 check: () => security.check()
             },

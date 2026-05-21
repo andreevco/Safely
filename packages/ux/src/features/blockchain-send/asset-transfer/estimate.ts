@@ -17,7 +17,11 @@ import {
     OutputsAreSpendingMoreThanInputsError
 } from '@safely/core';
 
-import { useActiveBtcWalletUtxoForEstimation, useAssets } from '../../../entities';
+import {
+    useActiveAccountQuery,
+    useActiveBtcWalletUtxoForEstimation,
+    useAssets
+} from '../../../entities';
 import {
     defineQueryKeys,
     finalKey,
@@ -57,6 +61,7 @@ export const maxSendKey = defineQueryKeys('maxSendKey', {
 export function useEstimateAssetTransfer(form: SendFormResult, options?: { enabled?: boolean }) {
     const btcEstimator = useBtcEstimator();
     const { data: utxos } = useActiveBtcWalletUtxoForEstimation();
+    const { data: activeAccount } = useActiveAccountQuery();
 
     return useQuery<TransactionTemplate>({
         queryKey: estimationKey.form(form).params({ btcEstimator, utxos }).toKey(),
@@ -98,6 +103,7 @@ export function useEstimateAssetTransfer(form: SendFormResult, options?: { enabl
                       assertUnreachable(form.blockchain);
                   }
                 : skipToken,
+        meta: { accountId: activeAccount?.accountId },
         refetchInterval: QUERIES_REFETCH_INTERVAL.TRANSACTION,
         refetchOnMount: 'always',
         placeholderData: keepPreviousData,
@@ -134,6 +140,8 @@ export function useMaxSendValueQueryConfig() {
     const btcEstimator = useBtcEstimator();
     const { data: assets } = useAssets();
     const { data: utxos } = useActiveBtcWalletUtxoForEstimation();
+    const { data: activeAccount } = useActiveAccountQuery();
+    const accountId = activeAccount?.accountId;
 
     return useCallback(
         (form: Pick<SendFormResult, 'blockchain' | 'recipient'>) => {
@@ -142,10 +150,11 @@ export function useMaxSendValueQueryConfig() {
             return {
                 queryKey: maxSendKey.form(form).params({ btcEstimator, assets, utxos }).toKey(),
                 queryFn: () => computeMaxSendValue({ form, btcEstimator, assets, utxos }),
-                staleTime: QUERIES_STALE_TIME.MAX_SEND
+                staleTime: QUERIES_STALE_TIME.MAX_SEND,
+                meta: { accountId }
             };
         },
-        [btcEstimator, assets, utxos]
+        [btcEstimator, assets, utxos, accountId]
     );
 }
 

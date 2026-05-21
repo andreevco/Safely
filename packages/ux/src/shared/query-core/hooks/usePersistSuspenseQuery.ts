@@ -18,11 +18,11 @@ export function usePersistSuspenseQuery<
 >(
     options: WithPersistMeta<SuspenseQueryOptions<TQueryFnData, TError, TData, TQueryKey>>
 ): PersistSuspenseQueryResult<TData, TError> {
-    const { schemaKey, ...rest } = options;
+    const { schemaKey, meta, ...rest } = options;
     const hydratedAt = useHydratedAt();
     const result = useSuspenseQuery({
         ...rest,
-        meta: { persist: true, schemaKey }
+        meta: { ...meta, persist: true, schemaKey }
     });
 
     return useIsActualised(result, hydratedAt);

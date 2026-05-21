@@ -3,8 +3,8 @@ import type { DehydratedState, InfiniteData } from '@tanstack/react-query';
 import type { Persister } from '@tanstack/react-query-persist-client';
 
 import type { IStorage } from '@safely/core';
-import type { Logger } from '@safely/sync';
 
+import type { ILoggerRegistry } from '../logger';
 import { cacheSchemas, isValidSchemaKey } from './cache-config';
 import { serialize, deserialize } from './serialization';
 
@@ -28,7 +28,11 @@ function isInfiniteData(data: unknown): data is InfiniteData<unknown, unknown> {
     );
 }
 
-function validateQuery(query: DehydratedQuery, logger: Logger): void {
+function validateQuery(query: DehydratedQuery, loggerRegistry: ILoggerRegistry): void {
+    const accountId = query.meta?.accountId;
+    const logger = accountId
+        ? loggerRegistry.getAccountLogger(accountId)
+        : loggerRegistry.systemLogger;
     const schemaKey = query.meta?.schemaKey;
 
     if (!query.state?.data) return;
@@ -67,7 +71,7 @@ function keepOnlyFirstInfinityPage(queries: DehydratedQuery[]) {
     }
 }
 
-export function createPersister(storage: IStorage, logger: Logger): Persister {
+export function createPersister(storage: IStorage, loggerRegistry: ILoggerRegistry): Persister {
     const basePersister = createAsyncStoragePersister({
         storage,
         serialize,
@@ -93,7 +97,7 @@ export function createPersister(storage: IStorage, logger: Logger): Persister {
 
             if (queries?.length) {
                 queries.forEach(query => {
-                    validateQuery(query, logger);
+                    validateQuery(query, loggerRegistry);
                 });
             }
 

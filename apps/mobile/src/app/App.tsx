@@ -15,9 +15,9 @@ import { REGULAR_MOBILE_STORAGE_ONLY_APP_LEVEL_USE } from './storage';
 
 const persister = createPersister(
     REGULAR_MOBILE_STORAGE_ONLY_APP_LEVEL_USE.storage.child('persister'),
-    loggerRegistry.systemLogger
+    loggerRegistry
 );
-const queryClient = createQueryClient(loggerRegistry.systemLogger);
+const queryClient = createQueryClient(loggerRegistry);
 
 export const App = () => {
     return (

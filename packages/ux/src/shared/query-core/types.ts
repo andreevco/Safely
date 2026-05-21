@@ -1,8 +1,12 @@
 import type { CacheSchemaKey } from './cache-config';
+import type { SafelyQueryMeta } from './meta';
 
 export type WithIsActualised<T> = T & { isActualised: boolean };
 
-export type WithPersistMeta<TOptions> = Omit<TOptions, 'meta'> & { schemaKey: CacheSchemaKey };
+export type WithPersistMeta<TOptions> = Omit<TOptions, 'meta'> & {
+    schemaKey: CacheSchemaKey;
+    meta?: Pick<SafelyQueryMeta, 'accountId'>;
+};
 
 export type DerivedQueryResult<TData = unknown, TError = unknown> = {
     data: TData | undefined;

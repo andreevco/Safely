@@ -9,30 +9,29 @@ export enum LinkingProtocol {
 }
 
 export abstract class Linking {
-    constructor(protected readonly logger: Logger) {}
     protected abstract readonly authorizedOpenUrlProtocols: LinkingProtocol[];
 
     protected abstract openWindow(url: string): Promise<void>;
 
-    private isValidUrlProtocol(url: string): boolean {
+    private isValidUrlProtocol(url: string, logger: Logger): boolean {
         try {
             const u = new URL(url);
             return this.authorizedOpenUrlProtocols.includes(u.protocol as LinkingProtocol);
         } catch (e) {
-            this.logger.error('Invalid URL protocol', e);
+            logger.error('Invalid URL protocol', e);
             return false;
         }
     }
 
-    public async openURL(url: string): Promise<void> {
-        if (!this.isValidUrlProtocol(url)) {
+    public async openURL(url: string, logger: Logger): Promise<void> {
+        if (!this.isValidUrlProtocol(url, logger)) {
             throw new LinkingUnsafeProtocolError();
         }
 
         try {
             await this.openWindow(url);
         } catch (e) {
-            this.logger.error('Failed to open URL', e);
+            logger.error('Failed to open URL', e);
             throw new LinkingFailedToOpenError();
         }
     }

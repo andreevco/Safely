@@ -5,6 +5,7 @@ import type { BtcApiTx } from '@safely/core';
 import { BLOCKCHAIN_NAME } from '@safely/core';
 
 import { QUERIES_REFETCH_INTERVAL, useBtcApi } from '../../../shared';
+import { useActiveAccountQuery } from '../../account/account-state';
 import { useActualBtcBlockNumber } from '../../btc-blockchain';
 import { useActiveBtcWallet } from '../../portfolio';
 import { fetchBtcActivity } from '../api';
@@ -59,6 +60,7 @@ export function useLastBtcTransactionTimestamp() {
     const btcApi = useBtcApi();
     const btcWallet = useActiveBtcWallet();
     const walletId = btcWallet.id.toString();
+    const { data: activeAccount } = useActiveAccountQuery();
 
     const historyQueryKey = activityKeys.all(walletId, {}).toKey();
 
@@ -83,6 +85,7 @@ export function useLastBtcTransactionTimestamp() {
             const page = await fetchBtcActivity(btcApi, btcWallet, 1, {});
             return extractTimestamp(page.items);
         },
-        refetchInterval: QUERIES_REFETCH_INTERVAL.LAST_BTC_TX
+        refetchInterval: QUERIES_REFETCH_INTERVAL.LAST_BTC_TX,
+        meta: { accountId: activeAccount?.accountId }
     });
 }

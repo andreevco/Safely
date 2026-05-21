@@ -4,15 +4,19 @@ import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client
 import type { FC, PropsWithChildren, ReactNode } from 'react';
 import { useEffect, useState } from 'react';
 
-import type { Logger } from '@safely/sync';
-
 import { QueryHydrationProvider } from '../contexts';
+import type { ILoggerRegistry } from '../logger';
 import { QUERIES_STALE_TIME, BUSTER_VERSION, CACHE_LIVE_TIME } from '../query-core';
 
-export function createQueryClient(logger: Logger): QueryClient {
+export function createQueryClient(loggerRegistry: ILoggerRegistry): QueryClient {
     return new QueryClient({
         queryCache: new QueryCache({
             onError: (error, query) => {
+                const accountId = query.meta?.accountId;
+                const logger = accountId
+                    ? loggerRegistry.getAccountLogger(accountId)
+                    : loggerRegistry.systemLogger;
+
                 logger.error('[QueryClient] query error', error, 'in', query.queryKey);
             }
         }),
