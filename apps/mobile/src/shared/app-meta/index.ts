@@ -1,7 +1,7 @@
 import * as Device from 'expo-device';
 import { Platform } from 'react-native';
 
-import { Build } from '@safely/core';
+import type { Build } from '@safely/core';
 
 export const build: Build =
     Platform.select({

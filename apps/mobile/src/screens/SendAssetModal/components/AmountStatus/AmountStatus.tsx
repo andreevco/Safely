@@ -5,7 +5,7 @@ import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
 import { useActiveWalletBtcBalance, useNumberFormatter } from '@safely/ux';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import type { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { Icon, InformationCircle12 } from '@mobile/shared/ui/Icon';
 import { Text } from '@mobile/shared/ui/Text';
 

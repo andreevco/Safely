@@ -3,10 +3,11 @@ import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { BtcApiUtxoWithOptionalTx, BtcAssetAmount } from '@safely/core';
+import type { BtcApiUtxoWithOptionalTx } from '@safely/core';
+import { BtcAssetAmount } from '@safely/core';
 import { useNumberFormatter, btcTxToActivityItem } from '@safely/ux';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import type { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { Text, TouchableOpacity } from '@mobile/shared/ui';
 
 import { styles } from './ReceivingBadge.styles';

@@ -1,5 +1,5 @@
 /* eslint-disable no-irregular-whitespace */
-import { StaticScreenProps } from '@react-navigation/native';
+import type { StaticScreenProps } from '@react-navigation/native';
 import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';

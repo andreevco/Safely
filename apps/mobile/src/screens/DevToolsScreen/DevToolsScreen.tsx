@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 
 import { useClearDismissedBannerIds } from '@safely/ux';
 
-import { SettingsStackNavigationProp } from '@mobile/app/navigation/types';
+import type { SettingsStackNavigationProp } from '@mobile/app/navigation/types';
 import { Cell, List, Screen, Text } from '@mobile/shared/ui';
 
 import { styles } from './DevToolsScreen.styles';

@@ -4,12 +4,12 @@ import { useTranslation } from 'react-i18next';
 import { TextInput, View } from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';
 
+import type { PortfolioMeta } from '@safely/core';
 import {
     BtcAddress,
     BtcXpub,
     PortfolioAlreadyExistsError,
     PortfolioFactory,
-    PortfolioMeta,
     PortfolioNetworkType,
     toPortfolioIdWatchOnly
 } from '@safely/core';

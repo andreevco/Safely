@@ -1,12 +1,13 @@
-import { StaticScreenProps, useNavigation } from '@react-navigation/native';
+import type { StaticScreenProps } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { notificationAsync, NotificationFeedbackType } from 'expo-haptics';
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
+import type { SendFormResult } from '@safely/ux';
 import {
-    SendFormResult,
     useActiveBtcWallet,
     useActivePortfolio,
     useEstimateAssetTransfer,
@@ -21,7 +22,7 @@ import { Checkmark96, Icon, List, Screen, Text, Image } from '@mobile/shared/ui'
 
 import { Amount, ConfirmationFooter, Wallet, TransactionCell } from './components';
 import { styles } from './ConfirmationScreen.styles';
-import { ConfirmationState } from './ConfirmationScreen.types';
+import type { ConfirmationState } from './ConfirmationScreen.types';
 
 export type SendConfirmationParams = {
     confirmationResult: SendFormResult;

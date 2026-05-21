@@ -3,7 +3,7 @@ import { impactAsync, ImpactFeedbackStyle } from 'expo-haptics';
 
 import { useActivePortfolio } from '@safely/ux';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import type { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { PortfolioName } from '@mobile/entities/portfolio';
 import { ChevronDown16, Icon, TouchableOpacity } from '@mobile/shared/ui';
 

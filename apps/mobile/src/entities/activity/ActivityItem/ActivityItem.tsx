@@ -3,7 +3,7 @@ import { View } from 'react-native';
 
 import { ContactName } from '@mobile/entities/contact';
 import { PortfolioName } from '@mobile/entities/portfolio';
-import { ActivityRow } from '@mobile/features/history/HistoryList/utils/rows';
+import type { ActivityRow } from '@mobile/features/history/HistoryList/utils/rows';
 import { Cell, Text } from '@mobile/shared/ui';
 
 import { styles } from './ActivityItem.styles';

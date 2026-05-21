@@ -12,7 +12,7 @@ import {
     useToast
 } from '@safely/ux';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import type { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { BottomSheet, Button, Text, useCloseOnReturn } from '@mobile/shared/ui';
 
 import { styles } from './AddAccountSheet.styles';

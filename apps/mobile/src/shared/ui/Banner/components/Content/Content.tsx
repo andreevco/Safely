@@ -1,6 +1,6 @@
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { View } from 'react-native';
-import { UnistylesVariants } from 'react-native-unistyles';
+import type { UnistylesVariants } from 'react-native-unistyles';
 
 import { styles } from './Content.styles';
 

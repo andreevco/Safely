@@ -10,7 +10,10 @@ import {
     useSecurityCheck
 } from '@safely/ux';
 
-import { RootStackNavigationProp, SettingsStackNavigationProp } from '@mobile/app/navigation/types';
+import type {
+    RootStackNavigationProp,
+    SettingsStackNavigationProp
+} from '@mobile/app/navigation/types';
 import { useLockScreenQuery, useSetLockScreenEnabled } from '@mobile/entities/security';
 import {
     getBiometryTranslationKey,

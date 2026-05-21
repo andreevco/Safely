@@ -1,4 +1,5 @@
-import React, { FC, PropsWithChildren, useCallback, useEffect, useState } from 'react';
+import type { FC, PropsWithChildren } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 import { FullWindowOverlay } from 'react-native-screens';
 

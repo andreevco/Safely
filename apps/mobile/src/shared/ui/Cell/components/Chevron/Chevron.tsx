@@ -1,4 +1,5 @@
-import { Icon, IconProps } from '@mobile/shared/ui/Icon';
+import type { IconProps } from '@mobile/shared/ui/Icon';
+import { Icon } from '@mobile/shared/ui/Icon';
 import { ChevronRight16 } from '@mobile/shared/ui/Icon/icons';
 
 export const Chevron = (props: Omit<IconProps, 'icon'>) => {

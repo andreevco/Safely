@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import { useAccounts, useActiveAccountMeta, useDeleteAccount, useToast } from '@safely/ux';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import type { RootStackNavigationProp } from '@mobile/app/navigation/types';
 
 export function useSignOutAccountConfirmation() {
     const { t } = useTranslation();

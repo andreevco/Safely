@@ -1,7 +1,8 @@
 import GHBottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import { useNavigation } from '@react-navigation/native';
 import React, { forwardRef, useCallback, useImperativeHandle, useMemo, useRef } from 'react';
-import { Pressable, StyleSheet, View, ViewStyle } from 'react-native';
+import type { ViewStyle } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
     interpolateColor,
     useAnimatedStyle,

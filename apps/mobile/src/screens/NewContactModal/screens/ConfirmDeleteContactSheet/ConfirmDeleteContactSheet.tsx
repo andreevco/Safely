@@ -1,14 +1,15 @@
-import { StaticScreenProps, useNavigation } from '@react-navigation/native';
+import type { StaticScreenProps } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { Contact } from '@safely/core';
+import type { Contact } from '@safely/core';
 import { useDeleteContact } from '@safely/ux';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import type { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { BottomSheet, Button, Text } from '@mobile/shared/ui';
-import { BottomSheetContextType } from '@mobile/shared/ui/BottomSheet/context';
+import type { BottomSheetContextType } from '@mobile/shared/ui/BottomSheet/context';
 
 import { styles } from './ConfirmDeleteContactSheet.styles';
 

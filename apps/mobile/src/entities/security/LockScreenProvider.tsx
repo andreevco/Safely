@@ -1,14 +1,6 @@
 import { CommonActions } from '@react-navigation/native';
-import {
-    createContext,
-    FC,
-    PropsWithChildren,
-    useCallback,
-    useContext,
-    useEffect,
-    useRef,
-    useState
-} from 'react';
+import type { FC, PropsWithChildren } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 
 import { useAppState } from '@safely/ux';
 

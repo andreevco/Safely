@@ -1,7 +1,7 @@
 import { notificationAsync, NotificationFeedbackType } from 'expo-haptics';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { TextInput } from 'react-native';
+import type { TextInput } from 'react-native';
 
 import { usePasscodeState } from '@mobile/screens/PasscodeModal/hooks';
 import { PASSCODE_DIGITS } from '@mobile/shared/constants';

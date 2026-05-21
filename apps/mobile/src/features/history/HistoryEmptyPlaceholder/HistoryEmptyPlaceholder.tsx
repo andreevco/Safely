@@ -5,7 +5,7 @@ import { View } from 'react-native';
 
 import { BTC_ASSET } from '@safely/core';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import type { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { Button, Text } from '@mobile/shared/ui';
 
 import { styles } from './HistoryEmptyPlaceholder.styles';

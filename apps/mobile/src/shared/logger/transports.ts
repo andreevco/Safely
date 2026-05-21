@@ -1,4 +1,4 @@
-import { Build } from '@safely/core';
+import type { Build } from '@safely/core';
 
 import { FileTransport } from './file-transport';
 import {

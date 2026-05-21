@@ -5,7 +5,7 @@ import { View } from 'react-native';
 
 import { useActivePortfolio, useDeletePortfolio, useToast } from '@safely/ux';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import type { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { BottomSheet, Button, ConfirmCheckbox, Text, useBottomSheet } from '@mobile/shared/ui';
 
 import { styles } from './RemoveWalletSheet.styles';

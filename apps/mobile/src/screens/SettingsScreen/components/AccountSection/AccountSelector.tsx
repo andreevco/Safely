@@ -1,16 +1,16 @@
 import { impactAsync, ImpactFeedbackStyle } from 'expo-haptics';
 import { useRef } from 'react';
 
+import type { SyncAccount } from '@safely/ux';
 import {
-    SyncAccount,
     useActiveAccount,
     useActiveAccountMeta,
     usePortfolios,
     useSetActiveAccount
 } from '@safely/ux';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
-import { PopupMenuRef } from '@mobile/shared/ui/PopupMenu';
+import type { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import type { PopupMenuRef } from '@mobile/shared/ui/PopupMenu';
 
 import { ModalAccountSelector } from './ModalAccountSelector';
 import { PopupAccountSelector } from './PopupAccountSelector';

@@ -1,6 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import type { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { WalletSelector } from '@mobile/features/portfolio';
 import { Screen } from '@mobile/shared/ui';
 

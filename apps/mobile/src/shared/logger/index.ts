@@ -1,7 +1,8 @@
 import packageJson from '../../../package.json';
 import { build, deviceInfo } from '../app-meta';
 import { LoggerRegistry } from './registry';
-import { createAccountTransport, createSystemTransport, TransportConfig } from './transports';
+import type { TransportConfig } from './transports';
+import { createAccountTransport, createSystemTransport } from './transports';
 
 const transportConfig: TransportConfig = {
     appVersion: packageJson.version,

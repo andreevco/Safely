@@ -1,8 +1,9 @@
-import { FC } from 'react';
+import type { FC } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { btcBlockWaitingTimeMinutes, Estimation } from '@safely/core';
+import type { Estimation } from '@safely/core';
+import { btcBlockWaitingTimeMinutes } from '@safely/core';
 import { useFiatEquivalent, useNumberFormatter } from '@safely/ux';
 
 import { TransactionCell } from '@mobile/screens/ConfirmationScreen/components';

@@ -1,6 +1,14 @@
-import { type TFunction } from 'i18next';
+import type { TFunction } from 'i18next';
 
-import { ContactMeta, PortfolioMeta, ellipsisMiddle } from '@safely/core';
+import type { ContactMeta, PortfolioMeta } from '@safely/core';
+import { ellipsisMiddle } from '@safely/core';
+import type {
+    useActualBtcBlockNumber,
+    useContacts,
+    useNumberFormatter,
+    usePortfolios,
+    useRate
+} from '@safely/ux';
 import {
     type ActivityItemsDatedGroupMeta,
     type BtcActivityItem,
@@ -8,12 +16,7 @@ import {
     ACTIVITY_GROUP_LABEL,
     findContactMetaByAddress,
     findPortfolioMetaByAddress,
-    getBtcTransactionDisplayStatus,
-    useActualBtcBlockNumber,
-    useContacts,
-    useNumberFormatter,
-    usePortfolios,
-    useRate
+    getBtcTransactionDisplayStatus
 } from '@safely/ux';
 
 export type HistoryHeaderRow = {

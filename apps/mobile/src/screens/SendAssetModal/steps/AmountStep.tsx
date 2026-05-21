@@ -1,14 +1,15 @@
-import { RefObject, useCallback } from 'react';
+import type { RefObject } from 'react';
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TouchableOpacity, View } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
-import { NumberFormatter } from '@safely/core';
-import { type AmountView } from '@safely/ux';
+import type { NumberFormatter } from '@safely/core';
+import type { AmountView } from '@safely/ux';
 
 import { Text } from '@mobile/shared/ui/Text';
 
-import { MaskedInputRef } from '../../../../modules/safely-masked-input/src';
+import type { MaskedInputRef } from '../../../../modules/safely-masked-input/src';
 import { AmountInput, AmountStatus, AssetSelector } from '../components';
 import { styles } from './AmountStep.styles';
 import { useAmountStepView } from './useAmountStepView';

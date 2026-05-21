@@ -4,7 +4,7 @@ import { useCallback, useMemo } from 'react';
 import { BtcXpub, PortfolioType } from '@safely/core';
 import { useActivePortfolioEntities } from '@safely/ux';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import type { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { PortfolioName } from '@mobile/entities/portfolio';
 import { Button, Cell, List, Screen, Text } from '@mobile/shared/ui';
 import { Icon, Switch16 } from '@mobile/shared/ui/Icon';

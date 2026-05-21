@@ -1,5 +1,6 @@
-import { Pressable, PressableProps, StyleProp, ViewStyle } from 'react-native';
-import { UnistylesVariants } from 'react-native-unistyles';
+import type { PressableProps, StyleProp, ViewStyle } from 'react-native';
+import { Pressable } from 'react-native';
+import type { UnistylesVariants } from 'react-native-unistyles';
 
 import { Text } from '@mobile/shared/ui/Text';
 

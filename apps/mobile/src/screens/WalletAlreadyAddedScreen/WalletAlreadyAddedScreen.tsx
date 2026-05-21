@@ -1,9 +1,10 @@
-import { CommonActions, StaticScreenProps, useNavigation } from '@react-navigation/native';
+import type { StaticScreenProps } from '@react-navigation/native';
+import { CommonActions, useNavigation } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { Portfolio } from '@safely/core';
+import type { Portfolio } from '@safely/core';
 import { getPortfolioDisplayName, useSetActivePortfolio } from '@safely/ux';
 
 import { Button, Screen, Text } from '@mobile/shared/ui';

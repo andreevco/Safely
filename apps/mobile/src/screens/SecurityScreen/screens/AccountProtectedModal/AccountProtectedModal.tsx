@@ -12,7 +12,8 @@ import {
 } from '@safely/ux';
 import { useDateFormatter } from '@safely/ux';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import type { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import type { PopupMenuRef } from '@mobile/shared/ui';
 import {
     Badge,
     Block16,
@@ -20,7 +21,6 @@ import {
     Icon,
     More28,
     PopupMenu,
-    PopupMenuRef,
     Screen,
     Text
 } from '@mobile/shared/ui';

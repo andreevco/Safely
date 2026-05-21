@@ -10,7 +10,8 @@ import { useUnistyles } from 'react-native-unistyles';
 import { ColorPicker, EmojiPicker, Text } from '@mobile/shared/ui';
 import { smoothstepGradient } from '@mobile/shared/utils';
 
-import { WALLET_COLORS, WALLET_EMOJIS, WalletIcon } from './constants';
+import type { WalletIcon } from './constants';
+import { WALLET_COLORS, WALLET_EMOJIS } from './constants';
 import { styles } from './CustomizeWalletContent.styles';
 
 interface CustomizeWalletContentProps {

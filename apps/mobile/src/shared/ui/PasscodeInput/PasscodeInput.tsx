@@ -1,7 +1,9 @@
-import { ForwardedRef, forwardRef, useCallback, useRef } from 'react';
-import { TextInput, TouchableWithoutFeedback, ViewProps } from 'react-native';
+import type { ForwardedRef } from 'react';
+import { forwardRef, useCallback, useRef } from 'react';
+import type { ViewProps } from 'react-native';
+import { TextInput, TouchableWithoutFeedback } from 'react-native';
+import type { SharedValue } from 'react-native-reanimated';
 import Animated, {
-    SharedValue,
     useAnimatedReaction,
     useAnimatedStyle,
     useSharedValue,

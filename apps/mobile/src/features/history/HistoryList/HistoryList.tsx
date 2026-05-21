@@ -22,7 +22,7 @@ import {
 
 import { ActivityItem } from '@mobile/entities/activity';
 import { Screen, Text } from '@mobile/shared/ui';
-import { ListRef } from '@mobile/shared/ui/Screen/components/List';
+import type { ListRef } from '@mobile/shared/ui/Screen/components/List';
 
 import { HistoryEmptyPlaceholder } from '../HistoryEmptyPlaceholder';
 import { NewTransactionsBubble, useNewTransactionsBubble } from './components';

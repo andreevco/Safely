@@ -5,7 +5,7 @@ import { View } from 'react-native';
 import { PortfolioType } from '@safely/core';
 import { useActivePortfolio } from '@safely/ux';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import type { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { PortfolioName } from '@mobile/entities/portfolio';
 import { Button, Cell, List } from '@mobile/shared/ui';
 

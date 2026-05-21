@@ -1,4 +1,4 @@
-import { TFunction } from 'i18next';
+import type { TFunction } from 'i18next';
 
 export function formatLockoutTime(remainingSeconds: number, t: TFunction) {
     const minutes = Math.ceil(remainingSeconds / 60);

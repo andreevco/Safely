@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 
 import { authenticateBiometry, useBiometryQuery } from '@mobile/features/biometry';
 
-import { PromptAndCheckOptions } from './types';
+import type { PromptAndCheckOptions } from './types';
 import { usePasscode } from './usePasscode';
 
 export function useMobileSecurityCheck() {

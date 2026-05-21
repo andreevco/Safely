@@ -1,9 +1,10 @@
 import { useCallback } from 'react';
-import { Platform, Text, TextLayoutEvent } from 'react-native';
+import type { TextLayoutEvent } from 'react-native';
+import { Platform, Text } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import { useUnistyles } from 'react-native-unistyles';
 
-import { ContactMeta, PortfolioMeta } from '@safely/core';
+import type { ContactMeta, PortfolioMeta } from '@safely/core';
 
 import { ContactName } from '@mobile/entities/contact';
 import { PortfolioName } from '@mobile/entities/portfolio';

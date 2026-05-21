@@ -1,8 +1,9 @@
-import { useNavigation, StaticScreenProps } from '@react-navigation/native';
+import type { StaticScreenProps } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import type { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { usePasscodeVerification } from '@mobile/entities/security';
 import { useLogOutAllConfirmation } from '@mobile/features/settings/useLogOutAllConfirmation';
 import { LockoutContent, PasscodeInput, PasscodeLayout, Screen } from '@mobile/shared/ui';

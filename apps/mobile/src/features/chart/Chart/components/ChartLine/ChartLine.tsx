@@ -1,7 +1,9 @@
 import { Canvas, Circle, Group, Line, Path, vec } from '@shopify/react-native-skia';
 import { useState } from 'react';
-import { LayoutChangeEvent, View } from 'react-native';
-import { GestureDetector, GestureType } from 'react-native-gesture-handler';
+import type { LayoutChangeEvent } from 'react-native';
+import { View } from 'react-native';
+import type { GestureType } from 'react-native-gesture-handler';
+import { GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
     type SharedValue,
     useAnimatedStyle,
@@ -13,7 +15,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useUnistyles } from 'react-native-unistyles';
 
-import { ChartPeriod } from '@mobile/features/chart/Chart/config';
+import type { ChartPeriod } from '@mobile/features/chart/Chart/config';
 import {
     DOT_RADIUS,
     FADED_LINE_COLOR,

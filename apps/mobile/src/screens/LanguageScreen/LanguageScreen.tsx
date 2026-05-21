@@ -3,9 +3,10 @@ import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { SettingsStackNavigationProp } from '@mobile/app/navigation/types';
+import type { SettingsStackNavigationProp } from '@mobile/app/navigation/types';
 import { mobileLayerSynchronousLocale } from '@mobile/app/storage';
-import { availableLanguages, LanguageCode } from '@mobile/shared/i18n';
+import type { LanguageCode } from '@mobile/shared/i18n';
+import { availableLanguages } from '@mobile/shared/i18n';
 import { Cell, List, Screen, Text } from '@mobile/shared/ui';
 import { ArrowLeft16, Checkmark28, Icon } from '@mobile/shared/ui/Icon';
 

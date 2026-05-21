@@ -1,8 +1,8 @@
-import { FC } from 'react';
+import type { FC } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { assertUnreachable } from '@safely/core';
-import { BtcApiTx } from '@safely/core/api/btc';
+import type { BtcApiTx } from '@safely/core/api/btc';
 import { useBtcTransactionDisplayStatus, useDateFormatter } from '@safely/ux';
 
 import { TableCell } from '@mobile/shared/ui';

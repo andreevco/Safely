@@ -1,5 +1,7 @@
-import { StyleProp, View, ViewStyle } from 'react-native';
-import { StyleSheet, UnistylesVariants } from 'react-native-unistyles';
+import type { StyleProp, ViewStyle } from 'react-native';
+import { View } from 'react-native';
+import type { UnistylesVariants } from 'react-native-unistyles';
+import { StyleSheet } from 'react-native-unistyles';
 
 type TickProps = UnistylesVariants<typeof styles> & {
     style?: StyleProp<ViewStyle>;

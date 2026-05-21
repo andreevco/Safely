@@ -5,7 +5,7 @@ import { ImageBackground, View } from 'react-native';
 
 import { useAppContext, useCreateExistingAccountConnector, useLinking } from '@safely/ux';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import type { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { useOnboardingFlow } from '@mobile/features/onboarding';
 import { resources } from '@mobile/shared/resources';
 import { Button, Icon, Safely96, Screen, Text } from '@mobile/shared/ui';

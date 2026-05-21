@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
-import { LayoutChangeEvent, Platform, StatusBar, View } from 'react-native';
+import type { LayoutChangeEvent, View } from 'react-native';
+import { Platform, StatusBar } from 'react-native';
 import {
     interpolateColor,
     useAnimatedProps,

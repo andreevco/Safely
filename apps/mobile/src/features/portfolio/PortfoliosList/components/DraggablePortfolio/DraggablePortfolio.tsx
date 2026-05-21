@@ -1,8 +1,10 @@
 import { memo, useMemo } from 'react';
 import { GestureDetector } from 'react-native-gesture-handler';
-import Animated, { SharedValue } from 'react-native-reanimated';
+import type { SharedValue } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 
-import { Portfolio, PortfolioType } from '@safely/core';
+import type { Portfolio } from '@safely/core';
+import { PortfolioType } from '@safely/core';
 import { useActivePortfolio, useNumberFormatter, usePortfolioBalance } from '@safely/ux';
 
 import { PortfolioName } from '@mobile/entities/portfolio';

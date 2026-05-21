@@ -1,7 +1,8 @@
 import { CommonActions, useNavigation } from '@react-navigation/native';
 import { useCallback } from 'react';
 
-import { MnemonicResource, PortfolioMeta } from '@safely/core';
+import type { PortfolioMeta } from '@safely/core';
+import { MnemonicResource } from '@safely/core';
 import {
     useGeneratePortfolio,
     useImportPortfolio,

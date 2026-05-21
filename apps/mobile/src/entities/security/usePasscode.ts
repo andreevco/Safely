@@ -7,7 +7,7 @@ import { navigationRef } from '@mobile/app/navigation/navigationRef';
 import { useMobileLayerEncryptedStorage } from '@mobile/shared/storage';
 
 import { passcodeKeys } from './keys';
-import { PromptAndCheckOptions } from './types';
+import type { PromptAndCheckOptions } from './types';
 
 export type UsePasscodeResult =
     | {

@@ -1,4 +1,4 @@
-import { StaticScreenProps } from '@react-navigation/native';
+import type { StaticScreenProps } from '@react-navigation/native';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
@@ -6,7 +6,8 @@ import { View } from 'react-native';
 import { BottomSheet, Button, ConfirmCheckbox, Text, useBottomSheet } from '@mobile/shared/ui';
 
 import { styles } from './SignOutAccountSheet.styles';
-import { AccountSyncState, useAccountSyncState } from './useAccountSyncState';
+import type { AccountSyncState } from './useAccountSyncState';
+import { useAccountSyncState } from './useAccountSyncState';
 
 type SignOutAccountParams = {
     accountName: string;

@@ -7,7 +7,7 @@ import QRCode from 'react-native-qrcode-skia';
 
 import { useCreateReconnectConnector, useLogger, useToast } from '@safely/ux';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import type { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { resources } from '@mobile/shared/resources';
 import { Screen, Text, TouchableOpacity } from '@mobile/shared/ui';
 import { useCopy } from '@mobile/shared/utils/copy';

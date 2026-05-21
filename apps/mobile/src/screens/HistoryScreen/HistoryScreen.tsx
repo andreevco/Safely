@@ -1,9 +1,10 @@
 import { useNavigation } from '@react-navigation/native';
 import { useCallback } from 'react';
 
-import { BtcActivityItem, useActivePortfolio, useHasPortfolio } from '@safely/ux';
+import type { BtcActivityItem } from '@safely/ux';
+import { useActivePortfolio, useHasPortfolio } from '@safely/ux';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import type { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { HistoryList } from '@mobile/features/history';
 import { WalletSelector } from '@mobile/features/portfolio';
 import { Screen } from '@mobile/shared/ui';

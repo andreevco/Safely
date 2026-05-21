@@ -1,7 +1,8 @@
 import * as SecureStore from 'expo-secure-store';
 import { createMMKV } from 'react-native-mmkv';
 
-import { IEnumerableStorage, ISyncSingleStorage, TreeStorage } from '@safely/core';
+import type { IEnumerableStorage, ISyncSingleStorage } from '@safely/core';
+import { TreeStorage } from '@safely/core';
 
 import { SafelySecureStoreEnum } from '../../modules/safely-secure-store-enum/src';
 
