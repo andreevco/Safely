@@ -21,10 +21,7 @@ type WalletDerivationStorage = {
 export class WalletSeedFactory {
     constructor(private readonly storage: WalletDerivationStorage) {}
 
-    public async createWalletDerivation(
-        encryptor: ISecretEncryptor,
-        rootSeedKey: Buffer
-    ): Promise<WalletDerivation> {
+    public async createWalletDerivation(encryptor: ISecretEncryptor, rootSeedKey: Buffer) {
         let encryptedRoot: string;
         try {
             encryptedRoot = await encryptor.encrypt(bytesToHex(rootSeedKey));
@@ -45,12 +42,6 @@ export class WalletSeedFactory {
             };
             draft.set('walletDerivation', walletDerivation);
         });
-
-        if (!walletDerivation) {
-            throw new Error('Wallet derivation is not initialized');
-        }
-
-        return walletDerivation;
     }
 
     public async generateBip39SeedAccessor(encryptor: ISecretEncryptor): Promise<MnemonicResource> {

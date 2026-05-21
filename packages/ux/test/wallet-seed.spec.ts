@@ -57,14 +57,12 @@ describe('WalletSeedFactory', () => {
         const storage = new WalletDerivationStorage();
         const factory = new WalletSeedFactory(storage);
 
-        const walletDerivation = await factory.createWalletDerivation(
-            passthroughEncryptor,
-            Buffer.alloc(32, 0)
-        );
+        await factory.createWalletDerivation(passthroughEncryptor, Buffer.alloc(32, 0));
 
-        expect(walletDerivation.root_seed_key).toMatch(/^[0-9a-f]{64}$/);
-        expect(walletDerivation.bip39_256_wallet_index).toBe(0);
-        expect(storage.value).toEqual(walletDerivation);
+        expect(storage.value).toEqual({
+            bip39_256_wallet_index: 0,
+            root_seed_key: '0000000000000000000000000000000000000000000000000000000000000000'
+        });
     });
 
     it('does not overwrite an existing wallet derivation state', async () => {
