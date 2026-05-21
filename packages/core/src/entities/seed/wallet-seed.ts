@@ -13,6 +13,7 @@ export type WalletSeedDescriptor = {
 };
 
 const ROOT_SEED_KEY_BYTES = 32;
+const MAX_UINT32 = 0xffffffff;
 const SUPPORTED_ENTROPY_BITS = new Set([128, 160, 192, 224, 256]);
 
 export function deriveWalletSeedAccessor(
@@ -67,7 +68,7 @@ function assertValidRootSeedKey(rootSeedKey: Uint8Array) {
 }
 
 function assertValidWalletIndex(walletIndex: number) {
-    if (!Number.isSafeInteger(walletIndex) || walletIndex < 0) {
+    if (!Number.isSafeInteger(walletIndex) || walletIndex < 0 || walletIndex > MAX_UINT32) {
         throw new Error('Wallet seed index must be a uint32');
     }
 }

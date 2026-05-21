@@ -43,4 +43,14 @@ describe('wallet seed derivation', () => {
             )
         );
     });
+
+    it('rejects wallet indexes outside uint32 range', () => {
+        expect(() =>
+            deriveBip39WalletSeedAccessor(hexToBytes(ZERO_ROOT_SEED_KEY), {
+                schema: 'bip39',
+                walletIndex: 0x1_0000_0000,
+                entropyBits: 128
+            })
+        ).toThrow('Wallet seed index must be a uint32');
+    });
 });
