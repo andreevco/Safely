@@ -4,6 +4,7 @@ import { fromCallback } from 'xstate';
 import type { StorageVersion } from '@safely/slottree';
 
 import type { SyncMachineConfig } from '../config';
+import { classifyError } from '../error-handler';
 
 export const updatesSubscriberActor = fromCallback(
     (opts: {
@@ -13,6 +14,19 @@ export const updatesSubscriberActor = fromCallback(
         const abortController = new AbortController();
 
         let connected = false;
+        const sendConnectionError = (error: unknown) => {
+            void classifyError(error)
+                .then(classified => {
+                    if (!abortController.signal.aborted) {
+                        opts.sendBack({ type: 'CONNECTION_ERROR', error: classified });
+                    }
+                })
+                .catch((classificationError: unknown) => {
+                    if (!abortController.signal.aborted) {
+                        opts.sendBack({ type: 'CONNECTION_ERROR', error: classificationError });
+                    }
+                });
+        };
 
         const timeoutId = setTimeout(() => {
             if (!connected) {
@@ -37,13 +51,10 @@ export const updatesSubscriberActor = fromCallback(
                     },
                     reason => {
                         if (abortController.signal.aborted) return;
-                        if (reason instanceof Error) {
-                            opts.sendBack({
-                                type: 'CONNECTION_ERROR',
-                                error: reason.message ?? String(reason)
-                            });
-                        } else {
+                        if (reason === undefined) {
                             opts.sendBack({ type: 'DISCONNECTED' });
+                        } else {
+                            sendConnectionError(reason);
                         }
                     }
                 );
@@ -59,10 +70,7 @@ export const updatesSubscriberActor = fromCallback(
                 if (abortController.signal.aborted) return;
 
                 opts.input.logger.error('Failed to subscribe to updates', err);
-                opts.sendBack({
-                    type: 'CONNECTION_ERROR',
-                    error: err instanceof Error ? err : String(err)
-                });
+                sendConnectionError(err);
             }
         })();
 

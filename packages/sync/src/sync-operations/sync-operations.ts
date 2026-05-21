@@ -21,7 +21,7 @@ export class SyncOperations<Latest extends StorageVersion, Rest> {
     public async applyRemoteUpdate(
         update: EncryptedStateAndProofChain,
         signal?: AbortSignal
-    ): Promise<{ hasLocalChanges: boolean }> {
+    ): Promise<{ hasLocalChanges: boolean; revoked?: boolean }> {
         return await this.queue.run(async () => {
             this.throwIfAborted(signal);
             return await this.updateHandler.handle(update);
@@ -31,7 +31,7 @@ export class SyncOperations<Latest extends StorageVersion, Rest> {
     public async pushLocalSnapshot(signal?: AbortSignal): Promise<void> {
         await this.queue.run(async () => {
             this.throwIfAborted(signal);
-            await this.snapshotSender.sendCurrentSnapshot();
+            await this.snapshotSender.sendCurrentSnapshot(signal);
         });
     }
 

@@ -68,6 +68,11 @@ export class DeviceManagementService {
         return device?.type === 'active';
     }
 
+    public async isThisDeviceRevoked(): Promise<boolean> {
+        const device = await this.getThisStoredDevice();
+        return device?.type === 'revoked';
+    }
+
     public async assertDeviceCanReconnect(ikPub: Buffer): Promise<void> {
         const device = await this.deviceRepository.getStoredDevice(getKID(ikPub));
         if (!device) {
