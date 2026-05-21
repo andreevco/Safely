@@ -83,7 +83,7 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
                 draft.set('meta', { name: params?.name ?? newAccountName });
 
                 const ownMeta = generateOwnMeta(account);
-                draft.at('devicesMeta').set(...ownMeta);
+                draft.at('devicesMeta').orDefault({}).set(ownMeta[0], ownMeta[1]);
 
                 if (createdPortfolio) {
                     draft.set('portfolios', [createdPortfolio.toJSON()]);
