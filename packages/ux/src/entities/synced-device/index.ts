@@ -85,9 +85,7 @@ export function useSetOwnSyncedDeviceMeta() {
         async mutationFn(syncAccount) {
             await update(syncAccount, draft => {
                 const [key, value] = generate(syncAccount);
-                if (!draft.get()?.[key]) {
-                    draft.set(key, value);
-                }
+                draft.orDefault({}).entry(key).orDefault(value);
             });
         }
     });
