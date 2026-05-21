@@ -81,15 +81,6 @@ export class OnlineSyncProvider<Latest extends StorageVersion, Rest>
         this.syncMachine.start();
     }
 
-    public async set<K extends keyof NewOf<Latest>>(
-        k: K,
-        v: z.input<NewOf<Latest>[K]> | string
-    ): Promise<void> {
-        await super.set(k, v);
-
-        this.syncMachine.send({ type: 'LOCAL_UPDATE' });
-    }
-
     public async transaction(f: (draft: Draft<z.output<NewOf<Latest>>>) => void): Promise<void> {
         await super.transaction(f);
 

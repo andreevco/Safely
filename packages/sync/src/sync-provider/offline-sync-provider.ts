@@ -44,14 +44,6 @@ export class OfflineSyncProvider<Latest extends StorageVersion, Rest> implements
         return this.container.yManager.getFull();
     }
 
-    public async set<K extends keyof NewOf<Latest>>(
-        k: K,
-        v: z.input<NewOf<Latest>[K]> | string
-    ): Promise<void> {
-        this.container.logger.info('SyncProvider.set<K>', k.toString());
-        await this.container.yManager.set(k.toString(), v);
-    }
-
     public async transaction(f: (draft: Draft<z.output<NewOf<Latest>>>) => void): Promise<void> {
         this.container.logger.info('SyncProvider.update');
         await this.container.yManager.transaction(f);
