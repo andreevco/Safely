@@ -185,7 +185,7 @@
         },
         "unlinkDevice": {
             "title": "Unlink {{deviceName}}",
-            "subtitle": "This will unlink your device from this account. The account data will remain on the device but will not sync with other devices.",
+            "subtitle": "This device will be removed from your linked devices and will no longer sync with this account.",
             "confirm": "Unlink {{deviceName}}"
         },
         "groups": {
