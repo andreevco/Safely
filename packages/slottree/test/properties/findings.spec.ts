@@ -59,30 +59,33 @@ describe('Storage merge findings', () => {
         const b = makeStorage('B');
         const c = makeStorage('C');
 
-        a.update(draft => {
-            draft.tick = '';
+        a.transaction(draft => {
+            draft.set('tick', '');
         });
-        a.update(draft => {
-            delete draft.deepMixed.c;
+        a.transaction(draft => {
+            draft.at('deepMixed').delete('c');
         });
 
-        b.update(draft => {
-            draft.deepMixed.c ??= {
-                children: {}
-            };
+        b.transaction(draft => {
+            draft.at('deepMixed').set(
+                'c',
+                draft.at('deepMixed').at('c').get() ?? {
+                    children: {}
+                }
+            );
 
-            draft.deepMixed.c.children.x = {
+            draft.at('deepMixed').at('c').at('children').set('x', {
                 value: null
-            };
+            });
         });
 
-        c.update(draft => {
-            draft.tick = '';
+        c.transaction(draft => {
+            draft.set('tick', '');
         });
-        c.update(draft => {
-            draft.deepMixed.c = {
+        c.transaction(draft => {
+            draft.at('deepMixed').set('c', {
                 children: {}
-            };
+            });
         });
 
         function fullMeshSync() {

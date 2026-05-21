@@ -1,12 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-import {
-    ILoggerTransport,
-    LogEntry,
-    LogLevel,
-    Logger,
-    logsFilterMinSeverityLevel
-} from '../../src';
+import type { ILoggerTransport, LogEntry } from '../../src';
+import { LogLevel, Logger, logsFilterMinSeverityLevel } from '../../src';
 
 function createMockTransport(): ILoggerTransport & { entries: LogEntry[] } {
     const transport = {

@@ -1,5 +1,7 @@
 import { x25519 } from '@noble/curves/ed25519.js';
 
+import type { StorageVersion } from '@safely/slottree';
+
 import { deriveOnboardingKey, encryptOnboardingMessage } from './crypto';
 import type { QRMessageNewDeviceOnboarding, QRMessageReconnection } from './onboarding-codec';
 import { QRMessageCodec, QRMessageOperation } from './onboarding-codec';
@@ -9,6 +11,7 @@ import type { DmkSignerService } from '../crypto/service/dmk-signer-service';
 import type { MasterKeyService } from '../crypto/service/master-key-service';
 import type { DeviceManagementService } from '../device-manager/device-management-service';
 import { SyncError } from '../sync-error';
+import type { SyncOperations } from '../sync-operations/sync-operations';
 import { u8be, utf8 } from '../utils/buffer';
 
 export class PrimaryDeviceOnboarding {
@@ -17,7 +20,9 @@ export class PrimaryDeviceOnboarding {
         private readonly dmkService: DmkSignerService,
         private readonly accountsApi: AccountsApi,
         private readonly deviceManager: DeviceManagementService,
-        private readonly triggerSync: () => void
+        private readonly syncOperations: SyncOperations<StorageVersion, unknown>,
+        private readonly storageVersion: number,
+        private readonly triggerSync: () => Promise<void>
     ) {}
 
     public async onboard(data: Buffer): Promise<void> {
@@ -36,6 +41,8 @@ export class PrimaryDeviceOnboarding {
     }
 
     private async reconnectExistingDevice(message: QRMessageReconnection): Promise<void> {
+        await this.deviceManager.assertDeviceCanReconnect(message.ikPub);
+
         const signature = await this.signOnboardingMessage(message.ikPub);
         await this.accountsApi.addDeviceToAccount({
             signedDeviceIdentity: {
@@ -44,8 +51,13 @@ export class PrimaryDeviceOnboarding {
             }
         });
 
-        await this.deviceManager.addDevice(message.ikPub, this.dmkService);
-        this.triggerSync();
+        await this.syncOperations.addDevice(
+            message.ikPub,
+            this.knownStorageVersion(message.storageVersion),
+            this.dmkService
+        );
+        await this.triggerSync();
+        await this.waitUntilDeviceVisible(message.ikPub);
     }
 
     private async onboardNewDevice(message: QRMessageNewDeviceOnboarding): Promise<void> {
@@ -63,19 +75,23 @@ export class PrimaryDeviceOnboarding {
             info: onboardingMetadata
         });
 
-        const addOp = await this.deviceManager.makeAddOp(message.ikPub, this.dmkService);
-
         const { ciphertext, nonce } = await this.masterKeyService.withMasterKey(masterKey => {
             return encryptOnboardingMessage({
                 aad: onboardingMetadata,
                 onboardKey,
                 onboardingMessagePayload: encodeOnboardingMessagePayload({
-                    masterKey,
-                    addOp
+                    masterKey
                 })
             });
         });
         const signature = await this.signOnboardingMessage(message.ikPub);
+
+        await this.syncOperations.addDevice(
+            message.ikPub,
+            this.knownStorageVersion(message.storageVersion),
+            this.dmkService
+        );
+        await this.triggerSync();
 
         await this.accountsApi.postOnboardingMessage({
             onboardingMessage: {
@@ -87,17 +103,7 @@ export class PrimaryDeviceOnboarding {
             }
         });
 
-        for (let i = 0; i < 3; i++) {
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            const devices = await this.deviceManager.getDevices();
-            if (devices.some(d => d.ikPub.equals(message.ikPub))) {
-                return;
-            }
-        }
-
-        throw new PrimaryDeviceOnboardingError(
-            'New device did not appear after onboarding message was sent'
-        );
+        await this.waitUntilDeviceVisible(message.ikPub);
     }
 
     private async signOnboardingMessage(newIkPub: Buffer): Promise<Buffer> {
@@ -107,6 +113,18 @@ export class PrimaryDeviceOnboarding {
             newIkPub
         ]);
         return await this.dmkService.sign(toSign);
+    }
+
+    private knownStorageVersion(version: number): number | undefined {
+        return version <= this.storageVersion ? version : undefined;
+    }
+
+    private async waitUntilDeviceVisible(ikPub: Buffer): Promise<void> {
+        await this.deviceManager.waitUntilDeviceVisible(ikPub, {
+            timeoutMs: 30000,
+            timeoutError: () =>
+                new PrimaryDeviceOnboardingError('Device did not become active after onboarding')
+        });
     }
 }
 

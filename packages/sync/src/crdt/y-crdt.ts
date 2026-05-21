@@ -1,63 +1,70 @@
-import * as Y from 'yjs';
-import type { ZodType } from 'zod';
+import type { Draft, JsonValue, ObjectDraft, SlotTree } from '@safely/slottree';
 
-import { atomicTransaction } from './atomic-transaction';
-import { deepMerge } from './deep-merge/deep-merge';
-import { yValueToJs } from './deep-merge/y-value-to-js';
+export class YCRDT<T extends object> {
+    constructor(private readonly doc: SlotTree<T>) {}
 
-export class YCRDT {
-    constructor(
-        private readonly doc: Y.Doc,
-        public readonly schema: Record<string, ZodType>
-    ) {}
-
-    public applyUpdate(update: Buffer, origin: string): void {
-        Y.applyUpdateV2(this.doc, update, origin);
+    public applyUpdate(update: Buffer): void {
+        this.doc.merge(update.toString('utf8'));
     }
 
-    public encodeAsSnapshot(): Buffer {
-        return Buffer.from(Y.encodeStateAsUpdateV2(this.doc));
-    }
-
-    public get(k: string): unknown {
-        const map = this.doc.getMap('root');
-        const value = map.get(k);
-        return value ? yValueToJs(value, this.schema[k]) : null;
-    }
-
-    public getArray(k: string): Y.Array<string> {
-        return this.doc.getArray(k);
-    }
-
-    public onUpdate(observer: (update: Buffer, origin: string) => void): () => void {
-        const handler = (update: Uint8Array, origin: unknown) => {
-            observer(Buffer.from(update), typeof origin === 'string' ? origin : 'local');
-        };
-        this.doc.on('updateV2', handler);
-
-        return () => {
-            this.doc.off('updateV2', handler);
-        };
-    }
-
-    public remove(k: string): void {
-        const map = this.doc.getMap<string>('root');
-        map.delete(k);
-    }
-
-    public set(k: string, v: unknown): void {
-        atomicTransaction(this.doc, doc => {
-            deepMerge(doc.getMap('root'), k, v, this.schema[k]);
+    public async unsafeAsyncApplyUpdate(
+        update: Buffer,
+        commit: (snapshot: Buffer) => Promise<boolean>
+    ): Promise<boolean> {
+        return await this.doc.unsafeAsyncMerge(update.toString('utf8'), async snapshot => {
+            return await commit(Buffer.from(snapshot, 'utf8'));
         });
     }
 
-    public equals(other: YCRDT): boolean {
-        const thisSnapshot = Buffer.from(Y.encodeStateAsUpdateV2(this.doc));
-        const otherSnapshot = Buffer.from(Y.encodeStateAsUpdateV2(other.doc));
-        return thisSnapshot.equals(otherSnapshot);
+    public encodeAsSnapshot(): Buffer {
+        return Buffer.from(this.doc.export(), 'utf8');
     }
 
-    public toRaw(): Y.Doc {
-        return this.doc;
+    public getFull(): T {
+        return this.doc.get();
+    }
+
+    public get(k: string): unknown {
+        return (this.doc.get() as Record<string, unknown>)[k];
+    }
+
+    public onUpdate(observer: (update: Buffer) => void): () => void {
+        return this.doc.onChange(() => {
+            observer(this.encodeAsSnapshot());
+        });
+    }
+
+    public addAuthor(authorId: string, storageVersion: number): void {
+        this.doc.addAuthor(authorId, storageVersion);
+    }
+
+    public deleteAuthor(authorId: string): void {
+        this.doc.removeAuthor(authorId);
+    }
+
+    public set(key: Extract<keyof T, string>, value: unknown): void {
+        this.doc.transaction(draft => {
+            (draft as ObjectDraft<Record<string, JsonValue | undefined>>).set(
+                key,
+                value as JsonValue
+            );
+        });
+    }
+
+    public transaction(fn: (draft: Draft<T>) => void): void {
+        this.doc.transaction(fn);
+    }
+
+    public async unsafeAsyncTransaction(
+        fn: (draft: Draft<T>) => void,
+        commit: (snapshot: Buffer) => Promise<boolean>
+    ): Promise<boolean> {
+        return await this.doc.unsafeAsyncTransaction(fn, async snapshot => {
+            return await commit(Buffer.from(snapshot, 'utf8'));
+        });
+    }
+
+    public equals(other: string): boolean {
+        return this.doc.export() === other;
     }
 }

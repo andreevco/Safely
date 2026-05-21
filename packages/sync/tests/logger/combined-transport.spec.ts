@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 
-import { CombinedTransport, ILoggerTransport, LogEntry, LogLevel } from '../../src';
+import type { ILoggerTransport, LogEntry } from '../../src';
+import { CombinedTransport, LogLevel } from '../../src';
 
 function makeEntry(overrides: Partial<LogEntry> = {}): LogEntry {
     return {
@@ -12,8 +13,10 @@ function makeEntry(overrides: Partial<LogEntry> = {}): LogEntry {
     };
 }
 
-function createMockTransport(): ILoggerTransport & { log: ReturnType<typeof vi.fn> } {
-    return { log: vi.fn() };
+function createMockTransport(): ILoggerTransport & {
+    log: ReturnType<typeof vi.fn<(entry: LogEntry) => void>>;
+} {
+    return { log: vi.fn<(entry: LogEntry) => void>() };
 }
 
 describe('CombinedTransport', () => {
@@ -104,7 +107,7 @@ describe('CombinedTransport', () => {
         it('should delegate to a single transport', () => {
             const t = createMockTransport();
             const combined = new CombinedTransport([t]);
-            const entry = makeEntry({ level: LogLevel.ERROR, message: 'critical' });
+            const entry = makeEntry({ level: LogLevel.ERROR, message: ['critical'] });
 
             combined.log(entry);
 

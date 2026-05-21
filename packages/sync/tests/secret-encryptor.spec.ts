@@ -1,7 +1,7 @@
 import { randomBytes } from '@noble/ciphers/utils.js';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { ITreeStorage } from '../src';
+import type { ITreeStorage } from '../src';
 import { InMemStorage } from './impl/storage';
 import { EncryptedKeyRepository } from '../src/crypto/encrypted-key-repository';
 import { SecureEncryptedKeyRepository } from '../src/crypto/secure-encrypted-key-repository';

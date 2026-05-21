@@ -24,6 +24,7 @@
         "cancel": "Cancel",
         "continue": "Continue",
         "later": "Later",
+        "comingSoon": "Coming soon",
         "errors": {
             "unknown": "Something went wrong"
         }
@@ -405,6 +406,9 @@
             "invalidAddress": "Invalid Bitcoin address",
             "unsupportedExtendedKey": "ypub is not supported yet. Use xpub."
         }
+    },
+    "account": {
+        "unnamed": "Unnamed"
     },
     "addAccount": {
         "title": "Add account",

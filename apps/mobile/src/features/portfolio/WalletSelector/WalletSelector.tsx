@@ -1,11 +1,11 @@
-import { usePortfoliosQuery } from '@safely/ux';
+import { usePortfolios } from '@safely/ux';
 
 import { AccountSelector } from './components/AccountSelector';
 import { CompactAccountSelector } from './components/CompactAccountSelector';
 
 export const WalletSelector = () => {
-    const portfolios = usePortfoliosQuery().data;
-    const portfolioCount = portfolios?.length ?? 0;
+    const portfolios = usePortfolios();
+    const portfolioCount = portfolios.length;
 
     if (portfolioCount === 0) {
         return null;

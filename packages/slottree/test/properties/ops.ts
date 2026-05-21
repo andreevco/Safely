@@ -2,21 +2,39 @@ import fc from 'fast-check';
 import type { z } from 'zod';
 
 import type { stressSchema } from './stress-schema';
+import type { Draft } from '../../src';
 
 type StressState = z.output<typeof stressSchema>;
 
 type StorageLike = {
-    update(fn: (draft: StressState) => void): void;
+    transaction(fn: (draft: Draft<StressState>) => void): void;
 };
+
+type StressDraft = Draft<StressState>;
 
 const safeString = fc.string({ maxLength: 20 });
 
 const keyArb = fc.constantFrom('a', 'b', 'c');
 const nestedKeyArb = fc.constantFrom('x', 'y', 'z');
+const arrayIdArb = fc.constantFrom('i1', 'i2', 'i3', 'i4');
 
 const scalarArb = safeString;
 
 const richObjectArb = fc.record({
+    value: scalarArb,
+    nested: fc.record(
+        {
+            note: scalarArb,
+            nullableNote: fc.option(scalarArb, { nil: null })
+        },
+        {
+            requiredKeys: ['nullableNote']
+        }
+    )
+});
+
+const arrayRichObjectArb = fc.record({
+    __setId: arrayIdArb,
     value: scalarArb,
     nested: fc.record(
         {
@@ -48,6 +66,28 @@ const discriminatedItemArb = fc.oneof(
     })
 );
 
+const arrayDiscriminatedItemArb = fc.oneof(
+    fc.record({
+        __setId: arrayIdArb,
+        type: fc.constant('text' as const),
+        value: scalarArb
+    }),
+
+    fc.record({
+        __setId: arrayIdArb,
+        type: fc.constant('ref' as const),
+        refId: scalarArb,
+        meta: fc.record({
+            label: fc.option(scalarArb, { nil: undefined })
+        })
+    }),
+
+    fc.record({
+        __setId: arrayIdArb,
+        type: fc.constant('empty' as const)
+    })
+);
+
 const objectStringNullUnionArb = fc.oneof(richObjectArb, scalarArb, fc.constant(null));
 
 const ambiguousUnionArb = fc.oneof(
@@ -62,14 +102,21 @@ const ambiguousUnionArb = fc.oneof(
     })
 );
 
-const arrayOfObjectsArb = fc.array(richObjectArb, { maxLength: 4 });
+const arrayOfObjectsArb = fc.uniqueArray(arrayRichObjectArb, {
+    maxLength: 4,
+    selector: item => item.__setId
+});
 
-const arrayOfUnionsArb = fc.array(
-    fc.oneof(scalarArb, fc.constant(null), richObjectArb, discriminatedItemArb),
-    { maxLength: 4 }
+const arrayOfUnionsArb = fc.uniqueArray(fc.oneof(arrayRichObjectArb, arrayDiscriminatedItemArb), {
+    maxLength: 4,
+    selector: item => item.__setId
+});
+
+const tupleArb = fc.tuple(
+    richObjectArb.map(value => ({ __setId: 'tuple-a', ...value })),
+    richObjectArb.map(value => ({ __setId: 'tuple-b', ...value })),
+    discriminatedItemArb.map(value => ({ __setId: 'tuple-c', ...value }))
 );
-
-const tupleArb = fc.tuple(scalarArb, richObjectArb, fc.option(discriminatedItemArb, { nil: null }));
 
 const catchallValueArb = fc.oneof(
     scalarArb,
@@ -81,8 +128,9 @@ const catchallValueArb = fc.oneof(
 const deepMixedValueArb = fc.record({
     object: richObjectArb,
     maybeObject: fc.option(richObjectArb, { nil: null }),
-    items: fc.array(fc.oneof(richObjectArb, discriminatedItemArb, scalarArb, fc.constant(null)), {
-        maxLength: 4
+    items: fc.uniqueArray(fc.oneof(arrayRichObjectArb, arrayDiscriminatedItemArb), {
+        maxLength: 4,
+        selector: item => item.__setId
     }),
     children: fc.dictionary(
         nestedKeyArb,
@@ -202,6 +250,7 @@ type Op =
     // 12. Arrays and tuple
     | { type: 'arrayOfObjects.set'; value: StressState['arrayOfObjects'] }
     | { type: 'arrayOfUnions.set'; value: StressState['arrayOfUnions'] }
+    | { type: 'arrayOfObjects.update'; id: string; value: string }
     | { type: 'tuple.set'; value: StressState['tuple'] }
 
     // 13. Ambiguous union
@@ -399,6 +448,17 @@ export const opArb = fc.oneof(
         value
     })),
 
+    fc
+        .record({
+            id: arrayIdArb,
+            value: scalarArb
+        })
+        .map(({ id, value }) => ({
+            type: 'arrayOfObjects.update',
+            id,
+            value
+        })),
+
     tupleArb.map(value => ({
         type: 'tuple.set',
         value
@@ -528,234 +588,260 @@ export const opArb = fc.oneof(
 
 export const opsArb = fc.array(opArb, { maxLength: 50 });
 
-function applyObjectOp(draft: StressState, op: Op): boolean {
+export function applyOp(storage: StorageLike, op: Op): void {
+    storage.transaction(draft => {
+        if (applyObjectOp(draft, op)) {
+            return;
+        }
+
+        if (applyCollectionOp(draft, op)) {
+            return;
+        }
+
+        if (applyValueOp(draft, op)) {
+            return;
+        }
+
+        applyRemainingOp(draft, op);
+    });
+}
+
+function applyObjectOp(draft: StressDraft, op: Op): boolean {
     switch (op.type) {
         case 'nested.setValue': {
-            draft.nested.value = op.value;
+            draft.at('nested').set('value', op.value);
             return true;
         }
 
         case 'nested.setChildValue': {
-            draft.nested.child.value = op.value;
+            draft.at('nested').at('child').set('value', op.value);
             return true;
         }
 
         case 'optionalObject.set': {
-            draft.optionalObject = op.value;
-            return true;
-        }
-
-        case 'optionalObject.delete': {
-            delete draft.optionalObject;
-            return true;
-        }
-
-        case 'nullableObject.set': {
-            draft.nullableObject = op.value;
-            return true;
-        }
-
-        case 'optionalNullableObject.set': {
-            draft.optionalNullableObject = op.value;
-            return true;
-        }
-
-        case 'optionalNullableObject.delete': {
-            delete draft.optionalNullableObject;
-            return true;
-        }
-
-        default:
-            return false;
-    }
-}
-
-function applyRecordOp(draft: StressState, op: Op): boolean {
-    switch (op.type) {
-        case 'recordOfObjects.setEntry': {
-            draft.recordOfObjects[op.key] = op.value;
-            return true;
-        }
-
-        case 'recordOfObjects.deleteEntry': {
-            delete draft.recordOfObjects[op.key];
-            return true;
-        }
-
-        case 'nestedRecordOfObjects.setEntry': {
-            draft.nestedRecordOfObjects[op.outerKey] ??= {};
-            draft.nestedRecordOfObjects[op.outerKey][op.innerKey] = op.value;
-            return true;
-        }
-
-        case 'nestedRecordOfObjects.deleteEntry': {
-            delete draft.nestedRecordOfObjects[op.outerKey]?.[op.innerKey];
-            return true;
-        }
-
-        case 'nestedRecordOfObjects.deleteOuter': {
-            delete draft.nestedRecordOfObjects[op.outerKey];
-            return true;
-        }
-
-        case 'nestedRecordOfNullableObjects.setEntry': {
-            draft.nestedRecordOfNullableObjects[op.outerKey] ??= {};
-            draft.nestedRecordOfNullableObjects[op.outerKey][op.innerKey] = op.value;
-            return true;
-        }
-
-        case 'nestedRecordOfNullableObjects.deleteEntry': {
-            delete draft.nestedRecordOfNullableObjects[op.outerKey]?.[op.innerKey];
-            return true;
-        }
-
-        case 'recordOfDiscriminatedUnions.setEntry': {
-            draft.recordOfDiscriminatedUnions[op.key] = op.value;
-            return true;
-        }
-
-        case 'recordOfDiscriminatedUnions.deleteEntry': {
-            delete draft.recordOfDiscriminatedUnions[op.key];
-            return true;
-        }
-
-        default:
-            return false;
-    }
-}
-
-function applyUnionOp(draft: StressState, op: Op): boolean {
-    switch (op.type) {
-        case 'objectStringNullUnion.set': {
-            draft.objectStringNullUnion = op.value;
-            return true;
-        }
-
-        case 'discriminatedUnion.set': {
-            draft.discriminatedUnion = op.value;
-            return true;
-        }
-
-        case 'nestedDiscriminatedUnion.setItem': {
-            draft.nestedDiscriminatedUnion.item = op.value;
-            return true;
-        }
-
-        case 'nestedDiscriminatedUnion.setId': {
-            draft.nestedDiscriminatedUnion.id = op.value;
-            return true;
-        }
-
-        case 'ambiguousUnion.set': {
-            draft.ambiguousUnion = op.value;
-            return true;
-        }
-
-        default:
-            return false;
-    }
-}
-
-function applyCollectionOp(draft: StressState, op: Op): boolean {
-    switch (op.type) {
-        case 'arrayOfObjects.set': {
-            draft.arrayOfObjects = op.value;
-            return true;
-        }
-
-        case 'arrayOfUnions.set': {
-            draft.arrayOfUnions = op.value;
-            return true;
-        }
-
-        case 'tuple.set': {
-            draft.tuple = op.value;
-            return true;
-        }
-
-        case 'intersectionObject.setId': {
-            draft.intersectionObject.id = op.value;
-            return true;
-        }
-
-        case 'intersectionObject.setValue': {
-            draft.intersectionObject.value = op.value;
-            return true;
-        }
-
-        case 'intersectionObject.setMetaNote': {
-            draft.intersectionObject.meta.note = op.value;
-            return true;
-        }
-
-        case 'intersectionObject.deleteMetaNote': {
-            delete draft.intersectionObject.meta.note;
-            return true;
-        }
-
-        case 'catchallObject.setKnown': {
-            draft.catchallObject.known = op.value;
-            return true;
-        }
-
-        case 'catchallObject.setExtra': {
-            draft.catchallObject[op.key] = op.value;
-            return true;
-        }
-
-        case 'catchallObject.deleteExtra': {
-            if (op.key !== 'known') {
-                delete draft.catchallObject[op.key];
+            if (op.value === undefined) {
+                draft.delete('optionalObject');
+            } else {
+                draft.set('optionalObject', op.value);
             }
             return true;
         }
 
+        case 'optionalObject.delete': {
+            draft.delete('optionalObject');
+            return true;
+        }
+
+        case 'nullableObject.set': {
+            draft.set('nullableObject', op.value);
+            return true;
+        }
+
+        case 'optionalNullableObject.set': {
+            if (op.value === undefined) {
+                draft.delete('optionalNullableObject');
+            } else {
+                draft.set('optionalNullableObject', op.value);
+            }
+            return true;
+        }
+
+        case 'optionalNullableObject.delete': {
+            draft.delete('optionalNullableObject');
+            return true;
+        }
+
+        case 'recordOfObjects.setEntry': {
+            draft.at('recordOfObjects').set(op.key, op.value);
+            return true;
+        }
+
+        case 'recordOfObjects.deleteEntry': {
+            draft.at('recordOfObjects').delete(op.key);
+            return true;
+        }
+
         default:
             return false;
     }
 }
 
-function applyPartialOp(draft: StressState, op: Op): boolean {
+function applyCollectionOp(draft: StressDraft, op: Op): boolean {
     switch (op.type) {
-        case 'partialObject.setA': {
-            draft.partialObject.a = op.value;
+        case 'nestedRecordOfObjects.setEntry': {
+            draft.at('nestedRecordOfObjects').at(op.outerKey).set(op.innerKey, op.value);
             return true;
+        }
+
+        case 'nestedRecordOfObjects.deleteEntry': {
+            const outer = draft.at('nestedRecordOfObjects').at(op.outerKey);
+            if (outer.get() !== undefined) {
+                outer.delete(op.innerKey);
+            }
+            return true;
+        }
+
+        case 'nestedRecordOfObjects.deleteOuter': {
+            draft.at('nestedRecordOfObjects').delete(op.outerKey);
+            return true;
+        }
+
+        case 'nestedRecordOfNullableObjects.setEntry': {
+            draft.at('nestedRecordOfNullableObjects').at(op.outerKey).set(op.innerKey, op.value);
+            return true;
+        }
+
+        case 'nestedRecordOfNullableObjects.deleteEntry': {
+            const outer = draft.at('nestedRecordOfNullableObjects').at(op.outerKey);
+            if (outer.get() !== undefined) {
+                outer.delete(op.innerKey);
+            }
+            return true;
+        }
+
+        case 'recordOfDiscriminatedUnions.setEntry': {
+            draft.at('recordOfDiscriminatedUnions').set(op.key, op.value);
+            return true;
+        }
+
+        case 'recordOfDiscriminatedUnions.deleteEntry': {
+            draft.at('recordOfDiscriminatedUnions').delete(op.key);
+            return true;
+        }
+
+        case 'arrayOfObjects.set': {
+            draft.set('arrayOfObjects', op.value);
+            return true;
+        }
+
+        case 'arrayOfUnions.set': {
+            draft.set('arrayOfUnions', op.value);
+            return true;
+        }
+
+        case 'arrayOfObjects.update': {
+            const array = draft.at('arrayOfObjects');
+            if (array.getById(op.id) !== undefined) {
+                array.update(op.id, item => {
+                    item.set('value', op.value);
+                });
+            }
+            return true;
+        }
+
+        case 'tuple.set': {
+            draft.set('tuple', op.value);
+            return true;
+        }
+
+        default:
+            return false;
+    }
+}
+
+function applyValueOp(draft: StressDraft, op: Op): boolean {
+    switch (op.type) {
+        case 'objectStringNullUnion.set': {
+            draft.set('objectStringNullUnion', op.value);
+            return true;
+        }
+
+        case 'discriminatedUnion.set': {
+            draft.set('discriminatedUnion', op.value);
+            return true;
+        }
+
+        case 'nestedDiscriminatedUnion.setItem': {
+            draft.at('nestedDiscriminatedUnion').set('item', op.value);
+            return true;
+        }
+
+        case 'nestedDiscriminatedUnion.setId': {
+            draft.at('nestedDiscriminatedUnion').set('id', op.value);
+            return true;
+        }
+
+        case 'ambiguousUnion.set': {
+            draft.set('ambiguousUnion', op.value);
+            return true;
+        }
+
+        case 'intersectionObject.setId': {
+            draft.at('intersectionObject').set('id', op.value);
+            return true;
+        }
+
+        case 'intersectionObject.setValue': {
+            draft.at('intersectionObject').set('value', op.value);
+            return true;
+        }
+
+        case 'intersectionObject.setMetaNote': {
+            draft.at('intersectionObject').at('meta').set('note', op.value);
+            return true;
+        }
+
+        case 'intersectionObject.deleteMetaNote': {
+            draft.at('intersectionObject').at('meta').delete('note');
+            return true;
+        }
+
+        default:
+            return false;
+    }
+}
+
+function applyRemainingOp(draft: StressDraft, op: Op): void {
+    switch (op.type) {
+        case 'catchallObject.setKnown': {
+            draft.at('catchallObject').set('known', op.value);
+            return;
+        }
+
+        case 'catchallObject.setExtra': {
+            draft.at('catchallObject').set(op.key, op.value);
+            return;
+        }
+
+        case 'catchallObject.deleteExtra': {
+            if (op.key !== 'known') {
+                draft.at('catchallObject').delete(op.key);
+            }
+            return;
+        }
+
+        case 'partialObject.setA': {
+            draft.at('partialObject').set('a', op.value);
+            return;
         }
 
         case 'partialObject.deleteA': {
-            delete draft.partialObject.a;
-            return true;
+            draft.at('partialObject').delete('a');
+            return;
         }
 
         case 'partialObject.setChild': {
-            draft.partialObject.child = op.value;
-            return true;
+            draft.at('partialObject').set('child', op.value);
+            return;
         }
 
         case 'partialObject.deleteChild': {
-            delete draft.partialObject.child;
-            return true;
+            draft.at('partialObject').delete('child');
+            return;
         }
 
-        default:
-            return false;
-    }
-}
-
-function applyDeepMixedOp(draft: StressState, op: Op): boolean {
-    switch (op.type) {
         case 'deepMixed.setEntry': {
-            draft.deepMixed[op.key] = op.value;
-            return true;
+            draft.at('deepMixed').set(op.key, op.value);
+            return;
         }
 
         case 'deepMixed.deleteEntry': {
-            delete draft.deepMixed[op.key];
-            return true;
+            draft.at('deepMixed').delete(op.key);
+            return;
         }
 
         case 'deepMixed.setChild': {
-            draft.deepMixed[op.key] ??= {
+            draft.at('deepMixed').set(op.key, {
                 object: {
                     value: '',
                     nested: {
@@ -765,37 +851,22 @@ function applyDeepMixedOp(draft: StressState, op: Op): boolean {
                 maybeObject: null,
                 items: [],
                 children: {}
-            };
-
-            draft.deepMixed[op.key].children[op.childKey] = op.value;
-            return true;
-        }
-
-        case 'deepMixed.deleteChild': {
-            delete draft.deepMixed[op.key]?.children[op.childKey];
-            return true;
-        }
-
-        default:
-            return false;
-    }
-}
-
-export function applyOp(storage: StorageLike, op: Op): void {
-    storage.update(draft => {
-        if (
-            applyObjectOp(draft, op) ||
-            applyRecordOp(draft, op) ||
-            applyUnionOp(draft, op) ||
-            applyCollectionOp(draft, op) ||
-            applyPartialOp(draft, op) ||
-            applyDeepMixedOp(draft, op)
-        ) {
+            });
+            draft.at('deepMixed').at(op.key).at('children').set(op.childKey, op.value);
             return;
         }
 
-        throw new Error(`Unhandled op: ${op.type}`);
-    });
+        case 'deepMixed.deleteChild': {
+            const entry = draft.at('deepMixed').at(op.key);
+            if (entry.get() !== undefined) {
+                entry.at('children').delete(op.childKey);
+            }
+            return;
+        }
+
+        default:
+            return;
+    }
 }
 
 export function applyOps(storage: StorageLike, ops: Op[]): void {

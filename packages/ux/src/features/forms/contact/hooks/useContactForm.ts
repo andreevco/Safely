@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 
 import type { Contact } from '@safely/core';
+import { vmTypeByBlockchainName } from '@safely/core';
 
 import { useCreateContact, useEditContact } from '../../../../entities';
 import type { ContactFormResult } from '../types';
@@ -55,7 +56,7 @@ export function useContactForm(params: UseContactFormParams) {
                 !parsed ||
                 !initial ||
                 parsed.address !== initial.address ||
-                parsed.blockchain !== initial.blockchain
+                vmTypeByBlockchainName(parsed.blockchain) !== initial.blockchain
             );
         });
     }, [initialContact, state.parsed, state.values]);

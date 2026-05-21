@@ -5,12 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Image, View } from 'react-native';
 import QRCode from 'react-native-qrcode-skia';
 
-import {
-    useActiveAccountQueryKey,
-    useCreateReconnectConnector,
-    useLogger,
-    useToast
-} from '@safely/ux';
+import { useCreateReconnectConnector, useLogger, useToast } from '@safely/ux';
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { resources } from '@mobile/shared/resources';
@@ -26,7 +21,6 @@ export const ReconnectDeviceModal = () => {
     const logger = useLogger();
     const navigation = useNavigation<RootStackNavigationProp>();
     const queryClient = useQueryClient();
-    const accountQueryKey = useActiveAccountQueryKey();
 
     const { mutate, data, isPending, isError } = useCreateReconnectConnector();
 
@@ -43,10 +37,6 @@ export const ReconnectDeviceModal = () => {
             .then(async () => {
                 if (!isAlive) return;
 
-                await queryClient.invalidateQueries({
-                    queryKey: accountQueryKey.devices.meta.toKey()
-                });
-
                 navigation.goBack();
                 toast(t('deviceUnlinked.reconnect.successToast'));
             })
@@ -61,7 +51,7 @@ export const ReconnectDeviceModal = () => {
             isAlive = false;
             data.abort();
         };
-    }, [data, queryClient, accountQueryKey.devices.meta, navigation, toast, t, logger]);
+    }, [data, queryClient, navigation, toast, t, logger]);
 
     useEffect(() => {
         if (isError) navigation.goBack();

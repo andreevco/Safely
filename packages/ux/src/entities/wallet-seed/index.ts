@@ -6,8 +6,9 @@ import {
     type ISecretEncryptor,
     type MnemonicResource
 } from '@safely/core';
+import type { WalletDerivation } from '@safely/sync-storage';
 
-import type { WalletDerivation } from '../../shared';
+export type { WalletDerivation } from '@safely/sync-storage';
 
 type WalletDerivationStorage = {
     get(key: 'walletDerivation'): WalletDerivation | null;

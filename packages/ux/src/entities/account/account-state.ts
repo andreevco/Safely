@@ -1,22 +1,30 @@
 import { useQueryClient } from '@tanstack/react-query';
+import { useMemo } from 'react';
 
 import { notNullish } from '@safely/core';
 import type { ISyncAccount } from '@safely/sync';
 import { SyncAccountFactory } from '@safely/sync';
+import type {
+    SAccountMeta,
+    SyncedStorageStructure,
+    SyncedStorageVersions
+} from '@safely/sync-storage';
+import { syncedStorageVersions } from '@safely/sync-storage';
 
 import { accountKey } from './keys';
-import type { AccountMeta, SyncedStorageStructure } from '../../shared';
+import { useAccountStoreSlot } from './sync-storage/useAccountStore';
 import {
-    syncedStorageStructure,
     useAppContext,
     useBootConfig,
     useSharedUxStorage,
-    useSuspenseQuery
+    useSuspenseQuery,
+    useTranslate
 } from '../../shared';
+import type { AccountStoreData, SyncedSlotKey } from './sync-storage/account-store';
 
-export type SyncAccount = ISyncAccount<SyncedStorageStructure> & {
-    meta: AccountMeta;
-};
+export type AccountMeta = Exclude<SAccountMeta, null>;
+
+export type SyncAccount = ISyncAccount<SyncedStorageStructure>;
 
 export type OnboardingConnector = {
     connectionString: string;
@@ -24,31 +32,7 @@ export type OnboardingConnector = {
     abort: () => void;
 };
 
-export function generateAccountMeta(accountId: string, name?: string) {
-    return {
-        name: name ?? `Account ${accountId.slice(-6)}`,
-        icon: {
-            type: 'color' as const,
-            value:
-                '#' +
-                Math.floor(Number(`0x${accountId.slice(-6)}`))
-                    .toString(16)
-                    .padStart(6, '0')
-        }
-    };
-}
-
-export function withMeta(account: ISyncAccount<SyncedStorageStructure>): SyncAccount {
-    let meta = account.syncProvider.get('meta');
-    if (!meta) {
-        meta = generateAccountMeta(account.accountId);
-    }
-
-    (account as SyncAccount).meta = meta;
-    return account as SyncAccount;
-}
-
-let _syncAccountFactory: SyncAccountFactory<SyncedStorageStructure> | null = null;
+let _syncAccountFactory: SyncAccountFactory<SyncedStorageVersions> | null = null;
 
 export function resetAccountsFactory() {
     _syncAccountFactory = null;
@@ -65,7 +49,7 @@ export function useAccountsFactory() {
         _syncAccountFactory = new SyncAccountFactory({
             storage: sync.regular,
             encryptedStorage: sync.encrypted,
-            structure: syncedStorageStructure,
+            versions: syncedStorageVersions,
             apiConfiguration: {
                 basePath: config.sync.api_url
             },
@@ -82,9 +66,8 @@ export function useAccountsQueryConfig() {
 
     return {
         queryKey: accountKey.list.toKey(),
-        async queryFn() {
-            const accounts = await factory.getSyncAccounts();
-            return accounts.map(withMeta);
+        async queryFn(): Promise<SyncAccount[]> {
+            return factory.getSyncAccounts();
         },
         staleTime: Infinity
     };
@@ -140,4 +123,21 @@ export function useActiveAccount() {
 export function useActiveAccountQueryKey() {
     const { data: activeAccount } = useActiveAccountQuery();
     return accountKey.accountId(activeAccount?.accountId);
+}
+
+export function useActiveAccountStoreSlot<K extends SyncedSlotKey>(
+    key: K
+): AccountStoreData[K] | undefined {
+    const account = useActiveAccount();
+    return useAccountStoreSlot(account.accountId, key);
+}
+
+export function useAccountMeta(accountId: string | null | undefined): AccountMeta {
+    const stored = useAccountStoreSlot(accountId ?? null, 'meta');
+    const t = useTranslate();
+    return useMemo(() => stored ?? { name: t('account.unnamed') }, [stored, t]);
+}
+
+export function useActiveAccountMeta(): AccountMeta {
+    return useAccountMeta(useActiveAccount().accountId);
 }

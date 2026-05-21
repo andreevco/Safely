@@ -1,5 +1,6 @@
 import { ed25519, x25519 } from '@noble/curves/ed25519.js';
-import type { ZodType } from 'zod';
+
+import type { StorageVersion } from '@safely/slottree';
 
 import { decryptOnboardingMessagePayload, deriveOnboardingKey } from './crypto';
 import { QRMessageCodec, QRMessageOperation } from './onboarding-codec';
@@ -13,15 +14,17 @@ import type { ITreeStorage } from '../I-storage';
 import type { Logger } from '../logger';
 import { OnboardingAbortedError } from '../sync-error';
 
-export class NewDeviceOnboarding<S extends Record<string, ZodType>> {
+export class NewDeviceOnboarding<Latest extends StorageVersion, Rest> {
     private ephemeralKeyPair: { publicKey: Buffer; secretKey: Buffer } | null = null;
 
     constructor(
         private readonly ik: { publicKey: Buffer; secretKey: Buffer },
         private readonly accountsApi: AccountsApi,
-        private readonly accountManager: AccountManager<S>,
+        private readonly accountManager: AccountManager<Latest, Rest>,
         private readonly secureEncryptedStorage: ITreeStorage,
-        private readonly logger: Logger
+        private readonly logger: Logger,
+        private readonly pollingTimeout: number,
+        private readonly storageVersion: number
     ) {}
 
     public generateOnboardingData(): Buffer {
@@ -34,27 +37,16 @@ export class NewDeviceOnboarding<S extends Record<string, ZodType>> {
         return QRMessageCodec.encode({
             type: QRMessageOperation.NEW_DEVICE_ONBOARDING,
             ephemeralPub: this.ephemeralKeyPair.publicKey,
-            ikPub: this.ik.publicKey
+            ikPub: this.ik.publicKey,
+            storageVersion: this.storageVersion
         });
     }
 
-    public async waitForOnboarding(signal?: AbortSignal): Promise<ISyncAccount<S>> {
-        for (let i = 0; i < 30; i++) {
+    public async waitForOnboarding(signal?: AbortSignal): Promise<ISyncAccount<Latest>> {
+        for (let i = 0; i < 150; i++) {
             if (signal?.aborted) {
                 throw new OnboardingAbortedError();
             }
-
-            await new Promise<void>((resolve, reject) => {
-                const timer = setTimeout(resolve, 3000);
-                signal?.addEventListener(
-                    'abort',
-                    () => {
-                        clearTimeout(timer);
-                        reject(new OnboardingAbortedError());
-                    },
-                    { once: true }
-                );
-            });
 
             let message: OnboardingMessage;
             try {
@@ -67,6 +59,7 @@ export class NewDeviceOnboarding<S extends Record<string, ZodType>> {
                 }
 
                 this.logger.info('No onboarding message yet, retrying...', err);
+                await this.waitBeforeRetry(signal);
                 continue;
             }
 
@@ -77,6 +70,20 @@ export class NewDeviceOnboarding<S extends Record<string, ZodType>> {
             return await this.handleOnboardingMessage(message);
         }
         throw new Error('Onboarding timed out');
+    }
+
+    private async waitBeforeRetry(signal?: AbortSignal): Promise<void> {
+        await new Promise<void>((resolve, reject) => {
+            const timer = setTimeout(resolve, this.pollingTimeout);
+            signal?.addEventListener(
+                'abort',
+                () => {
+                    clearTimeout(timer);
+                    reject(new OnboardingAbortedError());
+                },
+                { once: true }
+            );
+        });
     }
 
     private async handleOnboardingMessage(msg: OnboardingMessage) {

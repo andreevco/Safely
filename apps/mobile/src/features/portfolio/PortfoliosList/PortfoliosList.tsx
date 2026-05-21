@@ -1,6 +1,6 @@
 import { impactAsync, ImpactFeedbackStyle } from 'expo-haptics';
-import { useCallback, useLayoutEffect, useRef } from 'react';
-import { useSharedValue } from 'react-native-reanimated';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
+import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 
 import { Portfolio } from '@safely/core';
 import { useReorderPortfolios, useSetActivePortfolio } from '@safely/ux';
@@ -14,23 +14,47 @@ interface PortfoliosListProps {
     variant?: 'compact';
 }
 
+const buildPositions = (portfolios: Portfolio[]): Record<string, number> => {
+    const positions: Record<string, number> = {};
+
+    portfolios.forEach((portfolio, index) => {
+        positions[portfolio.id.toString()] = index;
+    });
+
+    return positions;
+};
+
 export const PortfoliosList = (props: PortfoliosListProps) => {
     const { portfolios, onSelect, variant } = props;
     const { mutate: reorderPortfolios } = useReorderPortfolios();
     const { mutate: setActivePortfolio } = useSetActivePortfolio();
 
-    const draggedIndex = useSharedValue<number | null>(null);
-    const offsetY = useSharedValue(0);
+    const gap = variant === 'compact' ? 0 : 2;
+    const itemsCount = portfolios.length;
 
-    const pendingDragReset = useRef(false);
+    const positions = useSharedValue<Record<string, number>>(buildPositions(portfolios));
+    const activeId = useSharedValue<string | null>(null);
+    const draggedOffsetY = useSharedValue(0);
+    const rowHeight = useSharedValue(48);
 
-    useLayoutEffect(() => {
-        if (pendingDragReset.current) {
-            pendingDragReset.current = false;
-            draggedIndex.value = null;
-            offsetY.value = 0;
-        }
-    }, [portfolios, draggedIndex, offsetY]);
+    const portfoliosRef = useRef(portfolios);
+    portfoliosRef.current = portfolios;
+
+    // recalculate positions only when added/changed/removed portfolios
+    const idsSetSignature = useMemo(
+        () =>
+            portfolios
+                .map(p => p.id.toString())
+                .sort()
+                .join('|'),
+        [portfolios]
+    );
+
+    useEffect(() => {
+        if (activeId.value !== null) return;
+
+        positions.value = buildPositions(portfoliosRef.current);
+    }, [idsSetSignature, positions, activeId]);
 
     const handleSelect = useCallback(
         (portfolio: Portfolio) => {
@@ -41,37 +65,54 @@ export const PortfoliosList = (props: PortfoliosListProps) => {
         [setActivePortfolio, onSelect]
     );
 
-    const handleDragStart = useCallback(() => {
-        pendingDragReset.current = false;
-    }, []);
+    const handleReorder = useCallback(
+        (nextOrderIds: string[]) => {
+            if (nextOrderIds.length !== portfolios.length) return;
 
-    const moveItem = useCallback(
-        (fromIndex: number, toIndex: number) => {
-            const newPortfolios = [...portfolios];
-            const clampedToIndex = Math.max(0, Math.min(toIndex, newPortfolios.length - 1));
+            const byId = new Map(portfolios.map(p => [p.id.toString(), p]));
+            const next = nextOrderIds.map(id => byId.get(id)).filter(p => p !== undefined);
 
-            newPortfolios.splice(clampedToIndex, 0, newPortfolios.splice(fromIndex, 1)[0]);
-
-            pendingDragReset.current = true;
-            reorderPortfolios(newPortfolios);
+            reorderPortfolios(next);
         },
         [portfolios, reorderPortfolios]
     );
 
-    return portfolios.map((portfolio, index) => {
-        return (
-            <DraggablePortfolio
-                key={portfolio.id.toString()}
-                portfolio={portfolio}
-                index={index}
-                itemsCount={portfolios.length}
-                draggedIndex={draggedIndex}
-                offsetY={offsetY}
-                moveItem={moveItem}
-                handleSelect={handleSelect}
-                handleDragStart={handleDragStart}
-                variant={variant}
-            />
-        );
+    const handleMeasure = useCallback(
+        (height: number) => {
+            if (height > 0 && rowHeight.value !== height) rowHeight.value = height;
+        },
+        [rowHeight]
+    );
+
+    const containerStyle = useAnimatedStyle(() => {
+        const stride = rowHeight.value + gap;
+
+        return {
+            height: itemsCount > 0 ? itemsCount * stride - gap : 0
+        };
     });
+
+    return (
+        <Animated.View style={containerStyle}>
+            {portfolios.map((portfolio, index) => {
+                return (
+                    <DraggablePortfolio
+                        key={portfolio.id.toString()}
+                        portfolio={portfolio}
+                        index={index}
+                        itemsCount={itemsCount}
+                        gap={gap}
+                        positions={positions}
+                        activeId={activeId}
+                        draggedOffsetY={draggedOffsetY}
+                        rowHeight={rowHeight}
+                        onReorder={handleReorder}
+                        onMeasure={handleMeasure}
+                        handleSelect={handleSelect}
+                        variant={variant}
+                    />
+                );
+            })}
+        </Animated.View>
+    );
 };

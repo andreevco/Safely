@@ -1,19 +1,41 @@
 import { createActor } from 'xstate';
 import { z } from 'zod';
 
-import { MockSnapshotsServer } from './mock-snapshots-api';
-import { createMockSyncContainer, MockSyncContainer } from './mock-sync-container';
+import { defineVersionHList, hCons, hNil, projectIdentity } from '@safely/slottree';
+
+import type { MockSnapshotsServer } from './mock-snapshots-api';
+import type { MockSyncContainer } from './mock-sync-container';
+import { createMockSyncContainer } from './mock-sync-container';
 import { SyncStatus } from '../../src';
-import { SnapshotsApi } from '../../src/api/generated';
-import { SnapshotsSse } from '../../src/api/snapshots-sse';
+import type { SnapshotsApi } from '../../src/api/generated';
+import type { SnapshotsSse } from '../../src/api/snapshots-sse';
 import { generateAccountID, initializeSyncAccount } from '../../src/initialize';
 import { Logger } from '../../src/logger/logger';
-import { createSyncMachine, SyncMachine } from '../../src/sync-machine/machine';
+import type { SyncMachine } from '../../src/sync-machine/machine';
+import { createSyncMachine } from '../../src/sync-machine/machine';
 import { SyncStatusManager } from '../../src/sync-provider/sync-status';
+import { encodeUpdatePayload } from '../../src/update-handler/update-payload';
 import { InMemStorage } from '../impl/storage';
 
+const TestSchema = z
+    .object({
+        value: z.string()
+    })
+    .partial();
+const TestV1 = {
+    version: 1,
+    schema: TestSchema,
+    initial: {},
+    projectUp: projectIdentity,
+    projectDown: projectIdentity
+} as const;
+const TestVersions = defineVersionHList(hCons(TestV1, hNil));
+type TestLatest = (typeof TestVersions)['head'];
+type TestRest = (typeof TestVersions)['tail'];
+export type TestMockSyncContainer = MockSyncContainer<TestLatest, TestRest>;
+
 export type MachineContext = {
-    container: MockSyncContainer;
+    container: TestMockSyncContainer;
     machine: SyncMachine;
     secureEncryptedStorage: InMemStorage;
 };
@@ -33,10 +55,9 @@ export async function createMachineContext(
     const accountEncryptedStorage = encryptedStorage.child(accountId);
     const accountSecureEncryptedStorage = secureEncryptedStorage.child(accountId);
     const logger = new Logger();
-    const structure = { value: z.string() };
     await initializeSyncAccount({
         storage: accountStorage,
-        structure,
+        versions: TestVersions,
         encryptedStorage: accountEncryptedStorage,
         secureEncryptedStorage: accountSecureEncryptedStorage,
         masterKey,
@@ -49,12 +70,15 @@ export async function createMachineContext(
         server,
         accountId,
         logger,
-        structure
+        TestVersions
     );
 
     if (!server.hasSnapshot()) {
         const encrypted = await container.updateEncryptor.encryptAndSign(
-            container.yManager.encodeAsSnapshot()
+            encodeUpdatePayload({
+                userStorage: container.yManager.encodeAsSnapshot(),
+                deviceStorage: container.deviceYManager.encodeAsSnapshot()
+            })
         );
         await server.seedFromSnapshot(encrypted);
     }
@@ -63,12 +87,10 @@ export async function createMachineContext(
     const machine = createActor(createSyncMachine(), {
         input: {
             syncStateRepository: container.syncStateRepository,
-            updateHandler: container.updateHandler,
-            yManager: container.yManager,
-            updateEncryptor: container.updateEncryptor,
+            deviceYManager: container.deviceYManager,
             snapshotsApi: container.snapshotApi as unknown as SnapshotsApi,
             snapshotsSse: container.snapshotSse as unknown as SnapshotsSse,
-            ikService: container.ikService,
+            syncOperations: container.syncOperations,
             syncStatusManager,
             logger: logger
         }
@@ -104,7 +126,7 @@ function delay(ms: number): Promise<void> {
 }
 
 export async function waitForSnapshotSync(
-    container: MockSyncContainer,
+    container: TestMockSyncContainer,
     server: MockSnapshotsServer
 ): Promise<void> {
     await waitFor(async () => {

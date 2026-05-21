@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
-import { InteractionManager, LayoutChangeEvent, Platform, StatusBar, View } from 'react-native';
+import { LayoutChangeEvent, Platform, StatusBar, View } from 'react-native';
 import {
     interpolateColor,
     useAnimatedProps,
@@ -21,6 +21,7 @@ export const usePopupMenu = (screenHeight: number, menuMargin = 8) => {
     const menuHeight = useSharedValue(0);
     const scale = useSharedValue(0.75);
     const progress = useSharedValue(0);
+    const isClosing = useSharedValue(false);
 
     const { layout } = useScreenContext();
     const { top } = useSafeAreaInsets();
@@ -32,7 +33,8 @@ export const usePopupMenu = (screenHeight: number, menuMargin = 8) => {
               : 0;
 
     const open = useCallback(() => {
-        InteractionManager.runAfterInteractions(() => {
+        requestAnimationFrame(() => {
+            isClosing.value = false;
             triggerRef.current?.measureInWindow((x, y, width, height) => {
                 triggerHeight.value = height;
                 triggerFrame.value = {
@@ -42,42 +44,38 @@ export const usePopupMenu = (screenHeight: number, menuMargin = 8) => {
                     height
                 };
                 setVisible(true);
-
-                requestAnimationFrame(() => {
-                    triggerRef.current?.measureInWindow((nextX, nextY, nextWidth, nextHeight) => {
-                        triggerHeight.value = nextHeight;
-                        triggerFrame.value = {
-                            x: nextX,
-                            y: nextY + offsetY,
-                            width: nextWidth,
-                            height: nextHeight
-                        };
-                    });
-                });
             });
         });
-    }, [offsetY, triggerHeight, triggerFrame]);
+    }, [offsetY, triggerHeight, triggerFrame, isClosing]);
 
     const hide = useCallback(() => {
+        triggerFrame.value = { x: 0, y: 0, width: 0, height: 0 };
+        triggerHeight.value = 0;
+        menuHeight.value = 0;
+        isClosing.value = false;
         setVisible(false);
-    }, []);
+    }, [triggerFrame, triggerHeight, menuHeight, isClosing]);
 
     const close = useCallback(() => {
+        isClosing.value = true;
         progress.value = withTiming(0, { duration: 50 });
         scale.value = withTiming(0.75, { duration: 50 }, finished => {
             if (finished) {
                 scheduleOnRN(hide);
             }
         });
-    }, [progress, scale, hide]);
+    }, [progress, scale, hide, isClosing]);
 
     const onMenuLayout = useCallback(
         (e: LayoutChangeEvent) => {
             menuHeight.value = e.nativeEvent.layout.height;
+            if (isClosing.value) {
+                return;
+            }
             progress.value = withTiming(1, { duration: 50 });
             scale.value = withTiming(1, { duration: 50 });
         },
-        [menuHeight, progress, scale]
+        [menuHeight, progress, scale, isClosing]
     );
 
     const triggerFrameStyle = useAnimatedStyle(() => ({

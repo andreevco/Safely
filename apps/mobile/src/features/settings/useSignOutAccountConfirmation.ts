@@ -2,7 +2,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { useAccounts, useActiveAccount, useDeleteAccount, useToast } from '@safely/ux';
+import { useAccounts, useActiveAccountMeta, useDeleteAccount, useToast } from '@safely/ux';
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 
@@ -10,7 +10,7 @@ export function useSignOutAccountConfirmation() {
     const { t } = useTranslation();
     const navigation = useNavigation<RootStackNavigationProp>();
     const accounts = useAccounts();
-    const account = useActiveAccount();
+    const accountName = useActiveAccountMeta().name;
     const toast = useToast();
     const { mutateAsync: deleteAccount } = useDeleteAccount();
 
@@ -18,7 +18,7 @@ export function useSignOutAccountConfirmation() {
         const isLastAccount = accounts?.length === 1;
 
         navigation.navigate('SignOutAccountSheet', {
-            accountName: account.meta.name,
+            accountName,
             onConfirm: async () => {
                 await deleteAccount();
 
@@ -35,5 +35,5 @@ export function useSignOutAccountConfirmation() {
                 navigation.navigate('SettingsModal', { screen: 'ProtectAccountModal' });
             }
         });
-    }, [navigation, account.meta.name, accounts?.length, deleteAccount, toast, t]);
+    }, [navigation, accountName, accounts?.length, deleteAccount, toast, t]);
 }
