@@ -31,7 +31,10 @@ describe('WalletSeedFactory', () => {
         const storage = new WalletDerivationStorage();
         const factory = new WalletSeedFactory(storage);
 
-        const walletDerivation = await factory.createWalletDerivation(passthroughEncryptor);
+        const walletDerivation = await factory.createWalletDerivation(
+            passthroughEncryptor,
+            Buffer.alloc(32, 0)
+        );
 
         expect(walletDerivation.root_seed_key).toMatch(/^[0-9a-f]{64}$/);
         expect(walletDerivation.bip39_256_wallet_index).toBe(0);
@@ -46,9 +49,9 @@ describe('WalletSeedFactory', () => {
         };
         const factory = new WalletSeedFactory(storage);
 
-        await expect(factory.createWalletDerivation(passthroughEncryptor)).rejects.toThrow(
-            'Wallet derivation is already initialized'
-        );
+        await expect(
+            factory.createWalletDerivation(passthroughEncryptor, Buffer.alloc(32, 0))
+        ).rejects.toThrow('Wallet derivation is already initialized');
     });
 
     it('throws when seed generation is requested before wallet derivation initialization', async () => {

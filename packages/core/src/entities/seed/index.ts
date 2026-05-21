@@ -3,6 +3,5 @@ export { generateBip39Accessor } from './utils';
 export {
     deriveBip39WalletSeedAccessor,
     deriveWalletSeedAccessor,
-    generateWalletRootSeedKey,
     type WalletSeedDescriptor
 } from './wallet-seed';

@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo } from 'react';
 
 import type { ITreeStorage, PortfolioBip39 } from '@safely/core';
 import { toPortfolioId } from '@safely/core';
-import { delay, PortfolioFactory, PortfolioNetworkType, generateBip39Accessor } from '@safely/core';
+import { delay, PortfolioFactory, PortfolioNetworkType } from '@safely/core';
 import type { ISyncAccount, OnboardingConnector as RawOnboardingConnector } from '@safely/sync';
 import { OnboardingAbortedError } from '@safely/sync';
 import type { SyncedStorageStructure } from '@safely/sync-storage';
@@ -20,6 +20,7 @@ import { useLogger } from '../logger';
 import { useMutation } from '../query-core';
 import { useCurrentDeviceIkPub, useSetOwnSyncedDeviceMeta } from '../synced-device';
 import { useToast } from '../toast';
+import { generateRootSeedKey, WalletSeedFactory } from '../wallet-seed';
 import type { SActivePortfolioSchema } from './local-storage';
 import { useClearActiveAccountLocalStorage } from './local-storage';
 import {
@@ -60,17 +61,26 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
             await delay();
 
             const account = await factory.createSyncAccount(params.secureEncryptedStorage);
+            const secretEncryptor = new SecretEncryptor(
+                account.secretEncryptor,
+                params.secureEncryptedStorage
+            );
+            const walletSeedFactory = new WalletSeedFactory(account.syncProvider);
+
             await updateMeta(account, (_, storeDraft) =>
                 storeDraft.set('meta', { name: params?.name ?? newAccountName })
+            );
+            await walletSeedFactory.createWalletDerivation(
+                secretEncryptor,
+                await generateRootSeedKey(account, params.secureEncryptedStorage)
             );
 
             let createdPortfolio: PortfolioBip39 | null = null;
 
             if (options?.createWallet || options?.setActive) {
-                const portfolioFactory = new PortfolioFactory(
-                    new SecretEncryptor(account.secretEncryptor, params.secureEncryptedStorage)
-                );
-                using accessorVault = generateBip39Accessor();
+                const portfolioFactory = new PortfolioFactory(secretEncryptor);
+                using accessorVault =
+                    await walletSeedFactory.generateBip39SeedAccessor(secretEncryptor);
                 createdPortfolio = await portfolioFactory.generatePortfolioBip39(accessorVault, {
                     network: PortfolioNetworkType.MAINNET,
                     meta: { name: t('security.groups.wallet.defaultName', { number: 1 }) }

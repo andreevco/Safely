@@ -1,6 +1,6 @@
 import { hmac } from '@noble/hashes/hmac.js';
 import { sha256 } from '@noble/hashes/sha2.js';
-import { concatBytes, randomBytes, utf8ToBytes } from '@noble/hashes/utils.js';
+import { concatBytes, utf8ToBytes } from '@noble/hashes/utils.js';
 import { entropyToMnemonic } from '@scure/bip39';
 import { wordlist } from '@scure/bip39/wordlists/english.js';
 
@@ -14,10 +14,6 @@ export type WalletSeedDescriptor = {
 
 const ROOT_SEED_KEY_BYTES = 32;
 const SUPPORTED_ENTROPY_BITS = new Set([128, 160, 192, 224, 256]);
-
-export function generateWalletRootSeedKey(): Uint8Array {
-    return randomBytes(32);
-}
 
 export function deriveWalletSeedAccessor(
     rootSeedKey: Uint8Array,
