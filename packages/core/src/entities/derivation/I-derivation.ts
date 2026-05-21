@@ -1,12 +1,12 @@
+import type { SDerivation } from '@safely/sync-storage';
+
 import type { IPortfolioDerivable } from '../portfolio';
 import type { IDerivationChainItemBtc } from './btc/I-derivation-chain-item-btc';
-import type { SDerivation } from './derivation.stored';
 import type { Id } from '../../utils/id';
-import type { IPortfolioId } from '../portfolio/portfolio-id';
 
 export interface IDerivationId extends Id {
     derivationIndex: number;
-    portfolioId: IPortfolioId;
+    portfolioId: Id;
 }
 
 export interface IDerivation {

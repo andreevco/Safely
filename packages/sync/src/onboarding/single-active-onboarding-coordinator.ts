@@ -1,24 +1,25 @@
-import type { ZodType } from 'zod';
+import type { StorageVersion } from '@safely/slottree';
 
 import type { OnboardingConnector } from './connector';
 import { EagerOnboardingConnector } from './eager-onboarding-connector';
 import type { ISyncAccount } from '../account/I-sync-account';
 
-type OnboardingSession<S extends Record<string, ZodType>> = {
+type OnboardingSession<Latest extends StorageVersion> = {
     data: Buffer;
-    waitForCompletion: (signal: AbortSignal) => Promise<ISyncAccount<S>>;
+    waitForCompletion: (signal: AbortSignal) => Promise<ISyncAccount<Latest>>;
 };
 
-export class SingleActiveOnboardingCoordinator<S extends Record<string, ZodType>> {
-    private activeConnector: { token: object; connector: OnboardingConnector<S> } | null = null;
+export class SingleActiveOnboardingCoordinator<Latest extends StorageVersion> {
+    private activeConnector: { token: object; connector: OnboardingConnector<Latest> } | null =
+        null;
     private activeConnectorPromise: {
         token: object;
-        promise: Promise<OnboardingConnector<S>>;
+        promise: Promise<OnboardingConnector<Latest>>;
     } | null = null;
 
     public async getConnector(
-        createSession: () => Promise<OnboardingSession<S>>
-    ): Promise<OnboardingConnector<S>> {
+        createSession: () => Promise<OnboardingSession<Latest>>
+    ): Promise<OnboardingConnector<Latest>> {
         if (this.activeConnector) {
             return this.activeConnector.connector;
         }

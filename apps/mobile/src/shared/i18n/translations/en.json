@@ -24,6 +24,7 @@
         "cancel": "Cancel",
         "continue": "Continue",
         "later": "Later",
+        "comingSoon": "Coming soon",
         "errors": {
             "unknown": "Something went wrong"
         }
@@ -404,6 +405,14 @@
             "info": "Watch account cannot sign transactions and send funds.",
             "invalidAddress": "Invalid Bitcoin address",
             "unsupportedExtendedKey": "ypub is not supported yet. Use xpub."
+        }
+    },
+    "account": {
+        "unnamed": "Unnamed",
+        "sync": {
+            "errors": {
+                "updateFailed": "Couldn't save changes. Changes have been reverted."
+            }
         }
     },
     "addAccount": {

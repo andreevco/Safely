@@ -17,7 +17,7 @@ const PRIVACY_URL = 'https://google.com';
 
 export const WelcomeScreen = () => {
     const { t } = useTranslation();
-    const { onStartCreate } = useOnboardingFlow();
+    const { onSuccessCreate, onSuccessSignIn } = useOnboardingFlow();
     const signIn = useCreateExistingAccountConnector();
     const navigation = useNavigation<RootStackNavigationProp>();
     const {
@@ -32,15 +32,19 @@ export const WelcomeScreen = () => {
 
         // resource will be closed manually in `closeStorage` because it needs to be opened on the SignInScreen
         const secureEncryptedStorage = getSecureEncrypted();
+
+        // don't ask for the password while setting app initially after first account creation during onboarding to provide smooth user experience
         secureEncryptedStorage.UNSAFE_SKIP_SECURITY_CHECK_unlock();
 
         const connector = await signIn.mutateAsync({ secureEncryptedStorage });
 
         navigation.navigate('SignInScreen', {
             connector,
-            closeStorage: () => secureEncryptedStorage[Symbol.dispose]()
+            closeStorage: () => secureEncryptedStorage[Symbol.dispose](),
+            onSuccess: () =>
+                navigation.navigate('SignInSuccessScreen', { onContinue: onSuccessSignIn })
         });
-    }, [signIn, navigation, getSecureEncrypted]);
+    }, [signIn, navigation, getSecureEncrypted, onSuccessSignIn]);
 
     return (
         <Screen background="transparent">
@@ -56,7 +60,7 @@ export const WelcomeScreen = () => {
                     </View>
 
                     <View style={styles.buttonsContainer}>
-                        <Button type="primary" size="large" onPress={onStartCreate}>
+                        <Button type="primary" size="large" onPress={onSuccessCreate}>
                             {t('welcome.createNew')}
                         </Button>
                         <Button type="secondary" size="large" onPress={handleSignIn}>

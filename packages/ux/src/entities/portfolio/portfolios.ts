@@ -1,4 +1,5 @@
-import { keepPreviousData, notifyManager, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
+import { useCallback } from 'react';
 
 import type {
     BtcWalletReadOnly,
@@ -9,7 +10,6 @@ import type {
     PortfolioBip39,
     PortfolioMeta,
     PortfolioWatchOnly,
-    IPortfolioId,
     ISecretEncryptor
 } from '@safely/core';
 import {
@@ -20,106 +20,49 @@ import {
     PortfolioNetworkType,
     PortfolioType,
     generateBip39Accessor,
-    VMType
+    VM_TYPE
 } from '@safely/core';
 
+import { useTranslate, useSecurityCheck, useAppContext } from '../../shared';
+import { useSuspenseQuery } from '../../shared';
+import type { SActivePortfolioSchema, UseAccountSyncStorageUpdateOptions } from '../account';
+import { useActiveAccountSyncStorageSlotUpdate } from '../account';
+import { useActiveAccountStoreSlot } from '../account';
 import {
-    useTranslate,
-    useSuspenseQuery,
-    useSecurityCheck,
-    useAppContext,
-    SecretEncryptor
-} from '../../shared';
-import { useActiveAccountQuery, useActiveAccountQueryKey } from '../account';
-import { useActiveAccountLocalStorage, useActiveAccountSyncedStorage } from '../account/storage';
+    useActiveAccountLocalStorage,
+    useActiveAccountQuery,
+    useActiveAccountQueryKey
+} from '../account';
 import { useErrorToast } from '../errors';
-import { useLogger } from '../logger';
 import { useMutation } from '../query-core';
 import { useToast } from '../toast';
 
-export function usePortfoliosQuery() {
-    const config = usePortfoliosQueryConfig();
+const EMPTY_PORTFOLIOS: Portfolio[] = Object.freeze([]) as unknown as Portfolio[];
 
-    return useQuery({
-        ...config,
-        initialData: () => config.queryFn()
-    });
+export function usePortfolios(): Portfolio[] {
+    return useActiveAccountStoreSlot('portfolios') ?? EMPTY_PORTFOLIOS;
 }
 
-export function usePortfoliosQueryConfig() {
-    const accountQueryKey = useActiveAccountQueryKey();
-    const { get } = useActiveAccountSyncedStorage('portfolios');
-    const { data: account } = useActiveAccountQuery();
-    const { storage } = useAppContext();
-
-    return {
-        queryKey: accountQueryKey.portfolios.toKey(),
-        queryFn(): Portfolio[] {
-            if (!account) return [];
-
-            const data = get();
-            if (data === null) return [];
-
-            return data.map(p =>
-                PortfolioFactory.restorePortfolio(
-                    new SecretEncryptor(account.secretEncryptor, storage.sync.getSecureEncrypted()),
-                    p
-                )
-            );
-        },
-        staleTime: Infinity,
-        placeholderData: keepPreviousData
-    };
-}
-
-export function usePortfolios() {
-    return usePortfoliosQuery().data;
-}
-
-function useSetPortfolios() {
-    const { set } = useActiveAccountSyncedStorage('portfolios');
-    const client = useQueryClient();
-    const accountQueryKey = useActiveAccountQueryKey();
-
-    return useMutation<void, Error, Portfolio[]>({
-        async mutationFn(accounts) {
-            notifyManager.batch(() => {
-                client.setQueryData(accountQueryKey.portfolios.toKey(), accounts);
-
-                if (accounts.length === 0) {
-                    client.setQueryData(accountQueryKey.portfolios.active.toKey(), null);
-                }
-            });
-
-            await set(accounts.map(a => a.toJSON()));
-            await client.invalidateQueries({ queryKey: accountQueryKey.portfolios.toKey() });
-        }
-    });
-}
-
-export function useAddPortfolio() {
-    const { mutateAsync } = useSetPortfolios();
-    const { data: accounts } = usePortfoliosQuery();
+export function useAddPortfolio(options?: UseAccountSyncStorageUpdateOptions) {
+    const update = useActiveAccountSyncStorageSlotUpdate('portfolios', options);
 
     return useMutation<void, Error, Portfolio>({
-        async mutationFn(account) {
-            await mutateAsync((accounts ?? []).concat(account));
+        async mutationFn(portfolio) {
+            return update(draft => draft.push(portfolio.toJSON()));
         }
     });
 }
 
 export function useNewPortfolioFallbackName() {
-    const { data: portfolios } = usePortfoliosQuery();
+    const portfolios = usePortfolios();
     const t = useTranslate();
 
-    const portfoliosCount = portfolios?.length ?? 0;
-
-    return t('security.groups.wallet.defaultName', { number: portfoliosCount + 1 });
+    return t('security.groups.wallet.defaultName', { number: portfolios.length + 1 });
 }
 
 export function useGeneratePortfolio() {
     const { mutateAsync: setActivePortfolio } = useSetActivePortfolio();
-    const { mutateAsync: addAccount } = useAddPortfolio();
+    const { mutateAsync: addAccount } = useAddPortfolio({ showErrorToast: false });
 
     const errorToast = useErrorToast({
         PortfolioGenerationFailedError: 'importWalletScreen.errors.failedToGenerate'
@@ -153,8 +96,7 @@ export function useGeneratePortfolio() {
 }
 
 export function useImportPortfolio() {
-    const { data: existingPortfolios } = usePortfoliosQuery();
-    const { mutateAsync: addPortfolio } = useAddPortfolio();
+    const { mutateAsync: addPortfolio } = useAddPortfolio({ showErrorToast: false });
     const { mutateAsync: setActivePortfolio } = useSetActivePortfolio();
     const toast = useToast();
     const t = useTranslate();
@@ -162,6 +104,7 @@ export function useImportPortfolio() {
         InvalidMnemonicError: 'importWalletScreen.errors.invalidMnemonic'
     });
     const { deviceInfo } = useAppContext();
+    const portfolios = usePortfolios();
 
     return useMutation<
         Portfolio,
@@ -184,7 +127,7 @@ export function useImportPortfolio() {
                 seedRevealedFromDevice: deviceInfo.name
             });
 
-            const existingBip39 = existingPortfolios?.find(p => p.id.isEq(portfolio.id));
+            const existingBip39 = portfolios.find(p => p.id.isEq(portfolio.id));
 
             if (existingBip39) {
                 throw new PortfolioAlreadyExistsError(existingBip39);
@@ -210,190 +153,123 @@ export function useImportPortfolio() {
 }
 
 export function useDeletePortfolio() {
-    const portfolios = usePortfolios();
-    const { mutateAsync } = useSetPortfolios();
+    const update = useActiveAccountSyncStorageSlotUpdate('portfolios');
     const check = useSecurityCheck();
 
-    return useMutation<void, Error, { id: IPortfolioId }>({
-        async mutationFn({ id }) {
+    return useMutation<void, Error, Portfolio>({
+        async mutationFn(portfolio) {
             await check();
-            await mutateAsync(portfolios.filter(p => !p.id.isEq(id)));
+            await update(draft => draft.remove(portfolio.jsonArrayId()));
         }
     });
 }
 
 export function useReorderPortfolios() {
-    const { mutateAsync } = useSetPortfolios();
-    const client = useQueryClient();
-    const accountQueryKey = useActiveAccountQueryKey();
+    const update = useActiveAccountSyncStorageSlotUpdate('portfolios');
 
     return useMutation<void, Error, Portfolio[]>({
-        onMutate(nextPortfoliosOrder) {
-            client.setQueryData(accountQueryKey.portfolios.toKey(), nextPortfoliosOrder);
-        },
         async mutationFn(nextPortfoliosOrder) {
-            await mutateAsync(nextPortfoliosOrder);
-        }
-    });
-}
-
-export function useAddBip39Derivation() {
-    const portfolio = useActivePortfolio();
-    const portfolios = usePortfolios();
-    const { mutateAsync } = useSetPortfolios();
-
-    return useMutation<void, Error, { index: number | undefined }>({
-        async mutationFn({ index }) {
-            if (portfolio.type !== PortfolioType.BIP39) {
-                throw new Error('Derivation can be added only to bip39 portfolio');
-            }
-
-            if (index === undefined) {
-                await portfolio.addNextDerivation();
-            } else {
-                await portfolio.addDerivation(index);
-            }
-
-            await mutateAsync(portfolios);
-        }
-    });
-}
-
-export function useRemoveBip39Derivation() {
-    const portfolio = useActivePortfolio();
-    const portfolios = usePortfolios();
-    const { mutateAsync } = useSetPortfolios();
-
-    return useMutation<void, Error, { index: number }>({
-        async mutationFn({ index }) {
-            if (portfolio.type !== PortfolioType.BIP39) {
-                throw new Error('Derivation can be removed only to bip39 wallet');
-            }
-
-            portfolio.removeDerivation(index);
-
-            await mutateAsync(portfolios);
+            await update(draft => draft.reorder(nextPortfoliosOrder.map(p => p.jsonArrayId())));
         }
     });
 }
 
 type ActivePortfolioEntitiesBip39 = {
-    kind: 'bip39';
+    type: 'bip39';
     portfolio: PortfolioBip39;
     btcWallet: SignableBtcWallet;
     derivation: IDerivation;
 };
 
 type ActivePortfolioEntitiesWatchOnly = {
-    kind: 'watch-only';
+    type: 'watch-only';
     portfolio: PortfolioWatchOnly;
 };
 
 type ActivePortfolioEntities = ActivePortfolioEntitiesBip39 | ActivePortfolioEntitiesWatchOnly;
 
-export function useActivePortfolioEntitiesQuery() {
-    const { get, set } = useActiveAccountLocalStorage('activePortfolio');
+export function useActivePortfolioEntitiesIdsQuery<TData = SActivePortfolioSchema>(
+    select?: (data: SActivePortfolioSchema) => TData
+) {
+    const { get } = useActiveAccountLocalStorage('activePortfolio');
     const accountQueryKey = useActiveAccountQueryKey();
     const { data: activeAccount } = useActiveAccountQuery();
-    const client = useQueryClient();
-    const portfoliosQuery = usePortfoliosQueryConfig();
-    const logger = useLogger();
 
-    return useSuspenseQuery<ActivePortfolioEntities | null>({
-        queryKey: accountQueryKey.portfolios.active.toKey(),
+    return useSuspenseQuery<SActivePortfolioSchema, unknown, TData>({
+        queryKey: accountQueryKey.activePortfolio.toKey(),
         async queryFn() {
-            if (!activeAccount) {
-                return null;
-            }
+            if (!activeAccount) return null;
+            return get();
+        },
+        staleTime: Infinity,
+        select
+    });
+}
 
-            const portfolios: ReturnType<typeof usePortfoliosQuery>['data'] =
-                await client.fetchQuery(portfoliosQuery);
-            if (!portfolios?.length) {
-                return null;
-            }
+export function useActivePortfolioEntitiesQuery() {
+    const portfolios = usePortfolios();
 
-            const activeConfig = await get();
+    return useActivePortfolioEntitiesIdsQuery<ActivePortfolioEntities | null>(
+        useCallback(
+            (sActivePortfolioSchema: SActivePortfolioSchema) => {
+                if (portfolios.length === 0) return null;
 
-            const resolveEntities = async (
-                portfolio: Portfolio
-            ): Promise<ActivePortfolioEntities> => {
+                let portfolio: Portfolio;
+                if (sActivePortfolioSchema) {
+                    portfolio =
+                        portfolios.find(p =>
+                            p.id.isEq(Id.fromString(sActivePortfolioSchema.portfolioId))
+                        ) ?? portfolios[0];
+                } else {
+                    portfolio = portfolios[0];
+                }
+
                 if (portfolio.type === PortfolioType.WATCH_ONLY) {
-                    await set({ portfolioId: portfolio.id.toString(), derivationId: null });
-
-                    return {
-                        kind: 'watch-only',
-                        portfolio
-                    };
+                    return { type: 'watch-only' as const, portfolio };
                 }
 
-                if (activeConfig && !activeConfig.derivationId) {
-                    logger.error('derivationId is null for derivable portfolio');
-                }
-
-                const derivation = activeConfig?.derivationId
-                    ? (portfolio.getDerivation(Id.fromString(activeConfig.derivationId)) ??
-                      portfolio.getDerivations()[0])
-                    : portfolio.getDerivations()[0];
-
-                await set({
-                    portfolioId: portfolio.id.toString(),
-                    derivationId: derivation.id.toString()
-                });
+                const derivation = portfolio.getDerivations()[0];
 
                 return {
-                    kind: 'bip39',
+                    type: 'bip39' as const,
                     portfolio,
                     btcWallet: derivation.chains.btc.wallets[0],
                     derivation
                 };
-            };
+            },
+            [portfolios]
+        )
+    );
+}
 
-            if (!activeConfig) {
-                return resolveEntities(portfolios[0]);
-            }
-
-            const activePortfolio = portfolios.find(p =>
-                p.id.isEq(Id.fromString(activeConfig.portfolioId))
-            );
-
-            if (!activePortfolio) {
-                return resolveEntities(portfolios[0]);
-            }
-
-            return resolveEntities(activePortfolio);
-        },
-        staleTime: Infinity,
-        placeholderData: keepPreviousData
-    });
+export function useActivePortfolioEntities(): ActivePortfolioEntities {
+    const entities = useActivePortfolioEntitiesQuery().data;
+    if (entities === null) {
+        throw new Error('No active portfolio');
+    }
+    return entities;
 }
 
 export function useHasPortfolio() {
-    const { data: active } = useActivePortfolioEntitiesQuery();
-
-    return active !== null;
+    return useActivePortfolioEntitiesQuery().data !== null;
 }
 
 export function useIsActiveWalletWatchOnly(): boolean {
-    const entities = useActivePortfolioEntitiesQuery().data;
-
-    return entities?.kind === 'watch-only';
+    return useActivePortfolioEntitiesQuery()?.data?.type === 'watch-only';
 }
 
 export function useAddWatchOnlyPortfolio() {
-    const client = useQueryClient();
-    const portfoliosQuery = usePortfoliosQueryConfig();
     const { mutateAsync: addPortfolio } = useAddPortfolio();
     const { mutateAsync: setActivePortfolio } = useSetActivePortfolio();
+    const portfolios = usePortfolios();
 
     return useMutation<Portfolio, Error, { input: string; meta: PortfolioMeta }>({
         async mutationFn({ input, meta }) {
             const portfolio = PortfolioFactory.generateWatchOnlyPortfolio(input, {
                 network: PortfolioNetworkType.MAINNET,
                 meta,
-                vmType: VMType.BTC
+                vmType: VM_TYPE.BTC
             });
-
-            const portfolios: Portfolio[] = await client.fetchQuery(portfoliosQuery);
 
             const existing = portfolios.find(p => p.id.isEq(portfolio.id));
             if (existing) {
@@ -408,68 +284,26 @@ export function useAddWatchOnlyPortfolio() {
     });
 }
 
-export function useSetActiveDerivation() {
-    const { set } = useActiveAccountLocalStorage('activePortfolio');
-    const client = useQueryClient();
-    const portfoliosQuery = usePortfoliosQueryConfig();
-    const accountQueryKey = useActiveAccountQueryKey();
-
-    return useMutation<Portfolio, Error, Pick<IDerivation, 'id'>>({
-        async mutationFn({ id }) {
-            const portfolios: Portfolio[] = await client.fetchQuery(portfoliosQuery);
-            const portfolioToSet = portfolios.find(a => a.id.isEq(id.portfolioId));
-
-            if (!portfolioToSet || portfolioToSet.type !== PortfolioType.BIP39) {
-                throw new Error('Portfolio not found or not derivable');
-            }
-
-            const derivationToSet = portfolioToSet.getDerivation(id);
-
-            if (!derivationToSet) {
-                throw new Error('Derivation not found');
-            }
-
-            await set({
-                portfolioId: portfolioToSet.id.toString(),
-                derivationId: derivationToSet.id.toString()
-            });
-
-            await client.invalidateQueries({
-                queryKey: accountQueryKey.portfolios.toKey()
-            });
-
-            return portfolioToSet;
-        }
-    });
-}
-
 export function useSetActivePortfolio() {
     const { set } = useActiveAccountLocalStorage('activePortfolio');
-    const portfoliosQuery = usePortfoliosQueryConfig();
     const client = useQueryClient();
     const accountQueryKey = useActiveAccountQueryKey();
+    const portfolios = usePortfolios();
 
     return useMutation<Portfolio, Error, Pick<Portfolio, 'id'>>({
         async mutationFn({ id }) {
-            const portfolios: Portfolio[] = await client.fetchQuery(portfoliosQuery);
             const portfolioToSet = portfolios.find(a => a.id.isEq(id));
 
             if (!portfolioToSet) {
                 throw new Error('Portfolio not found');
             }
 
-            const derivationId =
-                portfolioToSet.type === PortfolioType.BIP39
-                    ? portfolioToSet.getDerivations()[0].id.toString()
-                    : null;
-
             await set({
-                portfolioId: portfolioToSet.id.toString(),
-                derivationId
+                portfolioId: portfolioToSet.id.toString()
             });
 
             await client.invalidateQueries({
-                queryKey: accountQueryKey.portfolios.toKey()
+                queryKey: accountQueryKey.activePortfolio.toKey()
             });
 
             return portfolioToSet;
@@ -478,60 +312,44 @@ export function useSetActivePortfolio() {
 }
 
 export function useChangePortfolioMeta() {
-    const client = useQueryClient();
-    const portfoliosQuery = usePortfoliosQueryConfig();
-    const { mutateAsync } = useSetPortfolios();
+    const update = useActiveAccountSyncStorageSlotUpdate('portfolios');
 
-    return useMutation<
-        Portfolio,
-        Error,
-        { portfolio: { id: IPortfolioId }; meta: Partial<PortfolioMeta> }
-    >({
-        async mutationFn({ portfolio: { id }, meta }) {
-            const portfolios: Portfolio[] = await client.fetchQuery(portfoliosQuery);
-            const portfolio = portfolios.find(p => p.id.isEq(id));
-            if (!portfolio) {
-                throw new Error('Portfolio not found');
-            }
-
-            portfolio.updateMeta(meta);
-            await mutateAsync(portfolios);
-            return portfolio;
+    return useMutation<void, Error, { portfolio: Portfolio; meta: Partial<PortfolioMeta> }>({
+        mutationFn({ portfolio, meta }) {
+            return update(draft =>
+                draft.update(portfolio.jsonArrayId(), activePortfolioDraft => {
+                    activePortfolioDraft.set('meta', {
+                        ...activePortfolioDraft.get()!.meta,
+                        ...meta
+                    });
+                })
+            );
         }
     });
 }
 
 export function useRecordActivePortfolioSecretReveal() {
-    const client = useQueryClient();
-    const portfoliosQuery = usePortfoliosQueryConfig();
     const activePortfolio = useActivePortfolio();
-    const { mutateAsync } = useSetPortfolios();
+    const update = useActiveAccountSyncStorageSlotUpdate('portfolios');
     const { deviceInfo } = useAppContext();
 
     return useMutation({
-        async mutationFn() {
-            if (activePortfolio.type !== PortfolioType.BIP39) {
-                return;
-            }
+        mutationFn() {
+            return update(draft =>
+                draft.update(activePortfolio.jsonArrayId(), activePortfolioDraft => {
+                    const bip39Draft = activePortfolioDraft.narrow(
+                        (p): p is Extract<typeof p, { type: typeof PortfolioType.BIP39 }> =>
+                            p.type === PortfolioType.BIP39
+                    );
 
-            const portfolios: Portfolio[] = await client.fetchQuery(portfoliosQuery);
-            const portfolio = portfolios.find(p => p.id.isEq(activePortfolio.id));
-            if (!portfolio || portfolio.type !== PortfolioType.BIP39) {
-                return;
-            }
-            portfolio.recordSecretReveal(deviceInfo.name);
-            await mutateAsync(portfolios);
+                    bip39Draft?.set('secretRevealedStatus', {
+                        revealedAt: new Date().getTime(),
+                        revealedFromDevice: deviceInfo.name
+                    });
+                })
+            );
         }
     });
-}
-
-export function useActivePortfolioEntities() {
-    const { data } = useActivePortfolioEntitiesQuery();
-    if (data === null) {
-        throw new Error('No active portfolio');
-    }
-
-    return data;
 }
 
 export function useActivePortfolio() {
@@ -539,13 +357,13 @@ export function useActivePortfolio() {
 }
 
 export function useActiveBtcWallet(): BtcWalletReadOnly {
-    return resolveBtcWallet(useActivePortfolioEntities().portfolio);
+    return resolveBtcWallet(useActivePortfolio());
 }
 
 export function useActiveSignableBtcWallet(): SignableBtcWallet {
     const entities = useActivePortfolioEntities();
 
-    if (entities.kind !== 'bip39') {
+    if (entities.type !== 'bip39') {
         throw new Error('Signable wallet unavailable for watch-only portfolio');
     }
 
@@ -553,10 +371,10 @@ export function useActiveSignableBtcWallet(): SignableBtcWallet {
 }
 
 export function findPortfolioMetaByAddress(
-    portfolios: ReturnType<typeof usePortfolios>,
+    portfolios: Portfolio[],
     address: string
 ): PortfolioMeta | undefined {
-    return portfolios?.find(p => resolveBtcWallet(p).address === address)?.meta;
+    return portfolios.find(p => resolveBtcWallet(p).address === address)?.meta;
 }
 
 export function resolveBtcWallet(portfolio: Portfolio): BtcWalletReadOnly {

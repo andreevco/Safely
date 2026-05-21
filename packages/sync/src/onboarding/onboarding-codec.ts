@@ -11,11 +11,13 @@ export type QRMessageNewDeviceOnboarding = {
     type: QRMessageOperation.NEW_DEVICE_ONBOARDING;
     ephemeralPub: Buffer;
     ikPub: Buffer;
+    storageVersion: number;
 };
 
 export type QRMessageReconnection = {
     type: QRMessageOperation.RECONNECTION;
     ikPub: Buffer;
+    storageVersion: number;
 };
 
 export type QRMessage = QRMessageNewDeviceOnboarding | QRMessageReconnection;
@@ -29,12 +31,14 @@ export class QRMessageCodec {
             case QRMessageOperation.NEW_DEVICE_ONBOARDING:
                 writer.write(0x02, payload.ephemeralPub);
                 writer.write(0x03, payload.ikPub);
+                writer.write(0x04, u8be(payload.storageVersion));
                 break;
             case QRMessageOperation.RECONNECTION:
                 writer.write(0x02, payload.ikPub);
+                writer.write(0x04, u8be(payload.storageVersion));
                 break;
             default:
-                throw new SyncError('Unsupported operation type in message');
+                throw new UnsupportedQRCodeOperationError();
         }
 
         return writer.concat();
@@ -46,35 +50,53 @@ export class QRMessageCodec {
 
         const op = chunks.find(d => d.type === 0x01);
         if (!op) {
-            throw new SyncError('Missing operation type in message');
+            throw new CorruptedQRCodeOperationError();
         }
 
-        const operation = op.value[0] as QRMessageOperation;
+        const operation = QRMessageCodec.decodeOperation(op.value[0]);
         switch (operation) {
             case QRMessageOperation.NEW_DEVICE_ONBOARDING: {
                 const ephemeralPubChunk = chunks.find(d => d.type === 0x02);
                 const ikPubChunk = chunks.find(d => d.type === 0x03);
-                if (!ephemeralPubChunk || !ikPubChunk) {
-                    throw new SyncError('Missing fields for new device onboarding message');
+                const storageVersionChunk = chunks.find(d => d.type === 0x04);
+                if (!ephemeralPubChunk || !ikPubChunk || !storageVersionChunk) {
+                    throw new CorruptedQRCodeOperationError();
                 }
                 return {
                     type: QRMessageOperation.NEW_DEVICE_ONBOARDING,
                     ephemeralPub: ephemeralPubChunk.value,
-                    ikPub: ikPubChunk.value
+                    ikPub: ikPubChunk.value,
+                    storageVersion: storageVersionChunk.value[0]
                 };
             }
             case QRMessageOperation.RECONNECTION: {
                 const ikPubChunk = chunks.find(d => d.type === 0x02);
-                if (!ikPubChunk) {
-                    throw new SyncError('Missing IK public key for reconnection message');
+                const storageVersionChunk = chunks.find(d => d.type === 0x04);
+                if (!ikPubChunk || !storageVersionChunk) {
+                    throw new CorruptedQRCodeOperationError();
                 }
                 return {
                     type: QRMessageOperation.RECONNECTION,
-                    ikPub: ikPubChunk.value
+                    ikPub: ikPubChunk.value,
+                    storageVersion: storageVersionChunk.value[0]
                 };
             }
             default:
-                throw new SyncError('Unsupported operation type in message');
+                throw new UnsupportedQRCodeOperationError();
+        }
+    }
+
+    private static decodeOperation(value: number): QRMessageOperation {
+        switch (value) {
+            case 1:
+                return QRMessageOperation.NEW_DEVICE_ONBOARDING;
+            case 2:
+                return QRMessageOperation.RECONNECTION;
+            default:
+                throw new UnsupportedQRCodeOperationError();
         }
     }
 }
+
+export class UnsupportedQRCodeOperationError extends SyncError {}
+export class CorruptedQRCodeOperationError extends SyncError {}

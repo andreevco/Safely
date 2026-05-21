@@ -13,7 +13,7 @@ import Animated, {
 import { useUnistyles } from 'react-native-unistyles';
 
 import { ContactMeta, PortfolioMeta, ellipsisMiddle } from '@safely/core';
-import { useScanQrScheme } from '@safely/ux';
+import { SuggestionSource, useScanQrScheme } from '@safely/ux';
 
 import { ContactName } from '@mobile/entities/contact';
 import { PortfolioName } from '@mobile/entities/portfolio';
@@ -22,6 +22,7 @@ import { Text } from '@mobile/shared/ui/Text';
 import { TouchableOpacity } from '@mobile/shared/ui/TouchableOpacity';
 
 import { styles } from './AddressInput.styles';
+import { AddressSuffix } from './AddressSuffix';
 
 interface AddressInputProps {
     value: string;
@@ -32,6 +33,7 @@ interface AddressInputProps {
     inputRef?: Ref<TextInput>;
     selectedPortfolioMeta?: PortfolioMeta;
     selectedContactMeta?: ContactMeta;
+    metaSource?: SuggestionSource;
     onSubmitEditing?: () => void;
 }
 
@@ -45,9 +47,12 @@ export const AddressInput = (props: AddressInputProps) => {
         inputRef,
         selectedPortfolioMeta,
         selectedContactMeta,
+        metaSource,
         onSubmitEditing
     } = props;
     const selectedMeta = selectedPortfolioMeta ?? selectedContactMeta;
+    const isSuggestionsMeta = !!selectedMeta && metaSource === SuggestionSource.SUGGESTIONS;
+    const isUserDefinedMeta = !!selectedMeta && metaSource === SuggestionSource.USER_DEFINED;
     const { t } = useTranslation();
     const { theme } = useUnistyles();
 
@@ -93,14 +98,14 @@ export const AddressInput = (props: AddressInputProps) => {
 
     const handleChangeText = useCallback(
         (text: string) => {
-            if (selectedMeta) {
+            if (isSuggestionsMeta) {
                 const added = text.length > value.length ? text.slice(value.length) : '';
                 onChangeText(added);
                 return;
             }
             onChangeText(text);
         },
-        [onChangeText, selectedMeta, value]
+        [onChangeText, isSuggestionsMeta, value]
     );
 
     const handleSelectedPress = useCallback(() => {
@@ -117,24 +122,33 @@ export const AddressInput = (props: AddressInputProps) => {
                 </View>
             )}
             <View style={styles.container}>
-                <TextInput
-                    ref={textInputRef}
-                    value={value}
-                    onChangeText={handleChangeText}
-                    onFocus={handleFocus}
-                    onBlur={handleBlur}
-                    style={[styles.input, selectedMeta && styles.hiddenInput]}
-                    placeholder={placeholder}
-                    placeholderTextColor={theme.colors.text.tertiary}
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    spellCheck={false}
-                    multiline
-                    submitBehavior="submit"
-                    returnKeyType="next"
-                    onSubmitEditing={onSubmitEditing}
-                />
-                {selectedMeta && (
+                <View style={styles.inputModeBox}>
+                    <TextInput
+                        ref={textInputRef}
+                        value={value}
+                        onChangeText={handleChangeText}
+                        onFocus={handleFocus}
+                        onBlur={handleBlur}
+                        style={[styles.input, isSuggestionsMeta && styles.hiddenInput]}
+                        placeholder={placeholder}
+                        placeholderTextColor={theme.colors.text.tertiary}
+                        autoCapitalize="none"
+                        autoCorrect={false}
+                        spellCheck={false}
+                        multiline
+                        submitBehavior="submit"
+                        returnKeyType="next"
+                        onSubmitEditing={onSubmitEditing}
+                    />
+                    {isUserDefinedMeta && (
+                        <AddressSuffix
+                            value={value}
+                            portfolioMeta={selectedPortfolioMeta}
+                            contactMeta={selectedContactMeta}
+                        />
+                    )}
+                </View>
+                {isSuggestionsMeta && (
                     <Pressable style={styles.selectedContent} onPress={handleSelectedPress}>
                         {selectedPortfolioMeta ? (
                             <PortfolioName

@@ -4,3 +4,4 @@ export { useAssets } from './useAssets';
 export { useTotalBalance } from './useTotalBalance';
 export { useRate } from './useRate';
 export { usePortfolioBalance } from './usePortfolioBalance';
+export { useChart } from './useChart';

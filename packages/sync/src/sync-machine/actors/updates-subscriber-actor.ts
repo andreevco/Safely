@@ -1,10 +1,15 @@
 import type { AnyEventObject } from 'xstate';
 import { fromCallback } from 'xstate';
 
+import type { StorageVersion } from '@safely/slottree';
+
 import type { SyncMachineConfig } from '../config';
 
 export const updatesSubscriberActor = fromCallback(
-    (opts: { sendBack: (event: AnyEventObject) => void; input: SyncMachineConfig }) => {
+    (opts: {
+        sendBack: (event: AnyEventObject) => void;
+        input: SyncMachineConfig<StorageVersion, unknown>;
+    }) => {
         const abortController = new AbortController();
 
         let connected = false;

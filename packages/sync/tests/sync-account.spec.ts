@@ -1,6 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 
+import { defineVersionHList, hCons, hNil, projectIdentity } from '@safely/slottree';
+import type { NewOf } from '@safely/slottree';
+
 import { SyncAccount } from '../src/account/sync-account';
 import type { SyncAccountRepository } from '../src/account/sync-account-repository';
 import { Logger } from '../src/logger/logger';
@@ -11,7 +14,22 @@ import type { ISyncProvider } from '../src/sync-provider/I-sync-provider';
 import type { OnlineSyncProvider } from '../src/sync-provider/online-sync-provider';
 import { SyncStatus, SyncStatusManager } from '../src/sync-provider/sync-status';
 
-const structure = { value: z.string() };
+const TestSchema = z
+    .object({
+        value: z.string()
+    })
+    .partial();
+const TestV1 = {
+    version: 1,
+    schema: TestSchema,
+    initial: {},
+    projectUp: projectIdentity,
+    projectDown: projectIdentity
+} as const;
+const TestVersions = defineVersionHList(hCons(TestV1, hNil));
+type TestLatest = (typeof TestVersions)['head'];
+type TestRest = (typeof TestVersions)['tail'];
+type TestProviderSchema = NewOf<TestLatest>;
 
 describe('SyncAccount reconnect onboarding', () => {
     afterEach(() => {
@@ -82,14 +100,14 @@ describe('SyncAccount reconnect onboarding', () => {
         const syncProvider = {
             syncStatusManager,
             restart
-        } as unknown as OnlineSyncProvider<typeof structure>;
+        } as unknown as OnlineSyncProvider<TestLatest, TestRest>;
         const info = vi.fn();
         const logger = { info } as unknown as Logger;
-        const onboarding = new ReconnectOnboarding({} as Buffer, syncProvider, logger, 1000);
+        const onboarding = new ReconnectOnboarding(Buffer.alloc(0), syncProvider, logger, 1000, 0);
 
         const promise = onboarding.waitForOnboarding();
 
-        await vi.advanceTimersByTimeAsync(1000);
+        await vi.advanceTimersByTimeAsync(2000);
 
         expect(restart).toHaveBeenCalledTimes(2);
         expect(info).toHaveBeenCalledWith('Trying to reconnect, attempt', 1);
@@ -102,32 +120,34 @@ describe('SyncAccount reconnect onboarding', () => {
 });
 
 function createDeletedAccount(): {
-    account: SyncAccount<typeof structure>;
-    container: SyncContainer & { ikService: { getPub: ReturnType<typeof vi.fn> } };
+    account: SyncAccount<TestLatest, TestRest>;
+    container: SyncContainer<TestLatest, TestRest> & { ikService: { getPub: () => Buffer } };
 } {
     const syncProvider = {
-        structure,
+        structure: TestSchema,
         syncStatusManager: new SyncStatusManager(SyncStatus.DEVICE_DELETED),
         get: vi.fn(),
         getAll: vi.fn(),
         set: vi.fn(),
+        transaction: vi.fn(),
         remove: vi.fn(),
         onChange: vi.fn(() => () => undefined),
+        onDevicesChange: vi.fn(() => () => undefined),
         onError: vi.fn(() => () => undefined),
         dispose: vi.fn(),
         restart: vi.fn(),
         triggerSync: vi.fn()
-    } as unknown as ISyncProvider<typeof structure>;
+    } as unknown as ISyncProvider<TestProviderSchema>;
     const container = {
         ikService: { getPub: vi.fn().mockReturnValue(Buffer.from('01', 'hex')) },
         logger: new Logger({ log: () => undefined }),
         secretEncryptor: {} as ISecretEncryptor
-    } as unknown as SyncContainer & { ikService: { getPub: ReturnType<typeof vi.fn> } };
+    } as unknown as SyncContainer<TestLatest, TestRest> & { ikService: { getPub: () => Buffer } };
 
     return {
         account: new SyncAccount({
             accountId: 'account-id',
-            structure,
+            structure: TestVersions,
             syncProvider,
             container,
             syncAccountRepository: {} as SyncAccountRepository,

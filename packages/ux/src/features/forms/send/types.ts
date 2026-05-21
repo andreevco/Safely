@@ -107,8 +107,14 @@ export interface SendFormErrors {
     asset: string | undefined;
 }
 
+export enum SuggestionSource {
+    USER_DEFINED = 'user-defined',
+    SUGGESTIONS = 'suggestions'
+}
+
 export interface SendSuggestionState {
     selectedId: string | undefined;
     portfoliosIds: string[] | undefined;
     contactsIds: string[] | undefined;
+    source: SuggestionSource | undefined;
 }

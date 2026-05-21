@@ -1,11 +1,19 @@
 import { fromPromise } from 'xstate';
 
+import type { StorageVersion } from '@safely/slottree';
+
 import { hex } from '../../utils/buffer';
 import type { SyncMachineConfig } from '../config';
 import { classifyError } from '../error-handler';
 
 export const initialSyncing = fromPromise(
-    async ({ input, signal }: { input: SyncMachineConfig; signal: AbortSignal }) => {
+    async ({
+        input,
+        signal
+    }: {
+        input: SyncMachineConfig<StorageVersion, unknown>;
+        signal: AbortSignal;
+    }) => {
         input.logger.info('Initial syncing: fetching latest snapshot from server...');
         const knownState = await input.syncStateRepository.getState();
 

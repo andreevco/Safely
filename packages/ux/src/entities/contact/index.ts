@@ -1,61 +1,29 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-
-import type { BLOCKCHAIN_NAME, ContactMeta, IContact } from '@safely/core';
+import type { ContactMeta, IContact } from '@safely/core';
+import type { BLOCKCHAIN_NAME } from '@safely/core';
+import { vmTypeByBlockchainName } from '@safely/core';
 import { allowedContactMetaColors, Contact } from '@safely/core';
+import type { SContact } from '@safely/sync-storage';
+import { sContactAddress } from '@safely/sync-storage';
 
 import { useTranslate } from '../../shared';
-import { useActiveAccountQueryKey } from '../account';
-import { useActiveAccountSyncedStorage } from '../account/storage';
+import { useActiveAccountStoreSlot, useActiveAccountSyncStorageSlotUpdate } from '../account';
 import { useMutation } from '../query-core';
 import { useToast } from '../toast';
 
 export { contactKey } from './keys';
 
+const EMPTY_CONTACTS: Contact[] = Object.freeze([]) as unknown as Contact[];
+
 function pickRandomContactColor(): string {
     return allowedContactMetaColors[Math.floor(Math.random() * allowedContactMetaColors.length)];
 }
 
-export function useContactsQuery() {
-    const accountQueryKey = useActiveAccountQueryKey();
-    const { get } = useActiveAccountSyncedStorage('contacts');
-
-    const resolve = (): Contact[] => {
-        const data = get();
-
-        if (data === null) return [];
-
-        return data.map(c => Contact.restoreContact(c));
-    };
-
-    return useQuery({
-        queryKey: accountQueryKey.contacts.toKey(),
-        queryFn: resolve,
-        initialData: resolve,
-        staleTime: Infinity
-    });
-}
-
-export function useContacts() {
-    return useContactsQuery().data;
-}
-
-function useSetContacts() {
-    const { set } = useActiveAccountSyncedStorage('contacts');
-    const client = useQueryClient();
-    const accountQueryKey = useActiveAccountQueryKey();
-
-    return useMutation<void, Error, Contact[]>({
-        async mutationFn(contacts) {
-            const sorted = [...contacts].sort((a, b) => a.meta.name.localeCompare(b.meta.name));
-            await set(sorted.map(c => c.toJSON()));
-            client.setQueryData<Contact[]>(accountQueryKey.contacts.toKey(), sorted);
-        }
-    });
+export function useContacts(): Contact[] {
+    return useActiveAccountStoreSlot('contacts') ?? EMPTY_CONTACTS;
 }
 
 export function useCreateContact() {
-    const { mutateAsync: setContacts } = useSetContacts();
-    const contacts = useContacts();
+    const update = useActiveAccountSyncStorageSlotUpdate('contacts');
 
     return useMutation<
         Contact,
@@ -64,11 +32,13 @@ export function useCreateContact() {
     >({
         async mutationFn({ name, addresses }) {
             const contact = new Contact({
-                addresses,
+                addresses: addresses.map(a => ({
+                    blockchain: vmTypeByBlockchainName(a.blockchain),
+                    address: a.address
+                })),
                 meta: { name, color: pickRandomContactColor() }
             });
-
-            await setContacts(contacts.concat(contact));
+            await update(draft => draft.push(contact.toJSON()));
 
             return contact;
         }
@@ -76,7 +46,7 @@ export function useCreateContact() {
 }
 
 export function useEditContact() {
-    const { mutateAsync: setContacts } = useSetContacts();
+    const update = useActiveAccountSyncStorageSlotUpdate('contacts');
     const contacts = useContacts();
 
     return useMutation<
@@ -89,30 +59,47 @@ export function useEditContact() {
         }
     >({
         async mutationFn({ contact: { id }, meta, addresses }) {
-            const target = contacts.find(c => c.id.isEq(id));
+            const target = contacts.find(c => c.id === id);
             if (!target) {
-                throw new Error(`Contact not found: ${id.toString()}`);
+                throw new Error(`Contact not found: ${String(id)}`);
+            }
+            if (!addresses && !meta) {
+                throw new Error('No changes provided');
             }
 
-            if (meta) target.updateMeta(meta);
-            if (addresses) target.setAddresses(addresses);
+            let restored: Contact | undefined;
+            await update(draft => {
+                draft.update(target.jsonArrayId(), sContactDraft => {
+                    if (meta) {
+                        sContactDraft.set('meta', { ...sContactDraft.get()!.meta, ...meta });
+                    }
+                    if (addresses) {
+                        sContactDraft.set(
+                            'addresses',
+                            addresses.map(({ address }) => sContactAddress.toJson({ address }))
+                        );
+                    }
 
-            await setContacts(contacts);
+                    restored = Contact.restoreContact(sContactDraft.get() as SContact);
+                });
+            });
 
-            return target;
+            if (!restored) {
+                throw new Error(`Contact not found: ${String(id)}`);
+            }
+            return restored;
         }
     });
 }
 
 export function useDeleteContact() {
-    const { mutateAsync: setContacts } = useSetContacts();
-    const contacts = useContacts();
+    const update = useActiveAccountSyncStorageSlotUpdate('contacts');
     const toast = useToast();
     const t = useTranslate();
 
-    return useMutation<void, Error, IContact>({
+    return useMutation<void, Error, Contact>({
         async mutationFn(contact) {
-            await setContacts(contacts.filter(c => !c.id.isEq(contact.id)));
+            await update(draft => draft.remove(contact.jsonArrayId()));
         },
         onSuccess() {
             toast({ message: t('common.removed') });

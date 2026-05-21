@@ -1,8 +1,8 @@
-import type { ZodType } from 'zod';
+import type { AssertVersionHList, HCons, StorageVersion } from '@safely/slottree';
 
 import { generateAccountID, generateMasterKey, initializeSyncAccount } from '../initialize';
 import { getSyncAccountStorage } from './sync-account-storage';
-import { createSyncContainer } from '../sync-container';
+import { createSyncContainer, type SyncApiImplementations } from '../sync-container';
 import { SyncAccount } from './sync-account';
 import type { SyncAccountRepository } from './sync-account-repository';
 import type { Configuration } from '../api/generated';
@@ -14,14 +14,15 @@ import { OfflineSyncProvider } from '../sync-provider/offline-sync-provider';
 import { OnlineSyncProvider } from '../sync-provider/online-sync-provider';
 import { SyncStatus } from '../sync-provider/sync-status';
 
-export class CreateAccountService<S extends Record<string, ZodType>> {
+export class CreateAccountService<Latest extends StorageVersion, Rest> {
     constructor(
         private readonly storage: ITreeStorage,
         private readonly encryptedStorage: ITreeStorage,
         private readonly syncAccountIDRepository: SyncAccountRepository,
-        private readonly structure: S,
+        private readonly versions: HCons<Latest, Rest> & AssertVersionHList<HCons<Latest, Rest>>,
         private readonly apiConfiguration: Configuration,
         private readonly pollingTimeout: number,
+        private readonly apiImplementations: SyncApiImplementations | undefined,
         private readonly getAccountLogger: (accountId: string) => Logger
     ) {}
 
@@ -40,7 +41,7 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
             storage,
             encryptedStorage,
             secureEncryptedStorage: accountSecureEncryptedStorage,
-            structure: this.structure,
+            versions: this.versions,
             masterKey,
             logger
         });
@@ -50,11 +51,12 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
 
         const container = await createSyncContainer({
             accountId: accountID,
-            structure: this.structure,
+            versions: this.versions,
             storage,
             encryptedStorage,
             apiConfiguration: this.apiConfiguration,
             pollingTimeout: this.pollingTimeout,
+            apiImplementations: this.apiImplementations,
             logger
         });
 
@@ -62,11 +64,12 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
             container.ikService.getPub(),
             container.keyServiceFactory.createDmkSignerService(secureEncryptedStorage)
         );
+        await container.deviceManager.activate();
 
         return new SyncAccount({
             accountId: accountID,
-            structure: this.structure,
-            syncProvider: new OfflineSyncProvider(this.structure, container),
+            structure: this.versions,
+            syncProvider: new OfflineSyncProvider(container),
             container,
             syncAccountRepository: this.syncAccountIDRepository,
             online: false
@@ -94,7 +97,7 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
         const logger = this.getAccountLogger(accountID);
         await initializeSyncAccount({
             storage,
-            structure: this.structure,
+            versions: this.versions,
             encryptedStorage: encryptedStorage,
             secureEncryptedStorage: accountSecureEncryptedStorage,
             masterKey: payload.masterKey,
@@ -107,30 +110,24 @@ export class CreateAccountService<S extends Record<string, ZodType>> {
 
         const container = await createSyncContainer({
             accountId: accountID,
-            structure: this.structure,
+            versions: this.versions,
             storage,
             encryptedStorage,
             apiConfiguration: this.apiConfiguration,
             pollingTimeout: this.pollingTimeout,
+            apiImplementations: this.apiImplementations,
             logger
         });
         await container.accountsApi.confirmOnboarding();
 
         const account = new SyncAccount({
             accountId: accountID,
-            structure: this.structure,
-            syncProvider: await OnlineSyncProvider.create(this.structure, container),
+            structure: this.versions,
+            syncProvider: await OnlineSyncProvider.create(container),
             container,
             syncAccountRepository: this.syncAccountIDRepository,
             online: true
         });
-        await account.syncProvider.syncStatusManager.waitForStatus(SyncStatus.SYNCHRONIZED);
-
-        // TODO: in scenario when computation crushed before this point, the new device will not be
-        // added to the Y.doc. We need to handle this edge case
-        await container.yManager.addDeviceOp(payload.addOp);
-        await container.deviceManager.verifyDeviceOpAndApply(payload.addOp);
-        account.syncProvider.triggerSync();
         await account.syncProvider.syncStatusManager.waitForStatus(SyncStatus.SYNCHRONIZED);
 
         return account;

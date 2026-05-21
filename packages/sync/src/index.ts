@@ -2,13 +2,14 @@ export type { IStorage, IEnumerableStorage, ITreeStorage } from './I-storage';
 
 export type { ISyncAccount } from './account/I-sync-account';
 export type { ISyncAccountFactory } from './account/I-sync-account-factory';
-export { SyncAccountFactory } from './account/sync-account-factory';
+export { SyncAccountFactory, type SyncAccountFactoryOptions } from './account/sync-account-factory';
 
 export type { OnboardingConnector } from './onboarding/connector';
 
 export type { ISyncProvider } from './sync-provider/I-sync-provider';
 export { SyncStatus } from './sync-provider/sync-status';
 export type { ISyncStatusManager } from './sync-provider/sync-status';
+export type { Device } from './device-manager/device-repository';
 
 export { SyncError, OnboardingAbortedError } from './sync-error';
 
@@ -18,9 +19,6 @@ export type { ISecretEncryptor, SSecretDecrypted, SSecretEncrypted } from './sec
 export { sSecretEncrypted, sSecretDecrypted } from './secret-encryptor';
 
 export { type IsomorphicEventSource } from './utils/sse-stream';
-
-export { zArrayWithKey } from './crdt/deep-merge/array-registry';
-export type { ArrayMergeMeta } from './crdt/deep-merge/array-registry';
 
 export {
     LogLevel,

@@ -2,7 +2,7 @@ import type { z } from 'zod';
 
 import type { ContainerSlot } from '../slots';
 
-export type AnySchema = z.ZodTypeAny;
+export type AnySchema = z.ZodObject;
 
 export type StorageVersion<Old extends AnySchema = AnySchema, New extends AnySchema = AnySchema> = {
     readonly __oldSchema?: Old;

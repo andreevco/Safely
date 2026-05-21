@@ -1,16 +1,7 @@
 {
     "extends": "../../tsconfig.json",
     "compilerOptions": {
-        "outDir": "./dist",
-        "jsx": "react-jsx",
-        "baseUrl": "./src",
-        "rootDir": "../",
-        "paths": {
-            "@safely/sync": ["../../sync/src"],
-            "@safely/core": ["../../core/src"],
-            "@safely/core/api/*": ["../../core/src/api/*"],
-            "@safely/core/*": ["../../core/src/*"]
-        }
+        "jsx": "react-jsx"
     },
     "include": ["src/**/*", "test/**/*", "../core/src/utils/groups.ts"],
     "exclude": [
