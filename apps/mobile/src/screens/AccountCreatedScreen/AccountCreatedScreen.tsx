@@ -31,7 +31,7 @@ export const AccountCreatedScreen = () => {
 
         using secureEncryptedStorage = getSecureEncrypted();
 
-        // don't ask for the password after initial the account is created during onboarding
+        // don't ask for the password while setting app initially after first account creation during onboarding to provide smooth user experience
         secureEncryptedStorage.UNSAFE_SKIP_SECURITY_CHECK_unlock();
 
         await connectAccountToNewDevice({ secureEncryptedStorage });
