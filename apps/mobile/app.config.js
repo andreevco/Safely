@@ -21,7 +21,7 @@ module.exports = {
             supportsTablet: true,
             /*
                 https://developer.apple.com/documentation/BundleResources/Information-Property-List/UIRequiresFullScreen
-                TODO: 
+                TODO: SAF-408
                 we should prepare interface for resizing
                 We force fullScreen because of known (slider) and unknown issues at this moment
                 It's better to double-check app on ARM Macs and iPads before public release 
