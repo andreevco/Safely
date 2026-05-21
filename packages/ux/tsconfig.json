@@ -3,7 +3,7 @@
     "compilerOptions": {
         "jsx": "react-jsx"
     },
-    "include": ["src/**/*", "test/**/*", "../core/src/utils/groups.ts"],
+    "include": ["src/**/*", "test/**/*"],
     "exclude": [
         "dist",
         "node_modules"
