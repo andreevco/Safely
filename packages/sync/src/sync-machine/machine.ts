@@ -30,7 +30,7 @@ export const createSyncMachine = () => {
                     | { type: 'REMOTE_UPDATE'; upd: EncryptedState }
                     | { type: 'CONNECTED' }
                     | { type: 'DISCONNECTED' }
-                    | { type: 'CONNECTION_ERROR'; error: string }
+                    | { type: 'CONNECTION_ERROR'; error: unknown }
                     | { type: 'CONNECT_RETRY' };
                 context: SyncMachineConfig<StorageVersion, unknown>;
                 input: SyncMachineInput<StorageVersion, unknown>;
@@ -169,7 +169,10 @@ export const createSyncMachine = () => {
                     initial: 'connecting',
                     on: {
                         DISCONNECTED: { target: '#syncMachine.waitingForRetry' },
-                        CONNECTION_ERROR: { target: '#syncMachine.waitingForRetry' },
+                        CONNECTION_ERROR: {
+                            actions: ['handleError'],
+                            target: '#syncMachine.errorHandling'
+                        },
                         REMOTE_UPDATE: { actions: ['setRemoteUpdate', 'setStatusSynchronizing'] }
                     },
                     states: {
