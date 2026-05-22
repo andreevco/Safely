@@ -1,6 +1,6 @@
 import { StyleSheet } from 'react-native-unistyles';
 
-export const styles = StyleSheet.create((theme, rt) => ({
+export const styles = StyleSheet.create(theme => ({
     content: {
         alignItems: 'center',
         paddingHorizontal: theme.spacing[24]
@@ -14,7 +14,6 @@ export const styles = StyleSheet.create((theme, rt) => ({
     footer: {
         width: '100%',
         gap: theme.spacing[8],
-        marginVertical: theme.spacing[24],
-        marginBottom: rt.insets.bottom
+        marginVertical: theme.spacing[24]
     }
 }));
