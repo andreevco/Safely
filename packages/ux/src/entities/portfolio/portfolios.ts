@@ -12,6 +12,7 @@ import type {
     PortfolioWatchOnly,
     ISecretEncryptor
 } from '@safely/core';
+import { toPortfolioId } from '@safely/core';
 import {
     delay,
     Id,
@@ -199,7 +200,6 @@ export function useActivePortfolioEntitiesIdsQuery<TData = SActivePortfolioSchem
     const { get, set } = useActiveAccountLocalStorage('activePortfolio');
     const accountQueryKey = useActiveAccountQueryKey();
     const { data: activeAccount } = useActiveAccountQuery();
-    const portfolios = usePortfolios();
 
     return useSuspenseQuery<SActivePortfolioSchema, unknown, TData>({
         queryKey: accountQueryKey.activePortfolio.toKey(),
@@ -208,16 +208,18 @@ export function useActivePortfolioEntitiesIdsQuery<TData = SActivePortfolioSchem
 
             const stored = await get();
 
+            const portfolios = activeAccount.syncProvider.get('portfolios');
+
             if (portfolios.length === 0) return stored;
 
             const storedIsValid =
                 stored !== null &&
-                portfolios.some(p => p.id.isEq(Id.fromString(stored.portfolioId)));
+                portfolios.some(p => toPortfolioId(p).isEq(Id.fromString(stored.portfolioId)));
 
             if (storedIsValid) return stored;
 
             const next: SActivePortfolioSchema = {
-                portfolioId: portfolios[0].id.toString()
+                portfolioId: toPortfolioId(portfolios[0]).toString()
             };
             await set(next);
             return next;
