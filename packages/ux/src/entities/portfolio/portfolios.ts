@@ -155,11 +155,16 @@ export function useImportPortfolio() {
 export function useDeletePortfolio() {
     const update = useActiveAccountSyncStorageSlotUpdate('portfolios');
     const check = useSecurityCheck();
+    const client = useQueryClient();
+    const accountQueryKey = useActiveAccountQueryKey();
 
     return useMutation<void, Error, Portfolio>({
         async mutationFn(portfolio) {
             await check();
             await update(draft => draft.remove(portfolio.jsonArrayId()));
+            await client.invalidateQueries({
+                queryKey: accountQueryKey.activePortfolio.toKey()
+            });
         }
     });
 }
@@ -191,15 +196,31 @@ type ActivePortfolioEntities = ActivePortfolioEntitiesBip39 | ActivePortfolioEnt
 export function useActivePortfolioEntitiesIdsQuery<TData = SActivePortfolioSchema>(
     select?: (data: SActivePortfolioSchema) => TData
 ) {
-    const { get } = useActiveAccountLocalStorage('activePortfolio');
+    const { get, set } = useActiveAccountLocalStorage('activePortfolio');
     const accountQueryKey = useActiveAccountQueryKey();
     const { data: activeAccount } = useActiveAccountQuery();
+    const portfolios = usePortfolios();
 
     return useSuspenseQuery<SActivePortfolioSchema, unknown, TData>({
         queryKey: accountQueryKey.activePortfolio.toKey(),
         async queryFn() {
             if (!activeAccount) return null;
-            return get();
+
+            const stored = await get();
+
+            if (portfolios.length === 0) return stored;
+
+            const storedIsValid =
+                stored !== null &&
+                portfolios.some(p => p.id.isEq(Id.fromString(stored.portfolioId)));
+
+            if (storedIsValid) return stored;
+
+            const next: SActivePortfolioSchema = {
+                portfolioId: portfolios[0].id.toString()
+            };
+            await set(next);
+            return next;
         },
         staleTime: Infinity,
         select
@@ -208,23 +229,16 @@ export function useActivePortfolioEntitiesIdsQuery<TData = SActivePortfolioSchem
 
 export function useActivePortfolioEntitiesQuery() {
     const portfolios = usePortfolios();
-    const { mutate: setActivePortfolio } = useSetActivePortfolio();
 
     return useActivePortfolioEntitiesIdsQuery<ActivePortfolioEntities | null>(
         useCallback(
             (sActivePortfolioSchema: SActivePortfolioSchema) => {
-                if (portfolios.length === 0) return null;
+                if (portfolios.length === 0 || !sActivePortfolioSchema) return null;
 
-                let portfolio: Portfolio;
-                if (sActivePortfolioSchema) {
-                    portfolio =
-                        portfolios.find(p =>
-                            p.id.isEq(Id.fromString(sActivePortfolioSchema.portfolioId))
-                        ) ?? portfolios[0];
-                } else {
-                    portfolio = portfolios[0];
-                    setActivePortfolio(portfolio);
-                }
+                const portfolio =
+                    portfolios.find(p =>
+                        p.id.isEq(Id.fromString(sActivePortfolioSchema.portfolioId))
+                    ) ?? portfolios[0];
 
                 if (portfolio.type === PortfolioType.WATCH_ONLY) {
                     return { type: 'watch-only' as const, portfolio };
