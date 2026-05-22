@@ -74,7 +74,7 @@ export const BtcAssetCell = (props: BtcAssetCellProps) => {
                 <Cell.Row style={styles.subtitleRow}>
                     {subtitle}
                     <Cell.Subvalue color="secondary" style={styles.subvalue}>
-                        {cryptoAssetAmount.format(formatter)}
+                        {cryptoAssetAmount.format(formatter, { fullPrecision: true })}
                     </Cell.Subvalue>
                 </Cell.Row>
             </Cell.Content>
