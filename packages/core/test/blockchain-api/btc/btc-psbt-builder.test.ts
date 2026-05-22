@@ -171,8 +171,7 @@ describe('BtcPsbtBuilder', () => {
 
         it('vSize does not depend on the literal output value (only on script type)', () => {
             // Output value is serialized as a fixed 8-byte field, so vSize must be
-            // identical regardless of its magnitude. Keep input value close to the
-            // outputs to avoid bitcoinjs' "absurd fee" guard in extractTransaction.
+            // identical regardless of its magnitude.
             const small = builder.calculateTransactionVSize({
                 inputs: [utxo({ value: '100000' })],
                 outputs: [{ address: RECIPIENT_ADDR, value: 1n }]
@@ -182,6 +181,15 @@ describe('BtcPsbtBuilder', () => {
                 outputs: [{ address: RECIPIENT_ADDR, value: 99_999n }]
             });
             expect(small).toBe(huge);
+        });
+
+        it("does not trip bitcoinjs' absurd-fee guard when inputs >> outputs", () => {
+            expect(() =>
+                builder.calculateTransactionVSize({
+                    inputs: [utxo({ value: '130000000' })],
+                    outputs: [{ address: RECIPIENT_ADDR, value: 1n }]
+                })
+            ).not.toThrow();
         });
 
         it('also rejects non-P2WPKH inputs during vSize estimation', () => {
