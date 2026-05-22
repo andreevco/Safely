@@ -4,8 +4,18 @@ import * as LocalAuthentication from 'expo-local-authentication';
 import { useMutation } from '@safely/ux';
 
 import { useMobileLayerRegularStorage } from '@mobile/shared/storage';
+import { blurFreeze } from '@mobile/shared/utils';
 
 import { biometryKeys } from './keys';
+
+async function authenticateWithBlurFreeze(): Promise<LocalAuthentication.LocalAuthenticationResult> {
+    blurFreeze.freeze();
+    try {
+        return await LocalAuthentication.authenticateAsync();
+    } finally {
+        blurFreeze.unfreeze();
+    }
+}
 
 export enum BiometryType {
     FACE = 'face',
@@ -57,7 +67,7 @@ export function useSetBiometryEnabled() {
 
     return useMutation({
         mutationFn: async (enabled: boolean) => {
-            const result = await LocalAuthentication.authenticateAsync();
+            const result = await authenticateWithBlurFreeze();
             if (!result.success) {
                 throw new Error('Authentication failed');
             }
@@ -71,7 +81,7 @@ export function useSetBiometryEnabled() {
 
 export async function authenticateBiometry() {
     try {
-        const result = await LocalAuthentication.authenticateAsync();
+        const result = await authenticateWithBlurFreeze();
         if (result.success) {
             return { success: true } as const;
         }

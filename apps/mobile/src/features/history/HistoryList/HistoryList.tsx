@@ -142,7 +142,8 @@ export const HistoryList = (props: HistoryListProps) => {
     }, []);
 
     const renderItem = useCallback(({ item, index }: { item: HistoryRowItem; index: number }) => {
-        switch (item.type) {
+        const { key: _, ...itemWithoutKey } = item;
+        switch (itemWithoutKey.type) {
             case 'header':
                 return (
                     <View
@@ -157,7 +158,7 @@ export const HistoryList = (props: HistoryListProps) => {
                     </View>
                 );
             case 'activity':
-                return <ActivityItem {...item} />;
+                return <ActivityItem {...itemWithoutKey} />;
         }
     }, []);
 

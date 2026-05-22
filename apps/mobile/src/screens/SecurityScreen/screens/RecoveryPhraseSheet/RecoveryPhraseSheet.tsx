@@ -1,4 +1,5 @@
 import { StaticScreenProps } from '@react-navigation/native';
+import { usePreventScreenCapture } from 'expo-screen-capture';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
@@ -14,6 +15,8 @@ type RecoveryPhraseSheetProps = StaticScreenProps<{
 }>;
 
 export const RecoveryPhraseSheet = (props: RecoveryPhraseSheetProps) => {
+    usePreventScreenCapture();
+
     const { t } = useTranslation();
     const copy = useCopy();
     const phrase = props.route.params.mnemonic;
@@ -23,6 +26,8 @@ export const RecoveryPhraseSheet = (props: RecoveryPhraseSheetProps) => {
     const rightColumn = phrase.slice(halfLength);
 
     const handleCopy = useCallback(() => {
+        // TODO: on android it's better to add isSensitive flag
+        // but it's still not merged https://github.com/expo/expo/pull/43291
         copy(phrase.join(' '));
     }, [copy, phrase]);
 
