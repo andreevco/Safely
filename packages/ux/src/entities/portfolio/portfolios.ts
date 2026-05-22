@@ -208,6 +208,7 @@ export function useActivePortfolioEntitiesIdsQuery<TData = SActivePortfolioSchem
 
 export function useActivePortfolioEntitiesQuery() {
     const portfolios = usePortfolios();
+    const { mutate: setActivePortfolio } = useSetActivePortfolio();
 
     return useActivePortfolioEntitiesIdsQuery<ActivePortfolioEntities | null>(
         useCallback(
@@ -222,6 +223,7 @@ export function useActivePortfolioEntitiesQuery() {
                         ) ?? portfolios[0];
                 } else {
                     portfolio = portfolios[0];
+                    setActivePortfolio(portfolio);
                 }
 
                 if (portfolio.type === PortfolioType.WATCH_ONLY) {
