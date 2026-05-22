@@ -17,6 +17,7 @@ import { SyncStatus } from '../sync-provider/sync-status';
 export class SyncAccount<Latest extends StorageVersion, Rest> implements ISyncAccount<Latest> {
     public readonly secretEncryptor: ISecretEncryptor;
     public readonly accountId: string;
+    public readonly analyticsAccountUuid: string | undefined;
 
     private readonly structure: HCons<Latest, Rest> & AssertVersionHList<HCons<Latest, Rest>>;
     private readonly container: SyncContainer<Latest, Rest>;
@@ -34,8 +35,10 @@ export class SyncAccount<Latest extends StorageVersion, Rest> implements ISyncAc
         container: SyncContainer<Latest, Rest>;
         syncAccountRepository: SyncAccountRepository;
         online: boolean;
+        analyticsAccountUuid?: string;
     }) {
         this.accountId = opts.accountId;
+        this.analyticsAccountUuid = opts.analyticsAccountUuid;
         this.structure = opts.structure;
         this.container = opts.container;
         this.syncAccountRepository = opts.syncAccountRepository;
@@ -114,15 +117,6 @@ export class SyncAccount<Latest extends StorageVersion, Rest> implements ISyncAc
 
     public getMyDeviceIkPub(): Buffer {
         return this.container.ikService.getPub();
-    }
-
-    public async withMasterKey<T>(
-        secureEncryptedStorage: ITreeStorage,
-        fn: (masterKey: Buffer) => Promise<T> | T
-    ): Promise<T> {
-        return this.container.keyServiceFactory
-            .createMasterKeyService(secureEncryptedStorage)
-            .withMasterKey(fn);
     }
 
     public async deleteThisDevice(secureEncryptedStorage: ITreeStorage): Promise<void> {

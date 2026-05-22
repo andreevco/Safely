@@ -22,14 +22,18 @@ export class SyncAccountRepository {
         return account;
     }
 
-    public async addAccount(accountId: AccountID, online = false): Promise<void> {
+    public async addAccount(
+        accountId: AccountID,
+        opts: { online?: boolean; analyticsAccountUuid?: string } = {}
+    ): Promise<void> {
         const accounts = await this.getSyncAccounts();
         if (accounts.some(x => x.accountId === accountId)) {
             throw new Error(`Account with ID "${accountId}" already exists.`);
         }
         accounts.push({
             accountId,
-            online
+            online: opts.online ?? false,
+            analyticsAccountUuid: opts.analyticsAccountUuid
         });
         await this.storage.setItem(
             'sync_accounts',
@@ -63,9 +67,11 @@ export type AccountID = string;
 export type AccountInfo = {
     accountId: AccountID;
     online: boolean;
+    analyticsAccountUuid?: string;
 };
 
 export const AccountInfoSchema = z.object({
     accountId: z.string(),
-    online: z.boolean()
+    online: z.boolean(),
+    analyticsAccountUuid: z.string().optional()
 });

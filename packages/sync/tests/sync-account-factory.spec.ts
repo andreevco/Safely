@@ -33,7 +33,8 @@ describe('SyncAccountFactory onboarding', () => {
             encryptedStorage: new InMemStorage(),
             versions,
             noAccountLogger: new Logger({ log: () => undefined }),
-            getAccountLogger: () => new Logger({ log: () => undefined })
+            getAccountLogger: () => new Logger({ log: () => undefined }),
+            deriveAnalyticsAccountUuid: () => '00000000-0000-5000-8000-000000000000'
         });
 
         const [connector, secondConnector] = await Promise.all([

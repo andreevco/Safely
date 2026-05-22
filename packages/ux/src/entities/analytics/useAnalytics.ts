@@ -28,7 +28,7 @@ export function useAnalytics(): AnalyticsApi {
     }
 
     const lang = useActiveLanguage();
-    const { data: accountUuid } = useAccountUuid();
+    const accountUuid = useAccountUuid();
 
     return useMemo<AnalyticsApi>(
         () => ({

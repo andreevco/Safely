@@ -154,7 +154,8 @@ describe('versioned onboarding', () => {
                 apiImplementations,
                 pollingTimeout: 1,
                 noAccountLogger: logger,
-                getAccountLogger: () => logger
+                getAccountLogger: () => logger,
+                deriveAnalyticsAccountUuid: () => '00000000-0000-5000-8000-000000000000'
             }),
             secureEncryptedStorage,
             setRequesterIk: ikPub => {

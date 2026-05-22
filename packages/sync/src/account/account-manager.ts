@@ -93,7 +93,8 @@ export class AccountManager<Latest extends StorageVersion, Rest> {
             syncProvider,
             container,
             syncAccountRepository: this.syncAccountIdRepository,
-            online: accountInfo.online
+            online: accountInfo.online,
+            analyticsAccountUuid: accountInfo.analyticsAccountUuid
         });
         this.accounts.set(accountId, acc);
         return acc;

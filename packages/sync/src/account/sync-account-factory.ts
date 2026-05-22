@@ -28,6 +28,7 @@ export type SyncAccountFactoryOptions<Versions extends VersionHList> = {
     pollingTimeout?: number;
     noAccountLogger: Logger;
     getAccountLogger: (accountId: string) => Logger;
+    deriveAnalyticsAccountUuid: (masterKey: Buffer) => string;
 };
 
 export class SyncAccountFactory<Versions extends VersionHList> implements ISyncAccountFactory<
@@ -59,7 +60,8 @@ export class SyncAccountFactory<Versions extends VersionHList> implements ISyncA
             this.apiConfiguration,
             this.pollingTimeout,
             this.apiImplementations,
-            opts.getAccountLogger
+            opts.getAccountLogger,
+            opts.deriveAnalyticsAccountUuid
         );
         this.accountManager = new AccountManager(
             opts.storage,

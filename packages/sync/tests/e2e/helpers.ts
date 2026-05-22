@@ -49,7 +49,8 @@ export function makeFactory(): TestSyncAccountFactory {
         apiConfiguration,
         pollingTimeout: 500,
         noAccountLogger: new Logger().child(`${factoryId}`),
-        getAccountLogger: accountId => new Logger().child(`${factoryId}:${accountId}`)
+        getAccountLogger: accountId => new Logger().child(`${factoryId}:${accountId}`),
+        deriveAnalyticsAccountUuid: () => '00000000-0000-5000-8000-000000000000'
     });
 }
 

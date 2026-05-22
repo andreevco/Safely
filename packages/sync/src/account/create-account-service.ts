@@ -23,7 +23,8 @@ export class CreateAccountService<Latest extends StorageVersion, Rest> {
         private readonly apiConfiguration: Configuration,
         private readonly pollingTimeout: number,
         private readonly apiImplementations: SyncApiImplementations | undefined,
-        private readonly getAccountLogger: (accountId: string) => Logger
+        private readonly getAccountLogger: (accountId: string) => Logger,
+        private readonly deriveAnalyticsAccountUuid: (masterKey: Buffer) => string
     ) {}
 
     public async createOfflineAccount(secureEncryptedStorage: ITreeStorage) {
@@ -45,9 +46,10 @@ export class CreateAccountService<Latest extends StorageVersion, Rest> {
             masterKey,
             logger
         });
+        const analyticsAccountUuid = this.deriveAnalyticsAccountUuid(masterKey);
         masterKey.fill(0);
 
-        await this.syncAccountIDRepository.addAccount(accountID);
+        await this.syncAccountIDRepository.addAccount(accountID, { analyticsAccountUuid });
 
         const container = await createSyncContainer({
             accountId: accountID,
@@ -72,7 +74,8 @@ export class CreateAccountService<Latest extends StorageVersion, Rest> {
             syncProvider: new OfflineSyncProvider(container),
             container,
             syncAccountRepository: this.syncAccountIDRepository,
-            online: false
+            online: false,
+            analyticsAccountUuid
         });
     }
 
@@ -104,9 +107,13 @@ export class CreateAccountService<Latest extends StorageVersion, Rest> {
             ik,
             logger
         });
+        const analyticsAccountUuid = this.deriveAnalyticsAccountUuid(payload.masterKey);
         payload.masterKey.fill(0);
 
-        await this.syncAccountIDRepository.addAccount(accountID, true);
+        await this.syncAccountIDRepository.addAccount(accountID, {
+            online: true,
+            analyticsAccountUuid
+        });
 
         const container = await createSyncContainer({
             accountId: accountID,
@@ -126,7 +133,8 @@ export class CreateAccountService<Latest extends StorageVersion, Rest> {
             syncProvider: await OnlineSyncProvider.create(container),
             container,
             syncAccountRepository: this.syncAccountIDRepository,
-            online: true
+            online: true,
+            analyticsAccountUuid
         });
         await account.syncProvider.syncStatusManager.waitForStatus(SyncStatus.SYNCHRONIZED);
 

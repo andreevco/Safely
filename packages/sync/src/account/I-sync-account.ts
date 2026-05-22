@@ -12,6 +12,11 @@ export interface ISyncAccount<Latest extends StorageVersion> {
      */
     readonly accountId: string;
     /**
+     * Stable, opaque UUID derived from the account's master key at creation time.
+     * Used for analytics; may be undefined for accounts created before this field existed.
+     */
+    readonly analyticsAccountUuid: string | undefined;
+    /**
      * The sync provider associated with this account, used to update storage.
      */
     readonly syncProvider: ISyncProvider<NewOf<Latest>>;
@@ -52,16 +57,4 @@ export interface ISyncAccount<Latest extends StorageVersion> {
      * Returns the IK public key of the current device.
      */
     getMyDeviceIkPub(): Buffer;
-
-    /**
-     * Provides access to the unwrapped master key inside the callback for derivations that
-     * need raw key material (e.g. analytics account UUID). The key is zeroed after the
-     * callback resolves; do not retain references to it.
-     * @param secureEncryptedStorage - unlocked secure encrypted storage
-     * @param fn - callback receiving the master key
-     */
-    withMasterKey<T>(
-        secureEncryptedStorage: ITreeStorage,
-        fn: (masterKey: Buffer) => Promise<T> | T
-    ): Promise<T>;
 }
