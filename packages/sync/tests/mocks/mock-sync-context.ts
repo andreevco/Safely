@@ -138,11 +138,13 @@ export async function waitForSnapshotSync(
 export async function sendLocalUpdate(
     ctx: MachineContext,
     server: MockSnapshotsServer,
-    key: string,
+    key: 'value',
     value: string
 ): Promise<void> {
     const initialSnapshots = server.snapshotCount;
-    await ctx.container.yManager.set(key, value);
+    await ctx.container.yManager.transaction(draft => {
+        draft.set(key, value);
+    });
     ctx.machine.send({ type: 'LOCAL_UPDATE' });
 
     await waitFor(() => server.snapshotCount === initialSnapshots + 1);

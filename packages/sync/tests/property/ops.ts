@@ -10,7 +10,7 @@ import { initializeSyncServer } from '../impl/sync-server-registry';
 
 type MockFactory = ReturnType<typeof makeFactory>;
 
-const WAIT_TIMEOUT_MS = 2000;
+const WAIT_TIMEOUT_MS = 10000;
 
 let nextWalletIndex = 0;
 

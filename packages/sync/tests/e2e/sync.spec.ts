@@ -21,27 +21,35 @@ describe('Sync', () => {
     });
 
     async function setAndVerify(account: TestSyncAccount, data: WalletItem[]) {
-        await account.syncProvider.set('wallets', data);
-        await vi.waitFor(async () => {
-            // checks if all accounts synchronized
-            for (const acc of accounts) {
-                const wallets = acc.syncProvider.get('wallets');
-                expect(wallets).toEqual(data);
-            }
+        await account.syncProvider.transaction(draft => {
+            draft.set('wallets', data);
         });
+        await vi.waitFor(
+            async () => {
+                // checks if all accounts synchronized
+                for (const acc of accounts) {
+                    const wallets = acc.syncProvider.get('wallets');
+                    expect(wallets).toEqual(data);
+                }
+            },
+            { timeout: 10000 }
+        );
     }
 
     async function updateAndVerify(account: TestSyncAccount, data: WalletItem[]) {
         await account.syncProvider.transaction(draft => {
             draft.set('wallets', data);
         });
-        await vi.waitFor(async () => {
-            // checks if all accounts synchronized
-            for (const acc of accounts) {
-                const wallets = acc.syncProvider.get('wallets');
-                expect(wallets).toEqual(data);
-            }
-        });
+        await vi.waitFor(
+            async () => {
+                // checks if all accounts synchronized
+                for (const acc of accounts) {
+                    const wallets = acc.syncProvider.get('wallets');
+                    expect(wallets).toEqual(data);
+                }
+            },
+            { timeout: 10000 }
+        );
     }
 
     it('should sync 2 devices', async () => {

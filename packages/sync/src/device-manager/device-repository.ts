@@ -38,7 +38,7 @@ export class DeviceRepository {
     public async activateDevice(device: Device) {
         const kid = getKID(device.info.ikPub);
         await this.manager.transaction(draft => {
-            draft.at('devices').at(kid).set('type', 'active');
+            draft.at('devices').entry(kid).unwrap().set('type', 'active');
         });
     }
 

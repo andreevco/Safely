@@ -29,6 +29,7 @@ export const RecipientStep = (props: RecipientStepProps) => {
         suggestions,
         restoredSuggestions,
         selectedSuggestionId,
+        selectedSuggestionSource,
         setRecipient,
         setAddressBookName,
         selectSuggestion,
@@ -68,6 +69,7 @@ export const RecipientStep = (props: RecipientStepProps) => {
                 placeholder={t('send.recipient.placeholder')}
                 selectedPortfolioMeta={selectedPortfolioMeta}
                 selectedContactMeta={selectedContactMeta}
+                metaSource={selectedSuggestionSource}
             />
             <KeyboardAwareScrollView
                 style={{ flex: 1 }}

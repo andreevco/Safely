@@ -19,6 +19,6 @@ export type {
     SendFormInitialValues,
     SendSuggestionState
 } from './types';
-export { SEND_STEPS, FormStepNames } from './types';
+export { SEND_STEPS, FormStepNames, SuggestionSource } from './types';
 export * from './utils';
 export * from './validators';

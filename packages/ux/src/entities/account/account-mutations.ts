@@ -12,19 +12,24 @@ import type { AccountMeta, OnboardingConnector, SyncAccount } from './account-st
 import { useAccountsQueryConfig } from './account-state';
 import { useActiveAccountMeta } from './account-state';
 import { useAccounts } from './account-state';
-import { resetAccountsFactory, useAccountsFactory, useActiveAccount } from './account-state';
+import { useAccountsFactory, useActiveAccount } from './account-state';
 import { accountKey } from './keys';
+import type { SActivePortfolioSchema } from './local-storage';
+import { useClearActiveAccountLocalStorage } from './local-storage';
 import { SecretEncryptor, useAppContext, useSharedUxStorage, useTranslate } from '../../shared';
+import { useErrorToast } from '../errors';
 import { useLoader } from '../loader';
 import { useLogger } from '../logger';
 import { useMutation } from '../query-core';
-import { useCurrentDeviceIkPub, useSetOwnSyncedDeviceMeta } from '../synced-device';
+import {
+    useCurrentDeviceIkPub,
+    useGenerateOwnSyncedDeviceMeta,
+    useSetOwnSyncedDeviceMeta
+} from '../synced-device';
 import { useToast } from '../toast';
-import type { SActivePortfolioSchema } from './local-storage';
-import { useClearActiveAccountLocalStorage } from './local-storage';
 import {
     useAccountSyncStorageUpdate,
-    useActiveAccountSyncStorageUpdate
+    useActiveAccountSyncStorageSlotUpdate
 } from './useAccountSyncStorageUpdate';
 
 export * from './local-storage';
@@ -47,8 +52,8 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
     const factory = useAccountsFactory();
     const { mutateAsync: setActive } = useSetActiveAccount();
     const newAccountName = useNewAccountDefaultName();
-    const updatePortfolios = useAccountSyncStorageUpdate('portfolios');
-    const updateMeta = useAccountSyncStorageUpdate('meta');
+    const updateSyncStorage = useAccountSyncStorageUpdate();
+    const generateOwnMeta = useGenerateOwnSyncedDeviceMeta();
 
     return useMutation<
         ISyncAccount<SyncedStorageStructure>,
@@ -60,12 +65,8 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
             await delay();
 
             const account = await factory.createSyncAccount(params.secureEncryptedStorage);
-            await updateMeta(account, (_, storeDraft) =>
-                storeDraft.set('meta', { name: params?.name ?? newAccountName })
-            );
 
             let createdPortfolio: PortfolioBip39 | null = null;
-
             if (options?.createWallet || options?.setActive) {
                 const portfolioFactory = new PortfolioFactory(
                     new SecretEncryptor(account.secretEncryptor, params.secureEncryptedStorage)
@@ -75,11 +76,18 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
                     network: PortfolioNetworkType.MAINNET,
                     meta: { name: t('security.groups.wallet.defaultName', { number: 1 }) }
                 });
-
-                await updatePortfolios(account, (_, storeDraft) =>
-                    storeDraft.set('portfolios', [createdPortfolio!.toJSON()])
-                );
             }
+
+            await updateSyncStorage(account, draft => {
+                draft.set('meta', { name: params?.name ?? newAccountName });
+
+                const { key, value } = generateOwnMeta(account);
+                draft.at('devicesMeta').orDefault({}).set(key, value);
+
+                if (createdPortfolio) {
+                    draft.set('portfolios', [createdPortfolio.toJSON()]);
+                }
+            });
 
             await client.invalidateQueries({ queryKey: accountKey.list.toKey() });
 
@@ -139,7 +147,7 @@ export function useCreateReconnectConnector() {
 }
 
 export function useAccountConnectedCallback(
-    connector: OnboardingConnector,
+    connector: OnboardingConnector | undefined,
     callback: (account: SyncAccount) => void,
     options?: { setAsActive: boolean; onError?: (e: Error) => void }
 ) {
@@ -151,7 +159,7 @@ export function useAccountConnectedCallback(
 
     useEffect(() => {
         let isReset = false;
-        connector.accountPromise
+        connector?.accountPromise
             .then(async account => {
                 if (isReset) {
                     return;
@@ -179,15 +187,19 @@ export function useAccountConnectedCallback(
                 options?.onError?.(e instanceof Error ? e : new Error(String(e)));
             });
         return () => {
+            connector?.abort();
             isReset = true;
         };
-    }, [connector.accountPromise, callback, client, setAsActive]);
+    }, [connector?.accountPromise, callback, client, setAsActive]);
 }
 
 export function useConnectAccountToNewDevice() {
     const t = useTranslate();
     const activeAccount = useActiveAccount();
     const toast = useToast();
+    const errorToast = useErrorToast({
+        ReconnectFromAnotherAccountError: 'settings.qrCodeFromAnotherAccount'
+    });
     const { withLoader } = useLoader();
     const { qrScanner } = useAppContext();
 
@@ -206,7 +218,8 @@ export function useConnectAccountToNewDevice() {
         },
         onSuccess() {
             toast(t('settings.deviceConnected'));
-        }
+        },
+        onError: errorToast
     });
 }
 
@@ -248,13 +261,11 @@ export function useSetActiveAccount() {
 
 export function useChangeAccountMeta() {
     const currentMeta = useActiveAccountMeta();
-    const update = useActiveAccountSyncStorageUpdate('meta');
+    const update = useActiveAccountSyncStorageSlotUpdate('meta');
 
     return useMutation<void, Error, Partial<AccountMeta>>({
         async mutationFn(meta) {
-            await update((_, storeDraft) => {
-                storeDraft.set('meta', { ...currentMeta, ...meta });
-            });
+            await update(draft => draft.set({ ...currentMeta, ...meta }));
         }
     });
 }
@@ -266,14 +277,16 @@ export function useDeleteAccount() {
     const { storage } = useAppContext();
     const ikPub = useCurrentDeviceIkPub();
     const clearActiveAccountLocalStorage = useClearActiveAccountLocalStorage();
-    const update = useActiveAccountSyncStorageUpdate('devicesMeta');
+    const update = useActiveAccountSyncStorageSlotUpdate('devicesMeta');
 
     return useMutation({
         async mutationFn() {
             using secureEncryptedStorage = storage.sync.getSecureEncrypted();
             await secureEncryptedStorage.unlock();
 
-            await update(draft => draft.delete(ikPub));
+            await update(draft => {
+                draft.ifPresent(devicesMeta => devicesMeta.delete(ikPub));
+            });
 
             await accountFactory.deleteLocalAccount(account.accountId, secureEncryptedStorage);
             await clearActiveAccountLocalStorage();
@@ -294,22 +307,20 @@ export function useDeleteAccount() {
 export function useEraseAllData() {
     const {
         clearAllData,
+        reloadApp,
         i18n: { t }
     } = useAppContext();
-    const queryClient = useQueryClient();
     const toast = useToast();
 
     return useMutation({
         async mutationFn() {
-            resetAccountsFactory();
             try {
                 await clearAllData();
+                reloadApp();
             } catch (e) {
                 toast({ type: 'error', message: t('logOutAllAccounts.error') });
                 throw e;
             }
-
-            queryClient.clear();
         }
     });
 }

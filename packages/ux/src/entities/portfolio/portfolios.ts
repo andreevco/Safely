@@ -12,6 +12,7 @@ import type {
     PortfolioWatchOnly,
     ISecretEncryptor
 } from '@safely/core';
+import { toPortfolioId } from '@safely/core';
 import {
     delay,
     Id,
@@ -25,13 +26,13 @@ import {
 
 import { useTranslate, useSecurityCheck, useAppContext } from '../../shared';
 import { useSuspenseQuery } from '../../shared';
-import type { SActivePortfolioSchema } from '../account';
+import type { SActivePortfolioSchema, UseAccountSyncStorageUpdateOptions } from '../account';
+import { useActiveAccountSyncStorageSlotUpdate } from '../account';
 import { useActiveAccountStoreSlot } from '../account';
 import {
     useActiveAccountLocalStorage,
     useActiveAccountQuery,
-    useActiveAccountQueryKey,
-    useActiveAccountSyncStorageUpdate
+    useActiveAccountQueryKey
 } from '../account';
 import { useErrorToast } from '../errors';
 import { useMutation } from '../query-core';
@@ -43,12 +44,12 @@ export function usePortfolios(): Portfolio[] {
     return useActiveAccountStoreSlot('portfolios') ?? EMPTY_PORTFOLIOS;
 }
 
-export function useAddPortfolio() {
-    const update = useActiveAccountSyncStorageUpdate('portfolios');
+export function useAddPortfolio(options?: UseAccountSyncStorageUpdateOptions) {
+    const update = useActiveAccountSyncStorageSlotUpdate('portfolios', options);
 
     return useMutation<void, Error, Portfolio>({
         async mutationFn(portfolio) {
-            update(draft => draft.push(portfolio.toJSON()));
+            return update(draft => draft.push(portfolio.toJSON()));
         }
     });
 }
@@ -62,7 +63,7 @@ export function useNewPortfolioFallbackName() {
 
 export function useGeneratePortfolio() {
     const { mutateAsync: setActivePortfolio } = useSetActivePortfolio();
-    const { mutateAsync: addAccount } = useAddPortfolio();
+    const { mutateAsync: addAccount } = useAddPortfolio({ showErrorToast: false });
 
     const errorToast = useErrorToast({
         PortfolioGenerationFailedError: 'importWalletScreen.errors.failedToGenerate'
@@ -96,7 +97,7 @@ export function useGeneratePortfolio() {
 }
 
 export function useImportPortfolio() {
-    const { mutateAsync: addPortfolio } = useAddPortfolio();
+    const { mutateAsync: addPortfolio } = useAddPortfolio({ showErrorToast: false });
     const { mutateAsync: setActivePortfolio } = useSetActivePortfolio();
     const toast = useToast();
     const t = useTranslate();
@@ -153,23 +154,28 @@ export function useImportPortfolio() {
 }
 
 export function useDeletePortfolio() {
-    const update = useActiveAccountSyncStorageUpdate('portfolios');
+    const update = useActiveAccountSyncStorageSlotUpdate('portfolios');
     const check = useSecurityCheck();
+    const client = useQueryClient();
+    const accountQueryKey = useActiveAccountQueryKey();
 
     return useMutation<void, Error, Portfolio>({
         async mutationFn(portfolio) {
             await check();
-            update(draft => draft.remove(portfolio.jsonArrayId()));
+            await update(draft => draft.remove(portfolio.jsonArrayId()));
+            await client.invalidateQueries({
+                queryKey: accountQueryKey.activePortfolio.toKey()
+            });
         }
     });
 }
 
 export function useReorderPortfolios() {
-    const update = useActiveAccountSyncStorageUpdate('portfolios');
+    const update = useActiveAccountSyncStorageSlotUpdate('portfolios');
 
     return useMutation<void, Error, Portfolio[]>({
         async mutationFn(nextPortfoliosOrder) {
-            update(draft => draft.reorder(nextPortfoliosOrder.map(p => p.jsonArrayId())));
+            await update(draft => draft.reorder(nextPortfoliosOrder.map(p => p.jsonArrayId())));
         }
     });
 }
@@ -191,7 +197,7 @@ type ActivePortfolioEntities = ActivePortfolioEntitiesBip39 | ActivePortfolioEnt
 export function useActivePortfolioEntitiesIdsQuery<TData = SActivePortfolioSchema>(
     select?: (data: SActivePortfolioSchema) => TData
 ) {
-    const { get } = useActiveAccountLocalStorage('activePortfolio');
+    const { get, set } = useActiveAccountLocalStorage('activePortfolio');
     const accountQueryKey = useActiveAccountQueryKey();
     const { data: activeAccount } = useActiveAccountQuery();
 
@@ -199,7 +205,24 @@ export function useActivePortfolioEntitiesIdsQuery<TData = SActivePortfolioSchem
         queryKey: accountQueryKey.activePortfolio.toKey(),
         async queryFn() {
             if (!activeAccount) return null;
-            return get();
+
+            const stored = await get();
+
+            const portfolios = activeAccount.syncProvider.get('portfolios');
+
+            if (portfolios.length === 0) return stored;
+
+            const storedIsValid =
+                stored !== null &&
+                portfolios.some(p => toPortfolioId(p).isEq(Id.fromString(stored.portfolioId)));
+
+            if (storedIsValid) return stored;
+
+            const next: SActivePortfolioSchema = {
+                portfolioId: toPortfolioId(portfolios[0]).toString()
+            };
+            await set(next);
+            return next;
         },
         staleTime: Infinity,
         select
@@ -212,17 +235,12 @@ export function useActivePortfolioEntitiesQuery() {
     return useActivePortfolioEntitiesIdsQuery<ActivePortfolioEntities | null>(
         useCallback(
             (sActivePortfolioSchema: SActivePortfolioSchema) => {
-                if (portfolios.length === 0) return null;
+                if (portfolios.length === 0 || !sActivePortfolioSchema) return null;
 
-                let portfolio: Portfolio;
-                if (sActivePortfolioSchema) {
-                    portfolio =
-                        portfolios.find(p =>
-                            p.id.isEq(Id.fromString(sActivePortfolioSchema.portfolioId))
-                        ) ?? portfolios[0];
-                } else {
-                    portfolio = portfolios[0];
-                }
+                const portfolio =
+                    portfolios.find(p =>
+                        p.id.isEq(Id.fromString(sActivePortfolioSchema.portfolioId))
+                    ) ?? portfolios[0];
 
                 if (portfolio.type === PortfolioType.WATCH_ONLY) {
                     return { type: 'watch-only' as const, portfolio };
@@ -312,14 +330,14 @@ export function useSetActivePortfolio() {
 }
 
 export function useChangePortfolioMeta() {
-    const update = useActiveAccountSyncStorageUpdate('portfolios');
+    const update = useActiveAccountSyncStorageSlotUpdate('portfolios');
 
     return useMutation<void, Error, { portfolio: Portfolio; meta: Partial<PortfolioMeta> }>({
-        async mutationFn({ portfolio, meta }) {
-            update(draft =>
+        mutationFn({ portfolio, meta }) {
+            return update(draft =>
                 draft.update(portfolio.jsonArrayId(), activePortfolioDraft => {
                     activePortfolioDraft.set('meta', {
-                        ...activePortfolioDraft.get()!.meta,
+                        ...activePortfolioDraft.get().meta,
                         ...meta
                     });
                 })
@@ -330,12 +348,12 @@ export function useChangePortfolioMeta() {
 
 export function useRecordActivePortfolioSecretReveal() {
     const activePortfolio = useActivePortfolio();
-    const update = useActiveAccountSyncStorageUpdate('portfolios');
+    const update = useActiveAccountSyncStorageSlotUpdate('portfolios');
     const { deviceInfo } = useAppContext();
 
     return useMutation({
-        async mutationFn() {
-            update(draft =>
+        mutationFn() {
+            return update(draft =>
                 draft.update(activePortfolio.jsonArrayId(), activePortfolioDraft => {
                     const bip39Draft = activePortfolioDraft.narrow(
                         (p): p is Extract<typeof p, { type: typeof PortfolioType.BIP39 }> =>
