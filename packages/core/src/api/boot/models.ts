@@ -7,6 +7,7 @@ export interface BootParams {
     version: string; // x.y.z
     userCountryInfo?: Partial<UserCountryInfo>;
     lang: string;
+    devToken?: string;
 }
 
 export type BootConfig = z.infer<typeof bootConfigSchema>;
