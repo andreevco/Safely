@@ -92,8 +92,10 @@ describe('versioned onboarding', () => {
         const accountA = await deviceA.factory.createSyncAccount(deviceA.secureEncryptedStorage);
         accounts.push(accountA);
 
-        await accountA.syncProvider.set('wallets', walletItems('wallet-a'));
-        await accountA.syncProvider.set('newField', 'from-v2');
+        await accountA.syncProvider.transaction(draft => {
+            draft.set('wallets', walletItems('wallet-a'));
+            draft.set('newField', 'from-v2');
+        });
 
         const accountB = await onboardDevice(accountA, deviceA, deviceB);
         accounts.push(accountB);
@@ -109,7 +111,9 @@ describe('versioned onboarding', () => {
         const accountA = await deviceA.factory.createSyncAccount(deviceA.secureEncryptedStorage);
         accounts.push(accountA);
 
-        await accountA.syncProvider.set('wallets', walletItems('wallet-a'));
+        await accountA.syncProvider.transaction(draft => {
+            draft.set('wallets', walletItems('wallet-a'));
+        });
 
         const accountB = await onboardDevice(accountA, deviceA, deviceB);
         accounts.push(accountB);

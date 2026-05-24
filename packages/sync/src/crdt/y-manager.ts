@@ -1,17 +1,19 @@
 import type { z } from 'zod';
 
-import type { Draft, JsonValue, NewOf, ObjectDraft, StorageVersion } from '@safely/slottree';
+import type { Draft, NewOf, StorageVersion } from '@safely/slottree';
 
 import type { YCRDT } from './y-crdt';
 import type { YCRDTRepository } from './y-crdt-repository';
 import { SyncError } from '../sync-error';
+
+type State<T> = z.output<NewOf<T>>;
 
 export class YManager<Latest extends StorageVersion, Rest> {
     private writeQueue: Promise<void> = Promise.resolve();
 
     private constructor(
         private readonly yRepository: YCRDTRepository<Latest, Rest>,
-        private readonly yDoc: YCRDT<z.output<NewOf<Latest>>>
+        private readonly yDoc: YCRDT<State<Latest>>
     ) {}
 
     public static async create<Latest extends StorageVersion, Rest>(
@@ -29,25 +31,6 @@ export class YManager<Latest extends StorageVersion, Rest> {
                 await this.yRepository.saveSnapshot(snapshot);
                 return true;
             });
-        });
-    }
-
-    public async set(key: string, value: unknown): Promise<void> {
-        await this.enqueueWrite(async () => {
-            // unsafeAsyncTransaction can race when called concurrently; YManager
-            // serializes all writes through enqueueWrite before using it.
-            await this.yDoc.unsafeAsyncTransaction(
-                draft => {
-                    (draft as ObjectDraft<Record<string, JsonValue | undefined>>).set(
-                        key,
-                        value as JsonValue
-                    );
-                },
-                async snapshot => {
-                    await this.yRepository.saveSnapshot(snapshot);
-                    return true;
-                }
-            );
         });
     }
 

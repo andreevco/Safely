@@ -48,6 +48,8 @@ export function useOnboardingFlow() {
                 Keyboard.dismiss();
                 await withLoader(async () => {
                     using secureEncryptedStorage = getSecureEncrypted();
+
+                    // don't ask for the password while setting app initially after first account creation during onboarding to provide smooth user experience
                     secureEncryptedStorage.UNSAFE_SKIP_SECURITY_CHECK_unlock();
 
                     await createAccount({ secureEncryptedStorage });
@@ -60,10 +62,6 @@ export function useOnboardingFlow() {
     );
 
     const onBiometryFinished = useCallback(() => {
-        navigation.dispatch(CommonActions.navigate(routes.notifications));
-    }, [navigation]);
-
-    const onNotificationsFinished = useCallback(() => {
         if (_isSignInFlow) {
             navigation.dispatch(
                 CommonActions.reset({
@@ -90,7 +88,6 @@ export function useOnboardingFlow() {
         onSuccessSignIn,
         onPasscodeReady,
         onBiometryFinished,
-        onNotificationsFinished,
         onAccountCreatedFinished
     };
 }

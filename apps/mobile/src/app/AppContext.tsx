@@ -1,4 +1,5 @@
 import { getLocales } from 'expo-localization';
+import { reloadAppAsync as reloadApp } from 'expo-modules-core';
 import { FC, PropsWithChildren, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AppState } from 'react-native';
@@ -91,6 +92,7 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
                 check: () => security.check()
             },
             clearAllData: CLEAR_ALL_MOBILE_STORAGE_ONLY_APP_LEVEL_USE_DANGER,
+            reloadApp,
             subscribeAppStateChange(callback) {
                 const subscription = AppState.addEventListener('change', state => {
                     switch (state) {

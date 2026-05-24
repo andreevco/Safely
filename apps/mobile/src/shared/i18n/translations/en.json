@@ -24,6 +24,7 @@
         "cancel": "Cancel",
         "continue": "Continue",
         "later": "Later",
+        "comingSoon": "Coming soon",
         "errors": {
             "unknown": "Something went wrong"
         }
@@ -180,29 +181,26 @@
         },
         "device": {
             "added": "Linked {{date}}",
-            "upToDate": "Up to date",
-            "notUpToDate": "Not up to date",
-            "walletsNotSynced": "{{ count }} wallets not synced",
-            "unlink": "Unlink"
+            "unlink": "Unlink",
+            "current": "Current"
         },
         "unlinkDevice": {
             "title": "Unlink {{deviceName}}",
-            "subtitle": "This will unlink your device from this account. The account data will remain on the device but will not sync with other devices.",
+            "subtitle": "This device will be removed from your linked devices and will no longer sync with this account.",
             "confirm": "Unlink {{deviceName}}"
         },
         "groups": {
             "account": {
-                "title": "Account",
+                "title": "Data safety",
                 "protect": {
-                    "title": "Protect your account",
-                    "badge": "Set up required",
-                    "subtitle": "Link another device to protect your account. Without it, your access can't be restored if this phone is lost."
+                    "title": "Linked devices",
+                    "badge": "Required",
+                    "subtitle": "Link another device as a redundant storage for your wallet keys and other data."
                 },
                 "protection": {
-                    "title": "Account Protection",
+                    "title": "Linked devices",
                     "badge": "Enabled",
-                    "subtitle_one": "Protected with {{count}} device",
-                    "subtitle_other": "Protected with {{count}} devices"
+                    "subtitle": "Wallet keys are stored on your linked devices."
                 },
                 "unlinked": {
                     "title": "Device link",
@@ -327,6 +325,7 @@
                 "beforeIcon": "Open Safely on another device where this account is active. Go to ",
                 "afterIcon": " Settings, tap “Link device” and scan this QR code."
             },
+            "banner": "This device will have full access to your account. It can be used if your other device is lost.",
             "timeout": "Connection timed out. Please try again.",
             "successToast": "Device re-linked"
         }
@@ -407,7 +406,12 @@
         }
     },
     "account": {
-        "unnamed": "Unnamed"
+        "unnamed": "Unnamed",
+        "sync": {
+            "errors": {
+                "updateFailed": "Couldn't save changes. Changes have been reverted."
+            }
+        }
     },
     "addAccount": {
         "title": "Add account",
@@ -454,6 +458,7 @@
     "settings": {
         "title": "Settings",
         "deviceConnected": "Successfully linked",
+        "qrCodeFromAnotherAccount": "QR code is from another account.\nUse the same account on both devices.",
         "addAccount": "Add account",
         "linkDevice": "Link device",
         "walletsCount_one": "{{count}} wallet",
@@ -571,12 +576,18 @@
         "about": "About"
     },
     "safelyBeta": {
-        "title": "Safely is in beta",
-        "subtitle": "Some features are still evolving. Keep less than $100 until the public release. Save your recovery phrases in Settings → Security.",
-        "feedback": {
-            "description": "Found a bug or have an idea?\nYour feedback helps us improve Safely.",
-            "action": "Send feedback"
+        "title": "Safely",
+        "subtitle": "Beta · {{version}}",
+        "cards": {
+            "betaNotice": "Safely is in beta. Keep under 0.002 BTC and back up your recovery phrase.",
+            "follow": "Follow updates in <tg>Telegram</tg> or <wa>WhatsApp</wa>",
+            "feedback": "Found a bug or have an idea? Your feedback helps us improve Safely. <action>Send feedback</action>"
         }
+    },
+    "dateGroups": {
+        "pending": "Pending",
+        "today": "Today",
+        "yesterday": "Yesterday"
     },
     "history": {
         "title": "History",
@@ -589,11 +600,6 @@
             "subtitle": "Your transactions will appear here.",
             "receive": "Receive BTC",
             "send": "Send"
-        },
-        "dateHeaders": {
-            "pending": "Pending",
-            "today": "Today",
-            "yesterday": "Yesterday"
         },
         "transactionInfo": {
             "sending": "Sending",
