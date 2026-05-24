@@ -5,6 +5,7 @@ import { fetchBtcActivity } from './api';
 import { activityKeys } from './keys';
 import type { ActivityPage, IActivityFilters, IActivityPageParam, IHistoryOptions } from './types';
 import { QUERIES_STALE_TIME, useInfinitePersistQuery, useBtcApi } from '../../shared';
+import { useActiveAccountQuery } from '../account/account-state';
 import { useLastBroadcastedBtcTx } from '../btc-blockchain';
 import { useActiveBtcWallet } from '../portfolio';
 
@@ -17,6 +18,7 @@ export function useHistory<TData = InfiniteData<ActivityPage, IActivityPageParam
     const btcApi = useBtcApi();
     const btcWallet = useActiveBtcWallet();
     const broadcastedTx = useLastBroadcastedBtcTx();
+    const { data: activeAccount } = useActiveAccountQuery();
 
     return useInfinitePersistQuery<ActivityPage, unknown, TData, QueryKey, IActivityPageParam>({
         queryKey: activityKeys.all(btcWallet.id.toString(), filters).toKey(),
@@ -33,6 +35,7 @@ export function useHistory<TData = InfiniteData<ActivityPage, IActivityPageParam
             const currentPage = lastPageParam?.page ?? INITIAL_PAGE;
             return { page: currentPage + 1 };
         },
+        meta: { accountId: activeAccount?.accountId },
         initialPageParam: { page: INITIAL_PAGE },
         schemaKey: 'infiniteActivityData',
         select: useCallback(

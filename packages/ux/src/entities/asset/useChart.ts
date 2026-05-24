@@ -8,11 +8,13 @@ import {
     usePersistQuery,
     usePriceApi
 } from '../../shared';
+import { useActiveAccountQuery } from '../account/account-state';
 import { useActiveFiat } from '../fiat';
 
 export function useChart(asset: CryptoAsset, startDate: number) {
     const fiat = useActiveFiat();
     const priceApi = usePriceApi();
+    const { data: activeAccount } = useActiveAccountQuery();
 
     return usePersistQuery<HistoricalPrice | null>({
         queryKey: assetKeys
@@ -31,6 +33,7 @@ export function useChart(asset: CryptoAsset, startDate: number) {
         },
         staleTime: QUERIES_STALE_TIME.DEFAULT,
         refetchInterval: QUERIES_REFETCH_INTERVAL.DEFAULT,
-        schemaKey: 'sHistoricalPrice'
+        schemaKey: 'sHistoricalPrice',
+        meta: { accountId: activeAccount?.accountId }
     });
 }
