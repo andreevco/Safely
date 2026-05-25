@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import type { z } from 'zod';
 
 import type { StorageImpl } from '../src';
-import { createStorage, jsonEncoder } from '../src';
+import { createStorage } from '../src';
 import type { schemaV1 } from './version-fixtures';
 import { v1 } from './version-fixtures';
 import { createOriginContainer } from '../src/core/slots';
@@ -31,11 +31,11 @@ describe('storage merge', () => {
             draft.set('key2', 'value2');
         });
 
-        storage1.withEncoder(jsonEncoder).merge(storage2.withEncoder(jsonEncoder).export());
+        storage1.merge(storage2.export());
         expect(storage1.read().key1).toEqual(10);
         expect(storage1.read().key2).toEqual('value2');
 
-        storage2.withEncoder(jsonEncoder).merge(storage1.withEncoder(jsonEncoder).export());
+        storage2.merge(storage1.export());
         expect(storage2.read().key1).toEqual(10);
         expect(storage2.read().key2).toEqual('value2');
     });
@@ -50,7 +50,7 @@ describe('storage merge', () => {
             draft.set('key2', 'value2');
         });
 
-        storage1.withEncoder(jsonEncoder).merge(storage2.withEncoder(jsonEncoder).export());
+        storage1.merge(storage2.export());
 
         expect(calls).toBe(1);
     });
@@ -61,7 +61,7 @@ describe('storage merge', () => {
             calls += 1;
         });
 
-        storage1.withEncoder(jsonEncoder).merge(storage1.withEncoder(jsonEncoder).export());
+        storage1.merge(storage1.export());
 
         expect(calls).toBe(0);
     });

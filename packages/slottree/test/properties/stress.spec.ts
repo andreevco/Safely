@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { applyOps, opsArb } from './ops';
 import { stressVersionList } from './stress-schema';
-import { createStorage, jsonEncoder } from '../../src';
+import { createStorage } from '../../src';
 
 function makeStorage(authorId: string) {
     return createStorage({
@@ -23,12 +23,12 @@ describe('Basic CRDT properties', () => {
                     applyOps(a, opsA);
                     applyOps(b, opsB);
 
-                    const incoming = b.withEncoder(jsonEncoder).export();
+                    const incoming = b.export();
 
-                    a.withEncoder(jsonEncoder).merge(incoming);
+                    a.merge(incoming);
                     const afterOnce = a.get();
 
-                    a.withEncoder(jsonEncoder).merge(incoming);
+                    a.merge(incoming);
                     const afterTwice = a.get();
 
                     expect(afterTwice).toEqual(afterOnce);
@@ -48,13 +48,13 @@ describe('Basic CRDT properties', () => {
                     applyOps(a, opsA);
                     applyOps(b, opsB);
 
-                    const incoming = b.withEncoder(jsonEncoder).export();
+                    const incoming = b.export();
 
-                    a.withEncoder(jsonEncoder).merge(incoming);
-                    const afterOnce = a.withEncoder(jsonEncoder).export();
+                    a.merge(incoming);
+                    const afterOnce = a.export();
 
-                    a.withEncoder(jsonEncoder).merge(incoming);
-                    const afterTwice = a.withEncoder(jsonEncoder).export();
+                    a.merge(incoming);
+                    const afterTwice = a.export();
 
                     expect(afterTwice).toEqual(afterOnce);
                 }),
@@ -73,17 +73,17 @@ describe('Basic CRDT properties', () => {
                     applyOps(a, opsA);
                     applyOps(b, opsB);
 
-                    a.withEncoder(jsonEncoder).merge(b.withEncoder(jsonEncoder).export());
-                    b.withEncoder(jsonEncoder).merge(a.withEncoder(jsonEncoder).export());
+                    a.merge(b.export());
+                    b.merge(a.export());
 
-                    const aAfterFirstSync = a.withEncoder(jsonEncoder).export();
-                    const bAfterFirstSync = b.withEncoder(jsonEncoder).export();
+                    const aAfterFirstSync = a.export();
+                    const bAfterFirstSync = b.export();
 
-                    a.withEncoder(jsonEncoder).merge(b.withEncoder(jsonEncoder).export());
-                    b.withEncoder(jsonEncoder).merge(a.withEncoder(jsonEncoder).export());
+                    a.merge(b.export());
+                    b.merge(a.export());
 
-                    expect(a.withEncoder(jsonEncoder).export()).toEqual(aAfterFirstSync);
-                    expect(b.withEncoder(jsonEncoder).export()).toEqual(bAfterFirstSync);
+                    expect(a.export()).toEqual(aAfterFirstSync);
+                    expect(b.export()).toEqual(bAfterFirstSync);
 
                     expect(a.get()).toEqual(b.get());
                 }),
@@ -105,27 +105,27 @@ describe('Basic CRDT properties', () => {
                     applyOps(c, opsC);
 
                     function fullMeshSync() {
-                        a.withEncoder(jsonEncoder).merge(b.withEncoder(jsonEncoder).export());
-                        a.withEncoder(jsonEncoder).merge(c.withEncoder(jsonEncoder).export());
+                        a.merge(b.export());
+                        a.merge(c.export());
 
-                        b.withEncoder(jsonEncoder).merge(a.withEncoder(jsonEncoder).export());
-                        b.withEncoder(jsonEncoder).merge(c.withEncoder(jsonEncoder).export());
+                        b.merge(a.export());
+                        b.merge(c.export());
 
-                        c.withEncoder(jsonEncoder).merge(a.withEncoder(jsonEncoder).export());
-                        c.withEncoder(jsonEncoder).merge(b.withEncoder(jsonEncoder).export());
+                        c.merge(a.export());
+                        c.merge(b.export());
                     }
 
                     fullMeshSync();
 
-                    const aAfterFirst = a.withEncoder(jsonEncoder).export();
-                    const bAfterFirst = b.withEncoder(jsonEncoder).export();
-                    const cAfterFirst = c.withEncoder(jsonEncoder).export();
+                    const aAfterFirst = a.export();
+                    const bAfterFirst = b.export();
+                    const cAfterFirst = c.export();
 
                     fullMeshSync();
 
-                    expect(a.withEncoder(jsonEncoder).export()).toEqual(aAfterFirst);
-                    expect(b.withEncoder(jsonEncoder).export()).toEqual(bAfterFirst);
-                    expect(c.withEncoder(jsonEncoder).export()).toEqual(cAfterFirst);
+                    expect(a.export()).toEqual(aAfterFirst);
+                    expect(b.export()).toEqual(bAfterFirst);
+                    expect(c.export()).toEqual(cAfterFirst);
 
                     expect(a.get()).toEqual(b.get());
                     expect(b.get()).toEqual(c.get());
@@ -147,11 +147,11 @@ describe('Basic CRDT properties', () => {
                     applyOps(a, opsA);
                     applyOps(b, opsB);
 
-                    const aState = a.withEncoder(jsonEncoder).export();
-                    const bState = b.withEncoder(jsonEncoder).export();
+                    const aState = a.export();
+                    const bState = b.export();
 
-                    a.withEncoder(jsonEncoder).merge(bState);
-                    b.withEncoder(jsonEncoder).merge(aState);
+                    a.merge(bState);
+                    b.merge(aState);
 
                     expect(a.get()).toEqual(b.get());
                 }),
@@ -174,17 +174,17 @@ describe('Basic CRDT properties', () => {
                     applyOps(b, opsB);
                     applyOps(c, opsC);
 
-                    const aState = a.withEncoder(jsonEncoder).export();
-                    const bState = b.withEncoder(jsonEncoder).export();
-                    const cState = c.withEncoder(jsonEncoder).export();
+                    const aState = a.export();
+                    const bState = b.export();
+                    const cState = c.export();
 
                     // (A merge B) merge C
-                    a.withEncoder(jsonEncoder).merge(bState);
-                    a.withEncoder(jsonEncoder).merge(cState);
+                    a.merge(bState);
+                    a.merge(cState);
 
                     // A merge (B merge C)
-                    b.withEncoder(jsonEncoder).merge(cState);
-                    b.withEncoder(jsonEncoder).merge(aState);
+                    b.merge(cState);
+                    b.merge(aState);
 
                     expect(a.get()).toEqual(b.get());
                 }),

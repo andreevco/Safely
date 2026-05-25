@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
 import type { StorageImpl } from '../src';
-import { createStorage, jsonEncoder } from '../src';
+import { createStorage } from '../src';
 import { identityProjection } from './version-fixtures';
-import { isContainerSlot } from '../src/core/slots';
+import { isContainerSlot, type ContainerSlot } from '../src/core/slots';
 import { stripSlot } from '../src/core/slots/slot-json';
 import { defineVersionHList, hCons, hNil } from '../src/core/versioning/version';
 
@@ -102,7 +102,7 @@ describe('records', () => {
         expect(Object.getPrototypeOf(stripped)).toBeNull();
     });
 
-    it('merges JSON-imported prototype-like keys as data', () => {
+    it('merges prototype-like keys as data', () => {
         const schema = z.object({
             objects: z.record(
                 z.string(),
@@ -171,7 +171,14 @@ describe('records', () => {
       "a": ""
     }`;
 
-        storage.withEncoder(jsonEncoder).merge(incoming);
+        const incomingRoot = JSON.parse(incoming) as ContainerSlot;
+        const remote = createStorage({
+            authorId: 'remote',
+            versions: version,
+            root: incomingRoot
+        });
+
+        storage.merge(remote.export());
 
         const exported = storage.exportSlot();
         const versionSlot = exported.v['1'];

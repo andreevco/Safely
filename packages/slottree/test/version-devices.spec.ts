@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
 import type { StorageImpl } from '../src';
-import { createStorage, DEVICES_KEY, jsonEncoder } from '../src';
+import { createStorage, DEVICES_KEY } from '../src';
 import type { StorageV3 } from './version-fixtures';
 import { v3 } from './version-fixtures';
-import { createOriginContainer, type ContainerSlot } from '../src/core/slots';
+import { createOriginContainer } from '../src/core/slots';
 import { slotFromJson, stripSlot } from '../src/core/slots/slot-json';
 
 const v3Initial = {
@@ -161,13 +161,13 @@ describe('storage device versions', () => {
             authorId: 'device-1',
             versions: v3
         });
-        const before = storage.withEncoder(jsonEncoder).export();
+        const before = storage.export();
 
         expect(() => {
             storage.addAuthor('device-unknown', 999);
         }).toThrow('Unknown storage version 999');
 
-        expect(storage.withEncoder(jsonEncoder).export()).toBe(before);
+        expect(storage.export()).toBe(before);
     });
 
     it('removes an author, prunes its unused version, and keeps exports importable', () => {
@@ -197,12 +197,12 @@ describe('storage device versions', () => {
         storage.removeAuthor('old-device');
 
         const exported = storage.exportSlot();
-        const encoded = storage.withEncoder(jsonEncoder).export();
+        const encoded = storage.export();
         const imported = createStorage({
             authorId: 'device-1',
-            versions: v3,
-            root: JSON.parse(encoded) as ContainerSlot
+            versions: v3
         });
+        imported.merge(encoded);
 
         expect(calls).toBe(1);
         expect(stripSlot(exported.v[DEVICES_KEY])).toEqual({
@@ -219,7 +219,7 @@ describe('storage device versions', () => {
             authorId: 'device-1',
             versions: v3
         });
-        const before = storage.withEncoder(jsonEncoder).export();
+        const before = storage.export();
         let calls = 0;
         storage.onChange(() => {
             calls += 1;
@@ -228,6 +228,6 @@ describe('storage device versions', () => {
         storage.removeAuthor('missing-device');
 
         expect(calls).toBe(0);
-        expect(storage.withEncoder(jsonEncoder).export()).toBe(before);
+        expect(storage.export()).toBe(before);
     });
 });

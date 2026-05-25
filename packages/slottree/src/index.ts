@@ -19,15 +19,6 @@ export type {
 export { createStorage, StorageObservers } from './core/slot-tree';
 export type { SlotTree, StorageImpl } from './core/slot-tree';
 export type { StorageObserver } from './core/slot-tree';
-export type { Merger } from './core/merger';
-export { JsonEncoder, jsonEncoder } from './core/encoder/json';
-export type { SnapshotEncoder } from './core/encoder/encoder';
-export {
-    Base64SnapshotEncoder,
-    CborEncoder,
-    base64SnapshotEncoder,
-    cborEncoder
-} from './core/encoder/cbor/cbor-encoder';
 
 export type { StorageVersion } from './core/versioning/version';
 export { DEVICES_KEY, VersionController } from './core/versioning/version-controller';

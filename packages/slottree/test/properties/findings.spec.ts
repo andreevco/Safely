@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
-import { createStorage, jsonEncoder } from '../../src';
+import { createStorage } from '../../src';
 import { cloneSlot } from '../../src/core/slots/slot-json';
 import { defineVersionHList, hCons, hNil } from '../../src/core/versioning/version';
 
@@ -89,26 +89,26 @@ describe('Storage merge findings', () => {
         });
 
         function fullMeshSync() {
-            a.withEncoder(jsonEncoder).merge(b.withEncoder(jsonEncoder).export());
-            a.withEncoder(jsonEncoder).merge(c.withEncoder(jsonEncoder).export());
+            a.merge(b.export());
+            a.merge(c.export());
 
-            b.withEncoder(jsonEncoder).merge(a.withEncoder(jsonEncoder).export());
-            b.withEncoder(jsonEncoder).merge(c.withEncoder(jsonEncoder).export());
+            b.merge(a.export());
+            b.merge(c.export());
 
-            c.withEncoder(jsonEncoder).merge(a.withEncoder(jsonEncoder).export());
-            c.withEncoder(jsonEncoder).merge(b.withEncoder(jsonEncoder).export());
+            c.merge(a.export());
+            c.merge(b.export());
         }
 
         fullMeshSync();
 
-        const aAfterFirst = a.withEncoder(jsonEncoder).export();
-        const bAfterFirst = b.withEncoder(jsonEncoder).export();
-        const cAfterFirst = c.withEncoder(jsonEncoder).export();
+        const aAfterFirst = a.export();
+        const bAfterFirst = b.export();
+        const cAfterFirst = c.export();
 
         fullMeshSync();
 
-        expect(a.withEncoder(jsonEncoder).export()).toEqual(aAfterFirst);
-        expect(b.withEncoder(jsonEncoder).export()).toEqual(bAfterFirst);
-        expect(c.withEncoder(jsonEncoder).export()).toEqual(cAfterFirst);
+        expect(a.export()).toEqual(aAfterFirst);
+        expect(b.export()).toEqual(bAfterFirst);
+        expect(c.export()).toEqual(cAfterFirst);
     });
 });

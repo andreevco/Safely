@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
 import type { StorageImpl } from '../src';
-import { createStorage, jsonEncoder, type SlotTree } from '../src';
+import { createStorage, type SlotTree } from '../src';
 import type { schemaV1, StorageV1 } from './version-fixtures';
 import { v1 } from './version-fixtures';
 import type { ContainerSlot } from '../src/core/slots';
@@ -135,7 +135,7 @@ describe('storage updates', () => {
             calls += 1;
         });
 
-        const committed = await storage.withEncoder(jsonEncoder).unsafeAsyncTransaction(
+        const committed = await storage.unsafeAsyncTransaction(
             draft => {
                 draft.set('key1', 10);
             },
@@ -164,7 +164,7 @@ describe('storage updates', () => {
             calls += 1;
         });
 
-        const committed = await storage.withEncoder(jsonEncoder).unsafeAsyncTransaction(
+        const committed = await storage.unsafeAsyncTransaction(
             draft => {
                 draft.set('key1', 10);
             },
@@ -186,7 +186,7 @@ describe('storage updates', () => {
         });
 
         await expect(
-            storage.withEncoder(jsonEncoder).unsafeAsyncTransaction(
+            storage.unsafeAsyncTransaction(
                 draft => {
                     draft.set('key1', 10);
                 },
@@ -217,15 +217,13 @@ describe('storage updates', () => {
             calls += 1;
         });
 
-        const committed = await storage
-            .withEncoder(jsonEncoder)
-            .unsafeAsyncMerge(remote.withEncoder(jsonEncoder).export(), async () => {
-                expect(storage.read()).toEqual({
-                    key1: 0,
-                    key2: 'initial'
-                });
-                return true;
+        const committed = await storage.unsafeAsyncMerge(remote.export(), async () => {
+            expect(storage.read()).toEqual({
+                key1: 0,
+                key2: 'initial'
             });
+            return true;
+        });
 
         expect(committed).toBe(true);
         expect(storage.read()).toEqual({
@@ -250,11 +248,9 @@ describe('storage updates', () => {
         });
 
         await expect(
-            storage
-                .withEncoder(jsonEncoder)
-                .unsafeAsyncMerge(remote.withEncoder(jsonEncoder).export(), async () => {
-                    throw new Error('persist failed');
-                })
+            storage.unsafeAsyncMerge(remote.export(), async () => {
+                throw new Error('persist failed');
+            })
         ).rejects.toThrow('persist failed');
 
         expect(storage.read()).toEqual({
@@ -323,9 +319,7 @@ describe('storage updates', () => {
             root: reordered
         });
 
-        expect(storageFromReorderedRoot.withEncoder(jsonEncoder).export()).toBe(
-            isolatedStorage.withEncoder(jsonEncoder).export()
-        );
+        expect(storageFromReorderedRoot.export()).toBe(isolatedStorage.export());
     });
 
     it('prevents runtime writes through read proxies', () => {

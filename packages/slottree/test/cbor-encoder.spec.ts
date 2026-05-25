@@ -1,7 +1,8 @@
 import * as cbor from 'cbor-x';
 import { describe, expect, it } from 'vitest';
 
-import { cborEncoder, type JsonValue } from '../src';
+import type { JsonValue } from '../src';
+import { cborEncoder } from '../src/core/encoder/cbor/cbor-encoder';
 import {
     createContainerSlot,
     createOrderedArraySlot,

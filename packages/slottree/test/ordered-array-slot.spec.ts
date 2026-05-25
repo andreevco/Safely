@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
 import type { StorageImpl } from '../src';
-import { createStorage, jsonEncoder } from '../src';
+import { createStorage } from '../src';
 import {
     isContainerSlot,
     isOrderedArraySlot,
@@ -314,8 +314,8 @@ describe('ordered array slots', () => {
             draft.at('portfolios').push({ __setId: 'p2', name: 'Two' });
         });
 
-        a.withEncoder(jsonEncoder).merge(b.withEncoder(jsonEncoder).export());
-        b.withEncoder(jsonEncoder).merge(a.withEncoder(jsonEncoder).export());
+        a.merge(b.export());
+        b.merge(a.export());
 
         expect(a.get().portfolios).toEqual([
             { __setId: 'p1', name: 'One' },
@@ -351,8 +351,8 @@ describe('ordered array slots', () => {
             });
         });
 
-        a.withEncoder(jsonEncoder).merge(b.withEncoder(jsonEncoder).export());
-        b.withEncoder(jsonEncoder).merge(a.withEncoder(jsonEncoder).export());
+        a.merge(b.export());
+        b.merge(a.export());
 
         expect(a.get().portfolios).toEqual([
             { __setId: 'p2', name: 'Second' },
@@ -375,7 +375,7 @@ describe('ordered array slots', () => {
         const imported = createStorage({
             authorId: 'device-2',
             versions,
-            root: JSON.parse(storage.withEncoder(jsonEncoder).export()) as ContainerSlot
+            root: storage.exportSlot()
         });
 
         expect(imported.get()).toEqual(storage.get());

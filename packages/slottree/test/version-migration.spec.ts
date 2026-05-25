@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
 import type { StorageImpl } from '../src';
-import { createStorage, DEVICES_KEY, jsonEncoder } from '../src';
+import { createStorage, DEVICES_KEY } from '../src';
 import type { StorageV1 } from './version-fixtures';
 import { identityProjection, type StorageV3, v1, v3 } from './version-fixtures';
 import { createOriginContainer, SlotKind, type ContainerSlot } from '../src/core/slots';
@@ -153,7 +153,7 @@ describe('version migration', () => {
             draft.set('key2', 'from-v1');
         });
 
-        newDevice.withEncoder(jsonEncoder).merge(oldDevice.withEncoder(jsonEncoder).export());
+        newDevice.merge(oldDevice.export());
 
         const oldExport = oldDevice.exportSlot();
         const newExport = newDevice.exportSlot();
@@ -252,7 +252,7 @@ describe('version migration', () => {
             draft.delete('optional');
         });
 
-        newDevice.withEncoder(jsonEncoder).merge(oldDevice.withEncoder(jsonEncoder).export());
+        newDevice.merge(oldDevice.export());
 
         const oldExport = oldDevice.exportSlot();
         const newExport = newDevice.exportSlot();

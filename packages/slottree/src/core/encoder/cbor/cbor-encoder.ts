@@ -1,9 +1,8 @@
 import { decodeCbor } from './decode';
 import { encodeCbor } from './encode';
 import type { ContainerSlot } from '../../slots';
-import type { SnapshotEncoder } from '../encoder';
 
-export class CborEncoder implements SnapshotEncoder {
+export class CborEncoder {
     constructor(private readonly stringEncoding: BufferEncoding) {}
 
     public encode(root: ContainerSlot): string {
@@ -20,12 +19,6 @@ export class CborEncoder implements SnapshotEncoder {
 
     public decodeBinary(data: Buffer): ContainerSlot {
         return decodeCbor(data);
-    }
-}
-
-export class Base64SnapshotEncoder extends CborEncoder {
-    constructor() {
-        super('base64');
     }
 }
 

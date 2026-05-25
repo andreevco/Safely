@@ -1,12 +1,9 @@
 import type { z } from 'zod';
 
 import { cborEncoder } from './encoder/cbor/cbor-encoder';
-import type { SnapshotEncoder } from './encoder/encoder';
 import type { DeepReadonly } from './json';
 import type { MergeStats } from './merge-protocol';
 import { MergeProtocol } from './merge-protocol';
-import type { Merger } from './merger';
-import { MergerImpl } from './merger';
 import type { ContainerSlot, Slot } from './slots';
 import { createOriginContainer } from './slots';
 import { cloneSlot } from './slots/slot-json';
@@ -27,12 +24,12 @@ export interface SlotTree<T> {
     readonly version: number;
 
     /**
-     * Returns full storage as JSON representation
+     * Returns the current storage value projected to the latest schema version.
      */
     get(): T;
 
     /**
-     * Returns readonly Proxy over storage
+     * Returns a readonly proxy over the current storage value.
      */
     read(): DeepReadonly<T>;
 
@@ -42,7 +39,40 @@ export interface SlotTree<T> {
      */
     transaction(fn: (draft: Draft<T>) => void): void;
 
-    mergeBinary(incoming: Buffer): void;
+    /**
+     * Unsafe atomic async storage transaction.
+     *
+     * Prepares the next state, passes its encoded snapshot to commit, and only
+     * publishes the state in memory when commit resolves to true.
+     *
+     * Unsafe because concurrent calls can race: each call prepares state from the
+     * root visible at its start, then awaits commit before publishing. Callers
+     * must serialize calls externally when lost updates are not acceptable.
+     */
+    unsafeAsyncTransaction(
+        fn: (draft: Draft<T>) => void,
+        commit: (snapshot: string) => Promise<boolean>
+    ): Promise<boolean>;
+
+    /**
+     * Merges an encoded storage snapshot into the current storage.
+     */
+    merge(incoming: string): MergeStats;
+
+    /**
+     * Unsafe async storage merge.
+     *
+     * Prepares the merged state, passes its encoded snapshot to commit, and
+     * only publishes the state in memory when commit resolves to true.
+     *
+     * Unsafe because concurrent calls can race: each call prepares state from the
+     * root visible at its start, then awaits commit before publishing. Callers
+     * must serialize calls externally when lost updates are not acceptable.
+     */
+    unsafeAsyncMerge(
+        incoming: string,
+        commit: (snapshot: string) => Promise<boolean>
+    ): Promise<boolean>;
 
     /**
      * Observe successful storage changes.
@@ -50,9 +80,10 @@ export interface SlotTree<T> {
      */
     onChange(observer: StorageObserver): () => void;
 
-    exportBinary(): Buffer;
-
-    withEncoder(encoder: SnapshotEncoder): Merger<T>;
+    /**
+     * Exports the current storage as an encoded snapshot string.
+     */
+    export(): string;
 
     /**
      * Adds new author with selected storage versions and automatically adds migration to the
@@ -146,6 +177,15 @@ export class StorageImpl<T> implements SlotTree<T> {
         }
     }
 
+    public async unsafeAsyncTransaction(
+        fn: (draft: Draft<T>) => void,
+        commit: (snapshot: string) => Promise<boolean>
+    ): Promise<boolean> {
+        return await this.unsafeAsyncTransactionSlot(fn, async root => {
+            return await commit(cborEncoder.encode(root));
+        });
+    }
+
     public async unsafeAsyncTransactionSlot(
         fn: (draft: Draft<T>) => void,
         commit: (snapshot: ContainerSlot) => Promise<boolean>
@@ -188,6 +228,10 @@ export class StorageImpl<T> implements SlotTree<T> {
         return stats;
     }
 
+    public merge(incoming: string): MergeStats {
+        return this.mergeSlot(cborEncoder.decode(incoming));
+    }
+
     public async unsafeAsyncMergeSlot(
         incoming: Slot,
         commit: (snapshot: ContainerSlot) => Promise<boolean>
@@ -212,6 +256,15 @@ export class StorageImpl<T> implements SlotTree<T> {
         this.protocol.observeTree(this.root);
         this.observers.notify();
         return true;
+    }
+
+    public async unsafeAsyncMerge(
+        incoming: string,
+        commit: (snapshot: string) => Promise<boolean>
+    ): Promise<boolean> {
+        return await this.unsafeAsyncMergeSlot(cborEncoder.decode(incoming), async root => {
+            return await commit(cborEncoder.encode(root));
+        });
     }
 
     public onChange(observer: StorageObserver): () => void {
@@ -285,16 +338,8 @@ export class StorageImpl<T> implements SlotTree<T> {
         new VersionController(this.root, this.versions).deleteVersionsUnusedByDevices();
     }
 
-    public exportBinary(): Buffer {
-        return cborEncoder.encodeBinary(this.root);
-    }
-
-    public mergeBinary(incoming: Buffer): void {
-        this.mergeSlot(cborEncoder.decodeBinary(incoming));
-    }
-
-    public withEncoder(encoder: SnapshotEncoder): Merger<T> {
-        return new MergerImpl(this, encoder);
+    public export(): string {
+        return cborEncoder.encode(this.root);
     }
 }
 

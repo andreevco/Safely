@@ -1,7 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
-import { defineVersionHList, DEVICES_KEY, hCons, hNil, projectIdentity } from '@safely/slottree';
+import {
+    createStorage,
+    defineVersionHList,
+    hCons,
+    hNil,
+    projectIdentity,
+    VersionController,
+    type StorageImpl
+} from '@safely/slottree';
 
 import { InMemStorage } from './impl/storage';
 import { CrdtController } from '../src/crdt/crdt-controller';
@@ -136,25 +144,15 @@ async function deviceVersion(
         throw new Error(`Missing ${storageKey} snapshot`);
     }
 
-    const snapshot = JSON.parse(raw) as {
-        v?: Record<
-            string,
-            {
-                v?: Record<
-                    string,
-                    {
-                        v?: {
-                            version?: {
-                                v?: unknown;
-                            };
-                        };
-                    }
-                >;
-            }
-        >;
-    };
-    const version = snapshot.v?.[DEVICES_KEY]?.v?.[authorId]?.v?.version?.v;
-    return typeof version === 'number' ? version : undefined;
+    const snapshotStorage = createStorage({
+        authorId: 'reader',
+        versions: Versions
+    }) as StorageImpl<z.output<typeof Schema>>;
+    snapshotStorage.merge(raw);
+
+    return new VersionController(snapshotStorage.exportSlot(), [Version]).getDeviceVersion(
+        authorId
+    );
 }
 
 class FailingSetStorage extends InMemStorage {
