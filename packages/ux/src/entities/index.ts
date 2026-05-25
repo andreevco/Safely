@@ -16,4 +16,3 @@ export * from './query-core';
 export * from './errors';
 export * from './linking';
 export * from './dismissed-banners';
-export * from './wallet-seed';

@@ -16,7 +16,7 @@ export const sPortfolioBip39IdMasterKeyDerived = z.object({
 
 export const sPortfolioBip39IdImported = z.object({
     source: z.literal(sPortfolioBip39Source.enum.IMPORTED),
-    seedHash: z.string(),
+    mnemonicHash: z.string(),
     networkType: sPortfolioNetworkType
 });
 

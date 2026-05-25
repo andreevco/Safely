@@ -12,3 +12,9 @@ export class BtcBip39SeedProducer implements ISeedProducer {
         return Buffer.from(await mnemonicToSeed(mnemonic.join(' ')));
     }
 }
+
+export class BtcBip39SeedProducerEmpty implements ISeedProducer {
+    public async getSeed(): Promise<Buffer> {
+        throw new Error('Expected not to get here');
+    }
+}

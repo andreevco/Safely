@@ -9,7 +9,6 @@ import { sDevicesMeta } from './schemas/devices-meta.schema';
 import type { SPortfolios } from './schemas/portfolio/portfolios.schema';
 import { sPortfolios } from './schemas/portfolio/portfolios.schema';
 import { sPreferredFiat } from './schemas/preferred-fiat.schema';
-import { sWalletDerivation } from './schemas/wallet-derivation.schema';
 
 const syncedStorageSchema = z.object({
     preferredFiat: sPreferredFiat,
@@ -17,7 +16,7 @@ const syncedStorageSchema = z.object({
     meta: sAccountMeta,
     devicesMeta: sDevicesMeta,
     contacts: sContacts,
-    walletDerivation: sWalletDerivation
+    latestDerivedBip39PortfolioIndex: z.number().int().nonnegative().nullable()
 });
 
 export const syncedStorageV1 = {
@@ -29,7 +28,7 @@ export const syncedStorageV1 = {
         meta: null,
         devicesMeta: null,
         contacts: [] as SContacts,
-        walletDerivation: null
+        latestDerivedBip39PortfolioIndex: null
     },
     projectUp: projectIdentity,
     projectDown: projectIdentity
