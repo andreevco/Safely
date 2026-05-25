@@ -10,10 +10,10 @@ import { ListRef } from '@mobile/shared/ui/Screen/components/List';
 import { useGroupedRows, getGroupedRowType, type GroupedRow } from '@mobile/shared/utils';
 
 import { styles } from './AboutFeed.styles';
-import { PostCard } from './components';
+import { PostCard, AboutFeedSkeleton } from './components';
 
 export const AboutFeed = () => {
-    const { data } = useAboutQuery();
+    const { data, isLoading } = useAboutQuery();
     const posts = data?.posts;
     const rows = useGroupedRows(
         posts ?? [],
@@ -40,8 +40,8 @@ export const AboutFeed = () => {
         );
     };
 
-    if (!posts) {
-        return null;
+    if (isLoading) {
+        return <AboutFeedSkeleton />;
     }
 
     return (
