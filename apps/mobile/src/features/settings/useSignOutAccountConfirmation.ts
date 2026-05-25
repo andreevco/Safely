@@ -33,9 +33,6 @@ export function useSignOutAccountConfirmation() {
                     await deleteAccount();
                     toast(t('settings.signOutAccount.toastAccountRemoved'));
                 }
-            },
-            onProtect: () => {
-                navigation.navigate('SettingsModal', { screen: 'ProtectAccountModal' });
             }
         });
     }, [navigation, accountName, accounts?.length, deleteAccount, eraseAllData, toast, t]);

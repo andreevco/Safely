@@ -3,27 +3,27 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
+import { AccountLinkState, useAccountLinkState } from '@safely/ux';
+
 import { BottomSheet, Button, ConfirmCheckbox, Text, useBottomSheet } from '@mobile/shared/ui';
 
 import { styles } from './SignOutAccountSheet.styles';
-import { AccountSyncState, useAccountSyncState } from './useAccountSyncState';
 
 type SignOutAccountParams = {
     accountName: string;
     onConfirm: () => Promise<void>;
-    onProtect: () => void;
 };
 
 type SignOutAccountSheetProps = StaticScreenProps<SignOutAccountParams>;
 
-const needsCheckbox = (syncState: AccountSyncState) => syncState !== 'fullCopy';
-
 const SignOutAccountContent = (props: SignOutAccountParams) => {
-    const { accountName, onConfirm, onProtect } = props;
+    const { accountName, onConfirm } = props;
 
     const { t } = useTranslation();
     const { close } = useBottomSheet();
-    const syncState = useAccountSyncState();
+    const linkState = useAccountLinkState();
+    const hasLinkedPeers = linkState === AccountLinkState.PROTECTED;
+    const stateKey = hasLinkedPeers ? 'fullCopy' : 'noDevices';
 
     const [isConfirmed, setIsConfirmed] = useState(false);
 
@@ -39,19 +39,13 @@ const SignOutAccountContent = (props: SignOutAccountParams) => {
                     {t('settings.signOutAccount.sheet.title', { name: accountName })}
                 </Text>
                 <Text textAlign="center" variant="bodyL" color="secondary" style={styles.subtitle}>
-                    {t(`settings.signOutAccount.sheet.${syncState}.subtitle`)}
-                    {syncState === 'noDevices' && ' '}
-                    {syncState === 'noDevices' && (
-                        <Text variant="bodyL" color="link" onPress={onProtect}>
-                            {t('settings.signOutAccount.sheet.noDevices.protectLink')}
-                        </Text>
-                    )}
+                    {t(`settings.signOutAccount.sheet.${stateKey}.subtitle`)}
                 </Text>
             </View>
 
-            {needsCheckbox(syncState) && (
+            {!hasLinkedPeers && (
                 <ConfirmCheckbox
-                    text={t(`settings.signOutAccount.sheet.${syncState}.checkbox`)}
+                    text={t('settings.signOutAccount.sheet.noDevices.checkbox')}
                     isChecked={isConfirmed}
                     onToggle={() => setIsConfirmed(prev => !prev)}
                 />
@@ -61,7 +55,7 @@ const SignOutAccountContent = (props: SignOutAccountParams) => {
                 <Button
                     type="destructive"
                     size="large"
-                    disabled={needsCheckbox(syncState) && !isConfirmed}
+                    disabled={!hasLinkedPeers && !isConfirmed}
                     onPress={handleSignOut}
                 >
                     {t('settings.signOutAccount.sheet.signOutButton')}
