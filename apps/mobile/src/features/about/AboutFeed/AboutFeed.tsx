@@ -2,24 +2,29 @@ import { useScrollToTop } from '@react-navigation/native';
 import { useRef } from 'react';
 import { View } from 'react-native';
 
+import { type AboutPost } from '@safely/core';
+import { useAboutQuery } from '@safely/ux';
+
 import { Screen, Text } from '@mobile/shared/ui';
 import { ListRef } from '@mobile/shared/ui/Screen/components/List';
 import { useGroupedRows, getGroupedRowType, type GroupedRow } from '@mobile/shared/utils';
 
 import { styles } from './AboutFeed.styles';
-import { ABOUT_CARDS, type AboutCard } from './cards';
-import { Content } from './components';
-
-const getPublishedAt = (card: AboutCard) => card.publishedAt;
-const getCardId = (card: AboutCard) => card.id;
+import { PostCard } from './components';
 
 export const AboutFeed = () => {
-    const data = useGroupedRows(ABOUT_CARDS, getPublishedAt, getCardId);
-    const listRef = useRef<ListRef<GroupedRow<AboutCard>>>(null);
+    const { data } = useAboutQuery();
+    const posts = data?.posts;
+    const rows = useGroupedRows(
+        posts ?? [],
+        p => p.timestamp * 1000,
+        p => p.id
+    );
+    const listRef = useRef<ListRef<GroupedRow<AboutPost>>>(null);
 
     useScrollToTop(listRef);
 
-    const renderItem = ({ item }: { item: GroupedRow<AboutCard> }) => {
+    const renderItem = ({ item }: { item: GroupedRow<AboutPost> }) => {
         if (item.type === 'header') {
             return (
                 <Text variant="bodyM" color="tertiary" style={styles.sectionTitle}>
@@ -30,16 +35,20 @@ export const AboutFeed = () => {
 
         return (
             <View style={styles.card}>
-                <Content blocks={item.item.blocks} />
+                <PostCard post={item.item} />
             </View>
         );
     };
 
+    if (!posts) {
+        return null;
+    }
+
     return (
         <Screen.List
             ref={listRef}
-            data={data}
-            initialScrollIndex={data.length - 1}
+            data={rows}
+            initialScrollIndex={Math.max(rows.length - 1, 0)}
             contentContainerStyle={styles.content}
             keyExtractor={item => item.key}
             getItemType={getGroupedRowType}

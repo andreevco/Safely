@@ -28,6 +28,7 @@
   },
   "exports": {
     ".": "./src/index.ts",
+    "./api/about": "./src/api/about/index.ts",
     "./api/boot": "./src/api/boot/index.ts",
     "./api/btc": "./src/api/btc/index.ts",
     "./api/price": "./src/api/price/index.ts"

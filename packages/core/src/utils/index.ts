@@ -7,3 +7,4 @@ export * from './format';
 export * from './timers';
 export * from './date-groups';
 export * from './semver';
+export * from './array';
