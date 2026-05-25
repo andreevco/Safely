@@ -13,6 +13,18 @@ import { BtcWalletId } from '../derivation/btc/btc-wallet-id';
 import type { BtcWalletReadOnly } from '../derivation/btc/I-btc-wallet';
 
 export class PortfolioWatchOnlyBtc extends PortfolioWatchOnlyBase {
+    public static resolveUserInput(
+        input: string,
+        networkType: PortfolioNetworkType
+    ): SPortfolioWatchOnlyId {
+        const source = BtcXpub.validate(input) ? WatchOnlySource.XPUB : WatchOnlySource.ADDRESS;
+        if (source === WatchOnlySource.XPUB) {
+            return { source, xpub: input, networkType };
+        } else {
+            return { source, address: input, networkType };
+        }
+    }
+
     public static create(id: SPortfolioWatchOnlyId, meta: SPortfolioMeta): PortfolioWatchOnlyBtc {
         const portfolioId = toPortfolioIdWatchOnly(id);
         const network = btcNetworkByPortfolioNetworkType(portfolioId.network);

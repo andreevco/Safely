@@ -12,7 +12,7 @@ export enum MNEMONIC_TYPE {
 
 export { bip39Wordlist as wordlist };
 
-export async function validateMnemonic(type: MNEMONIC_TYPE, secret: IMnemonic) {
+export function validateMnemonic(type: MNEMONIC_TYPE, secret: IMnemonic) {
     if (type === MNEMONIC_TYPE.BIP39) {
         const isValid = validateBip39Mnemonic(secret.join(' '), bip39Wordlist);
 

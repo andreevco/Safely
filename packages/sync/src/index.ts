@@ -29,3 +29,4 @@ export {
     logsFilterMinSeverityLevel
 } from './logger';
 export type { LogEntry, ILoggerTransport, LoggerLifecycleContext, LogsFilter } from './logger';
+export { MKDerivationDomain } from './crypto/service/master-key-service';

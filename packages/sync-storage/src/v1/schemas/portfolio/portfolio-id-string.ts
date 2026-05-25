@@ -10,7 +10,7 @@ export function portfolioBip39IdToString(id: SPortfolioBip39Id): string {
         case 'MASTER_KEY_DERIVED':
             return join('portfolio', 'BIP39', id.source, id.derivationIndex, id.networkType);
         case 'IMPORTED':
-            return join('portfolio', 'BIP39', id.source, id.seedHash, id.networkType);
+            return join('portfolio', 'BIP39', id.source, id.mnemonicHash, id.networkType);
     }
 }
 

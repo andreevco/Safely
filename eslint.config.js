@@ -262,7 +262,6 @@ export default [
             'packages/ux/**/*.ts',
             'packages/ux/**/*.tsx',
             'packages/core/**/*.ts',
-            'packages/core/**/*.tsx',
             'packages/sync-storage/**/*.ts',
             'packages/sync/**/*.ts',
             'packages/slottree/**/*.ts'
