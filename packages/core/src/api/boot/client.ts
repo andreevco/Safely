@@ -9,19 +9,21 @@ export class BootApi extends ApiClient implements IIdentifiable {
     }
 
     public get id() {
-        return `${this.constructor.name}:${this.params.build}:${this.params.version}:${this.params.lang}:${this.params.userCountryInfo?.storeCode}:${this.params.userCountryInfo?.storeCode}`;
+        return `${this.constructor.name}:${this.params.build}:${this.params.version}:${this.params.lang}:${this.params.userCountryInfo?.storeCode}:${this.params.userCountryInfo?.storeCode}:${this.params.devToken ?? ''}`;
     }
 
     private get searchParams() {
-        const device_country_code = this.params.userCountryInfo?.deviceCode;
+        const dev_token = this.params.devToken;
         const store_country_code = this.params.userCountryInfo?.storeCode;
+        const device_country_code = this.params.userCountryInfo?.deviceCode;
 
         return {
             lang: this.params.lang,
             platform: this.params.build,
             version: this.params.version,
             ...(device_country_code !== undefined && { device_country_code }),
-            ...(store_country_code !== undefined && { store_country_code })
+            ...(store_country_code !== undefined && { store_country_code }),
+            ...(dev_token && { dev_token })
         };
     }
 
