@@ -9,7 +9,11 @@ export const build: Build =
         android: 'android' as const
     }) ?? ('ios' as const);
 
+const isIOSAppOnMac = Platform.OS === 'ios' && Device.deviceType === Device.DeviceType.DESKTOP;
+
+const fallbackName = Platform.OS === 'ios' ? 'iPhone' : 'Android device';
+
 export const deviceInfo = {
-    name: Device.modelName ?? (Platform.OS === 'ios' ? 'iPhone' : 'Android device'),
+    name: isIOSAppOnMac ? 'Apple Silicon Mac (iOS App)' : (Device.modelName ?? fallbackName),
     osVersion: Device.osVersion ?? String(Platform.Version)
 };

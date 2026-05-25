@@ -1,3 +1,5 @@
+import { ReconnectFromAnotherAccountError } from '@safely/sync';
+
 import { InvalidMnemonicError } from './invalid-mnemonic.error';
 import { LinkingFailedToOpenError } from './linking-failed-to-open.error';
 import { LinkingUnsafeProtocolError } from './linking-unsafe-protocol.error';
@@ -13,7 +15,8 @@ export const customErrors = {
     BtcSendDustError,
     OutputsAreSpendingMoreThanInputsError,
     LinkingUnsafeProtocolError,
-    LinkingFailedToOpenError
+    LinkingFailedToOpenError,
+    ReconnectFromAnotherAccountError
 } as const;
 export type CustomError = InstanceType<(typeof customErrors)[keyof typeof customErrors]>;
 

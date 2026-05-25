@@ -1,0 +1,1 @@
+export { AboutFeed } from './AboutFeed';

@@ -6,7 +6,7 @@ import { createMachineContext, getMasterKey, waitFor } from './mocks/mock-sync-c
 import { ed25519_keygen } from '../src/crypto/ed25519';
 import {
     DeviceAlreadyExistsError,
-    UnknownDeviceError
+    ReconnectFromAnotherAccountError
 } from '../src/device-manager/device-management-service';
 import { OfflineSyncProvider } from '../src/sync-provider/offline-sync-provider';
 import { getKID } from '../src/utils/kid';
@@ -158,7 +158,7 @@ describe('device management service', () => {
         const addedIkPub = deviceIkPub(2);
 
         await expect(ctx.container.deviceManager.assertDeviceCanReconnect(ikPub)).rejects.toThrow(
-            UnknownDeviceError
+            ReconnectFromAnotherAccountError
         );
 
         await addPub(ctx, addedIkPub);

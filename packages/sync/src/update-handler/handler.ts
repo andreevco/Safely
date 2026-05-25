@@ -24,7 +24,9 @@ export class UpdateHandler<Latest extends StorageVersion, Rest> {
         private readonly logger: Logger
     ) {}
 
-    public async handle(upd: EncryptedStateAndProofChain): Promise<{ hasLocalChanges: boolean }> {
+    public async handle(
+        upd: EncryptedStateAndProofChain
+    ): Promise<{ hasLocalChanges: boolean; revoked?: boolean }> {
         const syncState = await this.syncStateRepository.getState();
         this.logger.info('Handling incoming update', upd.snapshotProof.toString('hex'));
 
@@ -77,6 +79,16 @@ export class UpdateHandler<Latest extends StorageVersion, Rest> {
         await this.deviceManagementService.mergeDeviceStorage(
             Buffer.from(payload.deviceStorage, 'utf8')
         );
+
+        const isRevoked = await this.deviceManagementService.isThisDeviceRevoked();
+        if (isRevoked) {
+            this.logger.warn('This device has been revoked');
+            return {
+                hasLocalChanges: false,
+                revoked: true
+            };
+        }
+
         await this.deviceManagementService.activate();
 
         // TODO

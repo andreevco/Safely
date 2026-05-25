@@ -181,29 +181,26 @@
         },
         "device": {
             "added": "Linked {{date}}",
-            "upToDate": "Up to date",
-            "notUpToDate": "Not up to date",
-            "walletsNotSynced": "{{ count }} wallets not synced",
-            "unlink": "Unlink"
+            "unlink": "Unlink",
+            "current": "Current"
         },
         "unlinkDevice": {
             "title": "Unlink {{deviceName}}",
-            "subtitle": "This will unlink your device from this account. The account data will remain on the device but will not sync with other devices.",
+            "subtitle": "This device will be removed from your linked devices and will no longer sync with this account.",
             "confirm": "Unlink {{deviceName}}"
         },
         "groups": {
             "account": {
-                "title": "Account",
+                "title": "Data safety",
                 "protect": {
-                    "title": "Protect your account",
-                    "badge": "Set up required",
-                    "subtitle": "Link another device to protect your account. Without it, your access can't be restored if this phone is lost."
+                    "title": "Linked devices",
+                    "badge": "Required",
+                    "subtitle": "Link another device as a redundant storage for your wallet keys and other data."
                 },
                 "protection": {
-                    "title": "Account Protection",
+                    "title": "Linked devices",
                     "badge": "Enabled",
-                    "subtitle_one": "Protected with {{count}} device",
-                    "subtitle_other": "Protected with {{count}} devices"
+                    "subtitle": "Wallet keys are stored on your linked devices."
                 },
                 "unlinked": {
                     "title": "Device link",
@@ -328,6 +325,7 @@
                 "beforeIcon": "Open Safely on another device where this account is active. Go to ",
                 "afterIcon": " Settings, tap “Link device” and scan this QR code."
             },
+            "banner": "This device will have full access to your account. It can be used if your other device is lost.",
             "timeout": "Connection timed out. Please try again.",
             "successToast": "Device re-linked"
         }
@@ -460,6 +458,7 @@
     "settings": {
         "title": "Settings",
         "deviceConnected": "Successfully linked",
+        "qrCodeFromAnotherAccount": "QR code is from another account.\nUse the same account on both devices.",
         "addAccount": "Add account",
         "linkDevice": "Link device",
         "walletsCount_one": "{{count}} wallet",
@@ -496,18 +495,14 @@
         "signOutAccount": {
             "title": "Sign out account “{{name}}”",
             "sheet": {
-                "title": "Sign out of {{name}}?",
+                "title": "Sign out of “{{name}}”?",
                 "noDevices": {
-                    "subtitle": "This is the only device with a copy of this account. If you sign out, you will permanently lose access.",
+                    "subtitle": "This is the only linked device for this account. You may lose access to this account after signing out.",
                     "protectLink": "Protect account now",
-                    "checkbox": "I understand that I will permanently lose this account."
+                    "checkbox": "I understand that I may lose access to this account."
                 },
                 "fullCopy": {
-                    "subtitle": "After signing out, your account will remain available on your other linked devices. You can restore access from them at any time."
-                },
-                "partialCopy": {
-                    "subtitle": "Other devices haven't finished syncing this account. They need to be online to update.",
-                    "checkbox": "I understand that some account data may be lost."
+                    "subtitle": "Other linked devices are connected to this account."
                 },
                 "signOutButton": "Sign out anyway",
                 "cancelButton": "Cancel"
@@ -563,9 +558,9 @@
         "pending": "Pending",
         "available": "Available",
         "total": "Total",
-        "estimatedTime": "\u2248 {{minutes}} minutes",
+        "estimatedTime": "≈ {{minutes}} minutes",
         "ok": "OK",
-        "receiving": "Receiving {{amount}}\u2026"
+        "receiving": "Receiving {{amount}}…"
     },
     "assetCell": {
         "lastTransaction": "Last transaction {{timeAgo}}",
@@ -577,12 +572,18 @@
         "about": "About"
     },
     "safelyBeta": {
-        "title": "Safely is in beta",
-        "subtitle": "Some features are still evolving. Keep less than $100 until the public release. Save your recovery phrases in Settings → Security.",
-        "feedback": {
-            "description": "Found a bug or have an idea?\nYour feedback helps us improve Safely.",
-            "action": "Send feedback"
+        "title": "Safely",
+        "subtitle": "Beta · {{version}}",
+        "cards": {
+            "betaNotice": "Safely is in beta. Keep under 0.002 BTC and back up your recovery phrase.",
+            "follow": "Follow updates in <tg>Telegram</tg> or <wa>WhatsApp</wa>",
+            "feedback": "Found a bug or have an idea? Your feedback helps us improve Safely. <action>Send feedback</action>"
         }
+    },
+    "dateGroups": {
+        "pending": "Pending",
+        "today": "Today",
+        "yesterday": "Yesterday"
     },
     "history": {
         "title": "History",
@@ -595,11 +596,6 @@
             "subtitle": "Your transactions will appear here.",
             "receive": "Receive BTC",
             "send": "Send"
-        },
-        "dateHeaders": {
-            "pending": "Pending",
-            "today": "Today",
-            "yesterday": "Yesterday"
         },
         "transactionInfo": {
             "sending": "Sending",

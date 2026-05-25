@@ -1,12 +1,15 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { useAppState } from '@safely/ux';
+
 import { usePasscodeVerification, useLockScreenControl } from '@mobile/entities/security';
 import { authenticateBiometry, useBiometryQuery } from '@mobile/features/biometry';
 import { useLogOutAllConfirmation } from '@mobile/features/settings/useLogOutAllConfirmation';
 import { LockoutContent, PasscodeInput, PasscodeLayout, Screen, Text } from '@mobile/shared/ui';
 
 export const LockScreen = () => {
+    const { current } = useAppState();
     const { t } = useTranslation();
     const { unlock } = useLockScreenControl();
     const handleLogOut = useLogOutAllConfirmation();
@@ -34,7 +37,7 @@ export const LockScreen = () => {
     } = usePasscodeVerification({ onSuccess: handleUnlock });
 
     useEffect(() => {
-        if (hasPromptedRef.current || isLocked || !biometry?.isEnabled) {
+        if (hasPromptedRef.current || isLocked || !biometry?.isEnabled || current !== 'active') {
             return;
         }
 
@@ -46,7 +49,7 @@ export const LockScreen = () => {
                 handleUnlock();
             }
         })();
-    }, [isLocked, biometry?.isEnabled, handleUnlock]);
+    }, [isLocked, biometry?.isEnabled, handleUnlock, current]);
 
     if (isLocked) {
         return <LockoutContent remainingSeconds={remainingSeconds} onSignOut={handleLogOut} />;

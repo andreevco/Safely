@@ -10,6 +10,7 @@ export type { ISyncProvider } from './sync-provider/I-sync-provider';
 export { SyncStatus } from './sync-provider/sync-status';
 export type { ISyncStatusManager } from './sync-provider/sync-status';
 export type { Device } from './device-manager/device-repository';
+export { ReconnectFromAnotherAccountError } from './device-manager/device-management-service';
 
 export { SyncError, OnboardingAbortedError } from './sync-error';
 

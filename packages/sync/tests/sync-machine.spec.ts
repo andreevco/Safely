@@ -25,7 +25,9 @@ describe('sync machine', () => {
         try {
             const initialSnapshots = server.snapshotCount;
 
-            await ctx.container.yManager.set(DATA_KEY, 'local-1');
+            await ctx.container.yManager.transaction(draft => {
+                draft.set(DATA_KEY, 'local-1');
+            });
             ctx.machine.send({ type: 'LOCAL_UPDATE' });
 
             await waitFor(() => server.snapshotCount === initialSnapshots + 1);

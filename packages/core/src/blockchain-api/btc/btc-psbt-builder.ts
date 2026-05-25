@@ -64,7 +64,11 @@ export class BtcPsbtBuilder {
 
         req.inputs.forEach((_, i) => psbt.finalizeInput(i, this.p2wpkhEstimationFinalizer));
 
-        return BigInt(psbt.extractTransaction().virtualSize());
+        // Pass `true` to disable bitcoinjs' "absurd fee" guard: callers build dummy
+        // outputs (often 1 sat) purely to measure vSize, so implied fee = inputs - outputs
+        // can be arbitrarily large and would otherwise trip the default 5000 sat/vB cap.
+        const disableFeeCheck = true;
+        return BigInt(psbt.extractTransaction(disableFeeCheck).virtualSize());
     }
 
     private assertSpendableUtxo(

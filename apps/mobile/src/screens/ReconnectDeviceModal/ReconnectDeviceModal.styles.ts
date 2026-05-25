@@ -30,5 +30,21 @@ export const styles = StyleSheet.create(theme => ({
         width: 23,
         height: 20,
         transform: [{ translateY: 7 }]
+    },
+    banner: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: theme.colors.background.secondary,
+        borderRadius: theme.radius.md,
+        paddingVertical: theme.spacing[12],
+        paddingHorizontal: theme.spacing[16],
+        gap: theme.spacing[12],
+        margin: theme.spacing[24]
+    },
+    bannerText: {
+        flex: 1
+    },
+    bannerIcon: {
+        marginHorizontal: theme.spacing[8]
     }
 }));

@@ -29,6 +29,8 @@ export interface IAppContext {
 
     userCountryInfo?: UserCountryInfo;
 
+    devToken?: string;
+
     storage: {
         ux: {
             regular: ITreeStorage;
@@ -56,6 +58,8 @@ export interface IAppContext {
     };
 
     clearAllData: () => Promise<void>;
+
+    reloadApp: () => void;
 
     loggerRegistry: ILoggerRegistry;
 

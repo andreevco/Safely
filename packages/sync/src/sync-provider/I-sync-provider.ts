@@ -14,7 +14,6 @@ export interface ISyncProvider<S extends ZodObject> {
 
     get<K extends SchemaKey<S>>(key: K): z.output<ShapeOf<S>[K]>;
     getAll(): z.output<S>;
-    set<K extends SchemaKey<S>>(key: K, value: z.input<ShapeOf<S>[K]>): Promise<void>;
     transaction(f: (draft: Draft<z.output<S>>) => void): Promise<void>;
     onChange<K extends SchemaKey<S>>(
         key: K,

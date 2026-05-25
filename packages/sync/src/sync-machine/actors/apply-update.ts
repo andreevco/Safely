@@ -2,8 +2,9 @@ import { fromPromise } from 'xstate';
 
 import type { StorageVersion } from '@safely/slottree';
 
+import { SyncStatus } from '../../sync-provider/sync-status';
 import type { SyncMachineConfig } from '../config';
-import { classifyError } from '../error-handler';
+import { classifyError, SyncMachineError } from '../error-handler';
 
 export const applyUpdate = fromPromise(
     async ({
@@ -19,8 +20,10 @@ export const applyUpdate = fromPromise(
             'Applying remote update, proof:',
             upd.snapshotProof.toString('hex').slice(0, 16) + '...'
         );
+
+        let result;
         try {
-            const result = await input.config.syncOperations.applyRemoteUpdate(
+            result = await input.config.syncOperations.applyRemoteUpdate(
                 {
                     snapshotProofChain: [],
                     ...upd
@@ -28,10 +31,16 @@ export const applyUpdate = fromPromise(
                 signal
             );
             input.config.logger.info('Remote update applied successfully');
-            return result;
         } catch (e) {
             input.config.logger.error('Error applying update', e);
             throw await classifyError(e);
         }
+        if (result.revoked) {
+            throw new SyncMachineError({
+                type: 'fatal',
+                status: SyncStatus.DEVICE_DELETED
+            });
+        }
+        return result;
     }
 );

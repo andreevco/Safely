@@ -12,7 +12,6 @@ import { DestructiveConfirmSheet } from '@mobile/screens/DestructiveConfirmSheet
 import { LockScreen } from '@mobile/screens/LockScreen';
 import { NewContactModal } from '@mobile/screens/NewContactModal';
 import { ConfirmDeleteContactSheet } from '@mobile/screens/NewContactModal/screens/ConfirmDeleteContactSheet';
-import { OnboardingNotificationsScreen } from '@mobile/screens/OnboardingNotificationsScreen';
 import { OnboardingPasscodeScreen } from '@mobile/screens/OnboardingPasscodeScreen';
 import { PasscodeVerificationScreen } from '@mobile/screens/PasscodeVerificationScreen';
 import { PendingFundsSheet } from '@mobile/screens/PendingFundsSheet';
@@ -48,7 +47,6 @@ export const RootStack = createNativeStackNavigator({
                 WelcomeScreen: WelcomeScreen,
                 OnboardingPasscodeScreen: OnboardingPasscodeScreen,
                 BiometryScreen: BiometryScreen,
-                OnboardingNotificationsScreen: OnboardingNotificationsScreen,
                 AccountCreatedScreen: AccountCreatedScreen,
                 SignInScreen: SignInScreen,
                 SignInSuccessScreen: SignInSuccessScreen

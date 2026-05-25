@@ -69,12 +69,12 @@ describe('Storage merge findings', () => {
         b.transaction(draft => {
             draft.at('deepMixed').set(
                 'c',
-                draft.at('deepMixed').at('c').get() ?? {
+                draft.at('deepMixed').entry('c').get() ?? {
                     children: {}
                 }
             );
 
-            draft.at('deepMixed').at('c').at('children').set('x', {
+            draft.at('deepMixed').entry('c').unwrap().at('children').set('x', {
                 value: null
             });
         });

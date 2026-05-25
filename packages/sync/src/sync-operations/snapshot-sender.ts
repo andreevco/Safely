@@ -19,26 +19,34 @@ export class SnapshotSender<Latest extends StorageVersion, Rest> {
         private readonly ikService: IkService
     ) {}
 
-    public async sendCurrentSnapshot(): Promise<void> {
+    public async sendCurrentSnapshot(signal?: AbortSignal): Promise<void> {
         const encrypted = await this.updateEncryptor.encryptAndSign(
             encodeUpdatePayload({
                 userStorage: this.yManager.encodeAsSnapshot(),
                 deviceStorage: this.deviceYManager.encodeAsSnapshot()
             })
         );
-        await this.saveEncryptedSnapshot(encrypted);
+        await this.saveEncryptedSnapshot(encrypted, signal);
     }
 
-    private async saveEncryptedSnapshot(encrypted: EncryptedState): Promise<void> {
-        await this.snapshotsApi.saveSnapshot({
-            snapshot: {
-                kid: this.ikService.getKID().toString('hex'),
-                ciphertext: encrypted.ciphertext.toString('hex'),
-                nonce: encrypted.nonce.toString('hex'),
-                snapshotProof: encrypted.snapshotProof.toString('hex'),
-                signature: encrypted.signature.toString('hex')
+    private async saveEncryptedSnapshot(
+        encrypted: EncryptedState,
+        signal?: AbortSignal
+    ): Promise<void> {
+        await this.snapshotsApi.saveSnapshot(
+            {
+                snapshot: {
+                    kid: this.ikService.getKID().toString('hex'),
+                    ciphertext: encrypted.ciphertext.toString('hex'),
+                    nonce: encrypted.nonce.toString('hex'),
+                    snapshotProof: encrypted.snapshotProof.toString('hex'),
+                    signature: encrypted.signature.toString('hex')
+                }
+            },
+            {
+                signal
             }
-        });
+        );
 
         await this.syncStateRepository.saveState({
             snapshotProof: encrypted.snapshotProof

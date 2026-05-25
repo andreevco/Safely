@@ -2,6 +2,7 @@ type SSEConfig<T> = {
     url: string;
     headers: Record<string, string>;
     parsers: Record<string, (data: unknown) => T | null>;
+    errorParsers?: Record<string, (data: unknown) => unknown>;
     onUpdate: (update: T, eventId: string) => void;
     onOpen?: () => void;
     onError?: (err: Event) => void;
@@ -93,8 +94,7 @@ export class SSEStream<T> implements AsyncIterable<SSEStreamItem<T>> {
         this.eventSource.onopen = () => this.config.onOpen?.();
 
         this.eventSource.onerror = err => {
-            this.config.onError?.(err);
-            this.stop(err);
+            this.handleTransportError(err);
         };
 
         for (const [eventType, parser] of Object.entries(this.config.parsers)) {
@@ -107,6 +107,27 @@ export class SSEStream<T> implements AsyncIterable<SSEStreamItem<T>> {
                 }
             });
         }
+
+        for (const [eventType, parser] of Object.entries(this.config.errorParsers ?? {})) {
+            this.eventSource.addEventListener(eventType, (event: Event) => {
+                if (!isMessageEventWithData(event)) {
+                    this.handleTransportError(event);
+                    return;
+                }
+
+                try {
+                    this.stop(parser(JSON.parse(event.data)));
+                } catch (e) {
+                    this.config.onLog?.('error', `Error parsing SSE event '${eventType}'`, e);
+                    this.stop(e);
+                }
+            });
+        }
+    }
+
+    private handleTransportError(err: Event) {
+        this.config.onError?.(err);
+        this.stop(err);
     }
 
     private push(value: SSEStreamItem<T>) {
@@ -133,3 +154,7 @@ export type SSEStreamItem<T> = {
     value: T;
     eventId: string;
 };
+
+function isMessageEventWithData(event: Event): event is MessageEvent<string> {
+    return 'data' in event && typeof (event as MessageEvent<string>).data === 'string';
+}

@@ -9,7 +9,7 @@ export function useAppState() {
         current: AppStateStatus;
         previous: AppStateStatus | undefined;
     }>({
-        current: 'active',
+        current: 'unknown',
         previous: undefined
     });
 
