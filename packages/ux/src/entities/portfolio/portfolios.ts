@@ -92,8 +92,8 @@ export function useGeneratePortfolio() {
                 params.secureEncryptedStorage
             );
 
-            const nextWalletIndex =
-                (account.syncProvider.get('latestDerivedBip39PortfolioIndex') ?? 0) + 1;
+            const latestWalletIndex = account.syncProvider.get('latestDerivedBip39PortfolioIndex');
+            const nextWalletIndex = latestWalletIndex === null ? 0 : latestWalletIndex + 1;
             using mnemonicAccessor =
                 await portfolioMnemonicFactory.deriveBip39MnemonicResource(nextWalletIndex);
 
@@ -119,7 +119,7 @@ export function useGeneratePortfolio() {
                     .get();
 
                 if (
-                    !latestDerivedBip39PortfolioIndex ||
+                    latestDerivedBip39PortfolioIndex === null ||
                     nextWalletIndex > latestDerivedBip39PortfolioIndex
                 ) {
                     draft.at('latestDerivedBip39PortfolioIndex').set(nextWalletIndex);
