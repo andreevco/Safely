@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
 import type { StorageImpl } from '../src';
-import { createStorage, type SlotTree } from '../src';
+import { createStorage, jsonEncoder, type SlotTree } from '../src';
 import type { schemaV1, StorageV1 } from './version-fixtures';
 import { v1 } from './version-fixtures';
 import type { ContainerSlot } from '../src/core/slots';
@@ -135,7 +135,7 @@ describe('storage updates', () => {
             calls += 1;
         });
 
-        const committed = await storage.unsafeAsyncTransaction(
+        const committed = await storage.withEncoder(jsonEncoder).unsafeAsyncTransaction(
             draft => {
                 draft.set('key1', 10);
             },
@@ -164,7 +164,7 @@ describe('storage updates', () => {
             calls += 1;
         });
 
-        const committed = await storage.unsafeAsyncTransaction(
+        const committed = await storage.withEncoder(jsonEncoder).unsafeAsyncTransaction(
             draft => {
                 draft.set('key1', 10);
             },
@@ -186,7 +186,7 @@ describe('storage updates', () => {
         });
 
         await expect(
-            storage.unsafeAsyncTransaction(
+            storage.withEncoder(jsonEncoder).unsafeAsyncTransaction(
                 draft => {
                     draft.set('key1', 10);
                 },
@@ -217,13 +217,15 @@ describe('storage updates', () => {
             calls += 1;
         });
 
-        const committed = await storage.unsafeAsyncMerge(remote.export(), async () => {
-            expect(storage.read()).toEqual({
-                key1: 0,
-                key2: 'initial'
+        const committed = await storage
+            .withEncoder(jsonEncoder)
+            .unsafeAsyncMerge(remote.withEncoder(jsonEncoder).export(), async () => {
+                expect(storage.read()).toEqual({
+                    key1: 0,
+                    key2: 'initial'
+                });
+                return true;
             });
-            return true;
-        });
 
         expect(committed).toBe(true);
         expect(storage.read()).toEqual({
@@ -248,9 +250,11 @@ describe('storage updates', () => {
         });
 
         await expect(
-            storage.unsafeAsyncMerge(remote.export(), async () => {
-                throw new Error('persist failed');
-            })
+            storage
+                .withEncoder(jsonEncoder)
+                .unsafeAsyncMerge(remote.withEncoder(jsonEncoder).export(), async () => {
+                    throw new Error('persist failed');
+                })
         ).rejects.toThrow('persist failed');
 
         expect(storage.read()).toEqual({
@@ -285,7 +289,7 @@ describe('storage updates', () => {
             versions: v1
         }) as StorageImpl<StorageV1>;
 
-        const exported = isolatedStorage.exportSlot() as ContainerSlot;
+        const exported = isolatedStorage.exportSlot();
         const versionSlot = exported.v['1'] as ContainerSlot;
         const key1Slot = versionSlot.v.key1;
 
@@ -312,14 +316,16 @@ describe('storage updates', () => {
             draft.set('key2', 'updated');
         });
 
-        const reordered = reverseSlotKeys(isolatedStorage.exportSlot() as ContainerSlot);
+        const reordered = reverseSlotKeys(isolatedStorage.exportSlot());
         const storageFromReorderedRoot = createStorage({
             authorId: 'device-1',
             versions: v1,
             root: reordered
         });
 
-        expect(storageFromReorderedRoot.export()).toBe(isolatedStorage.export());
+        expect(storageFromReorderedRoot.withEncoder(jsonEncoder).export()).toBe(
+            isolatedStorage.withEncoder(jsonEncoder).export()
+        );
     });
 
     it('prevents runtime writes through read proxies', () => {
@@ -484,7 +490,7 @@ describe('storage updates', () => {
             draft.set('key2', 'updated');
         });
 
-        const exported = isolatedStorage.exportSlot() as ContainerSlot;
+        const exported = isolatedStorage.exportSlot();
         const versionSlot = exported.v['1'] as ContainerSlot;
 
         expect(versionSlot.v.key1?.t).toBe(versionSlot.v.key2?.t);

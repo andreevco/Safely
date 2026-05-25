@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
 import type { StorageImpl } from '../src';
-import { createStorage } from '../src';
+import { createStorage, jsonEncoder } from '../src';
 import {
     isContainerSlot,
     isOrderedArraySlot,
@@ -314,8 +314,8 @@ describe('ordered array slots', () => {
             draft.at('portfolios').push({ __setId: 'p2', name: 'Two' });
         });
 
-        a.merge(b.export());
-        b.merge(a.export());
+        a.withEncoder(jsonEncoder).merge(b.withEncoder(jsonEncoder).export());
+        b.withEncoder(jsonEncoder).merge(a.withEncoder(jsonEncoder).export());
 
         expect(a.get().portfolios).toEqual([
             { __setId: 'p1', name: 'One' },
@@ -334,12 +334,12 @@ describe('ordered array slots', () => {
         const a = createStorage({
             authorId: 'device-a',
             versions,
-            root: seed.exportSlot() as ContainerSlot
+            root: seed.exportSlot()
         }) as StorageImpl<State>;
         const b = createStorage({
             authorId: 'device-b',
             versions,
-            root: seed.exportSlot() as ContainerSlot
+            root: seed.exportSlot()
         }) as StorageImpl<State>;
 
         a.transaction(draft => {
@@ -351,8 +351,8 @@ describe('ordered array slots', () => {
             });
         });
 
-        a.merge(b.export());
-        b.merge(a.export());
+        a.withEncoder(jsonEncoder).merge(b.withEncoder(jsonEncoder).export());
+        b.withEncoder(jsonEncoder).merge(a.withEncoder(jsonEncoder).export());
 
         expect(a.get().portfolios).toEqual([
             { __setId: 'p2', name: 'Second' },
@@ -375,7 +375,7 @@ describe('ordered array slots', () => {
         const imported = createStorage({
             authorId: 'device-2',
             versions,
-            root: JSON.parse(storage.export()) as ContainerSlot
+            root: JSON.parse(storage.withEncoder(jsonEncoder).export()) as ContainerSlot
         });
 
         expect(imported.get()).toEqual(storage.get());

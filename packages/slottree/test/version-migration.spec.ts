@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
 import type { StorageImpl } from '../src';
-import { createStorage, DEVICES_KEY } from '../src';
+import { createStorage, DEVICES_KEY, jsonEncoder } from '../src';
 import type { StorageV1 } from './version-fixtures';
 import { identityProjection, type StorageV3, v1, v3 } from './version-fixtures';
 import { createOriginContainer, SlotKind, type ContainerSlot } from '../src/core/slots';
@@ -29,7 +29,7 @@ describe('version migration', () => {
             key4: 'v3'
         });
 
-        const exported = storage.exportSlot() as ContainerSlot;
+        const exported = storage.exportSlot();
         const v3Slot = exported.v['3'] as ContainerSlot;
 
         expect(exported.v['1']).toBeUndefined();
@@ -76,7 +76,7 @@ describe('version migration', () => {
             draft.set('key4', 'latest-only');
         });
 
-        const exported = storage.exportSlot() as ReturnType<typeof createOriginContainer>;
+        const exported = storage.exportSlot();
         expect(exported.v['2']).toMatchObject({
             v: {
                 key1: { v: 10 },
@@ -128,7 +128,7 @@ describe('version migration', () => {
             draft.set('label', 'updated');
         });
 
-        const exported = storage.exportSlot() as ReturnType<typeof createOriginContainer>;
+        const exported = storage.exportSlot();
         expect(exported.v['2']).toBeUndefined();
         expect(exported.v['1']).toMatchObject({
             v: {
@@ -153,10 +153,10 @@ describe('version migration', () => {
             draft.set('key2', 'from-v1');
         });
 
-        newDevice.merge(oldDevice.export());
+        newDevice.withEncoder(jsonEncoder).merge(oldDevice.withEncoder(jsonEncoder).export());
 
-        const oldExport = oldDevice.exportSlot() as ContainerSlot;
-        const newExport = newDevice.exportSlot() as ContainerSlot;
+        const oldExport = oldDevice.exportSlot();
+        const newExport = newDevice.exportSlot();
         const oldV1 = oldExport.v['1'] as ContainerSlot;
         const newV3 = newExport.v['3'] as ContainerSlot;
 
@@ -252,10 +252,10 @@ describe('version migration', () => {
             draft.delete('optional');
         });
 
-        newDevice.merge(oldDevice.export());
+        newDevice.withEncoder(jsonEncoder).merge(oldDevice.withEncoder(jsonEncoder).export());
 
-        const oldExport = oldDevice.exportSlot() as ContainerSlot;
-        const newExport = newDevice.exportSlot() as ContainerSlot;
+        const oldExport = oldDevice.exportSlot();
+        const newExport = newDevice.exportSlot();
         const oldTombstone = (oldExport.v['1'] as ContainerSlot).v.optional;
         const projectedTombstone = (newExport.v['2'] as ContainerSlot).v.renamed;
 

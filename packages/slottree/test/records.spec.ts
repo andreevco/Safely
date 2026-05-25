@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
 import type { StorageImpl } from '../src';
-import { createStorage } from '../src';
+import { createStorage, jsonEncoder } from '../src';
 import { identityProjection } from './version-fixtures';
-import { isContainerSlot, type ContainerSlot } from '../src/core/slots';
+import { isContainerSlot } from '../src/core/slots';
 import { stripSlot } from '../src/core/slots/slot-json';
 import { defineVersionHList, hCons, hNil } from '../src/core/versioning/version';
 
@@ -81,7 +81,7 @@ describe('records', () => {
             draft.at('objects').set('prototype', { value: 3 });
         });
 
-        const exported = storage.exportSlot() as ContainerSlot;
+        const exported = storage.exportSlot();
         const versionSlot = exported.v['1'];
         if (!isContainerSlot(versionSlot)) {
             throw new Error('Expected version slot to be a container');
@@ -171,9 +171,9 @@ describe('records', () => {
       "a": ""
     }`;
 
-        storage.merge(incoming);
+        storage.withEncoder(jsonEncoder).merge(incoming);
 
-        const exported = storage.exportSlot() as ContainerSlot;
+        const exported = storage.exportSlot();
         const versionSlot = exported.v['1'];
         if (!isContainerSlot(versionSlot)) {
             throw new Error('Expected version slot to be a container');

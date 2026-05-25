@@ -189,7 +189,7 @@ describe('Draft', () => {
             }
         });
 
-        const exported = storage.exportSlot() as ContainerSlot;
+        const exported = storage.exportSlot();
         const versionSlot = exported.v['1'] as ContainerSlot;
         const settingsSlot = versionSlot.v.settings as ContainerSlot;
 
