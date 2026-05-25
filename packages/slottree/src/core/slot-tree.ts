@@ -1,5 +1,6 @@
 import type { z } from 'zod';
 
+import { cborEncoder } from './encoder/cbor/cbor-encoder';
 import type { SnapshotEncoder } from './encoder/encoder';
 import type { DeepReadonly } from './json';
 import type { MergeStats } from './merge-protocol';
@@ -41,11 +42,15 @@ export interface SlotTree<T> {
      */
     transaction(fn: (draft: Draft<T>) => void): void;
 
+    mergeBinary(incoming: Buffer): void;
+
     /**
      * Observe successful storage changes.
      * Returns a cleanup function that removes the observer.
      */
     onChange(observer: StorageObserver): () => void;
+
+    exportBinary(): Buffer;
 
     withEncoder(encoder: SnapshotEncoder): Merger<T>;
 
@@ -278,6 +283,14 @@ export class StorageImpl<T> implements SlotTree<T> {
 
     private deleteUnusedVersions(): void {
         new VersionController(this.root, this.versions).deleteVersionsUnusedByDevices();
+    }
+
+    public exportBinary(): Buffer {
+        return cborEncoder.encodeBinary(this.root);
+    }
+
+    public mergeBinary(incoming: Buffer): void {
+        this.mergeSlot(cborEncoder.decodeBinary(incoming));
     }
 
     public withEncoder(encoder: SnapshotEncoder): Merger<T> {
