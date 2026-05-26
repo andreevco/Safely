@@ -31,9 +31,13 @@ export function useSignOutAccountConfirmation() {
 
         navigation.navigate('SignOutAccountSheet', {
             accountName,
-            withLoader: !isLastAccount && isSyncAccount,
+            withLoader: isSyncAccount,
             onConfirm: async () => {
                 if (isLastAccount) {
+                    if (isSyncAccount) {
+                        await deleteAccount();
+                    }
+
                     return eraseAllData();
                 } else {
                     await deleteAccount();
