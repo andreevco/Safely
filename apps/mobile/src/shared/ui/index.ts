@@ -24,6 +24,7 @@ export * from './WordCell';
 export * from './ColorPicker';
 export * from './EmojiPicker';
 export * from './PasscodeInput';
+export * from './PasscodeKeypad';
 export * from './PasscodeLayout';
 export * from './PasscodeSetup';
 export { LockoutContent } from './LockoutContent';
