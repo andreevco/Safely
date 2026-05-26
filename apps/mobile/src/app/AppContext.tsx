@@ -4,6 +4,7 @@ import { FC, PropsWithChildren, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AppState } from 'react-native';
 
+import { LoggableStorage } from '@safely/core';
 import {
     AppContext,
     AppStateStatus,
@@ -78,7 +79,11 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
                     encrypted: ENCRYPTED_MOBILE_STORAGE_ONLY_APP_LEVEL_USE.storage.child('sync'),
                     getSecureEncrypted() {
                         return new UnlockableSecuredEncryptedStorage(
-                            SECURE_ENCRYPTED_MOBILE_STORAGE_ONLY_APP_LEVEL_USE.enumerable,
+                            new LoggableStorage(
+                                SECURE_ENCRYPTED_MOBILE_STORAGE_ONLY_APP_LEVEL_USE.enumerable,
+                                loggerRegistry.systemLogger,
+                                'SecureEncryptedStorage'
+                            ),
                             security,
                             ['sync']
                         );
