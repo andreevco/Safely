@@ -15,7 +15,7 @@ import {
 
 import { navigationRef } from '@mobile/app/navigation/navigationRef';
 import { useMobileSecurityCheck } from '@mobile/entities/security';
-import { build, deviceInfo } from '@mobile/shared/app-meta';
+import { build, deviceInfo, environment } from '@mobile/shared/app-meta';
 import { loggerRegistry } from '@mobile/shared/logger';
 import { useLoaderServiceContext } from '@mobile/shared/providers/loader';
 import { useToastServiceContext } from '@mobile/shared/providers/toast';
@@ -65,6 +65,7 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
             },
             version: packageJson.version,
             build,
+            environment,
             devToken: mobileLayerSynchronousDevToken.storage.get() ?? undefined,
             deviceInfo,
             numberFormatLocale: new MobileNumberFormatLocale(getLocales()[0]),

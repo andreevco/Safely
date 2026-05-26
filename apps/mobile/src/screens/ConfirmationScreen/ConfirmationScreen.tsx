@@ -8,7 +8,9 @@ import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import {
     SendFormResult,
     useActiveBtcWallet,
+    useActiveFiat,
     useActivePortfolio,
+    useAnalytics,
     useEstimateAssetTransfer,
     useLogger,
     useNumberFormatter,
@@ -35,6 +37,8 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
     const { confirmationResult, onSuccess } = route.params;
 
     const { t } = useTranslation();
+    const analytics = useAnalytics();
+    const fiat = useActiveFiat();
     const navigation = useNavigation();
     const btcWallet = useActiveBtcWallet();
     const activePortfolio = useActivePortfolio();
@@ -52,18 +56,32 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
     const formatter = useNumberFormatter();
 
     const onSend = useCallback(async () => {
+        const fiatAmount = confirmationResult.amount.fiatAssetAmount.amount.toNumber();
+        const cryptoCurrency = confirmationResult.amount.cryptoAssetAmount.asset.symbol;
+
         try {
             setConfirmationState({ type: 'sending' });
             await send();
             onSuccess?.();
             notificationAsync(NotificationFeedbackType.Success);
             setConfirmationState({ type: 'success' });
+            void analytics.trackSendFinish({
+                cryptoCurrency,
+                fiatAmount,
+                fiatSymbol: fiat.id.symbol
+            });
         } catch (error) {
             logger.error('[ConfirmationScreen] send failed', error);
             notificationAsync(NotificationFeedbackType.Error);
             setConfirmationState({ type: 'error', error });
+            void analytics.trackSendFinish({
+                cryptoCurrency,
+                fiatAmount,
+                fiatSymbol: fiat.id.symbol,
+                error
+            });
         }
-    }, [send, onSuccess, logger]);
+    }, [send, onSuccess, logger, confirmationResult, analytics, fiat.id.symbol]);
 
     const displayState = useMemo(() => {
         if (txTemplateError) {

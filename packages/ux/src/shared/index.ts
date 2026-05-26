@@ -13,3 +13,4 @@ export * from './logger';
 export * from './react';
 export * from './search';
 export * from './linking';
+export * from './analytics';
