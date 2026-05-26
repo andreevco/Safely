@@ -272,22 +272,16 @@ export function useActivePortfolioEntitiesIdsQuery<TData = SActivePortfolioSchem
 
 export function useActivePortfolioEntitiesQuery() {
     const portfolios = usePortfolios();
-    const client = useQueryClient();
-    const accountQueryKey = useActiveAccountQueryKey();
 
     return useActivePortfolioEntitiesIdsQuery<ActivePortfolioEntities | null>(
         useCallback(
             (sActivePortfolioSchema: SActivePortfolioSchema) => {
                 if (portfolios.length === 0 || !sActivePortfolioSchema) return null;
 
-                let portfolio = portfolios.find(p =>
-                    p.id.isEq(Id.fromString(sActivePortfolioSchema.portfolioId))
-                );
-
-                if (!portfolio) {
-                    portfolio = portfolios[0];
-                    client.invalidateQueries({ queryKey: accountQueryKey.activePortfolio.toKey() });
-                }
+                const portfolio =
+                    portfolios.find(p =>
+                        p.id.isEq(Id.fromString(sActivePortfolioSchema.portfolioId))
+                    ) ?? portfolios[0];
 
                 if (portfolio.type === PortfolioType.WATCH_ONLY) {
                     return { type: 'watch-only' as const, portfolio };
