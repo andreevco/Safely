@@ -13,6 +13,17 @@ import {
 } from '../account/useAccountSyncStorageUpdate';
 import { useMutation } from '../query-core';
 
+export function useSyncStatus(account: SyncAccount): SyncStatus {
+    return useSyncExternalStore(
+        useCallback(cb => account.syncProvider.syncStatusManager.subscribe(cb), [account]),
+        () => account.syncProvider.syncStatusManager.getStatus()
+    );
+}
+
+export function useActiveAccountSyncStatus(): SyncStatus {
+    return useSyncStatus(useActiveAccount());
+}
+
 export function useSyncedDevicesMeta(): Record<string, SDeviceMeta> | null {
     return useActiveAccountStoreSlot('devicesMeta') ?? null;
 }
@@ -34,10 +45,7 @@ export function useAccountLinkState(): AccountLinkState {
     const selfIkPub = useCurrentDeviceIkPub();
     const devicesMeta = useSyncedDevicesMeta();
 
-    const syncStatus = useSyncExternalStore(
-        useCallback(cb => account.syncProvider.syncStatusManager.subscribe(cb), [account]),
-        () => account.syncProvider.syncStatusManager.getStatus()
-    );
+    const syncStatus = useSyncStatus(account);
 
     if (syncStatus === SyncStatus.DEVICE_DELETED) {
         return AccountLinkState.UNLINKED;

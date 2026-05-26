@@ -1,5 +1,7 @@
-import { useNetworkState } from 'expo-network';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+
+import { SyncStatus } from '@safely/sync';
+import { useActiveAccountSyncStatus } from '@safely/ux';
 
 export enum SubtitleStatus {
     LAST_UPDATED = 'lastUpdated',
@@ -45,13 +47,13 @@ interface UseSubtitleStatusParams {
 }
 
 export function useSubtitleStatus({ isFetching, lastUpdatedAt }: UseSubtitleStatusParams) {
-    const networkState = useNetworkState();
+    const syncStatus = useActiveAccountSyncStatus();
     const [isCopied, setIsCopied] = useState(false);
     const copyTimerRef = useRef<Timer>(null);
 
     const showUpdating = useDebouncedStatus(isFetching, STATUS_DEBOUNCE_MS);
     const showNoInternet = useDebouncedStatus(
-        !networkState.isInternetReachable,
+        syncStatus === SyncStatus.DISCONNECTED,
         STATUS_DEBOUNCE_MS
     );
 
@@ -64,7 +66,7 @@ export function useSubtitleStatus({ isFetching, lastUpdatedAt }: UseSubtitleStat
         if (showNoInternet) return SubtitleStatus.NO_INTERNET;
         if (showUpdating) return SubtitleStatus.UPDATING;
         return SubtitleStatus.ADDRESS;
-    }, [isCopied, showNoInternet, showUpdating]);
+    }, [isCopied, showNoInternet, showUpdating, lastUpdatedAt]);
 
     const onCopyAddress = useCallback(() => {
         clearTimer(copyTimerRef);
