@@ -50,7 +50,7 @@ export const SignInScreen = (props: SignInScreenProps) => {
 
     const handleError = useCallback(() => {
         navigation.goBack();
-        toast(t('signIn.timeout'));
+        toast({ message: t('signIn.timeout'), duration: 5000 });
     }, [navigation, toast, t]);
 
     useAccountConnectedCallback(connector, handleConnected, {
