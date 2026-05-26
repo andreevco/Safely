@@ -1,6 +1,7 @@
-import { ReactNode } from 'react';
-import { Pressable, PressableProps, StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
-import { UnistylesVariants } from 'react-native-unistyles';
+import type { ReactNode } from 'react';
+import type { PressableProps, StyleProp, ViewStyle } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import type { UnistylesVariants } from 'react-native-unistyles';
 
 import { CircularSpinner } from '@mobile/shared/ui/CircularSpinner';
 import { Text } from '@mobile/shared/ui/Text';

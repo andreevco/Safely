@@ -2,9 +2,10 @@ import { impactAsync, ImpactFeedbackStyle } from 'expo-haptics';
 import { useRef } from 'react';
 import { TextInput, View } from 'react-native';
 
-import { TouchableOpacity } from '@mobile/shared/ui';
-import { Backspace28, Icon, IconProps } from '@mobile/shared/ui/Icon';
+import type { IconProps } from '@mobile/shared/ui/Icon';
+import { Backspace28, Icon } from '@mobile/shared/ui/Icon';
 import { Text } from '@mobile/shared/ui/Text';
+import { TouchableOpacity } from '@mobile/shared/ui/TouchableOpacity';
 
 import { styles } from './PasscodeKeypad.styles';
 

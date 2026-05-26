@@ -1,17 +1,12 @@
 import { getLocales } from 'expo-localization';
 import { reloadAppAsync as reloadApp } from 'expo-modules-core';
-import { FC, PropsWithChildren, useEffect, useMemo } from 'react';
+import type { FC, PropsWithChildren } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AppState } from 'react-native';
 
-import {
-    AppContext,
-    AppStateStatus,
-    IAppContext,
-    Security,
-    UnlockableSecuredEncryptedStorage,
-    useLoggerLifecycle
-} from '@safely/ux';
+import type { AppStateStatus, IAppContext, Security } from '@safely/ux';
+import { AppContext, UnlockableSecuredEncryptedStorage, useLoggerLifecycle } from '@safely/ux';
 
 import { navigationRef } from '@mobile/app/navigation/navigationRef';
 import { useMobileSecurityCheck } from '@mobile/entities/security';
