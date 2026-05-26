@@ -26,7 +26,9 @@ export function useBetaFeedWatched(): BetaFeedWatched {
 
     const shouldShowBadge = useMemo<boolean>(() => {
         if (latestTimestamp === null) return false;
-        if (stored === null || stored === undefined) return false;
+        if (stored === undefined) return false;
+
+        if (stored === null) return true;
 
         return stored < latestTimestamp;
     }, [latestTimestamp, stored]);
