@@ -13,11 +13,6 @@ export interface ISyncAccount<Latest extends StorageVersion> {
      */
     readonly accountId: string;
     /**
-     * Stable, opaque UUID derived from the account's master key at creation time.
-     * Used for analytics; may be undefined for accounts created before this field existed.
-     */
-    readonly analyticsAccountUuid: string | undefined;
-    /**
      * The sync provider associated with this account, used to update storage.
      */
     readonly syncProvider: ISyncProvider<NewOf<Latest>>;
