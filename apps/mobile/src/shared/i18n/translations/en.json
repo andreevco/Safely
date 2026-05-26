@@ -495,18 +495,14 @@
         "signOutAccount": {
             "title": "Sign out account “{{name}}”",
             "sheet": {
-                "title": "Sign out of {{name}}?",
+                "title": "Sign out of “{{name}}”?",
                 "noDevices": {
-                    "subtitle": "This is the only device with a copy of this account. If you sign out, you will permanently lose access.",
+                    "subtitle": "This is the only linked device for this account. You may lose access to this account after signing out.",
                     "protectLink": "Protect account now",
-                    "checkbox": "I understand that I will permanently lose this account."
+                    "checkbox": "I understand that I may lose access to this account."
                 },
                 "fullCopy": {
-                    "subtitle": "After signing out, your account will remain available on your other linked devices. You can restore access from them at any time."
-                },
-                "partialCopy": {
-                    "subtitle": "Other devices haven't finished syncing this account. They need to be online to update.",
-                    "checkbox": "I understand that some account data may be lost."
+                    "subtitle": "Other linked devices are connected to this account."
                 },
                 "signOutButton": "Sign out anyway",
                 "cancelButton": "Cancel"
@@ -562,9 +558,9 @@
         "pending": "Pending",
         "available": "Available",
         "total": "Total",
-        "estimatedTime": "\u2248 {{minutes}} minutes",
+        "estimatedTime": "≈ {{minutes}} minutes",
         "ok": "OK",
-        "receiving": "Receiving {{amount}}\u2026"
+        "receiving": "Receiving {{amount}}…"
     },
     "assetCell": {
         "lastTransaction": "Last transaction {{timeAgo}}",

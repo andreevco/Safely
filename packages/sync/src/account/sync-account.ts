@@ -1,6 +1,7 @@
 import type { AssertVersionHList, HCons, NewOf, StorageVersion } from '@safely/slottree';
 
 import type { ISyncAccount } from './I-sync-account';
+import type { MKDerivationDomain } from '../crypto/service/master-key-service';
 import type { Device } from '../device-manager/device-repository';
 import type { ITreeStorage } from '../I-storage';
 import type { OnboardingConnector } from '../onboarding/connector';
@@ -117,6 +118,15 @@ export class SyncAccount<Latest extends StorageVersion, Rest> implements ISyncAc
 
     public getMyDeviceIkPub(): Buffer {
         return this.container.ikService.getPub();
+    }
+
+    public async deriveKeyFromMasterKey(
+        domain: MKDerivationDomain,
+        secureEncryptedStorage: ITreeStorage
+    ): Promise<Buffer> {
+        return await this.container.keyServiceFactory
+            .createMasterKeyService(secureEncryptedStorage)
+            .deriveKey(domain);
     }
 
     public async deleteThisDevice(secureEncryptedStorage: ITreeStorage): Promise<void> {

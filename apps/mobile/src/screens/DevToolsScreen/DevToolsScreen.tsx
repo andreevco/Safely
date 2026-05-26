@@ -1,7 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import { useCallback } from 'react';
 
-import { useClearDismissedBannerIds } from '@safely/ux';
+import { useClearDismissedBannerIds, useIsDevVersion } from '@safely/ux';
 
 import { SettingsStackNavigationProp } from '@mobile/app/navigation/types';
 import { Cell, List, Screen, Text } from '@mobile/shared/ui';
@@ -9,6 +9,7 @@ import { Cell, List, Screen, Text } from '@mobile/shared/ui';
 import { styles } from './DevToolsScreen.styles';
 
 export const DevToolsScreen = () => {
+    const isDevVersion = useIsDevVersion();
     const navigation = useNavigation<SettingsStackNavigationProp>();
     const { mutate: clearDismissedBannerIds } = useClearDismissedBannerIds();
 
@@ -44,6 +45,16 @@ export const DevToolsScreen = () => {
                             </Cell.Content>
                             <Cell.Chevron />
                         </Cell>
+                        {isDevVersion && (
+                            <Cell onPress={() => navigation.navigate('DevToolsConfigModal')}>
+                                <Cell.Content>
+                                    <Cell.Row>
+                                        <Cell.Title>Dev config</Cell.Title>
+                                    </Cell.Row>
+                                </Cell.Content>
+                                <Cell.Chevron />
+                            </Cell>
+                        )}
                     </List.Group>
                     <List.Group variant="divided">
                         <Cell onPress={handleClearDismissedBannerIds}>

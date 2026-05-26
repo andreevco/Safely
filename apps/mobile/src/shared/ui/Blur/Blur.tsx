@@ -1,5 +1,5 @@
 import { BlurView, BlurViewProps } from 'expo-blur';
-import { Platform, StyleProp, ViewStyle } from 'react-native';
+import { Platform, StyleProp, ViewProps, ViewStyle } from 'react-native';
 import Animated from 'react-native-reanimated';
 
 /* 
@@ -16,18 +16,19 @@ const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 export type BlurProps = {
     blurAnimatedProps: Partial<BlurViewProps>;
     style?: StyleProp<ViewStyle>;
+    pointerEvents?: ViewProps['pointerEvents'];
 };
 
-export const Blur = ({ blurAnimatedProps, style }: BlurProps) => {
+export const Blur = ({ blurAnimatedProps, style, pointerEvents = 'none' }: BlurProps) => {
     return SUPPORTS_BLUR ? (
         <AnimatedBlurView
             experimentalBlurMethod={'dimezisBlurView'}
             tint={'dark'}
             style={style}
-            pointerEvents="none"
+            pointerEvents={pointerEvents}
             animatedProps={blurAnimatedProps}
         />
     ) : (
-        <Animated.View style={style} pointerEvents="none" />
+        <Animated.View style={style} pointerEvents={pointerEvents} />
     );
 };

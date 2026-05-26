@@ -31,6 +31,8 @@ export interface IAppContext {
 
     userCountryInfo?: UserCountryInfo;
 
+    devToken?: string;
+
     storage: {
         ux: {
             regular: ITreeStorage;

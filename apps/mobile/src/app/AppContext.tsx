@@ -6,6 +6,7 @@ import { AppState } from 'react-native';
 
 import {
     AppContext,
+    AppStateStatus,
     IAppContext,
     Security,
     UnlockableSecuredEncryptedStorage,
@@ -23,6 +24,7 @@ import { MobileNumberFormatLocale, MobileAppLinking } from '@mobile/shared/utils
 import {
     CLEAR_ALL_MOBILE_STORAGE_ONLY_APP_LEVEL_USE_DANGER,
     ENCRYPTED_MOBILE_STORAGE_ONLY_APP_LEVEL_USE,
+    mobileLayerSynchronousDevToken,
     REGULAR_MOBILE_STORAGE_ONLY_APP_LEVEL_USE,
     SECURE_ENCRYPTED_MOBILE_STORAGE_ONLY_APP_LEVEL_USE
 } from './storage';
@@ -33,6 +35,19 @@ const security: Security = {
         throw new Error('Security check not initialized');
     }
 };
+
+function resolveAppStateStatus(state: string): AppStateStatus {
+    switch (state) {
+        case 'active':
+        case 'background':
+        case 'inactive':
+            return state;
+        case 'extension':
+        case 'unknown':
+        default:
+            return 'unknown';
+    }
+}
 
 export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
     const {
@@ -51,6 +66,7 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
             version: packageJson.version,
             build,
             environment,
+            devToken: mobileLayerSynchronousDevToken.storage.get() ?? undefined,
             deviceInfo,
             numberFormatLocale: new MobileNumberFormatLocale(getLocales()[0]),
             storage: {
@@ -95,16 +111,10 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
             clearAllData: CLEAR_ALL_MOBILE_STORAGE_ONLY_APP_LEVEL_USE_DANGER,
             reloadApp,
             subscribeAppStateChange(callback) {
+                callback(resolveAppStateStatus(AppState.currentState));
+
                 const subscription = AppState.addEventListener('change', state => {
-                    switch (state) {
-                        case 'active':
-                        case 'background':
-                        case 'inactive':
-                            return callback(state);
-                        case 'extension':
-                        case 'unknown':
-                            return callback('unknown');
-                    }
+                    callback(resolveAppStateStatus(state));
                 });
                 return () => subscription.remove();
             }

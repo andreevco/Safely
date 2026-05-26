@@ -1,12 +1,14 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo } from 'react';
 
-import type { ITreeStorage, PortfolioBip39 } from '@safely/core';
+import type { ITreeStorage } from '@safely/core';
+import { PortfolioBip39, PortfolioIdBip39MasterKeyDerived } from '@safely/core';
+import { PortfolioMnemonicFactory } from '@safely/core';
 import { toPortfolioId } from '@safely/core';
-import { delay, PortfolioFactory, PortfolioNetworkType, generateBip39Accessor } from '@safely/core';
+import { delay, PortfolioNetworkType } from '@safely/core';
 import type { ISyncAccount, OnboardingConnector as RawOnboardingConnector } from '@safely/sync';
 import { OnboardingAbortedError } from '@safely/sync';
-import type { SyncedStorageStructure } from '@safely/sync-storage';
+import type { SPortfolioBip39, SyncedStorageStructure } from '@safely/sync-storage';
 
 import type { AccountMeta, OnboardingConnector, SyncAccount } from './account-state';
 import { useAccountsQueryConfig } from './account-state';
@@ -66,15 +68,33 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
 
             const account = await factory.createSyncAccount(params.secureEncryptedStorage);
 
-            let createdPortfolio: PortfolioBip39 | null = null;
+            let createdPortfolio: SPortfolioBip39 | null = null;
             if (options?.createWallet || options?.setActive) {
-                const portfolioFactory = new PortfolioFactory(
-                    new SecretEncryptor(account.secretEncryptor, params.secureEncryptedStorage)
+                const portfolioMnemonicFactory = new PortfolioMnemonicFactory(
+                    account,
+                    params.secureEncryptedStorage
                 );
-                using accessorVault = generateBip39Accessor();
-                createdPortfolio = await portfolioFactory.generatePortfolioBip39(accessorVault, {
-                    network: PortfolioNetworkType.MAINNET,
-                    meta: { name: t('security.groups.wallet.defaultName', { number: 1 }) }
+
+                const firstPortfolioDerivationIndex = 0;
+                using mnemonicAccessor = await portfolioMnemonicFactory.deriveBip39MnemonicResource(
+                    firstPortfolioDerivationIndex
+                );
+
+                const id = new PortfolioIdBip39MasterKeyDerived({
+                    derivationIndex: firstPortfolioDerivationIndex,
+                    networkType: PortfolioNetworkType.MAINNET
+                });
+
+                createdPortfolio = await PortfolioBip39.createSerializedPortfolio({
+                    id,
+                    mnemonicAccessor,
+                    encryptor: new SecretEncryptor(
+                        account.secretEncryptor,
+                        params.secureEncryptedStorage
+                    ),
+                    options: {
+                        meta: { name: t('security.groups.wallet.defaultName', { number: 1 }) }
+                    }
                 });
             }
 
@@ -85,7 +105,7 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
                 draft.at('devicesMeta').orDefault({}).set(key, value);
 
                 if (createdPortfolio) {
-                    draft.set('portfolios', [createdPortfolio.toJSON()]);
+                    draft.set('portfolios', [createdPortfolio]);
                 }
             });
 

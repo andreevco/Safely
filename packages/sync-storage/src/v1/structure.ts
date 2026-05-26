@@ -15,7 +15,8 @@ const syncedStorageSchema = z.object({
     portfolios: sPortfolios,
     meta: sAccountMeta,
     devicesMeta: sDevicesMeta,
-    contacts: sContacts
+    contacts: sContacts,
+    latestDerivedBip39PortfolioIndex: z.number().int().nonnegative().nullable()
 });
 
 export const syncedStorageV1 = {
@@ -26,7 +27,8 @@ export const syncedStorageV1 = {
         portfolios: [] as SPortfolios,
         meta: null,
         devicesMeta: null,
-        contacts: [] as SContacts
+        contacts: [] as SContacts,
+        latestDerivedBip39PortfolioIndex: null
     },
     projectUp: projectIdentity,
     projectDown: projectIdentity

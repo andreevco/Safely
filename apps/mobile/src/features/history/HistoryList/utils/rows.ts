@@ -74,11 +74,11 @@ const getGroupTitle = (
 ): string => {
     switch (meta.label) {
         case ACTIVITY_GROUP_LABEL.PENDING:
-            return t('history.dateHeaders.pending');
+            return t('dateGroups.pending');
         case ACTIVITY_GROUP_LABEL.TODAY:
-            return t('history.dateHeaders.today');
+            return t('dateGroups.today');
         case ACTIVITY_GROUP_LABEL.YESTERDAY:
-            return t('history.dateHeaders.yesterday');
+            return t('dateGroups.yesterday');
         case ACTIVITY_GROUP_LABEL.THIS_MONTH: {
             const date = new Date(meta.year, meta.month, meta.day);
             return formatter({ month: 'long', day: 'numeric' }).format(date);

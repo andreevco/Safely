@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { TestSyncAccount, TestSyncAccountFactory } from './helpers';
 import { makeFactory, onboardDevice } from './helpers';
+import { SyncStatus } from '../../src';
 import { InMemStorage } from '../impl/storage';
 
 type WalletItem = {
@@ -24,6 +25,7 @@ describe('Sync', () => {
         await account.syncProvider.transaction(draft => {
             draft.set('wallets', data);
         });
+        await account.syncProvider.syncStatusManager.waitForStatus(SyncStatus.SYNCHRONIZED);
         await vi.waitFor(
             async () => {
                 // checks if all accounts synchronized

@@ -1,5 +1,6 @@
 import type { NewOf, StorageVersion } from '@safely/slottree';
 
+import type { MKDerivationDomain } from '../crypto/service/master-key-service';
 import type { Device } from '../device-manager/device-repository';
 import type { ITreeStorage } from '../I-storage';
 import type { OnboardingConnector } from '../onboarding/connector';
@@ -57,4 +58,14 @@ export interface ISyncAccount<Latest extends StorageVersion> {
      * Returns the IK public key of the current device.
      */
     getMyDeviceIkPub(): Buffer;
+
+    /**
+     * Derives a new key from the account master key.
+     * @param domain - must be unique
+     * @param secureEncryptedStorage
+     */
+    deriveKeyFromMasterKey(
+        domain: MKDerivationDomain,
+        secureEncryptedStorage: ITreeStorage
+    ): Promise<Buffer>;
 }

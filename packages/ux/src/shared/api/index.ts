@@ -3,3 +3,4 @@ export { useBootApi, useBootConfigQuery, useBootConfig } from './useBootConfig';
 export { useBtcApi } from './useBtcApi';
 export { usePriceApi } from './usePriceApi';
 export { useAvailableFiats } from './useAvailableFiats';
+export { useIsDevVersion } from './useIsDevVersion';

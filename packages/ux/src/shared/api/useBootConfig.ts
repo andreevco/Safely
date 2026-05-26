@@ -9,7 +9,7 @@ import { useAppContext } from '../providers';
 import { usePersistSuspenseQuery } from '../query-core';
 
 export function useBootApi(): BootApi {
-    const { version, build, i18n, userCountryInfo } = useAppContext();
+    const { version, build, i18n, userCountryInfo, devToken } = useAppContext();
 
     return useMemo(
         () =>
@@ -17,9 +17,10 @@ export function useBootApi(): BootApi {
                 build,
                 version,
                 lang: i18n.language,
-                userCountryInfo
+                userCountryInfo,
+                devToken
             }),
-        [build, version, i18n.language, userCountryInfo]
+        [build, version, i18n.language, userCountryInfo, devToken]
     );
 }
 

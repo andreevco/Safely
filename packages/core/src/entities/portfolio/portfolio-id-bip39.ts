@@ -1,6 +1,3 @@
-import { hmac } from '@noble/hashes/hmac.js';
-import { sha512 } from '@noble/hashes/sha2.js';
-
 import type {
     SPortfolioBip39Id,
     SPortfolioBip39IdImported,
@@ -12,8 +9,7 @@ import { Bip39Source } from './I-portfolio';
 import type { PortfolioMetaIconEmoji } from './portfolio-meta';
 import { allowedPortfolioMetaEmojis } from './portfolio-meta';
 import type { PortfolioNetworkType } from './portfolio-network-type';
-import { assertUnreachable } from '../../utils';
-import { xorFold16 } from '../../utils/crypto';
+import { assertUnreachable, sha256Prefix } from '../../utils';
 import { Id } from '../../utils/id';
 import type { IMnemonicAccessor } from '../mnemonic';
 
@@ -59,18 +55,12 @@ export class PortfolioIdBip39Imported extends Id implements IPortfolioId {
         mnemonicAccessor: IMnemonicAccessor,
         network: PortfolioNetworkType
     ): Promise<PortfolioIdBip39Imported> {
-        const mnemonicHash = xorFold16(
-            Buffer.from(
-                // TODO мб проще?
-                hmac(
-                    sha512,
-                    Buffer.from('SECRET_BASED_PORTFOLIO_ID'),
-                    Buffer.from(mnemonicAccessor.value.join(' ').toLowerCase())
-                )
-            )
+        const mnemonicHash = sha256Prefix(
+            `safely/v1/portfolio-id/imported/${mnemonicAccessor.value.join(' ').toLowerCase()}`,
+            16
         );
         return new PortfolioIdBip39Imported({
-            seedHash: mnemonicHash.toString('hex'),
+            mnemonicHash,
             networkType: network
         });
     }
@@ -79,18 +69,19 @@ export class PortfolioIdBip39Imported extends Id implements IPortfolioId {
 
     public readonly network: PortfolioNetworkType;
 
-    private readonly seedHash: string;
+    private readonly mnemonicHash: string;
 
     constructor(serialized: Omit<SPortfolioBip39IdImported, 'source'>) {
         super();
 
         this.network = serialized.networkType;
-        this.seedHash = serialized.seedHash;
+        this.mnemonicHash = serialized.mnemonicHash;
     }
 
     public getFallbackEmoji(): PortfolioMetaIconEmoji {
         const index =
-            Buffer.from(this.seedHash, 'hex').readUint32BE() % allowedPortfolioMetaEmojis.length;
+            Buffer.from(this.mnemonicHash, 'hex').readUint32BE() %
+            allowedPortfolioMetaEmojis.length;
 
         return { type: 'emoji', value: allowedPortfolioMetaEmojis[index] };
     }
@@ -102,7 +93,7 @@ export class PortfolioIdBip39Imported extends Id implements IPortfolioId {
     public toJSON(): SPortfolioBip39IdImported {
         return {
             source: this.source,
-            seedHash: this.seedHash,
+            mnemonicHash: this.mnemonicHash,
             networkType: this.network
         };
     }

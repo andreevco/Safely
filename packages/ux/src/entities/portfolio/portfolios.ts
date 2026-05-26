@@ -7,26 +7,30 @@ import type {
     IDerivation,
     IMnemonicAccessor,
     Portfolio,
-    PortfolioBip39,
     PortfolioMeta,
     PortfolioWatchOnly,
-    ISecretEncryptor
+    ISecretEncryptor,
+    ITreeStorage,
+    IMnemonicVault
 } from '@safely/core';
+import { PortfolioWatchOnlyBtc } from '@safely/core';
+import { PortfolioIdBip39Imported } from '@safely/core';
+import { PortfolioBip39, PortfolioIdBip39MasterKeyDerived } from '@safely/core';
+import { PortfolioMnemonicFactory } from '@safely/core';
 import { toPortfolioId } from '@safely/core';
 import {
     delay,
     Id,
     PortfolioAlreadyExistsError,
-    PortfolioFactory,
     PortfolioNetworkType,
-    PortfolioType,
-    generateBip39Accessor,
-    VM_TYPE
+    PortfolioType
 } from '@safely/core';
+import type { SPortfolio } from '@safely/sync-storage';
 
-import { useTranslate, useSecurityCheck, useAppContext } from '../../shared';
+import { useTranslate, useSecurityCheck, useAppContext, SecretEncryptor } from '../../shared';
 import { useSuspenseQuery } from '../../shared';
 import type { SActivePortfolioSchema, UseAccountSyncStorageUpdateOptions } from '../account';
+import { useAccountSyncStorageUpdate } from '../account';
 import { useActiveAccountSyncStorageSlotUpdate } from '../account';
 import { useActiveAccountStoreSlot } from '../account';
 import {
@@ -47,9 +51,9 @@ export function usePortfolios(): Portfolio[] {
 export function useAddPortfolio(options?: UseAccountSyncStorageUpdateOptions) {
     const update = useActiveAccountSyncStorageSlotUpdate('portfolios', options);
 
-    return useMutation<void, Error, Portfolio>({
+    return useMutation<void, Error, SPortfolio>({
         async mutationFn(portfolio) {
-            return update(draft => draft.push(portfolio.toJSON()));
+            return update(draft => draft.push(portfolio));
         }
     });
 }
@@ -63,34 +67,66 @@ export function useNewPortfolioFallbackName() {
 
 export function useGeneratePortfolio() {
     const { mutateAsync: setActivePortfolio } = useSetActivePortfolio();
-    const { mutateAsync: addAccount } = useAddPortfolio({ showErrorToast: false });
+    const { data: account } = useActiveAccountQuery();
+    const update = useAccountSyncStorageUpdate();
 
     const errorToast = useErrorToast({
         PortfolioGenerationFailedError: 'importWalletScreen.errors.failedToGenerate'
     });
 
     return useMutation<
-        PortfolioBip39,
+        void,
         Error,
-        { meta: PortfolioMeta; secretEncryptor: ISecretEncryptor },
+        { meta: PortfolioMeta; secureEncryptedStorage: ITreeStorage },
         unknown
     >({
         async mutationFn(params) {
             await delay();
 
-            using accessorVault = generateBip39Accessor();
-            const factory = new PortfolioFactory(params.secretEncryptor);
+            if (!account) {
+                throw new Error('Cannot generate portfolio without active account');
+            }
 
-            const portfolio = await factory.generatePortfolioBip39(accessorVault, {
-                network: PortfolioNetworkType.MAINNET,
-                meta: params.meta
+            const portfolioMnemonicFactory = new PortfolioMnemonicFactory(
+                account,
+                params.secureEncryptedStorage
+            );
+
+            const latestWalletIndex = account.syncProvider.get('latestDerivedBip39PortfolioIndex');
+            const nextWalletIndex = latestWalletIndex === null ? 0 : latestWalletIndex + 1;
+            using mnemonicAccessor =
+                await portfolioMnemonicFactory.deriveBip39MnemonicResource(nextWalletIndex);
+
+            const id = new PortfolioIdBip39MasterKeyDerived({
+                derivationIndex: nextWalletIndex,
+                networkType: PortfolioNetworkType.MAINNET
             });
 
-            await addAccount(portfolio);
+            const portfolio = await PortfolioBip39.createSerializedPortfolio({
+                mnemonicAccessor,
+                encryptor: new SecretEncryptor(
+                    account.secretEncryptor,
+                    params.secureEncryptedStorage
+                ),
+                id,
+                options: { meta: params.meta }
+            });
 
-            await setActivePortfolio(portfolio);
+            await update(account, draft => {
+                draft.at('portfolios').push(portfolio);
+                const latestDerivedBip39PortfolioIndex = draft
+                    .at('latestDerivedBip39PortfolioIndex')
+                    .get();
 
-            return portfolio;
+                if (
+                    latestDerivedBip39PortfolioIndex === null ||
+                    nextWalletIndex > latestDerivedBip39PortfolioIndex
+                ) {
+                    draft.at('latestDerivedBip39PortfolioIndex').set(nextWalletIndex);
+                }
+            });
+
+            await setActivePortfolio({ id });
         },
         onError: errorToast
     });
@@ -108,10 +144,10 @@ export function useImportPortfolio() {
     const portfolios = usePortfolios();
 
     return useMutation<
-        Portfolio,
+        void,
         Error,
         {
-            mnemonicAccessor: IMnemonicAccessor;
+            mnemonicAccessor: IMnemonicAccessor & IMnemonicVault;
             secretEncryptor: ISecretEncryptor;
             meta: PortfolioMeta;
         },
@@ -120,15 +156,22 @@ export function useImportPortfolio() {
         async mutationFn({ mnemonicAccessor, secretEncryptor, meta }) {
             await delay();
 
-            const factory = new PortfolioFactory(secretEncryptor);
+            const id = await PortfolioIdBip39Imported.create(
+                mnemonicAccessor,
+                PortfolioNetworkType.MAINNET
+            );
 
-            const portfolio = await factory.generatePortfolio(mnemonicAccessor, {
-                network: PortfolioNetworkType.MAINNET,
-                meta,
-                seedRevealedFromDevice: deviceInfo.name
+            const portfolio = await PortfolioBip39.createSerializedPortfolio({
+                id,
+                encryptor: secretEncryptor,
+                mnemonicAccessor,
+                options: {
+                    meta,
+                    seedRevealedFromDevice: deviceInfo.name
+                }
             });
 
-            const existingBip39 = portfolios.find(p => p.id.isEq(portfolio.id));
+            const existingBip39 = portfolios.find(p => p.id.isEq(id));
 
             if (existingBip39) {
                 throw new PortfolioAlreadyExistsError(existingBip39);
@@ -136,9 +179,7 @@ export function useImportPortfolio() {
 
             await addPortfolio(portfolio);
 
-            await setActivePortfolio(portfolio);
-
-            return portfolio;
+            await setActivePortfolio({ id });
         },
         onSuccess() {
             toast(t('importWalletScreen.toastMessages.importedWallet'));
@@ -283,18 +324,16 @@ export function useAddWatchOnlyPortfolio() {
 
     return useMutation<Portfolio, Error, { input: string; meta: PortfolioMeta }>({
         async mutationFn({ input, meta }) {
-            const portfolio = PortfolioFactory.generateWatchOnlyPortfolio(input, {
-                network: PortfolioNetworkType.MAINNET,
-                meta,
-                vmType: VM_TYPE.BTC
-            });
+            const id = PortfolioWatchOnlyBtc.resolveUserInput(input, PortfolioNetworkType.MAINNET);
+
+            const portfolio = PortfolioWatchOnlyBtc.create(id, meta);
 
             const existing = portfolios.find(p => p.id.isEq(portfolio.id));
             if (existing) {
                 throw new PortfolioAlreadyExistsError(existing);
             }
 
-            await addPortfolio(portfolio);
+            await addPortfolio(portfolio.toJSON());
             await setActivePortfolio(portfolio);
 
             return portfolio;

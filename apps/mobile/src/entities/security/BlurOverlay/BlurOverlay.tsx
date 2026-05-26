@@ -8,6 +8,7 @@ import { StyleSheet } from 'react-native-unistyles';
 import { useAppState } from '@safely/ux';
 
 import { Blur } from '@mobile/shared/ui/Blur';
+import { blurFreeze } from '@mobile/shared/utils';
 
 const OverlayComponent = Platform.OS === 'ios' ? FullWindowOverlay : View;
 
@@ -24,7 +25,11 @@ export const BlurOverlay = () => {
     }));
 
     useEffect(() => {
-        if (['inactive', 'background'].includes(current)) {
+        // Face ID changes state to 'inactive' for too long. So we need 'hack' with blur freeze for smooth UX
+        const shouldBlur =
+            current === 'background' || (current === 'inactive' && !blurFreeze.isFrozen);
+
+        if (shouldBlur) {
             setIsVisible(true);
             intensity.value = BLUR_INTENSITY;
             if (Platform.OS === 'android') {
@@ -48,8 +53,12 @@ export const BlurOverlay = () => {
     }
 
     return (
-        <OverlayComponent pointerEvents="none" style={StyleSheet.absoluteFill}>
-            <Blur blurAnimatedProps={blurAnimatedProps} style={StyleSheet.absoluteFill} />
+        <OverlayComponent style={StyleSheet.absoluteFill}>
+            <Blur
+                blurAnimatedProps={blurAnimatedProps}
+                style={StyleSheet.absoluteFill}
+                pointerEvents="auto"
+            />
         </OverlayComponent>
     );
 };
