@@ -3,19 +3,18 @@ import { StyleSheet } from 'react-native-unistyles';
 export const styles = StyleSheet.create(theme => ({
     content: {
         paddingHorizontal: theme.spacing[8],
-        paddingRight: theme.spacing[32],
-        paddingBottom: theme.spacing[16]
+        gap: theme.spacing[2],
+        alignItems: 'flex-start'
     },
-    sectionTitle: {
-        paddingTop: theme.spacing[16],
-        paddingBottom: theme.spacing[12],
-        paddingHorizontal: theme.spacing[8]
+    skeletonLabel: {
+        marginTop: theme.spacing[16],
+        marginBottom: theme.spacing[12],
+        marginHorizontal: theme.spacing[8]
     },
     card: {
+        gap: theme.spacing[8],
         alignSelf: 'flex-start',
         alignItems: 'flex-start',
-        marginBottom: theme.spacing[2],
-        gap: theme.spacing[4],
         backgroundColor: theme.colors.background.secondary,
         borderRadius: theme.radius.md,
         paddingHorizontal: theme.spacing[16],

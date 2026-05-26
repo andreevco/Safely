@@ -562,12 +562,7 @@
     },
     "safelyBeta": {
         "title": "Safely",
-        "subtitle": "Beta · {{version}}",
-        "cards": {
-            "betaNotice": "Safely в бета-версии. Держите меньше 0.002 BTC и сохраните фразу восстановления.",
-            "follow": "Следите за обновлениями в <tg>Telegram</tg> или <wa>WhatsApp</wa>",
-            "feedback": "Нашли баг или есть идея? Ваш отзыв помогает нам улучшать Safely. <action>Отправить отзыв</action>"
-        }
+        "subtitle": "Beta · {{version}}"
     },
     "externalInput": {
         "errors": {
