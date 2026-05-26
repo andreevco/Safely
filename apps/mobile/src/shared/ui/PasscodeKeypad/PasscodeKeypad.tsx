@@ -101,9 +101,13 @@ export const PasscodeKeypad = (props: PasscodeKeypadProps) => {
                         0
                     </Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.button} onPress={handleBackspace}>
-                    <Icon icon={Backspace28} />
-                </TouchableOpacity>
+                {value.length > 0 ? (
+                    <TouchableOpacity style={styles.button} onPress={handleBackspace}>
+                        <Icon icon={Backspace28} />
+                    </TouchableOpacity>
+                ) : (
+                    <View style={styles.button} />
+                )}
             </View>
         </View>
     );
