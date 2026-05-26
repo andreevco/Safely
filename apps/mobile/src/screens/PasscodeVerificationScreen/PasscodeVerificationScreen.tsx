@@ -4,8 +4,9 @@ import { useTranslation } from 'react-i18next';
 
 import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { usePasscodeVerification } from '@mobile/entities/security';
+import { authenticateBiometry, getBiometryIcon, useBiometryQuery } from '@mobile/features/biometry';
 import { useLogOutAllConfirmation } from '@mobile/features/settings/useLogOutAllConfirmation';
-import { LockoutContent, PasscodeInput, PasscodeLayout, Screen } from '@mobile/shared/ui';
+import { LockoutContent, PasscodeView, Screen } from '@mobile/shared/ui';
 
 type PasscodeVerificationScreenProps = StaticScreenProps<{
     onSuccess: () => void;
@@ -19,6 +20,7 @@ export const PasscodeVerificationScreen = (props: PasscodeVerificationScreenProp
     const { t } = useTranslation();
     const navigation = useNavigation<RootStackNavigationProp>();
     const handleLogOut = useLogOutAllConfirmation();
+    const { data: biometry } = useBiometryQuery();
     const successCalled = useRef(false);
 
     const handleSuccess = useCallback(() => {
@@ -26,6 +28,14 @@ export const PasscodeVerificationScreen = (props: PasscodeVerificationScreenProp
         navigation.goBack();
         setTimeout(onSuccess, 100);
     }, [navigation, onSuccess]);
+
+    const handleBiometryPress = useCallback(async () => {
+        const result = await authenticateBiometry();
+
+        if (result.success) {
+            handleSuccess();
+        }
+    }, [handleSuccess]);
 
     const {
         inputValue,
@@ -58,15 +68,22 @@ export const PasscodeVerificationScreen = (props: PasscodeVerificationScreenProp
                 <Screen.Header.CloseButton />
             </Screen.Header>
 
-            <PasscodeLayout title={title ?? t('passcode.verify.title')}>
-                <PasscodeInput
-                    numberOfDigits={digitsAmount}
-                    value={inputValue}
-                    onChange={handleInputChange}
-                    isSuccess={isSuccess}
-                    isError={isError}
-                />
-            </PasscodeLayout>
+            <PasscodeView
+                title={title ?? t('passcode.verify.title')}
+                numberOfDigits={digitsAmount}
+                value={inputValue}
+                onChange={handleInputChange}
+                isSuccess={isSuccess}
+                isError={isError}
+                biometry={
+                    biometry?.isEnabled
+                        ? {
+                              onPress: handleBiometryPress,
+                              icon: getBiometryIcon(biometry.availableType)
+                          }
+                        : undefined
+                }
+            />
         </Screen>
     );
 };

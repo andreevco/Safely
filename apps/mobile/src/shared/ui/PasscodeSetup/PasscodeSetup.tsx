@@ -1,12 +1,10 @@
 import { notificationAsync, NotificationFeedbackType } from 'expo-haptics';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { TextInput } from 'react-native';
 
 import { usePasscodeState } from '@mobile/screens/PasscodeModal/hooks';
 import { PASSCODE_DIGITS } from '@mobile/shared/constants';
-import { PasscodeInput } from '@mobile/shared/ui/PasscodeInput';
-import { PasscodeLayout } from '@mobile/shared/ui/PasscodeLayout';
+import { PasscodeView } from '@mobile/shared/ui/PasscodeView';
 import { Screen } from '@mobile/shared/ui/Screen';
 import { Text } from '@mobile/shared/ui/Text';
 
@@ -28,7 +26,6 @@ export const PasscodeSetup = ({
     onComplete
 }: PasscodeSetupProps) => {
     const { t } = useTranslation();
-    const inputRef = useRef<TextInput>(null);
 
     const passcodeState = usePasscodeState();
     const [firstPasscode, setFirstPasscode] = useState<string | null>(null);
@@ -93,16 +90,15 @@ export const PasscodeSetup = ({
                 )}
             </Screen.Header>
 
-            <PasscodeLayout title={currentTitle} description={currentDescription}>
-                <PasscodeInput
-                    ref={inputRef}
-                    numberOfDigits={passcodeState.digitsAmount}
-                    value={passcodeState.inputValue}
-                    onChange={passcodeState.setInputValue}
-                    isSuccess={passcodeState.isSuccess}
-                    isError={passcodeState.isError}
-                />
-            </PasscodeLayout>
+            <PasscodeView
+                title={currentTitle}
+                description={currentDescription}
+                numberOfDigits={passcodeState.digitsAmount}
+                value={passcodeState.inputValue}
+                onChange={passcodeState.setInputValue}
+                isSuccess={passcodeState.isSuccess}
+                isError={passcodeState.isError}
+            />
         </Screen>
     );
 };

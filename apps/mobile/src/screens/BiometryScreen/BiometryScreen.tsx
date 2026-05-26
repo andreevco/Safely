@@ -2,17 +2,14 @@ import React, { FC, useCallback, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Platform, View } from 'react-native';
 
-import { useBiometryQuery, useSetBiometryEnabled, BiometryType } from '@mobile/features/biometry';
-import { useOnboardingFlow } from '@mobile/features/onboarding';
 import {
-    Button,
-    FaceidAndroid96,
-    FaceidIos96,
-    Fingerprint96,
-    Icon,
-    Screen,
-    Text
-} from '@mobile/shared/ui';
+    BiometryType,
+    getBiometryIcon,
+    useBiometryQuery,
+    useSetBiometryEnabled
+} from '@mobile/features/biometry';
+import { useOnboardingFlow } from '@mobile/features/onboarding';
+import { Button, Icon, Screen, Text } from '@mobile/shared/ui';
 
 import { styles } from './BiometryScreen.styles';
 
@@ -62,24 +59,26 @@ const BiometrySupportedScreen: FC<{
     const platformKey = Platform.OS === 'ios' ? 'ios' : 'other';
 
     const { title, description, picture } = useMemo(() => {
+        const icon = getBiometryIcon(availableType);
+
         switch (availableType) {
             case BiometryType.FACE:
                 return {
                     title: t(`biometry.face.${platformKey}.title`),
                     description: t(`biometry.face.${platformKey}.description`),
-                    picture: <Icon icon={Platform.OS === 'ios' ? FaceidIos96 : FaceidAndroid96} />
+                    picture: <Icon icon={icon} />
                 };
             case BiometryType.FINGERPRINT:
                 return {
                     title: t(`biometry.fingerprint.${platformKey}.title`),
                     description: t(`biometry.fingerprint.${platformKey}.description`),
-                    picture: <Icon icon={Fingerprint96} />
+                    picture: <Icon icon={icon} />
                 };
             default:
                 return {
                     title: t('biometry.default.title'),
                     description: t('biometry.default.description'),
-                    picture: <Icon icon={Fingerprint96} />
+                    picture: <Icon icon={icon} />
                 };
         }
     }, [availableType, platformKey, t]);
