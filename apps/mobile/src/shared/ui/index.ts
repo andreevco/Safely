@@ -28,3 +28,4 @@ export * from './PasscodeKeypad';
 export * from './PasscodeView';
 export * from './PasscodeSetup';
 export { LockoutContent } from './LockoutContent';
+export { CircularSpinner } from './CircularSpinner';

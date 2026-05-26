@@ -11,25 +11,33 @@ import { styles } from './SignOutAccountSheet.styles';
 
 type SignOutAccountParams = {
     accountName: string;
+    withLoader: boolean;
     onConfirm: () => Promise<void>;
 };
 
 type SignOutAccountSheetProps = StaticScreenProps<SignOutAccountParams>;
 
 const SignOutAccountContent = (props: SignOutAccountParams) => {
-    const { accountName, onConfirm } = props;
+    const { accountName, withLoader, onConfirm } = props;
 
     const { t } = useTranslation();
     const { close } = useBottomSheet();
     const linkState = useAccountLinkState();
-    const hasLinkedPeers = linkState === AccountLinkState.PROTECTED;
+    const [hasLinkedPeers] = useState(() => linkState === AccountLinkState.PROTECTED);
     const stateKey = hasLinkedPeers ? 'fullCopy' : 'noDevices';
 
+    const [isLoading, setIsLoading] = useState(false);
     const [isConfirmed, setIsConfirmed] = useState(false);
 
     const handleSignOut = async () => {
-        await onConfirm();
-        close();
+        if (withLoader) setIsLoading(true);
+
+        try {
+            await onConfirm();
+        } finally {
+            if (withLoader) setIsLoading(false);
+            close();
+        }
     };
 
     return (
@@ -56,11 +64,12 @@ const SignOutAccountContent = (props: SignOutAccountParams) => {
                     type="destructive"
                     size="large"
                     disabled={!hasLinkedPeers && !isConfirmed}
+                    isLoading={isLoading}
                     onPress={handleSignOut}
                 >
                     {t('settings.signOutAccount.sheet.signOutButton')}
                 </Button>
-                <Button type="secondary" size="large" onPress={close}>
+                <Button type="secondary" size="large" disabled={isLoading} onPress={close}>
                     {t('settings.signOutAccount.sheet.cancelButton')}
                 </Button>
             </View>
