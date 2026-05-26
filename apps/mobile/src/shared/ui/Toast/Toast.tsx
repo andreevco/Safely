@@ -19,7 +19,7 @@ export const Toast = ({ message, style, variant, ...pressableProps }: ToastProps
                 <Text
                     variant="labelM"
                     textAlign="center"
-                    numberOfLines={1}
+                    numberOfLines={4}
                     color={variant === 'white' ? 'constantBlack' : undefined}
                 >
                     {message}

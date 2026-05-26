@@ -1,7 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
+import { View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { AccountLinkState, useAccountLinkState } from '@safely/ux';
 
@@ -10,7 +10,11 @@ import { Banner, ExclamationmarkCircle16 } from '@mobile/shared/ui';
 
 import { styles } from './DeviceUnlinkedBanner.styles';
 
-export const DeviceUnlinkedBanner = () => {
+type DeviceUnlinkedBannerProps = {
+    style?: StyleProp<ViewStyle>;
+};
+
+export const DeviceUnlinkedBanner = ({ style }: DeviceUnlinkedBannerProps) => {
     const { t } = useTranslation();
     const navigation = useNavigation<RootStackNavigationProp>();
     const linkState = useAccountLinkState();
@@ -24,7 +28,7 @@ export const DeviceUnlinkedBanner = () => {
     }
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, style]}>
             <Banner variant="danger" onPress={handlePress}>
                 <Banner.Content>
                     <Banner.Text>{t('deviceUnlinked.banner.text')}</Banner.Text>

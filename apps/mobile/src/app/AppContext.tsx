@@ -1,15 +1,21 @@
 import { getLocales } from 'expo-localization';
-import type { FC, PropsWithChildren } from 'react';
-import { useEffect, useMemo } from 'react';
+import { reloadAppAsync as reloadApp } from 'expo-modules-core';
+import { FC, PropsWithChildren, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AppState } from 'react-native';
 
-import type { IAppContext, Security } from '@safely/ux';
-import { AppContext, UnlockableSecuredEncryptedStorage, useLoggerLifecycle } from '@safely/ux';
+import {
+    AppContext,
+    AppStateStatus,
+    IAppContext,
+    Security,
+    UnlockableSecuredEncryptedStorage,
+    useLoggerLifecycle
+} from '@safely/ux';
 
 import { navigationRef } from '@mobile/app/navigation/navigationRef';
 import { useMobileSecurityCheck } from '@mobile/entities/security';
-import { build, deviceInfo } from '@mobile/shared/app-meta';
+import { build, deviceInfo, environment } from '@mobile/shared/app-meta';
 import { loggerRegistry } from '@mobile/shared/logger';
 import { useLoaderServiceContext } from '@mobile/shared/providers/loader';
 import { useToastServiceContext } from '@mobile/shared/providers/toast';
@@ -18,6 +24,7 @@ import { MobileNumberFormatLocale, MobileAppLinking } from '@mobile/shared/utils
 import {
     CLEAR_ALL_MOBILE_STORAGE_ONLY_APP_LEVEL_USE_DANGER,
     ENCRYPTED_MOBILE_STORAGE_ONLY_APP_LEVEL_USE,
+    mobileLayerSynchronousDevToken,
     REGULAR_MOBILE_STORAGE_ONLY_APP_LEVEL_USE,
     SECURE_ENCRYPTED_MOBILE_STORAGE_ONLY_APP_LEVEL_USE
 } from './storage';
@@ -28,6 +35,19 @@ const security: Security = {
         throw new Error('Security check not initialized');
     }
 };
+
+function resolveAppStateStatus(state: string): AppStateStatus {
+    switch (state) {
+        case 'active':
+        case 'background':
+        case 'inactive':
+            return state;
+        case 'extension':
+        case 'unknown':
+        default:
+            return 'unknown';
+    }
+}
 
 export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
     const {
@@ -45,6 +65,8 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
             },
             version: packageJson.version,
             build,
+            environment,
+            devToken: mobileLayerSynchronousDevToken.storage.get() ?? undefined,
             deviceInfo,
             numberFormatLocale: new MobileNumberFormatLocale(getLocales()[0]),
             storage: {
@@ -87,17 +109,12 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
                 check: () => security.check()
             },
             clearAllData: CLEAR_ALL_MOBILE_STORAGE_ONLY_APP_LEVEL_USE_DANGER,
+            reloadApp,
             subscribeAppStateChange(callback) {
+                callback(resolveAppStateStatus(AppState.currentState));
+
                 const subscription = AppState.addEventListener('change', state => {
-                    switch (state) {
-                        case 'active':
-                        case 'background':
-                        case 'inactive':
-                            return callback(state);
-                        case 'extension':
-                        case 'unknown':
-                            return callback('unknown');
-                    }
+                    callback(resolveAppStateStatus(state));
                 });
                 return () => subscription.remove();
             }

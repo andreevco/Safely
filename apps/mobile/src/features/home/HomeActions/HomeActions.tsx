@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { BTC_ASSET } from '@safely/core';
-import { useIsActiveWalletWatchOnly, useScanQrScheme } from '@safely/ux';
+import { useAnalytics, useIsActiveWalletWatchOnly, useScanQrScheme } from '@safely/ux';
 
 import type { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { Actions } from '@mobile/shared/ui';
@@ -15,6 +15,7 @@ const WATCH_ONLY_OPACITY = 0.56;
 
 export const HomeActions = () => {
     const { t } = useTranslation();
+    const analytics = useAnalytics();
     const navigation = useNavigation<RootStackNavigationProp<'TabsNavigator'>>();
     const isWatchOnly = useIsActiveWalletWatchOnly();
 
@@ -44,8 +45,9 @@ export const HomeActions = () => {
     }, [navigation]);
 
     const handleNavigateToSendAsset = useCallback(() => {
+        void analytics.trackSendStart();
         navigation.navigate('SendAssetModal');
-    }, [navigation]);
+    }, [navigation, analytics]);
 
     const handleWatchOnlyAction = useCallback(() => {
         navigation.navigate('WatchOnlySheet');

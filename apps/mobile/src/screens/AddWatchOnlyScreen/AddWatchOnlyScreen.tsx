@@ -4,13 +4,13 @@ import { useTranslation } from 'react-i18next';
 import { TextInput, View } from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';
 
-import type { PortfolioMeta } from '@safely/core';
 import {
     BtcAddress,
     BtcXpub,
     PortfolioAlreadyExistsError,
-    PortfolioFactory,
+    PortfolioMeta,
     PortfolioNetworkType,
+    PortfolioWatchOnlyBtc,
     toPortfolioIdWatchOnly
 } from '@safely/core';
 import { useAddWatchOnlyPortfolio, useLoader, usePortfolios } from '@safely/ux';
@@ -64,7 +64,7 @@ export const AddWatchOnlyScreen = () => {
 
     const handleNext = useCallback(() => {
         const portfolioId = toPortfolioIdWatchOnly(
-            PortfolioFactory.resolveBtcWatchOnlyInput(trimmedInput, PortfolioNetworkType.MAINNET)
+            PortfolioWatchOnlyBtc.resolveUserInput(trimmedInput, PortfolioNetworkType.MAINNET)
         );
 
         const existingPortfolio = portfolios.find(p => p.id.isEq(portfolioId));

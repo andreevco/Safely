@@ -40,21 +40,24 @@ export const PortfoliosList = (props: PortfoliosListProps) => {
     const portfoliosRef = useRef(portfolios);
     portfoliosRef.current = portfolios;
 
-    // recalculate positions only when added/changed/removed portfolios
-    const idsSetSignature = useMemo(
-        () =>
-            portfolios
-                .map(p => p.id.toString())
-                .sort()
-                .join('|'),
+    const idsSignature = useMemo(
+        () => portfolios.map(p => p.id.toString()).join('|'),
         [portfolios]
     );
 
     useEffect(() => {
         if (activeId.value !== null) return;
 
-        positions.value = buildPositions(portfoliosRef.current);
-    }, [idsSetSignature, positions, activeId]);
+        const next = buildPositions(portfoliosRef.current);
+        const current = positions.value;
+        const sameOrder =
+            Object.keys(next).length === Object.keys(current).length &&
+            Object.keys(next).every(id => current[id] === next[id]);
+
+        if (sameOrder) return;
+
+        positions.value = next;
+    }, [idsSignature, positions, activeId]);
 
     const handleSelect = useCallback(
         (portfolio: Portfolio) => {

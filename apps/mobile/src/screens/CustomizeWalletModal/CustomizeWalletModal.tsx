@@ -30,7 +30,7 @@ export const CustomizeWalletModal = (props: CustomizeWalletModalProps) => {
     const { portfolio, onSave, onCompleteCustomize, hasBackButton } = props.route?.params ?? {};
     const { t } = useTranslation();
     const fallbackName = useNewPortfolioFallbackName();
-    const { mutateAsync: changePortfolioMeta } = useChangePortfolioMeta();
+    const { mutate: changePortfolioMeta } = useChangePortfolioMeta();
 
     const [walletName, setWalletName] = useState(portfolio?.meta.name ?? fallbackName);
     const [selectedIcon, setSelectedIcon] = useState<WalletIcon>(
@@ -40,7 +40,7 @@ export const CustomizeWalletModal = (props: CustomizeWalletModalProps) => {
     const handleSave = useCallback(async () => {
         Keyboard.dismiss();
         if (portfolio) {
-            await changePortfolioMeta({
+            changePortfolioMeta({
                 portfolio,
                 meta: { name: walletName.trim(), icon: selectedIcon }
             });

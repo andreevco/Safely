@@ -1,7 +1,5 @@
-import type { TextProps as RNTextProps } from 'react-native';
-import { Text as RNText, View } from 'react-native';
-import type { UnistylesVariants } from 'react-native-unistyles';
-import { useUnistyles } from 'react-native-unistyles';
+import { Text as RNText, TextProps as RNTextProps, View, ViewStyle } from 'react-native';
+import { UnistylesVariants, useUnistyles } from 'react-native-unistyles';
 
 import { Skeleton } from '../Skeleton';
 import { styles } from './Text.styles';
@@ -25,6 +23,7 @@ export const Text = (props: TextProps) => {
         skeleton,
         skeletonVariant,
         skeletonWidth,
+        style,
         ...rest
     } = props;
     const { theme } = useUnistyles();
@@ -40,6 +39,7 @@ export const Text = (props: TextProps) => {
             <View style={styles.skeletonContainer}>
                 <Skeleton
                     width={skeletonWidth ?? width}
+                    style={style as ViewStyle}
                     height={height}
                     borderRadius={theme.radius.sm}
                     variant={skeletonVariant ?? 'secondary'}
@@ -49,7 +49,7 @@ export const Text = (props: TextProps) => {
     }
 
     return (
-        <RNText allowFontScaling={false} {...rest} style={[styles.text, rest.style]}>
+        <RNText allowFontScaling={false} {...rest} style={[styles.text, style]}>
             {children}
         </RNText>
     );

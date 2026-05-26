@@ -8,6 +8,8 @@ import { Cell, Text } from '@mobile/shared/ui';
 
 import { styles } from './ActivityItem.styles';
 
+type ActivityItemProps = Omit<ActivityRow, 'key'>;
+
 const Counterparty = ({ counterparty }: { counterparty: ActivityRow['counterparty'] }) => {
     switch (counterparty.kind) {
         case 'contact':
@@ -35,7 +37,7 @@ const Counterparty = ({ counterparty }: { counterparty: ActivityRow['counterpart
     }
 };
 
-export const ActivityItem = memo((props: ActivityRow) => {
+export const ActivityItem = memo((props: ActivityItemProps) => {
     const {
         activity,
         title,

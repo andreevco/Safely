@@ -34,10 +34,6 @@ export type OnboardingConnector = {
 
 let _syncAccountFactory: SyncAccountFactory<SyncedStorageVersions> | null = null;
 
-export function resetAccountsFactory() {
-    _syncAccountFactory = null;
-}
-
 export function useAccountsFactory() {
     const config = useBootConfig();
     const {

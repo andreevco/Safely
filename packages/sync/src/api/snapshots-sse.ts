@@ -8,6 +8,17 @@ import type { SyncStateRepository } from '../update-handler/sync-state-repositor
 import { BufferHexSchema } from '../utils/schemas';
 import { SSEStream } from '../utils/sse-stream';
 
+export class SnapshotStreamError extends Error {
+    public override readonly name = 'SnapshotStreamError';
+
+    constructor(
+        public readonly code: number | string,
+        public readonly body: unknown
+    ) {
+        super(`Snapshot stream error: ${code}`);
+    }
+}
+
 export class SnapshotsSse {
     constructor(
         private readonly syncStateRepository: SyncStateRepository,
@@ -54,6 +65,12 @@ export class SnapshotsSse {
                     };
                 }
             },
+            errorParsers: {
+                error: data => {
+                    const parsed = streamErrorSchema.parse(data);
+                    return new SnapshotStreamError(parsed.code, data);
+                }
+            },
             signal: abortController.signal,
             getAuthorizationHeader: async () => {
                 return await this.apiSigner.sign('GET', '/v1/snapshots/stream', '');
@@ -85,4 +102,8 @@ const snapshotSchema = z.object({
     nonce: BufferHexSchema,
     signature: BufferHexSchema,
     snapshotProof: BufferHexSchema
+});
+
+const streamErrorSchema = z.object({
+    code: z.union([z.number(), z.string()])
 });

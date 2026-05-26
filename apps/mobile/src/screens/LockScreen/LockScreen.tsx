@@ -1,12 +1,15 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { useAppState } from '@safely/ux';
+
 import { usePasscodeVerification, useLockScreenControl } from '@mobile/entities/security';
-import { authenticateBiometry, useBiometryQuery } from '@mobile/features/biometry';
+import { authenticateBiometry, getBiometryIcon, useBiometryQuery } from '@mobile/features/biometry';
 import { useLogOutAllConfirmation } from '@mobile/features/settings/useLogOutAllConfirmation';
-import { LockoutContent, PasscodeInput, PasscodeLayout, Screen, Text } from '@mobile/shared/ui';
+import { LockoutContent, PasscodeView, Screen, Text } from '@mobile/shared/ui';
 
 export const LockScreen = () => {
+    const { current } = useAppState();
     const { t } = useTranslation();
     const { unlock } = useLockScreenControl();
     const handleLogOut = useLogOutAllConfirmation();
@@ -23,6 +26,14 @@ export const LockScreen = () => {
         unlock();
     }, [unlock]);
 
+    const handleBiometryPress = useCallback(async () => {
+        const result = await authenticateBiometry();
+
+        if (result.success) {
+            handleUnlock();
+        }
+    }, [handleUnlock]);
+
     const {
         inputValue,
         digitsAmount,
@@ -34,7 +45,7 @@ export const LockScreen = () => {
     } = usePasscodeVerification({ onSuccess: handleUnlock });
 
     useEffect(() => {
-        if (hasPromptedRef.current || isLocked || !biometry?.isEnabled) {
+        if (hasPromptedRef.current || isLocked || !biometry?.isEnabled || current !== 'active') {
             return;
         }
 
@@ -46,7 +57,7 @@ export const LockScreen = () => {
                 handleUnlock();
             }
         })();
-    }, [isLocked, biometry?.isEnabled, handleUnlock]);
+    }, [isLocked, biometry?.isEnabled, handleUnlock, current]);
 
     if (isLocked) {
         return <LockoutContent remainingSeconds={remainingSeconds} onSignOut={handleLogOut} />;
@@ -63,15 +74,22 @@ export const LockScreen = () => {
                 </Screen.Header.Button>
             </Screen.Header>
 
-            <PasscodeLayout title={t('lockScreen.title')}>
-                <PasscodeInput
-                    numberOfDigits={digitsAmount}
-                    value={inputValue}
-                    onChange={handleInputChange}
-                    isSuccess={isSuccess}
-                    isError={isError}
-                />
-            </PasscodeLayout>
+            <PasscodeView
+                title={t('lockScreen.title')}
+                numberOfDigits={digitsAmount}
+                value={inputValue}
+                onChange={handleInputChange}
+                isSuccess={isSuccess}
+                isError={isError}
+                biometry={
+                    biometry?.isEnabled
+                        ? {
+                              onPress: handleBiometryPress,
+                              icon: getBiometryIcon(biometry.availableType)
+                          }
+                        : undefined
+                }
+            />
         </Screen>
     );
 };

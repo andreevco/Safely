@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import { projectIdentity } from '@safely/slottree';
 
+import { sAnalyticsId, sLatestDerivedBip39PortfolioIndex } from './schemas';
 import { sAccountMeta } from './schemas/account-meta.schema';
 import type { SContacts } from './schemas/contacts.schema';
 import { sContacts } from './schemas/contacts.schema';
@@ -15,7 +16,9 @@ const syncedStorageSchema = z.object({
     portfolios: sPortfolios,
     meta: sAccountMeta,
     devicesMeta: sDevicesMeta,
-    contacts: sContacts
+    contacts: sContacts,
+    latestDerivedBip39PortfolioIndex: sLatestDerivedBip39PortfolioIndex,
+    analyticsId: sAnalyticsId
 });
 
 export const syncedStorageV1 = {
@@ -26,7 +29,9 @@ export const syncedStorageV1 = {
         portfolios: [] as SPortfolios,
         meta: null,
         devicesMeta: null,
-        contacts: [] as SContacts
+        contacts: [] as SContacts,
+        latestDerivedBip39PortfolioIndex: null,
+        analyticsId: null
     },
     projectUp: projectIdentity,
     projectDown: projectIdentity

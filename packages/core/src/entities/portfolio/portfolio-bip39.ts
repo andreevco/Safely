@@ -1,4 +1,9 @@
-import { type SDerivation, type SPortfolioBip39, sPortfolioBip39 } from '@safely/sync-storage';
+import {
+    sDerivation,
+    type SDerivation,
+    type SPortfolioBip39,
+    sPortfolioBip39
+} from '@safely/sync-storage';
 
 import type { IDerivation } from '../derivation';
 import { Derivation, DerivationChainItemBtcSeed } from '../derivation';
@@ -6,15 +11,79 @@ import type { IPortfolioDerivable, PortfolioSecretRevealedStatus } from './I-por
 import { PortfolioType } from './I-portfolio';
 import type { PortfolioIdBip39 } from './portfolio-id-bip39';
 import { toPortfolioIdBip39 } from './portfolio-id-bip39';
-import type { PortfolioMeta } from './portfolio-meta';
+import type { NoIconPortfolioMeta, PortfolioMeta } from './portfolio-meta';
 import type { ISecretEncryptor } from '../../di';
 import type { Id } from '../../utils';
 import { BtcWalletType } from '../blockchain';
-import type { IMnemonicVaultEncryptedSecretStored } from '../mnemonic';
+import { InvalidMnemonicError, PortfolioGenerationFailedError } from '../errors';
+import type {
+    IMnemonicAccessor,
+    IMnemonicVault,
+    IMnemonicVaultEncryptedSecretStored
+} from '../mnemonic';
+import { MNEMONIC_TYPE, validateMnemonic } from '../mnemonic';
 import { MnemonicResource, MnemonicVault } from '../mnemonic';
 import { BtcBip39SeedProducer } from '../seed';
 
 export class PortfolioBip39 implements IPortfolioDerivable {
+    public static async createSerializedPortfolio({
+        encryptor,
+        mnemonicAccessor,
+        id,
+        options
+    }: {
+        encryptor: ISecretEncryptor;
+        mnemonicAccessor: IMnemonicAccessor & IMnemonicVault;
+        id: PortfolioIdBip39;
+        options: {
+            meta: NoIconPortfolioMeta;
+            seedRevealedFromDevice?: string;
+        };
+    }): Promise<SPortfolioBip39> {
+        try {
+            validateMnemonic(MNEMONIC_TYPE.BIP39, mnemonicAccessor.value);
+
+            const derivationIndex = 0;
+            const xpub = await DerivationChainItemBtcSeed.getXpub({
+                seedProducer: new BtcBip39SeedProducer(mnemonicAccessor),
+                walletType: BtcWalletType.NATIVE_SEGWIT,
+                network: id.network,
+                derivationIndex
+            });
+
+            const encryptedSecret = (
+                await MnemonicVault.fromMnemonicAccessor(encryptor, mnemonicAccessor)
+            ).encryptedSecret;
+
+            const meta = {
+                name: options.meta.name,
+                icon: options.meta.icon ?? id.getFallbackEmoji()
+            };
+
+            const secretRevealedStatus = options.seedRevealedFromDevice
+                ? {
+                      revealedAt: Date.now(),
+                      revealedFromDevice: options.seedRevealedFromDevice
+                  }
+                : null;
+
+            return sPortfolioBip39.toJson({
+                type: PortfolioType.BIP39,
+                id: id.toJSON(),
+                meta,
+                encryptedSecret,
+                secretRevealedStatus,
+                derivations: [sDerivation.toJson({ index: 0, chains: { btc: { xpub } } })]
+            });
+        } catch (error) {
+            if (error instanceof InvalidMnemonicError) {
+                throw error;
+            }
+
+            throw new PortfolioGenerationFailedError(undefined, { cause: error });
+        }
+    }
+
     public static restore(secretEncryptor: ISecretEncryptor, sPortfolio: SPortfolioBip39) {
         const mnemonicVault = new MnemonicVault(secretEncryptor, sPortfolio.encryptedSecret);
         return new PortfolioBip39({
@@ -35,12 +104,12 @@ export class PortfolioBip39 implements IPortfolioDerivable {
     private static restoreDerivation(
         mnemonicVault: MnemonicVault,
         portfolioRef: PortfolioBip39,
-        sDerivation: SDerivation
+        sDerivationVal: SDerivation
     ): IDerivation {
-        return new Derivation(portfolioRef, sDerivation.index, derivationRef => ({
+        return new Derivation(portfolioRef, sDerivationVal.index, derivationRef => ({
             btc: new DerivationChainItemBtcSeed({
-                sDerivation: sDerivation.chains.btc,
-                derivationIndex: sDerivation.index,
+                sDerivation: sDerivationVal.chains.btc,
+                derivationIndex: sDerivationVal.index,
                 seedProducer: new BtcBip39SeedProducer(mnemonicVault),
                 derivationRef
             })

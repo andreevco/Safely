@@ -22,12 +22,16 @@ export interface IAppContext {
 
     build: Build;
 
+    environment: 'production' | 'development';
+
     deviceInfo: {
         name: string;
         osVersion: string;
     };
 
     userCountryInfo?: UserCountryInfo;
+
+    devToken?: string;
 
     storage: {
         ux: {
@@ -56,6 +60,8 @@ export interface IAppContext {
     };
 
     clearAllData: () => Promise<void>;
+
+    reloadApp: () => void;
 
     loggerRegistry: ILoggerRegistry;
 

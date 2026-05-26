@@ -18,13 +18,7 @@ export function useLogOutAllConfirmation() {
             sliderLabel: t('logOutAllAccounts.slider.label'),
             sliderDescription: t('logOutAllAccounts.slider.description'),
             cancelLabel: t('logOutAllAccounts.cancel'),
-            onConfirm: async () => {
-                navigation.reset({
-                    index: 0,
-                    routes: [{ name: 'WelcomeScreen' }]
-                });
-                await eraseAllData();
-            }
+            onConfirm: eraseAllData
         });
     }, [eraseAllData, navigation, t]);
 }

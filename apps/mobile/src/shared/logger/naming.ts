@@ -23,5 +23,5 @@ export const ACCOUNT_FILE_PATTERN = new RegExp(
 );
 
 export function accountLogHash(accountId: string): string {
-    return sha256Prefix(accountId, HASH_BYTE_LENGTH);
+    return sha256Prefix('safely/v1/account-log/' + accountId, HASH_BYTE_LENGTH);
 }

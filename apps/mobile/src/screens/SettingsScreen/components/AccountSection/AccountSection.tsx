@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import {
+    AccountLinkState,
+    useAccountLinkState,
     useAccounts,
     useActiveAccountMeta,
     useAppContext,
@@ -24,6 +26,7 @@ import { AccountSelector } from './AccountSelector';
 export const AccountSection = () => {
     const { t } = useTranslation();
     const accounts = useAccounts();
+    const linkState = useAccountLinkState();
     const activeAccountName = useActiveAccountMeta().name;
     const navigation = useNavigation<SettingsStackNavigationProp>();
     const rootNavigation = useNavigation<RootStackNavigationProp>();
@@ -55,7 +58,7 @@ export const AccountSection = () => {
 
     const handleAddDevice = useCallback(async () => {
         using secureEncryptedStorage = getSecureEncrypted();
-        secureEncryptedStorage.UNSAFE_SKIP_SECURITY_CHECK_unlock();
+        await secureEncryptedStorage.unlock();
 
         await connectAccountToNewDevice({ secureEncryptedStorage });
     }, [connectAccountToNewDevice, getSecureEncrypted]);
@@ -89,16 +92,6 @@ export const AccountSection = () => {
                     </Cell.Content>
                     <Cell.Chevron />
                 </Cell>
-                <Cell onPress={() => navigation.navigate('NotificationsModal')}>
-                    <Cell.Content>
-                        <Cell.Row>
-                            <Cell.Title>
-                                {t('settings.groups.account.options.notifications')}
-                            </Cell.Title>
-                        </Cell.Row>
-                    </Cell.Content>
-                    <Cell.Chevron />
-                </Cell>
                 <Cell onPress={() => navigation.navigate('LanguageModal')}>
                     <Cell.Content>
                         <Cell.Row>
@@ -119,9 +112,11 @@ export const AccountSection = () => {
                 </Cell>
             </List.Group>
             <View style={styles.buttonsContainer}>
-                <Button type="secondary" size="small" onPress={handleAddDevice}>
-                    {t('settings.linkDevice')}
-                </Button>
+                {linkState !== AccountLinkState.UNLINKED && (
+                    <Button type="secondary" size="small" onPress={handleAddDevice}>
+                        {t('settings.linkDevice')}
+                    </Button>
+                )}
                 <Button type="secondary" size="small" onPress={handleAddAccount}>
                     {t('settings.addAccount')}
                 </Button>

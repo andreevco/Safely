@@ -4,7 +4,8 @@ import { Pressable } from 'react-native';
 
 import { useAppContext, useHasPortfolio } from '@safely/ux';
 
-import type { SettingsStackNavigationProp } from '@mobile/app/navigation/types';
+import { SettingsStackNavigationProp } from '@mobile/app/navigation/types';
+import { DeviceUnlinkedBanner } from '@mobile/features/device-link';
 import { List, Screen, Text } from '@mobile/shared/ui';
 
 import { AccountSection } from '../AccountSection';
@@ -25,6 +26,7 @@ export const SettingsContent = () => {
 
     return (
         <Screen.Scrollable contentContainerStyle={styles.container}>
+            <DeviceUnlinkedBanner style={styles.banner} />
             {hasPortfolio && <CurrentWalletSection />}
             <AccountSection />
             <SettingsGroups />

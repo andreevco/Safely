@@ -18,6 +18,11 @@ const sPortfolio = z.object({
     name: z.string()
 });
 
+type ReadonlyPortfolio = {
+    readonly __setId: string;
+    readonly name: string;
+};
+
 const schema = z.object({
     portfolios: z.array(sPortfolio)
 });
@@ -37,13 +42,44 @@ const versions = defineVersionHList(
     )
 );
 
+const nullableArraySchema = z.object({
+    portfolios: z.array(sPortfolio).nullable()
+});
+
+const nullableArrayVersions = defineVersionHList(
+    hCons(
+        {
+            version: 1,
+            schema: nullableArraySchema,
+            initial: {
+                portfolios: null
+            },
+            projectUp: cloneSlot,
+            projectDown: cloneSlot
+        },
+        hNil
+    )
+);
+
 type State = z.output<typeof schema>;
+type NullableArrayState = z.output<typeof nullableArraySchema>;
 
 function createPortfolioStorage(authorId: string): StorageImpl<State> {
     return createStorage({
         authorId,
         versions
     }) as StorageImpl<State>;
+}
+
+function createNullablePortfolioStorage(authorId: string): StorageImpl<NullableArrayState> {
+    return createStorage({
+        authorId,
+        versions: nullableArrayVersions
+    }) as StorageImpl<NullableArrayState>;
+}
+
+function expectAssignable<T>(_value: T): void {
+    return undefined;
 }
 
 function latest(storage: StorageImpl<State>): ContainerSlot {
@@ -160,12 +196,63 @@ describe('ordered array slots', () => {
 
         storage.transaction(draft => {
             draft.at('portfolios').push({ __setId: 'p1', name: 'One' });
+            expectAssignable<readonly ReadonlyPortfolio[]>(draft.at('portfolios').get());
+            expectAssignable<ReadonlyPortfolio | undefined>(
+                draft.at('portfolios').getById('missing')
+            );
+            expectAssignable<ReadonlyPortfolio | undefined>(
+                draft.at('portfolios').entry('missing').get()
+            );
+            // @ts-expect-error array lookup by id can be missing
+            expectAssignable<ReadonlyPortfolio>(draft.at('portfolios').getById('missing'));
+
             expect(draft.at('portfolios').getById('p1')).toEqual({
                 __setId: 'p1',
                 name: 'One'
             });
             expect(draft.at('portfolios').getById('missing')).toBeUndefined();
         });
+    });
+
+    it('uses entry for possibly missing array items', () => {
+        const storage = createPortfolioStorage('device-1');
+
+        storage.transaction(draft => {
+            const p1 = draft.at('portfolios').entry('p1');
+
+            expect(p1.exists()).toBe(false);
+            expect(p1.get()).toBeUndefined();
+            expect(() => p1.unwrap()).toThrow('Ordered array item "p1" does not exist');
+
+            p1.orDefault({ __setId: 'p1', name: 'One' }).set('name', 'Main');
+            expect(p1.exists()).toBe(true);
+
+            expect(p1.get()).toEqual({
+                __setId: 'p1',
+                name: 'Main'
+            });
+
+            p1.set({ __setId: 'p1', name: 'Replaced' });
+            expect(p1.get()).toEqual({
+                __setId: 'p1',
+                name: 'Replaced'
+            });
+
+            p1.update(item => {
+                item.set('name', 'Updated');
+            });
+            expect(p1.get()).toEqual({
+                __setId: 'p1',
+                name: 'Updated'
+            });
+
+            p1.delete();
+            expect(p1.exists()).toBe(false);
+            expect(() => p1.update(() => {})).toThrow('Ordered array item "p1" does not exist');
+            p1.set({ __setId: 'p1', name: 'Restored' });
+        });
+
+        expect(storage.get().portfolios).toEqual([{ __setId: 'p1', name: 'Restored' }]);
     });
 
     it('reorders items by full id list', () => {
@@ -297,5 +384,45 @@ describe('ordered array slots', () => {
     it('rejects array items without string __setIds', () => {
         expect(() => slotFromJson(['tag'], 0, '')).toThrow('string __setId');
         expect(() => slotFromJson([{ name: 'Missing id' }], 0, '')).toThrow('string __setId');
+    });
+
+    it('requires nullable array drafts to be unwrapped or defaulted', () => {
+        const storage = createNullablePortfolioStorage('device-1');
+
+        storage.transaction(draft => {
+            const portfolios = draft.at('portfolios');
+
+            expect(portfolios.get()).toBeNull();
+            expect(portfolios.isNull()).toBe(true);
+            expect(() => portfolios.unwrap()).toThrow('Nullable draft value is null');
+            expect(portfolios.ifPresent(() => {})).toBe(false);
+
+            // @ts-expect-error nullable array draft must be unwrapped or defaulted first
+            expectAssignable<{ push(item: unknown): void }>(portfolios);
+
+            const arrayDraft = portfolios.orDefault([]);
+            expectAssignable<readonly ReadonlyPortfolio[]>(arrayDraft.get());
+            arrayDraft.push({ __setId: 'p1', name: 'One' });
+            expect(
+                portfolios.ifPresent(present =>
+                    present.entry('p1').update(item => {
+                        item.set('name', 'Main');
+                    })
+                )
+            ).toBe(true);
+
+            expect(portfolios.get()).toEqual([{ __setId: 'p1', name: 'Main' }]);
+
+            portfolios.setNull();
+            expect(portfolios.get()).toBeNull();
+
+            portfolios.set([{ __setId: 'p2', name: 'Two' }]);
+            expect(portfolios.unwrap().entry('p2').get()).toEqual({
+                __setId: 'p2',
+                name: 'Two'
+            });
+        });
+
+        expect(storage.get().portfolios).toEqual([{ __setId: 'p2', name: 'Two' }]);
     });
 });

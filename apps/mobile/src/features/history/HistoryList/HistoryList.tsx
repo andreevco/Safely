@@ -42,7 +42,6 @@ const DAY_MONTH_FORMAT_OPTIONS = { day: 'numeric', month: 'short' } as const;
 
 const getFirstActivityKey = (groups: ActivityItemsDatedGroup[] | undefined): string | undefined =>
     groups?.[0]?.items?.[0]?.key;
-
 type HistoryListProps = {
     onNavigateToTransaction: (activity: BtcActivityItem) => void;
 };
@@ -143,7 +142,8 @@ export const HistoryList = (props: HistoryListProps) => {
     }, []);
 
     const renderItem = useCallback(({ item, index }: { item: HistoryRowItem; index: number }) => {
-        switch (item.type) {
+        const { key: _, ...itemWithoutKey } = item;
+        switch (itemWithoutKey.type) {
             case 'header':
                 return (
                     <View
@@ -158,7 +158,7 @@ export const HistoryList = (props: HistoryListProps) => {
                     </View>
                 );
             case 'activity':
-                return <ActivityItem {...item} />;
+                return <ActivityItem {...itemWithoutKey} />;
         }
     }, []);
 

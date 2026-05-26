@@ -56,6 +56,15 @@ jobs:
               NOTES=$(printf '[%s] #%s %s' "$BRANCH" "$NUMBER" "$TITLE")
             fi
           fi
+          # EAS Workflows doesn't quote-safe-interpolate inputs into its internal bash;
+          # unescaped () ` $ " ' \ in changelog cause exit 141 / SIGPIPE / empty log.
+          NOTES=$(printf '%s' "$NOTES" \
+            | tr -d '\r' \
+            | tr '\n' ' ' \
+            | tr '(' '[' \
+            | tr ')' ']' \
+            | sed "s/[\`\$\"'\\\\]//g" \
+            | tr -s ' ')
           # TestFlight "What to Test" caps at 4000 chars
           printf '%s' "$NOTES" | head -c 4000 > /tmp/release_notes.txt
           echo "----- release notes -----"

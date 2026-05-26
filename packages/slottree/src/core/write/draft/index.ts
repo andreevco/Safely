@@ -4,7 +4,15 @@ import { ObjectDraftNode } from './object-node';
 import type { Draft } from './types';
 import type { JsonStorageSelection } from '../selection';
 
-export type { ArrayDraft, AtomicDraft, Draft, DraftInput, ObjectDraft } from './types';
+export type {
+    ArrayDraft,
+    AtomicDraft,
+    Draft,
+    DraftInput,
+    EntryDraft,
+    NullableDraft,
+    ObjectDraft
+} from './types';
 
 export function createDraft<T>(selection: JsonStorageSelection, onUpdate: () => void): Draft<T> {
     const createChildNode = (cursor: DraftCursor): ArrayDraftNode => {
