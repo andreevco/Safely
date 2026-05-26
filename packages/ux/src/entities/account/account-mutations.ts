@@ -70,13 +70,13 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
             const account = await factory.createSyncAccount(params.secureEncryptedStorage);
 
             let createdPortfolio: SPortfolioBip39 | null = null;
+            const firstPortfolioDerivationIndex = 0;
             if (options?.createWallet || options?.setActive) {
                 const portfolioMnemonicFactory = new PortfolioMnemonicFactory(
                     account,
                     params.secureEncryptedStorage
                 );
 
-                const firstPortfolioDerivationIndex = 0;
                 using mnemonicAccessor = await portfolioMnemonicFactory.deriveBip39MnemonicResource(
                     firstPortfolioDerivationIndex
                 );
@@ -114,6 +114,7 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
 
                 if (createdPortfolio) {
                     draft.set('portfolios', [createdPortfolio]);
+                    draft.set('latestDerivedBip39PortfolioIndex', firstPortfolioDerivationIndex);
                 }
             });
 
