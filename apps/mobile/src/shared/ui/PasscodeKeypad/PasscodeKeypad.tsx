@@ -1,14 +1,12 @@
 import { impactAsync, ImpactFeedbackStyle } from 'expo-haptics';
 import { useRef } from 'react';
-import { Platform, TextInput, View } from 'react-native';
+import { TextInput, View } from 'react-native';
 
 import { TouchableOpacity } from '@mobile/shared/ui';
 import { Backspace28, Icon, IconProps } from '@mobile/shared/ui/Icon';
 import { Text } from '@mobile/shared/ui/Text';
 
 import { styles } from './PasscodeKeypad.styles';
-
-const supportsHardwareKeyboard = Platform.OS === 'ios' && Platform.isPad;
 
 interface PasscodeKeypadProps {
     value: string;
@@ -28,7 +26,7 @@ export const PasscodeKeypad = (props: PasscodeKeypadProps) => {
     const inputRef = useRef<TextInput>(null);
 
     const refocus = () => {
-        if (supportsHardwareKeyboard) inputRef.current?.focus();
+        inputRef.current?.focus();
     };
 
     const handleDigit = (digit: string) => {
@@ -61,18 +59,16 @@ export const PasscodeKeypad = (props: PasscodeKeypadProps) => {
 
     return (
         <View style={styles.container}>
-            {supportsHardwareKeyboard && (
-                <TextInput
-                    ref={inputRef}
-                    value={value}
-                    onChangeText={handleHardwareInput}
-                    keyboardType="number-pad"
-                    autoFocus
-                    caretHidden
-                    showSoftInputOnFocus={false}
-                    style={styles.hiddenInput}
-                />
-            )}
+            <TextInput
+                ref={inputRef}
+                value={value}
+                onChangeText={handleHardwareInput}
+                keyboardType="number-pad"
+                autoFocus
+                caretHidden
+                showSoftInputOnFocus={false}
+                style={styles.hiddenInput}
+            />
             {[0, 3, 6].map(start => (
                 <View key={start} style={styles.row}>
                     {DIGITS.slice(start, start + 3).map(d => (
