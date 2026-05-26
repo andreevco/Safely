@@ -17,3 +17,5 @@ export const deviceInfo = {
     name: isIOSAppOnMac ? 'Apple Silicon Mac (iOS App)' : (Device.modelName ?? fallbackName),
     osVersion: Device.osVersion ?? String(Platform.Version)
 };
+
+export const environment: 'production' | 'development' = __DEV__ ? 'development' : 'production';

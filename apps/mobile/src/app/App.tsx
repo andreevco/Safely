@@ -2,7 +2,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { createPersister, createQueryClient, QueryProvider } from '@safely/ux';
+import { AnalyticsProvider, createPersister, createQueryClient, QueryProvider } from '@safely/ux';
 
 import { BlurOverlay } from '@mobile/entities/security';
 import { loggerRegistry } from '@mobile/shared/logger';
@@ -30,12 +30,14 @@ export const App = () => {
                             <LoaderServiceProvider>
                                 <AppContextProvider>
                                     <RootSuspenseGate>
-                                        <SecurityCheckInitializer />
-                                        <LoggerLifecycle />
-                                        <LoaderProvider>
-                                            <AppNavigation />
-                                            <ToastProvider />
-                                        </LoaderProvider>
+                                        <AnalyticsProvider>
+                                            <SecurityCheckInitializer />
+                                            <LoggerLifecycle />
+                                            <LoaderProvider>
+                                                <AppNavigation />
+                                                <ToastProvider />
+                                            </LoaderProvider>
+                                        </AnalyticsProvider>
                                     </RootSuspenseGate>
                                     <BlurOverlay />
                                 </AppContextProvider>

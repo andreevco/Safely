@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 
 import { useAppContext } from '../../shared';
+import type { LinkingProtocol } from '../../shared/linking';
 import { useErrorToast } from '../errors';
 
 export function useLinking() {
@@ -11,8 +12,8 @@ export function useLinking() {
     });
 
     const openURL = useCallback(
-        (url: string) => {
-            linking.openURL(url).catch(errorToast);
+        (url: string, allowedProtocols?: LinkingProtocol[]) => {
+            linking.openURL(url, allowedProtocols).catch(errorToast);
         },
         [linking, errorToast]
     );

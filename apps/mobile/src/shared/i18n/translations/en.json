@@ -573,12 +573,7 @@
     },
     "safelyBeta": {
         "title": "Safely",
-        "subtitle": "Beta · {{version}}",
-        "cards": {
-            "betaNotice": "Safely is in beta. Keep under 0.002 BTC and back up your recovery phrase.",
-            "follow": "Follow updates in <tg>Telegram</tg> or <wa>WhatsApp</wa>",
-            "feedback": "Found a bug or have an idea? Your feedback helps us improve Safely. <action>Send feedback</action>"
-        }
+        "subtitle": "Beta · {{version}}"
     },
     "dateGroups": {
         "pending": "Pending",

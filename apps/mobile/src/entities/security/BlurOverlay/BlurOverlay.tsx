@@ -53,8 +53,12 @@ export const BlurOverlay = () => {
     }
 
     return (
-        <OverlayComponent pointerEvents="none" style={StyleSheet.absoluteFill}>
-            <Blur blurAnimatedProps={blurAnimatedProps} style={StyleSheet.absoluteFill} />
+        <OverlayComponent style={StyleSheet.absoluteFill}>
+            <Blur
+                blurAnimatedProps={blurAnimatedProps}
+                style={StyleSheet.absoluteFill}
+                pointerEvents="auto"
+            />
         </OverlayComponent>
     );
 };

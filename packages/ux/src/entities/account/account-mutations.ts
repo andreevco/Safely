@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo } from 'react';
 
 import type { ITreeStorage } from '@safely/core';
+import { deriveAnalyticsAccountUuid } from '@safely/core';
 import { PortfolioBip39, PortfolioIdBip39MasterKeyDerived } from '@safely/core';
 import { PortfolioMnemonicFactory } from '@safely/core';
 import { toPortfolioId } from '@safely/core';
@@ -69,13 +70,13 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
             const account = await factory.createSyncAccount(params.secureEncryptedStorage);
 
             let createdPortfolio: SPortfolioBip39 | null = null;
+            const firstPortfolioDerivationIndex = 0;
             if (options?.createWallet || options?.setActive) {
                 const portfolioMnemonicFactory = new PortfolioMnemonicFactory(
                     account,
                     params.secureEncryptedStorage
                 );
 
-                const firstPortfolioDerivationIndex = 0;
                 using mnemonicAccessor = await portfolioMnemonicFactory.deriveBip39MnemonicResource(
                     firstPortfolioDerivationIndex
                 );
@@ -98,14 +99,22 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
                 });
             }
 
+            const analyticsId = await deriveAnalyticsAccountUuid(
+                account,
+                params.secureEncryptedStorage
+            );
+
             await updateSyncStorage(account, draft => {
                 draft.set('meta', { name: params?.name ?? newAccountName });
 
                 const { key, value } = generateOwnMeta(account);
                 draft.at('devicesMeta').orDefault({}).set(key, value);
 
+                draft.at('analyticsId').set(analyticsId);
+
                 if (createdPortfolio) {
                     draft.set('portfolios', [createdPortfolio]);
+                    draft.set('latestDerivedBip39PortfolioIndex', firstPortfolioDerivationIndex);
                 }
             });
 

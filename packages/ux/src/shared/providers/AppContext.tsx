@@ -22,6 +22,8 @@ export interface IAppContext {
 
     build: Build;
 
+    environment: 'production' | 'development';
+
     deviceInfo: {
         name: string;
         osVersion: string;
