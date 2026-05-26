@@ -1,6 +1,6 @@
 import * as ScreenCapture from 'expo-screen-capture';
 import { useEffect, useState } from 'react';
-import { AppState, Platform, View } from 'react-native';
+import { Platform, View } from 'react-native';
 import { runOnJS, useAnimatedProps, useSharedValue, withTiming } from 'react-native-reanimated';
 import { FullWindowOverlay } from 'react-native-screens';
 import { StyleSheet } from 'react-native-unistyles';
@@ -15,45 +15,8 @@ const OverlayComponent = Platform.OS === 'ios' ? FullWindowOverlay : View;
 const BLUR_INTENSITY = 100;
 const FADE_OUT_DURATION = 200;
 
-function useShouldBlur() {
-    const { current } = useAppState();
-    const [isAndroidBlurred, setIsAndroidBlurred] = useState(false);
-
-    useEffect(() => {
-        if (Platform.OS !== 'android') {
-            return;
-        }
-
-        /**
-         * Not ideal, that it's internal logic on BlurOverlay,
-         * but on Android app state working a little bit different
-         * Should decide is it good idea to move this logic into useAppState
-         * and emit 'inactive' state on Android blur event
-         * Maybe good point for consistency between platforms – 'inactive' state works similar on iOS
-         */
-        const blurSubscription = AppState.addEventListener('blur', () => {
-            setIsAndroidBlurred(true);
-        });
-
-        const focusSubscription = AppState.addEventListener('focus', () => {
-            setIsAndroidBlurred(false);
-        });
-
-        return () => {
-            blurSubscription.remove();
-            focusSubscription.remove();
-        };
-    }, []);
-
-    return (
-        current === 'background' ||
-        ((isAndroidBlurred || current === 'inactive') && !blurFreeze.isFrozen)
-    );
-}
-
 export const BlurOverlay = () => {
-    const shouldBlur = useShouldBlur();
-
+    const { current } = useAppState();
     const intensity = useSharedValue(0);
     const [isVisible, setIsVisible] = useState(false);
 
@@ -63,6 +26,9 @@ export const BlurOverlay = () => {
 
     useEffect(() => {
         // Face ID changes state to 'inactive' for too long. So we need 'hack' with blur freeze for smooth UX
+        const shouldBlur =
+            current === 'background' || (current === 'inactive' && !blurFreeze.isFrozen);
+
         if (shouldBlur) {
             setIsVisible(true);
             intensity.value = BLUR_INTENSITY;
@@ -80,7 +46,7 @@ export const BlurOverlay = () => {
                 void ScreenCapture.allowScreenCaptureAsync();
             }
         }
-    }, [shouldBlur, intensity]);
+    }, [current, intensity]);
 
     if (!isVisible) {
         return null;
