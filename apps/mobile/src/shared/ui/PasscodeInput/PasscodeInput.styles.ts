@@ -8,11 +8,5 @@ export const styles = StyleSheet.create(theme => ({
         gap: theme.spacing[8],
         paddingTop: theme.spacing[12],
         paddingBottom: theme.spacing[16]
-    },
-    hiddenInput: {
-        position: 'absolute',
-        width: 0,
-        height: 0,
-        opacity: 0
     }
 }));
