@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { bootConfigSchema, sCryptoAssetAmount } from '@safely/core';
+import { aboutSchema, bootConfigSchema, sCryptoAssetAmount } from '@safely/core';
 import { UtxoSchema, UtxoWithOptionalTxSchema } from '@safely/core/api/btc';
 
 const sHistoricalPrice = z.object({
@@ -47,6 +47,7 @@ export const cacheSchemas = {
         hasLocalNotBroadcastedCache: z.boolean()
     }),
     bootConfig: bootConfigSchema,
+    about: aboutSchema,
     infiniteActivityData: sInfiniteActivityData,
     sHistoricalPrice: sHistoricalPrice
 } satisfies Record<string, z.ZodType>;

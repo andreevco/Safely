@@ -1,6 +1,6 @@
 import { BtcExplorer } from './btc-explorer';
 import type { Explorer } from './explorer';
-import type { BootConfig } from '../../api/boot/models';
+import type { BootConfig } from '../../api/config/models';
 import { assertUnreachable } from '../../utils';
 import { BLOCKCHAIN_NAME } from '../blockchain';
 
