@@ -10,6 +10,7 @@ import type { AnalyticsEvent, Environment, SystemProps } from './api/events/mode
 import { sAnalyticsEvent } from './api/events/models';
 import type { Bucket } from './bucket/bucket-types';
 import { getBucket } from './bucket/get-bucket';
+import { classifyAnalyticsSendError } from './errors';
 import { RateCache } from './rate-cache';
 import { SDK_VERSION } from './sdk-version';
 
@@ -125,7 +126,7 @@ export class AnalyticsService {
         lang: string;
         cryptoCurrency: string;
         fiatAmount: number;
-        errorType: string | null;
+        error?: unknown;
     }): Promise<void> {
         const bucket = await this.computeBucket(input.fiatAmount, input.fiatSymbol, 'send_finish');
         if (bucket === null) return;
@@ -135,7 +136,7 @@ export class AnalyticsService {
             props: {
                 bucket,
                 currency: input.cryptoCurrency,
-                errorType: input.errorType ?? 'none'
+                errorType: input.error ? classifyAnalyticsSendError(input.error) : 'none'
             },
             lang: input.lang,
             sessionId: this.resolveSessionId(input.accountUuid),

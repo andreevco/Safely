@@ -1,6 +1,8 @@
-import { BtcApiError, BtcSendDustError, OutputsAreSpendingMoreThanInputsError } from '@safely/core';
+import { BtcApiError } from '../../api/btc';
+import { BtcSendDustError } from '../../blockchain-api';
+import { OutputsAreSpendingMoreThanInputsError } from '../../entities';
 
-export function classifyError(error: unknown): string {
+export function classifyAnalyticsSendError(error: unknown): string {
     if (error instanceof BtcSendDustError) return 'dust';
     if (error instanceof OutputsAreSpendingMoreThanInputsError) return 'insufficient_funds';
     if (error instanceof BtcApiError) {

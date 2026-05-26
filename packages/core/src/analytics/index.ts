@@ -14,3 +14,4 @@ export { RateCache } from './rate-cache';
 
 export { AnalyticsService } from './analytics-service';
 export type { AnalyticsDeps } from './analytics-service';
+export * from './errors';

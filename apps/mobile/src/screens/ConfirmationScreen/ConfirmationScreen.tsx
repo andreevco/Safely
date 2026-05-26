@@ -21,7 +21,6 @@ import { TransactionFee } from '@mobile/screens/ConfirmationScreen/components/Tr
 import { TransactionSendResult } from '@mobile/screens/ConfirmationScreen/components/TransactionSendResult';
 import { Checkmark96, Icon, List, Screen, Text, Image } from '@mobile/shared/ui';
 
-import { classifyError } from './classify-error';
 import { Amount, ConfirmationFooter, Wallet, TransactionCell } from './components';
 import { styles } from './ConfirmationScreen.styles';
 import { ConfirmationState } from './ConfirmationScreen.types';
@@ -69,8 +68,7 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
             void analytics.trackSendFinish({
                 cryptoCurrency,
                 fiatAmount,
-                fiatSymbol: fiat.id.symbol,
-                errorType: null
+                fiatSymbol: fiat.id.symbol
             });
         } catch (error) {
             logger.error('[ConfirmationScreen] send failed', error);
@@ -80,7 +78,7 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
                 cryptoCurrency,
                 fiatAmount,
                 fiatSymbol: fiat.id.symbol,
-                errorType: classifyError(error)
+                error
             });
         }
     }, [send, onSuccess, logger, confirmationResult, analytics, fiat.id.symbol]);

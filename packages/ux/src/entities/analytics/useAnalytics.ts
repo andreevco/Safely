@@ -17,7 +17,7 @@ export interface AnalyticsApi {
         cryptoCurrency: string;
         fiatAmount: number;
         fiatSymbol: string;
-        errorType: string | null;
+        error?: unknown;
     }): Promise<void>;
 }
 
