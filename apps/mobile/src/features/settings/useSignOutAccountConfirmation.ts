@@ -2,8 +2,10 @@ import { useNavigation } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { SyncStatus } from '@safely/sync';
 import {
     useAccounts,
+    useActiveAccount,
     useActiveAccountMeta,
     useDeleteAccount,
     useEraseAllData,
@@ -16,6 +18,7 @@ export function useSignOutAccountConfirmation() {
     const { t } = useTranslation();
     const navigation = useNavigation<RootStackNavigationProp>();
     const accounts = useAccounts();
+    const activeAccount = useActiveAccount();
     const accountName = useActiveAccountMeta().name;
     const toast = useToast();
     const { mutateAsync: deleteAccount } = useDeleteAccount();
@@ -23,9 +26,12 @@ export function useSignOutAccountConfirmation() {
 
     return useCallback(() => {
         const isLastAccount = accounts?.length === 1;
+        const isSyncAccount =
+            activeAccount.syncProvider.syncStatusManager.getStatus() !== SyncStatus.OFFLINE;
 
         navigation.navigate('SignOutAccountSheet', {
             accountName,
+            withLoader: !isLastAccount && isSyncAccount,
             onConfirm: async () => {
                 if (isLastAccount) {
                     return eraseAllData();
@@ -35,5 +41,14 @@ export function useSignOutAccountConfirmation() {
                 }
             }
         });
-    }, [navigation, accountName, accounts?.length, deleteAccount, eraseAllData, toast, t]);
+    }, [
+        navigation,
+        accountName,
+        accounts?.length,
+        activeAccount,
+        deleteAccount,
+        eraseAllData,
+        toast,
+        t
+    ]);
 }
