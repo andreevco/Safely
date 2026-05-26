@@ -1,0 +1,1 @@
+export { AboutFeedSkeleton } from './AboutFeedSkeleton';

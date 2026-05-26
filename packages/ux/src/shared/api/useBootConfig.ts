@@ -1,35 +1,17 @@
 import { keepPreviousData } from '@tanstack/react-query';
-import { useMemo } from 'react';
 
-import { BootApi } from '@safely/core';
 import type { BootConfig } from '@safely/core';
 
 import { apiKeys } from './keys';
-import { useAppContext } from '../providers';
+import { useConfigApi } from './useConfigApi';
 import { usePersistSuspenseQuery } from '../query-core';
 
-export function useBootApi(): BootApi {
-    const { version, build, i18n, userCountryInfo, devToken } = useAppContext();
-
-    return useMemo(
-        () =>
-            new BootApi({
-                build,
-                version,
-                lang: i18n.language,
-                userCountryInfo,
-                devToken
-            }),
-        [build, version, i18n.language, userCountryInfo, devToken]
-    );
-}
-
 export function useBootConfigQuery() {
-    const bootApi = useBootApi();
+    const configApi = useConfigApi();
 
     return usePersistSuspenseQuery<BootConfig>({
-        queryKey: apiKeys.bootConfig(bootApi.id).toKey(),
-        queryFn: () => bootApi.boot(),
+        queryKey: apiKeys.bootConfig(configApi.id).toKey(),
+        queryFn: () => configApi.boot(),
         schemaKey: 'bootConfig',
         placeholderData: keepPreviousData
     });

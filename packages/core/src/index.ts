@@ -1,5 +1,4 @@
-export * from './api/boot/client';
-export * from './api/boot/models';
+export * from './api/config';
 export * from './api/btc';
 export * from './api/price';
 export * from './blockchain-api';

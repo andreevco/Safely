@@ -22,7 +22,8 @@ export const i18n = i18next.use(initReactI18next).init({
     lng: detectedLanguage,
     fallbackLng: FALLBACK_LANGUAGE,
     resources,
-    interpolation: { escapeValue: false }
+    interpolation: { escapeValue: false },
+    react: { transSupportBasicHtmlNodes: false }
 });
 
 export const availableLanguages = (Object.keys(resources) as LanguageCode[]).map(code => ({

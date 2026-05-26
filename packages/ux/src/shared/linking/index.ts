@@ -1,4 +1,8 @@
-import { LinkingFailedToOpenError, LinkingUnsafeProtocolError } from '@safely/core';
+import {
+    intersectArrays,
+    LinkingFailedToOpenError,
+    LinkingUnsafeProtocolError
+} from '@safely/core';
 import type { Logger } from '@safely/sync';
 
 export enum LinkingProtocol {
@@ -14,18 +18,27 @@ export abstract class Linking {
 
     protected abstract openWindow(url: string): Promise<void>;
 
-    private isValidUrlProtocol(url: string): boolean {
+    private isValidUrlProtocol(url: string, allowedProtocols?: LinkingProtocol[]): boolean {
         try {
-            const u = new URL(url);
-            return this.authorizedOpenUrlProtocols.includes(u.protocol as LinkingProtocol);
+            const allowed = allowedProtocols
+                ? intersectArrays(this.authorizedOpenUrlProtocols, allowedProtocols)
+                : this.authorizedOpenUrlProtocols;
+
+            return allowed.includes(new URL(url).protocol as LinkingProtocol);
         } catch (e) {
             this.logger.error('Invalid URL protocol', e);
             return false;
         }
     }
 
-    public async openURL(url: string): Promise<void> {
-        if (!this.isValidUrlProtocol(url)) {
+    /*
+     * @param url - The URL to open.
+     * @param allowedProtocols - does not override authorized protocols. It will be intersected with authorized protocols
+     * @throws {LinkingUnsafeProtocolError} If the URL protocol is not allowed.
+     * @throws {LinkingFailedToOpenError} If the URL failed to open.
+     */
+    public async openURL(url: string, allowedProtocols?: LinkingProtocol[]): Promise<void> {
+        if (!this.isValidUrlProtocol(url, allowedProtocols)) {
             throw new LinkingUnsafeProtocolError();
         }
 

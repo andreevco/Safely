@@ -1,9 +1,9 @@
 import { StaticScreenProps } from '@react-navigation/native';
-import { usePreventScreenCapture } from 'expo-screen-capture';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
+import { usePreventCurrentScreenCapture } from '@mobile/entities/security';
 import { Button, Screen, Text, WordCell } from '@mobile/shared/ui';
 import { ExclamationmarkCircle16, Icon } from '@mobile/shared/ui/Icon';
 import { useCopy } from '@mobile/shared/utils/copy';
@@ -15,7 +15,7 @@ type RecoveryPhraseSheetProps = StaticScreenProps<{
 }>;
 
 export const RecoveryPhraseSheet = (props: RecoveryPhraseSheetProps) => {
-    usePreventScreenCapture();
+    usePreventCurrentScreenCapture();
 
     const { t } = useTranslation();
     const copy = useCopy();

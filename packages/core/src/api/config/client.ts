@@ -1,10 +1,10 @@
-import type { BootConfig, BootParams } from './models';
-import { bootConfigSchema } from './models';
+import type { About, BootConfig, ConfigParams } from './models';
+import { aboutSchema, bootConfigSchema } from './models';
 import type { IIdentifiable } from '../../utils';
 import { ApiClient } from '../../utils/fetch';
 
-export class BootApi extends ApiClient implements IIdentifiable {
-    constructor(private readonly params: BootParams) {
+export class ConfigApi extends ApiClient implements IIdentifiable {
+    constructor(private readonly params: ConfigParams) {
         super('https://config.safely.app/v1');
     }
 
@@ -29,5 +29,9 @@ export class BootApi extends ApiClient implements IIdentifiable {
 
     public async boot(): Promise<BootConfig> {
         return this.getJson('/config', bootConfigSchema, this.searchParams);
+    }
+
+    public async getAbout(): Promise<About> {
+        return this.getJson('/about', aboutSchema, this.searchParams);
     }
 }

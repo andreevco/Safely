@@ -14,7 +14,7 @@ export const FullScreenLoader = ({ visible }: FullScreenLoaderProps) => {
     }
 
     return (
-        <View style={styles.overlay} pointerEvents="none">
+        <View style={styles.overlay}>
             <View style={styles.backdrop} />
             <View style={styles.container}>
                 <CircularSpinner />
