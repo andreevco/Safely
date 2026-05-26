@@ -16,4 +16,5 @@ export * from './query-core';
 export * from './errors';
 export * from './linking';
 export * from './dismissed-banners';
+export * from './beta-feed-watched';
 export * from './analytics';
