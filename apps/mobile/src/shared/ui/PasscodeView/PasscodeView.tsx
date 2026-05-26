@@ -16,22 +16,15 @@ interface PasscodeViewProps {
     onChange: (value: string) => void;
     isSuccess: SharedValue<boolean>;
     isError?: SharedValue<boolean>;
-    onBiometry?: () => void;
-    biometryIcon?: IconProps['icon'];
+    biometry?: {
+        onPress: () => void;
+        icon: IconProps['icon'];
+    };
 }
 
 export const PasscodeView = (props: PasscodeViewProps) => {
-    const {
-        title,
-        description,
-        numberOfDigits,
-        value,
-        onChange,
-        isSuccess,
-        isError,
-        onBiometry,
-        biometryIcon
-    } = props;
+    const { title, description, numberOfDigits, value, onChange, isSuccess, isError, biometry } =
+        props;
 
     return (
         <View style={styles.content}>
@@ -58,8 +51,7 @@ export const PasscodeView = (props: PasscodeViewProps) => {
                 value={value}
                 onChange={onChange}
                 maxLength={numberOfDigits}
-                onBiometry={onBiometry}
-                biometryIcon={biometryIcon}
+                biometry={biometry}
             />
         </View>
     );

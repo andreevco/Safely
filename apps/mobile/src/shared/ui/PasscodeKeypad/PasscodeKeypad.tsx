@@ -14,14 +14,16 @@ interface PasscodeKeypadProps {
     value: string;
     onChange: (value: string) => void;
     maxLength: number;
-    onBiometry?: () => void;
-    biometryIcon?: IconProps['icon'];
+    biometry?: {
+        onPress: () => void;
+        icon: IconProps['icon'];
+    };
 }
 
 const DIGITS = '123456789'.split('');
 
 export const PasscodeKeypad = (props: PasscodeKeypadProps) => {
-    const { value, onChange, maxLength, onBiometry, biometryIcon } = props;
+    const { value, onChange, maxLength, biometry } = props;
 
     const inputRef = useRef<TextInput>(null);
 
@@ -46,10 +48,10 @@ export const PasscodeKeypad = (props: PasscodeKeypadProps) => {
     };
 
     const handleBiometry = () => {
-        if (!onBiometry) return;
+        if (!biometry) return;
 
         void impactAsync(ImpactFeedbackStyle.Light);
-        onBiometry();
+        biometry.onPress();
     };
 
     const handleHardwareInput = (text: string) => {
@@ -87,9 +89,9 @@ export const PasscodeKeypad = (props: PasscodeKeypadProps) => {
                 </View>
             ))}
             <View style={styles.row}>
-                {onBiometry && biometryIcon ? (
+                {biometry ? (
                     <TouchableOpacity style={styles.button} onPress={handleBiometry}>
-                        <Icon icon={biometryIcon} size={28} />
+                        <Icon icon={biometry.icon} size={28} />
                     </TouchableOpacity>
                 ) : (
                     <View style={styles.button} />
