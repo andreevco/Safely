@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import type { FC, PropsWithChildren } from 'react';
 import { useEffect } from 'react';
 
@@ -7,12 +8,14 @@ import type { SyncedStorageStructure } from '@safely/sync-storage';
 import { SecretEncryptor, useAppContext } from '../../../shared';
 import { useAppState } from '../../../shared/app/useAppState';
 import { useAccounts } from '../account-state';
+import { accountKey } from '../keys';
 import { accountStore, accountStoreActions, SYNCED_SLOT_KEYS } from './account-store';
 import { AccountStoreTransform } from './account-store-transform';
 
 function useSyncObserver() {
     const { storage } = useAppContext();
     const accounts = useAccounts();
+    const queryClient = useQueryClient();
 
     useEffect(() => {
         if (!accounts || accounts.length === 0) {
@@ -40,6 +43,14 @@ function useSyncObserver() {
                     const prev = accountStore.getState().accountsData.get(account.accountId);
                     const next = transform.restore(key, slotJson, prev ?? null);
                     accountStoreActions.setSlot(account.accountId, key, next);
+
+                    if (key === 'portfolios') {
+                        queryClient.invalidateQueries({
+                            queryKey: accountKey
+                                .accountId(account.accountId)
+                                .activePortfolio.toKey()
+                        });
+                    }
                 });
                 unsubscribes.push(unsub);
             });
@@ -48,7 +59,7 @@ function useSyncObserver() {
         return () => {
             unsubscribes.forEach(fn => fn());
         };
-    }, [accounts, storage.sync]);
+    }, [accounts, storage.sync, queryClient]);
 }
 
 function useSyncRestartOnForeground() {
