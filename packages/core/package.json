@@ -19,7 +19,7 @@
     "bitcoinjs-lib": "^7.0.1",
     "ecpair": "^3.0.0",
     "tweetnacl": "^1.0.3",
-    "uuid": "^14.0.0",
+    "uuid": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {

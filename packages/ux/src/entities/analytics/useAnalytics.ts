@@ -1,13 +1,13 @@
-import { useContext, useMemo } from 'react';
+import { useCallback, useContext, useMemo } from 'react';
 
 import { AnalyticsContext } from './AnalyticsContext';
-import { useAccountUuid } from './useAccountUuid';
 import { useActiveLanguage } from '../../shared/i18n/translate';
+import { useActiveAccountQuery } from '../account';
 
 export interface AnalyticsApi {
     trackOnboardingOpen(input: { onboardingId: string }): Promise<void>;
     trackWalletOpen(input: {
-        onboardingId: string;
+        onboardingId: string | null;
         fiatAmount: number;
         fiatSymbol: string;
         sync: boolean;
@@ -28,12 +28,17 @@ export function useAnalytics(): AnalyticsApi {
     }
 
     const lang = useActiveLanguage();
-    const accountUuid = useAccountUuid();
+    const { data: activeAccount } = useActiveAccountQuery();
+    const getAccountUuid = useCallback(
+        () => activeAccount?.syncProvider.get('analyticsId'),
+        [activeAccount]
+    );
 
     return useMemo<AnalyticsApi>(
         () => ({
             trackOnboardingOpen: input => service.trackOnboardingOpen({ ...input, lang }),
             trackWalletOpen: async input => {
+                const accountUuid = getAccountUuid();
                 if (!accountUuid) return;
 
                 await service.trackWalletOpen({
@@ -43,11 +48,13 @@ export function useAnalytics(): AnalyticsApi {
                 });
             },
             trackSendStart: async () => {
+                const accountUuid = getAccountUuid();
                 if (!accountUuid) return;
 
                 await service.trackSendStart({ accountUuid, lang });
             },
             trackSendFinish: async input => {
+                const accountUuid = getAccountUuid();
                 if (!accountUuid) return;
 
                 await service.trackSendFinish({
@@ -57,6 +64,6 @@ export function useAnalytics(): AnalyticsApi {
                 });
             }
         }),
-        [service, accountUuid, lang]
+        [service, getAccountUuid, lang]
     );
 }

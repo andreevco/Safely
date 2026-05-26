@@ -3,7 +3,7 @@ export { SDK_VERSION } from './sdk-version';
 export type { Bucket } from './bucket/bucket-types';
 export { getBucket } from './bucket/get-bucket';
 
-export { deriveAnalyticsAccountUuid } from './derive-account-uuid';
+export { deriveAnalyticsAccountUuid } from './derive-account-analytics-id';
 
 export type { AnalyticsEvent, SystemProps } from './api/events/models';
 export { sAnalyticsEvent, sEventBase, sSystemProps } from './api/events/models';

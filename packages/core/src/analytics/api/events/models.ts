@@ -23,7 +23,7 @@ export const sOnboardingOpenProps = z.object({
 export const sWalletOpenProps = z.object({
     bucket: sBucket,
     sync: z.boolean(),
-    onboardingId: z.string().max(64)
+    onboardingId: z.string().max(64).optional()
 });
 
 export const sSendStartProps = z.object({});

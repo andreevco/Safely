@@ -21,7 +21,7 @@ export function useTrackWalletOpen() {
 
     const linkState = useAccountLinkState();
     const totalBtc = useBtcBalances(wallets);
-    const getOnboardingId = useOnboardingId();
+    const { value: onboardingId } = useOnboardingId();
     const { data: btcRate } = useRate(BTC_ASSET);
 
     const fiatAmount = useMemo(() => {
@@ -34,14 +34,11 @@ export function useTrackWalletOpen() {
     useEffect(() => {
         if (fiatAmount === null) return;
 
-        void (async () => {
-            const onboardingId = await getOnboardingId();
-            await analytics.trackWalletOpen({
-                onboardingId,
-                fiatAmount,
-                fiatSymbol: fiat.id.symbol,
-                sync: linkState === AccountLinkState.PROTECTED
-            });
-        })();
-    }, [fiatAmount, fiat.id.symbol, analytics, linkState, getOnboardingId]);
+        void analytics.trackWalletOpen({
+            onboardingId,
+            fiatAmount,
+            fiatSymbol: fiat.id.symbol,
+            sync: linkState === AccountLinkState.PROTECTED
+        });
+    }, [fiatAmount, fiat.id.symbol, analytics, linkState, onboardingId]);
 }

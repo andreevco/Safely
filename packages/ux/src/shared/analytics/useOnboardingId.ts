@@ -1,35 +1,24 @@
-import { useCallback } from 'react';
+import { v4 as uuid4 } from 'uuid';
+import { useStore } from 'zustand';
+import { createStore } from 'zustand/vanilla';
 
-import { generateUuidV4 } from '@safely/core';
-
-import { useSharedUxStorage } from '../storage';
+const onboardingId = createStore<string | null>(() => null);
+const actions = {
+    generate(this: void) {
+        const id = uuid4();
+        onboardingId.setState(id);
+        return id;
+    },
+    reset(this: void) {
+        onboardingId.setState(null);
+    }
+};
 
 export function useOnboardingId() {
-    const { get, set } = useSharedUxStorage('analyticsOnboardingId');
+    const value = useStore(onboardingId);
 
-    return useCallback(
-        async (isOnboarding = false): Promise<string> => {
-            const stored = await get();
-
-            if (isOnboarding) {
-                const fresh = generateUuidV4();
-                await set(`onboarding:${fresh}`);
-
-                return fresh;
-            }
-
-            if (stored?.startsWith('onboarding:')) {
-                const inherited = stored.slice('onboarding:'.length);
-                await set(`account:${inherited}`);
-
-                return inherited;
-            }
-
-            const fresh = generateUuidV4();
-            await set(`account:${fresh}`);
-
-            return fresh;
-        },
-        [get, set]
-    );
+    return {
+        value,
+        ...actions
+    };
 }

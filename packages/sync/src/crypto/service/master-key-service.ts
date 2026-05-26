@@ -5,7 +5,8 @@ import { utf8 } from '../../utils/buffer';
 import type { SecureEncryptedKeyRepository } from '../secure-encrypted-key-repository';
 
 export enum MKDerivationDomain {
-    ROOT_SEED_KEY = 'root-seed-key'
+    ROOT_SEED_KEY = 'root-seed-key',
+    ANALYTICS_ID = 'analytics-id'
 }
 
 export class MasterKeyService {

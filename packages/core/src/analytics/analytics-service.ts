@@ -1,10 +1,11 @@
+import { v4 as uuid4 } from 'uuid';
+
 import type { Logger } from '@safely/sync';
 
+import type { EventsApi } from './api/events';
 import { BtcApiError } from '../api/btc/errors';
 import type { RateApi } from '../api/rate/client';
 import type { Build } from '../entities/application/build.schema';
-import { generateUuidV4 } from '../utils/uuid';
-import type { EventsApi } from './api/events';
 import type { AnalyticsEvent, Environment, SystemProps } from './api/events/models';
 import { sAnalyticsEvent } from './api/events/models';
 import type { Bucket } from './bucket/bucket-types';
@@ -36,10 +37,9 @@ export class AnalyticsService {
 
     private readonly fired = new Set<string>();
 
-    private session: { accountKey: string | null; id: string } = {
-        accountKey: null,
-        id: generateUuidV4()
-    };
+    private readonly sessions = new Map<string, string>();
+
+    private onboardingSession: string | null = null;
 
     constructor(deps: AnalyticsDeps) {
         this.logger = deps.logger;
@@ -51,11 +51,23 @@ export class AnalyticsService {
     }
 
     private resolveSessionId(accountUuid: string | null): string {
-        if (this.session.accountKey !== accountUuid) {
-            this.session = { accountKey: accountUuid, id: generateUuidV4() };
+        if (!accountUuid) {
+            return this.onboardingSession ?? (this.onboardingSession = uuid4());
         }
 
-        return this.session.id;
+        // Promote onboarding session to the first account
+        if (this.onboardingSession && this.sessions.size === 0) {
+            const sessionToPromote = this.onboardingSession;
+            this.sessions.set(accountUuid, sessionToPromote);
+            this.onboardingSession = null;
+            return sessionToPromote;
+        }
+
+        if (!this.sessions.has(accountUuid)) {
+            this.sessions.set(accountUuid, uuid4());
+        }
+
+        return this.sessions.get(accountUuid)!;
     }
 
     public async trackOnboardingOpen(input: { onboardingId: string; lang: string }): Promise<void> {
@@ -72,7 +84,7 @@ export class AnalyticsService {
         accountUuid: string;
         fiatSymbol: string | null;
         lang: string;
-        onboardingId: string;
+        onboardingId: string | null;
         fiatAmount: number;
         sync: boolean;
     }): Promise<void> {
@@ -88,7 +100,7 @@ export class AnalyticsService {
             props: {
                 bucket,
                 sync: input.sync,
-                onboardingId: input.onboardingId
+                ...(input.onboardingId !== null && { onboardingId: input.onboardingId })
             },
             lang: input.lang,
             sessionId,
@@ -166,7 +178,7 @@ export class AnalyticsService {
         accountUuid: string | null;
     }): Promise<boolean> {
         const parsedPayload = sAnalyticsEvent.safeParse({
-            eventId: generateUuidV4(),
+            eventId: uuid4(),
             sessionId: payload.sessionId,
             systemProps: this.buildSystemProps(payload.lang, payload.accountUuid),
             eventName: payload.eventName,

@@ -1,12 +1,4 @@
-import { bytesToHex, randomBytes } from '@noble/hashes/utils.js';
-
-export function generateUuidV4(): string {
-    const bytes = randomBytes(16);
-    bytes[6] = (bytes[6] & 0x0f) | 0x40;
-    bytes[8] = (bytes[8] & 0x3f) | 0x80;
-
-    return formatUuidString(bytes);
-}
+import { bytesToHex } from '@noble/hashes/utils.js';
 
 export function formatBytesAsUuid(bytes: Uint8Array, version: number): string {
     if (bytes.length < 16) {

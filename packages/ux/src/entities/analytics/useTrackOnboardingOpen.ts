@@ -7,15 +7,12 @@ export function useTrackOnboardingOpen() {
     const tracked = useRef(false);
 
     const analytics = useAnalytics();
-    const getOnboardingId = useOnboardingId();
+    const { generate } = useOnboardingId();
 
     useEffect(() => {
         if (tracked.current) return;
         tracked.current = true;
 
-        void (async () => {
-            const onboardingId = await getOnboardingId(true);
-            await analytics.trackOnboardingOpen({ onboardingId });
-        })();
-    }, [analytics, getOnboardingId]);
+        void analytics.trackOnboardingOpen({ onboardingId: generate() });
+    }, [analytics, generate]);
 }

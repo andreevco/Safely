@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
-import { deriveAnalyticsAccountUuid, notNullish } from '@safely/core';
+import { notNullish } from '@safely/core';
 import type { ISyncAccount } from '@safely/sync';
 import { SyncAccountFactory } from '@safely/sync';
 import type {
@@ -50,8 +50,7 @@ export function useAccountsFactory() {
                 basePath: config.sync.api_url
             },
             noAccountLogger: loggerRegistry.systemLogger.child('sync'),
-            getAccountLogger: (accountId: string) => loggerRegistry.getAccountLogger(accountId),
-            deriveAnalyticsAccountUuid
+            getAccountLogger: (accountId: string) => loggerRegistry.getAccountLogger(accountId)
         });
     }
 

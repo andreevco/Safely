@@ -32,8 +32,7 @@ export function makeFactory() {
             apiImplementations,
             pollingTimeout: 1,
             noAccountLogger: new Logger().child(`property:${factoryId}`),
-            getAccountLogger: accountId => new Logger().child(`property:${factoryId}:${accountId}`),
-            deriveAnalyticsAccountUuid: () => '00000000-0000-5000-8000-000000000000'
+            getAccountLogger: accountId => new Logger().child(`property:${factoryId}:${accountId}`)
         }),
         setRequesterIk: (nextRequesterIk: string) => {
             requesterIk = nextRequesterIk;

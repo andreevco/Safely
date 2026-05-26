@@ -17,7 +17,8 @@
     "@noble/hashes": "catalog:",
     "xstate": "catalog:",
     "zod": "catalog:",
-    "zustand": "catalog:"
+    "zustand": "catalog:",
+    "uuid": "catalog:"
   },
   "devDependencies": {
     "@tanstack/react-query": "catalog:",

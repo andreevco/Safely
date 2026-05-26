@@ -23,6 +23,7 @@ catalog:
   '@eslint/js': '^9.39.2'
   eslint-plugin-react-hooks: '^7.0.1'
   typescript-eslint: '^8.51.0'
+  uuid: "^14.0.0"
 
 minimumReleaseAge: 5760
 

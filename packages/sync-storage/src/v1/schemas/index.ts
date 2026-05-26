@@ -23,3 +23,5 @@ export {
     type SDerivation,
     type SBtcAccountChainItem
 } from './derivation/derivation.schema';
+export { sLatestDerivedBip39PortfolioIndex } from './latest-derived-bip39-portfolio-Index.schema';
+export { sAnalyticsId } from './analytics-id.schema';
