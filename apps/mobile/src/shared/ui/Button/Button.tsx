@@ -14,6 +14,12 @@ type ButtonProps = Omit<PressableProps, 'style' | 'children'> &
         children?: ReactNode;
     };
 
+const SPINNER_SIZE_BY_BUTTON_SIZE = {
+    small: 20,
+    medium: 24,
+    large: 28
+};
+
 export const Button = (props: ButtonProps) => {
     const {
         children,
@@ -55,7 +61,7 @@ export const Button = (props: ButtonProps) => {
                         { alignItems: 'center', justifyContent: 'center' }
                     ]}
                 >
-                    <CircularSpinner size={24} />
+                    <CircularSpinner size={SPINNER_SIZE_BY_BUTTON_SIZE[size]} />
                 </View>
             )}
         </Pressable>
