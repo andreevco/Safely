@@ -27,3 +27,4 @@ export * from './PasscodeInput';
 export * from './PasscodeLayout';
 export * from './PasscodeSetup';
 export { LockoutContent } from './LockoutContent';
+export { CircularSpinner } from './CircularSpinner';

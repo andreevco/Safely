@@ -1,6 +1,7 @@
 import { View } from 'react-native';
 
-import { CircularSpinner } from './components/CircularSpinner';
+import { CircularSpinner } from '@mobile/shared/ui/CircularSpinner';
+
 import { styles } from './FullScreenLoader.styles';
 
 export interface FullScreenLoaderProps {
