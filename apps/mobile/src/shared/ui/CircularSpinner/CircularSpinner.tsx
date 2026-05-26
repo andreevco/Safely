@@ -12,7 +12,11 @@ import { Icon, Loader56 } from '@mobile/shared/ui/Icon';
 
 import { styles } from './CircularSpinner.styles';
 
-export const CircularSpinner = () => {
+interface CircularSpinnerProps {
+    size?: number;
+}
+
+export const CircularSpinner = ({ size }: CircularSpinnerProps) => {
     const rotation = useSharedValue(0);
 
     useEffect(() => {
@@ -30,7 +34,7 @@ export const CircularSpinner = () => {
     return (
         <View style={styles.wrapper}>
             <Animated.View style={animatedStyle}>
-                <Icon icon={Loader56} />
+                <Icon icon={Loader56} size={size} />
             </Animated.View>
         </View>
     );
