@@ -52,7 +52,7 @@ export class DeviceManagementService {
 
     public async addDevice(ikPub: Buffer, dmkSignerService: DmkSignerService): Promise<void> {
         const flow = this.startFlow('device_management.add_device', {
-            peerKid: getKID(ikPub)
+            ikPub: ikPub.toString('hex')
         });
 
         try {
@@ -75,7 +75,7 @@ export class DeviceManagementService {
             info: device.info,
             sign: device.sign
         });
-        this.logger.info('Device activated', { ik: device.info.ikPub.toString('hex') });
+        this.logger.info('Device activated', { ikPub: device.info.ikPub.toString('hex') });
     }
 
     public async isThisDeviceActive(): Promise<boolean> {
@@ -105,7 +105,7 @@ export class DeviceManagementService {
 
     public async revokeDevice(ikPub: Buffer, dmkSignerService: DmkSignerService): Promise<void> {
         const flow = this.startFlow('device_management.revoke_device', {
-            peerKid: getKID(ikPub)
+            ikPub: ikPub.toString('hex')
         });
 
         try {

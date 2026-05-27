@@ -14,7 +14,6 @@ import type { SyncFlowLogger } from '../logger';
 import { SyncError } from '../sync-error';
 import type { SyncOperations } from '../sync-operations/sync-operations';
 import { u8be, utf8 } from '../utils/buffer';
-import { getKID } from '../utils/kid';
 
 export class PrimaryDeviceOnboarding {
     constructor(
@@ -166,7 +165,7 @@ export class PrimaryDeviceOnboarding {
         message: QRMessageNewDeviceOnboarding | QRMessageReconnection
     ): Record<string, unknown> {
         return {
-            peerKid: getKID(message.ikPub)
+            ikPub: message.ikPub.toString('hex')
         };
     }
 }

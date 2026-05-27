@@ -14,7 +14,6 @@ import type { ITreeStorage } from '../I-storage';
 import type { Logger } from '../logger';
 import { SyncFlowLogger } from '../logger';
 import { OnboardingAbortedError } from '../sync-error';
-import { getKID } from '../utils/kid';
 
 export class NewDeviceOnboarding<Latest extends StorageVersion, Rest> {
     private readonly flow: SyncFlowLogger;
@@ -30,8 +29,7 @@ export class NewDeviceOnboarding<Latest extends StorageVersion, Rest> {
         private readonly storageVersion: number
     ) {
         this.flow = new SyncFlowLogger(logger, 'onboarding.new_device', {
-            localStorageVersion: this.storageVersion,
-            selfKid: getKID(this.ik.publicKey)
+            ikPub: this.ik.publicKey.toString('hex')
         });
     }
 
