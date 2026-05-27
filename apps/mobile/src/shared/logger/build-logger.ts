@@ -24,7 +24,7 @@ export function buildLogger(fileTransport: FileTransport, isDev: boolean): Logge
         transport = new SanitizedTransport(
             new CombinedTransport([new ConsoleTransport(), fileTransport])
         );
-        filter = logsFilterMinSeverityLevel(LogLevel.WARN);
+        filter = logsFilterMinSeverityLevel(LogLevel.INFO);
     }
 
     const logger = new Logger(transport);
