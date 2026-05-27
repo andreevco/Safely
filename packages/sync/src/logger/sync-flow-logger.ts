@@ -17,7 +17,7 @@ const HEX_SHORT_LENGTH = 16;
 
 export class SyncFlowLogger {
     private readonly flowId: string;
-    private readonly startedAt: number;
+    private startedAt: number;
     private completed = false;
 
     constructor(
@@ -57,6 +57,7 @@ export class SyncFlowLogger {
     }
 
     public logStart(fields: SyncFlowLogFields = {}): void {
+        this.startedAt = Date.now();
         this.log('start', undefined, fields);
     }
 

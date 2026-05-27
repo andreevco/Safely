@@ -71,6 +71,7 @@ export const createSyncMachine = () => {
                     }) => {
                         const error = (event as { error?: unknown }).error;
                         if (error instanceof SyncMachineError) {
+                            context.logger.warn(error);
                             return error.disposition;
                         } else {
                             context.logger.error('Unhandled sync machine error', error);
