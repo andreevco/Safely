@@ -17,8 +17,6 @@ import '@formatjs/intl-relativetimeformat/locale-data/en';
 import '@formatjs/intl-relativetimeformat/locale-data/ru';
 import * as Crypto from 'expo-crypto';
 
-import { XHREventSource } from '@safely/sync';
-
 /**
  *  Explicit resources management polyfills
  */
@@ -53,6 +51,10 @@ global.Buffer = require('@craftzdog/react-native-buffer').Buffer;
 /**
  *  EventSource polyfill
  */
+
+// IMPORTANT: ordering matters. The module imports cbor-x which checks Buffer availability only once.
+// So, this polyfill must be set after the Buffer polyfill,
+const { XHREventSource } = require('@safely/sync');
 
 (global as any).IsomorphicEventSource = XHREventSource;
 
