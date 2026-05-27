@@ -4,6 +4,8 @@ import { ed25519_verify } from '../crypto/ed25519';
 import type { DmkSignerService } from '../crypto/service/dmk-signer-service';
 import type { DmkVerifierService } from '../crypto/service/dmk-verifier-service';
 import type { IkService } from '../crypto/service/ik-service';
+import type { Logger } from '../logger';
+import { SyncFlowLogger } from '../logger';
 import { SyncError } from '../sync-error';
 import { u64be, utf8 } from '../utils/buffer';
 import { getKID } from '../utils/kid';
@@ -13,7 +15,8 @@ export class DeviceManagementService {
     constructor(
         private readonly deviceRepository: DeviceRepository,
         private readonly ikService: IkService,
-        private readonly dmkVerifierService: DmkVerifierService
+        private readonly dmkVerifierService: DmkVerifierService,
+        private readonly logger: Logger
     ) {}
 
     public onChange(observer: () => void): () => void {
@@ -48,7 +51,18 @@ export class DeviceManagementService {
     }
 
     public async addDevice(ikPub: Buffer, dmkSignerService: DmkSignerService): Promise<void> {
-        await this.deviceRepository.addDevice(await this.makeDevice(ikPub, dmkSignerService));
+        const flow = this.startFlow('device_management.add_device', {
+            peerKid: getKID(ikPub)
+        });
+
+        try {
+            const device = await this.makeDevice(ikPub, dmkSignerService);
+            await this.deviceRepository.addDevice(device);
+            flow.logEnd('added');
+        } catch (error) {
+            flow.logFail(error, 'failed');
+            throw error;
+        }
     }
 
     public async activate(): Promise<void> {
@@ -61,6 +75,7 @@ export class DeviceManagementService {
             info: device.info,
             sign: device.sign
         });
+        this.logger.info('Device activated', { ik: device.info.ikPub.toString('hex') });
     }
 
     public async isThisDeviceActive(): Promise<boolean> {
@@ -89,17 +104,27 @@ export class DeviceManagementService {
     }
 
     public async revokeDevice(ikPub: Buffer, dmkSignerService: DmkSignerService): Promise<void> {
-        const devices = await this.getDevices();
-        if (!devices.some(d => d.info.ikPub.equals(ikPub))) {
-            throw new Error('Device not found.');
-        }
-
-        const sign = await this.signRevokedDevice({
-            ikPub,
-            dmkSignerService
+        const flow = this.startFlow('device_management.revoke_device', {
+            peerKid: getKID(ikPub)
         });
 
-        await this.deviceRepository.revokeDevice(ikPub, sign);
+        try {
+            const devices = await this.getDevices();
+            if (!devices.some(d => d.info.ikPub.equals(ikPub))) {
+                throw new Error('Device not found.');
+            }
+
+            const sign = await this.signRevokedDevice({
+                ikPub,
+                dmkSignerService
+            });
+
+            await this.deviceRepository.revokeDevice(ikPub, sign);
+            flow.logEnd('revoked');
+        } catch (error) {
+            flow.logFail(error, 'failed');
+            throw error;
+        }
     }
 
     public async mergeDeviceStorage(update: Buffer): Promise<void> {
@@ -218,6 +243,10 @@ export class DeviceManagementService {
             Buffer.from([0x00]),
             device.info.ikPub
         ]);
+    }
+
+    private startFlow(flow: string, fields: Record<string, unknown> = {}): SyncFlowLogger {
+        return SyncFlowLogger.start(this.logger, flow, fields);
     }
 }
 
