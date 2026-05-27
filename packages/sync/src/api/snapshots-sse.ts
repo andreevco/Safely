@@ -85,7 +85,6 @@ export class SnapshotsSse {
                 notifyDisconnect();
             } catch (err) {
                 if (abortController.signal.aborted) return;
-                this.logger.error('Error in snapshots stream', err);
                 notifyDisconnect(err);
             }
         })();
