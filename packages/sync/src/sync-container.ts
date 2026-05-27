@@ -114,7 +114,8 @@ export async function createSyncContainer<Latest extends StorageVersion, Rest>(o
     const deviceManager = new DeviceManagementService(
         deviceRepository,
         ikService,
-        dmkVerifierService
+        dmkVerifierService,
+        opts.logger
     );
 
     const updateEncryptor = new UpdateEncryptorService(

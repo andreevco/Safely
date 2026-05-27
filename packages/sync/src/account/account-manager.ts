@@ -8,7 +8,7 @@ import { SyncAccount } from './sync-account';
 import type { SyncAccountRepository } from './sync-account-repository';
 import type { Configuration } from '../api/generated';
 import type { ITreeStorage } from '../I-storage';
-import type { Logger } from '../logger';
+import type { Logger, SyncFlowLogger } from '../logger';
 import type { OnboardingMessagePayload } from '../onboarding/onboarding-message-payload';
 import { OfflineSyncProvider } from '../sync-provider/offline-sync-provider';
 import { OnlineSyncProvider } from '../sync-provider/online-sync-provider';
@@ -111,12 +111,14 @@ export class AccountManager<Latest extends StorageVersion, Rest> {
     public async createOnlineAccountFromMasterKey(
         secureEncryptedStorage: ITreeStorage,
         payload: OnboardingMessagePayload,
-        ik: { publicKey: Buffer; secretKey: Buffer }
+        ik: { publicKey: Buffer; secretKey: Buffer },
+        flow: SyncFlowLogger
     ) {
         const account = await this.createAccountService.createOnlineAccountFromMasterKey(
             secureEncryptedStorage,
             payload,
-            ik
+            ik,
+            flow
         );
         this.accounts.set(account.accountId, account);
         return account;

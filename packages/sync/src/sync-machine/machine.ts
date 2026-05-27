@@ -42,7 +42,7 @@ export const createSyncMachine = () => {
                 applyUpdate: applyUpdate
             },
             delays: {
-                reconnectDelay: ({ context }) => getReconnectDelayMs(context.reconnectAttempt)
+                reconnectDelay: ({ context }) => context.reconnectDelayMs
             },
             guards: {
                 shouldSendUpdate: ({ context }) => shouldSendUpdate(context),
@@ -62,20 +62,13 @@ export const createSyncMachine = () => {
                     }
                 },
                 handleError: assign({
-                    lastError: ({
-                        context,
-                        event
-                    }: {
-                        context: SyncMachineConfig<StorageVersion, unknown>;
-                        event: unknown;
-                    }) => {
+                    lastError: ({ event }: { event: unknown }) => {
                         const error = (event as { error?: unknown }).error;
                         if (error instanceof SyncMachineError) {
                             return error.disposition;
-                        } else {
-                            context.logger.error('Unhandled sync machine error', error);
-                            return { type: 'reconnect' };
                         }
+
+                        return { type: 'reconnect' };
                     }
                 }),
                 clearError: assign({
@@ -102,9 +95,16 @@ export const createSyncMachine = () => {
                         return context.transmittingLocalUpdateVersion;
                     }
                 }),
-                incrementReconnectAttempt: assign({
-                    reconnectAttempt: ({ context }) => context.reconnectAttempt + 1
+                prepareReconnectRetry: assign({
+                    reconnectAttempt: ({ context }) => context.reconnectAttempt + 1,
+                    reconnectDelayMs: ({ context }) =>
+                        getReconnectDelayMs(context.reconnectAttempt + 1)
                 }),
+                logDisconnectedRetry: ({ context }) => {
+                    context.logger.info('sync_machine.disconnected.retrying', {
+                        retryAfterSeconds: context.reconnectDelayMs / 1000
+                    });
+                },
                 resetReconnectAttemptIfSynced: assign({
                     reconnectAttempt: ({ context }) => {
                         if (shouldSendUpdate(context) || context.remoteUpdates.length > 0) {
@@ -264,7 +264,11 @@ export const createSyncMachine = () => {
                 },
 
                 waitingForRetry: {
-                    entry: ['setStatusDisconnected', 'incrementReconnectAttempt'],
+                    entry: [
+                        'setStatusDisconnected',
+                        'prepareReconnectRetry',
+                        'logDisconnectedRetry'
+                    ],
                     after: {
                         reconnectDelay: { target: '#syncMachine.initialSyncing' }
                     },

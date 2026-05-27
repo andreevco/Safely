@@ -4,6 +4,8 @@ import type { ISyncAccount } from './I-sync-account';
 import type { MKDerivationDomain } from '../crypto/service/master-key-service';
 import type { Device } from '../device-manager/device-repository';
 import type { ITreeStorage } from '../I-storage';
+import type { SyncFlowLogger } from '../logger';
+import { withSyncFlow } from '../logger';
 import type { OnboardingConnector } from '../onboarding/connector';
 import { PrimaryDeviceOnboarding } from '../onboarding/primary-device-onboarding';
 import { ReconnectOnboardingCoordinator } from '../onboarding/reconnect/reconnect-onboarding-coordinator';
@@ -62,7 +64,23 @@ export class SyncAccount<Latest extends StorageVersion, Rest> implements ISyncAc
         data: Buffer,
         secureEncryptedStorage: ITreeStorage
     ): Promise<void> {
+        await withSyncFlow(
+            this.container.logger,
+            'account.connect_to_new_device',
+            {},
+            async flow => {
+                return await this.connectToNewDeviceWithLogger(data, secureEncryptedStorage, flow);
+            }
+        );
+    }
+
+    private async connectToNewDeviceWithLogger(
+        data: Buffer,
+        secureEncryptedStorage: ITreeStorage,
+        flow: SyncFlowLogger
+    ): Promise<void> {
         await this.ensureAccountOnline();
+        flow.logStep('ensure_online.done');
 
         const onboarding = new PrimaryDeviceOnboarding(
             this.container.keyServiceFactory.createMasterKeyService(secureEncryptedStorage),
@@ -76,7 +94,8 @@ export class SyncAccount<Latest extends StorageVersion, Rest> implements ISyncAc
                 await this.syncProvider.syncStatusManager.waitForStatus(SyncStatus.SYNCHRONIZED);
             }
         );
-        await onboarding.onboard(data);
+        await onboarding.onboard(data, flow.child('onboarding.primary'));
+        flow.logEnd('onboarding.completed');
     }
 
     public async getDevices(): Promise<Device[]> {

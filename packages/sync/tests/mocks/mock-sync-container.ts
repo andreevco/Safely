@@ -78,7 +78,8 @@ export async function createMockSyncContainer<Latest extends StorageVersion, Res
     const deviceManager = new DeviceManagementService(
         deviceRepository,
         ikService,
-        dmkVerifierService
+        dmkVerifierService,
+        logger
     );
 
     const updateEncryptor = new UpdateEncryptorService(
