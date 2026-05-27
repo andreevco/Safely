@@ -7,11 +7,13 @@ import { SlotKind } from '../../slots';
 
 export function encodeCbor(root: ContainerSlot): Buffer {
     const tables = collectEncodingTables(root);
-    return cbor.encode([
-        tables.authors.map(encodeAuthor),
-        tables.keys,
-        slotToTuple(root, tables.authorIndexes, tables.keyIndexes)
-    ] satisfies BinaryPayload);
+    return Buffer.from(
+        cbor.encode([
+            tables.authors.map(encodeAuthor),
+            tables.keys,
+            slotToTuple(root, tables.authorIndexes, tables.keyIndexes)
+        ] satisfies BinaryPayload)
+    );
 }
 
 function slotToTuple(
