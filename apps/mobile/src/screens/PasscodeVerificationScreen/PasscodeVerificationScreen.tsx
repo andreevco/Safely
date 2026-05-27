@@ -3,10 +3,10 @@ import { useNavigation } from '@react-navigation/native';
 import { useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { usePasscodeVerification } from '@mobile/entities/security';
 import { authenticateBiometry, getBiometryIcon, useBiometryQuery } from '@mobile/features/biometry';
 import { useLogOutAllConfirmation } from '@mobile/features/settings/useLogOutAllConfirmation';
+import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import { LockoutContent, PasscodeView, Screen } from '@mobile/shared/ui';
 
 type PasscodeVerificationScreenProps = StaticScreenProps<{

@@ -4,6 +4,8 @@ import { Keyboard } from 'react-native';
 
 import { useAppContext, useCreateAccount, useLoader } from '@safely/ux';
 
+// TODO Discuss with Max what to do with this
+// eslint-disable-next-line boundaries/element-types
 import { tabsInitialState } from '@mobile/app/navigation/tabs';
 import { usePasscode } from '@mobile/entities/security';
 

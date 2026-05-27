@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import { useEraseAllData } from '@safely/ux';
 
-import type { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 
 export function useLogOutAllConfirmation() {
     const { t } = useTranslation();

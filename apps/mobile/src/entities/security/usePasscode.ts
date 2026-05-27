@@ -3,6 +3,8 @@ import { useCallback } from 'react';
 
 import { useSuspenseQuery } from '@safely/ux';
 
+// TODO: find a way to navigate without this ref
+// eslint-disable-next-line boundaries/element-types
 import { navigationRef } from '@mobile/app/navigation/navigationRef';
 import { useMobileLayerEncryptedStorage } from '@mobile/shared/storage';
 

@@ -4,8 +4,8 @@ import { ScrollView } from 'react-native-gesture-handler';
 
 import { usePortfolios } from '@safely/ux';
 
-import type { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { PortfoliosList } from '@mobile/features/portfolio';
+import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import { Button, Screen } from '@mobile/shared/ui';
 
 import { styles } from './SelectAccountModal.styles';

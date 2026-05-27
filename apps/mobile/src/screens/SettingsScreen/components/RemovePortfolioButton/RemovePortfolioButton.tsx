@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import { useActivePortfolio } from '@safely/ux';
 
-import type { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import { Cell, Text } from '@mobile/shared/ui';
 
 import { styles } from './RemovePortfolioButton.styles';

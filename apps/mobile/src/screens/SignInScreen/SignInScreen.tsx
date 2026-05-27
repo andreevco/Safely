@@ -8,7 +8,7 @@ import QRCode from 'react-native-qrcode-skia';
 import type { OnboardingConnector } from '@safely/ux';
 import { useAccountConnectedCallback, useToast } from '@safely/ux';
 
-import type { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import { DeviceLink, Screen, Text, TouchableOpacity } from '@mobile/shared/ui';
 import { Icon, Sliders12 } from '@mobile/shared/ui/Icon';
 import { useCopy } from '@mobile/shared/utils/copy';

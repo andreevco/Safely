@@ -7,7 +7,7 @@ import QRCode from 'react-native-qrcode-skia';
 import type { CryptoAsset } from '@safely/core';
 import { useIsActiveWalletWatchOnly } from '@safely/ux';
 
-import type { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import { Badge, Text, Image, TouchableOpacity } from '@mobile/shared/ui';
 
 import { ReceiveCopyToast, useReceiveCopy } from '../ReceiveCopyToastProvider';

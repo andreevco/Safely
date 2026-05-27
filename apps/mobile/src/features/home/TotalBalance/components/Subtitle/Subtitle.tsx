@@ -20,7 +20,7 @@ import { useUnistyles } from 'react-native-unistyles';
 import { ellipsisMiddle } from '@safely/core';
 import { useDateFormatter } from '@safely/ux';
 
-import type { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import type { TextProps } from '@mobile/shared/ui';
 import { Badge, Text } from '@mobile/shared/ui';
 

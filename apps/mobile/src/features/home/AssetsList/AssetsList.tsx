@@ -3,8 +3,8 @@ import { useNavigation } from '@react-navigation/native';
 import { assertUnreachable, BLOCKCHAIN_NAME } from '@safely/core';
 import { useHomeScreenList } from '@safely/ux';
 
-import type { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { BtcAssetCell, AssetCellSkeleton } from '@mobile/entities/asset';
+import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import { List } from '@mobile/shared/ui';
 
 import { styles } from './AssetsList.styles';

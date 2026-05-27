@@ -10,8 +10,8 @@ import {
     useTrackOnboardingOpen
 } from '@safely/ux';
 
-import type { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { useOnboardingFlow } from '@mobile/features/onboarding';
+import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import { resources } from '@mobile/shared/resources';
 import { Button, Icon, Safely96, Screen, Text } from '@mobile/shared/ui';
 

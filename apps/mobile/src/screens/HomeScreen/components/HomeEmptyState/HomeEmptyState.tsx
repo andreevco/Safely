@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
 
-import type { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import { AddWallet96, Button, Icon, Screen, Text } from '@mobile/shared/ui';
 
 import { styles } from './HomeEmptyState.styles';

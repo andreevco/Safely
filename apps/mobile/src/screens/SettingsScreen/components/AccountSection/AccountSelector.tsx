@@ -9,7 +9,7 @@ import {
     useSetActiveAccount
 } from '@safely/ux';
 
-import type { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import type { PopupMenuRef } from '@mobile/shared/ui/PopupMenu';
 
 import { ModalAccountSelector } from './ModalAccountSelector';

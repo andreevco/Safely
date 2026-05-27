@@ -7,7 +7,7 @@ import type { BtcApiUtxoWithOptionalTx } from '@safely/core';
 import { BtcAssetAmount } from '@safely/core';
 import { useNumberFormatter, btcTxToActivityItem } from '@safely/ux';
 
-import type { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import { Text, TouchableOpacity } from '@mobile/shared/ui';
 
 import { styles } from './ReceivingBadge.styles';

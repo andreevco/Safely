@@ -9,9 +9,9 @@ import type { Portfolio } from '@safely/core';
 import { delay } from '@safely/core';
 import { useActivePortfolio, usePortfolios } from '@safely/ux';
 
-import type { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { PortfolioName } from '@mobile/entities/portfolio';
 import { PortfoliosList } from '@mobile/features/portfolio/PortfoliosList';
+import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import {
     Button,
     ChevronDown16,

@@ -3,10 +3,11 @@ import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import type { SettingsStackNavigationProp } from '@mobile/app/navigation/types';
+// eslint-disable-next-line boundaries/element-types -- TODO: route locale write through shared/i18n setter instead of touching raw storage
 import { mobileLayerSynchronousLocale } from '@mobile/app/storage';
 import type { LanguageCode } from '@mobile/shared/i18n';
 import { availableLanguages } from '@mobile/shared/i18n';
+import type { SettingsStackNavigationProp } from '@mobile/shared/navigation/types';
 import { Cell, List, Screen, Text } from '@mobile/shared/ui';
 import { ArrowLeft16, Checkmark28, Icon } from '@mobile/shared/ui/Icon';
 

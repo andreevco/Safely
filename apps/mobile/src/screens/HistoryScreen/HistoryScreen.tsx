@@ -4,9 +4,9 @@ import { useCallback } from 'react';
 import type { BtcActivityItem } from '@safely/ux';
 import { useActivePortfolio, useHasPortfolio } from '@safely/ux';
 
-import type { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { HistoryList } from '@mobile/features/history';
 import { WalletSelector } from '@mobile/features/portfolio';
+import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import { Screen } from '@mobile/shared/ui';
 
 const HistoryContent = () => {

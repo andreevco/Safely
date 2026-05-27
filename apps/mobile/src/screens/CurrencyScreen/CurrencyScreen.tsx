@@ -6,7 +6,7 @@ import { View } from 'react-native';
 import type { FiatAsset } from '@safely/core';
 import { useActiveFiat, useAvailableFiats, useSetActiveFiat } from '@safely/ux';
 
-import type { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import { Cell, List, Screen, Text } from '@mobile/shared/ui';
 import { Checkmark28, Icon } from '@mobile/shared/ui/Icon';
 

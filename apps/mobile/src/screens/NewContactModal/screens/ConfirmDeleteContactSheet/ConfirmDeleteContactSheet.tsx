@@ -7,7 +7,7 @@ import { View } from 'react-native';
 import type { Contact } from '@safely/core';
 import { useDeleteContact } from '@safely/ux';
 
-import type { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import { BottomSheet, Button, Text } from '@mobile/shared/ui';
 import type { BottomSheetContextType } from '@mobile/shared/ui/BottomSheet/context';
 
