@@ -30,7 +30,7 @@
     "@safely/sync": "workspace:*",
     "@safely/ux": "workspace:*",
     "@shopify/flash-list": "2.3.1",
-    "@shopify/react-native-skia": "^2.4.14",
+    "@shopify/react-native-skia": "^2.4.19",
     "@tanstack/react-query": "catalog:",
     "@xstate/react": "catalog:",
     "big.js": "catalog:",

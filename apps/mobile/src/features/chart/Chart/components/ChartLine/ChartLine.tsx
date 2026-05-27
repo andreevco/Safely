@@ -1,11 +1,13 @@
-import { Canvas, Circle, Group, Line, Path, vec } from '@shopify/react-native-skia';
-import { useState } from 'react';
+import { Canvas, Circle, Group, Line, Path, rect, vec } from '@shopify/react-native-skia';
+import { useEffect, useState } from 'react';
 import { LayoutChangeEvent, View } from 'react-native';
 import { GestureDetector, GestureType } from 'react-native-gesture-handler';
 import Animated, {
+    cancelAnimation,
     type SharedValue,
     useAnimatedStyle,
     useDerivedValue,
+    useSharedValue,
     withDelay,
     withRepeat,
     withSequence,
@@ -74,15 +76,23 @@ export const ChartLine = (props: ChartLineProps) => {
     const crosshair2P2 = useDerivedValue(() => vec(activeX2.value, size.height));
     const crosshair2Opacity = useDerivedValue(() => (secondaryCrosshair.value.isActive ? 1 : 0));
 
-    const minFraction = useDerivedValue(() => {
+    const minX = useDerivedValue(() => {
         if (!secondaryCrosshair.value.isActive) return 0;
-        return Math.min(primaryCrosshair.value.pathFraction, secondaryCrosshair.value.pathFraction);
+        return Math.min(primaryCrosshair.value.x, secondaryCrosshair.value.x);
     });
-    const maxFraction = useDerivedValue(() => {
+    const maxX = useDerivedValue(() => {
         if (!primaryCrosshair.value.isActive) return 0;
-        if (!secondaryCrosshair.value.isActive) return primaryCrosshair.value.pathFraction;
-        return Math.max(primaryCrosshair.value.pathFraction, secondaryCrosshair.value.pathFraction);
+        if (!secondaryCrosshair.value.isActive) return primaryCrosshair.value.x;
+        return Math.max(primaryCrosshair.value.x, secondaryCrosshair.value.x);
     });
+
+    const leftFadedClip = useDerivedValue(() => rect(0, 0, minX.value, size.height));
+    const brightClip = useDerivedValue(() =>
+        rect(minX.value, 0, Math.max(0, maxX.value - minX.value), size.height)
+    );
+    const rightFadedClip = useDerivedValue(() =>
+        rect(maxX.value, 0, Math.max(0, size.width - maxX.value), size.height)
+    );
 
     const { fullPath, periodSplitEnd, lastPoint, elegantPrices, splitPoint } = useChartPaths({
         prices,
@@ -102,8 +112,9 @@ export const ChartLine = (props: ChartLineProps) => {
         return { opacity: withTiming(near ? 0 : 1, { duration: 60 }) };
     });
 
-    const animatedCircleColor = useDerivedValue(() => {
-        return withRepeat(
+    const animatedCircleColor = useSharedValue(LINE_COLOR);
+    useEffect(() => {
+        animatedCircleColor.value = withRepeat(
             withSequence(
                 withTiming(LINE_COLOR, { duration: 1000 }),
                 withDelay(1500, withTiming(OPAQUE_LINE_COLOR, { duration: 1000 }))
@@ -111,7 +122,8 @@ export const ChartLine = (props: ChartLineProps) => {
             -1,
             true
         );
-    });
+        return () => cancelAnimation(animatedCircleColor);
+    }, [animatedCircleColor]);
 
     return (
         <View style={styles.container}>
@@ -206,28 +218,30 @@ export const ChartLine = (props: ChartLineProps) => {
 
                         {/* Active mode: bright before crosshair, faded after */}
                         <Group opacity={crosshairOpacity}>
-                            <Path
-                                path={fullPath}
-                                color={FADED_LINE_COLOR}
-                                strokeWidth={LINE_STROKE_WIDTH}
-                                style="stroke"
-                                end={minFraction}
-                            />
-                            <Path
-                                path={fullPath}
-                                color={LINE_COLOR}
-                                strokeWidth={LINE_STROKE_WIDTH}
-                                style="stroke"
-                                start={minFraction}
-                                end={maxFraction}
-                            />
-                            <Path
-                                path={fullPath}
-                                color={FADED_LINE_COLOR}
-                                strokeWidth={LINE_STROKE_WIDTH}
-                                style="stroke"
-                                start={maxFraction}
-                            />
+                            <Group clip={leftFadedClip}>
+                                <Path
+                                    path={fullPath}
+                                    color={FADED_LINE_COLOR}
+                                    strokeWidth={LINE_STROKE_WIDTH}
+                                    style="stroke"
+                                />
+                            </Group>
+                            <Group clip={brightClip}>
+                                <Path
+                                    path={fullPath}
+                                    color={LINE_COLOR}
+                                    strokeWidth={LINE_STROKE_WIDTH}
+                                    style="stroke"
+                                />
+                            </Group>
+                            <Group clip={rightFadedClip}>
+                                <Path
+                                    path={fullPath}
+                                    color={FADED_LINE_COLOR}
+                                    strokeWidth={LINE_STROKE_WIDTH}
+                                    style="stroke"
+                                />
+                            </Group>
                         </Group>
 
                         {/* Last point dot (hidden during gesture) */}
