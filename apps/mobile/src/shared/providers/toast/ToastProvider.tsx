@@ -15,7 +15,7 @@ import { useToastServiceContext } from './ToastServiceProvider';
 const OverlayComponent = Platform.OS === 'ios' ? FullWindowOverlay : View;
 
 const MIN_DURATION = 2500;
-const MAX_DURATION = 7000;
+const MAX_DURATION = 5000;
 
 function durationFromMessage(message: string): number {
     return Math.max(MIN_DURATION, Math.min(MAX_DURATION, message.length * 100));
