@@ -75,6 +75,7 @@ export const AddressInput = (props: AddressInputProps) => {
     }, [scan]);
 
     const [isFocused, setIsFocused] = useState(false);
+    const [boxWidth, setBoxWidth] = useState(0);
 
     const hasValue = value.length > 0;
     const hasError = !!error;
@@ -122,7 +123,10 @@ export const AddressInput = (props: AddressInputProps) => {
                 </View>
             )}
             <View style={styles.container}>
-                <View style={styles.inputModeBox}>
+                <View
+                    style={styles.inputModeBox}
+                    onLayout={e => setBoxWidth(e.nativeEvent.layout.width)}
+                >
                     <TextInput
                         ref={textInputRef}
                         value={value}
@@ -145,6 +149,7 @@ export const AddressInput = (props: AddressInputProps) => {
                             value={value}
                             portfolioMeta={selectedPortfolioMeta}
                             contactMeta={selectedContactMeta}
+                            containerWidth={boxWidth}
                         />
                     )}
                 </View>
