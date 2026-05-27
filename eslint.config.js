@@ -53,6 +53,7 @@ export default [
             boundaries
         },
         settings: {
+            'boundaries/root-path': import.meta.dirname,
             'import/parsers': {
                 '@typescript-eslint/parser': ['.ts', '.tsx']
             },
@@ -61,7 +62,7 @@ export default [
                     project: [
                         './tsconfig.json',
                         './packages/*/tsconfig.json',
-                        './apps/*/*/tsconfig.json'
+                        './apps/*/tsconfig.json'
                     ],
                     alwaysTryTypes: true
                 },
