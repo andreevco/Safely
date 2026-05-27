@@ -1,16 +1,34 @@
 import { memo } from 'react';
 import { View } from 'react-native';
 
+import type { ContactMeta, PortfolioMeta } from '@safely/core';
+import type { BtcActivityItem } from '@safely/ux';
+
 import { ContactName } from '@mobile/entities/contact';
 import { PortfolioName } from '@mobile/entities/portfolio';
-import type { ActivityRow } from '@mobile/features/history/HistoryList/utils/rows';
 import { Cell, Text } from '@mobile/shared/ui';
 
 import { styles } from './ActivityItem.styles';
 
-type ActivityItemProps = Omit<ActivityRow, 'key'>;
+export type ActivityItemCounterparty =
+    | { kind: 'contact'; meta: ContactMeta }
+    | { kind: 'portfolio'; meta: PortfolioMeta }
+    | { kind: 'address'; label: string };
 
-const Counterparty = ({ counterparty }: { counterparty: ActivityRow['counterparty'] }) => {
+export type ActivityItemProps = {
+    activity: BtcActivityItem;
+    title: string;
+    amountSign: '+' | '−';
+    formattedValue: string;
+    valueColor: 'primary' | 'accentGreen';
+    formattedFiat: string | null;
+    timestampLabel: string | null;
+    background: 'tertiary' | 'secondary';
+    counterparty: ActivityItemCounterparty;
+    onNavigateToTransaction: (activity: BtcActivityItem) => void;
+};
+
+const Counterparty = ({ counterparty }: { counterparty: ActivityItemCounterparty }) => {
     switch (counterparty.kind) {
         case 'contact':
             return (

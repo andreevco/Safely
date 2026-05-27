@@ -1,6 +1,5 @@
 import type { TFunction } from 'i18next';
 
-import type { ContactMeta, PortfolioMeta } from '@safely/core';
 import { ellipsisMiddle } from '@safely/core';
 import type {
     useActualBtcBlockNumber,
@@ -19,28 +18,17 @@ import {
     getBtcTransactionDisplayStatus
 } from '@safely/ux';
 
+import type { ActivityItemProps } from '@mobile/entities/activity';
+
 export type HistoryHeaderRow = {
     key: string;
     type: 'header';
     title: string;
 };
 
-export type ActivityRow = {
+export type ActivityRow = ActivityItemProps & {
     key: string;
     type: 'activity';
-    activity: BtcActivityItem;
-    title: string;
-    amountSign: '+' | '−';
-    formattedValue: string;
-    valueColor: 'primary' | 'accentGreen';
-    formattedFiat: string | null;
-    timestampLabel: string | null;
-    background: 'tertiary' | 'secondary';
-    counterparty:
-        | { kind: 'contact'; meta: ContactMeta }
-        | { kind: 'portfolio'; meta: PortfolioMeta }
-        | { kind: 'address'; label: string };
-    onNavigateToTransaction: (activity: BtcActivityItem) => void;
 };
 
 export type HistoryRowItem = HistoryHeaderRow | ActivityRow;
