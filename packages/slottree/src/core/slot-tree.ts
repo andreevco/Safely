@@ -91,14 +91,14 @@ export interface SlotTree<T> {
      * @param authorId
      * @param storageVersion
      */
-    addAuthor(authorId: string, storageVersion: number): void;
+    addAuthor(authorId: Buffer, storageVersion: number): void;
 
     /**
      * Removes author and deletes version related to the author if there are no other authors
      * using that version
      * @param authorId
      */
-    removeAuthor(authorId: string): void;
+    removeAuthor(authorId: Buffer): void;
 }
 
 export class StorageImpl<T> implements SlotTree<T> {
@@ -108,11 +108,11 @@ export class StorageImpl<T> implements SlotTree<T> {
     private readonly observers = new StorageObservers();
 
     constructor(options: {
-        authorId: string;
+        authorId: Buffer;
         versions: readonly StorageVersion[];
         root?: ContainerSlot;
     }) {
-        this.protocol = new MergeProtocol(options.authorId);
+        this.protocol = new MergeProtocol(options.authorId.toString('hex'));
         this.versions = options.versions;
 
         if (options.root !== undefined) {
@@ -127,10 +127,10 @@ export class StorageImpl<T> implements SlotTree<T> {
         this.protocol.observeTree(this.root);
     }
 
-    public addAuthor(authorId: string, storageVersion: number): void {
+    public addAuthor(authorId: Buffer, storageVersion: number): void {
         const controller = new VersionController(this.root, this.versions);
         controller.setDeviceVersion(
-            authorId,
+            authorId.toString('hex'),
             storageVersion,
             this.protocol.tick(),
             this.protocol.id
@@ -140,9 +140,9 @@ export class StorageImpl<T> implements SlotTree<T> {
         this.observers.notify();
     }
 
-    public removeAuthor(authorId: string): void {
+    public removeAuthor(authorId: Buffer): void {
         const controller = new VersionController(this.root, this.versions);
-        const deleted = controller.deleteAuthor(authorId);
+        const deleted = controller.deleteAuthor(authorId.toString('hex'));
         if (!deleted) {
             return;
         }
@@ -348,7 +348,7 @@ function didMergeChangeStorage(stats: MergeStats): boolean {
 }
 
 export function createStorage<Latest extends StorageVersion, Rest>(options: {
-    authorId: string;
+    authorId: Buffer;
     versions: HCons<Latest, Rest> & AssertVersionHList<HCons<Latest, Rest>>;
     root?: ContainerSlot;
 }): SlotTree<z.output<NewOf<Latest>>> {

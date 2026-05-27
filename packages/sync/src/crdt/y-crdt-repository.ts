@@ -34,7 +34,7 @@ export class YCRDTRepository<Latest extends StorageVersion, Rest> {
 
     public createCRDTFromSnapshot(snapshot: Buffer | string): YCRDT<z.output<NewOf<Latest>>> {
         const crdt = createStorage({
-            authorId: this.ikPub.toString('hex'),
+            authorId: this.ikPub,
             versions: this.versions
         });
         crdt.merge(Buffer.isBuffer(snapshot) ? snapshot.toString('utf8') : snapshot);
@@ -54,7 +54,7 @@ export class YCRDTRepository<Latest extends StorageVersion, Rest> {
 
     public async initialize(): Promise<void> {
         const crdt = createStorage({
-            authorId: this.ikPub.toString('hex'),
+            authorId: this.ikPub,
             versions: this.versions
         });
 

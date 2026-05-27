@@ -14,11 +14,11 @@ describe('storage merge', () => {
 
     beforeEach(() => {
         storage1 = createStorage({
-            authorId: 'device-1',
+            authorId: Buffer.from('device-1'),
             versions: v1
         }) as StorageImpl<z.output<typeof schemaV1>>;
         storage2 = createStorage({
-            authorId: 'device-2',
+            authorId: Buffer.from('device-2'),
             versions: v1
         }) as StorageImpl<z.output<typeof schemaV1>>;
     });

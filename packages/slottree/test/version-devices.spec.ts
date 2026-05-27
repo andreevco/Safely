@@ -14,17 +14,21 @@ const v3Initial = {
     key4: 'v3'
 };
 
+const device1 = Buffer.from('device-1').toString('hex');
+const deviceV1 = Buffer.from('device-v1').toString('hex');
+const oldDevice = Buffer.from('old-device').toString('hex');
+
 describe('storage device versions', () => {
     it('records the current device schema version when storage is created', () => {
         const storage = createStorage({
-            authorId: 'device-1',
+            authorId: Buffer.from('device-1'),
             versions: v3
         }) as StorageImpl<StorageV3>;
 
         const exported = storage.exportSlot();
 
         expect(stripSlot(exported.v[DEVICES_KEY])).toEqual({
-            'device-1': {
+            [device1]: {
                 version: 3
             }
         });
@@ -35,7 +39,7 @@ describe('storage device versions', () => {
             '3': slotFromJson(v3Initial, 0, ''),
             [DEVICES_KEY]: slotFromJson(
                 {
-                    'device-1': { version: 1 },
+                    [device1]: { version: 1 },
                     'old-device': { version: 1 }
                 },
                 0,
@@ -44,7 +48,7 @@ describe('storage device versions', () => {
         });
 
         const storage = createStorage({
-            authorId: 'device-1',
+            authorId: Buffer.from('device-1'),
             versions: v3,
             root
         }) as StorageImpl<StorageV3>;
@@ -52,7 +56,7 @@ describe('storage device versions', () => {
         const exported = storage.exportSlot();
 
         expect(stripSlot(exported.v[DEVICES_KEY])).toEqual({
-            'device-1': {
+            [device1]: {
                 version: 3
             },
             'old-device': {
@@ -67,7 +71,7 @@ describe('storage device versions', () => {
             '3': slotFromJson(v3Initial, 0, ''),
             [DEVICES_KEY]: slotFromJson(
                 {
-                    'device-1': { version: 3 }
+                    [device1]: { version: 3 }
                 },
                 0,
                 ''
@@ -75,7 +79,7 @@ describe('storage device versions', () => {
         });
 
         const storage = createStorage({
-            authorId: 'device-1',
+            authorId: Buffer.from('device-1'),
             versions: v3,
             root
         }) as StorageImpl<StorageV3>;
@@ -92,7 +96,7 @@ describe('storage device versions', () => {
             '3': slotFromJson(v3Initial, 0, ''),
             [DEVICES_KEY]: slotFromJson(
                 {
-                    'device-1': { version: 3 },
+                    [device1]: { version: 3 },
                     'old-device': { version: 1 }
                 },
                 0,
@@ -101,7 +105,7 @@ describe('storage device versions', () => {
         });
 
         const storage = createStorage({
-            authorId: 'device-1',
+            authorId: Buffer.from('device-1'),
             versions: v3,
             root
         }) as StorageImpl<StorageV3>;
@@ -114,7 +118,7 @@ describe('storage device versions', () => {
 
     it('adds an author on an older schema version and materializes that version', () => {
         const storage = createStorage({
-            authorId: 'device-1',
+            authorId: Buffer.from('device-1'),
             versions: v3
         }) as StorageImpl<StorageV3>;
 
@@ -130,16 +134,16 @@ describe('storage device versions', () => {
             calls += 1;
         });
 
-        storage.addAuthor('device-v1', 1);
+        storage.addAuthor(Buffer.from('device-v1'), 1);
 
         const exported = storage.exportSlot();
 
         expect(calls).toBe(1);
         expect(stripSlot(exported.v[DEVICES_KEY])).toEqual({
-            'device-1': {
+            [device1]: {
                 version: 3
             },
-            'device-v1': {
+            [deviceV1]: {
                 version: 1
             }
         });
@@ -158,13 +162,13 @@ describe('storage device versions', () => {
 
     it('rejects authors with unknown schema versions without changing storage', () => {
         const storage = createStorage({
-            authorId: 'device-1',
+            authorId: Buffer.from('device-1'),
             versions: v3
         });
         const before = storage.export();
 
         expect(() => {
-            storage.addAuthor('device-unknown', 999);
+            storage.addAuthor(Buffer.from('device-unknown'), 999);
         }).toThrow('Unknown storage version 999');
 
         expect(storage.export()).toBe(before);
@@ -176,15 +180,15 @@ describe('storage device versions', () => {
             '3': slotFromJson(v3Initial, 0, ''),
             [DEVICES_KEY]: slotFromJson(
                 {
-                    'device-1': { version: 3 },
-                    'old-device': { version: 1 }
+                    [device1]: { version: 3 },
+                    [oldDevice]: { version: 1 }
                 },
                 0,
                 ''
             )
         });
         const storage = createStorage({
-            authorId: 'device-1',
+            authorId: Buffer.from('device-1'),
             versions: v3,
             root
         }) as StorageImpl<StorageV3>;
@@ -194,19 +198,19 @@ describe('storage device versions', () => {
             calls += 1;
         });
 
-        storage.removeAuthor('old-device');
+        storage.removeAuthor(Buffer.from('old-device'));
 
         const exported = storage.exportSlot();
         const encoded = storage.export();
         const imported = createStorage({
-            authorId: 'device-1',
+            authorId: Buffer.from('device-1'),
             versions: v3
         });
         imported.merge(encoded);
 
         expect(calls).toBe(1);
         expect(stripSlot(exported.v[DEVICES_KEY])).toEqual({
-            'device-1': {
+            [device1]: {
                 version: 3
             }
         });
@@ -216,7 +220,7 @@ describe('storage device versions', () => {
 
     it('does not notify or rewrite storage when removing an unknown author', () => {
         const storage = createStorage({
-            authorId: 'device-1',
+            authorId: Buffer.from('device-1'),
             versions: v3
         });
         const before = storage.export();
@@ -225,7 +229,7 @@ describe('storage device versions', () => {
             calls += 1;
         });
 
-        storage.removeAuthor('missing-device');
+        storage.removeAuthor(Buffer.from('missing-device'));
 
         expect(calls).toBe(0);
         expect(storage.export()).toBe(before);

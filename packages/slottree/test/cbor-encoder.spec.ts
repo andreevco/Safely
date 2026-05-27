@@ -15,7 +15,7 @@ import {
 
 describe('CborEncoder', () => {
     const hexAuthor = 'a'.repeat(64);
-    const stringAuthor = 'device-string-author';
+    const stringAuthor = Buffer.from('device-string-author').toString('hex');
 
     function atomic(value: JsonValue, timestamp: number, author = stringAuthor): Slot {
         return {

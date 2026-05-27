@@ -39,7 +39,10 @@ export function collectEncodingTables(root: Slot): {
 }
 
 export function encodeAuthor(author: string): EncodedAuthor {
-    return isHex(author) ? Buffer.from(author, 'hex') : author;
+    if (!isHex(author)) {
+        throw new Error('Author must be hex');
+    }
+    return Buffer.from(author, 'hex');
 }
 
 export function decodeAuthor(author: EncodedAuthor): string {

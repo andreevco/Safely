@@ -31,7 +31,7 @@ describe('records', () => {
         );
 
         const storage = createStorage({
-            authorId: 'device-1',
+            authorId: Buffer.from('device-1'),
             versions: version
         });
 
@@ -71,7 +71,7 @@ describe('records', () => {
         );
 
         const storage = createStorage({
-            authorId: 'device-1',
+            authorId: Buffer.from('device-1'),
             versions: version
         }) as StorageImpl<z.output<typeof schema>>;
 
@@ -127,7 +127,7 @@ describe('records', () => {
         );
 
         const storage = createStorage({
-            authorId: 'device-1',
+            authorId: Buffer.from('device-1'),
             versions: version
         }) as StorageImpl<z.output<typeof schema>>;
 
@@ -139,26 +139,26 @@ describe('records', () => {
               "v": {
                 "__proto__": {
                   "s": 1,
-                  "v": { "value": { "s": 0, "v": 1, "t": 1, "a": "remote" } },
+                  "v": { "value": { "s": 0, "v": 1, "t": 1, "a": "72656d6f7465" } },
                   "t": 1,
-                  "a": "remote"
+                  "a": "72656d6f7465"
                 },
                 "constructor": {
                   "s": 1,
-                  "v": { "value": { "s": 0, "v": 2, "t": 1, "a": "remote" } },
+                  "v": { "value": { "s": 0, "v": 2, "t": 1, "a": "72656d6f7465" } },
                   "t": 1,
-                  "a": "remote"
+                  "a": "72656d6f7465"
                 },
                 "prototype": {
                   "s": 1,
-                  "v": { "value": { "s": 0, "v": 3, "t": 1, "a": "remote" } },
+                  "v": { "value": { "s": 0, "v": 3, "t": 1, "a": "72656d6f7465" } },
                   "t": 1,
-                  "a": "remote"
+                  "a": "72656d6f7465"
                 }
               },
               "s": 1,
               "t": 1,
-              "a": "remote"
+              "a": "72656d6f7465"
             }
           },
           "s": 1,
@@ -173,7 +173,7 @@ describe('records', () => {
 
         const incomingRoot = JSON.parse(incoming) as ContainerSlot;
         const remote = createStorage({
-            authorId: 'remote',
+            authorId: Buffer.from('remote'),
             versions: version,
             root: incomingRoot
         });

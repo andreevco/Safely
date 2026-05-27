@@ -34,11 +34,11 @@ export class YCRDT<T extends object> {
         });
     }
 
-    public addAuthor(authorId: string, storageVersion: number): void {
+    public addAuthor(authorId: Buffer, storageVersion: number): void {
         this.doc.addAuthor(authorId, storageVersion);
     }
 
-    public deleteAuthor(authorId: string): void {
+    public deleteAuthor(authorId: Buffer): void {
         this.doc.removeAuthor(authorId);
     }
 

@@ -56,7 +56,7 @@ type ReadonlyNullableUser = {
 
 function createTestStorage() {
     return createStorage({
-        authorId: 'device-1',
+        authorId: Buffer.from('device-1'),
         versions
     });
 }
@@ -91,7 +91,7 @@ const nullableVersions = defineVersionHList(
 
 function createNullableStorage() {
     return createStorage({
-        authorId: 'device-1',
+        authorId: Buffer.from('device-1'),
         versions: nullableVersions
     });
 }
@@ -195,7 +195,7 @@ describe('Draft', () => {
 
         expect(settingsSlot.v.layout).toMatchObject({
             s: SlotKind.Tombstone,
-            a: 'device-1'
+            a: Buffer.from('device-1').toString('hex')
         });
     });
 
