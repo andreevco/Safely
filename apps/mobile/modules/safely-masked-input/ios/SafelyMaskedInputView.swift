@@ -115,11 +115,27 @@ class SafelyMaskedInputView: ExpoView, UITextFieldDelegate {
     }
 
     func setFontWeightValue(_ weight: String) {
-        guard mainFontWeight != .semibold else { return }
-        mainFontWeight = .semibold
+        let newWeight = Self.fontWeight(from: weight)
+        guard mainFontWeight != newWeight else { return }
+        mainFontWeight = newWeight
         textField.font = resolvedMainFont()
         applyMask()
         applyPlaceholder()
+    }
+
+    private static func fontWeight(from value: String) -> UIFont.Weight {
+        switch value {
+        case "100", "ultraLight": return .ultraLight
+        case "200", "thin": return .thin
+        case "300", "light": return .light
+        case "400", "regular", "normal": return .regular
+        case "500", "medium": return .medium
+        case "600", "semibold": return .semibold
+        case "700", "bold": return .bold
+        case "800", "heavy": return .heavy
+        case "900", "black": return .black
+        default: return .semibold
+        }
     }
 
     func setTextColorValue(_ value: String) {
@@ -270,7 +286,7 @@ class SafelyMaskedInputView: ExpoView, UITextFieldDelegate {
             textField.text = nil
         } else {
             textField.attributedText = buildAttributedString(from: result.segments, withSuffix: true)
-            moveCursor(to: result.cursorPosition)
+            moveCursor(to: result.formatted.count)
         }
 
         isUpdatingFromCode = false
@@ -353,14 +369,14 @@ class SafelyMaskedInputView: ExpoView, UITextFieldDelegate {
         return text.hasSuffix(suffixText) ? String(text.dropLast(suffixText.count)) : text
     }
 
-    private func applyUserMaskResult(_ result: MaskResult) {
+    private func applyUserMaskResult(_ result: MaskResult, cursorPosition: Int) {
         isUpdatingFromCode = true
         if result.segments.isEmpty {
             textField.attributedText = nil
             textField.text = nil
         } else {
             textField.attributedText = buildAttributedString(from: result.segments, withSuffix: true)
-            moveCursor(to: result.cursorPosition)
+            moveCursor(to: cursorPosition)
         }
         isUpdatingFromCode = false
 
@@ -380,21 +396,23 @@ class SafelyMaskedInputView: ExpoView, UITextFieldDelegate {
         guard !isUpdatingFromCode else { return false }
 
         let currentEditableText = stripSuffix(from: textField.text ?? "")
-        guard range.location <= currentEditableText.count else { return false }
+        let editableCount = currentEditableText.count
+        guard range.location <= editableCount else { return false }
 
-        let replacedLength = min(range.length, max(currentEditableText.count - range.location, 0))
+        let replacedLength = min(range.length, max(editableCount - range.location, 0))
         let start = currentEditableText.index(currentEditableText.startIndex, offsetBy: range.location)
         let end = currentEditableText.index(start, offsetBy: replacedLength)
         let nextRawInput = currentEditableText.replacingCharacters(in: start..<end, with: string)
-        let rawCursorPosition = min(range.location + string.count, nextRawInput.count)
+        let rawCursorPosition = range.location + string.count
+
         let result = MaskEngine.apply(
             rawInput: nextRawInput,
             decimals: decimals,
-            decimalSeparator: decimalSeparator,
-            rawCursorPosition: rawCursorPosition
+            decimalSeparator: decimalSeparator
         )
+        let cursorPosition = result.cursorPosition(forRawCursor: rawCursorPosition)
 
-        applyUserMaskResult(result)
+        applyUserMaskResult(result, cursorPosition: cursorPosition)
         return false
     }
 
