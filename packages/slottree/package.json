@@ -15,6 +15,7 @@
     },
     "private": true,
     "dependencies": {
+        "cbor-x": "^1.6.4",
         "zod": "catalog:"
     },
     "exports": {

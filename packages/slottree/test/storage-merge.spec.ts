@@ -14,11 +14,11 @@ describe('storage merge', () => {
 
     beforeEach(() => {
         storage1 = createStorage({
-            authorId: 'device-1',
+            authorId: Buffer.from('device-1'),
             versions: v1
         }) as StorageImpl<z.output<typeof schemaV1>>;
         storage2 = createStorage({
-            authorId: 'device-2',
+            authorId: Buffer.from('device-2'),
             versions: v1
         }) as StorageImpl<z.output<typeof schemaV1>>;
     });
@@ -77,7 +77,7 @@ describe('storage merge', () => {
         storage1.transaction(draft => {
             draft.set('key1', 1);
         });
-        const exported = storage1.exportSlot() as ReturnType<typeof createOriginContainer>;
+        const exported = storage1.exportSlot();
         const versionSlot = exported.v['1'] as unknown as {
             v: { key1: { t: number } };
         };

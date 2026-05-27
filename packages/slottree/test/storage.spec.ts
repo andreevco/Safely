@@ -15,7 +15,7 @@ describe('storage updates', () => {
 
     beforeEach(() => {
         storage = createStorage({
-            authorId: 'device-1',
+            authorId: Buffer.from('device-1'),
             versions: v1
         });
     });
@@ -91,7 +91,7 @@ describe('storage updates', () => {
 
     it('leaves storage unchanged when update fails schema validation', () => {
         const isolatedStorage = createStorage({
-            authorId: 'device-1',
+            authorId: Buffer.from('device-1'),
             versions: v1
         });
 
@@ -205,7 +205,7 @@ describe('storage updates', () => {
 
     it('commits unsafe async merges only after commit hook resolves true', async () => {
         const remote = createStorage({
-            authorId: 'device-2',
+            authorId: Buffer.from('device-2'),
             versions: v1
         });
         remote.transaction(draft => {
@@ -235,7 +235,7 @@ describe('storage updates', () => {
 
     it('leaves unsafe async merge state unpublished when commit hook rejects', async () => {
         const remote = createStorage({
-            authorId: 'device-2',
+            authorId: Buffer.from('device-2'),
             versions: v1
         });
         remote.transaction(draft => {
@@ -262,7 +262,7 @@ describe('storage updates', () => {
 
     it('leaves storage unchanged when update callback throws', () => {
         const isolatedStorage = createStorage({
-            authorId: 'device-1',
+            authorId: Buffer.from('device-1'),
             versions: v1
         });
 
@@ -281,11 +281,11 @@ describe('storage updates', () => {
 
     it('export returns a deep clone', () => {
         const isolatedStorage = createStorage({
-            authorId: 'device-1',
+            authorId: Buffer.from('device-1'),
             versions: v1
         }) as StorageImpl<StorageV1>;
 
-        const exported = isolatedStorage.exportSlot() as ContainerSlot;
+        const exported = isolatedStorage.exportSlot();
         const versionSlot = exported.v['1'] as ContainerSlot;
         const key1Slot = versionSlot.v.key1;
 
@@ -303,7 +303,7 @@ describe('storage updates', () => {
 
     it('exports a stable string independent of object key insertion order', () => {
         const isolatedStorage = createStorage({
-            authorId: 'device-1',
+            authorId: Buffer.from('device-1'),
             versions: v1
         }) as StorageImpl<StorageV1>;
 
@@ -312,9 +312,9 @@ describe('storage updates', () => {
             draft.set('key2', 'updated');
         });
 
-        const reordered = reverseSlotKeys(isolatedStorage.exportSlot() as ContainerSlot);
+        const reordered = reverseSlotKeys(isolatedStorage.exportSlot());
         const storageFromReorderedRoot = createStorage({
-            authorId: 'device-1',
+            authorId: Buffer.from('device-1'),
             versions: v1,
             root: reordered
         });
@@ -324,7 +324,7 @@ describe('storage updates', () => {
 
     it('prevents runtime writes through read proxies', () => {
         const isolatedStorage = createStorage({
-            authorId: 'device-1',
+            authorId: Buffer.from('device-1'),
             versions: v1
         });
 
@@ -354,7 +354,7 @@ describe('storage updates', () => {
 
     it('supports object helpers on read proxies', () => {
         const isolatedStorage = createStorage({
-            authorId: 'device-1',
+            authorId: Buffer.from('device-1'),
             versions: v1
         });
 
@@ -411,7 +411,7 @@ describe('storage updates', () => {
         );
 
         const isolatedStorage = createStorage({
-            authorId: 'device-1',
+            authorId: Buffer.from('device-1'),
             versions
         });
         const readable = isolatedStorage.read();
@@ -457,7 +457,7 @@ describe('storage updates', () => {
         );
 
         const isolatedStorage = createStorage({
-            authorId: 'device-1',
+            authorId: Buffer.from('device-1'),
             versions
         });
 
@@ -475,7 +475,7 @@ describe('storage updates', () => {
 
     it('uses one timestamp for all writes in one transaction', () => {
         const isolatedStorage = createStorage({
-            authorId: 'device-1',
+            authorId: Buffer.from('device-1'),
             versions: v1
         }) as StorageImpl<StorageV1>;
 
@@ -484,12 +484,13 @@ describe('storage updates', () => {
             draft.set('key2', 'updated');
         });
 
-        const exported = isolatedStorage.exportSlot() as ContainerSlot;
+        const exported = isolatedStorage.exportSlot();
         const versionSlot = exported.v['1'] as ContainerSlot;
+        const author = Buffer.from('device-1').toString('hex');
 
         expect(versionSlot.v.key1?.t).toBe(versionSlot.v.key2?.t);
-        expect(versionSlot.v.key1?.a).toBe('device-1');
-        expect(versionSlot.v.key2?.a).toBe('device-1');
+        expect(versionSlot.v.key1?.a).toBe(author);
+        expect(versionSlot.v.key2?.a).toBe(author);
     });
 
     it('distinguishes null values from deleted fields', () => {
@@ -513,7 +514,7 @@ describe('storage updates', () => {
         );
 
         const isolatedStorage = createStorage({
-            authorId: 'device-1',
+            authorId: Buffer.from('device-1'),
             versions
         });
 
