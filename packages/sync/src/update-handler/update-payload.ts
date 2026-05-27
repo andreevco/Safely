@@ -1,25 +1,30 @@
+import * as cbor from 'cbor-x';
 import { z } from 'zod';
 
 const UpdatePayloadSchema = z.object({
-    userStorage: z.string(),
-    deviceStorage: z.string()
+    userStorage: z.instanceof(Uint8Array),
+    deviceStorage: z.instanceof(Uint8Array)
 });
 
-export type UpdatePayload = z.infer<typeof UpdatePayloadSchema>;
+export type UpdatePayload = {
+    userStorage: Buffer;
+    deviceStorage: Buffer;
+};
 
 export function encodeUpdatePayload(payload: {
     userStorage: Buffer;
     deviceStorage: Buffer;
 }): Buffer {
-    return Buffer.from(
-        JSON.stringify({
-            userStorage: payload.userStorage.toString('utf8'),
-            deviceStorage: payload.deviceStorage.toString('utf8')
-        }),
-        'utf8'
-    );
+    return cbor.encode({
+        userStorage: payload.userStorage,
+        deviceStorage: payload.deviceStorage
+    });
 }
 
 export function decodeUpdatePayload(payload: Buffer): UpdatePayload {
-    return UpdatePayloadSchema.parse(JSON.parse(payload.toString('utf8')));
+    const parsed = UpdatePayloadSchema.parse(cbor.decode(payload));
+    return {
+        userStorage: Buffer.from(parsed.userStorage),
+        deviceStorage: Buffer.from(parsed.deviceStorage)
+    };
 }

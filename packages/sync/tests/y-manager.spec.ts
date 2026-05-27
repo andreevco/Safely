@@ -148,7 +148,7 @@ async function deviceVersion(
         authorId: Buffer.from('reader'),
         versions: Versions
     }) as StorageImpl<z.output<typeof Schema>>;
-    snapshotStorage.merge(raw);
+    snapshotStorage.merge(Buffer.from(raw, 'base64url'));
 
     return new VersionController(snapshotStorage.exportSlot(), [Version]).getDeviceVersion(
         Buffer.from(authorId).toString('hex')

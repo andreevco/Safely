@@ -129,7 +129,7 @@ describe('storage updates', () => {
     });
 
     it('commits async transactions only after commit hook resolves true', async () => {
-        const snapshots: string[] = [];
+        const snapshots: Buffer[] = [];
         let calls = 0;
         storage.onChange(() => {
             calls += 1;
@@ -301,7 +301,7 @@ describe('storage updates', () => {
         });
     });
 
-    it('exports a stable string independent of object key insertion order', () => {
+    it('exports a stable snapshot independent of object key insertion order', () => {
         const isolatedStorage = createStorage({
             authorId: Buffer.from('device-1'),
             versions: v1
@@ -319,7 +319,7 @@ describe('storage updates', () => {
             root: reordered
         });
 
-        expect(storageFromReorderedRoot.export()).toBe(isolatedStorage.export());
+        expect(storageFromReorderedRoot.export().equals(isolatedStorage.export())).toBe(true);
     });
 
     it('prevents runtime writes through read proxies', () => {

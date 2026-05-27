@@ -3,14 +3,12 @@ import { encodeCbor } from './encode';
 import type { ContainerSlot } from '../../slots';
 
 export class CborEncoder {
-    constructor(private readonly stringEncoding: BufferEncoding) {}
-
-    public encode(root: ContainerSlot): string {
-        return this.encodeBinary(root).toString(this.stringEncoding);
+    public encode(root: ContainerSlot): Buffer {
+        return this.encodeBinary(root);
     }
 
-    public decode(encodedRoot: string): ContainerSlot {
-        return this.decodeBinary(Buffer.from(encodedRoot, this.stringEncoding));
+    public decode(encodedRoot: Buffer): ContainerSlot {
+        return this.decodeBinary(encodedRoot);
     }
 
     public encodeBinary(root: ContainerSlot): Buffer {
@@ -22,4 +20,4 @@ export class CborEncoder {
     }
 }
 
-export const cborEncoder = new CborEncoder('base64url');
+export const cborEncoder = new CborEncoder();

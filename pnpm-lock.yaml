@@ -515,6 +515,9 @@ importers:
       '@safely/slottree':
         specifier: workspace:*
         version: link:../slottree
+      cbor-x:
+        specifier: ^1.6.4
+        version: 1.6.4
       eventsource:
         specifier: ^4.1.0
         version: 4.1.0

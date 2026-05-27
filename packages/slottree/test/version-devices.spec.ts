@@ -171,7 +171,7 @@ describe('storage device versions', () => {
             storage.addAuthor(Buffer.from('device-unknown'), 999);
         }).toThrow('Unknown storage version 999');
 
-        expect(storage.export()).toBe(before);
+        expect(storage.export().equals(before)).toBe(true);
     });
 
     it('removes an author, prunes its unused version, and keeps exports importable', () => {
@@ -232,6 +232,6 @@ describe('storage device versions', () => {
         storage.removeAuthor(Buffer.from('missing-device'));
 
         expect(calls).toBe(0);
-        expect(storage.export()).toBe(before);
+        expect(storage.export().equals(before)).toBe(true);
     });
 });
