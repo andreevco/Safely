@@ -1,9 +1,8 @@
 import { useCallback } from 'react';
 
+import type { PromptAndCheckOptions } from '@mobile/entities/security';
+import { usePasscode } from '@mobile/entities/security';
 import { authenticateBiometry, useBiometryQuery } from '@mobile/features/biometry';
-
-import type { PromptAndCheckOptions } from './types';
-import { usePasscode } from './usePasscode';
 
 export function useMobileSecurityCheck() {
     const { data: biometry } = useBiometryQuery();

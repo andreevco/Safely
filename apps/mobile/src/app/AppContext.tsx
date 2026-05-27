@@ -9,7 +9,7 @@ import { LoggableStorage } from '@safely/core';
 import type { AppStateStatus, IAppContext, Security } from '@safely/ux';
 import { AppContext, UnlockableSecuredEncryptedStorage, useLoggerLifecycle } from '@safely/ux';
 
-import { useMobileSecurityCheck } from '@mobile/entities/security';
+import { useMobileSecurityCheck } from '@mobile/features/security';
 import { build, deviceInfo, environment } from '@mobile/shared/app-meta';
 import { loggerRegistry } from '@mobile/shared/logger';
 import { useLoaderServiceContext } from '@mobile/shared/providers/loader';
