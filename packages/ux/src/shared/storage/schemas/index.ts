@@ -1,5 +1,4 @@
 import { sActiveAccountId } from './active-account-id.schema';
-import { sAnalyticsOnboardingId } from './analytics-onboarding-id.schema';
 import { sChartPeriod } from './chart-period.schema';
 import { sDismissedBannerIds } from './dismissed-banner-ids.schema';
 import { sNotificationsEnabled } from './notifications-enabled.schema';
@@ -10,7 +9,6 @@ export const sharedStorageStructure = {
     chartPeriod: sChartPeriod,
     notificationsEnabled: sNotificationsEnabled,
     dismissedBannerIds: sDismissedBannerIds,
-    analyticsOnboardingId: sAnalyticsOnboardingId,
     watchedBetaTimestamp: sWatchedBetaTimestamp
 };
 
