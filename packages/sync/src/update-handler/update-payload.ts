@@ -15,10 +15,12 @@ export function encodeUpdatePayload(payload: {
     userStorage: Buffer;
     deviceStorage: Buffer;
 }): Buffer {
-    return cbor.encode({
-        userStorage: payload.userStorage,
-        deviceStorage: payload.deviceStorage
-    });
+    return Buffer.from(
+        cbor.encode({
+            userStorage: payload.userStorage,
+            deviceStorage: payload.deviceStorage
+        })
+    );
 }
 
 export function decodeUpdatePayload(payload: Buffer): UpdatePayload {
