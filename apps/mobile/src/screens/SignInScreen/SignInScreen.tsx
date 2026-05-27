@@ -52,7 +52,7 @@ export const SignInScreen = (props: SignInScreenProps) => {
 
     const handleError = useCallback(() => {
         navigation.goBack();
-        toast(t('signIn.timeout'));
+        toast({ message: t('signIn.timeout'), duration: 5000 });
     }, [navigation, toast, t]);
 
     useAccountConnectedCallback(connector, handleConnected, {
@@ -86,15 +86,19 @@ export const SignInScreen = (props: SignInScreenProps) => {
                             {t('signIn.description.top')}
                         </Text>
                         <View style={styles.iconLine}>
-                            <Text variant="bodyL" color="secondary">
-                                {t('signIn.description.iconLineStart')}
-                            </Text>
+                            <View style={{ flexShrink: 1 }}>
+                                <Text variant="bodyL" color="secondary" textAlign="center">
+                                    {t('signIn.description.iconLineStart')}
+                                </Text>
+                            </View>
                             <View style={styles.inlineSettingsIconContainer}>
                                 <Icon icon={Sliders12} />
                             </View>
-                            <Text variant="bodyL" color="secondary">
-                                {t('signIn.description.iconLineEnd')}
-                            </Text>
+                            <View style={{ flexShrink: 1 }}>
+                                <Text variant="bodyL" color="secondary" textAlign="center">
+                                    {t('signIn.description.iconLineEnd')}
+                                </Text>
+                            </View>
                         </View>
                         <Text textAlign="center" variant="bodyL" color="secondary">
                             {t('signIn.description.bottom')}

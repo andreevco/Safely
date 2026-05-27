@@ -10,6 +10,11 @@ import { slotFromJson } from '../src/core/slots/slot-json';
 import { projection } from '../src/core/versioning/projection';
 import { defineVersionHList, hCons, hNil } from '../src/core/versioning/version';
 
+const device1 = Buffer.from('device-1').toString('hex');
+const deviceV1 = Buffer.from('device-v1').toString('hex');
+const deviceV2 = Buffer.from('device-v2').toString('hex');
+const oldDeviceAuthor = Buffer.from('old-device').toString('hex');
+
 describe('version migration', () => {
     it('initializes the latest version by migrating an existing older version', () => {
         const root = createOriginContainer({
@@ -17,7 +22,7 @@ describe('version migration', () => {
         });
 
         const storage = createStorage({
-            authorId: 'device-1',
+            authorId: Buffer.from('device-1'),
             versions: v3,
             root
         }) as StorageImpl<StorageV3>;
@@ -29,7 +34,7 @@ describe('version migration', () => {
             key4: 'v3'
         });
 
-        const exported = storage.exportSlot() as ContainerSlot;
+        const exported = storage.exportSlot();
         const v3Slot = exported.v['3'] as ContainerSlot;
 
         expect(exported.v['1']).toBeUndefined();
@@ -55,9 +60,9 @@ describe('version migration', () => {
             '3': slotFromJson({ key1: 0, label: 'initial', key3: false, key4: 'v3' }, 0, ''),
             [DEVICES_KEY]: slotFromJson(
                 {
-                    'device-1': { version: 3 },
-                    'device-v1': { version: 1 },
-                    'device-v2': { version: 2 }
+                    [device1]: { version: 3 },
+                    [deviceV1]: { version: 1 },
+                    [deviceV2]: { version: 2 }
                 },
                 0,
                 ''
@@ -65,7 +70,7 @@ describe('version migration', () => {
         });
 
         const storage = createStorage({
-            authorId: 'device-1',
+            authorId: Buffer.from('device-1'),
             versions: v3,
             root
         }) as StorageImpl<StorageV3>;
@@ -76,18 +81,18 @@ describe('version migration', () => {
             draft.set('key4', 'latest-only');
         });
 
-        const exported = storage.exportSlot() as ReturnType<typeof createOriginContainer>;
+        const exported = storage.exportSlot();
         expect(exported.v['2']).toMatchObject({
             v: {
                 key1: { v: 10 },
-                key2: { v: 'updated', a: 'device-1' },
+                key2: { v: 'updated', a: device1 },
                 key3: { v: false, t: 0 }
             }
         });
         expect(exported.v['1']).toMatchObject({
             v: {
                 key1: { v: 10 },
-                key2: { v: 'updated', a: 'device-1' }
+                key2: { v: 'updated', a: device1 }
             }
         });
 
@@ -110,8 +115,8 @@ describe('version migration', () => {
             '3': slotFromJson({ key1: 0, label: 'initial', key3: false, key4: 'v3' }, 0, ''),
             [DEVICES_KEY]: slotFromJson(
                 {
-                    'device-1': { version: 3 },
-                    'device-v1': { version: 1 }
+                    [device1]: { version: 3 },
+                    [deviceV1]: { version: 1 }
                 },
                 0,
                 ''
@@ -119,7 +124,7 @@ describe('version migration', () => {
         });
 
         const storage = createStorage({
-            authorId: 'device-1',
+            authorId: Buffer.from('device-1'),
             versions: v3,
             root
         }) as StorageImpl<StorageV3>;
@@ -128,7 +133,7 @@ describe('version migration', () => {
             draft.set('label', 'updated');
         });
 
-        const exported = storage.exportSlot() as ReturnType<typeof createOriginContainer>;
+        const exported = storage.exportSlot();
         expect(exported.v['2']).toBeUndefined();
         expect(exported.v['1']).toMatchObject({
             v: {
@@ -140,11 +145,11 @@ describe('version migration', () => {
 
     it('migrates older-version edits up after merge', () => {
         const oldDevice = createStorage({
-            authorId: 'old-device',
+            authorId: Buffer.from('old-device'),
             versions: v1
         }) as StorageImpl<StorageV1>;
         const newDevice = createStorage({
-            authorId: 'new-device',
+            authorId: Buffer.from('new-device'),
             versions: v3
         }) as StorageImpl<StorageV3>;
 
@@ -155,8 +160,8 @@ describe('version migration', () => {
 
         newDevice.merge(oldDevice.export());
 
-        const oldExport = oldDevice.exportSlot() as ContainerSlot;
-        const newExport = newDevice.exportSlot() as ContainerSlot;
+        const oldExport = oldDevice.exportSlot();
+        const newExport = newDevice.exportSlot();
         const oldV1 = oldExport.v['1'] as ContainerSlot;
         const newV3 = newExport.v['3'] as ContainerSlot;
 
@@ -240,11 +245,11 @@ describe('version migration', () => {
         );
 
         const oldDevice = createStorage({
-            authorId: 'old-device',
+            authorId: Buffer.from('old-device'),
             versions: optionalV1
         }) as StorageImpl<z.output<typeof schemaOptionalV1>>;
         const newDevice = createStorage({
-            authorId: 'new-device',
+            authorId: Buffer.from('new-device'),
             versions: optionalV2
         }) as StorageImpl<z.output<typeof schemaOptionalV2>>;
 
@@ -254,15 +259,15 @@ describe('version migration', () => {
 
         newDevice.merge(oldDevice.export());
 
-        const oldExport = oldDevice.exportSlot() as ContainerSlot;
-        const newExport = newDevice.exportSlot() as ContainerSlot;
+        const oldExport = oldDevice.exportSlot();
+        const newExport = newDevice.exportSlot();
         const oldTombstone = (oldExport.v['1'] as ContainerSlot).v.optional;
         const projectedTombstone = (newExport.v['2'] as ContainerSlot).v.renamed;
 
         expect(projectedTombstone).toEqual(oldTombstone);
         expect(projectedTombstone).toMatchObject({
             s: SlotKind.Tombstone,
-            a: 'old-device'
+            a: oldDeviceAuthor
         });
     });
 });

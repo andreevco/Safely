@@ -1,8 +1,8 @@
-import { useCallback, useContext, useMemo } from 'react';
+import { useContext, useMemo } from 'react';
 
 import { AnalyticsContext } from './AnalyticsContext';
 import { useActiveLanguage } from '../../shared/i18n/translate';
-import { useActiveAccountQuery } from '../account';
+import { useAccountStoreSlot, useActiveAccountQuery } from '../account';
 
 export interface AnalyticsApi {
     trackOnboardingOpen(input: { onboardingId: string }): Promise<void>;
@@ -29,16 +29,12 @@ export function useAnalytics(): AnalyticsApi {
 
     const lang = useActiveLanguage();
     const { data: activeAccount } = useActiveAccountQuery();
-    const getAccountUuid = useCallback(
-        () => activeAccount?.syncProvider.get('analyticsId'),
-        [activeAccount]
-    );
+    const accountUuid = useAccountStoreSlot(activeAccount?.accountId ?? null, 'analyticsId');
 
     return useMemo<AnalyticsApi>(
         () => ({
             trackOnboardingOpen: input => service.trackOnboardingOpen({ ...input, lang }),
             trackWalletOpen: async input => {
-                const accountUuid = getAccountUuid();
                 if (!accountUuid) return;
 
                 await service.trackWalletOpen({
@@ -48,13 +44,11 @@ export function useAnalytics(): AnalyticsApi {
                 });
             },
             trackSendStart: async () => {
-                const accountUuid = getAccountUuid();
                 if (!accountUuid) return;
 
                 await service.trackSendStart({ accountUuid, lang });
             },
             trackSendFinish: async input => {
-                const accountUuid = getAccountUuid();
                 if (!accountUuid) return;
 
                 await service.trackSendFinish({
@@ -64,6 +58,6 @@ export function useAnalytics(): AnalyticsApi {
                 });
             }
         }),
-        [service, getAccountUuid, lang]
+        [service, accountUuid, lang]
     );
 }

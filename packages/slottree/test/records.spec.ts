@@ -31,7 +31,7 @@ describe('records', () => {
         );
 
         const storage = createStorage({
-            authorId: 'device-1',
+            authorId: Buffer.from('device-1'),
             versions: version
         });
 
@@ -71,7 +71,7 @@ describe('records', () => {
         );
 
         const storage = createStorage({
-            authorId: 'device-1',
+            authorId: Buffer.from('device-1'),
             versions: version
         }) as StorageImpl<z.output<typeof schema>>;
 
@@ -81,7 +81,7 @@ describe('records', () => {
             draft.at('objects').set('prototype', { value: 3 });
         });
 
-        const exported = storage.exportSlot() as ContainerSlot;
+        const exported = storage.exportSlot();
         const versionSlot = exported.v['1'];
         if (!isContainerSlot(versionSlot)) {
             throw new Error('Expected version slot to be a container');
@@ -102,7 +102,7 @@ describe('records', () => {
         expect(Object.getPrototypeOf(stripped)).toBeNull();
     });
 
-    it('merges JSON-imported prototype-like keys as data', () => {
+    it('merges prototype-like keys as data', () => {
         const schema = z.object({
             objects: z.record(
                 z.string(),
@@ -127,7 +127,7 @@ describe('records', () => {
         );
 
         const storage = createStorage({
-            authorId: 'device-1',
+            authorId: Buffer.from('device-1'),
             versions: version
         }) as StorageImpl<z.output<typeof schema>>;
 
@@ -139,26 +139,26 @@ describe('records', () => {
               "v": {
                 "__proto__": {
                   "s": 1,
-                  "v": { "value": { "s": 0, "v": 1, "t": 1, "a": "remote" } },
+                  "v": { "value": { "s": 0, "v": 1, "t": 1, "a": "72656d6f7465" } },
                   "t": 1,
-                  "a": "remote"
+                  "a": "72656d6f7465"
                 },
                 "constructor": {
                   "s": 1,
-                  "v": { "value": { "s": 0, "v": 2, "t": 1, "a": "remote" } },
+                  "v": { "value": { "s": 0, "v": 2, "t": 1, "a": "72656d6f7465" } },
                   "t": 1,
-                  "a": "remote"
+                  "a": "72656d6f7465"
                 },
                 "prototype": {
                   "s": 1,
-                  "v": { "value": { "s": 0, "v": 3, "t": 1, "a": "remote" } },
+                  "v": { "value": { "s": 0, "v": 3, "t": 1, "a": "72656d6f7465" } },
                   "t": 1,
-                  "a": "remote"
+                  "a": "72656d6f7465"
                 }
               },
               "s": 1,
               "t": 1,
-              "a": "remote"
+              "a": "72656d6f7465"
             }
           },
           "s": 1,
@@ -171,9 +171,16 @@ describe('records', () => {
       "a": ""
     }`;
 
-        storage.merge(incoming);
+        const incomingRoot = JSON.parse(incoming) as ContainerSlot;
+        const remote = createStorage({
+            authorId: Buffer.from('remote'),
+            versions: version,
+            root: incomingRoot
+        });
 
-        const exported = storage.exportSlot() as ContainerSlot;
+        storage.merge(remote.export());
+
+        const exported = storage.exportSlot();
         const versionSlot = exported.v['1'];
         if (!isContainerSlot(versionSlot)) {
             throw new Error('Expected version slot to be a container');

@@ -50,7 +50,7 @@ describe('Storage merge findings', () => {
 
         function makeStorage(authorId: string) {
             return createStorage({
-                authorId,
+                authorId: Buffer.from(authorId),
                 versions
             });
         }

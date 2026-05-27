@@ -2,6 +2,7 @@ import { fromPromise } from 'xstate';
 
 import type { StorageVersion } from '@safely/slottree';
 
+import { SyncFlowLogger } from '../../logger';
 import { SyncStatus } from '../../sync-provider/sync-status';
 import { hex } from '../../utils/buffer';
 import type { SyncMachineConfig } from '../config';
@@ -15,7 +16,7 @@ export const initialSyncing = fromPromise(
         input: SyncMachineConfig<StorageVersion, unknown>;
         signal: AbortSignal;
     }) => {
-        input.logger.info('Initial syncing: fetching latest snapshot from server...');
+        const flow = SyncFlowLogger.start(input.logger, 'sync_machine.initial_sync');
         const knownState = await input.syncStateRepository.getState();
 
         let lastState;
@@ -29,13 +30,9 @@ export const initialSyncing = fromPromise(
                 }
             );
         } catch (e) {
+            flow.logFail(e, 'fetch.failed');
             throw await classifyError(e);
         }
-        input.logger.info(
-            'Received snapshot from server, proof:',
-            lastState.snapshot.snapshotProof.slice(0, 16) + '...'
-        );
-
         let result;
         try {
             result = await input.syncOperations.applyRemoteUpdate(
@@ -52,15 +49,19 @@ export const initialSyncing = fromPromise(
                 signal
             );
         } catch (e) {
-            input.logger.error('Error during initial syncing', e);
+            flow.logFail(e, 'apply.failed');
             throw await classifyError(e);
         }
         if (result.revoked) {
+            flow.logIncomplete('revoked');
             throw new SyncMachineError({
                 type: 'fatal',
                 status: SyncStatus.DEVICE_DELETED
             });
         }
+        flow.logEnd('completed', {
+            hasLocalChanges: result.hasLocalChanges
+        });
         return result;
     }
 );

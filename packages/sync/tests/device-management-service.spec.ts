@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { MockSnapshotsServer } from './mocks/mock-snapshots-api';
 import type { MachineContext } from './mocks/mock-sync-context';
@@ -150,6 +150,29 @@ describe('device management service', () => {
 
         await verifyDeviceList(ctx, []);
         await verifyStoredDeviceState(ctx, ikPub, 'revoked');
+    });
+
+    it('logs only start and result for device add and revoke operations', async () => {
+        const ctx = await createMachineContext(server);
+        const ikPub = ctx.container.ikService.getPub();
+        const infoSpy = vi.spyOn(ctx.container.logger, 'info').mockImplementation(() => {});
+        const errorSpy = vi.spyOn(ctx.container.logger, 'error').mockImplementation(() => {});
+
+        await addPub(ctx, ikPub);
+        await ctx.container.deviceManager.activate();
+        await revokePub(ctx, ikPub);
+
+        const syncFlows = infoSpy.mock.calls
+            .filter(([message]) => message === 'sync.flow')
+            .map(([, event]) => (event as { flow: string }).flow);
+
+        expect(syncFlows).toEqual([
+            'device_management.add_device',
+            'device_management.add_device.added',
+            'device_management.revoke_device',
+            'device_management.revoke_device.revoked'
+        ]);
+        expect(errorSpy).not.toHaveBeenCalledWith('sync.flow', expect.anything());
     });
 
     it('allows reconnect only for revoked devices', async () => {

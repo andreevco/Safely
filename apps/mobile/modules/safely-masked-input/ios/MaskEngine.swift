@@ -11,11 +11,27 @@ struct StyledSegment {
     let category: SegmentCategory
 }
 
+struct MappedChar {
+    let rawIndex: Int
+    let formattedEnd: Int
+}
+
 struct MaskResult {
     let formatted: String
     let extracted: String
     let segments: [StyledSegment]
-    let cursorPosition: Int
+    let mapping: [MappedChar]
+}
+
+extension MaskResult {
+    func cursorPosition(forRawCursor rawCursor: Int) -> Int {
+        var position = 0
+        for entry in mapping {
+            guard entry.rawIndex < rawCursor else { break }
+            position = entry.formattedEnd
+        }
+        return min(position, formatted.count)
+    }
 }
 
 class MaskEngine {
@@ -23,52 +39,74 @@ class MaskEngine {
     static func apply(rawInput: String, decimals: Int, decimalSeparator: String) -> MaskResult {
         let sep = decimalSeparator.isEmpty ? "." : decimalSeparator
 
-        var integerDigits = ""
-        var decimalDigits = ""
+        var integerEntries: [(rawIndex: Int, char: Character)] = []
+        var decimalEntries: [(rawIndex: Int, char: Character)] = []
+        var separatorRawIndex: Int?
         var hasDecimal = false
 
-        for ch in rawInput {
+        for (rawIndex, ch) in rawInput.enumerated() {
             if ch.isNumber {
                 if hasDecimal {
-                    if decimalDigits.count < decimals { decimalDigits.append(ch) }
+                    if decimalEntries.count < decimals {
+                        decimalEntries.append((rawIndex, ch))
+                    }
                 } else {
-                    integerDigits.append(ch)
+                    integerEntries.append((rawIndex, ch))
                 }
             } else if String(ch) == sep && !hasDecimal && decimals > 0 {
                 hasDecimal = true
+                separatorRawIndex = rawIndex
             }
         }
 
-        while integerDigits.count > 1 && integerDigits.hasPrefix("0") {
-            integerDigits.removeFirst()
+        while integerEntries.count > 1 && integerEntries.first?.char == "0" {
+            integerEntries.removeFirst()
         }
 
-        if hasDecimal && integerDigits.isEmpty {
-            integerDigits = "0"
-        }
+        let prependSynthetic = hasDecimal && integerEntries.isEmpty
 
         var formatted = ""
+        var mapping: [MappedChar] = []
         var segments: [StyledSegment] = []
+        var integerText = ""
+        var decimalText = ""
 
-        if !integerDigits.isEmpty {
-            formatted += integerDigits
-            segments.append(StyledSegment(text: integerDigits, category: .integer))
+        if prependSynthetic {
+            formatted += "0"
+            integerText = "0"
+        }
+
+        for entry in integerEntries {
+            formatted.append(entry.char)
+            integerText.append(entry.char)
+            mapping.append(MappedChar(rawIndex: entry.rawIndex, formattedEnd: formatted.count))
+        }
+        if !integerText.isEmpty {
+            segments.append(StyledSegment(text: integerText, category: .integer))
         }
 
         if hasDecimal {
             formatted += sep
             segments.append(StyledSegment(text: sep, category: .separator))
-            if !decimalDigits.isEmpty {
-                formatted += decimalDigits
-                segments.append(StyledSegment(text: decimalDigits, category: .decimal))
+            if let sepRawIndex = separatorRawIndex {
+                mapping.append(MappedChar(rawIndex: sepRawIndex, formattedEnd: formatted.count))
+            }
+
+            for entry in decimalEntries {
+                formatted.append(entry.char)
+                decimalText.append(entry.char)
+                mapping.append(MappedChar(rawIndex: entry.rawIndex, formattedEnd: formatted.count))
+            }
+            if !decimalText.isEmpty {
+                segments.append(StyledSegment(text: decimalText, category: .decimal))
             }
         }
 
-        var extracted = integerDigits
+        var extracted = integerText
         if hasDecimal {
-            extracted += sep + decimalDigits
+            extracted += sep + decimalText
         }
 
-        return MaskResult(formatted: formatted, extracted: extracted, segments: segments, cursorPosition: formatted.count)
+        return MaskResult(formatted: formatted, extracted: extracted, segments: segments, mapping: mapping)
     }
 }

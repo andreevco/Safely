@@ -66,14 +66,14 @@ type NullableArrayState = z.output<typeof nullableArraySchema>;
 
 function createPortfolioStorage(authorId: string): StorageImpl<State> {
     return createStorage({
-        authorId,
+        authorId: Buffer.from(authorId),
         versions
     }) as StorageImpl<State>;
 }
 
 function createNullablePortfolioStorage(authorId: string): StorageImpl<NullableArrayState> {
     return createStorage({
-        authorId,
+        authorId: Buffer.from(authorId),
         versions: nullableArrayVersions
     }) as StorageImpl<NullableArrayState>;
 }
@@ -332,14 +332,14 @@ describe('ordered array slots', () => {
         });
 
         const a = createStorage({
-            authorId: 'device-a',
+            authorId: Buffer.from('device-a'),
             versions,
-            root: seed.exportSlot() as ContainerSlot
+            root: seed.exportSlot()
         }) as StorageImpl<State>;
         const b = createStorage({
-            authorId: 'device-b',
+            authorId: Buffer.from('device-b'),
             versions,
-            root: seed.exportSlot() as ContainerSlot
+            root: seed.exportSlot()
         }) as StorageImpl<State>;
 
         a.transaction(draft => {
@@ -373,9 +373,9 @@ describe('ordered array slots', () => {
         });
 
         const imported = createStorage({
-            authorId: 'device-2',
+            authorId: Buffer.from('device-2'),
             versions,
-            root: JSON.parse(storage.export()) as ContainerSlot
+            root: storage.exportSlot()
         });
 
         expect(imported.get()).toEqual(storage.get());

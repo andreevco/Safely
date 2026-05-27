@@ -11,6 +11,7 @@ export type AccountStoreData = {
     contacts: Contact[];
     preferredFiat: FiatAsset | null;
     devicesMeta: SDevicesMeta;
+    analyticsId: string | null;
 };
 
 export const SYNCED_SLOT_KEYS = [
@@ -18,7 +19,8 @@ export const SYNCED_SLOT_KEYS = [
     'portfolios',
     'contacts',
     'preferredFiat',
-    'devicesMeta'
+    'devicesMeta',
+    'analyticsId'
 ] as const satisfies readonly (keyof Omit<AccountStoreData, 'accountId'>)[];
 
 export type SyncedSlotKey = (typeof SYNCED_SLOT_KEYS)[number];

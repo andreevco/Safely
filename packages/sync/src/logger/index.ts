@@ -4,5 +4,7 @@ export { logsFilterMinSeverityLevel } from './logs-filter';
 export type { LogsFilter } from './logs-filter';
 export { ConsoleTransport } from './console-transport';
 export { CombinedTransport } from './combined-transport';
+export { SyncFlowLogger, makeQrLogId, withSyncFlow } from './sync-flow-logger';
+export type { SyncFlowLogFields, SyncFlowLoggerOptions } from './sync-flow-logger';
 export type { LogEntry } from './log-entry';
 export type { ILoggerTransport, LoggerLifecycleContext } from './I-logger-transport';
