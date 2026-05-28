@@ -75,8 +75,8 @@ export const HistoryList = (props: HistoryListProps) => {
         show: showBubble
     } = useNewTransactionsBubble({
         listRef,
-        // cell + title
-        topThreshold: 96
+        // cell
+        topThreshold: 44
     });
 
     const { mutate: runIntervalRefetch } = useMutation({
