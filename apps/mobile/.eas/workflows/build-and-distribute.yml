@@ -35,6 +35,16 @@ jobs:
       profile: production
       changelog: ${{ inputs.release_notes }}
 
+  # testflight upload may fail with unknown at this moment reasons, but retry should help
+  distribute_ios_crutch:
+    type: testflight
+    name: Upload to TestFlight (crutch)
+    after: [build_ios, distribute_ios]
+    if: ${{ after.distribute_ios.status == 'failure' }}
+    params:
+      build_id: ${{ after.build_ios.outputs.build_id }}
+      profile: production
+
   distribute_android:
     name: Upload to Firebase
     needs: [build_android]
