@@ -26,6 +26,7 @@ export class FileTransport implements ILoggerTransport {
     private flushing: Promise<void> = Promise.resolve();
     private flushScheduled = false;
     private seqNo = 0;
+    private disposed = false;
 
     constructor(opts: FileTransportConfig) {
         this.appVersion = opts.appVersion;
@@ -35,6 +36,8 @@ export class FileTransport implements ILoggerTransport {
     }
 
     public log(entry: LogEntry): void {
+        if (this.disposed) return;
+
         const key = `e_${Date.now()}_${this.seqNo++}`;
         this.mmkv.set(
             key,
@@ -68,6 +71,8 @@ export class FileTransport implements ILoggerTransport {
     }
 
     public erase(): void {
+        this.disposed = true;
+
         const file = new File(Paths.cache, FILENAME);
         if (file.exists) file.delete();
     }
@@ -85,6 +90,8 @@ export class FileTransport implements ILoggerTransport {
     }
 
     private doFlush(): void {
+        if (this.disposed) return;
+
         const keys = this.mmkv.getAllKeys().filter(k => k.startsWith('e_'));
         if (keys.length === 0) return;
 
