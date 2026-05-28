@@ -4,8 +4,6 @@ import { buildLogger } from './build-logger';
 import { FileTransport } from './file-transport';
 
 const transport = new FileTransport({
-    filename: 'safely.ndjson',
-    mmkvId: 'logger-buffer',
     appVersion: packageJson.version,
     build,
     deviceInfo
