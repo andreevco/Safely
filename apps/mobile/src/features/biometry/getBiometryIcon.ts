@@ -1,6 +1,7 @@
 import { Platform } from 'react-native';
 
-import { FaceidAndroid96, FaceidIos96, Fingerprint96, IconProps } from '@mobile/shared/ui/Icon';
+import type { IconProps } from '@mobile/shared/ui/Icon';
+import { FaceidAndroid96, FaceidIos96, Fingerprint96 } from '@mobile/shared/ui/Icon';
 
 import { BiometryType } from './useBiometry';
 

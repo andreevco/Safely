@@ -1,7 +1,7 @@
 import { View } from 'react-native';
-import { SharedValue } from 'react-native-reanimated';
+import type { SharedValue } from 'react-native-reanimated';
 
-import { IconProps } from '@mobile/shared/ui/Icon';
+import type { IconProps } from '@mobile/shared/ui/Icon';
 import { PasscodeInput } from '@mobile/shared/ui/PasscodeInput';
 import { PasscodeKeypad } from '@mobile/shared/ui/PasscodeKeypad';
 import { Text } from '@mobile/shared/ui/Text';

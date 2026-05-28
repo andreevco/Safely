@@ -1,6 +1,7 @@
 import { View } from 'react-native';
 
-import { Text, TextProps } from '@mobile/shared/ui/Text';
+import type { TextProps } from '@mobile/shared/ui/Text';
+import { Text } from '@mobile/shared/ui/Text';
 
 import { styles } from './Label.styles';
 

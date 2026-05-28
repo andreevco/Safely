@@ -1,4 +1,5 @@
 import type { ISecretEncryptor } from '@safely/core';
+import { assertUnreachable } from '@safely/core';
 import { Contact, FiatAsset, PortfolioFactory } from '@safely/core';
 import type { SContact, SPortfolio, SyncedStorageSchema } from '@safely/sync-storage';
 
@@ -36,6 +37,12 @@ export class AccountStoreTransform {
                 ) as AccountStoreData[K];
             case 'meta':
                 return this.meta(json as SyncedStorageSchema['meta']) as AccountStoreData[K];
+            case 'analyticsId':
+                return this.analyticsId(
+                    json as SyncedStorageSchema['analyticsId']
+                ) as AccountStoreData[K];
+            default:
+                assertUnreachable(key);
         }
     }
 
@@ -46,7 +53,8 @@ export class AccountStoreTransform {
             portfolios: this.portfolios(raw.portfolios),
             contacts: this.contacts(raw.contacts),
             preferredFiat: this.preferredFiat(raw.preferredFiat),
-            devicesMeta: this.devicesMeta(raw.devicesMeta)
+            devicesMeta: this.devicesMeta(raw.devicesMeta),
+            analyticsId: this.analyticsId(raw.analyticsId)
         };
     }
 
@@ -80,6 +88,10 @@ export class AccountStoreTransform {
     }
 
     private meta(json: SyncedStorageSchema['meta']): AccountStoreData['meta'] {
+        return json;
+    }
+
+    private analyticsId(json: SyncedStorageSchema['analyticsId']): AccountStoreData['analyticsId'] {
         return json;
     }
 

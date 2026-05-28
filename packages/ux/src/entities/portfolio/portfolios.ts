@@ -1,4 +1,4 @@
-import { useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 
 import type {
@@ -39,7 +39,6 @@ import {
     useActiveAccountQueryKey
 } from '../account';
 import { useErrorToast } from '../errors';
-import { useMutation } from '../query-core';
 import { useToast } from '../toast';
 
 const EMPTY_PORTFOLIOS: Portfolio[] = Object.freeze([]) as unknown as Portfolio[];

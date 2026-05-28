@@ -573,7 +573,8 @@
     },
     "safelyBeta": {
         "title": "Safely",
-        "subtitle": "Beta · {{version}}"
+        "subtitle": "Beta · {{version}}",
+        "versionCopied": "Application version copied"
     },
     "dateGroups": {
         "pending": "Pending",

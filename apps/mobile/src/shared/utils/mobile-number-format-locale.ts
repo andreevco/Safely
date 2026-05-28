@@ -1,11 +1,7 @@
-import { Locale } from 'expo-localization';
+import type { Locale } from 'expo-localization';
 
-import {
-    FiatCurrencyDisplay,
-    SPACE,
-    NumberFormatLocale,
-    SignedCurrencyAffixes
-} from '@safely/core';
+import type { FiatCurrencyDisplay, NumberFormatLocale, SignedCurrencyAffixes } from '@safely/core';
+import { SPACE } from '@safely/core';
 
 export class MobileNumberFormatLocale implements NumberFormatLocale {
     private readonly locale: string;

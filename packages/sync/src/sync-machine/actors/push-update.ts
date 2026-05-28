@@ -13,12 +13,12 @@ export const pushUpdateToServer = fromPromise(
         input: SyncMachineConfig<StorageVersion, unknown>;
         signal: AbortSignal;
     }) => {
-        input.logger.info('Encrypting local snapshot to send to server...');
         try {
             await input.syncOperations.pushLocalSnapshot(signal);
         } catch (e) {
+            input.logger.error('sync_machine.push_update.failed', e);
             throw await classifyError(e);
         }
-        input.logger.info('Snapshot successfully sent to server');
+        input.logger.info('sync_machine.push_update.succeeded');
     }
 );

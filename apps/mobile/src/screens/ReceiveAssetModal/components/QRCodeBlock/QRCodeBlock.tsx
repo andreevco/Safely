@@ -4,10 +4,10 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
 import QRCode from 'react-native-qrcode-skia';
 
-import { type CryptoAsset } from '@safely/core';
+import type { CryptoAsset } from '@safely/core';
 import { useIsActiveWalletWatchOnly } from '@safely/ux';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import { Badge, Text, Image, TouchableOpacity } from '@mobile/shared/ui';
 
 import { ReceiveCopyToast, useReceiveCopy } from '../ReceiveCopyToastProvider';

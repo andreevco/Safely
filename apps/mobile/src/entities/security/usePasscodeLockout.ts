@@ -6,7 +6,8 @@ import { useCountdownToTimestamp, useSuspenseQuery } from '@safely/ux';
 import { useMobileLayerRegularStorage } from '@mobile/shared/storage';
 
 import { lockoutKeys } from './keys';
-import { getLockoutDuration, LockoutState } from './lockout';
+import type { LockoutState } from './lockout';
+import { getLockoutDuration } from './lockout';
 
 export function usePasscodeLockout() {
     const client = useQueryClient();

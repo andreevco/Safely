@@ -4,7 +4,7 @@ import Animated from 'react-native-reanimated';
 import { FullWindowOverlay } from 'react-native-screens';
 import { StyleSheet } from 'react-native-unistyles';
 
-import { ToastOptions } from '@safely/ux';
+import type { ToastOptions } from '@safely/ux';
 
 import { Toast } from '@mobile/shared/ui';
 
@@ -13,7 +13,13 @@ import { useToastServiceContext } from './ToastServiceProvider';
 
 // On Android, we don't need to use the FullWindowOverlay component
 const OverlayComponent = Platform.OS === 'ios' ? FullWindowOverlay : View;
-const SHOW_DURATION_MS = 2500;
+
+const MIN_DURATION = 2500;
+const MAX_DURATION = 5000;
+
+function durationFromMessage(message: string): number {
+    return Math.max(MIN_DURATION, Math.min(MAX_DURATION, message.length * 100));
+}
 
 type ToastState = {
     message: string;
@@ -40,9 +46,9 @@ export const ToastProvider = () => {
     }, [clearHideTimeout]);
 
     const scheduleHide = useCallback(
-        (duration?: number) => {
+        (duration: number) => {
             clearHideTimeout();
-            hideTimeoutRef.current = setTimeout(hideToast, duration ?? SHOW_DURATION_MS);
+            hideTimeoutRef.current = setTimeout(hideToast, duration);
         },
         [clearHideTimeout, hideToast]
     );
@@ -50,7 +56,7 @@ export const ToastProvider = () => {
     const showToast = useCallback(
         (options: ToastOptions) => {
             setToast(options);
-            scheduleHide(options.duration);
+            scheduleHide(options.duration ?? durationFromMessage(options.message));
         },
         [scheduleHide]
     );

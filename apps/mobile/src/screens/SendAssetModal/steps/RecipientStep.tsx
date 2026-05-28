@@ -1,6 +1,8 @@
-import { Ref, useMemo } from 'react';
+import type { Ref } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { TextInput, View } from 'react-native';
+import type { TextInput } from 'react-native';
+import { View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
 import { CONTACT_NAME_MAX_LENGTH } from '@safely/core';

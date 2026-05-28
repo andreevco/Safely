@@ -1,7 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 
 import type { SDeviceMeta } from '@safely/sync-storage';
 import {
@@ -12,18 +12,9 @@ import {
 } from '@safely/ux';
 import { useDateFormatter } from '@safely/ux';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
-import {
-    Badge,
-    Block16,
-    DeviceLinkCheckmark96,
-    Icon,
-    More28,
-    PopupMenu,
-    PopupMenuRef,
-    Screen,
-    Text
-} from '@mobile/shared/ui';
+import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
+import type { PopupMenuRef } from '@mobile/shared/ui';
+import { Badge, DeviceLinkCheckmark96, Icon, Screen, Text, Button } from '@mobile/shared/ui';
 
 import { styles } from './AccountProtectedModal.styles';
 
@@ -55,19 +46,9 @@ function DeviceItem(props: { ikPubHex: string; meta: SDeviceMeta; isCurrent: boo
                 </Text>
             </View>
             {!isCurrent && (
-                <PopupMenu
-                    ref={menuRef}
-                    hasBackdrop={false}
-                    variant="compact"
-                    touchable={<Icon icon={More28} color="tertiary" />}
-                >
-                    <Pressable onPress={handleDisconnect}>
-                        <View style={styles.menuItem}>
-                            <Text variant="labelL">{t('security.device.unlink')}</Text>
-                            <Icon icon={Block16} />
-                        </View>
-                    </Pressable>
-                </PopupMenu>
+                <Button type="tertiary" size="small" onPress={handleDisconnect}>
+                    {t('security.device.unlink')}
+                </Button>
             )}
         </View>
     );

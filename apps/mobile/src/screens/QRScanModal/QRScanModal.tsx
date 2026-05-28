@@ -1,24 +1,20 @@
-import {
-    StaticScreenProps,
-    useFocusEffect,
-    useIsFocused,
-    useNavigation
-} from '@react-navigation/native';
+import type { StaticScreenProps } from '@react-navigation/native';
+import { useFocusEffect, useIsFocused, useNavigation } from '@react-navigation/native';
 import { notificationAsync, NotificationFeedbackType } from 'expo-haptics';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { LayoutChangeEvent, LayoutRectangle, useWindowDimensions } from 'react-native';
+import type { LayoutChangeEvent, LayoutRectangle } from 'react-native';
+import { useWindowDimensions } from 'react-native';
 import Animated, { useSharedValue } from 'react-native-reanimated';
 import { StyleSheet } from 'react-native-unistyles';
+import type { Code, CodeScannerFrame } from 'react-native-vision-camera';
 import {
     Camera,
-    Code,
-    CodeScannerFrame,
     useCameraDevice,
     useCameraPermission,
     useCodeScanner
 } from 'react-native-vision-camera';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import { Screen, Text } from '@mobile/shared/ui';
 
 import { CameraMask, FlashlightToggle } from './components';

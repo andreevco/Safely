@@ -12,7 +12,7 @@ import {
     useToast
 } from '@safely/ux';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 
 export function useSignOutAccountConfirmation() {
     const { t } = useTranslation();

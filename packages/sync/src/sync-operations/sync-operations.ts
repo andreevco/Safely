@@ -45,7 +45,7 @@ export class SyncOperations<Latest extends StorageVersion, Rest> {
             this.throwIfAborted(signal);
             await this.deviceManager.addDevice(ikPub, dmkSignerService);
             if (storageVersion !== undefined) {
-                await this.crdtController.addAuthor(ikPub.toString('hex'), storageVersion);
+                await this.crdtController.addAuthor(ikPub, storageVersion);
             }
         });
     }
@@ -58,7 +58,7 @@ export class SyncOperations<Latest extends StorageVersion, Rest> {
         await this.queue.run(async () => {
             this.throwIfAborted(signal);
             await this.deviceManager.revokeDevice(ikPub, dmkSignerService);
-            await this.crdtController.deleteAuthor(ikPub.toString('hex'));
+            await this.crdtController.deleteAuthor(ikPub);
         });
     }
 

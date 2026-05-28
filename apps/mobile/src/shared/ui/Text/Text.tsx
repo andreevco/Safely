@@ -1,5 +1,7 @@
-import { Text as RNText, TextProps as RNTextProps, View, ViewStyle } from 'react-native';
-import { UnistylesVariants, useUnistyles } from 'react-native-unistyles';
+import type { TextProps as RNTextProps, ViewStyle } from 'react-native';
+import { Text as RNText, View } from 'react-native';
+import type { UnistylesVariants } from 'react-native-unistyles';
+import { useUnistyles } from 'react-native-unistyles';
 
 import { Skeleton } from '../Skeleton';
 import { styles } from './Text.styles';

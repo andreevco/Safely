@@ -1,4 +1,5 @@
-import { StaticScreenProps, useNavigation } from '@react-navigation/native';
+import type { StaticScreenProps } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Keyboard } from 'react-native';
@@ -6,7 +7,7 @@ import { Keyboard } from 'react-native';
 import { CONTACT_NAME_MAX_LENGTH } from '@safely/core';
 import { useContactForm, useContacts, useDateFormatter } from '@safely/ux';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import { Button, Input, Screen } from '@mobile/shared/ui';
 
 import { styles } from './NewContactModal.styles';

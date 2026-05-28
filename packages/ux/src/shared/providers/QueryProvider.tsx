@@ -1,4 +1,4 @@
-import { QueryCache, QueryClient } from '@tanstack/react-query';
+import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
 import type { Persister } from '@tanstack/react-query-persist-client';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import type { FC, PropsWithChildren, ReactNode } from 'react';
@@ -14,6 +14,16 @@ export function createQueryClient(logger: Logger): QueryClient {
         queryCache: new QueryCache({
             onError: (error, query) => {
                 logger.error('[QueryClient] query error', error, 'in', query.queryKey);
+            }
+        }),
+        mutationCache: new MutationCache({
+            onError: (error, _vars, _ctx, mutation) => {
+                logger.error(
+                    '[QueryClient] mutation error',
+                    error,
+                    'in',
+                    mutation.options.mutationKey
+                );
             }
         }),
         defaultOptions: {

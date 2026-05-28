@@ -45,14 +45,14 @@ export class YManager<Latest extends StorageVersion, Rest> {
         });
     }
 
-    public async addAuthor(authorId: string, storageVersion: number): Promise<void> {
+    public async addAuthor(authorId: Buffer, storageVersion: number): Promise<void> {
         await this.enqueueWrite(async () => {
             this.yDoc.addAuthor(authorId, storageVersion);
             await this.yRepository.saveSnapshot(this.yDoc.encodeAsSnapshot());
         });
     }
 
-    public async deleteAuthor(authorId: string): Promise<void> {
+    public async deleteAuthor(authorId: Buffer): Promise<void> {
         await this.enqueueWrite(async () => {
             this.yDoc.deleteAuthor(authorId);
             await this.yRepository.saveSnapshot(this.yDoc.encodeAsSnapshot());
@@ -72,7 +72,7 @@ export class YManager<Latest extends StorageVersion, Rest> {
     }
 
     public equalsToRemoteUpdate(snapshot: Buffer): boolean {
-        return this.yDoc.equals(snapshot.toString('utf8'));
+        return this.yDoc.equals(snapshot);
     }
 
     public encodeAsSnapshot(): Buffer {

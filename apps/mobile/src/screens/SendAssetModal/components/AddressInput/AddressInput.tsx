@@ -1,4 +1,5 @@
-import { Ref, useCallback, useRef, useState } from 'react';
+import type { Ref } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Keyboard, Pressable, TextInput, View } from 'react-native';
 import Animated, {
@@ -12,7 +13,8 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useUnistyles } from 'react-native-unistyles';
 
-import { ContactMeta, PortfolioMeta, ellipsisMiddle } from '@safely/core';
+import type { ContactMeta, PortfolioMeta } from '@safely/core';
+import { ellipsisMiddle } from '@safely/core';
 import { SuggestionSource, useScanQrScheme } from '@safely/ux';
 
 import { ContactName } from '@mobile/entities/contact';
@@ -75,6 +77,7 @@ export const AddressInput = (props: AddressInputProps) => {
     }, [scan]);
 
     const [isFocused, setIsFocused] = useState(false);
+    const [boxWidth, setBoxWidth] = useState(0);
 
     const hasValue = value.length > 0;
     const hasError = !!error;
@@ -122,7 +125,10 @@ export const AddressInput = (props: AddressInputProps) => {
                 </View>
             )}
             <View style={styles.container}>
-                <View style={styles.inputModeBox}>
+                <View
+                    style={styles.inputModeBox}
+                    onLayout={e => setBoxWidth(e.nativeEvent.layout.width)}
+                >
                     <TextInput
                         ref={textInputRef}
                         value={value}
@@ -145,6 +151,7 @@ export const AddressInput = (props: AddressInputProps) => {
                             value={value}
                             portfolioMeta={selectedPortfolioMeta}
                             contactMeta={selectedContactMeta}
+                            containerWidth={boxWidth}
                         />
                     )}
                 </View>

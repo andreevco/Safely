@@ -1,56 +1,65 @@
-import { useCallback } from 'react';
-import { Platform, Text, TextLayoutEvent } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
+import { useState } from 'react';
+import { Platform, Text, View } from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';
 
-import { ContactMeta, PortfolioMeta } from '@safely/core';
+import type { ContactMeta, PortfolioMeta } from '@safely/core';
 
 import { ContactName } from '@mobile/entities/contact';
 import { PortfolioName } from '@mobile/entities/portfolio';
 
-import { styles } from './AddressInput.styles';
+import { styles, INPUT_LINE_HEIGHT } from './AddressInput.styles';
 
 interface AddressSuffixProps {
     value: string;
     portfolioMeta?: PortfolioMeta;
     contactMeta?: ContactMeta;
+    containerWidth: number;
 }
 
-/**
- * We are using invisible Text to measure pos of suffix
- * I guess it's better approach for maintainability than yet another (3rd...) native input
- */
-export const AddressSuffix = ({ value, portfolioMeta, contactMeta }: AddressSuffixProps) => {
+export const AddressSuffix = ({
+    value,
+    portfolioMeta,
+    contactMeta,
+    containerWidth
+}: AddressSuffixProps) => {
     const { theme } = useUnistyles();
-    const suffixPos = useSharedValue({ top: 0, left: 0 });
 
-    const handleTextLayout = useCallback(
-        (e: TextLayoutEvent) => {
-            const lines = e.nativeEvent.lines;
-            if (lines.length === 0) {
-                suffixPos.value = { top: 0, left: 0 };
-                return;
-            }
-            const last = lines[lines.length - 1];
-            const gap = Platform.OS === 'android' ? theme.spacing[16] : theme.spacing[8];
-            suffixPos.value = {
-                top: last.y,
-                left: last.x + last.width + gap
-            };
-        },
-        [suffixPos, theme]
-    );
+    const [suffixWidth, setSuffixWidth] = useState(0);
+    const [lastLine, setLastLine] = useState<{ x: number; y: number; width: number } | null>(null);
 
-    const animatedStyle = useAnimatedStyle(() => ({
-        transform: [{ translateY: suffixPos.value.top }, { translateX: suffixPos.value.left }]
-    }));
+    const gap = Platform.OS === 'android' ? theme.spacing[16] : theme.spacing[8];
+
+    const isMeasured = lastLine !== null && suffixWidth > 0 && containerWidth > 0;
+    const breakLine =
+        isMeasured && lastLine.x + lastLine.width + gap + suffixWidth > containerWidth;
+
+    const suffixStyle = !isMeasured
+        ? { opacity: 0 }
+        : {
+              opacity: 1,
+              transform: [
+                  { translateY: breakLine ? lastLine.y + INPUT_LINE_HEIGHT : lastLine.y },
+                  { translateX: breakLine ? 0 : lastLine.x + lastLine.width + gap }
+              ]
+          };
 
     return (
         <>
-            <Text style={[styles.input, styles.measure]} onTextLayout={handleTextLayout}>
+            <Text
+                style={[styles.input, styles.measure]}
+                onTextLayout={e => {
+                    const last = e.nativeEvent.lines.at(-1);
+                    setLastLine(last ? { x: last.x, y: last.y, width: last.width } : null);
+                }}
+            >
                 {value}
             </Text>
-            <Animated.View pointerEvents="none" style={[styles.inputSuffix, animatedStyle]}>
+            <View style={styles.wrapSpacer(breakLine ? INPUT_LINE_HEIGHT : 0)} />
+            <View
+                pointerEvents="none"
+                onLayout={e => setSuffixWidth(e.nativeEvent.layout.width)}
+                style={[styles.inputSuffix, { maxWidth: containerWidth || undefined }, suffixStyle]}
+            >
                 {portfolioMeta ? (
                     <PortfolioName
                         gap={8}
@@ -70,7 +79,7 @@ export const AddressSuffix = ({ value, portfolioMeta, contactMeta }: AddressSuff
                         />
                     )
                 )}
-            </Animated.View>
+            </View>
         </>
     );
 };

@@ -2,7 +2,7 @@ import { type RefObject, useEffect, useRef } from 'react';
 
 import { useLastBroadcastedBtcTx } from '@safely/ux';
 
-import { type ListRef } from '@mobile/shared/ui/Screen/components/List';
+import type { ListRef } from '@mobile/shared/ui/Screen/components/List';
 
 export function useScrollToTopOnNewBroadcastedTx<TItem>(
     listRef: RefObject<ListRef<TItem> | null>

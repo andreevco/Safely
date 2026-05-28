@@ -1,7 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
-import { defineVersionHList, DEVICES_KEY, hCons, hNil, projectIdentity } from '@safely/slottree';
+import {
+    createStorage,
+    defineVersionHList,
+    hCons,
+    hNil,
+    projectIdentity,
+    VersionController,
+    type StorageImpl
+} from '@safely/slottree';
 
 import { InMemStorage } from './impl/storage';
 import { CrdtController } from '../src/crdt/crdt-controller';
@@ -93,11 +101,11 @@ describe('YManager', () => {
         const storage = new InMemStorage();
         const manager = await createManager(storage, 'device-1');
 
-        await manager.addAuthor('device-2', 1);
+        await manager.addAuthor(Buffer.from('device-2'), 1);
 
         expect(await deviceVersion(storage, 'crdt', 'device-2')).toBe(1);
 
-        await manager.deleteAuthor('device-2');
+        await manager.deleteAuthor(Buffer.from('device-2'));
 
         expect(await deviceVersion(storage, 'crdt', 'device-2')).toBeUndefined();
     });
@@ -110,11 +118,11 @@ describe('YManager', () => {
         controller.addManager(manager);
         controller.addManager(deviceManager);
 
-        await controller.addAuthor('device-2', 1);
+        await controller.addAuthor(Buffer.from('device-2'), 1);
         expect(await deviceVersion(storage, 'crdt', 'device-2')).toBe(1);
         expect(await deviceVersion(storage, 'devices_crdt', 'device-2')).toBe(1);
 
-        await controller.deleteAuthor('device-2');
+        await controller.deleteAuthor(Buffer.from('device-2'));
 
         expect(await deviceVersion(storage, 'crdt', 'device-2')).toBeUndefined();
         expect(await deviceVersion(storage, 'devices_crdt', 'device-2')).toBeUndefined();
@@ -136,25 +144,15 @@ async function deviceVersion(
         throw new Error(`Missing ${storageKey} snapshot`);
     }
 
-    const snapshot = JSON.parse(raw) as {
-        v?: Record<
-            string,
-            {
-                v?: Record<
-                    string,
-                    {
-                        v?: {
-                            version?: {
-                                v?: unknown;
-                            };
-                        };
-                    }
-                >;
-            }
-        >;
-    };
-    const version = snapshot.v?.[DEVICES_KEY]?.v?.[authorId]?.v?.version?.v;
-    return typeof version === 'number' ? version : undefined;
+    const snapshotStorage = createStorage({
+        authorId: Buffer.from('reader'),
+        versions: Versions
+    }) as StorageImpl<z.output<typeof Schema>>;
+    snapshotStorage.merge(Buffer.from(raw, 'base64url'));
+
+    return new VersionController(snapshotStorage.exportSlot(), [Version]).getDeviceVersion(
+        Buffer.from(authorId).toString('hex')
+    );
 }
 
 class FailingSetStorage extends InMemStorage {

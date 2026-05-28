@@ -4,9 +4,9 @@ import { View } from 'react-native';
 
 import { useContacts } from '@safely/ux';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { AddressBookHeader } from '@mobile/features/addressbook';
 import { AddressBook } from '@mobile/features/addressbook/AddressBook';
+import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import { Screen, Button } from '@mobile/shared/ui';
 
 import { styles } from './AddressBookModal.styles';

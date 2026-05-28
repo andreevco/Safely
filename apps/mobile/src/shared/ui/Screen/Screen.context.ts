@@ -1,7 +1,7 @@
 import React from 'react';
-import { UnistylesVariants } from 'react-native-unistyles';
+import type { UnistylesVariants } from 'react-native-unistyles';
 
-import { styles } from './Screen.styles';
+import type { styles } from './Screen.styles';
 
 export type ScreenContextType = NonNullable<{
     background: UnistylesVariants<typeof styles>['background'];

@@ -1,26 +1,22 @@
 import { getLocales } from 'expo-localization';
 import { reloadAppAsync as reloadApp } from 'expo-modules-core';
-import { FC, PropsWithChildren, useEffect, useMemo } from 'react';
+import type { FC, PropsWithChildren } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AppState } from 'react-native';
 
-import {
-    AppContext,
-    AppStateStatus,
-    IAppContext,
-    Security,
-    UnlockableSecuredEncryptedStorage,
-    useLoggerLifecycle
-} from '@safely/ux';
+import { LoggableStorage } from '@safely/core';
+import type { AppStateStatus, IAppContext, Security } from '@safely/ux';
+import { AppContext, UnlockableSecuredEncryptedStorage } from '@safely/ux';
 
-import { navigationRef } from '@mobile/app/navigation/navigationRef';
-import { useMobileSecurityCheck } from '@mobile/entities/security';
+import { useMobileSecurityCheck } from '@mobile/features/security';
 import { build, deviceInfo, environment } from '@mobile/shared/app-meta';
-import { loggerRegistry } from '@mobile/shared/logger';
+import { flushLogs, logger } from '@mobile/shared/logger';
 import { useLoaderServiceContext } from '@mobile/shared/providers/loader';
 import { useToastServiceContext } from '@mobile/shared/providers/toast';
 import { MobileNumberFormatLocale, MobileAppLinking } from '@mobile/shared/utils';
 
+import { navigationRef } from './navigation/navigationRef';
 import {
     CLEAR_ALL_MOBILE_STORAGE_ONLY_APP_LEVEL_USE_DANGER,
     ENCRYPTED_MOBILE_STORAGE_ONLY_APP_LEVEL_USE,
@@ -78,7 +74,11 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
                     encrypted: ENCRYPTED_MOBILE_STORAGE_ONLY_APP_LEVEL_USE.storage.child('sync'),
                     getSecureEncrypted() {
                         return new UnlockableSecuredEncryptedStorage(
-                            SECURE_ENCRYPTED_MOBILE_STORAGE_ONLY_APP_LEVEL_USE.enumerable,
+                            new LoggableStorage(
+                                SECURE_ENCRYPTED_MOBILE_STORAGE_ONLY_APP_LEVEL_USE.enumerable,
+                                logger,
+                                'SecureEncryptedStorage'
+                            ),
                             security,
                             ['sync']
                         );
@@ -103,8 +103,8 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
                 hide: loaderService.hide,
                 withLoader: loaderService.withLoader
             },
-            loggerRegistry,
-            linking: new MobileAppLinking(loggerRegistry.systemLogger),
+            logger,
+            linking: new MobileAppLinking(logger),
             security: {
                 check: () => security.check()
             },
@@ -136,7 +136,15 @@ export const SecurityCheckInitializer: FC = () => {
 };
 
 export const LoggerLifecycle: FC = () => {
-    useLoggerLifecycle();
+    useEffect(() => {
+        const subscription = AppState.addEventListener('change', state => {
+            if (state === 'background' || state === 'inactive') {
+                void flushLogs();
+            }
+        });
+
+        return () => subscription.remove();
+    }, []);
 
     return null;
 };

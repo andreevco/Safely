@@ -1,5 +1,5 @@
 import { filterSensitiveData } from '@safely/core';
-import { ILoggerTransport, LogEntry, LoggerLifecycleContext } from '@safely/sync';
+import type { ILoggerTransport, LogEntry } from '@safely/sync';
 
 export class SanitizedTransport implements ILoggerTransport {
     constructor(private readonly inner: ILoggerTransport) {}
@@ -9,14 +9,6 @@ export class SanitizedTransport implements ILoggerTransport {
             ...entry,
             message: entry.message.map(filterSensitiveValue)
         });
-    }
-
-    public async onAfterAppOpened(ctx: LoggerLifecycleContext): Promise<void> {
-        await this.inner.onAfterAppOpened?.(ctx);
-    }
-
-    public async onBeforeAppClosed(ctx: LoggerLifecycleContext): Promise<void> {
-        await this.inner.onBeforeAppClosed?.(ctx);
     }
 }
 

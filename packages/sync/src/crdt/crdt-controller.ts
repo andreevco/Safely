@@ -11,13 +11,13 @@ export class CrdtController {
         this.managers.push(manager);
     }
 
-    public async addAuthor(authorId: string, storageVersion: number): Promise<void> {
+    public async addAuthor(authorId: Buffer, storageVersion: number): Promise<void> {
         await Promise.all(
             this.managers.map(manager => manager.addAuthor(authorId, storageVersion))
         );
     }
 
-    public async deleteAuthor(authorId: string): Promise<void> {
+    public async deleteAuthor(authorId: Buffer): Promise<void> {
         await Promise.all(this.managers.map(manager => manager.deleteAuthor(authorId)));
     }
 }

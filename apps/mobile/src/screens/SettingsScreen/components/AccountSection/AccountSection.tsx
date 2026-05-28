@@ -13,7 +13,10 @@ import {
     useConnectAccountToNewDevice
 } from '@safely/ux';
 
-import { RootStackNavigationProp, SettingsStackNavigationProp } from '@mobile/app/navigation/types';
+import type {
+    RootStackNavigationProp,
+    SettingsStackNavigationProp
+} from '@mobile/shared/navigation/types';
 import { Button, Cell, List } from '@mobile/shared/ui';
 
 import { SyncDot } from '../SyncDot';

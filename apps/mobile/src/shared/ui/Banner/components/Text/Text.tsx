@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 import { Text as UIText } from '@mobile/shared/ui/Text';
 

@@ -8,7 +8,7 @@ import { SyncAccount } from './sync-account';
 import type { SyncAccountRepository } from './sync-account-repository';
 import type { Configuration } from '../api/generated';
 import type { ITreeStorage } from '../I-storage';
-import type { Logger } from '../logger';
+import type { Logger, SyncFlowLogger } from '../logger';
 import type { OnboardingMessagePayload } from '../onboarding/onboarding-message-payload';
 import { OfflineSyncProvider } from '../sync-provider/offline-sync-provider';
 import { OnlineSyncProvider } from '../sync-provider/online-sync-provider';
@@ -26,7 +26,7 @@ export class AccountManager<Latest extends StorageVersion, Rest> {
         private readonly apiImplementations: SyncApiImplementations | undefined,
         private readonly createAccountService: CreateAccountService<Latest, Rest>,
         private readonly pollingTimeout: number,
-        private readonly getAccountLogger: (accountId: string) => Logger
+        private readonly logger: Logger
     ) {}
 
     public async getAccounts(): Promise<ISyncAccount<Latest>[]> {
@@ -71,7 +71,6 @@ export class AccountManager<Latest extends StorageVersion, Rest> {
             this.encryptedStorage,
             accountInfo.accountId
         );
-        const logger = this.getAccountLogger(accountInfo.accountId);
         const container = await createSyncContainer({
             accountId,
             versions: this.versions,
@@ -80,7 +79,7 @@ export class AccountManager<Latest extends StorageVersion, Rest> {
             apiConfiguration: this.apiConfiguration,
             pollingTimeout: this.pollingTimeout,
             apiImplementations: this.apiImplementations,
-            logger
+            logger: this.logger
         });
 
         const syncProvider = accountInfo.online
@@ -111,12 +110,14 @@ export class AccountManager<Latest extends StorageVersion, Rest> {
     public async createOnlineAccountFromMasterKey(
         secureEncryptedStorage: ITreeStorage,
         payload: OnboardingMessagePayload,
-        ik: { publicKey: Buffer; secretKey: Buffer }
+        ik: { publicKey: Buffer; secretKey: Buffer },
+        flow: SyncFlowLogger
     ) {
         const account = await this.createAccountService.createOnlineAccountFromMasterKey(
             secureEncryptedStorage,
             payload,
-            ik
+            ik,
+            flow
         );
         this.accounts.set(account.accountId, account);
         return account;

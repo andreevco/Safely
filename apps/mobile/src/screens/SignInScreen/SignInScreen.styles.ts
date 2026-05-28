@@ -38,11 +38,15 @@ export const styles = StyleSheet.create(theme => ({
     },
     iconLine: {
         flexDirection: 'row',
-        alignItems: 'center'
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexWrap: 'wrap',
+        maxWidth: '100%'
     },
     inlineSettingsIconContainer: {
         paddingVertical: 4,
         marginHorizontal: 4,
+        marginVertical: 2,
         paddingHorizontal: 5.5,
         borderRadius: 5,
         borderColor: theme.colors.other.transparentElement,

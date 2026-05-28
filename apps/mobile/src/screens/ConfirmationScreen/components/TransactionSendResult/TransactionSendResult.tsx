@@ -1,8 +1,9 @@
-import { FC, useCallback } from 'react';
+import type { FC } from 'react';
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { SendResult } from '@safely/core';
+import type { SendResult } from '@safely/core';
 import { useExplorerFactory, useLinking } from '@safely/ux';
 
 import { TransactionCell } from '@mobile/screens/ConfirmationScreen/components';

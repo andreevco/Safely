@@ -1,12 +1,14 @@
-import { StaticScreenProps, useNavigation } from '@react-navigation/native';
+import type { StaticScreenProps } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import QRCode from 'react-native-qrcode-skia';
 
-import { OnboardingConnector, useAccountConnectedCallback, useToast } from '@safely/ux';
+import type { OnboardingConnector } from '@safely/ux';
+import { useAccountConnectedCallback, useToast } from '@safely/ux';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import { DeviceLink, Screen, Text, TouchableOpacity } from '@mobile/shared/ui';
 import { Icon, Sliders12 } from '@mobile/shared/ui/Icon';
 import { useCopy } from '@mobile/shared/utils/copy';
@@ -50,7 +52,7 @@ export const SignInScreen = (props: SignInScreenProps) => {
 
     const handleError = useCallback(() => {
         navigation.goBack();
-        toast(t('signIn.timeout'));
+        toast({ message: t('signIn.timeout'), duration: 5000 });
     }, [navigation, toast, t]);
 
     useAccountConnectedCallback(connector, handleConnected, {
@@ -84,15 +86,19 @@ export const SignInScreen = (props: SignInScreenProps) => {
                             {t('signIn.description.top')}
                         </Text>
                         <View style={styles.iconLine}>
-                            <Text variant="bodyL" color="secondary">
-                                {t('signIn.description.iconLineStart')}
-                            </Text>
+                            <View style={{ flexShrink: 1 }}>
+                                <Text variant="bodyL" color="secondary" textAlign="center">
+                                    {t('signIn.description.iconLineStart')}
+                                </Text>
+                            </View>
                             <View style={styles.inlineSettingsIconContainer}>
                                 <Icon icon={Sliders12} />
                             </View>
-                            <Text variant="bodyL" color="secondary">
-                                {t('signIn.description.iconLineEnd')}
-                            </Text>
+                            <View style={{ flexShrink: 1 }}>
+                                <Text variant="bodyL" color="secondary" textAlign="center">
+                                    {t('signIn.description.iconLineEnd')}
+                                </Text>
+                            </View>
                         </View>
                         <Text textAlign="center" variant="bodyL" color="secondary">
                             {t('signIn.description.bottom')}

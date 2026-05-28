@@ -12,9 +12,11 @@ import type { Configuration, OnboardingMessage } from '../api/generated';
 import { AccountsApi } from '../api/generated';
 import type { ITreeStorage } from '../I-storage';
 import type { Logger } from '../logger';
+import { SyncFlowLogger } from '../logger';
 import { OnboardingAbortedError } from '../sync-error';
 
 export class NewDeviceOnboarding<Latest extends StorageVersion, Rest> {
+    private readonly flow: SyncFlowLogger;
     private ephemeralKeyPair: { publicKey: Buffer; secretKey: Buffer } | null = null;
 
     constructor(
@@ -25,25 +27,53 @@ export class NewDeviceOnboarding<Latest extends StorageVersion, Rest> {
         private readonly logger: Logger,
         private readonly pollingTimeout: number,
         private readonly storageVersion: number
-    ) {}
+    ) {
+        this.flow = new SyncFlowLogger(logger, 'onboarding.new_device', {
+            ikPub: this.ik.publicKey.toString('hex')
+        });
+    }
 
     public generateOnboardingData(): Buffer {
+        this.flow.logStart();
+
         const generated = x25519.keygen();
         this.ephemeralKeyPair = {
             publicKey: Buffer.from(generated.publicKey),
             secretKey: Buffer.from(generated.secretKey)
         };
 
-        return QRMessageCodec.encode({
+        const data = QRMessageCodec.encode({
             type: QRMessageOperation.NEW_DEVICE_ONBOARDING,
             ephemeralPub: this.ephemeralKeyPair.publicKey,
             ikPub: this.ik.publicKey,
             storageVersion: this.storageVersion
         });
+        this.flow.logStep('qr.generated');
+
+        return data;
     }
 
     public async waitForOnboarding(signal?: AbortSignal): Promise<ISyncAccount<Latest>> {
-        for (let i = 0; i < 150; i++) {
+        try {
+            const account = await this.waitForOnboardingInner(signal);
+            this.flow.logEnd('completed');
+            return account;
+        } catch (error) {
+            if (!this.flow.isCompleted()) {
+                this.flow.logFail(error, 'incomplete');
+            }
+            throw error;
+        }
+    }
+
+    private async waitForOnboardingInner(signal?: AbortSignal): Promise<ISyncAccount<Latest>> {
+        const maxAttempts = 150;
+        this.flow.logStep('message.poll.start', {
+            maxAttempts: maxAttempts,
+            pollingTimeoutMs: this.pollingTimeout
+        });
+
+        for (let i = 0; i < maxAttempts; i++) {
             if (signal?.aborted) {
                 throw new OnboardingAbortedError();
             }
@@ -53,12 +83,13 @@ export class NewDeviceOnboarding<Latest extends StorageVersion, Rest> {
                 message = await this.accountsApi.getOnboardingMessage({
                     signal
                 });
-            } catch (err) {
+                this.flow.logStep('message.poll.received', { attempt: i + 1 });
+            } catch {
                 if (signal?.aborted) {
                     throw new OnboardingAbortedError();
                 }
 
-                this.logger.info('No onboarding message yet, retrying...', err);
+                this.flow.logStep('message.poll.empty', { attempt: i + 1 });
                 await this.waitBeforeRetry(signal);
                 continue;
             }
@@ -92,13 +123,16 @@ export class NewDeviceOnboarding<Latest extends StorageVersion, Rest> {
         if (msg.newIdentityPubKey !== this.ik.publicKey.toString('hex')) {
             throw new Error('Onboarding message is not for this device');
         }
+        this.flow.logStep('message.validate.done');
 
         const onboardingMessagePayload = await this.getOnboardingMessagePayload(msg);
         const account = await this.accountManager.createOnlineAccountFromMasterKey(
             this.secureEncryptedStorage,
             onboardingMessagePayload,
-            this.ik
+            this.ik,
+            this.flow.child('handleOnboardingMessage')
         );
+        this.flow.logStep('account.created');
 
         this.logger.info('Onboarding completed');
         return account;

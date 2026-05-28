@@ -5,7 +5,7 @@ import { View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { AccountLinkState, useAccountLinkState } from '@safely/ux';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import { Banner, ExclamationmarkCircle16 } from '@mobile/shared/ui';
 
 import { styles } from './DeviceUnlinkedBanner.styles';

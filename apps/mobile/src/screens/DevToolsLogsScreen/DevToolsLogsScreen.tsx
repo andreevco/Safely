@@ -1,15 +1,11 @@
 import { View } from 'react-native';
 
-import { useActiveAccountQuery, useAppContext } from '@safely/ux';
-
+import { shareLogs } from '@mobile/shared/logger';
 import { Button, Screen, Text } from '@mobile/shared/ui';
 
 import { styles } from './DevToolsLogsScreen.styles';
 
 export const DevToolsLogsScreen = () => {
-    const { loggerRegistry } = useAppContext();
-    const { data: activeAccount } = useActiveAccountQuery();
-
     return (
         <Screen>
             <Screen.Header variant="center">
@@ -19,13 +15,7 @@ export const DevToolsLogsScreen = () => {
                 </Screen.Header.Title>
             </Screen.Header>
             <View style={styles.content}>
-                <Button
-                    size="large"
-                    type="primary"
-                    onPress={() =>
-                        loggerRegistry.shareLogs({ accountId: activeAccount?.accountId })
-                    }
-                >
+                <Button size="large" type="primary" onPress={() => void shareLogs()}>
                     Share logs
                 </Button>
             </View>

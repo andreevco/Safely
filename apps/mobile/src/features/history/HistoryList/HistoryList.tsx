@@ -1,5 +1,5 @@
 import { useIsFocused, useScrollToTop } from '@react-navigation/native';
-import { useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useWindowDimensions, View } from 'react-native';
@@ -14,7 +14,6 @@ import {
     useDateFormatter,
     useGroupedHistory,
     useInterval,
-    useMutation,
     useNumberFormatter,
     usePortfolios,
     useRate
@@ -22,7 +21,7 @@ import {
 
 import { ActivityItem } from '@mobile/entities/activity';
 import { Screen, Text } from '@mobile/shared/ui';
-import { ListRef } from '@mobile/shared/ui/Screen/components/List';
+import type { ListRef } from '@mobile/shared/ui/Screen/components/List';
 
 import { HistoryEmptyPlaceholder } from '../HistoryEmptyPlaceholder';
 import { NewTransactionsBubble, useNewTransactionsBubble } from './components';
@@ -75,7 +74,8 @@ export const HistoryList = (props: HistoryListProps) => {
         show: showBubble
     } = useNewTransactionsBubble({
         listRef,
-        topThreshold: windowHeight * 0.2
+        // cell
+        topThreshold: 44
     });
 
     const { mutate: runIntervalRefetch } = useMutation({
@@ -179,6 +179,7 @@ export const HistoryList = (props: HistoryListProps) => {
                 keyExtractor={item => item.key}
                 getItemType={getItemType}
                 drawDistance={windowHeight * 4}
+                maintainVisibleContentPosition={{ autoscrollToTopThreshold: 0 }}
                 onEndReached={fetchNextPage}
                 onEndReachedThreshold={0.5}
                 ItemSeparatorComponent={renderSeparator}

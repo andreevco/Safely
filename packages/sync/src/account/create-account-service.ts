@@ -7,6 +7,7 @@ import { SyncAccount } from './sync-account';
 import type { SyncAccountRepository } from './sync-account-repository';
 import type { Configuration } from '../api/generated';
 import type { ITreeStorage } from '../I-storage';
+import type { SyncFlowLogger } from '../logger';
 import type { Logger } from '../logger/logger';
 import type { OnboardingMessagePayload } from '../onboarding/onboarding-message-payload';
 import { AccountAlreadyExistsError } from '../sync-error';
@@ -23,7 +24,7 @@ export class CreateAccountService<Latest extends StorageVersion, Rest> {
         private readonly apiConfiguration: Configuration,
         private readonly pollingTimeout: number,
         private readonly apiImplementations: SyncApiImplementations | undefined,
-        private readonly getAccountLogger: (accountId: string) => Logger
+        private readonly logger: Logger
     ) {}
 
     public async createOfflineAccount(secureEncryptedStorage: ITreeStorage) {
@@ -36,14 +37,13 @@ export class CreateAccountService<Latest extends StorageVersion, Rest> {
             secureEncryptedStorage,
             accountID
         );
-        const logger = this.getAccountLogger(accountID);
         await initializeSyncAccount({
             storage,
             encryptedStorage,
             secureEncryptedStorage: accountSecureEncryptedStorage,
             versions: this.versions,
             masterKey,
-            logger
+            logger: this.logger
         });
         masterKey.fill(0);
 
@@ -57,7 +57,7 @@ export class CreateAccountService<Latest extends StorageVersion, Rest> {
             apiConfiguration: this.apiConfiguration,
             pollingTimeout: this.pollingTimeout,
             apiImplementations: this.apiImplementations,
-            logger
+            logger: this.logger
         });
 
         await container.deviceManager.addDevice(
@@ -79,7 +79,8 @@ export class CreateAccountService<Latest extends StorageVersion, Rest> {
     public async createOnlineAccountFromMasterKey(
         secureEncryptedStorage: ITreeStorage,
         payload: OnboardingMessagePayload,
-        ik: { publicKey: Buffer; secretKey: Buffer }
+        ik: { publicKey: Buffer; secretKey: Buffer },
+        flow: SyncFlowLogger
     ) {
         const accountID = await generateAccountID(payload.masterKey);
 
@@ -94,7 +95,6 @@ export class CreateAccountService<Latest extends StorageVersion, Rest> {
             secureEncryptedStorage,
             accountID
         );
-        const logger = this.getAccountLogger(accountID);
         await initializeSyncAccount({
             storage,
             versions: this.versions,
@@ -102,11 +102,12 @@ export class CreateAccountService<Latest extends StorageVersion, Rest> {
             secureEncryptedStorage: accountSecureEncryptedStorage,
             masterKey: payload.masterKey,
             ik,
-            logger
+            logger: this.logger
         });
         payload.masterKey.fill(0);
 
         await this.syncAccountIDRepository.addAccount(accountID, true);
+        flow.logStep('account_initialized');
 
         const container = await createSyncContainer({
             accountId: accountID,
@@ -116,9 +117,12 @@ export class CreateAccountService<Latest extends StorageVersion, Rest> {
             apiConfiguration: this.apiConfiguration,
             pollingTimeout: this.pollingTimeout,
             apiImplementations: this.apiImplementations,
-            logger
+            logger: this.logger
         });
+        flow.logStep('container_initialized');
+
         await container.accountsApi.confirmOnboarding();
+        flow.logStep('onboarded');
 
         const account = new SyncAccount({
             accountId: accountID,
@@ -129,6 +133,7 @@ export class CreateAccountService<Latest extends StorageVersion, Rest> {
             online: true
         });
         await account.syncProvider.syncStatusManager.waitForStatus(SyncStatus.SYNCHRONIZED);
+        flow.logStep('synchronized');
 
         return account;
     }

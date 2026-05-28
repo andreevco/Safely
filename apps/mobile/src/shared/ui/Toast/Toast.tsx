@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, type PressableProps, type StyleProp, View, type ViewStyle } from 'react-native';
-import { UnistylesVariants } from 'react-native-unistyles';
+import type { UnistylesVariants } from 'react-native-unistyles';
 
 import { Text } from '../Text';
 import { styles } from './Toast.styles';

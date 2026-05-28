@@ -1,5 +1,6 @@
 import { View } from 'react-native';
-import Animated, { interpolate, SharedValue, useAnimatedStyle } from 'react-native-reanimated';
+import type { SharedValue } from 'react-native-reanimated';
+import Animated, { interpolate, useAnimatedStyle } from 'react-native-reanimated';
 
 import { Cell, Icon, List, Switch16 } from '@mobile/shared/ui';
 

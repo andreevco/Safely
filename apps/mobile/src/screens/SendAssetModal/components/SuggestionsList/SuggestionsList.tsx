@@ -1,6 +1,6 @@
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
-import { SendSuggestions } from '@safely/ux';
+import type { SendSuggestions } from '@safely/ux';
 
 import { List } from '@mobile/shared/ui';
 

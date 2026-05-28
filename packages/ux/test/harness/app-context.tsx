@@ -134,13 +134,7 @@ export function createTestAppContext(opts: CreateTestAppContextOptions = {}): IA
         },
         clearAllData: opts.clearAllData ?? vi.fn(async () => undefined),
         reloadApp: opts.reloadApp ?? vi.fn(),
-        loggerRegistry: {
-            systemLogger: createNoopLogger(),
-            getAccountLogger: () => createNoopLogger(),
-            onAccountsChanged: vi.fn(),
-            onBeforeAppClosed: vi.fn(),
-            shareLogs: vi.fn()
-        },
+        logger: createNoopLogger(),
         security: { check: securityCheck },
         subscribeAppStateChange: () => () => undefined,
         ...opts

@@ -1,6 +1,8 @@
-import { createContext, FC, PropsWithChildren, useContext, useState } from 'react';
+import type { FC, PropsWithChildren } from 'react';
+import { createContext, useContext, useState } from 'react';
 
-import { LoaderService, noopLoaderService } from '@safely/ux';
+import type { LoaderService } from '@safely/ux';
+import { noopLoaderService } from '@safely/ux';
 
 export const LoaderServiceContext = createContext<
     { service: LoaderService; setService: (service: LoaderService) => void } | undefined

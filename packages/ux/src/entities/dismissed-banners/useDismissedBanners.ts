@@ -1,8 +1,7 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { useSharedUxStorage } from '../../shared';
-import { useMutation } from '../query-core';
 import { dismissedBannersKeys } from './keys';
+import { useSharedUxStorage } from '../../shared';
 
 export function useDismissedBannerIdsQuery() {
     const { get } = useSharedUxStorage('dismissedBannerIds');

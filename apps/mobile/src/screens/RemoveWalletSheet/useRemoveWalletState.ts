@@ -1,4 +1,5 @@
-import { Portfolio, PortfolioType } from '@safely/core';
+import type { Portfolio } from '@safely/core';
+import { PortfolioType } from '@safely/core';
 
 export function useRemoveWalletState(portfolio: Portfolio) {
     if (portfolio.type === PortfolioType.WATCH_ONLY) {

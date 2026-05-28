@@ -1,10 +1,11 @@
 import type { z } from 'zod';
 
+import { cborEncoder } from './encoder/cbor/cbor-encoder';
 import type { DeepReadonly } from './json';
 import type { MergeStats } from './merge-protocol';
 import { MergeProtocol } from './merge-protocol';
 import type { ContainerSlot, Slot } from './slots';
-import { createOriginContainer, isContainerSlot } from './slots';
+import { createOriginContainer } from './slots';
 import { cloneSlot } from './slots/slot-json';
 import { validateSlot } from './slots/slot-validation';
 import { StorageObservers } from './storage-observer';
@@ -23,12 +24,12 @@ export interface SlotTree<T> {
     readonly version: number;
 
     /**
-     * Returns full storage as JSON representation
+     * Returns the current storage value projected to the latest schema version.
      */
     get(): T;
 
     /**
-     * Returns readonly Proxy over storage
+     * Returns a readonly proxy over the current storage value.
      */
     read(): DeepReadonly<T>;
 
@@ -40,6 +41,7 @@ export interface SlotTree<T> {
 
     /**
      * Unsafe atomic async storage transaction.
+     *
      * Prepares the next state, passes its encoded snapshot to commit, and only
      * publishes the state in memory when commit resolves to true.
      *
@@ -49,17 +51,17 @@ export interface SlotTree<T> {
      */
     unsafeAsyncTransaction(
         fn: (draft: Draft<T>) => void,
-        commit: (snapshot: string) => Promise<boolean>
+        commit: (snapshot: Buffer) => Promise<boolean>
     ): Promise<boolean>;
 
     /**
-     * Merge storage
-     * @param incoming
+     * Merges an encoded storage snapshot into the current storage.
      */
-    merge(incoming: string): void;
+    merge(incoming: Buffer): MergeStats;
 
     /**
      * Unsafe async storage merge.
+     *
      * Prepares the merged state, passes its encoded snapshot to commit, and
      * only publishes the state in memory when commit resolves to true.
      *
@@ -68,8 +70,8 @@ export interface SlotTree<T> {
      * must serialize calls externally when lost updates are not acceptable.
      */
     unsafeAsyncMerge(
-        incoming: string,
-        commit: (snapshot: string) => Promise<boolean>
+        incoming: Buffer,
+        commit: (snapshot: Buffer) => Promise<boolean>
     ): Promise<boolean>;
 
     /**
@@ -79,9 +81,9 @@ export interface SlotTree<T> {
     onChange(observer: StorageObserver): () => void;
 
     /**
-     * Export storage to save or send to other device
+     * Exports the current storage as an encoded snapshot.
      */
-    export(): string;
+    export(): Buffer;
 
     /**
      * Adds new author with selected storage versions and automatically adds migration to the
@@ -89,29 +91,28 @@ export interface SlotTree<T> {
      * @param authorId
      * @param storageVersion
      */
-    addAuthor(authorId: string, storageVersion: number): void;
+    addAuthor(authorId: Buffer, storageVersion: number): void;
 
     /**
      * Removes author and deletes version related to the author if there are no other authors
      * using that version
      * @param authorId
      */
-    removeAuthor(authorId: string): void;
+    removeAuthor(authorId: Buffer): void;
 }
 
 export class StorageImpl<T> implements SlotTree<T> {
     private readonly protocol: MergeProtocol;
-    private readonly encoder = new Encoder();
     private root: ContainerSlot;
     private readonly versions: readonly StorageVersion[];
     private readonly observers = new StorageObservers();
 
     constructor(options: {
-        authorId: string;
+        authorId: Buffer;
         versions: readonly StorageVersion[];
         root?: ContainerSlot;
     }) {
-        this.protocol = new MergeProtocol(options.authorId);
+        this.protocol = new MergeProtocol(options.authorId.toString('hex'));
         this.versions = options.versions;
 
         if (options.root !== undefined) {
@@ -126,10 +127,10 @@ export class StorageImpl<T> implements SlotTree<T> {
         this.protocol.observeTree(this.root);
     }
 
-    public addAuthor(authorId: string, storageVersion: number): void {
+    public addAuthor(authorId: Buffer, storageVersion: number): void {
         const controller = new VersionController(this.root, this.versions);
         controller.setDeviceVersion(
-            authorId,
+            authorId.toString('hex'),
             storageVersion,
             this.protocol.tick(),
             this.protocol.id
@@ -139,9 +140,9 @@ export class StorageImpl<T> implements SlotTree<T> {
         this.observers.notify();
     }
 
-    public removeAuthor(authorId: string): void {
+    public removeAuthor(authorId: Buffer): void {
         const controller = new VersionController(this.root, this.versions);
-        const deleted = controller.deleteAuthor(authorId);
+        const deleted = controller.deleteAuthor(authorId.toString('hex'));
         if (!deleted) {
             return;
         }
@@ -178,7 +179,16 @@ export class StorageImpl<T> implements SlotTree<T> {
 
     public async unsafeAsyncTransaction(
         fn: (draft: Draft<T>) => void,
-        commit: (snapshot: string) => Promise<boolean>
+        commit: (snapshot: Buffer) => Promise<boolean>
+    ): Promise<boolean> {
+        return await this.unsafeAsyncTransactionSlot(fn, async root => {
+            return await commit(cborEncoder.encode(root));
+        });
+    }
+
+    public async unsafeAsyncTransactionSlot(
+        fn: (draft: Draft<T>) => void,
+        commit: (snapshot: ContainerSlot) => Promise<boolean>
     ): Promise<boolean> {
         const timestamp = this.protocol.tick();
         const author = this.protocol.id;
@@ -191,7 +201,7 @@ export class StorageImpl<T> implements SlotTree<T> {
         }
 
         const nextRoot = workingRoot.result();
-        const shouldCommit = await commit(this.encoder.encode(nextRoot));
+        const shouldCommit = await commit(nextRoot);
         if (!shouldCommit) {
             return false;
         }
@@ -199,17 +209,6 @@ export class StorageImpl<T> implements SlotTree<T> {
         this.root = nextRoot;
         this.observers.notify();
         return true;
-    }
-
-    public merge(incoming: string): MergeStats {
-        return this.mergeSlot(this.encoder.decode(incoming));
-    }
-
-    public async unsafeAsyncMerge(
-        incoming: string,
-        commit: (snapshot: string) => Promise<boolean>
-    ): Promise<boolean> {
-        return await this.unsafeAsyncMergeSlot(this.encoder.decode(incoming), commit);
     }
 
     public mergeSlot(incoming: Slot): MergeStats {
@@ -229,9 +228,13 @@ export class StorageImpl<T> implements SlotTree<T> {
         return stats;
     }
 
-    private async unsafeAsyncMergeSlot(
+    public merge(incoming: Buffer): MergeStats {
+        return this.mergeSlot(cborEncoder.decode(incoming));
+    }
+
+    public async unsafeAsyncMergeSlot(
         incoming: Slot,
-        commit: (snapshot: string) => Promise<boolean>
+        commit: (snapshot: ContainerSlot) => Promise<boolean>
     ): Promise<boolean> {
         const workingRoot = this.createWorkingRoot();
         const validationProtocol = new MergeProtocol(this.protocol.id);
@@ -243,7 +246,7 @@ export class StorageImpl<T> implements SlotTree<T> {
         }
 
         const nextRoot = workingRoot.result();
-        const shouldCommit = await commit(this.encoder.encode(nextRoot));
+        const shouldCommit = await commit(nextRoot);
         if (!shouldCommit) {
             return false;
         }
@@ -255,6 +258,15 @@ export class StorageImpl<T> implements SlotTree<T> {
         return true;
     }
 
+    public async unsafeAsyncMerge(
+        incoming: Buffer,
+        commit: (snapshot: Buffer) => Promise<boolean>
+    ): Promise<boolean> {
+        return await this.unsafeAsyncMergeSlot(cborEncoder.decode(incoming), async root => {
+            return await commit(cborEncoder.encode(root));
+        });
+    }
+
     public onChange(observer: StorageObserver): () => void {
         this.observers.add(observer);
 
@@ -263,11 +275,7 @@ export class StorageImpl<T> implements SlotTree<T> {
         };
     }
 
-    public export(): string {
-        return this.encoder.encode(this.root);
-    }
-
-    public exportSlot(): Slot {
+    public exportSlot(): ContainerSlot {
         return cloneSlot(this.root);
     }
 
@@ -329,47 +337,18 @@ export class StorageImpl<T> implements SlotTree<T> {
     private deleteUnusedVersions(): void {
         new VersionController(this.root, this.versions).deleteVersionsUnusedByDevices();
     }
+
+    public export(): Buffer {
+        return cborEncoder.encode(this.root);
+    }
 }
 
 function didMergeChangeStorage(stats: MergeStats): boolean {
     return stats.added > 0 || stats.updated > 0 || stats.replaced > 0;
 }
 
-class Encoder {
-    public encode(root: ContainerSlot): string {
-        return stableStringify(root);
-    }
-
-    public decode(encodedRoot: string): ContainerSlot {
-        const root: unknown = JSON.parse(encodedRoot);
-        validateSlot(root);
-
-        if (!isContainerSlot(root)) {
-            throw new Error('Encoded storage root must be a container slot');
-        }
-
-        return root;
-    }
-}
-
-function stableStringify(value: unknown): string {
-    if (value === null || typeof value !== 'object') {
-        return JSON.stringify(value);
-    }
-
-    if (Array.isArray(value)) {
-        return `[${value.map(stableStringify).join(',')}]`;
-    }
-
-    const record = value as Record<string, unknown>;
-    return `{${Object.keys(record)
-        .sort()
-        .map(key => `${JSON.stringify(key)}:${stableStringify(record[key])}`)
-        .join(',')}}`;
-}
-
 export function createStorage<Latest extends StorageVersion, Rest>(options: {
-    authorId: string;
+    authorId: Buffer;
     versions: HCons<Latest, Rest> & AssertVersionHList<HCons<Latest, Rest>>;
     root?: ContainerSlot;
 }): SlotTree<z.output<NewOf<Latest>>> {

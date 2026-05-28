@@ -1,8 +1,8 @@
-import { StaticScreenProps } from '@react-navigation/native';
+import type { StaticScreenProps } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { type CryptoAsset } from '@safely/core';
+import type { CryptoAsset } from '@safely/core';
 import { useReceiveInfo } from '@safely/ux';
 
 import { Screen, Text } from '@mobile/shared/ui';

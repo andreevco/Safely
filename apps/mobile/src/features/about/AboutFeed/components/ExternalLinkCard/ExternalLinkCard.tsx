@@ -1,6 +1,6 @@
 import { View } from 'react-native';
 
-import { type ExternalLinkPost } from '@safely/core';
+import type { ExternalLinkPost } from '@safely/core';
 import { LinkingProtocol, useLinking } from '@safely/ux';
 
 import { Image, Text, TouchableOpacity } from '@mobile/shared/ui';

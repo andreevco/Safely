@@ -1,12 +1,6 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import {
-    StyleProp,
-    TextInput,
-    View,
-    TextInputProps,
-    TouchableWithoutFeedback,
-    ViewStyle
-} from 'react-native';
+import type { StyleProp, TextInputProps, ViewStyle } from 'react-native';
+import { TextInput, View, TouchableWithoutFeedback } from 'react-native';
 import Animated, {
     interpolateColor,
     useAnimatedStyle,

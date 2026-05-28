@@ -4,20 +4,18 @@ export class YCRDT<T extends object> {
     constructor(private readonly doc: SlotTree<T>) {}
 
     public applyUpdate(update: Buffer): void {
-        this.doc.merge(update.toString('utf8'));
+        this.doc.merge(update);
     }
 
     public async unsafeAsyncApplyUpdate(
         update: Buffer,
         commit: (snapshot: Buffer) => Promise<boolean>
     ): Promise<boolean> {
-        return await this.doc.unsafeAsyncMerge(update.toString('utf8'), async snapshot => {
-            return await commit(Buffer.from(snapshot, 'utf8'));
-        });
+        return await this.doc.unsafeAsyncMerge(update, commit);
     }
 
     public encodeAsSnapshot(): Buffer {
-        return Buffer.from(this.doc.export(), 'utf8');
+        return this.doc.export();
     }
 
     public getFull(): T {
@@ -34,11 +32,11 @@ export class YCRDT<T extends object> {
         });
     }
 
-    public addAuthor(authorId: string, storageVersion: number): void {
+    public addAuthor(authorId: Buffer, storageVersion: number): void {
         this.doc.addAuthor(authorId, storageVersion);
     }
 
-    public deleteAuthor(authorId: string): void {
+    public deleteAuthor(authorId: Buffer): void {
         this.doc.removeAuthor(authorId);
     }
 
@@ -50,12 +48,10 @@ export class YCRDT<T extends object> {
         fn: (draft: Draft<T>) => void,
         commit: (snapshot: Buffer) => Promise<boolean>
     ): Promise<boolean> {
-        return await this.doc.unsafeAsyncTransaction(fn, async snapshot => {
-            return await commit(Buffer.from(snapshot, 'utf8'));
-        });
+        return await this.doc.unsafeAsyncTransaction(fn, commit);
     }
 
-    public equals(other: string): boolean {
-        return this.doc.export() === other;
+    public equals(other: Buffer): boolean {
+        return this.doc.export().equals(other);
     }
 }

@@ -1,5 +1,5 @@
 import { View } from 'react-native';
-import { UnistylesVariants } from 'react-native-unistyles';
+import type { UnistylesVariants } from 'react-native-unistyles';
 
 import { FrameCorner48, Icon } from '@mobile/shared/ui/Icon';
 

@@ -32,8 +32,7 @@ describe('SyncAccountFactory onboarding', () => {
             storage: new InMemStorage(),
             encryptedStorage: new InMemStorage(),
             versions,
-            noAccountLogger: new Logger({ log: () => undefined }),
-            getAccountLogger: () => new Logger({ log: () => undefined })
+            logger: new Logger({ log: () => undefined })
         });
 
         const [connector, secondConnector] = await Promise.all([

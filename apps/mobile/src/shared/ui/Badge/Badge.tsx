@@ -1,5 +1,6 @@
-import { StyleProp, View, ViewStyle } from 'react-native';
-import { UnistylesVariants } from 'react-native-unistyles';
+import type { StyleProp, ViewStyle } from 'react-native';
+import { View } from 'react-native';
+import type { UnistylesVariants } from 'react-native-unistyles';
 
 import { Text } from '../Text';
 import { styles } from './Badge.styles';

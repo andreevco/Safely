@@ -28,13 +28,13 @@ export class UpdateHandler<Latest extends StorageVersion, Rest> {
         upd: EncryptedStateAndProofChain
     ): Promise<{ hasLocalChanges: boolean; revoked?: boolean }> {
         const syncState = await this.syncStateRepository.getState();
-        this.logger.info('Handling incoming update', upd.snapshotProof.toString('hex'));
+        this.logger.info('UpdateHandler.handle', upd.snapshotProof.toString('hex'));
 
         const update = await this.updateDecryptor.decrypt(upd);
         const payload = decodeUpdatePayload(update);
 
         if (upd.snapshotProof.equals(syncState.snapshotProof)) {
-            this.logger.info('Update already received');
+            this.logger.info('UpdateHandler.handle.known');
             return { hasLocalChanges: await this.hasLocalChanges(payload) }; // Already have this update
         }
 
@@ -76,13 +76,11 @@ export class UpdateHandler<Latest extends StorageVersion, Rest> {
 
         // TODO: merge remote devices into temporal storage first and verify on temp storage
         // this is minor security bug
-        await this.deviceManagementService.mergeDeviceStorage(
-            Buffer.from(payload.deviceStorage, 'utf8')
-        );
+        await this.deviceManagementService.mergeDeviceStorage(payload.deviceStorage);
 
         const isRevoked = await this.deviceManagementService.isThisDeviceRevoked();
         if (isRevoked) {
-            this.logger.warn('This device has been revoked');
+            this.logger.debug('This device has been revoked');
             return {
                 hasLocalChanges: false,
                 revoked: true
@@ -109,14 +107,14 @@ export class UpdateHandler<Latest extends StorageVersion, Rest> {
         // meaningful security risk in the current flow, and the signature itself may be removed later.
         // await this.updateDecryptor.verifyIKSig(upd);
 
-        this.logger.info('Applying update to local CRDT document...');
-        await this.yManager.applyUpdate(Buffer.from(payload.userStorage, 'utf8'), 'remote');
+        this.logger.debug('Applying update to local CRDT document...');
+        await this.yManager.applyUpdate(payload.userStorage, 'remote');
 
         syncState.snapshotProof = upd.snapshotProof;
         await this.syncStateRepository.saveState(syncState);
 
         const hasLocalChanges = await this.hasLocalChanges(payload);
-        this.logger.info('Update applied, hasLocalChanges:', hasLocalChanges);
+        this.logger.info('UpdateHandler.handle.applied', { hasLocalChanges });
         return { hasLocalChanges };
     }
 
@@ -159,8 +157,8 @@ export class UpdateHandler<Latest extends StorageVersion, Rest> {
         }
 
         return (
-            !this.yManager.equalsToRemoteUpdate(Buffer.from(upd.userStorage, 'utf8')) ||
-            !this.deviceYManager.equalsToRemoteUpdate(Buffer.from(upd.deviceStorage, 'utf8'))
+            !this.yManager.equalsToRemoteUpdate(upd.userStorage) ||
+            !this.deviceYManager.equalsToRemoteUpdate(upd.deviceStorage)
         );
     }
 }

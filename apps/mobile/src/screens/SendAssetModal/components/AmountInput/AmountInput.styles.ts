@@ -1,4 +1,5 @@
-import { SharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
+import type { SharedValue } from 'react-native-reanimated';
+import { useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
 export const styles = StyleSheet.create(theme => ({

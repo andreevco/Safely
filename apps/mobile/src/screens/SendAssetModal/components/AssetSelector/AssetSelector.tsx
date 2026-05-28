@@ -1,4 +1,4 @@
-import { CryptoAsset } from '@safely/core';
+import type { CryptoAsset } from '@safely/core';
 
 import { Image } from '@mobile/shared/ui';
 

@@ -1,8 +1,10 @@
 import React from 'react';
-import { Platform, View, ViewProps } from 'react-native';
+import type { ViewProps } from 'react-native';
+import { Platform, View } from 'react-native';
 
 import { Title } from './components/Title';
-import { HeaderVariant, HeaderContext } from './Header.context';
+import type { HeaderVariant } from './Header.context';
+import { HeaderContext } from './Header.context';
 import { styles } from './Header.styles';
 import { useScreenContext } from '../../Screen.context';
 

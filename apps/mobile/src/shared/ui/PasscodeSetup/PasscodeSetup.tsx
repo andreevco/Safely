@@ -2,11 +2,12 @@ import { notificationAsync, NotificationFeedbackType } from 'expo-haptics';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { usePasscodeState } from '@mobile/screens/PasscodeModal/hooks';
 import { PASSCODE_DIGITS } from '@mobile/shared/constants';
 import { PasscodeView } from '@mobile/shared/ui/PasscodeView';
 import { Screen } from '@mobile/shared/ui/Screen';
 import { Text } from '@mobile/shared/ui/Text';
+
+import { usePasscodeState } from './usePasscodeState';
 
 type PasscodeSetupProps = {
     headerType: 'back' | 'close';

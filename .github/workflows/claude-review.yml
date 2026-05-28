@@ -100,7 +100,7 @@ jobs:
             ## Procedure (strict order)
             1. Read DIFF_FILE and META_FILE.
             2. PHASE 1 — Critical scan on the diff itself (SECURITY,
-               PERFORMANCE, CORRECTNESS, DATA INTEGRITY, LOGGER SANDBOX).
+               PERFORMANCE, CORRECTNESS, DATA INTEGRITY).
                This is the primary pass. Spend the bulk of the budget here.
             3. PHASE 2 — Only after Phase 1 is done AND budget remains, run
                structural sweeps (SYMMETRY, IDENTIFIER DRIFT, CONTRACT
@@ -132,21 +132,6 @@ jobs:
               migrations, optimistic updates without rollback, state mutation,
               storage version bump without migration (or vice versa),
               `setState` after `await` without mount/abort guard.
-            LOGGER SANDBOX — each account has its own logger; logger captured
-              and used after account switch writes user A's data to user B's
-              file. Flag:
-              - `useMutation` from `@tanstack/react-query` instead of `@safely/ux`
-              - `logger`/`useLogger()` inside `onError`/`onSuccess`/`onMutate`/
-                `onSettled` (fix: log in `mutationFn` via 2nd arg, or pass via
-                `onMutate` context). Duplicate `logger.error` in `onError` is
-                also wrong — wrapper already auto-logs `mutationFn` errors.
-              - `loggerRegistry.systemLogger` in account-scoped code (use
-                `useLogger()` / `getAccountLogger(accountId)`; systemLogger is
-                only for boot / global handlers / devtools).
-              - Logger captured in `useEffect`/`useCallback`/`useMemo` with deps
-                omitting it, at module load, or in long-lived async (timers,
-                subscriptions) that survive account switches.
-
             Mobile surfaces of concern: native bridge, deep links, WebViews,
             async storage, permissions, network transport, third-party SDKs.
 

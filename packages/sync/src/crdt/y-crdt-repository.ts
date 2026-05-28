@@ -24,20 +24,20 @@ export class YCRDTRepository<Latest extends StorageVersion, Rest> {
                 throw new Error('CRDT not found in storage');
             }
         }
-        const crdt = this.createCRDTFromSnapshot(crdtRaw);
+        const crdt = this.createCRDTFromSnapshot(Buffer.from(crdtRaw, 'base64url'));
         const snapshot = crdt.encodeAsSnapshot();
-        if (!snapshot.equals(Buffer.from(crdtRaw, 'utf8'))) {
+        if (snapshot.toString('base64url') !== crdtRaw) {
             await this.saveSnapshot(snapshot);
         }
         return crdt;
     }
 
-    public createCRDTFromSnapshot(snapshot: Buffer | string): YCRDT<z.output<NewOf<Latest>>> {
+    public createCRDTFromSnapshot(snapshot: Buffer): YCRDT<z.output<NewOf<Latest>>> {
         const crdt = createStorage({
-            authorId: this.ikPub.toString('hex'),
+            authorId: this.ikPub,
             versions: this.versions
         });
-        crdt.merge(Buffer.isBuffer(snapshot) ? snapshot.toString('utf8') : snapshot);
+        crdt.merge(snapshot);
         return new YCRDT(crdt);
     }
 
@@ -45,19 +45,16 @@ export class YCRDTRepository<Latest extends StorageVersion, Rest> {
         await this.saveSnapshot(crdt.encodeAsSnapshot());
     }
 
-    public async saveSnapshot(snapshot: Buffer | string): Promise<void> {
-        await this.storage.setItem(
-            this.storageKey,
-            Buffer.isBuffer(snapshot) ? snapshot.toString('utf8') : snapshot
-        );
+    public async saveSnapshot(snapshot: Buffer): Promise<void> {
+        await this.storage.setItem(this.storageKey, snapshot.toString('base64url'));
     }
 
     public async initialize(): Promise<void> {
         const crdt = createStorage({
-            authorId: this.ikPub.toString('hex'),
+            authorId: this.ikPub,
             versions: this.versions
         });
 
-        await this.storage.setItem(this.storageKey, crdt.export());
+        await this.storage.setItem(this.storageKey, crdt.export().toString('base64url'));
     }
 }
