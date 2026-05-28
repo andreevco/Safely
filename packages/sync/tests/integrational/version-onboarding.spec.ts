@@ -153,8 +153,7 @@ describe('versioned onboarding', () => {
                 },
                 apiImplementations,
                 pollingTimeout: 1,
-                noAccountLogger: logger,
-                getAccountLogger: () => logger
+                logger
             }),
             secureEncryptedStorage,
             setRequesterIk: ikPub => {

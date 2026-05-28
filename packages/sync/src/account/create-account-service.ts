@@ -24,7 +24,7 @@ export class CreateAccountService<Latest extends StorageVersion, Rest> {
         private readonly apiConfiguration: Configuration,
         private readonly pollingTimeout: number,
         private readonly apiImplementations: SyncApiImplementations | undefined,
-        private readonly getAccountLogger: (accountId: string) => Logger
+        private readonly logger: Logger
     ) {}
 
     public async createOfflineAccount(secureEncryptedStorage: ITreeStorage) {
@@ -37,14 +37,13 @@ export class CreateAccountService<Latest extends StorageVersion, Rest> {
             secureEncryptedStorage,
             accountID
         );
-        const logger = this.getAccountLogger(accountID);
         await initializeSyncAccount({
             storage,
             encryptedStorage,
             secureEncryptedStorage: accountSecureEncryptedStorage,
             versions: this.versions,
             masterKey,
-            logger
+            logger: this.logger
         });
         masterKey.fill(0);
 
@@ -58,7 +57,7 @@ export class CreateAccountService<Latest extends StorageVersion, Rest> {
             apiConfiguration: this.apiConfiguration,
             pollingTimeout: this.pollingTimeout,
             apiImplementations: this.apiImplementations,
-            logger
+            logger: this.logger
         });
 
         await container.deviceManager.addDevice(
@@ -96,7 +95,6 @@ export class CreateAccountService<Latest extends StorageVersion, Rest> {
             secureEncryptedStorage,
             accountID
         );
-        const logger = this.getAccountLogger(accountID);
         await initializeSyncAccount({
             storage,
             versions: this.versions,
@@ -104,7 +102,7 @@ export class CreateAccountService<Latest extends StorageVersion, Rest> {
             secureEncryptedStorage: accountSecureEncryptedStorage,
             masterKey: payload.masterKey,
             ik,
-            logger
+            logger: this.logger
         });
         payload.masterKey.fill(0);
 
@@ -119,7 +117,7 @@ export class CreateAccountService<Latest extends StorageVersion, Rest> {
             apiConfiguration: this.apiConfiguration,
             pollingTimeout: this.pollingTimeout,
             apiImplementations: this.apiImplementations,
-            logger
+            logger: this.logger
         });
         flow.logStep('container_initialized');
 

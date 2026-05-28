@@ -49,7 +49,7 @@ describe('AccountManager', () => {
             undefined,
             {} as CreateAccountService<(typeof versions)['head'], (typeof versions)['tail']>,
             2500,
-            () => logger
+            logger
         );
 
         const [first, second] = await Promise.all([
