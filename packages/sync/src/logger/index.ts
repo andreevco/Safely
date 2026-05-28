@@ -7,4 +7,4 @@ export { CombinedTransport } from './combined-transport';
 export { SyncFlowLogger, makeQrLogId, withSyncFlow } from './sync-flow-logger';
 export type { SyncFlowLogFields, SyncFlowLoggerOptions } from './sync-flow-logger';
 export type { LogEntry } from './log-entry';
-export type { ILoggerTransport, LoggerLifecycleContext } from './I-logger-transport';
+export type { ILoggerTransport } from './I-logger-transport';

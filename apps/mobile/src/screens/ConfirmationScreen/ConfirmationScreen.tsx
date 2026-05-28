@@ -12,8 +12,8 @@ import {
     useActiveFiat,
     useActivePortfolio,
     useAnalytics,
+    useAppContext,
     useEstimateAssetTransfer,
-    useLogger,
     useNumberFormatter,
     useSendAssetTransfer
 } from '@safely/ux';
@@ -43,7 +43,7 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
     const navigation = useNavigation();
     const btcWallet = useActiveBtcWallet();
     const activePortfolio = useActivePortfolio();
-    const logger = useLogger();
+    const { logger } = useAppContext();
 
     const [confirmationState, setConfirmationState] = useState<ConfirmationState>({ type: 'idle' });
 

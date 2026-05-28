@@ -10,7 +10,6 @@ import pluginQuery from '@tanstack/eslint-plugin-query';
 import boundaries from 'eslint-plugin-boundaries';
 import isEqPlugin from './eslint-rules/isEqPlugin.js';
 import noDirectBitcoinjsLibPlugin from './eslint-rules/noDirectBitcoinjsLibPlugin.js';
-import noTanstackUseMutationPlugin from './eslint-rules/noTanstackUseMutationPlugin.js';
 
 export default [
     {
@@ -49,7 +48,6 @@ export default [
             'unused-imports': unusedImports,
             iseq: isEqPlugin,
             'no-direct-bitcoinjs-lib': noDirectBitcoinjsLibPlugin,
-            'no-tanstack-use-mutation': noTanstackUseMutationPlugin,
             boundaries
         },
         settings: {
@@ -212,7 +210,6 @@ export default [
             /* custom */
             'iseq/no-strict-eq-when-isEq': 'error',
             'no-direct-bitcoinjs-lib/no-direct-bitcoinjs-lib': 'error',
-            'no-tanstack-use-mutation/no-tanstack-use-mutation': 'error',
 
             /* FSD layering inside @safely/ux: shared cannot import entities/features;
                entities cannot import features. */

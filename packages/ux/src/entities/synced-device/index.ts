@@ -1,3 +1,4 @@
+import { useMutation } from '@tanstack/react-query';
 import { useCallback, useMemo, useSyncExternalStore } from 'react';
 
 import type { ISyncAccount } from '@safely/sync';
@@ -11,7 +12,6 @@ import {
     useAccountSyncStorageSlotUpdate,
     useActiveAccountSyncStorageSlotUpdate
 } from '../account/useAccountSyncStorageUpdate';
-import { useMutation } from '../query-core';
 
 export function useSyncedDevicesMeta(): Record<string, SDeviceMeta> | null {
     return useActiveAccountStoreSlot('devicesMeta') ?? null;

@@ -26,8 +26,7 @@ export type SyncAccountFactoryOptions<Versions extends VersionHList> = {
     apiConfiguration?: SyncApiConfiguration;
     apiImplementations?: SyncApiImplementations;
     pollingTimeout?: number;
-    noAccountLogger: Logger;
-    getAccountLogger: (accountId: string) => Logger;
+    logger: Logger;
 };
 
 export class SyncAccountFactory<Versions extends VersionHList> implements ISyncAccountFactory<
@@ -37,7 +36,7 @@ export class SyncAccountFactory<Versions extends VersionHList> implements ISyncA
     private readonly accountManager: AccountManager<LatestOf<Versions>, RestOf<Versions>>;
     private readonly apiConfiguration: Configuration;
     private readonly apiImplementations?: SyncApiImplementations;
-    private readonly noAccountLogger: Logger;
+    private readonly logger: Logger;
     private readonly pollingTimeout: number;
     private readonly storageVersion: number;
     private readonly connectToExistingAccountCoordinator = new SingleActiveOnboardingCoordinator<
@@ -48,7 +47,7 @@ export class SyncAccountFactory<Versions extends VersionHList> implements ISyncA
         this.syncAccountIdRepository = new SyncAccountRepository(opts.storage);
         this.apiConfiguration = new Configuration(opts.apiConfiguration);
         this.apiImplementations = opts.apiImplementations;
-        this.noAccountLogger = opts.noAccountLogger;
+        this.logger = opts.logger;
         this.pollingTimeout = opts.pollingTimeout ?? 2000;
 
         const createAccountService = new CreateAccountService(
@@ -59,7 +58,7 @@ export class SyncAccountFactory<Versions extends VersionHList> implements ISyncA
             this.apiConfiguration,
             this.pollingTimeout,
             this.apiImplementations,
-            opts.getAccountLogger
+            this.logger
         );
         this.accountManager = new AccountManager(
             opts.storage,
@@ -70,7 +69,7 @@ export class SyncAccountFactory<Versions extends VersionHList> implements ISyncA
             this.apiImplementations,
             createAccountService,
             this.pollingTimeout,
-            opts.getAccountLogger
+            this.logger
         );
         this.storageVersion = opts.versions.head.version;
     }
@@ -98,7 +97,7 @@ export class SyncAccountFactory<Versions extends VersionHList> implements ISyncA
             accountsApi,
             this.accountManager,
             secureEncryptedStorage,
-            this.noAccountLogger,
+            this.logger,
             this.pollingTimeout,
             this.storageVersion
         );

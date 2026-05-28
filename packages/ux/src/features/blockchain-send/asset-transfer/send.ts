@@ -1,12 +1,9 @@
+import { useMutation } from '@tanstack/react-query';
+
 import type { TransactionTemplate } from '@safely/core';
 import { BtcTransactionTemplate } from '@safely/core';
 
-import {
-    BroadcastedBtcTx,
-    useBtcSendLocked,
-    useMutation,
-    useSetLastBroadcastedBtcTx
-} from '../../../entities';
+import { BroadcastedBtcTx, useBtcSendLocked, useSetLastBroadcastedBtcTx } from '../../../entities';
 
 export function useSendAssetTransfer(transactionTemplate: TransactionTemplate | undefined) {
     const { mutateAsync: setLastBroadcastedBtcTx } = useSetLastBroadcastedBtcTx();

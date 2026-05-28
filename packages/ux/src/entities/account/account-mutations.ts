@@ -1,4 +1,4 @@
-import { useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo } from 'react';
 
 import type { ITreeStorage } from '@safely/core';
@@ -22,8 +22,6 @@ import { useClearActiveAccountLocalStorage } from './local-storage';
 import { SecretEncryptor, useAppContext, useSharedUxStorage, useTranslate } from '../../shared';
 import { useErrorToast } from '../errors';
 import { useLoader } from '../loader';
-import { useLogger } from '../logger';
-import { useMutation } from '../query-core';
 import {
     useCurrentDeviceIkPub,
     useGenerateOwnSyncedDeviceMeta,
@@ -180,7 +178,7 @@ export function useAccountConnectedCallback(
     callback: (account: SyncAccount) => void,
     options?: { setAsActive: boolean; onError?: (e: Error) => void }
 ) {
-    const logger = useLogger();
+    const { logger } = useAppContext();
     const client = useQueryClient();
     const { mutateAsync: setActive } = useSetActiveAccount();
     const { mutateAsync: updateOwnSyncedDeviceMeta } = useSetOwnSyncedDeviceMeta();

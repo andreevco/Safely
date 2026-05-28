@@ -1,31 +1,26 @@
 import packageJson from '../../../package.json';
 import { build, deviceInfo } from '../app-meta';
-import { LoggerRegistry } from './registry';
-import type { TransportConfig } from './transports';
-import { createAccountTransport, createSystemTransport } from './transports';
+import { buildLogger } from './build-logger';
+import { FileTransport } from './file-transport';
 
-const transportConfig: TransportConfig = {
+const transport = new FileTransport({
     appVersion: packageJson.version,
     build,
     deviceInfo
-};
-
-const loggerRegistry = new LoggerRegistry({
-    isDev: __DEV__,
-    systemTransport: createSystemTransport(transportConfig),
-    createAccountTransport: accountId => createAccountTransport(transportConfig, accountId)
 });
+
+export const logger = buildLogger(transport, __DEV__);
+export const flushLogs = (): Promise<void> => transport.flush();
+export const shareLogs = (): Promise<void> => transport.share();
 
 const prevHandler = ErrorUtils.getGlobalHandler();
 ErrorUtils.setGlobalHandler((error, isFatal) => {
-    loggerRegistry.systemLogger.error(`[Unhandled${isFatal ? ' FATAL' : ''}]`, error);
+    logger.error(`[Unhandled${isFatal ? ' FATAL' : ''}]`, error);
     prevHandler(error, isFatal);
 });
 
 if (typeof globalThis.onunhandledrejection === 'undefined') {
     globalThis.onunhandledrejection = (event: PromiseRejectionEvent) => {
-        loggerRegistry.systemLogger.error('[Unhandled Promise Rejection]', event.reason);
+        logger.error('[Unhandled Promise Rejection]', event.reason);
     };
 }
-
-export { loggerRegistry };

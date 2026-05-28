@@ -7,11 +7,11 @@ import type {
     QrScanner,
     UserCountryInfo
 } from '@safely/core';
+import type { Logger } from '@safely/sync';
 
 import type { TranslateFn } from '../i18n/types';
 import type { Linking } from '../linking';
 import type { LoaderService } from '../loader/types';
-import type { ILoggerRegistry } from '../logger';
 import type { IUnlockableSecuredEncryptedStorage, Security } from '../security/types';
 import type { ToastService } from '../toast/types';
 
@@ -63,7 +63,7 @@ export interface IAppContext {
 
     reloadApp: () => void;
 
-    loggerRegistry: ILoggerRegistry;
+    logger: Logger;
 
     security: Security;
 

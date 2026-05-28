@@ -1,10 +1,10 @@
+import { useMutation } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
 import { FiatAsset } from '@safely/core';
 
 import { useAvailableFiats } from '../../shared';
 import { useActiveAccountStoreSlot, useActiveAccountSyncStorageSlotUpdate } from '../account';
-import { useMutation } from '../query-core';
 
 const USD_FIAT = FiatAsset.create({ symbol: 'USD', name: 'US Dollar' });
 

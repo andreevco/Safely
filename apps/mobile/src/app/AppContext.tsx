@@ -7,11 +7,11 @@ import { AppState } from 'react-native';
 
 import { LoggableStorage } from '@safely/core';
 import type { AppStateStatus, IAppContext, Security } from '@safely/ux';
-import { AppContext, UnlockableSecuredEncryptedStorage, useLoggerLifecycle } from '@safely/ux';
+import { AppContext, UnlockableSecuredEncryptedStorage } from '@safely/ux';
 
 import { useMobileSecurityCheck } from '@mobile/features/security';
 import { build, deviceInfo, environment } from '@mobile/shared/app-meta';
-import { loggerRegistry } from '@mobile/shared/logger';
+import { flushLogs, logger } from '@mobile/shared/logger';
 import { useLoaderServiceContext } from '@mobile/shared/providers/loader';
 import { useToastServiceContext } from '@mobile/shared/providers/toast';
 import { MobileNumberFormatLocale, MobileAppLinking } from '@mobile/shared/utils';
@@ -76,7 +76,7 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
                         return new UnlockableSecuredEncryptedStorage(
                             new LoggableStorage(
                                 SECURE_ENCRYPTED_MOBILE_STORAGE_ONLY_APP_LEVEL_USE.enumerable,
-                                loggerRegistry.systemLogger,
+                                logger,
                                 'SecureEncryptedStorage'
                             ),
                             security,
@@ -103,8 +103,8 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
                 hide: loaderService.hide,
                 withLoader: loaderService.withLoader
             },
-            loggerRegistry,
-            linking: new MobileAppLinking(loggerRegistry.systemLogger),
+            logger,
+            linking: new MobileAppLinking(logger),
             security: {
                 check: () => security.check()
             },
@@ -136,7 +136,15 @@ export const SecurityCheckInitializer: FC = () => {
 };
 
 export const LoggerLifecycle: FC = () => {
-    useLoggerLifecycle();
+    useEffect(() => {
+        const subscription = AppState.addEventListener('change', state => {
+            if (state === 'background' || state === 'inactive') {
+                void flushLogs();
+            }
+        });
+
+        return () => subscription.remove();
+    }, []);
 
     return null;
 };

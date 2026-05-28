@@ -48,8 +48,7 @@ export function makeFactory(): TestSyncAccountFactory {
         versions: Versions,
         apiConfiguration,
         pollingTimeout: 500,
-        noAccountLogger: new Logger().child(`${factoryId}`),
-        getAccountLogger: accountId => new Logger().child(`${factoryId}:${accountId}`)
+        logger: new Logger().child(`${factoryId}`)
     });
 }
 

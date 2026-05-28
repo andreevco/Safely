@@ -1,3 +1,5 @@
+import { useMutation } from '@tanstack/react-query';
+
 import type { ContactMeta, IContact } from '@safely/core';
 import type { BLOCKCHAIN_NAME } from '@safely/core';
 import { vmTypeByBlockchainName } from '@safely/core';
@@ -7,7 +9,6 @@ import { sContactAddress } from '@safely/sync-storage';
 
 import { useTranslate } from '../../shared';
 import { useActiveAccountStoreSlot, useActiveAccountSyncStorageSlotUpdate } from '../account';
-import { useMutation } from '../query-core';
 import { useToast } from '../toast';
 
 export { contactKey } from './keys';

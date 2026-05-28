@@ -26,7 +26,7 @@ export class AccountManager<Latest extends StorageVersion, Rest> {
         private readonly apiImplementations: SyncApiImplementations | undefined,
         private readonly createAccountService: CreateAccountService<Latest, Rest>,
         private readonly pollingTimeout: number,
-        private readonly getAccountLogger: (accountId: string) => Logger
+        private readonly logger: Logger
     ) {}
 
     public async getAccounts(): Promise<ISyncAccount<Latest>[]> {
@@ -71,7 +71,6 @@ export class AccountManager<Latest extends StorageVersion, Rest> {
             this.encryptedStorage,
             accountInfo.accountId
         );
-        const logger = this.getAccountLogger(accountInfo.accountId);
         const container = await createSyncContainer({
             accountId,
             versions: this.versions,
@@ -80,7 +79,7 @@ export class AccountManager<Latest extends StorageVersion, Rest> {
             apiConfiguration: this.apiConfiguration,
             pollingTimeout: this.pollingTimeout,
             apiImplementations: this.apiImplementations,
-            logger
+            logger: this.logger
         });
 
         const syncProvider = accountInfo.online

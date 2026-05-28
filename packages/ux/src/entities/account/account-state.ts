@@ -38,7 +38,7 @@ export function useAccountsFactory() {
     const config = useBootConfig();
     const {
         storage: { sync },
-        loggerRegistry
+        logger
     } = useAppContext();
 
     if (!_syncAccountFactory) {
@@ -49,8 +49,7 @@ export function useAccountsFactory() {
             apiConfiguration: {
                 basePath: config.sync.api_url
             },
-            noAccountLogger: loggerRegistry.systemLogger.child('sync'),
-            getAccountLogger: (accountId: string) => loggerRegistry.getAccountLogger(accountId)
+            logger: logger.child('sync')
         });
     }
 
