@@ -21,9 +21,7 @@ export function buildLogger(fileTransport: FileTransport, isDev: boolean): Logge
         ]);
         filter = logsFilterMinSeverityLevel(LogLevel.TRACE);
     } else {
-        transport = new SanitizedTransport(
-            new CombinedTransport([new ConsoleTransport(), fileTransport])
-        );
+        transport = new SanitizedTransport(fileTransport);
         filter = logsFilterMinSeverityLevel(LogLevel.INFO);
     }
 
