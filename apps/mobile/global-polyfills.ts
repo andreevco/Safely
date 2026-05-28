@@ -17,8 +17,6 @@ import '@formatjs/intl-relativetimeformat/locale-data/en';
 import '@formatjs/intl-relativetimeformat/locale-data/ru';
 import * as Crypto from 'expo-crypto';
 
-import { XHREventSource } from '@safely/sync';
-
 /**
  *  Explicit resources management polyfills
  */
@@ -51,15 +49,15 @@ if (typeof global.SuppressedError === 'undefined') {
 global.Buffer = require('@craftzdog/react-native-buffer').Buffer;
 
 /**
- *  EventSource polyfill
- */
-
-(global as any).IsomorphicEventSource = XHREventSource;
-
-/**
  * crypto polyfills
  */
 (global.crypto as any) = {
     ...Crypto,
     randomBytes: Crypto.getRandomBytes
 };
+
+/**
+ *  EventSource polyfill
+ */
+import { XHREventSource } from '@safely/xhr-event-source';
+(global as any).IsomorphicEventSource = XHREventSource;

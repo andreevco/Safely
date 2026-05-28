@@ -36,6 +36,9 @@ catalogs:
     big.js:
       specifier: ^7.0.1
       version: 7.0.1
+    cbor-x:
+      specifier: ^1.6.4
+      version: 1.6.4
     eslint:
       specifier: ^9.39.2
       version: 9.39.2
@@ -175,6 +178,9 @@ importers:
       '@safely/ux':
         specifier: workspace:*
         version: link:../../packages/ux
+      '@safely/xhr-event-source':
+        specifier: workspace:*
+        version: link:../../packages/xhr-event-source
       '@shopify/flash-list':
         specifier: 2.3.1
         version: 2.3.1(@babel/runtime@7.28.4)(react-native@0.81.4(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
@@ -488,7 +494,7 @@ importers:
   packages/slottree:
     dependencies:
       cbor-x:
-        specifier: ^1.6.4
+        specifier: 'catalog:'
         version: 1.6.4
       zod:
         specifier: 'catalog:'
@@ -515,6 +521,9 @@ importers:
       '@safely/slottree':
         specifier: workspace:*
         version: link:../slottree
+      cbor-x:
+        specifier: 'catalog:'
+        version: 1.6.4
       eventsource:
         specifier: ^4.1.0
         version: 4.1.0
@@ -613,6 +622,8 @@ importers:
       vitest:
         specifier: ^4.0.16
         version: 4.0.17(@types/node@25.0.3)(happy-dom@20.9.0)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(yaml@2.8.2)
+
+  packages/xhr-event-source: {}
 
 packages:
 

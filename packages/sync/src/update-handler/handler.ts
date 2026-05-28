@@ -76,9 +76,7 @@ export class UpdateHandler<Latest extends StorageVersion, Rest> {
 
         // TODO: merge remote devices into temporal storage first and verify on temp storage
         // this is minor security bug
-        await this.deviceManagementService.mergeDeviceStorage(
-            Buffer.from(payload.deviceStorage, 'utf8')
-        );
+        await this.deviceManagementService.mergeDeviceStorage(payload.deviceStorage);
 
         const isRevoked = await this.deviceManagementService.isThisDeviceRevoked();
         if (isRevoked) {
@@ -110,7 +108,7 @@ export class UpdateHandler<Latest extends StorageVersion, Rest> {
         // await this.updateDecryptor.verifyIKSig(upd);
 
         this.logger.debug('Applying update to local CRDT document...');
-        await this.yManager.applyUpdate(Buffer.from(payload.userStorage, 'utf8'), 'remote');
+        await this.yManager.applyUpdate(payload.userStorage, 'remote');
 
         syncState.snapshotProof = upd.snapshotProof;
         await this.syncStateRepository.saveState(syncState);
@@ -159,8 +157,8 @@ export class UpdateHandler<Latest extends StorageVersion, Rest> {
         }
 
         return (
-            !this.yManager.equalsToRemoteUpdate(Buffer.from(upd.userStorage, 'utf8')) ||
-            !this.deviceYManager.equalsToRemoteUpdate(Buffer.from(upd.deviceStorage, 'utf8'))
+            !this.yManager.equalsToRemoteUpdate(upd.userStorage) ||
+            !this.deviceYManager.equalsToRemoteUpdate(upd.deviceStorage)
         );
     }
 }

@@ -51,13 +51,13 @@ export interface SlotTree<T> {
      */
     unsafeAsyncTransaction(
         fn: (draft: Draft<T>) => void,
-        commit: (snapshot: string) => Promise<boolean>
+        commit: (snapshot: Buffer) => Promise<boolean>
     ): Promise<boolean>;
 
     /**
      * Merges an encoded storage snapshot into the current storage.
      */
-    merge(incoming: string): MergeStats;
+    merge(incoming: Buffer): MergeStats;
 
     /**
      * Unsafe async storage merge.
@@ -70,8 +70,8 @@ export interface SlotTree<T> {
      * must serialize calls externally when lost updates are not acceptable.
      */
     unsafeAsyncMerge(
-        incoming: string,
-        commit: (snapshot: string) => Promise<boolean>
+        incoming: Buffer,
+        commit: (snapshot: Buffer) => Promise<boolean>
     ): Promise<boolean>;
 
     /**
@@ -81,9 +81,9 @@ export interface SlotTree<T> {
     onChange(observer: StorageObserver): () => void;
 
     /**
-     * Exports the current storage as an encoded snapshot string.
+     * Exports the current storage as an encoded snapshot.
      */
-    export(): string;
+    export(): Buffer;
 
     /**
      * Adds new author with selected storage versions and automatically adds migration to the
@@ -179,7 +179,7 @@ export class StorageImpl<T> implements SlotTree<T> {
 
     public async unsafeAsyncTransaction(
         fn: (draft: Draft<T>) => void,
-        commit: (snapshot: string) => Promise<boolean>
+        commit: (snapshot: Buffer) => Promise<boolean>
     ): Promise<boolean> {
         return await this.unsafeAsyncTransactionSlot(fn, async root => {
             return await commit(cborEncoder.encode(root));
@@ -228,7 +228,7 @@ export class StorageImpl<T> implements SlotTree<T> {
         return stats;
     }
 
-    public merge(incoming: string): MergeStats {
+    public merge(incoming: Buffer): MergeStats {
         return this.mergeSlot(cborEncoder.decode(incoming));
     }
 
@@ -259,8 +259,8 @@ export class StorageImpl<T> implements SlotTree<T> {
     }
 
     public async unsafeAsyncMerge(
-        incoming: string,
-        commit: (snapshot: string) => Promise<boolean>
+        incoming: Buffer,
+        commit: (snapshot: Buffer) => Promise<boolean>
     ): Promise<boolean> {
         return await this.unsafeAsyncMergeSlot(cborEncoder.decode(incoming), async root => {
             return await commit(cborEncoder.encode(root));
@@ -338,7 +338,7 @@ export class StorageImpl<T> implements SlotTree<T> {
         new VersionController(this.root, this.versions).deleteVersionsUnusedByDevices();
     }
 
-    public export(): string {
+    public export(): Buffer {
         return cborEncoder.encode(this.root);
     }
 }

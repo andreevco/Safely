@@ -72,7 +72,7 @@ export class YManager<Latest extends StorageVersion, Rest> {
     }
 
     public equalsToRemoteUpdate(snapshot: Buffer): boolean {
-        return this.yDoc.equals(snapshot.toString('utf8'));
+        return this.yDoc.equals(snapshot);
     }
 
     public encodeAsSnapshot(): Buffer {

@@ -14,8 +14,6 @@ export { ReconnectFromAnotherAccountError } from './device-manager/device-manage
 
 export { SyncError, OnboardingAbortedError } from './sync-error';
 
-export { default as XHREventSource } from './eventsource/XHREventSource';
-
 export type { ISecretEncryptor, SSecretDecrypted, SSecretEncrypted } from './secret-encryptor';
 export { sSecretEncrypted, sSecretDecrypted } from './secret-encryptor';
 
