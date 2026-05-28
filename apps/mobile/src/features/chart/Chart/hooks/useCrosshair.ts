@@ -8,7 +8,8 @@ import { useDateFormatter } from '@safely/ux';
 
 import type { ChartPoint } from '@mobile/shared/utils/chart';
 
-import { CHART_CONFIG, ChartPeriod } from '../config';
+import type { ChartPeriod } from '../config';
+import { CHART_CONFIG } from '../config';
 import { getPriceDiff, type PriceDiffValue } from '../utils/priceDiff';
 
 const findNearestIndex = (points: ChartPoint[], touchX: number): number => {

@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import { View, ViewProps } from 'react-native';
+import type { ViewProps } from 'react-native';
+import { View } from 'react-native';
 
 import { Icon, Text, AddressBook96 } from '@mobile/shared/ui';
 

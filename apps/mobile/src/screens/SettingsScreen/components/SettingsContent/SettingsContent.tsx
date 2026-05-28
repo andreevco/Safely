@@ -4,8 +4,8 @@ import { Pressable } from 'react-native';
 
 import { useAppContext, useHasPortfolio } from '@safely/ux';
 
-import { SettingsStackNavigationProp } from '@mobile/app/navigation/types';
 import { DeviceUnlinkedBanner } from '@mobile/features/device-link';
+import type { SettingsStackNavigationProp } from '@mobile/shared/navigation/types';
 import { List, Screen, Text } from '@mobile/shared/ui';
 
 import { AccountSection } from '../AccountSection';

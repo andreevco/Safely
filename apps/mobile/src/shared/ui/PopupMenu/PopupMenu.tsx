@@ -1,7 +1,8 @@
 import { impactAsync, ImpactFeedbackStyle } from 'expo-haptics';
 import { forwardRef, useImperativeHandle } from 'react';
 import { Pressable, useWindowDimensions } from 'react-native';
-import Animated, { SharedValue } from 'react-native-reanimated';
+import type { SharedValue } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 import { StyleSheet } from 'react-native-unistyles';
 
 import { Blur } from '@mobile/shared/ui/Blur';

@@ -1,20 +1,22 @@
-import { useNavigation, NavigationProp, StaticScreenProps } from '@react-navigation/native';
+import type { NavigationProp, StaticScreenProps } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { useRef, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { TextInput, View } from 'react-native';
+import type { TextInput } from 'react-native';
+import { View } from 'react-native';
 import PagerView from 'react-native-pager-view';
 
 import { assertUnreachable } from '@safely/core';
+import type { SendFormResult } from '@safely/ux';
 import {
     useSendForm,
-    SendFormResult,
     useNumberFormatter,
     useActiveFiat,
     useAppContext,
     type SendFormView
 } from '@safely/ux';
 
-import { SendConfirmationParams } from '@mobile/screens/ConfirmationScreen';
+import type { SendConfirmationParams } from '@mobile/screens/ConfirmationScreen';
 import { Button, Screen, Text } from '@mobile/shared/ui';
 import { ArrowLeft16, Icon } from '@mobile/shared/ui/Icon';
 
@@ -24,7 +26,7 @@ import { RecipientPagerPage } from './RecipientPagerPage';
 import { styles } from './SendAssetModal.styles';
 import { useLastSeen } from './useLastSeen';
 import { useResetSubmittedOnFocus } from './useResetSubmittedOnFocus';
-import { MaskedInputRef } from '../../../modules/safely-masked-input/src';
+import type { MaskedInputRef } from '../../../modules/safely-masked-input/src';
 
 type SendStackParamList = {
     SendAssetModal: {

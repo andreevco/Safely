@@ -1,7 +1,8 @@
 import { Directory, File, Paths } from 'expo-file-system';
 import { createMMKV } from 'react-native-mmkv';
 
-import { ILoggerTransport, LogEntry, Logger, LogLevel } from '@safely/sync';
+import type { ILoggerTransport, LogEntry, Logger } from '@safely/sync';
+import { LogLevel } from '@safely/sync';
 
 import { ACCOUNT_FILE_PATTERN } from './naming';
 

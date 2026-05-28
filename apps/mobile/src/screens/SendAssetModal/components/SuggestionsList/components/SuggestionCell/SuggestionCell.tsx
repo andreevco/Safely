@@ -1,4 +1,4 @@
-import { ContactSuggestion, PortfolioSuggestion } from '@safely/ux';
+import type { ContactSuggestion, PortfolioSuggestion } from '@safely/ux';
 
 import { ContactCell } from '@mobile/entities/contact';
 import { PortfolioName } from '@mobile/entities/portfolio';

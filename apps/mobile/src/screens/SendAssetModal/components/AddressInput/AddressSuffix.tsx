@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Platform, Text, View } from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';
 
-import { ContactMeta, PortfolioMeta } from '@safely/core';
+import type { ContactMeta, PortfolioMeta } from '@safely/core';
 
 import { ContactName } from '@mobile/entities/contact';
 import { PortfolioName } from '@mobile/entities/portfolio';

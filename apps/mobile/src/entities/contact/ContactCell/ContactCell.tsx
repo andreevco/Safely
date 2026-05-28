@@ -1,9 +1,9 @@
 import { useCallback } from 'react';
 
-import { ContactMeta } from '@safely/core';
+import type { ContactMeta } from '@safely/core';
 
 import { Cell, Icon, Human16 } from '@mobile/shared/ui';
-import { CellContainerProps } from '@mobile/shared/ui/Cell/Cell';
+import type { CellContainerProps } from '@mobile/shared/ui/Cell/Cell';
 
 type ContactCellProps = CellContainerProps & {
     meta: ContactMeta;

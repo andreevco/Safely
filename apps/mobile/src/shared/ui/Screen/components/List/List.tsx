@@ -1,5 +1,6 @@
-import { FlashList, FlashListProps } from '@shopify/flash-list';
-import { FlashListRef } from '@shopify/flash-list/dist/FlashListRef';
+import type { FlashListProps } from '@shopify/flash-list';
+import { FlashList } from '@shopify/flash-list';
+import type { FlashListRef } from '@shopify/flash-list/dist/FlashListRef';
 import React from 'react';
 import { StyleSheet } from 'react-native-unistyles';
 

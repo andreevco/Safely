@@ -1,4 +1,5 @@
-import React, { FC, useCallback, useEffect, useMemo } from 'react';
+import type { FC } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Platform, View } from 'react-native';
 

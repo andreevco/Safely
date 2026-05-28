@@ -1,10 +1,11 @@
-import { ComponentProps } from 'react';
+import type { ComponentProps } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { PortfolioMeta } from '@safely/core';
+import type { PortfolioMeta } from '@safely/core';
 
-import { Badge, Text, TextProps } from '@mobile/shared/ui';
+import type { TextProps } from '@mobile/shared/ui';
+import { Badge, Text } from '@mobile/shared/ui';
 
 import { styles } from './PortfolioName.styles';
 

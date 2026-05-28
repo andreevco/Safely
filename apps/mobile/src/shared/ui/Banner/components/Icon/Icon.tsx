@@ -1,4 +1,5 @@
-import { Icon as UIIcon, IconProps } from '@mobile/shared/ui/Icon';
+import type { IconProps } from '@mobile/shared/ui/Icon';
+import { Icon as UIIcon } from '@mobile/shared/ui/Icon';
 import { TouchableOpacity } from '@mobile/shared/ui/TouchableOpacity';
 
 import { styles } from './Icon.styles';

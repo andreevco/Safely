@@ -1,7 +1,7 @@
 import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 
-import { Logger } from '@safely/sync';
+import type { Logger } from '@safely/sync';
 
 export async function shareAggregatedLogs(opts: {
     logger: Logger;

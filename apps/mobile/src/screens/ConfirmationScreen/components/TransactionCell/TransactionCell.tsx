@@ -1,13 +1,9 @@
-import {
-    StyleProp,
-    TextStyle,
-    TouchableHighlight,
-    TouchableHighlightProps,
-    View
-} from 'react-native';
+import type { StyleProp, TextStyle, TouchableHighlightProps } from 'react-native';
+import { TouchableHighlight, View } from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';
 
-import { Text, TextProps } from '@mobile/shared/ui';
+import type { TextProps } from '@mobile/shared/ui';
+import { Text } from '@mobile/shared/ui';
 
 import { styles } from './TransactionCell.styles';
 

@@ -1,6 +1,6 @@
 import { useScrollToTop } from '@react-navigation/native';
 import { useRef } from 'react';
-import { ScrollView } from 'react-native';
+import type { ScrollView } from 'react-native';
 
 import { useHasPortfolio, useTrackWalletOpen } from '@safely/ux';
 

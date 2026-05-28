@@ -1,17 +1,11 @@
 import { CommonActions } from '@react-navigation/native';
-import {
-    createContext,
-    FC,
-    PropsWithChildren,
-    useCallback,
-    useContext,
-    useEffect,
-    useRef,
-    useState
-} from 'react';
+import type { FC, PropsWithChildren } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 
 import { useAppState } from '@safely/ux';
 
+// TODO: IMPORT find a way to navigate without this ref
+// eslint-disable-next-line boundaries/element-types
 import { navigationRef } from '@mobile/app/navigation/navigationRef';
 
 import { useLockScreenQuery } from './useLockScreen';

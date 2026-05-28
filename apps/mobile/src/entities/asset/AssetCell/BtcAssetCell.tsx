@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { type ViewStyle } from 'react-native';
+import type { ViewStyle } from 'react-native';
 
-import { type CryptoAssetAmount, type CryptoFiatRate } from '@safely/core';
+import type { CryptoAssetAmount, CryptoFiatRate } from '@safely/core';
 import {
     useActiveBtcWalletUtxo,
     useLastBtcTransactionTimestamp,

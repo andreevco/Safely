@@ -1,5 +1,5 @@
-import { TouchableOpacityProps } from 'react-native';
-import { UnistylesVariants } from 'react-native-unistyles';
+import type { TouchableOpacityProps } from 'react-native';
+import type { UnistylesVariants } from 'react-native-unistyles';
 
 import { TouchableOpacity } from '@mobile/shared/ui/TouchableOpacity';
 

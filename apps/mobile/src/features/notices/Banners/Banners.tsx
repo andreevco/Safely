@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { View } from 'react-native';
 
-import { BootConfig } from '@safely/core';
+import type { BootConfig } from '@safely/core';
 import {
     useBootConfig,
     useDismissBanner,
@@ -10,7 +10,7 @@ import {
 } from '@safely/ux';
 
 import { Banner, InformationCircle28, Xmark16 } from '@mobile/shared/ui';
-import { IconProps } from '@mobile/shared/ui/Icon';
+import type { IconProps } from '@mobile/shared/ui/Icon';
 
 import { styles } from './Banners.styles';
 

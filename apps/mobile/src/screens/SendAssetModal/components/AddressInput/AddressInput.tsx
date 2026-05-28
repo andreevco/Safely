@@ -1,4 +1,5 @@
-import { Ref, useCallback, useRef, useState } from 'react';
+import type { Ref } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Keyboard, Pressable, TextInput, View } from 'react-native';
 import Animated, {
@@ -12,7 +13,8 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useUnistyles } from 'react-native-unistyles';
 
-import { ContactMeta, PortfolioMeta, ellipsisMiddle } from '@safely/core';
+import type { ContactMeta, PortfolioMeta } from '@safely/core';
+import { ellipsisMiddle } from '@safely/core';
 import { SuggestionSource, useScanQrScheme } from '@safely/ux';
 
 import { ContactName } from '@mobile/entities/contact';

@@ -29,3 +29,17 @@ export type AddWalletStackNavigationProp<
 
 export type SendStackNavigationProp<T extends keyof SendStackParamList = keyof SendStackParamList> =
     NativeStackNavigationProp<SendStackParamList, T>;
+
+declare global {
+    namespace ReactNavigation {
+        // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+        interface RootParamList extends RootStackParamList {}
+    }
+
+    namespace MobileNavigation {
+        type Settings = SettingsStackParamList;
+        type AddWallet = AddWalletStackParamList;
+        type Send = SendStackParamList;
+        type Tabs = TabsParamList;
+    }
+}

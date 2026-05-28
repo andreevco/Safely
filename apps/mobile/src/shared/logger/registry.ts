@@ -1,5 +1,5 @@
-import { Logger, LoggerLifecycleContext } from '@safely/sync';
-import { ILoggerRegistry } from '@safely/ux';
+import type { Logger, LoggerLifecycleContext } from '@safely/sync';
+import type { ILoggerRegistry } from '@safely/ux';
 
 import { buildLogger } from './build-logger';
 import { FileTransport } from './file-transport';

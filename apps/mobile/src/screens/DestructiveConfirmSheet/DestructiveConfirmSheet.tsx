@@ -1,4 +1,4 @@
-import { StaticScreenProps } from '@react-navigation/native';
+import type { StaticScreenProps } from '@react-navigation/native';
 import Color from 'color';
 import { View } from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';

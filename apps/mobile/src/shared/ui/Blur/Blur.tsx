@@ -1,10 +1,12 @@
-import { BlurView, BlurViewProps } from 'expo-blur';
-import { Platform, StyleProp, ViewProps, ViewStyle } from 'react-native';
+import type { BlurViewProps } from 'expo-blur';
+import { BlurView } from 'expo-blur';
+import type { StyleProp, ViewProps, ViewStyle } from 'react-native';
+import { Platform } from 'react-native';
 import Animated from 'react-native-reanimated';
 
-/* 
-    As noted in expo-blur docs, dimezisBlurView may decrease 
-    performance on Androids with < 30 SDK. 
+/*
+    As noted in expo-blur docs, dimezisBlurView may decrease
+    performance on Androids with < 30 SDK.
     So it's better to fallback on these devices to plain View
     https://docs.expo.dev/versions/latest/sdk/blur-view/
 */

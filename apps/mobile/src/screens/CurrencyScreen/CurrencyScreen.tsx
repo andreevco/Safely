@@ -3,10 +3,10 @@ import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { FiatAsset } from '@safely/core';
+import type { FiatAsset } from '@safely/core';
 import { useActiveFiat, useAvailableFiats, useSetActiveFiat } from '@safely/ux';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import { Cell, List, Screen, Text } from '@mobile/shared/ui';
 import { Checkmark28, Icon } from '@mobile/shared/ui/Icon';
 

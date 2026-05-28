@@ -1,6 +1,7 @@
 import { Children, cloneElement, isValidElement, useMemo } from 'react';
-import { View, ViewProps } from 'react-native';
-import { UnistylesVariants } from 'react-native-unistyles';
+import type { ViewProps } from 'react-native';
+import { View } from 'react-native';
+import type { UnistylesVariants } from 'react-native-unistyles';
 
 import { styles } from './Group.styles';
 

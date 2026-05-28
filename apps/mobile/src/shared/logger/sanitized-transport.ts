@@ -1,5 +1,5 @@
 import { filterSensitiveData } from '@safely/core';
-import { ILoggerTransport, LogEntry, LoggerLifecycleContext } from '@safely/sync';
+import type { ILoggerTransport, LogEntry, LoggerLifecycleContext } from '@safely/sync';
 
 export class SanitizedTransport implements ILoggerTransport {
     constructor(private readonly inner: ILoggerTransport) {}

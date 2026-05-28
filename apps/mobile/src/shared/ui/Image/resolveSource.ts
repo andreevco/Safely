@@ -1,4 +1,4 @@
-import { ImageProps } from 'expo-image';
+import type { ImageProps } from 'expo-image';
 
 import BtcLogo from '@mobile/shared/resources/images/btc-logo.svg';
 

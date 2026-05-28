@@ -1,8 +1,10 @@
 import { impactAsync, ImpactFeedbackStyle } from 'expo-haptics';
 import { useCallback, useMemo, useState } from 'react';
-import { SharedValue, useSharedValue } from 'react-native-reanimated';
+import type { SharedValue } from 'react-native-reanimated';
+import { useSharedValue } from 'react-native-reanimated';
 
-import { PASSCODE_DIGITS, PasscodeDigits } from '@mobile/shared/constants';
+import type { PasscodeDigits } from '@mobile/shared/constants';
+import { PASSCODE_DIGITS } from '@mobile/shared/constants';
 
 export interface PasscodeState {
     digitsAmount: PasscodeDigits;

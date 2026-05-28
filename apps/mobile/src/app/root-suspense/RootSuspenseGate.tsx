@@ -1,4 +1,5 @@
-import { PropsWithChildren, ReactNode, Suspense } from 'react';
+import type { PropsWithChildren, ReactNode } from 'react';
+import { Suspense } from 'react';
 
 import { RootSuspenseDependencies } from './RootSuspenseDependencies';
 

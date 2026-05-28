@@ -1,6 +1,7 @@
-import { createContext, FC, PropsWithChildren, useContext, useState } from 'react';
+import type { FC, PropsWithChildren } from 'react';
+import { createContext, useContext, useState } from 'react';
 
-import { ToastService } from '@safely/ux';
+import type { ToastService } from '@safely/ux';
 
 export const ToastServiceContext = createContext<
     { service: ToastService; setService: (service: ToastService) => void } | undefined

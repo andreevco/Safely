@@ -12,16 +12,9 @@ import {
 } from '@safely/ux';
 import { useDateFormatter } from '@safely/ux';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
-import {
-    Badge,
-    DeviceLinkCheckmark96,
-    Icon,
-    PopupMenuRef,
-    Screen,
-    Text,
-    Button
-} from '@mobile/shared/ui';
+import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
+import type { PopupMenuRef } from '@mobile/shared/ui';
+import { Badge, DeviceLinkCheckmark96, Icon, Screen, Text, Button } from '@mobile/shared/ui';
 
 import { styles } from './AccountProtectedModal.styles';
 

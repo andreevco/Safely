@@ -1,9 +1,10 @@
-import { type TFunction } from 'i18next';
+import type { TFunction } from 'i18next';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { GROUP_LABEL, groupByDate, type GroupMeta } from '@safely/core';
-import { DateFormatter, useDateFormatter } from '@safely/ux';
+import type { DateFormatter } from '@safely/ux';
+import { useDateFormatter } from '@safely/ux';
 
 export const getGroupKey = (meta: GroupMeta): string => JSON.stringify(meta);
 

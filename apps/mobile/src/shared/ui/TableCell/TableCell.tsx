@@ -4,7 +4,8 @@ import { notificationAsync, NotificationFeedbackType } from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { TouchableOpacity, View, ViewStyle } from 'react-native';
+import type { ViewStyle } from 'react-native';
+import { TouchableOpacity, View } from 'react-native';
 import Animated, {
     Easing,
     useAnimatedStyle,

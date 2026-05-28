@@ -1,6 +1,6 @@
-import { ViewProps } from 'react-native';
+import type { ViewProps } from 'react-native';
+import type { SharedValue } from 'react-native-reanimated';
 import Animated, {
-    SharedValue,
     useAnimatedReaction,
     useAnimatedStyle,
     useSharedValue,

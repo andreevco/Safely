@@ -1,6 +1,6 @@
 import { type FlashListProps, FlashList } from '@shopify/flash-list';
 
-import { Contact } from '@safely/core';
+import type { Contact } from '@safely/core';
 
 import { ContactCell } from '@mobile/entities/contact';
 
