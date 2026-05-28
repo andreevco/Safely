@@ -10,6 +10,7 @@ import { Logger } from '../src/logger/logger';
 import { ReconnectOnboarding } from '../src/onboarding/reconnect/reconnect-onboarding';
 import type { ISecretEncryptor } from '../src/secret-encryptor';
 import type { SyncContainer } from '../src/sync-container';
+import { SyncMachineRunResult } from '../src/sync-machine/run-result';
 import type { ISyncProvider } from '../src/sync-provider/I-sync-provider';
 import type { OnlineSyncProvider } from '../src/sync-provider/online-sync-provider';
 import { SyncStatus, SyncStatusManager } from '../src/sync-provider/sync-status';
@@ -92,14 +93,19 @@ describe('SyncAccount reconnect onboarding', () => {
         await expect(account.reconnectToAccount()).resolves.not.toBe(connector);
     });
 
-    it('retries when reconnect status waits time out', async () => {
+    it('waits for the current sync machine run result instead of current deleted status', async () => {
         vi.useFakeTimers();
 
         const syncStatusManager = new SyncStatusManager(SyncStatus.DEVICE_DELETED);
         const restart = vi.fn();
+        const waitForCurrentRunResult = vi.fn(async () => {
+            await new Promise(resolve => setTimeout(resolve, 5000));
+            return SyncMachineRunResult.SYNCHRONIZED;
+        });
         const syncProvider = {
             syncStatusManager,
-            restart
+            restart,
+            waitForCurrentRunResult
         } as unknown as OnlineSyncProvider<TestLatest, TestRest>;
         const info = vi.fn();
         const logger = { info } as unknown as Logger;
@@ -109,11 +115,11 @@ describe('SyncAccount reconnect onboarding', () => {
 
         await vi.advanceTimersByTimeAsync(2000);
 
-        expect(restart).toHaveBeenCalledTimes(2);
-        expect(info).toHaveBeenCalledWith('Trying to reconnect, attempt', 1);
+        expect(restart).toHaveBeenCalledTimes(1);
+        expect(waitForCurrentRunResult).toHaveBeenCalledTimes(1);
+        expect(info).not.toHaveBeenCalled();
 
-        syncStatusManager.setStatus(SyncStatus.SYNCHRONIZED);
-        await vi.advanceTimersByTimeAsync(1000);
+        await vi.advanceTimersByTimeAsync(3000);
 
         await expect(promise).resolves.toBeUndefined();
     });
@@ -136,6 +142,7 @@ function createDeletedAccount(): {
         onError: vi.fn(() => () => undefined),
         dispose: vi.fn(),
         restart: vi.fn(),
+        waitForCurrentRunResult: vi.fn(() => new Promise(() => undefined)),
         triggerSync: vi.fn()
     } as unknown as ISyncProvider<TestProviderSchema>;
     const container = {
