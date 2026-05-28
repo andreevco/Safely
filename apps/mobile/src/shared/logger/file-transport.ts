@@ -67,6 +67,11 @@ export class FileTransport implements ILoggerTransport {
         return this.flushing;
     }
 
+    public erase(): void {
+        const file = new File(Paths.cache, FILENAME);
+        if (file.exists) file.delete();
+    }
+
     public async share(): Promise<void> {
         await this.flush();
 
