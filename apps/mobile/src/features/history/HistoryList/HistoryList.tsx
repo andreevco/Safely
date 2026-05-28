@@ -74,7 +74,8 @@ export const HistoryList = (props: HistoryListProps) => {
         show: showBubble
     } = useNewTransactionsBubble({
         listRef,
-        topThreshold: windowHeight * 0.2
+        // cell
+        topThreshold: 44
     });
 
     const { mutate: runIntervalRefetch } = useMutation({
@@ -178,6 +179,7 @@ export const HistoryList = (props: HistoryListProps) => {
                 keyExtractor={item => item.key}
                 getItemType={getItemType}
                 drawDistance={windowHeight * 4}
+                maintainVisibleContentPosition={{ autoscrollToTopThreshold: 0 }}
                 onEndReached={fetchNextPage}
                 onEndReachedThreshold={0.5}
                 ItemSeparatorComponent={renderSeparator}

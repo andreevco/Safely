@@ -576,7 +576,8 @@
     },
     "safelyBeta": {
         "title": "Safely",
-        "subtitle": "Beta · {{version}}"
+        "subtitle": "Beta · {{version}}",
+        "versionCopied": "Версия скопирована"
     },
     "dateGroups": {
         "pending": "Обрабатывается",

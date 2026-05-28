@@ -3,12 +3,15 @@ export type WaitForChangeOptions = {
     predicate: () => boolean | Promise<boolean>;
     timeoutMs: number;
     timeoutError: () => Error;
+    signal?: AbortSignal;
+    abortError?: () => Error;
 };
 
 export async function waitForChange(opts: WaitForChangeOptions): Promise<void> {
     await new Promise<void>((resolve, reject) => {
         let done = false;
         let unsubscribe: (() => void) | undefined;
+        const abortError = opts.abortError ?? (() => new Error('Wait for change aborted'));
 
         const finish = (f: () => void) => {
             if (done) {
@@ -17,8 +20,13 @@ export async function waitForChange(opts: WaitForChangeOptions): Promise<void> {
 
             done = true;
             clearTimeout(timeout);
+            opts.signal?.removeEventListener('abort', onAbort);
             unsubscribe?.();
             f();
+        };
+
+        const onAbort = () => {
+            finish(() => reject(abortError()));
         };
 
         const check = () => {
@@ -35,6 +43,13 @@ export async function waitForChange(opts: WaitForChangeOptions): Promise<void> {
         const timeout = setTimeout(() => {
             finish(() => reject(opts.timeoutError()));
         }, opts.timeoutMs);
+
+        if (opts.signal?.aborted) {
+            onAbort();
+            return;
+        }
+
+        opts.signal?.addEventListener('abort', onAbort, { once: true });
 
         try {
             unsubscribe = opts.subscribe(check);

@@ -9,6 +9,8 @@ import { SyncStatus, SyncStatusManager } from './sync-status';
 import type { SyncContainer } from '../sync-container';
 import type { SyncMachine } from '../sync-machine/machine';
 import { createSyncMachine } from '../sync-machine/machine';
+import type { SyncMachineRunResult } from '../sync-machine/run-result';
+import { waitForSyncMachineRunResult } from '../sync-machine/run-result';
 
 export class OnlineSyncProvider<Latest extends StorageVersion, Rest>
     extends OfflineSyncProvider<Latest, Rest>
@@ -79,6 +81,18 @@ export class OnlineSyncProvider<Latest extends StorageVersion, Rest>
         }
         this.syncMachine = machineFromContainer(this.container, this.syncStatusManager);
         this.syncMachine.start();
+    }
+
+    public async waitForCurrentRunResult(opts: {
+        timeout: number;
+        signal?: AbortSignal;
+    }): Promise<SyncMachineRunResult> {
+        return await waitForSyncMachineRunResult({
+            syncMachine: this.syncMachine,
+            syncStatusManager: this.syncStatusManager,
+            timeout: opts.timeout,
+            signal: opts.signal
+        });
     }
 
     public async transaction(f: (draft: Draft<z.output<NewOf<Latest>>>) => void): Promise<void> {
