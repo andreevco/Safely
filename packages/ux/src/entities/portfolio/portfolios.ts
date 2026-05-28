@@ -250,10 +250,7 @@ export function useActivePortfolioEntitiesIdsQuery<TData = SActivePortfolioSchem
 
             const portfolios = activeAccount.syncProvider.get('portfolios');
 
-            if (portfolios.length === 0) {
-                await set(null);
-                return null;
-            }
+            if (portfolios.length === 0) return stored;
 
             const storedIsValid =
                 stored !== null &&
