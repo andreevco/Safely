@@ -16,7 +16,7 @@ export function AnalyticsProvider(props: { children: ReactNode }) {
     const service = useMemo(
         () =>
             new AnalyticsService({
-                logger: appContext.loggerRegistry.systemLogger.child('analytics'),
+                logger: appContext.logger.child('analytics'),
                 eventsApi: new EventsApi({
                     baseUrl: bootConfig.telemetry.analytics.url,
                     projectToken: bootConfig.telemetry.analytics.token
@@ -27,7 +27,7 @@ export function AnalyticsProvider(props: { children: ReactNode }) {
                 appVersion: appContext.version
             }),
         [
-            appContext.loggerRegistry.systemLogger,
+            appContext.logger,
             appContext.environment,
             appContext.build,
             appContext.version,

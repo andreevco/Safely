@@ -10,7 +10,6 @@ export * from './synced-device';
 export * from './explorer';
 export * from './security';
 export * from './btc-blockchain';
-export * from './logger';
 export * from './format';
 export * from './query-core';
 export * from './errors';
