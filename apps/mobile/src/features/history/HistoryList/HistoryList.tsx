@@ -179,6 +179,7 @@ export const HistoryList = (props: HistoryListProps) => {
                 keyExtractor={item => item.key}
                 getItemType={getItemType}
                 drawDistance={windowHeight * 4}
+                maintainVisibleContentPosition={{ autoscrollToTopThreshold: 0 }}
                 onEndReached={fetchNextPage}
                 onEndReachedThreshold={0.5}
                 ItemSeparatorComponent={renderSeparator}
