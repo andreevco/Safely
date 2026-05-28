@@ -4,7 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState } f
 
 import { useAppState } from '@safely/ux';
 
-// TODO: find a way to navigate without this ref
+// TODO: IMPORT find a way to navigate without this ref
 // eslint-disable-next-line boundaries/element-types
 import { navigationRef } from '@mobile/app/navigation/navigationRef';
 

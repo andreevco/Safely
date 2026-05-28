@@ -3,7 +3,7 @@ import { View } from 'react-native';
 
 import { useAppContext } from '@safely/ux';
 
-// TODO Find a way to keep on the app level
+// TODO IMPORT Find a way to keep on the app level
 // eslint-disable-next-line boundaries/element-types
 import { mobileLayerSynchronousDevToken } from '@mobile/app/storage';
 import { Button, Input, Screen, Text } from '@mobile/shared/ui';

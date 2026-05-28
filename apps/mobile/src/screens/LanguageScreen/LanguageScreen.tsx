@@ -3,7 +3,8 @@ import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-// eslint-disable-next-line boundaries/element-types -- TODO: route locale write through shared/i18n setter instead of touching raw storage
+// TODO IMPORT find a way not to touch raw storage
+// eslint-disable-next-line boundaries/element-types
 import { mobileLayerSynchronousLocale } from '@mobile/app/storage';
 import type { LanguageCode } from '@mobile/shared/i18n';
 import { availableLanguages } from '@mobile/shared/i18n';
