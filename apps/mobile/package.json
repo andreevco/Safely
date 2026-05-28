@@ -29,6 +29,7 @@
     "@safely/core": "workspace:*",
     "@safely/sync": "workspace:*",
     "@safely/ux": "workspace:*",
+    "@safely/xhr-event-source": "workspace:*",
     "@shopify/flash-list": "2.3.1",
     "@shopify/react-native-skia": "^2.4.14",
     "@tanstack/react-query": "catalog:",
