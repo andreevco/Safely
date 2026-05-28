@@ -1,8 +1,8 @@
-import { FC } from 'react';
+import type { FC } from 'react';
 import { View } from 'react-native';
 
 import { ellipsisMiddle } from '@safely/core';
-import { RecipientMeta } from '@safely/ux';
+import type { RecipientMeta } from '@safely/ux';
 
 import { ContactName } from '@mobile/entities/contact';
 import { PortfolioName } from '@mobile/entities/portfolio/PortfolioName';

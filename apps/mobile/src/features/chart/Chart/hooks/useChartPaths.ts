@@ -1,9 +1,10 @@
 import { useMemo } from 'react';
-import { type SharedValue } from 'react-native-reanimated';
+import type { SharedValue } from 'react-native-reanimated';
 
 import { buildChartPath, buildChartPoints, type ChartPoint } from '@mobile/shared/utils/chart';
 
-import { CHART_CONFIG, ChartPeriod } from '../config';
+import type { ChartPeriod } from '../config';
+import { CHART_CONFIG } from '../config';
 
 type UseChartPathsParams = {
     prices: [number, number][];

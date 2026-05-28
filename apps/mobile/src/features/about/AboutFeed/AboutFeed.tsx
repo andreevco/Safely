@@ -2,11 +2,11 @@ import { useScrollToTop } from '@react-navigation/native';
 import { useRef } from 'react';
 import { View } from 'react-native';
 
-import { type AboutPost } from '@safely/core';
+import type { AboutPost } from '@safely/core';
 import { useAboutQuery } from '@safely/ux';
 
 import { Screen, Text } from '@mobile/shared/ui';
-import { ListRef } from '@mobile/shared/ui/Screen/components/List';
+import type { ListRef } from '@mobile/shared/ui/Screen/components/List';
 import { useGroupedRows, getGroupedRowType, type GroupedRow } from '@mobile/shared/utils';
 
 import { styles } from './AboutFeed.styles';

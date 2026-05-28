@@ -1,10 +1,11 @@
 import { impactAsync } from 'expo-haptics';
 import React, { useCallback } from 'react';
-import { LayoutChangeEvent, StyleProp, ViewStyle } from 'react-native';
-import { ComposedGesture, Gesture, GestureType } from 'react-native-gesture-handler';
+import type { LayoutChangeEvent, StyleProp, ViewStyle } from 'react-native';
+import type { ComposedGesture, GestureType } from 'react-native-gesture-handler';
+import { Gesture } from 'react-native-gesture-handler';
+import type { SharedValue } from 'react-native-reanimated';
 import Animated, {
     Easing,
-    SharedValue,
     useAnimatedStyle,
     useDerivedValue,
     useSharedValue,

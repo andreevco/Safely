@@ -2,14 +2,16 @@ import { useNavigation } from '@react-navigation/native';
 import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
-import Animated, { interpolate, SharedValue, useAnimatedStyle } from 'react-native-reanimated';
+import type { SharedValue } from 'react-native-reanimated';
+import Animated, { interpolate, useAnimatedStyle } from 'react-native-reanimated';
 
-import { delay, Portfolio } from '@safely/core';
+import type { Portfolio } from '@safely/core';
+import { delay } from '@safely/core';
 import { useActivePortfolio, usePortfolios } from '@safely/ux';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { PortfolioName } from '@mobile/entities/portfolio';
 import { PortfoliosList } from '@mobile/features/portfolio/PortfoliosList';
+import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import {
     Button,
     ChevronDown16,
@@ -20,7 +22,7 @@ import {
     Text,
     Screen
 } from '@mobile/shared/ui';
-import { PopupMenuRef } from '@mobile/shared/ui/PopupMenu';
+import type { PopupMenuRef } from '@mobile/shared/ui/PopupMenu';
 
 import { styles } from './CompactAccountSelector.styles';
 

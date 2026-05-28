@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 
-import { BTC_ASSET, NumberFormatter } from '@safely/core';
+import type { NumberFormatter } from '@safely/core';
+import { BTC_ASSET } from '@safely/core';
 import { SendFormError, type AmountView } from '@safely/ux';
 
 interface UseAmountStepViewParams {

@@ -2,7 +2,7 @@ import { impactAsync, ImpactFeedbackStyle } from 'expo-haptics';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 
-import { Portfolio } from '@safely/core';
+import type { Portfolio } from '@safely/core';
 import { useReorderPortfolios, useSetActivePortfolio } from '@safely/ux';
 
 import { DraggablePortfolio } from './components';

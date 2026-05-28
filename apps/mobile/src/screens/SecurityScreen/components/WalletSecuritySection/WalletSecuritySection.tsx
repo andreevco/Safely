@@ -4,8 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { PortfolioType } from '@safely/core';
 import { useActivePortfolio, useDateFormatter } from '@safely/ux';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { PortfolioName } from '@mobile/entities/portfolio';
+import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import { Cell, List, Text } from '@mobile/shared/ui';
 import { Icon, Switch16 } from '@mobile/shared/ui/Icon';
 

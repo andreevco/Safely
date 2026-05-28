@@ -2,7 +2,8 @@ import { File, Paths } from 'expo-file-system';
 import { shareAsync } from 'expo-sharing';
 import { createMMKV } from 'react-native-mmkv';
 
-import { ILoggerTransport, LogEntry, LogLevel } from '@safely/sync';
+import type { ILoggerTransport, LogEntry } from '@safely/sync';
+import { LogLevel } from '@safely/sync';
 
 const MMKV_ID = 'logger-buffer';
 const FILENAME = 'safely.ndjson';

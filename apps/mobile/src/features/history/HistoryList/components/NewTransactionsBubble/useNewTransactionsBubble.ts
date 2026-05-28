@@ -1,8 +1,8 @@
 import { type RefObject, useCallback } from 'react';
-import { type NativeScrollEvent, type NativeSyntheticEvent } from 'react-native';
+import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 import { type SharedValue, useSharedValue } from 'react-native-reanimated';
 
-import { type ListRef } from '@mobile/shared/ui/Screen/components/List';
+import type { ListRef } from '@mobile/shared/ui/Screen/components/List';
 
 export enum NewTransactionsBubbleMode {
     HIDDEN = 0,

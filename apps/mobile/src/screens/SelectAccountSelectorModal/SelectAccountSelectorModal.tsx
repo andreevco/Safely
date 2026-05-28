@@ -11,7 +11,7 @@ import {
     useSetActiveAccount
 } from '@safely/ux';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
+import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import { Button, Cell, Checkmark28, Icon, List, Screen } from '@mobile/shared/ui';
 
 import { styles } from './SelectAccountSelectorModal.styles';

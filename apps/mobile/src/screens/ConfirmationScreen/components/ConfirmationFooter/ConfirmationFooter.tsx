@@ -7,7 +7,7 @@ import { useParseError } from '@safely/ux';
 import { Button, SlideButton, Text } from '@mobile/shared/ui';
 
 import { styles } from './ConfirmationFooter.styles';
-import { ConfirmationState } from '../../ConfirmationScreen.types';
+import type { ConfirmationState } from '../../ConfirmationScreen.types';
 
 interface Props {
     onSend: () => void;

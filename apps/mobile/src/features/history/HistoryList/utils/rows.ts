@@ -1,6 +1,13 @@
-import { type TFunction } from 'i18next';
+import type { TFunction } from 'i18next';
 
-import { ContactMeta, PortfolioMeta, ellipsisMiddle } from '@safely/core';
+import { ellipsisMiddle } from '@safely/core';
+import type {
+    useActualBtcBlockNumber,
+    useContacts,
+    useNumberFormatter,
+    usePortfolios,
+    useRate
+} from '@safely/ux';
 import {
     type ActivityItemsDatedGroupMeta,
     type BtcActivityItem,
@@ -8,13 +15,10 @@ import {
     ACTIVITY_GROUP_LABEL,
     findContactMetaByAddress,
     findPortfolioMetaByAddress,
-    getBtcTransactionDisplayStatus,
-    useActualBtcBlockNumber,
-    useContacts,
-    useNumberFormatter,
-    usePortfolios,
-    useRate
+    getBtcTransactionDisplayStatus
 } from '@safely/ux';
+
+import type { ActivityItemProps } from '@mobile/entities/activity';
 
 export type HistoryHeaderRow = {
     key: string;
@@ -22,22 +26,9 @@ export type HistoryHeaderRow = {
     title: string;
 };
 
-export type ActivityRow = {
+export type ActivityRow = ActivityItemProps & {
     key: string;
     type: 'activity';
-    activity: BtcActivityItem;
-    title: string;
-    amountSign: '+' | '−';
-    formattedValue: string;
-    valueColor: 'primary' | 'accentGreen';
-    formattedFiat: string | null;
-    timestampLabel: string | null;
-    background: 'tertiary' | 'secondary';
-    counterparty:
-        | { kind: 'contact'; meta: ContactMeta }
-        | { kind: 'portfolio'; meta: PortfolioMeta }
-        | { kind: 'address'; label: string };
-    onNavigateToTransaction: (activity: BtcActivityItem) => void;
 };
 
 export type HistoryRowItem = HistoryHeaderRow | ActivityRow;

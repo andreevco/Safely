@@ -1,10 +1,11 @@
-import { RefObject } from 'react';
+import type { RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { SyncAccount, useAccountMeta, useAccountStoreSlot } from '@safely/ux';
+import type { SyncAccount } from '@safely/ux';
+import { useAccountMeta, useAccountStoreSlot } from '@safely/ux';
 
 import { Button, Cell, Checkmark28, Icon, List, PopupMenu } from '@mobile/shared/ui';
-import { PopupMenuRef } from '@mobile/shared/ui/PopupMenu';
+import type { PopupMenuRef } from '@mobile/shared/ui/PopupMenu';
 
 import { AccountCell } from './AccountCell';
 import { AccountSelectorTouchable } from './AccountSelectorTouchable';

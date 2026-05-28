@@ -1,4 +1,5 @@
-import { ImageProps, Image as ExpoImage } from 'expo-image';
+import type { ImageProps } from 'expo-image';
+import { Image as ExpoImage } from 'expo-image';
 
 import { resolveSource } from './resolveSource';
 

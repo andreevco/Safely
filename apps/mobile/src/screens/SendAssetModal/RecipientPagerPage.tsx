@@ -1,5 +1,6 @@
-import { RefObject } from 'react';
-import { TextInput, View } from 'react-native';
+import type { RefObject } from 'react';
+import type { TextInput } from 'react-native';
+import { View } from 'react-native';
 
 import type { SendFormView } from '@safely/ux';
 

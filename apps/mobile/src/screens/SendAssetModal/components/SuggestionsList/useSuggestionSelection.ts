@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 
-import { SendSuggestions } from '@safely/ux';
+import type { SendSuggestions } from '@safely/ux';
 
 interface UseSuggestionSelectionParams {
     suggestions: SendSuggestions;

@@ -1,7 +1,9 @@
 import { useMemo } from 'react';
-import { TouchableHighlight, TouchableHighlightProps, View, ViewStyle } from 'react-native';
+import type { TouchableHighlightProps, ViewStyle } from 'react-native';
+import { TouchableHighlight, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
-import { UnistylesVariants, useUnistyles } from 'react-native-unistyles';
+import type { UnistylesVariants } from 'react-native-unistyles';
+import { useUnistyles } from 'react-native-unistyles';
 
 import { styles } from './Cell.styles';
 import { CellContext } from './CellContext';

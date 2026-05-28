@@ -1,5 +1,6 @@
 import React from 'react';
-import { ScrollView, ScrollViewProps } from 'react-native';
+import type { ScrollViewProps } from 'react-native';
+import { ScrollView } from 'react-native';
 
 import { useBottomTabBarHeightSafely } from '@mobile/shared/utils';
 

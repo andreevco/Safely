@@ -2,12 +2,13 @@ import { useMemo } from 'react';
 import { View } from 'react-native';
 import Animated, { useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
 
-import { CryptoAsset, SPACE } from '@safely/core';
+import type { CryptoAsset } from '@safely/core';
+import { SPACE } from '@safely/core';
 import { useActiveFiat, useNumberFormatter, useRate } from '@safely/ux';
 
-import { ChartPeriod } from '@mobile/features/chart/Chart/config';
+import type { ChartPeriod } from '@mobile/features/chart/Chart/config';
 import { usePriceDiff } from '@mobile/features/chart/Chart/hooks';
-import { type PriceDiffValue } from '@mobile/features/chart/Chart/utils/priceDiff';
+import type { PriceDiffValue } from '@mobile/features/chart/Chart/utils/priceDiff';
 import { Text } from '@mobile/shared/ui';
 
 import { styles } from './ChartHeader.styles';

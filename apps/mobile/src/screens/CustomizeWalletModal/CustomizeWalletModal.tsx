@@ -1,14 +1,15 @@
-import { StaticScreenProps } from '@react-navigation/native';
+import type { StaticScreenProps } from '@react-navigation/native';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Keyboard } from 'react-native';
 
-import { Portfolio, PortfolioMeta } from '@safely/core';
+import type { Portfolio, PortfolioMeta } from '@safely/core';
 import { useChangePortfolioMeta, useNewPortfolioFallbackName } from '@safely/ux';
 
 import { Button, Icon, Screen, Xmark16 } from '@mobile/shared/ui';
 
-import { WALLET_EMOJIS, WalletIcon } from './constants';
+import type { WalletIcon } from './constants';
+import { WALLET_EMOJIS } from './constants';
 import { CustomizeWalletContent } from './CustomizeWalletContent';
 import { styles } from './CustomizeWalletModal.styles';
 

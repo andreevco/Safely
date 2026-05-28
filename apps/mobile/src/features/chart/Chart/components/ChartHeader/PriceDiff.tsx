@@ -4,7 +4,7 @@ import Color from 'color';
 import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
-import { PriceDiffValue } from '@mobile/features/chart/Chart/utils/priceDiff';
+import type { PriceDiffValue } from '@mobile/features/chart/Chart/utils/priceDiff';
 import { Text } from '@mobile/shared/ui';
 
 type PriceDiffProps = {

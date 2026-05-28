@@ -1,5 +1,6 @@
 import { forwardRef } from 'react';
-import { TouchableOpacity as RNTouchableOpacity, TouchableOpacityProps, View } from 'react-native';
+import type { TouchableOpacityProps, View } from 'react-native';
+import { TouchableOpacity as RNTouchableOpacity } from 'react-native';
 
 /**
  * TouchableOpacity with configured active opacity

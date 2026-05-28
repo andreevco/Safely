@@ -1,8 +1,9 @@
 import { View } from 'react-native';
 
-import { ContactMeta } from '@safely/core';
+import type { ContactMeta } from '@safely/core';
 
-import { Text, TextProps } from '@mobile/shared/ui';
+import type { TextProps } from '@mobile/shared/ui';
+import { Text } from '@mobile/shared/ui';
 import { Icon, Human16 } from '@mobile/shared/ui';
 
 import { styles } from './ContactName.styles';

@@ -51,6 +51,7 @@ export default [
             boundaries
         },
         settings: {
+            'boundaries/root-path': import.meta.dirname,
             'import/parsers': {
                 '@typescript-eslint/parser': ['.ts', '.tsx']
             },
@@ -59,7 +60,7 @@ export default [
                     project: [
                         './tsconfig.json',
                         './packages/*/tsconfig.json',
-                        './apps/*/*/tsconfig.json'
+                        './apps/*/tsconfig.json'
                     ],
                     alwaysTryTypes: true
                 },
@@ -84,6 +85,31 @@ export default [
                 { type: 'sync', pattern: 'packages/sync/**/*', mode: 'full' },
                 { type: 'sync-storage', pattern: 'packages/sync-storage/**/*', mode: 'full' },
                 { type: 'slottree', pattern: 'packages/slottree/**/*', mode: 'full' },
+                {
+                    type: 'mobile-app',
+                    pattern: 'apps/mobile/src/app/**/*',
+                    mode: 'full'
+                },
+                {
+                    type: 'mobile-screens',
+                    pattern: 'apps/mobile/src/screens/**/*',
+                    mode: 'full'
+                },
+                {
+                    type: 'mobile-features',
+                    pattern: 'apps/mobile/src/features/**/*',
+                    mode: 'full'
+                },
+                {
+                    type: 'mobile-entities',
+                    pattern: 'apps/mobile/src/entities/**/*',
+                    mode: 'full'
+                },
+                {
+                    type: 'mobile-shared',
+                    pattern: 'apps/mobile/src/shared/**/*',
+                    mode: 'full'
+                },
                 { type: 'mobile', pattern: 'apps/mobile/**/*', mode: 'full' },
                 { type: 'web-common', pattern: 'apps/web/common/**/*', mode: 'full' },
                 { type: 'web-browser', pattern: 'apps/web/browser/**/*', mode: 'full' }
@@ -199,6 +225,27 @@ export default [
                         {
                             from: 'ux-entities',
                             disallow: ['ux-features']
+                        },
+                        {
+                            from: 'mobile-shared',
+                            disallow: [
+                                'mobile-entities',
+                                'mobile-features',
+                                'mobile-screens',
+                                'mobile-app'
+                            ]
+                        },
+                        {
+                            from: 'mobile-entities',
+                            disallow: ['mobile-features', 'mobile-screens', 'mobile-app']
+                        },
+                        {
+                            from: 'mobile-features',
+                            disallow: ['mobile-screens', 'mobile-app']
+                        },
+                        {
+                            from: 'mobile-screens',
+                            disallow: ['mobile-app']
                         }
                     ]
                 }
@@ -261,7 +308,9 @@ export default [
             'packages/core/**/*.ts',
             'packages/sync-storage/**/*.ts',
             'packages/sync/**/*.ts',
-            'packages/slottree/**/*.ts'
+            'packages/slottree/**/*.ts',
+            'apps/mobile/src/**/*.ts',
+            'apps/mobile/src/**/*.tsx'
         ],
         rules: {
             'import/no-cycle': ['error', { maxDepth: 10, ignoreExternal: true }],

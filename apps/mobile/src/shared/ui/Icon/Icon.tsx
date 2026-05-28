@@ -1,6 +1,7 @@
-import { Image, ImageStyle } from 'expo-image';
-import { ImageSourcePropType, StyleProp } from 'react-native';
-import { UnistylesVariants } from 'react-native-unistyles';
+import type { ImageStyle } from 'expo-image';
+import { Image } from 'expo-image';
+import type { ImageSourcePropType, StyleProp } from 'react-native';
+import type { UnistylesVariants } from 'react-native-unistyles';
 
 import { styles } from './Icon.styles';
 

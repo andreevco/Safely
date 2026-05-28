@@ -9,7 +9,6 @@ import {
     useSecurityCheck
 } from '@safely/ux';
 
-import { RootStackNavigationProp, SettingsStackNavigationProp } from '@mobile/app/navigation/types';
 import { useLockScreenQuery, useSetLockScreenEnabled } from '@mobile/entities/security';
 import {
     getBiometryTranslationKey,
@@ -17,6 +16,10 @@ import {
     useSetBiometryEnabled
 } from '@mobile/features/biometry';
 import { useLogOutAllConfirmation } from '@mobile/features/settings/useLogOutAllConfirmation';
+import type {
+    RootStackNavigationProp,
+    SettingsStackNavigationProp
+} from '@mobile/shared/navigation/types';
 import { Badge, Cell, List, Screen, Switch } from '@mobile/shared/ui';
 import { ArrowLeft16, Icon } from '@mobile/shared/ui/Icon';
 

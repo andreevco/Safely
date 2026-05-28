@@ -1,4 +1,5 @@
-import { BannerContainer, BannerContainerProps } from './Banner';
+import type { BannerContainerProps } from './Banner';
+import { BannerContainer } from './Banner';
 import { Action, Content, Icon, Text } from './components';
 
 export type BannerProps = BannerContainerProps;
