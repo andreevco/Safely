@@ -68,9 +68,7 @@ export const SecurityScreen = () => {
                         <List.Title>{t('security.groups.account.title')}</List.Title>
                         <List.Group>
                             {linkState === AccountLinkState.UNLINKED && (
-                                <Cell
-                                    onPress={() => navigation.navigate('ReconnectDeviceModal')}
-                                >
+                                <Cell onPress={() => navigation.navigate('ReconnectDeviceModal')}>
                                     <Cell.Content>
                                         <View style={styles.badgeRow}>
                                             <Cell.Title>
