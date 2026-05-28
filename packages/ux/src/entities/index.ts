@@ -11,7 +11,6 @@ export * from './explorer';
 export * from './security';
 export * from './btc-blockchain';
 export * from './format';
-export * from './query-core';
 export * from './errors';
 export * from './linking';
 export * from './dismissed-banners';

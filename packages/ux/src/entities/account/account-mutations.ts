@@ -1,4 +1,4 @@
-import { useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo } from 'react';
 
 import type { ITreeStorage } from '@safely/core';
@@ -22,7 +22,6 @@ import { useClearActiveAccountLocalStorage } from './local-storage';
 import { SecretEncryptor, useAppContext, useSharedUxStorage, useTranslate } from '../../shared';
 import { useErrorToast } from '../errors';
 import { useLoader } from '../loader';
-import { useMutation } from '../query-core';
 import {
     useCurrentDeviceIkPub,
     useGenerateOwnSyncedDeviceMeta,

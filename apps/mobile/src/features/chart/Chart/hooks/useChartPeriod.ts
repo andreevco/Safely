@@ -1,6 +1,6 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { defineQueryKeys, finalKey, useSharedUxStorage, useMutation } from '@safely/ux';
+import { defineQueryKeys, finalKey, useSharedUxStorage } from '@safely/ux';
 
 import { ChartPeriod } from '../config';
 

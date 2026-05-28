@@ -1,6 +1,6 @@
-import { useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { useSuspenseQuery, useMutation } from '@safely/ux';
+import { useSuspenseQuery } from '@safely/ux';
 
 import { useMobileLayerRegularStorage } from '@mobile/shared/storage';
 
