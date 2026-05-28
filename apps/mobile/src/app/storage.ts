@@ -109,7 +109,8 @@ const storagesList = {
         SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY
     ),
     mobileLayerSynchronousLocale: createMMKVSyncSingleStorage('mobile_synchronous_locale'),
-    mobileLayerSynchronousDevToken: createMMKVSyncSingleStorage('mobile_synchronous_dev_token')
+    mobileLayerSynchronousDevToken: createMMKVSyncSingleStorage('mobile_synchronous_dev_token'),
+    loggerBuffer: createMMKVEnumerableStorage('logger-buffer')
 };
 
 export async function CLEAR_ALL_MOBILE_STORAGE_ONLY_APP_LEVEL_USE_DANGER() {
@@ -125,3 +126,5 @@ export const SECURE_ENCRYPTED_MOBILE_STORAGE_ONLY_APP_LEVEL_USE = storagesList.s
 
 export const mobileLayerSynchronousLocale = storagesList.mobileLayerSynchronousLocale;
 export const mobileLayerSynchronousDevToken = storagesList.mobileLayerSynchronousDevToken;
+
+export const LOGGER_BUFFER_MOBILE_STORAGE_ONLY_APP_LEVEL_USE = storagesList.loggerBuffer;

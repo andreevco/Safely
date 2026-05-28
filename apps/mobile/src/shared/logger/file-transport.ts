@@ -1,11 +1,13 @@
 import { File, Paths } from 'expo-file-system';
 import { shareAsync } from 'expo-sharing';
-import { createMMKV } from 'react-native-mmkv';
 
 import type { ILoggerTransport, LogEntry } from '@safely/sync';
 import { LogLevel } from '@safely/sync';
 
-const MMKV_ID = 'logger-buffer';
+// TODO IMPORT Find a way to keep on the app level
+// eslint-disable-next-line boundaries/element-types
+import { LOGGER_BUFFER_MOBILE_STORAGE_ONLY_APP_LEVEL_USE } from '@mobile/app/storage';
+
 const FILENAME = 'safely.ndjson';
 const FLUSH_INTERVAL_MS = 30_000;
 const MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024;
@@ -17,7 +19,7 @@ type FileTransportConfig = {
 };
 
 export class FileTransport implements ILoggerTransport {
-    private readonly mmkv = createMMKV({ id: MMKV_ID });
+    private readonly mmkv = LOGGER_BUFFER_MOBILE_STORAGE_ONLY_APP_LEVEL_USE.mmkv;
     private readonly appVersion: string;
     private readonly build: string;
     private readonly device: string;
