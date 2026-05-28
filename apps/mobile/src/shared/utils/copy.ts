@@ -10,10 +10,10 @@ export const useCopy = () => {
     const { t } = useTranslation();
 
     return useCallback(
-        (text: string) => {
+        (text: string, message?: string) => {
             setStringAsync(text);
             notificationAsync(NotificationFeedbackType.Success);
-            toast({ message: t('actions.copied') });
+            toast({ message: message ?? t('actions.copied') });
         },
         [toast]
     );
