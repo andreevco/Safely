@@ -1,11 +1,10 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
 import { useCallback } from 'react';
 import { Pressable } from 'react-native';
 
 import { useAppContext, useHasPortfolio } from '@safely/ux';
 
 import { DeviceUnlinkedBanner } from '@mobile/features/device-link';
-import type { SettingsStackNavigationProp } from '@mobile/shared/navigation/types';
 import { List, Screen, Text } from '@mobile/shared/ui';
 
 import { AccountSection } from '../AccountSection';
@@ -18,10 +17,12 @@ import { styles } from './SettingsContent.styles';
 export const SettingsContent = () => {
     const { version } = useAppContext();
     const hasPortfolio = useHasPortfolio();
-    const navigation = useNavigation<SettingsStackNavigationProp>();
+    const navigation = useNavigation();
 
     const openDevTools = useCallback(() => {
-        navigation.navigate('DevToolsModal');
+        navigation.navigate('SettingsModal', {
+            screen: 'DevToolsModal'
+        });
     }, [navigation]);
 
     return (

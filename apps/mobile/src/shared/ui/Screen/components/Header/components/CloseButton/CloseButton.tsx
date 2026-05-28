@@ -1,4 +1,4 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
 
 import { useBottomSheetContext } from '@mobile/shared/ui/BottomSheet/context';
 import { Icon, Xmark16 } from '@mobile/shared/ui/Icon';

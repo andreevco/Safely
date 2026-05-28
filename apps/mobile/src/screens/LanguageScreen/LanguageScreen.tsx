@@ -1,4 +1,4 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
@@ -8,7 +8,6 @@ import { View } from 'react-native';
 import { mobileLayerSynchronousLocale } from '@mobile/app/storage';
 import type { LanguageCode } from '@mobile/shared/i18n';
 import { availableLanguages } from '@mobile/shared/i18n';
-import type { SettingsStackNavigationProp } from '@mobile/shared/navigation/types';
 import { Cell, List, Screen, Text } from '@mobile/shared/ui';
 import { ArrowLeft16, Checkmark28, Icon } from '@mobile/shared/ui/Icon';
 
@@ -16,7 +15,7 @@ import { styles } from './LanguageScreen.styles';
 
 export const LanguageScreen = () => {
     const { t, i18n } = useTranslation();
-    const navigation = useNavigation<SettingsStackNavigationProp>();
+    const navigation = useNavigation();
     const handlePress = useCallback(
         (code: LanguageCode) => () => {
             if (i18n.language === code) return;

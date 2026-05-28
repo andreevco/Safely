@@ -1,9 +1,8 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
 import { useTranslation } from 'react-i18next';
 
 import { useActivePortfolio } from '@safely/ux';
 
-import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import { Cell, Text } from '@mobile/shared/ui';
 
 import { styles } from './RemovePortfolioButton.styles';
@@ -15,7 +14,7 @@ type RemovePortfolioButtonProps = {
 export const RemovePortfolioButton = (props: RemovePortfolioButtonProps) => {
     const { showDivider = true } = props;
     const { t } = useTranslation();
-    const rootNavigation = useNavigation<RootStackNavigationProp>();
+    const rootNavigation = useNavigation();
     const portfolio = useActivePortfolio();
 
     const handleDeletePortfolio = () => {

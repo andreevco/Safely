@@ -1,4 +1,4 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
 import { useCallback, useEffect, useRef } from 'react';
 
 import { useBottomSheet } from './context';

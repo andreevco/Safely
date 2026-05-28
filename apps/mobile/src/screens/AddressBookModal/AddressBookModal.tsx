@@ -1,4 +1,4 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
@@ -6,13 +6,12 @@ import { useContacts } from '@safely/ux';
 
 import { AddressBookHeader } from '@mobile/features/addressbook';
 import { AddressBook } from '@mobile/features/addressbook/AddressBook';
-import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import { Screen, Button } from '@mobile/shared/ui';
 
 import { styles } from './AddressBookModal.styles';
 
 export const AddressBookModal = () => {
-    const navigation = useNavigation<RootStackNavigationProp<'SettingsModal'>>();
+    const navigation = useNavigation();
     const { t } = useTranslation();
     const contacts = useContacts();
 
