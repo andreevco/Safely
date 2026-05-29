@@ -12,8 +12,11 @@ export function aggregateFlags(queries: readonly DerivedQueryResult[]) {
     return { isError, isSuccess, isPending, isFetching, error };
 }
 
-export const minUpdatedAt = (queries: readonly DerivedQueryResult[]) =>
-    Math.min(...queries.map(q => q.dataUpdatedAt || Infinity));
+export const minUpdatedAt = (queries: readonly DerivedQueryResult[]) => {
+    const updatedAts = queries.map(q => q.dataUpdatedAt).filter(Boolean);
+
+    return updatedAts.length > 0 ? Math.min(...updatedAts) : 0;
+};
 
 export const allActualised = (queries: readonly DerivedQueryResult[]) =>
     queries.every(q => q.isActualised !== false);
