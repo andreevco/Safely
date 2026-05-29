@@ -13,7 +13,9 @@ export function useIsOffline(): boolean {
             getNetworkStateAsync()
                 .then(state => {
                     if (!isCancelled) {
-                        setIsOffline(state.isConnected === false);
+                        setIsOffline(
+                            state.isConnected === false || state.isInternetReachable === false
+                        );
                     }
                 })
                 .catch(() => undefined);
