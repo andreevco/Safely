@@ -13,17 +13,6 @@ import {
     useActiveAccountSyncStorageSlotUpdate
 } from '../account/useAccountSyncStorageUpdate';
 
-export function useSyncStatus(account: SyncAccount): SyncStatus {
-    return useSyncExternalStore(
-        useCallback(cb => account.syncProvider.syncStatusManager.subscribe(cb), [account]),
-        () => account.syncProvider.syncStatusManager.getStatus()
-    );
-}
-
-export function useActiveAccountSyncStatus(): SyncStatus {
-    return useSyncStatus(useActiveAccount());
-}
-
 export function useSyncedDevicesMeta(): Record<string, SDeviceMeta> | null {
     return useActiveAccountStoreSlot('devicesMeta') ?? null;
 }
@@ -45,7 +34,10 @@ export function useAccountLinkState(): AccountLinkState {
     const selfIkPub = useCurrentDeviceIkPub();
     const devicesMeta = useSyncedDevicesMeta();
 
-    const syncStatus = useSyncStatus(account);
+    const syncStatus = useSyncExternalStore(
+        useCallback(cb => account.syncProvider.syncStatusManager.subscribe(cb), [account]),
+        () => account.syncProvider.syncStatusManager.getStatus()
+    );
 
     if (syncStatus === SyncStatus.DEVICE_DELETED) {
         return AccountLinkState.UNLINKED;
