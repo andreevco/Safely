@@ -9,8 +9,10 @@ import { LogLevel } from '@safely/sync';
 import { LOGGER_BUFFER_MOBILE_STORAGE_ONLY_APP_LEVEL_USE } from '@mobile/app/storage';
 
 const FILENAME = 'safely.ndjson';
-const FLUSH_INTERVAL_MS = 30_000;
 const MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024;
+const CONTEXT_BUFFER_SIZE = 1000;
+const CONTEXT_PREFIX = 'c_';
+const FILE_PREFIX = 'f_';
 
 type FileTransportConfig = {
     appVersion: string;
@@ -23,48 +25,49 @@ export class FileTransport implements ILoggerTransport {
     private readonly appVersion: string;
     private readonly build: string;
     private readonly device: string;
-    private flushing: Promise<void> = Promise.resolve();
-    private flushScheduled = false;
+    private pending: Promise<void> | null = null;
     private seqNo = 0;
+    private contextKeys: string[];
 
     constructor(opts: FileTransportConfig) {
         this.appVersion = opts.appVersion;
         this.build = opts.build;
         this.device = `${opts.deviceInfo.name}, ${opts.deviceInfo.osVersion}`;
-        setInterval(() => void this.flush(), FLUSH_INTERVAL_MS);
+
+        this.contextKeys = this.mmkv
+            .getAllKeys()
+            .filter(k => k.startsWith(CONTEXT_PREFIX))
+            .sort();
+
+        void this.flush();
     }
 
     public log(entry: LogEntry): void {
-        const key = `e_${Date.now()}_${this.seqNo++}`;
-        this.mmkv.set(
-            key,
-            JSON.stringify({
-                t: entry.timestamp.toISOString(),
-                l: entry.level,
-                p: entry.path,
-                m: entry.message.map(serializeMessage).join(' '),
-                v: this.appVersion,
-                b: this.build,
-                d: this.device
-            })
-        );
+        const serialized = this.serialize(entry);
+
+        if (entry.level < LogLevel.WARN) {
+            this.pushContext(serialized);
+
+            return;
+        }
 
         if (entry.level >= LogLevel.ERROR) {
-            void this.flush();
+            this.promoteContext();
         }
+
+        this.mmkv.set(this.nextKey(FILE_PREFIX), serialized);
+        void this.flush();
     }
 
     public flush(): Promise<void> {
-        if (!this.flushScheduled) {
-            this.flushScheduled = true;
-            this.flushing = this.flushing.then(() => {
-                this.flushScheduled = false;
-
-                return this.doFlush();
+        if (!this.pending) {
+            this.pending = Promise.resolve().then(() => {
+                this.pending = null;
+                this.doFlush();
             });
         }
 
-        return this.flushing;
+        return this.pending;
     }
 
     public async share(): Promise<void> {
@@ -80,14 +83,25 @@ export class FileTransport implements ILoggerTransport {
     }
 
     private doFlush(): void {
-        const keys = this.mmkv.getAllKeys().filter(k => k.startsWith('e_'));
-        if (keys.length === 0) return;
-
         const lines: string[] = [];
-        for (const key of keys) {
-            const line = this.mmkv.getString(key);
-            if (line) lines.push(line);
-            this.mmkv.remove(key);
+
+        try {
+            const keys = this.mmkv
+                .getAllKeys()
+                .filter(k => k.startsWith(FILE_PREFIX))
+                .sort();
+            if (keys.length === 0) return;
+
+            for (const key of keys) {
+                const line = this.mmkv.getString(key);
+                if (line) lines.push(line);
+
+                this.mmkv.remove(key);
+            }
+        } catch (e) {
+            console.error('[FileTransport] failed to read buffered logs', e);
+
+            return;
         }
 
         if (lines.length === 0) return;
@@ -116,6 +130,46 @@ export class FileTransport implements ILoggerTransport {
         } catch (e) {
             console.error('[FileTransport] failed to write logs', e);
         }
+    }
+
+    private pushContext(serialized: string): void {
+        const key = this.nextKey(CONTEXT_PREFIX);
+        this.mmkv.set(key, serialized);
+        this.contextKeys.push(key);
+
+        while (this.contextKeys.length > CONTEXT_BUFFER_SIZE) {
+            const oldest = this.contextKeys.shift();
+            if (oldest) this.mmkv.remove(oldest);
+        }
+    }
+
+    private promoteContext(): void {
+        for (const key of this.contextKeys) {
+            const value = this.mmkv.getString(key);
+            if (value) {
+                this.mmkv.set(FILE_PREFIX + key.slice(CONTEXT_PREFIX.length), value);
+            }
+
+            this.mmkv.remove(key);
+        }
+
+        this.contextKeys = [];
+    }
+
+    private serialize(entry: LogEntry): string {
+        return JSON.stringify({
+            t: entry.timestamp.toISOString(),
+            l: entry.level,
+            p: entry.path,
+            m: entry.message.map(serializeMessage).join(' '),
+            v: this.appVersion,
+            b: this.build,
+            d: this.device
+        });
+    }
+
+    private nextKey(prefix: string): string {
+        return `${prefix}${Date.now()}_${String(this.seqNo++).padStart(6, '0')}`;
     }
 }
 
