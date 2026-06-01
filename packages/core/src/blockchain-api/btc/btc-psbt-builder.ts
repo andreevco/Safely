@@ -1,7 +1,6 @@
-import { witnessStackToScriptWitness } from 'bitcoinjs-lib/src/psbt/psbtutils';
+import { Address, OutScript, Transaction } from '@scure/btc-signer';
+import type { BTC_NETWORK } from '@scure/btc-signer/utils.js';
 
-import type { Network } from './bitcoinjs';
-import { bitcoin } from './bitcoinjs';
 import { BtcAddress } from './btc-address';
 import type { BtcApiUtxo } from '../../api/btc';
 
@@ -14,10 +13,10 @@ export type PsbtRequest = {
 const MAX_DER_SIGNATURE_SIZE = 73;
 // Compressed secp256k1 public key: 1-byte parity prefix + 32-byte X coordinate.
 const COMPRESSED_PUBKEY_SIZE = 33;
-// P2WPKH witness stack: <signature> <pubkey>. Used only for vSize estimation,
+// P2WPKH witness stack: <signature> <pubkey>. Used only for vSize estimation.
 const P2WPKH_ESTIMATION_WITNESS = [
-    Buffer.alloc(MAX_DER_SIGNATURE_SIZE, 0),
-    Buffer.alloc(COMPRESSED_PUBKEY_SIZE, 0)
+    new Uint8Array(MAX_DER_SIGNATURE_SIZE),
+    new Uint8Array(COMPRESSED_PUBKEY_SIZE)
 ];
 
 // BIP125 opt-in Replace-By-Fee: any sequence <= 0xfffffffd signals to relays
@@ -25,61 +24,56 @@ const P2WPKH_ESTIMATION_WITNESS = [
 const RBF_SEQUENCE = 0xfffffffd;
 
 export class BtcPsbtBuilder {
-    constructor(private readonly bitcoinNetwork: Network) {}
+    constructor(private readonly bitcoinNetwork: BTC_NETWORK) {}
 
-    private readonly p2wpkhEstimationFinalizer: NonNullable<
-        Parameters<bitcoin.Psbt['finalizeInput']>[1]
-    > = () => ({
-        finalScriptWitness: witnessStackToScriptWitness(P2WPKH_ESTIMATION_WITNESS),
-        finalScriptSig: undefined
-    });
+    public buildPsbt(req: PsbtRequest): Transaction {
+        return this.build(req, { forEstimation: false });
+    }
 
-    public buildPsbt({ inputs, outputs }: PsbtRequest): bitcoin.Psbt {
-        const psbt = new bitcoin.Psbt({ network: this.bitcoinNetwork });
+    public calculateTransactionVSize(req: PsbtRequest): bigint {
+        const tx = this.build(req, { forEstimation: true });
+        return BigInt(tx.vsize);
+    }
 
-        inputs.forEach(utxo => {
-            this.assertSpendableUtxo(utxo);
-
-            const script = bitcoin.address.toOutputScript(utxo.address, this.bitcoinNetwork);
-            psbt.addInput({
-                hash: utxo.txid,
-                index: utxo.vout,
-                sequence: RBF_SEQUENCE,
-                witnessUtxo: { script, value: BigInt(utxo.value) }
-            });
-        });
+    private build(
+        { inputs, outputs }: PsbtRequest,
+        options: { forEstimation: boolean }
+    ): Transaction {
+        const tx = new Transaction();
 
         outputs.forEach(o => {
             if (!BtcAddress.validate(o.address, this.bitcoinNetwork)) {
                 throw new Error(`invalid output address: ${o.address}`);
             }
-            psbt.addOutput({ address: o.address, value: o.value });
+            tx.addOutputAddress(o.address, o.value, this.bitcoinNetwork);
         });
 
-        return psbt;
-    }
+        const ignoreSignStatus = options.forEstimation;
 
-    public calculateTransactionVSize(req: PsbtRequest): bigint {
-        const psbt = this.buildPsbt(req);
+        inputs.forEach(utxo => {
+            if (!utxo.address) {
+                throw new Error('invalid address');
+            }
 
-        req.inputs.forEach((_, i) => psbt.finalizeInput(i, this.p2wpkhEstimationFinalizer));
+            const decoded = Address(this.bitcoinNetwork).decode(utxo.address);
+            if (decoded?.type !== 'wpkh') {
+                throw new Error('unsupported utxo type: only P2WPKH inputs are supported');
+            }
 
-        // Pass `true` to disable bitcoinjs' "absurd fee" guard: callers build dummy
-        // outputs (often 1 sat) purely to measure vSize, so implied fee = inputs - outputs
-        // can be arbitrarily large and would otherwise trip the default 5000 sat/vB cap.
-        const disableFeeCheck = true;
-        return BigInt(psbt.extractTransaction(disableFeeCheck).virtualSize());
-    }
+            tx.addInput(
+                {
+                    txid: Buffer.from(utxo.txid, 'hex'),
+                    index: utxo.vout,
+                    sequence: RBF_SEQUENCE,
+                    witnessUtxo: { script: OutScript.encode(decoded), amount: BigInt(utxo.value) },
+                    ...(options.forEstimation
+                        ? { finalScriptWitness: P2WPKH_ESTIMATION_WITNESS }
+                        : {})
+                },
+                ignoreSignStatus
+            );
+        });
 
-    private assertSpendableUtxo(
-        utxo: BtcApiUtxo
-    ): asserts utxo is BtcApiUtxo & { address: string } {
-        if (!utxo.address) {
-            throw new Error('invalid address');
-        }
-
-        if (BtcAddress.type(utxo.address) !== 'P2WPKH') {
-            throw new Error(`unsupported utxo type: only P2WPKH inputs are supported`);
-        }
+        return tx;
     }
 }
