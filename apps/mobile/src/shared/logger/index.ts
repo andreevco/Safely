@@ -1,7 +1,9 @@
 import packageJson from '../../../package.json';
 import { build, deviceInfo } from '../app-meta';
 import { buildLogger } from './build-logger';
-import { FileTransport } from './file-transport';
+import { FileTransport, type LogRecord } from './file-transport';
+
+export type { LogRecord } from './file-transport';
 
 const transport = new FileTransport({
     appVersion: packageJson.version,
@@ -12,6 +14,7 @@ const transport = new FileTransport({
 export const logger = buildLogger(transport, __DEV__);
 export const flushLogs = (): Promise<void> => transport.flush();
 export const shareLogs = (): Promise<void> => transport.share();
+export const readLogs = (): Promise<LogRecord[]> => transport.read();
 
 const prevHandler = ErrorUtils.getGlobalHandler();
 ErrorUtils.setGlobalHandler((error, isFatal) => {
