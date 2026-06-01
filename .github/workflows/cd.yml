@@ -3,7 +3,9 @@ name: CD
 on:
   workflow_dispatch: {}
   push:
-    branches: [master]
+    branches:
+      - master
+      - 'release/**'
 
 permissions:
   contents: read
