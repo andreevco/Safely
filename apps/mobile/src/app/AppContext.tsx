@@ -11,7 +11,7 @@ import { AppContext, UnlockableSecuredEncryptedStorage } from '@safely/ux';
 
 import { useMobileSecurityCheck } from '@mobile/features/security';
 import { build, deviceInfo, environment } from '@mobile/shared/app-meta';
-import { flushLogs, logger } from '@mobile/shared/logger';
+import { logger } from '@mobile/shared/logger';
 import { useLoaderServiceContext } from '@mobile/shared/providers/loader';
 import { useToastServiceContext } from '@mobile/shared/providers/toast';
 import { MobileNumberFormatLocale, MobileAppLinking } from '@mobile/shared/utils';
@@ -131,20 +131,6 @@ export const SecurityCheckInitializer: FC = () => {
     useEffect(() => {
         security.check = check;
     }, [check]);
-
-    return null;
-};
-
-export const LoggerLifecycle: FC = () => {
-    useEffect(() => {
-        const subscription = AppState.addEventListener('change', state => {
-            if (state === 'background' || state === 'inactive') {
-                void flushLogs();
-            }
-        });
-
-        return () => subscription.remove();
-    }, []);
 
     return null;
 };

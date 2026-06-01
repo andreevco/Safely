@@ -12,7 +12,6 @@ const transport = new FileTransport({
 });
 
 export const logger = buildLogger(transport, __DEV__);
-export const flushLogs = (): Promise<void> => transport.flush();
 export const shareLogs = (): Promise<void> => transport.share();
 export const readLogs = (): Promise<LogRecord[]> => transport.read();
 
