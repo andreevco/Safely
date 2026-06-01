@@ -5,7 +5,7 @@ import type { TextProps } from '@mobile/shared/ui';
 export const scopeLabel = (path: string[]): string =>
     path.length > 0 ? path.join(' › ') : '(root)';
 
-export const formatMessage = (message: string): { text: string; isJson: boolean } => {
+export const formatMessage = (message: string): string => {
     const trimmed = message.trim();
     const start = trimmed.search(/[{[]/);
 
@@ -14,13 +14,13 @@ export const formatMessage = (message: string): { text: string; isJson: boolean 
             const pretty = JSON.stringify(JSON.parse(trimmed.slice(start)), null, 2);
             const prefix = trimmed.slice(0, start).trim();
 
-            return { text: prefix ? `${prefix}\n${pretty}` : pretty, isJson: true };
+            return prefix ? `${prefix}\n${pretty}` : pretty;
         } catch {
-            return { text: message, isJson: false };
+            return message;
         }
     }
 
-    return { text: message, isJson: false };
+    return message;
 };
 
 export const levelColor = (level: LogLevel): TextProps['color'] => {
