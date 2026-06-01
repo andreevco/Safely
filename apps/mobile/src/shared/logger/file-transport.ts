@@ -20,6 +20,26 @@ type FileTransportConfig = {
     deviceInfo: { name: string; osVersion: string };
 };
 
+type StoredLog = {
+    t: string;
+    l: LogLevel;
+    p: string[];
+    m: string;
+    v: string;
+    b: string;
+    d: string;
+};
+
+export type LogRecord = {
+    timestamp: string;
+    level: LogLevel;
+    path: string[];
+    message: string;
+    appVersion: string;
+    build: string;
+    device: string;
+};
+
 export class FileTransport implements ILoggerTransport {
     private readonly mmkv = LOGGER_BUFFER_MOBILE_STORAGE_ONLY_APP_LEVEL_USE.mmkv;
     private readonly appVersion: string;
@@ -156,8 +176,27 @@ export class FileTransport implements ILoggerTransport {
         this.contextKeys = [];
     }
 
+    public async read(): Promise<LogRecord[]> {
+        await this.flush();
+
+        const file = new File(Paths.cache, FILENAME);
+        if (!file.exists) return [];
+
+        try {
+            return file
+                .textSync()
+                .split('\n')
+                .map(parseLogLine)
+                .filter((record): record is LogRecord => record !== null);
+        } catch (e) {
+            console.error('[FileTransport] failed to read log file', e);
+
+            return [];
+        }
+    }
+
     private serialize(entry: LogEntry): string {
-        return JSON.stringify({
+        const stored: StoredLog = {
             t: entry.timestamp.toISOString(),
             l: entry.level,
             p: entry.path,
@@ -165,11 +204,33 @@ export class FileTransport implements ILoggerTransport {
             v: this.appVersion,
             b: this.build,
             d: this.device
-        });
+        };
+
+        return JSON.stringify(stored);
     }
 
     private nextKey(prefix: string): string {
         return `${prefix}${Date.now()}_${String(this.seqNo++).padStart(6, '0')}`;
+    }
+}
+
+function parseLogLine(line: string): LogRecord | null {
+    if (!line) return null;
+
+    try {
+        const stored = JSON.parse(line) as StoredLog;
+
+        return {
+            timestamp: stored.t,
+            level: stored.l,
+            path: stored.p,
+            message: stored.m,
+            appVersion: stored.v,
+            build: stored.b,
+            device: stored.d
+        };
+    } catch {
+        return null;
     }
 }
 
