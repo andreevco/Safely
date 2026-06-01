@@ -9,8 +9,8 @@ import { styles } from './DevToolsLogsScreen.styles';
 import { useLogFilters, useLogs } from './hooks';
 
 export const DevToolsLogsScreen = () => {
-    const { records, isLoading, reload } = useLogs();
-    const { filtered, filterProps } = useLogFilters(records);
+    const { data, isLoading, refetch } = useLogs();
+    const { filtered, filterProps } = useLogFilters(data ?? []);
 
     const renderItem = useCallback<ListRenderItem<LogRecord>>(
         ({ item }) => <LogRow record={item} />,
@@ -44,7 +44,11 @@ export const DevToolsLogsScreen = () => {
                 />
 
                 <View style={styles.footer}>
-                    <Button style={styles.footerButton} type="secondary" onPress={reload}>
+                    <Button
+                        style={styles.footerButton}
+                        type="secondary"
+                        onPress={() => void refetch()}
+                    >
                         Refresh
                     </Button>
                     <Button
