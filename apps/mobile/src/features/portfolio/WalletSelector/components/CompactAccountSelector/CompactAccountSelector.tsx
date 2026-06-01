@@ -1,4 +1,4 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
 import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
@@ -11,7 +11,6 @@ import { useActivePortfolio, usePortfolios } from '@safely/ux';
 
 import { PortfolioName } from '@mobile/entities/portfolio';
 import { PortfoliosList } from '@mobile/features/portfolio/PortfoliosList';
-import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import {
     Button,
     ChevronDown16,
@@ -49,7 +48,7 @@ const Touchable = ({
 
 export const CompactAccountSelector = () => {
     const popupMenuRef = useRef<PopupMenuRef>(null);
-    const navigation = useNavigation<RootStackNavigationProp<'TabsNavigator'>>();
+    const navigation = useNavigation();
     const { t } = useTranslation();
 
     const portfolio = useActivePortfolio();

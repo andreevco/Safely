@@ -1,4 +1,4 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -12,11 +12,9 @@ import {
     useToast
 } from '@safely/ux';
 
-import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
-
 export function useSignOutAccountConfirmation() {
     const { t } = useTranslation();
-    const navigation = useNavigation<RootStackNavigationProp>();
+    const navigation = useNavigation();
     const accounts = useAccounts();
     const activeAccount = useActiveAccount();
     const accountName = useActiveAccountMeta().name;

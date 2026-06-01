@@ -1,11 +1,10 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import { useActivePortfolioEntitiesQuery, useDeletePortfolio, useToast } from '@safely/ux';
 
-import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import { BottomSheet, Button, ConfirmCheckbox, Text, useBottomSheet } from '@mobile/shared/ui';
 
 import { styles } from './RemoveWalletSheet.styles';
@@ -17,7 +16,7 @@ const RemoveWalletContent = () => {
     const portfolio = useRef(useActivePortfolioEntitiesQuery().data!).current.portfolio;
     const toast = useToast();
     const { mutateAsync: deletePortfolio, isPending } = useDeletePortfolio();
-    const navigation = useNavigation<RootStackNavigationProp>();
+    const navigation = useNavigation();
     const state = useRemoveWalletState(portfolio);
     const [isConfirmed, setIsConfirmed] = useState(false);
 

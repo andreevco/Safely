@@ -1,4 +1,4 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Keyboard, View } from 'react-native';
@@ -12,7 +12,6 @@ import {
     useToast
 } from '@safely/ux';
 
-import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import { BottomSheet, Button, Text, useCloseOnReturn } from '@mobile/shared/ui';
 
 import { styles } from './AddAccountSheet.styles';
@@ -24,7 +23,7 @@ const AddAccountContent = () => {
             sync: { getSecureEncrypted }
         }
     } = useAppContext();
-    const navigation = useNavigation<RootStackNavigationProp>();
+    const navigation = useNavigation();
     const signIn = useCreateExistingAccountConnector();
     const { mutateAsync: createAccount } = useCreateAccount({
         createWallet: true,

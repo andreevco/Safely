@@ -1,11 +1,10 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
 import { useCallback, useMemo } from 'react';
 
 import { BtcXpub, PortfolioType } from '@safely/core';
 import { useActivePortfolioEntities } from '@safely/ux';
 
 import { PortfolioName } from '@mobile/entities/portfolio';
-import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import { Button, Cell, List, Screen, Text } from '@mobile/shared/ui';
 import { Icon, Switch16 } from '@mobile/shared/ui/Icon';
 import { useCopy } from '@mobile/shared/utils/copy';
@@ -15,7 +14,7 @@ import { styles } from './DevToolsXpubScreen.styles';
 export const DevToolsXpubScreen = () => {
     const copy = useCopy();
     const entities = useActivePortfolioEntities();
-    const navigation = useNavigation<RootStackNavigationProp>();
+    const navigation = useNavigation();
 
     const xpub = useMemo(() => {
         if (entities.type === 'bip39') {
