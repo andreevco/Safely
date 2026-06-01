@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import { WithIsActualised } from './types';
+import type { WithIsActualised } from './types';
 
 type Actualisable = { status: string; dataUpdatedAt: number };
 

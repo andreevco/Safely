@@ -1,10 +1,15 @@
 import { impactAsync, ImpactFeedbackStyle } from 'expo-haptics';
 import { useRef } from 'react';
 
-import { SyncAccount, useActiveAccount, useSetActiveAccount } from '@safely/ux';
+import type { SyncAccount } from '@safely/ux';
+import {
+    useActiveAccount,
+    useActiveAccountMeta,
+    usePortfolios,
+    useSetActiveAccount
+} from '@safely/ux';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
-import { PopupMenuRef } from '@mobile/shared/ui/PopupMenu';
+import type { PopupMenuRef } from '@mobile/shared/ui/PopupMenu';
 
 import { ModalAccountSelector } from './ModalAccountSelector';
 import { PopupAccountSelector } from './PopupAccountSelector';
@@ -14,18 +19,19 @@ const MAX_POPUP_ACCOUNTS = 5;
 
 interface AccountSelectorProps {
     accounts: SyncAccount[];
-    rootNavigation: RootStackNavigationProp;
     onAddAccount: () => void;
+    onSelectAccountNavigate: () => void;
 }
 
 export const AccountSelector = (props: AccountSelectorProps) => {
-    const { accounts, rootNavigation, onAddAccount } = props;
+    const { accounts, onAddAccount, onSelectAccountNavigate } = props;
     const account = useActiveAccount();
+    const activeAccountName = useActiveAccountMeta().name;
+    const activeWalletsCount = usePortfolios().length;
     const { mutateAsync: setActiveAccount } = useSetActiveAccount();
     const popupMenuRef = useRef<PopupMenuRef>(null);
 
     const accountCount = accounts.length;
-    const activeWalletsCount = account.syncProvider.get('portfolios')?.length ?? 0;
 
     const handleSwitchAccount = async (accountId: string) => {
         popupMenuRef.current?.close();
@@ -37,17 +43,17 @@ export const AccountSelector = (props: AccountSelectorProps) => {
     };
 
     const handleOpenAccountSelector = () => {
-        rootNavigation.navigate('SelectAccountSelectorModal');
+        onSelectAccountNavigate();
     };
 
     if (accountCount <= 1) {
-        return <SingleAccountDisplay name={account.meta.name} walletsCount={activeWalletsCount} />;
+        return <SingleAccountDisplay name={activeAccountName} walletsCount={activeWalletsCount} />;
     }
 
     if (accountCount <= MAX_POPUP_ACCOUNTS) {
         return (
             <PopupAccountSelector
-                name={account.meta.name}
+                name={activeAccountName}
                 walletsCount={activeWalletsCount}
                 accounts={accounts}
                 activeAccountId={account.accountId}
@@ -60,7 +66,7 @@ export const AccountSelector = (props: AccountSelectorProps) => {
 
     return (
         <ModalAccountSelector
-            name={account.meta.name}
+            name={activeAccountName}
             walletsCount={activeWalletsCount}
             onPress={handleOpenAccountSelector}
         />

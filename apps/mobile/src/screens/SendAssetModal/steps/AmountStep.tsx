@@ -1,61 +1,57 @@
-import { RefObject, useCallback } from 'react';
+import type { RefObject } from 'react';
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TouchableOpacity, View } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
+import type { NumberFormatter } from '@safely/core';
+import type { AmountView } from '@safely/ux';
+
 import { Text } from '@mobile/shared/ui/Text';
 
-import { MaskedInputRef } from '../../../../modules/safely-masked-input/src';
+import type { MaskedInputRef } from '../../../../modules/safely-masked-input/src';
 import { AmountInput, AmountStatus, AssetSelector } from '../components';
 import { styles } from './AmountStep.styles';
+import { useAmountStepView } from './useAmountStepView';
 
 interface AmountStepProps {
-    value: string;
-    onChangeText: (value: string) => void;
-    isMax: boolean;
-    onMaxPress: () => void;
-    onMaxReset: () => void;
-    isMaxAvailable?: boolean;
-    remainingBalance?: string;
-    hasInsufficientBalance?: boolean;
-    formattedAlternativeAmount?: string;
-    onSwitchFiatMode?: () => void;
-    currencySymbol?: string;
-    decimals: number;
-    decimalSeparator: string;
+    view: AmountView;
     inputRef?: RefObject<MaskedInputRef | null>;
+    decimalSeparator: string;
+    fiatSymbol: string;
+    formatter: NumberFormatter;
 }
 
 export const AmountStep = (props: AmountStepProps) => {
-    const {
-        value,
-        onChangeText,
-        isMax,
-        onMaxPress,
-        onMaxReset,
-        isMaxAvailable = true,
-        remainingBalance,
-        hasInsufficientBalance,
-        formattedAlternativeAmount,
-        onSwitchFiatMode,
-        currencySymbol,
-        decimals,
-        decimalSeparator,
-        inputRef
-    } = props;
+    const { view, inputRef, decimalSeparator, fiatSymbol, formatter } = props;
 
     const { t } = useTranslation();
 
+    const {
+        decimals,
+        hasPrice,
+        hasInsufficientBalance,
+        isMax,
+        inputType,
+        alternativeAmount,
+        remainingBalance
+    } = useAmountStepView({ view, formatter, fiatSymbol });
+
+    const handleSwitchFiatMode = useCallback(() => {
+        view.setAmountInputType(inputType === 'fiat' ? 'crypto' : 'fiat');
+    }, [view, inputType]);
+
+    const enterMax = 'enterMax' in view ? view.enterMax : undefined;
     const handleMaxPress = useCallback(() => {
+        if (!enterMax) return;
+
         inputRef?.current?.blur();
-        onMaxPress();
-    }, [inputRef, onMaxPress]);
+        enterMax();
+    }, [inputRef, enterMax]);
 
     const handleFocus = useCallback(() => {
-        if (isMax) {
-            onMaxReset();
-        }
-    }, [isMax, onMaxReset]);
+        if ('exitMax' in view) view.exitMax();
+    }, [view]);
 
     return (
         <View style={styles.container}>
@@ -63,17 +59,21 @@ export const AmountStep = (props: AmountStepProps) => {
                 ref={inputRef}
                 decimals={decimals}
                 decimalSeparator={decimalSeparator}
-                value={value}
-                onChangeText={onChangeText}
+                value={view.values.amount}
+                onChangeText={view.setAmount}
                 onFocus={handleFocus}
                 placeholder="0"
                 isMax={isMax}
                 label={t('send.amount')}
                 errored={hasInsufficientBalance}
-                formattedAlternativeAmount={formattedAlternativeAmount}
-                onSwitchFiatMode={onSwitchFiatMode}
-                currencySymbol={currencySymbol}
-                RightComponent={<AssetSelector />}
+                formattedAlternativeAmount={alternativeAmount}
+                onSwitchFiatMode={hasPrice ? handleSwitchFiatMode : undefined}
+                currencySymbol={
+                    inputType === 'fiat' ? fiatSymbol : view.parsed.asset?.amount.asset.symbol
+                }
+                RightComponent={
+                    view.parsed.asset && <AssetSelector asset={view.parsed.asset.amount.asset} />
+                }
             />
             <View style={styles.remainingContainer}>
                 <AmountStatus
@@ -81,7 +81,7 @@ export const AmountStep = (props: AmountStepProps) => {
                     hasInsufficientBalance={hasInsufficientBalance}
                     remainingBalance={remainingBalance}
                 />
-                {!isMax && isMaxAvailable && (
+                {enterMax && view.isMaxAvailable && (
                     <Animated.View entering={FadeIn.duration(100)} exiting={FadeOut.duration(100)}>
                         <TouchableOpacity onPress={handleMaxPress} hitSlop={12}>
                             <Text variant="bodyM" color="secondary">

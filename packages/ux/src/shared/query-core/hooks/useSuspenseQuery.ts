@@ -1,10 +1,18 @@
-import {
+import type {
     QueryKey,
-    useQuery,
     UseQueryOptions,
     UseSuspenseQueryOptions,
     UseSuspenseQueryResult
 } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
+
+export type SuspenseQueryOptions<
+    TQueryFnData = unknown,
+    TError = Error,
+    TData = TQueryFnData,
+    TQueryKey extends QueryKey = QueryKey
+> = UseSuspenseQueryOptions<TQueryFnData, TError, TData, TQueryKey> &
+    Pick<UseQueryOptions<TQueryFnData, TError, TData, TQueryKey>, 'placeholderData'>;
 
 export function useSuspenseQuery<
     TQueryFnData = unknown,
@@ -12,8 +20,7 @@ export function useSuspenseQuery<
     TData = TQueryFnData,
     TQueryKey extends QueryKey = QueryKey
 >(
-    options: UseSuspenseQueryOptions<TQueryFnData, TError, TData, TQueryKey> &
-        Pick<UseQueryOptions<TQueryFnData, TError, TData, TQueryKey>, 'placeholderData'>
+    options: SuspenseQueryOptions<TQueryFnData, TError, TData, TQueryKey>
 ): UseSuspenseQueryResult<TData, TError> {
     const result = useQuery(options) as UseSuspenseQueryResult<TData, TError>;
 

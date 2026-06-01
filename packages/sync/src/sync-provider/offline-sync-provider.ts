@@ -1,16 +1,20 @@
-import { output, z, ZodType } from 'zod';
+import type { output, z } from 'zod';
 
-import { ISyncProvider } from './I-sync-provider';
+import type { Draft, NewOf, StorageVersion } from '@safely/slottree';
+
+import type { ISyncProvider } from './I-sync-provider';
 import { StorageError } from '../crdt/y-manager';
-import { SyncContainer } from '../sync-container';
-import { SyncError } from '../sync-error';
+import type { Device } from '../device-manager/device-repository';
+import type { SyncContainer } from '../sync-container';
+import type { SyncError } from '../sync-error';
 import { SyncStatus, SyncStatusManager } from './sync-status';
 
-export class OfflineSyncProvider<S extends Record<string, ZodType>> implements ISyncProvider<S> {
+export class OfflineSyncProvider<Latest extends StorageVersion, Rest> implements ISyncProvider<
+    NewOf<Latest>
+> {
     private readonly onErrorObservers = new Set<(e: SyncError) => void>();
     constructor(
-        public readonly structure: S,
-        protected readonly container: SyncContainer,
+        protected readonly container: SyncContainer<Latest, Rest>,
         public readonly syncStatusManager = new SyncStatusManager(SyncStatus.OFFLINE)
     ) {}
 
@@ -22,7 +26,7 @@ export class OfflineSyncProvider<S extends Record<string, ZodType>> implements I
         // in offline mode, restart doesn't do anything
     }
 
-    public get<K extends keyof S>(k: K): z.output<S[K]> {
+    public get<K extends keyof NewOf<Latest>>(k: K): z.output<NewOf<Latest>[K]> {
         let v: unknown;
         try {
             v = this.container.yManager.get(k.toString());
@@ -33,41 +37,23 @@ export class OfflineSyncProvider<S extends Record<string, ZodType>> implements I
                 throw e;
             }
         }
-        const schema = this.structure[k];
-        return schema.parse(v);
+        return v as z.output<NewOf<Latest>[K]>;
     }
 
-    public getAll(): { [K in keyof S]: output<S[K]> } {
-        const result = {} as { [K in keyof S]: output<S[K]> };
-        for (const k of Object.keys(this.structure) as Array<keyof S>) {
-            let v: unknown;
-            try {
-                v = this.container.yManager.get(k.toString());
-            } catch (e) {
-                if (e instanceof StorageError) {
-                    v = null;
-                } else {
-                    throw e;
-                }
-            }
-            const schema = this.structure[k];
-            result[k] = schema.parse(v);
-        }
-        return result;
+    public getAll(): z.output<NewOf<Latest>> {
+        return this.container.yManager.getFull();
     }
 
-    public async remove(k: keyof S): Promise<void> {
-        await this.container.yManager.remove(k.toString());
+    public async transaction(f: (draft: Draft<z.output<NewOf<Latest>>>) => void): Promise<void> {
+        this.container.logger.info('SyncProvider.update');
+        await this.container.yManager.transaction(f);
     }
 
-    public async set<K extends keyof S>(k: K, v: z.input<S[K]> | string): Promise<void> {
-        this.container.logger.info('SyncProvider.set<K>', k.toString());
-        this.structure[k].parse(v);
-        await this.container.yManager.set(k.toString(), v);
-    }
-
-    public onChange<K extends keyof S>(k: K, observer: (v: z.output<S[K]>) => void): () => void {
-        let lastStored: unknown;
+    public onChange<K extends keyof NewOf<Latest>>(
+        k: K,
+        observer: (v: z.output<NewOf<Latest>[K]>) => void
+    ): () => void {
+        let lastStored: string | undefined;
         return this.container.yManager.onChange(() => {
             let v: unknown;
             try {
@@ -79,18 +65,23 @@ export class OfflineSyncProvider<S extends Record<string, ZodType>> implements I
                     throw e;
                 }
             }
-            if (lastStored !== undefined && v === lastStored) {
+
+            // TODO: remove this ugliness and do proper change checks through timestamps.
+            const currentStored = JSON.stringify(v);
+            if (lastStored !== undefined && currentStored === lastStored) {
                 return;
             }
-            const schema = this.structure[k];
-            let value: z.output<S[K]>;
-            try {
-                value = schema.parse(v);
-            } catch {
-                return;
-            }
-            lastStored = v;
-            observer(value);
+
+            lastStored = currentStored;
+            observer(v as z.output<NewOf<Latest>[K]>);
+        });
+    }
+
+    public onDevicesChange(observer: (devices: Device[]) => void): () => void {
+        return this.container.deviceYManager.onChange(() => {
+            void this.container.deviceManager.getDevices().then(devices => {
+                observer(devices);
+            });
         });
     }
 

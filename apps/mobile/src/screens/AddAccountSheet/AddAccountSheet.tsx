@@ -1,28 +1,30 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Keyboard, View } from 'react-native';
 
 import {
-    useAccounts,
     useAppContext,
     useCreateAccount,
     useCreateExistingAccountConnector,
     useLoader,
+    useNewAccountDefaultName,
     useToast
 } from '@safely/ux';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { BottomSheet, Button, Text, useCloseOnReturn } from '@mobile/shared/ui';
 
 import { styles } from './AddAccountSheet.styles';
 
 const AddAccountContent = () => {
     const { t } = useTranslation();
-    const { getSecureEncryptedStorage } = useAppContext();
-    const navigation = useNavigation<RootStackNavigationProp>();
+    const {
+        storage: {
+            sync: { getSecureEncrypted }
+        }
+    } = useAppContext();
+    const navigation = useNavigation();
     const signIn = useCreateExistingAccountConnector();
-    const accounts = useAccounts();
     const { mutateAsync: createAccount } = useCreateAccount({
         createWallet: true,
         setActive: true
@@ -30,14 +32,14 @@ const AddAccountContent = () => {
     const { withLoader } = useLoader();
     const toast = useToast();
     const markNavigated = useCloseOnReturn();
+    const defaultName = useNewAccountDefaultName();
 
     const handleCreateNew = () => {
         markNavigated();
-        const defaultName = t('addAccount.defaultName', { number: (accounts?.length ?? 0) + 1 });
         navigation.navigate('CustomizeAccountModal', {
             defaultName,
             onSave: async (name: string) => {
-                using secureEncryptedStorage = getSecureEncryptedStorage();
+                using secureEncryptedStorage = getSecureEncrypted();
                 await secureEncryptedStorage.unlock();
 
                 Keyboard.dismiss();
@@ -58,20 +60,31 @@ const AddAccountContent = () => {
     const handleSignIn = useCallback(async () => {
         signIn.reset();
 
-        const secureEncryptedStorage = getSecureEncryptedStorage();
+        const secureEncryptedStorage = getSecureEncrypted();
 
         try {
             await secureEncryptedStorage.unlock();
             const connector = await signIn.mutateAsync({ secureEncryptedStorage });
 
+            markNavigated();
             navigation.navigate('SignInModal', {
-                connector,
-                closeStorage: () => secureEncryptedStorage[Symbol.dispose]()
+                screen: 'SignInQRModal',
+                params: {
+                    connector,
+                    closeStorage: () => secureEncryptedStorage[Symbol.dispose](),
+                    onSuccess: () =>
+                        navigation.navigate('SignInModal', {
+                            screen: 'SignInSuccessModal',
+                            params: {
+                                onContinue: () => navigation.goBack()
+                            }
+                        })
+                }
             });
         } catch {
             secureEncryptedStorage[Symbol.dispose]();
         }
-    }, [signIn, navigation, getSecureEncryptedStorage]);
+    }, [signIn, navigation, getSecureEncrypted, markNavigated]);
 
     return (
         <View>

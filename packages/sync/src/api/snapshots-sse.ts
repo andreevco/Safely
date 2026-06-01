@@ -1,17 +1,30 @@
 import { z } from 'zod';
 
-import { ApiSigner } from './api-signer';
-import { SnapshotsApi } from './generated';
-import { EncryptedState } from './types';
-import { SyncStateRepository } from '../update-handler/sync-state-repository';
+import type { ApiSigner } from './api-signer';
+import type { SnapshotsApi } from './generated';
+import type { EncryptedState } from './types';
+import type { Logger } from '../logger';
+import type { SyncStateRepository } from '../update-handler/sync-state-repository';
 import { BufferHexSchema } from '../utils/schemas';
 import { SSEStream } from '../utils/sse-stream';
+
+export class SnapshotStreamError extends Error {
+    public override readonly name = 'SnapshotStreamError';
+
+    constructor(
+        public readonly code: number | string,
+        public readonly body: unknown
+    ) {
+        super(`Snapshot stream error: ${code}`);
+    }
+}
 
 export class SnapshotsSse {
     constructor(
         private readonly syncStateRepository: SyncStateRepository,
         private readonly snapshotsApi: SnapshotsApi,
-        private readonly apiSigner: ApiSigner
+        private readonly apiSigner: ApiSigner,
+        private readonly logger: Logger
     ) {}
 
     public async subscribeToUpdates(
@@ -38,15 +51,24 @@ export class SnapshotsSse {
             onUpdate: async (update, _) => {
                 await onUpdate(update);
             },
-            onOpen: () => console.log('/v1/snapshots/stream connected'),
+            onOpen: () => this.logger.info('/v1/snapshots/stream connected'),
             onError: err => {
-                console.error('/v1/snapshots/stream error', err);
+                this.logger.error('/v1/snapshots/stream error', err);
+            },
+            onLog: (level, message, error) => {
+                this.logger[level](message, ...(error !== undefined ? [error] : []));
             },
             parsers: {
                 snapshot: data => {
                     return {
                         ...snapshotSchema.parse(data)
                     };
+                }
+            },
+            errorParsers: {
+                error: data => {
+                    const parsed = streamErrorSchema.parse(data);
+                    return new SnapshotStreamError(parsed.code, data);
                 }
             },
             signal: abortController.signal,
@@ -63,7 +85,6 @@ export class SnapshotsSse {
                 notifyDisconnect();
             } catch (err) {
                 if (abortController.signal.aborted) return;
-                console.error('Error in snapshots stream', err);
                 notifyDisconnect(err);
             }
         })();
@@ -80,4 +101,8 @@ const snapshotSchema = z.object({
     nonce: BufferHexSchema,
     signature: BufferHexSchema,
     snapshotProof: BufferHexSchema
+});
+
+const streamErrorSchema = z.object({
+    code: z.union([z.number(), z.string()])
 });

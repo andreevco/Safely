@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { IStorage } from '../I-storage';
+import type { IStorage } from '../I-storage';
 
 export class SyncAccountRepository {
     constructor(private readonly storage: IStorage) {}

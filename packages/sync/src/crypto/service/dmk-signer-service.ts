@@ -1,6 +1,6 @@
 import { utf8 } from '../../utils/buffer';
 import { ed25519_sign } from '../ed25519';
-import { SecureEncryptedKeyRepository } from '../secure-encrypted-key-repository';
+import type { SecureEncryptedKeyRepository } from '../secure-encrypted-key-repository';
 
 export class DmkSignerService {
     constructor(private readonly keyRepository: SecureEncryptedKeyRepository) {}

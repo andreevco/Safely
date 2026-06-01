@@ -1,10 +1,10 @@
 import { sha256 } from '@noble/hashes/sha2.js';
 
-import { HTTPMethod } from './generated';
-import { IIkService } from '../crypto/service/ik-service';
+import type { HTTPMethod, RequestSigner } from './request-signer';
+import type { IIkService } from '../crypto/service/ik-service';
 import { toHex, u16be, u32be, u64be, utf8 } from '../utils/buffer';
 
-export class ApiSigner {
+export class ApiSigner implements RequestSigner {
     constructor(private readonly ikService: IIkService) {}
 
     /**
@@ -31,7 +31,7 @@ export class ApiSigner {
 
         const signature = await this.ikService.sign(toSign);
 
-        const pub = await this.ikService.getPub();
+        const pub = this.ikService.getPub();
 
         return `ED25519 pub=${toHex(pub)},nonce=${nonce},timestamp=${timestamp},sig=${toHex(signature)}`;
     }

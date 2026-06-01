@@ -1,6 +1,7 @@
 import { View } from 'react-native';
 
-import { CircularSpinner } from './components/CircularSpinner';
+import { CircularSpinner } from '@mobile/shared/ui/CircularSpinner';
+
 import { styles } from './FullScreenLoader.styles';
 
 export interface FullScreenLoaderProps {
@@ -13,7 +14,7 @@ export const FullScreenLoader = ({ visible }: FullScreenLoaderProps) => {
     }
 
     return (
-        <View style={styles.overlay} pointerEvents="none">
+        <View style={styles.overlay}>
             <View style={styles.backdrop} />
             <View style={styles.container}>
                 <CircularSpinner />

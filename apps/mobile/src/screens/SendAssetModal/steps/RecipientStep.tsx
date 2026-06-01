@@ -1,79 +1,104 @@
-import { Ref, useMemo } from 'react';
+import type { Ref } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { TextInput, View } from 'react-native';
+import type { TextInput } from 'react-native';
+import { View } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 
-import { SendSuggestion } from '@safely/ux';
+import { CONTACT_NAME_MAX_LENGTH } from '@safely/core';
+import type { RecipientView } from '@safely/ux';
+
+import { Input } from '@mobile/shared/ui';
 
 import { AddressInput, SuggestionsList } from '../components';
+import { styles } from './RecipientStep.styles';
 import { useSuggestionSelection } from '../components/SuggestionsList/useSuggestionSelection';
 
 interface RecipientStepProps {
-    value: string;
-    error: string | undefined;
-    onChangeText: (value: string, label?: string) => void;
+    view: RecipientView;
     inputRef?: Ref<TextInput>;
-    suggestions: SendSuggestion[];
-    restoredSuggestions?: SendSuggestion[];
-    selectedId?: string;
-    onSelectSuggestion: (id: string, visibleSuggestions: SendSuggestion[]) => void;
-    onClearSuggestionSelection: () => void;
     onSubmitEditing?: () => void;
 }
 
 export const RecipientStep = (props: RecipientStepProps) => {
-    const {
-        value,
-        error,
-        inputRef,
-        suggestions,
-        restoredSuggestions,
-        selectedId,
-        onChangeText,
-        onSelectSuggestion,
-        onClearSuggestionSelection,
-        onSubmitEditing
-    } = props;
+    const { view, inputRef, onSubmitEditing } = props;
 
     const { t } = useTranslation();
+
+    const {
+        values,
+        errors,
+        suggestions,
+        restoredSuggestions,
+        selectedSuggestionId,
+        selectedSuggestionSource,
+        setRecipient,
+        setAddressBookName,
+        selectSuggestion,
+        status
+    } = view;
 
     const { displaySuggestions, handleSelect, handleChangeText } = useSuggestionSelection({
         suggestions,
         restoredSuggestions,
-        selectedId,
-        onChangeText,
-        onSelectSuggestion,
-        onClearSuggestionSelection
+        selectedId: selectedSuggestionId,
+        onChangeText: setRecipient,
+        onSelectSuggestion: selectSuggestion
     });
 
-    const selectedMeta = useMemo(
-        () => displaySuggestions.find(s => s.id === selectedId)?.meta,
-        [displaySuggestions, selectedId]
+    const selectedPortfolioMeta = useMemo(
+        () => displaySuggestions.portfolios.find(s => s.id === selectedSuggestionId)?.meta,
+        [displaySuggestions, selectedSuggestionId]
     );
+    const selectedContactMeta = useMemo(
+        () => displaySuggestions.contacts.find(s => s.id === selectedSuggestionId)?.meta,
+        [displaySuggestions, selectedSuggestionId]
+    );
+
+    const hasSearchMatches = suggestions.portfolios.length > 0 || suggestions.contacts.length > 0;
+    const visibleError = hasSearchMatches ? undefined : errors.recipient;
+    const isValid = status === 'valid';
 
     return (
         <View style={{ flex: 1 }}>
             <AddressInput
                 onSubmitEditing={onSubmitEditing}
-                value={value}
+                value={values.recipient}
                 onChangeText={handleChangeText}
-                error={error}
+                error={visibleError}
                 inputRef={inputRef}
                 label={t('send.recipient.label')}
                 placeholder={t('send.recipient.placeholder')}
-                selectedMeta={selectedMeta}
+                selectedPortfolioMeta={selectedPortfolioMeta}
+                selectedContactMeta={selectedContactMeta}
+                metaSource={selectedSuggestionSource}
             />
             <KeyboardAwareScrollView
                 style={{ flex: 1 }}
+                contentContainerStyle={styles.contentContainer}
                 keyboardShouldPersistTaps="handled"
                 showsVerticalScrollIndicator={false}
                 bottomOffset={16}
+                keyboardDismissMode="on-drag"
             >
                 <SuggestionsList
                     suggestions={displaySuggestions}
-                    selectedId={selectedId}
+                    selectedId={selectedSuggestionId}
                     onSelect={handleSelect}
                 />
+                {!selectedSuggestionId && isValid && (
+                    <Input>
+                        <Input.Label>{t('send.addressBook.label')}</Input.Label>
+                        <Input.Field
+                            value={values.addressBookName}
+                            onChangeText={setAddressBookName}
+                            withClearButton
+                            placeholder={t('send.addressBook.placeholder')}
+                            maxLength={CONTACT_NAME_MAX_LENGTH}
+                        />
+                        <Input.Description>{t('send.addressBook.description')}</Input.Description>
+                    </Input>
+                )}
             </KeyboardAwareScrollView>
         </View>
     );

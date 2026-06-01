@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - master
+      - 'release/**'
 
 jobs:
   build-and-test:
@@ -36,7 +37,11 @@ jobs:
         run: pnpm compile
 
       - name: Lint
-        run: pnpm lint
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: pnpm --filter "...[$BASE_SHA]" run lint
 
       - name: Test
-        run: pnpm test
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: pnpm --filter "...[$BASE_SHA]" run test

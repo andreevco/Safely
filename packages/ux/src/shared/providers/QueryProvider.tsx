@@ -1,30 +1,48 @@
-import { QueryCache, QueryClient } from '@tanstack/react-query';
-import { Persister, PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
-import React, { FC, PropsWithChildren, ReactNode, Suspense, useEffect, useState } from 'react';
+import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
+import type { Persister } from '@tanstack/react-query-persist-client';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import type { FC, PropsWithChildren, ReactNode } from 'react';
+import { useEffect, useState } from 'react';
+
+import type { Logger } from '@safely/sync';
 
 import { QueryHydrationProvider } from '../contexts';
 import { QUERIES_STALE_TIME, BUSTER_VERSION, CACHE_LIVE_TIME } from '../query-core';
 
-const queryClient = new QueryClient({
-    queryCache: new QueryCache({
-        onError: (error, query) => {
-            console.error('Query error:', error, 'in', query.queryKey);
+export function createQueryClient(logger: Logger): QueryClient {
+    return new QueryClient({
+        queryCache: new QueryCache({
+            onError: (error, query) => {
+                logger.error('[QueryClient] query error', error, 'in', query.queryKey);
+            }
+        }),
+        mutationCache: new MutationCache({
+            onError: (error, _vars, _ctx, mutation) => {
+                logger.error(
+                    '[QueryClient] mutation error',
+                    error,
+                    'in',
+                    mutation.options.mutationKey
+                );
+            }
+        }),
+        defaultOptions: {
+            queries: {
+                gcTime: CACHE_LIVE_TIME,
+                staleTime: QUERIES_STALE_TIME.DEFAULT,
+                experimental_prefetchInRender: true
+            }
         }
-    }),
-    defaultOptions: {
-        queries: {
-            gcTime: CACHE_LIVE_TIME,
-            staleTime: QUERIES_STALE_TIME.DEFAULT,
-            experimental_prefetchInRender: true
-        }
-    }
-});
+    });
+}
 
-export const QueryProvider: FC<PropsWithChildren<{ loader?: ReactNode; persister: Persister }>> = ({
-    children,
-    loader,
-    persister
-}) => {
+export const QueryProvider: FC<
+    PropsWithChildren<{
+        loader?: ReactNode;
+        persister: Persister;
+        queryClient: QueryClient;
+    }>
+> = ({ children, loader, persister, queryClient }) => {
     const [hydratedAt, setHydratedAt] = useState<number | null>(null);
     const isReady = hydratedAt !== null;
 
@@ -34,7 +52,7 @@ export const QueryProvider: FC<PropsWithChildren<{ loader?: ReactNode; persister
         void queryClient.invalidateQueries({
             predicate: q => Boolean(q.meta?.persist)
         });
-    }, [isReady]);
+    }, [isReady, queryClient]);
 
     return (
         <PersistQueryClientProvider
@@ -57,11 +75,7 @@ export const QueryProvider: FC<PropsWithChildren<{ loader?: ReactNode; persister
             onSuccess={() => setHydratedAt(Date.now())}
         >
             <QueryHydrationProvider value={{ hydratedAt }}>
-                {isReady ? (
-                    <Suspense fallback={loader ?? null}>{children}</Suspense>
-                ) : (
-                    (loader ?? null)
-                )}
+                {isReady ? children : (loader ?? null)}
             </QueryHydrationProvider>
         </PersistQueryClientProvider>
     );

@@ -1,9 +1,12 @@
-import { CommonActions, useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
+import { CommonActions } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { Keyboard } from 'react-native';
 
 import { useAppContext, useCreateAccount, useLoader } from '@safely/ux';
 
+// TODO IMPORT Discuss with Max what to do with this
+// eslint-disable-next-line boundaries/element-types
 import { tabsInitialState } from '@mobile/app/navigation/tabs';
 import { usePasscode } from '@mobile/entities/security';
 
@@ -24,14 +27,18 @@ export function useOnboardingFlow() {
     });
     const { withLoader } = useLoader();
     const { set: setPasscode } = usePasscode();
-    const { getSecureEncryptedStorage } = useAppContext();
+    const {
+        storage: {
+            sync: { getSecureEncrypted }
+        }
+    } = useAppContext();
 
-    const onStartCreate = useCallback(() => {
+    const onSuccessCreate = useCallback(() => {
         _isSignInFlow = false;
         navigation.dispatch(CommonActions.navigate(routes.passcode));
     }, [navigation]);
 
-    const onStartSignIn = useCallback(() => {
+    const onSuccessSignIn = useCallback(() => {
         _isSignInFlow = true;
         navigation.dispatch(CommonActions.navigate(routes.passcode));
     }, [navigation]);
@@ -43,7 +50,9 @@ export function useOnboardingFlow() {
             if (!_isSignInFlow) {
                 Keyboard.dismiss();
                 await withLoader(async () => {
-                    using secureEncryptedStorage = getSecureEncryptedStorage();
+                    using secureEncryptedStorage = getSecureEncrypted();
+
+                    // don't ask for the password while setting app initially after first account creation during onboarding to provide smooth user experience
                     secureEncryptedStorage.UNSAFE_SKIP_SECURITY_CHECK_unlock();
 
                     await createAccount({ secureEncryptedStorage });
@@ -52,14 +61,10 @@ export function useOnboardingFlow() {
 
             navigation.dispatch(CommonActions.navigate(routes.biometry));
         },
-        [navigation, setPasscode, createAccount, withLoader]
+        [navigation, setPasscode, createAccount, withLoader, getSecureEncrypted]
     );
 
     const onBiometryFinished = useCallback(() => {
-        navigation.dispatch(CommonActions.navigate(routes.notifications));
-    }, [navigation]);
-
-    const onNotificationsFinished = useCallback(() => {
         if (_isSignInFlow) {
             navigation.dispatch(
                 CommonActions.reset({
@@ -82,11 +87,10 @@ export function useOnboardingFlow() {
     }, [navigation]);
 
     return {
-        onStartCreate,
-        onStartSignIn,
+        onSuccessCreate,
+        onSuccessSignIn,
         onPasscodeReady,
         onBiometryFinished,
-        onNotificationsFinished,
         onAccountCreatedFinished
     };
 }

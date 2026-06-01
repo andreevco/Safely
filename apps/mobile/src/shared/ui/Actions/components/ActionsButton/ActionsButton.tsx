@@ -1,6 +1,7 @@
 import { View } from 'react-native';
 
-import { Icon, IconProps } from '@mobile/shared/ui/Icon';
+import type { IconProps } from '@mobile/shared/ui/Icon';
+import { Icon } from '@mobile/shared/ui/Icon';
 import { Text } from '@mobile/shared/ui/Text';
 import { TouchableOpacity } from '@mobile/shared/ui/TouchableOpacity';
 

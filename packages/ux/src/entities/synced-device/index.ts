@@ -1,123 +1,114 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
+import { useCallback, useMemo, useSyncExternalStore } from 'react';
 
-import { PortfolioFactory } from '@safely/core';
-import { ISyncAccount } from '@safely/sync';
+import type { ISyncAccount } from '@safely/sync';
+import { SyncStatus } from '@safely/sync';
+import type { SDeviceMeta, SyncedStorageStructure } from '@safely/sync-storage';
 
+import { useAppContext } from '../../shared';
+import type { SyncAccount } from '../account/account-state';
+import { useActiveAccount, useActiveAccountStoreSlot } from '../account/account-state';
 import {
-    type DeviceMeta,
-    useAppContext,
-    useSuspenseQuery,
-    useActiveAccountSyncedStorage,
-    SecretEncryptor,
-    SyncedStorageStructure
-} from '../../shared';
-import { calcSyncedStorageHash } from '../../shared/storage/account/synced/schemas';
-import { calculatePortfoliosHashes } from '../../shared/storage/account/synced/schemas/devices-meta.schema';
-import { useActiveAccount, useActiveAccountQueryKey } from '../account';
-import { accountKey } from '../account/keys';
+    useAccountSyncStorageSlotUpdate,
+    useActiveAccountSyncStorageSlotUpdate
+} from '../account/useAccountSyncStorageUpdate';
 
-export function useSyncedDevicesMetaQuery() {
-    const accountQueryKey = useActiveAccountQueryKey();
-    const { get } = useActiveAccountSyncedStorage('devicesMeta');
-
-    return useSuspenseQuery({
-        queryKey: accountQueryKey.devices.meta.toKey(),
-        queryFn: get,
-        staleTime: Infinity
-    });
+export function useSyncedDevicesMeta(): Record<string, SDeviceMeta> | null {
+    return useActiveAccountStoreSlot('devicesMeta') ?? null;
 }
 
-export function useSyncedDevicesMeta(): Record<string, DeviceMeta> | null {
-    return useSyncedDevicesMetaQuery().data;
-}
-
-export function useCurrentDeviceIkPub() {
+export function useCurrentDeviceIkPub(): string {
     const account = useActiveAccount();
-    const accountQueryKey = useActiveAccountQueryKey();
 
-    return useSuspenseQuery({
-        queryKey: accountQueryKey.devices.currentIkPub.toKey(),
-        queryFn: async () => {
-            const ikPub = await account.getMyDeviceIkPub();
-            return ikPub.toString('hex');
-        },
-        staleTime: Infinity
-    }).data;
+    return useMemo(() => account.getMyDeviceIkPub().toString('hex'), [account]);
 }
 
-export function useCurrentDeviceMetaSyncedState() {
-    const currentIkPub = useCurrentDeviceIkPub();
-    const syncedDevicesMeta = useSyncedDevicesMeta();
+export enum AccountLinkState {
+    SOLO = 'solo',
+    PROTECTED = 'protected',
+    UNLINKED = 'unlinked'
+}
 
-    return syncedDevicesMeta?.[currentIkPub].syncState;
+export function useAccountLinkState(): AccountLinkState {
+    const account = useActiveAccount();
+    const selfIkPub = useCurrentDeviceIkPub();
+    const devicesMeta = useSyncedDevicesMeta();
+
+    const syncStatus = useSyncExternalStore(
+        useCallback(cb => account.syncProvider.syncStatusManager.subscribe(cb), [account]),
+        () => account.syncProvider.syncStatusManager.getStatus()
+    );
+
+    if (syncStatus === SyncStatus.DEVICE_DELETED) {
+        return AccountLinkState.UNLINKED;
+    }
+
+    if (devicesMeta === null) {
+        return AccountLinkState.SOLO;
+    }
+
+    const keys = Object.keys(devicesMeta);
+
+    if (!(selfIkPub in devicesMeta)) {
+        return keys.length === 0 ? AccountLinkState.SOLO : AccountLinkState.UNLINKED;
+    }
+
+    const hasPeer = keys.some(k => k !== selfIkPub);
+
+    return hasPeer ? AccountLinkState.PROTECTED : AccountLinkState.SOLO;
 }
 
 export function useRevokeSyncedDevice() {
-    const client = useQueryClient();
     const account = useActiveAccount();
-    const accountQueryKey = useActiveAccountQueryKey();
-    const { get, set } = useActiveAccountSyncedStorage('devicesMeta');
-    const { getSecureEncryptedStorage } = useAppContext();
+    const { storage } = useAppContext();
+    const update = useActiveAccountSyncStorageSlotUpdate('devicesMeta');
 
     return useMutation({
         async mutationFn(ikPubHex: string) {
-            await account.revokeRemoteDevice(
-                Buffer.from(ikPubHex, 'hex'),
-                getSecureEncryptedStorage()
-            );
+            using secureStorage = storage.sync.getSecureEncrypted();
+            await secureStorage.unlock();
 
-            const existing = get() ?? {};
-            const { [ikPubHex]: _, ...rest } = existing;
-            await set(Object.keys(rest).length > 0 ? rest : null);
+            await account.revokeRemoteDevice(Buffer.from(ikPubHex, 'hex'), secureStorage);
 
-            await client.invalidateQueries({ queryKey: accountQueryKey.devices.meta.toKey() });
+            await update(draft => {
+                draft.ifPresent(devicesMeta => devicesMeta.delete(ikPubHex));
+            });
         }
     });
 }
 
-export function useUpdateOwnSyncedDeviceMeta() {
-    const client = useQueryClient();
-    const { version, build, deviceInfo, getSecureEncryptedStorage } = useAppContext();
+export function useSetOwnSyncedDeviceMeta() {
+    const update = useAccountSyncStorageSlotUpdate('devicesMeta');
+    const generate = useGenerateOwnSyncedDeviceMeta();
 
     return useMutation<void, Error, ISyncAccount<SyncedStorageStructure>>({
         async mutationFn(syncAccount) {
-            const ikPub = await syncAccount.getMyDeviceIkPub();
-            const ikPubHex = ikPub.toString('hex');
-
-            const existing = syncAccount.syncProvider.get('devicesMeta');
-            const currentMetaExisting = existing?.[ikPubHex];
-            const portfolios =
-                syncAccount.syncProvider
-                    .get('portfolios')
-                    ?.map(a =>
-                        PortfolioFactory.restorePortfolio(
-                            new SecretEncryptor(
-                                syncAccount.secretEncryptor,
-                                getSecureEncryptedStorage()
-                            ),
-                            a
-                        )
-                    ) ?? [];
-
-            const currentMeta: DeviceMeta = {
-                name: deviceInfo.name,
-                platform: build as 'ios' | 'android',
-                osVersion: deviceInfo.osVersion,
-                appVersion: version,
-                pairedAt: currentMetaExisting?.pairedAt ?? Date.now(),
-                syncState: {
-                    stateHash: calcSyncedStorageHash(syncAccount.syncProvider.getAll()),
-                    portfoliosHashes: calculatePortfoliosHashes(portfolios)
-                }
-            };
-
-            await syncAccount.syncProvider.set('devicesMeta', {
-                ...existing,
-                [ikPubHex]: currentMeta
-            });
-            await client.invalidateQueries({
-                queryKey: accountKey.accountId(syncAccount.accountId).devices.meta.toKey()
+            await update(syncAccount, draft => {
+                const { key, value } = generate(syncAccount);
+                draft.orDefault({}).entry(key).orDefault(value);
             });
         }
     });
+}
+
+export function useGenerateOwnSyncedDeviceMeta() {
+    const { version, build, deviceInfo } = useAppContext();
+
+    return useCallback(
+        (account: SyncAccount) => {
+            const ikPubHex = account.getMyDeviceIkPub().toString('hex');
+
+            return {
+                key: ikPubHex,
+                value: {
+                    name: deviceInfo.name,
+                    platform: build,
+                    osVersion: deviceInfo.osVersion,
+                    appVersion: version,
+                    pairedAt: Date.now()
+                }
+            };
+        },
+        [version, build, deviceInfo]
+    );
 }

@@ -1,7 +1,8 @@
-export * from './api/boot/client';
-export * from './api/boot/models';
+export * from './api/config';
 export * from './api/btc';
 export * from './api/price';
+export * from './api/rate';
+export * from './analytics';
 export * from './blockchain-api';
 export * from './di';
 export * from './entities';
@@ -9,3 +10,4 @@ export * from './utils';
 export * from './storage';
 export * from './external-input';
 export * from './di';
+export { filterSensitiveData } from './logger/sensitive-filter';

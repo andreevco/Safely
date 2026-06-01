@@ -1,18 +1,18 @@
 import { x25519 } from '@noble/curves/ed25519.js';
 
+import type { StorageVersion } from '@safely/slottree';
+
 import { deriveOnboardingKey, encryptOnboardingMessage } from './crypto';
-import {
-    QRMessageCodec,
-    QRMessageNewDeviceOnboarding,
-    QRMessageOperation,
-    QRMessageReconnection
-} from './onboarding-codec';
+import type { QRMessageNewDeviceOnboarding, QRMessageReconnection } from './onboarding-codec';
+import { QRMessageCodec, QRMessageOperation } from './onboarding-codec';
 import { encodeOnboardingMessagePayload } from './onboarding-message-payload';
-import { AccountsApi } from '../api/generated';
-import { DmkSignerService } from '../crypto/service/dmk-signer-service';
-import { MasterKeyService } from '../crypto/service/master-key-service';
-import { DeviceManagementService } from '../device-manager/device-management-service';
+import type { AccountsApi } from '../api/generated';
+import type { DmkSignerService } from '../crypto/service/dmk-signer-service';
+import type { MasterKeyService } from '../crypto/service/master-key-service';
+import type { DeviceManagementService } from '../device-manager/device-management-service';
+import type { SyncFlowLogger } from '../logger';
 import { SyncError } from '../sync-error';
+import type { SyncOperations } from '../sync-operations/sync-operations';
 import { u8be, utf8 } from '../utils/buffer';
 
 export class PrimaryDeviceOnboarding {
@@ -21,38 +21,66 @@ export class PrimaryDeviceOnboarding {
         private readonly dmkService: DmkSignerService,
         private readonly accountsApi: AccountsApi,
         private readonly deviceManager: DeviceManagementService,
-        private readonly triggerSync: () => void
+        private readonly syncOperations: SyncOperations<StorageVersion, unknown>,
+        private readonly storageVersion: number,
+        private readonly triggerSync: () => Promise<void>
     ) {}
 
-    public async onboard(data: Buffer): Promise<void> {
+    public async onboard(data: Buffer, flow: SyncFlowLogger): Promise<void> {
         const message = QRMessageCodec.decode(data);
 
         switch (message.type) {
             case QRMessageOperation.NEW_DEVICE_ONBOARDING:
-                await this.onboardNewDevice(message);
+                await this.onboardNewDevice(message, flow.child('new_device_onboarding'));
                 break;
             case QRMessageOperation.RECONNECTION:
-                await this.reconnectExistingDevice(message);
+                await this.reconnectExistingDevice(message, flow.child('reconnection'));
                 break;
             default:
                 throw new PrimaryDeviceOnboardingError('Unsupported onboarding operation');
         }
     }
 
-    private async reconnectExistingDevice(message: QRMessageReconnection): Promise<void> {
+    private async reconnectExistingDevice(
+        message: QRMessageReconnection,
+        flow: SyncFlowLogger
+    ): Promise<void> {
+        await this.deviceManager.assertDeviceCanReconnect(message.ikPub);
+        flow.logStep('assert_device.done', this.deviceLogFields(message));
+
         const signature = await this.signOnboardingMessage(message.ikPub);
+
         await this.accountsApi.addDeviceToAccount({
             signedDeviceIdentity: {
                 identityPubKey: message.ikPub.toString('hex'),
                 signature: signature.toString('hex')
             }
         });
+        flow.logStep('server.add_device', this.deviceLogFields(message));
 
-        await this.deviceManager.addDevice(message.ikPub, this.dmkService);
-        this.triggerSync();
+        await this.syncOperations.addDevice(
+            message.ikPub,
+            this.knownStorageVersion(message.storageVersion),
+            this.dmkService
+        );
+        flow.logStep('device_storage.add_device', this.deviceLogFields(message));
+
+        flow.logStep('sync.trigger.start', this.deviceLogFields(message));
+        await this.triggerSync();
+        flow.logStep('sync.trigger.done', this.deviceLogFields(message));
+
+        try {
+            await this.waitUntilDeviceVisible(message, flow);
+        } catch (e) {
+            flow.logFail(e, 'device.visible', this.deviceLogFields(message));
+            throw e;
+        }
     }
 
-    private async onboardNewDevice(message: QRMessageNewDeviceOnboarding): Promise<void> {
+    private async onboardNewDevice(
+        message: QRMessageNewDeviceOnboarding,
+        flow: SyncFlowLogger
+    ): Promise<void> {
         const ephemeralKeyPair = x25519.keygen();
 
         const onboardingMetadata = {
@@ -67,20 +95,28 @@ export class PrimaryDeviceOnboarding {
             info: onboardingMetadata
         });
 
-        const addOp = await this.deviceManager.makeAddOp(message.ikPub, this.dmkService);
-
         const { ciphertext, nonce } = await this.masterKeyService.withMasterKey(masterKey => {
             return encryptOnboardingMessage({
                 aad: onboardingMetadata,
                 onboardKey,
                 onboardingMessagePayload: encodeOnboardingMessagePayload({
-                    masterKey,
-                    addOp
+                    masterKey
                 })
             });
         });
         const signature = await this.signOnboardingMessage(message.ikPub);
 
+        await this.syncOperations.addDevice(
+            message.ikPub,
+            this.knownStorageVersion(message.storageVersion),
+            this.dmkService
+        );
+        flow.logStep('device_storage.add_device', this.deviceLogFields(message));
+
+        await this.triggerSync();
+        flow.logStep('sync.trigger', this.deviceLogFields(message));
+
+        flow.logStep('server.onboarding_message.post.start', this.deviceLogFields(message));
         await this.accountsApi.postOnboardingMessage({
             onboardingMessage: {
                 newIdentityPubKey: message.ikPub.toString('hex'),
@@ -90,18 +126,14 @@ export class PrimaryDeviceOnboarding {
                 signature: signature.toString('hex')
             }
         });
+        flow.logStep('server.onboarding_message.post.done', this.deviceLogFields(message));
 
-        for (let i = 0; i < 3; i++) {
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            const devices = await this.deviceManager.getDevices();
-            if (devices.some(d => d.ikPub.equals(message.ikPub))) {
-                return;
-            }
+        try {
+            await this.waitUntilDeviceVisible(message, flow);
+        } catch (e) {
+            flow.logFail(e, 'device.visible', this.deviceLogFields(message));
+            throw e;
         }
-
-        throw new PrimaryDeviceOnboardingError(
-            'New device did not appear after onboarding message was sent'
-        );
     }
 
     private async signOnboardingMessage(newIkPub: Buffer): Promise<Buffer> {
@@ -111,6 +143,30 @@ export class PrimaryDeviceOnboarding {
             newIkPub
         ]);
         return await this.dmkService.sign(toSign);
+    }
+
+    private knownStorageVersion(version: number): number | undefined {
+        return version <= this.storageVersion ? version : undefined;
+    }
+
+    private async waitUntilDeviceVisible(
+        message: QRMessageNewDeviceOnboarding | QRMessageReconnection,
+        flow: SyncFlowLogger
+    ): Promise<void> {
+        await this.deviceManager.waitUntilDeviceVisible(message.ikPub, {
+            timeoutMs: 30000,
+            timeoutError: () =>
+                new PrimaryDeviceOnboardingError('Device did not become active after onboarding')
+        });
+        flow.logEnd('device.visible', this.deviceLogFields(message));
+    }
+
+    private deviceLogFields(
+        message: QRMessageNewDeviceOnboarding | QRMessageReconnection
+    ): Record<string, unknown> {
+        return {
+            ikPub: message.ikPub.toString('hex')
+        };
     }
 }
 

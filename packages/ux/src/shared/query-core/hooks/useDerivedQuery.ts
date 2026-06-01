@@ -7,7 +7,7 @@ import {
     usePromises,
     useRefetchAll
 } from '../derived-helpers';
-import { DerivedQueryResult } from '../types';
+import type { DerivedQueryResult } from '../types';
 
 export type DataTuple<Qs extends readonly DerivedQueryResult[]> = {
     [K in keyof Qs]: Qs[K] extends DerivedQueryResult<infer D> ? D : never;

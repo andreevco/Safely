@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
 import { allActualised, minUpdatedAt, usePromises, useRefetchAll } from '../derived-helpers';
-import { DerivedQueryResult } from '../types';
+import type { DerivedQueryResult } from '../types';
 
 type SettledStatus = 'pending' | 'fulfilled' | 'rejected';
 

@@ -1,5 +1,7 @@
 import { StyleSheet } from 'react-native-unistyles';
 
+export const INPUT_LINE_HEIGHT = 22;
+
 export const styles = StyleSheet.create(theme => ({
     labelContainer: {
         paddingTop: theme.spacing[12],
@@ -33,6 +35,7 @@ export const styles = StyleSheet.create(theme => ({
     },
     input: {
         fontSize: 17,
+        lineHeight: INPUT_LINE_HEIGHT,
         fontWeight: 400,
         color: theme.colors.text.primary,
         paddingTop: 0,
@@ -56,11 +59,32 @@ export const styles = StyleSheet.create(theme => ({
         justifyContent: 'center',
         alignItems: 'center'
     },
+    clearIconButton: {
+        right: 20
+    },
     selectedContent: {
         flexDirection: 'row',
         alignItems: 'center',
         gap: theme.spacing[4]
     },
+    inputModeBox: {
+        position: 'relative'
+    },
+    measure: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        top: 0,
+        opacity: 0
+    },
+    inputSuffix: {
+        position: 'absolute',
+        flexDirection: 'row',
+        alignItems: 'center'
+    },
+    wrapSpacer: (height: number) => ({
+        height
+    }),
     selectedDot: (color: string) => ({
         width: 20,
         height: 20,

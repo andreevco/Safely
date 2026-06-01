@@ -1,5 +1,5 @@
 import { useFocusEffect } from '@react-navigation/native';
-import { StaticScreenProps } from '@react-navigation/native';
+import type { StaticScreenProps } from '@react-navigation/native';
 import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Keyboard, TextInput, TouchableOpacity, View } from 'react-native';

@@ -1,8 +1,11 @@
-import { CommonActions, useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
+import { CommonActions } from '@react-navigation/native';
 import { useCallback } from 'react';
 
-import { MnemonicResource, PortfolioMeta } from '@safely/core';
+import type { PortfolioMeta } from '@safely/core';
+import { MnemonicResource } from '@safely/core';
 import {
+    useAppContext,
     useGeneratePortfolio,
     useImportPortfolio,
     useUnlockableSecretEncryptorFactory
@@ -22,16 +25,21 @@ export function useAddWalletFlow() {
     const { mutateAsync: importPortfolio } = useImportPortfolio();
     const { mutateAsync: generatePortfolio } = useGeneratePortfolio();
     const createEncryptor = useUnlockableSecretEncryptorFactory();
+    const {
+        storage: {
+            sync: { getSecureEncrypted }
+        }
+    } = useAppContext();
 
     const startCreateFlow = useCallback(() => {
         navigation.dispatch(
             CommonActions.navigate(routes.customize, {
                 onSave: async (meta: PortfolioMeta) => {
-                    using secretEncryptor = createEncryptor();
-                    await secretEncryptor.unlockEncryption();
+                    using secureEncryptedStorage = getSecureEncrypted();
+                    await secureEncryptedStorage.unlock();
 
                     await withLoader(async () => {
-                        await generatePortfolio({ meta, secretEncryptor });
+                        await generatePortfolio({ meta, secureEncryptedStorage });
                     });
 
                     navigation.dispatch(
@@ -46,7 +54,7 @@ export function useAddWalletFlow() {
                 }
             })
         );
-    }, [navigation, generatePortfolio, withLoader]);
+    }, [navigation, generatePortfolio, withLoader, getSecureEncrypted]);
 
     const startImportFlow = useCallback(() => {
         navigation.dispatch(CommonActions.navigate(routes.importWallet));

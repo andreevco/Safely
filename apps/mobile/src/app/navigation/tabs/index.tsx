@@ -1,8 +1,5 @@
-import {
-    BottomTabBar,
-    BottomTabBarProps,
-    createBottomTabNavigator
-} from '@react-navigation/bottom-tabs';
+import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import { BottomTabBar, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import i18next from 'i18next';
 import { useEffect, useState } from 'react';
 
@@ -47,6 +44,9 @@ export const TabsNavigator = createBottomTabNavigator({
         },
         SafelyBetaScreen: {
             screen: SafelyBetaScreen,
+            linking: {
+                path: 'beta'
+            },
             options: () => ({
                 title: i18next.t('tabs.about'),
                 tabBarIcon: ({ color }) => (

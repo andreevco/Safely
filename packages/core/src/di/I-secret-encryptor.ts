@@ -5,7 +5,7 @@ export {
     sSecretEncrypted
 } from '@safely/sync';
 
-import { type SSecretDecrypted, type SSecretEncrypted } from '@safely/sync';
+import type { SSecretDecrypted, SSecretEncrypted } from '@safely/sync';
 
 export interface ISecretEncryptor {
     encrypt(decryptedSecret: SSecretDecrypted): Promise<SSecretEncrypted>;

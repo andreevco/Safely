@@ -1,4 +1,5 @@
-import { SharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
+import type { SharedValue } from 'react-native-reanimated';
+import { useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 
 export const styles = StyleSheet.create(theme => ({
@@ -19,6 +20,7 @@ export const styles = StyleSheet.create(theme => ({
     leftContentContainer: {
         paddingLeft: theme.spacing[16],
         paddingRight: theme.spacing[8],
+        gap: 1,
         paddingTop: theme.spacing[8] - theme.border.border,
         paddingBottom: 11 - theme.border.border,
         flex: 1

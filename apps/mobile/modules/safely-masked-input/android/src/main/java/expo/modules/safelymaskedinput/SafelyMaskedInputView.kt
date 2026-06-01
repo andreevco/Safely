@@ -63,6 +63,8 @@ class SafelyMaskedInputView(context: Context, appContext: AppContext) : ExpoView
     private var suffixColor = Color.GRAY
     private var suffixOpacity = 1.0f
     private var suffixFontSize = 0f
+    private var placeholderText: String = ""
+    private var placeholderColor: Int = Color.GRAY
 
     // MARK: - Init
 
@@ -125,13 +127,14 @@ class SafelyMaskedInputView(context: Context, appContext: AppContext) : ExpoView
         applyMask()
     }
 
-    fun setFontSizeValue(size: Float) { editText.setTextSize(TypedValue.COMPLEX_UNIT_SP, size) }
+    fun setFontSizeValue(size: Float) { editText.setTextSize(TypedValue.COMPLEX_UNIT_SP, size); applyPlaceholder() }
     fun setFontFamilyValue(family: String) {
         try { editText.typeface = Typeface.create(family, editText.typeface?.style ?: Typeface.NORMAL) } catch (_: Exception) {}
+        applyPlaceholder()
     }
     fun setTextColorValue(hex: String) { tryParseColor(hex) { integerColor = it; applyMask() } }
-    fun setPlaceholderValue(placeholder: String) { editText.hint = placeholder }
-    fun setPlaceholderTextColorValue(hex: String) { tryParseColor(hex) { editText.setHintTextColor(it) } }
+    fun setPlaceholderValue(placeholder: String) { placeholderText = placeholder; applyPlaceholder() }
+    fun setPlaceholderTextColorValue(hex: String) { tryParseColor(hex) { placeholderColor = it; editText.setHintTextColor(it); applyPlaceholder() } }
     fun setKeyboardTypeValue(type: String) {
         editText.inputType = when (type) {
             "numeric" -> EditorInfo.TYPE_CLASS_NUMBER
@@ -154,10 +157,10 @@ class SafelyMaskedInputView(context: Context, appContext: AppContext) : ExpoView
     fun setDecimalOpacityValue(opacity: Double) { decimalOpacity = opacity.toFloat(); applyMask() }
     fun setPlaceholderDigitColorValue(hex: String) {}
     fun setPlaceholderDigitOpacityValue(opacity: Double) {}
-    fun setSuffixValue(value: String) { suffix = value; applyMask() }
-    fun setSuffixColorValue(hex: String) { tryParseColor(hex) { suffixColor = it; applyMask() } }
-    fun setSuffixOpacityValue(opacity: Double) { suffixOpacity = opacity.toFloat(); applyMask() }
-    fun setSuffixFontSizeValue(size: Float) { suffixFontSize = size; applyMask() }
+    fun setSuffixValue(value: String) { suffix = value; applyMask(); applyPlaceholder() }
+    fun setSuffixColorValue(hex: String) { tryParseColor(hex) { suffixColor = it; applyMask(); applyPlaceholder() } }
+    fun setSuffixOpacityValue(opacity: Double) { suffixOpacity = opacity.toFloat(); applyMask(); applyPlaceholder() }
+    fun setSuffixFontSizeValue(size: Float) { suffixFontSize = size; applyMask(); applyPlaceholder() }
 
     // MARK: - Imperative commands
 
@@ -172,6 +175,28 @@ class SafelyMaskedInputView(context: Context, appContext: AppContext) : ExpoView
 
     private fun applyMask() {
         updateDisplay(MaskEngine.apply(rawValue, decimals, decimalSeparator))
+    }
+
+    private fun applyPlaceholder() {
+        if (placeholderText.isEmpty()) {
+            editText.hint = null
+            return
+        }
+
+        val builder = SpannableStringBuilder()
+        builder.append(placeholderText)
+        builder.setSpan(ForegroundColorSpan(placeholderColor), 0, builder.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+        if (suffix.isNotEmpty()) {
+            val start = builder.length
+            builder.append(" $suffix")
+            builder.setSpan(ForegroundColorSpan(colorWithOpacity(suffixColor, suffixOpacity)), start, builder.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            builder.setSpan(NormalTypefaceSpan(), start, builder.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            val size = if (suffixFontSize > 0) suffixFontSize else editText.textSize / resources.displayMetrics.scaledDensity
+            builder.setSpan(AbsoluteSizeSpan(size.toInt(), true), start, builder.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
+
+        editText.hint = builder
     }
 
     private fun updateDisplay(result: MaskResult) {
@@ -224,7 +249,7 @@ class SafelyMaskedInputView(context: Context, appContext: AppContext) : ExpoView
 
         if (suffix.isNotEmpty() && segments.isNotEmpty()) {
             val start = builder.length
-            builder.append("  $suffix")
+            builder.append(" $suffix")
             builder.setSpan(ForegroundColorSpan(colorWithOpacity(suffixColor, suffixOpacity)), start, builder.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
             builder.setSpan(NormalTypefaceSpan(), start, builder.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
             val size = if (suffixFontSize > 0) suffixFontSize else editText.textSize / resources.displayMetrics.scaledDensity
@@ -236,7 +261,7 @@ class SafelyMaskedInputView(context: Context, appContext: AppContext) : ExpoView
 
     // MARK: - Suffix helpers
 
-    private fun suffixDisplayLength(): Int = if (suffix.isEmpty()) 0 else suffix.length + 2
+    private fun suffixDisplayLength(): Int = if (suffix.isEmpty()) 0 else suffix.length + 1
 
     private fun maxEditablePosition(): Int {
         val textLen = editText.text?.length ?: 0
@@ -245,7 +270,7 @@ class SafelyMaskedInputView(context: Context, appContext: AppContext) : ExpoView
 
     private fun stripSuffix(text: String): String {
         if (suffix.isEmpty()) return text
-        val suffixPart = "  $suffix"
+        val suffixPart = " $suffix"
         return if (text.endsWith(suffixPart)) text.dropLast(suffixPart.length) else text
     }
 

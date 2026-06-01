@@ -12,41 +12,14 @@ export const styles = StyleSheet.create(theme => ({
         gap: theme.spacing[4],
         variants: {
             variant: {
-                warning: {
+                warn: {
                     backgroundColor: Color(theme.colors.accent.orange).alpha(0.16).toString()
+                },
+                alternate: {
+                    backgroundColor: theme.colors.background.secondary
                 },
                 danger: {
                     backgroundColor: Color(theme.colors.accent.red).alpha(0.16).toString()
-                }
-            }
-        }
-    },
-    text: {
-        color: theme.colors.text.primary,
-        variants: {
-            variant: {
-                warning: {
-                    color: theme.colors.accent.orange
-                },
-                danger: {
-                    color: theme.colors.accent.red
-                }
-            }
-        }
-    },
-    action: {
-        flexDirection: 'row',
-        alignItems: 'center'
-    },
-    icon: {
-        tintColor: theme.colors.icon.secondary,
-        variants: {
-            variant: {
-                warning: {
-                    tintColor: theme.colors.accent.orange
-                },
-                danger: {
-                    tintColor: theme.colors.accent.red
                 }
             }
         }

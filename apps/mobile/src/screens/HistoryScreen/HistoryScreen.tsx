@@ -1,19 +1,16 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
 import { useCallback } from 'react';
-import { View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { BtcActivityItem, useHasHistory, useHasPortfolio } from '@safely/ux';
+import type { BtcActivityItem } from '@safely/ux';
+import { useActivePortfolio, useHasPortfolio } from '@safely/ux';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { HistoryList } from '@mobile/features/history';
 import { WalletSelector } from '@mobile/features/portfolio';
 import { Screen } from '@mobile/shared/ui';
 
 const HistoryContent = () => {
-    const navigation = useNavigation<RootStackNavigationProp<'TabsNavigator'>>();
-    const { data: hasHistory } = useHasHistory();
-    const insets = useSafeAreaInsets();
+    const navigation = useNavigation();
+    const portfolio = useActivePortfolio();
 
     const onNavigateToTransaction = useCallback(
         (activity: BtcActivityItem) => {
@@ -24,16 +21,15 @@ const HistoryContent = () => {
 
     return (
         <>
-            {hasHistory !== false ? (
-                <Screen.Header>
-                    <Screen.Header.Title>
-                        <WalletSelector />
-                    </Screen.Header.Title>
-                </Screen.Header>
-            ) : (
-                <View style={{ height: insets.top }} />
-            )}
-            <HistoryList onNavigateToTransaction={onNavigateToTransaction} />
+            <Screen.Header>
+                <Screen.Header.Title>
+                    <WalletSelector />
+                </Screen.Header.Title>
+            </Screen.Header>
+            <HistoryList
+                key={portfolio?.id.toString()}
+                onNavigateToTransaction={onNavigateToTransaction}
+            />
         </>
     );
 };

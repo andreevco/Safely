@@ -1,13 +1,18 @@
-import { StaticScreenProps, useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
+import type { StaticScreenProps } from '@react-navigation/native';
 import { notificationAsync, NotificationFeedbackType } from 'expo-haptics';
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
+import type { SendFormResult } from '@safely/ux';
 import {
-    SendFormResult,
     useActiveBtcWallet,
+    useActiveFiat,
+    useActivePortfolio,
+    useAnalytics,
+    useAppContext,
     useEstimateAssetTransfer,
     useNumberFormatter,
     useSendAssetTransfer
@@ -19,7 +24,7 @@ import { Checkmark96, Icon, List, Screen, Text, Image } from '@mobile/shared/ui'
 
 import { Amount, ConfirmationFooter, Wallet, TransactionCell } from './components';
 import { styles } from './ConfirmationScreen.styles';
-import { ConfirmationState } from './ConfirmationScreen.types';
+import type { ConfirmationState } from './ConfirmationScreen.types';
 
 export type SendConfirmationParams = {
     confirmationResult: SendFormResult;
@@ -31,31 +36,61 @@ export type ConfirmationScreenProps = StaticScreenProps<SendConfirmationParams>;
 export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
     const { route } = props;
     const { confirmationResult, onSuccess } = route.params;
-    const navigation = useNavigation();
+
     const { t } = useTranslation();
+    const analytics = useAnalytics();
+    const fiat = useActiveFiat();
+    const navigation = useNavigation();
     const btcWallet = useActiveBtcWallet();
+    const activePortfolio = useActivePortfolio();
+    const { logger } = useAppContext();
 
     const [confirmationState, setConfirmationState] = useState<ConfirmationState>({ type: 'idle' });
 
-    const { data: txTemplate } = useEstimateAssetTransfer(confirmationResult, {
-        enabled: confirmationState.type !== 'success'
-    });
+    const { data: txTemplate, error: txTemplateError } = useEstimateAssetTransfer(
+        confirmationResult,
+        {
+            enabled: confirmationState.type !== 'success'
+        }
+    );
     const { mutateAsync: send, data: sendResult } = useSendAssetTransfer(txTemplate);
     const formatter = useNumberFormatter();
 
     const onSend = useCallback(async () => {
+        const fiatAmount = confirmationResult.amount.fiatAssetAmount.amount.toNumber();
+        const cryptoCurrency = confirmationResult.amount.cryptoAssetAmount.asset.symbol;
+
         try {
             setConfirmationState({ type: 'sending' });
             await send();
             onSuccess?.();
             notificationAsync(NotificationFeedbackType.Success);
             setConfirmationState({ type: 'success' });
+            void analytics.trackSendFinish({
+                cryptoCurrency,
+                fiatAmount,
+                fiatSymbol: fiat.id.symbol
+            });
         } catch (error) {
-            console.error(error);
+            logger.error('[ConfirmationScreen] send failed', error);
             notificationAsync(NotificationFeedbackType.Error);
             setConfirmationState({ type: 'error', error });
+            void analytics.trackSendFinish({
+                cryptoCurrency,
+                fiatAmount,
+                fiatSymbol: fiat.id.symbol,
+                error
+            });
         }
-    }, [send, onSuccess]);
+    }, [send, onSuccess, logger, confirmationResult, analytics, fiat.id.symbol]);
+
+    const displayState = useMemo(() => {
+        if (txTemplateError) {
+            return { type: 'estimateError' as const, error: txTemplateError };
+        }
+
+        return confirmationState;
+    }, [confirmationState, txTemplateError]);
 
     const onGoBack = useCallback(() => {
         navigation.getParent()?.goBack();
@@ -68,6 +103,7 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
             case 'idle':
             case 'sending':
             case 'error':
+            case 'estimateError':
                 return (
                     <Animated.View
                         key={confirmationState.type}
@@ -92,9 +128,7 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
                         exiting={FadeOut.duration(150)}
                         style={styles.titleWithLogoContainer}
                     >
-                        <View style={styles.assetLogoContainer}>
-                            <Icon icon={Checkmark96} color="accentGreen" />
-                        </View>
+                        <Icon icon={Checkmark96} color="accentGreen" />
                         <Text style={styles.title} variant="titleM">
                             {t('confirmation.success')}
                         </Text>
@@ -106,7 +140,7 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
     }, [confirmationState.type, asset, t]);
 
     return (
-        <Screen background="primary">
+        <Screen>
             <Screen.Header>
                 {confirmationState.type !== 'success' && <Screen.Header.BackButton />}
                 <Screen.Header.Title />
@@ -117,22 +151,31 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
                     <List.Group style={styles.listGroup}>
                         <TransactionCell
                             title={t('confirmation.from')}
-                            value={<Wallet address={btcWallet.address} />}
+                            value={
+                                <Wallet
+                                    address={btcWallet.address}
+                                    meta={{ kind: 'portfolio', meta: activePortfolio.meta }}
+                                />
+                            }
                         />
                         <TransactionCell
                             title={t('confirmation.to')}
-                            value={<Wallet recipient={confirmationResult.recipient} />}
+                            value={
+                                <Wallet
+                                    address={confirmationResult.recipient.address}
+                                    meta={confirmationResult.recipientMeta}
+                                />
+                            }
                         />
                     </List.Group>
                     <List.Group style={styles.listGroup}>
                         <Amount
-                            fiatAmount={confirmationResult.amount.fiatAssetAmount?.format(
-                                formatter
-                            )}
-                            cryptoAmount={confirmationResult.amount.cryptoAssetAmount?.format(
+                            fiatAmount={confirmationResult.amount.fiatAssetAmount.format(formatter)}
+                            cryptoAmount={confirmationResult.amount.cryptoAssetAmount.format(
                                 formatter,
                                 { fullPrecision: true }
                             )}
+                            inputType={confirmationResult.amount.inputType}
                         />
                         <TransactionFee estimation={txTemplate?.estimation} />
                     </List.Group>
@@ -145,7 +188,7 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
                 <ConfirmationFooter
                     onSend={onSend}
                     onGoBack={onGoBack}
-                    state={confirmationState}
+                    state={displayState}
                     isEstimating={!txTemplate}
                 />
             </View>

@@ -1,10 +1,17 @@
 import { StyleSheet } from 'react-native-unistyles';
 
+import { AccountLinkState } from '@safely/ux';
+
 export const styles = StyleSheet.create(theme => ({
-    dot: (synced: boolean) => ({
+    dot: (state: AccountLinkState) => ({
         width: 10,
         height: 10,
         borderRadius: theme.radius.full,
-        backgroundColor: synced ? theme.colors.accent.green : theme.colors.accent.orange
+        backgroundColor:
+            state === AccountLinkState.UNLINKED
+                ? theme.colors.accent.red
+                : state === AccountLinkState.PROTECTED
+                  ? theme.colors.accent.green
+                  : theme.colors.accent.orange
     })
 }));

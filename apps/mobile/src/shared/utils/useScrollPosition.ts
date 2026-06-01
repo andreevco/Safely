@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
-import { type NativeScrollEvent, type NativeSyntheticEvent } from 'react-native';
+import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 
 export type UseScrollPositionOptions = {
     threshold?: number;

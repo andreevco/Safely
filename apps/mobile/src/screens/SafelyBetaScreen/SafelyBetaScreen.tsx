@@ -1,44 +1,51 @@
-import { useCallback } from 'react';
+import { useNavigation } from '@react-navigation/core';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Linking, View } from 'react-native';
 
-import { useBootConfig } from '@safely/ux';
+import { useAppContext, useBetaFeedWatched } from '@safely/ux';
 
-import { resources } from '@mobile/shared/resources';
-import { Banner, Image, Screen, Text } from '@mobile/shared/ui';
+import { AboutFeed } from '@mobile/features/about';
+import { Screen, Text } from '@mobile/shared/ui';
+import { useCopy } from '@mobile/shared/utils/copy';
 
 import { styles } from './SafelyBetaScreen.styles';
 
 export const SafelyBetaScreen = () => {
     const { t } = useTranslation();
-    const supportEmail = useBootConfig().references.support.email;
+    const { version } = useAppContext();
+    const navigation = useNavigation();
+    const { shouldShowBadge, markWatched } = useBetaFeedWatched();
+    const handleCopy = useCopy();
 
-    const handleFeedback = useCallback(() => {
-        void Linking.openURL(`mailto:${supportEmail}`);
-    }, [supportEmail]);
+    useEffect(() => {
+        navigation.setOptions({
+            tabBarBadge: shouldShowBadge ? '' : undefined,
+            tabBarBadgeStyle: styles.badge
+        });
+    }, [shouldShowBadge, navigation]);
+
+    useFocusEffect(
+        useCallback(() => {
+            void markWatched();
+        }, [markWatched])
+    );
 
     return (
         <Screen>
-            <Screen.Header />
-            <View style={styles.container}>
-                <View style={styles.centerBlock}>
-                    <Image source={resources.safelyLogoWithBg} style={styles.logo} />
-                    <View style={styles.titleBox}>
-                        <Text variant="titleM" textAlign="center">
-                            {t('safelyBeta.title')}
-                        </Text>
-                        <Text variant="bodyL" color="secondary" textAlign="center">
-                            {t('safelyBeta.subtitle')}
-                        </Text>
-                    </View>
-                </View>
-                <Banner
-                    style={styles.banner}
-                    text={t('safelyBeta.feedback.description')}
-                    actionText={t('safelyBeta.feedback.action')}
-                    onPress={handleFeedback}
-                />
-            </View>
+            <Screen.Header variant="left">
+                <Screen.Header.Title>
+                    <Text variant="titleS">{t('safelyBeta.title')}</Text>
+                    <Text
+                        onPress={() => handleCopy(version, t('safelyBeta.versionCopied'))}
+                        variant="bodyM"
+                        color="secondary"
+                    >
+                        {t('safelyBeta.subtitle', { version })}
+                    </Text>
+                </Screen.Header.Title>
+            </Screen.Header>
+            <AboutFeed />
         </Screen>
     );
 };

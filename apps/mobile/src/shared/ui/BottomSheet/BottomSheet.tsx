@@ -1,7 +1,8 @@
 import GHBottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
-import { useNavigation } from '@react-navigation/native';
-import React, { useCallback, useMemo, useRef } from 'react';
-import { Pressable, StyleSheet, View, ViewStyle } from 'react-native';
+import { useNavigation } from '@react-navigation/core';
+import React, { forwardRef, useCallback, useImperativeHandle, useMemo, useRef } from 'react';
+import type { ViewStyle } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
     interpolateColor,
     useAnimatedStyle,
@@ -19,17 +20,26 @@ type ModalSheetProps = {
     children: React.ReactNode;
     containerStyle?: ViewStyle;
     closeOnBackdropPress?: boolean;
+    onClose?: () => void;
     headerTitle?: string;
     shortHeader?: boolean;
 };
 
-export function BottomSheet({
-    children,
-    containerStyle,
-    closeOnBackdropPress = true,
-    headerTitle,
-    shortHeader = false
-}: ModalSheetProps) {
+export type BottomSheetRef = {
+    close: () => void;
+};
+
+export const BottomSheet = forwardRef<BottomSheetRef, ModalSheetProps>(function BottomSheet(
+    {
+        children,
+        containerStyle,
+        closeOnBackdropPress = true,
+        headerTitle,
+        shortHeader = false,
+        onClose
+    },
+    forwardedRef
+) {
     const nav = useNavigation();
     const ref = useRef<GHBottomSheet>(null);
     const { theme } = useUnistyles();
@@ -47,12 +57,15 @@ export function BottomSheet({
     });
 
     const dismissRoute = useCallback(() => {
+        onClose?.();
         nav.goBack();
-    }, [nav]);
+    }, [nav, onClose]);
 
     const requestClose = useCallback(() => {
         if (index.value >= 0) ref.current?.close();
     }, [index]);
+
+    useImperativeHandle(forwardedRef, () => ({ close: requestClose }), [requestClose]);
 
     const contextValue = useMemo(() => ({ close: requestClose }), [requestClose]);
 
@@ -95,4 +108,4 @@ export function BottomSheet({
             </Animated.View>
         </BottomSheetContext.Provider>
     );
-}
+});

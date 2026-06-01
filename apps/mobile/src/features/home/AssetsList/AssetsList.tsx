@@ -1,16 +1,15 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
 
 import { assertUnreachable, BLOCKCHAIN_NAME } from '@safely/core';
 import { useHomeScreenList } from '@safely/ux';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { BtcAssetCell, AssetCellSkeleton } from '@mobile/entities/asset';
 import { List } from '@mobile/shared/ui';
 
 import { styles } from './AssetsList.styles';
 
 export const AssetsList = () => {
-    const navigation = useNavigation<RootStackNavigationProp<'TabsNavigator'>>();
+    const navigation = useNavigation();
     const { data } = useHomeScreenList() ?? [];
 
     if (!data) {

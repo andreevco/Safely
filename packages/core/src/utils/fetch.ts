@@ -1,14 +1,19 @@
-import { z } from 'zod';
+import type { z } from 'zod';
 
 import { BtcApiError } from '../api/btc/errors';
 import { APIErrorSchema } from '../api/btc/models';
 
 export class ApiClient {
-    protected readonly headers: Record<string, string> = {};
+    protected readonly headers: Record<string, string>;
 
     protected readonly timeoutMs = 5000;
 
-    constructor(protected readonly baseUrl: string) {}
+    constructor(
+        protected readonly baseUrl: string,
+        headers: Record<string, string> = {}
+    ) {
+        this.headers = { ...headers };
+    }
 
     protected async getJson<T extends z.ZodTypeAny, Q extends object>(
         path: string,
@@ -31,6 +36,33 @@ export class ApiClient {
             headers: { 'Content-Type': 'text/plain; charset=utf-8' },
             body
         });
+        return await this.parseAndValidate(response, schema);
+    }
+
+    protected async postJson(path: string, body: unknown): Promise<void>;
+    protected async postJson<T extends z.ZodTypeAny>(
+        path: string,
+        body: unknown,
+        schema: T
+    ): Promise<z.infer<T>>;
+    protected async postJson<T extends z.ZodTypeAny>(
+        path: string,
+        body: unknown,
+        schema?: T
+    ): Promise<z.infer<T> | void> {
+        const url = this.buildUrl(path);
+        const response = await this.performFetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+
+        if (!schema) {
+            if (!response.ok) await this.parseAndThrow(response);
+
+            return;
+        }
+
         return await this.parseAndValidate(response, schema);
     }
 
@@ -103,5 +135,23 @@ export class ApiClient {
         }
 
         return result.data;
+    }
+
+    private async parseAndThrow(response: Response): Promise<never> {
+        const text = await response.text();
+        let parsed: unknown;
+
+        try {
+            parsed = text ? JSON.parse(text) : {};
+        } catch {
+            parsed = text;
+        }
+
+        const errorResult = APIErrorSchema.safeParse(parsed);
+        const message = errorResult.success
+            ? errorResult.data.error
+            : response.statusText || 'Request failed';
+
+        throw new BtcApiError(message, response.status, parsed);
     }
 }

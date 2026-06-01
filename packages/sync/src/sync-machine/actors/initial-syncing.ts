@@ -1,44 +1,67 @@
 import { fromPromise } from 'xstate';
 
+import type { StorageVersion } from '@safely/slottree';
+
+import { SyncFlowLogger } from '../../logger';
+import { SyncStatus } from '../../sync-provider/sync-status';
 import { hex } from '../../utils/buffer';
-import { SyncMachineConfig } from '../config';
-import { classifyError } from '../error-handler';
+import type { SyncMachineConfig } from '../config';
+import { classifyError, SyncMachineError } from '../error-handler';
 
-export const initialSyncing = fromPromise(async ({ input }: { input: SyncMachineConfig }) => {
-    console.log('[Sync] Initial syncing: fetching latest snapshot from server...');
-    const knownState = await input.syncStateRepository.getState();
-    input.logger.info(`Initial sync ${knownState.snapshotProof.toString('hex')}`);
+export const initialSyncing = fromPromise(
+    async ({
+        input,
+        signal
+    }: {
+        input: SyncMachineConfig<StorageVersion, unknown>;
+        signal: AbortSignal;
+    }) => {
+        const flow = SyncFlowLogger.start(input.logger, 'sync_machine.initial_sync');
+        const knownState = await input.syncStateRepository.getState();
 
-    let lastState;
-    try {
-        lastState = await input.snapshotsApi.getActualSnapshot({
-            withProofChainTo: knownState.snapshotProof.toString('hex')
+        let lastState;
+        try {
+            lastState = await input.snapshotsApi.getActualSnapshot(
+                {
+                    withProofChainTo: knownState.snapshotProof.toString('hex')
+                },
+                {
+                    signal
+                }
+            );
+        } catch (e) {
+            flow.logFail(e, 'fetch.failed');
+            throw await classifyError(e);
+        }
+        let result;
+        try {
+            result = await input.syncOperations.applyRemoteUpdate(
+                {
+                    kid: hex(lastState.snapshot.kid),
+                    ciphertext: hex(lastState.snapshot.ciphertext),
+                    nonce: hex(lastState.snapshot.nonce),
+                    signature: hex(lastState.snapshot.signature),
+                    snapshotProof: hex(lastState.snapshot.snapshotProof),
+                    snapshotProofChain: lastState.proofChain
+                        ? lastState.proofChain.proofChain.map(proof => hex(proof))
+                        : []
+                },
+                signal
+            );
+        } catch (e) {
+            flow.logFail(e, 'apply.failed');
+            throw await classifyError(e);
+        }
+        if (result.revoked) {
+            flow.logIncomplete('revoked');
+            throw new SyncMachineError({
+                type: 'fatal',
+                status: SyncStatus.DEVICE_DELETED
+            });
+        }
+        flow.logEnd('completed', {
+            hasLocalChanges: result.hasLocalChanges
         });
-    } catch (e) {
-        throw await classifyError(e);
+        return result;
     }
-    console.log(
-        '[Sync] Initial syncing: received snapshot from server, proof:',
-        lastState.snapshot.snapshotProof.slice(0, 16) + '...'
-    );
-
-    try {
-        return await input.updateHandler.handle({
-            kid: hex(lastState.snapshot.kid),
-            ciphertext: hex(lastState.snapshot.ciphertext),
-            nonce: hex(lastState.snapshot.nonce),
-            signature: hex(lastState.snapshot.signature),
-            snapshotProof: hex(lastState.snapshot.snapshotProof),
-            snapshotProofChain: lastState.proofChain
-                ? lastState.proofChain.proofChain.map(proof => hex(proof))
-                : []
-        });
-    } catch (e) {
-        console.error('[SyncMachine] Error during initial syncing', {
-            isError: e instanceof Error,
-            name: e instanceof Error ? e.name : undefined,
-            message: e instanceof Error ? e.message : String(e)
-        });
-        throw await classifyError(e);
-    }
-});
+);

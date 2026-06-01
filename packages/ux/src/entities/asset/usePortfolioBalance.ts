@@ -1,4 +1,4 @@
-import { Portfolio } from '@safely/core';
+import type { Portfolio } from '@safely/core';
 
 import { useDerivedQuery } from '../../shared';
 import { useActiveFiat } from '../fiat';

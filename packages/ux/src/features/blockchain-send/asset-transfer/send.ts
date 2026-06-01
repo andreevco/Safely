@@ -1,15 +1,12 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 
-import { BtcTransactionTemplate, TransactionTemplate } from '@safely/core';
+import type { TransactionTemplate } from '@safely/core';
+import { BtcTransactionTemplate } from '@safely/core';
 
-import { BroadcastedBtcTx, useBtcSendLocked } from '../../../entities';
-import { useSetBroadcastedBtcTxCache } from '../../../entities/btc-blockchain/broadcasted-tx-cache';
-import { utxo } from '../../../entities/btc-blockchain/keys';
-import { refetchQueries } from '../../../shared';
+import { BroadcastedBtcTx, useBtcSendLocked, useSetLastBroadcastedBtcTx } from '../../../entities';
 
 export function useSendAssetTransfer(transactionTemplate: TransactionTemplate | undefined) {
-    const { mutateAsync: setBroadcastedTx } = useSetBroadcastedBtcTxCache();
-    const queryClient = useQueryClient();
+    const { mutateAsync: setLastBroadcastedBtcTx } = useSetLastBroadcastedBtcTx();
     const isLocked = useBtcSendLocked();
 
     return useMutation({
@@ -26,11 +23,9 @@ export function useSendAssetTransfer(transactionTemplate: TransactionTemplate | 
         },
         async onSuccess() {
             if (transactionTemplate instanceof BtcTransactionTemplate) {
-                await setBroadcastedTx(
+                await setLastBroadcastedBtcTx(
                     BroadcastedBtcTx.fromTransactionTemplate(transactionTemplate)
                 );
-                void queryClient.invalidateQueries({ queryKey: utxo.toKey() });
-                void refetchQueries(queryClient, utxo.toKey());
             }
         }
     });

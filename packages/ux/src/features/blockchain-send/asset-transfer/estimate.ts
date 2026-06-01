@@ -1,20 +1,31 @@
-import { keepPreviousData, skipToken, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, skipToken, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useCallback } from 'react';
 
+import type {
+    BtcEstimator,
+    RatedCryptoAssetAmount,
+    TransactionTemplate,
+    Recipient,
+    BtcApiUtxo
+} from '@safely/core';
 import {
     assertUnreachable,
     BLOCKCHAIN_NAME,
     BTC_ASSET,
     BtcAssetAmount,
-    BtcEstimator,
     BtcFeeType,
-    RatedCryptoAssetAmount,
-    TransactionTemplate,
-    BtcApiUtxo
+    OutputsAreSpendingMoreThanInputsError
 } from '@safely/core';
 
 import { useActiveBtcWalletUtxoForEstimation, useAssets } from '../../../entities';
-import { defineQueryKeys, finalKey, mappedParams, QUERIES_REFETCH_INTERVAL } from '../../../shared';
-import { SendFormResult } from '../../forms';
+import {
+    defineQueryKeys,
+    finalKey,
+    mappedParams,
+    QUERIES_REFETCH_INTERVAL,
+    QUERIES_STALE_TIME
+} from '../../../shared';
+import type { SendFormResult } from '../../forms/send/types';
 import { useBtcEstimator } from '../btc/estimator';
 
 export const estimationKey = defineQueryKeys('estimation', {
@@ -56,22 +67,32 @@ export function useEstimateAssetTransfer(form: SendFormResult, options?: { enabl
                           const recipientAddress = form.recipient.address;
                           const feeType = BtcFeeType.FAST;
 
-                          return btcEstimator.estimate(
-                              form.isMax
-                                  ? {
-                                        type: 'max',
-                                        recipientAddress,
-                                        estimatedAmount: form.amount.cryptoAssetAmount,
-                                        feeType
-                                    }
-                                  : {
-                                        type: 'not-max',
-                                        recipientAddress,
-                                        feeType,
-                                        amount: form.amount.cryptoAssetAmount
-                                    },
-                              utxos
-                          );
+                          try {
+                              return await btcEstimator.estimate(
+                                  form.isMax
+                                      ? {
+                                            type: 'max',
+                                            recipientAddress,
+                                            estimatedAmount: form.amount.cryptoAssetAmount,
+                                            feeType
+                                        }
+                                      : {
+                                            type: 'not-max',
+                                            recipientAddress,
+                                            feeType,
+                                            amount: form.amount.cryptoAssetAmount
+                                        },
+                                  utxos
+                              );
+                          } catch (error) {
+                              if (
+                                  error instanceof Error &&
+                                  error.message.includes('Outputs are spending more than Inputs')
+                              ) {
+                                  throw new OutputsAreSpendingMoreThanInputsError();
+                              }
+                              throw error;
+                          }
                       }
 
                       assertUnreachable(form.blockchain);
@@ -84,48 +105,60 @@ export function useEstimateAssetTransfer(form: SendFormResult, options?: { enabl
     });
 }
 
-export function useMaxSendAssetTransfer(
-    form: Pick<SendFormResult, 'blockchain' | 'recipient'> | undefined,
-    options?: { enabled?: boolean }
-) {
+async function computeMaxSendValue(params: {
+    form: Pick<SendFormResult, 'blockchain' | 'recipient'>;
+    btcEstimator: BtcEstimator;
+    assets: RatedCryptoAssetAmount[];
+    utxos: BtcApiUtxo[];
+}): Promise<BtcAssetAmount> {
+    const { form, btcEstimator, assets, utxos } = params;
+
+    if (form.blockchain === BLOCKCHAIN_NAME.BTC) {
+        const fee = await btcEstimator.getSendFee(
+            { recipientAddress: form.recipient.address, feeType: BtcFeeType.FAST },
+            utxos
+        );
+
+        const btcBalance = assets.find(a => a.amount.asset.id.isEq(BTC_ASSET.id));
+        if (!btcBalance) throw new Error('BTC asset not found');
+
+        if (btcBalance.amount.lte(fee)) return BtcAssetAmount.fromWeiAmount('0');
+
+        return btcBalance.amount.amountSub(fee);
+    }
+
+    assertUnreachable(form.blockchain);
+}
+
+export function useMaxSendValueQueryConfig() {
     const btcEstimator = useBtcEstimator();
     const { data: assets } = useAssets();
     const { data: utxos } = useActiveBtcWalletUtxoForEstimation();
 
-    return useQuery({
-        queryKey: maxSendKey.form(form).params({ btcEstimator, assets, utxos }).toKey(),
-        queryFn:
-            form && utxos && assets && options?.enabled !== false
-                ? async () => {
-                      if (form.blockchain === BLOCKCHAIN_NAME.BTC) {
-                          const fee = await btcEstimator.getSendFee(
-                              {
-                                  recipientAddress: form.recipient.address,
-                                  feeType: BtcFeeType.FAST
-                              },
-                              utxos
-                          );
+    return useCallback(
+        (form: Pick<SendFormResult, 'blockchain' | 'recipient'>) => {
+            if (!utxos || !assets) return undefined;
 
-                          const btcBalance = assets?.find(a =>
-                              a.amount.asset.id.isEq(BTC_ASSET.id)
-                          );
-                          if (!btcBalance) {
-                              throw new Error('BTC asset not found');
-                          }
+            return {
+                queryKey: maxSendKey.form(form).params({ btcEstimator, assets, utxos }).toKey(),
+                queryFn: () => computeMaxSendValue({ form, btcEstimator, assets, utxos }),
+                staleTime: QUERIES_STALE_TIME.MAX_SEND
+            };
+        },
+        [btcEstimator, assets, utxos]
+    );
+}
 
-                          if (btcBalance.amount.lte(fee)) {
-                              return BtcAssetAmount.fromWeiAmount('0');
-                          }
+export function useFetchMaxValue(): (recipient: Recipient) => Promise<BtcAssetAmount | undefined> {
+    const queryClient = useQueryClient();
+    const buildConfig = useMaxSendValueQueryConfig();
 
-                          return btcBalance.amount.amountSub(fee);
-                      }
+    return useCallback(
+        async (recipient: Recipient): Promise<BtcAssetAmount | undefined> => {
+            const config = buildConfig({ blockchain: recipient.blockchain, recipient });
 
-                      assertUnreachable(form.blockchain);
-                  }
-                : skipToken,
-        refetchInterval: QUERIES_REFETCH_INTERVAL.TRANSACTION,
-        refetchOnMount: 'always',
-        placeholderData: keepPreviousData,
-        retry: 2
-    });
+            return config ? queryClient.fetchQuery(config) : undefined;
+        },
+        [queryClient, buildConfig]
+    );
 }

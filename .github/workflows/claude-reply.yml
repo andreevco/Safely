@@ -1,0 +1,117 @@
+name: Claude PR Thread Reply
+
+on:
+  pull_request_review_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write
+
+jobs:
+  reply:
+    if: |
+      contains(github.event.comment.body, '@claude reply') &&
+      github.event.comment.user.type != 'Bot'
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    concurrency:
+      group: claude-reply-${{ github.event.pull_request.number }}-${{ github.event.comment.id }}
+      cancel-in-progress: false
+
+    env:
+      CLAUDE_CODE_MAX_OUTPUT_TOKENS: '4000'
+      MAX_THINKING_TOKENS: '4000'
+      DISABLE_TELEMETRY: '1'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Collect thread context
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO_FULL: ${{ github.repository }}
+          COMMENT_ID: ${{ github.event.comment.id }}
+        run: |
+          set -euo pipefail
+          gh api "repos/$REPO_FULL/pulls/$PR_NUMBER/comments" --paginate \
+            > "$GITHUB_WORKSPACE/.pr-comments.json"
+          ROOT_ID=$(jq --argjson cid "$COMMENT_ID" '
+            (.[] | select(.id == $cid)) as $c
+            | ($c.in_reply_to_id // $c.id)
+          ' "$GITHUB_WORKSPACE/.pr-comments.json")
+          echo "Thread root id: $ROOT_ID"
+          jq --argjson rid "$ROOT_ID" '
+            [.[] | select(.id == $rid or .in_reply_to_id == $rid)]
+            | sort_by(.created_at)
+            | map({id, user: .user.login, created_at, body, path, line, diff_hunk})
+          ' "$GITHUB_WORKSPACE/.pr-comments.json" \
+            > "$GITHUB_WORKSPACE/.thread.json"
+          echo "ROOT_COMMENT_ID=$ROOT_ID" >> "$GITHUB_ENV"
+
+      - id: claude
+        uses: anthropics/claude-code-action@v1
+        timeout-minutes: 9
+        env:
+          REPO_FULL: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_args: |
+            --model claude-sonnet-4-6
+            --max-turns 5
+            --setting-sources project
+            --allowedTools "Read,Bash(gh api:*),Bash(git show:*),Bash(git diff:*),Bash(git log:*),Bash(cat:*),Bash(printf:*),Bash(mkdir:*)"
+            --disallowedTools "Task,Agent,Skill,WebSearch,WebFetch,ToolSearch,ScheduleWakeup,EnterPlanMode,ExitPlanMode,EnterWorktree,ExitWorktree,CronCreate,CronDelete,CronList,Monitor,RemoteTrigger,PushNotification,NotebookEdit,AskUserQuestion,Write,Edit,mcp__github_inline_comment__create_inline_comment"
+          show_full_output: true
+          prompt: |
+            You are a senior reviewer answering a question inside an inline PR
+            review thread. The human just summoned you with "@claude reply".
+
+            ## Run context
+            REPO: ${{ github.repository }}
+            PR: ${{ github.event.pull_request.number }}
+            THREAD_ROOT_COMMENT_ID: ${{ env.ROOT_COMMENT_ID }}
+            THREAD_FILE: $GITHUB_WORKSPACE/.thread.json
+
+            ## How to read the thread
+            Read $GITHUB_WORKSPACE/.thread.json with the `Read` tool. It is a
+            JSON array of all comments in this thread, sorted by created_at,
+            each with: id, user, created_at, body, path, line, diff_hunk.
+            The root entry carries path/line/diff_hunk so you know which code
+            is being discussed. For wider file context, use `git show HEAD:<path>`
+            or `git diff` — do NOT call `gh pr diff`.
+
+            ## What to do
+            1. Read the thread end-to-end. Identify what the human is actually
+               asking: question, disagreement, request for opinion, sanity check.
+            2. Form a concrete opinion. Pick a side. If the current code is fine,
+               say so. If the reviewer is right, say so. If both options are
+               reasonable, name the trade-off and pick one.
+            3. Post exactly ONE reply to the thread. Pipe the body straight
+               into `gh api` via stdin — do NOT write any file (the sandbox
+               blocks writes to `.*` paths in the workspace):
+                 gh api "repos/$REPO_FULL/pulls/$PR_NUMBER/comments/${{ env.ROOT_COMMENT_ID }}/replies" \
+                   -F body=@- <<'EOF'
+                 ...your reply text...
+                 EOF
+
+            ## Reply style
+            - 1–4 sentences. No headers. No bullet salad unless truly listing items.
+            - Direct: "I'd keep it as is because ...", "The reviewer is right: ...".
+            - If you genuinely don't know, say "I don't know — depends on X" and
+              name what evidence would settle it.
+            - No "great question", no thread summaries, no praise.
+            - Code snippets only if 1–3 lines and they clarify the answer.
+
+            ## Do NOT
+            - Do not open new inline comments anywhere else.
+            - Do not push commits, edit files, or run the full security review.
+            - Do not reply more than once per invocation.

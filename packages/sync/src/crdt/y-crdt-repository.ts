@@ -1,28 +1,60 @@
-import * as Y from 'yjs';
-import { ZodType } from 'zod';
+import type { z } from 'zod';
+
+import type { AssertVersionHList, HCons, NewOf, StorageVersion } from '@safely/slottree';
+import { createStorage } from '@safely/slottree';
 
 import { YCRDT } from './y-crdt';
-import { IStorage } from '../I-storage';
+import type { IStorage } from '../I-storage';
 
-export class YCRDTRepository {
+export class YCRDTRepository<Latest extends StorageVersion, Rest> {
     constructor(
         private readonly storage: IStorage,
-        private readonly schema: Record<string, ZodType>
+        private readonly ikPub: Buffer,
+        private readonly versions: HCons<Latest, Rest> & AssertVersionHList<HCons<Latest, Rest>>,
+        private readonly storageKey = 'crdt'
     ) {}
 
-    public async loadCRDT(): Promise<YCRDT> {
-        const crdt_raw = await this.storage.getItem('crdt');
-        const ydoc = new Y.Doc();
-        if (!crdt_raw) {
-            throw new Error('CRDT not found in storage');
+    public async loadCRDT(): Promise<YCRDT<z.output<NewOf<Latest>>>> {
+        let crdtRaw = await this.storage.getItem(this.storageKey);
+        if (!crdtRaw) {
+            // TODO: fix
+            await this.initialize();
+            crdtRaw = await this.storage.getItem(this.storageKey);
+            if (!crdtRaw) {
+                throw new Error('CRDT not found in storage');
+            }
         }
-        const crdt_buffer = Buffer.from(crdt_raw, 'hex');
-        Y.applyUpdateV2(ydoc, crdt_buffer);
-        return new YCRDT(ydoc, this.schema);
+        const crdt = this.createCRDTFromSnapshot(Buffer.from(crdtRaw, 'base64url'));
+        const snapshot = crdt.encodeAsSnapshot();
+        if (snapshot.toString('base64url') !== crdtRaw) {
+            await this.saveSnapshot(snapshot);
+        }
+        return crdt;
     }
 
-    public async saveCRDT(crdt: YCRDT): Promise<void> {
-        const crdt_buffer = crdt.encodeAsSnapshot();
-        await this.storage.setItem('crdt', crdt_buffer.toString('hex'));
+    public createCRDTFromSnapshot(snapshot: Buffer): YCRDT<z.output<NewOf<Latest>>> {
+        const crdt = createStorage({
+            authorId: this.ikPub,
+            versions: this.versions
+        });
+        crdt.merge(snapshot);
+        return new YCRDT(crdt);
+    }
+
+    public async saveCRDT(crdt: YCRDT<z.output<NewOf<Latest>>>): Promise<void> {
+        await this.saveSnapshot(crdt.encodeAsSnapshot());
+    }
+
+    public async saveSnapshot(snapshot: Buffer): Promise<void> {
+        await this.storage.setItem(this.storageKey, snapshot.toString('base64url'));
+    }
+
+    public async initialize(): Promise<void> {
+        const crdt = createStorage({
+            authorId: this.ikPub,
+            versions: this.versions
+        });
+
+        await this.storage.setItem(this.storageKey, crdt.export().toString('base64url'));
     }
 }

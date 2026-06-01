@@ -1,41 +1,43 @@
 import { createActor } from 'xstate';
-import * as z from 'zod';
-import { ZodType } from 'zod';
+import type * as z from 'zod';
 
-import { ISyncProvider } from './I-sync-provider';
-import { SyncContainer } from '../sync-container';
+import type { Draft, NewOf, StorageVersion } from '@safely/slottree';
+
+import type { ISyncProvider } from './I-sync-provider';
 import { OfflineSyncProvider } from './offline-sync-provider';
 import { SyncStatus, SyncStatusManager } from './sync-status';
-import { createSyncMachine, SyncMachine } from '../sync-machine/machine';
+import type { SyncContainer } from '../sync-container';
+import type { SyncMachine } from '../sync-machine/machine';
+import { createSyncMachine } from '../sync-machine/machine';
+import type { SyncMachineRunResult } from '../sync-machine/run-result';
+import { waitForSyncMachineRunResult } from '../sync-machine/run-result';
 
-export class OnlineSyncProvider<S extends Record<string, ZodType>>
-    extends OfflineSyncProvider<S>
-    implements ISyncProvider<S>
+export class OnlineSyncProvider<Latest extends StorageVersion, Rest>
+    extends OfflineSyncProvider<Latest, Rest>
+    implements ISyncProvider<NewOf<Latest>>
 {
     constructor(
-        structure: S,
-        container: SyncContainer,
+        container: SyncContainer<Latest, Rest>,
         private syncMachine: SyncMachine,
         public readonly syncStatusManager: SyncStatusManager
     ) {
-        super(structure, container, syncStatusManager);
+        super(container, syncStatusManager);
     }
 
-    public static async create<S extends Record<string, ZodType>>(
-        structure: S,
-        container: SyncContainer,
+    public static async create<Latest extends StorageVersion, Rest>(
+        container: SyncContainer<Latest, Rest>,
         syncStatusManager = new SyncStatusManager(SyncStatus.DISCONNECTED)
-    ): Promise<OnlineSyncProvider<S>> {
+    ): Promise<OnlineSyncProvider<Latest, Rest>> {
         syncStatusManager.setStatus(SyncStatus.DISCONNECTED);
+
         const machine = createActor(createSyncMachine(), {
             input: {
                 syncStateRepository: container.syncStateRepository,
-                updateHandler: container.updateHandler,
-                yManager: container.yManager,
-                updateEncryptor: container.updateEncryptor,
+                deviceYManager: container.deviceYManager,
+
                 snapshotsApi: container.snapshotApi,
                 snapshotsSse: container.snapshotSse,
-                ikService: container.ikService,
+                syncOperations: container.syncOperations,
                 syncStatusManager,
                 logger: container.logger
             },
@@ -47,7 +49,7 @@ export class OnlineSyncProvider<S extends Record<string, ZodType>>
         });
         machine.start();
 
-        return new OnlineSyncProvider(structure, container, machine, syncStatusManager);
+        return new OnlineSyncProvider(container, machine, syncStatusManager);
     }
 
     public async waitForInitialSync(): Promise<void> {
@@ -72,21 +74,29 @@ export class OnlineSyncProvider<S extends Record<string, ZodType>>
         this.syncStatusManager.setStatus(SyncStatus.DISABLED);
     }
 
-    public restart(): void {
+    public restart(options?: { preserveStatus?: boolean }): void {
         this.syncMachine.stop();
-        this.syncStatusManager.setStatus(SyncStatus.DISCONNECTED);
+        if (!options?.preserveStatus) {
+            this.syncStatusManager.setStatus(SyncStatus.DISCONNECTED);
+        }
         this.syncMachine = machineFromContainer(this.container, this.syncStatusManager);
         this.syncMachine.start();
     }
 
-    public async remove(k: keyof S): Promise<void> {
-        await super.remove(k);
-
-        this.syncMachine.send({ type: 'LOCAL_UPDATE' });
+    public async waitForCurrentRunResult(opts: {
+        timeout: number;
+        signal?: AbortSignal;
+    }): Promise<SyncMachineRunResult> {
+        return await waitForSyncMachineRunResult({
+            syncMachine: this.syncMachine,
+            syncStatusManager: this.syncStatusManager,
+            timeout: opts.timeout,
+            signal: opts.signal
+        });
     }
 
-    public async set<K extends keyof S>(k: K, v: z.input<S[K]> | string): Promise<void> {
-        await super.set(k, v);
+    public async transaction(f: (draft: Draft<z.output<NewOf<Latest>>>) => void): Promise<void> {
+        await super.transaction(f);
 
         this.syncMachine.send({ type: 'LOCAL_UPDATE' });
     }
@@ -96,16 +106,18 @@ export class OnlineSyncProvider<S extends Record<string, ZodType>>
     }
 }
 
-function machineFromContainer(container: SyncContainer, syncStatusManager: SyncStatusManager) {
+function machineFromContainer<Latest extends StorageVersion, Rest>(
+    container: SyncContainer<Latest, Rest>,
+    syncStatusManager: SyncStatusManager
+) {
     return createActor(createSyncMachine(), {
         input: {
             syncStateRepository: container.syncStateRepository,
-            updateHandler: container.updateHandler,
-            yManager: container.yManager,
-            updateEncryptor: container.updateEncryptor,
+            deviceYManager: container.deviceYManager,
+
             snapshotsApi: container.snapshotApi,
             snapshotsSse: container.snapshotSse,
-            ikService: container.ikService,
+            syncOperations: container.syncOperations,
             syncStatusManager,
             logger: container.logger
         },

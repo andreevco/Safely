@@ -1,27 +1,31 @@
-import { FC, useMemo } from 'react';
+import type { FC } from 'react';
 import { View } from 'react-native';
 
-import { ellipsisMiddle, Recipient } from '@safely/core';
-import { findPortfolioMetaByAddress, usePortfolios } from '@safely/ux';
+import { ellipsisMiddle } from '@safely/core';
+import type { RecipientMeta } from '@safely/ux';
 
+import { ContactName } from '@mobile/entities/contact';
 import { PortfolioName } from '@mobile/entities/portfolio/PortfolioName';
 import { Text } from '@mobile/shared/ui';
 
 import { styles } from './Wallet.styles';
 
-export const Wallet: FC<{ address: string } | { recipient: Recipient }> = props => {
-    const portfolios = usePortfolios();
-    const address = 'address' in props ? props.address : props.recipient.address;
+interface WalletProps {
+    address: string;
+    meta?: RecipientMeta;
+}
 
-    const meta = useMemo(
-        () => findPortfolioMetaByAddress(portfolios, address),
-        [address, portfolios]
-    );
+export const Wallet: FC<WalletProps> = props => {
+    const { address, meta } = props;
 
     if (meta) {
         return (
             <View style={styles.container}>
-                <PortfolioName meta={meta} size={12} gap={6} fontVariant="bodyM" />
+                {meta.kind === 'contact' ? (
+                    <ContactName meta={meta.meta} size={12} gap={6} fontVariant="bodyM" />
+                ) : (
+                    <PortfolioName meta={meta.meta} size={12} gap={6} fontVariant="bodyM" />
+                )}
                 <Text variant="bodyM" color="tertiary" numberOfLines={1}>
                     {ellipsisMiddle(address)}
                 </Text>

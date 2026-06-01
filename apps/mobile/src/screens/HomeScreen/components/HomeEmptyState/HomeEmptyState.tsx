@@ -1,16 +1,15 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { AddWallet96, Button, Icon, Screen, Text } from '@mobile/shared/ui';
 
 import { styles } from './HomeEmptyState.styles';
 
 export const HomeEmptyState = () => {
     const { t } = useTranslation();
-    const navigation = useNavigation<RootStackNavigationProp>();
+    const navigation = useNavigation();
 
     const handleAddWallet = useCallback(() => {
         navigation.navigate('AddWalletModal');

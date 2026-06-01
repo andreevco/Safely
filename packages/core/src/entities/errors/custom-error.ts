@@ -1,4 +1,9 @@
+import { ReconnectFromAnotherAccountError } from '@safely/sync';
+
 import { InvalidMnemonicError } from './invalid-mnemonic.error';
+import { LinkingFailedToOpenError } from './linking-failed-to-open.error';
+import { LinkingUnsafeProtocolError } from './linking-unsafe-protocol.error';
+import { OutputsAreSpendingMoreThanInputsError } from './outputs-are-spending-more-than-inputs.error';
 import { PortfolioAlreadyExistsError } from './portfolio-already-exists.error';
 import { PortfolioGenerationFailedError } from './portfolio-generation-failed.error';
 import { BtcSendDustError } from '../../blockchain-api/btc/errors';
@@ -7,7 +12,11 @@ export const customErrors = {
     InvalidMnemonicError,
     PortfolioAlreadyExistsError,
     PortfolioGenerationFailedError,
-    BtcSendDustError
+    BtcSendDustError,
+    OutputsAreSpendingMoreThanInputsError,
+    LinkingUnsafeProtocolError,
+    LinkingFailedToOpenError,
+    ReconnectFromAnotherAccountError
 } as const;
 export type CustomError = InstanceType<(typeof customErrors)[keyof typeof customErrors]>;
 

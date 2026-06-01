@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
-import { AppStateStatus, useAppContext } from '../providers/AppContext';
+import type { AppStateStatus } from '../providers/AppContext';
+import { useAppContext } from '../providers/AppContext';
 
 export function useAppState() {
     const { subscribeAppStateChange } = useAppContext();
@@ -8,7 +9,7 @@ export function useAppState() {
         current: AppStateStatus;
         previous: AppStateStatus | undefined;
     }>({
-        current: 'active',
+        current: 'unknown',
         previous: undefined
     });
 

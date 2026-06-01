@@ -1,5 +1,7 @@
-import { BtcAssetId, BtcAsset, sBtcAsset, sBtcAssetId } from './btc-asset';
-import { ASSET_TYPE, IAsset } from './I-asset';
+import type { BtcAssetId, BtcAsset } from './btc-asset';
+import { sBtcAsset, sBtcAssetId } from './btc-asset';
+import type { IAsset } from './I-asset';
+import { ASSET_TYPE } from './I-asset';
 
 export const sCryptoAsset = sBtcAsset;
 export type CryptoAsset = BtcAsset;

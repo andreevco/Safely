@@ -1,4 +1,4 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
 import { setStringAsync } from 'expo-clipboard';
 import { notificationAsync, NotificationFeedbackType } from 'expo-haptics';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
@@ -18,9 +18,10 @@ import Animated, {
 import { useUnistyles } from 'react-native-unistyles';
 
 import { ellipsisMiddle } from '@safely/core';
+import { useDateFormatter } from '@safely/ux';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
-import { Badge, Text, TextProps } from '@mobile/shared/ui';
+import type { TextProps } from '@mobile/shared/ui';
+import { Badge, Text } from '@mobile/shared/ui';
 
 import { SubtitleStatus, useSubtitleStatus } from './useSubtitleStatus';
 
@@ -67,7 +68,7 @@ export const SubtitleAnimatedText = ({ children, ...props }: TextProps) => {
 
 export const Subtitle = ({ address, isFetching, lastUpdatedAt, isWatchOnly }: SubtitleProps) => {
     const { t } = useTranslation();
-    const navigation = useNavigation<RootStackNavigationProp>();
+    const navigation = useNavigation();
 
     const { status, onCopyAddress } = useSubtitleStatus({ isFetching, lastUpdatedAt });
 
@@ -89,12 +90,21 @@ export const Subtitle = ({ address, isFetching, lastUpdatedAt, isWatchOnly }: Su
         onCopyAddress();
     }, [onCopyAddress, address]);
 
+    const dateFormatter = useDateFormatter({
+        day: 'numeric',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+
     const content = useMemo(() => {
         switch (status) {
             case SubtitleStatus.LAST_UPDATED:
                 return (
                     <Text variant="bodyL" textAlign="center" color="secondary">
-                        {t('home.status.lastUpdated', { lastUpdatedAt })}
+                        {t('home.status.lastUpdated', {
+                            lastUpdatedAt: dateFormatter.format(lastUpdatedAt)
+                        })}
                     </Text>
                 );
             case SubtitleStatus.ADDRESS:
@@ -143,7 +153,16 @@ export const Subtitle = ({ address, isFetching, lastUpdatedAt, isWatchOnly }: Su
                     </Text>
                 );
         }
-    }, [status, t, lastUpdatedAt, handleCopyAddress, address, isWatchOnly, handleWatchOnlyPress]);
+    }, [
+        status,
+        t,
+        dateFormatter,
+        lastUpdatedAt,
+        handleCopyAddress,
+        address,
+        isWatchOnly,
+        handleWatchOnlyPress
+    ]);
 
     return (
         <Animated.View

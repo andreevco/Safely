@@ -1,16 +1,15 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
 import { impactAsync, ImpactFeedbackStyle } from 'expo-haptics';
 
 import { useActivePortfolio } from '@safely/ux';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { PortfolioName } from '@mobile/entities/portfolio';
 import { ChevronDown16, Icon, TouchableOpacity } from '@mobile/shared/ui';
 
 import { styles } from './AccountSelector.styles';
 
 export const AccountSelector = () => {
-    const navigation = useNavigation<RootStackNavigationProp<'TabsNavigator'>>();
+    const navigation = useNavigation();
     const portfolio = useActivePortfolio();
 
     return (

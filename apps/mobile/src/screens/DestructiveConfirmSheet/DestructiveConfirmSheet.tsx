@@ -1,4 +1,4 @@
-import { StaticScreenProps } from '@react-navigation/native';
+import type { StaticScreenProps } from '@react-navigation/native';
 import { useMutation } from '@tanstack/react-query';
 import Color from 'color';
 import { View } from 'react-native';

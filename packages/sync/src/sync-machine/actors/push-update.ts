@@ -1,32 +1,24 @@
 import { fromPromise } from 'xstate';
 
-import { SyncMachineConfig } from '../config';
+import type { StorageVersion } from '@safely/slottree';
+
+import type { SyncMachineConfig } from '../config';
 import { classifyError } from '../error-handler';
 
-export const pushUpdateToServer = fromPromise(async ({ input }: { input: SyncMachineConfig }) => {
-    console.log('[Sync Push] Encrypting local snapshot to send to server...');
-    const encrypted = await input.updateEncryptor.encryptAndSign(input.yManager.encodeAsSnapshot());
-    console.log(
-        '[Sync Push] Sending encrypted snapshot to server, proof:',
-        encrypted.snapshotProof.toString('hex').slice(0, 16) + '...'
-    );
-    try {
-        await input.snapshotsApi.saveSnapshot({
-            snapshot: {
-                kid: (await input.ikService.getKID()).toString('hex'),
-                ciphertext: encrypted.ciphertext.toString('hex'),
-                nonce: encrypted.nonce.toString('hex'),
-                snapshotProof: encrypted.snapshotProof.toString('hex'),
-                signature: encrypted.signature.toString('hex')
-            }
-        });
-    } catch (e) {
-        throw await classifyError(e);
+export const pushUpdateToServer = fromPromise(
+    async ({
+        input,
+        signal
+    }: {
+        input: SyncMachineConfig<StorageVersion, unknown>;
+        signal: AbortSignal;
+    }) => {
+        try {
+            await input.syncOperations.pushLocalSnapshot(signal);
+        } catch (e) {
+            input.logger.error('sync_machine.push_update.failed', e);
+            throw await classifyError(e);
+        }
+        input.logger.info('sync_machine.push_update.succeeded');
     }
-    console.log('[Sync Push] Snapshot successfully sent to server');
-
-    await input.syncStateRepository.saveState({
-        snapshotProof: encrypted.snapshotProof
-    });
-    input.logger.info(`Pushed new update ${encrypted.snapshotProof.toString('hex')}`);
-});
+);

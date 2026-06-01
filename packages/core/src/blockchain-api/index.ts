@@ -1,5 +1,5 @@
-import { BtcEstimation, BtcTransactionTemplate } from './btc';
-import { BtcSendResult } from './btc/btc-transaction-template';
+import type { BtcEstimation, BtcTransactionTemplate } from './btc';
+import type { BtcSendResult } from './btc/btc-transaction-template';
 
 export type Estimation = BtcEstimation;
 export type TransactionTemplate = BtcTransactionTemplate;

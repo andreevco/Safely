@@ -17,16 +17,21 @@
     },
     "common": {
         "edit": "Edit",
+        "remove": "Remove",
+        "removed": "Removed",
         "next": "Next",
+        "save": "Save",
         "cancel": "Cancel",
         "continue": "Continue",
         "later": "Later",
+        "comingSoon": "Coming soon",
         "errors": {
             "unknown": "Something went wrong"
         }
     },
     "send": {
         "title": "Send",
+        "from": "From",
         "recipient": {
             "label": "Recipient",
             "placeholder": "Address or name",
@@ -37,7 +42,12 @@
         "maxHint": "All available balance will be sent. Fee included.",
         "remaining": "Remaining:",
         "pending": "Pending:",
-        "insufficientBalance": "Insufficient balance"
+        "insufficientBalance": "Insufficient balance",
+        "addressBook": {
+            "label": "Save to your address book",
+            "placeholder": "Name",
+            "description": "You can edit and organize this later in Settings → Address Book."
+        }
     },
     "passcode": {
         "title": "Create passcode",
@@ -162,37 +172,40 @@
         },
         "protectAccount": {
             "title": "No linked device",
-            "subtitle": "Link another device to protect your account. Without it, your access can't be restored if this phone is lost."
+            "subtitle": "Link another device as a redundant storage for your wallets. If this phone is lost and you don't have linked devices, you won't be able to restore your wallets.",
+            "linkDevice": "Link device"
         },
         "accountProtected": {
-            "title": "Account protected",
-            "subtitle": "Linked devices have full access to your account and can be used to restore access if another device is lost."
+            "title": "Linked devices",
+            "subtitle": "Listed devices have full access to your wallets and can be used to restore access if another device is lost."
         },
         "device": {
-            "added": "Added {{date}}",
-            "upToDate": "Up to date",
-            "notUpToDate": "Not up to date",
-            "walletsNotSynced": "{{ count }} wallets not synced",
-            "disconnect": "Disconnect"
+            "added": "Linked {{date}}",
+            "unlink": "Unlink",
+            "current": "Current"
         },
-        "disconnectDevice": {
-            "title": "Disconnect {{deviceName}}",
-            "subtitle": "This will disconnect your account from this device. The account will remain on the device, but will no longer sync.",
-            "confirm": "Disconnect device"
+        "unlinkDevice": {
+            "title": "Unlink {{deviceName}}",
+            "subtitle": "This device will be removed from your linked devices and will no longer sync with this account.",
+            "confirm": "Unlink {{deviceName}}"
         },
         "groups": {
             "account": {
-                "title": "Account",
+                "title": "Data safety",
                 "protect": {
-                    "title": "Protect your account",
-                    "badge": "Set up required",
-                    "subtitle": "Link another device to protect your account. Without it, your access can't be restored if this phone is lost."
+                    "title": "Linked devices",
+                    "badge": "Required",
+                    "subtitle": "Link another device as a redundant storage for your wallet keys and other data."
                 },
                 "protection": {
-                    "title": "Account Protection",
+                    "title": "Linked devices",
                     "badge": "Enabled",
-                    "subtitle_one": "Protected with {{count}} device",
-                    "subtitle_other": "Protected with {{count}} devices"
+                    "subtitle": "Wallet keys are stored on your linked devices."
+                },
+                "unlinked": {
+                    "title": "Device link",
+                    "badge": "OFF",
+                    "subtitle": "Re-link this device to your account."
                 }
             },
             "application": {
@@ -205,7 +218,8 @@
                     "title": "Lock screen",
                     "subtitle": "Require passcode to view wallet contents."
                 },
-                "changePasscode": "Change passcode"
+                "changePasscode": "Change passcode",
+                "eraseAndLogout": "Erase app data and log out"
             },
             "wallet": {
                 "title": "Wallet",
@@ -214,7 +228,7 @@
                 "recovery": {
                     "title": "Recovery phrase",
                     "subtitle": "Keep it private. View only if necessary. This phrase has never been viewed.",
-                    "revealed": "Security reduced. First viewed on {{date}} on {{device}}."
+                    "revealed": "First viewed on {{date}} on {{device}}."
                 }
             }
         }
@@ -264,14 +278,20 @@
             "btc": {
                 "dust": "Transaction value is too small."
             }
+        },
+        "estimateError": {
+            "title": "Can't estimate transaction",
+            "default": "Check details and try again",
+            "btc": {
+                "outputsAreSpendingMoreThanInputs": "Insufficient balance for transfer amount and fee"
+            }
         }
     },
     "sendForm": {
         "errors": {
-            "enterRecipientAddress": "Enter recipient address",
-            "invalidAddressFormat": "Invalid address format",
-            "invalidRecipientAddress": "Invalid recipient address",
-            "unsupportedBlockchain": "Unsupported blockchain",
+            "invalidWalletAddress": "Invalid wallet address.",
+            "selfTransfer": "This is your active wallet.",
+            "unsupportedBlockchain": "Unsupported blockchain.",
             "selectToken": "Select token",
             "selectTokenFirst": "Select token first",
             "unableToValidateToken": "Unable to validate token",
@@ -281,13 +301,33 @@
     },
     "signIn": {
         "title": "Scan QR to sign in",
-        "description": "Scan it with your other device to add this device to your account.",
+        "description": {
+            "top": "Open Safely on another device.",
+            "iconLineStart": "Go to Settings",
+            "iconLineEnd": "tap “Link device”",
+            "bottom": "and scan this QR code."
+        },
         "banner": "This device will have full access to your account. It can be used if your other device is lost.",
         "timeout": "Connection timed out. Please try again.",
         "success": {
             "title": "Signed in",
             "subtitle": "This device now has full access\nto your account.",
             "continue": "Continue"
+        }
+    },
+    "deviceUnlinked": {
+        "banner": {
+            "text": "This device is unlinked from your account and does not synchronise with other devices."
+        },
+        "reconnect": {
+            "title": "Scan to link again",
+            "description": {
+                "beforeIcon": "Open Safely on another device where this account is active. Go to ",
+                "afterIcon": " Settings, tap “Link device” and scan this QR code."
+            },
+            "banner": "This device will have full access to your account. It can be used if your other device is lost.",
+            "timeout": "Connection timed out. Please try again.",
+            "successToast": "Device re-linked"
         }
     },
     "welcome": {
@@ -337,7 +377,7 @@
                 "step2": "Tap \"Sign in\" to show a QR code.",
                 "step3": "Tap \"Add device\" below and scan that code — camera access will be required."
             },
-            "addDevice": "Add device",
+            "addDevice": "Link device",
             "protectLater": "Protect account later",
             "deviceNotAdded": "Device was not added. Please try again."
         }
@@ -359,9 +399,18 @@
         "watchAccount": {
             "title": "Watch account",
             "subtitle": "Track by wallet address",
-            "placeholder": "Enter address or XPUB",
+            "placeholder": "Enter address",
             "info": "Watch account cannot sign transactions and send funds.",
-            "invalidAddress": "Invalid Bitcoin address"
+            "invalidAddress": "Invalid Bitcoin address",
+            "unsupportedExtendedKey": "ypub is not supported yet. Use xpub."
+        }
+    },
+    "account": {
+        "unnamed": "Unnamed",
+        "sync": {
+            "errors": {
+                "updateFailed": "Couldn't save changes. Changes have been reverted."
+            }
         }
     },
     "addAccount": {
@@ -409,7 +458,9 @@
     "settings": {
         "title": "Settings",
         "deviceConnected": "Successfully linked",
+        "qrCodeFromAnotherAccount": "QR code is from another account.\nUse the same account on both devices.",
         "addAccount": "Add account",
+        "linkDevice": "Link device",
         "walletsCount_one": "{{count}} wallet",
         "walletsCount_other": "{{count}} wallets",
         "groups": {
@@ -442,20 +493,16 @@
             }
         },
         "signOutAccount": {
-            "title": "Sign out account \"{{name}}\"",
+            "title": "Sign out account “{{name}}”",
             "sheet": {
-                "title": "Sign out of {{name}}?",
+                "title": "Sign out of “{{name}}”?",
                 "noDevices": {
-                    "subtitle": "This is the only device with a copy of this account. If you sign out, you will permanently lose access.",
+                    "subtitle": "This is the only linked device for this account. You may lose access to this account after signing out.",
                     "protectLink": "Protect account now",
-                    "checkbox": "I understand that I will permanently lose this account."
+                    "checkbox": "I understand that I may lose access to this account."
                 },
                 "fullCopy": {
-                    "subtitle": "After signing out, your account will remain available on your other linked devices. You can restore access from them at any time."
-                },
-                "partialCopy": {
-                    "subtitle": "Other devices haven't finished syncing this account. They need to be online to update.",
-                    "checkbox": "I understand that some account data may be lost."
+                    "subtitle": "Other linked devices are connected to this account."
                 },
                 "signOutButton": "Sign out anyway",
                 "cancelButton": "Cancel"
@@ -463,7 +510,7 @@
             "toastAccountRemoved": "Account removed from this device"
         },
         "removePortfolio": {
-            "title": "Remove wallet \"{{name}}\"",
+            "title": "Remove wallet “{{name}}”",
             "confirm": {
                 "title": "Remove this wallet?",
                 "message": "This will remove wallet “{{name}}”. This action cannot be undone.",
@@ -476,16 +523,17 @@
         }
     },
     "logOutAllAccounts": {
-        "title": "Erase this device?",
-        "message": "All accounts and data will be permanently removed from this device. Only accounts with a backup can be restored.",
+        "title": "Erase all app data on this device?",
+        "message": "All accounts, wallets, and app data stored in Safely on this device will be permanently removed. Only backed up accounts can be restored.",
         "slider": {
-            "label": "Erase device",
+            "label": "Erase all app data",
             "description": "Slide to erase"
         },
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "error": "Couldn't erase all data. Please try again."
     },
     "removeWallet": {
-        "title": "Remove wallet {{name}}?",
+        "title": "Remove wallet “{{name}}”?",
         "backUpLink": "Back up recovery phrase",
         "removeButton": "Remove anyway",
         "cancelButton": "Cancel",
@@ -510,9 +558,9 @@
         "pending": "Pending",
         "available": "Available",
         "total": "Total",
-        "estimatedTime": "\u2248 {{minutes}} minutes",
+        "estimatedTime": "≈ {{minutes}} minutes",
         "ok": "OK",
-        "receiving": "Receiving {{amount}}\u2026"
+        "receiving": "Receiving {{amount}}…"
     },
     "assetCell": {
         "lastTransaction": "Last transaction {{timeAgo}}",
@@ -524,25 +572,26 @@
         "about": "About"
     },
     "safelyBeta": {
-        "title": "Safely is in beta",
-        "subtitle": "Some features are still evolving. Save your recovery phrases in Settings \u2192 Security.",
-        "feedback": {
-            "description": "Found a bug or have an idea?\nYour feedback helps us improve Safely.",
-            "action": "Send feedback"
-        }
+        "title": "Safely",
+        "subtitle": "Beta · {{version}}",
+        "versionCopied": "Application version copied"
+    },
+    "dateGroups": {
+        "pending": "Pending",
+        "today": "Today",
+        "yesterday": "Yesterday"
     },
     "history": {
         "title": "History",
+        "bubble": {
+            "one": "New transaction",
+            "many": "New transactions"
+        },
         "empty": {
             "title": "Transaction history",
             "subtitle": "Your transactions will appear here.",
             "receive": "Receive BTC",
             "send": "Send"
-        },
-        "dateHeaders": {
-            "pending": "Pending",
-            "today": "Today",
-            "yesterday": "Yesterday"
         },
         "transactionInfo": {
             "sending": "Sending",
@@ -596,6 +645,39 @@
         "errors": {
             "unrecognized": "Unrecognized input",
             "unsupportedScheme": "Unsupported input type"
+        }
+    },
+    "addressBook": {
+        "title": "Address Book",
+        "subtitle": "Add trusted contacts to avoid mistakes and send faster.",
+        "subtitle_not_empty": "Send crypto safely using your saved contacts.",
+        "addContact": "Add contact"
+    },
+    "newContact": {
+        "title": "Contact",
+        "form": {
+            "name": "Name",
+            "namePlaceholder": "Name",
+            "address": "Bitcoin address",
+            "addressPlaceholder": "Address",
+            "addedOn": "Added on {{date}}",
+            "remove": "Remove contact"
+        },
+        "confirmDelete": {
+            "title": "Remove {{name}}?",
+            "message": "This contact will be removed from your address book."
+        }
+    },
+    "contactForm": {
+        "errors": {
+            "invalidAddressFormat": "Invalid address format",
+            "unsupportedBlockchain": "Unsupported blockchain"
+        }
+    },
+    "linking": {
+        "errors": {
+            "unsafeProtocol": "Unsafe protocol",
+            "failedToOpen": "Couldn't open the link"
         }
     }
 }

@@ -2,9 +2,11 @@ type SSEConfig<T> = {
     url: string;
     headers: Record<string, string>;
     parsers: Record<string, (data: unknown) => T | null>;
+    errorParsers?: Record<string, (data: unknown) => unknown>;
     onUpdate: (update: T, eventId: string) => void;
     onOpen?: () => void;
     onError?: (err: Event) => void;
+    onLog?: (level: 'error' | 'info', message: string, error?: unknown) => void;
     signal?: AbortSignal;
     getAuthorizationHeader?: () => Promise<string>;
 };
@@ -92,8 +94,7 @@ export class SSEStream<T> implements AsyncIterable<SSEStreamItem<T>> {
         this.eventSource.onopen = () => this.config.onOpen?.();
 
         this.eventSource.onerror = err => {
-            this.config.onError?.(err);
-            this.stop(err);
+            this.handleTransportError(err);
         };
 
         for (const [eventType, parser] of Object.entries(this.config.parsers)) {
@@ -102,10 +103,31 @@ export class SSEStream<T> implements AsyncIterable<SSEStreamItem<T>> {
                     const parsed = parser(JSON.parse(event.data));
                     if (parsed) this.push({ value: parsed, eventId: event.lastEventId });
                 } catch (e) {
-                    console.error(`Error parsing SSE event '${eventType}':`, e);
+                    this.config.onLog?.('error', `Error parsing SSE event '${eventType}'`, e);
                 }
             });
         }
+
+        for (const [eventType, parser] of Object.entries(this.config.errorParsers ?? {})) {
+            this.eventSource.addEventListener(eventType, (event: Event) => {
+                if (!isMessageEventWithData(event)) {
+                    this.handleTransportError(event);
+                    return;
+                }
+
+                try {
+                    this.stop(parser(JSON.parse(event.data)));
+                } catch (e) {
+                    this.config.onLog?.('error', `Error parsing SSE event '${eventType}'`, e);
+                    this.stop(e);
+                }
+            });
+        }
+    }
+
+    private handleTransportError(err: Event) {
+        this.config.onError?.(err);
+        this.stop(err);
     }
 
     private push(value: SSEStreamItem<T>) {
@@ -124,7 +146,7 @@ export class SSEStream<T> implements AsyncIterable<SSEStreamItem<T>> {
         this.eventSource?.close();
         this.eventSource = null;
         this.queue = [];
-        console.log('SSEStream: device-connection closed and cleaned up');
+        this.config.onLog?.('info', 'SSEStream: device-connection closed and cleaned up');
     }
 }
 
@@ -132,3 +154,7 @@ export type SSEStreamItem<T> = {
     value: T;
     eventId: string;
 };
+
+function isMessageEventWithData(event: Event): event is MessageEvent<string> {
+    return 'data' in event && typeof (event as MessageEvent<string>).data === 'string';
+}

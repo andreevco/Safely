@@ -1,69 +1,96 @@
 import { ed25519, x25519 } from '@noble/curves/ed25519.js';
-import { ZodType } from 'zod';
+
+import type { StorageVersion } from '@safely/slottree';
 
 import { decryptOnboardingMessagePayload, deriveOnboardingKey } from './crypto';
 import { QRMessageCodec, QRMessageOperation } from './onboarding-codec';
 import { decodeOnboardingMessagePayload } from './onboarding-message-payload';
-import { AccountManager } from '../account/account-manager';
-import { ISyncAccount } from '../account/I-sync-account';
+import type { AccountManager } from '../account/account-manager';
+import type { ISyncAccount } from '../account/I-sync-account';
 import { ApiSigner } from '../api/api-signer';
-import { AccountsApi, Configuration, OnboardingMessage } from '../api/generated';
-import { ITreeStorage } from '../I-storage';
+import type { Configuration, OnboardingMessage } from '../api/generated';
+import { AccountsApi } from '../api/generated';
+import type { ITreeStorage } from '../I-storage';
+import type { Logger } from '../logger';
+import { SyncFlowLogger } from '../logger';
 import { OnboardingAbortedError } from '../sync-error';
 
-export class NewDeviceOnboarding<S extends Record<string, ZodType>> {
+export class NewDeviceOnboarding<Latest extends StorageVersion, Rest> {
+    private readonly flow: SyncFlowLogger;
     private ephemeralKeyPair: { publicKey: Buffer; secretKey: Buffer } | null = null;
 
     constructor(
         private readonly ik: { publicKey: Buffer; secretKey: Buffer },
         private readonly accountsApi: AccountsApi,
-        private readonly accountManager: AccountManager<S>,
-        private readonly secureEncryptedStorage: ITreeStorage
-    ) {}
+        private readonly accountManager: AccountManager<Latest, Rest>,
+        private readonly secureEncryptedStorage: ITreeStorage,
+        private readonly logger: Logger,
+        private readonly pollingTimeout: number,
+        private readonly storageVersion: number
+    ) {
+        this.flow = new SyncFlowLogger(logger, 'onboarding.new_device', {
+            ikPub: this.ik.publicKey.toString('hex')
+        });
+    }
 
     public generateOnboardingData(): Buffer {
+        this.flow.logStart();
+
         const generated = x25519.keygen();
         this.ephemeralKeyPair = {
             publicKey: Buffer.from(generated.publicKey),
             secretKey: Buffer.from(generated.secretKey)
         };
 
-        return QRMessageCodec.encode({
+        const data = QRMessageCodec.encode({
             type: QRMessageOperation.NEW_DEVICE_ONBOARDING,
             ephemeralPub: this.ephemeralKeyPair.publicKey,
-            ikPub: this.ik.publicKey
+            ikPub: this.ik.publicKey,
+            storageVersion: this.storageVersion
         });
+        this.flow.logStep('qr.generated');
+
+        return data;
     }
 
-    public async waitForOnboarding(signal?: AbortSignal): Promise<ISyncAccount<S>> {
-        for (let i = 0; i < 30; i++) {
+    public async waitForOnboarding(signal?: AbortSignal): Promise<ISyncAccount<Latest>> {
+        try {
+            const account = await this.waitForOnboardingInner(signal);
+            this.flow.logEnd('completed');
+            return account;
+        } catch (error) {
+            if (!this.flow.isCompleted()) {
+                this.flow.logFail(error, 'incomplete');
+            }
+            throw error;
+        }
+    }
+
+    private async waitForOnboardingInner(signal?: AbortSignal): Promise<ISyncAccount<Latest>> {
+        const maxAttempts = 150;
+        this.flow.logStep('message.poll.start', {
+            maxAttempts: maxAttempts,
+            pollingTimeoutMs: this.pollingTimeout
+        });
+
+        for (let i = 0; i < maxAttempts; i++) {
             if (signal?.aborted) {
                 throw new OnboardingAbortedError();
             }
-
-            await new Promise<void>((resolve, reject) => {
-                const timer = setTimeout(resolve, 1000);
-                signal?.addEventListener(
-                    'abort',
-                    () => {
-                        clearTimeout(timer);
-                        reject(new OnboardingAbortedError());
-                    },
-                    { once: true }
-                );
-            });
 
             let message: OnboardingMessage;
             try {
                 message = await this.accountsApi.getOnboardingMessage({
                     signal
                 });
-            } catch (err) {
+                this.flow.logStep('message.poll.received', { attempt: i + 1 });
+            } catch {
                 if (signal?.aborted) {
                     throw new OnboardingAbortedError();
                 }
 
-                console.log('No onboarding message yet, retrying...', err);
+                this.flow.logStep('message.poll.empty', { attempt: i + 1 });
+                await this.waitBeforeRetry(signal);
                 continue;
             }
 
@@ -76,21 +103,38 @@ export class NewDeviceOnboarding<S extends Record<string, ZodType>> {
         throw new Error('Onboarding timed out');
     }
 
+    private async waitBeforeRetry(signal?: AbortSignal): Promise<void> {
+        await new Promise<void>((resolve, reject) => {
+            const timer = setTimeout(resolve, this.pollingTimeout);
+            signal?.addEventListener(
+                'abort',
+                () => {
+                    clearTimeout(timer);
+                    reject(new OnboardingAbortedError());
+                },
+                { once: true }
+            );
+        });
+    }
+
     private async handleOnboardingMessage(msg: OnboardingMessage) {
         // We don't need to verify signature from the onboarding message because it is the signature for server
         // operation, not for the new device.
         if (msg.newIdentityPubKey !== this.ik.publicKey.toString('hex')) {
             throw new Error('Onboarding message is not for this device');
         }
+        this.flow.logStep('message.validate.done');
 
         const onboardingMessagePayload = await this.getOnboardingMessagePayload(msg);
         const account = await this.accountManager.createOnlineAccountFromMasterKey(
             this.secureEncryptedStorage,
             onboardingMessagePayload,
-            this.ik
+            this.ik,
+            this.flow.child('handleOnboardingMessage')
         );
+        this.flow.logStep('account.created');
 
-        console.info('Onboarding completed');
+        this.logger.info('Onboarding completed');
         return account;
     }
 
@@ -136,10 +180,10 @@ export function accountsApiForOnboarding(
                 const signature = ed25519.sign(data, ikKeypair.secretKey);
                 return Buffer.from(signature);
             },
-            verify(_: Buffer, __: Buffer): Promise<boolean> {
+            verify(_: Buffer, __: Buffer): boolean {
                 throw new Error('is not used in this context');
             },
-            getPub: async () => {
+            getPub: () => {
                 return Buffer.from(ikKeypair.publicKey);
             }
         }),

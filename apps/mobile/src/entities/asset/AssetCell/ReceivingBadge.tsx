@@ -1,31 +1,53 @@
+import { useNavigation } from '@react-navigation/core';
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { BtcApiUtxo, BtcAssetAmount } from '@safely/core';
-import { useNumberFormatter } from '@safely/ux';
+import type { BtcApiUtxoWithOptionalTx } from '@safely/core';
+import { BtcAssetAmount } from '@safely/core';
+import { useNumberFormatter, btcTxToActivityItem } from '@safely/ux';
 
-import { Text } from '@mobile/shared/ui';
+import { Text, TouchableOpacity } from '@mobile/shared/ui';
 
 import { styles } from './ReceivingBadge.styles';
 
-export const ReceivingBadges = ({ utxo }: { utxo: BtcApiUtxo[] }) => {
+export const ReceivingBadges = ({ utxos }: { utxos: BtcApiUtxoWithOptionalTx[] }) => {
     const { t } = useTranslation();
     const formatter = useNumberFormatter();
+    const navigation = useNavigation();
 
-    if (utxo.length === 0) {
+    const handleReceivingPress = useCallback(
+        (u: BtcApiUtxoWithOptionalTx) => {
+            if (!u?.tx) {
+                return;
+            }
+
+            const activity = btcTxToActivityItem(u.tx);
+            if (activity) {
+                navigation.navigate('TransactionScreen', { activity });
+            }
+        },
+        [navigation]
+    );
+
+    if (utxos.length === 0) {
         return null;
     }
 
     return (
         <View style={styles.container}>
-            {utxo.map(u => (
-                <View key={`${u.txid}:${u.vout}`} style={styles.badge}>
+            {utxos.map(u => (
+                <TouchableOpacity
+                    key={`${u.txid}:${u.vout}`}
+                    style={styles.badge}
+                    onPress={() => handleReceivingPress(u)}
+                >
                     <Text variant="bodyM" color="primary">
                         {t('pendingFunds.receiving', {
                             amount: BtcAssetAmount.fromWeiAmount(u.value).format(formatter)
                         })}
                     </Text>
-                </View>
+                </TouchableOpacity>
             ))}
         </View>
     );

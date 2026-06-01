@@ -1,18 +1,38 @@
+import { useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
+
+import { useAppState } from '@safely/ux';
 
 import { usePasscodeVerification, useLockScreenControl } from '@mobile/entities/security';
+import { authenticateBiometry, getBiometryIcon, useBiometryQuery } from '@mobile/features/biometry';
 import { useLogOutAllConfirmation } from '@mobile/features/settings/useLogOutAllConfirmation';
-import { LockoutContent, PasscodeInput, PasscodeLayout, Screen, Text } from '@mobile/shared/ui';
-
-import { styles } from './LockScreen.styles';
-
-const SHOW_SIGN_OUT_THRESHOLD = 3;
+import { LockoutContent, PasscodeView, Screen, Text } from '@mobile/shared/ui';
 
 export const LockScreen = () => {
+    const { current } = useAppState();
     const { t } = useTranslation();
     const { unlock } = useLockScreenControl();
     const handleLogOut = useLogOutAllConfirmation();
+    const { data: biometry } = useBiometryQuery();
+    const hasPromptedRef = useRef(false);
+    const hasUnlockedRef = useRef(false);
+
+    const handleUnlock = useCallback(() => {
+        if (hasUnlockedRef.current) {
+            return;
+        }
+
+        hasUnlockedRef.current = true;
+        unlock();
+    }, [unlock]);
+
+    const handleBiometryPress = useCallback(async () => {
+        const result = await authenticateBiometry();
+
+        if (result.success) {
+            handleUnlock();
+        }
+    }, [handleUnlock]);
 
     const {
         inputValue,
@@ -21,11 +41,23 @@ export const LockScreen = () => {
         isError,
         isLocked,
         remainingSeconds,
-        failedAttempts,
         handleInputChange
-    } = usePasscodeVerification({ onSuccess: unlock });
+    } = usePasscodeVerification({ onSuccess: handleUnlock });
 
-    const isSignOutVisible = failedAttempts >= SHOW_SIGN_OUT_THRESHOLD;
+    useEffect(() => {
+        if (hasPromptedRef.current || isLocked || !biometry?.isEnabled || current !== 'active') {
+            return;
+        }
+
+        hasPromptedRef.current = true;
+
+        void (async () => {
+            const result = await authenticateBiometry();
+            if (result.success) {
+                handleUnlock();
+            }
+        })();
+    }, [isLocked, biometry?.isEnabled, handleUnlock, current]);
 
     if (isLocked) {
         return <LockoutContent remainingSeconds={remainingSeconds} onSignOut={handleLogOut} />;
@@ -35,27 +67,29 @@ export const LockScreen = () => {
         <Screen>
             <Screen.Header variant="left">
                 <Screen.Header.Title />
-                <View
-                    style={styles.signOutButton(isSignOutVisible)}
-                    pointerEvents={isSignOutVisible ? 'auto' : 'none'}
-                >
-                    <Screen.Header.Button type="small" onPress={handleLogOut}>
-                        <Text variant="labelM" color="primary">
-                            {t('passcode.lockout.signOut')}
-                        </Text>
-                    </Screen.Header.Button>
-                </View>
+                <Screen.Header.Button type="small" onPress={handleLogOut}>
+                    <Text variant="labelM" color="primary">
+                        {t('passcode.lockout.signOut')}
+                    </Text>
+                </Screen.Header.Button>
             </Screen.Header>
 
-            <PasscodeLayout title={t('lockScreen.title')}>
-                <PasscodeInput
-                    numberOfDigits={digitsAmount}
-                    value={inputValue}
-                    onChange={handleInputChange}
-                    isSuccess={isSuccess}
-                    isError={isError}
-                />
-            </PasscodeLayout>
+            <PasscodeView
+                title={t('lockScreen.title')}
+                numberOfDigits={digitsAmount}
+                value={inputValue}
+                onChange={handleInputChange}
+                isSuccess={isSuccess}
+                isError={isError}
+                biometry={
+                    biometry?.isEnabled
+                        ? {
+                              onPress: handleBiometryPress,
+                              icon: getBiometryIcon(biometry.availableType)
+                          }
+                        : undefined
+                }
+            />
         </Screen>
     );
 };

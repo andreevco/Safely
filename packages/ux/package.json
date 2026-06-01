@@ -10,19 +10,38 @@
   },
   "dependencies": {
     "@safely/core": "workspace:*",
+    "@safely/sync-storage": "workspace:*",
     "@safely/sync": "workspace:*",
-    "@tanstack/query-async-storage-persister": "^5.90.18",
-    "@tanstack/react-query-persist-client": "^5.90.18",
-    "@noble/hashes": "^2.0.1",
-    "zod": "^4.3.5"
+    "@tanstack/query-async-storage-persister": "catalog:",
+    "@tanstack/react-query-persist-client": "catalog:",
+    "@noble/hashes": "catalog:",
+    "xstate": "catalog:",
+    "zod": "catalog:",
+    "zustand": "catalog:",
+    "uuid": "catalog:"
   },
   "devDependencies": {
-    "@types/big.js": "^6.2.2",
-    "vitest": "^4.0.16"
+    "@tanstack/react-query": "catalog:",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/react": "^16.3.0",
+    "@types/big.js": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@xstate/react": "catalog:",
+    "happy-dom": "^20.9.0",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "vitest": "^4.0.16",
+    "@safely/slottree": "workspace:*"
   },
   "peerDependencies": {
-    "@tanstack/react-query": "^5.90.5",
-    "@types/react": "^19.1.0",
-    "react": "^19.1.0"
+    "@tanstack/react-query": "catalog:",
+    "@types/react": "catalog:",
+    "@xstate/react": "catalog:",
+    "react": "catalog:"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./assets/icons/*": "./src/shared/assets/icons/*"
   }
 }

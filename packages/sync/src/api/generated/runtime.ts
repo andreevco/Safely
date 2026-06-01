@@ -1,6 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-import { ApiSigner } from '../api-signer';
+import type { HTTPMethod, RequestSigner } from '../request-signer';
 
 /**
  * Safely Sync
@@ -104,7 +104,7 @@ export class BaseAPI {
 
     constructor(
         // MARK - written by hand
-        private readonly apiSigner: ApiSigner,
+        private readonly apiSigner: RequestSigner,
         // MARK END
         public configuration = DefaultConfig
     ) {
@@ -156,9 +156,36 @@ export class BaseAPI {
         if (response && response.status >= 200 && response.status < 300) {
             return response;
         }
-        console.log(response);
-        throw new ResponseError(response, 'Response returned an error code');
+
+        // MARK - written by hand
+        const body = await this.parseResponseBody(response.clone());
+        throw new ResponseError(
+            response,
+            `Response returned an error code: ${response.status} ${response.statusText}`,
+            body
+        );
+        // MARK END
     }
+
+    // MARK - written by hand
+    private async parseResponseBody(response: Response): Promise<unknown> {
+        const text = await response.text();
+
+        if (!text) {
+            return undefined;
+        }
+
+        if (!this.isJsonMime(response.headers.get('content-type'))) {
+            return text;
+        }
+
+        try {
+            return JSON.parse(text);
+        } catch {
+            return text;
+        }
+    }
+    // MARK END
 
     // MARK - written by hand
     private async signRequest(context: RequestOpts): Promise<void> {
@@ -314,11 +341,26 @@ function isFormData(value: any): value is FormData {
 
 export class ResponseError extends Error {
     override name: 'ResponseError' = 'ResponseError';
+    public readonly status: number;
+    public readonly statusText: string;
+
     constructor(
         public response: Response,
-        msg?: string
+        msg?: string,
+        public readonly body?: unknown
     ) {
         super(msg);
+        this.status = response.status;
+        this.statusText = response.statusText;
+    }
+
+    get code(): number | string | undefined {
+        if (this.body && typeof this.body === 'object' && 'code' in this.body) {
+            const { code } = this.body as { code?: number | string };
+            return code;
+        }
+
+        return undefined;
     }
 }
 
@@ -352,7 +394,7 @@ export const COLLECTION_FORMATS = {
 export type FetchAPI = WindowOrWorkerGlobalScope['fetch'];
 
 export type Json = any;
-export type HTTPMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'OPTIONS' | 'HEAD';
+export type { HTTPMethod };
 export type HTTPHeaders = { [key: string]: string };
 export type HTTPQuery = {
     [key: string]:

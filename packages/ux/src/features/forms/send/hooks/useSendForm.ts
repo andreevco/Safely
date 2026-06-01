@@ -1,10 +1,15 @@
-import { useEffect, useMemo } from 'react';
+import { useMachine } from '@xstate/react';
 
-import { SendFormInitialValues, SendFormResult } from '../types';
-import { useSendFormDraft } from './useSendFormDraft';
-import { useSendFormMeta } from './useSendFormMeta';
-import { useSendFormState } from './useSendFormState';
-import { useSuggestionDraft } from './useSuggestionDraft';
+import { useAssets } from '../../../../entities';
+import { createSendFormMachine } from '../machine/machine';
+import type { SendFormInitialValues, SendFormResult } from '../types';
+import type { SendFormView } from '../view';
+import { useSendFormDispatchers } from './useSendFormDispatchers';
+import { useSendFormMachineInput } from './useSendFormMachineInput';
+import { useSendFormSuggestions } from './useSendFormSuggestions';
+import { useSendFormView } from './useSendFormView';
+
+const sendFormMachine = createSendFormMachine();
 
 export interface UseSendFormOptions {
     onSubmit: (result: SendFormResult, onSuccess: () => void) => void;
@@ -12,60 +17,27 @@ export interface UseSendFormOptions {
     initialValues?: SendFormInitialValues;
 }
 
-export function useSendForm(props: UseSendFormOptions) {
+export function useSendForm(props: UseSendFormOptions): SendFormView {
     const { onSubmit, shouldResetForm = true, initialValues } = props;
 
-    const { initialDraft, saveDraft, clearDraft } = useSendFormDraft();
+    const { portfolioSuggestions, contactSuggestions } = useSendFormSuggestions();
+    const ratedAssets = useAssets().data ?? [];
 
-    const resolvedInitialValues = useMemo(() => {
-        if (initialValues?.recipient) return initialValues;
-
-        return initialDraft ?? initialValues;
-    }, []);
-
-    const { state, actions, step, assetsData } = useSendFormState({
-        resolvedInitialValues,
+    const machineInput = useSendFormMachineInput({
         onSubmit,
         shouldResetForm,
-        clearDraft
+        initialValues,
+        portfolioSuggestions,
+        contactSuggestions,
+        ratedAssets
     });
 
-    const suggestionDraft = useSuggestionDraft(initialDraft);
+    const [snapshot, send] = useMachine(sendFormMachine, { input: machineInput });
 
-    const meta = useSendFormMeta({
-        state,
-        assetsData,
-        suggestionDraft: suggestionDraft.state
+    const dispatchers = useSendFormDispatchers(send);
+
+    return useSendFormView({
+        snapshot,
+        dispatchers
     });
-
-    useEffect(() => {
-        if (state.values.recipient) {
-            saveDraft({
-                recipient: state.values.recipient,
-                amount: state.values.amount || undefined,
-                amountInputType: state.values.amountInputType,
-                isMax: state.values.isMax || undefined,
-                stepIndex: state.stepIndex,
-                ...suggestionDraft.state
-            });
-        } else {
-            clearDraft();
-        }
-    }, [
-        state.values.recipient,
-        state.values.amount,
-        state.values.amountInputType,
-        state.values.isMax,
-        state.stepIndex,
-        suggestionDraft.state.selectedId,
-        suggestionDraft.state.suggestionIds
-    ]);
-
-    return {
-        state,
-        actions,
-        step,
-        meta,
-        suggestionSelection: suggestionDraft.actions
-    };
 }

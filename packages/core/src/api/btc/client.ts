@@ -10,7 +10,7 @@ import {
 } from './models';
 import { BtcWalletType } from '../../entities/blockchain/btc';
 import { ApiClient } from '../../utils/fetch';
-import { IIdentifiable } from '../../utils/types';
+import type { IIdentifiable } from '../../utils/types';
 
 export { BtcApiError } from './errors';
 
@@ -25,10 +25,6 @@ export type BtcDescriptor = BtcXpubDescriptor | BtcAddressDescriptor;
 export interface BtcXpubDescriptor {
     type: BtcWalletType;
     xpub: string;
-    derivationPath?: {
-        change: number;
-        addressIndex: number | '*';
-    };
 }
 
 export interface BtcAddressDescriptor {
@@ -95,11 +91,9 @@ export class BtcApi extends ApiClient implements IIdentifiable {
             return { endpoint: 'addresses', value: descriptor.address };
         }
 
-        let path = `${btcWalletTypeToDescriptor[descriptor.type]}(${descriptor.xpub}`;
-        if (descriptor.derivationPath) {
-            path += `/${descriptor.derivationPath.change ?? 0}/${descriptor.derivationPath.addressIndex ?? '*'}`;
-        }
-
-        return { endpoint: 'xpubs', value: path + ')' };
+        return {
+            endpoint: 'xpubs',
+            value: `${btcWalletTypeToDescriptor[descriptor.type]}(${descriptor.xpub})`
+        };
     }
 }

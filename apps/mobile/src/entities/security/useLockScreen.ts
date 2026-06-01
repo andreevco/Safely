@@ -1,19 +1,13 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import z from 'zod';
 
-import { useSharedUnstructuredStorage, useSuspenseQuery } from '@safely/ux';
+import { useSuspenseQuery } from '@safely/ux';
 
-import { StorageKey } from '@mobile/shared/constants';
+import { useMobileLayerRegularStorage } from '@mobile/shared/storage';
 
 import { lockScreenKeys } from './keys';
 
-const sLockScreenEnabled = z.boolean();
-
 export function useLockScreenQuery() {
-    const { get: storageGet } = useSharedUnstructuredStorage(
-        StorageKey.LOCK_SCREEN_ENABLED,
-        sLockScreenEnabled
-    );
+    const { get: storageGet } = useMobileLayerRegularStorage('lockScreenEnabled');
 
     return useSuspenseQuery({
         queryKey: lockScreenKeys.state.toKey(),
@@ -28,10 +22,7 @@ export function useLockScreenQuery() {
 
 export function useSetLockScreenEnabled() {
     const queryClient = useQueryClient();
-    const { set: storageSet } = useSharedUnstructuredStorage(
-        StorageKey.LOCK_SCREEN_ENABLED,
-        sLockScreenEnabled
-    );
+    const { set: storageSet } = useMobileLayerRegularStorage('lockScreenEnabled');
 
     return useMutation({
         mutationFn: async (enabled: boolean) => {

@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { type ViewStyle } from 'react-native';
+import type { ViewStyle } from 'react-native';
 
-import { type CryptoAssetAmount, type CryptoFiatRate } from '@safely/core';
+import type { CryptoAssetAmount, CryptoFiatRate } from '@safely/core';
 import {
     useActiveBtcWalletUtxo,
     useLastBtcTransactionTimestamp,
@@ -46,7 +46,7 @@ export const BtcAssetCell = (props: BtcAssetCellProps) => {
     if (isSubtitleLoading) {
         subtitle = <Cell.Subtitle skeletonWidth={140} />;
     } else if (hasReceiving) {
-        subtitle = <ReceivingBadges utxo={btcUtxo!.unconfirmedUnsafe.utxos} />;
+        subtitle = <ReceivingBadges utxos={btcUtxo!.unconfirmedUnsafe.utxos} />;
     } else if (timeAgo) {
         subtitle = (
             <Cell.Subtitle color="secondary" numberOfLines={undefined} style={styles.subtitle}>
@@ -63,7 +63,7 @@ export const BtcAssetCell = (props: BtcAssetCellProps) => {
 
     return (
         <Cell showDivider={showDivider} onPress={onPress} style={styles.cell as ViewStyle}>
-            <Cell.Image type="image" image={cryptoAssetAmount.asset.image} />
+            <Cell.Image style={styles.image} type="image" image={cryptoAssetAmount.asset.image} />
             <Cell.Content>
                 <Cell.Row style={styles.titleRow}>
                     <Cell.Title color="primary">{cryptoAssetAmount.asset.name}</Cell.Title>
@@ -74,7 +74,7 @@ export const BtcAssetCell = (props: BtcAssetCellProps) => {
                 <Cell.Row style={styles.subtitleRow}>
                     {subtitle}
                     <Cell.Subvalue color="secondary" style={styles.subvalue}>
-                        {cryptoAssetAmount.format(formatter)}
+                        {cryptoAssetAmount.format(formatter, { fullPrecision: true })}
                     </Cell.Subvalue>
                 </Cell.Row>
             </Cell.Content>

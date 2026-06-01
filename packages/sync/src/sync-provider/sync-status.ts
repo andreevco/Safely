@@ -42,8 +42,22 @@ export interface ISyncStatusManager {
     /**
      * Returns a promise that resolves when the synchronization status reaches the specified target status.
      * @param targetStatus
+     * @param opts
      */
-    waitForStatus(targetStatus: SyncStatus): Promise<void>;
+    waitForStatus(targetStatus: SyncStatus, opts?: WaitForStatusOptions): Promise<void>;
+}
+
+export type WaitForStatusOptions = {
+    timeout?: number;
+};
+
+export class SyncStatusTimeoutError extends Error {
+    constructor(
+        public readonly targetStatus: SyncStatus,
+        public readonly timeout: number
+    ) {
+        super(`Timed out waiting for sync status ${targetStatus} after ${timeout}ms`);
+    }
 }
 
 export class SyncStatusManager implements ISyncStatusManager {
@@ -62,17 +76,43 @@ export class SyncStatusManager implements ISyncStatusManager {
         }
     }
 
-    public waitForStatus(targetStatus: SyncStatus): Promise<void> {
+    public waitForStatus(targetStatus: SyncStatus, opts?: WaitForStatusOptions): Promise<void> {
         if (this.status === targetStatus) {
             return Promise.resolve();
         }
-        return new Promise(resolve => {
+
+        return new Promise((resolve, reject) => {
+            let settled = false;
+            let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+            const complete = (fn: () => void) => {
+                if (settled) {
+                    return;
+                }
+
+                settled = true;
+                if (timeoutId) {
+                    clearTimeout(timeoutId);
+                }
+                unsubscribe();
+                fn();
+            };
+
             const unsubscribe = this.subscribe(status => {
                 if (status === targetStatus) {
-                    unsubscribe();
-                    resolve();
+                    complete(() => {
+                        resolve();
+                    });
                 }
             });
+
+            if (opts?.timeout !== undefined) {
+                timeoutId = setTimeout(() => {
+                    complete(() => {
+                        reject(new SyncStatusTimeoutError(targetStatus, opts.timeout!));
+                    });
+                }, opts.timeout);
+            }
         });
     }
 

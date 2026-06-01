@@ -1,11 +1,10 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import { PortfolioType } from '@safely/core';
 import { useActivePortfolio, useRecordActivePortfolioSecretReveal } from '@safely/ux';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { BottomSheet, Button, Text, useBottomSheet, useCloseOnReturn } from '@mobile/shared/ui';
 import { Icon, ListKey96 } from '@mobile/shared/ui/Icon';
 
@@ -20,15 +19,15 @@ const RecoveryConfirmContent = () => {
         throw new Error('Recovery only available for BIP39 portfolio');
     }
 
-    const navigation = useNavigation<RootStackNavigationProp>();
+    const navigation = useNavigation();
     const markNavigated = useCloseOnReturn();
 
-    const { mutateAsync: recordSeedReveal } = useRecordActivePortfolioSecretReveal();
+    const { mutate: recordSeedReveal } = useRecordActivePortfolioSecretReveal();
 
     const handleReveal = async () => {
         try {
             const mnemonic = await portfolio.getMnemonic();
-            await recordSeedReveal();
+            recordSeedReveal();
             markNavigated();
             navigation.navigate('RecoveryPhraseModal', { mnemonic });
         } catch {

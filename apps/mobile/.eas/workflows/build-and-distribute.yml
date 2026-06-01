@@ -1,7 +1,13 @@
 name: Build & Distribute to Firebase
 
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      release_notes:
+        description: Release notes / "What to Test" for testers
+        type: string
+        required: false
+        default: ''
 
 jobs:
   build_ios:
@@ -10,6 +16,7 @@ jobs:
     params:
       platform: ios
       profile: production
+      message: ${{ inputs.release_notes }}
 
   build_android:
     name: Build APK
@@ -17,13 +24,25 @@ jobs:
     params:
       platform: android
       profile: production
+      message: ${{ inputs.release_notes }}
 
   distribute_ios:
-    type: submit
+    type: testflight
     name: Upload to TestFlight
     needs: [build_ios]
     params:
       build_id: ${{ needs.build_ios.outputs.build_id }}
+      profile: production
+      changelog: ${{ inputs.release_notes }}
+
+  # testflight upload may fail with unknown at this moment reasons, but retry should help
+  distribute_ios_crutch:
+    type: testflight
+    name: Upload to TestFlight (crutch)
+    after: [build_ios, distribute_ios]
+    if: ${{ after.distribute_ios.status == 'failure' }}
+    params:
+      build_id: ${{ after.build_ios.outputs.build_id }}
       profile: production
 
   distribute_android:
@@ -44,12 +63,23 @@ jobs:
           echo '${{ env.SERVICE_ACCOUNT }}' > /tmp/sa-key.json
           export GOOGLE_APPLICATION_CREDENTIALS=/tmp/sa-key.json
 
+          cat > /tmp/release_notes.txt << 'EAS_RELEASE_NOTES_EOF'
+          ${{ inputs.release_notes }}
+          EAS_RELEASE_NOTES_EOF
+
           APK_PATH=$(find ${{ steps.download_build.outputs.artifact_path }} -name "*.apk" -type f | head -1)
           if [ -z "$APK_PATH" ]; then
             echo "No .apk file found in artifact. Contents:"
             ls -R ${{ steps.download_build.outputs.artifact_path }}
             exit 1
           fi
+
+          NOTES_ARGS=()
+          if [ -s /tmp/release_notes.txt ]; then
+            NOTES_ARGS=(--release-notes-file /tmp/release_notes.txt)
+          fi
+
           firebase appdistribution:distribute "$APK_PATH" \
             --app "${{ env.FIREBASE_APP_ID }}" \
-            --groups "testers"
+            --groups "testers" \
+            "${NOTES_ARGS[@]}"

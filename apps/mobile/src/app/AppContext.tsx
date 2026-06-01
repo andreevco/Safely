@@ -1,19 +1,29 @@
-import * as Device from 'expo-device';
 import { getLocales } from 'expo-localization';
-import { FC, PropsWithChildren, useEffect, useMemo } from 'react';
+import { reloadAppAsync as reloadApp } from 'expo-modules-core';
+import type { FC, PropsWithChildren } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AppState, Platform } from 'react-native';
+import { AppState } from 'react-native';
 
-import { Build } from '@safely/core';
-import { AppContext, IAppContext, Security, UnlockableSecuredEncryptedStorage } from '@safely/ux';
+import { LoggableStorage } from '@safely/core';
+import type { AppStateStatus, IAppContext, Security } from '@safely/ux';
+import { AppContext, UnlockableSecuredEncryptedStorage } from '@safely/ux';
 
-import { navigationRef } from '@mobile/app/navigation/navigationRef';
-import { useMobileSecurityCheck } from '@mobile/entities/security';
+import { useMobileSecurityCheck } from '@mobile/features/security';
+import { build, deviceInfo, environment } from '@mobile/shared/app-meta';
+import { eraseLogs, flushLogs, logger } from '@mobile/shared/logger';
 import { useLoaderServiceContext } from '@mobile/shared/providers/loader';
 import { useToastServiceContext } from '@mobile/shared/providers/toast';
-import { mobileStorages } from '@mobile/shared/storage';
-import { MobileNumberFormatLocale } from '@mobile/shared/utils';
+import { MobileNumberFormatLocale, MobileAppLinking } from '@mobile/shared/utils';
 
+import { navigationRef } from './navigation/navigationRef';
+import {
+    CLEAR_ALL_MOBILE_STORAGE_ONLY_APP_LEVEL_USE_DANGER,
+    ENCRYPTED_MOBILE_STORAGE_ONLY_APP_LEVEL_USE,
+    mobileLayerSynchronousDevToken,
+    REGULAR_MOBILE_STORAGE_ONLY_APP_LEVEL_USE,
+    SECURE_ENCRYPTED_MOBILE_STORAGE_ONLY_APP_LEVEL_USE
+} from './storage';
 import packageJson from '../../package.json';
 
 const security: Security = {
@@ -22,15 +32,18 @@ const security: Security = {
     }
 };
 
-const build: Build =
-    Platform.select({
-        ios: 'ios' as const,
-        android: 'android' as const,
-        web: 'web' as const
-    }) ?? ('web' as const);
-
-const getSecureEncryptedStorage = () =>
-    new UnlockableSecuredEncryptedStorage(mobileStorages.secureEncrypted.storage, security);
+function resolveAppStateStatus(state: string): AppStateStatus {
+    switch (state) {
+        case 'active':
+        case 'background':
+        case 'inactive':
+            return state;
+        case 'extension':
+        case 'unknown':
+        default:
+            return 'unknown';
+    }
+}
 
 export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
     const {
@@ -48,14 +61,30 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
             },
             version: packageJson.version,
             build,
-            deviceInfo: {
-                name: Device.modelName ?? (Platform.OS === 'ios' ? 'iPhone' : 'Android device'),
-                osVersion: Device.osVersion ?? String(Platform.Version)
-            },
+            environment,
+            devToken: mobileLayerSynchronousDevToken.storage.get() ?? undefined,
+            deviceInfo,
             numberFormatLocale: new MobileNumberFormatLocale(getLocales()[0]),
-            storage: mobileStorages.app.storage,
-            encryptedStorage: mobileStorages.encrypted.storage,
-            getSecureEncryptedStorage,
+            storage: {
+                ux: {
+                    regular: REGULAR_MOBILE_STORAGE_ONLY_APP_LEVEL_USE.storage.child('ux')
+                },
+                sync: {
+                    regular: REGULAR_MOBILE_STORAGE_ONLY_APP_LEVEL_USE.storage.child('sync'),
+                    encrypted: ENCRYPTED_MOBILE_STORAGE_ONLY_APP_LEVEL_USE.storage.child('sync'),
+                    getSecureEncrypted() {
+                        return new UnlockableSecuredEncryptedStorage(
+                            new LoggableStorage(
+                                SECURE_ENCRYPTED_MOBILE_STORAGE_ONLY_APP_LEVEL_USE.enumerable,
+                                logger,
+                                'SecureEncryptedStorage'
+                            ),
+                            security,
+                            ['sync']
+                        );
+                    }
+                }
+            },
             qrScanner: {
                 scan: options =>
                     new Promise<string>(resolve => {
@@ -74,26 +103,21 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
                 hide: loaderService.hide,
                 withLoader: loaderService.withLoader
             },
+            logger,
+            linking: new MobileAppLinking(logger),
             security: {
                 check: () => security.check()
             },
-            async clearAllData() {
-                const storages = Object.values(mobileStorages);
-                for (const storageConfig of storages) {
-                    await storageConfig.storage.clear();
-                }
+            clearAllData: async () => {
+                await CLEAR_ALL_MOBILE_STORAGE_ONLY_APP_LEVEL_USE_DANGER();
+                eraseLogs();
             },
+            reloadApp,
             subscribeAppStateChange(callback) {
+                callback(resolveAppStateStatus(AppState.currentState));
+
                 const subscription = AppState.addEventListener('change', state => {
-                    switch (state) {
-                        case 'active':
-                        case 'background':
-                        case 'inactive':
-                            return callback(state);
-                        case 'extension':
-                        case 'unknown':
-                            return callback('unknown');
-                    }
+                    callback(resolveAppStateStatus(state));
                 });
                 return () => subscription.remove();
             }
@@ -101,20 +125,29 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
         [t, toastService, loaderService, language]
     );
 
-    return (
-        <AppContext value={appContext}>
-            <SecurityCheckInitializer />
-            {children}
-        </AppContext>
-    );
+    return <AppContext value={appContext}>{children}</AppContext>;
 };
 
-const SecurityCheckInitializer: FC = () => {
+export const SecurityCheckInitializer: FC = () => {
     const check = useMobileSecurityCheck();
 
     useEffect(() => {
         security.check = check;
     }, [check]);
+
+    return null;
+};
+
+export const LoggerLifecycle: FC = () => {
+    useEffect(() => {
+        const subscription = AppState.addEventListener('change', state => {
+            if (state === 'background' || state === 'inactive') {
+                void flushLogs();
+            }
+        });
+
+        return () => subscription.remove();
+    }, []);
 
     return null;
 };

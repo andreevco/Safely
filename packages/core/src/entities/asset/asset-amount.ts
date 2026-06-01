@@ -1,18 +1,18 @@
-import Big, { BigSource } from 'big.js';
+import type { BigSource } from 'big.js';
+import Big from 'big.js';
 import * as z from 'zod';
 
-import { CryptoAsset, isCryptoAsset, sCryptoAsset } from './crypto-asset';
-import { FiatAsset, isFiatAsset, sFiatAsset } from './fiat-asset';
-import { IAsset } from './I-asset';
-import { Rate, sCryptoFiatRate } from './rate';
-import {
-    CryptoCurrencyDisplay,
-    FiatCurrencyDisplay,
-    NumberFormatter,
-    isZero,
-    toBig,
-    toBigInt
-} from '../../utils';
+import { sFiatAsset } from '@safely/sync-storage';
+
+import type { CryptoAsset } from './crypto-asset';
+import { isCryptoAsset, sCryptoAsset } from './crypto-asset';
+import { FiatAsset } from './fiat-asset';
+import { isFiatAsset } from './fiat-asset';
+import type { IAsset } from './I-asset';
+import type { Rate } from './rate';
+import { sCryptoFiatRate } from './rate';
+import type { CryptoCurrencyDisplay, FiatCurrencyDisplay, NumberFormatter } from '../../utils';
+import { isZero, toBig, toBigInt } from '../../utils';
 
 type AssetAmountByAsset<T extends IAsset> = T extends CryptoAsset
     ? CryptoAssetAmount<T>
@@ -159,7 +159,7 @@ export const sFiatAssetAmount = z
     .transform(
         val =>
             new FiatAssetAmount({
-                asset: val.asset,
+                asset: FiatAsset.restore(val.asset),
                 amount: val.amount
             })
     );

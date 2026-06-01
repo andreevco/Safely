@@ -1,4 +1,5 @@
-import { Text, TextProps } from '@mobile/shared/ui/Text';
+import type { TextProps } from '@mobile/shared/ui/Text';
+import { Text } from '@mobile/shared/ui/Text';
 
 import { useCellContext } from '../../CellContext';
 

@@ -1,5 +1,5 @@
-import { IMnemonic, IMnemonicAccessor } from './mnemonic';
-import { ISecretEncryptor, SSecretEncrypted } from '../../di';
+import type { IMnemonic, IMnemonicAccessor } from './mnemonic';
+import type { ISecretEncryptor, SSecretEncrypted } from '../../di';
 
 export interface IMnemonicVault {
     getMnemonic(): Promise<IMnemonic>;

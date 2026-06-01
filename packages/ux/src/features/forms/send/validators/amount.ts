@@ -1,13 +1,8 @@
-import {
-    CryptoAsset,
-    CryptoAssetAmount,
-    FiatAssetAmount,
-    NumberFormatter,
-    RatedCryptoAssetAmount
-} from '@safely/core';
+import type { CryptoAsset, NumberFormatter, RatedCryptoAssetAmount } from '@safely/core';
+import { CryptoAssetAmount, FiatAssetAmount } from '@safely/core';
 
 import { SendFormError } from '../errors';
-import {
+import type {
     AmountInputType,
     AmountValidationResult,
     AmountWithInputType,
@@ -167,11 +162,7 @@ export function reformatForInputType(
     currentParsed: AmountWithInputType<CryptoAsset>,
     newInputType: AmountInputType,
     formatter: NumberFormatter
-): AmountWithOutputType | null {
-    if (!currentParsed.fiatAssetAmount) {
-        return null;
-    }
-
+): AmountWithOutputType {
     const formatted = formatAmountForDisplay(
         newInputType,
         currentParsed.fiatAssetAmount,

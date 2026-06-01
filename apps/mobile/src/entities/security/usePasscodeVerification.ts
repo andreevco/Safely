@@ -5,7 +5,8 @@ import {
     NotificationFeedbackType
 } from 'expo-haptics';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { SharedValue, useSharedValue } from 'react-native-reanimated';
+import type { SharedValue } from 'react-native-reanimated';
+import { useSharedValue } from 'react-native-reanimated';
 
 import { PASSCODE_DIGITS } from '@mobile/shared/constants';
 

@@ -1,6 +1,5 @@
 import { useAppContext } from '../providers';
-
-export type TranslateFn = (key: string, options?: Record<string, string | number>) => string;
+import type { TranslateFn } from './types';
 
 export function useTranslate(): TranslateFn {
     return useAppContext().i18n.t;

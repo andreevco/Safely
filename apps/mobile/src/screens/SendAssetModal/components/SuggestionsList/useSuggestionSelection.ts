@@ -1,56 +1,33 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback } from 'react';
 
-import { SendSuggestion } from '@safely/ux';
+import type { SendSuggestions } from '@safely/ux';
 
 interface UseSuggestionSelectionParams {
-    suggestions: SendSuggestion[];
-    restoredSuggestions?: SendSuggestion[];
+    suggestions: SendSuggestions;
+    restoredSuggestions?: SendSuggestions;
     selectedId?: string;
     onChangeText: (value: string, label?: string) => void;
-    onSelectSuggestion: (id: string, visibleSuggestions: SendSuggestion[]) => void;
-    onClearSuggestionSelection: () => void;
+    onSelectSuggestion: (id: string, visibleSuggestions: SendSuggestions) => void;
 }
 
 export function useSuggestionSelection(params: UseSuggestionSelectionParams) {
-    const {
-        suggestions,
-        restoredSuggestions,
-        selectedId,
-        onChangeText,
-        onSelectSuggestion,
-        onClearSuggestionSelection
-    } = params;
+    const { suggestions, restoredSuggestions, selectedId, onChangeText, onSelectSuggestion } =
+        params;
 
-    const savedSuggestions = useRef<SendSuggestion[]>(restoredSuggestions ?? suggestions);
-
-    useEffect(() => {
-        if (suggestions.length > 0) {
-            savedSuggestions.current = suggestions;
-        }
-    }, [suggestions]);
-
-    const displaySuggestions = selectedId ? savedSuggestions.current : suggestions;
+    const displaySuggestions =
+        selectedId && restoredSuggestions ? restoredSuggestions : suggestions;
 
     const handleSelect = useCallback(
-        (id: string, address: string, label: string) => {
-            onSelectSuggestion(id, savedSuggestions.current);
-            onChangeText(address, label);
+        (id: string) => {
+            onSelectSuggestion(id, displaySuggestions);
         },
-        [onChangeText, onSelectSuggestion]
-    );
-
-    const handleChangeText = useCallback(
-        (text: string, label?: string) => {
-            onClearSuggestionSelection();
-            onChangeText(text, label);
-        },
-        [onChangeText, onClearSuggestionSelection]
+        [onSelectSuggestion, displaySuggestions]
     );
 
     return {
         displaySuggestions,
         selectedId,
         handleSelect,
-        handleChangeText
+        handleChangeText: onChangeText
     };
 }

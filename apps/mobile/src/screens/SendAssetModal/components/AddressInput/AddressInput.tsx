@@ -1,4 +1,5 @@
-import { Ref, useCallback, useRef, useState } from 'react';
+import type { Ref } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Keyboard, Pressable, TextInput, View } from 'react-native';
 import Animated, {
@@ -12,15 +13,18 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useUnistyles } from 'react-native-unistyles';
 
-import { PortfolioMeta, ellipsisMiddle } from '@safely/core';
-import { useScanQrScheme } from '@safely/ux';
+import type { ContactMeta, PortfolioMeta } from '@safely/core';
+import { ellipsisMiddle } from '@safely/core';
+import { SuggestionSource, useScanQrScheme } from '@safely/ux';
 
+import { ContactName } from '@mobile/entities/contact';
 import { PortfolioName } from '@mobile/entities/portfolio';
 import { Icon, QrCodeScan28, XmarkCircle16 } from '@mobile/shared/ui/Icon';
 import { Text } from '@mobile/shared/ui/Text';
 import { TouchableOpacity } from '@mobile/shared/ui/TouchableOpacity';
 
 import { styles } from './AddressInput.styles';
+import { AddressSuffix } from './AddressSuffix';
 
 interface AddressInputProps {
     value: string;
@@ -29,7 +33,9 @@ interface AddressInputProps {
     label?: string;
     placeholder?: string;
     inputRef?: Ref<TextInput>;
-    selectedMeta?: PortfolioMeta;
+    selectedPortfolioMeta?: PortfolioMeta;
+    selectedContactMeta?: ContactMeta;
+    metaSource?: SuggestionSource;
     onSubmitEditing?: () => void;
 }
 
@@ -41,9 +47,14 @@ export const AddressInput = (props: AddressInputProps) => {
         label,
         placeholder,
         inputRef,
-        selectedMeta,
+        selectedPortfolioMeta,
+        selectedContactMeta,
+        metaSource,
         onSubmitEditing
     } = props;
+    const selectedMeta = selectedPortfolioMeta ?? selectedContactMeta;
+    const isSuggestionsMeta = !!selectedMeta && metaSource === SuggestionSource.SUGGESTIONS;
+    const isUserDefinedMeta = !!selectedMeta && metaSource === SuggestionSource.USER_DEFINED;
     const { t } = useTranslation();
     const { theme } = useUnistyles();
 
@@ -66,6 +77,7 @@ export const AddressInput = (props: AddressInputProps) => {
     }, [scan]);
 
     const [isFocused, setIsFocused] = useState(false);
+    const [boxWidth, setBoxWidth] = useState(0);
 
     const hasValue = value.length > 0;
     const hasError = !!error;
@@ -87,6 +99,18 @@ export const AddressInput = (props: AddressInputProps) => {
         onChangeText('');
     }, [onChangeText]);
 
+    const handleChangeText = useCallback(
+        (text: string) => {
+            if (isSuggestionsMeta) {
+                const added = text.length > value.length ? text.slice(value.length) : '';
+                onChangeText(added);
+                return;
+            }
+            onChangeText(text);
+        },
+        [onChangeText, isSuggestionsMeta, value]
+    );
+
     const handleSelectedPress = useCallback(() => {
         textInputRef.current?.focus();
     }, [textInputRef]);
@@ -101,43 +125,74 @@ export const AddressInput = (props: AddressInputProps) => {
                 </View>
             )}
             <View style={styles.container}>
-                <TextInput
-                    ref={textInputRef}
-                    value={value}
-                    onChangeText={onChangeText}
-                    onFocus={handleFocus}
-                    onBlur={handleBlur}
-                    style={[styles.input, selectedMeta && styles.hiddenInput]}
-                    placeholder={placeholder}
-                    placeholderTextColor={theme.colors.text.tertiary}
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    spellCheck={false}
-                    multiline
-                    submitBehavior="submit"
-                    returnKeyType="next"
-                    onSubmitEditing={onSubmitEditing}
-                />
-                {selectedMeta && (
+                <View
+                    style={styles.inputModeBox}
+                    onLayout={e => setBoxWidth(e.nativeEvent.layout.width)}
+                >
+                    <TextInput
+                        ref={textInputRef}
+                        value={value}
+                        onChangeText={handleChangeText}
+                        onFocus={handleFocus}
+                        onBlur={handleBlur}
+                        style={[styles.input, isSuggestionsMeta && styles.hiddenInput]}
+                        placeholder={placeholder}
+                        placeholderTextColor={theme.colors.text.tertiary}
+                        autoCapitalize="none"
+                        autoCorrect={false}
+                        spellCheck={false}
+                        multiline
+                        submitBehavior="submit"
+                        returnKeyType="next"
+                        onSubmitEditing={onSubmitEditing}
+                    />
+                    {isUserDefinedMeta && (
+                        <AddressSuffix
+                            value={value}
+                            portfolioMeta={selectedPortfolioMeta}
+                            contactMeta={selectedContactMeta}
+                            containerWidth={boxWidth}
+                        />
+                    )}
+                </View>
+                {isSuggestionsMeta && (
                     <Pressable style={styles.selectedContent} onPress={handleSelectedPress}>
-                        <PortfolioName gap={8} meta={selectedMeta} size={16} fontVariant="bodyL" />
-                        <BlinkingCursor color={theme.colors.accent.blue} />
+                        {selectedPortfolioMeta ? (
+                            <PortfolioName
+                                gap={8}
+                                meta={selectedPortfolioMeta}
+                                size={16}
+                                fontVariant="bodyL"
+                            />
+                        ) : (
+                            selectedContactMeta && (
+                                <ContactName
+                                    gap={8}
+                                    meta={selectedContactMeta}
+                                    size={16}
+                                    fontVariant="bodyL"
+                                />
+                            )
+                        )}
                         <Text variant="bodyL" color="tertiary">
                             {ellipsisMiddle(value)}
                         </Text>
+                        <BlinkingCursor color={theme.colors.accent.blue} />
                     </Pressable>
                 )}
 
-                <TouchableOpacity
-                    style={styles.iconButton}
-                    onPress={hasValue ? handleClear : handleScan}
-                >
-                    {hasValue ? (
+                {hasValue ? (
+                    <TouchableOpacity
+                        style={[styles.iconButton, styles.clearIconButton]}
+                        onPress={handleClear}
+                    >
                         <Icon icon={XmarkCircle16} color="tertiary" />
-                    ) : (
+                    </TouchableOpacity>
+                ) : (
+                    <TouchableOpacity style={styles.iconButton} onPress={handleScan}>
                         <Icon icon={QrCodeScan28} color="accent" />
-                    )}
-                </TouchableOpacity>
+                    </TouchableOpacity>
+                )}
             </View>
 
             {hasError && <Text style={styles.errorText}>{t(error)}</Text>}

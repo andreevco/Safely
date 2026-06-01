@@ -1,20 +1,53 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
 import { impactAsync, ImpactFeedbackStyle } from 'expo-haptics';
 import { useTranslation } from 'react-i18next';
 import { ScrollView } from 'react-native-gesture-handler';
 
-import { useAccounts, useActiveAccount, useSetActiveAccount } from '@safely/ux';
+import {
+    useAccountMeta,
+    useAccounts,
+    useAccountStoreSlot,
+    useActiveAccount,
+    useSetActiveAccount
+} from '@safely/ux';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { Button, Cell, Checkmark28, Icon, List, Screen } from '@mobile/shared/ui';
 
 import { styles } from './SelectAccountSelectorModal.styles';
+
+interface AccountListItemProps {
+    accountId: string;
+    isActive: boolean;
+    onPress: () => void;
+}
+
+const AccountListItem = ({ accountId, isActive, onPress }: AccountListItemProps) => {
+    const { t } = useTranslation();
+    const name = useAccountMeta(accountId).name;
+    const walletsCount = useAccountStoreSlot(accountId, 'portfolios')?.length ?? 0;
+
+    return (
+        <Cell onPress={onPress}>
+            <Cell.Content>
+                <Cell.Row>
+                    <Cell.Title>{name}</Cell.Title>
+                </Cell.Row>
+                <Cell.Row>
+                    <Cell.Subtitle>
+                        {t('settings.walletsCount', { count: walletsCount })}
+                    </Cell.Subtitle>
+                </Cell.Row>
+            </Cell.Content>
+            {isActive && <Icon icon={Checkmark28} color="accent" />}
+        </Cell>
+    );
+};
 
 export const SelectAccountSelectorModal = () => {
     const { t } = useTranslation();
     const accounts = useAccounts();
     const account = useActiveAccount();
-    const navigation = useNavigation<RootStackNavigationProp>();
+    const navigation = useNavigation();
     const { mutateAsync: setActiveAccount } = useSetActiveAccount();
 
     const handleSwitchAccount = async (accountId: string) => {
@@ -41,28 +74,14 @@ export const SelectAccountSelectorModal = () => {
                 contentContainerStyle={styles.contentContainer}
             >
                 <List.Group variant="divided">
-                    {accounts?.map(acc => {
-                        const isActive = acc.accountId === account.accountId;
-                        const walletsCount = acc.syncProvider.get('portfolios')?.length ?? 0;
-                        return (
-                            <Cell
-                                key={acc.accountId}
-                                onPress={() => handleSwitchAccount(acc.accountId)}
-                            >
-                                <Cell.Content>
-                                    <Cell.Row>
-                                        <Cell.Title>{acc.meta.name}</Cell.Title>
-                                    </Cell.Row>
-                                    <Cell.Row>
-                                        <Cell.Subtitle>
-                                            {t('settings.walletsCount', { count: walletsCount })}
-                                        </Cell.Subtitle>
-                                    </Cell.Row>
-                                </Cell.Content>
-                                {isActive && <Icon icon={Checkmark28} color="accent" />}
-                            </Cell>
-                        );
-                    })}
+                    {accounts?.map(acc => (
+                        <AccountListItem
+                            key={acc.accountId}
+                            accountId={acc.accountId}
+                            isActive={acc.accountId === account.accountId}
+                            onPress={() => handleSwitchAccount(acc.accountId)}
+                        />
+                    ))}
                 </List.Group>
                 <Button
                     type="secondary"

@@ -1,14 +1,15 @@
-import { StaticScreenProps, useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
+import type { StaticScreenProps } from '@react-navigation/native';
 import { useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import QRCode from 'react-native-qrcode-skia';
 
-import { OnboardingConnector, useAccountConnectedCallback, useToast } from '@safely/ux';
+import type { OnboardingConnector } from '@safely/ux';
+import { useAccountConnectedCallback, useToast } from '@safely/ux';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { DeviceLink, Screen, Text, TouchableOpacity } from '@mobile/shared/ui';
-import { Icon } from '@mobile/shared/ui/Icon';
+import { Icon, Sliders12 } from '@mobile/shared/ui/Icon';
 import { useCopy } from '@mobile/shared/utils/copy';
 
 import { styles } from './SignInScreen.styles';
@@ -16,15 +17,16 @@ import { styles } from './SignInScreen.styles';
 type SignInScreenProps = StaticScreenProps<{
     connector: OnboardingConnector;
     closeStorage: () => void;
+    onSuccess: () => void;
 }>;
 
 export const SignInScreen = (props: SignInScreenProps) => {
-    const { connector, closeStorage } = props.route.params;
+    const { connector, closeStorage, onSuccess } = props.route.params;
 
     const { t } = useTranslation();
     const copy = useCopy();
     const toast = useToast();
-    const navigation = useNavigation<RootStackNavigationProp>();
+    const navigation = useNavigation();
 
     const connectedRef = useRef(false);
 
@@ -44,12 +46,12 @@ export const SignInScreen = (props: SignInScreenProps) => {
 
     const handleConnected = useCallback(() => {
         connectedRef.current = true;
-        navigation.navigate('SignInSuccessScreen');
-    }, [navigation]);
+        onSuccess();
+    }, [onSuccess]);
 
     const handleError = useCallback(() => {
         navigation.goBack();
-        toast(t('signIn.timeout'));
+        toast({ message: t('signIn.timeout'), duration: 5000 });
     }, [navigation, toast, t]);
 
     useAccountConnectedCallback(connector, handleConnected, {
@@ -80,7 +82,25 @@ export const SignInScreen = (props: SignInScreenProps) => {
                             {t('signIn.title')}
                         </Text>
                         <Text textAlign="center" variant="bodyL" color="secondary">
-                            {t('signIn.description')}
+                            {t('signIn.description.top')}
+                        </Text>
+                        <View style={styles.iconLine}>
+                            <View style={{ flexShrink: 1 }}>
+                                <Text variant="bodyL" color="secondary" textAlign="center">
+                                    {t('signIn.description.iconLineStart')}
+                                </Text>
+                            </View>
+                            <View style={styles.inlineSettingsIconContainer}>
+                                <Icon icon={Sliders12} />
+                            </View>
+                            <View style={{ flexShrink: 1 }}>
+                                <Text variant="bodyL" color="secondary" textAlign="center">
+                                    {t('signIn.description.iconLineEnd')}
+                                </Text>
+                            </View>
+                        </View>
+                        <Text textAlign="center" variant="bodyL" color="secondary">
+                            {t('signIn.description.bottom')}
                         </Text>
                     </View>
                 </View>

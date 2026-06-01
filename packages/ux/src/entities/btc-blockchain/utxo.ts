@@ -1,13 +1,9 @@
-import { useCallback, useMemo } from 'react';
+import { useQueries } from '@tanstack/react-query';
+import { useMemo } from 'react';
 
-import {
-    assertUnreachable,
-    BtcAssetAmount,
-    BtcWallet,
-    PortfolioType,
-    RequiredProperties
-} from '@safely/core';
-import { BtcApiUtxoWithOptionalTx } from '@safely/core/api/btc';
+import type { BtcWallet, RequiredProperties } from '@safely/core';
+import { assertUnreachable, BtcAssetAmount, PortfolioType } from '@safely/core';
+import type { BtcApi, BtcApiUtxoWithOptionalTx } from '@safely/core/api/btc';
 
 import {
     QUERIES_REFETCH_INTERVAL,
@@ -15,9 +11,13 @@ import {
     useDerivedQuery,
     usePersistQuery
 } from '../../shared';
+import { useActiveAccount } from '../account';
 import { resolveBtcWallet, useActiveBtcWallet, usePortfolios } from '../portfolio';
-import { useBroadcastedBtcTxCache, BroadcastedBtcTxCacheService } from './broadcasted-tx-cache';
 import { utxo } from './keys';
+import {
+    BroadcastedBtcTxService,
+    getLastBroadcastedBtcTxForWallet
+} from './last-broadcasted-btc-tx';
 import { getBiggestBtcIOAddress } from '../activity/api';
 
 function useAccessibleBtcWallets() {
@@ -47,33 +47,32 @@ function getTotal(utxos: { value: string }[]) {
     );
 }
 
-export function useRawBtcWalletUtxo(btcWallet: BtcWallet) {
-    const api = useBtcApi();
+function btcWalletUtxoOptions(deps: {
+    api: BtcApi;
+    accessibleBtcWallets: BtcWallet[];
+    accountId: string;
+    btcWallet: BtcWallet;
+}) {
+    const { api, accessibleBtcWallets, accountId, btcWallet } = deps;
 
-    return usePersistQuery({
+    return {
         queryKey: utxo.wallet(btcWallet).params({ api }).toKey(),
-        queryFn: () => api.getUtxos(btcWallet, true),
-        schemaKey: 'sBtcWalletUtxos',
-        refetchInterval: QUERIES_REFETCH_INTERVAL.UTXO
-    });
-}
+        queryFn: async () => {
+            const utxos = await api.getUtxos(btcWallet, true);
 
-function useBtcWalletUtxoFromServer(btcWallet: BtcWallet) {
-    const rawQuery = useRawBtcWalletUtxo(btcWallet);
-    const accessibleBtcWallets = useAccessibleBtcWallets();
+            const serverConfirmed = utxos.filter(u => u.confirmations > 0);
+            const unconfirmed = utxos.filter(u => u.confirmations === 0);
 
-    const queryFn = useCallback(
-        ([allUtxos]: readonly [BtcApiUtxoWithOptionalTx[]]) => {
-            const confirmed = allUtxos.filter(u => u.confirmations > 0);
-            const unconfirmed = allUtxos.filter(u => u.confirmations === 0);
-
-            const { safe, unsafe } = unconfirmed.reduce(
+            const { safe: serverSafe, unsafe: serverUnsafe } = unconfirmed.reduce(
                 (acc, item) => {
                     if (!item.tx) {
                         return { ...acc };
                     }
-                    const fromAddress = getBiggestBtcIOAddress(item.tx.vin.filter(v => !v.isOwn));
-                    const isSafe = accessibleBtcWallets.some(w => w.address === fromAddress);
+                    const externalInputs = item.tx.vin.filter(v => !v.isOwn);
+                    const fromAddress = getBiggestBtcIOAddress(externalInputs);
+                    const isSafe =
+                        externalInputs.length === 0 ||
+                        accessibleBtcWallets.some(w => w.address === fromAddress);
                     const narrowed = item as RequiredProperties<BtcApiUtxoWithOptionalTx, 'tx'>;
                     if (isSafe) {
                         return { ...acc, safe: acc.safe.concat(narrowed) };
@@ -87,67 +86,81 @@ function useBtcWalletUtxoFromServer(btcWallet: BtcWallet) {
                 }
             );
 
+            const lastBroadcastedBtcTx = getLastBroadcastedBtcTxForWallet(accountId, btcWallet);
+
+            const service = new BroadcastedBtcTxService(lastBroadcastedBtcTx, btcWallet.address, {
+                serverConfirmed,
+                serverSafe,
+                serverUnsafe
+            });
+
+            const confirmed = service.confirmed;
+            const safe = service.unconfirmedSafe;
+
             return {
-                confirmed: {
-                    totalAmount: getTotal(confirmed),
-                    utxos: confirmed
-                },
-                unconfirmedSafe: {
-                    totalAmount: getTotal(safe),
-                    utxos: safe
-                },
+                confirmed: { totalAmount: getTotal(confirmed), utxos: confirmed },
+                unconfirmedSafe: { totalAmount: getTotal(safe), utxos: safe },
                 unconfirmedUnsafe: {
-                    totalAmount: getTotal(unsafe),
-                    utxos: unsafe
-                }
+                    totalAmount: getTotal(serverUnsafe),
+                    utxos: serverUnsafe
+                },
+                hasLocalNotBroadcastedCache: service.hasLocalNotBroadcastedCache
             };
         },
-        [accessibleBtcWallets]
-    );
-
-    return useDerivedQuery({
-        queries: [rawQuery],
-        queryFn
-    });
+        schemaKey: 'sBtcWalletUtxos' as const,
+        refetchInterval: QUERIES_REFETCH_INTERVAL.UTXO
+    };
 }
 
 export function useBtcWalletUtxo(btcWallet: BtcWallet) {
-    const serverUtxoQuery = useBtcWalletUtxoFromServer(btcWallet);
-    const broadcastedTxQuery = useBroadcastedBtcTxCache();
+    const api = useBtcApi();
+    const account = useActiveAccount();
+    const accessibleBtcWallets = useAccessibleBtcWallets();
 
-    return useDerivedQuery({
-        queries: [serverUtxoQuery, broadcastedTxQuery],
-        queryFn([serverUtxo, rawBroadcastedTx]) {
-            const spentKeys = new Set(rawBroadcastedTx?.inputs.map(i => `${i.txid}:${i.vout}`));
-            const isSender = serverUtxo.confirmed.utxos
-                .concat(serverUtxo.unconfirmedSafe.utxos)
-                .some(u => spentKeys.has(`${u.txid}:${u.vout}`));
-            const isRecipient =
-                rawBroadcastedTx?.outputs.some(o => o.address === btcWallet.address) ?? false;
+    return usePersistQuery(
+        btcWalletUtxoOptions({
+            api,
+            accessibleBtcWallets,
+            accountId: account.accountId,
+            btcWallet
+        })
+    );
+}
 
-            if (!isSender && !isRecipient) {
-                rawBroadcastedTx = null;
-            }
+export function useBtcBalances(wallets: BtcWallet[]) {
+    const api = useBtcApi();
+    const accessibleBtcWallets = useAccessibleBtcWallets();
+    const account = useActiveAccount();
 
-            const cacheService = new BroadcastedBtcTxCacheService(
-                rawBroadcastedTx,
-                btcWallet.address
-            );
-
-            const patchedConfirmed = cacheService.toConfirmed(serverUtxo.confirmed.utxos);
-            const patchedSafe = cacheService.toUnconfirmedSafe(serverUtxo.unconfirmedSafe.utxos);
+    return useQueries({
+        queries: wallets.map(btcWallet => {
+            const { schemaKey, ...rest } = btcWalletUtxoOptions({
+                api,
+                accessibleBtcWallets,
+                accountId: account.accountId,
+                btcWallet
+            });
 
             return {
-                confirmed: {
-                    totalAmount: getTotal(patchedConfirmed),
-                    utxos: patchedConfirmed
-                },
-                unconfirmedSafe: {
-                    totalAmount: getTotal(patchedSafe),
-                    utxos: patchedSafe
-                },
-                unconfirmedUnsafe: serverUtxo.unconfirmedUnsafe
+                ...rest,
+                meta: {
+                    persist: true,
+                    schemaKey
+                }
             };
+        }),
+        combine: results => {
+            let total = BtcAssetAmount.fromWeiAmount('0');
+
+            for (const r of results) {
+                if (r.data === undefined) return null;
+
+                total = total.amountAdd(
+                    r.data.confirmed.totalAmount.amountAdd(r.data.unconfirmedSafe.totalAmount)
+                );
+            }
+
+            return total;
         }
     });
 }
@@ -185,6 +198,6 @@ export function useActiveBtcWalletUtxoForEstimation() {
 }
 
 export function useBtcSendLocked() {
-    const { data: broadcastedTx = null } = useBroadcastedBtcTxCache();
-    return !!broadcastedTx;
+    const { data } = useActiveBtcWalletUtxo();
+    return data?.hasLocalNotBroadcastedCache === true;
 }

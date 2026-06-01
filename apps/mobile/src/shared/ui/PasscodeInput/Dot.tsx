@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
-import { View, ViewProps } from 'react-native';
+import type { ViewProps } from 'react-native';
+import { View } from 'react-native';
+import type { SharedValue } from 'react-native-reanimated';
 import Animated, {
-    SharedValue,
     useAnimatedStyle,
     useSharedValue,
     withSequence,

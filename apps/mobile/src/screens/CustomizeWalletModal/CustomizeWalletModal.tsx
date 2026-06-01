@@ -1,20 +1,21 @@
-import { StaticScreenProps } from '@react-navigation/native';
+import type { StaticScreenProps } from '@react-navigation/native';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Keyboard } from 'react-native';
 
-import { Portfolio, PortfolioMeta } from '@safely/core';
+import type { Portfolio, PortfolioMeta } from '@safely/core';
 import { useChangePortfolioMeta, useNewPortfolioFallbackName } from '@safely/ux';
 
 import { Button, Icon, Screen, Xmark16 } from '@mobile/shared/ui';
 
-import { WALLET_COLORS, WalletIcon } from './constants';
+import type { WalletIcon } from './constants';
+import { WALLET_EMOJIS } from './constants';
 import { CustomizeWalletContent } from './CustomizeWalletContent';
 import { styles } from './CustomizeWalletModal.styles';
 
-const DEFAULT_ICON: WalletIcon = {
-    type: 'color',
-    value: WALLET_COLORS[0]
+const getDefaultIcon = (): WalletIcon => {
+    const randomIndex = Math.floor(Math.random() * WALLET_EMOJIS.length);
+    return { type: 'emoji', value: WALLET_EMOJIS[randomIndex] ?? '' };
 };
 
 type CustomizeWalletModalProps = StaticScreenProps<{
@@ -29,17 +30,17 @@ export const CustomizeWalletModal = (props: CustomizeWalletModalProps) => {
     const { portfolio, onSave, onCompleteCustomize, hasBackButton } = props.route?.params ?? {};
     const { t } = useTranslation();
     const fallbackName = useNewPortfolioFallbackName();
-    const { mutateAsync: changePortfolioMeta } = useChangePortfolioMeta();
+    const { mutate: changePortfolioMeta } = useChangePortfolioMeta();
 
     const [walletName, setWalletName] = useState(portfolio?.meta.name ?? fallbackName);
     const [selectedIcon, setSelectedIcon] = useState<WalletIcon>(
-        portfolio?.meta.icon ?? DEFAULT_ICON
+        () => portfolio?.meta.icon ?? getDefaultIcon()
     );
 
     const handleSave = useCallback(async () => {
         Keyboard.dismiss();
         if (portfolio) {
-            await changePortfolioMeta({
+            changePortfolioMeta({
                 portfolio,
                 meta: { name: walletName.trim(), icon: selectedIcon }
             });

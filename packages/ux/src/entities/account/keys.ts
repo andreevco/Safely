@@ -1,6 +1,4 @@
-import { FiatAsset } from '@safely/core';
-
-import { defineQueryKeys, finalKey, mappedParams } from '../../shared';
+import { defineQueryKeys, finalKey } from '../../shared';
 
 export const accountKey = defineQueryKeys('account', {
     list: {
@@ -8,24 +6,7 @@ export const accountKey = defineQueryKeys('account', {
     },
     accountId: (_id: string | undefined) => {
         return {
-            preferredFiat: {
-                deps: mappedParams(
-                    (_: { availableFiats: FiatAsset[] }) => {
-                        return finalKey;
-                    },
-                    p => {
-                        return [{ availableFiats: p.availableFiats.map(a => a.id.toString()) }];
-                    }
-                )
-            },
-            portfolios: {
-                active: finalKey
-            },
-            devices: {
-                meta: finalKey,
-                currentIkPub: finalKey
-            },
-            lastSeedRevealedAt: finalKey
+            activePortfolio: finalKey
         };
     }
 });

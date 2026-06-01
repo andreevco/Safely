@@ -1,10 +1,9 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
 import { useTranslation } from 'react-i18next';
 import { ScrollView } from 'react-native-gesture-handler';
 
 import { usePortfolios } from '@safely/ux';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { PortfoliosList } from '@mobile/features/portfolio';
 import { Button, Screen } from '@mobile/shared/ui';
 
@@ -13,7 +12,7 @@ import { styles } from './SelectAccountModal.styles';
 export const SelectAccountModal = () => {
     const { t } = useTranslation();
     const portfolios = usePortfolios();
-    const navigation = useNavigation<RootStackNavigationProp>();
+    const navigation = useNavigation();
 
     return (
         <Screen>

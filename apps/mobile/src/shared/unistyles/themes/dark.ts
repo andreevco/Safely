@@ -61,7 +61,7 @@ export const darkTheme = {
             magneta: 'rgba(255, 71, 157, 1)'
         },
         other: {
-            transparentElement: 'rgba(255, 255, 255, 0.06)',
+            transparentElement: 'rgba(255, 255, 255, 0.04)',
             hover: 'rgba(255, 255, 255, 0.04)',
             constant: {
                 white: 'rgba(255, 255, 255, 1)',

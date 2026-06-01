@@ -1,111 +1,100 @@
-/* eslint-disable no-irregular-whitespace */
-import { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
+import { memo } from 'react';
 import { View } from 'react-native';
 
-import { BTC_ASSET, ellipsisMiddle } from '@safely/core';
-import {
-    type BtcActivityItem,
-    findPortfolioMetaByAddress,
-    useBtcTransactionDisplayStatus,
-    useDateFormatter,
-    useNumberFormatter,
-    usePortfolios,
-    useRate
-} from '@safely/ux';
+import type { ContactMeta, PortfolioMeta } from '@safely/core';
+import type { BtcActivityItem } from '@safely/ux';
 
+import { ContactName } from '@mobile/entities/contact';
 import { PortfolioName } from '@mobile/entities/portfolio';
 import { Cell, Text } from '@mobile/shared/ui';
 
 import { styles } from './ActivityItem.styles';
 
-export type ActivityItemTimeFormatDetails = 'time' | 'day-month-time';
+export type ActivityItemCounterparty =
+    | { kind: 'contact'; meta: ContactMeta }
+    | { kind: 'portfolio'; meta: PortfolioMeta }
+    | { kind: 'address'; label: string };
 
-type ActivityItemProps = {
+export type ActivityItemProps = {
     activity: BtcActivityItem;
-    timeFormatDetails: ActivityItemTimeFormatDetails;
+    title: string;
+    amountSign: '+' | '−';
+    formattedValue: string;
+    valueColor: 'primary' | 'accentGreen';
+    formattedFiat: string | null;
+    timestampLabel: string | null;
+    background: 'tertiary' | 'secondary';
+    counterparty: ActivityItemCounterparty;
     onNavigateToTransaction: (activity: BtcActivityItem) => void;
 };
 
-export const ActivityItem = (props: ActivityItemProps) => {
-    const { activity, onNavigateToTransaction, timeFormatDetails } = props;
-    const formatter = useNumberFormatter();
-    const rate = useRate(BTC_ASSET);
-    const { t } = useTranslation();
-    const portfolios = usePortfolios();
+const Counterparty = ({ counterparty }: { counterparty: ActivityItemCounterparty }) => {
+    switch (counterparty.kind) {
+        case 'contact':
+            return (
+                <ContactName
+                    meta={counterparty.meta}
+                    size={12}
+                    gap={6}
+                    fontVariant="bodyM"
+                    color="secondary"
+                />
+            );
+        case 'portfolio':
+            return (
+                <PortfolioName
+                    meta={counterparty.meta}
+                    size={12}
+                    gap={6}
+                    fontVariant="bodyM"
+                    color="secondary"
+                />
+            );
+        case 'address':
+            return <Cell.Subtitle color="secondary">{counterparty.label}</Cell.Subtitle>;
+    }
+};
 
-    const isInitiator = activity.transaction.isInitiator;
-    const dateFormatter = useDateFormatter({ hour: 'numeric', minute: 'numeric' });
-    const counterpartyAddress = isInitiator
-        ? activity.transaction.toAddress
-        : activity.transaction.fromAddress;
-    const counterpartyMeta = findPortfolioMetaByAddress(portfolios, counterpartyAddress);
-
-    const status = useBtcTransactionDisplayStatus(activity.transaction.raw);
-
-    const title = useMemo(() => {
-        if (status.type === 'pending') {
-            if (isInitiator) {
-                return t('history.transactionInfo.sending');
-            } else {
-                return t('history.transactionInfo.receiving');
-            }
-        }
-        return isInitiator
-            ? t('history.transactionInfo.sent')
-            : t('history.transactionInfo.received');
-    }, [status.type, isInitiator, t]);
+export const ActivityItem = memo((props: ActivityItemProps) => {
+    const {
+        activity,
+        title,
+        amountSign,
+        formattedValue,
+        valueColor,
+        formattedFiat,
+        timestampLabel,
+        background,
+        counterparty,
+        onNavigateToTransaction
+    } = props;
 
     return (
-        <View style={styles.border}>
-            <Cell
-                background={status.type === 'pending' ? 'tertiary' : 'secondary'}
-                showDivider={false}
-                onPress={() => onNavigateToTransaction(activity)}
-            >
-                <Cell.Content>
-                    <Cell.Row>
-                        <View style={styles.titleWithTimestamp}>
-                            <Cell.Title>{title}</Cell.Title>
-                            {status.type !== 'pending' && (
-                                <Text color="tertiary" style={styles.timestamp}>
-                                    {timeFormatDetails === 'time'
-                                        ? dateFormatter.format(activity.timestamp)
-                                        : dateFormatter({ day: 'numeric', month: 'short' }).format(
-                                              activity.timestamp
-                                          )}
-                                </Text>
-                            )}
-                        </View>
-                        <Cell.Value
-                            color={
-                                status.type === 'pending' || isInitiator ? 'primary' : 'accentGreen'
-                            }
-                        >
-                            {isInitiator ? '−' : '+'} {activity.transaction.value.format(formatter)}
-                        </Cell.Value>
-                    </Cell.Row>
-                    <Cell.Row>
-                        {counterpartyMeta ? (
-                            <PortfolioName
-                                meta={counterpartyMeta}
-                                size={12}
-                                gap={6}
-                                fontVariant="bodyM"
-                                color="secondary"
-                            />
-                        ) : (
-                            <Cell.Subtitle color="secondary">
-                                {ellipsisMiddle(counterpartyAddress, 6)}
-                            </Cell.Subtitle>
+        <Cell
+            containerStyle={styles.border}
+            background={background}
+            showDivider={false}
+            onPress={() => onNavigateToTransaction(activity)}
+        >
+            <Cell.Content>
+                <Cell.Row>
+                    <View style={styles.titleWithTimestamp}>
+                        <Cell.Title>{title}</Cell.Title>
+                        {timestampLabel !== null && (
+                            <Text color="tertiary" style={styles.timestamp}>
+                                {timestampLabel}
+                            </Text>
                         )}
-                        <Cell.Subvalue>
-                            {rate.data &&
-                                activity.transaction.value.convert(rate.data).format(formatter)}
-                        </Cell.Subvalue>
-                    </Cell.Row>
-                </Cell.Content>
-            </Cell>
-        </View>
+                    </View>
+                    <Cell.Value color={valueColor}>
+                        {amountSign} {formattedValue}
+                    </Cell.Value>
+                </Cell.Row>
+                <Cell.Row>
+                    <Counterparty counterparty={counterparty} />
+                    <Cell.Subvalue>{formattedFiat}</Cell.Subvalue>
+                </Cell.Row>
+            </Cell.Content>
+        </Cell>
     );
-};
+});

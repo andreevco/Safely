@@ -1,9 +1,11 @@
+import { useNavigation } from '@react-navigation/core';
+import { useCallback } from 'react';
 import { Pressable } from 'react-native';
 
 import { useAppContext, useHasPortfolio } from '@safely/ux';
 
+import { DeviceUnlinkedBanner } from '@mobile/features/device-link';
 import { List, Screen, Text } from '@mobile/shared/ui';
-import { shareLogs } from '@mobile/shared/utils/log-capture';
 
 import { AccountSection } from '../AccountSection';
 import { CurrentWalletSection } from '../CurrentWalletSection';
@@ -15,9 +17,17 @@ import { styles } from './SettingsContent.styles';
 export const SettingsContent = () => {
     const { version } = useAppContext();
     const hasPortfolio = useHasPortfolio();
+    const navigation = useNavigation();
+
+    const openDevTools = useCallback(() => {
+        navigation.navigate('SettingsModal', {
+            screen: 'DevToolsModal'
+        });
+    }, [navigation]);
 
     return (
         <Screen.Scrollable contentContainerStyle={styles.container}>
+            <DeviceUnlinkedBanner style={styles.banner} />
             {hasPortfolio && <CurrentWalletSection />}
             <AccountSection />
             <SettingsGroups />
@@ -27,7 +37,7 @@ export const SettingsContent = () => {
                     <SignOutAccountButton />
                 </List.Group>
             </List>
-            <Pressable onLongPress={shareLogs}>
+            <Pressable onLongPress={openDevTools}>
                 <Text variant="bodyM" color="tertiary" textAlign="center" style={styles.version}>
                     Safely · {version}
                 </Text>

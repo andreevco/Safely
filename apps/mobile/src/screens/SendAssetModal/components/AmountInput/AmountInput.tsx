@@ -97,7 +97,7 @@ export const AmountInput = forwardRef<MaskedInputRef, AmountInputProps>((props, 
                                     textColor={theme.colors.text.primary}
                                     keyboardType="decimal-pad"
                                     fontSize={32}
-                                    suffix={currencySymbol ?? ''}
+                                    suffix={currencySymbol}
                                     suffixColor={theme.colors.text.tertiary}
                                     suffixFontSize={14}
                                     style={styles.input}
@@ -109,7 +109,12 @@ export const AmountInput = forwardRef<MaskedInputRef, AmountInputProps>((props, 
                                 style={styles.switchButton}
                             >
                                 <Animated.View style={styles.secondaryCurrencyContainer}>
-                                    <Text variant="bodyM" color="tertiary" monospace>
+                                    <Text
+                                        numberOfLines={1}
+                                        variant="bodyM"
+                                        color="tertiary"
+                                        monospace
+                                    >
                                         {formattedAlternativeAmount ?? '0'}
                                     </Text>
                                     <Icon icon={SwapVertical20} color="secondary" />

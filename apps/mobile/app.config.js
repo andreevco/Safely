@@ -9,7 +9,7 @@ module.exports = {
         icon: './assets/icon.png',
         userInterfaceStyle: 'dark',
         newArchEnabled: true,
-        scheme: 'aco-swalet',
+        scheme: 'safely',
         ios: {
             infoPlist: {
                 UIDesignRequiresCompatibility: true,
@@ -19,6 +19,14 @@ module.exports = {
                 ITSAppUsesNonExemptEncryption: false
             },
             supportsTablet: true,
+            /*
+                https://developer.apple.com/documentation/BundleResources/Information-Property-List/UIRequiresFullScreen
+                TODO: SAF-408
+                we should prepare interface for resizing
+                We force fullScreen because of known (slider) and unknown issues at this moment
+                It's better to double-check app on ARM Macs and iPads before public release 
+            */
+            requireFullScreen: true,
             bundleIdentifier: 'com.aco.swallet',
             appleTeamId: '9N49283836'
         },
@@ -27,7 +35,8 @@ module.exports = {
                 foregroundImage: './assets/adaptive-icon.png',
                 backgroundImage: './assets/android-icon-bg.png'
             },
-            package: 'com.aco.swallet'
+            package: 'com.aco.swallet',
+            allowBackup: false
         },
         plugins: [
             [
@@ -61,7 +70,8 @@ module.exports = {
                 {
                     icon: './assets/icon.png'
                 }
-            ]
+            ],
+            './plugins/withMMKVNoBackup'
         ],
         extra: {
             eas: {

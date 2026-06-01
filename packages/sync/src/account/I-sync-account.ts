@@ -1,12 +1,13 @@
-import { ZodType } from 'zod';
+import type { NewOf, StorageVersion } from '@safely/slottree';
 
-import { Device } from '../device-manager/device-repository';
-import { ITreeStorage } from '../I-storage';
-import { OnboardingConnector } from '../onboarding/connector';
-import { ISecretEncryptor } from '../secret-encryptor';
-import { ISyncProvider } from '../sync-provider/I-sync-provider';
+import type { MKDerivationDomain } from '../crypto/service/master-key-service';
+import type { Device } from '../device-manager/device-repository';
+import type { ITreeStorage } from '../I-storage';
+import type { OnboardingConnector } from '../onboarding/connector';
+import type { ISecretEncryptor } from '../secret-encryptor';
+import type { ISyncProvider } from '../sync-provider/I-sync-provider';
 
-export interface ISyncAccount<S extends Record<string, ZodType>> {
+export interface ISyncAccount<Latest extends StorageVersion> {
     /**
      * The unique identifier of the sync account.
      */
@@ -14,7 +15,7 @@ export interface ISyncAccount<S extends Record<string, ZodType>> {
     /**
      * The sync provider associated with this account, used to update storage.
      */
-    readonly syncProvider: ISyncProvider<S>;
+    readonly syncProvider: ISyncProvider<NewOf<Latest>>;
     /**
      * The secret encryptor associated with this account, used to encrypt and decrypt secrets
      * before putting them into storage.
@@ -32,7 +33,7 @@ export interface ISyncAccount<S extends Record<string, ZodType>> {
     /**
      * Initiates the process of reconnecting to an existing sync account.
      */
-    reconnectToAccount(): Promise<OnboardingConnector<S>>;
+    reconnectToAccount(): Promise<OnboardingConnector<Latest>>;
 
     /**
      * Retrieves the list of devices currently connected to the sync account.
@@ -51,5 +52,15 @@ export interface ISyncAccount<S extends Record<string, ZodType>> {
     /**
      * Returns the IK public key of the current device.
      */
-    getMyDeviceIkPub(): Promise<Buffer>;
+    getMyDeviceIkPub(): Buffer;
+
+    /**
+     * Derives a new key from the account master key.
+     * @param domain - must be unique
+     * @param secureEncryptedStorage
+     */
+    deriveKeyFromMasterKey(
+        domain: MKDerivationDomain,
+        secureEncryptedStorage: ITreeStorage
+    ): Promise<Buffer>;
 }

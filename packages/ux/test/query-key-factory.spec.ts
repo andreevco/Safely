@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { defineQueryKeys, finalKey, mappedParams } from '../src';
+import {
+    defineQueryKeys,
+    finalKey,
+    mappedParams
+} from '../src/shared/query-core/query-key-factory';
 
 describe('defineQueryKeys', () => {
     describe('Simple nested structure', () => {
@@ -40,14 +44,14 @@ describe('defineQueryKeys', () => {
     });
 
     describe('mappedParams', () => {
-        interface KeeperId {
+        interface Account {
             accountId: string;
         }
 
         it('should transform parameters using paramsMapper', () => {
-            const keeperIdKey = defineQueryKeys('keeperId', {
+            const accountKey = defineQueryKeys('account', {
                 accountId: mappedParams(
-                    (_id: string | KeeperId | null) => {
+                    (_id: string | Account | null) => {
                         return {
                             accountData: finalKey,
                             preferences: {
@@ -55,24 +59,24 @@ describe('defineQueryKeys', () => {
                             }
                         };
                     },
-                    (id: string | KeeperId | null) => [
+                    (id: string | Account | null) => [
                         id && typeof id === 'object' && 'accountId' in id ? id.accountId : id
                     ]
                 )
             });
 
-            const keeperId: KeeperId = { accountId: '123' };
-            const accountKey1 = keeperIdKey.accountId(keeperId);
+            const account: Account = { accountId: '123' };
+            const accountKey1 = accountKey.accountId(account);
             const key1 = accountKey1.accountData.toKey();
-            expect(key1).toEqual(['keeperId', 'accountId', '123', 'accountData']);
+            expect(key1).toEqual(['account', 'accountId', '123', 'accountData']);
 
-            const accountKey2 = keeperIdKey.accountId('456');
+            const accountKey2 = accountKey.accountId('456');
             const key2 = accountKey2.accountData.toKey();
-            expect(key2).toEqual(['keeperId', 'accountId', '456', 'accountData']);
+            expect(key2).toEqual(['account', 'accountId', '456', 'accountData']);
 
-            const accountKey3 = keeperIdKey.accountId(null);
+            const accountKey3 = accountKey.accountId(null);
             const key3 = accountKey3.accountData.toKey();
-            expect(key3).toEqual(['keeperId', 'accountId', null, 'accountData']);
+            expect(key3).toEqual(['account', 'accountId', null, 'accountData']);
         });
 
         it('should handle nested mappedParams', () => {
@@ -97,7 +101,7 @@ describe('defineQueryKeys', () => {
 
     describe('Nested object structures', () => {
         it('should handle nested objects without functions', () => {
-            const keeperIdStorageKey = defineQueryKeys('keeperId', {
+            const accountStorageKey = defineQueryKeys('account', {
                 list: {
                     active: finalKey
                 },
@@ -106,13 +110,13 @@ describe('defineQueryKeys', () => {
                 })
             });
 
-            const listKey = keeperIdStorageKey.list;
+            const listKey = accountStorageKey.list;
             const key1 = listKey.active.toKey();
-            expect(key1).toEqual(['keeperId', 'list', 'active']);
+            expect(key1).toEqual(['account', 'list', 'active']);
 
-            const accountKey = keeperIdStorageKey.accountId('123');
+            const accountKey = accountStorageKey.accountId('123');
             const key2 = accountKey.accountData.toKey();
-            expect(key2).toEqual(['keeperId', 'accountId', '123', 'accountData']);
+            expect(key2).toEqual(['account', 'accountId', '123', 'accountData']);
         });
     });
 
@@ -359,19 +363,19 @@ describe('defineQueryKeys', () => {
             expect(key2[1]).toBe('token');
         });
 
-        it('should match the keeperId key pattern with mappedParams', () => {
-            interface KeeperId {
+        it('should match the account key pattern with mappedParams', () => {
+            interface Account {
                 accountId: string;
             }
 
-            const keeperIdStorageKey = defineQueryKeys('keeperId', {
+            const accountStorageKey = defineQueryKeys('account', {
                 list: {
                     active: finalKey
                 },
                 accountId: mappedParams(
-                    (_id: string | KeeperId | null) => {
+                    (_id: string | Account | null) => {
                         return {
-                            keeperIdAccountData: finalKey,
+                            accountData: finalKey,
                             preferredFiat: {
                                 deps: mappedParams(
                                     (_: { availableFiats: Array<{ id: string }> }) => finalKey,
@@ -389,26 +393,26 @@ describe('defineQueryKeys', () => {
                             }
                         };
                     },
-                    (id: string | KeeperId | null) => [
+                    (id: string | Account | null) => [
                         id && typeof id === 'object' && 'accountId' in id ? id.accountId : id
                     ]
                 )
             });
 
-            const listKey = keeperIdStorageKey.list;
+            const listKey = accountStorageKey.list;
             const key1 = listKey.active.toKey();
-            expect(key1).toEqual(['keeperId', 'list', 'active']);
+            expect(key1).toEqual(['account', 'list', 'active']);
 
-            const keeperId: KeeperId = { accountId: '123' };
-            const accountKey = keeperIdStorageKey.accountId(keeperId);
-            const key2 = accountKey.keeperIdAccountData.toKey();
-            expect(key2).toEqual(['keeperId', 'accountId', '123', 'keeperIdAccountData']);
+            const account: Account = { accountId: '123' };
+            const accountKey = accountStorageKey.accountId(account);
+            const key2 = accountKey.accountData.toKey();
+            expect(key2).toEqual(['account', 'accountId', '123', 'accountData']);
 
             const preferredFiatKey = accountKey.preferredFiat.deps({
                 availableFiats: [{ id: 'usd' }, { id: 'eur' }]
             });
             const key3 = preferredFiatKey.toKey();
-            expect(key3[0]).toBe('keeperId');
+            expect(key3[0]).toBe('account');
             expect(key3[1]).toBe('accountId');
             expect(key3[2]).toBe('123');
             expect(key3[3]).toBe('preferredFiat');

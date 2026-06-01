@@ -1,4 +1,4 @@
-import { NavigationContainerProps } from '@react-navigation/native';
+import type { NavigationContainerProps } from '@react-navigation/native';
 import { useRef } from 'react';
 
 import { useHasAccount } from '@safely/ux';
@@ -17,7 +17,9 @@ export function useInitialNavigationState(): NavigationContainerProps['initialSt
             }
 
             if (isLockScreenEnabled) {
-                return { routes: [{ name: 'LockScreen' as const }] };
+                return {
+                    routes: [{ name: 'LockScreen' as const }]
+                };
             }
 
             return undefined;

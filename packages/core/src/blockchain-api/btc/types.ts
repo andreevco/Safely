@@ -1,5 +1,5 @@
-import { BtcAsset, BtcAssetAmount } from '../../entities';
-import { TransactionFeeCrypto } from '../shared';
+import type { BtcAsset, BtcAssetAmount } from '../../entities';
+import type { TransactionFeeCrypto } from '../shared';
 
 export type BtcTransferRequest = BtcTransferRequestNotMax | BtcTransferRequestMax;
 

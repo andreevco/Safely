@@ -1,31 +1,44 @@
 import Big from 'big.js';
 
-import { BtcPsbtBulder } from './btc-psbt-bulder';
+import { BtcAddress } from './btc-address';
+import { BtcPsbtBuilder } from './btc-psbt-builder';
 import { BtcTransactionTemplate } from './btc-transaction-template';
-import {
-    BtcFeeType,
-    BtcTransferRequest,
-    BtcTransferRequestMax,
-    BtcTransferRequestNotMax
-} from './types';
+import type { BtcTransferRequest, BtcTransferRequestMax, BtcTransferRequestNotMax } from './types';
+import { BtcFeeType } from './types';
 import { getUtxoTotal } from './utils';
-import { BtcApi, BtcApiEstimatedFee, BtcApiUtxo } from '../../api/btc';
-import { BtcAssetAmount, btcNetworkConfig, SignableBtcWallet } from '../../entities';
-import { abs, assertUnreachable, IIdentifiable, toBig } from '../../utils';
+import type { BtcApi, BtcApiEstimatedFee, BtcApiUtxo } from '../../api/btc';
+import type { BtcAsset, CryptoAssetAmount, SignableBtcWallet } from '../../entities';
+import { BtcAssetAmount } from '../../entities/asset';
+import { btcNetworkConfig } from '../../entities/blockchain';
+import type { IIdentifiable } from '../../utils';
+import { abs, assertUnreachable, toBig } from '../../utils';
 
 export type SpentUtxo = { txid: string; vout: number; value: string };
+
+function getDustSat(walletAddress: string) {
+    const type = BtcAddress.type(walletAddress);
+    switch (type) {
+        // Bitcoin Core's GetDustThreshold (policy/policy.cpp) for a P2WPKH output at the default
+        // dustRelayFee of 3000 sat/kvB: (31 + 67) * 3 = 294 sat. Outputs strictly
+        // below this are rejected by the node with reject reason "dust" (-26).
+        case 'P2WPKH':
+            return 294n;
+        default:
+            throw new Error('Unsupported address type');
+    }
+}
 
 export class BtcEstimator implements IIdentifiable {
     public readonly id: string;
 
-    private readonly psbtBulder: BtcPsbtBulder;
+    private readonly psbtBuilder: BtcPsbtBuilder;
 
     constructor(
         private readonly btcApi: BtcApi,
         private readonly wallet: SignableBtcWallet
     ) {
         this.id = `${this.constructor.name}:${this.btcApi.id}:${this.wallet.id.toString()}`;
-        this.psbtBulder = new BtcPsbtBulder(btcApi, btcNetworkConfig[this.wallet.network]);
+        this.psbtBuilder = new BtcPsbtBuilder(btcNetworkConfig[this.wallet.network]);
     }
 
     private async getFeeValue(
@@ -86,26 +99,56 @@ export class BtcEstimator implements IIdentifiable {
 
         const totalBalance = getUtxoTotal(utxos);
 
-        const vSize = await this.psbtBulder.calculateTransactionVSize({
+        const vSizeNoChange = this.psbtBuilder.calculateTransactionVSize({
             inputs: utxos,
-            outputs: [
-                { address: request.recipientAddress, value: request.amount.weiAmount },
-                { address: this.wallet.address, value: 1n } // value doesn't affect vSize
-            ]
+            outputs: [{ address: request.recipientAddress, value: request.amount.weiAmount }]
         });
+        const feeNoChange = BtcAssetAmount.fromWeiAmount(
+            feeSatVb.mul(toBig(vSizeNoChange)).round(0, Big.roundUp)
+        );
 
-        const feeSat = feeSatVb.mul(toBig(vSize)).round(0, Big.roundUp);
-        const fee = BtcAssetAmount.fromWeiAmount(feeSat);
-
-        if (totalBalance.lt(request.amount.add(fee))) {
+        if (totalBalance.lt(request.amount.add(feeNoChange))) {
             throw new Error('Not enough funds');
         }
 
-        return new BtcTransactionTemplate(this.btcApi, this.wallet, request, utxos, {
-            fee: { amount: fee, type: 'crypto' },
-            feeType: request.feeType,
-            txTargetBlock: targetBlock
+        const vSizeWithChange = this.psbtBuilder.calculateTransactionVSize({
+            inputs: utxos,
+            outputs: [
+                { address: request.recipientAddress, value: request.amount.weiAmount },
+                { address: this.wallet.address, value: 1n }
+            ]
         });
+        const feeWithChange = BtcAssetAmount.fromWeiAmount(
+            feeSatVb.mul(toBig(vSizeWithChange)).round(0, Big.roundUp)
+        );
+
+        let fee: CryptoAssetAmount<BtcAsset>;
+        let hasChange: boolean;
+
+        const change = totalBalance.weiAmount - request.amount.weiAmount - feeWithChange.weiAmount; // might be negative
+        if (change < getDustSat(this.wallet.address)) {
+            fee = totalBalance.sub(request.amount);
+            hasChange = false;
+        } else {
+            fee = feeWithChange;
+            hasChange = true;
+        }
+
+        return new BtcTransactionTemplate(
+            this.btcApi,
+            this.wallet,
+            {
+                recipientAddress: request.recipientAddress,
+                amount: request.amount,
+                hasChange
+            },
+            utxos,
+            {
+                fee: { amount: fee, type: 'crypto' },
+                feeType: request.feeType,
+                txTargetBlock: targetBlock
+            }
+        );
     }
 
     private async estimateSendFee(
@@ -120,7 +163,7 @@ export class BtcEstimator implements IIdentifiable {
 
         const totalBalance = getUtxoTotal(utxos);
 
-        const vSize = await this.psbtBulder.calculateTransactionVSize({
+        const vSize = this.psbtBuilder.calculateTransactionVSize({
             inputs: utxos,
             outputs: [{ address: request.recipientAddress, value: 1n }]
         });
@@ -142,6 +185,7 @@ export class BtcEstimator implements IIdentifiable {
         const { fee, targetBlock } = await this.estimateSendFee(request, utxos);
         const totalBalance = getUtxoTotal(utxos);
 
+        // Balance changed significantly since max amount was calculated initially in the form
         const amount = totalBalance.sub(fee);
         if (abs(request.estimatedAmount.weiAmount - amount.weiAmount) * 2n > fee.weiAmount) {
             throw new Error('Amount changed since it was estimated');
@@ -150,7 +194,11 @@ export class BtcEstimator implements IIdentifiable {
         return new BtcTransactionTemplate(
             this.btcApi,
             this.wallet,
-            { amount: totalBalance.sub(fee), ...request },
+            {
+                recipientAddress: request.recipientAddress,
+                amount: totalBalance.sub(fee),
+                hasChange: false
+            },
             utxos,
             {
                 fee: { amount: fee, type: 'crypto' },

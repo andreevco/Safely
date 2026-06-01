@@ -1,49 +1,29 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
+import { useMemo } from 'react';
 
 import { FiatAsset } from '@safely/core';
 
-import { useAvailableFiats, useSuspenseQuery, useActiveAccountSyncedStorage } from '../../shared';
-import { useActiveAccountQueryKey } from '../account';
+import { useAvailableFiats } from '../../shared';
+import { useActiveAccountStoreSlot, useActiveAccountSyncStorageSlotUpdate } from '../account';
 
 const USD_FIAT = FiatAsset.create({ symbol: 'USD', name: 'US Dollar' });
 
-export function useActiveFiatQuery() {
+export function useActiveFiat(): FiatAsset {
+    const stored = useActiveAccountStoreSlot('preferredFiat');
     const availableFiats = useAvailableFiats();
-    const accountQueryKey = useActiveAccountQueryKey();
-    const { get } = useActiveAccountSyncedStorage('preferredFiat');
 
-    return useSuspenseQuery<FiatAsset>({
-        queryKey: accountQueryKey.preferredFiat.deps({ availableFiats }).toKey(),
-        queryFn: async () => {
-            const stored = get();
-
-            if (stored) {
-                const isSupported = availableFiats.some(fiat => fiat.id.isEq(stored.id));
-
-                if (isSupported) return stored;
-            }
-
-            return USD_FIAT;
-        },
-        staleTime: Infinity
-    });
-}
-
-export function useActiveFiat() {
-    return useActiveFiatQuery().data;
+    return useMemo(() => {
+        if (stored && availableFiats.some(fiat => fiat.id.isEq(stored.id))) {
+            return stored;
+        }
+        return USD_FIAT;
+    }, [stored, availableFiats]);
 }
 
 export function useSetActiveFiat() {
-    const client = useQueryClient();
-    const accountQueryKey = useActiveAccountQueryKey();
-    const { set } = useActiveAccountSyncedStorage('preferredFiat');
+    const update = useActiveAccountSyncStorageSlotUpdate('preferredFiat');
 
     return useMutation<void, Error, { fiat: FiatAsset }>({
-        mutationFn: async ({ fiat }) => {
-            await set(fiat.toJSON());
-            await client.invalidateQueries({
-                queryKey: accountQueryKey.preferredFiat.toKey()
-            });
-        }
+        mutationFn: ({ fiat }) => update(draft => draft.set(fiat.toJSON()))
     });
 }

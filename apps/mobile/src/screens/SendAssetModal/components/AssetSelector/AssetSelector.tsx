@@ -1,7 +1,9 @@
-import { BTC_ASSET } from '@safely/core';
+import type { CryptoAsset } from '@safely/core';
 
 import { Image } from '@mobile/shared/ui';
 
 import { styles } from './AssetSelector.styles';
 
-export const AssetSelector = () => <Image source={BTC_ASSET.image} style={styles.image} />;
+export const AssetSelector = ({ asset }: { asset: CryptoAsset }) => (
+    <Image source={asset.image} style={styles.image} />
+);

@@ -1,17 +1,18 @@
-import { CommonActions, useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
+import { CommonActions, useFocusEffect } from '@react-navigation/native';
 import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TextInput, View } from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';
 
+import type { PortfolioMeta } from '@safely/core';
 import {
     BtcAddress,
     BtcXpub,
     PortfolioAlreadyExistsError,
-    PortfolioFactory,
-    PortfolioMeta,
     PortfolioNetworkType,
-    VMType
+    PortfolioWatchOnlyBtc,
+    toPortfolioIdWatchOnly
 } from '@safely/core';
 import { useAddWatchOnlyPortfolio, useLoader, usePortfolios } from '@safely/ux';
 
@@ -50,19 +51,21 @@ export const AddWatchOnlyScreen = () => {
     }, []);
 
     const trimmedInput = address.trim();
-    const isValidInput = BtcAddress.validate(trimmedInput) || BtcXpub.validate(trimmedInput);
-    const hasError = trimmedInput.length >= 20 && !isValidInput;
+    const isValidAddress = BtcAddress.validate(trimmedInput);
+    const isValidPubkey = BtcXpub.validate(trimmedInput);
+    const isValidSupportedPubkey = isValidPubkey && /^[XxZz]pub/.test(trimmedInput);
+
+    const isValidInput = isValidAddress || isValidSupportedPubkey;
+    const displayError = !isValidInput && trimmedInput.length >= 20;
 
     styles.useVariants({
         focused: isFocused,
-        error: hasError
+        error: displayError
     });
 
     const handleNext = useCallback(() => {
-        const portfolioId = PortfolioFactory.resolveWatchOnlyId(
-            trimmedInput,
-            PortfolioNetworkType.MAINNET,
-            VMType.BTC
+        const portfolioId = toPortfolioIdWatchOnly(
+            PortfolioWatchOnlyBtc.resolveUserInput(trimmedInput, PortfolioNetworkType.MAINNET)
         );
 
         const existingPortfolio = portfolios.find(p => p.id.isEq(portfolioId));
@@ -157,9 +160,13 @@ export const AddWatchOnlyScreen = () => {
                     )}
                 </View>
 
-                {hasError && (
+                {displayError && (
                     <Text style={styles.errorText}>
-                        {t('addWallet.watchAccount.invalidAddress')}
+                        {t(
+                            isValidPubkey && !isValidSupportedPubkey
+                                ? 'addWallet.watchAccount.unsupportedExtendedKey'
+                                : 'addWallet.watchAccount.invalidAddress'
+                        )}
                     </Text>
                 )}
 

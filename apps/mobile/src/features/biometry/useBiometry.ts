@@ -1,14 +1,19 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as LocalAuthentication from 'expo-local-authentication';
-import z from 'zod';
 
-import { useSharedUnstructuredStorage } from '@safely/ux';
-
-import { StorageKey } from '@mobile/shared/constants';
+import { useMobileLayerRegularStorage } from '@mobile/shared/storage';
+import { blurFreeze } from '@mobile/shared/utils';
 
 import { biometryKeys } from './keys';
 
-const sBiometryEnabled = z.boolean();
+async function authenticateWithBlurFreeze(): Promise<LocalAuthentication.LocalAuthenticationResult> {
+    blurFreeze.freeze();
+    try {
+        return await LocalAuthentication.authenticateAsync();
+    } finally {
+        blurFreeze.unfreeze();
+    }
+}
 
 export enum BiometryType {
     FACE = 'face',
@@ -41,10 +46,7 @@ async function getAvailableBiometryType(): Promise<BiometryType | null> {
 }
 
 export function useBiometryQuery() {
-    const { get: storageGet } = useSharedUnstructuredStorage(
-        StorageKey.BIOMETRY_ENABLED,
-        sBiometryEnabled
-    );
+    const { get: storageGet } = useMobileLayerRegularStorage('biometryEnabled');
 
     return useQuery({
         queryKey: biometryKeys.state.toKey(),
@@ -59,14 +61,11 @@ export function useBiometryQuery() {
 
 export function useSetBiometryEnabled() {
     const queryClient = useQueryClient();
-    const { set: storageSet } = useSharedUnstructuredStorage(
-        StorageKey.BIOMETRY_ENABLED,
-        sBiometryEnabled
-    );
+    const { set: storageSet } = useMobileLayerRegularStorage('biometryEnabled');
 
     return useMutation({
         mutationFn: async (enabled: boolean) => {
-            const result = await LocalAuthentication.authenticateAsync();
+            const result = await authenticateWithBlurFreeze();
             if (!result.success) {
                 throw new Error('Authentication failed');
             }
@@ -80,7 +79,7 @@ export function useSetBiometryEnabled() {
 
 export async function authenticateBiometry() {
     try {
-        const result = await LocalAuthentication.authenticateAsync();
+        const result = await authenticateWithBlurFreeze();
         if (result.success) {
             return { success: true } as const;
         }

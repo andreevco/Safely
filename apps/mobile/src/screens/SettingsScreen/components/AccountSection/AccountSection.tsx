@@ -1,10 +1,19 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, View } from 'react-native';
+import { View } from 'react-native';
 
-import { useAccounts, useActiveAccount, useChangeAccountMeta } from '@safely/ux';
+import {
+    AccountLinkState,
+    useAccountLinkState,
+    useAccounts,
+    useActiveAccountMeta,
+    useAppContext,
+    useChangeAccountMeta,
+    useConnectAccountToNewDevice
+} from '@safely/ux';
 
-import { RootStackNavigationProp, SettingsStackNavigationProp } from '@mobile/app/navigation/types';
 import { Button, Cell, List } from '@mobile/shared/ui';
 
 import { SyncDot } from '../SyncDot';
@@ -14,34 +23,50 @@ import { AccountSelector } from './AccountSelector';
 export const AccountSection = () => {
     const { t } = useTranslation();
     const accounts = useAccounts();
-    const account = useActiveAccount();
-    const navigation = useNavigation<SettingsStackNavigationProp>();
-    const rootNavigation = useNavigation<RootStackNavigationProp>();
+    const linkState = useAccountLinkState();
+    const activeAccountName = useActiveAccountMeta().name;
+    const navigation = useNavigation();
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+    const nativeStackNavigation = useNavigation<NativeStackNavigationProp<{}>>();
     const { mutateAsync: changeAccountMeta } = useChangeAccountMeta();
 
+    const {
+        storage: {
+            sync: { getSecureEncrypted }
+        }
+    } = useAppContext();
+    const { mutateAsync: connectAccountToNewDevice } = useConnectAccountToNewDevice();
+
     const handleEditAccount = () => {
-        rootNavigation.navigate('CustomizeAccountModal', {
-            defaultName: account.meta.name,
+        navigation.navigate('CustomizeAccountModal', {
+            defaultName: activeAccountName,
             onSave: async (name: string) => {
                 await changeAccountMeta({ name });
-                rootNavigation.pop();
+                nativeStackNavigation.pop();
             },
             onClose: () => {
-                rootNavigation.pop();
+                nativeStackNavigation.pop();
             }
         });
     };
 
     const handleAddAccount = () => {
-        rootNavigation.navigate('AddAccountSheet');
+        navigation.navigate('AddAccountSheet');
     };
+
+    const handleAddDevice = useCallback(async () => {
+        using secureEncryptedStorage = getSecureEncrypted();
+        await secureEncryptedStorage.unlock();
+
+        await connectAccountToNewDevice({ secureEncryptedStorage });
+    }, [connectAccountToNewDevice, getSecureEncrypted]);
 
     return (
         <List>
             <List.Title>{t('settings.groups.account.title')}</List.Title>
             <AccountSelector
                 accounts={accounts ?? []}
-                rootNavigation={rootNavigation}
+                onSelectAccountNavigate={() => navigation.navigate('SelectAccountSelectorModal')}
                 onAddAccount={handleAddAccount}
             />
             <List.Group variant="divided" style={styles.accountOptions}>
@@ -55,7 +80,11 @@ export const AccountSection = () => {
                     </Cell.Content>
                     <Cell.Chevron />
                 </Cell>
-                <Cell onPress={() => Alert.alert('Not implemented yet')}>
+                <Cell
+                    onPress={() =>
+                        navigation.navigate('SettingsModal', { screen: 'AddressBookModal' })
+                    }
+                >
                     <Cell.Content>
                         <Cell.Row>
                             <Cell.Title>
@@ -65,17 +94,11 @@ export const AccountSection = () => {
                     </Cell.Content>
                     <Cell.Chevron />
                 </Cell>
-                <Cell onPress={() => navigation.navigate('NotificationsModal')}>
-                    <Cell.Content>
-                        <Cell.Row>
-                            <Cell.Title>
-                                {t('settings.groups.account.options.notifications')}
-                            </Cell.Title>
-                        </Cell.Row>
-                    </Cell.Content>
-                    <Cell.Chevron />
-                </Cell>
-                <Cell onPress={() => navigation.navigate('LanguageModal')}>
+                <Cell
+                    onPress={() =>
+                        navigation.navigate('SettingsModal', { screen: 'LanguageModal' })
+                    }
+                >
                     <Cell.Content>
                         <Cell.Row>
                             <Cell.Title>{t('settings.groups.account.options.language')}</Cell.Title>
@@ -85,7 +108,11 @@ export const AccountSection = () => {
                         </Cell.Row>
                     </Cell.Content>
                 </Cell>
-                <Cell onPress={() => navigation.navigate('SecurityModal')}>
+                <Cell
+                    onPress={() =>
+                        navigation.navigate('SettingsModal', { screen: 'SecurityModal' })
+                    }
+                >
                     <Cell.Content>
                         <Cell.Row>
                             <Cell.Title>{t('settings.groups.account.options.security')}</Cell.Title>
@@ -94,7 +121,12 @@ export const AccountSection = () => {
                     <SyncDot />
                 </Cell>
             </List.Group>
-            <View style={styles.buttonContainer}>
+            <View style={styles.buttonsContainer}>
+                {linkState !== AccountLinkState.UNLINKED && (
+                    <Button type="secondary" size="small" onPress={handleAddDevice}>
+                        {t('settings.linkDevice')}
+                    </Button>
+                )}
                 <Button type="secondary" size="small" onPress={handleAddAccount}>
                     {t('settings.addAccount')}
                 </Button>

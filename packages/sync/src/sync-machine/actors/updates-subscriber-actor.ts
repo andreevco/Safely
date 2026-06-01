@@ -1,16 +1,36 @@
-import { AnyEventObject, fromCallback } from 'xstate';
+import type { AnyEventObject } from 'xstate';
+import { fromCallback } from 'xstate';
 
-import { SyncMachineConfig } from '../config';
+import type { StorageVersion } from '@safely/slottree';
+
+import type { SyncMachineConfig } from '../config';
+import { classifyError } from '../error-handler';
 
 export const updatesSubscriberActor = fromCallback(
-    (opts: { sendBack: (event: AnyEventObject) => void; input: SyncMachineConfig }) => {
+    (opts: {
+        sendBack: (event: AnyEventObject) => void;
+        input: SyncMachineConfig<StorageVersion, unknown>;
+    }) => {
         const abortController = new AbortController();
 
         let connected = false;
+        const sendConnectionError = (error: unknown) => {
+            void classifyError(error)
+                .then(classified => {
+                    if (!abortController.signal.aborted) {
+                        opts.sendBack({ type: 'CONNECTION_ERROR', error: classified });
+                    }
+                })
+                .catch((classificationError: unknown) => {
+                    if (!abortController.signal.aborted) {
+                        opts.sendBack({ type: 'CONNECTION_ERROR', error: classificationError });
+                    }
+                });
+        };
 
         const timeoutId = setTimeout(() => {
             if (!connected) {
-                console.warn('[Updates Subscriber]: timeout exceeded, aborting connection');
+                opts.input.logger.warn('Updates subscriber: timeout exceeded, aborting connection');
                 abortController.abort();
                 opts.sendBack({ type: 'DISCONNECTED' });
             }
@@ -23,21 +43,14 @@ export const updatesSubscriberActor = fromCallback(
                         if (abortController.signal.aborted) {
                             return;
                         }
-                        console.log(
-                            '[Sync SSE] Received remote update via SSE, proof:',
-                            upd.snapshotProof.toString('hex').slice(0, 16) + '...'
-                        );
                         opts.sendBack({ type: 'REMOTE_UPDATE', upd });
                     },
                     reason => {
                         if (abortController.signal.aborted) return;
-                        if (reason instanceof Error) {
-                            opts.sendBack({
-                                type: 'CONNECTION_ERROR',
-                                error: reason.message ?? String(reason)
-                            });
-                        } else {
+                        if (reason === undefined) {
                             opts.sendBack({ type: 'DISCONNECTED' });
+                        } else {
+                            sendConnectionError(reason);
                         }
                     }
                 );
@@ -52,11 +65,8 @@ export const updatesSubscriberActor = fromCallback(
             } catch (err) {
                 if (abortController.signal.aborted) return;
 
-                console.error('[Updates Subscriber]: failed to subscribe to updates', err);
-                opts.sendBack({
-                    type: 'CONNECTION_ERROR',
-                    error: err instanceof Error ? err : String(err)
-                });
+                opts.input.logger.error('Failed to subscribe to updates', err);
+                sendConnectionError(err);
             }
         })();
 

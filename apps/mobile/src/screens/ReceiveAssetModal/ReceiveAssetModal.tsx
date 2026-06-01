@@ -1,14 +1,15 @@
-import { StaticScreenProps } from '@react-navigation/native';
+import type { StaticScreenProps } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { type CryptoAsset } from '@safely/core';
+import type { CryptoAsset } from '@safely/core';
 import { useReceiveInfo } from '@safely/ux';
 
 import { Screen, Text } from '@mobile/shared/ui';
 
 import { QRCodeBlock } from './components/QRCodeBlock/QRCodeBlock';
 import { ReceiveActions } from './components/ReceiveActions';
+import { ReceiveCopyToastProvider } from './components/ReceiveCopyToastProvider';
 import { styles } from './ReceiveAssetModal.styles';
 
 type ReceiveAssetModalProps = StaticScreenProps<{
@@ -32,16 +33,18 @@ export const ReceiveAssetModal = (props: ReceiveAssetModalProps) => {
                 <Screen.Header.CloseButton />
             </Screen.Header>
             <Screen.Content>
-                <View style={styles.textContainer}>
-                    <Text textAlign="center" variant="titleM">
-                        {t('receiveAsset.title', { symbol: asset.symbol })}
-                    </Text>
-                    <Text textAlign="center" variant="bodyL" color="secondary">
-                        {t('receiveAsset.description', { name: asset.name })}
-                    </Text>
-                </View>
-                <QRCodeBlock address={receiveInfo.displayAddress} asset={asset} />
-                <ReceiveActions address={receiveInfo.displayAddress} />
+                <ReceiveCopyToastProvider>
+                    <View style={styles.textContainer}>
+                        <Text textAlign="center" variant="titleM">
+                            {t('receiveAsset.title', { symbol: asset.symbol })}
+                        </Text>
+                        <Text textAlign="center" variant="bodyL" color="secondary">
+                            {t('receiveAsset.description', { name: asset.name })}
+                        </Text>
+                    </View>
+                    <QRCodeBlock address={receiveInfo.displayAddress} asset={asset} />
+                    <ReceiveActions address={receiveInfo.displayAddress} />
+                </ReceiveCopyToastProvider>
             </Screen.Content>
         </Screen>
     );

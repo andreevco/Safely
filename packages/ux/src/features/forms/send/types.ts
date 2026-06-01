@@ -1,6 +1,7 @@
-import {
+import type {
     BLOCKCHAIN_NAME,
     BtcAsset,
+    ContactMeta,
     CryptoAsset,
     CryptoAssetAmount,
     FiatAssetAmount,
@@ -9,7 +10,11 @@ import {
     Recipient
 } from '@safely/core';
 
-export interface SendSuggestion {
+export type RecipientMeta =
+    | { kind: 'portfolio'; meta: PortfolioMeta }
+    | { kind: 'contact'; meta: ContactMeta };
+
+export interface PortfolioSuggestion {
     id: string;
     address: string;
     meta: PortfolioMeta;
@@ -17,12 +22,23 @@ export interface SendSuggestion {
     isWatchOnly?: boolean;
 }
 
+export interface ContactSuggestion {
+    id: string;
+    address: string;
+    meta: ContactMeta;
+}
+
+export type SendSuggestions = {
+    portfolios: PortfolioSuggestion[];
+    contacts: ContactSuggestion[];
+};
+
 export type AmountInputType = 'crypto' | 'fiat';
 
 export type AmountCryptoFirst<C extends CryptoAsset> = {
     inputType: 'crypto';
     cryptoAssetAmount: CryptoAssetAmount<C>;
-    fiatAssetAmount?: FiatAssetAmount;
+    fiatAssetAmount: FiatAssetAmount;
 };
 
 export type AmountFiatFirst<C extends CryptoAsset> = {
@@ -49,6 +65,7 @@ export type SendFormResultBtc = {
     recipient: Recipient;
     amount: AmountWithInputType<BtcAsset>;
     isMax: boolean;
+    recipientMeta?: RecipientMeta;
 };
 
 export type SendFormResult = SendFormResultBtc;
@@ -63,15 +80,14 @@ export type SendStepId = (typeof SEND_STEPS)[number];
 
 export interface SendFormInitialValues {
     recipient?: string;
+    addressBookName?: string;
     amount?: string;
     amountInputType?: AmountInputType;
-    isMax?: boolean;
-    stepIndex?: number;
 }
 
 export interface SendFormValues {
     recipient: string;
-    recipientLabel: string | undefined;
+    addressBookName: string;
     amount: string;
     amountInputType: AmountInputType;
     isMax: boolean;
@@ -91,45 +107,14 @@ export interface SendFormErrors {
     asset: string | undefined;
 }
 
-export interface SendFormState {
-    values: SendFormValues;
-    parsed: SendFormParsed;
-    errors: SendFormErrors;
-    stepIndex: number;
+export enum SuggestionSource {
+    USER_DEFINED = 'user-defined',
+    SUGGESTIONS = 'suggestions'
 }
 
-export type SendFormAction =
-    | { type: 'SET_RECIPIENT'; value: string; label?: string }
-    | {
-          type: 'SET_RECIPIENT_VALIDATED';
-          recipient: Recipient | undefined;
-          error: string | undefined;
-      }
-    | { type: 'SET_AMOUNT'; value: string }
-    | {
-          type: 'SET_AMOUNT_VALIDATED';
-          parsed: AmountWithInputType<CryptoAsset> | undefined;
-          formatted: string;
-          error: string | undefined;
-      }
-    | { type: 'SET_AMOUNT_INPUT_TYPE'; value: AmountInputType }
-    | { type: 'SET_IS_MAX'; value: boolean }
-    | {
-          type: 'SET_ASSET';
-          assetId: string;
-          asset: RatedCryptoAssetAmount | undefined;
-          error: string | undefined;
-      }
-    | { type: 'NEXT_STEP' }
-    | { type: 'PREV_STEP' }
-    | { type: 'RESET' }
-    | { type: 'RESET_DEPENDENT_FIELDS' }
-    | {
-          type: 'RESTORE_DRAFT';
-          recipient: Recipient;
-          asset: RatedCryptoAssetAmount;
-          assetId: string;
-          amountInputType: AmountInputType;
-          isMax: boolean;
-          stepIndex: number;
-      };
+export interface SendSuggestionState {
+    selectedId: string | undefined;
+    portfoliosIds: string[] | undefined;
+    contactsIds: string[] | undefined;
+    source: SuggestionSource | undefined;
+}

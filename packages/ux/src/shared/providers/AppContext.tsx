@@ -1,10 +1,19 @@
 import { createContext, useContext } from 'react';
 
-import { Build, ITreeStorage, NumberFormatLocale, QrScanner, UserCountryInfo } from '@safely/core';
+import type {
+    Build,
+    ITreeStorage,
+    NumberFormatLocale,
+    QrScanner,
+    UserCountryInfo
+} from '@safely/core';
+import type { Logger } from '@safely/sync';
 
-import { LoaderService, Security, ToastService } from '../../entities';
-import { TranslateFn } from '../i18n';
-import { IUnlockableSecuredEncryptedStorage } from '../security';
+import type { TranslateFn } from '../i18n/types';
+import type { Linking } from '../linking';
+import type { LoaderService } from '../loader/types';
+import type { IUnlockableSecuredEncryptedStorage, Security } from '../security/types';
+import type { ToastService } from '../toast/types';
 
 export type AppStateStatus = 'active' | 'background' | 'inactive' | 'unknown';
 
@@ -13,6 +22,8 @@ export interface IAppContext {
 
     build: Build;
 
+    environment: 'production' | 'development';
+
     deviceInfo: {
         name: string;
         osVersion: string;
@@ -20,17 +31,26 @@ export interface IAppContext {
 
     userCountryInfo?: UserCountryInfo;
 
-    storage: ITreeStorage;
+    devToken?: string;
 
-    encryptedStorage: ITreeStorage;
-
-    getSecureEncryptedStorage(this: void): IUnlockableSecuredEncryptedStorage;
+    storage: {
+        ux: {
+            regular: ITreeStorage;
+        };
+        sync: {
+            regular: ITreeStorage;
+            encrypted: ITreeStorage;
+            getSecureEncrypted(this: void): IUnlockableSecuredEncryptedStorage;
+        };
+    };
 
     qrScanner: QrScanner;
 
     numberFormatLocale: NumberFormatLocale;
 
     toast: ToastService;
+
+    linking: Linking;
 
     loader: LoaderService;
 
@@ -40,6 +60,10 @@ export interface IAppContext {
     };
 
     clearAllData: () => Promise<void>;
+
+    reloadApp: () => void;
+
+    logger: Logger;
 
     security: Security;
 

@@ -35,5 +35,22 @@ export const styles = StyleSheet.create(theme => ({
     },
     bannerIcon: {
         marginHorizontal: theme.spacing[8]
+    },
+    iconLine: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexWrap: 'wrap',
+        maxWidth: '100%'
+    },
+    inlineSettingsIconContainer: {
+        paddingVertical: 4,
+        marginHorizontal: 4,
+        marginVertical: 2,
+        paddingHorizontal: 5.5,
+        borderRadius: 5,
+        borderColor: theme.colors.other.transparentElement,
+        borderWidth: theme.border.hairlineAlternate,
+        alignSelf: 'center'
     }
 }));

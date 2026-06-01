@@ -1,14 +1,12 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useEraseAllData } from '@safely/ux';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
-
 export function useLogOutAllConfirmation() {
     const { t } = useTranslation();
-    const navigation = useNavigation<RootStackNavigationProp>();
+    const navigation = useNavigation();
     const { mutateAsync: eraseAllData } = useEraseAllData();
 
     return useCallback(() => {
@@ -18,13 +16,7 @@ export function useLogOutAllConfirmation() {
             sliderLabel: t('logOutAllAccounts.slider.label'),
             sliderDescription: t('logOutAllAccounts.slider.description'),
             cancelLabel: t('logOutAllAccounts.cancel'),
-            onConfirm: async () => {
-                await eraseAllData();
-                navigation.reset({
-                    index: 0,
-                    routes: [{ name: 'WelcomeScreen' }]
-                });
-            }
+            onConfirm: eraseAllData
         });
     }, [eraseAllData, navigation, t]);
 }

@@ -1,8 +1,10 @@
 import { memo, useMemo } from 'react';
 import { GestureDetector } from 'react-native-gesture-handler';
-import Animated, { SharedValue } from 'react-native-reanimated';
+import type { SharedValue } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 
-import { Portfolio, PortfolioType } from '@safely/core';
+import type { Portfolio } from '@safely/core';
+import { PortfolioType } from '@safely/core';
 import { useActivePortfolio, useNumberFormatter, usePortfolioBalance } from '@safely/ux';
 
 import { PortfolioName } from '@mobile/entities/portfolio';
@@ -14,11 +16,14 @@ type DraggablePortfolioProps = {
     portfolio: Portfolio;
     index: number;
     itemsCount: number;
-    draggedIndex: SharedValue<number | null>;
-    offsetY: SharedValue<number>;
-    moveItem: (fromIndex: number, toIndex: number) => void;
+    gap: number;
+    positions: SharedValue<Record<string, number>>;
+    activeId: SharedValue<string | null>;
+    draggedOffsetY: SharedValue<number>;
+    rowHeight: SharedValue<number>;
+    onReorder: (orderedIds: string[]) => void;
+    onMeasure: (height: number) => void;
     handleSelect: (portfolio: Portfolio) => void;
-    handleDragStart?: () => void;
     variant?: 'compact';
 };
 
@@ -27,11 +32,14 @@ export const DraggablePortfolio = memo((props: DraggablePortfolioProps) => {
         portfolio,
         index,
         itemsCount,
-        draggedIndex,
-        offsetY,
-        moveItem,
+        gap,
+        positions,
+        activeId,
+        draggedOffsetY,
+        rowHeight,
+        onReorder,
+        onMeasure,
         handleSelect,
-        handleDragStart,
         variant
     } = props;
     const activePortfolio = useActivePortfolio();
@@ -45,16 +53,17 @@ export const DraggablePortfolio = memo((props: DraggablePortfolioProps) => {
 
     return (
         <Draggable
-            gap={variant === 'compact' ? 0 : 2}
-            key={portfolio.id.toString()}
-            index={index}
-            itemCount={itemsCount}
-            draggedIndex={draggedIndex}
-            offsetY={offsetY}
-            moveItem={moveItem}
+            id={portfolio.id.toString()}
+            itemsCount={itemsCount}
+            gap={gap}
+            positions={positions}
+            activeId={activeId}
+            draggedOffsetY={draggedOffsetY}
+            rowHeight={rowHeight}
+            onReorder={onReorder}
+            onMeasure={onMeasure}
             activationDelay={150}
             onPress={() => handleSelect(portfolio)}
-            onDragStart={handleDragStart}
         >
             {({ gesture, underlayStyle }) => (
                 <GestureDetector gesture={gesture}>

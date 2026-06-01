@@ -9,6 +9,7 @@ import prettierPlugin from 'eslint-plugin-prettier';
 import pluginQuery from '@tanstack/eslint-plugin-query';
 import boundaries from 'eslint-plugin-boundaries';
 import isEqPlugin from './eslint-rules/isEqPlugin.js';
+import noDirectBitcoinjsLibPlugin from './eslint-rules/noDirectBitcoinjsLibPlugin.js';
 
 export default [
     {
@@ -46,9 +47,11 @@ export default [
             import: importPlugin,
             'unused-imports': unusedImports,
             iseq: isEqPlugin,
+            'no-direct-bitcoinjs-lib': noDirectBitcoinjsLibPlugin,
             boundaries
         },
         settings: {
+            'boundaries/root-path': import.meta.dirname,
             'import/parsers': {
                 '@typescript-eslint/parser': ['.ts', '.tsx']
             },
@@ -57,7 +60,7 @@ export default [
                     project: [
                         './tsconfig.json',
                         './packages/*/tsconfig.json',
-                        './apps/*/*/tsconfig.json'
+                        './apps/*/tsconfig.json'
                     ],
                     alwaysTryTypes: true
                 },
@@ -67,8 +70,46 @@ export default [
             },
             'boundaries/elements': [
                 { type: 'core', pattern: 'packages/core/**/*', mode: 'full' },
+                { type: 'ux-shared', pattern: 'packages/ux/src/shared/**/*', mode: 'full' },
+                {
+                    type: 'ux-entities',
+                    pattern: 'packages/ux/src/entities/**/*',
+                    mode: 'full'
+                },
+                {
+                    type: 'ux-features',
+                    pattern: 'packages/ux/src/features/**/*',
+                    mode: 'full'
+                },
                 { type: 'ux', pattern: 'packages/ux/**/*', mode: 'full' },
                 { type: 'sync', pattern: 'packages/sync/**/*', mode: 'full' },
+                { type: 'sync-storage', pattern: 'packages/sync-storage/**/*', mode: 'full' },
+                { type: 'slottree', pattern: 'packages/slottree/**/*', mode: 'full' },
+                {
+                    type: 'mobile-app',
+                    pattern: 'apps/mobile/src/app/**/*',
+                    mode: 'full'
+                },
+                {
+                    type: 'mobile-screens',
+                    pattern: 'apps/mobile/src/screens/**/*',
+                    mode: 'full'
+                },
+                {
+                    type: 'mobile-features',
+                    pattern: 'apps/mobile/src/features/**/*',
+                    mode: 'full'
+                },
+                {
+                    type: 'mobile-entities',
+                    pattern: 'apps/mobile/src/entities/**/*',
+                    mode: 'full'
+                },
+                {
+                    type: 'mobile-shared',
+                    pattern: 'apps/mobile/src/shared/**/*',
+                    mode: 'full'
+                },
                 { type: 'mobile', pattern: 'apps/mobile/**/*', mode: 'full' },
                 { type: 'web-common', pattern: 'apps/web/common/**/*', mode: 'full' },
                 { type: 'web-browser', pattern: 'apps/web/browser/**/*', mode: 'full' }
@@ -89,12 +130,7 @@ export default [
             radix: ['error', 'as-needed'],
             'no-return-assign': 'off',
             'no-restricted-syntax': ['error', 'LabeledStatement', 'WithStatement'],
-            'no-console': [
-                'warn',
-                {
-                    allow: ['warn', 'error', 'info', 'log']
-                }
-            ],
+            'no-console': 'error',
 
             /* imports */
             'import/extensions': 'off',
@@ -173,6 +209,47 @@ export default [
             '@typescript-eslint/no-floating-promises': 'off',
             /* custom */
             'iseq/no-strict-eq-when-isEq': 'error',
+            'no-direct-bitcoinjs-lib/no-direct-bitcoinjs-lib': 'error',
+
+            /* FSD layering inside @safely/ux: shared cannot import entities/features;
+               entities cannot import features. */
+            'boundaries/element-types': [
+                'error',
+                {
+                    default: 'allow',
+                    rules: [
+                        {
+                            from: 'ux-shared',
+                            disallow: ['ux-entities', 'ux-features']
+                        },
+                        {
+                            from: 'ux-entities',
+                            disallow: ['ux-features']
+                        },
+                        {
+                            from: 'mobile-shared',
+                            disallow: [
+                                'mobile-entities',
+                                'mobile-features',
+                                'mobile-screens',
+                                'mobile-app'
+                            ]
+                        },
+                        {
+                            from: 'mobile-entities',
+                            disallow: ['mobile-features', 'mobile-screens', 'mobile-app']
+                        },
+                        {
+                            from: 'mobile-features',
+                            disallow: ['mobile-screens', 'mobile-app']
+                        },
+                        {
+                            from: 'mobile-screens',
+                            disallow: ['mobile-app']
+                        }
+                    ]
+                }
+            ]
         }
     },
     /* React */
@@ -211,6 +288,51 @@ export default [
         plugins: { prettier: prettierPlugin },
         rules: {
             'prettier/prettier': 'error'
+        }
+    },
+    /* NOTE: forbid any import cycles inside the package.
+     *
+     * Why this matters: many of our modules call utilities at module-load time
+     * (e.g. "defineQueryKeys(...)" evaluated inside "keys.ts" files at import).
+     * If a cycle exists, the importer sees a half-evaluated module — the
+     * exported binding is still "undefined". Calling it throws
+     * "X is not a function" and crashes the whole app on startup.
+     *
+     * "import/no-cycle" doesn't support a custom message — if it fires, the
+     * default trace shows the cycle path; fix the cycle, don't suppress.
+     */
+    {
+        files: [
+            'packages/ux/**/*.ts',
+            'packages/ux/**/*.tsx',
+            'packages/core/**/*.ts',
+            'packages/sync-storage/**/*.ts',
+            'packages/sync/**/*.ts',
+            'packages/slottree/**/*.ts',
+            'apps/mobile/src/**/*.ts',
+            'apps/mobile/src/**/*.tsx'
+        ],
+        rules: {
+            'import/no-cycle': ['error', { maxDepth: 10, ignoreExternal: true }],
+            '@typescript-eslint/consistent-type-imports': [
+                'error',
+                { prefer: 'type-imports', fixStyle: 'separate-type-imports' }
+            ],
+            '@typescript-eslint/no-import-type-side-effects': 'error'
+        }
+    },
+    /* logger implementations — console is the last-resort fallback */
+    {
+        files: ['apps/mobile/src/shared/logger/**/*.ts', 'packages/sync/src/logger/**/*.ts'],
+        rules: {
+            'no-console': 'off'
+        }
+    },
+    /* tests */
+    {
+        files: ['**/*.test.ts', '**/*.test.tsx', '**/*.spec.ts', '**/*.spec.tsx'],
+        rules: {
+            'no-console': 'off'
         }
     },
     eslintConfigPrettier

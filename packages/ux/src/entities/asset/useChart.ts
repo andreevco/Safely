@@ -1,5 +1,5 @@
-import { CryptoAsset } from '@safely/core';
-import { HistoricalPrice } from '@safely/core/api/price/models';
+import type { CryptoAsset } from '@safely/core';
+import type { HistoricalPrice } from '@safely/core/api/price';
 
 import { assetKeys } from './keys';
 import {

@@ -1,11 +1,15 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
 import { useCallback } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
-import { ImageBackground, Linking, View } from 'react-native';
+import { ImageBackground, View } from 'react-native';
 
-import { useAppContext, useCreateExistingAccountConnector } from '@safely/ux';
+import {
+    useAppContext,
+    useCreateExistingAccountConnector,
+    useLinking,
+    useTrackOnboardingOpen
+} from '@safely/ux';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
 import { useOnboardingFlow } from '@mobile/features/onboarding';
 import { resources } from '@mobile/shared/resources';
 import { Button, Icon, Safely96, Screen, Text } from '@mobile/shared/ui';
@@ -17,25 +21,36 @@ const PRIVACY_URL = 'https://google.com';
 
 export const WelcomeScreen = () => {
     const { t } = useTranslation();
-    const { onStartCreate } = useOnboardingFlow();
+    const { onSuccessCreate, onSuccessSignIn } = useOnboardingFlow();
     const signIn = useCreateExistingAccountConnector();
-    const navigation = useNavigation<RootStackNavigationProp>();
-    const { getSecureEncryptedStorage } = useAppContext();
+    const navigation = useNavigation();
+    const {
+        storage: {
+            sync: { getSecureEncrypted }
+        }
+    } = useAppContext();
+    const { openURL } = useLinking();
+
+    useTrackOnboardingOpen();
 
     const handleSignIn = useCallback(async () => {
         signIn.reset();
 
         // resource will be closed manually in `closeStorage` because it needs to be opened on the SignInScreen
-        const secureEncryptedStorage = getSecureEncryptedStorage();
+        const secureEncryptedStorage = getSecureEncrypted();
+
+        // don't ask for the password while setting app initially after first account creation during onboarding to provide smooth user experience
         secureEncryptedStorage.UNSAFE_SKIP_SECURITY_CHECK_unlock();
 
         const connector = await signIn.mutateAsync({ secureEncryptedStorage });
 
         navigation.navigate('SignInScreen', {
             connector,
-            closeStorage: () => secureEncryptedStorage[Symbol.dispose]()
+            closeStorage: () => secureEncryptedStorage[Symbol.dispose](),
+            onSuccess: () =>
+                navigation.navigate('SignInSuccessScreen', { onContinue: onSuccessSignIn })
         });
-    }, [signIn, navigation, getSecureEncryptedStorage]);
+    }, [signIn, navigation, getSecureEncrypted, onSuccessSignIn]);
 
     return (
         <Screen background="transparent">
@@ -51,7 +66,7 @@ export const WelcomeScreen = () => {
                     </View>
 
                     <View style={styles.buttonsContainer}>
-                        <Button type="primary" size="large" onPress={onStartCreate}>
+                        <Button type="primary" size="large" onPress={onSuccessCreate}>
                             {t('welcome.createNew')}
                         </Button>
                         <Button type="secondary" size="large" onPress={handleSignIn}>
@@ -71,14 +86,14 @@ export const WelcomeScreen = () => {
                                         <Text
                                             variant="bodyS"
                                             color="secondary"
-                                            onPress={() => Linking.openURL(TERMS_URL)}
+                                            onPress={() => openURL(TERMS_URL)}
                                         />
                                     ),
                                     privacy: (
                                         <Text
                                             variant="bodyS"
                                             color="secondary"
-                                            onPress={() => Linking.openURL(PRIVACY_URL)}
+                                            onPress={() => openURL(PRIVACY_URL)}
                                         />
                                     )
                                 }}

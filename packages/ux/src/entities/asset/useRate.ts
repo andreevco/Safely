@@ -1,11 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { CryptoAsset, CryptoFiatRate } from '@safely/core';
+import type { CryptoAsset, CryptoFiatRate } from '@safely/core';
 
 import { assetKeys } from './keys';
 import { getRateFn } from './rateQuery';
 import { usePriceApi } from '../../shared';
-import { useActiveFiat } from '../fiat';
+import { useActiveFiat } from '../fiat/useActiveFiat';
 
 export function useRate(asset: CryptoAsset) {
     const fiat = useActiveFiat();

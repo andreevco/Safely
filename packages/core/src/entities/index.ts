@@ -1,6 +1,7 @@
 export * from './application';
 export * from './asset';
 export * from './blockchain';
+export * from './contact';
 export * from './derivation';
 export * from './mnemonic';
 export * from './portfolio';

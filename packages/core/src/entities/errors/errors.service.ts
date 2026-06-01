@@ -1,4 +1,5 @@
-import { customErrors, isCustomError } from './custom-error';
+import type { customErrors } from './custom-error';
+import { isCustomError } from './custom-error';
 
 export type ErrorsConfig = {
     [key in keyof typeof customErrors]?: (err: InstanceType<(typeof customErrors)[key]>) => string;

@@ -1,16 +1,25 @@
+import type { Actor } from 'xstate';
 import * as x from 'xstate';
-import { Actor, assign } from 'xstate';
+import { assign } from 'xstate';
+
+import type { StorageVersion } from '@safely/slottree';
 
 import { pushUpdateToServer } from './actors/push-update';
 import { updatesSubscriberActor } from './actors/updates-subscriber-actor';
-import { defaultConfig, SyncMachineConfig, SyncMachineInput } from './config';
-import { EncryptedState } from '../api/types';
+import type { SyncMachineConfig, SyncMachineInput } from './config';
+import { defaultConfig } from './config';
+import type { EncryptedState } from '../api/types';
 import { SyncStatus } from '../sync-provider/sync-status';
 import { applyUpdate } from './actors/apply-update';
 import { initialSyncing } from './actors/initial-syncing';
 import { SyncMachineError } from './error-handler';
+import { getReconnectDelayMs } from './reconnect-backoff';
 
 export type SyncMachine = Awaited<Actor<ReturnType<typeof createSyncMachine>>>;
+
+function shouldSendUpdate(context: SyncMachineConfig<StorageVersion, unknown>): boolean {
+    return context.localUpdateVersion > context.acknowledgedLocalUpdateVersion;
+}
 
 export const createSyncMachine = () => {
     return x
@@ -21,10 +30,10 @@ export const createSyncMachine = () => {
                     | { type: 'REMOTE_UPDATE'; upd: EncryptedState }
                     | { type: 'CONNECTED' }
                     | { type: 'DISCONNECTED' }
-                    | { type: 'CONNECTION_ERROR'; error: string }
+                    | { type: 'CONNECTION_ERROR'; error: unknown }
                     | { type: 'CONNECT_RETRY' };
-                context: SyncMachineConfig;
-                input: SyncMachineInput;
+                context: SyncMachineConfig<StorageVersion, unknown>;
+                input: SyncMachineInput<StorageVersion, unknown>;
             },
             actors: {
                 updatesSubscriberActor: updatesSubscriberActor,
@@ -32,8 +41,11 @@ export const createSyncMachine = () => {
                 initialSyncing: initialSyncing,
                 applyUpdate: applyUpdate
             },
+            delays: {
+                reconnectDelay: ({ context }) => context.reconnectDelayMs
+            },
             guards: {
-                shouldSendUpdate: ({ context }) => context.shouldSendUpdate,
+                shouldSendUpdate: ({ context }) => shouldSendUpdate(context),
                 shouldHandleUpdate: ({ context }) => context.remoteUpdates.length > 0,
                 isFatalError: ({ context }) => context.lastError?.type === 'fatal'
             },
@@ -44,17 +56,19 @@ export const createSyncMachine = () => {
                 setStatusSynchronizing: ({ context }) => {
                     context.syncStatusManager.setStatus(SyncStatus.SYNCHRONIZING);
                 },
-                setStatusSynchronized: ({ context }) => {
-                    context.syncStatusManager.setStatus(SyncStatus.SYNCHRONIZED);
+                setStatusSynchronizedIfIdle: ({ context }) => {
+                    if (!shouldSendUpdate(context) && context.remoteUpdates.length === 0) {
+                        context.syncStatusManager.setStatus(SyncStatus.SYNCHRONIZED);
+                    }
                 },
                 handleError: assign({
                     lastError: ({ event }: { event: unknown }) => {
                         const error = (event as { error?: unknown }).error;
                         if (error instanceof SyncMachineError) {
                             return error.disposition;
-                        } else {
-                            return { type: 'reconnect' };
                         }
+
+                        return { type: 'reconnect' };
                     }
                 }),
                 clearError: assign({
@@ -67,13 +81,37 @@ export const createSyncMachine = () => {
                     }
                 },
                 markDirty: assign({
-                    shouldSendUpdate: () => {
-                        return true;
+                    localUpdateVersion: ({ context }) => {
+                        return context.localUpdateVersion + 1;
                     }
                 }),
-                clearDirty: assign({
-                    shouldSendUpdate: () => {
-                        return false;
+                startTransmitting: assign({
+                    transmittingLocalUpdateVersion: ({ context }) => {
+                        return context.localUpdateVersion;
+                    }
+                }),
+                acknowledgeTransmittedVersion: assign({
+                    acknowledgedLocalUpdateVersion: ({ context }) => {
+                        return context.transmittingLocalUpdateVersion;
+                    }
+                }),
+                prepareReconnectRetry: assign({
+                    reconnectAttempt: ({ context }) => context.reconnectAttempt + 1,
+                    reconnectDelayMs: ({ context }) =>
+                        getReconnectDelayMs(context.reconnectAttempt + 1)
+                }),
+                logDisconnectedRetry: ({ context }) => {
+                    context.logger.info('sync_machine.disconnected.retrying', {
+                        retryAfterSeconds: context.reconnectDelayMs / 1000
+                    });
+                },
+                resetReconnectAttemptIfSynced: assign({
+                    reconnectAttempt: ({ context }) => {
+                        if (shouldSendUpdate(context) || context.remoteUpdates.length > 0) {
+                            return context.reconnectAttempt;
+                        }
+
+                        return 0;
                     }
                 }),
                 setRemoteUpdate: assign({
@@ -131,8 +169,11 @@ export const createSyncMachine = () => {
                     initial: 'connecting',
                     on: {
                         DISCONNECTED: { target: '#syncMachine.waitingForRetry' },
-                        CONNECTION_ERROR: { target: '#syncMachine.waitingForRetry' },
-                        REMOTE_UPDATE: { actions: 'setRemoteUpdate' }
+                        CONNECTION_ERROR: {
+                            actions: ['handleError'],
+                            target: '#syncMachine.errorHandling'
+                        },
+                        REMOTE_UPDATE: { actions: ['setRemoteUpdate', 'setStatusSynchronizing'] }
                     },
                     states: {
                         connecting: {
@@ -142,7 +183,7 @@ export const createSyncMachine = () => {
                             }
                         },
                         connected: {
-                            entry: ['setStatusSynchronized'],
+                            entry: ['setStatusSynchronizedIfIdle', 'resetReconnectAttemptIfSynced'],
                             always: [
                                 {
                                     guard: 'shouldHandleUpdate',
@@ -155,11 +196,11 @@ export const createSyncMachine = () => {
                             ],
                             on: {
                                 LOCAL_UPDATE: {
-                                    actions: ['markDirty'],
+                                    actions: ['markDirty', 'setStatusSynchronizing'],
                                     target: 'transmitting'
                                 },
                                 REMOTE_UPDATE: {
-                                    actions: ['setRemoteUpdate'],
+                                    actions: ['setRemoteUpdate', 'setStatusSynchronizing'],
                                     target: 'applyingUpdate'
                                 }
                             }
@@ -172,10 +213,17 @@ export const createSyncMachine = () => {
                                 input: ({ context }) => {
                                     return { config: context };
                                 },
-                                onDone: {
-                                    actions: 'clearRemoteUpdate',
-                                    target: 'connected'
-                                },
+                                onDone: [
+                                    {
+                                        guard: ({ event }) => event.output.hasLocalChanges,
+                                        actions: ['clearRemoteUpdate', 'markDirty'],
+                                        target: 'connected'
+                                    },
+                                    {
+                                        actions: 'clearRemoteUpdate',
+                                        target: 'connected'
+                                    }
+                                ],
                                 onError: {
                                     actions: ['clearRemoteUpdate', 'handleError'],
                                     target: '#syncMachine.errorHandling'
@@ -183,17 +231,17 @@ export const createSyncMachine = () => {
                             }
                         },
                         transmitting: {
-                            entry: ['setStatusSynchronizing'],
+                            entry: ['setStatusSynchronizing', 'startTransmitting'],
                             invoke: {
                                 id: 'pushUpdateToServer',
                                 src: 'pushUpdateToServer',
                                 input: ({ context }) => context,
                                 onDone: {
-                                    actions: 'clearDirty',
+                                    actions: 'acknowledgeTransmittedVersion',
                                     target: 'connected'
                                 },
                                 onError: {
-                                    actions: ['clearDirty', 'handleError'],
+                                    actions: ['handleError'],
                                     target: '#syncMachine.errorHandling'
                                 }
                             }
@@ -216,9 +264,13 @@ export const createSyncMachine = () => {
                 },
 
                 waitingForRetry: {
-                    entry: ['setStatusDisconnected'],
+                    entry: [
+                        'setStatusDisconnected',
+                        'prepareReconnectRetry',
+                        'logDisconnectedRetry'
+                    ],
                     after: {
-                        1000: { target: '#syncMachine.initialSyncing' }
+                        reconnectDelay: { target: '#syncMachine.initialSyncing' }
                     },
                     on: {
                         CONNECT_RETRY: { target: '#syncMachine.initialSyncing' }

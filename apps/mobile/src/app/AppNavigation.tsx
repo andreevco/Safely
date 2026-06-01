@@ -1,4 +1,6 @@
-import { DarkTheme, Theme } from '@react-navigation/native';
+import type { Theme } from '@react-navigation/native';
+import { DarkTheme } from '@react-navigation/native';
+import * as Linking from 'expo-linking';
 import * as SplashScreen from 'expo-splash-screen';
 import * as SystemUI from 'expo-system-ui';
 import { useEffect, useMemo } from 'react';
@@ -44,6 +46,10 @@ export function AppNavigation() {
                     initialState={initialState}
                     onReady={() => SplashScreen.hideAsync()}
                     theme={NavigationTheme}
+                    linking={{
+                        enabled: true,
+                        prefixes: [Linking.createURL('/')]
+                    }}
                 />
             </SyncStorageProvider>
         </LockScreenProvider>

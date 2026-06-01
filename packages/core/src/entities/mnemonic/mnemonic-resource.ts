@@ -1,5 +1,5 @@
-import { IMnemonic, IMnemonicAccessor } from './mnemonic';
-import { IMnemonicVault } from './mnemonic-vault';
+import type { IMnemonic, IMnemonicAccessor } from './mnemonic';
+import type { IMnemonicVault } from './mnemonic-vault';
 
 export class MnemonicResource implements IMnemonicAccessor, IMnemonicVault {
     #value: IMnemonic | IMnemonicAccessor | undefined;

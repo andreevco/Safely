@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
-import { LayoutChangeEvent, View } from 'react-native';
+import type { LayoutChangeEvent } from 'react-native';
+import { View } from 'react-native';
 import Animated, {
     type SharedValue,
     useAnimatedStyle,
@@ -12,7 +13,8 @@ import { Text } from '@mobile/shared/ui';
 
 import { styles } from './ChartFooter.styles';
 import { Tick } from './Tick';
-import { CHART_CONFIG, ChartPeriod } from '../../config';
+import type { ChartPeriod } from '../../config';
+import { CHART_CONFIG } from '../../config';
 import type { CrosshairState } from '../../hooks/useCrosshair';
 
 type TicksProps = {

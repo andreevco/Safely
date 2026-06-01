@@ -1,53 +1,29 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 
+import type { SDeviceMeta } from '@safely/sync-storage';
 import {
     useAppContext,
     useConnectAccountToNewDevice,
     useCurrentDeviceIkPub,
-    useCurrentDeviceMetaSyncedState,
     useSyncedDevicesMeta
 } from '@safely/ux';
-import { useDateFormatter } from '@safely/ux/shared/format/date';
-import { DeviceMeta } from '@safely/ux/shared/storage/account/synced/schemas';
+import { useDateFormatter } from '@safely/ux';
 
-import { RootStackNavigationProp } from '@mobile/app/navigation/types';
-import {
-    Badge,
-    Block16,
-    DeviceLinkCheckmark96,
-    Icon,
-    More28,
-    PopupMenu,
-    PopupMenuRef,
-    Screen,
-    Text
-} from '@mobile/shared/ui';
+import type { PopupMenuRef } from '@mobile/shared/ui';
+import { Badge, DeviceLinkCheckmark96, Icon, Screen, Text, Button } from '@mobile/shared/ui';
 
 import { styles } from './AccountProtectedModal.styles';
 
-function formatOsBadge(platform: 'ios' | 'android', osVersion: string): string {
-    return platform === 'ios' ? `iOS ${osVersion}` : `Android ${osVersion}`;
-}
-
-function DeviceItem(props: { ikPubHex: string; meta: DeviceMeta }) {
-    const { ikPubHex, meta } = props;
+function DeviceItem(props: { ikPubHex: string; meta: SDeviceMeta; isCurrent: boolean }) {
+    const { ikPubHex, meta, isCurrent } = props;
 
     const { t } = useTranslation();
-    const rootNavigation = useNavigation<RootStackNavigationProp>();
+    const rootNavigation = useNavigation();
     const menuRef = useRef<PopupMenuRef>(null);
     const formatDate = useDateFormatter({ month: 'short', day: 'numeric', year: 'numeric' });
-
-    const devicePortfolioHashes = Object.entries(meta.syncState.portfoliosHashes);
-    const currentDeviceMeta = useCurrentDeviceMetaSyncedState();
-    const isUpToDate = currentDeviceMeta?.stateHash === meta.syncState.stateHash;
-    const notSyncedWalletsCount = currentDeviceMeta
-        ? Object.entries(currentDeviceMeta.portfoliosHashes).filter(([id, hash]) =>
-              devicePortfolioHashes.every(([id2, hash2]) => id !== id2 || hash !== hash2)
-          ).length
-        : 0;
 
     const handleDisconnect = () => {
         menuRef.current?.close();
@@ -62,26 +38,17 @@ function DeviceItem(props: { ikPubHex: string; meta: DeviceMeta }) {
             <View style={styles.deviceInfo}>
                 <View style={styles.deviceNameRow}>
                     <Text variant="labelL">{meta.name}</Text>
-                    <Badge>{formatOsBadge(meta.platform, meta.osVersion)}</Badge>
+                    {isCurrent && <Badge isUppercase>{t('security.device.current')}</Badge>}
                 </View>
-                <Text variant="bodyM" color="secondary">
+                <Text variant="bodyM" color="tertiary">
                     {t('security.device.added', { date: formatDate.format(meta.pairedAt) })}
                 </Text>
-                <Text variant="bodyM" color="tertiary">
-                    {t(isUpToDate ? 'security.device.upToDate' : 'security.device.notUpToDate')}
-                    {notSyncedWalletsCount > 0 &&
-                        ' · ' +
-                            t('security.device.walletsNotSynced', { count: notSyncedWalletsCount })}
-                </Text>
             </View>
-            <PopupMenu ref={menuRef} touchable={<Icon icon={More28} color="tertiary" />}>
-                <Pressable onPress={handleDisconnect}>
-                    <View style={styles.menuItem}>
-                        <Text variant="labelL">{t('security.device.disconnect')}</Text>
-                        <Icon icon={Block16} />
-                    </View>
-                </Pressable>
-            </PopupMenu>
+            {!isCurrent && (
+                <Button type="tertiary" size="small" onPress={handleDisconnect}>
+                    {t('security.device.unlink')}
+                </Button>
+            )}
         </View>
     );
 }
@@ -89,27 +56,35 @@ function DeviceItem(props: { ikPubHex: string; meta: DeviceMeta }) {
 export const AccountProtectedModal = () => {
     const { t } = useTranslation();
     const navigation = useNavigation();
-    const { getSecureEncryptedStorage } = useAppContext();
+    const {
+        storage: {
+            sync: { getSecureEncrypted }
+        }
+    } = useAppContext();
     const { mutateAsync: connectToNewDevice } = useConnectAccountToNewDevice();
     const devicesMeta = useSyncedDevicesMeta();
     const myIkPubHex = useCurrentDeviceIkPub();
 
     const handleAddDevice = async () => {
-        using secureEncryptedStorage = getSecureEncryptedStorage();
+        using secureEncryptedStorage = getSecureEncrypted();
         await secureEncryptedStorage.unlock();
 
         await connectToNewDevice({ secureEncryptedStorage });
     };
 
-    const devices = Object.entries(devicesMeta ?? {}).filter(
+    const currentDevice = devicesMeta?.[myIkPubHex];
+    const otherDevices = Object.entries(devicesMeta ?? {}).filter(
         ([ikPubHex]) => ikPubHex !== myIkPubHex
     );
+    const devices = currentDevice
+        ? [[myIkPubHex, currentDevice] as const, ...otherDevices]
+        : otherDevices;
 
     useEffect(() => {
-        if (devices.length === 0) {
+        if (otherDevices.length === 0) {
             navigation.goBack();
         }
-    }, [devices.length, navigation]);
+    }, [otherDevices.length, navigation]);
 
     return (
         <Screen>
@@ -135,7 +110,12 @@ export const AccountProtectedModal = () => {
                     </View>
                     <View style={styles.deviceList}>
                         {devices.map(([ikPubHex, meta]) => (
-                            <DeviceItem key={ikPubHex} ikPubHex={ikPubHex} meta={meta} />
+                            <DeviceItem
+                                key={ikPubHex}
+                                ikPubHex={ikPubHex}
+                                meta={meta}
+                                isCurrent={ikPubHex === myIkPubHex}
+                            />
                         ))}
                     </View>
                 </View>
