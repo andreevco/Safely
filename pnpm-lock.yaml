@@ -9,6 +9,9 @@ catalogs:
     '@eslint/js':
       specifier: ^9.39.2
       version: 9.39.2
+    '@noble/curves':
+      specifier: 2.2.0
+      version: 2.2.0
     '@noble/hashes':
       specifier: 2.2.0
       version: 2.2.0
@@ -450,6 +453,9 @@ importers:
 
   packages/core:
     dependencies:
+      '@noble/curves':
+        specifier: 'catalog:'
+        version: 2.2.0
       '@noble/hashes':
         specifier: 'catalog:'
         version: 2.2.0
@@ -510,7 +516,7 @@ importers:
         specifier: 2.2.0
         version: 2.2.0
       '@noble/curves':
-        specifier: 2.2.0
+        specifier: 'catalog:'
         version: 2.2.0
       '@noble/hashes':
         specifier: 'catalog:'
