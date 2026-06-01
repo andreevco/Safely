@@ -11,8 +11,8 @@
     },
     "dependencies": {
         "@safely/slottree": "workspace:*",
-        "@noble/ciphers": "^2.0.1",
-        "@noble/curves": "^2.0.1",
+        "@noble/ciphers": "2.2.0",
+        "@noble/curves": "2.2.0",
         "@noble/hashes": "catalog:",
         "cbor-x": "catalog:",
         "eventsource": "^4.1.0",
