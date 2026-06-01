@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { View } from 'react-native';
 
 import { LogLevel } from '@safely/sync';
@@ -17,7 +17,7 @@ type LogRowProps = {
     record: LogRecord;
 };
 
-export const LogRow = ({ record }: LogRowProps) => {
+export const LogRow = memo(({ record }: LogRowProps) => {
     const message = formatMessage(record.message);
     const copy = useCopy();
     const [isExpanded, setIsExpanded] = useState(false);
@@ -63,4 +63,4 @@ export const LogRow = ({ record }: LogRowProps) => {
             </Text>
         </TouchableOpacity>
     );
-};
+});

@@ -1,6 +1,7 @@
-import { FlatList, View } from 'react-native';
+import { useCallback } from 'react';
+import { FlatList, type ListRenderItem, View } from 'react-native';
 
-import { shareLogs } from '@mobile/shared/logger';
+import { type LogRecord, shareLogs } from '@mobile/shared/logger';
 import { Button, Screen, Text } from '@mobile/shared/ui';
 
 import { LogFilters, LogRow } from './components';
@@ -10,6 +11,11 @@ import { useLogFilters, useLogs } from './hooks';
 export const DevToolsLogsScreen = () => {
     const { records, isLoading, reload } = useLogs();
     const { filtered, filterProps } = useLogFilters(records);
+
+    const renderItem = useCallback<ListRenderItem<LogRecord>>(
+        ({ item }) => <LogRow record={item} />,
+        []
+    );
 
     return (
         <Screen>
@@ -27,7 +33,7 @@ export const DevToolsLogsScreen = () => {
                     contentContainerStyle={styles.listContent}
                     data={filtered}
                     keyExtractor={(item, index) => `${item.timestamp}_${index}`}
-                    renderItem={({ item }) => <LogRow record={item} />}
+                    renderItem={renderItem}
                     ListEmptyComponent={
                         <View style={styles.empty}>
                             <Text variant="bodyM" color="secondary">
