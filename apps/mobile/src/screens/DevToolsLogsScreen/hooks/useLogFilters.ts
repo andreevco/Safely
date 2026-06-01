@@ -58,12 +58,14 @@ export const useLogFilters = (records: LogRecord[]) => {
     const isScopeActive = (scope: string) => scopeSel === null || scopeSel.has(scope);
 
     return {
-        levels,
-        scopes,
         filtered,
-        isLevelActive,
-        isScopeActive,
-        toggleLevel,
-        toggleScope
+        filterProps: {
+            levels,
+            scopes,
+            isLevelActive,
+            isScopeActive,
+            onToggleLevel: toggleLevel,
+            onToggleScope: toggleScope
+        }
     };
 };
