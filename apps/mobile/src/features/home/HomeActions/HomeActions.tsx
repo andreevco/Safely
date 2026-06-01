@@ -24,7 +24,7 @@ export const HomeActions = () => {
                 switch (scheme.name) {
                     case 'btc-transfer':
                         navigation.navigate('SendAssetModal', {
-                            screen: 'SendAssetModal',
+                            screen: 'SendForm',
                             params: {
                                 address: scheme.parsed.address,
                                 amount: scheme.parsed.amount

@@ -1,12 +1,12 @@
-import { bitcoin } from './bitcoinjs';
+import { Address, NETWORK } from '@scure/btc-signer';
+import type { BTC_NETWORK } from '@scure/btc-signer/utils.js';
 
 export type BitcoinAddressType = 'P2PKH' | 'P2SH' | 'P2WPKH' | 'P2WSH' | 'P2TR';
 
 export class BtcAddress {
-    public static validate(address: string, network = bitcoin.networks.bitcoin): boolean {
+    public static validate(address: string, network: BTC_NETWORK = NETWORK): boolean {
         try {
-            bitcoin.address.toOutputScript(address, network);
-            return true;
+            return !!Address(network).decode(address);
         } catch {
             return false;
         }

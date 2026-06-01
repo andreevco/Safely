@@ -9,7 +9,6 @@ import prettierPlugin from 'eslint-plugin-prettier';
 import pluginQuery from '@tanstack/eslint-plugin-query';
 import boundaries from 'eslint-plugin-boundaries';
 import isEqPlugin from './eslint-rules/isEqPlugin.js';
-import noDirectBitcoinjsLibPlugin from './eslint-rules/noDirectBitcoinjsLibPlugin.js';
 
 export default [
     {
@@ -47,7 +46,6 @@ export default [
             import: importPlugin,
             'unused-imports': unusedImports,
             iseq: isEqPlugin,
-            'no-direct-bitcoinjs-lib': noDirectBitcoinjsLibPlugin,
             boundaries
         },
         settings: {
@@ -209,7 +207,6 @@ export default [
             '@typescript-eslint/no-floating-promises': 'off',
             /* custom */
             'iseq/no-strict-eq-when-isEq': 'error',
-            'no-direct-bitcoinjs-lib/no-direct-bitcoinjs-lib': 'error',
 
             /* FSD layering inside @safely/ux: shared cannot import entities/features;
                entities cannot import features. */

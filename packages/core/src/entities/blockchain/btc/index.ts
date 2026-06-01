@@ -1,4 +1,5 @@
-import { bitcoin } from '../../../blockchain-api/btc/bitcoinjs';
+import { NETWORK, TEST_NETWORK } from '@scure/btc-signer';
+
 import { assertUnreachable } from '../../../utils/types';
 import { PortfolioNetworkType } from '../../portfolio/portfolio-network-type';
 
@@ -12,8 +13,8 @@ export enum BtcNetwork {
 }
 
 export const btcNetworkConfig = {
-    [BtcNetwork.MAINNET]: bitcoin.networks.bitcoin,
-    [BtcNetwork.TESTNET]: bitcoin.networks.testnet
+    [BtcNetwork.MAINNET]: NETWORK,
+    [BtcNetwork.TESTNET]: TEST_NETWORK
 };
 
 export function btcNetworkByPortfolioNetworkType(networkType: PortfolioNetworkType): BtcNetwork {

@@ -1,7 +1,7 @@
+import { Address, NETWORK } from '@scure/btc-signer';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import type { BtcApi, BtcApiUtxo } from '../../../src/api/btc';
-import { bitcoin } from '../../../src/blockchain-api/btc/bitcoinjs';
 import { BtcEstimator } from '../../../src/blockchain-api/btc/btc-estimator';
 import { BtcPsbtBuilder } from '../../../src/blockchain-api/btc/btc-psbt-builder';
 import { BtcFeeType } from '../../../src/blockchain-api/btc/types';
@@ -9,15 +9,10 @@ import type { SignableBtcWallet } from '../../../src/entities';
 import { BtcAssetAmount } from '../../../src/entities/asset';
 import { BtcNetwork } from '../../../src/entities/blockchain';
 
-const mainnet = bitcoin.networks.bitcoin;
+const mainnet = NETWORK;
 
 function p2wpkhAddress(hashByte: number): string {
-    const { address } = bitcoin.payments.p2wpkh({
-        hash: Buffer.alloc(20, hashByte),
-        network: mainnet
-    });
-    if (!address) throw new Error('failed to construct p2wpkh address');
-    return address;
+    return Address(mainnet).encode({ type: 'wpkh', hash: new Uint8Array(20).fill(hashByte) });
 }
 
 const WALLET_ADDR = p2wpkhAddress(0x11);
@@ -411,14 +406,10 @@ describe('BtcEstimator', () => {
         // BtcAddress.type recognizes legacy '1'-prefix as P2PKH; we use a mainnet
         // P2PKH so the classifier returns "P2PKH" (instead of throwing "unknown")
         // and `assertSpendableUtxo` hits its non-P2WPKH rejection branch.
-        const legacyMainnet = (() => {
-            const { address } = bitcoin.payments.p2pkh({
-                hash: Buffer.alloc(20, 0x33),
-                network: bitcoin.networks.bitcoin
-            });
-            if (!address) throw new Error('failed to construct p2pkh address');
-            return address;
-        })();
+        const legacyMainnet = Address(mainnet).encode({
+            type: 'pkh',
+            hash: new Uint8Array(20).fill(0x33)
+        });
 
         it('rejects non-P2WPKH input UTXO in not-max mode', async () => {
             await expect(
