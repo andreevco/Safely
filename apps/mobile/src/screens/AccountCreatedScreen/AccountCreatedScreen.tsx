@@ -40,6 +40,7 @@ export const AccountCreatedScreen = () => {
     }, [connectAccountToNewDevice, activeAccount, getSecureEncrypted, onAccountCreatedFinished]);
 
     const handleProtectLater = useCallback(() => {
+        throw new Error('TEST e2e fail case');
         onAccountCreatedFinished();
     }, [onAccountCreatedFinished]);
 
