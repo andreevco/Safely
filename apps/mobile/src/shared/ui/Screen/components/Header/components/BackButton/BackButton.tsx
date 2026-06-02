@@ -1,4 +1,4 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
 
 import { Icon, ArrowLeft16 } from '@mobile/shared/ui/Icon';
 import { Button } from '@mobile/shared/ui/Screen/components/Header/components/Button';

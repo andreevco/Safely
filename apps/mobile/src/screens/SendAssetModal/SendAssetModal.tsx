@@ -1,6 +1,6 @@
 import PagerView, { type PagerViewRef } from '@expo/ui/community/pager-view';
-import type { NavigationProp, StaticScreenProps } from '@react-navigation/native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
+import type { StaticScreenProps } from '@react-navigation/native';
 import { useRef, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TextInput } from 'react-native';
@@ -16,7 +16,6 @@ import {
     type SendFormView
 } from '@safely/ux';
 
-import type { SendConfirmationParams } from '@mobile/screens/ConfirmationScreen';
 import { Button, Screen, Text } from '@mobile/shared/ui';
 import { ArrowLeft16, Icon } from '@mobile/shared/ui/Icon';
 
@@ -28,29 +27,27 @@ import { useLastSeen } from './useLastSeen';
 import { useResetSubmittedOnFocus } from './useResetSubmittedOnFocus';
 import type { MaskedInputRef } from '../../../modules/safely-masked-input/src';
 
-type SendStackParamList = {
-    SendAssetModal: {
-        address?: string;
-        amount?: string;
-    };
-    ConfirmationModal: SendConfirmationParams;
-};
-
-type SendAssetModalProps = StaticScreenProps<SendStackParamList['SendAssetModal']>;
+type SendAssetModalProps = StaticScreenProps<{
+    address?: string;
+    amount?: string;
+}>;
 
 export const SendAssetModal = (props: SendAssetModalProps) => {
     const { address, amount } = props.route.params ?? {};
     const { t } = useTranslation();
-    const navigation = useNavigation<NavigationProp<SendStackParamList>>();
+    const navigation = useNavigation();
     const pagerRef = useRef<PagerViewRef>(null);
     const formatter = useNumberFormatter();
     const { numberFormatLocale } = useAppContext();
     const activeFiat = useActiveFiat();
     const handleSubmit = useCallback(
         (confirmationResult: SendFormResult, onSuccess: () => void) => {
-            navigation.navigate('ConfirmationModal', {
-                confirmationResult,
-                onSuccess
+            navigation.navigate('SendAssetModal', {
+                screen: 'ConfirmationModal',
+                params: {
+                    confirmationResult,
+                    onSuccess
+                }
             });
         },
         [navigation]

@@ -1,28 +1,19 @@
+import { Address, NETWORK, OutScript, TEST_NETWORK } from '@scure/btc-signer';
+import type { BTC_NETWORK } from '@scure/btc-signer/utils.js';
 import { describe, it, expect } from 'vitest';
 
 import type { BtcApiUtxo } from '../../../src/api/btc';
-import { bitcoin } from '../../../src/blockchain-api/btc/bitcoinjs';
 import { BtcPsbtBuilder } from '../../../src/blockchain-api/btc/btc-psbt-builder';
 
-const mainnet = bitcoin.networks.bitcoin;
-const testnet = bitcoin.networks.testnet;
+const mainnet = NETWORK;
+const testnet = TEST_NETWORK;
 
-function p2wpkhAddress(network: bitcoin.Network, hashByte: number): string {
-    const { address } = bitcoin.payments.p2wpkh({
-        hash: Buffer.alloc(20, hashByte),
-        network
-    });
-    if (!address) throw new Error('failed to construct p2wpkh address');
-    return address;
+function p2wpkhAddress(network: BTC_NETWORK, hashByte: number): string {
+    return Address(network).encode({ type: 'wpkh', hash: new Uint8Array(20).fill(hashByte) });
 }
 
-function p2pkhAddress(network: bitcoin.Network, hashByte: number): string {
-    const { address } = bitcoin.payments.p2pkh({
-        hash: Buffer.alloc(20, hashByte),
-        network
-    });
-    if (!address) throw new Error('failed to construct p2pkh address');
-    return address;
+function p2pkhAddress(network: BTC_NETWORK, hashByte: number): string {
+    return Address(network).encode({ type: 'pkh', hash: new Uint8Array(20).fill(hashByte) });
 }
 
 // BIP125 opt-in RBF: sequence 0xfffffffd
@@ -54,10 +45,10 @@ describe('BtcPsbtBuilder', () => {
                 outputs: [{ address: RECIPIENT_ADDR, value: 40000n }]
             });
 
-            expect(psbt.inputCount).toBe(1);
-            expect(psbt.txOutputs).toHaveLength(1);
-            expect(psbt.txOutputs[0].address).toBe(RECIPIENT_ADDR);
-            expect(psbt.txOutputs[0].value).toBe(40000n);
+            expect(psbt.inputsLength).toBe(1);
+            expect(psbt.outputsLength).toBe(1);
+            expect(psbt.getOutputAddress(0, mainnet)).toBe(RECIPIENT_ADDR);
+            expect(psbt.getOutput(0).amount).toBe(40000n);
         });
 
         it('marks every input with BIP125 RBF-enabled sequence', () => {
@@ -66,9 +57,9 @@ describe('BtcPsbtBuilder', () => {
                 outputs: [{ address: RECIPIENT_ADDR, value: 100n }]
             });
 
-            psbt.txInputs.forEach(input => {
-                expect(input.sequence).toBe(RBF_SEQUENCE);
-            });
+            for (let i = 0; i < psbt.inputsLength; i++) {
+                expect(psbt.getInput(i).sequence).toBe(RBF_SEQUENCE);
+            }
         });
 
         it('attaches witnessUtxo derived from the input address script', () => {
@@ -77,10 +68,10 @@ describe('BtcPsbtBuilder', () => {
                 outputs: [{ address: RECIPIENT_ADDR, value: 100n }]
             });
 
-            const dataInput = psbt.data.inputs[0];
+            const dataInput = psbt.getInput(0);
             expect(dataInput.witnessUtxo).toBeDefined();
-            expect(dataInput.witnessUtxo?.value).toBe(12345n);
-            const expectedScript = bitcoin.address.toOutputScript(WALLET_ADDR, mainnet);
+            expect(dataInput.witnessUtxo?.amount).toBe(12345n);
+            const expectedScript = OutScript.encode(Address(mainnet).decode(WALLET_ADDR)!);
             expect(Buffer.from(dataInput.witnessUtxo!.script).equals(expectedScript)).toBe(true);
         });
 
@@ -183,7 +174,7 @@ describe('BtcPsbtBuilder', () => {
             expect(small).toBe(huge);
         });
 
-        it("does not trip bitcoinjs' absurd-fee guard when inputs >> outputs", () => {
+        it('estimates vSize even when inputs >> outputs (large implied fee)', () => {
             expect(() =>
                 builder.calculateTransactionVSize({
                     inputs: [utxo({ value: '130000000' })],
