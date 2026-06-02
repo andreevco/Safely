@@ -21,6 +21,11 @@ jobs:
   build_android:
     name: Build APK
     type: build
+    steps:
+      - uses: eas/checkout
+      - uses: eas/restore_build_cache
+      - uses: eas/build
+      - uses: eas/save_build_cache
     params:
       platform: android
       profile: production
