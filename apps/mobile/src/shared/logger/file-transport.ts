@@ -4,6 +4,8 @@ import { shareAsync } from 'expo-sharing';
 import type { ILoggerTransport, LogEntry } from '@safely/sync';
 import { LogLevel } from '@safely/sync';
 
+import { type StoredLog, sStoredLog } from './schemas/stored-log.schema';
+
 const FILENAME = 'safely.ndjson';
 const MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024;
 const CONTEXT_BUFFER_SIZE = 1000;
@@ -12,16 +14,6 @@ type FileTransportConfig = {
     appVersion: string;
     build: string;
     deviceInfo: { name: string; osVersion: string };
-};
-
-type StoredLog = {
-    t: string;
-    l: LogLevel;
-    p: string[];
-    m: string;
-    v: string;
-    b: string;
-    d: string;
 };
 
 export type LogRecord = {
@@ -84,10 +76,11 @@ export class FileTransport implements ILoggerTransport {
         if (!file.exists) return [];
 
         try {
-            return file
-                .textSync()
+            const content = await file.text();
+
+            return content
                 .split('\n')
-                .map(parseLogLine)
+                .map(line => this.parseLogLine(line))
                 .filter((record): record is LogRecord => record !== null);
         } catch (e) {
             console.error('[FileTransport] failed to read log file', e);
@@ -130,7 +123,7 @@ export class FileTransport implements ILoggerTransport {
             t: entry.timestamp.toISOString(),
             l: entry.level,
             p: entry.path,
-            m: entry.message.map(serializeMessage).join(' '),
+            m: entry.message.map(message => this.serializeMessage(message)).join(' '),
             v: this.appVersion,
             b: this.build,
             d: this.device
@@ -138,13 +131,21 @@ export class FileTransport implements ILoggerTransport {
 
         return JSON.stringify(stored);
     }
-}
 
-function parseLogLine(line: string): LogRecord | null {
-    if (!line) return null;
+    private parseLogLine(line: string): LogRecord | null {
+        if (!line) return null;
 
-    try {
-        const stored = JSON.parse(line) as StoredLog;
+        let parsed: unknown;
+        try {
+            parsed = JSON.parse(line);
+        } catch {
+            return null;
+        }
+
+        const result = sStoredLog.safeParse(parsed);
+        if (!result.success) return null;
+
+        const stored = result.data;
 
         return {
             timestamp: stored.t,
@@ -155,18 +156,16 @@ function parseLogLine(line: string): LogRecord | null {
             build: stored.b,
             device: stored.d
         };
-    } catch {
-        return null;
     }
-}
 
-function serializeMessage(message: unknown): string {
-    if (typeof message === 'string') return message;
-    if (message instanceof Error) return message.stack ?? message.message;
+    private serializeMessage(message: unknown): string {
+        if (typeof message === 'string') return message;
+        if (message instanceof Error) return message.stack ?? message.message;
 
-    try {
-        return JSON.stringify(message);
-    } catch {
-        return String(message);
+        try {
+            return JSON.stringify(message);
+        } catch {
+            return String(message);
+        }
     }
 }
