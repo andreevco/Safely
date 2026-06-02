@@ -132,4 +132,7 @@ jobs:
           STATUS_IOS_CRUTCH: ${{ after.distribute_ios_crutch.status }}
           STATUS_ANDROID: ${{ after.distribute_android.status }}
           STATUS_E2E: ${{ after.e2e_android.status }}
-        run: node scripts/eas-report.mjs
+        run: |
+          SCRIPT=apps/mobile/scripts/eas-report.mjs
+          [ -f "$SCRIPT" ] || SCRIPT=scripts/eas-report.mjs
+          node "$SCRIPT"
