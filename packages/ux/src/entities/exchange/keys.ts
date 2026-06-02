@@ -9,3 +9,7 @@ export const exchangeKeys = defineQueryKeys('exchange', {
         _deviceCountryCode: string
     ) => finalKey
 });
+
+export const dismissedProvidersKeys = defineQueryKeys('dismissedProviders', {
+    ids: finalKey
+});

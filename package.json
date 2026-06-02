@@ -13,6 +13,8 @@
   },
   "packageManager": "pnpm@10.27.0",
   "devDependencies": {
+    "@babel/generator": "^7.29.7",
+    "@babel/types": "^7.29.7",
     "@eslint/js": "catalog:",
     "@tanstack/eslint-plugin-query": "^5.91.2",
     "@types/node": "^25.0.3",

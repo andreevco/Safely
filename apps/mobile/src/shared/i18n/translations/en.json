@@ -685,6 +685,9 @@
         "title": "Choose a payment option to buy Bitcoin",
         "provider": {
             "availabilityVaries": "Availability may vary by region"
-        }
+        },
+        "disclaimer": "You’ll be redirected to {{providerName}}. {{providerName}}’s <terms>Terms</terms> and <privacy>Privacy Policy</privacy> apply.",
+        "continue": "Continue with {{providerName}}",
+        "dontShowAgain": "Don’t show this again"
     }
 }
