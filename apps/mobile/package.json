@@ -93,6 +93,7 @@
     "@safely/sync-storage": "workspace:*",
     "@types/react": "catalog:",
     "babel-preset-expo": "~56.0.0",
+    "eas-cli": "^16.32.0",
     "typescript": "catalog:"
   },
   "private": true
