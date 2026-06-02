@@ -16,7 +16,7 @@
     "@bottom-tabs/react-navigation": "^1.2.0",
     "@craftzdog/react-native-buffer": "^6.1.1",
     "@expo/metro-runtime": "~56.0.13",
-    "@expo/ui": "^56.0.14",
+    "@expo/ui": "~56.0.15",
     "@formatjs/intl-getcanonicallocales": "^3.2.0",
     "@formatjs/intl-locale": "^5.2.0",
     "@formatjs/intl-numberformat": "^9.2.1",
@@ -38,26 +38,26 @@
     "@xstate/react": "catalog:",
     "big.js": "catalog:",
     "color": "^5.0.3",
-    "expo": "~56.0.5",
+    "expo": "~56.0.8",
     "expo-asset": "~56.0.15",
     "expo-blur": "~56.0.3",
     "expo-clipboard": "~56.0.3",
     "expo-crypto": "~56.0.4",
-    "expo-dev-client": "~56.0.16",
+    "expo-dev-client": "~56.0.18",
     "expo-device": "~56.0.4",
     "expo-file-system": "~56.0.7",
     "expo-haptics": "~56.0.3",
     "expo-image": "~56.0.9",
     "expo-linear-gradient": "~56.0.4",
-    "expo-linking": "~56.0.12",
+    "expo-linking": "~56.0.13",
     "expo-local-authentication": "~56.0.4",
     "expo-localization": "~56.0.6",
-    "expo-modules-core": "~56.0.13",
+    "expo-modules-core": "~56.0.14",
     "expo-network": "~56.0.4",
-    "expo-notifications": "~56.0.14",
+    "expo-notifications": "~56.0.15",
     "expo-screen-capture": "~56.0.4",
     "expo-secure-store": "~56.0.4",
-    "expo-sharing": "~56.0.14",
+    "expo-sharing": "~56.0.15",
     "expo-splash-screen": "~56.0.10",
     "expo-system-ui": "~56.0.5",
     "i18next": "^25.7.4",
@@ -95,14 +95,6 @@
     "babel-preset-expo": "~56.0.0",
     "eas-cli": "^16.32.0",
     "typescript": "catalog:"
-  },
-  "expo": {
-    "install": {
-      "exclude": [
-        "typescript",
-        "@shopify/flash-list"
-      ]
-    }
   },
   "private": true
 }
