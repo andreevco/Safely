@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { useIsOffline } from '@mobile/shared/hooks';
+import { useIsOffline } from '@mobile/shared/network';
 
 export enum SubtitleStatus {
     LAST_UPDATED = 'lastUpdated',
