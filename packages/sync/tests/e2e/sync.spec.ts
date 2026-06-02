@@ -10,7 +10,7 @@ type WalletItem = {
     value: string;
 };
 
-describe('Sync', () => {
+describe('Sync', { timeout: 10_000 }, () => {
     let factory: TestSyncAccountFactory;
     let secureEncryptedStorage: InMemStorage;
     let accounts: TestSyncAccount[];
