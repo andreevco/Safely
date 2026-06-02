@@ -35,7 +35,7 @@ function validateQuery(query: DehydratedQuery, logger: Logger): void {
     if (!schemaKey || typeof schemaKey !== 'string') return;
 
     if (!isValidSchemaKey(schemaKey)) {
-        logger.warn('[persistence] unknown schema key', schemaKey);
+        logger.warn('unknown schema key', schemaKey);
         clearQueryState(query);
 
         return;
@@ -47,7 +47,7 @@ function validateQuery(query: DehydratedQuery, logger: Logger): void {
     if (result.success) {
         query.state.data = result.data;
     } else {
-        logger.warn('[persistence] cache validation failed for', query.queryKey, result.error);
+        logger.warn('cache validation failed for', query.queryKey, result.error);
         clearQueryState(query);
     }
 }
@@ -68,6 +68,7 @@ function keepOnlyFirstInfinityPage(queries: DehydratedQuery[]) {
 }
 
 export function createPersister(storage: IStorage, logger: Logger): Persister {
+    const persistenceLogger = logger.child('persistence');
     const basePersister = createAsyncStoragePersister({
         storage,
         serialize,
@@ -93,7 +94,7 @@ export function createPersister(storage: IStorage, logger: Logger): Persister {
 
             if (queries?.length) {
                 queries.forEach(query => {
-                    validateQuery(query, logger);
+                    validateQuery(query, persistenceLogger);
                 });
             }
 
