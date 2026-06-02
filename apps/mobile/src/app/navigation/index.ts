@@ -9,12 +9,14 @@ import { CurrencyScreen } from '@mobile/screens/CurrencyScreen';
 import { CustomizeAccountModal } from '@mobile/screens/CustomizeAccountModal';
 import { CustomizeWalletModal } from '@mobile/screens/CustomizeWalletModal';
 import { DestructiveConfirmSheet } from '@mobile/screens/DestructiveConfirmSheet';
+import { ExchangeModal } from '@mobile/screens/ExchangeModal';
 import { LockScreen } from '@mobile/screens/LockScreen';
 import { NewContactModal } from '@mobile/screens/NewContactModal';
 import { ConfirmDeleteContactSheet } from '@mobile/screens/NewContactModal/screens/ConfirmDeleteContactSheet';
 import { OnboardingPasscodeScreen } from '@mobile/screens/OnboardingPasscodeScreen';
 import { PasscodeVerificationScreen } from '@mobile/screens/PasscodeVerificationScreen';
 import { PendingFundsSheet } from '@mobile/screens/PendingFundsSheet';
+import { ProviderSheet } from '@mobile/screens/ProviderSheet';
 import { QRScanModal } from '@mobile/screens/QRScanModal';
 import { ReceiveAssetModal } from '@mobile/screens/ReceiveAssetModal';
 import { ReconnectDeviceModal } from '@mobile/screens/ReconnectDeviceModal';
@@ -91,6 +93,7 @@ export const RootStack = createNativeStackNavigator({
             screens: {
                 SettingsModal: SettingsStack,
                 CurrencyModal: CurrencyScreen,
+                ExchangeModal: ExchangeModal,
                 RecoveryPhraseModal: RecoveryPhraseSheet,
                 SignInModal: SignInStack,
                 CustomizeAccountModal: CustomizeAccountModal,
@@ -118,7 +121,8 @@ export const RootStack = createNativeStackNavigator({
                 SignOutAccountSheet: SignOutAccountSheet,
                 WatchOnlySheet: WatchOnlySheet,
                 PendingFundsSheet: PendingFundsSheet,
-                ConfirmDeleteContactSheet: ConfirmDeleteContactSheet
+                ConfirmDeleteContactSheet: ConfirmDeleteContactSheet,
+                ProviderSheet: ProviderSheet
             },
             screenOptions: {
                 animationDuration: 0,

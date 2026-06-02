@@ -2,7 +2,7 @@ import { ed25519 } from '@noble/curves/ed25519.js';
 import { secp256k1 } from '@noble/curves/secp256k1.js';
 import { hkdf } from '@noble/hashes/hkdf.js';
 import { sha256 } from '@noble/hashes/sha2.js';
-import { HDKey } from '@scure/bip32';
+import type { HDKey } from '@scure/bip32';
 
 import { AUTH_CERT_CHILD_INDEX, CERT_DOMAIN, SEED_INFO } from './const';
 import { bytesToHex, utf8 } from './utils';

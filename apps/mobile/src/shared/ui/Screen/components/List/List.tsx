@@ -11,7 +11,7 @@ import { styles } from './List.styles';
 export type ListRef<T> = FlashListRef<T>;
 
 export const List = <TItem,>(
-    props: FlashListProps<TItem> & { ref: React.Ref<FlashListRef<TItem>> }
+    props: FlashListProps<TItem> & { ref?: React.Ref<FlashListRef<TItem>> }
 ) => {
     const { style, contentContainerStyle, ref, ...rest } = props;
     const isInsideTabBar = !!useBottomTabBarHeightSafely();

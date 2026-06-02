@@ -7,7 +7,7 @@ import { useAnalytics, useIsActiveWalletWatchOnly, useScanQrScheme } from '@safe
 
 import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import { Actions } from '@mobile/shared/ui';
-import { ArrowDown28, ArrowTop28, QrCodeScan28 } from '@mobile/shared/ui/Icon';
+import { ArrowDown28, ArrowTop28, Plus28, QrCodeScan28 } from '@mobile/shared/ui/Icon';
 
 import { styles } from './HomeActions.styles';
 
@@ -53,6 +53,10 @@ export const HomeActions = () => {
         navigation.navigate('WatchOnlySheet');
     }, [navigation]);
 
+    const handleNavigateToExchange = useCallback(() => {
+        navigation.navigate('ExchangeModal');
+    }, [navigation]);
+
     return (
         <Actions style={styles.container}>
             <Actions.Button
@@ -65,6 +69,11 @@ export const HomeActions = () => {
                 title={t('home.actions.receive')}
                 icon={ArrowDown28}
                 onPress={handleNavigateToReceiveAsset}
+            />
+            <Actions.Button
+                title={t('home.actions.buy')}
+                icon={Plus28}
+                onPress={handleNavigateToExchange}
             />
             <Actions.Button
                 title={t('home.actions.scan')}

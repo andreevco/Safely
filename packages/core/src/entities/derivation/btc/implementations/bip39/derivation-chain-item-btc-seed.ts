@@ -2,6 +2,8 @@ import type { SBtcAccountChainItem } from '@safely/sync-storage';
 
 import { BtcBip32NodeProducer } from './btc-bip32-node-producer';
 import { BtcXpub } from '../../../../../blockchain-api';
+import type { AuthorizationProvider } from '../../../../../utils/fetch';
+import { createReadOnlyCertificate, signRequest } from '../../../../auth-cert';
 import type { BtcNetwork } from '../../../../blockchain';
 import { btcNetworkByPortfolioNetworkType, BtcWalletType } from '../../../../blockchain';
 import type { PortfolioNetworkType } from '../../../../portfolio';
@@ -85,6 +87,7 @@ export class DerivationChainItemBtcSeed implements IDerivationChainItemBtc {
             type: walletType,
             address
         });
+        const getAuthorization = this.createAuthorizationProvider(seedProducer, walletType);
 
         this.wallets = [
             {
@@ -96,7 +99,8 @@ export class DerivationChainItemBtcSeed implements IDerivationChainItemBtc {
                 derivationRef,
                 sign(tx: BtcSigningRequest) {
                     return signer.sign(tx);
-                }
+                },
+                getAuthorization
             }
         ];
     }
@@ -113,6 +117,33 @@ export class DerivationChainItemBtcSeed implements IDerivationChainItemBtc {
         );
 
         return new BtcKeypairSigner(keypairProducer, { ...wallet, network: this.network });
+    }
+
+    private createAuthorizationProvider(
+        seedProducer: ISeedProducer,
+        walletType: BtcWalletType
+    ): AuthorizationProvider {
+        let certificatePromise: Promise<ReturnType<typeof createReadOnlyCertificate>> | undefined;
+
+        return async ({ method, pathWithQuery, bodyBytes }) => {
+            certificatePromise ??= new BtcBip32NodeProducer(
+                seedProducer,
+                walletType,
+                this.network,
+                this.derivationIndex
+            )
+                .getPortfolioDerivation()
+                .then(createReadOnlyCertificate);
+
+            const { certHex, reqSecretKey } = await certificatePromise;
+            return signRequest({
+                certHex,
+                reqSecretKey,
+                method,
+                pathWithQuery,
+                bodyBytes
+            });
+        };
     }
 
     public toJSON(): SBtcAccountChainItem {

@@ -1,4 +1,5 @@
 export * from './application';
+export * from './auth-cert';
 export * from './asset';
 export * from './blockchain';
 export * from './contact';
