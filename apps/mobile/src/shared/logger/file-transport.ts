@@ -61,6 +61,13 @@ export class FileTransport implements ILoggerTransport {
         this.writeToFile([serialized]);
     }
 
+    public erase(): void {
+        this.context = [];
+
+        const file = new File(Paths.cache, FILENAME);
+        if (file.exists) file.delete();
+    }
+
     public async share(): Promise<void> {
         const file = new File(Paths.cache, FILENAME);
         if (!file.exists) return;

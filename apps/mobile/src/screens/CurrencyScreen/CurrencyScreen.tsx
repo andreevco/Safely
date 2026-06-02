@@ -1,4 +1,4 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
@@ -6,7 +6,6 @@ import { View } from 'react-native';
 import type { FiatAsset } from '@safely/core';
 import { useActiveFiat, useAvailableFiats, useSetActiveFiat } from '@safely/ux';
 
-import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import { Cell, List, Screen, Text } from '@mobile/shared/ui';
 import { Checkmark28, Icon } from '@mobile/shared/ui/Icon';
 
@@ -14,7 +13,7 @@ import { styles } from './CurrencyScreen.styles';
 
 export const CurrencyScreen = () => {
     const { t } = useTranslation();
-    const navigation = useNavigation<RootStackNavigationProp>();
+    const navigation = useNavigation();
 
     const activeFiat = useActiveFiat();
     const setActiveFiat = useSetActiveFiat();

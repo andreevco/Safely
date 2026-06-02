@@ -1,4 +1,4 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
 import { useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Image, View } from 'react-native';
@@ -6,7 +6,6 @@ import QRCode from 'react-native-qrcode-skia';
 
 import { useAccountConnectedCallback, useCreateReconnectConnector, useToast } from '@safely/ux';
 
-import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import { resources } from '@mobile/shared/resources';
 import { DeviceLink, Screen, Text, TouchableOpacity } from '@mobile/shared/ui';
 import { Icon } from '@mobile/shared/ui/Icon';
@@ -18,7 +17,7 @@ export const ReconnectDeviceModal = () => {
     const { t } = useTranslation();
     const copy = useCopy();
     const toast = useToast();
-    const navigation = useNavigation<RootStackNavigationProp>();
+    const navigation = useNavigation();
 
     const { mutate, data, isPending, isError } = useCreateReconnectConnector();
     useAccountConnectedCallback(

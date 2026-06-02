@@ -1,17 +1,18 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
 
 import { WalletSelector } from '@mobile/features/portfolio';
-import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
+import { TEST_ID } from '@mobile/shared/constants';
 import { Screen } from '@mobile/shared/ui';
 
 import { CurrencyButton, SettingsButton } from './components';
 
 export const HomeHeader = () => {
-    const navigation = useNavigation<RootStackNavigationProp<'TabsNavigator'>>();
+    const navigation = useNavigation();
 
     return (
         <Screen.Header>
             <Screen.Header.Button
+                testID={TEST_ID.home.settingsButton}
                 type="transparent"
                 onPress={() => navigation.navigate('SettingsModal')}
             >

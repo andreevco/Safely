@@ -6,6 +6,7 @@ import { useUnistyles } from 'react-native-unistyles';
 
 import { useImportSeedPhrase } from '@safely/ux';
 
+import { usePreventCurrentScreenCapture } from '@mobile/entities/security';
 import { useAddWalletFlow } from '@mobile/features/add-wallet';
 import { Button, Screen, Text } from '@mobile/shared/ui';
 
@@ -14,6 +15,8 @@ import type { SeedPhraseInputRef } from '../../../modules/safely-masked-input/sr
 import { SeedPhraseInput } from '../../../modules/safely-masked-input/src';
 
 export const ImportWalletScreen = () => {
+    usePreventCurrentScreenCapture();
+
     const { t } = useTranslation();
     const { theme } = useUnistyles();
     const { onMnemonicReady } = useAddWalletFlow();
