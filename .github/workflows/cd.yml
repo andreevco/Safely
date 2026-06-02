@@ -58,6 +58,10 @@ jobs:
               NOTES=$(printf '[%s] #%s %s' "$BRANCH" "$NUMBER" "$TITLE")
             fi
           fi
+
+          # Expose the just-merged PR number (empty for direct pushes / manual runs)
+          # so the EAS report can link to it in Slack — works for any trigger/branch.
+          echo "PR_NUMBER=${NUMBER:-}" >> "$GITHUB_ENV"
           # EAS Workflows doesn't quote-safe-interpolate inputs into its internal bash;
           # unescaped () ` $ " ' \ in changelog cause exit 141 / SIGPIPE / empty log.
           NOTES=$(printf '%s' "$NOTES" \
@@ -81,4 +85,6 @@ jobs:
         run: |
           RELEASE_NOTES="$(cat /tmp/release_notes.txt)"
           pnpm dlx eas-cli workflow:run build-and-distribute.yml \
-            --input release_notes="$RELEASE_NOTES"
+            --input release_notes="$RELEASE_NOTES" \
+            --input pr_number="${PR_NUMBER:-}" \
+            --input repository="${{ github.repository }}"
