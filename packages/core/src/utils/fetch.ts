@@ -85,6 +85,28 @@ export class ApiClient {
         return await this.parseAndValidate(response, schema);
     }
 
+    private async performFetch(url: string, init: RequestInit): Promise<Response> {
+        const controller = this.timeoutMs ? new AbortController() : undefined;
+        const id = this.timeoutMs
+            ? setTimeout(() => controller!.abort(), this.timeoutMs)
+            : undefined;
+        try {
+            const mergedInit: RequestInit = {
+                ...init,
+                headers: { ...this.headers, ...(init.headers || {}) },
+                signal: controller?.signal
+            };
+            return await fetch(url, mergedInit);
+        } catch (err) {
+            if (err instanceof Error && err.name === 'AbortError') {
+                throw new BtcApiError('Request timed out', 408);
+            }
+            throw err;
+        } finally {
+            if (id) clearTimeout(id);
+        }
+    }
+
     private buildRequestTarget(
         path: string,
         query?: object
