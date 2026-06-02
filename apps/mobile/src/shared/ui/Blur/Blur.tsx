@@ -2,7 +2,7 @@ import type { BlurViewProps } from 'expo-blur';
 import { BlurView } from 'expo-blur';
 import type { StyleProp, ViewProps, ViewStyle } from 'react-native';
 import { Platform } from 'react-native';
-import Animated from 'react-native-reanimated';
+import Animated, { type AnimatedStyle } from 'react-native-reanimated';
 
 /*
     As noted in expo-blur docs, dimezisBlurView may decrease
@@ -17,14 +17,14 @@ const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 
 export type BlurProps = {
     blurAnimatedProps: Partial<BlurViewProps>;
-    style?: StyleProp<ViewStyle>;
+    style?: StyleProp<AnimatedStyle<ViewStyle>>;
     pointerEvents?: ViewProps['pointerEvents'];
 };
 
 export const Blur = ({ blurAnimatedProps, style, pointerEvents = 'none' }: BlurProps) => {
     return SUPPORTS_BLUR ? (
         <AnimatedBlurView
-            experimentalBlurMethod={'dimezisBlurView'}
+            blurMethod={'dimezisBlurView'}
             tint={'dark'}
             style={style}
             pointerEvents={pointerEvents}

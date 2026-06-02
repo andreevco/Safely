@@ -1,10 +1,10 @@
+import PagerView, { type PagerViewRef } from '@expo/ui/community/pager-view';
 import type { NavigationProp, StaticScreenProps } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
 import { useRef, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TextInput } from 'react-native';
 import { View } from 'react-native';
-import PagerView from 'react-native-pager-view';
 
 import { assertUnreachable } from '@safely/core';
 import type { SendFormResult } from '@safely/ux';
@@ -42,7 +42,7 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
     const { address, amount } = props.route.params ?? {};
     const { t } = useTranslation();
     const navigation = useNavigation<NavigationProp<SendStackParamList>>();
-    const pagerRef = useRef<PagerView>(null);
+    const pagerRef = useRef<PagerViewRef>(null);
     const formatter = useNumberFormatter();
     const { numberFormatLocale } = useAppContext();
     const activeFiat = useActiveFiat();
