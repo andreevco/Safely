@@ -10,6 +10,7 @@ import {
     useSetBiometryEnabled
 } from '@mobile/features/biometry';
 import { useOnboardingFlow } from '@mobile/features/onboarding';
+import { TEST_ID } from '@mobile/shared/constants';
 import { Button, Icon, Screen, Text } from '@mobile/shared/ui';
 
 import { styles } from './BiometryScreen.styles';
@@ -97,7 +98,11 @@ const BiometrySupportedScreen: FC<{
         <Screen>
             <Screen.Header withCompensateHeight={false}>
                 <View />
-                <Screen.Header.Button type="small" onPress={handleSkip}>
+                <Screen.Header.Button
+                    testID={TEST_ID.biometry.skip}
+                    type="small"
+                    onPress={handleSkip}
+                >
                     <Text variant="labelM">{t('common.later')}</Text>
                 </Screen.Header.Button>
             </Screen.Header>

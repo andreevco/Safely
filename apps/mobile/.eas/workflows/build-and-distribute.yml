@@ -8,6 +8,16 @@ on:
         type: string
         required: false
         default: ''
+      pr_number:
+        description: Just-merged PR number, used to build the PR link in the Slack report. Empty if none.
+        type: string
+        required: false
+        default: ''
+      repository:
+        description: owner/repo, used to build the PR link in the Slack report
+        type: string
+        required: false
+        default: ''
 
 jobs:
   build_ios:
@@ -83,3 +93,43 @@ jobs:
             --app "${{ env.FIREBASE_APP_ID }}" \
             --groups "testers" \
             "${NOTES_ARGS[@]}"
+
+  # Runs on the same APK we ship to Firebase (no separate e2e build),
+  # in parallel with distribute_android.
+  e2e_android:
+    name: E2E (Maestro, Android)
+    type: maestro
+    needs: [build_android]
+    params:
+      build_id: ${{ needs.build_android.outputs.build_id }}
+      flow_path: ['.maestro/onboarding-create-wallet.yaml']
+
+  # Aggregates TestFlight + Firebase + e2e results into a Slack message.
+  # `after` => runs regardless of upstream success/failure, and lets us read
+  # both the statuses and the build outputs (version / build number).
+  report:
+    name: Report (Slack)
+    after:
+      - build_ios
+      - build_android
+      - distribute_ios
+      - distribute_ios_crutch
+      - distribute_android
+      - e2e_android
+    steps:
+      - name: Post report
+        env:
+          SLACK_WEBHOOK_URL: ${{ env.SLACK_WEBHOOK_URL }}
+          WORKFLOW_URL: ${{ workflow.url }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+          REPOSITORY: ${{ inputs.repository }}
+          RELEASE_NOTES: ${{ inputs.release_notes }}
+          IOS_VERSION: ${{ after.build_ios.outputs.app_version }}
+          IOS_BUILD: ${{ after.build_ios.outputs.app_build_version }}
+          ANDROID_VERSION: ${{ after.build_android.outputs.app_version }}
+          ANDROID_BUILD: ${{ after.build_android.outputs.app_build_version }}
+          STATUS_IOS: ${{ after.distribute_ios.status }}
+          STATUS_IOS_CRUTCH: ${{ after.distribute_ios_crutch.status }}
+          STATUS_ANDROID: ${{ after.distribute_android.status }}
+          STATUS_E2E: ${{ after.e2e_android.status }}
+        run: node scripts/eas-report.mjs
