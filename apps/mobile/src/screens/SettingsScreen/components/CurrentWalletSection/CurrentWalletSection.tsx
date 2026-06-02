@@ -1,4 +1,5 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
@@ -6,7 +7,6 @@ import { PortfolioType } from '@safely/core';
 import { useActivePortfolio } from '@safely/ux';
 
 import { PortfolioName } from '@mobile/entities/portfolio';
-import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import { Button, Cell, List } from '@mobile/shared/ui';
 
 import { styles } from './CurrentWalletSection.styles';
@@ -14,13 +14,15 @@ import { styles } from './CurrentWalletSection.styles';
 export const CurrentWalletSection = () => {
     const { t } = useTranslation();
     const activePortfolio = useActivePortfolio();
-    const navigation = useNavigation<RootStackNavigationProp>();
+    const navigation = useNavigation();
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+    const nativeStackNavigation = useNavigation<NativeStackNavigationProp<{}>>();
 
     const handleEditPress = () => {
         navigation.navigate('CustomizeWalletModal', {
             portfolio: activePortfolio,
             onCompleteCustomize: () => {
-                navigation.pop();
+                nativeStackNavigation.pop();
             }
         });
     };

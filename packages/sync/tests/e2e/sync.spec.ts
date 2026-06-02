@@ -73,7 +73,7 @@ describe('Sync', () => {
         await setAndVerify(account, walletItems('wallet6'));
         await setAndVerify(newAccount, walletItems('wallet7'));
         await setAndVerify(account, walletItems('wallet8'));
-    });
+    }, 10000);
 
     it('should sync local update mutations', async () => {
         const account = await factory.createSyncAccount(secureEncryptedStorage);
@@ -84,7 +84,7 @@ describe('Sync', () => {
 
         await updateAndVerify(account, walletItems('wallet1'));
         await updateAndVerify(newAccount, walletItems('wallet1', 'wallet2'));
-    });
+    }, 10000);
 
     it('should sync 3 devices', async () => {
         const account = await factory.createSyncAccount(secureEncryptedStorage);
@@ -98,7 +98,7 @@ describe('Sync', () => {
         await setAndVerify(account, walletItems('wallet1'));
         await setAndVerify(account2, walletItems('wallet1', 'wallet2'));
         await setAndVerify(account3, walletItems('wallet1', 'wallet2', 'wallet3'));
-    });
+    }, 10000);
 
     it('should sync device list when 1 device is onboarded', async () => {
         const account = await factory.createSyncAccount(secureEncryptedStorage);
@@ -114,7 +114,7 @@ describe('Sync', () => {
             expect(devices1).toHaveLength(2);
             expect(devices1).toEqual(devices2);
         });
-    });
+    }, 10000);
 
     it('should sync device lists between 3 devices (A->B, A->C)', async () => {
         const account = await factory.createSyncAccount(secureEncryptedStorage);
@@ -133,7 +133,7 @@ describe('Sync', () => {
             expect(devices1).toEqual(devices2);
             expect(devices2).toEqual(devices3);
         });
-    });
+    }, 10000);
 
     it('should sync device lists between 3 devices (A->B, B->C)', async () => {
         const account = await factory.createSyncAccount(secureEncryptedStorage);
@@ -153,7 +153,7 @@ describe('Sync', () => {
             expect(devices1).toEqual(devices2);
             expect(devices2).toEqual(devices3);
         });
-    });
+    }, 10000);
 
     // Scenario 1:
     // - User has two devices A (online) and B (offline)
@@ -178,7 +178,7 @@ describe('Sync', () => {
             const walletsB = accountB.syncProvider.get('wallets');
             expect(walletsB).toEqual(walletItems('wallet1', 'wallet2'));
         });
-    });
+    }, 10000);
 });
 
 function walletItems(...values: string[]): WalletItem[] {

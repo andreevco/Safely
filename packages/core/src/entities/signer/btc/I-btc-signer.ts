@@ -1,7 +1,7 @@
-import type { Psbt } from '../../../blockchain-api/btc/bitcoinjs';
+import type { Transaction } from '@scure/btc-signer';
 
 export interface BtcSigningRequest {
-    psbt: Psbt;
+    psbt: Transaction;
     utxos: Array<{
         derivationPath: {
             change: number;

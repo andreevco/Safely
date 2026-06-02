@@ -1,4 +1,4 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
@@ -7,7 +7,6 @@ import type { BtcApiUtxoWithOptionalTx } from '@safely/core';
 import { BtcAssetAmount } from '@safely/core';
 import { useNumberFormatter, btcTxToActivityItem } from '@safely/ux';
 
-import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import { Text, TouchableOpacity } from '@mobile/shared/ui';
 
 import { styles } from './ReceivingBadge.styles';
@@ -15,7 +14,7 @@ import { styles } from './ReceivingBadge.styles';
 export const ReceivingBadges = ({ utxos }: { utxos: BtcApiUtxoWithOptionalTx[] }) => {
     const { t } = useTranslation();
     const formatter = useNumberFormatter();
-    const navigation = useNavigation<RootStackNavigationProp<'TabsNavigator'>>();
+    const navigation = useNavigation();
 
     const handleReceivingPress = useCallback(
         (u: BtcApiUtxoWithOptionalTx) => {

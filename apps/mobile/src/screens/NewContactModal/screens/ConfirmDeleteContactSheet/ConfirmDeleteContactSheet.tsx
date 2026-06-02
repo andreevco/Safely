@@ -1,5 +1,6 @@
+import { useNavigation } from '@react-navigation/core';
 import type { StaticScreenProps } from '@react-navigation/native';
-import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
@@ -7,7 +8,6 @@ import { View } from 'react-native';
 import type { Contact } from '@safely/core';
 import { useDeleteContact } from '@safely/ux';
 
-import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import { BottomSheet, Button, Text } from '@mobile/shared/ui';
 import type { BottomSheetContextType } from '@mobile/shared/ui/BottomSheet/context';
 
@@ -20,14 +20,15 @@ type ConfirmDeleteContactSheetProps = StaticScreenProps<{
 export const ConfirmDeleteContactSheet = ({ route }: ConfirmDeleteContactSheetProps) => {
     const { contact } = route.params;
     const { t } = useTranslation();
-    const navigation = useNavigation<RootStackNavigationProp<'NewContactModal'>>();
+    const nativeStackNavigation =
+        useNavigation<NativeStackNavigationProp<{ SettingsModal: undefined }>>();
     const bottomSheetRef = useRef<BottomSheetContextType>(null);
     const { mutateAsync: deleteContact } = useDeleteContact();
 
     const handleDelete = async () => {
         await deleteContact(contact);
 
-        navigation.popTo('SettingsModal');
+        nativeStackNavigation.popTo('SettingsModal');
     };
 
     return (

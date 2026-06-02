@@ -1,11 +1,10 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { BTC_ASSET } from '@safely/core';
 import { useAnalytics, useIsActiveWalletWatchOnly, useScanQrScheme } from '@safely/ux';
 
-import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import { Actions } from '@mobile/shared/ui';
 import { ArrowDown28, ArrowTop28, Plus28, QrCodeScan28 } from '@mobile/shared/ui/Icon';
 
@@ -16,7 +15,7 @@ const WATCH_ONLY_OPACITY = 0.56;
 export const HomeActions = () => {
     const { t } = useTranslation();
     const analytics = useAnalytics();
-    const navigation = useNavigation<RootStackNavigationProp<'TabsNavigator'>>();
+    const navigation = useNavigation();
     const isWatchOnly = useIsActiveWalletWatchOnly();
 
     const handleQRScan = useScanQrScheme({
@@ -25,7 +24,7 @@ export const HomeActions = () => {
                 switch (scheme.name) {
                     case 'btc-transfer':
                         navigation.navigate('SendAssetModal', {
-                            screen: 'SendAssetModal',
+                            screen: 'SendForm',
                             params: {
                                 address: scheme.parsed.address,
                                 amount: scheme.parsed.amount

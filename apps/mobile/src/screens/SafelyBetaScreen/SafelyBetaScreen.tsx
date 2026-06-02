@@ -1,4 +1,5 @@
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
+import { useFocusEffect } from '@react-navigation/native';
 import { useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 

@@ -3,7 +3,9 @@ name: CD
 on:
   workflow_dispatch: {}
   push:
-    branches: [master]
+    branches:
+      - master
+      - 'release/**'
 
 permissions:
   contents: read
@@ -34,7 +36,7 @@ jobs:
         run: corepack enable
 
       - name: Install dependencies
-        run: pnpm i
+        run: pnpm install --frozen-lockfile
 
       - name: Resolve release notes from PR
         env:

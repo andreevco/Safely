@@ -1,12 +1,11 @@
+import { useNavigation } from '@react-navigation/core';
 import type { StaticScreenProps } from '@react-navigation/native';
-import { useNavigation } from '@react-navigation/native';
 import { useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { usePasscodeVerification } from '@mobile/entities/security';
 import { authenticateBiometry, getBiometryIcon, useBiometryQuery } from '@mobile/features/biometry';
 import { useLogOutAllConfirmation } from '@mobile/features/settings/useLogOutAllConfirmation';
-import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import { LockoutContent, PasscodeView, Screen } from '@mobile/shared/ui';
 
 type PasscodeVerificationScreenProps = StaticScreenProps<{
@@ -19,7 +18,7 @@ export const PasscodeVerificationScreen = (props: PasscodeVerificationScreenProp
     const { onSuccess, onClose, title } = props.route.params;
 
     const { t } = useTranslation();
-    const navigation = useNavigation<RootStackNavigationProp>();
+    const navigation = useNavigation();
     const handleLogOut = useLogOutAllConfirmation();
     const { data: biometry } = useBiometryQuery();
     const successCalled = useRef(false);

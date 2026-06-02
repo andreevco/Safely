@@ -1,16 +1,15 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
 import { useCallback } from 'react';
 
 import { useClearDismissedBannerIds, useIsDevVersion } from '@safely/ux';
 
-import type { SettingsStackNavigationProp } from '@mobile/shared/navigation/types';
 import { Cell, List, Screen, Text } from '@mobile/shared/ui';
 
 import { styles } from './DevToolsScreen.styles';
 
 export const DevToolsScreen = () => {
     const isDevVersion = useIsDevVersion();
-    const navigation = useNavigation<SettingsStackNavigationProp>();
+    const navigation = useNavigation();
     const { mutate: clearDismissedBannerIds } = useClearDismissedBannerIds();
 
     const handleClearDismissedBannerIds = useCallback(() => {
@@ -29,7 +28,13 @@ export const DevToolsScreen = () => {
             <Screen.Content style={styles.content}>
                 <List>
                     <List.Group variant="divided">
-                        <Cell onPress={() => navigation.navigate('DevToolsXpubModal')}>
+                        <Cell
+                            onPress={() =>
+                                navigation.navigate('SettingsModal', {
+                                    screen: 'DevToolsXpubModal'
+                                })
+                            }
+                        >
                             <Cell.Content>
                                 <Cell.Row>
                                     <Cell.Title>Xpub</Cell.Title>
@@ -37,7 +42,13 @@ export const DevToolsScreen = () => {
                             </Cell.Content>
                             <Cell.Chevron />
                         </Cell>
-                        <Cell onPress={() => navigation.navigate('DevToolsLogsModal')}>
+                        <Cell
+                            onPress={() =>
+                                navigation.navigate('SettingsModal', {
+                                    screen: 'DevToolsLogsModal'
+                                })
+                            }
+                        >
                             <Cell.Content>
                                 <Cell.Row>
                                     <Cell.Title>Logs</Cell.Title>
@@ -46,7 +57,13 @@ export const DevToolsScreen = () => {
                             <Cell.Chevron />
                         </Cell>
                         {isDevVersion && (
-                            <Cell onPress={() => navigation.navigate('DevToolsConfigModal')}>
+                            <Cell
+                                onPress={() =>
+                                    navigation.navigate('SettingsModal', {
+                                        screen: 'DevToolsConfigModal'
+                                    })
+                                }
+                            >
                                 <Cell.Content>
                                     <Cell.Row>
                                         <Cell.Title>Dev config</Cell.Title>

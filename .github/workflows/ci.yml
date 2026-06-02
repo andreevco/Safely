@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - master
+      - 'release/**'
 
 jobs:
   build-and-test:
@@ -30,7 +31,7 @@ jobs:
         run: corepack enable
 
       - name: Install dependencies
-        run: pnpm i
+        run: pnpm install --frozen-lockfile
 
       - name: Compile
         run: pnpm compile

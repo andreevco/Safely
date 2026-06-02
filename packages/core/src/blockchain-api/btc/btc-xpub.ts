@@ -1,7 +1,7 @@
 import type { Versions } from '@scure/bip32';
 import { HDKey } from '@scure/bip32';
+import { p2wpkh } from '@scure/btc-signer';
 
-import * as bitcoin from './bitcoinjs';
 import type { BtcNetwork } from '../../entities';
 import { btcNetworkConfig, BtcWalletType } from '../../entities/blockchain';
 import { assertUnreachable } from '../../utils';
@@ -63,10 +63,7 @@ export class BtcXpub {
 
         switch (walletType) {
             case BtcWalletType.NATIVE_SEGWIT: {
-                const { address } = bitcoin.payments.p2wpkh({
-                    pubkey,
-                    network: btcNetworkConfig[network]
-                });
+                const { address } = p2wpkh(pubkey, btcNetworkConfig[network]);
 
                 if (!address) {
                     throw new Error('Failed to derive address from xpub');

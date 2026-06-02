@@ -1,18 +1,17 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import { BTC_ASSET } from '@safely/core';
 
-import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import { Button, Text } from '@mobile/shared/ui';
 
 import { styles } from './HistoryEmptyPlaceholder.styles';
 
 export const HistoryEmptyPlaceholder = () => {
     const { t } = useTranslation();
-    const navigation = useNavigation<RootStackNavigationProp<'TabsNavigator'>>();
+    const navigation = useNavigation();
 
     const handleReceive = useCallback(() => {
         navigation.navigate('ReceiveAssetModal', { asset: BTC_ASSET });
