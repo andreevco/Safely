@@ -3,13 +3,10 @@ import type { z } from 'zod';
 import { defineVersionHList, hCons, hNil } from '@safely/slottree';
 
 import { syncedStorageV1 } from './v1/structure';
-import { syncedStorageV2 } from './v2/structure';
 
 export * from './actual-version';
 
-export const syncedStorageVersions = defineVersionHList(
-    hCons(syncedStorageV2, hCons(syncedStorageV1, hNil))
-);
+export const syncedStorageVersions = defineVersionHList(hCons(syncedStorageV1, hNil));
 
 export type SyncedStorageVersions = typeof syncedStorageVersions;
 
