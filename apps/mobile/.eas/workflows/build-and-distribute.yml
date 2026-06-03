@@ -23,6 +23,13 @@ on:
         type: string
         required: false
         default: ''
+      android_build_profile:
+        description: >-
+          EAS build profile for the Android build. 'production-cached' enables ccache + Gradle
+          build cache (used for release/* feature builds); 'production' = no cache (master, manual).
+        type: string
+        required: false
+        default: production
 
 jobs:
   build_ios:
@@ -38,7 +45,7 @@ jobs:
     type: build
     params:
       platform: android
-      profile: production
+      profile: ${{ inputs.android_build_profile }}
       message: ${{ inputs.release_notes }}
 
   distribute_ios:
