@@ -4,7 +4,7 @@ import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { shareLogs } from '@mobile/shared/logger';
-import { Button, Text } from '@mobile/shared/ui';
+import { Button, Icon, Text, XmarkCircle56 } from '@mobile/shared/ui';
 
 import { styles } from './RootErrorFallback.styles';
 
@@ -13,19 +13,18 @@ export const RootErrorFallback = () => {
     const insets = useSafeAreaInsets();
 
     return (
-        <View
-            style={[
-                styles.container,
-                { paddingTop: insets.top, paddingBottom: insets.bottom + 24 }
-            ]}
-        >
-            <View style={styles.titleBox}>
-                <Text textAlign="center" variant="titleM">
-                    {t('errorBoundary.title')}
-                </Text>
-                <Text textAlign="center" variant="bodyL" color="secondary">
-                    {t('errorBoundary.subtitle')}
-                </Text>
+        <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+            <View style={styles.content}>
+                <Icon icon={XmarkCircle56} color="tertiary" />
+
+                <View style={styles.textContainer}>
+                    <Text textAlign="center" variant="titleM">
+                        {t('errorBoundary.title')}
+                    </Text>
+                    <Text textAlign="center" variant="bodyL" color="secondary">
+                        {t('errorBoundary.subtitle')}
+                    </Text>
+                </View>
             </View>
 
             <View style={styles.footer}>
