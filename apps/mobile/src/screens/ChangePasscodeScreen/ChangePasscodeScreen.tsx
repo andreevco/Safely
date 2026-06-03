@@ -1,4 +1,4 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 

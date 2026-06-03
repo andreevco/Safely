@@ -1,11 +1,10 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
 import { useTranslation } from 'react-i18next';
 
 import { PortfolioType } from '@safely/core';
 import { useActivePortfolio, useDateFormatter } from '@safely/ux';
 
 import { PortfolioName } from '@mobile/entities/portfolio';
-import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import { Cell, List, Text } from '@mobile/shared/ui';
 import { Icon, Switch16 } from '@mobile/shared/ui/Icon';
 
@@ -17,7 +16,7 @@ export const WalletSecuritySection = () => {
     const isWatchOnly = portfolio.type === PortfolioType.WATCH_ONLY;
     const secretRevealedStatus =
         portfolio.type === PortfolioType.BIP39 ? portfolio.secretRevealedStatus : null;
-    const rootNavigation = useNavigation<RootStackNavigationProp>();
+    const rootNavigation = useNavigation();
     const formatDate = useDateFormatter({
         month: 'long',
         day: 'numeric',

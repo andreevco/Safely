@@ -1,4 +1,4 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
@@ -7,7 +7,6 @@ import QRCode from 'react-native-qrcode-skia';
 import type { CryptoAsset } from '@safely/core';
 import { useIsActiveWalletWatchOnly } from '@safely/ux';
 
-import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import { Badge, Text, Image, TouchableOpacity } from '@mobile/shared/ui';
 
 import { ReceiveCopyToast, useReceiveCopy } from '../ReceiveCopyToastProvider';
@@ -22,7 +21,7 @@ export const QRCodeBlock = (props: QRCodeBlockProps) => {
     const { address, asset } = props;
     const copy = useReceiveCopy();
     const { t } = useTranslation();
-    const navigation = useNavigation<RootStackNavigationProp>();
+    const navigation = useNavigation();
     const isWatchOnly = useIsActiveWalletWatchOnly();
 
     const handleCopyAddress = useCallback(() => {

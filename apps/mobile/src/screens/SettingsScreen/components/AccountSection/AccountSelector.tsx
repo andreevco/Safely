@@ -9,7 +9,6 @@ import {
     useSetActiveAccount
 } from '@safely/ux';
 
-import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import type { PopupMenuRef } from '@mobile/shared/ui/PopupMenu';
 
 import { ModalAccountSelector } from './ModalAccountSelector';
@@ -20,12 +19,12 @@ const MAX_POPUP_ACCOUNTS = 5;
 
 interface AccountSelectorProps {
     accounts: SyncAccount[];
-    rootNavigation: RootStackNavigationProp;
     onAddAccount: () => void;
+    onSelectAccountNavigate: () => void;
 }
 
 export const AccountSelector = (props: AccountSelectorProps) => {
-    const { accounts, rootNavigation, onAddAccount } = props;
+    const { accounts, onAddAccount, onSelectAccountNavigate } = props;
     const account = useActiveAccount();
     const activeAccountName = useActiveAccountMeta().name;
     const activeWalletsCount = usePortfolios().length;
@@ -44,7 +43,7 @@ export const AccountSelector = (props: AccountSelectorProps) => {
     };
 
     const handleOpenAccountSelector = () => {
-        rootNavigation.navigate('SelectAccountSelectorModal');
+        onSelectAccountNavigate();
     };
 
     if (accountCount <= 1) {

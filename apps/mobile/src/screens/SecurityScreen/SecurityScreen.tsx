@@ -1,4 +1,4 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
@@ -16,10 +16,6 @@ import {
     useSetBiometryEnabled
 } from '@mobile/features/biometry';
 import { useLogOutAllConfirmation } from '@mobile/features/settings/useLogOutAllConfirmation';
-import type {
-    RootStackNavigationProp,
-    SettingsStackNavigationProp
-} from '@mobile/shared/navigation/types';
 import { Badge, Cell, List, Screen, Switch } from '@mobile/shared/ui';
 import { ArrowLeft16, Icon } from '@mobile/shared/ui/Icon';
 
@@ -32,8 +28,7 @@ export const SecurityScreen = () => {
     const { mutateAsync: setBiometryEnabled } = useSetBiometryEnabled();
     const check = useSecurityCheck();
     const hasPortfolio = useHasPortfolio();
-    const navigation = useNavigation<SettingsStackNavigationProp>();
-    const rootNavigation = useNavigation<RootStackNavigationProp>();
+    const navigation = useNavigation();
 
     const { data: lockScreenEnabled } = useLockScreenQuery();
     const { mutateAsync: setLockScreenEnabled } = useSetLockScreenEnabled();
@@ -53,7 +48,7 @@ export const SecurityScreen = () => {
 
     const handleChangePasscode = async () => {
         await check({ title: t('changePasscode.verify.title') });
-        rootNavigation.navigate('ChangePasscodeScreen');
+        navigation.navigate('ChangePasscodeScreen');
     };
 
     const eraseAllData = useLogOutAllConfirmation();
@@ -73,9 +68,7 @@ export const SecurityScreen = () => {
                         <List.Title>{t('security.groups.account.title')}</List.Title>
                         <List.Group>
                             {linkState === AccountLinkState.UNLINKED && (
-                                <Cell
-                                    onPress={() => rootNavigation.navigate('ReconnectDeviceModal')}
-                                >
+                                <Cell onPress={() => navigation.navigate('ReconnectDeviceModal')}>
                                     <Cell.Content>
                                         <View style={styles.badgeRow}>
                                             <Cell.Title>
@@ -95,7 +88,13 @@ export const SecurityScreen = () => {
                                 </Cell>
                             )}
                             {linkState === AccountLinkState.PROTECTED && (
-                                <Cell onPress={() => navigation.navigate('AccountProtectedModal')}>
+                                <Cell
+                                    onPress={() =>
+                                        navigation.navigate('SettingsModal', {
+                                            screen: 'AccountProtectedModal'
+                                        })
+                                    }
+                                >
                                     <Cell.Content>
                                         <View style={styles.badgeRow}>
                                             <Cell.Title>
@@ -115,7 +114,13 @@ export const SecurityScreen = () => {
                                 </Cell>
                             )}
                             {linkState === AccountLinkState.SOLO && (
-                                <Cell onPress={() => navigation.navigate('ProtectAccountModal')}>
+                                <Cell
+                                    onPress={() =>
+                                        navigation.navigate('SettingsModal', {
+                                            screen: 'ProtectAccountModal'
+                                        })
+                                    }
+                                >
                                     <Cell.Content>
                                         <View style={styles.badgeRow}>
                                             <Cell.Title>

@@ -1,4 +1,4 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
@@ -12,7 +12,6 @@ import {
 } from '@safely/ux';
 import { useDateFormatter } from '@safely/ux';
 
-import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import type { PopupMenuRef } from '@mobile/shared/ui';
 import { Badge, DeviceLinkCheckmark96, Icon, Screen, Text, Button } from '@mobile/shared/ui';
 
@@ -22,7 +21,7 @@ function DeviceItem(props: { ikPubHex: string; meta: SDeviceMeta; isCurrent: boo
     const { ikPubHex, meta, isCurrent } = props;
 
     const { t } = useTranslation();
-    const rootNavigation = useNavigation<RootStackNavigationProp>();
+    const rootNavigation = useNavigation();
     const menuRef = useRef<PopupMenuRef>(null);
     const formatDate = useDateFormatter({ month: 'short', day: 'numeric', year: 'numeric' });
 

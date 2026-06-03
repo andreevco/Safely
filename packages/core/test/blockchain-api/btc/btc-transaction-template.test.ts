@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 
+import { Address, NETWORK } from '@scure/btc-signer';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { ellipsisMiddle } from '../../../src';
 import type { BtcApi, BtcApiUtxo } from '../../../src/api/btc';
-import { bitcoin } from '../../../src/blockchain-api/btc/bitcoinjs';
 import { BtcTransactionTemplate } from '../../../src/blockchain-api/btc/btc-transaction-template';
 import { BtcSendDustError } from '../../../src/blockchain-api/btc/errors';
 import type { BtcEstimation } from '../../../src/blockchain-api/btc/types';
@@ -14,15 +14,10 @@ import { BtcAssetAmount } from '../../../src/entities/asset';
 import { BtcNetwork, BLOCKCHAIN_NAME } from '../../../src/entities/blockchain';
 import type { BtcSigningRequest } from '../../../src/entities/signer';
 
-const mainnet = bitcoin.networks.bitcoin;
+const mainnet = NETWORK;
 
 function p2wpkhAddress(hashByte: number): string {
-    const { address } = bitcoin.payments.p2wpkh({
-        hash: Buffer.alloc(20, hashByte),
-        network: mainnet
-    });
-    if (!address) throw new Error('failed to construct p2wpkh address');
-    return address;
+    return Address(mainnet).encode({ type: 'wpkh', hash: new Uint8Array(20).fill(hashByte) });
 }
 
 const WALLET_ADDR = p2wpkhAddress(0x11);
@@ -206,9 +201,9 @@ describe('BtcTransactionTemplate', () => {
                 (wallet.sign as ReturnType<typeof vi.fn>).mock.calls[0][0] as BtcSigningRequest
             ).psbt;
             // recipient output + change output
-            expect(psbt.txOutputs).toHaveLength(2);
-            expect(psbt.txOutputs[0].address).toBe(RECIPIENT_ADDR);
-            expect(psbt.txOutputs[1].address).toBe(WALLET_ADDR);
+            expect(psbt.outputsLength).toBe(2);
+            expect(psbt.getOutputAddress(0)).toBe(RECIPIENT_ADDR);
+            expect(psbt.getOutputAddress(1)).toBe(WALLET_ADDR);
         });
 
         it('caches sendResult and rejects a second send call', async () => {

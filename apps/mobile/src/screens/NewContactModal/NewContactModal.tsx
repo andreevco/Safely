@@ -1,5 +1,5 @@
+import { useNavigation } from '@react-navigation/core';
 import type { StaticScreenProps } from '@react-navigation/native';
-import { useNavigation } from '@react-navigation/native';
 import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Keyboard } from 'react-native';
@@ -7,7 +7,6 @@ import { Keyboard } from 'react-native';
 import { CONTACT_NAME_MAX_LENGTH } from '@safely/core';
 import { useContactForm, useContacts, useDateFormatter } from '@safely/ux';
 
-import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import { Button, Input, Screen } from '@mobile/shared/ui';
 
 import { styles } from './NewContactModal.styles';
@@ -18,7 +17,7 @@ type NewContactModalProps = StaticScreenProps<NewContactModalParams>;
 
 export const NewContactModal = ({ route }: NewContactModalProps) => {
     const { t } = useTranslation();
-    const navigation = useNavigation<RootStackNavigationProp<'NewContactModal'>>();
+    const navigation = useNavigation();
 
     const contactId = route.params?.contactId;
     const contacts = useContacts();

@@ -1,5 +1,6 @@
+import { useNavigation } from '@react-navigation/core';
 import type { StaticScreenProps } from '@react-navigation/native';
-import { useFocusEffect, useIsFocused, useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { notificationAsync, NotificationFeedbackType } from 'expo-haptics';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { LayoutChangeEvent, LayoutRectangle } from 'react-native';
@@ -14,7 +15,6 @@ import {
     useCodeScanner
 } from 'react-native-vision-camera';
 
-import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import { Screen, Text } from '@mobile/shared/ui';
 
 import { CameraMask, FlashlightToggle } from './components';
@@ -31,7 +31,7 @@ export type QRScanModalProps = StaticScreenProps<{
 
 export const QRScanModal = (props: QRScanModalProps) => {
     const { onSuccess, onClose, title, subtitle } = props.route.params;
-    const navigation = useNavigation<RootStackNavigationProp<'QRScanModal'>>();
+    const navigation = useNavigation();
     const isProcessingRef = useRef(false);
     const scanningTimeoutId = useRef<NodeJS.Timeout | null>(null);
 

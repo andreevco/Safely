@@ -112,7 +112,7 @@ export class DerivationChainItemBtcSeed implements IDerivationChainItemBtc {
             this.derivationIndex
         );
 
-        return new BtcKeypairSigner(keypairProducer, { ...wallet, network: this.network });
+        return new BtcKeypairSigner(keypairProducer);
     }
 
     public toJSON(): SBtcAccountChainItem {
