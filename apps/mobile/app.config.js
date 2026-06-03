@@ -25,7 +25,7 @@ module.exports = {
                 TODO: SAF-408
                 we should prepare interface for resizing
                 We force fullScreen because of known (slider) and unknown issues at this moment
-                It's better to double-check app on ARM Macs and iPads before public release 
+                It's better to double-check app on ARM Macs and iPads before public release
             */
             requireFullScreen: true,
             bundleIdentifier: 'com.aco.swallet',
@@ -62,6 +62,13 @@ module.exports = {
                 'expo-notifications',
                 {
                     icon: './assets/icon.png'
+                }
+            ],
+            [
+                'react-native-ble-plx',
+                {
+                    bluetoothAlwaysPermission:
+                        '$(PRODТUCT_NAME) needs access to Bluetooth to connect to your Ledger hardware wallet.'
                 }
             ],
             './plugins/withMMKVNoBackup'
