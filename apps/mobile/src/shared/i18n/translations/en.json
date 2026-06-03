@@ -409,6 +409,28 @@
             "info": "Watch account cannot sign transactions and send funds.",
             "invalidAddress": "Invalid Bitcoin address",
             "unsupportedExtendedKey": "ypub is not supported yet. Use xpub."
+        },
+        "connectLedger": {
+            "title": "Ledger",
+            "subtitle": "Connect a hardware wallet",
+            "screen": {
+                "title": "Connect your Ledger",
+                "subtitle": "Use your Ledger to securely manage assets and approve transactions.",
+                "steps": {
+                    "bluetooth": {
+                        "title": "Turn on Bluetooth.",
+                        "description": "Allow access when prompted."
+                    },
+                    "unlock": {
+                        "title": "Unlock your Ledger.",
+                        "description": "Make sure it's unlocked and nearby."
+                    },
+                    "import": {
+                        "title": "Connect and import accounts.",
+                        "description": "We'll look for activity in any accounts you might have used."
+                    }
+                }
+            }
         }
     },
     "account": {

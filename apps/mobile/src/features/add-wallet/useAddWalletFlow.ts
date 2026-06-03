@@ -16,6 +16,8 @@ import { handleDuplicatePortfolio } from './handleDuplicatePortfolio';
 
 const routes = {
     importWallet: 'ImportWalletModal',
+    addWatchOnly: 'AddWatchOnlyModal',
+    connectLedger: 'ConnectLedgerModal',
     customize: 'CustomizeWalletModal'
 } as const;
 
@@ -60,6 +62,14 @@ export function useAddWalletFlow() {
         navigation.dispatch(CommonActions.navigate(routes.importWallet));
     }, [navigation]);
 
+    const startWatchOnlyFlow = useCallback(() => {
+        navigation.dispatch(CommonActions.navigate(routes.addWatchOnly));
+    }, [navigation]);
+
+    const startConnectLedgerFlow = useCallback(() => {
+        navigation.dispatch(CommonActions.navigate(routes.connectLedger));
+    }, [navigation]);
+
     const onMnemonicReady = useCallback(
         (mnemonic: string[]) => {
             navigation.dispatch(
@@ -96,6 +106,8 @@ export function useAddWalletFlow() {
     return {
         startCreateFlow,
         startImportFlow,
+        startWatchOnlyFlow,
+        startConnectLedgerFlow,
         onMnemonicReady
     };
 }

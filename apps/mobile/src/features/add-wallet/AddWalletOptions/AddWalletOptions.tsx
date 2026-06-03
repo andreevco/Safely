@@ -1,6 +1,3 @@
-import { useNavigation } from '@react-navigation/core';
-import { CommonActions } from '@react-navigation/native';
-import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Cell, List } from '@mobile/shared/ui';
@@ -10,12 +7,8 @@ import { styles } from './AddWalletOptions.styles';
 
 export const AddWalletOptions = () => {
     const { t } = useTranslation();
-    const navigation = useNavigation();
-    const { startCreateFlow, startImportFlow } = useAddWalletFlow();
-
-    const startWatchOnlyFlow = useCallback(() => {
-        navigation.dispatch(CommonActions.navigate('AddWatchOnlyModal'));
-    }, [navigation]);
+    const { startCreateFlow, startImportFlow, startWatchOnlyFlow, startConnectLedgerFlow } =
+        useAddWalletFlow();
 
     return (
         <List style={styles.list}>
@@ -49,6 +42,17 @@ export const AddWalletOptions = () => {
                         </Cell.Row>
                         <Cell.Row>
                             <Cell.Subtitle>{t('addWallet.watchAccount.subtitle')}</Cell.Subtitle>
+                        </Cell.Row>
+                    </Cell.Content>
+                    <Cell.Chevron />
+                </Cell>
+                <Cell onPress={startConnectLedgerFlow}>
+                    <Cell.Content>
+                        <Cell.Row>
+                            <Cell.Title>{t('addWallet.connectLedger.title')}</Cell.Title>
+                        </Cell.Row>
+                        <Cell.Row>
+                            <Cell.Subtitle>{t('addWallet.connectLedger.subtitle')}</Cell.Subtitle>
                         </Cell.Row>
                     </Cell.Content>
                     <Cell.Chevron />
