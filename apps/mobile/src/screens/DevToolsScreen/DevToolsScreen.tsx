@@ -16,6 +16,8 @@ export const DevToolsScreen = () => {
         void clearDismissedBannerIds();
     }, [clearDismissedBannerIds]);
 
+    throw new Error('Test error, simulate render runtime error');
+
     return (
         <Screen>
             <Screen.Header variant="center">
