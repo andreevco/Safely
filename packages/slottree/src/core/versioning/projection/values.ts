@@ -30,7 +30,7 @@ export function resolveDefaultValue<Output extends ProjectionValue>(
     value: Output | (() => Output)
 ): Output {
     if (typeof value === 'function') {
-        return (value as () => Output)();
+        return value();
     }
 
     return value;

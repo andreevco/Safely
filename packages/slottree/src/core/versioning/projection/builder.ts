@@ -1,6 +1,5 @@
 import type {
     AnyObject,
-    CopyRule,
     DefaultRule,
     FromRule,
     MapRule,
@@ -20,14 +19,14 @@ export function createProjectionBuilder<From>(): ProjectionBuilder<From> {
     const copy = (() => {
         return {
             kind: 'copy'
-        } as CopyRule<NoMap>;
+        };
     }) as ProjectionBuilder<From>['copy'];
 
     const from = (<K extends StringKeyOf<From>>(key: K): FromRule<K, NoMap> => {
         return {
             kind: 'from',
             key
-        } as FromRule<K, NoMap>;
+        };
     }) as ProjectionBuilder<From>['from'];
 
     const map = ((
@@ -54,7 +53,7 @@ export function createProjectionBuilder<From>(): ProjectionBuilder<From> {
         return {
             kind: 'default',
             value
-        } as DefaultRule<Output>;
+        };
     }) as ProjectionBuilder<From>['default'];
 
     const objectFrom = (<K extends StringKeyOf<From>, To extends AnyObject>(
@@ -69,7 +68,7 @@ export function createProjectionBuilder<From>(): ProjectionBuilder<From> {
             kind: 'objectFrom',
             key,
             shape: build(nestedBuilder) as ProjectionShape<AnyObject, To>
-        } as ObjectFromRule<K, To>;
+        };
     }) as ProjectionBuilder<From>['objectFrom'];
 
     const recordFrom = (<K extends StringKeyOf<From>, ToValue extends AnyObject>(
@@ -85,10 +84,12 @@ export function createProjectionBuilder<From>(): ProjectionBuilder<From> {
             build: (recordKey: string, s: ProjectionBuilder<AnyObject>) => {
                 return build(
                     recordKey,
+                    // TODO: fix type assertion
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
                     s as ProjectionBuilder<NonNullableRecordValue<From[K]>>
                 ) as ProjectionShape<AnyObject, ToValue>;
             }
-        } as RecordFromRule<K, Record<string, ToValue>>;
+        };
     }) as ProjectionBuilder<From>['recordFrom'];
 
     return {

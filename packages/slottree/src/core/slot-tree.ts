@@ -356,5 +356,5 @@ export function createStorage<Latest extends StorageVersion, Rest>(options: {
         authorId: options.authorId,
         versions: hListToRuntimeArray(options.versions),
         root: options.root
-    }) as SlotTree<z.output<NewOf<Latest>>>;
+    });
 }

@@ -547,5 +547,5 @@ function reverseSlotKeys(slot: ContainerSlot): ContainerSlot {
         )
     };
 
-    return reversed as ContainerSlot;
+    return reversed;
 }
