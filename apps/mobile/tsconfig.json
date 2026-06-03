@@ -3,7 +3,6 @@
   "compilerOptions": {
     "types": ["node"],
     "strict": true,
-    "noUncheckedSideEffectImports": false,
     "paths": {
       "@mobile/shared": ["./src/shared"],
       "@mobile/shared/*": ["./src/shared/*"],
