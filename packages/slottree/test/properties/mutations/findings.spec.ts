@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
-import { createStorage } from '../../src';
-import { cloneSlot } from '../../src/core/slots/slot-json';
-import { defineVersionHList, hCons, hNil } from '../../src/core/versioning/version';
+import { createStorage } from '../../../src';
+import { cloneSlot } from '../../../src/core/slots/slot-json';
+import { defineVersionHList, hCons, hNil } from '../../../src/core/versioning/version';
 
 describe('Storage merge findings', () => {
     /*
