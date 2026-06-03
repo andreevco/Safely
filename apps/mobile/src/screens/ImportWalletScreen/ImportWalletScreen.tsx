@@ -1,18 +1,20 @@
+import { Host, TextInput, useNativeState } from '@expo/ui';
+import type { TextInputRef } from '@expo/ui';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';
+import { runOnJS } from 'react-native-worklets';
 
 import { useImportSeedPhrase } from '@safely/ux';
 
 import { usePreventCurrentScreenCapture } from '@mobile/entities/security';
 import { useAddWalletFlow } from '@mobile/features/add-wallet';
 import { Button, Screen, Text } from '@mobile/shared/ui';
+import { maskSeedPhraseInput } from '@mobile/shared/utils';
 
 import { styles } from './ImportWalletScreen.styles';
-import type { SeedPhraseInputRef } from '../../../modules/safely-masked-input/src';
-import { SeedPhraseInput } from '../../../modules/safely-masked-input/src';
 
 export const ImportWalletScreen = () => {
     usePreventCurrentScreenCapture();
@@ -27,7 +29,23 @@ export const ImportWalletScreen = () => {
         }
     });
 
-    const inputRef = useRef<SeedPhraseInputRef>(null);
+    const text = useNativeState(value);
+    const selection = useNativeState({ start: 0, end: 0 });
+
+    const handleChangeText = useCallback(
+        (newValue: string) => {
+            'worklet';
+            const masked = maskSeedPhraseInput(newValue, selection.value);
+            text.value = masked.value;
+            if (masked.changed) {
+                selection.value = masked.selection;
+            }
+            runOnJS(onChange)(masked.value);
+        },
+        [text, selection, onChange]
+    );
+
+    const inputRef = useRef<TextInputRef>(null);
     const [isFocused, setIsFocused] = useState(false);
 
     useFocusEffect(
@@ -75,16 +93,22 @@ export const ImportWalletScreen = () => {
                     </View>
 
                     <View style={styles.inputContainer}>
-                        <SeedPhraseInput
-                            ref={inputRef}
-                            value={value}
-                            onChangeText={onChange}
-                            onFocusChange={setIsFocused}
-                            style={styles.textArea}
-                            textColor={theme.colors.text.primary}
-                            placeholder={t('onboarding.importWallet.placeholder')}
-                            placeholderTextColor={theme.colors.text.tertiary}
-                        />
+                        <Host matchContents={{ vertical: true }}>
+                            <TextInput
+                                ref={inputRef}
+                                value={text}
+                                selection={selection}
+                                onChangeText={handleChangeText}
+                                onFocus={() => setIsFocused(true)}
+                                onBlur={() => setIsFocused(false)}
+                                style={styles.textArea}
+                                placeholder={t('onboarding.importWallet.placeholder')}
+                                placeholderTextColor={theme.colors.text.tertiary}
+                                multiline
+                                autoCapitalize="none"
+                                autoCorrect={false}
+                            />
+                        </Host>
                     </View>
 
                     {error && (
