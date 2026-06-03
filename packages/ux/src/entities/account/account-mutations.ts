@@ -324,8 +324,6 @@ export function useDeleteAccount() {
             if (remaining.length > 0) {
                 client.setQueryData(accountKey.list.toKey(), remaining);
                 client.setQueryData(accountKey.list.active.toKey(), remaining[0]);
-            } else {
-                client.removeQueries({ queryKey: accountKey.toKey() });
             }
         }
     });
