@@ -9,10 +9,9 @@ type Simplify<T> = { [K in keyof T]: T[K] } & {};
 
 // Verify T is an object
 type ObjectValue<T> = Extract<Exclude<T, undefined>, object>;
+type StringKeyOf<T> = Extract<keyof ObjectValue<T>, string>;
 // Get only string keys
-type StringFields<T> = [ObjectValue<T>] extends [never]
-    ? never
-    : Extract<keyof ObjectValue<T>, string>;
+type StringFields<T> = [ObjectValue<T>] extends [never] ? never : StringKeyOf<T>;
 
 // Get field type
 type Field<T, K extends string> = K extends keyof ObjectValue<T>
@@ -28,6 +27,24 @@ type PathValue<T, P extends readonly string[]> = P extends readonly [
 ]
     ? PathValue<Field<T, Head>, Rest>
     : T;
+
+// Get union of all possible path combinations, i.e.
+// { a: { b }, c } -> ['a'] | ['a', 'b'] | ['c']
+type NonEmptyPatchPath<T> = T extends readonly unknown[]
+    ? never
+    : [ObjectValue<T>] extends [never]
+      ? never
+      : {
+            [K in StringKeyOf<T>]:
+                | readonly [K]
+                | (NonEmptyPatchPath<Field<T, K>> extends infer Rest extends readonly string[]
+                      ? readonly [K, ...Rest]
+                      : never);
+        }[StringKeyOf<T>];
+// Same as above but also []
+export type PatchPath<T> = readonly [] | NonEmptyPatchPath<T>;
+// Any non-empty string path
+type NonEmptyStringPath = readonly [string, ...string[]];
 
 // Recursively updates types, ex:
 // { a: { b: string } } => { a: { b: number } }
@@ -95,7 +112,7 @@ export interface SlotPatch<From, To> {
 
 export interface PatchDraft<T> {
     newField<const P extends readonly string[], F extends string, V extends JsonValue>(
-        path: P,
+        path: P & PatchPath<T>,
         field: F extends StringFields<PathValue<T, P>> ? never : F,
         defaultValue: V
     ): PatchDraft<SetPath<T, P, AddField<PathValue<T, P>, F, V>>>;
@@ -104,26 +121,26 @@ export interface PatchDraft<T> {
         From extends StringFields<PathValue<T, P>>,
         To extends string
     >(
-        path: P,
+        path: P & PatchPath<T>,
         from: From,
         to: To extends StringFields<PathValue<T, P>> ? never : To
     ): PatchDraft<SetPath<T, P, RenameField<PathValue<T, P>, From, To>>>;
 
     update<const P extends readonly string[], V extends JsonValue>(
-        path: P,
+        path: P & PatchPath<T>,
         f: (v: DeepReadonly<PathValue<T, P>>) => V
     ): PatchDraft<SetPath<T, P, V>>;
     deleteField<const P extends readonly string[], F extends string>(
-        path: P,
+        path: P & PatchPath<T>,
         field: F extends StringFields<PathValue<T, P>> ? F : never
     ): PatchDraft<SetPath<T, P, DeleteField<PathValue<T, P>, F>>>;
-    move<const From extends readonly string[], const To extends readonly string[]>(
-        from: From,
+    move<const From extends readonly string[], const To extends NonEmptyStringPath>(
+        from: From & NonEmptyPatchPath<T>,
         to: To
     ): PatchDraft<SetPath<DeletePath<T, From>, To, PathValue<T, From>>>;
 
     updateEach<const P extends readonly string[], Output>(
-        path: P,
+        path: P & PatchPath<T>,
         f: (v: PatchDraft<CollectionItem<PathValue<T, P>>>) => PatchDraft<Output>
     ): PatchDraft<SetPath<T, P, CollectionWithItem<PathValue<T, P>, Output>>>;
 
@@ -132,7 +149,7 @@ export interface PatchDraft<T> {
         const V extends Extract<PathValue<T, P>, JsonValue>,
         Output
     >(
-        path: P,
+        path: P & PatchPath<T>,
         value: V,
         map: (draft: PatchDraft<DiscriminatedByPath<T, P, V>>) => PatchDraft<Output>
     ): PatchDraft<NonDiscriminatedByPath<T, P, V> | Output>;
