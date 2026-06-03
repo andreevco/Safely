@@ -367,7 +367,7 @@ describe('useDeleteAccount (remove)', () => {
         expect(activeCache).toBe(b);
     });
 
-    it('removes all account queries when no accounts remain', async () => {
+    it('keeps stale account queries in cache when no accounts remain', async () => {
         const lone = createMockSyncAccount({ accountId: 'lone' });
         const factory = createFactoryStub();
         setupAccountState({ accounts: [lone], account: lone, factory });
@@ -387,8 +387,8 @@ describe('useDeleteAccount (remove)', () => {
             await result.current.mutateAsync();
         });
 
-        expect(queryClient.getQueryData(accountKey.list.toKey())).toBeUndefined();
-        expect(queryClient.getQueryData(accountKey.list.active.toKey())).toBeUndefined();
+        expect(queryClient.getQueryData(accountKey.list.toKey())).toEqual([lone]);
+        expect(queryClient.getQueryData(accountKey.list.active.toKey())).toBe(lone);
     });
 });
 
