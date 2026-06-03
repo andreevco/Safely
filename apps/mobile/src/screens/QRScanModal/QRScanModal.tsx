@@ -7,12 +7,13 @@ import type { LayoutChangeEvent, LayoutRectangle } from 'react-native';
 import { useWindowDimensions } from 'react-native';
 import Animated, { useSharedValue } from 'react-native-reanimated';
 import { StyleSheet } from 'react-native-unistyles';
-import type { Code, CodeScannerFrame } from 'react-native-vision-camera';
+import type { ScannedObject } from 'react-native-vision-camera';
 import {
     Camera,
+    isScannedCode,
     useCameraDevice,
     useCameraPermission,
-    useCodeScanner
+    useObjectOutput
 } from 'react-native-vision-camera';
 
 import { Screen, Text } from '@mobile/shared/ui';
@@ -78,11 +79,11 @@ export const QRScanModal = (props: QRScanModalProps) => {
         height: 0
     });
 
-    const handleCodeScanned = useCallback(
-        async (codes: Code[], frame: CodeScannerFrame) => {
-            const code = codes[0];
+    const handleObjectsScanned = useCallback(
+        async (objects: ScannedObject[]) => {
+            const code = objects.find(isScannedCode);
 
-            if (!code.frame || !code.value) {
+            if (!code || !code.value) {
                 return;
             }
 
@@ -92,15 +93,15 @@ export const QRScanModal = (props: QRScanModalProps) => {
 
             const minSize = 128;
 
-            const cameraWidth = (code.frame.height / frame.height) * cameraLayout.value.width;
-            const cameraHeight = (code.frame.width / frame.width) * cameraLayout.value.height;
+            const { boundingBox } = code;
+
+            const cameraWidth = boundingBox.height * cameraLayout.value.width;
+            const cameraHeight = boundingBox.width * cameraLayout.value.height;
 
             const x =
-                cameraLayout.value.width -
-                cameraWidth -
-                (code.frame.y / frame.height) * cameraLayout.value.width;
+                cameraLayout.value.width - cameraWidth - boundingBox.y * cameraLayout.value.width;
 
-            const y = (code.frame.x / frame.width) * cameraLayout.value.height;
+            const y = boundingBox.x * cameraLayout.value.height;
 
             const centerX = x + cameraWidth / 2;
             const centerY = y + cameraHeight / 2;
@@ -160,9 +161,9 @@ export const QRScanModal = (props: QRScanModalProps) => {
         [barcodeValues, cameraLayout]
     );
 
-    const codeScanner = useCodeScanner({
-        codeTypes: ['qr'],
-        onCodeScanned: handleCodeScanned
+    const objectOutput = useObjectOutput({
+        types: ['qr'],
+        onObjectsScanned: handleObjectsScanned
     });
 
     if (!hasPermission) {
@@ -176,12 +177,12 @@ export const QRScanModal = (props: QRScanModalProps) => {
     return (
         <Screen background="transparent">
             <Camera
+                torchMode={isLightOn ? 'on' : 'off'}
                 onLayout={handleCameraLayout}
                 style={StyleSheet.absoluteFill}
                 device={device}
-                codeScanner={codeScanner}
+                outputs={[objectOutput]}
                 isActive={isFocused}
-                torch={isLightOn ? 'on' : 'off'}
             />
             <CameraMask barcodeValues={barcodeValues} />
             <Screen.Header>

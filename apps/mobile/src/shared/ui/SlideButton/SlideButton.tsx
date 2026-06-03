@@ -228,7 +228,7 @@ export const SlideButton = (props: SlideButtonProps) => {
                             <View>
                                 <Animated.View
                                     style={[
-                                        StyleSheet.absoluteFillObject,
+                                        StyleSheet.absoluteFill,
                                         styles.iconOverlay,
                                         iconPrimaryOpacityStyle
                                     ]}
@@ -237,7 +237,7 @@ export const SlideButton = (props: SlideButtonProps) => {
                                 </Animated.View>
                                 <Animated.View
                                     style={[
-                                        StyleSheet.absoluteFillObject,
+                                        StyleSheet.absoluteFill,
                                         styles.iconOverlay,
                                         iconSecondaryOpacityStyle
                                     ]}
