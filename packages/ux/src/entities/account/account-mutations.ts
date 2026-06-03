@@ -210,7 +210,7 @@ export function useAccountConnectedCallback(
                     return;
                 }
 
-                logger.error('[useAccountConnectedCallback]', e);
+                logger.child('useAccountConnectedCallback').error(e);
                 options?.onError?.(e instanceof Error ? e : new Error(String(e)));
             });
         return () => {
