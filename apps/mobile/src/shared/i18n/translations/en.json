@@ -29,6 +29,12 @@
             "unknown": "Something went wrong"
         }
     },
+    "errorBoundary": {
+        "title": "Something went wrong",
+        "subtitle": "Restart the app and try again.\nIf the issue persists, send logs to support.",
+        "restartButton": "Restart app",
+        "shareLogsButton": "Send logs"
+    },
     "send": {
         "title": "Send",
         "from": "From",
