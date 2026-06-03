@@ -1,8 +1,9 @@
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
+    "types": ["node"],
     "strict": true,
-    "baseUrl": ".",
+    "noUncheckedSideEffectImports": false,
     "paths": {
       "@mobile/shared": ["./src/shared"],
       "@mobile/shared/*": ["./src/shared/*"],
