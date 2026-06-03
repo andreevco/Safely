@@ -4,6 +4,7 @@ import { StyleSheet } from 'react-native-unistyles';
 export const styles = StyleSheet.create(theme => ({
     container: {
         marginHorizontal: theme.spacing[8],
+        padding: Platform.OS === 'android' ? 0 : theme.spacing[16],
         backgroundColor: theme.colors.background.secondary,
         borderRadius: theme.radius.md,
         minHeight: 166,
@@ -21,10 +22,6 @@ export const styles = StyleSheet.create(theme => ({
                 }
             }
         }
-    },
-    field: {
-        padding: Platform.OS === 'android' ? 0 : theme.spacing[16],
-        borderRadius: theme.radius.md
     },
     text: {
         fontSize: 16,
