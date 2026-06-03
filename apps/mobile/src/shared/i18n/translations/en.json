@@ -430,6 +430,29 @@
                         "description": "We'll look for activity in any accounts you might have used."
                     }
                 }
+            },
+            "bluetoothAccess": {
+                "title": "Bluetooth access required",
+                "description": "Allow Bluetooth access to discover and connect your Ledger device.",
+                "button": "Open Settings"
+            },
+            "discovery": {
+                "title": "Select your Ledger",
+                "subtitle": "Select a nearby Ledger to start pairing.",
+                "searching": "Searching…",
+                "notFound": "No devices found"
+            },
+            "pairing": {
+                "title": "Pairing with {{device}}",
+                "subtitle": "Follow instructions on your Ledger device while pairing."
+            },
+            "pairingSuccess": {
+                "title": "Pairing successful",
+                "subtitle": "You have successfully paired and connected your Ledger device."
+            },
+            "importAccounts": {
+                "title": "Import accounts",
+                "subtitle": "Select the accounts you want to add."
             }
         }
     },

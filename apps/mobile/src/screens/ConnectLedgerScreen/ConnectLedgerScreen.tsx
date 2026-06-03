@@ -1,12 +1,17 @@
+import { useNavigation } from '@react-navigation/core';
+import { CommonActions } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
+import { State } from 'react-native-ble-plx';
 
+import { getBluetoothState } from '@mobile/features/ledger';
 import { Button, Icon, Lock56, Screen, StepsList, Text } from '@mobile/shared/ui';
 
 import { styles } from './ConnectLedgerScreen.styles';
 
 export const ConnectLedgerScreen = () => {
     const { t } = useTranslation();
+    const navigation = useNavigation();
 
     const steps = [
         {
@@ -23,7 +28,13 @@ export const ConnectLedgerScreen = () => {
         }
     ];
 
-    const handleContinue = () => {};
+    const handleContinue = async () => {
+        const state = await getBluetoothState();
+        const route =
+            state === State.PoweredOn ? 'LedgerDiscoveryModal' : 'BluetoothAccessRequiredModal';
+
+        navigation.dispatch(CommonActions.navigate(route));
+    };
 
     return (
         <Screen>

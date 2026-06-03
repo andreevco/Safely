@@ -1,0 +1,1 @@
+export { getBluetoothState } from './getBluetoothState';
