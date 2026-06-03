@@ -7,12 +7,12 @@ import { runOnJS } from 'react-native-worklets';
 
 import { useAppContext, useImportSeedPhrase } from '@safely/ux';
 
-import { CapturePreventionScreen } from '../../../modules/safely-capture-prevention/src';
 import { useAddWalletFlow } from '@mobile/features/add-wallet';
 import { Button, NativeInput, Screen, Text, type NativeInputRef } from '@mobile/shared/ui';
 import { maskSeedPhraseInput } from '@mobile/shared/utils';
 
 import { styles } from './ImportWalletScreen.styles';
+import { CapturePreventionScreen } from '../../../modules/safely-capture-prevention/src';
 
 export const ImportWalletScreen = () => {
     const { t } = useTranslation();
@@ -78,32 +78,32 @@ export const ImportWalletScreen = () => {
                         logger.error('[ImportWalletScreen] capture protection unavailable')
                     }
                 >
-                <View style={styles.content}>
-                    <View style={styles.textContainer}>
-                        <Text variant="titleM" textAlign="center">
-                            {t('onboarding.importWallet.title')}
-                        </Text>
-                        <Text variant="bodyL" color="secondary" textAlign="center">
-                            {t('onboarding.importWallet.description')}
-                        </Text>
+                    <View style={styles.content}>
+                        <View style={styles.textContainer}>
+                            <Text variant="titleM" textAlign="center">
+                                {t('onboarding.importWallet.title')}
+                            </Text>
+                            <Text variant="bodyL" color="secondary" textAlign="center">
+                                {t('onboarding.importWallet.description')}
+                            </Text>
+                        </View>
+
+                        <NativeInput
+                            ref={inputRef}
+                            value={text}
+                            selection={selection}
+                            onChangeText={handleChangeText}
+                            error={!!error}
+                            placeholder={t('onboarding.importWallet.placeholder')}
+                            multiline
+                        />
+
+                        {error && (
+                            <Text variant="bodyM" color="accentRed">
+                                {error}
+                            </Text>
+                        )}
                     </View>
-
-                    <NativeInput
-                        ref={inputRef}
-                        value={text}
-                        selection={selection}
-                        onChangeText={handleChangeText}
-                        error={!!error}
-                        placeholder={t('onboarding.importWallet.placeholder')}
-                        multiline
-                    />
-
-                    {error && (
-                        <Text variant="bodyM" color="accentRed">
-                            {error}
-                        </Text>
-                    )}
-                </View>
                 </CapturePreventionScreen>
             </Screen.Scrollable>
         </Screen>
