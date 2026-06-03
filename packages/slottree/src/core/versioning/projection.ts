@@ -8,7 +8,6 @@ import {
     type AnySchema,
     type ProjectionBuilder,
     type ProjectionShape,
-    type RuntimeRule,
     type SlotProjection
 } from './projection/index';
 import { stripSlot } from '../slots/slot-json';
@@ -44,7 +43,7 @@ export function projection<
     const project = ((source: ContainerSlot): ContainerSlot => {
         validateSlot(source);
 
-        const projectedValues = projectShape(source, shape as Record<string, RuntimeRule>);
+        const projectedValues = projectShape(source, shape);
 
         const projected = createContainerSlot(source.t, source.a, projectedValues);
 

@@ -75,7 +75,7 @@ export interface RecordFromRule<
     readonly key: Key;
     readonly build: (
         key: string,
-        s: ProjectionBuilder<AnyObject>
+        s: ProjectionBuilder<NonNullableRecordValue<Output[string]>>
     ) => ProjectionShape<AnyObject, RecordValue<Output>>;
 }
 

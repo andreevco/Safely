@@ -195,7 +195,7 @@ async function onboardDevice<
         primaryOnboarding
     ]);
 
-    return newAccount as ISyncAccount<NewLatest>;
+    return newAccount;
 }
 
 function walletItems(...values: string[]) {

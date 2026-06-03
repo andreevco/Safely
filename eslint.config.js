@@ -129,7 +129,6 @@ export default [
             'no-return-assign': 'off',
             'no-restricted-syntax': ['error', 'LabeledStatement', 'WithStatement'],
             'no-console': 'error',
-            '@typescript-eslint/no-unnecessary-type-assertion': 'off',
 
             /* imports */
             'import/extensions': 'off',

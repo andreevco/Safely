@@ -24,6 +24,7 @@ function shouldSendUpdate(context: SyncMachineConfig<StorageVersion, unknown>): 
 export const createSyncMachine = () => {
     return x
         .setup({
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
             types: {} as {
                 events:
                     | { type: 'LOCAL_UPDATE' }
