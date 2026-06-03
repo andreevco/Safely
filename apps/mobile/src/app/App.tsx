@@ -11,6 +11,7 @@ import { ToastProvider, ToastServiceProvider } from '@mobile/shared/providers/to
 
 import { AppContextProvider, SecurityCheckInitializer } from './AppContext';
 import { AppNavigation } from './AppNavigation';
+import { RootErrorBoundary } from './root-error-boundary';
 import { RootSuspenseGate } from './root-suspense';
 import { REGULAR_MOBILE_STORAGE_ONLY_APP_LEVEL_USE } from './storage';
 
@@ -24,26 +25,28 @@ export const App = () => {
     return (
         <GestureHandlerRootView>
             <SafeAreaProvider>
-                <KeyboardProvider>
-                    <QueryProvider persister={persister} queryClient={queryClient}>
-                        <ToastServiceProvider>
-                            <LoaderServiceProvider>
-                                <AppContextProvider>
-                                    <RootSuspenseGate>
-                                        <AnalyticsProvider>
-                                            <SecurityCheckInitializer />
-                                            <LoaderProvider>
-                                                <AppNavigation />
-                                                <ToastProvider />
-                                            </LoaderProvider>
-                                        </AnalyticsProvider>
-                                    </RootSuspenseGate>
-                                    <BlurOverlay />
-                                </AppContextProvider>
-                            </LoaderServiceProvider>
-                        </ToastServiceProvider>
-                    </QueryProvider>
-                </KeyboardProvider>
+                <RootErrorBoundary>
+                    <KeyboardProvider>
+                        <QueryProvider persister={persister} queryClient={queryClient}>
+                            <ToastServiceProvider>
+                                <LoaderServiceProvider>
+                                    <AppContextProvider>
+                                        <RootSuspenseGate>
+                                            <AnalyticsProvider>
+                                                <SecurityCheckInitializer />
+                                                <LoaderProvider>
+                                                    <AppNavigation />
+                                                    <ToastProvider />
+                                                </LoaderProvider>
+                                            </AnalyticsProvider>
+                                        </RootSuspenseGate>
+                                        <BlurOverlay />
+                                    </AppContextProvider>
+                                </LoaderServiceProvider>
+                            </ToastServiceProvider>
+                        </QueryProvider>
+                    </KeyboardProvider>
+                </RootErrorBoundary>
             </SafeAreaProvider>
         </GestureHandlerRootView>
     );

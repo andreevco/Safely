@@ -29,6 +29,12 @@
             "unknown": "Something went wrong"
         }
     },
+    "errorBoundary": {
+        "title": "Something went wrong",
+        "subtitle": "An unexpected error occurred. Restart the app to continue. If the problem persists, share the logs with support.",
+        "restartButton": "Restart app",
+        "shareLogsButton": "Share logs"
+    },
     "send": {
         "title": "Send",
         "from": "From",
