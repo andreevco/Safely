@@ -31,5 +31,10 @@ minimumReleaseAge: 5760
 strictPeerDependencies: true
 autoInstallPeers: false
 
-onlyBuiltDependencies:
-  - '@shopify/react-native-skia'
+allowBuilds:
+  '@shopify/react-native-skia': true
+  cbor-extract: false
+  msgpackr-extract: false
+  unrs-resolver: false
+  esbuild: false
+  dtrace-provider: false
