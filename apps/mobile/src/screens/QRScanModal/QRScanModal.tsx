@@ -183,7 +183,6 @@ export const QRScanModal = (props: QRScanModalProps) => {
                 device={device}
                 outputs={[objectOutput]}
                 isActive={isFocused}
-                onStarted={() => setIsLightOn(prev => !prev)}
             />
             <CameraMask barcodeValues={barcodeValues} />
             <Screen.Header>
