@@ -87,4 +87,5 @@ jobs:
           pnpm dlx eas-cli workflow:run build-and-distribute.yml \
             --input release_notes="$RELEASE_NOTES" \
             --input pr_number="${PR_NUMBER:-}" \
-            --input repository="${{ github.repository }}"
+            --input repository="${{ github.repository }}" \
+            --input target_branch="$GITHUB_REF_NAME"

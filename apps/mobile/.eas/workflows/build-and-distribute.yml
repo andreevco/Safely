@@ -18,6 +18,11 @@ on:
         type: string
         required: false
         default: ''
+      target_branch:
+        description: Branch the change was merged into (e.g. release/1.0.1), prefixed to the Slack notes
+        type: string
+        required: false
+        default: ''
 
 jobs:
   build_ios:
@@ -117,22 +122,22 @@ jobs:
       - distribute_android
       - e2e_android
     steps:
+      # Custom steps jobs start with an empty workdir — check out the repo to reach the script.
+      - uses: eas/checkout
       - name: Post report
-        env:
-          SLACK_WEBHOOK_URL: ${{ env.SLACK_WEBHOOK_URL }}
-          WORKFLOW_URL: ${{ workflow.url }}
-          PR_NUMBER: ${{ inputs.pr_number }}
-          REPOSITORY: ${{ inputs.repository }}
-          RELEASE_NOTES: ${{ inputs.release_notes }}
-          IOS_VERSION: ${{ after.build_ios.outputs.app_version }}
-          IOS_BUILD: ${{ after.build_ios.outputs.app_build_version }}
-          ANDROID_VERSION: ${{ after.build_android.outputs.app_version }}
-          ANDROID_BUILD: ${{ after.build_android.outputs.app_build_version }}
-          STATUS_IOS: ${{ after.distribute_ios.status }}
-          STATUS_IOS_CRUTCH: ${{ after.distribute_ios_crutch.status }}
-          STATUS_ANDROID: ${{ after.distribute_android.status }}
-          STATUS_E2E: ${{ after.e2e_android.status }}
         run: |
-          SCRIPT=apps/mobile/scripts/eas-report.mjs
-          [ -f "$SCRIPT" ] || SCRIPT=scripts/eas-report.mjs
-          node "$SCRIPT"
+          export RELEASE_NOTES="${{ inputs.release_notes }}"
+          export SLACK_WEBHOOK_URL="${{ env.SLACK_WEBHOOK_URL }}"
+          export WORKFLOW_URL="${{ workflow.url }}"
+          export PR_NUMBER="${{ inputs.pr_number }}"
+          export REPOSITORY="${{ inputs.repository }}"
+          export TARGET_BRANCH="${{ inputs.target_branch }}"
+          export IOS_VERSION="${{ after.build_ios.outputs.app_version }}"
+          export IOS_BUILD="${{ after.build_ios.outputs.app_build_version }}"
+          export ANDROID_VERSION="${{ after.build_android.outputs.app_version }}"
+          export ANDROID_BUILD="${{ after.build_android.outputs.app_build_version }}"
+          export STATUS_IOS="${{ after.distribute_ios.status }}"
+          export STATUS_IOS_CRUTCH="${{ after.distribute_ios_crutch.status }}"
+          export STATUS_ANDROID="${{ after.distribute_android.status }}"
+          export STATUS_E2E="${{ after.e2e_android.status }}"
+          node scripts/eas-report.mjs

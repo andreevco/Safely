@@ -21,6 +21,7 @@ let {
     PR_NUMBER,
     REPOSITORY,
     RELEASE_NOTES,
+    TARGET_BRANCH,
     IOS_VERSION,
     IOS_BUILD,
     ANDROID_VERSION,
@@ -49,8 +50,10 @@ const allOk = iosOk && firebaseOk && e2eOk;
 const headline = allOk ? '✅ Build & distribute succeeded' : '⚠️ Build & distribute — issues';
 
 const notes = (RELEASE_NOTES || '').trim();
+const targetBranch = (TARGET_BRANCH || '').trim();
+const notesWithBranch = targetBranch ? `${targetBranch} <- ${notes}` : notes;
 
-const prUrl = PR_NUMBER && REPOSITORY ? `https://github.com/${REPOSITORY}/pull/${PR_NUMBER}` : '';
+const prUrl = PR_NUMBER !== undefined && REPOSITORY ? `https://github.com/${REPOSITORY}/pull/${PR_NUMBER}` : '';
 const workflowUrl = WORKFLOW_URL || '';
 
 
@@ -69,8 +72,11 @@ function buildText() {
 }
 
 async function postSlack() {
-    if (!SLACK_WEBHOOK_URL) {
-        console.log('[report] SLACK_WEBHOOK_URL not set — skipping Slack.');
+    // Must be a real URL — guards against an unresolved `${{ env.* }}` literal slipping through.
+    if (!/^https:\/\//.test(SLACK_WEBHOOK_URL || '')) {
+        console.log(
+            `[report] SLACK_WEBHOOK_URL missing or not a URL — skipping Slack (got ${SLACK_WEBHOOK_URL ? 'a non-URL value' : 'empty'}).`
+        );
         return;
     }
 
@@ -78,7 +84,7 @@ async function postSlack() {
         text: buildText(),
         eas_workflow_url: workflowUrl,
         github_pr_url: prUrl,
-        notes: notes.slice(0, 1000)
+        notes: notesWithBranch.slice(0, 1000)
     };
 
     const res = await fetch(SLACK_WEBHOOK_URL, {
