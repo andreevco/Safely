@@ -84,8 +84,15 @@ jobs:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: |
           RELEASE_NOTES="$(cat /tmp/release_notes.txt)"
+          # Cache only feature builds (release/*); master stays uncached for clean from-scratch builds.
+          if [[ "$GITHUB_REF_NAME" == release/* ]]; then
+            ANDROID_BUILD_PROFILE="production-cached"
+          else
+            ANDROID_BUILD_PROFILE="production"
+          fi
           pnpm dlx eas-cli workflow:run build-and-distribute.yml \
             --input release_notes="$RELEASE_NOTES" \
             --input pr_number="${PR_NUMBER:-}" \
             --input repository="${{ github.repository }}" \
-            --input target_branch="$GITHUB_REF_NAME"
+            --input target_branch="$GITHUB_REF_NAME" \
+            --input android_build_profile="$ANDROID_BUILD_PROFILE"
