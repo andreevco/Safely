@@ -3,7 +3,9 @@ import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { usePreventCurrentScreenCapture } from '@mobile/entities/security';
+import { useAppContext } from '@safely/ux';
+
+import { CapturePreventionScreen } from '../../../../../modules/safely-capture-prevention/src';
 import { Button, Screen, Text, WordCell } from '@mobile/shared/ui';
 import { ExclamationmarkCircle16, Icon } from '@mobile/shared/ui/Icon';
 import { useCopy } from '@mobile/shared/utils/copy';
@@ -15,9 +17,8 @@ type RecoveryPhraseSheetProps = StaticScreenProps<{
 }>;
 
 export const RecoveryPhraseSheet = (props: RecoveryPhraseSheetProps) => {
-    usePreventCurrentScreenCapture();
-
     const { t } = useTranslation();
+    const { logger } = useAppContext();
     const copy = useCopy();
     const phrase = props.route.params.mnemonic;
 
@@ -38,6 +39,12 @@ export const RecoveryPhraseSheet = (props: RecoveryPhraseSheetProps) => {
                 <Screen.Header.CloseButton />
             </Screen.Header>
             <Screen.Content>
+                <CapturePreventionScreen
+                    style={styles.captureScreen}
+                    onUnsupported={() =>
+                        logger.error('[RecoveryPhraseSheet] capture protection unavailable')
+                    }
+                >
                 <View style={styles.content}>
                     <View style={styles.banner}>
                         <Text variant="bodyM" style={styles.bannerText}>
@@ -84,6 +91,7 @@ export const RecoveryPhraseSheet = (props: RecoveryPhraseSheetProps) => {
                         {t('security.phraseSheet.copy')}
                     </Button>
                 </View>
+                </CapturePreventionScreen>
             </Screen.Content>
         </Screen>
     );

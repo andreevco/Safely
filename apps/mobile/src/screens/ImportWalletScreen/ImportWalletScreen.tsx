@@ -5,9 +5,9 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { runOnJS } from 'react-native-worklets';
 
-import { useImportSeedPhrase } from '@safely/ux';
+import { useAppContext, useImportSeedPhrase } from '@safely/ux';
 
-import { usePreventCurrentScreenCapture } from '@mobile/entities/security';
+import { CapturePreventionScreen } from '../../../modules/safely-capture-prevention/src';
 import { useAddWalletFlow } from '@mobile/features/add-wallet';
 import { Button, NativeInput, Screen, Text, type NativeInputRef } from '@mobile/shared/ui';
 import { maskSeedPhraseInput } from '@mobile/shared/utils';
@@ -15,9 +15,8 @@ import { maskSeedPhraseInput } from '@mobile/shared/utils';
 import { styles } from './ImportWalletScreen.styles';
 
 export const ImportWalletScreen = () => {
-    usePreventCurrentScreenCapture();
-
     const { t } = useTranslation();
+    const { logger } = useAppContext();
     const { onMnemonicReady } = useAddWalletFlow();
 
     const { value, error, isDirty, onChange, handleSubmit } = useImportSeedPhrase({
@@ -73,6 +72,12 @@ export const ImportWalletScreen = () => {
                 </Button>
             </Screen.Header>
             <Screen.Scrollable>
+                <CapturePreventionScreen
+                    style={styles.captureScreen}
+                    onUnsupported={() =>
+                        logger.error('[ImportWalletScreen] capture protection unavailable')
+                    }
+                >
                 <View style={styles.content}>
                     <View style={styles.textContainer}>
                         <Text variant="titleM" textAlign="center">
@@ -99,6 +104,7 @@ export const ImportWalletScreen = () => {
                         </Text>
                     )}
                 </View>
+                </CapturePreventionScreen>
             </Screen.Scrollable>
         </Screen>
     );

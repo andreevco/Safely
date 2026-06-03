@@ -5,5 +5,4 @@ export { useLockScreenQuery, useSetLockScreenEnabled } from './useLockScreen';
 export { usePasscodeVerification } from './usePasscodeVerification';
 export { LockScreenProvider, useLockScreenControl } from './LockScreenProvider';
 export { BlurOverlay } from './BlurOverlay';
-export { usePreventCurrentScreenCapture } from './usePreventCurrentScreenCapture';
 export type { PromptAndCheckOptions } from './types';
