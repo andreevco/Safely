@@ -9,13 +9,18 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@ledgerhq/device-management-kit": "^1.5.1",
+    "@ledgerhq/device-signer-kit-bitcoin": "^1.3.1",
+    "@ledgerhq/signer-utils": "^1.2.0",
+    "@noble/hashes": "catalog:",
     "@safely/sync": "workspace:*",
     "@safely/sync-storage": "workspace:*",
-    "@noble/hashes": "catalog:",
     "@scure/bip32": "2.2.0",
     "@scure/bip39": "2.2.0",
     "@scure/btc-signer": "2.2.0",
     "big.js": "catalog:",
+    "bitcoinjs-lib": "^6.1.7",
+    "rxjs": "7.8.2",
     "tweetnacl": "^1.0.3",
     "uuid": "catalog:",
     "zod": "catalog:"
