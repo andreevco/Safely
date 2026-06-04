@@ -43,8 +43,9 @@ type NonEmptyPatchPath<T> = T extends readonly unknown[]
         }[StringKeyOf<T>];
 // Same as above but also []
 export type PatchPath<T> = readonly [] | NonEmptyPatchPath<T>;
-// Any non-empty string path
-type NonEmptyStringPath = readonly [string, ...string[]];
+// Any path where only the last segment may be a new key.
+type MoveTargetPath<T> =
+    PatchPath<T> extends infer P extends readonly string[] ? readonly [...P, string] : never;
 
 // Recursively updates types, ex:
 // { a: { b: string } } => { a: { b: number } }
@@ -134,7 +135,10 @@ export interface PatchDraft<T> {
         path: P & PatchPath<T>,
         field: F extends StringFields<PathValue<T, P>> ? F : never
     ): PatchDraft<SetPath<T, P, DeleteField<PathValue<T, P>, F>>>;
-    move<const From extends readonly string[], const To extends NonEmptyStringPath>(
+    move<
+        const From extends readonly string[],
+        const To extends MoveTargetPath<DeletePath<T, From>>
+    >(
         from: From & NonEmptyPatchPath<T>,
         to: To
     ): PatchDraft<SetPath<DeletePath<T, From>, To, PathValue<T, From>>>;
