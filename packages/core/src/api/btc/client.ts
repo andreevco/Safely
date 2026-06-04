@@ -18,12 +18,7 @@ export { BtcApiError } from './errors';
 
 function isTransientSendError(error: unknown): boolean {
     if (error instanceof BtcApiError) {
-        return (
-            error.status === 400 ||
-            error.status === 408 ||
-            error.status === 429 ||
-            error.status >= 500
-        );
+        return error.status === 408 || error.status === 429 || error.status >= 500;
     }
 
     return error instanceof TypeError;
