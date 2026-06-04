@@ -19,13 +19,7 @@ import { useAccountsFactory, useActiveAccount } from './account-state';
 import { accountKey } from './keys';
 import type { SActivePortfolioSchema } from './local-storage';
 import { useClearActiveAccountLocalStorage } from './local-storage';
-import {
-    IUnlockableSecuredEncryptedStorage,
-    SecretEncryptor,
-    useAppContext,
-    useSharedUxStorage,
-    useTranslate
-} from '../../shared';
+import { SecretEncryptor, useAppContext, useSharedUxStorage, useTranslate } from '../../shared';
 import { useErrorToast } from '../errors';
 import { useLoader } from '../loader';
 import {
