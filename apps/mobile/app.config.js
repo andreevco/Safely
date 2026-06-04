@@ -32,6 +32,7 @@ module.exports = {
             appleTeamId: '9N49283836'
         },
         android: {
+            permissions: ["android.permission.CAMERA"],
             adaptiveIcon: {
                 foregroundImage: './assets/adaptive-icon.png',
                 backgroundImage: './assets/android-icon-bg.png'
