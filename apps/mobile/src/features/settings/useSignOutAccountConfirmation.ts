@@ -7,6 +7,7 @@ import {
     useAccounts,
     useActiveAccount,
     useActiveAccountMeta,
+    useAppContext,
     useDeleteAccount,
     useEraseAllData,
     useToast
@@ -21,6 +22,7 @@ export function useSignOutAccountConfirmation() {
     const toast = useToast();
     const { mutateAsync: deleteAccount } = useDeleteAccount();
     const { mutateAsync: eraseAllData } = useEraseAllData();
+    const { logger } = useAppContext();
 
     return useCallback(() => {
         const isLastAccount = accounts?.length === 1;
@@ -33,7 +35,11 @@ export function useSignOutAccountConfirmation() {
             onConfirm: async () => {
                 if (isLastAccount) {
                     if (isSyncAccount) {
-                        await deleteAccount();
+                        try {
+                            await deleteAccount();
+                        } catch (e) {
+                            logger.error('Failed to delete account', e);
+                        }
                     }
 
                     return eraseAllData();
