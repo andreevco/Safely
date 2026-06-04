@@ -19,7 +19,13 @@ import { useAccountsFactory, useActiveAccount } from './account-state';
 import { accountKey } from './keys';
 import type { SActivePortfolioSchema } from './local-storage';
 import { useClearActiveAccountLocalStorage } from './local-storage';
-import { SecretEncryptor, useAppContext, useSharedUxStorage, useTranslate } from '../../shared';
+import {
+    IUnlockableSecuredEncryptedStorage,
+    SecretEncryptor,
+    useAppContext,
+    useSharedUxStorage,
+    useTranslate
+} from '../../shared';
 import { useErrorToast } from '../errors';
 import { useLoader } from '../loader';
 import {
@@ -306,11 +312,8 @@ export function useDeleteAccount() {
     const clearActiveAccountLocalStorage = useClearActiveAccountLocalStorage();
     const update = useActiveAccountSyncStorageSlotUpdate('devicesMeta');
 
-    return useMutation({
-        async mutationFn() {
-            using secureEncryptedStorage = storage.sync.getSecureEncrypted();
-            await secureEncryptedStorage.unlock();
-
+    return useMutation<void, Error, ITreeStorage>({
+        async mutationFn(secureEncryptedStorage) {
             await update(draft => {
                 draft.ifPresent(devicesMeta => devicesMeta.delete(ikPub));
             });
