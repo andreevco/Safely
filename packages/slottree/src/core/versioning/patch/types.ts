@@ -43,6 +43,15 @@ type NonEmptyPatchPath<T> = T extends readonly unknown[]
         }[StringKeyOf<T>];
 // Same as above but also []
 export type PatchPath<T> = readonly [] | NonEmptyPatchPath<T>;
+// PathPath<T> but filter only paths where all fields are objects
+type ContainerPatchPath<T> =
+    PatchPath<T> extends infer P extends readonly string[]
+        ? PathValue<T, P> extends readonly unknown[]
+            ? never
+            : [ObjectValue<PathValue<T, P>>] extends [never]
+              ? never
+              : P
+        : never;
 // Any path where only the last segment may be a new key.
 type MoveTargetPath<T> =
     PatchPath<T> extends infer P extends readonly string[] ? readonly [...P, string] : never;
@@ -113,7 +122,7 @@ export interface SlotPatch<From, To> {
 
 export interface PatchDraft<T> {
     newField<const P extends readonly string[], F extends string, V extends JsonValue>(
-        path: P & PatchPath<T>,
+        path: P & ContainerPatchPath<T>,
         field: F extends StringFields<PathValue<T, P>> ? never : F,
         defaultValue: V
     ): PatchDraft<SetPath<T, P, AddField<PathValue<T, P>, F, V>>>;
@@ -122,7 +131,7 @@ export interface PatchDraft<T> {
         From extends StringFields<PathValue<T, P>>,
         To extends string
     >(
-        path: P & PatchPath<T>,
+        path: P & ContainerPatchPath<T>,
         from: From,
         to: To extends StringFields<PathValue<T, P>> ? never : To
     ): PatchDraft<SetPath<T, P, RenameField<PathValue<T, P>, From, To>>>;
@@ -132,7 +141,7 @@ export interface PatchDraft<T> {
         f: (v: DeepReadonly<PathValue<T, P>>) => V
     ): PatchDraft<SetPath<T, P, V>>;
     deleteField<const P extends readonly string[], F extends string>(
-        path: P & PatchPath<T>,
+        path: P & ContainerPatchPath<T>,
         field: F extends StringFields<PathValue<T, P>> ? F : never
     ): PatchDraft<SetPath<T, P, DeleteField<PathValue<T, P>, F>>>;
     move<
