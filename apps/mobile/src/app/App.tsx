@@ -1,3 +1,4 @@
+import { StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -8,6 +9,7 @@ import { BlurOverlay } from '@mobile/entities/security';
 import { logger } from '@mobile/shared/logger';
 import { LoaderProvider, LoaderServiceProvider } from '@mobile/shared/providers/loader';
 import { ToastProvider, ToastServiceProvider } from '@mobile/shared/providers/toast';
+import { BlurTarget } from '@mobile/shared/ui/Blur';
 
 import { AppContextProvider, SecurityCheckInitializer } from './AppContext';
 import { AppNavigation } from './AppNavigation';
@@ -31,16 +33,18 @@ export const App = () => {
                             <ToastServiceProvider>
                                 <LoaderServiceProvider>
                                     <AppContextProvider>
-                                        <RootSuspenseGate>
-                                            <AnalyticsProvider>
-                                                <SecurityCheckInitializer />
-                                                <LoaderProvider>
-                                                    <AppNavigation />
-                                                    <ToastProvider />
-                                                </LoaderProvider>
-                                            </AnalyticsProvider>
-                                        </RootSuspenseGate>
-                                        <BlurOverlay />
+                                        <BlurTarget style={StyleSheet.absoluteFill}>
+                                            <RootSuspenseGate>
+                                                <AnalyticsProvider>
+                                                    <SecurityCheckInitializer />
+                                                    <LoaderProvider>
+                                                        <AppNavigation />
+                                                        <ToastProvider />
+                                                    </LoaderProvider>
+                                                </AnalyticsProvider>
+                                            </RootSuspenseGate>
+                                            <BlurOverlay />
+                                        </BlurTarget>
                                     </AppContextProvider>
                                 </LoaderServiceProvider>
                             </ToastServiceProvider>
