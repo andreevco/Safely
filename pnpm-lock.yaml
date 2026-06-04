@@ -6,16 +6,43 @@ settings:
 
 catalogs:
   default:
+    '@eslint/js':
+      specifier: ^9.39.2
+      version: 9.39.2
+    '@noble/hashes':
+      specifier: 2.2.0
+      version: 2.2.0
+    '@tanstack/query-async-storage-persister':
+      specifier: ^5.90.18
+      version: 5.90.18
     '@tanstack/react-query':
       specifier: ^5.90.16
       version: 5.90.16
+    '@tanstack/react-query-persist-client':
+      specifier: ^5.90.18
+      version: 5.90.18
+    '@types/big.js':
+      specifier: ^6.2.2
+      version: 6.2.2
     '@types/react':
       specifier: 19.2.14
       version: 19.2.14
+    '@types/react-dom':
+      specifier: 19.2.3
+      version: 19.2.3
     '@xstate/react':
       specifier: ^6.1.0
       version: 6.1.0
     big.js:
+      specifier: ^7.0.1
+      version: 7.0.1
+    cbor-x:
+      specifier: ^1.6.4
+      version: 1.6.4
+    eslint:
+      specifier: ^9.39.2
+      version: 9.39.2
+    eslint-plugin-react-hooks:
       specifier: ^7.0.1
       version: 7.0.1
     react:
@@ -27,9 +54,21 @@ catalogs:
     typescript:
       specifier: ~6.0.3
       version: 6.0.3
+    typescript-eslint:
+      specifier: ^8.58.0
+      version: 8.60.0
+    uuid:
+      specifier: ^14.0.0
+      version: 14.0.0
+    xstate:
+      specifier: ^5.26.0
+      version: 5.28.0
     zod:
       specifier: 4.4.1
       version: 4.4.1
+    zustand:
+      specifier: ^5.0.0
+      version: 5.0.13
 
 importers:
 
