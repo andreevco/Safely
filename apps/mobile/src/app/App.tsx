@@ -14,12 +14,15 @@ import { AppNavigation } from './AppNavigation';
 import { RootErrorBoundary } from './root-error-boundary';
 import { RootSuspenseGate } from './root-suspense';
 import { REGULAR_MOBILE_STORAGE_ONLY_APP_LEVEL_USE } from './storage';
+import { setupTanstackQueryManagers } from './tanstack-query-managers';
 
 const persister = createPersister(
     REGULAR_MOBILE_STORAGE_ONLY_APP_LEVEL_USE.storage.child('persister'),
     logger
 );
 const queryClient = createQueryClient(logger);
+
+setupTanstackQueryManagers();
 
 export const App = () => {
     return (
