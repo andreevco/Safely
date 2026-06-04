@@ -1,9 +1,9 @@
 import type { output, z } from 'zod';
 
-import type { Draft, NewOf, StorageVersion } from '@safely/slottree';
+import type { Draft, NewOf, SlotRevision, StorageVersion } from '@safely/slottree';
 
 import type { ISyncProvider } from './I-sync-provider';
-import { StorageError } from '../crdt/y-manager';
+import { KeyNotFoundError } from '../crdt/y-manager';
 import type { Device } from '../device-manager/device-repository';
 import type { SyncContainer } from '../sync-container';
 import type { SyncError } from '../sync-error';
@@ -31,7 +31,7 @@ export class OfflineSyncProvider<Latest extends StorageVersion, Rest> implements
         try {
             v = this.container.yManager.get(k.toString());
         } catch (e) {
-            if (e instanceof StorageError) {
+            if (e instanceof KeyNotFoundError) {
                 v = null;
             } else {
                 throw e;
@@ -53,26 +53,31 @@ export class OfflineSyncProvider<Latest extends StorageVersion, Rest> implements
         k: K,
         observer: (v: z.output<NewOf<Latest>[K]>) => void
     ): () => void {
-        let lastStored: string | undefined;
+        let lastRevision: SlotRevision | undefined;
         return this.container.yManager.onChange(() => {
             let v: unknown;
             try {
                 v = this.container.yManager.get(k.toString());
             } catch (e) {
-                if (e instanceof StorageError) {
+                if (e instanceof KeyNotFoundError) {
                     v = null;
                 } else {
                     throw e;
                 }
             }
 
-            // TODO: remove this ugliness and do proper change checks through timestamps.
-            const currentStored = JSON.stringify(v);
-            if (lastStored !== undefined && currentStored === lastStored) {
+            const currentRevision = this.container.yManager.getTopLevelRevision(
+                k.toString() as Extract<keyof z.output<NewOf<Latest>>, string>
+            );
+            if (
+                currentRevision === undefined
+                    ? lastRevision === undefined
+                    : lastRevision !== undefined && currentRevision.compare(lastRevision) === 0
+            ) {
                 return;
             }
 
-            lastStored = currentStored;
+            lastRevision = currentRevision;
             observer(v as z.output<NewOf<Latest>[K]>);
         });
     }
