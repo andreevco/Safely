@@ -307,7 +307,6 @@ export function useDeleteAccount() {
     const account = useActiveAccount();
     const accountFactory = useAccountsFactory();
     const client = useQueryClient();
-    const { storage } = useAppContext();
     const ikPub = useCurrentDeviceIkPub();
     const clearActiveAccountLocalStorage = useClearActiveAccountLocalStorage();
     const update = useActiveAccountSyncStorageSlotUpdate('devicesMeta');

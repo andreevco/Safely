@@ -22,7 +22,7 @@ export function useSignOutAccountConfirmation() {
     const toast = useToast();
     const { mutateAsync: deleteAccount } = useDeleteAccount();
     const { mutateAsync: eraseAllData } = useEraseAllData();
-    const { logger, storage } = useAppContext();
+    const { storage } = useAppContext();
 
     return useCallback(() => {
         const isLastAccount = accounts?.length === 1;
@@ -38,11 +38,7 @@ export function useSignOutAccountConfirmation() {
 
                 if (isLastAccount) {
                     if (isSyncAccount) {
-                        try {
-                            await deleteAccount(secureEncryptedStorage);
-                        } catch (e) {
-                            logger.error('Failed to delete account', e);
-                        }
+                        await deleteAccount(secureEncryptedStorage);
                     }
 
                     await eraseAllData();
