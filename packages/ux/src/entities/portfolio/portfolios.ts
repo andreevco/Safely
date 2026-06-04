@@ -250,7 +250,12 @@ export function useActivePortfolioEntitiesIdsQuery<TData = SActivePortfolioSchem
 
             const portfolios = activeAccount.syncProvider.get('portfolios');
 
-            if (portfolios.length === 0) return stored;
+            if (portfolios.length === 0) {
+                if (stored !== null) {
+                    await set(null);
+                }
+                return null;
+            }
 
             const storedIsValid =
                 stored !== null &&
@@ -275,12 +280,14 @@ export function useActivePortfolioEntitiesQuery() {
     return useActivePortfolioEntitiesIdsQuery<ActivePortfolioEntities | null>(
         useCallback(
             (sActivePortfolioSchema: SActivePortfolioSchema) => {
-                if (portfolios.length === 0 || !sActivePortfolioSchema) return null;
+                if (portfolios.length === 0) return null;
 
                 const portfolio =
-                    portfolios.find(p =>
-                        p.id.isEq(Id.fromString(sActivePortfolioSchema.portfolioId))
-                    ) ?? portfolios[0];
+                    (sActivePortfolioSchema &&
+                        portfolios.find(p =>
+                            p.id.isEq(Id.fromString(sActivePortfolioSchema.portfolioId))
+                        )) ||
+                    portfolios[0];
 
                 if (portfolio.type === PortfolioType.WATCH_ONLY) {
                     return { type: 'watch-only' as const, portfolio };
