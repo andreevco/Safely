@@ -198,6 +198,23 @@ const projectUp = patch(v1Schema, v2Schema, draft =>
 );
 ```
 
+Function may be passed instead of value:
+
+```ts
+const projectUp = patch(v1Schema, v2Schema, draft =>
+    draft.updateEach(['portfolios'], portfolio =>
+        portfolio.when(
+            ['type'], 
+            t => t === 'BIP39', 
+            bip39 =>
+                bip39.updateEach(['derivations'], derivation =>
+                    derivation.newField(['chains', 'btc'], 'newField', '')
+                )
+        )
+    )
+);
+```
+
 `when(path, value, map)` applies `map` only when the current draft value at `path` equals `value`.
 
 ## Combine Multiple Operations

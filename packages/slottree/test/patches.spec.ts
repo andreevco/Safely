@@ -12,6 +12,8 @@ import { slotFromJson, stripSlot } from '../src/core/slots/slot-json';
 import { PatchCursor } from '../src/core/versioning/patch/cursor';
 import { createPatchDraft } from '../src/core/versioning/patch/draft';
 
+type RuntimeMatcher = JsonValue | ((value: unknown) => boolean);
+
 type RuntimeDraft = {
     newField(path: readonly string[], field: string, value: JsonValue): RuntimeDraft;
     rename(path: readonly string[], from: string, to: string): RuntimeDraft;
@@ -21,7 +23,7 @@ type RuntimeDraft = {
     updateEach(path: readonly string[], map: (draft: RuntimeDraft) => unknown): RuntimeDraft;
     when(
         path: readonly string[],
-        value: JsonValue,
+        value: RuntimeMatcher,
         map: (draft: RuntimeDraft) => unknown
     ): RuntimeDraft;
 };
@@ -422,6 +424,27 @@ describe('PatchDraft runtime', () => {
                 name: 'External'
             });
             expect(slot.v.imported).toBeUndefined();
+        });
+
+        it('applies the mapper when the predicate matches', () => {
+            const slot = sourceSlot({
+                type: 'BIP39',
+                name: 'Main'
+            });
+            const draft = draftOf(slot);
+
+            draft.when(
+                ['type'],
+                value => value === 'BIP39',
+                bip39 => bip39.newField([], 'imported', false)
+            );
+
+            expect(stripSlot(slot)).toEqual({
+                type: 'BIP39',
+                name: 'Main',
+                imported: false
+            });
+            expect(slot.v.imported).toMatchObject(originClock());
         });
     });
 });

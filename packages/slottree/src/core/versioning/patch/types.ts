@@ -112,6 +112,9 @@ type NonDiscriminatedByPath<T, P extends readonly string[], V extends JsonValue>
     T,
     DiscriminatedByPath<T, P, V>
 >;
+type WhenMatcher<T, P extends readonly string[], V extends Extract<PathValue<T, P>, JsonValue>> =
+    | V
+    | ((value: DeepReadonly<PathValue<T, P>>) => value is DeepReadonly<V>);
 
 export interface SlotPatch<From, To> {
     (source: ContainerSlot): ContainerSlot;
@@ -163,7 +166,7 @@ export interface PatchDraft<T> {
         Output
     >(
         path: P & PatchPath<T>,
-        value: V,
+        value: WhenMatcher<T, P, V>,
         map: (draft: PatchDraft<DiscriminatedByPath<T, P, V>>) => PatchDraft<Output>
     ): PatchDraft<NonDiscriminatedByPath<T, P, V> | Output>;
 }

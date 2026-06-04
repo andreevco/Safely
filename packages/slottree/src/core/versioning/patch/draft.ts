@@ -12,6 +12,7 @@ import { orderedArrayLiveIds, slotFromJson, stripSlot } from '../../slots/slot-j
 
 type PatchMap = (value: unknown) => JsonValue | undefined;
 type ItemPatch = (draft: PatchDraftNode) => unknown;
+type PatchMatcher = JsonValue | ((value: unknown) => boolean);
 
 export function createPatchDraft<T>(cursor: PatchCursor): PatchDraft<T> {
     return new PatchDraftNode(cursor) as unknown as PatchDraft<T>;
@@ -121,10 +122,11 @@ class PatchDraftNode {
         throw new Error('updateEach target must be an ordered array or record slot');
     }
 
-    public when(path: readonly string[], value: JsonValue, map: ItemPatch): PatchDraftNode {
+    public when(path: readonly string[], value: PatchMatcher, map: ItemPatch): PatchDraftNode {
         const current = this.cursorAt(path).readValue();
+        const matches = typeof value === 'function' ? value(current) : current === value;
 
-        if (current === value) {
+        if (matches) {
             map(this);
         }
 
