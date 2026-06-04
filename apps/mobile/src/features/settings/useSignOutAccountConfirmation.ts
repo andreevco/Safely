@@ -56,6 +56,7 @@ export function useSignOutAccountConfirmation() {
         deleteAccount,
         eraseAllData,
         toast,
-        t
+        t,
+        storage.sync.getSecureEncrypted
     ]);
 }
