@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
+import { useLedgerPairing } from '@mobile/features/ledger';
 import { CircularSpinner, Icon, Lock56, Screen, Text } from '@mobile/shared/ui';
 
 import { styles } from './LedgerPairingScreen.styles';
@@ -13,14 +14,17 @@ export const LedgerPairingScreen = () => {
     const navigation = useNavigation();
     const route = useRoute();
     const device = (route.params as { device?: string })?.device ?? 'Ledger';
+    const { status } = useLedgerPairing();
 
     useEffect(() => {
-        const timer = setTimeout(() => {
+        if (status === 'connected') {
             navigation.dispatch(StackActions.replace('LedgerPairingSuccessModal'));
-        }, 2500);
+        }
 
-        return () => clearTimeout(timer);
-    }, [navigation]);
+        if (status === 'error') {
+            navigation.goBack();
+        }
+    }, [status, navigation]);
 
     return (
         <Screen>
