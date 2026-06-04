@@ -8,12 +8,14 @@ export const styles = StyleSheet.create(theme => ({
         alignItems: 'center'
     },
     list: {
-        marginHorizontal: theme.spacing[16],
-        paddingHorizontal: theme.spacing[16],
-        backgroundColor: theme.colors.background.secondary,
-        borderRadius: theme.radius.md
+        paddingHorizontal: theme.spacing[16]
     },
-    row: {
-        paddingVertical: theme.spacing[16]
+    statusContainer: {
+        alignItems: 'center',
+        paddingVertical: theme.spacing[24]
+    },
+    showNext: {
+        alignSelf: 'center',
+        marginTop: theme.spacing[8]
     }
 }));

@@ -22,6 +22,7 @@ type LedgerSessionContextValue = {
     setSelectedDevice: (device: DiscoveredDevice | null) => void;
     sessionId: string | null;
     setSessionId: (sessionId: string | null) => void;
+    reconnect: () => Promise<string>;
 };
 
 const LedgerSessionContext = createContext<LedgerSessionContextValue | null>(null);
@@ -56,9 +57,20 @@ export const LedgerSessionProvider = (props: LedgerSessionProviderProps) => {
         };
     }, []);
 
+    const reconnect = useCallback(async () => {
+        if (!selectedDevice) {
+            throw new Error('No selected device to reconnect');
+        }
+
+        const id = await getDmk().connect({ device: selectedDevice });
+        setSessionId(id);
+
+        return id;
+    }, [getDmk, selectedDevice]);
+
     const value = useMemo(
-        () => ({ getDmk, selectedDevice, setSelectedDevice, sessionId, setSessionId }),
-        [getDmk, selectedDevice, sessionId]
+        () => ({ getDmk, selectedDevice, setSelectedDevice, sessionId, setSessionId, reconnect }),
+        [getDmk, selectedDevice, sessionId, reconnect]
     );
 
     return <LedgerSessionContext.Provider value={value}>{children}</LedgerSessionContext.Provider>;

@@ -1,14 +1,16 @@
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { Screen, Text } from '@mobile/shared/ui';
+import { useLedgerAccounts } from '@mobile/features/ledger';
+import { Button, CircularSpinner, List, Screen, Text } from '@mobile/shared/ui';
 
+import { LedgerAccountCell } from './components';
 import { styles } from './LedgerImportAccountsScreen.styles';
-
-const MOCK_ADDRESSES = ['bc1qxy2…h0wlh', 'bc1q9d4…3tg6a', 'bc1qar0…f5mdq'];
 
 export const LedgerImportAccountsScreen = () => {
     const { t } = useTranslation();
+    const { accounts, selectedIndexes, toggle, showNext, isLoading, isLoadingMore } =
+        useLedgerAccounts();
 
     return (
         <Screen>
@@ -24,13 +26,37 @@ export const LedgerImportAccountsScreen = () => {
                         {t('addWallet.connectLedger.importAccounts.subtitle')}
                     </Text>
                 </View>
-                <View style={styles.list}>
-                    {MOCK_ADDRESSES.map(address => (
-                        <View key={address} style={styles.row}>
-                            <Text variant="bodyM">{address}</Text>
-                        </View>
-                    ))}
-                </View>
+
+                {isLoading ? (
+                    <View style={styles.statusContainer}>
+                        <CircularSpinner />
+                    </View>
+                ) : (
+                    <>
+                        <List style={styles.list}>
+                            <List.Group variant="divided">
+                                {accounts.map(account => (
+                                    <LedgerAccountCell
+                                        key={account.index}
+                                        account={account}
+                                        isSelected={selectedIndexes.has(account.index)}
+                                        onPress={() => toggle(account.index)}
+                                    />
+                                ))}
+                            </List.Group>
+                        </List>
+
+                        <Button
+                            size="small"
+                            type="secondary"
+                            style={styles.showNext}
+                            isLoading={isLoadingMore}
+                            onPress={showNext}
+                        >
+                            {t('addWallet.connectLedger.importAccounts.showNext')}
+                        </Button>
+                    </>
+                )}
             </Screen.Content>
         </Screen>
     );

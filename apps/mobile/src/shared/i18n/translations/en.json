@@ -452,7 +452,8 @@
             },
             "importAccounts": {
                 "title": "Import accounts",
-                "subtitle": "Select the accounts you want to add."
+                "subtitle": "Select the accounts you want to add.",
+                "showNext": "Show next"
             }
         }
     },
