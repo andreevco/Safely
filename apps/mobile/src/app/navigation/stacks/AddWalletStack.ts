@@ -6,11 +6,9 @@ import { BluetoothAccessRequiredScreen } from '@mobile/screens/BluetoothAccessRe
 import { ConnectLedgerScreen } from '@mobile/screens/ConnectLedgerScreen';
 import { CustomizeWalletModal } from '@mobile/screens/CustomizeWalletModal';
 import { ImportWalletScreen } from '@mobile/screens/ImportWalletScreen';
-import { LedgerDiscoveryScreen } from '@mobile/screens/LedgerDiscoveryScreen';
-import { LedgerImportAccountsScreen } from '@mobile/screens/LedgerImportAccountsScreen';
-import { LedgerPairingScreen } from '@mobile/screens/LedgerPairingScreen';
-import { LedgerPairingSuccessScreen } from '@mobile/screens/LedgerPairingSuccessScreen';
 import { WalletAlreadyAddedScreen } from '@mobile/screens/WalletAlreadyAddedScreen';
+
+import { LedgerFlow } from './LedgerFlow';
 
 export const AddWalletStack = createNativeStackNavigator({
     initialRouteName: 'AddWalletRootModal',
@@ -20,10 +18,7 @@ export const AddWalletStack = createNativeStackNavigator({
         AddWatchOnlyModal: AddWatchOnlyScreen,
         ConnectLedgerModal: ConnectLedgerScreen,
         BluetoothAccessRequiredModal: BluetoothAccessRequiredScreen,
-        LedgerDiscoveryModal: LedgerDiscoveryScreen,
-        LedgerPairingModal: LedgerPairingScreen,
-        LedgerPairingSuccessModal: LedgerPairingSuccessScreen,
-        LedgerImportAccountsModal: LedgerImportAccountsScreen,
+        LedgerFlowModal: LedgerFlow,
         CustomizeWalletModal: CustomizeWalletModal,
         WalletAlreadyAddedModal: WalletAlreadyAddedScreen
     },

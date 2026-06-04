@@ -21,7 +21,7 @@ export const BluetoothAccessRequiredScreen = () => {
 
             getBluetoothState().then(state => {
                 if (isActive && state === State.PoweredOn) {
-                    navigation.dispatch(StackActions.replace('LedgerDiscoveryModal'));
+                    navigation.dispatch(StackActions.replace('LedgerFlowModal'));
                 }
             });
 

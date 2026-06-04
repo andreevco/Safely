@@ -31,7 +31,7 @@ export const ConnectLedgerScreen = () => {
     const handleContinue = async () => {
         const state = await getBluetoothState();
         const route =
-            state === State.PoweredOn ? 'LedgerDiscoveryModal' : 'BluetoothAccessRequiredModal';
+            state === State.PoweredOn ? 'LedgerFlowModal' : 'BluetoothAccessRequiredModal';
 
         navigation.dispatch(CommonActions.navigate(route));
     };

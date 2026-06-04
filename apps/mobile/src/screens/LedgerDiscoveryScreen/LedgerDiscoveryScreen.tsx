@@ -1,28 +1,36 @@
 import { useNavigation } from '@react-navigation/core';
 import { CommonActions } from '@react-navigation/native';
-import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { Button, Cell, CircularSpinner, Icon, List, Lock56, Screen, Text } from '@mobile/shared/ui';
+import { getSignalLevel, useLedgerDeviceScan, useLedgerSession } from '@mobile/features/ledger';
+import {
+    Button,
+    Cell,
+    CircularSpinner,
+    Icon,
+    List,
+    Lock56,
+    Screen,
+    SignalHigh16,
+    SignalLow16,
+    SignalMedium16,
+    Text
+} from '@mobile/shared/ui';
 
 import { styles } from './LedgerDiscoveryScreen.styles';
 
-type DiscoveryStatus = 'searching' | 'found' | 'notFound';
-
-const MOCK_DEVICES = ['Ledger Stax', 'Ledger Nano X'];
+const SIGNAL_ICON = {
+    weak: SignalLow16,
+    medium: SignalMedium16,
+    strong: SignalHigh16
+} as const;
 
 export const LedgerDiscoveryScreen = () => {
     const { t } = useTranslation();
     const navigation = useNavigation();
-    const [status, setStatus] = useState<DiscoveryStatus>('searching');
-    const [selectedDevice, setSelectedDevice] = useState<string | null>(null);
-
-    useEffect(() => {
-        const timer = setTimeout(() => setStatus('found'), 1500);
-
-        return () => clearTimeout(timer);
-    }, []);
+    const { devices, status } = useLedgerDeviceScan();
+    const { selectedDevice, setSelectedDevice } = useLedgerSession();
 
     const handleContinue = () => {
         if (!selectedDevice) {
@@ -30,7 +38,7 @@ export const LedgerDiscoveryScreen = () => {
         }
 
         navigation.dispatch(
-            CommonActions.navigate('LedgerPairingModal', { device: selectedDevice })
+            CommonActions.navigate('LedgerPairingModal', { device: selectedDevice.name })
         );
     };
 
@@ -65,26 +73,23 @@ export const LedgerDiscoveryScreen = () => {
                     {status === 'found' && (
                         <List style={styles.list}>
                             <List.Group variant="divided">
-                                {MOCK_DEVICES.map(device => (
-                                    <Cell key={device} onPress={() => setSelectedDevice(device)}>
+                                {devices.map(device => (
+                                    <Cell key={device.id} onPress={() => setSelectedDevice(device)}>
+                                        <Cell.Image
+                                            type="icon"
+                                            style={styles.signalIcon}
+                                            icon={SIGNAL_ICON[getSignalLevel(device.rssi)]}
+                                        />
                                         <Cell.Content>
                                             <Cell.Row>
-                                                <Cell.Title>{device}</Cell.Title>
+                                                <Cell.Title>{device.name}</Cell.Title>
                                             </Cell.Row>
                                         </Cell.Content>
-                                        {selectedDevice === device && <Cell.Checkmark />}
+                                        {selectedDevice?.id === device.id && <Cell.Checkmark />}
                                     </Cell>
                                 ))}
                             </List.Group>
                         </List>
-                    )}
-
-                    {status === 'notFound' && (
-                        <View style={styles.statusContainer}>
-                            <Text variant="bodyM" color="secondary">
-                                {t('addWallet.connectLedger.discovery.notFound')}
-                            </Text>
-                        </View>
                     )}
                 </View>
 

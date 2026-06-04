@@ -22,6 +22,10 @@ export const styles = StyleSheet.create(theme => ({
     list: {
         paddingHorizontal: theme.spacing[16]
     },
+    signalIcon: {
+        width: 20,
+        height: 20
+    },
     buttonContainer: {
         padding: theme.spacing[24]
     }
