@@ -5,7 +5,7 @@ import type { SharedValue } from 'react-native-reanimated';
 import Animated from 'react-native-reanimated';
 import { StyleSheet } from 'react-native-unistyles';
 
-import { Blur, useBlurTargetRef } from '@mobile/shared/ui/Blur';
+import { Blur } from '@mobile/shared/ui/Blur';
 import { TouchableOpacity } from '@mobile/shared/ui/TouchableOpacity';
 
 import { OverlayContainer } from './OverlayContainer';
@@ -40,7 +40,6 @@ export const PopupMenu = forwardRef<PopupMenuRef, PopupMenuProps>((props, ref) =
     } = props;
     const { height } = useWindowDimensions();
     const menu = usePopupMenu(height, menuMargin);
-    const blurTarget = useBlurTargetRef();
 
     useImperativeHandle(ref, () => ({ close: menu.close }), [menu.close]);
 
@@ -55,7 +54,6 @@ export const PopupMenu = forwardRef<PopupMenuRef, PopupMenuProps>((props, ref) =
                 <Blur
                     blurAnimatedProps={menu.blurAnimatedProps}
                     style={[StyleSheet.absoluteFill, menu.blurAnimatedStyle]}
-                    blurTarget={blurTarget ?? undefined}
                 />
             )}
             {header}

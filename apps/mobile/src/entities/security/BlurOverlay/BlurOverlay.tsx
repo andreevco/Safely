@@ -7,7 +7,7 @@ import { StyleSheet } from 'react-native-unistyles';
 
 import { useAppState } from '@safely/ux';
 
-import { Blur, useBlurTargetRef } from '@mobile/shared/ui/Blur';
+import { Blur } from '@mobile/shared/ui/Blur';
 import { blurFreeze } from '@mobile/shared/utils';
 
 const OverlayComponent = Platform.OS === 'ios' ? FullWindowOverlay : View;
@@ -19,7 +19,6 @@ export const BlurOverlay = () => {
     const { current } = useAppState();
     const intensity = useSharedValue(0);
     const [isVisible, setIsVisible] = useState(false);
-    const blurTarget = useBlurTargetRef();
 
     const blurAnimatedProps = useAnimatedProps(() => ({
         intensity: intensity.value
@@ -59,7 +58,6 @@ export const BlurOverlay = () => {
                 blurAnimatedProps={blurAnimatedProps}
                 style={StyleSheet.absoluteFill}
                 pointerEvents="auto"
-                blurTarget={blurTarget ?? undefined}
             />
         </OverlayComponent>
     );
