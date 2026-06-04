@@ -6,7 +6,7 @@ import type { Logger } from '@safely/sync';
 export class DmkLoggerAdapter implements LoggerSubscriberService {
     constructor(private readonly logger: Logger) {}
 
-    log(...[level, message, options]: Parameters<LoggerSubscriberService['log']>): void {
+    public log(...[level, message, options]: Parameters<LoggerSubscriberService['log']>): void {
         const text = `[${options.tag}] ${message}`;
         const args = options.data ? [text, options.data] : [text];
 
