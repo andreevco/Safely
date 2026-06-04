@@ -301,16 +301,12 @@ export function useDeleteAccount() {
     const account = useActiveAccount();
     const accountFactory = useAccountsFactory();
     const client = useQueryClient();
-    const { storage } = useAppContext();
     const ikPub = useCurrentDeviceIkPub();
     const clearActiveAccountLocalStorage = useClearActiveAccountLocalStorage();
     const update = useActiveAccountSyncStorageSlotUpdate('devicesMeta');
 
-    return useMutation({
-        async mutationFn() {
-            using secureEncryptedStorage = storage.sync.getSecureEncrypted();
-            await secureEncryptedStorage.unlock();
-
+    return useMutation<void, Error, ITreeStorage>({
+        async mutationFn(secureEncryptedStorage) {
             await update(draft => {
                 draft.ifPresent(devicesMeta => devicesMeta.delete(ikPub));
             });

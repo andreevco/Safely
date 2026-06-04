@@ -11,9 +11,9 @@
     },
     "watchOnlySheet": {
         "title": "Watch-only wallet",
-        "subtitle": "This wallet lets you view balance and transactions. Import it to enable sending funds.",
+        "subtitle": "This wallet lets you view balance and transactions. Import it to enable sending funds. ",
         "import": "Import wallet",
-        "ok": "OK"
+        "ok": "Later"
     },
     "common": {
         "edit": "Edit",
@@ -57,7 +57,7 @@
     },
     "passcode": {
         "title": "Create passcode",
-        "description": "Enter a passcode to protect your wallet",
+        "description": "Set a passcode to protect your data. It will be required to unlock the app.",
         "switchToSix": "Use 6-digit passcode",
         "switchToFour": "Use 4-digit passcode",
         "verify": {
@@ -104,7 +104,7 @@
         },
         "emptyState": {
             "title": "Get started with a wallet",
-            "subtitle": "Create or import a wallet\nto start using your account"
+            "subtitle": "Create or import a wallet to start using your account."
         }
     },
     "accounts": {
@@ -123,18 +123,18 @@
         "subtitle": "Scan BTC address to continue.",
         "addDevice": {
             "title": "Scan QR code to add",
-            "subtitle": "Scan the code on your other device. It's shown in \"Sign in\" there."
+            "subtitle": "Scan the QR code shown in \"Link with QR\" on your other device."
         }
     },
     "camera": {
         "permissionRequest": {
             "title": "Camera access required",
-            "description": "Turn on camera access to scan QR codes and connect services.",
-            "button": "Open Settings"
+            "description": "Enable camera access in Settings to scan QR codes.",
+            "button": "Settings"
         },
         "noCameraFound": {
             "title": "No camera found",
-            "description": "Please check your camera settings and try again."
+            "description": "Please check your camera settings and try again."
         }
     },
     "receiveAsset": {
@@ -154,18 +154,18 @@
     },
     "notifications": {
         "title": "Notifications",
-        "warning": "Notifications are disabled. You turned off notifications in your phone's settings. To activate notifications, go to Settings on this device.",
-        "openSettings": "Open Settings",
+        "warning": "Notifications are off.",
+        "openSettings": "Settings",
         "push": {
             "title": "Push notifications",
-            "subtitle": "Get notifications when you receive BTC."
+            "subtitle": "Get notified when you receive BTC."
         }
     },
     "security": {
         "title": "Security",
         "recoverySheet": {
             "title": "Recovery phrase",
-            "description": "The recovery phrase is used to back up your wallet.",
+            "description": "The recovery phrase is used to back up your wallet.",
             "warning1": "Sharing it gives full control over your wallet.",
             "warning2": "Anyone with it can use your wallet without your account.",
             "cancel": "Cancel",
@@ -183,7 +183,7 @@
         },
         "accountProtected": {
             "title": "Linked devices",
-            "subtitle": "Listed devices have full access to your wallets and can be used to restore access if another device is lost."
+            "subtitle": "These devices have access to your wallets and can help restore access if another device is lost. "
         },
         "device": {
             "added": "Linked {{date}}",
@@ -201,7 +201,7 @@
                 "protect": {
                     "title": "Linked devices",
                     "badge": "Required",
-                    "subtitle": "Link another device as a redundant storage for your wallet keys and other data."
+                    "subtitle": "Link another device as a redundant storage for your wallet keys and other data."
                 },
                 "protection": {
                     "title": "Linked devices",
@@ -222,7 +222,7 @@
                 },
                 "lockScreen": {
                     "title": "Lock screen",
-                    "subtitle": "Require passcode to view wallet contents."
+                    "subtitle": "Require passcode to unlock the app."
                 },
                 "changePasscode": "Change passcode",
                 "eraseAndLogout": "Erase app data and log out"
@@ -233,7 +233,7 @@
                 "defaultName": "Wallet {{number}}",
                 "recovery": {
                     "title": "Recovery phrase",
-                    "subtitle": "Keep it private. View only if necessary. This phrase has never been viewed.",
+                    "subtitle": "Keep it private. View only if necessary. This phrase has never been viewed.",
                     "revealed": "First viewed on {{date}} on {{device}}."
                 }
             }
@@ -241,13 +241,13 @@
     },
     "customizeWallet": {
         "title": "Customize your wallet",
-        "description": "Set a name and icon to tell this wallet apart here. Sync across your devices.",
+        "description": "Set a name and icon to tell this wallet apart here. Sync across your devices.",
         "namePlaceholder": "Wallet name",
         "save": "Save"
     },
     "customizeAccount": {
         "title": "Customize your account",
-        "subtitle": "Name this account to tell it apart here.\nSyncs across your devices.",
+        "subtitle": "Name this account to tell it apart here. Syncs across your devices.",
         "namePlaceholder": "Account name",
         "save": "Save"
     },
@@ -306,7 +306,7 @@
         }
     },
     "signIn": {
-        "title": "Scan QR to sign in",
+        "title": "Scan to sign in",
         "description": {
             "top": "Open Safely on another device.",
             "iconLineStart": "Go to Settings",
@@ -316,8 +316,8 @@
         "banner": "This device will have full access to your account. It can be used if your other device is lost.",
         "timeout": "Connection timed out. Please try again.",
         "success": {
-            "title": "Signed in",
-            "subtitle": "This device now has full access\nto your account.",
+            "title": "Done",
+            "subtitle": "Device linked.",
             "continue": "Continue"
         }
     },
@@ -326,7 +326,7 @@
             "text": "This device is unlinked from your account and does not synchronise with other devices."
         },
         "reconnect": {
-            "title": "Scan to link again",
+            "title": "Link device",
             "description": {
                 "beforeIcon": "Open Safely on another device where this account is active. Go to ",
                 "afterIcon": " Settings, tap “Link device” and scan this QR code."
@@ -339,8 +339,8 @@
     "welcome": {
         "title": "Safely",
         "subtitle": "Your personal wallet. Receive, buy and spend crypto with ease.",
-        "createNew": "Create new account",
-        "importExisting": "Sign in",
+        "createNew": "Start",
+        "importExisting": "Link with QR",
         "legalLine1": "By using Safely, you agree to accept",
         "legalLine2": "our <terms>Terms of Use</terms> and <privacy>Privacy Policy</privacy>."
     },
@@ -359,11 +359,11 @@
             "paste": "Paste"
         },
         "passcode": {
-            "title": "Passcode",
-            "description": "Set a passcode to protect your account.\nIt will be required to unlock the app.",
+            "title": "Create passcode",
+            "description": "Set a passcode to protect your data. It will be required to unlock the app.",
             "reenter": {
                 "title": "Re-enter passcode",
-                "description": "Set a passcode to protect your account.\nIt will be required to unlock the app."
+                "description": "Set a passcode to protect your data. It will be required to unlock the app."
             }
         },
         "customize": {
@@ -372,19 +372,19 @@
         },
         "notifications": {
             "title": "Notifications",
-            "description": "Get alerts when funds arrive.\nNo need to check manually.",
+            "description": "Get alerts when funds arrive. No need to check manually.",
             "enable": "Enable notifications"
         },
         "accountCreated": {
             "title": "Account created",
-            "subtitle": "Link another device to protect your account. Without it, your access can't be restored if this phone is lost.",
+            "subtitle": "Add a second device to avoid losing access to your wallets if your phone is lost.",
             "steps": {
-                "step1": "Install Safely on another device.",
-                "step2": "Tap \"Sign in\" to show a QR code.",
-                "step3": "Tap \"Add device\" below and scan that code — camera access will be required."
+                "step1": "Open Safely on another device.",
+                "step2": "Tap \"Link with QR\".",
+                "step3": "Scan the QR code shown there."
             },
-            "addDevice": "Link device",
-            "protectLater": "Protect account later",
+            "addDevice": "Add second device",
+            "protectLater": "Later",
             "deviceNotAdded": "Device was not added. Please try again."
         }
     },
@@ -423,7 +423,7 @@
         "title": "Add account",
         "subtitle": "Add another account to keep things separate — personal, family, or work.",
         "createNew": "Create new account",
-        "signIn": "Sign in",
+        "signIn": "Link with QR",
         "defaultName": "Account {{number}}",
         "toastAccountCreated": "Account created"
     },
@@ -437,27 +437,27 @@
     "biometry": {
         "enable": "Enable {{name}}",
         "default": {
-            "title": "Biometric Authentication",
-            "description": "Use biometric authentication to unlock your wallet quickly and securely."
+            "title": "Biometric unlock",
+            "description": "Unlock securely with your biometric data. No password needed."
         },
         "face": {
             "ios": {
                 "title": "Face ID",
-                "description": "Unlock securely with a glance. No password needed."
+                "description": "Unlock securely with a glance. No password needed."
             },
             "other": {
                 "title": "Face recognition",
-                "description": "Use face recognition to unlock your wallet quickly and securely."
+                "description": "Unlock securely with a glance. No password needed."
             }
         },
         "fingerprint": {
             "ios": {
                 "title": "Touch ID",
-                "description": "Unlock securely with your fingerprint. No password needed."
+                "description": "Unlock securely with your fingerprint. No password needed."
             },
             "other": {
                 "title": "Fingerprint unlock",
-                "description": "Use your fingerprint to unlock your wallet quickly and securely."
+                "description": "Unlock securely with your fingerprint. No password needed."
             }
         }
     },
