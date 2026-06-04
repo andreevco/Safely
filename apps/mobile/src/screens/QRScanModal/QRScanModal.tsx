@@ -198,6 +198,7 @@ export const QRScanModal = (props: QRScanModalProps) => {
                 clearTimeout(scanningTimeoutId.current);
             }
 
+            await delay(SCAN_SUCCESS_DELAY_MS);
             notificationAsync(NotificationFeedbackType.Success);
             await delay(SCAN_SUCCESS_DELAY_MS);
             onSuccess(value);
