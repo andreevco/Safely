@@ -10,8 +10,8 @@ import { validateSlot } from '../../slots/slot-validation';
 export function patch<
     FromSchema extends z.ZodTypeAny,
     ToSchema extends z.ZodTypeAny,
-    From = z.output<FromSchema>,
-    To = z.output<ToSchema>
+    From extends z.output<FromSchema> = z.output<FromSchema>,
+    To extends z.output<ToSchema> = z.output<ToSchema>
 >(
     fromSchema: FromSchema,
     toSchema: ToSchema,
