@@ -43,7 +43,7 @@ export function useSignOutAccountConfirmation() {
 
                     await eraseAllData();
                 } else {
-                    await deleteAccount();
+                    await deleteAccount(secureEncryptedStorage);
                     toast(t('settings.signOutAccount.toastAccountRemoved'));
                 }
             }
