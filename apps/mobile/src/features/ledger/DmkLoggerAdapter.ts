@@ -7,7 +7,7 @@ export class DmkLoggerAdapter implements LoggerSubscriberService {
     constructor(private readonly logger: Logger) {}
 
     public log(...[level, message, options]: Parameters<LoggerSubscriberService['log']>): void {
-        const text = `[${options.tag}] ${message}`;
+        const text = `${options.tag} ${message}`;
         const args = options.data ? [text, options.data] : [text];
 
         switch (level) {
