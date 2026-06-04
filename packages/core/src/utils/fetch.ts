@@ -1,12 +1,35 @@
-import type { z } from 'zod';
+import { z } from 'zod';
 
-import { BtcApiError } from '../api/btc/errors';
-import { APIErrorSchema } from '../api/btc/models';
+export class ApiError extends Error {
+    public readonly name: string = 'ApiError';
+
+    public readonly status: number;
+
+    public readonly payload?: unknown;
+
+    constructor(message: string, status: number, payload?: unknown) {
+        super(message);
+        this.status = status;
+        this.payload = payload;
+    }
+}
+
+/** API error response. */
+const APIErrorSchema = z.looseObject({
+    error: z.string()
+});
 
 export class ApiClient {
     protected readonly headers: Record<string, string>;
 
-    protected readonly timeoutMs = 5000;
+    protected readonly timeoutMs: number = 5000;
+
+    /** subclasses override to throw their own ApiError subclass */
+    protected readonly errorConstructor: new (
+        message: string,
+        status: number,
+        payload?: unknown
+    ) => ApiError = ApiError;
 
     constructor(
         protected readonly baseUrl: string,
@@ -96,7 +119,7 @@ export class ApiClient {
             return await fetch(url, mergedInit);
         } catch (err) {
             if (err instanceof Error && err.name === 'AbortError') {
-                throw new BtcApiError('Request timed out', 408);
+                throw new this.errorConstructor('Request timed out', 408);
             }
             throw err;
         } finally {
@@ -122,12 +145,12 @@ export class ApiClient {
             const message = errorResult.success
                 ? errorResult.data.error
                 : response.statusText || 'Request failed';
-            throw new BtcApiError(message, response.status, parsed);
+            throw new this.errorConstructor(message, response.status, parsed);
         }
 
         const result = schema.safeParse(parsed);
         if (!result.success) {
-            throw new BtcApiError(
+            throw new this.errorConstructor(
                 `Response validation failed: ${result.error.message}`,
                 response.status,
                 parsed
@@ -152,6 +175,6 @@ export class ApiClient {
             ? errorResult.data.error
             : response.statusText || 'Request failed';
 
-        throw new BtcApiError(message, response.status, parsed);
+        throw new this.errorConstructor(message, response.status, parsed);
     }
 }
