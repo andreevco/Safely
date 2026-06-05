@@ -4,8 +4,11 @@ import { describe, expect, it } from 'vitest';
 import { SyncServer } from './sync-server';
 import type { OnboardingMessage, Snapshot } from '../../src/api/generated';
 import { ed25519_keygen, ed25519_sign } from '../../src/crypto/ed25519';
+import {
+    getServerAddDeviceSignaturePayload,
+    getServerRevokeDeviceSignaturePayload
+} from '../../src/device-manager/device-signature-payload';
 import { getSnapshotProofFromCiphertextHash } from '../../src/update-handler/snapshot-proof';
-import { u8be, utf8 } from '../../src/utils/buffer';
 
 describe('SyncServer', () => {
     it('stores onboarding messages and confirms them', () => {
@@ -216,17 +219,11 @@ describe('SyncServer', () => {
 });
 
 function signAddDevice(dmkSecret: Buffer, ikPub: Buffer): Buffer {
-    return ed25519_sign(
-        Buffer.concat([utf8('safely/sync/v1/server/add_device'), u8be(0x00), ikPub]),
-        dmkSecret
-    );
+    return ed25519_sign(getServerAddDeviceSignaturePayload(ikPub), dmkSecret);
 }
 
 function signRevokeDevice(dmkSecret: Buffer, ikPub: Buffer): Buffer {
-    return ed25519_sign(
-        Buffer.concat([utf8('safely/sync/v1/server/revoke_device'), u8be(0x00), ikPub]),
-        dmkSecret
-    );
+    return ed25519_sign(getServerRevokeDeviceSignaturePayload(ikPub), dmkSecret);
 }
 
 function makeServerWithAccount() {
