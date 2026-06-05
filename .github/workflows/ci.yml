@@ -41,13 +41,35 @@ jobs:
           BASE_SHA=$(git merge-base "origin/$BASE_REF" "$HEAD_SHA")
           echo "sha=$BASE_SHA" >> "$GITHUB_OUTPUT"
           echo "Comparing against merge-base with $BASE_REF: $BASE_SHA"
+          # Root-level changes (lockfile, eslint/tsconfig, patches, …) affect
+          # every package, so lint/test must fall back to a full run.
+          if git diff --name-only "$BASE_SHA" "$HEAD_SHA" | grep -qvE '^(apps|packages)/'; then
+            echo "root_changed=true" >> "$GITHUB_OUTPUT"
+            echo "Root-level files changed — lint/test will run for all packages"
+          else
+            echo "root_changed=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Lint
         env:
           BASE_SHA: ${{ steps.base.outputs.sha }}
-        run: pnpm --filter "...[$BASE_SHA]" run lint
+          ROOT_CHANGED: ${{ steps.base.outputs.root_changed }}
+        # "!safely" excludes the root project: its lint is "pnpm -r run lint",
+        # which would re-lint every package and defeat the changed-only filter.
+        run: |
+          if [ "$ROOT_CHANGED" = "true" ]; then
+            pnpm -r run lint
+          else
+            pnpm --filter "...[$BASE_SHA]" --filter "!safely" run lint
+          fi
 
       - name: Test
         env:
           BASE_SHA: ${{ steps.base.outputs.sha }}
-        run: pnpm --filter "...[$BASE_SHA]" run test
+          ROOT_CHANGED: ${{ steps.base.outputs.root_changed }}
+        run: |
+          if [ "$ROOT_CHANGED" = "true" ]; then
+            pnpm -r run test
+          else
+            pnpm --filter "...[$BASE_SHA]" --filter "!safely" run test
+          fi
