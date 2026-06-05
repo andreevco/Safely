@@ -27,16 +27,7 @@ export class OfflineSyncProvider<Latest extends StorageVersion, Rest> implements
     }
 
     public get<K extends keyof NewOf<Latest>>(k: K): z.output<NewOf<Latest>[K]> {
-        let v: unknown;
-        try {
-            v = this.container.yManager.get(k.toString());
-        } catch (e) {
-            if (e instanceof KeyNotFoundError) {
-                v = null;
-            } else {
-                throw e;
-            }
-        }
+        const v = this.getOrNull(k);
         return v as z.output<NewOf<Latest>[K]>;
     }
 
@@ -55,16 +46,7 @@ export class OfflineSyncProvider<Latest extends StorageVersion, Rest> implements
     ): () => void {
         let lastRevision: SlotRevision | undefined;
         return this.container.yManager.onChange(() => {
-            let v: unknown;
-            try {
-                v = this.container.yManager.get(k.toString());
-            } catch (e) {
-                if (e instanceof KeyNotFoundError) {
-                    v = null;
-                } else {
-                    throw e;
-                }
-            }
+            const v = this.getOrNull(k);
 
             const currentRevision = this.container.yManager.getTopLevelRevision(
                 k.toString() as Extract<keyof z.output<NewOf<Latest>>, string>
@@ -103,5 +85,17 @@ export class OfflineSyncProvider<Latest extends StorageVersion, Rest> implements
 
     public triggerSync(): void {
         // in offline mode, triggerSync doesn't do anything
+    }
+
+    private getOrNull<K extends keyof NewOf<Latest>>(k: K): unknown {
+        try {
+            return this.container.yManager.get(k.toString());
+        } catch (e) {
+            if (e instanceof KeyNotFoundError) {
+                return null;
+            }
+
+            throw e;
+        }
     }
 }
