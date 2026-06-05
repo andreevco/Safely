@@ -39,7 +39,7 @@ export class VersionPropagation {
             }
 
             const projected = toVersion.projectUp(current);
-            this.validateProjection(toVersion, projected);
+            this.validateVersionSlot(toVersion, projected);
             current = this.mergeIntoExistingVersion(root, toVersion, projected, protocol, {
                 updateExisting: true,
                 createMissing: false
@@ -69,7 +69,7 @@ export class VersionPropagation {
             const toVersion = this.versions[index - 1];
 
             const projected = fromVersion.projectDown(current);
-            this.validateProjection(toVersion, projected);
+            this.validateVersionSlot(toVersion, projected);
             current = this.mergeIntoExistingVersion(root, toVersion, projected, protocol, {
                 updateExisting: deviceVersions.has(toVersion.version),
                 createMissing: deviceVersions.has(toVersion.version)
@@ -139,7 +139,7 @@ export class VersionPropagation {
         return projected;
     }
 
-    private validateProjection(version: StorageVersion, projected: ContainerSlot): void {
+    private validateVersionSlot(version: StorageVersion, projected: ContainerSlot): void {
         validateSlot(projected);
         version.schema.parse(stripSlot(projected));
     }
