@@ -62,6 +62,14 @@ export const QueryProvider: FC<
     const isReady = hydratedAt !== null;
 
     useEffect(() => {
+        if (!isReady) return;
+
+        void queryClient.invalidateQueries({
+            predicate: q => Boolean(q.meta?.persist)
+        });
+    }, [isReady, queryClient]);
+
+    useEffect(() => {
         if (!eventListeners) return;
 
         if (eventListeners.onlineManager) {
