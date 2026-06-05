@@ -89,24 +89,6 @@ export class UpdateHandler<Latest extends StorageVersion, Rest> {
 
         await this.deviceManagementService.activate();
 
-        // TODO
-        // Suppose following scenario:
-        // - User has two devices A (online) and B (offline)
-        // - User adds device C from A, and then send snapshots to server from C
-        // - B comes online and receives snapshot from server, but there is no yet device C in the B's device list
-        // - To prevent deadlock (B needs to verify snapshot with C's signature, but to do so it needs to read C's
-        //   snapshot), we first apply any device ops from the update, and only then verify IK signature of the snapshot.
-        // Security considerations:
-        // - If the attacker can create a valid device update, then they can get access to all the private keys from compromised
-        //   device (including wallet secrets) at which point they can do much more harm than just sending invalid snapshots.
-        //   At this point we cant really protect user, so this is acceptable scenario.
-        //
-        // IK signature verification is intentionally disabled for now. Legal delete/revoke flows can leave the
-        // snapshot signer already revoked locally, or even deliver a snapshot where the signing remote device is revoked
-        // by the same update, which makes authenticity verification fail for a valid snapshot. This does not add
-        // meaningful security risk in the current flow, and the signature itself may be removed later.
-        // await this.updateDecryptor.verifyIKSig(upd);
-
         this.logger.debug('Applying update to local CRDT document...');
         await this.yManager.applyUpdate(payload.userStorage, 'remote');
 

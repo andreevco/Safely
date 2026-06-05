@@ -1,6 +1,5 @@
 import type { DeviceRepository } from './device-repository';
 import type { Device, StoredDevice } from './device-storage-schema';
-import { ed25519_verify } from '../crypto/ed25519';
 import type { DmkSignerService } from '../crypto/service/dmk-signer-service';
 import type { DmkVerifierService } from '../crypto/service/dmk-verifier-service';
 import type { IkService } from '../crypto/service/ik-service';
@@ -141,27 +140,6 @@ export class DeviceManagementService {
         }
 
         await this.deviceRepository.applyUpdate(update);
-    }
-
-    public async verifyDeviceIKSig(opts: {
-        kid: Buffer;
-        sig: Buffer;
-        data: Buffer;
-    }): Promise<boolean> {
-        const devices = await this.getDevices();
-        if (devices.length === 0) {
-            return true; // first sync
-        }
-
-        for (const device of devices) {
-            const kid = Buffer.from(getKID(device.info.ikPub), 'hex');
-            if (kid.equals(opts.kid)) {
-                return ed25519_verify(opts.sig, opts.data, device.info.ikPub);
-            }
-        }
-        throw new UnknownDeviceError(
-            `Device with the given KID ${opts.kid.toString('hex')} not found.`
-        );
     }
 
     public async verifyStoredDevice(device: StoredDevice): Promise<void> {

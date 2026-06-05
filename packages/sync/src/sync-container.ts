@@ -123,7 +123,7 @@ export async function createSyncContainer<Latest extends StorageVersion, Rest>(o
         ikService,
         syncStateRepository
     );
-    const updateDecryptor = new UpdateDecryptorService(syncKeyService, deviceManager);
+    const updateDecryptor = new UpdateDecryptorService(syncKeyService);
 
     const updateHandler = new UpdateHandler<Latest, Rest>(
         syncStateRepository,
