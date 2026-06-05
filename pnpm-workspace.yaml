@@ -38,3 +38,6 @@ allowBuilds:
   unrs-resolver: false
   esbuild: false
   dtrace-provider: false
+
+patchedDependencies:
+  expo-blur@15.0.8: patches/expo-blur@15.0.8.patch

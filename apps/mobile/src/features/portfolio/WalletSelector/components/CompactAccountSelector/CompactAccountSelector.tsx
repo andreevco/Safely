@@ -75,7 +75,7 @@ export const CompactAccountSelector = () => {
                 footer={
                     <View style={styles.footer}>
                         {portfolios.length > 1 && (
-                            <Text variant="bodyM" color="secondary">
+                            <Text variant="bodyM" color="secondary" textAlign="center">
                                 {t('portfoliosPopup.reorderHint')}
                             </Text>
                         )}

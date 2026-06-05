@@ -24,7 +24,7 @@ export type BlurProps = {
 export const Blur = ({ blurAnimatedProps, style, pointerEvents = 'none' }: BlurProps) => {
     return SUPPORTS_BLUR ? (
         <AnimatedBlurView
-            blurMethod={'dimezisBlurView'}
+            experimentalBlurMethod={'dimezisBlurView'}
             tint={'dark'}
             style={style}
             pointerEvents={pointerEvents}

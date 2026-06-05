@@ -126,7 +126,7 @@ export const AddressInput = (props: AddressInputProps) => {
             )}
             <View style={styles.container}>
                 <View
-                    style={styles.inputModeBox}
+                    style={[styles.inputModeBox, !hasValue && styles.emptyInputBox]}
                     onLayout={e => setBoxWidth(e.nativeEvent.layout.width)}
                 >
                     <TextInput
@@ -154,32 +154,32 @@ export const AddressInput = (props: AddressInputProps) => {
                             containerWidth={boxWidth}
                         />
                     )}
-                </View>
-                {isSuggestionsMeta && (
-                    <Pressable style={styles.selectedContent} onPress={handleSelectedPress}>
-                        {selectedPortfolioMeta ? (
-                            <PortfolioName
-                                gap={8}
-                                meta={selectedPortfolioMeta}
-                                size={16}
-                                fontVariant="bodyL"
-                            />
-                        ) : (
-                            selectedContactMeta && (
-                                <ContactName
+                    {isSuggestionsMeta && (
+                        <Pressable style={styles.selectedContent} onPress={handleSelectedPress}>
+                            {selectedPortfolioMeta ? (
+                                <PortfolioName
                                     gap={8}
-                                    meta={selectedContactMeta}
+                                    meta={selectedPortfolioMeta}
                                     size={16}
                                     fontVariant="bodyL"
                                 />
-                            )
-                        )}
-                        <Text variant="bodyL" color="tertiary">
-                            {ellipsisMiddle(value)}
-                        </Text>
-                        <BlinkingCursor color={theme.colors.accent.blue} />
-                    </Pressable>
-                )}
+                            ) : (
+                                selectedContactMeta && (
+                                    <ContactName
+                                        gap={8}
+                                        meta={selectedContactMeta}
+                                        size={16}
+                                        fontVariant="bodyL"
+                                    />
+                                )
+                            )}
+                            <Text variant="bodyL" color="tertiary">
+                                {ellipsisMiddle(value)}
+                            </Text>
+                            <BlinkingCursor color={theme.colors.accent.blue} />
+                        </Pressable>
+                    )}
+                </View>
 
                 {hasValue ? (
                     <TouchableOpacity
