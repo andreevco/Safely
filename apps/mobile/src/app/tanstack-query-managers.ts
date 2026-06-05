@@ -1,29 +1,36 @@
-import { focusManager, onlineManager } from '@tanstack/react-query';
 import * as Network from 'expo-network';
 import { AppState, Platform, type AppStateStatus } from 'react-native';
 
-export function setupTanstackQueryManagers(): void {
-    onlineManager.setEventListener(setOnline => {
-        void Network.getNetworkStateAsync()
-            .then(state => setOnline(Boolean(state.isConnected)))
-            .catch(() => setOnline(true));
+import type { EventListeners } from '@safely/ux';
 
-        const subscription = Network.addNetworkStateListener(state => {
-            setOnline(Boolean(state.isConnected));
-        });
+export function createTanstackEventListeners(): EventListeners {
+    const eventListeners: EventListeners = {
+        onlineManager: setOnline => {
+            const checkOnline = () => {
+                void Network.getNetworkStateAsync()
+                    .then(state => setOnline(Boolean(state.isConnected)))
+                    .catch(() => setOnline(true));
+            };
 
-        return () => subscription.remove();
-    });
+            checkOnline();
 
-    if (Platform.OS === 'web') return;
+            const onlineStatusPollingInterval = setInterval(checkOnline, 3000);
 
-    focusManager.setEventListener(setFocused => {
-        const onAppStateChange = (status: AppStateStatus) => {
-            setFocused(status === 'active');
+            return () => clearInterval(onlineStatusPollingInterval);
+        }
+    };
+
+    if (Platform.OS !== 'web') {
+        eventListeners.focusManager = setFocused => {
+            const onAppStateChange = (status: AppStateStatus) => {
+                setFocused(status === 'active');
+            };
+
+            const subscription = AppState.addEventListener('change', onAppStateChange);
+
+            return () => subscription.remove();
         };
+    }
 
-        const subscription = AppState.addEventListener('change', onAppStateChange);
-
-        return () => subscription.remove();
-    });
+    return eventListeners;
 }
