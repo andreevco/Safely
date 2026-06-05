@@ -3,6 +3,7 @@ import { CommonActions } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { TEST_ID } from '@mobile/shared/constants';
 import { Cell, List } from '@mobile/shared/ui';
 
 import { useAddWalletFlow } from '../useAddWalletFlow';
@@ -31,7 +32,7 @@ export const AddWalletOptions = () => {
                     </Cell.Content>
                     <Cell.Chevron />
                 </Cell>
-                <Cell onPress={startImportFlow}>
+                <Cell testID={TEST_ID.addWallet.importExisting} onPress={startImportFlow}>
                     <Cell.Content>
                         <Cell.Row>
                             <Cell.Title>{t('addWallet.importExisting.title')}</Cell.Title>

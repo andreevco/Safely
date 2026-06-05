@@ -4,6 +4,7 @@ import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
 import { useParseError } from '@safely/ux';
 
+import { TEST_ID } from '@mobile/shared/constants';
 import { Button, SlideButton, Text } from '@mobile/shared/ui';
 
 import { styles } from './ConfirmationFooter.styles';
@@ -57,6 +58,7 @@ export const ConfirmationFooter = (props: Props) => {
             {(state.type === 'idle' || state.type === 'sending') && (
                 <Animated.View exiting={FadeOut.duration(150)}>
                     <SlideButton
+                        knobTestID={TEST_ID.confirmation.sliderKnob}
                         label={t('confirmation.slider.send')}
                         description={
                             isEstimating
@@ -75,7 +77,12 @@ export const ConfirmationFooter = (props: Props) => {
                     entering={FadeIn.duration(150)}
                     exiting={FadeOut.duration(150)}
                 >
-                    <Button size="large" type="secondary" onPress={onGoBack}>
+                    <Button
+                        testID={TEST_ID.confirmation.backToWallet}
+                        size="large"
+                        type="secondary"
+                        onPress={onGoBack}
+                    >
                         {t('confirmation.slider.backToWallet')}
                     </Button>
                 </Animated.View>

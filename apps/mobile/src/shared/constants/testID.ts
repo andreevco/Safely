@@ -18,6 +18,38 @@ export const TEST_ID = {
         addDevice: 'accountCreated.addDevice'
     },
     home: {
-        settingsButton: 'home.settingsButton'
+        settingsButton: 'home.settingsButton',
+        walletSelector: 'home.walletSelector',
+        sendButton: 'home.sendButton',
+        receiveButton: 'home.receiveButton'
+    },
+    receive: {
+        address: 'receive.address'
+    },
+    accounts: {
+        addWallet: 'accounts.addWallet'
+    },
+    addWallet: {
+        importExisting: 'addWallet.importExisting'
+    },
+    importWallet: {
+        continueButton: 'importWallet.continueButton'
+    },
+    customizeWallet: {
+        saveButton: 'customizeWallet.saveButton'
+    },
+    passcodeVerification: {
+        screen: 'passcodeVerification.screen'
+    },
+    send: {
+        addressInput: 'send.addressInput',
+        nextButton: 'send.nextButton',
+        amountInput: 'send.amountInput',
+        switchAmountMode: 'send.switchAmountMode'
+    },
+    confirmation: {
+        fee: 'confirmation.fee',
+        sliderKnob: 'confirmation.sliderKnob',
+        backToWallet: 'confirmation.backToWallet'
     }
 } as const;

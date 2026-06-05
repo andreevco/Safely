@@ -3,3 +3,13 @@ flows:
 
 includeTags:
     - smoke
+
+# The flows form a chain: each one starts from the state the previous one
+# finished in (fresh onboarding -> import a wallet -> send from it),
+# so the order matters and a failed flow invalidates the rest.
+executionOrder:
+    continueOnFailure: false
+    flowsOrder:
+        - onboarding-create-wallet
+        - import-wallet
+        - send-asset
