@@ -71,7 +71,7 @@ export const ImportWalletScreen = () => {
                     {t('common.continue')}
                 </Button>
             </Screen.Header>
-            <Screen.Scrollable>
+            <Screen.Content>
                 <CapturePreventionScreen
                     style={styles.captureScreen}
                     onUnsupported={() =>
@@ -87,7 +87,6 @@ export const ImportWalletScreen = () => {
                                 {t('onboarding.importWallet.description')}
                             </Text>
                         </View>
-
                         <NativeInput
                             ref={inputRef}
                             value={text}
@@ -97,7 +96,6 @@ export const ImportWalletScreen = () => {
                             placeholder={t('onboarding.importWallet.placeholder')}
                             multiline
                         />
-
                         {error && (
                             <Text variant="bodyM" color="accentRed">
                                 {error}
@@ -105,7 +103,7 @@ export const ImportWalletScreen = () => {
                         )}
                     </View>
                 </CapturePreventionScreen>
-            </Screen.Scrollable>
+            </Screen.Content>
         </Screen>
     );
 };

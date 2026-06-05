@@ -6,7 +6,6 @@ class SafelyCapturePreventionView: ExpoView {
 
     private let secureField = UITextField()
     private let childrenContainer = UIView()
-    private weak var secureCanvas: UIView?
     private var isProtected = false
 
     required init(appContext: AppContext? = nil) {
@@ -34,7 +33,6 @@ class SafelyCapturePreventionView: ExpoView {
     override func layoutSubviews() {
         super.layoutSubviews()
         secureField.frame = bounds
-        secureCanvas?.frame = bounds
         childrenContainer.frame = bounds
     }
 
@@ -42,22 +40,18 @@ class SafelyCapturePreventionView: ExpoView {
         guard !isProtected, window != nil else { return }
         secureField.layoutIfNeeded()
 
-        guard let canvas = findSecureCanvas(in: secureField) else {
+        guard let secureLayer = findSecureLayer(in: secureField) else {
             onUnsupported()
             return
         }
 
         isProtected = true
-        canvas.isUserInteractionEnabled = true
-        canvas.frame = bounds
-        addSubview(canvas)
-        canvas.addSubview(childrenContainer)
-        secureCanvas = canvas
+        secureLayer.addSublayer(childrenContainer.layer)
     }
 
-    private func findSecureCanvas(in field: UITextField) -> UIView? {
-        field.subviews.first(where: {
+    private func findSecureLayer(in field: UITextField) -> CALayer? {
+        field.subviews.first {
             String(describing: type(of: $0)).contains("CanvasView")
-        })
+        }?.layer
     }
 }
