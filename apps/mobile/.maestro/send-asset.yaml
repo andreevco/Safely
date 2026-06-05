@@ -1,5 +1,5 @@
-# Step 3 of the e2e chain: sends 0.00001 BTC from the wallet imported by
-# import-wallet (it is the active one) to MAESTRO_RECIPIENT_ADDRESS.
+# Step 5 (last) of the e2e chain: sends 0.00001 BTC from the wallet imported
+# by import-wallet (it is the active one) to MAESTRO_RECIPIENT_ADDRESS.
 appId: com.aco.swallet
 name: send-asset
 tags:

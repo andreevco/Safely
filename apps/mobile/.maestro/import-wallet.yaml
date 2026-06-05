@@ -1,6 +1,7 @@
-# Step 2 of the e2e chain: imports a wallet from MAESTRO_SEED_PHRASE.
-# Starts from the state onboarding-create-wallet finished in:
-# a created wallet on the home screen, passcode 1234, biometry skipped.
+# Step 4 of the e2e chain: imports a wallet from MAESTRO_SEED_PHRASE.
+# Needs an onboarded state: a wallet on the home screen, passcode 1234,
+# biometry skipped. Must run right before send-asset — the imported wallet
+# becomes the active one, and send-asset sends from the active wallet.
 appId: com.aco.swallet
 name: import-wallet
 tags:

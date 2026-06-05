@@ -1,0 +1,51 @@
+# Step 2 of the e2e chain: adds a second wallet via "Create new".
+# Starts from the state onboarding-create-wallet finished in:
+# a created wallet on the home screen, passcode 1234, biometry skipped.
+appId: com.aco.swallet
+name: create-wallet
+tags:
+    - smoke
+    - add-wallet
+---
+# Relaunch WITHOUT clearState — we continue on top of the previous flow's state.
+- launchApp
+
+- extendedWaitUntil:
+      visible:
+          id: 'home.walletSelector'
+      timeout: 60000
+
+# Wallet selector popup -> "Add wallet" -> "Create new".
+- tapOn:
+      id: 'home.walletSelector'
+- tapOn:
+      id: 'accounts.addWallet'
+- tapOn:
+      id: 'addWallet.createNew'
+
+# Customize step: the name is prefilled, just save.
+- extendedWaitUntil:
+      visible:
+          id: 'customizeWallet.saveButton'
+      timeout: 15000
+- tapOn:
+      id: 'customizeWallet.saveButton'
+
+# Encrypting the new secret requires passcode verification.
+- extendedWaitUntil:
+      visible:
+          id: 'passcodeVerification.screen'
+      timeout: 15000
+- tapOn: '1'
+- tapOn: '2'
+- tapOn: '3'
+- tapOn: '4'
+
+# Wallet generation, then navigation resets to home
+# with the new wallet active.
+- extendedWaitUntil:
+      visible:
+          id: 'home.settingsButton'
+      timeout: 60000
+- assertVisible:
+      id: 'home.settingsButton'

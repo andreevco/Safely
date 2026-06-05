@@ -21,7 +21,7 @@ export const AddWalletOptions = () => {
     return (
         <List style={styles.list}>
             <List.Group variant="separated">
-                <Cell onPress={startCreateFlow}>
+                <Cell testID={TEST_ID.addWallet.createNew} onPress={startCreateFlow}>
                     <Cell.Content>
                         <Cell.Row>
                             <Cell.Title>{t('addWallet.createNew.title')}</Cell.Title>
@@ -43,7 +43,7 @@ export const AddWalletOptions = () => {
                     </Cell.Content>
                     <Cell.Chevron />
                 </Cell>
-                <Cell onPress={startWatchOnlyFlow}>
+                <Cell testID={TEST_ID.addWallet.watchAccount} onPress={startWatchOnlyFlow}>
                     <Cell.Content>
                         <Cell.Row>
                             <Cell.Title>{t('addWallet.watchAccount.title')}</Cell.Title>
