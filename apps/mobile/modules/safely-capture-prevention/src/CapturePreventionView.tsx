@@ -3,16 +3,16 @@ import { allowScreenCaptureAsync, preventScreenCaptureAsync } from 'expo-screen-
 import { useEffect, useId, type ReactNode } from 'react';
 import { Platform, View, type ViewProps } from 'react-native';
 
-export interface CapturePreventionScreenProps extends ViewProps {
+export interface CapturePreventionViewProps extends ViewProps {
     children?: ReactNode;
     onUnsupported?: () => void;
 }
 
-const AndroidCapturePreventionScreen = ({
+const AndroidCapturePreventionView = ({
     children,
     onUnsupported,
     ...props
-}: CapturePreventionScreenProps) => {
+}: CapturePreventionViewProps) => {
     const tag = useId();
 
     useEffect(() => {
@@ -28,7 +28,7 @@ const AndroidCapturePreventionScreen = ({
     return <View {...props}>{children}</View>;
 };
 
-export const CapturePreventionScreen =
+export const CapturePreventionView =
     Platform.OS === 'ios'
         ? requireNativeViewManager('SafelyCapturePrevention')!
-        : AndroidCapturePreventionScreen;
+        : AndroidCapturePreventionView;

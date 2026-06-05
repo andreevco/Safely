@@ -10,7 +10,7 @@ import { ExclamationmarkCircle16, Icon } from '@mobile/shared/ui/Icon';
 import { useCopy } from '@mobile/shared/utils/copy';
 
 import { styles } from './RecoveryPhraseSheet.styles';
-import { CapturePreventionScreen } from '../../../../../modules/safely-capture-prevention/src';
+import { CapturePreventionView } from '../../../../../modules/safely-capture-prevention/src';
 
 type RecoveryPhraseSheetProps = StaticScreenProps<{
     mnemonic: string[];
@@ -39,7 +39,7 @@ export const RecoveryPhraseSheet = (props: RecoveryPhraseSheetProps) => {
                 <Screen.Header.CloseButton />
             </Screen.Header>
             <Screen.Content>
-                <CapturePreventionScreen
+                <CapturePreventionView
                     style={styles.captureScreen}
                     onUnsupported={() =>
                         logger.error('[RecoveryPhraseSheet] capture protection unavailable')
@@ -91,7 +91,7 @@ export const RecoveryPhraseSheet = (props: RecoveryPhraseSheetProps) => {
                             {t('security.phraseSheet.copy')}
                         </Button>
                     </View>
-                </CapturePreventionScreen>
+                </CapturePreventionView>
             </Screen.Content>
         </Screen>
     );

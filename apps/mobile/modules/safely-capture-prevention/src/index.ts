@@ -1,2 +1,2 @@
-export { CapturePreventionScreen } from './CapturePreventionScreen';
-export type { CapturePreventionScreenProps } from './CapturePreventionScreen';
+export { CapturePreventionView } from './CapturePreventionView';
+export type { CapturePreventionViewProps } from './CapturePreventionView';

@@ -12,7 +12,7 @@ import { Button, NativeInput, Screen, Text, type NativeInputRef } from '@mobile/
 import { maskSeedPhraseInput } from '@mobile/shared/utils';
 
 import { styles } from './ImportWalletScreen.styles';
-import { CapturePreventionScreen } from '../../../modules/safely-capture-prevention/src';
+import { CapturePreventionView } from '../../../modules/safely-capture-prevention/src';
 
 export const ImportWalletScreen = () => {
     const { t } = useTranslation();
@@ -72,7 +72,7 @@ export const ImportWalletScreen = () => {
                 </Button>
             </Screen.Header>
             <Screen.Content>
-                <CapturePreventionScreen
+                <CapturePreventionView
                     style={styles.captureScreen}
                     onUnsupported={() =>
                         logger.error('[ImportWalletScreen] capture protection unavailable')
@@ -102,7 +102,7 @@ export const ImportWalletScreen = () => {
                             </Text>
                         )}
                     </View>
-                </CapturePreventionScreen>
+                </CapturePreventionView>
             </Screen.Content>
         </Screen>
     );
