@@ -19,6 +19,7 @@ import { SuggestionSource, useScanQrScheme } from '@safely/ux';
 
 import { ContactName } from '@mobile/entities/contact';
 import { PortfolioName } from '@mobile/entities/portfolio';
+import { TEST_ID } from '@mobile/shared/constants';
 import { Icon, QrCodeScan28, XmarkCircle16 } from '@mobile/shared/ui/Icon';
 import { Text } from '@mobile/shared/ui/Text';
 import { TouchableOpacity } from '@mobile/shared/ui/TouchableOpacity';
@@ -130,6 +131,7 @@ export const AddressInput = (props: AddressInputProps) => {
                     onLayout={e => setBoxWidth(e.nativeEvent.layout.width)}
                 >
                     <TextInput
+                        testID={TEST_ID.send.addressInput}
                         ref={textInputRef}
                         value={value}
                         onChangeText={handleChangeText}

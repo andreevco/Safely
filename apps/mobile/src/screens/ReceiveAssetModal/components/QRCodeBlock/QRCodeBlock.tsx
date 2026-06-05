@@ -7,6 +7,7 @@ import QRCode from 'react-native-qrcode-skia';
 import type { CryptoAsset } from '@safely/core';
 import { useIsActiveWalletWatchOnly } from '@safely/ux';
 
+import { TEST_ID } from '@mobile/shared/constants';
 import { Badge, Text, Image, TouchableOpacity } from '@mobile/shared/ui';
 
 import { ReceiveCopyToast, useReceiveCopy } from '../ReceiveCopyToastProvider';
@@ -49,6 +50,7 @@ export const QRCodeBlock = (props: QRCodeBlockProps) => {
             </View>
             <TouchableOpacity onPress={handleCopyAddress}>
                 <Text
+                    testID={TEST_ID.receive.address}
                     textAlign="center"
                     style={styles.address}
                     variant="bodyLMono"

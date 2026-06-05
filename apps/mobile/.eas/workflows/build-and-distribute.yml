@@ -108,13 +108,25 @@ jobs:
 
   # Runs on the same APK we ship to Firebase (no separate e2e build),
   # in parallel with distribute_android.
+  # The flows are a chain — each starts from the state the previous one left
+  # (onboarding -> add wallets -> import wallet -> send), so the order below
+  # matters. The flows read MAESTRO_SEED_PHRASE / MAESTRO_IMPORTED_WALLET_ADDRESS /
+  # MAESTRO_WATCH_ONLY_ADDRESS / MAESTRO_RECIPIENT_ADDRESS from the EAS
+  # environment (Maestro exposes MAESTRO_-prefixed env vars to flows).
   e2e_android:
     name: E2E (Maestro, Android)
     type: maestro
     needs: [build_android]
     params:
       build_id: ${{ needs.build_android.outputs.build_id }}
-      flow_path: ['.maestro/onboarding-create-wallet.yaml']
+      flow_path:
+        [
+          '.maestro/onboarding-create-wallet.yaml',
+          '.maestro/create-wallet.yaml',
+          '.maestro/add-watch-only.yaml',
+          '.maestro/import-wallet.yaml',
+          '.maestro/send-asset.yaml',
+        ]
 
   # Aggregates TestFlight + Firebase + e2e results into a Slack message.
   # `after` => runs regardless of upstream success/failure, and lets us read
