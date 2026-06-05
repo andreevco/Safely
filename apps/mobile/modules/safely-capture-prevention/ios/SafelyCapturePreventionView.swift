@@ -56,11 +56,8 @@ class SafelyCapturePreventionView: ExpoView {
     }
 
     private func findSecureCanvas(in field: UITextField) -> UIView? {
-        if let canvas = field.subviews.first(where: {
+        field.subviews.first(where: {
             String(describing: type(of: $0)).contains("CanvasView")
-        }) {
-            return canvas
-        }
-        return field.subviews.first
+        })
     }
 }

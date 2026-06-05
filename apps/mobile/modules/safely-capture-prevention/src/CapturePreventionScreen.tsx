@@ -8,12 +8,21 @@ export interface CapturePreventionScreenProps extends ViewProps {
     onUnsupported?: () => void;
 }
 
-const AndroidCapturePreventionScreen = ({ children, ...props }: CapturePreventionScreenProps) => {
+const AndroidCapturePreventionScreen = ({
+    children,
+    onUnsupported,
+    ...props
+}: CapturePreventionScreenProps) => {
     const tag = useId();
 
     useEffect(() => {
-        void preventScreenCaptureAsync(tag);
-        return () => void allowScreenCaptureAsync(tag);
+        preventScreenCaptureAsync(tag).catch(() => {
+            onUnsupported?.();
+        });
+        return () => {
+            void allowScreenCaptureAsync(tag);
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [tag]);
 
     return <View {...props}>{children}</View>;
