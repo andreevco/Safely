@@ -7,7 +7,7 @@ import {
 
 import type { IDerivation } from '../derivation';
 import { Derivation, DerivationChainItemBtcSeed } from '../derivation';
-import type { IPortfolioDerivable, PortfolioSecretRevealedStatus } from './I-portfolio';
+import type { IPortfolioBip39, PortfolioSecretRevealedStatus } from './I-portfolio';
 import { PortfolioType } from './I-portfolio';
 import type { PortfolioIdBip39 } from './portfolio-id-bip39';
 import { toPortfolioIdBip39 } from './portfolio-id-bip39';
@@ -25,7 +25,7 @@ import { MNEMONIC_TYPE, validateMnemonic } from '../mnemonic';
 import { MnemonicResource, MnemonicVault } from '../mnemonic';
 import { BtcBip39SeedProducer } from '../seed';
 
-export class PortfolioBip39 implements IPortfolioDerivable {
+export class PortfolioBip39 implements IPortfolioBip39 {
     public static async createSerializedPortfolio({
         encryptor,
         mnemonicAccessor,

@@ -2,7 +2,8 @@ import z from 'zod';
 
 export const sActivePortfolioSchema = z
     .object({
-        portfolioId: z.string()
+        portfolioId: z.string(),
+        derivationIndex: z.number().optional()
     })
     .nullable();
 

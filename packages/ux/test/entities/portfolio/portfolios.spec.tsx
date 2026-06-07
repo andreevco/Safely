@@ -106,7 +106,7 @@ async function makeImportedPortfolio(
         mnemonicAccessor: accessor,
         options: { meta: { name } }
     });
-    return PortfolioFactory.restorePortfolio(encryptor, serialized) as PortfolioBip39;
+    return PortfolioFactory.restorePortfolio(serialized, { encryptor }) as PortfolioBip39;
 }
 
 async function makeDerivedPortfolio(
@@ -127,10 +127,9 @@ async function makeDerivedPortfolio(
         mnemonicAccessor: accessor,
         options: { meta: { name } }
     });
-    return PortfolioFactory.restorePortfolio(
-        new SecretEncryptor(account.secretEncryptor, storage),
-        serialized
-    ) as PortfolioBip39;
+    return PortfolioFactory.restorePortfolio(serialized, {
+        encryptor: new SecretEncryptor(account.secretEncryptor, storage)
+    }) as PortfolioBip39;
 }
 
 const ICON: PortfolioMeta['icon'] = { type: 'emoji', value: '🦊' };

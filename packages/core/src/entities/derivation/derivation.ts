@@ -1,6 +1,6 @@
 import { type SDerivation, sDerivation } from '@safely/sync-storage';
 
-import type { IPortfolioDerivable } from '../portfolio';
+import type { IPortfolioBase } from '../portfolio';
 import { DerivationId } from './derivation-id';
 import type { IDerivation, IDerivationChains } from './I-derivation';
 
@@ -14,7 +14,7 @@ export class Derivation implements IDerivation {
     }
 
     constructor(
-        public portfolioRef: IPortfolioDerivable,
+        public portfolioRef: IPortfolioBase,
         index: number,
         chains: IDerivationChains | ((self: Derivation) => IDerivationChains)
     ) {

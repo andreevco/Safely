@@ -31,7 +31,7 @@ export function mapPortfolioToSuggestions(
     return derivations
         .filter(d => !(isActivePortfolio && active?.derivation && d.id.isEq(active.derivation.id)))
         .map(derivation => ({
-            id: portfolio.id.toString(),
+            id: derivation.id.toString(),
             address: derivation.chains.btc.wallets[0]?.address,
             meta: portfolio.meta,
             tag: derivations.length > 1 ? derivation.index + 1 : undefined

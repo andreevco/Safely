@@ -46,7 +46,7 @@ async function createBip39Portfolio(
             seedRevealedFromDevice: options.seedRevealedFromDevice
         }
     });
-    return PortfolioFactory.restorePortfolio(encryptor, serialized) as PortfolioBip39;
+    return PortfolioFactory.restorePortfolio(serialized, { encryptor }) as PortfolioBip39;
 }
 
 describe('PortfolioBip39 generation', () => {
@@ -122,7 +122,7 @@ describe('PortfolioBip39 serialization', () => {
 
         const json = portfolio.toJSON();
         const parsed = sPortfolio.parse(JSON.parse(JSON.stringify(json))) as SPortfolioBip39;
-        const restored = PortfolioFactory.restorePortfolio(encryptor, parsed) as PortfolioBip39;
+        const restored = PortfolioFactory.restorePortfolio(parsed, { encryptor }) as PortfolioBip39;
 
         expect(restored.derivations[0].chains.btc.wallets[0].address).toBe(
             portfolio.derivations[0].chains.btc.wallets[0].address
@@ -148,7 +148,7 @@ describe('PortfolioBip39 serialization', () => {
         expect(portfolio.secretRevealedStatus?.revealedFromDevice).toBe('TEST_DEVICE_NAME');
 
         const parsed = sPortfolio.parse(JSON.parse(JSON.stringify(portfolio))) as SPortfolioBip39;
-        const restored = PortfolioFactory.restorePortfolio(encryptor, parsed) as PortfolioBip39;
+        const restored = PortfolioFactory.restorePortfolio(parsed, { encryptor }) as PortfolioBip39;
 
         expect(restored.secretRevealedStatus?.revealedFromDevice).toBe('TEST_DEVICE_NAME');
         expect(restored.secretRevealedStatus?.revealedAt.getTime()).toBe(
@@ -404,10 +404,9 @@ describe('PortfolioBip39 derivations', () => {
             { network: PortfolioNetworkType.TESTNET, meta: { name: 'BTC Testnet Portfolio' } }
         );
 
-        const restored = PortfolioFactory.restorePortfolio(
-            encryptor,
-            sPortfolio.parse(portfolio.toJSON())
-        ) as PortfolioBip39;
+        const restored = PortfolioFactory.restorePortfolio(sPortfolio.parse(portfolio.toJSON()), {
+            encryptor
+        }) as PortfolioBip39;
 
         expect(restored.networkType).toBe(PortfolioNetworkType.TESTNET);
         expect(restored.meta.name).toBe('BTC Testnet Portfolio');
@@ -513,10 +512,9 @@ describe('PortfolioWatchOnlyBtc', () => {
             META
         );
 
-        const restored = PortfolioFactory.restorePortfolio(
-            encryptor,
-            sPortfolio.parse(portfolio.toJSON())
-        );
+        const restored = PortfolioFactory.restorePortfolio(sPortfolio.parse(portfolio.toJSON()), {
+            encryptor
+        });
 
         if (restored.type !== PortfolioType.WATCH_ONLY) {
             throw new Error('expected watch-only');
@@ -556,10 +554,9 @@ describe('PortfolioWatchOnlyBtc', () => {
         expect(portfolio.wallet.xpub).toBe(xpub);
         expect(portfolio.wallet.address.startsWith('bc1q')).toBe(true);
 
-        const restored = PortfolioFactory.restorePortfolio(
-            encryptor,
-            sPortfolio.parse(portfolio.toJSON())
-        );
+        const restored = PortfolioFactory.restorePortfolio(sPortfolio.parse(portfolio.toJSON()), {
+            encryptor
+        });
         if (restored.type !== PortfolioType.WATCH_ONLY) {
             throw new Error('expected watch-only');
         }

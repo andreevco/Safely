@@ -1,13 +1,7 @@
-import { DeviceActionStatus } from '@ledgerhq/device-management-kit';
-import type {
-    DeviceActionIntermediateValue,
-    DeviceActionState,
-    DeviceManagementKit,
-    DmkError
-} from '@ledgerhq/device-management-kit';
+import type { DeviceManagementKit } from '@ledgerhq/device-management-kit';
 import { SignerBtcBuilder } from '@ledgerhq/device-signer-kit-bitcoin';
-import type { Observable } from 'rxjs';
 
+import { awaitDeviceAction } from './await-device-action';
 import type { BtcApi } from '../api/btc';
 import { BtcXpub } from '../blockchain-api';
 import { BtcNetwork, BtcWalletType } from '../entities/blockchain';
@@ -18,24 +12,6 @@ export type LedgerAccount = {
     address: string;
     balance: bigint;
 };
-
-const awaitDeviceAction = <Output>(action: {
-    observable: Observable<DeviceActionState<Output, DmkError, DeviceActionIntermediateValue>>;
-}): Promise<Output> =>
-    new Promise((resolve, reject) => {
-        const subscription = action.observable.subscribe({
-            next: state => {
-                if (state.status === DeviceActionStatus.Completed) {
-                    subscription.unsubscribe();
-                    resolve(state.output);
-                } else if (state.status === DeviceActionStatus.Error) {
-                    subscription.unsubscribe();
-                    reject(new Error(`${state.error._tag} ${state.error?.message}`));
-                }
-            },
-            error: reject
-        });
-    });
 
 export const discoverLedgerAccounts = async (
     dmk: DeviceManagementKit,

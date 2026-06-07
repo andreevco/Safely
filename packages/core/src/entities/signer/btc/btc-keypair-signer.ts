@@ -1,5 +1,4 @@
-import type { Transaction } from '@scure/btc-signer';
-
+import { assertBtcFeeIsNotAbsurd } from './assert-btc-fee';
 import type { BtcSigningRequest, IBtcSigner } from './I-btc-signer';
 import type { IBtcNodeProducer } from '../../derivation/btc/I-btc-node-producer';
 
@@ -26,19 +25,8 @@ export class BtcKeypairSigner implements IBtcSigner {
 
         psbt.finalize();
 
-        this.assertFeeIsNotAbsurd(psbt);
+        assertBtcFeeIsNotAbsurd(psbt);
 
         return Buffer.from(psbt.extract());
-    }
-
-    private assertFeeIsNotAbsurd(psbt: Transaction) {
-        const MAX_FEE_RATE_SAT_VBYTE = 5000n;
-        const feeRate = psbt.fee / BigInt(psbt.vsize);
-
-        if (feeRate > MAX_FEE_RATE_SAT_VBYTE) {
-            throw new Error(
-                `Refusing to sign: fee rate ${feeRate} sat/vB exceeds the ${MAX_FEE_RATE_SAT_VBYTE} sat/vB safety limit`
-            );
-        }
     }
 }

@@ -28,6 +28,7 @@ function useAccessibleBtcWallets() {
                 .filter(p => {
                     switch (p.type) {
                         case PortfolioType.BIP39:
+                        case PortfolioType.LEDGER:
                             return true;
                         case PortfolioType.WATCH_ONLY:
                             return false;

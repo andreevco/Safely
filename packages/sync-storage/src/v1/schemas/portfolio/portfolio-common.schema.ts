@@ -1,6 +1,6 @@
 import z from 'zod';
 
-export const sPortfolioType = z.enum(['BIP39', 'WATCH_ONLY']);
+export const sPortfolioType = z.enum(['BIP39', 'WATCH_ONLY', 'LEDGER']);
 
 export const sPortfolioNetworkType = z.enum(['MAINNET', 'TESTNET']);
 

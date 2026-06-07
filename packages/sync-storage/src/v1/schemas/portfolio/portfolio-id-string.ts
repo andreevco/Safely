@@ -1,4 +1,5 @@
 import type { SPortfolioBip39Id } from './portfolio-bip39.schema';
+import type { SPortfolioLedgerId } from './portfolio-ledger.schema';
 import type { SPortfolioWatchOnlyId } from './portfolio-watch-only.schema';
 
 function join(...parts: (string | number)[]): string {
@@ -21,4 +22,8 @@ export function portfolioWatchOnlyIdToString(id: SPortfolioWatchOnlyId): string 
         case 'ADDRESS':
             return join('portfolio', 'WATCH_ONLY', id.source, id.address, id.networkType);
     }
+}
+
+export function portfolioLedgerIdToString(id: SPortfolioLedgerId): string {
+    return join('portfolio', 'LEDGER', id.masterFingerprint, id.networkType);
 }

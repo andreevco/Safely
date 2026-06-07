@@ -3,9 +3,14 @@ import z from 'zod';
 import { zIndexedArray } from '@safely/slottree';
 
 import { sPortfolioBip39 } from './portfolio-bip39.schema';
+import { sPortfolioLedger } from './portfolio-ledger.schema';
 import { sPortfolioWatchOnly } from './portfolio-watch-only.schema';
 
-export const sPortfolio = z.discriminatedUnion('type', [sPortfolioBip39, sPortfolioWatchOnly]);
+export const sPortfolio = z.discriminatedUnion('type', [
+    sPortfolioBip39,
+    sPortfolioLedger,
+    sPortfolioWatchOnly
+]);
 
 export const sPortfolios = zIndexedArray(sPortfolio);
 
