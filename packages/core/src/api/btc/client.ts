@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import type { Logger } from '@safely/sync';
+
 import { BtcApiError } from './errors';
 import {
     AddressSchema,
@@ -58,9 +60,9 @@ export class BtcApi extends ApiClient implements IIdentifiable {
 
     public readonly id: string;
 
-    constructor(options: { baseUrl: string }) {
+    constructor(options: { baseUrl: string; logger?: Logger }) {
         const baseUrl = options.baseUrl.replace(/\/$/, '');
-        super(baseUrl);
+        super(baseUrl, {}, options.logger);
 
         this.id = `${this.constructor.name}:${baseUrl}`;
     }

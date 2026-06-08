@@ -178,6 +178,7 @@ export class AnalyticsService {
         sessionId: string;
         accountUuid: string | null;
     }): Promise<boolean> {
+        this.logger.info('start send event', payload);
         const parsedPayload = sAnalyticsEvent.safeParse({
             eventId: uuid4(),
             sessionId: payload.sessionId,

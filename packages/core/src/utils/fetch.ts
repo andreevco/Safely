@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import type { Logger } from '@safely/sync';
+
 export class ApiError extends Error {
     public readonly name: string = 'ApiError';
 
@@ -31,11 +33,15 @@ export class ApiClient {
         payload?: unknown
     ) => ApiError = ApiError;
 
+    protected readonly logger?: Logger;
+
     constructor(
         protected readonly baseUrl: string,
-        headers: Record<string, string> = {}
+        headers: Record<string, string> = {},
+        logger?: Logger
     ) {
         this.headers = { ...headers };
+        this.logger = logger?.child(this.constructor.name);
     }
 
     protected async getJson<T extends z.ZodTypeAny, Q extends object>(
@@ -110,17 +116,22 @@ export class ApiClient {
         const id = this.timeoutMs
             ? setTimeout(() => controller!.abort(), this.timeoutMs)
             : undefined;
+        this.logger?.debug('request', { method: init.method, url });
         try {
             const mergedInit: RequestInit = {
                 ...init,
                 headers: { ...this.headers, ...(init.headers || {}) },
                 signal: controller?.signal
             };
-            return await fetch(url, mergedInit);
+            const response = await fetch(url, mergedInit);
+            this.logger?.debug('response', { method: init.method, url, status: response.status });
+            return response;
         } catch (err) {
             if (err instanceof Error && err.name === 'AbortError') {
+                this.logger?.warn('request timed out', { method: init.method, url });
                 throw new this.errorConstructor('Request timed out', 408);
             }
+            this.logger?.warn('request failed (network error)', { method: init.method, url });
             throw err;
         } finally {
             if (id) clearTimeout(id);
@@ -150,6 +161,10 @@ export class ApiClient {
 
         const result = schema.safeParse(parsed);
         if (!result.success) {
+            this.logger?.warn('response validation failed', {
+                url: response.url,
+                issue: result.error.message
+            });
             throw new this.errorConstructor(
                 `Response validation failed: ${result.error.message}`,
                 response.status,

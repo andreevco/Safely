@@ -1,3 +1,5 @@
+import type { Logger } from '@safely/sync';
+
 import { type PsbtRequest, BtcPsbtBuilder } from './btc-psbt-builder';
 import { BtcSendDustError } from './errors';
 import type { BtcEstimation } from './types';
@@ -16,6 +18,8 @@ export class BtcTransactionTemplate {
     private isSending = false;
 
     private readonly psbtBuilder: BtcPsbtBuilder;
+
+    private readonly logger?: Logger;
 
     public get outputs(): PsbtRequest['outputs'] {
         const total = getUtxoTotal(this.utxos);
@@ -50,8 +54,10 @@ export class BtcTransactionTemplate {
             hasChange: boolean;
         },
         private readonly utxos: BtcApiUtxo[],
-        public readonly estimation: BtcEstimation
+        public readonly estimation: BtcEstimation,
+        logger?: Logger
     ) {
+        this.logger = logger?.child('BtcTransactionTemplate');
         this.psbtBuilder = new BtcPsbtBuilder(btcNetworkConfig[this.wallet.network]);
     }
 
@@ -65,10 +71,15 @@ export class BtcTransactionTemplate {
         }
 
         this.isSending = true;
+        this.logger?.info('broadcasting transaction', { blockchain: this.blockchain });
 
         try {
             this.sendResult = await this._send();
+            this.logger?.info('transaction broadcast succeeded', { txId: this.sendResult.txId });
             return this.sendResult;
+        } catch (error) {
+            this.logger?.error('transaction broadcast failed', error);
+            throw error;
         } finally {
             this.isSending = false;
         }

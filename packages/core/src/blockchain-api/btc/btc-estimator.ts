@@ -1,5 +1,7 @@
 import Big from 'big.js';
 
+import type { Logger } from '@safely/sync';
+
 import { BtcAddress } from './btc-address';
 import { BtcPsbtBuilder } from './btc-psbt-builder';
 import { BtcTransactionTemplate } from './btc-transaction-template';
@@ -33,11 +35,15 @@ export class BtcEstimator implements IIdentifiable {
 
     private readonly psbtBuilder: BtcPsbtBuilder;
 
+    private readonly logger?: Logger;
+
     constructor(
         private readonly btcApi: BtcApi,
-        private readonly wallet: SignableBtcWallet
+        private readonly wallet: SignableBtcWallet,
+        logger?: Logger
     ) {
         this.id = `${this.constructor.name}:${this.btcApi.id}:${this.wallet.id.toString()}`;
+        this.logger = logger?.child('BtcEstimator');
         this.psbtBuilder = new BtcPsbtBuilder(btcNetworkConfig[this.wallet.network]);
     }
 
@@ -73,14 +79,22 @@ export class BtcEstimator implements IIdentifiable {
         request: BtcTransferRequest,
         utxo: BtcApiUtxo[]
     ): Promise<BtcTransactionTemplate> {
+        this.logger?.info('estimating transaction', { request, utxo });
+        let result: BtcTransactionTemplate;
+
         switch (request.type) {
             case 'max':
-                return this.estimateMax(request, utxo);
+                result = await this.estimateMax(request, utxo);
+                break;
             case 'not-max':
-                return this.estimateNotMax(request, utxo);
+                result = await this.estimateNotMax(request, utxo);
+                break;
             default:
                 assertUnreachable(request);
         }
+
+        this.logger?.info('transaction estimated', result);
+        return result;
     }
 
     private async estimateNotMax(
@@ -147,7 +161,8 @@ export class BtcEstimator implements IIdentifiable {
                 fee: { amount: fee, type: 'crypto' },
                 feeType: request.feeType,
                 txTargetBlock: targetBlock
-            }
+            },
+            this.logger
         );
     }
 
@@ -204,7 +219,8 @@ export class BtcEstimator implements IIdentifiable {
                 fee: { amount: fee, type: 'crypto' },
                 feeType: request.feeType,
                 txTargetBlock: targetBlock
-            }
+            },
+            this.logger
         );
     }
 }
