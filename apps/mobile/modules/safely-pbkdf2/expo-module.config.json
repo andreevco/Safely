@@ -1,0 +1,9 @@
+{
+  "platforms": ["ios", "android"],
+  "ios": {
+    "modules": ["SafelyPbkdf2Module"]
+  },
+  "android": {
+    "modules": ["expo.modules.safelypbkdf2.SafelyPbkdf2Module"]
+  }
+}

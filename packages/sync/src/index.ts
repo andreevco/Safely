@@ -19,6 +19,8 @@ export { sSecretEncrypted, sSecretDecrypted } from './secret-encryptor';
 
 export { type IsomorphicEventSource } from './utils/sse-stream';
 
+export { type SafelyCrypto } from './safely-crypto';
+
 export {
     LogLevel,
     Logger,

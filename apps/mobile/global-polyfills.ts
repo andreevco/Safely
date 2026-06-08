@@ -61,3 +61,5 @@ global.Buffer = require('@craftzdog/react-native-buffer').Buffer;
  */
 import { XHREventSource } from '@safely/xhr-event-source';
 (global as any).IsomorphicEventSource = XHREventSource;
+
+import './safely-crypto';
