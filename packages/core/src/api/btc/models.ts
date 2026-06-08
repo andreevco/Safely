@@ -1,12 +1,5 @@
 import { z } from 'zod';
 
-/** API error response. */
-export const APIErrorSchema = z
-    .object({
-        error: z.string()
-    })
-    .passthrough();
-
 /** Transaction output. */
 const VoutSchema = z.object({
     /** List of addresses that are recipients of this output. */

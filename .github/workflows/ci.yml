@@ -24,11 +24,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 10.27.0
           run_install: false
-
-      - name: Enable Corepack
-        run: corepack enable
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -36,12 +32,22 @@ jobs:
       - name: Compile
         run: pnpm compile
 
+      - name: Resolve base SHA
+        id: base
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          BASE_SHA=$(git merge-base "origin/$BASE_REF" "$HEAD_SHA")
+          echo "sha=$BASE_SHA" >> "$GITHUB_OUTPUT"
+          echo "Comparing against merge-base with $BASE_REF: $BASE_SHA"
+
       - name: Lint
         env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          BASE_SHA: ${{ steps.base.outputs.sha }}
         run: pnpm --filter "...[$BASE_SHA]" run lint
 
       - name: Test
         env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          BASE_SHA: ${{ steps.base.outputs.sha }}
         run: pnpm --filter "...[$BASE_SHA]" run test

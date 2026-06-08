@@ -210,7 +210,7 @@ export function useAccountConnectedCallback(
                     return;
                 }
 
-                logger.error('[useAccountConnectedCallback]', e);
+                logger.child('useAccountConnectedCallback').error(e);
                 options?.onError?.(e instanceof Error ? e : new Error(String(e)));
             });
         return () => {
@@ -301,16 +301,12 @@ export function useDeleteAccount() {
     const account = useActiveAccount();
     const accountFactory = useAccountsFactory();
     const client = useQueryClient();
-    const { storage } = useAppContext();
     const ikPub = useCurrentDeviceIkPub();
     const clearActiveAccountLocalStorage = useClearActiveAccountLocalStorage();
     const update = useActiveAccountSyncStorageSlotUpdate('devicesMeta');
 
-    return useMutation({
-        async mutationFn() {
-            using secureEncryptedStorage = storage.sync.getSecureEncrypted();
-            await secureEncryptedStorage.unlock();
-
+    return useMutation<void, Error, ITreeStorage>({
+        async mutationFn(secureEncryptedStorage) {
             await update(draft => {
                 draft.ifPresent(devicesMeta => devicesMeta.delete(ikPub));
             });
@@ -324,8 +320,6 @@ export function useDeleteAccount() {
             if (remaining.length > 0) {
                 client.setQueryData(accountKey.list.toKey(), remaining);
                 client.setQueryData(accountKey.list.active.toKey(), remaining[0]);
-            } else {
-                client.removeQueries({ queryKey: accountKey.toKey() });
             }
         }
     });

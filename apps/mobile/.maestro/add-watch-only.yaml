@@ -1,0 +1,63 @@
+# Step 3 of the e2e chain: adds a watch-only wallet for MAESTRO_WATCH_ONLY_ADDRESS.
+# Starts from the state create-wallet finished in (any onboarded state works —
+# the flow only needs a wallet on the home screen and passcode 1234).
+appId: com.aco.swallet
+name: add-watch-only
+tags:
+    - smoke
+    - add-wallet
+---
+# Relaunch WITHOUT clearState — we continue on top of the previous flow's state.
+- launchApp
+
+- extendedWaitUntil:
+      visible:
+          id: 'home.walletSelector'
+      timeout: 60000
+
+# Wallet selector popup -> "Add wallet" -> "Watch account".
+- tapOn:
+      id: 'home.walletSelector'
+- tapOn:
+      id: 'accounts.addWallet'
+- tapOn:
+      id: 'addWallet.watchAccount'
+
+# The address input autofocuses ~400ms after the screen gets focus.
+- extendedWaitUntil:
+      visible:
+          id: 'watchOnly.addressInput'
+      timeout: 15000
+- waitForAnimationToEnd
+- tapOn:
+      id: 'watchOnly.addressInput'
+- inputText: ${MAESTRO_WATCH_ONLY_ADDRESS}
+- tapOn:
+      id: 'watchOnly.continueButton'
+
+# Customize step: the name is prefilled, just save.
+# No passcode here — a watch-only wallet has no secret to encrypt.
+- extendedWaitUntil:
+      visible:
+          id: 'customizeWallet.saveButton'
+      timeout: 15000
+- tapOn:
+      id: 'customizeWallet.saveButton'
+
+# Navigation resets to home with the watch-only wallet active.
+- extendedWaitUntil:
+      visible:
+          id: 'home.settingsButton'
+      timeout: 60000
+
+# Verify the watch-only wallet tracks exactly the address we entered:
+# the receive screen must display MAESTRO_WATCH_ONLY_ADDRESS.
+- tapOn:
+      id: 'home.receiveButton'
+- extendedWaitUntil:
+      visible:
+          id: 'receive.address'
+      timeout: 15000
+- assertVisible:
+      id: 'receive.address'
+      text: ${MAESTRO_WATCH_ONLY_ADDRESS}

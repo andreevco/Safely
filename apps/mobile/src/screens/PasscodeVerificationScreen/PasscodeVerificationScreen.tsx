@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { usePasscodeVerification } from '@mobile/entities/security';
 import { authenticateBiometry, getBiometryIcon, useBiometryQuery } from '@mobile/features/biometry';
 import { useLogOutAllConfirmation } from '@mobile/features/settings/useLogOutAllConfirmation';
+import { TEST_ID } from '@mobile/shared/constants';
 import { LockoutContent, PasscodeView, Screen } from '@mobile/shared/ui';
 
 type PasscodeVerificationScreenProps = StaticScreenProps<{
@@ -69,6 +70,7 @@ export const PasscodeVerificationScreen = (props: PasscodeVerificationScreenProp
             </Screen.Header>
 
             <PasscodeView
+                testID={TEST_ID.passcodeVerification.screen}
                 title={title ?? t('passcode.verify.title')}
                 numberOfDigits={digitsAmount}
                 value={inputValue}

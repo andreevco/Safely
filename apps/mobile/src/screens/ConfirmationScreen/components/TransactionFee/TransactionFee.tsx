@@ -7,6 +7,7 @@ import { btcBlockWaitingTimeMinutes } from '@safely/core';
 import { useFiatEquivalent, useNumberFormatter } from '@safely/ux';
 
 import { TransactionCell } from '@mobile/screens/ConfirmationScreen/components';
+import { TEST_ID } from '@mobile/shared/constants';
 import { Text } from '@mobile/shared/ui';
 
 import { styles } from './TransactionFee.styles';
@@ -48,7 +49,8 @@ const FeeValue: FC<{ estimation: Estimation }> = ({ estimation }) => {
     const { data: fiat } = useFiatEquivalent(estimation.fee.amount);
 
     return (
-        <View style={styles.feeContainer}>
+        // testID marks fee estimation as done — e2e waits for it before sliding to send
+        <View style={styles.feeContainer} testID={TEST_ID.confirmation.fee}>
             {!!fiat && <Text variant="bodyM">{fiat.format(formatter)} </Text>}
             <Text color="secondary" variant="bodyM" skeleton>
                 {estimation?.fee.amount.format(formatter)}

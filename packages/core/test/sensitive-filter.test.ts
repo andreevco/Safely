@@ -24,6 +24,26 @@ describe('filterSensitiveData', () => {
             expect(filterSensitiveData(long)).toBe(long);
         });
 
+        it('should redact a 128-char hex string (ed25519 private key)', () => {
+            const key = 'a'.repeat(128);
+            expect(filterSensitiveData(`self_ik_prv: ${key}`)).toBe('self_ik_prv: [REDACTED:key]');
+        });
+
+        it('should redact a 32-char hex string (16-byte secret / raw seed entropy)', () => {
+            const key = 'a'.repeat(32);
+            expect(filterSensitiveData(key)).toBe('[REDACTED:key]');
+        });
+
+        it('should not redact a 31-char hex string', () => {
+            const short = 'a'.repeat(31);
+            expect(filterSensitiveData(short)).toBe(short);
+        });
+
+        it('should not redact a 127-char (odd) hex string', () => {
+            const odd = 'a'.repeat(127);
+            expect(filterSensitiveData(odd)).toBe(odd);
+        });
+
         it('should redact multiple hex keys in the same string', () => {
             const k1 = 'a'.repeat(64);
             const k2 = 'b'.repeat(64);
@@ -120,6 +140,112 @@ describe('filterSensitiveData', () => {
         it('should be case-insensitive', () => {
             const upper = mnemonic12.toUpperCase();
             expect(filterSensitiveData(upper)).toBe('[REDACTED:mnemonic]');
+        });
+    });
+
+    describe('mnemonic inside serialized JSON', () => {
+        const mnemonic12 =
+            'abandon ability able about above absent absorb abstract absurd abuse access accident';
+        const words12 = mnemonic12.split(' ');
+
+        it('should redact a mnemonic embedded in a JSON object string', () => {
+            const json = JSON.stringify({ mnemonic: mnemonic12 });
+            expect(filterSensitiveData(json)).toBe('{"mnemonic":"[REDACTED:mnemonic]"}');
+        });
+
+        it('should redact a 13-word phrase in a JSON object (interior run below old threshold)', () => {
+            const phrase = `${mnemonic12} achieve`;
+            const json = JSON.stringify({ recovery: phrase });
+            expect(filterSensitiveData(json)).toBe('{"recovery":"[REDACTED:mnemonic]"}');
+        });
+
+        it('should redact a mnemonic stored as a JSON array of words', () => {
+            const json = JSON.stringify(words12);
+            expect(filterSensitiveData(json)).toBe('"[REDACTED:mnemonic]"');
+        });
+
+        it('should redact a mnemonic nested in a JSON array field', () => {
+            const json = JSON.stringify({ words: words12 });
+            expect(filterSensitiveData(json)).toBe('{"words":"[REDACTED:mnemonic]"}');
+        });
+
+        it('should redact a word array by shape even without dictionary words', () => {
+            const json = JSON.stringify([
+                'zzz',
+                'qqq',
+                'xyzzy',
+                'foobar',
+                'plugh',
+                'wibble',
+                'wobble',
+                'flob',
+                'grault',
+                'garply',
+                'waldo',
+                'fred'
+            ]);
+            expect(filterSensitiveData(json)).toBe('"[REDACTED:mnemonic]"');
+        });
+
+        it('should preserve surrounding JSON structure', () => {
+            const json = JSON.stringify({ id: 'abc', mnemonic: mnemonic12, ok: true });
+            expect(filterSensitiveData(json)).toBe(
+                '{"id":"abc","mnemonic":"[REDACTED:mnemonic]","ok":true}'
+            );
+        });
+
+        it('should redact a private key embedded in a JSON object string', () => {
+            const key = 'a'.repeat(128);
+            const json = JSON.stringify({ dmk_prv: key });
+            expect(filterSensitiveData(json)).toBe('{"dmk_prv":"[REDACTED:key]"}');
+        });
+    });
+
+    describe('false-positive guards', () => {
+        it('should not redact ordinary English with scattered BIP39 words', () => {
+            const text =
+                'the quick brown fox jumps over the lazy dog and runs about above the access point';
+            expect(filterSensitiveData(text)).toBe(text);
+        });
+
+        it('should not redact 11 BIP39 words stored as a JSON array', () => {
+            const words11 = [
+                'abandon',
+                'ability',
+                'able',
+                'about',
+                'above',
+                'absent',
+                'absorb',
+                'abstract',
+                'absurd',
+                'abuse',
+                'access'
+            ];
+            const json = JSON.stringify(words11);
+            expect(filterSensitiveData(json)).toBe(json);
+        });
+    });
+
+    describe('idempotency on new cases', () => {
+        const mnemonic12 =
+            'abandon ability able about above absent absorb abstract absurd abuse access accident';
+
+        it('should be stable on a JSON object mnemonic', () => {
+            const json = JSON.stringify({ mnemonic: mnemonic12 });
+            const once = filterSensitiveData(json);
+            expect(filterSensitiveData(once)).toBe(once);
+        });
+
+        it('should be stable on a JSON array mnemonic', () => {
+            const json = JSON.stringify(mnemonic12.split(' '));
+            const once = filterSensitiveData(json);
+            expect(filterSensitiveData(once)).toBe(once);
+        });
+
+        it('should be stable on a 128-char hex key', () => {
+            const once = filterSensitiveData('a'.repeat(128));
+            expect(filterSensitiveData(once)).toBe(once);
         });
     });
 

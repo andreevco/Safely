@@ -12,13 +12,15 @@ export type ActionsButtonProps = {
     icon: IconProps['icon'];
     onPress: () => void;
     opacity?: number;
+    testID?: string;
 };
 
 export const ActionsButton = (props: ActionsButtonProps) => {
-    const { title, icon, onPress, opacity } = props;
+    const { title, icon, onPress, opacity, testID } = props;
 
     return (
         <TouchableOpacity
+            testID={testID}
             onPress={onPress}
             style={[styles.container, opacity != null && { opacity }]}
         >

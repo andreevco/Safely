@@ -38,6 +38,8 @@ type SlideButtonProps = ViewProps & {
     trackColor?: string;
     knobColor?: string;
     textColor?: string;
+    /** testID for the draggable knob — e2e swipe gestures must start on the knob, not the track */
+    knobTestID?: string;
 };
 
 export const SlideButton = (props: SlideButtonProps) => {
@@ -51,6 +53,7 @@ export const SlideButton = (props: SlideButtonProps) => {
         trackColor,
         knobColor,
         textColor,
+        knobTestID,
         ...rest
     } = props;
     const { theme } = useUnistyles();
@@ -218,7 +221,7 @@ export const SlideButton = (props: SlideButtonProps) => {
             </Animated.View>
 
             <GestureDetector gesture={panGesture}>
-                <Animated.View style={styles.knobWrapper}>
+                <Animated.View style={styles.knobWrapper} testID={knobTestID}>
                     <Animated.View style={[styles.knob, knobStyle]}>
                         {loading ? (
                             <Animated.View style={loaderStyle}>
@@ -228,7 +231,7 @@ export const SlideButton = (props: SlideButtonProps) => {
                             <View>
                                 <Animated.View
                                     style={[
-                                        StyleSheet.absoluteFillObject,
+                                        StyleSheet.absoluteFill,
                                         styles.iconOverlay,
                                         iconPrimaryOpacityStyle
                                     ]}
@@ -237,7 +240,7 @@ export const SlideButton = (props: SlideButtonProps) => {
                                 </Animated.View>
                                 <Animated.View
                                     style={[
-                                        StyleSheet.absoluteFillObject,
+                                        StyleSheet.absoluteFill,
                                         styles.iconOverlay,
                                         iconSecondaryOpacityStyle
                                     ]}

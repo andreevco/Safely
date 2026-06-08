@@ -9,21 +9,21 @@ catalog:
   cbor-x: "^1.6.4"
   '@noble/hashes': '2.2.0'
   '@types/big.js': '^6.2.2'
-  react: '~19.1.0'
-  react-dom: '~19.1.0'
-  '@types/react': '^19.1.17'
-  '@types/react-dom': '~19.1.0'
+  react: '19.2.3'
+  react-dom: '19.2.3'
+  '@types/react': '19.2.14'
+  '@types/react-dom': '19.2.3'
   '@tanstack/react-query': '^5.90.16'
   '@tanstack/query-async-storage-persister': '^5.90.18'
   '@tanstack/react-query-persist-client': '^5.90.18'
   xstate: '^5.26.0'
   '@xstate/react': '^6.1.0'
   zustand: '^5.0.0'
-  typescript: '~5.9.3'
+  typescript: '~6.0.3'
   eslint: '^9.39.2'
   '@eslint/js': '^9.39.2'
   eslint-plugin-react-hooks: '^7.0.1'
-  typescript-eslint: '^8.51.0'
+  typescript-eslint: '^8.58.0'
   uuid: "^14.0.0"
 
 minimumReleaseAge: 5760
@@ -31,8 +31,13 @@ minimumReleaseAge: 5760
 strictPeerDependencies: true
 autoInstallPeers: false
 
-onlyBuiltDependencies:
-  - '@shopify/react-native-skia'
+allowBuilds:
+  '@shopify/react-native-skia': true
+  cbor-extract: false
+  msgpackr-extract: false
+  unrs-resolver: false
+  esbuild: false
+  dtrace-provider: false
 
 patchedDependencies:
-  react-native-vision-camera: patches/react-native-vision-camera.patch
+  expo-blur@15.0.8: patches/expo-blur@15.0.8.patch

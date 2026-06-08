@@ -9,42 +9,50 @@ import { logger } from '@mobile/shared/logger';
 import { LoaderProvider, LoaderServiceProvider } from '@mobile/shared/providers/loader';
 import { ToastProvider, ToastServiceProvider } from '@mobile/shared/providers/toast';
 
-import { AppContextProvider, LoggerLifecycle, SecurityCheckInitializer } from './AppContext';
+import { AppContextProvider, SecurityCheckInitializer } from './AppContext';
 import { AppNavigation } from './AppNavigation';
+import { RootErrorBoundary } from './root-error-boundary';
 import { RootSuspenseGate } from './root-suspense';
 import { REGULAR_MOBILE_STORAGE_ONLY_APP_LEVEL_USE } from './storage';
+import { createTanstackEventListeners } from './tanstack-query-managers';
 
 const persister = createPersister(
     REGULAR_MOBILE_STORAGE_ONLY_APP_LEVEL_USE.storage.child('persister'),
     logger
 );
 const queryClient = createQueryClient(logger);
+const eventListeners = createTanstackEventListeners();
 
 export const App = () => {
     return (
         <GestureHandlerRootView>
             <SafeAreaProvider>
-                <KeyboardProvider>
-                    <QueryProvider persister={persister} queryClient={queryClient}>
-                        <ToastServiceProvider>
-                            <LoaderServiceProvider>
-                                <AppContextProvider>
-                                    <RootSuspenseGate>
-                                        <AnalyticsProvider>
-                                            <SecurityCheckInitializer />
-                                            <LoggerLifecycle />
-                                            <LoaderProvider>
-                                                <AppNavigation />
-                                                <ToastProvider />
-                                            </LoaderProvider>
-                                        </AnalyticsProvider>
-                                    </RootSuspenseGate>
-                                    <BlurOverlay />
-                                </AppContextProvider>
-                            </LoaderServiceProvider>
-                        </ToastServiceProvider>
-                    </QueryProvider>
-                </KeyboardProvider>
+                <RootErrorBoundary>
+                    <KeyboardProvider>
+                        <QueryProvider
+                            persister={persister}
+                            queryClient={queryClient}
+                            eventListeners={eventListeners}
+                        >
+                            <ToastServiceProvider>
+                                <LoaderServiceProvider>
+                                    <AppContextProvider>
+                                        <RootSuspenseGate>
+                                            <AnalyticsProvider>
+                                                <SecurityCheckInitializer />
+                                                <LoaderProvider>
+                                                    <AppNavigation />
+                                                    <ToastProvider />
+                                                </LoaderProvider>
+                                            </AnalyticsProvider>
+                                        </RootSuspenseGate>
+                                        <BlurOverlay />
+                                    </AppContextProvider>
+                                </LoaderServiceProvider>
+                            </ToastServiceProvider>
+                        </QueryProvider>
+                    </KeyboardProvider>
+                </RootErrorBoundary>
             </SafeAreaProvider>
         </GestureHandlerRootView>
     );

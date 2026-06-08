@@ -3,45 +3,43 @@ import type { Logger } from '@safely/sync';
 import type { IEnumerableStorage } from '../di';
 
 export class LoggableStorage implements IEnumerableStorage {
+    private readonly logger: Logger;
+
     constructor(
         private readonly storage: IEnumerableStorage,
-        private readonly logger: Logger,
-        private readonly label: string
-    ) {}
+        logger: Logger,
+        label: string
+    ) {
+        this.logger = logger.child(label);
+    }
 
     public getItem(key: string): Promise<string | null> {
-        this.logger.info(this.label, 'called "getItem" for key', `"${key}"`, this.captureStack());
+        this.logger.info('called "getItem" for key', `"${key}"`, this.captureStack());
         return this.storage.getItem(key);
     }
 
     public setItem(key: string, value: string): Promise<void> {
-        this.logger.info(this.label, 'called "setItem" for key', `"${key}"`, this.captureStack());
+        this.logger.info('called "setItem" for key', `"${key}"`, this.captureStack());
         return this.storage.setItem(key, value);
     }
 
     public removeItem(key: string): Promise<void> {
-        this.logger.info(
-            this.label,
-            'called "removeItem" for key',
-            `"${key}"`,
-            this.captureStack()
-        );
+        this.logger.info('called "removeItem" for key', `"${key}"`, this.captureStack());
         return this.storage.removeItem(key);
     }
 
     public clear(): Promise<void> {
-        this.logger.info(this.label, 'called "clear"', this.captureStack());
+        this.logger.info('called "clear"', this.captureStack());
         return this.storage.clear();
     }
 
     public getAllKeys(): Promise<string[]> {
-        this.logger.info(this.label, 'called "getAllKeys"', this.captureStack());
+        this.logger.info('called "getAllKeys"', this.captureStack());
         return this.storage.getAllKeys();
     }
 
     public getKeysWithPrefix(prefix: string): Promise<string[]> {
         this.logger.info(
-            this.label,
             'called "getKeysWithPrefix" with prefix',
             `"${prefix}"`,
             this.captureStack()
@@ -50,7 +48,7 @@ export class LoggableStorage implements IEnumerableStorage {
     }
 
     public removeItemsWithPrefix(prefix: string): Promise<void> {
-        this.logger.info(this.label, 'removeItemsWithPrefix', `"${prefix}"`, this.captureStack());
+        this.logger.info('removeItemsWithPrefix', `"${prefix}"`, this.captureStack());
         return this.storage.removeItemsWithPrefix(prefix);
     }
 

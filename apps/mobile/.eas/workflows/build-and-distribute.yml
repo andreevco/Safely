@@ -8,6 +8,28 @@ on:
         type: string
         required: false
         default: ''
+      pr_number:
+        description: Just-merged PR number, used to build the PR link in the Slack report. Empty if none.
+        type: string
+        required: false
+        default: ''
+      repository:
+        description: owner/repo, used to build the PR link in the Slack report
+        type: string
+        required: false
+        default: ''
+      target_branch:
+        description: Branch the change was merged into (e.g. release/1.0.1), prefixed to the Slack notes
+        type: string
+        required: false
+        default: ''
+      android_build_profile:
+        description: >-
+          EAS build profile for the Android build. 'production-cached' enables ccache + Gradle
+          build cache (used for release/* feature builds); 'production' = no cache (master, manual).
+        type: string
+        required: false
+        default: production
 
 jobs:
   build_ios:
@@ -23,7 +45,7 @@ jobs:
     type: build
     params:
       platform: android
-      profile: production
+      profile: ${{ inputs.android_build_profile }}
       message: ${{ inputs.release_notes }}
 
   distribute_ios:
@@ -83,3 +105,58 @@ jobs:
             --app "${{ env.FIREBASE_APP_ID }}" \
             --groups "testers" \
             "${NOTES_ARGS[@]}"
+
+  # Runs on the same APK we ship to Firebase (no separate e2e build),
+  # in parallel with distribute_android.
+  # The flows are a chain — each starts from the state the previous one left
+  # (onboarding -> add wallets -> import wallet -> send), so the order below
+  # matters. The flows read MAESTRO_SEED_PHRASE / MAESTRO_IMPORTED_WALLET_ADDRESS /
+  # MAESTRO_WATCH_ONLY_ADDRESS / MAESTRO_RECIPIENT_ADDRESS from the EAS
+  # environment (Maestro exposes MAESTRO_-prefixed env vars to flows).
+  e2e_android:
+    name: E2E (Maestro, Android)
+    type: maestro
+    needs: [build_android]
+    params:
+      build_id: ${{ needs.build_android.outputs.build_id }}
+      flow_path:
+        [
+          '.maestro/onboarding-create-wallet.yaml',
+          '.maestro/create-wallet.yaml',
+          '.maestro/add-watch-only.yaml',
+          '.maestro/import-wallet.yaml',
+          '.maestro/send-asset.yaml',
+        ]
+
+  # Aggregates TestFlight + Firebase + e2e results into a Slack message.
+  # `after` => runs regardless of upstream success/failure, and lets us read
+  # both the statuses and the build outputs (version / build number).
+  report:
+    name: Report (Slack)
+    after:
+      - build_ios
+      - build_android
+      - distribute_ios
+      - distribute_ios_crutch
+      - distribute_android
+      - e2e_android
+    steps:
+      # Custom steps jobs start with an empty workdir — check out the repo to reach the script.
+      - uses: eas/checkout
+      - name: Post report
+        run: |
+          export RELEASE_NOTES="${{ inputs.release_notes }}"
+          export SLACK_WEBHOOK_URL="${{ env.SLACK_WEBHOOK_URL }}"
+          export WORKFLOW_URL="${{ workflow.url }}"
+          export PR_NUMBER="${{ inputs.pr_number }}"
+          export REPOSITORY="${{ inputs.repository }}"
+          export TARGET_BRANCH="${{ inputs.target_branch }}"
+          export IOS_VERSION="${{ after.build_ios.outputs.app_version }}"
+          export IOS_BUILD="${{ after.build_ios.outputs.app_build_version }}"
+          export ANDROID_VERSION="${{ after.build_android.outputs.app_version }}"
+          export ANDROID_BUILD="${{ after.build_android.outputs.app_build_version }}"
+          export STATUS_IOS="${{ after.distribute_ios.status }}"
+          export STATUS_IOS_CRUTCH="${{ after.distribute_ios_crutch.status }}"
+          export STATUS_ANDROID="${{ after.distribute_android.status }}"
+          export STATUS_E2E="${{ after.e2e_android.status }}"
+          node scripts/eas-report.mjs

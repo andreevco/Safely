@@ -3,9 +3,9 @@ import { v4 as uuid4 } from 'uuid';
 import type { Logger } from '@safely/sync';
 
 import type { EventsApi } from './api/events';
-import { BtcApiError } from '../api/btc/errors';
 import type { RateApi } from '../api/rate/client';
 import type { Build } from '../entities/application/build.schema';
+import { ApiError } from '../utils/fetch';
 import type { AnalyticsEvent, Environment, SystemProps } from './api/events/models';
 import { sAnalyticsEvent } from './api/events/models';
 import type { Bucket } from './bucket/bucket-types';
@@ -43,7 +43,7 @@ export class AnalyticsService {
     private onboardingSession: string | null = null;
 
     constructor(deps: AnalyticsDeps) {
-        this.logger = deps.logger;
+        this.logger = deps.logger.child('analytics');
         this.eventsApi = deps.eventsApi;
         this.environment = deps.environment;
         this.platform = deps.platform;
@@ -150,7 +150,7 @@ export class AnalyticsService {
         eventName: string
     ): Promise<Bucket | null> {
         if (fiatSymbol === null) {
-            this.logger.warn('[analytics] no fiat configured, dropping event', { eventName });
+            this.logger.warn('no fiat configured, dropping event', { eventName });
 
             return null;
         }
@@ -159,10 +159,10 @@ export class AnalyticsService {
         try {
             rate = await this.rateCache.get(fiatSymbol);
         } catch (err) {
-            this.logger.warn('[analytics] no rate available, dropping event', {
+            this.logger.warn('no rate available, dropping event', {
                 eventName,
                 currency: fiatSymbol,
-                status: err instanceof BtcApiError ? err.status : null
+                status: err instanceof ApiError ? err.status : null
             });
 
             return null;
@@ -187,7 +187,7 @@ export class AnalyticsService {
         });
 
         if (!parsedPayload.success) {
-            this.logger.warn('[analytics] payload failed validation, dropping event', {
+            this.logger.warn('payload failed validation, dropping event', {
                 eventName: payload.eventName
             });
 
@@ -199,9 +199,9 @@ export class AnalyticsService {
 
             return true;
         } catch (err) {
-            this.logger.warn('[analytics] failed to deliver event', {
+            this.logger.warn('failed to deliver event', {
                 eventName: payload.eventName,
-                status: err instanceof BtcApiError ? err.status : null
+                status: err instanceof ApiError ? err.status : null
             });
 
             return false;

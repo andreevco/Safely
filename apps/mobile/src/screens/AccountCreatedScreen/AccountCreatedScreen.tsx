@@ -5,6 +5,7 @@ import { View } from 'react-native';
 import { useActiveAccountQuery, useAppContext, useConnectAccountToNewDevice } from '@safely/ux';
 
 import { useOnboardingFlow } from '@mobile/features/onboarding';
+import { TEST_ID } from '@mobile/shared/constants';
 import { Button, Icon, Checkmark96, Screen, Text } from '@mobile/shared/ui';
 
 import { styles } from './AccountCreatedScreen.styles';
@@ -75,10 +76,20 @@ export const AccountCreatedScreen = () => {
                     </View>
                 </View>
                 <View style={styles.buttonContainer}>
-                    <Button type="primary" size="large" onPress={handleAddDevice}>
+                    <Button
+                        testID={TEST_ID.accountCreated.addDevice}
+                        type="primary"
+                        size="large"
+                        onPress={handleAddDevice}
+                    >
                         {t('onboarding.accountCreated.addDevice')}
                     </Button>
-                    <Button type="secondary" size="large" onPress={handleProtectLater}>
+                    <Button
+                        testID={TEST_ID.accountCreated.protectLater}
+                        type="secondary"
+                        size="large"
+                        onPress={handleProtectLater}
+                    >
                         {t('onboarding.accountCreated.protectLater')}
                     </Button>
                 </View>
