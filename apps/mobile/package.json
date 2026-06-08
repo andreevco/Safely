@@ -85,6 +85,7 @@
     "react-native-web": "~0.21.0",
     "react-native-worklets": "0.8.3",
     "rxjs": "catalog:",
+    "xstate": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
