@@ -21,5 +21,8 @@ export const styles = StyleSheet.create(theme => ({
     },
     firstSectionHeaderContainer: {
         paddingTop: theme.spacing[16]
+    },
+    titleContainer: {
+        alignItems: 'flex-start'
     }
 }));

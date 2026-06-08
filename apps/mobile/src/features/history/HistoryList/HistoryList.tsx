@@ -20,7 +20,8 @@ import {
 } from '@safely/ux';
 
 import { ActivityItem } from '@mobile/entities/activity';
-import { Screen, Text } from '@mobile/shared/ui';
+import { ActivityItemSkeleton } from '@mobile/entities/activity/ActivityItem/ActivityItem';
+import { List, Screen, Text } from '@mobile/shared/ui';
 import type { ListRef } from '@mobile/shared/ui/Screen/components/List';
 
 import { HistoryEmptyPlaceholder } from '../HistoryEmptyPlaceholder';
@@ -163,7 +164,16 @@ export const HistoryList = (props: HistoryListProps) => {
     }, []);
 
     if (!rows) {
-        return null;
+        return (
+            <List>
+                <List.Title containerStyle={styles.titleContainer} skeleton />
+                <List.Group style={styles.contentContainer} variant="separated">
+                    <ActivityItemSkeleton />
+                    <ActivityItemSkeleton />
+                    <ActivityItemSkeleton />
+                </List.Group>
+            </List>
+        );
     }
 
     if (rows.length === 0) {
