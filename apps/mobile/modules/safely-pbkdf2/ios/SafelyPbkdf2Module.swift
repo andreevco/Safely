@@ -21,15 +21,17 @@ public class SafelyPbkdf2Module: Module {
         Name("SafelyPbkdf2")
 
         Function("pbkdf2Sha512") { (password: TypedArray, salt: TypedArray, iterations: Int, output: TypedArray) in
-            let passwordData = Data(bytes: password.rawPointer, count: password.byteLength)
+            var passwordData = Data(bytes: password.rawPointer, count: password.byteLength)
+            defer { passwordData.resetBytes(in: 0..<passwordData.count) }
             let saltData = Data(bytes: salt.rawPointer, count: salt.byteLength)
             do {
-                let derived = try pbkdf2Sha512(
+                var derived = try pbkdf2Sha512(
                     password: passwordData,
                     salt: saltData,
                     iterations: iterations,
                     keyLength: output.byteLength
                 )
+                defer { derived.resetBytes(in: 0..<derived.count) }
                 derived.withUnsafeBytes { src in
                     output.rawPointer.copyMemory(from: src.baseAddress!, byteCount: derived.count)
                 }
