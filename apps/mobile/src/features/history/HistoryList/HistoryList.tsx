@@ -19,8 +19,7 @@ import {
     useRate
 } from '@safely/ux';
 
-import { ActivityItem } from '@mobile/entities/activity';
-import { ActivityItemSkeleton } from '@mobile/entities/activity/ActivityItem/ActivityItem';
+import { ActivityItem, ActivityItemSkeleton } from '@mobile/entities/activity';
 import { List, Screen, Text } from '@mobile/shared/ui';
 import type { ListRef } from '@mobile/shared/ui/Screen/components/List';
 
