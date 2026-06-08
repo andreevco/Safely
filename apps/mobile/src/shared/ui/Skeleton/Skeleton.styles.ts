@@ -1,8 +1,8 @@
 import { StyleSheet } from 'react-native-unistyles';
 
 type SkeletonOptions = {
-    width: number;
-    height: number;
+    width: number | 'auto';
+    height: number | 'auto';
     borderRadius?: number;
 };
 
