@@ -27,7 +27,13 @@ import {
 } from '@safely/core';
 import type { SPortfolio } from '@safely/sync-storage';
 
-import { useTranslate, useSecurityCheck, useAppContext, SecretEncryptor } from '../../shared';
+import {
+    useTranslate,
+    useSecurityCheck,
+    useAppContext,
+    useLogger,
+    SecretEncryptor
+} from '../../shared';
 import { useSuspenseQuery } from '../../shared';
 import type { SActivePortfolioSchema, UseAccountSyncStorageUpdateOptions } from '../account';
 import { useAccountSyncStorageUpdate } from '../account';
@@ -68,7 +74,7 @@ export function useGeneratePortfolio() {
     const { mutateAsync: setActivePortfolio } = useSetActivePortfolio();
     const { data: account } = useActiveAccountQuery();
     const update = useAccountSyncStorageUpdate();
-    const logger = useAppContext().logger.child('portfolio');
+    const logger = useLogger('portfolio');
 
     const errorToast = useErrorToast({
         PortfolioGenerationFailedError: 'importWalletScreen.errors.failedToGenerate'
@@ -146,8 +152,8 @@ export function useImportPortfolio() {
     const errorToast = useErrorToast({
         InvalidMnemonicError: 'importWalletScreen.errors.invalidMnemonic'
     });
-    const { deviceInfo, logger } = useAppContext();
-    const portfolioLogger = logger.child('portfolio');
+    const { deviceInfo } = useAppContext();
+    const portfolioLogger = useLogger('portfolio');
     const portfolios = usePortfolios();
 
     return useMutation<
@@ -211,7 +217,7 @@ export function useDeletePortfolio() {
     const check = useSecurityCheck();
     const client = useQueryClient();
     const accountQueryKey = useActiveAccountQueryKey();
-    const logger = useAppContext().logger.child('portfolio');
+    const logger = useLogger('portfolio');
 
     return useMutation<void, Error, Portfolio>({
         async mutationFn(portfolio) {
@@ -343,7 +349,7 @@ export function useAddWatchOnlyPortfolio() {
     const { mutateAsync: addPortfolio } = useAddPortfolio();
     const { mutateAsync: setActivePortfolio } = useSetActivePortfolio();
     const portfolios = usePortfolios();
-    const logger = useAppContext().logger.child('portfolio');
+    const logger = useLogger('portfolio');
 
     return useMutation<Portfolio, Error, { input: string; meta: PortfolioMeta }>({
         async mutationFn({ input, meta }) {
@@ -372,7 +378,7 @@ export function useSetActivePortfolio() {
     const client = useQueryClient();
     const accountQueryKey = useActiveAccountQueryKey();
     const portfolios = usePortfolios();
-    const logger = useAppContext().logger.child('portfolio');
+    const logger = useLogger('portfolio');
 
     return useMutation<Portfolio, Error, Pick<Portfolio, 'id'>>({
         async mutationFn({ id }) {
@@ -422,11 +428,12 @@ export function useChangePortfolioMeta() {
 export function useRecordActivePortfolioSecretReveal() {
     const activePortfolio = useActivePortfolio();
     const update = useActiveAccountSyncStorageSlotUpdate('portfolios');
-    const { deviceInfo, logger } = useAppContext();
+    const { deviceInfo } = useAppContext();
+    const logger = useLogger('portfolio');
 
     return useMutation({
         mutationFn() {
-            logger.child('portfolio').info('recording portfolio secret reveal');
+            logger.info('recording portfolio secret reveal');
             return update(draft =>
                 draft.update(activePortfolio.jsonArrayId(), activePortfolioDraft => {
                     const bip39Draft = activePortfolioDraft.narrow(

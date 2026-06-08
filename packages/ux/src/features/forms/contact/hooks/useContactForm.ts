@@ -4,7 +4,7 @@ import type { Contact } from '@safely/core';
 import { vmTypeByBlockchainName } from '@safely/core';
 
 import { useCreateContact, useEditContact } from '../../../../entities';
-import { useAppContext } from '../../../../shared';
+import { useLogger } from '../../../../shared';
 import type { ContactFormResult } from '../types';
 import { useContactFormState } from './useContactFormState';
 
@@ -32,7 +32,7 @@ export function useContactForm(params: UseContactFormParams) {
     const { mutateAsync: createContact, isPending: isCreating } = useCreateContact();
     const { mutateAsync: editContact, isPending: isEditing } = useEditContact();
 
-    const logger = useAppContext().logger.child('contact-form');
+    const logger = useLogger('contact-form');
     const isEditMode = !!initialContact;
     const isSubmitting = isCreating || isEditing;
 

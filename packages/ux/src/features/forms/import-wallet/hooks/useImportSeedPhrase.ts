@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 
-import { useAppContext } from '../../../../shared';
+import { useLogger } from '../../../../shared';
 import { isValidMnemonicWord, normalizeInput } from '../utils';
 
 export interface UseImportSeedPhraseParams {
@@ -19,7 +19,7 @@ export interface UseImportSeedPhraseResult {
 export const useImportSeedPhrase = ({
     onSubmit
 }: UseImportSeedPhraseParams): UseImportSeedPhraseResult => {
-    const logger = useAppContext().logger.child('import-seed');
+    const logger = useLogger('import-seed');
     const [value, setValue] = useState('');
     const [error, setError] = useState<string | null>(null);
 

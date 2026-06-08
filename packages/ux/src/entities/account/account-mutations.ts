@@ -19,7 +19,13 @@ import { useAccountsFactory, useActiveAccount } from './account-state';
 import { accountKey } from './keys';
 import type { SActivePortfolioSchema } from './local-storage';
 import { useClearActiveAccountLocalStorage } from './local-storage';
-import { SecretEncryptor, useAppContext, useSharedUxStorage, useTranslate } from '../../shared';
+import {
+    SecretEncryptor,
+    useAppContext,
+    useLogger,
+    useSharedUxStorage,
+    useTranslate
+} from '../../shared';
 import { useErrorToast } from '../errors';
 import { useLoader } from '../loader';
 import {
@@ -55,7 +61,7 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
     const newAccountName = useNewAccountDefaultName();
     const updateSyncStorage = useAccountSyncStorageUpdate();
     const generateOwnMeta = useGenerateOwnSyncedDeviceMeta();
-    const logger = useAppContext().logger.child('account');
+    const logger = useLogger('account');
 
     return useMutation<
         ISyncAccount<SyncedStorageStructure>,
@@ -186,7 +192,7 @@ export function useAccountConnectedCallback(
     callback: (account: SyncAccount) => void,
     options?: { setAsActive: boolean; onError?: (e: Error) => void }
 ) {
-    const logger = useAppContext().logger.child('account-connect');
+    const logger = useLogger('account-connect');
     const client = useQueryClient();
     const { mutateAsync: setActive } = useSetActiveAccount();
     const { mutateAsync: updateOwnSyncedDeviceMeta } = useSetOwnSyncedDeviceMeta();
@@ -246,8 +252,8 @@ export function useConnectAccountToNewDevice() {
         ReconnectFromAnotherAccountError: 'settings.qrCodeFromAnotherAccount'
     });
     const { withLoader } = useLoader();
-    const { qrScanner, logger } = useAppContext();
-    const scopedLogger = logger.child('account');
+    const { qrScanner } = useAppContext();
+    const scopedLogger = useLogger('account');
 
     return useMutation<void, Error, { secureEncryptedStorage: ITreeStorage }, unknown>({
         async mutationFn({ secureEncryptedStorage }) {
@@ -280,7 +286,7 @@ export function useSetActiveAccount() {
     const { set } = useSharedUxStorage('activeAccount');
     const client = useQueryClient();
     const accountsQuery = useAccountsQueryConfig();
-    const logger = useAppContext().logger.child('account');
+    const logger = useLogger('account');
 
     return useMutation<void, Error, string>({
         async mutationFn(id) {
@@ -333,7 +339,7 @@ export function useDeleteAccount() {
     const ikPub = useCurrentDeviceIkPub();
     const clearActiveAccountLocalStorage = useClearActiveAccountLocalStorage();
     const update = useActiveAccountSyncStorageSlotUpdate('devicesMeta');
-    const logger = useAppContext().logger.child('account');
+    const logger = useLogger('account');
 
     return useMutation<void, Error, ITreeStorage>({
         async mutationFn(secureEncryptedStorage) {
@@ -362,11 +368,10 @@ export function useEraseAllData() {
     const {
         clearAllData,
         reloadApp,
-        logger,
         i18n: { t }
     } = useAppContext();
     const toast = useToast();
-    const scopedLogger = logger.child('account');
+    const scopedLogger = useLogger('account');
 
     return useMutation({
         async mutationFn() {

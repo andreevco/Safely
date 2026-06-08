@@ -3,6 +3,7 @@ export * from './loader';
 export * from './toast';
 export * from './contexts';
 export * from './providers';
+export * from './logger';
 export * from './api';
 export * from './errors';
 export * from './format';
