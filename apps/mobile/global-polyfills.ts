@@ -43,9 +43,13 @@ if (typeof global.SuppressedError === 'undefined') {
 }
 
 /**
- *  Buffer polyfill
+ *  We use `require` (not `import`) below: ES `import` statements are hoisted
+ *  above the imperative polyfill assignments above `Symbol.dispose`.
  */
 
+/**
+ *  Buffer polyfill
+ */
 global.Buffer = require('@craftzdog/react-native-buffer').Buffer;
 
 /**
@@ -59,7 +63,10 @@ global.Buffer = require('@craftzdog/react-native-buffer').Buffer;
 /**
  *  EventSource polyfill
  */
-import { XHREventSource } from '@safely/xhr-event-source';
+const { XHREventSource } = require('@safely/xhr-event-source');
 (global as any).IsomorphicEventSource = XHREventSource;
 
-import './safely-crypto';
+/**
+ * Safely crypto implementations
+ */
+require('./safely-crypto');

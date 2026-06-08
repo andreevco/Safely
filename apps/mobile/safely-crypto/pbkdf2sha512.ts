@@ -1,5 +1,6 @@
 import { pbkdf2Async } from '@noble/hashes/pbkdf2.js';
 import { sha512 } from '@noble/hashes/sha2.js';
+import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js';
 
 import { logger } from '@mobile/shared/logger';
 
@@ -36,12 +37,12 @@ const SELF_CHECK = {
 let nativeMatchesVector: boolean | undefined;
 try {
     const derived = nativePbkdf2Sha512(
-        new Uint8Array(Buffer.from(SELF_CHECK.password, 'utf8')),
-        new Uint8Array(Buffer.from(SELF_CHECK.salt, 'utf8')),
+        utf8ToBytes(SELF_CHECK.password),
+        utf8ToBytes(SELF_CHECK.salt),
         SELF_CHECK.iterations,
         SELF_CHECK.keyLength
     );
-    nativeMatchesVector = Buffer.from(derived).toString('hex') === SELF_CHECK.derivedKeyHex;
+    nativeMatchesVector = bytesToHex(derived) === SELF_CHECK.derivedKeyHex;
 } catch (error) {
     logger.error('[pbkdf2] native self-check threw', error);
     nativeMatchesVector = false;
