@@ -1,4 +1,4 @@
 export { ChartHeader } from './ChartHeader';
 export { ChartPeriods } from './ChartPeriods';
-export { ChartLine } from './ChartLine';
+export { ChartLine, ChartLineSkeleton } from './ChartLine';
 export { ChartFooter } from './ChartFooter';
