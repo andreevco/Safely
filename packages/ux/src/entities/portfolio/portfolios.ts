@@ -135,7 +135,7 @@ export function useGeneratePortfolio() {
 
             await setActivePortfolio({ id });
 
-            logger.info('portfolio generated', { index: nextWalletIndex, meta: params.meta });
+            logger.info('portfolio generated', { index: nextWalletIndex });
         },
         onError(error) {
             logger.error('portfolio generation failed', error);
@@ -195,7 +195,7 @@ export function useImportPortfolio() {
 
             await setActivePortfolio({ id });
 
-            portfolioLogger.info('portfolio imported', { meta: portfolio.meta });
+            portfolioLogger.info('portfolio imported', { id: portfolio.id });
         },
         onSuccess() {
             toast(t('importWalletScreen.toastMessages.importedWallet'));
@@ -221,13 +221,13 @@ export function useDeletePortfolio() {
 
     return useMutation<void, Error, Portfolio>({
         async mutationFn(portfolio) {
-            logger.info('deleting portfolio', { id: portfolio.id, meta: portfolio.meta });
+            logger.info('deleting portfolio', { id: portfolio.id });
             await check();
             await update(draft => draft.remove(portfolio.jsonArrayId()));
             await client.invalidateQueries({
                 queryKey: accountQueryKey.activePortfolio.toKey()
             });
-            logger.info('portfolio deleted', { id: portfolio.id, meta: portfolio.meta });
+            logger.info('portfolio deleted', { id: portfolio.id });
         }
     });
 }
@@ -366,7 +366,7 @@ export function useAddWatchOnlyPortfolio() {
             await addPortfolio(portfolio.toJSON());
             await setActivePortfolio(portfolio);
 
-            logger.info('watch-only portfolio added', { id: portfolio.id, meta: portfolio.meta });
+            logger.info('watch-only portfolio added', { id: portfolio.id });
 
             return portfolio;
         }
@@ -400,8 +400,7 @@ export function useSetActivePortfolio() {
             });
 
             logger.info('set active portfolio complete', {
-                id: portfolioToSet.id,
-                meta: portfolioToSet.meta
+                id: portfolioToSet.id
             });
             return portfolioToSet;
         }
