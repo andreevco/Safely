@@ -75,7 +75,6 @@
     "react-native-pager-view": "^8.0.2",
     "react-native-qrcode-skia": "^0.4.0",
     "react-native-reanimated": "4.3.1",
-    "react-native-inappbrowser-reborn": "^3.7.1",
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "4.25.2",
     "react-native-svg": "15.15.4",

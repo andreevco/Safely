@@ -1,0 +1,9 @@
+{
+  "platforms": ["ios", "android"],
+  "ios": {
+    "modules": ["SafelyInAppBrowserModule"]
+  },
+  "android": {
+    "modules": ["expo.modules.safelyinappbrowser.SafelyInAppBrowserModule"]
+  }
+}

@@ -1,7 +1,8 @@
 import { Linking as RNLinking } from 'react-native';
-import InAppBrowser from 'react-native-inappbrowser-reborn';
 
 import { Linking, LinkingProtocol } from '@safely/ux';
+
+import { isAvailable, openBrowser } from '../../../modules/safely-in-app-browser/src';
 
 export class MobileAppLinking extends Linking {
     protected override authorizedOpenUrlProtocols: LinkingProtocol[] = [
@@ -15,20 +16,11 @@ export class MobileAppLinking extends Linking {
     }
 
     protected async openInApp(url: string): Promise<void> {
-        if (!InAppBrowser.isAvailable()) {
+        if (!isAvailable()) {
             await this.openExternal(url);
             return;
         }
 
-        await InAppBrowser.open(url, {
-            ephemeralWebSession: false,
-            showTitle: false,
-            showInRecents: true,
-            enableUrlBarHiding: true,
-            forceCloseOnRedirection: true,
-            animated: false,
-            modalPresentationStyle: 'overFullScreen',
-            modalTransitionStyle: 'coverVertical'
-        });
+        await openBrowser(url);
     }
 }
