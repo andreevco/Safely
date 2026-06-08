@@ -12,7 +12,7 @@ import {
     type Providers,
     type RampOrders
 } from './models';
-import type { ApiError } from '../../utils/api-error';
+import type { ApiError } from '../../utils/fetch';
 import { ApiClient, type AuthorizationProvider } from '../../utils/fetch';
 import type { IIdentifiable } from '../../utils/types';
 
@@ -56,7 +56,7 @@ export class ExchangeApi extends ApiClient implements IIdentifiable {
             code !== undefined
                 ? `Exchange API error (code=${code})`
                 : response.statusText || 'Request failed';
-        return new ExchangeApiError(message, response.status, parsed, code);
+        return new ExchangeApiError(message, response.status, parsed);
     }
 
     private toProvidersQuery(params: GetProvidersParams) {

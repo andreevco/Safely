@@ -1,4 +1,3 @@
-export * from './api-error';
 export * from './crypto';
 export * from './id';
 export * from './number';
