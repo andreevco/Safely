@@ -15,7 +15,12 @@ const sActivityItem = z.object({
         fromAddress: z.string(),
         toAddress: z.string(),
         value: sCryptoAssetAmount,
-        fee: sCryptoAssetAmount,
+        fee: z
+            .object({
+                type: z.literal('crypto'),
+                amount: sCryptoAssetAmount
+            })
+            .optional(),
         raw: z.unknown()
     })
 });
