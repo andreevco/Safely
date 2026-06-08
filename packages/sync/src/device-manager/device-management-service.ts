@@ -11,6 +11,8 @@ import { u64be, utf8 } from '../utils/buffer';
 import { getKID } from '../utils/kid';
 import { waitForChange } from '../utils/wait-for-change';
 
+const STALE_ADDED_DEVICE_TTL_MS = 24 * 60 * 60 * 1000;
+
 export class DeviceManagementService {
     constructor(
         private readonly deviceRepository: DeviceRepository,
@@ -78,6 +80,18 @@ export class DeviceManagementService {
         this.logger
             .child('device_management')
             .info('Device activated', { ikPub: device.info.ikPub.toString('hex') });
+    }
+
+    public async cleanupStaleAddedDevices(): Promise<void> {
+        const now = Date.now();
+        const ttlMs = STALE_ADDED_DEVICE_TTL_MS;
+        const devices = await this.deviceRepository.getStoredDevices();
+
+        for (const device of Object.values(devices)) {
+            if (device.type === 'added' && device.info.addedAt <= now - ttlMs) {
+                await this.deviceRepository.deleteDevice(device.info.ikPub);
+            }
+        }
     }
 
     public async isThisDeviceActive(): Promise<boolean> {

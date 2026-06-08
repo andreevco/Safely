@@ -81,6 +81,7 @@ export async function createMockSyncContainer<Latest extends StorageVersion, Res
         dmkVerifierService,
         logger
     );
+    await deviceManager.cleanupStaleAddedDevices();
 
     const updateEncryptor = new UpdateEncryptorService(
         syncKeyService,
