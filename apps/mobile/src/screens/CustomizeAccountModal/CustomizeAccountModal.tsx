@@ -27,7 +27,10 @@ export const CustomizeAccountModal = (props: CustomizeAccountModalProps) => {
     const [accountName, setAccountName] = useState(defaultName ?? '');
 
     useEffect(() => {
-        const unsub = navigation.addListener('transitionEnd', () => {
+        const unsub = navigation.addListener('transitionEnd', event => {
+            if (event.data.closing) {
+                return;
+            }
             inputRef.current?.focus();
         });
         return unsub;
