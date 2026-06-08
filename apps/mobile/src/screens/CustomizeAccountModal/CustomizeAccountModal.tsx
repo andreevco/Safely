@@ -1,6 +1,7 @@
-import { useFocusEffect } from '@react-navigation/native';
-import type { StaticScreenProps } from '@react-navigation/native';
-import { useCallback, useRef, useState } from 'react';
+import type { ParamListBase, StaticScreenProps } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Keyboard, TextInput, TouchableOpacity, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
@@ -22,14 +23,15 @@ export const CustomizeAccountModal = (props: CustomizeAccountModalProps) => {
     const { theme } = useUnistyles();
     const inputRef = useRef<TextInput>(null);
     const isFocused = useSharedValue(false);
-
+    const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
     const [accountName, setAccountName] = useState(defaultName ?? '');
 
-    useFocusEffect(
-        useCallback(() => {
+    useEffect(() => {
+        const unsub = navigation.addListener('transitionEnd', () => {
             inputRef.current?.focus();
-        }, [])
-    );
+        });
+        return unsub;
+    }, [navigation]);
 
     const handleSave = useCallback(async () => {
         Keyboard.dismiss();

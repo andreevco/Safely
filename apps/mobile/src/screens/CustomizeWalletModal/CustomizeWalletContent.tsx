@@ -1,7 +1,9 @@
-import { useFocusEffect } from '@react-navigation/native';
+import type { ParamListBase } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { selectionAsync } from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TextInput, View } from 'react-native';
 import { KeyboardAwareScrollView, KeyboardStickyView } from 'react-native-keyboard-controller';
@@ -39,14 +41,15 @@ export const CustomizeWalletContent = ({
     const { theme } = useUnistyles();
     const inputRef = useRef<TextInput>(null);
     const [isFocused, setIsFocused] = useState(false);
-
+    const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
     styles.useVariants({ focused: isFocused });
 
-    useFocusEffect(
-        useCallback(() => {
-            requestAnimationFrame(() => inputRef.current?.focus());
-        }, [])
-    );
+    useEffect(() => {
+        const unsub = navigation.addListener('transitionEnd', () => {
+            inputRef.current?.focus();
+        });
+        return unsub;
+    }, [navigation]);
 
     const handleIconChange = useCallback(
         (icon: WalletIcon) => {
