@@ -4,6 +4,7 @@ import type { Contact } from '@safely/core';
 import { vmTypeByBlockchainName } from '@safely/core';
 
 import { useCreateContact, useEditContact } from '../../../../entities';
+import { useAppContext } from '../../../../shared';
 import type { ContactFormResult } from '../types';
 import { useContactFormState } from './useContactFormState';
 
@@ -31,6 +32,7 @@ export function useContactForm(params: UseContactFormParams) {
     const { mutateAsync: createContact, isPending: isCreating } = useCreateContact();
     const { mutateAsync: editContact, isPending: isEditing } = useEditContact();
 
+    const logger = useAppContext().logger.child('contact-form');
     const isEditMode = !!initialContact;
     const isSubmitting = isCreating || isEditing;
 
@@ -67,7 +69,14 @@ export function useContactForm(params: UseContactFormParams) {
         if (!canSubmit) return null;
 
         const result: ContactFormResult | null = buildResult();
-        if (!result) return null;
+        if (!result) {
+            logger.warn('contact submit produced no result despite passing validation');
+            return null;
+        }
+
+        const mode = isEditMode ? 'edit' : 'create';
+        // Log address count only — never the names or addresses themselves.
+        logger.info('submitting contact', { mode, addressCount: result.addresses.length });
 
         const contact = initialContact
             ? await editContact({
@@ -77,10 +86,21 @@ export function useContactForm(params: UseContactFormParams) {
               })
             : await createContact(result);
 
+        logger.info('contact saved', { mode });
+
         onSuccess?.(contact);
 
         return contact;
-    }, [buildResult, canSubmit, createContact, editContact, initialContact, onSuccess]);
+    }, [
+        buildResult,
+        canSubmit,
+        createContact,
+        editContact,
+        initialContact,
+        isEditMode,
+        onSuccess,
+        logger
+    ]);
 
     return {
         state,

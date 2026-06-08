@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 
+import { useAppContext } from '../../../../shared';
 import { isValidMnemonicWord, normalizeInput } from '../utils';
 
 export interface UseImportSeedPhraseParams {
@@ -18,6 +19,7 @@ export interface UseImportSeedPhraseResult {
 export const useImportSeedPhrase = ({
     onSubmit
 }: UseImportSeedPhraseParams): UseImportSeedPhraseResult => {
+    const logger = useAppContext().logger.child('import-seed');
     const [value, setValue] = useState('');
     const [error, setError] = useState<string | null>(null);
 
@@ -38,19 +40,24 @@ export const useImportSeedPhrase = ({
     }, []);
 
     const handleSubmit = useCallback(() => {
+        // Never log the words themselves — only the count, which is safe.
+        logger.info('seed phrase submitted', { wordCount: words.length });
+
         if (words.length !== 12 && words.length !== 24) {
+            logger.warn('seed phrase rejected: invalid word count', { wordCount: words.length });
             setError('Secret recovery phrase must be 12 or 24 words');
             return;
         }
 
         const invalidWord = words.find(word => !isValidMnemonicWord(word));
         if (invalidWord) {
+            logger.warn('seed phrase rejected: contains a word outside the BIP39 wordlist');
             setError(`Invalid word: "${invalidWord}"`);
             return;
         }
 
         onSubmit(words);
-    }, [words, onSubmit]);
+    }, [words, onSubmit, logger]);
 
     return {
         value,
