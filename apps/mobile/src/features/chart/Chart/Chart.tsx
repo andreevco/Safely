@@ -14,7 +14,7 @@ import { useChartPeriodQuery, useSetChartPeriod, useCrosshair } from './hooks';
 
 export const Chart = () => {
     const asset = BTC_ASSET;
-    const { data: selectedPeriod = ChartPeriod.ONE_MONTH, isLoading } = useChartPeriodQuery();
+    const { data: selectedPeriod = ChartPeriod.ONE_MONTH } = useChartPeriodQuery();
     const { mutate: setSelectedPeriod } = useSetChartPeriod();
     const chartPointsShared = useSharedValue<ChartPoint[]>([]);
     const pathFractionsShared = useSharedValue<number[]>([]);
@@ -38,7 +38,7 @@ export const Chart = () => {
                 activePriceDiff={crosshair.activePriceDiff}
             />
             <ChartPeriods selectedPeriod={selectedPeriod} onSelectPeriod={setSelectedPeriod} />
-            {isLoading ? (
+            {chart.isLoading ? (
                 <ChartLineSkeleton />
             ) : (
                 <ChartLine

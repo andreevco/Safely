@@ -1,14 +1,13 @@
-import { useFocusEffect } from '@react-navigation/native';
 import { selectionAsync } from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TextInput, View } from 'react-native';
 import { KeyboardAwareScrollView, KeyboardStickyView } from 'react-native-keyboard-controller';
 import { useUnistyles } from 'react-native-unistyles';
 
 import { ColorPicker, EmojiPicker, Text } from '@mobile/shared/ui';
-import { smoothstepGradient } from '@mobile/shared/utils';
+import { smoothstepGradient, useAutoFocus } from '@mobile/shared/utils';
 
 import type { WalletIcon } from './constants';
 import { WALLET_COLORS, WALLET_EMOJIS } from './constants';
@@ -37,16 +36,10 @@ export const CustomizeWalletContent = ({
 }: CustomizeWalletContentProps) => {
     const { t } = useTranslation();
     const { theme } = useUnistyles();
-    const inputRef = useRef<TextInput>(null);
     const [isFocused, setIsFocused] = useState(false);
+    const inputRef = useAutoFocus();
 
     styles.useVariants({ focused: isFocused });
-
-    useFocusEffect(
-        useCallback(() => {
-            requestAnimationFrame(() => inputRef.current?.focus());
-        }, [])
-    );
 
     const handleIconChange = useCallback(
         (icon: WalletIcon) => {

@@ -38,6 +38,9 @@ export function createQueryClient(logger: Logger): QueryClient {
                 gcTime: CACHE_LIVE_TIME,
                 staleTime: QUERIES_STALE_TIME.DEFAULT,
                 experimental_prefetchInRender: true
+            },
+            mutations: {
+                networkMode: 'offlineFirst'
             }
         }
     });
