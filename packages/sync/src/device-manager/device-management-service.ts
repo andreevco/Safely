@@ -77,7 +77,9 @@ export class DeviceManagementService {
             info: device.info,
             sign: device.sign
         });
-        this.logger.info('Device activated', { ikPub: device.info.ikPub.toString('hex') });
+        this.logger
+            .child('device_management')
+            .info('Device activated', { ikPub: device.info.ikPub.toString('hex') });
     }
 
     public async isThisDeviceActive(): Promise<boolean> {

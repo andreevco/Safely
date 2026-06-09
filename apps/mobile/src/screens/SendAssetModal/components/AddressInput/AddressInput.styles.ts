@@ -70,6 +70,9 @@ export const styles = StyleSheet.create(theme => ({
     inputModeBox: {
         position: 'relative'
     },
+    emptyInputBox: {
+        height: INPUT_LINE_HEIGHT
+    },
     measure: {
         position: 'absolute',
         left: 0,

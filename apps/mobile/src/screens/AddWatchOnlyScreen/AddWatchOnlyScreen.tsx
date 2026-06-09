@@ -17,6 +17,7 @@ import {
 import { useAddWatchOnlyPortfolio, useLoader, usePortfolios } from '@safely/ux';
 
 import { handleDuplicatePortfolio } from '@mobile/features/add-wallet/handleDuplicatePortfolio';
+import { TEST_ID } from '@mobile/shared/constants';
 import { Button, Screen, Text } from '@mobile/shared/ui';
 import { Icon, XmarkCircle16 } from '@mobile/shared/ui/Icon';
 import { TouchableOpacity } from '@mobile/shared/ui/TouchableOpacity';
@@ -112,6 +113,7 @@ export const AddWatchOnlyScreen = () => {
             <Screen.Header variant="left">
                 <Screen.Header.BackButton />
                 <Button
+                    testID={TEST_ID.watchOnly.continueButton}
                     type="primary"
                     size="small"
                     style={styles.nextButton}
@@ -133,6 +135,7 @@ export const AddWatchOnlyScreen = () => {
 
                 <View style={styles.inputContainer}>
                     <TextInput
+                        testID={TEST_ID.watchOnly.addressInput}
                         ref={inputRef}
                         value={address}
                         onChangeText={setAddress}

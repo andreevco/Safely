@@ -3,7 +3,7 @@ import React, { useCallback } from 'react';
 import type { LayoutChangeEvent, StyleProp, ViewStyle } from 'react-native';
 import type { ComposedGesture, GestureType } from 'react-native-gesture-handler';
 import { Gesture } from 'react-native-gesture-handler';
-import type { SharedValue } from 'react-native-reanimated';
+import type { AnimatedStyle, SharedValue } from 'react-native-reanimated';
 import Animated, {
     Easing,
     useAnimatedStyle,
@@ -18,7 +18,7 @@ type Positions = Record<string, number>;
 
 type DraggableRenderProps = {
     gesture: GestureType | ComposedGesture;
-    underlayStyle: StyleProp<ViewStyle>;
+    underlayStyle: StyleProp<AnimatedStyle<ViewStyle>>;
 };
 
 type DraggableProps = {

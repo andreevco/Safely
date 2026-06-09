@@ -3,6 +3,7 @@ import { TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import Animated, { useSharedValue } from 'react-native-reanimated';
 import { useUnistyles } from 'react-native-unistyles';
 
+import { TEST_ID } from '@mobile/shared/constants';
 import { Icon, SwapVertical20 } from '@mobile/shared/ui/Icon';
 import { Text } from '@mobile/shared/ui/Text';
 
@@ -86,6 +87,7 @@ export const AmountInput = forwardRef<MaskedInputRef, AmountInputProps>((props, 
                                     </Text>
                                 )}
                                 <MaskedInput
+                                    testID={TEST_ID.send.amountInput}
                                     ref={inputRef}
                                     decimals={decimals}
                                     decimalSeparator={decimalSeparator}
@@ -104,6 +106,7 @@ export const AmountInput = forwardRef<MaskedInputRef, AmountInputProps>((props, 
                                 />
                             </View>
                             <TouchableOpacity
+                                testID={TEST_ID.send.switchAmountMode}
                                 activeOpacity={0.8}
                                 onPress={onSwitchFiatMode}
                                 style={styles.switchButton}

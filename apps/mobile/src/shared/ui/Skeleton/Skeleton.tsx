@@ -13,8 +13,8 @@ import { useUnistyles } from 'react-native-unistyles';
 import { styles } from './Skeleton.styles';
 
 type SkeletonProps = {
-    width: number;
-    height: number;
+    width: number | 'auto';
+    height: number | 'auto';
     borderRadius?: number;
     style?: ViewStyle;
     variant?: 'transparentElement' | 'secondary';

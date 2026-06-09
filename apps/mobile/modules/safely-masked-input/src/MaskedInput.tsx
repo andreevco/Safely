@@ -45,6 +45,7 @@ export interface MaskedInputProps {
     suffixOpacity?: number;
     suffixFontSize?: number;
     style?: StyleProp<ViewStyle>;
+    testID?: string;
 }
 
 interface NativeChangeEvent {

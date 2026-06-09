@@ -320,7 +320,7 @@ describe('useSetActiveAccount (change)', () => {
 });
 
 describe('useDeleteAccount (remove)', () => {
-    it('unlocks secure storage, removes own device meta, deletes local account, clears local storage', async () => {
+    it('removes own device meta, deletes local account with the provided storage, clears local storage', async () => {
         const a = createMockSyncAccount({ accountId: 'to-delete' });
         const b = createMockSyncAccount({ accountId: 'survivor' });
         const factory = createFactoryStub();
@@ -341,13 +341,16 @@ describe('useDeleteAccount (remove)', () => {
             .child(['account', 'to-delete'])
             .setItem('activePortfolio', '{}');
 
+        const secureEncryptedStorage = appContext.storage.sync.encrypted as Parameters<
+            typeof result.current.mutateAsync
+        >[0];
         await act(async () => {
-            await result.current.mutateAsync();
+            await result.current.mutateAsync(secureEncryptedStorage);
         });
 
         expect(factory.deleteLocalAccount).toHaveBeenCalledWith(
             'to-delete',
-            expect.objectContaining({ unlock: expect.any(Function) })
+            secureEncryptedStorage
         );
 
         const recorder = a.transactions[0];
@@ -367,7 +370,7 @@ describe('useDeleteAccount (remove)', () => {
         expect(activeCache).toBe(b);
     });
 
-    it('removes all account queries when no accounts remain', async () => {
+    it('keeps stale account queries in cache when no accounts remain', async () => {
         const lone = createMockSyncAccount({ accountId: 'lone' });
         const factory = createFactoryStub();
         setupAccountState({ accounts: [lone], account: lone, factory });
@@ -384,11 +387,15 @@ describe('useDeleteAccount (remove)', () => {
         });
 
         await act(async () => {
-            await result.current.mutateAsync();
+            await result.current.mutateAsync(
+                appContext.storage.sync.encrypted as Parameters<
+                    typeof result.current.mutateAsync
+                >[0]
+            );
         });
 
-        expect(queryClient.getQueryData(accountKey.list.toKey())).toBeUndefined();
-        expect(queryClient.getQueryData(accountKey.list.active.toKey())).toBeUndefined();
+        expect(queryClient.getQueryData(accountKey.list.toKey())).toEqual([lone]);
+        expect(queryClient.getQueryData(accountKey.list.active.toKey())).toBe(lone);
     });
 });
 

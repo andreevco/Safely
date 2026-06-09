@@ -50,6 +50,9 @@ export default [
         },
         settings: {
             'boundaries/root-path': import.meta.dirname,
+            /* don't let eslint-plugin-import (import/no-cycle) parse files inside
+               node_modules — RN ships Flow .js files the TS parser chokes on */
+            'import/ignore': ['node_modules'],
             'import/parsers': {
                 '@typescript-eslint/parser': ['.ts', '.tsx']
             },
@@ -129,6 +132,7 @@ export default [
             'no-return-assign': 'off',
             'no-restricted-syntax': ['error', 'LabeledStatement', 'WithStatement'],
             'no-console': 'error',
+            '@typescript-eslint/no-unnecessary-type-assertion': 'off',
 
             /* imports */
             'import/extensions': 'off',

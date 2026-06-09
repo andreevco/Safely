@@ -6,6 +6,7 @@ import { Keyboard } from 'react-native';
 import type { Portfolio, PortfolioMeta } from '@safely/core';
 import { useChangePortfolioMeta, useNewPortfolioFallbackName } from '@safely/ux';
 
+import { TEST_ID } from '@mobile/shared/constants';
 import { Button, Icon, Screen, Xmark16 } from '@mobile/shared/ui';
 
 import type { WalletIcon } from './constants';
@@ -63,6 +64,7 @@ export const CustomizeWalletModal = (props: CustomizeWalletModalProps) => {
                     </Screen.Header.Button>
                 )}
                 <Button
+                    testID={TEST_ID.customizeWallet.saveButton}
                     type="primary"
                     size="small"
                     style={styles.saveButton}

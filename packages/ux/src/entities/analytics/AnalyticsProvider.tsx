@@ -21,7 +21,10 @@ export function AnalyticsProvider(props: { children: ReactNode }) {
                     baseUrl: bootConfig.telemetry.analytics.url,
                     projectToken: bootConfig.telemetry.analytics.token
                 }),
-                rateApi: new RateApi({ baseUrl: bootConfig.currencies.prices_api_url }),
+                rateApi: new RateApi({
+                    baseUrl: bootConfig.currencies.prices_api_url,
+                    logger: appContext.logger
+                }),
                 environment: appContext.environment,
                 platform: appContext.build,
                 appVersion: appContext.version

@@ -1,0 +1,58 @@
+# Step 1 of the e2e chain (see executionOrder in config.yaml):
+# onboarding -> create-wallet -> add-watch-only -> import-wallet -> send-asset.
+# Each flow starts from the state the previous one finished in.
+appId: com.aco.swallet
+name: onboarding-create-wallet
+tags:
+    - smoke
+    - onboarding
+---
+# Fresh launch: wipe app data so we always start from the onboarding welcome screen.
+- launchApp:
+      clearState: true
+
+# Wait through splash + JS bundle load until the welcome screen is interactive.
+- extendedWaitUntil:
+      visible:
+          id: 'welcome.createWallet'
+      timeout: 60000
+
+- tapOn:
+      id: 'welcome.createWallet'
+
+- tapOn: '1'
+- tapOn: '2'
+- tapOn: '3'
+- tapOn: '4'
+
+# Let the "enter" -> "re-enter" transition settle before typing again,
+# otherwise taps land while the input is still locked at max length.
+- waitForAnimationToEnd
+
+- tapOn: '1'
+- tapOn: '2'
+- tapOn: '3'
+- tapOn: '4'
+
+- runFlow:
+      when:
+          visible:
+              id: 'biometry.skip'
+      commands:
+          - tapOn:
+                id: 'biometry.skip'
+
+- extendedWaitUntil:
+      visible:
+          id: 'accountCreated.protectLater'
+      timeout: 30000
+- tapOn:
+      id: 'accountCreated.protectLater'
+
+# We should now be on the home tab.
+- extendedWaitUntil:
+      visible:
+          id: 'home.settingsButton'
+      timeout: 30000
+- assertVisible:
+      id: 'home.settingsButton'

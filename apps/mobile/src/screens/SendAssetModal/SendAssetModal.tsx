@@ -16,6 +16,7 @@ import {
     type SendFormView
 } from '@safely/ux';
 
+import { TEST_ID } from '@mobile/shared/constants';
 import { Button, Screen, Text } from '@mobile/shared/ui';
 import { ArrowLeft16, Icon } from '@mobile/shared/ui/Icon';
 
@@ -114,7 +115,13 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
                     )}
                 </Screen.Header.Title>
                 <View style={styles.nextButton}>
-                    <Button size="small" type="primary" disabled={!next} onPress={next}>
+                    <Button
+                        testID={TEST_ID.send.nextButton}
+                        size="small"
+                        type="primary"
+                        disabled={!next}
+                        onPress={next}
+                    >
                         {t('common.next')}
                     </Button>
                 </View>

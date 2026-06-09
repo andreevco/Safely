@@ -8,13 +8,13 @@ import { useChart } from '@safely/ux';
 import type { ChartPoint } from '@mobile/shared/utils/chart';
 
 import { styles } from './Chart.styles';
-import { ChartHeader, ChartLine, ChartPeriods, ChartFooter } from './components';
+import { ChartHeader, ChartLine, ChartPeriods, ChartFooter, ChartLineSkeleton } from './components';
 import { CHART_CONFIG, ChartPeriod } from './config';
 import { useChartPeriodQuery, useSetChartPeriod, useCrosshair } from './hooks';
 
 export const Chart = () => {
     const asset = BTC_ASSET;
-    const { data: selectedPeriod = ChartPeriod.ONE_MONTH } = useChartPeriodQuery();
+    const { data: selectedPeriod = ChartPeriod.ONE_MONTH, isLoading } = useChartPeriodQuery();
     const { mutate: setSelectedPeriod } = useSetChartPeriod();
     const chartPointsShared = useSharedValue<ChartPoint[]>([]);
     const pathFractionsShared = useSharedValue<number[]>([]);
@@ -38,16 +38,20 @@ export const Chart = () => {
                 activePriceDiff={crosshair.activePriceDiff}
             />
             <ChartPeriods selectedPeriod={selectedPeriod} onSelectPeriod={setSelectedPeriod} />
-            <ChartLine
-                startDate={stickyStartDate}
-                prices={prices}
-                selectedPeriod={selectedPeriod}
-                chartPointsShared={chartPointsShared}
-                pathFractionsShared={pathFractionsShared}
-                primaryCrosshair={crosshair.primaryCrosshair}
-                secondaryCrosshair={crosshair.secondaryCrosshair}
-                gesture={crosshair.gesture}
-            />
+            {isLoading ? (
+                <ChartLineSkeleton />
+            ) : (
+                <ChartLine
+                    startDate={stickyStartDate}
+                    prices={prices}
+                    selectedPeriod={selectedPeriod}
+                    chartPointsShared={chartPointsShared}
+                    pathFractionsShared={pathFractionsShared}
+                    primaryCrosshair={crosshair.primaryCrosshair}
+                    secondaryCrosshair={crosshair.secondaryCrosshair}
+                    gesture={crosshair.gesture}
+                />
+            )}
             <ChartFooter
                 startDate={stickyStartDate}
                 selectedPeriod={selectedPeriod}

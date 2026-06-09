@@ -5,6 +5,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { usePortfolios } from '@safely/ux';
 
 import { PortfoliosList } from '@mobile/features/portfolio';
+import { TEST_ID } from '@mobile/shared/constants';
 import { Button, Screen } from '@mobile/shared/ui';
 
 import { styles } from './SelectAccountModal.styles';
@@ -26,6 +27,7 @@ export const SelectAccountModal = () => {
             >
                 <PortfoliosList portfolios={portfolios} onSelect={navigation.goBack} />
                 <Button
+                    testID={TEST_ID.accounts.addWallet}
                     type="secondary"
                     size="small"
                     style={styles.addButton}
