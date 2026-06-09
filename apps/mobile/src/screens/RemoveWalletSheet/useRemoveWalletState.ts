@@ -10,6 +10,14 @@ export function useRemoveWalletState(portfolio: Portfolio) {
         } as const;
     }
 
+    if (portfolio.type === PortfolioType.LEDGER) {
+        return {
+            subtitleKey: 'removeWallet.ledger.subtitle',
+            hasCheckbox: false,
+            hasBackUpLink: false
+        } as const;
+    }
+
     const isSeedRevealed = portfolio.secretRevealedStatus !== null;
 
     if (isSeedRevealed) {

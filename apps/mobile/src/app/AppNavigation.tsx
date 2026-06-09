@@ -9,6 +9,8 @@ import { useUnistyles } from 'react-native-unistyles';
 import { SyncStorageProvider } from '@safely/ux';
 
 import { LockScreenProvider } from '@mobile/entities/security';
+import { LedgerSigningProvider } from '@mobile/features/ledger';
+import { logger } from '@mobile/shared/logger';
 
 import Navigation from './navigation';
 import { navigationRef } from './navigation/navigationRef';
@@ -40,18 +42,23 @@ export function AppNavigation() {
 
     return (
         <LockScreenProvider>
-            <SyncStorageProvider>
-                <Navigation
-                    ref={navigationRef}
-                    initialState={initialState}
-                    onReady={() => SplashScreen.hideAsync()}
-                    theme={NavigationTheme}
-                    linking={{
-                        enabled: true,
-                        prefixes: [Linking.createURL('/')]
-                    }}
-                />
-            </SyncStorageProvider>
+            <LedgerSigningProvider
+                logger={logger}
+                openConnectScreen={() => navigationRef.navigate('ConnectToSignModal')}
+            >
+                <SyncStorageProvider>
+                    <Navigation
+                        ref={navigationRef}
+                        initialState={initialState}
+                        onReady={() => SplashScreen.hideAsync()}
+                        theme={NavigationTheme}
+                        linking={{
+                            enabled: true,
+                            prefixes: [Linking.createURL('/')]
+                        }}
+                    />
+                </SyncStorageProvider>
+            </LedgerSigningProvider>
         </LockScreenProvider>
     );
 }

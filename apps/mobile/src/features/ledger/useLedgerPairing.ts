@@ -1,7 +1,7 @@
 import { DeviceActionStatus, OpenAppDeviceAction } from '@ledgerhq/device-management-kit';
 import { useEffect, useState } from 'react';
 
-import { useLedgerSession } from './LedgerSessionProvider';
+import { useLedgerSession } from './LedgerSigningProvider';
 
 export type PairingStatus = 'connecting' | 'connected' | 'error';
 

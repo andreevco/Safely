@@ -15,7 +15,10 @@ export function useTrackWalletOpen() {
     const analytics = useAnalytics();
     const portfolios = usePortfolios();
     const wallets = useMemo(
-        () => portfolios.filter(p => p.type === PortfolioType.BIP39).map(p => resolveBtcWallet(p)),
+        () =>
+            portfolios
+                .filter(p => p.type === PortfolioType.BIP39 || p.type === PortfolioType.LEDGER)
+                .map(p => resolveBtcWallet(p)),
         [portfolios]
     );
 

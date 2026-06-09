@@ -2,7 +2,7 @@ import type { DiscoveredDevice } from '@ledgerhq/device-management-kit';
 import { rnBleTransportIdentifier } from '@ledgerhq/device-transport-kit-react-native-ble';
 import { useEffect, useState } from 'react';
 
-import { useLedgerSession } from './LedgerSessionProvider';
+import { useLedgerSession } from './LedgerSigningProvider';
 
 export type DiscoveryStatus = 'searching' | 'found';
 
