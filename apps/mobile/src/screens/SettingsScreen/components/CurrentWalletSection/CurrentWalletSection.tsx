@@ -3,7 +3,6 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { PortfolioType } from '@safely/core';
 import { useActivePortfolio } from '@safely/ux';
 
 import { PortfolioName } from '@mobile/entities/portfolio';
@@ -39,7 +38,7 @@ export const CurrentWalletSection = () => {
                                 fontVariant="labelL"
                                 gap={12}
                                 size={16}
-                                isWatchOnly={activePortfolio.type === PortfolioType.WATCH_ONLY}
+                                type={activePortfolio.type}
                             />
                             <Cell.Value variant="bodyL" color="tertiary">
                                 {t('common.edit')}

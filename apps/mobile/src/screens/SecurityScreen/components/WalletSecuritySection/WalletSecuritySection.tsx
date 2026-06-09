@@ -41,7 +41,7 @@ export const WalletSecuritySection = () => {
                 <Cell onPress={handleSelectWallet}>
                     <Cell.Content>
                         <Cell.Row>
-                            <PortfolioName meta={portfolio.meta} isWatchOnly={isWatchOnly} />
+                            <PortfolioName meta={portfolio.meta} type={portfolio.type} />
                         </Cell.Row>
                     </Cell.Content>
                     <Icon icon={Switch16} color="tertiary" />

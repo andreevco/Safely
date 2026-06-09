@@ -1,3 +1,4 @@
+import { PortfolioType } from '@safely/core';
 import type { ContactSuggestion, PortfolioSuggestion } from '@safely/ux';
 
 import { ContactCell } from '@mobile/entities/contact';
@@ -41,7 +42,7 @@ export const SuggestionCell = (props: SuggestionCellProps) => {
                                 gap={12}
                                 size={16}
                                 tag={suggestion.tag}
-                                isWatchOnly={suggestion.isWatchOnly}
+                                type={suggestion.isWatchOnly ? PortfolioType.WATCH_ONLY : undefined}
                                 watchOnlyBadgeType="warning"
                             />
                             {isSelected && <Icon icon={Checkmark28} color="accent" />}

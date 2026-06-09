@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import type { PortfolioMeta } from '@safely/core';
+import { PortfolioType } from '@safely/core';
 
 import type { TextProps } from '@mobile/shared/ui';
 import { Badge, Text } from '@mobile/shared/ui';
@@ -11,6 +12,11 @@ import { styles } from './PortfolioName.styles';
 
 type WatchOnlyBadgeType = ComponentProps<typeof Badge>['type'];
 
+const BADGE_LABEL_BY_TYPE: Partial<Record<PortfolioType, string>> = {
+    [PortfolioType.WATCH_ONLY]: 'portfolio.watchOnly',
+    [PortfolioType.LEDGER]: 'portfolio.ledger'
+};
+
 type PortfolioNameProps = {
     meta: PortfolioMeta;
     size?: number;
@@ -18,7 +24,7 @@ type PortfolioNameProps = {
     fontVariant?: TextProps['variant'];
     color?: TextProps['color'];
     tag?: number | false;
-    isWatchOnly?: boolean;
+    type?: PortfolioType;
     watchOnlyBadgeType?: WatchOnlyBadgeType;
 };
 
@@ -30,10 +36,13 @@ export const PortfolioName = (props: PortfolioNameProps) => {
         fontVariant = 'labelL',
         color,
         tag,
-        isWatchOnly,
+        type,
         watchOnlyBadgeType = 'neutral'
     } = props;
     const { t } = useTranslation();
+
+    const badgeLabelKey = type ? BADGE_LABEL_BY_TYPE[type] : undefined;
+    const badgeLabel = badgeLabelKey ? t(badgeLabelKey) : null;
 
     switch (meta.icon.type) {
         case 'color':
@@ -57,9 +66,9 @@ export const PortfolioName = (props: PortfolioNameProps) => {
                             </Text>
                         </View>
                     )}
-                    {isWatchOnly && (
+                    {badgeLabel && (
                         <Badge type={watchOnlyBadgeType} isUppercase>
-                            {t('portfolio.watchOnly')}
+                            {badgeLabel}
                         </Badge>
                     )}
                 </View>
@@ -87,9 +96,9 @@ export const PortfolioName = (props: PortfolioNameProps) => {
                             </Text>
                         </View>
                     )}
-                    {isWatchOnly && (
+                    {badgeLabel && (
                         <Badge type={watchOnlyBadgeType} isUppercase>
-                            {t('portfolio.watchOnly')}
+                            {badgeLabel}
                         </Badge>
                     )}
                 </View>
