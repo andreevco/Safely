@@ -1,13 +1,12 @@
-import type { ParamListBase, StaticScreenProps } from '@react-navigation/native';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import type { StaticScreenProps } from '@react-navigation/native';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Keyboard, TextInput, TouchableOpacity, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useUnistyles } from 'react-native-unistyles';
 
 import { Button, Icon, Screen, Text, Xmark16, XmarkCircle16 } from '@mobile/shared/ui';
+import { useAutoFocus } from '@mobile/shared/utils';
 
 import { styles } from './CustomizeAccountModal.styles';
 
@@ -21,20 +20,9 @@ export const CustomizeAccountModal = (props: CustomizeAccountModalProps) => {
     const { defaultName, onSave, onClose } = props.route?.params ?? {};
     const { t } = useTranslation();
     const { theme } = useUnistyles();
-    const inputRef = useRef<TextInput>(null);
     const isFocused = useSharedValue(false);
-    const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
     const [accountName, setAccountName] = useState(defaultName ?? '');
-
-    useEffect(() => {
-        const unsub = navigation.addListener('transitionEnd', event => {
-            if (event.data.closing) {
-                return;
-            }
-            inputRef.current?.focus();
-        });
-        return unsub;
-    }, [navigation]);
+    const inputRef = useAutoFocus();
 
     const handleSave = useCallback(async () => {
         Keyboard.dismiss();
