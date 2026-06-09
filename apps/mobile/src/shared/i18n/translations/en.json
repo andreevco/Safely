@@ -1,7 +1,40 @@
 {
     "currentLanguageName": "English",
     "portfolio": {
-        "watchOnly": "Watch only"
+        "watchOnly": "Watch only",
+        "ledger": "Ledger"
+    },
+    "ledgerSign": {
+        "retry": "Try again",
+        "cancel": "Cancel",
+        "searching": {
+            "title": "Looking for your Ledger",
+            "subtitle": "Turn on your Ledger and keep it nearby."
+        },
+        "connecting": {
+            "title": "Connecting",
+            "subtitle": "Unlock your Ledger and open the Bitcoin app."
+        },
+        "verifying": {
+            "title": "Verifying device",
+            "subtitle": "Make sure this is the Ledger for this wallet."
+        },
+        "signing": {
+            "title": "Confirm on your Ledger",
+            "subtitle": "Review and approve the transaction on your device."
+        },
+        "wrongDevice": {
+            "title": "Wrong Ledger",
+            "subtitle": "This device doesn't match this wallet. Connect the Ledger you used to add it."
+        },
+        "unsupportedApp": {
+            "title": "Update your Bitcoin app",
+            "subtitle": "Open Ledger Live and update the Bitcoin app on your device to version 2.1.0 or newer, then try again."
+        },
+        "failed": {
+            "title": "Connection failed",
+            "subtitle": "Couldn't reach your Ledger. Check it's unlocked with the Bitcoin app open."
+        }
     },
     "walletAlreadyAdded": {
         "title": "You've already added this wallet as {{name}}",
@@ -235,7 +268,8 @@
                     "title": "Recovery phrase",
                     "subtitle": "Keep it private. View only if necessary. This phrase has never been viewed.",
                     "revealed": "First viewed on {{date}} on {{device}}."
-                }
+                },
+                "ledgerInfo": "This wallet is secured by your Ledger device."
             }
         }
     },
@@ -453,7 +487,9 @@
             "importAccounts": {
                 "title": "Import accounts",
                 "subtitle": "Select the accounts you want to add.",
-                "showNext": "Show next"
+                "errorTitle": "Couldn't load accounts",
+                "errorSubtitle": "Something went wrong reading your Ledger. Please start over.",
+                "tryAgain": "Start over"
             }
         }
     },
@@ -602,6 +638,9 @@
         },
         "watchOnly": {
             "subtitle": "This wallet will be removed from your account. You can add it again anytime using the address."
+        },
+        "ledger": {
+            "subtitle": "This wallet will be removed from your account. You can add it again anytime by reconnecting your Ledger."
         }
     },
     "pendingFunds": {
