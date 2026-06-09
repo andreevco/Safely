@@ -1,3 +1,4 @@
+import type { Logger } from '@safely/sync';
 import {
     sDerivation,
     type SDerivation,
@@ -30,7 +31,8 @@ export class PortfolioBip39 implements IPortfolioBip39 {
         encryptor,
         mnemonicAccessor,
         id,
-        options
+        options,
+        logger
     }: {
         encryptor: ISecretEncryptor;
         mnemonicAccessor: IMnemonicAccessor & IMnemonicVault;
@@ -39,7 +41,10 @@ export class PortfolioBip39 implements IPortfolioBip39 {
             meta: NoIconPortfolioMeta;
             seedRevealedFromDevice?: string;
         };
+        logger?: Logger;
     }): Promise<SPortfolioBip39> {
+        const log = logger?.child('PortfolioBip39');
+        log?.info('creating portfolio', { id: id.toJSON() });
         try {
             validateMnemonic(MNEMONIC_TYPE.BIP39, mnemonicAccessor.value);
 
@@ -66,6 +71,8 @@ export class PortfolioBip39 implements IPortfolioBip39 {
                       revealedFromDevice: options.seedRevealedFromDevice
                   }
                 : null;
+
+            log?.info('portfolio created', { id: id.toJSON() });
 
             return sPortfolioBip39.toJson({
                 type: PortfolioType.BIP39,

@@ -22,5 +22,8 @@ export const styles = StyleSheet.create(theme => ({
         right: 0,
         // compensate lineHeight of font
         transform: [{ translateY: -20 }]
+    },
+    skeletonContainer: {
+        justifyContent: 'center'
     }
 }));

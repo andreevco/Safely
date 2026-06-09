@@ -7,6 +7,7 @@ import {
     useAccounts,
     useActiveAccount,
     useActiveAccountMeta,
+    useAppContext,
     useDeleteAccount,
     useEraseAllData,
     useToast
@@ -21,6 +22,7 @@ export function useSignOutAccountConfirmation() {
     const toast = useToast();
     const { mutateAsync: deleteAccount } = useDeleteAccount();
     const { mutateAsync: eraseAllData } = useEraseAllData();
+    const { storage } = useAppContext();
 
     return useCallback(() => {
         const isLastAccount = accounts?.length === 1;
@@ -31,14 +33,17 @@ export function useSignOutAccountConfirmation() {
             accountName,
             withLoader: isSyncAccount,
             onConfirm: async () => {
+                using secureEncryptedStorage = storage.sync.getSecureEncrypted();
+                await secureEncryptedStorage.unlock();
+
                 if (isLastAccount) {
                     if (isSyncAccount) {
-                        await deleteAccount();
+                        await deleteAccount(secureEncryptedStorage);
                     }
 
-                    return eraseAllData();
+                    await eraseAllData();
                 } else {
-                    await deleteAccount();
+                    await deleteAccount(secureEncryptedStorage);
                     toast(t('settings.signOutAccount.toastAccountRemoved'));
                 }
             }
@@ -51,6 +56,7 @@ export function useSignOutAccountConfirmation() {
         deleteAccount,
         eraseAllData,
         toast,
-        t
+        t,
+        storage.sync.getSecureEncrypted
     ]);
 }

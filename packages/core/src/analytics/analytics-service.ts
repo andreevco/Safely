@@ -3,9 +3,9 @@ import { v4 as uuid4 } from 'uuid';
 import type { Logger } from '@safely/sync';
 
 import type { EventsApi } from './api/events';
-import { BtcApiError } from '../api/btc/errors';
 import type { RateApi } from '../api/rate/client';
 import type { Build } from '../entities/application/build.schema';
+import { ApiError } from '../utils/fetch';
 import type { AnalyticsEvent, Environment, SystemProps } from './api/events/models';
 import { sAnalyticsEvent } from './api/events/models';
 import type { Bucket } from './bucket/bucket-types';
@@ -162,7 +162,7 @@ export class AnalyticsService {
             this.logger.warn('no rate available, dropping event', {
                 eventName,
                 currency: fiatSymbol,
-                status: err instanceof BtcApiError ? err.status : null
+                status: err instanceof ApiError ? err.status : null
             });
 
             return null;
@@ -178,6 +178,7 @@ export class AnalyticsService {
         sessionId: string;
         accountUuid: string | null;
     }): Promise<boolean> {
+        this.logger.info('start send event', payload);
         const parsedPayload = sAnalyticsEvent.safeParse({
             eventId: uuid4(),
             sessionId: payload.sessionId,
@@ -201,7 +202,7 @@ export class AnalyticsService {
         } catch (err) {
             this.logger.warn('failed to deliver event', {
                 eventName: payload.eventName,
-                status: err instanceof BtcApiError ? err.status : null
+                status: err instanceof ApiError ? err.status : null
             });
 
             return false;

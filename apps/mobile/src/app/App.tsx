@@ -14,12 +14,14 @@ import { AppNavigation } from './AppNavigation';
 import { RootErrorBoundary } from './root-error-boundary';
 import { RootSuspenseGate } from './root-suspense';
 import { REGULAR_MOBILE_STORAGE_ONLY_APP_LEVEL_USE } from './storage';
+import { createTanstackEventListeners } from './tanstack-query-managers';
 
 const persister = createPersister(
     REGULAR_MOBILE_STORAGE_ONLY_APP_LEVEL_USE.storage.child('persister'),
     logger
 );
 const queryClient = createQueryClient(logger);
+const eventListeners = createTanstackEventListeners();
 
 export const App = () => {
     return (
@@ -27,7 +29,11 @@ export const App = () => {
             <SafeAreaProvider>
                 <RootErrorBoundary>
                     <KeyboardProvider>
-                        <QueryProvider persister={persister} queryClient={queryClient}>
+                        <QueryProvider
+                            persister={persister}
+                            queryClient={queryClient}
+                            eventListeners={eventListeners}
+                        >
                             <ToastServiceProvider>
                                 <LoaderServiceProvider>
                                     <AppContextProvider>

@@ -20,14 +20,24 @@ interface PasscodeViewProps {
         onPress: () => void;
         icon: IconProps['icon'];
     };
+    testID?: string;
 }
 
 export const PasscodeView = (props: PasscodeViewProps) => {
-    const { title, description, numberOfDigits, value, onChange, isSuccess, isError, biometry } =
-        props;
+    const {
+        title,
+        description,
+        numberOfDigits,
+        value,
+        onChange,
+        isSuccess,
+        isError,
+        biometry,
+        testID
+    } = props;
 
     return (
-        <View style={styles.content}>
+        <View style={styles.content} testID={testID}>
             <View style={styles.textContainer}>
                 <Text textAlign="center" variant="titleM">
                     {title}

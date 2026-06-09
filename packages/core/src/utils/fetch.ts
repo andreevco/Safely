@@ -1,18 +1,47 @@
-import type { z } from 'zod';
+import { z } from 'zod';
 
-import { BtcApiError } from '../api/btc/errors';
-import { APIErrorSchema } from '../api/btc/models';
+import type { Logger } from '@safely/sync';
+
+export class ApiError extends Error {
+    public readonly name: string = 'ApiError';
+
+    public readonly status: number;
+
+    public readonly payload?: unknown;
+
+    constructor(message: string, status: number, payload?: unknown) {
+        super(message);
+        this.status = status;
+        this.payload = payload;
+    }
+}
+
+/** API error response. */
+const APIErrorSchema = z.looseObject({
+    error: z.string()
+});
 
 export class ApiClient {
     protected readonly headers: Record<string, string>;
 
-    protected readonly timeoutMs = 5000;
+    protected readonly timeoutMs: number = 5000;
+
+    /** subclasses override to throw their own ApiError subclass */
+    protected readonly errorConstructor: new (
+        message: string,
+        status: number,
+        payload?: unknown
+    ) => ApiError = ApiError;
+
+    protected readonly logger?: Logger;
 
     constructor(
         protected readonly baseUrl: string,
-        headers: Record<string, string> = {}
+        headers: Record<string, string> = {},
+        logger?: Logger
     ) {
         this.headers = { ...headers };
+        this.logger = logger?.child(this.constructor.name);
     }
 
     protected async getJson<T extends z.ZodTypeAny, Q extends object>(
@@ -87,17 +116,22 @@ export class ApiClient {
         const id = this.timeoutMs
             ? setTimeout(() => controller!.abort(), this.timeoutMs)
             : undefined;
+        this.logger?.debug('request', { method: init.method, url });
         try {
             const mergedInit: RequestInit = {
                 ...init,
                 headers: { ...this.headers, ...(init.headers || {}) },
                 signal: controller?.signal
             };
-            return await fetch(url, mergedInit);
+            const response = await fetch(url, mergedInit);
+            this.logger?.debug('response', { method: init.method, url, status: response.status });
+            return response;
         } catch (err) {
             if (err instanceof Error && err.name === 'AbortError') {
-                throw new BtcApiError('Request timed out', 408);
+                this.logger?.warn('request timed out', { method: init.method, url });
+                throw new this.errorConstructor('Request timed out', 408);
             }
+            this.logger?.warn('request failed (network error)', { method: init.method, url });
             throw err;
         } finally {
             if (id) clearTimeout(id);
@@ -122,12 +156,16 @@ export class ApiClient {
             const message = errorResult.success
                 ? errorResult.data.error
                 : response.statusText || 'Request failed';
-            throw new BtcApiError(message, response.status, parsed);
+            throw new this.errorConstructor(message, response.status, parsed);
         }
 
         const result = schema.safeParse(parsed);
         if (!result.success) {
-            throw new BtcApiError(
+            this.logger?.warn('response validation failed', {
+                url: response.url,
+                issue: result.error.message
+            });
+            throw new this.errorConstructor(
                 `Response validation failed: ${result.error.message}`,
                 response.status,
                 parsed
@@ -152,6 +190,6 @@ export class ApiClient {
             ? errorResult.data.error
             : response.statusText || 'Request failed';
 
-        throw new BtcApiError(message, response.status, parsed);
+        throw new this.errorConstructor(message, response.status, parsed);
     }
 }

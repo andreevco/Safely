@@ -6,12 +6,12 @@ describe('filterSensitiveData', () => {
     describe('hex private keys', () => {
         it('should redact a 64-char lowercase hex string', () => {
             const key = 'a'.repeat(64);
-            expect(filterSensitiveData(`key: ${key}`)).toBe('key: [REDACTED:key]');
+            expect(filterSensitiveData(`key: ${key}`)).toBe('key: [REDACTED:key:aaaa…aaaa]');
         });
 
         it('should redact a 64-char mixed-case hex string', () => {
             const key = 'aB3f'.repeat(16);
-            expect(filterSensitiveData(key)).toBe('[REDACTED:key]');
+            expect(filterSensitiveData(key)).toBe('[REDACTED:key:aB3f…aB3f]');
         });
 
         it('should not redact a 63-char hex string', () => {
@@ -26,12 +26,14 @@ describe('filterSensitiveData', () => {
 
         it('should redact a 128-char hex string (ed25519 private key)', () => {
             const key = 'a'.repeat(128);
-            expect(filterSensitiveData(`self_ik_prv: ${key}`)).toBe('self_ik_prv: [REDACTED:key]');
+            expect(filterSensitiveData(`self_ik_prv: ${key}`)).toBe(
+                'self_ik_prv: [REDACTED:key:aaaa…aaaa]'
+            );
         });
 
         it('should redact a 32-char hex string (16-byte secret / raw seed entropy)', () => {
             const key = 'a'.repeat(32);
-            expect(filterSensitiveData(key)).toBe('[REDACTED:key]');
+            expect(filterSensitiveData(key)).toBe('[REDACTED:key:aaaa…aaaa]');
         });
 
         it('should not redact a 31-char hex string', () => {
@@ -44,11 +46,19 @@ describe('filterSensitiveData', () => {
             expect(filterSensitiveData(odd)).toBe(odd);
         });
 
+        it('should keep the edges of an accountID embedded in a storage key path', () => {
+            const accountId = '0123456789abcdef0123456789abcdef';
+            const input = `called "setItem" for key "sync..${accountId}..master_key"`;
+            expect(filterSensitiveData(input)).toBe(
+                'called "setItem" for key "sync..[REDACTED:key:0123…cdef]..master_key"'
+            );
+        });
+
         it('should redact multiple hex keys in the same string', () => {
             const k1 = 'a'.repeat(64);
             const k2 = 'b'.repeat(64);
             const result = filterSensitiveData(`${k1} and ${k2}`);
-            expect(result).toBe('[REDACTED:key] and [REDACTED:key]');
+            expect(result).toBe('[REDACTED:key:aaaa…aaaa] and [REDACTED:key:bbbb…bbbb]');
         });
     });
 
@@ -197,7 +207,7 @@ describe('filterSensitiveData', () => {
         it('should redact a private key embedded in a JSON object string', () => {
             const key = 'a'.repeat(128);
             const json = JSON.stringify({ dmk_prv: key });
-            expect(filterSensitiveData(json)).toBe('{"dmk_prv":"[REDACTED:key]"}');
+            expect(filterSensitiveData(json)).toBe('{"dmk_prv":"[REDACTED:key:aaaa…aaaa]"}');
         });
     });
 
@@ -255,7 +265,7 @@ describe('filterSensitiveData', () => {
             const mnemonic =
                 'abandon ability able about above absent absorb abstract absurd abuse access accident';
             const input = `key ${key} words ${mnemonic}`;
-            expect(filterSensitiveData(input)).toContain('[REDACTED:key]');
+            expect(filterSensitiveData(input)).toContain('[REDACTED:key:ffff…ffff]');
             expect(filterSensitiveData(input)).toContain('[REDACTED:mnemonic]');
         });
 

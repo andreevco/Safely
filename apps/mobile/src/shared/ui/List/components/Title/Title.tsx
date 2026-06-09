@@ -1,19 +1,19 @@
-import { View } from 'react-native';
+import { View, type ViewStyle } from 'react-native';
 
-import { Text } from '@mobile/shared/ui/Text';
+import { Text, type TextProps } from '@mobile/shared/ui/Text';
 
 import { styles } from './Title.styles';
 
-interface TitleProps {
-    children: React.ReactNode;
-}
+type TitleProps = TextProps & {
+    containerStyle?: ViewStyle;
+};
 
 export const Title = (props: TitleProps) => {
-    const { children } = props;
+    const { children, containerStyle, ...rest } = props;
 
     return (
-        <View style={styles.container}>
-            <Text textTransform="uppercase" color="tertiary" variant="bodyM">
+        <View style={[styles.container, containerStyle]}>
+            <Text textTransform="uppercase" color="tertiary" variant="bodyM" {...rest}>
                 {children}
             </Text>
         </View>

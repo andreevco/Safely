@@ -12,11 +12,12 @@ export const styles = StyleSheet.create(theme => ({
         gap: theme.spacing[4],
         variants: {
             variant: {
+                transparent: {
+                    backgroundColor: 'transparent',
+                    borderWidth: 0
+                },
                 warn: {
                     backgroundColor: Color(theme.colors.accent.orange).alpha(0.16).toString()
-                },
-                alternate: {
-                    backgroundColor: theme.colors.background.secondary
                 },
                 danger: {
                     backgroundColor: Color(theme.colors.accent.red).alpha(0.16).toString()

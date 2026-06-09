@@ -38,6 +38,8 @@ type SlideButtonProps = ViewProps & {
     trackColor?: string;
     knobColor?: string;
     textColor?: string;
+    /** testID for the draggable knob — e2e swipe gestures must start on the knob, not the track */
+    knobTestID?: string;
 };
 
 export const SlideButton = (props: SlideButtonProps) => {
@@ -51,6 +53,7 @@ export const SlideButton = (props: SlideButtonProps) => {
         trackColor,
         knobColor,
         textColor,
+        knobTestID,
         ...rest
     } = props;
     const { theme } = useUnistyles();
@@ -219,7 +222,9 @@ export const SlideButton = (props: SlideButtonProps) => {
 
             <GestureDetector gesture={panGesture}>
                 <Animated.View style={styles.knobWrapper}>
-                    <Animated.View style={[styles.knob, knobStyle]}>
+                    {/* testID on the knob itself: the wrapper stretches to the full track,
+                        so a directional swipe from its center falls short of the threshold */}
+                    <Animated.View style={[styles.knob, knobStyle]} testID={knobTestID}>
                         {loading ? (
                             <Animated.View style={loaderStyle}>
                                 <Icon icon={Loader28} color="primary" />

@@ -9,6 +9,7 @@ import { useImportSeedPhrase } from '@safely/ux';
 
 import { usePreventCurrentScreenCapture } from '@mobile/entities/security';
 import { useAddWalletFlow } from '@mobile/features/add-wallet';
+import { TEST_ID } from '@mobile/shared/constants';
 import { Button, NativeInput, Screen, Text, type NativeInputRef } from '@mobile/shared/ui';
 import { maskSeedPhraseInput } from '@mobile/shared/utils';
 
@@ -63,6 +64,7 @@ export const ImportWalletScreen = () => {
             <Screen.Header variant="left">
                 <Screen.Header.BackButton />
                 <Button
+                    testID={TEST_ID.importWallet.continueButton}
                     type="primary"
                     size="small"
                     style={styles.continueButton}

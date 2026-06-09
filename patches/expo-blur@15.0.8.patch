@@ -1,0 +1,18 @@
+diff --git a/expo-module.config.json b/expo-module.config.json
+index 22c57365cc96da8966116528ab1e9e5bf01fae50..c8a8fdf178f66d3fb70c36faf1457c819d2a449f 100644
+--- a/expo-module.config.json
++++ b/expo-module.config.json
+@@ -4,12 +4,6 @@
+     "modules": ["BlurViewModule"]
+   },
+   "android": {
+-    "modules": ["expo.modules.blur.BlurModule"],
+-    "publication": {
+-      "groupId": "host.exp.exponent",
+-      "artifactId": "expo.modules.blur",
+-      "version": "15.0.8",
+-      "repository": "local-maven-repo"
+-    }
++    "modules": ["expo.modules.blur.BlurModule"]
+   }
+ }

@@ -38,16 +38,18 @@ const iosOk = STATUS_IOS === 'success' || STATUS_IOS_CRUTCH === 'success';
 const firebaseOk = STATUS_ANDROID === 'success';
 const e2eOk = STATUS_E2E === 'success';
 
-const icon = (ok) => (ok ? '✅' : '❌');
-const label = (status) => status || 'not run';
 const ver = (v, b) => `v${v || '?'} (${b || '?'})`;
 
-const iosStatusText = STATUS_IOS_CRUTCH
-    ? `${label(STATUS_IOS)} (retry: ${label(STATUS_IOS_CRUTCH)})`
-    : label(STATUS_IOS);
-
-const allOk = iosOk && firebaseOk && e2eOk;
-const headline = allOk ? '✅ Build & distribute succeeded' : '⚠️ Build & distribute — issues';
+const buildsOk = iosOk && firebaseOk;
+// "tests" in the headline = e2e.
+const testsOk = e2eOk;
+const headline = buildsOk
+    ? testsOk
+        ? '✅ successful build and tests'
+        : '❌ successful build; tests failed'
+    : testsOk
+        ? '❌ failed build; successful tests'
+        : '❌ failed build and tests';
 
 const notes = (RELEASE_NOTES || '').trim();
 const targetBranch = (TARGET_BRANCH || '').trim();
@@ -56,15 +58,15 @@ const notesWithBranch = targetBranch ? `${targetBranch} <- ${notes}` : notes;
 const prUrl = PR_NUMBER !== undefined && REPOSITORY ? `https://github.com/${REPOSITORY}/pull/${PR_NUMBER}` : '';
 const workflowUrl = WORKFLOW_URL || '';
 
-
 function buildText() {
     const lines = [
-        `📱 iOS — TestFlight ${icon(iosOk)} ${iosStatusText} · ${ver(IOS_VERSION, IOS_BUILD)}`,
-        `🤖 Android — Firebase ${icon(firebaseOk)} ${label(STATUS_ANDROID)} · ${ver(ANDROID_VERSION, ANDROID_BUILD)}`,
-        `🧪 E2E (Android) ${icon(e2eOk)} ${label(STATUS_E2E)}`,
+        headline,
+        iosOk ? `📱 iOS · ${ver(IOS_VERSION, IOS_BUILD)}` : '📱 iOS build failed ❌',
+        firebaseOk ? `🤖 Android · ${ver(ANDROID_VERSION, ANDROID_BUILD)}` : '🤖 Android build failed ❌',
     ];
 
     if (!e2eOk) {
+        lines.push('🧪 E2E failed ❌');
         lines.push('Full log is in the "Maestro Test Results" artifact on the EAS run page.');
     }
 

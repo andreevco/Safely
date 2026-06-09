@@ -1,0 +1,9 @@
+{
+  "platforms": ["ios", "android"],
+  "ios": {
+    "modules": ["SafelyCryptoModule"]
+  },
+  "android": {
+    "modules": ["expo.modules.safelycrypto.SafelyCryptoModule"]
+  }
+}

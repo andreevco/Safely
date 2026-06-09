@@ -1,10 +1,10 @@
-import PagerView, { type PagerViewRef } from '@expo/ui/community/pager-view';
 import { useNavigation } from '@react-navigation/core';
 import type { StaticScreenProps } from '@react-navigation/native';
 import { useRef, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TextInput } from 'react-native';
 import { View } from 'react-native';
+import PagerView from 'react-native-pager-view';
 
 import { assertUnreachable } from '@safely/core';
 import type { SendFormResult } from '@safely/ux';
@@ -16,6 +16,7 @@ import {
     type SendFormView
 } from '@safely/ux';
 
+import { TEST_ID } from '@mobile/shared/constants';
 import { Button, Screen, Text } from '@mobile/shared/ui';
 import { ArrowLeft16, Icon } from '@mobile/shared/ui/Icon';
 
@@ -36,7 +37,7 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
     const { address, amount } = props.route.params ?? {};
     const { t } = useTranslation();
     const navigation = useNavigation();
-    const pagerRef = useRef<PagerViewRef>(null);
+    const pagerRef = useRef<PagerView>(null);
     const formatter = useNumberFormatter();
     const { numberFormatLocale } = useAppContext();
     const activeFiat = useActiveFiat();
@@ -114,7 +115,13 @@ export const SendAssetModal = (props: SendAssetModalProps) => {
                     )}
                 </Screen.Header.Title>
                 <View style={styles.nextButton}>
-                    <Button size="small" type="primary" disabled={!next} onPress={next}>
+                    <Button
+                        testID={TEST_ID.send.nextButton}
+                        size="small"
+                        type="primary"
+                        disabled={!next}
+                        onPress={next}
+                    >
                         {t('common.next')}
                     </Button>
                 </View>

@@ -3,3 +3,17 @@ flows:
 
 includeTags:
     - smoke
+
+# The flows form a chain: each one starts from the state the previous one
+# finished in (fresh onboarding -> add wallets -> import a wallet -> send
+# from it), so the order matters and a failed flow invalidates the rest.
+# import-wallet must run right before send-asset: send expects the imported
+# wallet to be the active one, and every added wallet becomes active.
+executionOrder:
+    continueOnFailure: false
+    flowsOrder:
+        - onboarding-create-wallet
+        - create-wallet
+        - add-watch-only
+        - import-wallet
+        - send-asset
