@@ -10,7 +10,12 @@
     "icons": "node scripts/generate-icons-file.js",
     "compile": "tsc --noEmit",
     "build": "pnpm dlx eas-cli workflow:run build-and-distribute.yml",
-    "lint": "eslint ./src"
+    "lint": "eslint ./src",
+    "test": "pnpm run test:js",
+    "test:all": "pnpm run test:js && pnpm run test:ios && pnpm run test:android",
+    "test:js": "vitest run",
+    "test:ios": "cd modules/safely-crypto/ios && swift test",
+    "test:android": "cd modules/safely-crypto/android/host-test && ./gradlew test"
   },
   "dependencies": {
     "@bottom-tabs/react-navigation": "^1.2.0",
@@ -23,6 +28,7 @@
     "@formatjs/intl-pluralrules": "^6.2.1",
     "@formatjs/intl-relativetimeformat": "^12.3.1",
     "@gorhom/bottom-sheet": "^5.2.14",
+    "@noble/hashes": "catalog:",
     "@react-navigation/bottom-tabs": "^7.15.9",
     "@react-navigation/core": "^7.17.4",
     "@react-navigation/elements": "^2.9.14",
@@ -96,7 +102,8 @@
     "@safely/sync-storage": "workspace:*",
     "@types/react": "catalog:",
     "babel-preset-expo": "~56.0.0",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "^4.0.17"
   },
   "private": true,
   "expo": {
