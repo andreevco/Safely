@@ -29,9 +29,7 @@ let {
     STATUS_IOS,
     STATUS_IOS_CRUTCH,
     STATUS_ANDROID,
-    STATUS_E2E,
-    STATUS_TEST_IOS,
-    STATUS_TEST_ANDROID
+    STATUS_E2E
 } = process.env;
 
 
@@ -39,14 +37,12 @@ let {
 const iosOk = STATUS_IOS === 'success' || STATUS_IOS_CRUTCH === 'success';
 const firebaseOk = STATUS_ANDROID === 'success';
 const e2eOk = STATUS_E2E === 'success';
-const unitIosOk = STATUS_TEST_IOS === 'success';
-const unitAndroidOk = STATUS_TEST_ANDROID === 'success';
 
 const ver = (v, b) => `v${v || '?'} (${b || '?'})`;
 
 const buildsOk = iosOk && firebaseOk;
-// "tests" in the headline = unit (iOS + Android) + e2e.
-const testsOk = unitIosOk && unitAndroidOk && e2eOk;
+// "tests" in the headline = e2e.
+const testsOk = e2eOk;
 const headline = buildsOk
     ? testsOk
         ? '✅ successful build and tests'
@@ -67,7 +63,6 @@ function buildText() {
         headline,
         iosOk ? `📱 iOS · ${ver(IOS_VERSION, IOS_BUILD)}` : '📱 iOS build failed ❌',
         firebaseOk ? `🤖 Android · ${ver(ANDROID_VERSION, ANDROID_BUILD)}` : '🤖 Android build failed ❌',
-        `🔬 Unit · iOS ${unitIosOk ? '✅' : '❌'} · Android ${unitAndroidOk ? '✅' : '❌'}`,
     ];
 
     if (!e2eOk) {

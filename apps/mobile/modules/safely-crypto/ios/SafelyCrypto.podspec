@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
-  s.name           = 'SafelyPbkdf2'
+  s.name           = 'SafelyCrypto'
   s.version        = '1.0.0'
-  s.summary        = 'Native PBKDF2-HMAC-SHA512 (CommonCrypto) for Safely wallet'
+  s.summary        = 'Native cryptographic primitives (CommonCrypto) for Safely wallet'
   s.author         = 'Andreevco'
   s.homepage       = 'https://github.com/andreevco/Safely'
   s.platforms      = { :ios => '15.1' }

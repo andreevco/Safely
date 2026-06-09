@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-  namespace "expo.modules.safelypbkdf2"
+  namespace "expo.modules.safelycrypto"
 
   compileSdk 35
 

@@ -8,7 +8,7 @@ enum Pbkdf2Error: Error {
 // Pure RFC 8018 PBKDF2-HMAC-SHA512 over raw bytes. No ExpoModulesCore
 // dependency, so it is unit-testable on the host via SwiftPM (`swift test`).
 // The BIP39 semantics (NFKD, "mnemonic" salt prefix, 2048 iterations) live on
-// the JS side; this is the bare primitive. SafelyPbkdf2Module's `Function` is a
+// the JS side; this is the bare primitive. SafelyCryptoModule's `Function` is a
 // thin TypedArray<->Data adapter over this function.
 func pbkdf2Sha512(password: Data, salt: Data, iterations: Int, keyLength: Int) throws -> Data {
     var derived = Data(count: keyLength)

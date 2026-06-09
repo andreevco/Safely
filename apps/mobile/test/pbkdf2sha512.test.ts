@@ -27,7 +27,7 @@ const noblePbkdf2Async =
     >();
 const loggerError = vi.fn();
 
-vi.mock('../modules/safely-pbkdf2/src', () => ({ pbkdf2Sha512: nativePbkdf2Sha512 }));
+vi.mock('../modules/safely-crypto/src', () => ({ pbkdf2Sha512: nativePbkdf2Sha512 }));
 vi.mock('@noble/hashes/pbkdf2.js', () => ({ pbkdf2Async: noblePbkdf2Async }));
 vi.mock('@noble/hashes/sha2.js', () => ({ sha512: { __sha512: true } }));
 vi.mock('@mobile/shared/logger', () => ({ logger: { error: loggerError } }));

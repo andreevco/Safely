@@ -1,4 +1,4 @@
-package expo.modules.safelypbkdf2
+package expo.modules.safelycrypto
 
 import org.junit.Assert.assertEquals
 import org.junit.Test

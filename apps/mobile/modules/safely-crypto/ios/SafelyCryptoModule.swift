@@ -16,9 +16,9 @@ internal final class Pbkdf2FailedException: GenericException<Int32> {
 // HMAC iterations) and hand off to the testable pure `pbkdf2Sha512`. A native
 // run takes ~10ms, fine to block on — unlike the pure-JS path it replaces (~2s
 // on Hermes).
-public class SafelyPbkdf2Module: Module {
+public class SafelyCryptoModule: Module {
     public func definition() -> ModuleDefinition {
-        Name("SafelyPbkdf2")
+        Name("SafelyCrypto")
 
         Function("pbkdf2Sha512") { (password: TypedArray, salt: TypedArray, iterations: Int, output: TypedArray) in
             var passwordData = Data(bytes: password.rawPointer, count: password.byteLength)

@@ -4,7 +4,7 @@ import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js';
 
 import { logger } from '@mobile/shared/logger';
 
-import { pbkdf2Sha512 as nativePbkdf2Sha512 } from '../modules/safely-pbkdf2/src';
+import { pbkdf2Sha512 as nativePbkdf2Sha512 } from '../modules/safely-crypto/src';
 
 const nativePbkdf2Sha512Async = (...args: Parameters<typeof nativePbkdf2Sha512>) => {
     return Promise.resolve(nativePbkdf2Sha512(...args));
