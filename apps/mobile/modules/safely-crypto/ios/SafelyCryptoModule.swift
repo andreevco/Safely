@@ -33,7 +33,7 @@ public class SafelyCryptoModule: Module {
                 )
                 defer { derived.resetBytes(in: 0..<derived.count) }
                 derived.withUnsafeBytes { src in
-                    output.rawPointer.copyMemory(from: src.baseAddress!, byteCount: derived.count)
+                    output.rawPointer.copyMemory(from: src.baseAddress!, byteCount: src.count)
                 }
             } catch Pbkdf2Error.derivationFailed(let status) {
                 throw Pbkdf2FailedException(status)
