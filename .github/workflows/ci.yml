@@ -100,7 +100,7 @@ jobs:
   # macOS-only). No Xcode project, CocoaPods, Expo or RN.
   swift-core-tests:
     needs: resolve-changes
-    if: needs.changes.outputs.mobile == 'true'
+    if: needs.resolve-changes.outputs.mobile == 'true'
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
@@ -112,7 +112,7 @@ jobs:
   # Android SDK, Expo, RN or node — just JDK + Gradle.
   kotlin-core-tests:
     needs: resolve-changes
-    if: needs.changes.outputs.mobile == 'true'
+    if: needs.resolve-changes.outputs.mobile == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
