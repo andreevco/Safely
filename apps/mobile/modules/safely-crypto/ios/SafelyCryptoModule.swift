@@ -6,6 +6,12 @@ internal final class Pbkdf2FailedException: GenericException<Int32> {
     }
 }
 
+internal final class Pbkdf2InvalidArgsException: Exception {
+    override var reason: String {
+        "iterations, password and output must be non-empty"
+    }
+}
+
 // Native PBKDF2-HMAC-SHA512 over raw bytes. The BIP39 semantics (NFKD
 // normalization, "mnemonic" salt prefix, 2048 iterations) live on the JS side
 // in @safely/core; this module is a pure RFC 8018 primitive — see Pbkdf2Core.
@@ -21,6 +27,9 @@ public class SafelyCryptoModule: Module {
         Name("SafelyCrypto")
 
         Function("pbkdf2Sha512") { (password: TypedArray, salt: TypedArray, iterations: Int, output: TypedArray) in
+            guard iterations > 0, password.byteLength > 0, output.byteLength > 0 else {
+                throw Pbkdf2InvalidArgsException()
+            }
             var passwordData = Data(bytes: password.rawPointer, count: password.byteLength)
             defer { passwordData.resetBytes(in: 0..<passwordData.count) }
             let saltData = Data(bytes: salt.rawPointer, count: salt.byteLength)
