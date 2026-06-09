@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react';
 
-export type BannerVariant = 'warn' | 'alternate' | 'danger';
+export type BannerVariant = 'warn' | 'transparent' | 'danger';
 
 type BannerContextValue = {
     variant?: BannerVariant;
