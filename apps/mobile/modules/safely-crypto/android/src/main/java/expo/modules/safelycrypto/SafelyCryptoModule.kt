@@ -29,8 +29,11 @@ class SafelyCryptoModule : Module() {
             val saltBytes = ByteArray(salt.byteLength).also { salt.read(it, 0, it.size) }
             try {
                 val derived = pbkdf2HmacSha512(passwordBytes, saltBytes, iterations, output.byteLength)
-                output.write(derived, 0, derived.size)
-                derived.fill(0)
+                try {
+                    output.write(derived, 0, derived.size)
+                } finally {
+                    derived.fill(0)
+                }
             } finally {
                 passwordBytes.fill(0)
             }
