@@ -574,12 +574,10 @@
         "receiving": "Получение {{amount}}…"
     },
     "assetCell": {
-        "lastTransaction": "Последняя транзакция {{timeAgo}}",
-        "noTransactions": "Нет транзакций"
+        "history": "История"
     },
     "tabs": {
         "home": "Главная",
-        "history": "История",
         "about": "О приложении"
     },
     "safelyBeta": {

@@ -1,11 +1,11 @@
 import { useNavigation } from '@react-navigation/core';
+import { t } from 'i18next';
 import { useCallback } from 'react';
 
 import type { BtcActivityItem } from '@safely/ux';
 import { useActivePortfolio, useHasPortfolio } from '@safely/ux';
 
 import { HistoryList } from '@mobile/features/history';
-import { WalletSelector } from '@mobile/features/portfolio';
 import { Screen } from '@mobile/shared/ui';
 
 const HistoryContent = () => {
@@ -22,9 +22,8 @@ const HistoryContent = () => {
     return (
         <>
             <Screen.Header>
-                <Screen.Header.Title>
-                    <WalletSelector />
-                </Screen.Header.Title>
+                <Screen.Header.BackButton />
+                <Screen.Header.Title>{t('history.title')}</Screen.Header.Title>
             </Screen.Header>
             <HistoryList
                 key={portfolio?.id.toString()}
