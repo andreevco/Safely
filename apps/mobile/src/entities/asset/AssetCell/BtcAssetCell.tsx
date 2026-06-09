@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { View, type ViewStyle } from 'react-native';
 
 import type { CryptoAssetAmount, CryptoFiatRate } from '@safely/core';
@@ -17,6 +18,7 @@ type BtcAssetCellProps = {
 export const BtcAssetCell = (props: BtcAssetCellProps) => {
     const { cryptoAssetAmount, price, showDivider = true, onPress } = props;
     const formatter = useNumberFormatter();
+    const { t } = useTranslation();
 
     return (
         <Cell showDivider={showDivider} onPress={onPress} style={styles.cell as ViewStyle}>
@@ -30,7 +32,7 @@ export const BtcAssetCell = (props: BtcAssetCellProps) => {
                 </Cell.Row>
                 <Cell.Row style={styles.subtitleRow}>
                     <View style={styles.subtitleContainer}>
-                        <Cell.Subtitle color="secondary">History</Cell.Subtitle>
+                        <Cell.Subtitle color="secondary">{t('assetCell.history')}</Cell.Subtitle>
                         <Icon style={styles.chevron} icon={ChevronRight12} color="tertiary" />
                     </View>
                     <Cell.Subvalue color="secondary" style={styles.subvalue}>
