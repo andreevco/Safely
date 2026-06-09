@@ -1,6 +1,6 @@
 import { useNavigation } from '@react-navigation/core';
-import { t } from 'i18next';
 import { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import type { BtcActivityItem } from '@safely/ux';
 import { useActivePortfolio, useHasPortfolio } from '@safely/ux';
@@ -11,6 +11,7 @@ import { Screen } from '@mobile/shared/ui';
 const HistoryContent = () => {
     const navigation = useNavigation();
     const portfolio = useActivePortfolio();
+    const { t } = useTranslation();
 
     const onNavigateToTransaction = useCallback(
         (activity: BtcActivityItem) => {
