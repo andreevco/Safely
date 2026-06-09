@@ -131,7 +131,6 @@ export async function createSyncContainer<Latest extends StorageVersion, Rest>(o
         deviceYManager,
         updateDecryptor,
         deviceManager,
-        snapshotsApi,
         opts.logger
     );
     const snapshotSender = new SnapshotSender(
