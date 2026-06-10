@@ -4,7 +4,7 @@ import type { ObservableState, TextFieldColors } from '@expo/ui/jetpack-compose'
 import type { TextFieldRef as AndroidTextFieldRef } from '@expo/ui/jetpack-compose';
 import { TextField as IosTextField, Text as IosText } from '@expo/ui/swift-ui';
 import type { TextFieldRef as IosTextFieldRef } from '@expo/ui/swift-ui';
-import { foregroundStyle } from '@expo/ui/swift-ui/modifiers';
+import { foregroundStyle, frame } from '@expo/ui/swift-ui/modifiers';
 import { useImperativeHandle, useRef, useState, type Ref } from 'react';
 import { Platform, View } from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';
@@ -118,7 +118,7 @@ export const NativeInput = ({
 
     return (
         <View style={styles.container}>
-            <Host matchContents={{ vertical: true }}>
+            <Host style={styles.host}>
                 <IosTextField
                     ref={textFieldRef}
                     text={value}
@@ -133,6 +133,7 @@ export const NativeInput = ({
                     }}
                     axis={multiline ? 'vertical' : 'horizontal'}
                     placeholder={placeholder}
+                    modifiers={[frame({ maxHeight: Infinity, alignment: 'topLeading' })]}
                 >
                     {placeholder ? (
                         <IosTextField.Placeholder>
