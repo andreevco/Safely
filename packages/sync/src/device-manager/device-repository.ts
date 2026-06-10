@@ -42,6 +42,13 @@ export class DeviceRepository {
         });
     }
 
+    public async deleteDevice(ikPub: Buffer): Promise<void> {
+        const kid = getKID(ikPub);
+        await this.manager.transaction(draft => {
+            draft.at('devices').delete(kid);
+        });
+    }
+
     public async revokeDevice(ikPub: Buffer, sign: Buffer) {
         const kid = getKID(ikPub);
         await this.manager.transaction(draft => {
