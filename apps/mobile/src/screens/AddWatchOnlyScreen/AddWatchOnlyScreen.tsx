@@ -14,7 +14,12 @@ import {
     PortfolioWatchOnlyBtc,
     toPortfolioIdWatchOnly
 } from '@safely/core';
-import { useAddWatchOnlyPortfolio, useLoader, usePortfolios } from '@safely/ux';
+import {
+    useAddWatchOnlyPortfolio,
+    useLoader,
+    useNewPortfolioFallbackName,
+    usePortfolios
+} from '@safely/ux';
 
 import { handleDuplicatePortfolio } from '@mobile/features/add-wallet/handleDuplicatePortfolio';
 import { TEST_ID } from '@mobile/shared/constants';
@@ -31,6 +36,7 @@ export const AddWatchOnlyScreen = () => {
     const portfolios = usePortfolios();
     const { withLoader } = useLoader();
     const { mutateAsync: addWatchOnlyPortfolio } = useAddWatchOnlyPortfolio();
+    const defaultPortfolioName = useNewPortfolioFallbackName();
 
     const inputRef = useRef<TextInput>(null);
     const [address, setAddress] = useState('');
@@ -82,6 +88,8 @@ export const AddWatchOnlyScreen = () => {
         navigation.dispatch(
             CommonActions.navigate('CustomizeWalletModal', {
                 hasBackButton: true,
+                defaultName: defaultPortfolioName,
+                defaultIcon: portfolioId.getFallbackEmoji(),
                 onSave: async (meta: PortfolioMeta) => {
                     try {
                         await withLoader(async () => {
@@ -100,13 +108,17 @@ export const AddWatchOnlyScreen = () => {
                     } catch (error) {
                         handleDuplicatePortfolio(error, navigation);
                     }
-                },
-                onCompleteCustomize: () => {
-                    navigation.goBack();
                 }
             })
         );
-    }, [trimmedInput, portfolios, navigation, withLoader, addWatchOnlyPortfolio]);
+    }, [
+        trimmedInput,
+        portfolios,
+        navigation,
+        withLoader,
+        addWatchOnlyPortfolio,
+        defaultPortfolioName
+    ]);
 
     return (
         <Screen>

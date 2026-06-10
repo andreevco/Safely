@@ -2,6 +2,7 @@ export {
     sContact,
     sContactAddress,
     sContactMeta,
+    sContacts,
     type SContacts,
     type SContact,
     type SContactAddress
@@ -9,6 +10,7 @@ export {
 export {
     sFiatAsset,
     sFiatAssetId,
+    sPreferredFiat,
     type SFiatAsset,
     type SFiatAssetId
 } from './preferred-fiat.schema';

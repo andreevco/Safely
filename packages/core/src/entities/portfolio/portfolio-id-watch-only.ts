@@ -7,8 +7,12 @@ import { portfolioWatchOnlyIdToString } from '@safely/sync-storage';
 
 import { WatchOnlySource } from './I-portfolio';
 import type { IPortfolioId } from './portfolio-id-bip39';
+import type { PortfolioMetaIconEmoji } from './portfolio-meta';
+import { allowedPortfolioMetaEmojis } from './portfolio-meta';
 import type { PortfolioNetworkType } from './portfolio-network-type';
+import { BtcXpub } from '../../blockchain-api';
 import { assertUnreachable, Id } from '../../utils';
+import { BtcNetwork, BtcWalletType } from '../blockchain';
 
 export class PortfolioIdWatchOnlyXpub extends Id implements IPortfolioId {
     public readonly source = WatchOnlySource.XPUB;
@@ -25,6 +29,12 @@ export class PortfolioIdWatchOnlyXpub extends Id implements IPortfolioId {
 
     public toString(): string {
         return portfolioWatchOnlyIdToString(this.toJSON());
+    }
+
+    public getFallbackEmoji() {
+        return getEmojiByBtcAddress(
+            BtcXpub.deriveAddress(this.xpub, BtcNetwork.MAINNET, BtcWalletType.NATIVE_SEGWIT)
+        );
     }
 
     public toJSON(): SPortfolioWatchOnlyIdXpub {
@@ -49,6 +59,10 @@ export class PortfolioIdWatchOnlyAddress extends Id implements IPortfolioId {
         this.address = serialized.address;
     }
 
+    public getFallbackEmoji() {
+        return getEmojiByBtcAddress(this.address);
+    }
+
     public toString(): string {
         return portfolioWatchOnlyIdToString(this.toJSON());
     }
@@ -60,6 +74,12 @@ export class PortfolioIdWatchOnlyAddress extends Id implements IPortfolioId {
             address: this.address
         };
     }
+}
+
+function getEmojiByBtcAddress(address: string): PortfolioMetaIconEmoji {
+    const index = Buffer.from(address, 'utf-8').readUint32BE() % allowedPortfolioMetaEmojis.length;
+
+    return { type: 'emoji', value: allowedPortfolioMetaEmojis[index] };
 }
 
 export type PortfolioIdWatchOnly = PortfolioIdWatchOnlyXpub | PortfolioIdWatchOnlyAddress;

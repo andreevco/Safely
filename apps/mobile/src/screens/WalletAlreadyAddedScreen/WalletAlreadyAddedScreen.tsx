@@ -5,8 +5,8 @@ import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import type { Portfolio } from '@safely/core';
-import { getPortfolioDisplayName, useSetActivePortfolio } from '@safely/ux';
+import type { Portfolio, PortfolioMeta } from '@safely/core';
+import { getPortfolioDisplayName, useChangePortfolioMeta, useSetActivePortfolio } from '@safely/ux';
 
 import { Button, Screen, Text } from '@mobile/shared/ui';
 
@@ -23,6 +23,7 @@ export const WalletAlreadyAddedScreen = (props: WalletAlreadyAddedScreenProps) =
     const { mutateAsync: setActivePortfolio } = useSetActivePortfolio();
 
     const walletDisplayName = getPortfolioDisplayName(portfolio.meta);
+    const { mutateAsync: changePortfolioMeta } = useChangePortfolioMeta();
 
     const handleOpen = useCallback(async () => {
         await setActivePortfolio(portfolio);
@@ -35,21 +36,28 @@ export const WalletAlreadyAddedScreen = (props: WalletAlreadyAddedScreenProps) =
     }, [navigation, setActivePortfolio, portfolio]);
 
     const handleEdit = useCallback(() => {
+        const onClose = async () => {
+            await setActivePortfolio(portfolio);
+            navigation.dispatch(
+                CommonActions.reset({
+                    index: 0,
+                    routes: [{ name: 'TabsNavigator' }]
+                })
+            );
+        };
+
         navigation.dispatch(
             CommonActions.navigate('CustomizeWalletModal', {
-                portfolio,
-                onCompleteCustomize: async () => {
-                    await setActivePortfolio(portfolio);
-                    navigation.dispatch(
-                        CommonActions.reset({
-                            index: 0,
-                            routes: [{ name: 'TabsNavigator' }]
-                        })
-                    );
+                defaultIcon: portfolio.meta.icon,
+                defaultName: portfolio.meta.name,
+                onClose,
+                onSave: async (meta: PortfolioMeta) => {
+                    await changePortfolioMeta({ portfolio, meta });
+                    return onClose();
                 }
             })
         );
-    }, [navigation, portfolio, setActivePortfolio]);
+    }, [navigation, portfolio, setActivePortfolio, changePortfolioMeta]);
 
     return (
         <Screen>
