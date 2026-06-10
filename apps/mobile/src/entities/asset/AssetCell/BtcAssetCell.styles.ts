@@ -14,10 +14,14 @@ export const styles = StyleSheet.create(() => ({
     subtitleRow: {
         alignItems: 'flex-start'
     },
-    subtitle: {
-        flex: 1
-    },
     subvalue: {
         flexShrink: 0
+    },
+    subtitleContainer: {
+        flex: 1,
+        flexDirection: 'row'
+    },
+    chevron: {
+        marginTop: 5
     }
 }));

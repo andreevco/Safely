@@ -569,12 +569,10 @@
         "receiving": "Receiving {{amount}}…"
     },
     "assetCell": {
-        "lastTransaction": "Last transaction {{timeAgo}}",
-        "noTransactions": "No transactions"
+        "history": "History"
     },
     "tabs": {
         "home": "Home",
-        "history": "History",
         "about": "About"
     },
     "safelyBeta": {
