@@ -1,4 +1,4 @@
-import type { Draft, SlotTree } from '@safely/slottree';
+import type { Draft, SlotRevision, SlotTree } from '@safely/slottree';
 
 export class YCRDT<T extends object> {
     constructor(private readonly doc: SlotTree<T>) {}
@@ -24,6 +24,10 @@ export class YCRDT<T extends object> {
 
     public get(k: string): unknown {
         return (this.doc.get() as Record<string, unknown>)[k];
+    }
+
+    public getTopLevelRevision(k: Extract<keyof T, string>): SlotRevision | undefined {
+        return this.doc.getTopLevelRevision(k);
     }
 
     public onUpdate(observer: (update: Buffer) => void): () => void {

@@ -119,7 +119,7 @@ export class SyncAccount<Latest extends StorageVersion, Rest> implements ISyncAc
         this.syncProvider.triggerSync();
         const sig = await this.container.keyServiceFactory
             .createDmkSignerService(secureEncryptedStorage)
-            .signRevokeMessageForServer(ikPub);
+            .signRevokeDeviceForServer(ikPub);
         await this.container.accountsApi.removeDeviceFromAccount({
             signedDeviceIdentity: {
                 identityPubKey: ikPub.toString('hex'),
@@ -172,7 +172,7 @@ export class SyncAccount<Latest extends StorageVersion, Rest> implements ISyncAc
         try {
             const sig = await this.container.keyServiceFactory
                 .createDmkSignerService(secureEncryptedStorage)
-                .signRevokeMessageForServer(myIkPub);
+                .signRevokeDeviceForServer(myIkPub);
             await this.container.accountsApi.removeDeviceFromAccount({
                 signedDeviceIdentity: {
                     identityPubKey: myIkPub.toString('hex'),

@@ -8,6 +8,7 @@ import {
     SyncMachineRunTimeoutError
 } from '../../sync-machine/run-result';
 import type { OnlineSyncProvider } from '../../sync-provider/online-sync-provider';
+import { abortableDelay } from '../../utils/abortable-delay';
 import { QRMessageCodec, QRMessageOperation } from '../onboarding-codec';
 
 const MAX_RECONNECT_ATTEMPTS = 150;
@@ -69,20 +70,9 @@ export class ReconnectOnboarding<Latest extends StorageVersion, Rest> {
     }
 
     private async waitBeforeRetry(timeoutMs: number, signal?: AbortSignal): Promise<void> {
-        if (timeoutMs <= 0) {
-            return;
-        }
-
-        await new Promise<void>((resolve, reject) => {
-            const timer = setTimeout(resolve, timeoutMs);
-            signal?.addEventListener(
-                'abort',
-                () => {
-                    clearTimeout(timer);
-                    reject(new OnboardingAbortedError());
-                },
-                { once: true }
-            );
+        await abortableDelay(timeoutMs, {
+            signal,
+            abortError: () => new OnboardingAbortedError()
         });
     }
 }

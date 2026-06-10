@@ -45,21 +45,4 @@ describe('Sync online/offline properties', () => {
         const ops: Op[] = [{ type: 'device.deleteLocalOnlineSelf', targetIndex: 0 }];
         await expectOpsToKeepOnlineDevicesConverged(ops);
     });
-
-    // TODO: consider removing IK signatures from snapshots
-    // I dont really know what to do in this case. To handle this case in the current implementation we need to
-    // validate snapshots IK signature using revoked public keys. This removes the necessity of signing snapshots
-    // with IK at all.
-    // There are a lot of similar edge cases with current implementation of self delete.
-    //
-    // it('should sync after 2 remote self deletes', async () => {
-    //     const ops: Op[] = [                                           // initial: [A, B]
-    //         { type: 'device.takeOnlineOffline', targetIndex: 0 },     // A -> offline
-    //         { type: 'device.addOnlineFromOnline', actorIndex: 0 },    // B added C
-    //         { type: 'device.deleteLocalOnlineSelf', targetIndex: 0 }, // B deleted itself
-    //         { type: 'device.deleteLocalOnlineSelf', targetIndex: 0 }, // C deleted itself
-    //         { type: 'device.returnOfflineOnline', targetIndex: 0 }    // A went online
-    //     ];
-    //     await expectOpsToKeepOnlineDevicesConverged(ops);
-    // });
 });
