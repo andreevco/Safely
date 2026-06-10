@@ -51,7 +51,7 @@ export class SnapshotsSse {
             onUpdate: async (update, _) => {
                 await onUpdate(update);
             },
-            onOpen: () => this.logger.info('/v1/snapshots/stream connected'),
+            onOpen: () => this.logger.debug('/v1/snapshots/stream connected'),
             onError: err => {
                 this.logger.error('/v1/snapshots/stream error', err);
             },
