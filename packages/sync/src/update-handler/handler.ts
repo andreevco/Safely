@@ -10,7 +10,7 @@ import type { EncryptedStateAndProofChain } from '../api/types';
 import type { YManager } from '../crdt/y-manager';
 import type { DeviceManagementService } from '../device-manager/device-management-service';
 import type { tDevicesLatest, tDevicesRest } from '../device-manager/device-storage-schema';
-import type { Logger } from '../logger';
+import type { Logger, SyncFlowLogger } from '../logger';
 import type { UpdateDecryptorService } from '../update-encryptor/update-decryptor-service';
 
 export class UpdateHandler<Latest extends StorageVersion, Rest> {
@@ -25,17 +25,18 @@ export class UpdateHandler<Latest extends StorageVersion, Rest> {
     ) {}
 
     public async handle(
-        upd: EncryptedStateAndProofChain
+        upd: EncryptedStateAndProofChain,
+        flow: SyncFlowLogger
     ): Promise<{ hasLocalChanges: boolean; revoked?: boolean }> {
         const syncState = await this.syncStateRepository.getState();
-        this.logger.info('UpdateHandler.handle', upd.snapshotProof.toString('hex'));
 
         const update = await this.updateDecryptor.decrypt(upd);
         const payload = decodeUpdatePayload(update);
 
         if (upd.snapshotProof.equals(syncState.snapshotProof)) {
-            this.logger.info('UpdateHandler.handle.known');
-            return { hasLocalChanges: await this.hasLocalChanges(payload) }; // Already have this update
+            const hasLocalChanges = await this.hasLocalChanges(payload);
+            flow.logStep('known', { hasLocalChanges });
+            return { hasLocalChanges }; // Already have this update
         }
 
         // TODO
@@ -77,10 +78,12 @@ export class UpdateHandler<Latest extends StorageVersion, Rest> {
         // TODO: merge remote devices into temporal storage first and verify on temp storage
         // this is minor security bug
         await this.deviceManagementService.mergeDeviceStorage(payload.deviceStorage);
+        flow.logStep('devices.merged');
 
         const isRevoked = await this.deviceManagementService.isThisDeviceRevoked();
         if (isRevoked) {
             this.logger.debug('This device has been revoked');
+            flow.logStep('revoked');
             return {
                 hasLocalChanges: false,
                 revoked: true
@@ -88,6 +91,7 @@ export class UpdateHandler<Latest extends StorageVersion, Rest> {
         }
 
         await this.deviceManagementService.activate();
+        flow.logStep('device.activated');
 
         // TODO
         // Suppose following scenario:
@@ -109,12 +113,14 @@ export class UpdateHandler<Latest extends StorageVersion, Rest> {
 
         this.logger.debug('Applying update to local CRDT document...');
         await this.yManager.applyUpdate(payload.userStorage, 'remote');
+        flow.logStep('user_storage.applied');
 
         syncState.snapshotProof = upd.snapshotProof;
         await this.syncStateRepository.saveState(syncState);
+        flow.logStep('state.saved');
 
         const hasLocalChanges = await this.hasLocalChanges(payload);
-        this.logger.info('UpdateHandler.handle.applied', { hasLocalChanges });
+        flow.logStep('applied', { hasLocalChanges });
         return { hasLocalChanges };
     }
 

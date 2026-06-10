@@ -89,7 +89,6 @@ export class NewDeviceOnboarding<Latest extends StorageVersion, Rest> {
                     throw new OnboardingAbortedError();
                 }
 
-                this.flow.logStep('message.poll.empty', { attempt: i + 1 });
                 await this.waitBeforeRetry(signal);
                 continue;
             }
