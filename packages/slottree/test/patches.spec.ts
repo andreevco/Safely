@@ -15,12 +15,18 @@ import { createPatchDraft } from '../src/core/versioning/patch/draft';
 type RuntimeMatcher = JsonValue | ((value: unknown) => boolean);
 
 type RuntimeDraft = {
+    newField(field: string, value: JsonValue): RuntimeDraft;
     newField(path: readonly string[], field: string, value: JsonValue): RuntimeDraft;
+    rename(from: string, to: string): RuntimeDraft;
     rename(path: readonly string[], from: string, to: string): RuntimeDraft;
+    update(map: (value: unknown) => JsonValue | undefined): RuntimeDraft;
     update(path: readonly string[], map: (value: unknown) => JsonValue | undefined): RuntimeDraft;
+    deleteField(field: string): RuntimeDraft;
     deleteField(path: readonly string[], field: string): RuntimeDraft;
     move(from: readonly string[], to: readonly string[]): RuntimeDraft;
+    updateEach(map: (draft: RuntimeDraft) => unknown): RuntimeDraft;
     updateEach(path: readonly string[], map: (draft: RuntimeDraft) => unknown): RuntimeDraft;
+    when(value: RuntimeMatcher, map: (draft: RuntimeDraft) => unknown): RuntimeDraft;
     when(
         path: readonly string[],
         value: RuntimeMatcher,
@@ -66,6 +72,19 @@ describe('PatchDraft runtime', () => {
             expect(theme.v.name).toMatchObject(originClock());
         });
 
+        it('uses the root path when path is omitted', () => {
+            const slot = sourceSlot({ name: 'Alice' });
+            const draft = draftOf(slot);
+
+            draft.newField('createdAt', 0);
+
+            expect(stripSlot(slot)).toEqual({
+                name: 'Alice',
+                createdAt: 0
+            });
+            expect(slot.v.createdAt).toMatchObject(originClock());
+        });
+
         it('throws when target field already exists', () => {
             const draft = draftOf(sourceSlot({ name: 'Alice' }));
 
@@ -105,6 +124,18 @@ describe('PatchDraft runtime', () => {
             expect(profile.v.displayName).toMatchObject(clock());
         });
 
+        it('uses the root path when path is omitted', () => {
+            const slot = sourceSlot({ name: 'Alice' });
+            const draft = draftOf(slot);
+
+            draft.rename('name', 'displayName');
+
+            expect(stripSlot(slot)).toEqual({
+                displayName: 'Alice'
+            });
+            expect(slot.v.displayName).toMatchObject(clock());
+        });
+
         it('throws when renamed field already exists', () => {
             const draft = draftOf(
                 sourceSlot({
@@ -134,6 +165,22 @@ describe('PatchDraft runtime', () => {
             expect(stripSlot(slot)).toEqual({
                 counter: 5
             });
+            expect(slot.v.counter).toMatchObject(clock());
+        });
+
+        it('uses the root path when path is omitted', () => {
+            const slot = sourceSlot({ counter: 4 });
+            const draft = draftOf(slot);
+
+            draft.update(value => ({
+                ...(value as Record<string, JsonValue>),
+                counter: 5
+            }));
+
+            expect(stripSlot(slot)).toEqual({
+                counter: 5
+            });
+            expect(slot).toMatchObject(clock());
             expect(slot.v.counter).toMatchObject(clock());
         });
 
@@ -187,6 +234,21 @@ describe('PatchDraft runtime', () => {
                 }
             });
             expect(settings.v.legacy).toBeUndefined();
+        });
+
+        it('uses the root path when path is omitted', () => {
+            const slot = sourceSlot({
+                legacy: 'drop',
+                keep: 'value'
+            });
+            const draft = draftOf(slot);
+
+            draft.deleteField('legacy');
+
+            expect(stripSlot(slot)).toEqual({
+                keep: 'value'
+            });
+            expect(slot.v.legacy).toBeUndefined();
         });
     });
 
@@ -314,6 +376,26 @@ describe('PatchDraft runtime', () => {
             expect(alice.v.active).toMatchObject(originClock());
         });
 
+        it('uses the root path when path is omitted', () => {
+            const slot = sourceSlot({
+                alice: {
+                    name: 'Alice'
+                }
+            });
+            const draft = draftOf(slot);
+
+            draft.updateEach(user => user.newField('active', true));
+
+            const alice = expectContainer(slot.v.alice, 'alice');
+            expect(stripSlot(slot)).toEqual({
+                alice: {
+                    name: 'Alice',
+                    active: true
+                }
+            });
+            expect(alice.v.active).toMatchObject(originClock());
+        });
+
         it('skips tombstone children inside record collections', () => {
             const slot = sourceSlot({
                 users: {
@@ -410,6 +492,30 @@ describe('PatchDraft runtime', () => {
             expect(slot.v.imported).toMatchObject(originClock());
         });
 
+        it('uses the root path when path is omitted', () => {
+            const slot = sourceSlot({
+                type: 'BIP39',
+                name: 'Main'
+            });
+            const draft = draftOf(slot);
+
+            draft.when(
+                value =>
+                    typeof value === 'object' &&
+                    value !== null &&
+                    !Array.isArray(value) &&
+                    (value as Record<string, JsonValue>).type === 'BIP39',
+                bip39 => bip39.newField('imported', false)
+            );
+
+            expect(stripSlot(slot)).toEqual({
+                type: 'BIP39',
+                name: 'Main',
+                imported: false
+            });
+            expect(slot.v.imported).toMatchObject(originClock());
+        });
+
         it('does not apply the mapper when the value at path does not match', () => {
             const slot = sourceSlot({
                 type: 'WATCH_ONLY',
@@ -454,7 +560,7 @@ function sourceSlot(value: JsonValue): ContainerSlot {
 }
 
 function draftOf(slot: ContainerSlot): RuntimeDraft {
-    return createPatchDraft(PatchCursor.root(slot)) as unknown as RuntimeDraft;
+    return createPatchDraft(PatchCursor.root(slot));
 }
 
 function clock(): { t: number; a: string } {

@@ -13,6 +13,16 @@ import { orderedArrayLiveIds, slotFromJson, stripSlot } from '../../slots/slot-j
 type PatchMap = (value: unknown) => JsonValue | undefined;
 type ItemPatch = (draft: PatchDraftNode) => unknown;
 type PatchMatcher = JsonValue | ((value: unknown) => boolean);
+type NewFieldArgs =
+    | [path: readonly string[], field: string, defaultValue: JsonValue]
+    | [field: string, defaultValue: JsonValue];
+type RenameArgs = [path: readonly string[], from: string, to: string] | [from: string, to: string];
+type UpdateArgs = [path: readonly string[], map: PatchMap] | [map: PatchMap];
+type DeleteFieldArgs = [path: readonly string[], field: string] | [field: string];
+type UpdateEachArgs = [path: readonly string[], map: ItemPatch] | [map: ItemPatch];
+type WhenArgs =
+    | [path: readonly string[], value: PatchMatcher, map: ItemPatch]
+    | [value: PatchMatcher, map: ItemPatch];
 
 export function createPatchDraft<T>(cursor: PatchCursor): PatchDraft<T> {
     return new PatchDraftNode(cursor) as unknown as PatchDraft<T>;
@@ -21,11 +31,8 @@ export function createPatchDraft<T>(cursor: PatchCursor): PatchDraft<T> {
 class PatchDraftNode {
     constructor(private readonly cursor: PatchCursor) {}
 
-    public newField(
-        path: readonly string[],
-        field: string,
-        defaultValue: JsonValue
-    ): PatchDraftNode {
+    public newField(...args: NewFieldArgs): PatchDraftNode {
+        const { path, field, defaultValue } = normalizeNewFieldArgs(args);
         const container = this.cursorAt(path).expectContainerSlot();
 
         assertMissingField(container, field);
@@ -33,7 +40,8 @@ class PatchDraftNode {
         return this;
     }
 
-    public rename(path: readonly string[], from: string, to: string): PatchDraftNode {
+    public rename(...args: RenameArgs): PatchDraftNode {
+        const { path, from, to } = normalizeRenameArgs(args);
         const container = this.cursorAt(path).expectContainerSlot();
 
         assertMissingField(container, to);
@@ -47,7 +55,8 @@ class PatchDraftNode {
         return this;
     }
 
-    public update(path: readonly string[], map: PatchMap): PatchDraftNode {
+    public update(...args: UpdateArgs): PatchDraftNode {
+        const { path, map } = normalizeUpdateArgs(args);
         const cursor = this.cursorAt(path);
         const current = cursor.readSlot();
         const next = map(stripSlot(current));
@@ -61,7 +70,8 @@ class PatchDraftNode {
         return this;
     }
 
-    public deleteField(path: readonly string[], field: string): PatchDraftNode {
+    public deleteField(...args: DeleteFieldArgs): PatchDraftNode {
+        const { path, field } = normalizeDeleteFieldArgs(args);
         delete this.cursorAt(path).expectContainerSlot().v[field];
         return this;
     }
@@ -94,7 +104,8 @@ class PatchDraftNode {
         return this;
     }
 
-    public updateEach(path: readonly string[], map: ItemPatch): PatchDraftNode {
+    public updateEach(...args: UpdateEachArgs): PatchDraftNode {
+        const { path, map } = normalizeUpdateEachArgs(args);
         const cursor = this.cursorAt(path);
         const slot = cursor.readSlot();
 
@@ -122,7 +133,8 @@ class PatchDraftNode {
         throw new Error('updateEach target must be an ordered array or record slot');
     }
 
-    public when(path: readonly string[], value: PatchMatcher, map: ItemPatch): PatchDraftNode {
+    public when(...args: WhenArgs): PatchDraftNode {
+        const { path, value, map } = normalizeWhenArgs(args);
         const current = this.cursorAt(path).readValue();
         const matches = typeof value === 'function' ? value(current) : current === value;
 
@@ -140,6 +152,126 @@ class PatchDraftNode {
 
 function createPatchDraftNode(cursor: PatchCursor): PatchDraftNode {
     return new PatchDraftNode(cursor);
+}
+
+function normalizeNewFieldArgs(args: NewFieldArgs): {
+    path: readonly string[];
+    field: string;
+    defaultValue: JsonValue;
+} {
+    if (args.length === 3) {
+        const [path, field, defaultValue] = args;
+        return {
+            path,
+            field,
+            defaultValue
+        };
+    }
+
+    const [field, defaultValue] = args;
+    return {
+        path: [],
+        field,
+        defaultValue
+    };
+}
+
+function normalizeRenameArgs(args: RenameArgs): {
+    path: readonly string[];
+    from: string;
+    to: string;
+} {
+    if (args.length === 3) {
+        const [path, from, to] = args;
+        return {
+            path,
+            from,
+            to
+        };
+    }
+
+    const [from, to] = args;
+    return {
+        path: [],
+        from,
+        to
+    };
+}
+
+function normalizeUpdateArgs(args: UpdateArgs): { path: readonly string[]; map: PatchMap } {
+    if (args.length === 2) {
+        const [path, map] = args;
+        return {
+            path,
+            map
+        };
+    }
+
+    const [map] = args;
+    return {
+        path: [],
+        map
+    };
+}
+
+function normalizeDeleteFieldArgs(args: DeleteFieldArgs): {
+    path: readonly string[];
+    field: string;
+} {
+    if (args.length === 2) {
+        const [path, field] = args;
+        return {
+            path,
+            field
+        };
+    }
+
+    const [field] = args;
+    return {
+        path: [],
+        field
+    };
+}
+
+function normalizeUpdateEachArgs(args: UpdateEachArgs): {
+    path: readonly string[];
+    map: ItemPatch;
+} {
+    if (args.length === 2) {
+        const [path, map] = args;
+        return {
+            path,
+            map
+        };
+    }
+
+    const [map] = args;
+    return {
+        path: [],
+        map
+    };
+}
+
+function normalizeWhenArgs(args: WhenArgs): {
+    path: readonly string[];
+    value: PatchMatcher;
+    map: ItemPatch;
+} {
+    if (args.length === 3) {
+        const [path, value, map] = args;
+        return {
+            path,
+            value,
+            map
+        };
+    }
+
+    const [value, map] = args;
+    return {
+        path: [],
+        value,
+        map
+    };
 }
 
 function assertMissingField(container: ContainerSlot, field: string): void {

@@ -600,12 +600,12 @@ describe('versioning patch examples', () => {
 
         const projectUp = patch(v1Schema, v2Schema, draft =>
             draft
-                .rename([], 'portfolios', 'accounts')
-                .newField([], 'meta', {})
+                .rename('portfolios', 'accounts')
+                .newField('meta', {})
                 .move(['analyticsId'], ['meta', 'analyticsId'])
-                .deleteField([], 'legacyState')
+                .deleteField('legacyState')
                 .updateEach(['accounts'], account =>
-                    account.when(['type'], 'BIP39', bip39 => bip39.newField([], 'imported', false))
+                    account.when(['type'], 'BIP39', bip39 => bip39.newField('imported', false))
                 )
         );
 
@@ -659,6 +659,121 @@ describe('versioning patch examples', () => {
             a: 'device-1'
         });
         expect(migrated.v.legacyState).toBeUndefined();
+    });
+
+    it('supports root path shorthands in typed patch builders', () => {
+        const userV1 = z.object({
+            name: z.string(),
+            legacyId: z.string()
+        });
+        const userV2 = z.object({
+            displayName: z.string(),
+            active: z.boolean()
+        });
+        const v1Schema = z.record(z.string(), userV1);
+        const v2Schema = z.record(z.string(), userV2);
+
+        const projectUp = patch(v1Schema, v2Schema, draft =>
+            draft.updateEach(user =>
+                user.rename('name', 'displayName').deleteField('legacyId').newField('active', true)
+            )
+        );
+
+        const migrated = projectUp(
+            slotFromJson(
+                {
+                    alice: {
+                        name: 'Alice',
+                        legacyId: 'old'
+                    }
+                },
+                7,
+                'device-1'
+            ) as ContainerSlot
+        );
+
+        expect(stripSlot(migrated)).toEqual({
+            alice: {
+                displayName: 'Alice',
+                active: true
+            }
+        });
+    });
+
+    it('supports root update shorthand in typed patch builders', () => {
+        const v1Schema = z.object({
+            counter: z.number()
+        });
+        const v2Schema = z.object({
+            counter: z.string()
+        });
+
+        const projectUp = patch(v1Schema, v2Schema, draft =>
+            draft.update(value => ({
+                counter: String(value.counter)
+            }))
+        );
+
+        const migrated = projectUp(
+            slotFromJson(
+                {
+                    counter: 4
+                },
+                7,
+                'device-1'
+            ) as ContainerSlot
+        );
+
+        expect(stripSlot(migrated)).toEqual({
+            counter: '4'
+        });
+    });
+
+    it('supports root when shorthand in typed patch builders', () => {
+        type Bip39 = {
+            type: 'BIP39';
+            name: string;
+        };
+
+        const bip39V1 = z.object({
+            type: z.literal('BIP39'),
+            name: z.string()
+        });
+        const watchOnly = z.object({
+            type: z.literal('WATCH_ONLY'),
+            name: z.string()
+        });
+        const bip39V2 = z.object({
+            type: z.literal('BIP39'),
+            name: z.string(),
+            imported: z.boolean()
+        });
+        const v1Schema = z.discriminatedUnion('type', [bip39V1, watchOnly]);
+        const v2Schema = z.discriminatedUnion('type', [bip39V2, watchOnly]);
+
+        const projectUp = patch(v1Schema, v2Schema, draft =>
+            draft.when(
+                (value): value is Readonly<Bip39> => value.type === 'BIP39',
+                bip39 => bip39.newField('imported', false)
+            )
+        );
+
+        const migrated = projectUp(
+            slotFromJson(
+                {
+                    type: 'BIP39',
+                    name: 'Main'
+                },
+                7,
+                'device-1'
+            ) as ContainerSlot
+        );
+
+        expect(stripSlot(migrated)).toEqual({
+            type: 'BIP39',
+            name: 'Main',
+            imported: false
+        });
     });
 });
 
