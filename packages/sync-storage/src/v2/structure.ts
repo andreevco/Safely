@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { patch, projectIdentity } from '@safely/slottree';
+import { patch } from '@safely/slottree';
 
 import {
     sAccountMeta,
@@ -39,10 +39,17 @@ export const syncedStorageV2 = {
     },
     projectUp: patch(syncedStorageV1.schema, syncedStorageSchema, draft =>
         draft
-            .rename([], 'latestDerivedBip39PortfolioIndex', 'nextDerivingPortfolioInfo')
+            .rename('latestDerivedBip39PortfolioIndex', 'nextDerivingPortfolioInfo')
             .update(['nextDerivingPortfolioInfo'], index =>
-                index === null ? null : { index: index + 1 }
+                index == null ? null : { index: index + 1 }
             )
+            .update(['analyticsId'], id => id ?? null)
     ),
-    projectDown: projectIdentity
+    projectDown: patch(syncedStorageSchema, syncedStorageV1.schema, draft =>
+        draft
+            .rename('nextDerivingPortfolioInfo', 'latestDerivedBip39PortfolioIndex')
+            .update(['latestDerivedBip39PortfolioIndex'], info =>
+                info == null || info.index === 0 ? null : info.index - 1
+            )
+    )
 } as const;
