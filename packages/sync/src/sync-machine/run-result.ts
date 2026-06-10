@@ -4,7 +4,8 @@ import { waitForChange } from '../utils/wait-for-change';
 
 export enum SyncMachineRunResult {
     SYNCHRONIZED = 'synchronized',
-    DEVICE_DELETED = 'device_deleted'
+    DEVICE_DELETED = 'device_deleted',
+    SYNC_DATA_NOT_FOUND = 'sync_data_not_found'
 }
 
 export class SyncMachineRunTimeoutError extends Error {
@@ -71,7 +72,14 @@ function getSyncMachineRunResult(
     }
 
     if (snapshot.matches('fatalError')) {
-        return SyncMachineRunResult.DEVICE_DELETED;
+        switch (syncStatusManager.getStatus()) {
+            case SyncStatus.DEVICE_DELETED:
+                return SyncMachineRunResult.DEVICE_DELETED;
+            case SyncStatus.SYNC_DATA_NOT_FOUND:
+                return SyncMachineRunResult.SYNC_DATA_NOT_FOUND;
+            default:
+                return null;
+        }
     }
 
     return null;
