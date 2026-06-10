@@ -3,6 +3,7 @@
 `patch(fromSchema, toSchema, draft => ...)` mutates a cloned slot tree and validates the result against `toSchema`.
 
 Paths are arrays of object keys. The empty path `[]` means the current draft root.
+For root operations, the path may be omitted: `draft.rename('name', 'displayName')`.
 
 ```ts
 import { patch } from '@safely/slottree';
@@ -12,7 +13,7 @@ import { patch } from '@safely/slottree';
 
 ```ts
 const projectUp = patch(v1Schema, v2Schema, draft =>
-    draft.rename([], 'name', 'displayName')
+    draft.rename('name', 'displayName')
 );
 ```
 
@@ -33,7 +34,7 @@ This is intentional: patches must not modify **data**, they only modify **struct
 
 ```ts
 const projectUp = patch(v1Schema, v2Schema, draft =>
-    draft.deleteField([], 'legacyFlag')
+    draft.deleteField('legacyFlag')
 );
 ```
 
@@ -51,7 +52,7 @@ const projectUp = patch(v1Schema, v2Schema, draft =>
 
 ```ts
 const projectUp = patch(v1Schema, v2Schema, draft =>
-    draft.newField([], 'createdAt', 0)
+    draft.newField('createdAt', 0)
 );
 ```
 
@@ -107,7 +108,7 @@ Patch:
 
 ```ts
 const projectUp = patch(v1Schema, v2Schema, draft =>
-    draft.newField([], 'b', {}).move(['a'], ['b', 'a'])
+    draft.newField('b', {}).move(['a'], ['b', 'a'])
 );
 ```
 
@@ -139,7 +140,7 @@ Patch:
 
 ```ts
 const projectUp = patch(v1Schema, v2Schema, draft =>
-    draft.move(['b', 'a'], ['a']).deleteField([], 'b')
+    draft.move(['b', 'a'], ['a']).deleteField('b')
 );
 ```
 
@@ -150,7 +151,7 @@ const projectUp = patch(v1Schema, v2Schema, draft =>
 ```ts
 const projectUp = patch(v1Schema, v2Schema, draft =>
     draft.updateEach(['items'], item =>
-        item.rename([], 'name', 'title').newField([], 'enabled', true)
+        item.rename('name', 'title').newField('enabled', true)
     )
 );
 ```
@@ -162,7 +163,7 @@ const projectUp = patch(v1Schema, v2Schema, draft =>
 ```ts
 const projectUp = patch(v1Schema, v2Schema, draft =>
     draft.updateEach(['users'], user =>
-        user.deleteField([], 'legacyId').newField([], 'active', true)
+        user.deleteField('legacyId').newField('active', true)
     )
 );
 ```
@@ -176,8 +177,8 @@ const projectUp = patch(v1Schema, v2Schema, draft =>
     draft.updateEach(['portfolios'], portfolio =>
         portfolio.updateEach(['derivations'], derivation =>
             derivation
-                .newField([], 'newField', 0)
-                .deleteField([], 'oldField')
+                .newField('newField', 0)
+                .deleteField('oldField')
                 .update(['counter'], counter => counter + 1)
         )
     )
@@ -222,13 +223,13 @@ const projectUp = patch(v1Schema, v2Schema, draft =>
 ```ts
 const projectUp = patch(v1Schema, v2Schema, draft =>
     draft
-        .rename([], 'portfolios', 'accounts')
-        .newField([], 'meta', {})
+        .rename('portfolios', 'accounts')
+        .newField('meta', {})
         .move(['analyticsId'], ['meta', 'analyticsId'])
-        .deleteField([], 'legacyState')
+        .deleteField('legacyState')
         .updateEach(['accounts'], account =>
             account.when(['type'], 'BIP39', bip39 =>
-                bip39.newField([], 'imported', false)
+                bip39.newField('imported', false)
             )
         )
 );

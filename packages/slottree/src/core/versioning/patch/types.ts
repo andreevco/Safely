@@ -115,6 +115,7 @@ type NonDiscriminatedByPath<T, P extends readonly string[], V extends JsonValue>
 type WhenMatcher<T, P extends readonly string[], V extends Extract<PathValue<T, P>, JsonValue>> =
     | V
     | ((value: DeepReadonly<PathValue<T, P>>) => value is DeepReadonly<V>);
+type RootContainer<T> = readonly [] extends ContainerPatchPath<T> ? unknown : never;
 
 export interface SlotPatch<From, To> {
     (source: ContainerSlot): ContainerSlot;
@@ -124,11 +125,19 @@ export interface SlotPatch<From, To> {
 }
 
 export interface PatchDraft<T> {
+    newField<F extends string, V extends JsonValue>(
+        field: (F extends StringFields<T> ? never : F) & RootContainer<T>,
+        defaultValue: V
+    ): PatchDraft<AddField<T, F, V>>;
     newField<const P extends readonly string[], F extends string, V extends JsonValue>(
         path: P & ContainerPatchPath<T>,
         field: F extends StringFields<PathValue<T, P>> ? never : F,
         defaultValue: V
     ): PatchDraft<SetPath<T, P, AddField<PathValue<T, P>, F, V>>>;
+    rename<From extends StringFields<T>, To extends string>(
+        from: From & RootContainer<T>,
+        to: To extends StringFields<T> ? never : To
+    ): PatchDraft<RenameField<T, From, To>>;
     rename<
         const P extends readonly string[],
         From extends StringFields<PathValue<T, P>>,
@@ -139,10 +148,14 @@ export interface PatchDraft<T> {
         to: To extends StringFields<PathValue<T, P>> ? never : To
     ): PatchDraft<SetPath<T, P, RenameField<PathValue<T, P>, From, To>>>;
 
+    update<V extends JsonValue>(f: (v: DeepReadonly<T>) => V): PatchDraft<V>;
     update<const P extends readonly string[], V extends JsonValue>(
         path: P & PatchPath<T>,
         f: (v: DeepReadonly<PathValue<T, P>>) => V
     ): PatchDraft<SetPath<T, P, V>>;
+    deleteField<F extends string>(
+        field: (F extends StringFields<T> ? F : never) & RootContainer<T>
+    ): PatchDraft<DeleteField<T, F>>;
     deleteField<const P extends readonly string[], F extends string>(
         path: P & ContainerPatchPath<T>,
         field: F extends StringFields<PathValue<T, P>> ? F : never
@@ -155,6 +168,9 @@ export interface PatchDraft<T> {
         to: To
     ): PatchDraft<SetPath<DeletePath<T, From>, To, PathValue<T, From>>>;
 
+    updateEach<Output>(
+        f: (v: PatchDraft<CollectionItem<T>>) => PatchDraft<Output>
+    ): PatchDraft<CollectionWithItem<T, Output>>;
     updateEach<const P extends readonly string[], Output>(
         path: P & PatchPath<T>,
         f: (v: PatchDraft<CollectionItem<PathValue<T, P>>>) => PatchDraft<Output>
@@ -169,4 +185,8 @@ export interface PatchDraft<T> {
         value: WhenMatcher<T, P, V>,
         map: (draft: PatchDraft<DiscriminatedByPath<T, P, V>>) => PatchDraft<Output>
     ): PatchDraft<NonDiscriminatedByPath<T, P, V> | Output>;
+    when<const V extends Extract<T, JsonValue>, Output>(
+        value: WhenMatcher<T, readonly [], V>,
+        map: (draft: PatchDraft<DiscriminatedByPath<T, readonly [], V>>) => PatchDraft<Output>
+    ): PatchDraft<NonDiscriminatedByPath<T, readonly [], V> | Output>;
 }
