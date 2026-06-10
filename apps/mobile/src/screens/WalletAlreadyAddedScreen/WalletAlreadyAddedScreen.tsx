@@ -46,17 +46,15 @@ export const WalletAlreadyAddedScreen = (props: WalletAlreadyAddedScreenProps) =
             );
         };
 
-        navigation.dispatch(
-            CommonActions.navigate('CustomizeWalletModal', {
-                defaultIcon: portfolio.meta.icon,
-                defaultName: portfolio.meta.name,
-                onClose,
-                onSave: async (meta: PortfolioMeta) => {
-                    await changePortfolioMeta({ portfolio, meta });
-                    return onClose();
-                }
-            })
-        );
+        navigation.navigate('CustomizeWalletModal', {
+            defaultIcon: portfolio.meta.icon,
+            defaultName: portfolio.meta.name,
+            onClose,
+            onSave: async (meta: PortfolioMeta) => {
+                await changePortfolioMeta({ portfolio, meta });
+                return onClose();
+            }
+        });
     }, [navigation, portfolio, setActivePortfolio, changePortfolioMeta]);
 
     return (

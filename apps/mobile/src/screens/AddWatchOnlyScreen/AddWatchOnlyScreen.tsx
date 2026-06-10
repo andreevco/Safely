@@ -85,32 +85,30 @@ export const AddWatchOnlyScreen = () => {
             return;
         }
 
-        navigation.dispatch(
-            CommonActions.navigate('CustomizeWalletModal', {
-                hasBackButton: true,
-                defaultName: defaultPortfolioName,
-                defaultIcon: portfolioId.getFallbackEmoji(),
-                onSave: async (meta: PortfolioMeta) => {
-                    try {
-                        await withLoader(async () => {
-                            await addWatchOnlyPortfolio({
-                                input: trimmedInput,
-                                meta
-                            });
+        navigation.navigate('CustomizeWalletModal', {
+            hasBackButton: true,
+            defaultName: defaultPortfolioName,
+            defaultIcon: portfolioId.getFallbackEmoji(),
+            onSave: async (meta: PortfolioMeta) => {
+                try {
+                    await withLoader(async () => {
+                        await addWatchOnlyPortfolio({
+                            input: trimmedInput,
+                            meta
                         });
+                    });
 
-                        navigation.dispatch(
-                            CommonActions.reset({
-                                index: 0,
-                                routes: [{ name: 'TabsNavigator' }]
-                            })
-                        );
-                    } catch (error) {
-                        handleDuplicatePortfolio(error, navigation);
-                    }
+                    navigation.dispatch(
+                        CommonActions.reset({
+                            index: 0,
+                            routes: [{ name: 'TabsNavigator' }]
+                        })
+                    );
+                } catch (error) {
+                    handleDuplicatePortfolio(error, navigation);
                 }
-            })
-        );
+            }
+        });
     }, [
         trimmedInput,
         portfolios,

@@ -2,7 +2,7 @@ import { useNavigation } from '@react-navigation/core';
 import { CommonActions } from '@react-navigation/native';
 import { useCallback } from 'react';
 
-import type { PortfolioMeta } from '@safely/core';
+import type { PortfolioMeta, PortfolioMetaIcon } from '@safely/core';
 import { PortfolioIdBip39Imported } from '@safely/core';
 import { PortfolioIdBip39MasterKeyDerived } from '@safely/core';
 import { MnemonicResource } from '@safely/core';
@@ -38,7 +38,7 @@ export function useAddWalletFlow() {
     const defaultName = useNewPortfolioFallbackName();
 
     const startCreateFlow = useCallback(() => {
-        let defaultIcon;
+        let defaultIcon: PortfolioMetaIcon;
         if (nextGeneratingPortfolioInfo?.emoji) {
             defaultIcon = { type: 'emoji', value: nextGeneratingPortfolioInfo.emoji };
         } else {
@@ -47,30 +47,28 @@ export function useAddWalletFlow() {
             );
         }
 
-        navigation.dispatch(
-            CommonActions.navigate(routes.customize, {
-                defaultIcon,
-                defaultName,
-                onSave: async (meta: PortfolioMeta) => {
-                    using secureEncryptedStorage = getSecureEncrypted();
-                    await secureEncryptedStorage.unlock();
+        navigation.navigate(routes.customize, {
+            defaultIcon,
+            defaultName,
+            onSave: async (meta: PortfolioMeta) => {
+                using secureEncryptedStorage = getSecureEncrypted();
+                await secureEncryptedStorage.unlock();
 
-                    await withLoader(async () => {
-                        await generatePortfolio({ meta, secureEncryptedStorage });
-                    });
+                await withLoader(async () => {
+                    await generatePortfolio({ meta, secureEncryptedStorage });
+                });
 
-                    navigation.dispatch(
-                        CommonActions.reset({
-                            index: 0,
-                            routes: [{ name: 'TabsNavigator' }]
-                        })
-                    );
-                },
-                onClose: () => {
-                    navigation.goBack();
-                }
-            })
-        );
+                navigation.dispatch(
+                    CommonActions.reset({
+                        index: 0,
+                        routes: [{ name: 'TabsNavigator' }]
+                    })
+                );
+            },
+            onClose: () => {
+                navigation.goBack();
+            }
+        });
     }, [
         navigation,
         generatePortfolio,
@@ -89,35 +87,33 @@ export function useAddWalletFlow() {
             using accessor = new MnemonicResource(mnemonic);
             const defaultIcon = PortfolioIdBip39Imported.getFallbackEmoji(accessor);
 
-            navigation.dispatch(
-                CommonActions.navigate(routes.customize, {
-                    defaultIcon,
-                    defaultName,
-                    onSave: async (meta: PortfolioMeta) => {
-                        try {
-                            using secretEncryptor = createEncryptor();
-                            await secretEncryptor.unlockEncryption();
+            navigation.navigate(routes.customize, {
+                defaultIcon,
+                defaultName,
+                onSave: async (meta: PortfolioMeta) => {
+                    try {
+                        using secretEncryptor = createEncryptor();
+                        await secretEncryptor.unlockEncryption();
 
-                            await withLoader(async () => {
-                                using mnemonicAccessor = new MnemonicResource(mnemonic);
-                                await importPortfolio({ mnemonicAccessor, secretEncryptor, meta });
-                            });
+                        await withLoader(async () => {
+                            using mnemonicAccessor = new MnemonicResource(mnemonic);
+                            await importPortfolio({ mnemonicAccessor, secretEncryptor, meta });
+                        });
 
-                            navigation.dispatch(
-                                CommonActions.reset({
-                                    index: 0,
-                                    routes: [{ name: 'TabsNavigator' }]
-                                })
-                            );
-                        } catch (error) {
-                            handleDuplicatePortfolio(error, navigation);
-                        }
-                    },
-                    onClose: () => {
-                        navigation.goBack();
+                        navigation.dispatch(
+                            CommonActions.reset({
+                                index: 0,
+                                routes: [{ name: 'TabsNavigator' }]
+                            })
+                        );
+                    } catch (error) {
+                        handleDuplicatePortfolio(error, navigation);
                     }
-                })
-            );
+                },
+                onClose: () => {
+                    navigation.goBack();
+                }
+            });
         },
         [navigation, importPortfolio, withLoader, createEncryptor, defaultName]
     );
