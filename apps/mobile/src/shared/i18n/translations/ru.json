@@ -2,6 +2,7 @@
     "currentLanguageName": "Русский",
     "portfolio": {
         "watchOnly": "Только просмотр",
+        "testnet": "Testnet",
         "ledger": "Ledger"
     },
     "walletAlreadyAdded": {
@@ -414,6 +415,10 @@
             "invalidAddress": "Неверный Bitcoin адрес",
             "unsupportedExtendedKey": "ypub пока не поддерживается. Используйте xpub."
         },
+        "testnet": {
+            "title": "Testnet",
+            "subtitle": "Добавить кошелёк в тестовой сети"
+        },
         "connectLedger": {
             "title": "Ledger",
             "subtitle": "Подключить аппаратный кошелёк",
@@ -627,12 +632,10 @@
         "receiving": "Получение {{amount}}…"
     },
     "assetCell": {
-        "lastTransaction": "Последняя транзакция {{timeAgo}}",
-        "noTransactions": "Нет транзакций"
+        "history": "История"
     },
     "tabs": {
         "home": "Главная",
-        "history": "История",
         "about": "О приложении"
     },
     "safelyBeta": {

@@ -164,17 +164,15 @@ export function useImportPortfolio() {
             mnemonicAccessor: IMnemonicAccessor & IMnemonicVault;
             secretEncryptor: ISecretEncryptor;
             meta: PortfolioMeta;
+            networkType: PortfolioNetworkType;
         },
         unknown
     >({
-        async mutationFn({ mnemonicAccessor, secretEncryptor, meta }) {
+        async mutationFn({ mnemonicAccessor, secretEncryptor, meta, networkType }) {
             portfolioLogger.info('importing portfolio');
             await delay();
 
-            const id = await PortfolioIdBip39Imported.create(
-                mnemonicAccessor,
-                PortfolioNetworkType.MAINNET
-            );
+            const id = await PortfolioIdBip39Imported.create(mnemonicAccessor, networkType);
 
             const portfolio = await PortfolioBip39.createSerializedPortfolio({
                 id,
@@ -374,8 +372,15 @@ export function useHasPortfolio() {
     return useActivePortfolioEntitiesQuery().data !== null;
 }
 
-export function useIsActiveWalletWatchOnly(): boolean {
+export function useIsActivePortfolioWatchOnly(): boolean {
     return useActivePortfolioEntitiesQuery()?.data?.type === 'watch-only';
+}
+
+export function useIsActivePortfolioTestnet(): boolean {
+    return (
+        useActivePortfolioEntitiesQuery()?.data?.portfolio.networkType ===
+        PortfolioNetworkType.TESTNET
+    );
 }
 
 export function useAddWatchOnlyPortfolio() {

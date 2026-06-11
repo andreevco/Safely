@@ -26,6 +26,7 @@ type PortfolioNameProps = {
     tag?: number | false;
     type?: PortfolioType;
     watchOnlyBadgeType?: WatchOnlyBadgeType;
+    isTestnet?: boolean;
 };
 
 export const PortfolioName = (props: PortfolioNameProps) => {
@@ -37,7 +38,8 @@ export const PortfolioName = (props: PortfolioNameProps) => {
         color,
         tag,
         type,
-        watchOnlyBadgeType = 'neutral'
+        watchOnlyBadgeType = 'neutral',
+        isTestnet
     } = props;
     const { t } = useTranslation();
 
@@ -71,6 +73,11 @@ export const PortfolioName = (props: PortfolioNameProps) => {
                             {badgeLabel}
                         </Badge>
                     )}
+                    {isTestnet && (
+                        <Badge type="neutral" isUppercase>
+                            {t('portfolio.testnet')}
+                        </Badge>
+                    )}
                 </View>
             );
         case 'emoji':
@@ -99,6 +106,11 @@ export const PortfolioName = (props: PortfolioNameProps) => {
                     {badgeLabel && (
                         <Badge type={watchOnlyBadgeType} isUppercase>
                             {badgeLabel}
+                        </Badge>
+                    )}
+                    {isTestnet && (
+                        <Badge type="neutral" isUppercase>
+                            {t('portfolio.testnet')}
                         </Badge>
                     )}
                 </View>

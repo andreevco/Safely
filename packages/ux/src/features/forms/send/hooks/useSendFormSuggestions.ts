@@ -1,5 +1,7 @@
 import { useMemo } from 'react';
 
+import { PortfolioNetworkType } from '@safely/core';
+
 import { useActivePortfolioEntities, useContacts, usePortfolios } from '../../../../entities';
 import type { ContactSuggestion, PortfolioSuggestion } from '../types';
 import { mapContactToSuggestions, mapPortfolioToSuggestions } from '../utils';
@@ -14,6 +16,8 @@ export function useSendFormSuggestions(): SendFormSuggestions {
     const entities = useActivePortfolioEntities();
     const portfolios = usePortfolios();
 
+    const networkType = entities.portfolio.networkType;
+
     const activePortfolio = useMemo(
         () => ({
             portfolioId: entities.portfolio.id,
@@ -23,13 +27,19 @@ export function useSendFormSuggestions(): SendFormSuggestions {
     );
 
     const portfolioSuggestions = useMemo(
-        () => portfolios.flatMap(p => mapPortfolioToSuggestions(p, activePortfolio)),
-        [portfolios, activePortfolio]
+        () =>
+            portfolios
+                .filter(p => p.networkType === networkType)
+                .flatMap(p => mapPortfolioToSuggestions(p, activePortfolio)),
+        [portfolios, activePortfolio, networkType]
     );
 
     const contactSuggestions = useMemo(
-        () => contacts.flatMap(c => mapContactToSuggestions(c)),
-        [contacts]
+        () =>
+            networkType === PortfolioNetworkType.TESTNET
+                ? []
+                : contacts.flatMap(c => mapContactToSuggestions(c)),
+        [contacts, networkType]
     );
 
     return { portfolioSuggestions, contactSuggestions };

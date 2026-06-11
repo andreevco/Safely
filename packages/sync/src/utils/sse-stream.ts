@@ -6,7 +6,7 @@ type SSEConfig<T> = {
     onUpdate: (update: T, eventId: string) => void;
     onOpen?: () => void;
     onError?: (err: Event) => void;
-    onLog?: (level: 'error' | 'info', message: string, error?: unknown) => void;
+    onLog?: (level: 'error' | 'info' | 'debug', message: string, error?: unknown) => void;
     signal?: AbortSignal;
     getAuthorizationHeader?: () => Promise<string>;
 };
@@ -146,7 +146,7 @@ export class SSEStream<T> implements AsyncIterable<SSEStreamItem<T>> {
         this.eventSource?.close();
         this.eventSource = null;
         this.queue = [];
-        this.config.onLog?.('info', 'SSEStream: device-connection closed and cleaned up');
+        this.config.onLog?.('debug', 'SSEStream: device-connection closed and cleaned up');
     }
 }
 

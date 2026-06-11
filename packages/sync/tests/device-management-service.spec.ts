@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { MockSnapshotsServer } from './mocks/mock-snapshots-api';
 import type { MachineContext } from './mocks/mock-sync-context';
@@ -12,10 +12,15 @@ import { OfflineSyncProvider } from '../src/sync-provider/offline-sync-provider'
 import { getKID } from '../src/utils/kid';
 
 describe('device management service', () => {
+    const DAY_MS = 24 * 60 * 60 * 1000;
     let server: MockSnapshotsServer;
 
     beforeEach(() => {
         server = new MockSnapshotsServer();
+    });
+
+    afterEach(() => {
+        vi.useRealTimers();
     });
 
     function deviceIkPub(i: number) {
@@ -150,6 +155,56 @@ describe('device management service', () => {
 
         await verifyDeviceList(ctx, []);
         await verifyStoredDeviceState(ctx, ikPub, 'revoked');
+    });
+
+    it('removes stale added devices', async () => {
+        const ctx = await createMachineContext(server);
+        const ikPub = deviceIkPub(1);
+        const addedAt = new Date('2026-01-01T00:00:00.000Z');
+
+        vi.useFakeTimers();
+        vi.setSystemTime(addedAt);
+        await addPub(ctx, ikPub);
+
+        const addedDevice = await ctx.container.deviceRepository.getStoredDevice(getKID(ikPub));
+        expect(addedDevice).toMatchObject({
+            type: 'added',
+            info: {
+                addedAt: addedAt.getTime()
+            }
+        });
+
+        vi.setSystemTime(addedAt.getTime() + DAY_MS);
+        await ctx.container.deviceManager.cleanupStaleAddedDevices();
+
+        expect(await ctx.container.deviceRepository.getStoredDevice(getKID(ikPub))).toBeUndefined();
+    });
+
+    it('keeps fresh added devices and active devices during stale added cleanup', async () => {
+        const ctx = await createMachineContext(server);
+        const activeIkPub = ctx.container.ikService.getPub();
+        const addedIkPub = deviceIkPub(2);
+        const addedAt = new Date('2026-01-01T00:00:00.000Z');
+
+        vi.useFakeTimers();
+        vi.setSystemTime(addedAt);
+        await addPub(ctx, activeIkPub);
+        await ctx.container.deviceManager.activate();
+        await addPub(ctx, addedIkPub);
+
+        const addedDevice = await ctx.container.deviceRepository.getStoredDevice(
+            getKID(addedIkPub)
+        );
+        expect(addedDevice?.type).toBe('added');
+        if (!addedDevice || addedDevice.type !== 'added') {
+            throw new Error('Expected added device');
+        }
+
+        vi.setSystemTime(addedAt.getTime() + DAY_MS - 1);
+        await ctx.container.deviceManager.cleanupStaleAddedDevices();
+
+        await verifyStoredDeviceState(ctx, activeIkPub, 'active');
+        await verifyStoredDeviceState(ctx, addedIkPub, 'added');
     });
 
     it('logs only start and result for device add and revoke operations', async () => {

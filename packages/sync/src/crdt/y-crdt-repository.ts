@@ -17,7 +17,6 @@ export class YCRDTRepository<Latest extends StorageVersion, Rest> {
     public async loadCRDT(): Promise<YCRDT<z.output<NewOf<Latest>>>> {
         let crdtRaw = await this.storage.getItem(this.storageKey);
         if (!crdtRaw) {
-            // TODO: fix
             await this.initialize();
             crdtRaw = await this.storage.getItem(this.storageKey);
             if (!crdtRaw) {

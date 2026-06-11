@@ -81,13 +81,14 @@ export async function createMockSyncContainer<Latest extends StorageVersion, Res
         dmkVerifierService,
         logger
     );
+    await deviceManager.cleanupStaleAddedDevices();
 
     const updateEncryptor = new UpdateEncryptorService(
         syncKeyService,
         ikService,
         syncStateRepository
     );
-    const updateDecryptor = new UpdateDecryptorService(syncKeyService, deviceManager);
+    const updateDecryptor = new UpdateDecryptorService(syncKeyService);
 
     const updateHandler = new UpdateHandler<Latest, Rest>(
         syncStateRepository,
@@ -95,7 +96,6 @@ export async function createMockSyncContainer<Latest extends StorageVersion, Res
         deviceYManager,
         updateDecryptor,
         deviceManager,
-        snapshotApi as unknown as SnapshotsApi,
         logger
     );
     const snapshotSender = new SnapshotSender(

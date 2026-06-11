@@ -1,7 +1,7 @@
 import * as SecureStore from 'expo-secure-store';
 import { createMMKV } from 'react-native-mmkv';
 
-import type { IEnumerableStorage, ISyncSingleStorage } from '@safely/core';
+import type { IEnumerableStorage, ISyncKeyValueStorage, ISyncSingleStorage } from '@safely/core';
 import { TreeStorage } from '@safely/core';
 
 import { SafelySecureStoreEnum } from '../../modules/safely-secure-store-enum/src';
@@ -49,6 +49,21 @@ function createMMKVSyncSingleStorage(id: string) {
         get: () => mmkv.getString(id) ?? null,
         set: (value: string) => mmkv.set(id, value),
         clear: () => mmkv.remove(id)
+    };
+
+    return {
+        storage,
+        mmkv
+    };
+}
+
+function createMMKVSyncKeyValueStorage(id: string) {
+    const mmkv = createMMKV({ id });
+    const storage: ISyncKeyValueStorage = {
+        get: key => mmkv.getString(key) ?? null,
+        set: (key, value) => mmkv.set(key, value),
+        remove: key => mmkv.remove(key),
+        clear: () => mmkv.clearAll()
     };
 
     return {
@@ -109,7 +124,7 @@ const storagesList = {
         SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY
     ),
     mobileLayerSynchronousLocale: createMMKVSyncSingleStorage('mobile_synchronous_locale'),
-    mobileLayerSynchronousDevToken: createMMKVSyncSingleStorage('mobile_synchronous_dev_token')
+    mobileLayerSynchronousGlobal: createMMKVSyncKeyValueStorage('mobile_synchronous_global')
 };
 
 export async function CLEAR_ALL_MOBILE_STORAGE_ONLY_APP_LEVEL_USE_DANGER() {
@@ -124,4 +139,4 @@ export const ENCRYPTED_MOBILE_STORAGE_ONLY_APP_LEVEL_USE = storagesList.encrypte
 export const SECURE_ENCRYPTED_MOBILE_STORAGE_ONLY_APP_LEVEL_USE = storagesList.secureEncrypted;
 
 export const mobileLayerSynchronousLocale = storagesList.mobileLayerSynchronousLocale;
-export const mobileLayerSynchronousDevToken = storagesList.mobileLayerSynchronousDevToken;
+export const mobileLayerSynchronousGlobal = storagesList.mobileLayerSynchronousGlobal;

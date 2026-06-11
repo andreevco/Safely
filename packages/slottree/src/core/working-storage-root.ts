@@ -64,6 +64,10 @@ export class WorkingStorageRoot {
         ) as DeepReadonly<T>;
     }
 
+    public topLevelSlot(key: string): Slot | undefined {
+        return this.latestContainer().v[key];
+    }
+
     public result(): ContainerSlot {
         return this.root;
     }

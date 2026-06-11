@@ -1,5 +1,7 @@
 import { useTranslation } from 'react-i18next';
 
+import { useAppContext } from '@safely/ux';
+
 import { TEST_ID } from '@mobile/shared/constants';
 import { Cell, List } from '@mobile/shared/ui';
 
@@ -8,6 +10,7 @@ import { styles } from './AddWalletOptions.styles';
 
 export const AddWalletOptions = () => {
     const { t } = useTranslation();
+    const { devIsTestnetAllowed } = useAppContext();
     const { startCreateFlow, startImportFlow, startWatchOnlyFlow, startConnectLedgerFlow } =
         useAddWalletFlow();
 
@@ -58,6 +61,19 @@ export const AddWalletOptions = () => {
                     </Cell.Content>
                     <Cell.Chevron />
                 </Cell>
+                {devIsTestnetAllowed && (
+                    <Cell testID={TEST_ID.addWallet.testnet} onPress={startTestnetImportFlow}>
+                        <Cell.Content>
+                            <Cell.Row>
+                                <Cell.Title>{t('addWallet.testnet.title')}</Cell.Title>
+                            </Cell.Row>
+                            <Cell.Row>
+                                <Cell.Subtitle>{t('addWallet.testnet.subtitle')}</Cell.Subtitle>
+                            </Cell.Row>
+                        </Cell.Content>
+                        <Cell.Chevron />
+                    </Cell>
+                )}
             </List.Group>
         </List>
     );

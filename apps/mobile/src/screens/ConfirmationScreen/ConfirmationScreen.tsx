@@ -14,6 +14,7 @@ import {
     useAnalytics,
     useAppContext,
     useEstimateAssetTransfer,
+    useIsActivePortfolioTestnet,
     useNumberFormatter,
     useSendAssetTransfer
 } from '@safely/ux';
@@ -43,6 +44,7 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
     const navigation = useNavigation();
     const btcWallet = useActiveBtcWallet();
     const activePortfolio = useActivePortfolio();
+    const isTestnet = useIsActivePortfolioTestnet();
     const { logger } = useAppContext();
 
     const [confirmationState, setConfirmationState] = useState<ConfirmationState>({ type: 'idle' });
@@ -155,6 +157,7 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
                                 <Wallet
                                     address={btcWallet.address}
                                     meta={{ kind: 'portfolio', meta: activePortfolio.meta }}
+                                    isTestnet={isTestnet}
                                 />
                             }
                         />
@@ -164,6 +167,7 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
                                 <Wallet
                                     address={confirmationResult.recipient.address}
                                     meta={confirmationResult.recipientMeta}
+                                    isTestnet={isTestnet}
                                 />
                             }
                         />

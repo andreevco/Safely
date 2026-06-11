@@ -1,6 +1,6 @@
 import type { z } from 'zod';
 
-import type { Draft, NewOf, StorageVersion } from '@safely/slottree';
+import type { Draft, NewOf, SlotRevision, StorageVersion } from '@safely/slottree';
 
 import type { YCRDT } from './y-crdt';
 import type { YCRDTRepository } from './y-crdt-repository';
@@ -66,9 +66,15 @@ export class YManager<Latest extends StorageVersion, Rest> {
     public get(key: string): unknown {
         const value = this.yDoc.get(key);
         if (value === undefined) {
-            throw new StorageError(`Key "${key}" does not exist.`);
+            throw new KeyNotFoundError(`Key "${key}" does not exist.`);
         }
         return value;
+    }
+
+    public getTopLevelRevision(
+        key: Extract<keyof State<Latest>, string>
+    ): SlotRevision | undefined {
+        return this.yDoc.getTopLevelRevision(key);
     }
 
     public equalsToRemoteUpdate(snapshot: Buffer): boolean {
@@ -97,4 +103,4 @@ export class YManager<Latest extends StorageVersion, Rest> {
     }
 }
 
-export class StorageError extends SyncError {}
+export class KeyNotFoundError extends SyncError {}

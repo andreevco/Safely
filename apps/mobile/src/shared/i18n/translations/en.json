@@ -2,6 +2,7 @@
     "currentLanguageName": "English",
     "portfolio": {
         "watchOnly": "Watch only",
+        "testnet": "Testnet",
         "ledger": "Ledger"
     },
     "ledgerSign": {
@@ -444,6 +445,10 @@
             "invalidAddress": "Invalid Bitcoin address",
             "unsupportedExtendedKey": "ypub is not supported yet. Use xpub."
         },
+        "testnet": {
+            "title": "Testnet",
+            "subtitle": "Add a wallet on the test network"
+        },
         "connectLedger": {
             "title": "Ledger",
             "subtitle": "Connect a hardware wallet",
@@ -654,12 +659,10 @@
         "receiving": "Receiving {{amount}}…"
     },
     "assetCell": {
-        "lastTransaction": "Last transaction {{timeAgo}}",
-        "noTransactions": "No transactions"
+        "history": "History"
     },
     "tabs": {
         "home": "Home",
-        "history": "History",
         "about": "About"
     },
     "safelyBeta": {

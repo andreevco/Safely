@@ -33,20 +33,25 @@ export const initialSyncing = fromPromise(
             flow.logFail(e, 'fetch.failed');
             throw await classifyError(e);
         }
+        const remoteUpdate = {
+            kid: hex(lastState.snapshot.kid),
+            ciphertext: hex(lastState.snapshot.ciphertext),
+            nonce: hex(lastState.snapshot.nonce),
+            signature: hex(lastState.snapshot.signature),
+            snapshotProof: hex(lastState.snapshot.snapshotProof),
+            snapshotProofChain: lastState.proofChain
+                ? lastState.proofChain.proofChain.map(proof => hex(proof))
+                : []
+        };
+
         let result;
         try {
             result = await input.syncOperations.applyRemoteUpdate(
-                {
-                    kid: hex(lastState.snapshot.kid),
-                    ciphertext: hex(lastState.snapshot.ciphertext),
-                    nonce: hex(lastState.snapshot.nonce),
-                    signature: hex(lastState.snapshot.signature),
-                    snapshotProof: hex(lastState.snapshot.snapshotProof),
-                    snapshotProofChain: lastState.proofChain
-                        ? lastState.proofChain.proofChain.map(proof => hex(proof))
-                        : []
-                },
-                signal
+                remoteUpdate,
+                signal,
+                flow.child('update_handler', {
+                    snapshotProof: remoteUpdate.snapshotProof.toString('hex').slice(0, 16)
+                })
             );
         } catch (e) {
             flow.logFail(e, 'apply.failed');

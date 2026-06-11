@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { BTC_ASSET } from '@safely/core';
-import { useAnalytics, useIsActiveWalletWatchOnly, useScanQrScheme } from '@safely/ux';
+import { useAnalytics, useIsActivePortfolioWatchOnly, useScanQrScheme } from '@safely/ux';
 
 import { TEST_ID } from '@mobile/shared/constants';
 import { Actions } from '@mobile/shared/ui';
@@ -17,7 +17,7 @@ export const HomeActions = () => {
     const { t } = useTranslation();
     const analytics = useAnalytics();
     const navigation = useNavigation();
-    const isWatchOnly = useIsActiveWalletWatchOnly();
+    const isWatchOnly = useIsActivePortfolioWatchOnly();
 
     const handleQRScan = useScanQrScheme({
         onResult: useCallback(

@@ -3,7 +3,7 @@ import { CommonActions } from '@react-navigation/native';
 import { useCallback } from 'react';
 
 import type { PortfolioMeta } from '@safely/core';
-import { MnemonicResource } from '@safely/core';
+import { MnemonicResource, PortfolioNetworkType } from '@safely/core';
 import {
     useAppContext,
     useGeneratePortfolio,
@@ -55,7 +55,19 @@ export function useAddWalletFlow() {
     }, [navigation, generatePortfolio, getSecureEncrypted]);
 
     const startImportFlow = useCallback(() => {
-        navigation.dispatch(CommonActions.navigate(routes.importWallet));
+        navigation.dispatch(
+            CommonActions.navigate(routes.importWallet, {
+                networkType: PortfolioNetworkType.MAINNET
+            })
+        );
+    }, [navigation]);
+
+    const startTestnetImportFlow = useCallback(() => {
+        navigation.dispatch(
+            CommonActions.navigate(routes.importWallet, {
+                networkType: PortfolioNetworkType.TESTNET
+            })
+        );
     }, [navigation]);
 
     const startWatchOnlyFlow = useCallback(() => {
@@ -67,7 +79,7 @@ export function useAddWalletFlow() {
     }, [navigation]);
 
     const onMnemonicReady = useCallback(
-        (mnemonic: string[]) => {
+        (mnemonic: string[], networkType: PortfolioNetworkType) => {
             navigation.dispatch(
                 CommonActions.navigate(routes.customize, {
                     onSave: async (meta: PortfolioMeta) => {
@@ -76,7 +88,12 @@ export function useAddWalletFlow() {
                             await secretEncryptor.unlockEncryption();
 
                             using mnemonicAccessor = new MnemonicResource(mnemonic);
-                            await importPortfolio({ mnemonicAccessor, secretEncryptor, meta });
+                            await importPortfolio({
+                                mnemonicAccessor,
+                                secretEncryptor,
+                                meta,
+                                networkType
+                            });
 
                             navigation.dispatch(
                                 CommonActions.reset({
@@ -102,6 +119,7 @@ export function useAddWalletFlow() {
         startImportFlow,
         startWatchOnlyFlow,
         startConnectLedgerFlow,
+        startTestnetImportFlow,
         onMnemonicReady
     };
 }
