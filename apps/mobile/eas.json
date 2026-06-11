@@ -17,6 +17,7 @@
     "production-cached": {
       "extends": "production",
       "env": {
+        "EXPO_PUBLIC_USE_RN_FETCH": "1",
         "EAS_USE_CACHE": "1",
         "EAS_GRADLE_CACHE": "1"
       }
