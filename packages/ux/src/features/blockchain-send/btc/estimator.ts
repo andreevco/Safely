@@ -6,8 +6,8 @@ import { useActiveSignableBtcWallet } from '../../../entities';
 import { useAppContext, useBtcApi } from '../../../shared';
 
 export function useBtcEstimator() {
-    const btcApi = useBtcApi();
     const btcWallet = useActiveSignableBtcWallet();
+    const btcApi = useBtcApi(btcWallet.network);
     const { logger } = useAppContext();
 
     return useMemo(

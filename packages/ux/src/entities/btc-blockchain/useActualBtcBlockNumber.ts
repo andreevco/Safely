@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 
+import { useActiveBtcApi } from './api';
 import { btcBlockchain } from './keys';
-import { useBtcApi } from '../../shared';
 
 export function useActualBtcBlockNumber() {
-    const btcApi = useBtcApi();
+    const btcApi = useActiveBtcApi();
 
     return useQuery<number>({
         queryKey: btcBlockchain.blockNumber(btcApi).toKey(),

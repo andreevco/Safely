@@ -32,7 +32,8 @@ export const TEST_ID = {
     addWallet: {
         createNew: 'addWallet.createNew',
         importExisting: 'addWallet.importExisting',
-        watchAccount: 'addWallet.watchAccount'
+        watchAccount: 'addWallet.watchAccount',
+        testnet: 'addWallet.testnet'
     },
     watchOnly: {
         addressInput: 'watchOnly.addressInput',
