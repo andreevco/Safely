@@ -19,6 +19,11 @@ export const bootConfigSchema = z.looseObject({
                 api_url: z.string(),
                 explorer_account_url: z.string(),
                 explorer_tx_url: z.string()
+            }),
+            testnet: z.looseObject({
+                api_url: z.string(),
+                explorer_account_url: z.string(),
+                explorer_tx_url: z.string()
             })
         })
     }),

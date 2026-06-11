@@ -8,6 +8,7 @@ import type { BtcApi, BtcApiUtxoWithOptionalTx } from '@safely/core/api/btc';
 import {
     QUERIES_REFETCH_INTERVAL,
     useBtcApi,
+    useGetBtcApi,
     useDerivedQuery,
     usePersistQuery
 } from '../../shared';
@@ -113,7 +114,7 @@ function btcWalletUtxoOptions(deps: {
 }
 
 export function useBtcWalletUtxo(btcWallet: BtcWallet) {
-    const api = useBtcApi();
+    const api = useBtcApi(btcWallet.network);
     const account = useActiveAccount();
     const accessibleBtcWallets = useAccessibleBtcWallets();
 
@@ -128,14 +129,14 @@ export function useBtcWalletUtxo(btcWallet: BtcWallet) {
 }
 
 export function useBtcBalances(wallets: BtcWallet[]) {
-    const api = useBtcApi();
+    const getBtcApi = useGetBtcApi();
     const accessibleBtcWallets = useAccessibleBtcWallets();
     const account = useActiveAccount();
 
     return useQueries({
         queries: wallets.map(btcWallet => {
             const { schemaKey, ...rest } = btcWalletUtxoOptions({
-                api,
+                api: getBtcApi(btcWallet.network),
                 accessibleBtcWallets,
                 accountId: account.accountId,
                 btcWallet

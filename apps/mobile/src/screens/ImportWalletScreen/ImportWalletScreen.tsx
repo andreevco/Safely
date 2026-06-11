@@ -1,10 +1,12 @@
 import { useNativeState } from '@expo/ui/jetpack-compose';
+import type { StaticScreenProps } from '@react-navigation/native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { runOnJS } from 'react-native-worklets';
 
+import type { PortfolioNetworkType } from '@safely/core';
 import { useAppContext, useImportSeedPhrase } from '@safely/ux';
 
 import { useAddWalletFlow } from '@mobile/features/add-wallet';
@@ -15,14 +17,17 @@ import { maskSeedPhraseInput } from '@mobile/shared/utils';
 import { styles } from './ImportWalletScreen.styles';
 import { CapturePreventionView } from '../../../modules/safely-capture-prevention/src';
 
-export const ImportWalletScreen = () => {
+type ImportWalletScreenProps = StaticScreenProps<{ networkType: PortfolioNetworkType }>;
+
+export const ImportWalletScreen = (props: ImportWalletScreenProps) => {
+    const networkType = props.route.params.networkType;
     const { t } = useTranslation();
     const { logger } = useAppContext();
     const { onMnemonicReady } = useAddWalletFlow();
 
     const { value, error, isDirty, onChange, handleSubmit } = useImportSeedPhrase({
         onSubmit: mnemonic => {
-            void onMnemonicReady(mnemonic);
+            void onMnemonicReady(mnemonic, networkType);
         }
     });
 

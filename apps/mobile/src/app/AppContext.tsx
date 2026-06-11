@@ -1,7 +1,7 @@
 import { getLocales } from 'expo-localization';
 import { reloadAppAsync as reloadApp } from 'expo-modules-core';
 import type { FC, PropsWithChildren } from 'react';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AppState } from 'react-native';
 
@@ -20,6 +20,7 @@ import { navigationRef } from './navigation/navigationRef';
 import {
     CLEAR_ALL_MOBILE_STORAGE_ONLY_APP_LEVEL_USE_DANGER,
     ENCRYPTED_MOBILE_STORAGE_ONLY_APP_LEVEL_USE,
+    mobileLayerSynchronousDevIsTestnetAllowed,
     mobileLayerSynchronousDevToken,
     REGULAR_MOBILE_STORAGE_ONLY_APP_LEVEL_USE,
     SECURE_ENCRYPTED_MOBILE_STORAGE_ONLY_APP_LEVEL_USE
@@ -52,6 +53,7 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
     } = useTranslation();
     const { service: toastService } = useToastServiceContext();
     const { service: loaderService } = useLoaderServiceContext();
+    const devIsTestnetAllowed = useDevIsTestnetAllowed();
 
     const appContext = useMemo<IAppContext>(
         () => ({
@@ -63,6 +65,7 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
             build,
             environment,
             devToken: mobileLayerSynchronousDevToken.storage.get() ?? undefined,
+            devIsTestnetAllowed,
             deviceInfo,
             numberFormatLocale: new MobileNumberFormatLocale(getLocales()[0]),
             storage: {
@@ -122,11 +125,30 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
                 return () => subscription.remove();
             }
         }),
-        [t, toastService, loaderService, language]
+        [t, toastService, loaderService, language, devIsTestnetAllowed]
     );
 
     return <AppContext value={appContext}>{children}</AppContext>;
 };
+
+// reflects dev settings toggle without app reload
+function useDevIsTestnetAllowed() {
+    const [devIsTestnetAllowed, setDevIsTestnetAllowed] = useState(
+        () => mobileLayerSynchronousDevIsTestnetAllowed.storage.get() === 'true'
+    );
+
+    useEffect(() => {
+        const subscription =
+            mobileLayerSynchronousDevIsTestnetAllowed.mmkv.addOnValueChangedListener(() => {
+                setDevIsTestnetAllowed(
+                    mobileLayerSynchronousDevIsTestnetAllowed.storage.get() === 'true'
+                );
+            });
+        return () => subscription.remove();
+    }, []);
+
+    return devIsTestnetAllowed;
+}
 
 export const SecurityCheckInitializer: FC = () => {
     const check = useMobileSecurityCheck();

@@ -1,9 +1,12 @@
 import { useNavigation } from '@react-navigation/core';
 import { useCallback } from 'react';
 
-import { useClearDismissedBannerIds, useIsDevVersion } from '@safely/ux';
+import { useAppContext, useClearDismissedBannerIds, useIsDevVersion } from '@safely/ux';
 
-import { Cell, List, Screen, Text } from '@mobile/shared/ui';
+// TODO IMPORT Find a way to keep on the app level
+// eslint-disable-next-line boundaries/element-types
+import { mobileLayerSynchronousDevIsTestnetAllowed } from '@mobile/app/storage';
+import { Cell, List, Screen, Switch, Text } from '@mobile/shared/ui';
 
 import { styles } from './DevToolsScreen.styles';
 
@@ -11,10 +14,17 @@ export const DevToolsScreen = () => {
     const isDevVersion = useIsDevVersion();
     const navigation = useNavigation();
     const { mutate: clearDismissedBannerIds } = useClearDismissedBannerIds();
+    const { devIsTestnetAllowed } = useAppContext();
 
     const handleClearDismissedBannerIds = useCallback(() => {
         void clearDismissedBannerIds();
     }, [clearDismissedBannerIds]);
+
+    const handleTestnetToggle = useCallback(() => {
+        mobileLayerSynchronousDevIsTestnetAllowed.storage.set(
+            devIsTestnetAllowed ? 'false' : 'true'
+        );
+    }, [devIsTestnetAllowed]);
 
     return (
         <Screen>
@@ -72,6 +82,22 @@ export const DevToolsScreen = () => {
                                 <Cell.Chevron />
                             </Cell>
                         )}
+                    </List.Group>
+                    <List.Group variant="divided">
+                        <Cell>
+                            <Cell.Content>
+                                <Cell.Row>
+                                    <Cell.Title>Testnet</Cell.Title>
+                                </Cell.Row>
+                                <Cell.Row>
+                                    <Cell.Subtitle numberOfLines={0}>
+                                        Allow adding wallets on the test network for development
+                                        purposes.
+                                    </Cell.Subtitle>
+                                </Cell.Row>
+                            </Cell.Content>
+                            <Switch value={!!devIsTestnetAllowed} onPress={handleTestnetToggle} />
+                        </Cell>
                     </List.Group>
                     <List.Group variant="divided">
                         <Cell onPress={handleClearDismissedBannerIds}>

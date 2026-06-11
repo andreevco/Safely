@@ -56,8 +56,8 @@ function extractTimestamp(items: ActivityItem[]) {
 
 export function useLastBtcTransactionTimestamp() {
     const queryClient = useQueryClient();
-    const btcApi = useBtcApi();
     const btcWallet = useActiveBtcWallet();
+    const btcApi = useBtcApi(btcWallet.network);
     const walletId = btcWallet.id.toString();
 
     const historyQueryKey = activityKeys.all(walletId, {}).toKey();

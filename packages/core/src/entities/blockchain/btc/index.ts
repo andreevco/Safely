@@ -28,4 +28,15 @@ export function btcNetworkByPortfolioNetworkType(networkType: PortfolioNetworkTy
     }
 }
 
+export function portfolioNetworkTypeByBtcNetwork(network: BtcNetwork): PortfolioNetworkType {
+    switch (network) {
+        case BtcNetwork.MAINNET:
+            return PortfolioNetworkType.MAINNET;
+        case BtcNetwork.TESTNET:
+            return PortfolioNetworkType.TESTNET;
+        default:
+            assertUnreachable(network);
+    }
+}
+
 export const btcBlockWaitingTimeMinutes = 10;

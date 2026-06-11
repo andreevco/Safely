@@ -6,7 +6,11 @@ import type { BtcEstimation } from './types';
 import { getUtxoTotal, utxoPathToStruct } from './utils';
 import type { BtcApi, BtcApiUtxo } from '../../api/btc';
 import type { BtcAssetAmount, SignableBtcWallet, ExplorerFactory } from '../../entities';
-import { BLOCKCHAIN_NAME, btcNetworkConfig } from '../../entities/blockchain';
+import {
+    BLOCKCHAIN_NAME,
+    btcNetworkConfig,
+    portfolioNetworkTypeByBtcNetwork
+} from '../../entities/blockchain';
 import { getExternalErrorText } from '../../entities/errors/errors.service';
 import { ellipsisMiddle } from '../../utils';
 
@@ -108,6 +112,8 @@ export class BtcTransactionTemplate {
             throw error;
         }
 
+        const networkType = portfolioNetworkTypeByBtcNetwork(this.wallet.network);
+
         return {
             blockchain: BLOCKCHAIN_NAME.BTC,
             txId: result.txid,
@@ -115,7 +121,9 @@ export class BtcTransactionTemplate {
                 return ellipsisMiddle(result.txid, 6);
             },
             toExplorerUrl(explorerFactory: ExplorerFactory): string {
-                return explorerFactory.createExplorer(BLOCKCHAIN_NAME.BTC).transaction(result.txid);
+                return explorerFactory
+                    .createExplorer(BLOCKCHAIN_NAME.BTC, networkType)
+                    .transaction(result.txid);
             }
         };
     }
