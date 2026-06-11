@@ -14,6 +14,7 @@ import type {
     IMnemonicVault
 } from '@safely/core';
 import { PortfolioWatchOnlyBtc } from '@safely/core';
+import { PortfolioLedger } from '@safely/core';
 import { PortfolioIdBip39Imported } from '@safely/core';
 import { PortfolioBip39, PortfolioIdBip39MasterKeyDerived } from '@safely/core';
 import { PortfolioMnemonicFactory } from '@safely/core';
@@ -25,7 +26,7 @@ import {
     PortfolioNetworkType,
     PortfolioType
 } from '@safely/core';
-import type { SPortfolio } from '@safely/sync-storage';
+import { isBip39SPortfolio, isDerivableSPortfolio, type SPortfolio } from '@safely/sync-storage';
 
 import {
     useTranslate,
@@ -242,9 +243,38 @@ export function useReorderPortfolios() {
     });
 }
 
+export function useReorderDerivations() {
+    const update = useActiveAccountSyncStorageSlotUpdate('portfolios');
+
+    return useMutation<void, Error, { portfolio: Portfolio; orderedDerivationIds: string[] }>({
+        async mutationFn({ portfolio, orderedDerivationIds }) {
+            if (portfolio.type === PortfolioType.WATCH_ONLY) return;
+
+            const derivations = portfolio.getDerivations();
+            const byId = new Map(derivations.map(d => [d.id.toString(), d]));
+            const ordered = orderedDerivationIds
+                .map(id => byId.get(id))
+                .filter((d): d is IDerivation => d !== undefined);
+
+            if (ordered.length !== derivations.length) return;
+
+            await update(draft =>
+                draft.update(portfolio.jsonArrayId(), portfolioDraft => {
+                    const derivableDraft = portfolioDraft.narrow(isDerivableSPortfolio);
+
+                    derivableDraft?.set(
+                        'derivations',
+                        ordered.map(d => d.toJSON())
+                    );
+                })
+            );
+        }
+    });
+}
+
 type ActivePortfolioEntitiesBip39 = {
     type: 'bip39';
-    portfolio: PortfolioBip39;
+    portfolio: PortfolioBip39 | PortfolioLedger;
     btcWallet: SignableBtcWallet;
     derivation: IDerivation;
 };
@@ -315,7 +345,10 @@ export function useActivePortfolioEntitiesQuery() {
                     return { type: 'watch-only' as const, portfolio };
                 }
 
-                const derivation = portfolio.getDerivations()[0];
+                const derivations = portfolio.getDerivations();
+                const derivation =
+                    derivations.find(d => d.index === sActivePortfolioSchema?.derivationIndex) ??
+                    derivations[0];
 
                 return {
                     type: 'bip39' as const,
@@ -435,10 +468,7 @@ export function useRecordActivePortfolioSecretReveal() {
             logger.info('recording portfolio secret reveal');
             return update(draft =>
                 draft.update(activePortfolio.jsonArrayId(), activePortfolioDraft => {
-                    const bip39Draft = activePortfolioDraft.narrow(
-                        (p): p is Extract<typeof p, { type: typeof PortfolioType.BIP39 }> =>
-                            p.type === PortfolioType.BIP39
-                    );
+                    const bip39Draft = activePortfolioDraft.narrow(isBip39SPortfolio);
 
                     bip39Draft?.set('secretRevealedStatus', {
                         revealedAt: new Date().getTime(),

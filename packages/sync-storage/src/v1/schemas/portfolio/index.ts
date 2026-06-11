@@ -43,4 +43,11 @@ export {
     portfolioLedgerIdToString
 } from './portfolio-id-string';
 
-export { sPortfolio, sPortfolios, type SPortfolio, type SPortfolios } from './portfolios.schema';
+export {
+    sPortfolio,
+    sPortfolios,
+    isDerivableSPortfolio,
+    isBip39SPortfolio,
+    type SPortfolio,
+    type SPortfolios
+} from './portfolios.schema';

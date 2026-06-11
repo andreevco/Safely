@@ -14,7 +14,7 @@ export { Banner } from './Banner';
 export { Switch } from './Switch';
 export { SlideButton } from './SlideButton';
 export { TableCell } from './TableCell';
-export { Draggable } from './Draggable';
+export { Draggable, useReorderEngine, type ReorderEngine } from './Draggable';
 export { Image } from './Image';
 export { Skeleton } from './Skeleton';
 export { Input } from './Input';
