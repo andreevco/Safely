@@ -1,12 +1,14 @@
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View, type ViewStyle } from 'react-native';
 
 import type { CryptoAssetAmount, CryptoFiatRate } from '@safely/core';
-import { useNumberFormatter } from '@safely/ux';
+import { useActiveBtcWalletUtxo, useNumberFormatter } from '@safely/ux';
 
 import { Cell, ChevronRight12, Icon } from '@mobile/shared/ui';
 
 import { styles } from './BtcAssetCell.styles';
+import { ReceivingBadges } from './ReceivingBadge';
 
 type BtcAssetCellProps = {
     cryptoAssetAmount: CryptoAssetAmount;
@@ -17,8 +19,17 @@ type BtcAssetCellProps = {
 
 export const BtcAssetCell = (props: BtcAssetCellProps) => {
     const { cryptoAssetAmount, price, showDivider = true, onPress } = props;
-    const formatter = useNumberFormatter();
     const { t } = useTranslation();
+    const formatter = useNumberFormatter();
+
+    const { data: btcUtxo } = useActiveBtcWalletUtxo();
+
+    const receivingUtxoValues = useMemo(
+        () => btcUtxo?.unconfirmedUnsafe.utxos.map(u => u.value) ?? [],
+        [btcUtxo]
+    );
+
+    const hasReceiving = receivingUtxoValues.length > 0;
 
     return (
         <Cell showDivider={showDivider} onPress={onPress} style={styles.cell as ViewStyle}>
@@ -39,6 +50,12 @@ export const BtcAssetCell = (props: BtcAssetCellProps) => {
                         {cryptoAssetAmount.format(formatter, { fullPrecision: true })}
                     </Cell.Subvalue>
                 </Cell.Row>
+
+                {hasReceiving && (
+                    <Cell.Row>
+                        <ReceivingBadges utxos={btcUtxo!.unconfirmedUnsafe.utxos} />
+                    </Cell.Row>
+                )}
             </Cell.Content>
         </Cell>
     );
