@@ -44,7 +44,7 @@
     "@xstate/react": "catalog:",
     "big.js": "catalog:",
     "color": "^5.0.3",
-    "expo": "~56.0.8",
+    "expo": "~56.0.11",
     "expo-asset": "~56.0.15",
     "expo-blur": "15.0.8",
     "expo-clipboard": "~56.0.3",
