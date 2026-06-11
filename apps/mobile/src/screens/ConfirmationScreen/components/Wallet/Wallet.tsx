@@ -2,7 +2,7 @@ import type { FC } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { ellipsisMiddle } from '@safely/core';
+import { ellipsisMiddle, PortfolioNetworkType } from '@safely/core';
 import type { RecipientMeta } from '@safely/ux';
 
 import { ContactName } from '@mobile/entities/contact';
@@ -14,12 +14,14 @@ import { styles } from './Wallet.styles';
 interface WalletProps {
     address: string;
     meta?: RecipientMeta;
-    isTestnet?: boolean;
+    networkType?: PortfolioNetworkType;
 }
 
 export const Wallet: FC<WalletProps> = props => {
-    const { address, meta, isTestnet } = props;
+    const { address, meta, networkType } = props;
     const { t } = useTranslation();
+
+    const isTestnet = networkType === PortfolioNetworkType.TESTNET;
 
     const testnetBadge = isTestnet ? (
         <Badge type="neutral" isUppercase>
@@ -41,7 +43,7 @@ export const Wallet: FC<WalletProps> = props => {
                         size={12}
                         gap={6}
                         fontVariant="bodyM"
-                        isTestnet={isTestnet}
+                        networkType={networkType}
                     />
                 )}
                 <Text variant="bodyM" color="tertiary" numberOfLines={1}>
