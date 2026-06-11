@@ -16,7 +16,7 @@ export type {
     ObjectDraft
 } from './core/write';
 
-export { createStorage, StorageObservers } from './core/slot-tree';
+export { createStorage, createStorageFromSnapshot, StorageObservers } from './core/slot-tree';
 export type { SlotTree, StorageImpl } from './core/slot-tree';
 export type { StorageObserver } from './core/slot-tree';
 
