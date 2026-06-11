@@ -41,6 +41,8 @@ module.exports = {
             allowBackup: false
         },
         plugins: [
+            'expo-image',
+            'expo-sharing',
             [
                 'expo-localization',
                 {
