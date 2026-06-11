@@ -19,7 +19,7 @@ export class ExplorerFactory {
         switch (blockchain) {
             case BLOCKCHAIN_NAME.BTC:
                 return new BtcExplorer(
-                    this.config.bitcoin[btcNetworkByPortfolioNetworkType(networkType)]
+                    this.config.bitcoin[btcNetworkByPortfolioNetworkType(networkType)]!
                 );
             default:
                 assertUnreachable(blockchain);
