@@ -1,11 +1,9 @@
 import { useNavigation } from '@react-navigation/core';
 import { useCallback } from 'react';
 
-import { useAppContext, useClearDismissedBannerIds, useIsDevVersion } from '@safely/ux';
+import { useClearDismissedBannerIds, useIsDevVersion } from '@safely/ux';
 
-// TODO IMPORT Find a way to keep on the app level
-// eslint-disable-next-line boundaries/element-types
-import { mobileLayerSynchronousDevIsTestnetAllowed } from '@mobile/app/storage';
+import { useMobileLayerSynchronousGlobalStorage } from '@mobile/shared/storage';
 import { Cell, List, Screen, Switch, Text } from '@mobile/shared/ui';
 
 import { styles } from './DevToolsScreen.styles';
@@ -14,17 +12,16 @@ export const DevToolsScreen = () => {
     const isDevVersion = useIsDevVersion();
     const navigation = useNavigation();
     const { mutate: clearDismissedBannerIds } = useClearDismissedBannerIds();
-    const { devIsTestnetAllowed } = useAppContext();
+    const { value: devIsTestnetAllowed, set: setDevIsTestnetAllowed } =
+        useMobileLayerSynchronousGlobalStorage('devIsTestnetAllowed');
 
     const handleClearDismissedBannerIds = useCallback(() => {
         void clearDismissedBannerIds();
     }, [clearDismissedBannerIds]);
 
     const handleTestnetToggle = useCallback(() => {
-        mobileLayerSynchronousDevIsTestnetAllowed.storage.set(
-            devIsTestnetAllowed ? 'false' : 'true'
-        );
-    }, [devIsTestnetAllowed]);
+        setDevIsTestnetAllowed(!devIsTestnetAllowed);
+    }, [devIsTestnetAllowed, setDevIsTestnetAllowed]);
 
     return (
         <Screen>

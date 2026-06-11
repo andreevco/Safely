@@ -1,7 +1,7 @@
 import { getLocales } from 'expo-localization';
 import { reloadAppAsync as reloadApp } from 'expo-modules-core';
 import type { FC, PropsWithChildren } from 'react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AppState } from 'react-native';
 
@@ -14,14 +14,13 @@ import { build, deviceInfo, environment } from '@mobile/shared/app-meta';
 import { eraseLogs, logger } from '@mobile/shared/logger';
 import { useLoaderServiceContext } from '@mobile/shared/providers/loader';
 import { useToastServiceContext } from '@mobile/shared/providers/toast';
+import { useMobileLayerSynchronousGlobalStorage } from '@mobile/shared/storage';
 import { MobileNumberFormatLocale, MobileAppLinking } from '@mobile/shared/utils';
 
 import { navigationRef } from './navigation/navigationRef';
 import {
     CLEAR_ALL_MOBILE_STORAGE_ONLY_APP_LEVEL_USE_DANGER,
     ENCRYPTED_MOBILE_STORAGE_ONLY_APP_LEVEL_USE,
-    mobileLayerSynchronousDevIsTestnetAllowed,
-    mobileLayerSynchronousDevToken,
     REGULAR_MOBILE_STORAGE_ONLY_APP_LEVEL_USE,
     SECURE_ENCRYPTED_MOBILE_STORAGE_ONLY_APP_LEVEL_USE
 } from './storage';
@@ -53,7 +52,9 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
     } = useTranslation();
     const { service: toastService } = useToastServiceContext();
     const { service: loaderService } = useLoaderServiceContext();
-    const devIsTestnetAllowed = useDevIsTestnetAllowed();
+    const { value: devIsTestnetAllowed } =
+        useMobileLayerSynchronousGlobalStorage('devIsTestnetAllowed');
+    const { value: devToken } = useMobileLayerSynchronousGlobalStorage('devToken');
 
     const appContext = useMemo<IAppContext>(
         () => ({
@@ -64,8 +65,8 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
             version: packageJson.version,
             build,
             environment,
-            devToken: mobileLayerSynchronousDevToken.storage.get() ?? undefined,
-            devIsTestnetAllowed,
+            devToken: devToken ?? undefined,
+            devIsTestnetAllowed: devIsTestnetAllowed ?? undefined,
             deviceInfo,
             numberFormatLocale: new MobileNumberFormatLocale(getLocales()[0]),
             storage: {
@@ -125,30 +126,11 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
                 return () => subscription.remove();
             }
         }),
-        [t, toastService, loaderService, language, devIsTestnetAllowed]
+        [t, toastService, loaderService, language, devIsTestnetAllowed, devToken]
     );
 
     return <AppContext value={appContext}>{children}</AppContext>;
 };
-
-// reflects dev settings toggle without app reload
-function useDevIsTestnetAllowed() {
-    const [devIsTestnetAllowed, setDevIsTestnetAllowed] = useState(
-        () => mobileLayerSynchronousDevIsTestnetAllowed.storage.get() === 'true'
-    );
-
-    useEffect(() => {
-        const subscription =
-            mobileLayerSynchronousDevIsTestnetAllowed.mmkv.addOnValueChangedListener(() => {
-                setDevIsTestnetAllowed(
-                    mobileLayerSynchronousDevIsTestnetAllowed.storage.get() === 'true'
-                );
-            });
-        return () => subscription.remove();
-    }, []);
-
-    return devIsTestnetAllowed;
-}
 
 export const SecurityCheckInitializer: FC = () => {
     const check = useMobileSecurityCheck();
