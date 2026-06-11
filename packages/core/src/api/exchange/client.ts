@@ -13,15 +13,15 @@ import {
     type RampOrders
 } from './models';
 import type { ApiError } from '../../utils/fetch';
-import { ApiClient, type AuthorizationProvider } from '../../utils/fetch';
+import { ApiClient } from '../../utils/fetch';
 import type { IIdentifiable } from '../../utils/types';
 
 export class ExchangeApi extends ApiClient implements IIdentifiable {
     public readonly id: string;
 
-    constructor(options: { baseUrl: string; getAuthorization?: AuthorizationProvider }) {
+    constructor(options: { baseUrl: string }) {
         const baseUrl = options.baseUrl.replace(/\/$/, '');
-        super(baseUrl, {}, options.getAuthorization);
+        super(baseUrl);
 
         this.id = `${this.constructor.name}:${baseUrl}`;
     }
@@ -38,15 +38,12 @@ export class ExchangeApi extends ApiClient implements IIdentifiable {
             '/v1/onramp/widget',
             body,
             onrampWidgetResponseSchema,
-            this.toProvidersQuery(params),
-            { authorized: true }
+            this.toProvidersQuery(params)
         );
     }
 
     public async getRampOrders(params: GetRampOrdersParams): Promise<RampOrders> {
-        return this.getJson('/v1/ramp/orders', rampOrdersSchema, this.toOrdersQuery(params), {
-            authorized: true
-        });
+        return this.getJson('/v1/ramp/orders', rampOrdersSchema, this.toOrdersQuery(params));
     }
 
     protected createError(response: Response, parsed: unknown): ApiError {

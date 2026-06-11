@@ -3,11 +3,18 @@ import type {
     BtcApiTx,
     BtcAsset,
     BtcWalletReadOnly,
+    ExchangeApi,
     TransactionFeeCrypto
 } from '@safely/core';
 import { BtcAssetAmount, toBig, toBigOrZero } from '@safely/core';
 
-import type { ActivityPage, BtcActivityItem, IActivityFilters } from './types';
+import { rampOrderToActivityItem } from './onramp';
+import type {
+    BtcActivityItem,
+    BtcActivityPage,
+    IActivityFilters,
+    OrdersActivityPage
+} from './types';
 
 const ON_PAGE_ELEMENTS_LIMIT = 25;
 
@@ -47,6 +54,7 @@ export function btcTxToActivityItem(tx: BtcApiTx): BtcActivityItem | null {
     }
 
     return {
+        type: 'transaction',
         timestamp: (tx.blockTime || 0) * 1000,
         key: tx.txid,
         transaction: {
@@ -65,7 +73,7 @@ export async function fetchBtcActivity(
     wallet: Pick<BtcWalletReadOnly, 'type' | 'xpub' | 'address'>,
     page: number,
     filters: IActivityFilters
-): Promise<ActivityPage> {
+): Promise<BtcActivityPage> {
     const pageNum = page >= 1 ? page : 1;
 
     const addressData = await btcApi.getAddressInfo(wallet, {
@@ -93,4 +101,30 @@ export async function fetchBtcActivity(
     const hasNextPage = totalPages > 0 && currentPage < totalPages;
 
     return { items, hasNextPage };
+}
+
+export async function fetchOrdersActivity(
+    exchangeApi: ExchangeApi,
+    request: { lang: string; storeCountryCode?: string; deviceCountryCode?: string },
+    cursor: string | null,
+    filters: IActivityFilters
+): Promise<OrdersActivityPage> {
+    const result = await exchangeApi.getRampOrders({
+        ...request,
+        blockchain: 'bitcoin',
+        limit: ON_PAGE_ELEMENTS_LIMIT,
+        before: cursor ?? undefined
+    });
+
+    const items = result.orders
+        .filter(
+            order =>
+                filters.isInitiator === undefined ||
+                (order.type === 'offramp') === filters.isInitiator
+        )
+        .map(rampOrderToActivityItem);
+
+    const nextCursor = result.orders.length > 0 ? (result.cursor ?? null) : null;
+
+    return { items, nextCursor };
 }

@@ -4,7 +4,7 @@ import { useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useWindowDimensions, View } from 'react-native';
 
-import { BTC_ASSET } from '@safely/core';
+import { BTC_ASSET, type RampOrder } from '@safely/core';
 import {
     type ActivityItemsDatedGroup,
     type BtcActivityItem,
@@ -16,6 +16,7 @@ import {
     useInterval,
     useNumberFormatter,
     usePortfolios,
+    useProvidersQuery,
     useRate
 } from '@safely/ux';
 
@@ -43,10 +44,11 @@ const getFirstActivityKey = (groups: ActivityItemsDatedGroup[] | undefined): str
     groups?.[0]?.items?.[0]?.key;
 type HistoryListProps = {
     onNavigateToTransaction: (activity: BtcActivityItem) => void;
+    onNavigateToOrder: (order: RampOrder) => void;
 };
 
 export const HistoryList = (props: HistoryListProps) => {
-    const { onNavigateToTransaction } = props;
+    const { onNavigateToTransaction, onNavigateToOrder } = props;
     const { t } = useTranslation();
 
     const groupFormatter = useDateFormatter();
@@ -57,6 +59,7 @@ export const HistoryList = (props: HistoryListProps) => {
     const contacts = useContacts();
     const { data: rateData } = useRate(BTC_ASSET);
     const { data: currentBlockNumber } = useActualBtcBlockNumber();
+    const { data: providersData } = useProvidersQuery();
 
     const isFocused = useIsFocused();
     const listRef = useRef<ListRef<HistoryRowItem>>(null);
@@ -108,7 +111,9 @@ export const HistoryList = (props: HistoryListProps) => {
             contacts,
             rateData,
             currentBlockNumber,
-            onNavigateToTransaction
+            providers: providersData,
+            onNavigateToTransaction,
+            onNavigateToOrder
         };
 
         return historyGroups.flatMap(group => {
@@ -134,7 +139,9 @@ export const HistoryList = (props: HistoryListProps) => {
         portfolios,
         contacts,
         currentBlockNumber,
-        onNavigateToTransaction
+        providersData,
+        onNavigateToTransaction,
+        onNavigateToOrder
     ]);
 
     const renderSeparator = useCallback(() => {

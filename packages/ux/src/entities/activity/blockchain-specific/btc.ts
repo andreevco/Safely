@@ -10,6 +10,7 @@ import { useActiveBtcWallet } from '../../portfolio';
 import { fetchBtcActivity } from '../api';
 import { activityKeys } from '../keys';
 import type { ActivityItem, ActivityPage, IActivityPageParam } from '../types';
+import { isBtcActivityItem } from '../types';
 
 export type BtcTransactionDisplayStatus =
     | { type: 'pending' }
@@ -49,7 +50,9 @@ export function useBtcTransactionDisplayStatus(
 
 function extractTimestamp(items: ActivityItem[]) {
     const btcItem = items.find(
-        item => item.transaction.value.asset.id.blockchain === BLOCKCHAIN_NAME.BTC
+        item =>
+            isBtcActivityItem(item) &&
+            item.transaction.value.asset.id.blockchain === BLOCKCHAIN_NAME.BTC
     );
     return btcItem?.timestamp ?? null;
 }

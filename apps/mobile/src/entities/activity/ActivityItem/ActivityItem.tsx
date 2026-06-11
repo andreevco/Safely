@@ -1,8 +1,9 @@
 import { memo } from 'react';
 import { View } from 'react-native';
 
-import type { ContactMeta, PortfolioMeta } from '@safely/core';
-import type { BtcActivityItem } from '@safely/ux';
+import type { ContactMeta, PortfolioMeta, RampOrder } from '@safely/core';
+import type { ActivityItem as ActivityItemData, BtcActivityItem } from '@safely/ux';
+import { isOrderActivityItem } from '@safely/ux';
 
 import { ContactName } from '@mobile/entities/contact';
 import { PortfolioName } from '@mobile/entities/portfolio';
@@ -16,7 +17,7 @@ export type ActivityItemCounterparty =
     | { kind: 'address'; label: string };
 
 export type ActivityItemProps = {
-    activity: BtcActivityItem;
+    activity: ActivityItemData;
     title: string;
     amountSign: '+' | '−';
     formattedValue: string;
@@ -26,6 +27,7 @@ export type ActivityItemProps = {
     background: 'tertiary' | 'secondary';
     counterparty: ActivityItemCounterparty;
     onNavigateToTransaction: (activity: BtcActivityItem) => void;
+    onNavigateToOrder: (order: RampOrder) => void;
 };
 
 const Counterparty = ({ counterparty }: { counterparty: ActivityItemCounterparty }) => {
@@ -66,7 +68,8 @@ export const ActivityItem = memo((props: ActivityItemProps) => {
         timestampLabel,
         background,
         counterparty,
-        onNavigateToTransaction
+        onNavigateToTransaction,
+        onNavigateToOrder
     } = props;
 
     return (
@@ -74,7 +77,11 @@ export const ActivityItem = memo((props: ActivityItemProps) => {
             containerStyle={styles.border}
             background={background}
             showDivider={false}
-            onPress={() => onNavigateToTransaction(activity)}
+            onPress={() =>
+                isOrderActivityItem(activity)
+                    ? onNavigateToOrder(activity.order)
+                    : onNavigateToTransaction(activity)
+            }
         >
             <Cell.Content>
                 <Cell.Row>

@@ -1,24 +1,34 @@
 import type { TFunction } from 'i18next';
 
-import { ellipsisMiddle } from '@safely/core';
+import type { RampOrder } from '@safely/core';
+import { assertUnreachable, ellipsisMiddle } from '@safely/core';
 import type {
     useActualBtcBlockNumber,
     useContacts,
     useNumberFormatter,
     usePortfolios,
+    useProvidersQuery,
     useRate
 } from '@safely/ux';
 import {
+    type ActivityItem,
     type ActivityItemsDatedGroupMeta,
     type BtcActivityItem,
     type DateFormatter,
+    type OrderActivityItem,
     ACTIVITY_GROUP_LABEL,
     findContactMetaByAddress,
     findPortfolioMetaByAddress,
-    getBtcTransactionDisplayStatus
+    getBtcTransactionDisplayStatus,
+    isRampOrderActive
 } from '@safely/ux';
 
 import type { ActivityItemProps } from '@mobile/entities/activity';
+import {
+    formatOrderCrypto,
+    formatOrderFiat,
+    getOrderProviderName
+} from '@mobile/entities/activity';
 
 export type HistoryHeaderRow = {
     key: string;
@@ -42,7 +52,9 @@ export type ActivityRowContext = {
     contacts: ReturnType<typeof useContacts>;
     rateData: ReturnType<typeof useRate>['data'];
     currentBlockNumber: ReturnType<typeof useActualBtcBlockNumber>['data'];
+    providers: ReturnType<typeof useProvidersQuery>['data'];
     onNavigateToTransaction: (activity: BtcActivityItem) => void;
+    onNavigateToOrder: (order: RampOrder) => void;
 };
 
 export type TimeFormatDetails = 'time' | 'day-month-time';
@@ -96,7 +108,16 @@ export const buildHeaderRow = (
     title: getGroupTitle(meta, t, groupFormatter)
 });
 
-export const buildActivityRow = (
+const formatTimestampLabel = (
+    timestamp: number,
+    timeFormatDetails: TimeFormatDetails,
+    context: ActivityRowContext
+): string =>
+    timeFormatDetails === 'time'
+        ? context.dateFormatterTime.format(timestamp)
+        : context.dateFormatterDayMonth.format(timestamp);
+
+const buildTransactionRow = (
     activity: BtcActivityItem,
     groupKey: string,
     timeFormatDetails: TimeFormatDetails,
@@ -126,9 +147,7 @@ export const buildActivityRow = (
 
     const timestampLabel = isPending
         ? null
-        : timeFormatDetails === 'time'
-          ? context.dateFormatterTime.format(activity.timestamp)
-          : context.dateFormatterDayMonth.format(activity.timestamp);
+        : formatTimestampLabel(activity.timestamp, timeFormatDetails, context);
 
     const counterpartyAddress = isInitiator
         ? activity.transaction.toAddress
@@ -155,6 +174,58 @@ export const buildActivityRow = (
         timestampLabel,
         background,
         counterparty,
-        onNavigateToTransaction: context.onNavigateToTransaction
+        onNavigateToTransaction: context.onNavigateToTransaction,
+        onNavigateToOrder: context.onNavigateToOrder
     };
 };
+
+const buildOrderRow = (
+    activity: OrderActivityItem,
+    groupKey: string,
+    timeFormatDetails: TimeFormatDetails,
+    context: ActivityRowContext
+): ActivityRow => {
+    const { order } = activity;
+    const isPending = isRampOrderActive(order);
+    const isSale = order.type === 'offramp';
+    const isUnsuccessful = !isPending && order.status !== 'completed';
+
+    return {
+        key: `activity-${groupKey}-${activity.key}`,
+        type: 'activity',
+        activity,
+        title: isSale
+            ? context.t('history.orderInfo.sale')
+            : context.t('history.orderInfo.purchase'),
+        amountSign: isSale ? '−' : '+',
+        formattedValue: formatOrderCrypto(order, context.numberFormatter),
+        valueColor: isSale || isUnsuccessful ? 'primary' : 'accentGreen',
+        formattedFiat: formatOrderFiat(order, context.numberFormatter),
+        timestampLabel: isPending
+            ? null
+            : formatTimestampLabel(activity.timestamp, timeFormatDetails, context),
+        background: isPending ? 'tertiary' : 'secondary',
+        counterparty: {
+            kind: 'address',
+            label: getOrderProviderName(order, context.providers)
+        },
+        onNavigateToTransaction: context.onNavigateToTransaction,
+        onNavigateToOrder: context.onNavigateToOrder
+    };
+};
+
+export function buildActivityRow(
+    activity: ActivityItem,
+    groupKey: string,
+    timeFormatDetails: TimeFormatDetails,
+    context: ActivityRowContext
+): ActivityRow {
+    switch (activity.type) {
+        case 'transaction':
+            return buildTransactionRow(activity, groupKey, timeFormatDetails, context);
+        case 'order':
+            return buildOrderRow(activity, groupKey, timeFormatDetails, context);
+        default:
+            return assertUnreachable(activity as never);
+    }
+}

@@ -141,6 +141,7 @@ export class BroadcastedBtcTx {
             .reduce((acc, v) => acc.plus(toBigOrZero(v.value)), toBig(0));
 
         return {
+            type: 'transaction',
             timestamp: this.timestamp,
             key: btcApiTx.txid,
             transaction: {

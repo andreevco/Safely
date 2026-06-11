@@ -625,6 +625,14 @@
                     "description": "More than 6 confirmations"
                 }
             }
+        },
+        "orderInfo": {
+            "purchase": "Purchase",
+            "sale": "Sale",
+            "provider": "Provider",
+            "order": "Order",
+            "transaction": "Transaction",
+            "support": "Support"
         }
     },
     "chart": {

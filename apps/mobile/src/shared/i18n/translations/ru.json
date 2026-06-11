@@ -630,6 +630,14 @@
                     "description": "Более 6 подтверждений"
                 }
             }
+        },
+        "orderInfo": {
+            "purchase": "Покупка",
+            "sale": "Продажа",
+            "provider": "Провайдер",
+            "order": "Ордер",
+            "transaction": "Транзакция",
+            "support": "Поддержка"
         }
     },
     "importWalletScreen": {

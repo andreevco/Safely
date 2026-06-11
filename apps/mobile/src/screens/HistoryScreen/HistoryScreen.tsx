@@ -1,6 +1,7 @@
 import { useNavigation } from '@react-navigation/core';
 import { useCallback } from 'react';
 
+import type { RampOrder } from '@safely/core';
 import type { BtcActivityItem } from '@safely/ux';
 import { useActivePortfolio, useHasPortfolio } from '@safely/ux';
 
@@ -19,6 +20,13 @@ const HistoryContent = () => {
         [navigation]
     );
 
+    const onNavigateToOrder = useCallback(
+        (order: RampOrder) => {
+            navigation.navigate('OrderScreen', { order });
+        },
+        [navigation]
+    );
+
     return (
         <>
             <Screen.Header>
@@ -29,6 +37,7 @@ const HistoryContent = () => {
             <HistoryList
                 key={portfolio?.id.toString()}
                 onNavigateToTransaction={onNavigateToTransaction}
+                onNavigateToOrder={onNavigateToOrder}
             />
         </>
     );

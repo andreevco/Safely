@@ -1,5 +1,4 @@
 import type { BtcWalletId } from './btc-wallet-id';
-import type { AuthorizationProvider } from '../../../utils/fetch';
 import type { BtcNetwork, BtcWalletType } from '../../blockchain';
 import type { BtcSigningRequest } from '../../signer';
 import type { Derivation } from '../derivation';
@@ -18,8 +17,6 @@ export interface SignableBtcWallet extends BtcWalletReadOnly {
     xpub: string;
 
     sign(tx: BtcSigningRequest): Promise<Buffer>;
-
-    getAuthorization: AuthorizationProvider;
 }
 
 export type BtcWallet = BtcWalletReadOnly | SignableBtcWallet;

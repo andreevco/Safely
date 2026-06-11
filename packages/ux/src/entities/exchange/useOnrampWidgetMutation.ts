@@ -5,11 +5,11 @@ import type { OnrampWidgetResponse, Provider } from '@safely/core';
 import { useExchangeApi } from '../../shared/api/useExchangeApi';
 import { useAppContext } from '../../shared/providers/AppContext';
 import { useActiveFiat } from '../fiat';
-import { useActiveSignableBtcWallet } from '../portfolio';
+import { useActiveBtcWallet } from '../portfolio';
 
 export function useOnrampWidgetMutation() {
-    const wallet = useActiveSignableBtcWallet();
-    const exchangeApi = useExchangeApi(wallet.getAuthorization);
+    const wallet = useActiveBtcWallet();
+    const exchangeApi = useExchangeApi();
     const { i18n, userCountryInfo } = useAppContext();
     const fiat = useActiveFiat();
 

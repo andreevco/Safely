@@ -14,6 +14,7 @@ import { LockScreen } from '@mobile/screens/LockScreen';
 import { NewContactModal } from '@mobile/screens/NewContactModal';
 import { ConfirmDeleteContactSheet } from '@mobile/screens/NewContactModal/screens/ConfirmDeleteContactSheet';
 import { OnboardingPasscodeScreen } from '@mobile/screens/OnboardingPasscodeScreen';
+import { OrderScreen } from '@mobile/screens/OrderScreen';
 import { PasscodeVerificationScreen } from '@mobile/screens/PasscodeVerificationScreen';
 import { PendingFundsSheet } from '@mobile/screens/PendingFundsSheet';
 import { ProviderSheet } from '@mobile/screens/ProviderSheet';
@@ -63,6 +64,7 @@ export const RootStack = createNativeStackNavigator({
                     }
                 },
                 TransactionScreen: TransactionScreen,
+                OrderScreen: OrderScreen,
                 LockScreen: {
                     screen: LockScreen,
                     options: {

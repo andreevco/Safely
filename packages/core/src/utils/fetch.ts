@@ -1,4 +1,7 @@
 import { z } from 'zod';
+
+import type { Logger } from '@safely/sync';
+
 export class ApiError extends Error {
     public readonly name: string = 'ApiError';
 
@@ -18,12 +21,6 @@ const APIErrorSchema = z.looseObject({
     error: z.string()
 });
 
-export type AuthorizationProvider = (req: {
-    method: string;
-    pathWithQuery: string;
-    bodyBytes: Uint8Array;
-}) => string | Promise<string>;
-
 export class ApiClient {
     protected readonly headers: Record<string, string>;
 
@@ -36,26 +33,24 @@ export class ApiClient {
         payload?: unknown
     ) => ApiError = ApiError;
 
+    protected readonly logger?: Logger;
+
     constructor(
         protected readonly baseUrl: string,
         headers: Record<string, string> = {},
-        protected readonly getAuthorization?: AuthorizationProvider
+        logger?: Logger
     ) {
         this.headers = { ...headers };
+        this.logger = logger?.child(this.constructor.name);
     }
 
     protected async getJson<T extends z.ZodTypeAny, Q extends object>(
         path: string,
         schema: T,
-        query?: Q,
-        opts?: { authorized?: boolean }
+        query?: Q
     ): Promise<z.infer<T>> {
-        const { absoluteUrl, pathWithQuery } = this.buildRequestTarget(path, query);
-        const authHeaders = await this.authHeaders('GET', pathWithQuery, new Uint8Array(), opts);
-        const response = await this.performFetch(absoluteUrl, {
-            method: 'GET',
-            headers: authHeaders
-        });
+        const url = this.buildUrl(path, query);
+        const response = await this.performFetch(url, { method: 'GET' });
         return await this.parseAndValidate(response, schema);
     }
 
@@ -64,8 +59,8 @@ export class ApiClient {
         body: string,
         schema: T
     ): Promise<z.infer<T>> {
-        const { absoluteUrl } = this.buildRequestTarget(path);
-        const response = await this.performFetch(absoluteUrl, {
+        const url = this.buildUrl(path);
+        const response = await this.performFetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain; charset=utf-8' },
             body
@@ -78,22 +73,18 @@ export class ApiClient {
         path: string,
         body: unknown,
         schema: T,
-        query?: object,
-        opts?: { authorized?: boolean }
+        query?: object
     ): Promise<z.infer<T>>;
     protected async postJson<T extends z.ZodTypeAny>(
         path: string,
         body: unknown,
         schema?: T,
-        query?: object,
-        opts?: { authorized?: boolean }
+        query?: object
     ): Promise<z.infer<T> | void> {
-        const { absoluteUrl, pathWithQuery } = this.buildRequestTarget(path, query);
-        const authHeaders = await this.authHeaders('POST', pathWithQuery, body, opts);
-
-        const response = await this.performFetch(absoluteUrl, {
+        const url = this.buildUrl(path, query);
+        const response = await this.performFetch(url, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', ...authHeaders },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body)
         });
 
@@ -106,32 +97,7 @@ export class ApiClient {
         return await this.parseAndValidate(response, schema);
     }
 
-    private async performFetch(url: string, init: RequestInit): Promise<Response> {
-        const controller = this.timeoutMs ? new AbortController() : undefined;
-        const id = this.timeoutMs
-            ? setTimeout(() => controller!.abort(), this.timeoutMs)
-            : undefined;
-        try {
-            const mergedInit: RequestInit = {
-                ...init,
-                headers: { ...this.headers, ...(init.headers || {}) },
-                signal: controller?.signal
-            };
-            return await fetch(url, mergedInit);
-        } catch (err) {
-            if (err instanceof Error && err.name === 'AbortError') {
-                throw new this.errorConstructor('Request timed out', 408);
-            }
-            throw err;
-        } finally {
-            if (id) clearTimeout(id);
-        }
-    }
-
-    private buildRequestTarget(
-        path: string,
-        query?: object
-    ): { absoluteUrl: string; pathWithQuery: string } {
+    private buildUrl(path: string, query?: object): string {
         const url = new URL(this.baseUrl + path);
         if (query) {
             Object.entries(query)
@@ -144,23 +110,34 @@ export class ApiClient {
                     }
                 });
         }
-        return { absoluteUrl: url.toString(), pathWithQuery: url.pathname + url.search };
+        return url.toString();
     }
 
-    private async authHeaders(
-        method: string,
-        pathWithQuery: string,
-        body: unknown,
-        opts?: { authorized?: boolean }
-    ): Promise<Record<string, string>> {
-        if (!opts?.authorized) return {};
-        if (!this.getAuthorization) {
-            throw new Error('ApiClient: an authorized request was made without getAuthorization');
+    private async performFetch(url: string, init: RequestInit): Promise<Response> {
+        const controller = this.timeoutMs ? new AbortController() : undefined;
+        const id = this.timeoutMs
+            ? setTimeout(() => controller!.abort(), this.timeoutMs)
+            : undefined;
+        this.logger?.debug('request', { method: init.method, url });
+        try {
+            const mergedInit: RequestInit = {
+                ...init,
+                headers: { ...this.headers, ...(init.headers || {}) },
+                signal: controller?.signal
+            };
+            const response = await fetch(url, mergedInit);
+            this.logger?.debug('response', { method: init.method, url, status: response.status });
+            return response;
+        } catch (err) {
+            if (err instanceof Error && err.name === 'AbortError') {
+                this.logger?.warn('request timed out', { method: init.method, url });
+                throw new this.errorConstructor('Request timed out', 408);
+            }
+            this.logger?.warn('request failed (network error)', { method: init.method, url });
+            throw err;
+        } finally {
+            if (id) clearTimeout(id);
         }
-        const bodyBytes =
-            body !== undefined ? new TextEncoder().encode(JSON.stringify(body)) : new Uint8Array();
-        const authorization = await this.getAuthorization({ method, pathWithQuery, bodyBytes });
-        return { Authorization: authorization };
     }
 
     private async parseAndValidate<T extends z.ZodTypeAny>(
@@ -177,11 +154,19 @@ export class ApiClient {
         }
 
         if (!response.ok) {
-            throw this.createError(response, parsed);
+            const errorResult = APIErrorSchema.safeParse(parsed);
+            const message = errorResult.success
+                ? errorResult.data.error
+                : response.statusText || 'Request failed';
+            throw new this.errorConstructor(message, response.status, parsed);
         }
 
         const result = schema.safeParse(parsed);
         if (!result.success) {
+            this.logger?.warn('response validation failed', {
+                url: response.url,
+                issue: result.error.message
+            });
             throw new this.errorConstructor(
                 `Response validation failed: ${result.error.message}`,
                 response.status,
@@ -202,14 +187,11 @@ export class ApiClient {
             parsed = text;
         }
 
-        throw this.createError(response, parsed);
-    }
-
-    protected createError(response: Response, parsed: unknown): ApiError {
         const errorResult = APIErrorSchema.safeParse(parsed);
         const message = errorResult.success
             ? errorResult.data.error
             : response.statusText || 'Request failed';
-        return new this.errorConstructor(message, response.status, parsed);
+
+        throw new this.errorConstructor(message, response.status, parsed);
     }
 }
