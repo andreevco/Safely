@@ -67,6 +67,16 @@ jobs:
             pnpm --filter "...[$BASE_SHA]" --filter "!safely" run lint
           fi
 
+      - name: Resolve dev-sync.safely.app
+        env:
+          DEV_SYNC_IP: ${{ secrets.DEV_SYNC_IP }}
+        run: |
+          if [ -n "$DEV_SYNC_IP" ]; then
+            echo "$DEV_SYNC_IP dev-sync.safely.app" | sudo tee -a /etc/hosts > /dev/null
+          else
+            echo "DEV_SYNC_IP secret is not set — dev-sync.safely.app will not resolve"
+          fi
+
       - name: Test
         env:
           BASE_SHA: ${{ steps.base.outputs.sha }}
