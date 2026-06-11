@@ -11,8 +11,13 @@ import { styles } from './AddWalletOptions.styles';
 export const AddWalletOptions = () => {
     const { t } = useTranslation();
     const { devIsTestnetAllowed } = useAppContext();
-    const { startCreateFlow, startImportFlow, startWatchOnlyFlow, startConnectLedgerFlow } =
-        useAddWalletFlow();
+    const {
+        startCreateFlow,
+        startImportFlow,
+        startWatchOnlyFlow,
+        startConnectLedgerFlow,
+        startTestnetImportFlow
+    } = useAddWalletFlow();
 
     return (
         <List style={styles.list}>
