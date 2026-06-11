@@ -13,7 +13,12 @@ export enum LinkingProtocol {
 }
 
 export abstract class Linking {
-    constructor(protected readonly logger: Logger) {}
+    protected readonly logger: Logger;
+
+    constructor(logger: Logger) {
+        this.logger = logger.child('linking');
+    }
+
     protected abstract readonly authorizedOpenUrlProtocols: LinkingProtocol[];
 
     protected abstract openWindow(url: string): Promise<void>;

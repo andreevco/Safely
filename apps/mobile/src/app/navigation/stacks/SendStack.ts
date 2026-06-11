@@ -4,9 +4,9 @@ import { ConfirmationScreen } from '@mobile/screens/ConfirmationScreen';
 import { SendAssetModal } from '@mobile/screens/SendAssetModal';
 
 export const SendStack = createNativeStackNavigator({
-    initialRouteName: 'SendAssetModal',
+    initialRouteName: 'SendFormModal',
     screens: {
-        SendAssetModal: SendAssetModal,
+        SendFormModal: SendAssetModal,
         ConfirmationModal: ConfirmationScreen
     },
     screenOptions: {

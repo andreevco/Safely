@@ -1,12 +1,12 @@
-import { useFocusEffect } from '@react-navigation/native';
 import type { StaticScreenProps } from '@react-navigation/native';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Keyboard, TextInput, TouchableOpacity, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useUnistyles } from 'react-native-unistyles';
 
 import { Button, Icon, Screen, Text, Xmark16, XmarkCircle16 } from '@mobile/shared/ui';
+import { useAutoFocus } from '@mobile/shared/utils';
 
 import { styles } from './CustomizeAccountModal.styles';
 
@@ -20,16 +20,9 @@ export const CustomizeAccountModal = (props: CustomizeAccountModalProps) => {
     const { defaultName, onSave, onClose } = props.route?.params ?? {};
     const { t } = useTranslation();
     const { theme } = useUnistyles();
-    const inputRef = useRef<TextInput>(null);
     const isFocused = useSharedValue(false);
-
     const [accountName, setAccountName] = useState(defaultName ?? '');
-
-    useFocusEffect(
-        useCallback(() => {
-            inputRef.current?.focus();
-        }, [])
-    );
+    const inputRef = useAutoFocus();
 
     const handleSave = useCallback(async () => {
         Keyboard.dismiss();

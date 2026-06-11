@@ -9,7 +9,6 @@ import prettierPlugin from 'eslint-plugin-prettier';
 import pluginQuery from '@tanstack/eslint-plugin-query';
 import boundaries from 'eslint-plugin-boundaries';
 import isEqPlugin from './eslint-rules/isEqPlugin.js';
-import noDirectBitcoinjsLibPlugin from './eslint-rules/noDirectBitcoinjsLibPlugin.js';
 
 export default [
     {
@@ -47,11 +46,13 @@ export default [
             import: importPlugin,
             'unused-imports': unusedImports,
             iseq: isEqPlugin,
-            'no-direct-bitcoinjs-lib': noDirectBitcoinjsLibPlugin,
             boundaries
         },
         settings: {
             'boundaries/root-path': import.meta.dirname,
+            /* don't let eslint-plugin-import (import/no-cycle) parse files inside
+               node_modules — RN ships Flow .js files the TS parser chokes on */
+            'import/ignore': ['node_modules'],
             'import/parsers': {
                 '@typescript-eslint/parser': ['.ts', '.tsx']
             },
@@ -131,6 +132,7 @@ export default [
             'no-return-assign': 'off',
             'no-restricted-syntax': ['error', 'LabeledStatement', 'WithStatement'],
             'no-console': 'error',
+            '@typescript-eslint/no-unnecessary-type-assertion': 'off',
 
             /* imports */
             'import/extensions': 'off',
@@ -209,7 +211,6 @@ export default [
             '@typescript-eslint/no-floating-promises': 'off',
             /* custom */
             'iseq/no-strict-eq-when-isEq': 'error',
-            'no-direct-bitcoinjs-lib/no-direct-bitcoinjs-lib': 'error',
 
             /* FSD layering inside @safely/ux: shared cannot import entities/features;
                entities cannot import features. */

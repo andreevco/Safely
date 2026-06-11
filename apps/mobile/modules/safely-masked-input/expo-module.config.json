@@ -1,12 +1,9 @@
 {
   "platforms": ["ios", "android"],
   "ios": {
-    "modules": ["SafelyMaskedInputModule", "SafelySeedPhraseInputModule"]
+    "modules": ["SafelyMaskedInputModule"]
   },
   "android": {
-    "modules": [
-      "expo.modules.safelymaskedinput.SafelyMaskedInputModule",
-      "expo.modules.safelymaskedinput.SafelySeedPhraseInputModule"
-    ]
+    "modules": ["expo.modules.safelymaskedinput.SafelyMaskedInputModule"]
   }
 }

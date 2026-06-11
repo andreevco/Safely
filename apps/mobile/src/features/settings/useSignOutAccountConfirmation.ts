@@ -1,4 +1,4 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -7,22 +7,22 @@ import {
     useAccounts,
     useActiveAccount,
     useActiveAccountMeta,
+    useAppContext,
     useDeleteAccount,
     useEraseAllData,
     useToast
 } from '@safely/ux';
 
-import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
-
 export function useSignOutAccountConfirmation() {
     const { t } = useTranslation();
-    const navigation = useNavigation<RootStackNavigationProp>();
+    const navigation = useNavigation();
     const accounts = useAccounts();
     const activeAccount = useActiveAccount();
     const accountName = useActiveAccountMeta().name;
     const toast = useToast();
     const { mutateAsync: deleteAccount } = useDeleteAccount();
     const { mutateAsync: eraseAllData } = useEraseAllData();
+    const { storage } = useAppContext();
 
     return useCallback(() => {
         const isLastAccount = accounts?.length === 1;
@@ -33,14 +33,17 @@ export function useSignOutAccountConfirmation() {
             accountName,
             withLoader: isSyncAccount,
             onConfirm: async () => {
+                using secureEncryptedStorage = storage.sync.getSecureEncrypted();
+                await secureEncryptedStorage.unlock();
+
                 if (isLastAccount) {
                     if (isSyncAccount) {
-                        await deleteAccount();
+                        await deleteAccount(secureEncryptedStorage);
                     }
 
-                    return eraseAllData();
+                    await eraseAllData();
                 } else {
-                    await deleteAccount();
+                    await deleteAccount(secureEncryptedStorage);
                     toast(t('settings.signOutAccount.toastAccountRemoved'));
                 }
             }
@@ -53,6 +56,7 @@ export function useSignOutAccountConfirmation() {
         deleteAccount,
         eraseAllData,
         toast,
-        t
+        t,
+        storage.sync.getSecureEncrypted
     ]);
 }

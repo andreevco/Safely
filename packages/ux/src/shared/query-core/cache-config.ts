@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { aboutSchema, bootConfigSchema, sCryptoAssetAmount } from '@safely/core';
+import { aboutSchema, bootConfigSchema, sCryptoAssetAmount, sCryptoFiatRate } from '@safely/core';
 import { UtxoSchema, UtxoWithOptionalTxSchema } from '@safely/core/api/btc';
 
 const sHistoricalPrice = z.object({
@@ -15,7 +15,12 @@ const sActivityItem = z.object({
         fromAddress: z.string(),
         toAddress: z.string(),
         value: sCryptoAssetAmount,
-        fee: sCryptoAssetAmount,
+        fee: z
+            .object({
+                type: z.literal('crypto'),
+                amount: sCryptoAssetAmount
+            })
+            .optional(),
         raw: z.unknown()
     })
 });
@@ -49,7 +54,8 @@ export const cacheSchemas = {
     bootConfig: bootConfigSchema,
     about: aboutSchema,
     infiniteActivityData: sInfiniteActivityData,
-    sHistoricalPrice: sHistoricalPrice
+    sHistoricalPrice: sHistoricalPrice,
+    sCryptoFiatRate: sCryptoFiatRate
 } satisfies Record<string, z.ZodType>;
 
 export type CacheSchemaKey = keyof typeof cacheSchemas;

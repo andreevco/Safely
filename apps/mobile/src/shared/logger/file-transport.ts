@@ -4,13 +4,11 @@ import { shareAsync } from 'expo-sharing';
 import type { ILoggerTransport, LogEntry } from '@safely/sync';
 import { LogLevel } from '@safely/sync';
 
-// TODO IMPORT Find a way to keep on the app level
-// eslint-disable-next-line boundaries/element-types
-import { LOGGER_BUFFER_MOBILE_STORAGE_ONLY_APP_LEVEL_USE } from '@mobile/app/storage';
+import { type StoredLog, sStoredLog } from './schemas/stored-log.schema';
 
 const FILENAME = 'safely.ndjson';
-const FLUSH_INTERVAL_MS = 30_000;
 const MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024;
+const CONTEXT_BUFFER_SIZE = 1000;
 
 type FileTransportConfig = {
     appVersion: string;
@@ -18,58 +16,59 @@ type FileTransportConfig = {
     deviceInfo: { name: string; osVersion: string };
 };
 
+export type LogRecord = {
+    timestamp: string;
+    level: LogLevel;
+    path: string[];
+    message: string;
+    appVersion: string;
+    build: string;
+    device: string;
+};
+
 export class FileTransport implements ILoggerTransport {
-    private readonly mmkv = LOGGER_BUFFER_MOBILE_STORAGE_ONLY_APP_LEVEL_USE.mmkv;
     private readonly appVersion: string;
     private readonly build: string;
     private readonly device: string;
-    private flushing: Promise<void> = Promise.resolve();
-    private flushScheduled = false;
-    private seqNo = 0;
+    private context: string[] = [];
 
     constructor(opts: FileTransportConfig) {
         this.appVersion = opts.appVersion;
         this.build = opts.build;
         this.device = `${opts.deviceInfo.name}, ${opts.deviceInfo.osVersion}`;
-        setInterval(() => void this.flush(), FLUSH_INTERVAL_MS);
     }
 
     public log(entry: LogEntry): void {
-        const key = `e_${Date.now()}_${this.seqNo++}`;
-        this.mmkv.set(
-            key,
-            JSON.stringify({
-                t: entry.timestamp.toISOString(),
-                l: entry.level,
-                p: entry.path,
-                m: entry.message.map(serializeMessage).join(' '),
-                v: this.appVersion,
-                b: this.build,
-                d: this.device
-            })
-        );
+        const serialized = this.serialize(entry);
+
+        if (entry.level < LogLevel.WARN) {
+            this.context.push(serialized);
+
+            if (this.context.length > CONTEXT_BUFFER_SIZE) {
+                this.context.shift();
+            }
+
+            return;
+        }
 
         if (entry.level >= LogLevel.ERROR) {
-            void this.flush();
+            this.writeToFile([...this.context, serialized]);
+            this.context = [];
+
+            return;
         }
+
+        this.writeToFile([serialized]);
     }
 
-    public flush(): Promise<void> {
-        if (!this.flushScheduled) {
-            this.flushScheduled = true;
-            this.flushing = this.flushing.then(() => {
-                this.flushScheduled = false;
+    public erase(): void {
+        this.context = [];
 
-                return this.doFlush();
-            });
-        }
-
-        return this.flushing;
+        const file = new File(Paths.cache, FILENAME);
+        if (file.exists) file.delete();
     }
 
     public async share(): Promise<void> {
-        await this.flush();
-
         const file = new File(Paths.cache, FILENAME);
         if (!file.exists) return;
 
@@ -79,17 +78,25 @@ export class FileTransport implements ILoggerTransport {
         });
     }
 
-    private doFlush(): void {
-        const keys = this.mmkv.getAllKeys().filter(k => k.startsWith('e_'));
-        if (keys.length === 0) return;
+    public async read(): Promise<LogRecord[]> {
+        const file = new File(Paths.cache, FILENAME);
+        if (!file.exists) return [];
 
-        const lines: string[] = [];
-        for (const key of keys) {
-            const line = this.mmkv.getString(key);
-            if (line) lines.push(line);
-            this.mmkv.remove(key);
+        try {
+            const content = await file.text();
+
+            return content
+                .split('\n')
+                .map(line => this.parseLogLine(line))
+                .filter((record): record is LogRecord => record !== null);
+        } catch (e) {
+            console.error('[FileTransport] failed to read log file', e);
+
+            return [];
         }
+    }
 
+    private writeToFile(lines: string[]): void {
         if (lines.length === 0) return;
 
         const content = lines.join('\n') + '\n';
@@ -117,15 +124,55 @@ export class FileTransport implements ILoggerTransport {
             console.error('[FileTransport] failed to write logs', e);
         }
     }
-}
 
-function serializeMessage(message: unknown): string {
-    if (typeof message === 'string') return message;
-    if (message instanceof Error) return message.stack ?? message.message;
+    private serialize(entry: LogEntry): string {
+        const stored: StoredLog = {
+            t: entry.timestamp.toISOString(),
+            l: entry.level,
+            p: entry.path,
+            m: entry.message.map(message => this.serializeMessage(message)).join(' '),
+            v: this.appVersion,
+            b: this.build,
+            d: this.device
+        };
 
-    try {
-        return JSON.stringify(message);
-    } catch {
-        return String(message);
+        return JSON.stringify(stored);
+    }
+
+    private parseLogLine(line: string): LogRecord | null {
+        if (!line) return null;
+
+        let parsed: unknown;
+        try {
+            parsed = JSON.parse(line);
+        } catch {
+            return null;
+        }
+
+        const result = sStoredLog.safeParse(parsed);
+        if (!result.success) return null;
+
+        const stored = result.data;
+
+        return {
+            timestamp: stored.t,
+            level: stored.l,
+            path: stored.p,
+            message: stored.m,
+            appVersion: stored.v,
+            build: stored.b,
+            device: stored.d
+        };
+    }
+
+    private serializeMessage(message: unknown): string {
+        if (typeof message === 'string') return message;
+        if (message instanceof Error) return message.stack ?? message.message;
+
+        try {
+            return JSON.stringify(message);
+        } catch {
+            return String(message);
+        }
     }
 }

@@ -1,4 +1,4 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
 import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
@@ -11,7 +11,7 @@ import { useActivePortfolio, usePortfolios } from '@safely/ux';
 
 import { PortfolioName } from '@mobile/entities/portfolio';
 import { PortfoliosList } from '@mobile/features/portfolio/PortfoliosList';
-import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
+import { TEST_ID } from '@mobile/shared/constants';
 import {
     Button,
     ChevronDown16,
@@ -38,7 +38,7 @@ const Touchable = ({
     }));
 
     return (
-        <View style={styles.touchableContainer}>
+        <View style={styles.touchableContainer} testID={TEST_ID.home.walletSelector}>
             <Animated.View style={[styles.innerTouchableContainer, innerAnimatedOpacity]}>
                 <PortfolioName meta={portfolio.meta} />
                 <Icon icon={ChevronDown16} color="tertiary" />
@@ -49,7 +49,7 @@ const Touchable = ({
 
 export const CompactAccountSelector = () => {
     const popupMenuRef = useRef<PopupMenuRef>(null);
-    const navigation = useNavigation<RootStackNavigationProp<'TabsNavigator'>>();
+    const navigation = useNavigation();
     const { t } = useTranslation();
 
     const portfolio = useActivePortfolio();
@@ -76,7 +76,7 @@ export const CompactAccountSelector = () => {
                 footer={
                     <View style={styles.footer}>
                         {portfolios.length > 1 && (
-                            <Text variant="bodyM" color="secondary">
+                            <Text variant="bodyM" color="secondary" textAlign="center">
                                 {t('portfoliosPopup.reorderHint')}
                             </Text>
                         )}
@@ -108,6 +108,7 @@ export const CompactAccountSelector = () => {
                     />
                 </View>
                 <Button
+                    testID={TEST_ID.accounts.addWallet}
                     style={styles.addButton}
                     type="secondary"
                     size="small"

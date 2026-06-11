@@ -1,4 +1,4 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
 import { impactAsync, ImpactFeedbackStyle } from 'expo-haptics';
 import { useTranslation } from 'react-i18next';
 import { ScrollView } from 'react-native-gesture-handler';
@@ -11,7 +11,6 @@ import {
     useSetActiveAccount
 } from '@safely/ux';
 
-import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import { Button, Cell, Checkmark28, Icon, List, Screen } from '@mobile/shared/ui';
 
 import { styles } from './SelectAccountSelectorModal.styles';
@@ -48,7 +47,7 @@ export const SelectAccountSelectorModal = () => {
     const { t } = useTranslation();
     const accounts = useAccounts();
     const account = useActiveAccount();
-    const navigation = useNavigation<RootStackNavigationProp>();
+    const navigation = useNavigation();
     const { mutateAsync: setActiveAccount } = useSetActiveAccount();
 
     const handleSwitchAccount = async (accountId: string) => {

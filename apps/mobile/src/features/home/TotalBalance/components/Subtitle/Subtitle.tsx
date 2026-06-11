@@ -1,4 +1,4 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
 import { setStringAsync } from 'expo-clipboard';
 import { notificationAsync, NotificationFeedbackType } from 'expo-haptics';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
@@ -20,7 +20,6 @@ import { useUnistyles } from 'react-native-unistyles';
 import { ellipsisMiddle } from '@safely/core';
 import { useDateFormatter } from '@safely/ux';
 
-import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import type { TextProps } from '@mobile/shared/ui';
 import { Badge, Text } from '@mobile/shared/ui';
 
@@ -69,7 +68,7 @@ export const SubtitleAnimatedText = ({ children, ...props }: TextProps) => {
 
 export const Subtitle = ({ address, isFetching, lastUpdatedAt, isWatchOnly }: SubtitleProps) => {
     const { t } = useTranslation();
-    const navigation = useNavigation<RootStackNavigationProp>();
+    const navigation = useNavigation();
 
     const { status, onCopyAddress } = useSubtitleStatus({ isFetching, lastUpdatedAt });
 

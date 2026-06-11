@@ -98,3 +98,20 @@ export const ActivityItem = memo((props: ActivityItemProps) => {
         </Cell>
     );
 });
+
+export const ActivityItemSkeleton = () => {
+    return (
+        <Cell skeleton showDivider={false}>
+            <Cell.Content>
+                <Cell.Row>
+                    <Cell.Title skeleton />
+                    <Cell.Value skeleton />
+                </Cell.Row>
+                <Cell.Row>
+                    <Cell.Subtitle skeleton />
+                    <Cell.Subvalue skeleton />
+                </Cell.Row>
+            </Cell.Content>
+        </Cell>
+    );
+};

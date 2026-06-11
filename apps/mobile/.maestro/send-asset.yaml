@@ -1,0 +1,77 @@
+# Step 5 (last) of the e2e chain: sends 0.00001 BTC from the wallet imported
+# by import-wallet (it is the active one) to MAESTRO_RECIPIENT_ADDRESS.
+appId: com.aco.swallet
+name: send-asset
+tags:
+    - smoke
+    - send
+---
+# Relaunch WITHOUT clearState — we continue on top of the previous flow's state.
+- launchApp
+
+- extendedWaitUntil:
+      visible:
+          id: 'home.sendButton'
+      timeout: 60000
+- tapOn:
+      id: 'home.sendButton'
+
+# Recipient step.
+- extendedWaitUntil:
+      visible:
+          id: 'send.addressInput'
+      timeout: 15000
+- waitForAnimationToEnd
+- tapOn:
+      id: 'send.addressInput'
+- inputText: ${MAESTRO_RECIPIENT_ADDRESS}
+- tapOn:
+      id: 'send.nextButton'
+
+# Amount step: the input starts in crypto mode — enter 0.00001 BTC.
+- extendedWaitUntil:
+      visible:
+          id: 'send.amountInput'
+      timeout: 15000
+- waitForAnimationToEnd
+- tapOn:
+      id: 'send.amountInput'
+- inputText: '0.00001'
+- tapOn:
+      id: 'send.nextButton'
+
+# Confirmation: the slider is disabled until the fee estimate is ready.
+- extendedWaitUntil:
+      visible:
+          id: 'confirmation.fee'
+      timeout: 30000
+- waitForAnimationToEnd
+
+# Slide to confirm: drag the knob to the right end of the track.
+- swipe:
+      from:
+          id: 'confirmation.sliderKnob'
+      direction: RIGHT
+
+# Signing decrypts the secret, which requires passcode verification.
+- extendedWaitUntil:
+      visible:
+          id: 'passcodeVerification.screen'
+      timeout: 15000
+- tapOn: '1'
+- tapOn: '2'
+- tapOn: '3'
+- tapOn: '4'
+
+# Wait for broadcast success and return to the wallet.
+- extendedWaitUntil:
+      visible:
+          id: 'confirmation.backToWallet'
+      timeout: 60000
+- tapOn:
+      id: 'confirmation.backToWallet'
+
+- extendedWaitUntil:
+      visible:
+          id: 'home.settingsButton'
+      timeout: 30000

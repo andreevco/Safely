@@ -11,7 +11,7 @@ import { AppContext, UnlockableSecuredEncryptedStorage } from '@safely/ux';
 
 import { useMobileSecurityCheck } from '@mobile/features/security';
 import { build, deviceInfo, environment } from '@mobile/shared/app-meta';
-import { flushLogs, logger } from '@mobile/shared/logger';
+import { eraseLogs, logger } from '@mobile/shared/logger';
 import { useLoaderServiceContext } from '@mobile/shared/providers/loader';
 import { useToastServiceContext } from '@mobile/shared/providers/toast';
 import { MobileNumberFormatLocale, MobileAppLinking } from '@mobile/shared/utils';
@@ -108,7 +108,10 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
             security: {
                 check: () => security.check()
             },
-            clearAllData: CLEAR_ALL_MOBILE_STORAGE_ONLY_APP_LEVEL_USE_DANGER,
+            clearAllData: async () => {
+                await CLEAR_ALL_MOBILE_STORAGE_ONLY_APP_LEVEL_USE_DANGER();
+                eraseLogs();
+            },
             reloadApp,
             subscribeAppStateChange(callback) {
                 callback(resolveAppStateStatus(AppState.currentState));
@@ -131,20 +134,6 @@ export const SecurityCheckInitializer: FC = () => {
     useEffect(() => {
         security.check = check;
     }, [check]);
-
-    return null;
-};
-
-export const LoggerLifecycle: FC = () => {
-    useEffect(() => {
-        const subscription = AppState.addEventListener('change', state => {
-            if (state === 'background' || state === 'inactive') {
-                void flushLogs();
-            }
-        });
-
-        return () => subscription.remove();
-    }, []);
 
     return null;
 };

@@ -8,13 +8,14 @@ module.exports = {
         orientation: 'portrait',
         icon: './assets/icon.png',
         userInterfaceStyle: 'dark',
-        newArchEnabled: true,
         scheme: 'safely',
         ios: {
             infoPlist: {
                 UIDesignRequiresCompatibility: true,
                 NSFaceIDUsageDescription:
                     'We use Face ID to unlock your wallet securely.',
+                NSCameraUsageDescription:
+                    '$(PRODUCT_NAME) needs access to your Camera.',
                 CFBundleLocalizations: ['en', 'ru'],
                 ITSAppUsesNonExemptEncryption: false
             },
@@ -31,6 +32,7 @@ module.exports = {
             appleTeamId: '9N49283836'
         },
         android: {
+            permissions: ["android.permission.CAMERA"],
             adaptiveIcon: {
                 foregroundImage: './assets/adaptive-icon.png',
                 backgroundImage: './assets/android-icon-bg.png'
@@ -39,14 +41,8 @@ module.exports = {
             allowBackup: false
         },
         plugins: [
-            [
-                'react-native-vision-camera',
-                {
-                    cameraPermissionText:
-                        '$(PRODUCT_NAME) needs access to your Camera.',
-                    enableLocation: false
-                }
-            ],
+            'expo-image',
+            'expo-sharing',
             [
                 'expo-localization',
                 {

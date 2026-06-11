@@ -19,6 +19,7 @@ import { SuggestionSource, useScanQrScheme } from '@safely/ux';
 
 import { ContactName } from '@mobile/entities/contact';
 import { PortfolioName } from '@mobile/entities/portfolio';
+import { TEST_ID } from '@mobile/shared/constants';
 import { Icon, QrCodeScan28, XmarkCircle16 } from '@mobile/shared/ui/Icon';
 import { Text } from '@mobile/shared/ui/Text';
 import { TouchableOpacity } from '@mobile/shared/ui/TouchableOpacity';
@@ -126,10 +127,11 @@ export const AddressInput = (props: AddressInputProps) => {
             )}
             <View style={styles.container}>
                 <View
-                    style={styles.inputModeBox}
+                    style={[styles.inputModeBox, !hasValue && styles.emptyInputBox]}
                     onLayout={e => setBoxWidth(e.nativeEvent.layout.width)}
                 >
                     <TextInput
+                        testID={TEST_ID.send.addressInput}
                         ref={textInputRef}
                         value={value}
                         onChangeText={handleChangeText}
@@ -154,32 +156,32 @@ export const AddressInput = (props: AddressInputProps) => {
                             containerWidth={boxWidth}
                         />
                     )}
-                </View>
-                {isSuggestionsMeta && (
-                    <Pressable style={styles.selectedContent} onPress={handleSelectedPress}>
-                        {selectedPortfolioMeta ? (
-                            <PortfolioName
-                                gap={8}
-                                meta={selectedPortfolioMeta}
-                                size={16}
-                                fontVariant="bodyL"
-                            />
-                        ) : (
-                            selectedContactMeta && (
-                                <ContactName
+                    {isSuggestionsMeta && (
+                        <Pressable style={styles.selectedContent} onPress={handleSelectedPress}>
+                            {selectedPortfolioMeta ? (
+                                <PortfolioName
                                     gap={8}
-                                    meta={selectedContactMeta}
+                                    meta={selectedPortfolioMeta}
                                     size={16}
                                     fontVariant="bodyL"
                                 />
-                            )
-                        )}
-                        <Text variant="bodyL" color="tertiary">
-                            {ellipsisMiddle(value)}
-                        </Text>
-                        <BlinkingCursor color={theme.colors.accent.blue} />
-                    </Pressable>
-                )}
+                            ) : (
+                                selectedContactMeta && (
+                                    <ContactName
+                                        gap={8}
+                                        meta={selectedContactMeta}
+                                        size={16}
+                                        fontVariant="bodyL"
+                                    />
+                                )
+                            )}
+                            <Text variant="bodyL" color="tertiary">
+                                {ellipsisMiddle(value)}
+                            </Text>
+                            <BlinkingCursor color={theme.colors.accent.blue} />
+                        </Pressable>
+                    )}
+                </View>
 
                 {hasValue ? (
                     <TouchableOpacity

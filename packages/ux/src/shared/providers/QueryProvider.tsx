@@ -1,4 +1,10 @@
-import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
+import {
+    focusManager,
+    MutationCache,
+    onlineManager,
+    QueryCache,
+    QueryClient
+} from '@tanstack/react-query';
 import type { Persister } from '@tanstack/react-query-persist-client';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import type { FC, PropsWithChildren, ReactNode } from 'react';
@@ -28,12 +34,21 @@ export function createQueryClient(logger: Logger): QueryClient {
         }),
         defaultOptions: {
             queries: {
+                networkMode: 'offlineFirst',
                 gcTime: CACHE_LIVE_TIME,
                 staleTime: QUERIES_STALE_TIME.DEFAULT,
                 experimental_prefetchInRender: true
+            },
+            mutations: {
+                networkMode: 'offlineFirst'
             }
         }
     });
+}
+
+export interface EventListeners {
+    onlineManager?: Parameters<typeof onlineManager.setEventListener>[0];
+    focusManager?: Parameters<typeof focusManager.setEventListener>[0];
 }
 
 export const QueryProvider: FC<
@@ -41,8 +56,12 @@ export const QueryProvider: FC<
         loader?: ReactNode;
         persister: Persister;
         queryClient: QueryClient;
+        /**
+         * On web working out-of-box, should be implemented only on RN (and desktop maybe)
+         */
+        eventListeners?: EventListeners;
     }>
-> = ({ children, loader, persister, queryClient }) => {
+> = ({ children, loader, persister, queryClient, eventListeners }) => {
     const [hydratedAt, setHydratedAt] = useState<number | null>(null);
     const isReady = hydratedAt !== null;
 
@@ -53,6 +72,18 @@ export const QueryProvider: FC<
             predicate: q => Boolean(q.meta?.persist)
         });
     }, [isReady, queryClient]);
+
+    useEffect(() => {
+        if (!eventListeners) return;
+
+        if (eventListeners.onlineManager) {
+            onlineManager.setEventListener(eventListeners.onlineManager);
+        }
+
+        if (eventListeners.focusManager) {
+            focusManager.setEventListener(eventListeners.focusManager);
+        }
+    }, [eventListeners]);
 
     return (
         <PersistQueryClientProvider

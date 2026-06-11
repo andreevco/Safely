@@ -1,7 +1,9 @@
 import packageJson from '../../../package.json';
 import { build, deviceInfo } from '../app-meta';
 import { buildLogger } from './build-logger';
-import { FileTransport } from './file-transport';
+import { FileTransport, type LogRecord } from './file-transport';
+
+export type { LogRecord } from './file-transport';
 
 const transport = new FileTransport({
     appVersion: packageJson.version,
@@ -10,17 +12,20 @@ const transport = new FileTransport({
 });
 
 export const logger = buildLogger(transport, __DEV__);
-export const flushLogs = (): Promise<void> => transport.flush();
+export const eraseLogs = (): void => transport.erase();
 export const shareLogs = (): Promise<void> => transport.share();
+export const readLogs = (): Promise<LogRecord[]> => transport.read();
+
+const unhandledLogger = logger.child('unhandled');
 
 const prevHandler = ErrorUtils.getGlobalHandler();
 ErrorUtils.setGlobalHandler((error, isFatal) => {
-    logger.error(`[Unhandled${isFatal ? ' FATAL' : ''}]`, error);
+    unhandledLogger.error(isFatal ? 'fatal' : 'error', error);
     prevHandler(error, isFatal);
 });
 
 if (typeof globalThis.onunhandledrejection === 'undefined') {
     globalThis.onunhandledrejection = (event: PromiseRejectionEvent) => {
-        logger.error('[Unhandled Promise Rejection]', event.reason);
+        unhandledLogger.error('promise rejection', event.reason);
     };
 }

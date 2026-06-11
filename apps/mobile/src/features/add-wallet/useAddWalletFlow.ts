@@ -1,4 +1,5 @@
-import { CommonActions, useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
+import { CommonActions } from '@react-navigation/native';
 import { useCallback } from 'react';
 
 import type { PortfolioMeta } from '@safely/core';
@@ -9,7 +10,6 @@ import {
     useImportPortfolio,
     useUnlockableSecretEncryptorFactory
 } from '@safely/ux';
-import { useLoader } from '@safely/ux';
 
 import { handleDuplicatePortfolio } from './handleDuplicatePortfolio';
 
@@ -20,7 +20,6 @@ const routes = {
 
 export function useAddWalletFlow() {
     const navigation = useNavigation();
-    const { withLoader } = useLoader();
     const { mutateAsync: importPortfolio } = useImportPortfolio();
     const { mutateAsync: generatePortfolio } = useGeneratePortfolio();
     const createEncryptor = useUnlockableSecretEncryptorFactory();
@@ -37,9 +36,7 @@ export function useAddWalletFlow() {
                     using secureEncryptedStorage = getSecureEncrypted();
                     await secureEncryptedStorage.unlock();
 
-                    await withLoader(async () => {
-                        await generatePortfolio({ meta, secureEncryptedStorage });
-                    });
+                    await generatePortfolio({ meta, secureEncryptedStorage });
 
                     navigation.dispatch(
                         CommonActions.reset({
@@ -53,7 +50,7 @@ export function useAddWalletFlow() {
                 }
             })
         );
-    }, [navigation, generatePortfolio, withLoader, getSecureEncrypted]);
+    }, [navigation, generatePortfolio, getSecureEncrypted]);
 
     const startImportFlow = useCallback(() => {
         navigation.dispatch(CommonActions.navigate(routes.importWallet));
@@ -68,10 +65,8 @@ export function useAddWalletFlow() {
                             using secretEncryptor = createEncryptor();
                             await secretEncryptor.unlockEncryption();
 
-                            await withLoader(async () => {
-                                using mnemonicAccessor = new MnemonicResource(mnemonic);
-                                await importPortfolio({ mnemonicAccessor, secretEncryptor, meta });
-                            });
+                            using mnemonicAccessor = new MnemonicResource(mnemonic);
+                            await importPortfolio({ mnemonicAccessor, secretEncryptor, meta });
 
                             navigation.dispatch(
                                 CommonActions.reset({
@@ -89,7 +84,7 @@ export function useAddWalletFlow() {
                 })
             );
         },
-        [navigation, importPortfolio, withLoader, createEncryptor]
+        [navigation, importPortfolio, createEncryptor]
     );
 
     return {

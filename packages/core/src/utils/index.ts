@@ -5,6 +5,7 @@ export * from './string';
 export * from './types';
 export * from './format';
 export * from './timers';
+export * from './retry';
 export * from './date-groups';
 export * from './semver';
 export * from './array';

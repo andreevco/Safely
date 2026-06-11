@@ -10,3 +10,5 @@ export { hasUnsupportedExtendedKeyPrefix } from './extended-key';
 export { MobileAppLinking } from './linking';
 export { useGroupedRows, getGroupedRowType, type GroupedRow } from './date-groups';
 export { blurFreeze } from './blur-freeze';
+export { maskSeedPhraseInput } from './seed-phrase-mask';
+export { useAutoFocus } from './useAutoFocus';

@@ -4,7 +4,7 @@ import type { ExternalInputResult, ExternalInputSchemeName, SchemeByName } from 
 import { parseExternalInput } from '@safely/core';
 
 import { useToast } from '../../entities';
-import { useTranslate } from '../../shared';
+import { useLogger, useTranslate } from '../../shared';
 
 interface UseExternalInputParserOptions<
     SName extends ExternalInputSchemeName = ExternalInputSchemeName
@@ -22,20 +22,25 @@ export function useExternalInputParser<
 
     const t = useTranslate();
     const toast = useToast();
+    const logger = useLogger('external-input');
 
     return useCallback(
         (raw: string) => {
             const result = parseExternalInput(raw, allowedSchemes);
 
-            if (!result.ok && showErrorToast) {
-                toast({
-                    message: t(result.error),
-                    type: 'error'
-                });
+            if (!result.ok) {
+                logger.warn('external input parse failed', { reason: result.error });
+
+                if (showErrorToast) {
+                    toast({
+                        message: t(result.error),
+                        type: 'error'
+                    });
+                }
             }
 
             return result as ExternalInputResult<SchemeByName<SName>>;
         },
-        [allowedSchemes, showErrorToast, toast, t]
+        [allowedSchemes, showErrorToast, toast, t, logger]
     );
 }

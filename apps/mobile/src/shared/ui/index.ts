@@ -18,6 +18,7 @@ export { Draggable } from './Draggable';
 export { Image } from './Image';
 export { Skeleton } from './Skeleton';
 export { Input } from './Input';
+export { NativeInput, type NativeInputRef } from './NativeInput';
 export * from './Icon';
 export * from './BottomSheet';
 export * from './WordCell';

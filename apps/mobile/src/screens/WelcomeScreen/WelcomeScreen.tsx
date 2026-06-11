@@ -1,4 +1,4 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
 import { useCallback } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { ImageBackground, View } from 'react-native';
@@ -11,7 +11,7 @@ import {
 } from '@safely/ux';
 
 import { useOnboardingFlow } from '@mobile/features/onboarding';
-import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
+import { TEST_ID } from '@mobile/shared/constants';
 import { resources } from '@mobile/shared/resources';
 import { Button, Icon, Safely96, Screen, Text } from '@mobile/shared/ui';
 
@@ -24,7 +24,7 @@ export const WelcomeScreen = () => {
     const { t } = useTranslation();
     const { onSuccessCreate, onSuccessSignIn } = useOnboardingFlow();
     const signIn = useCreateExistingAccountConnector();
-    const navigation = useNavigation<RootStackNavigationProp>();
+    const navigation = useNavigation();
     const {
         storage: {
             sync: { getSecureEncrypted }
@@ -67,10 +67,20 @@ export const WelcomeScreen = () => {
                     </View>
 
                     <View style={styles.buttonsContainer}>
-                        <Button type="primary" size="large" onPress={onSuccessCreate}>
+                        <Button
+                            testID={TEST_ID.welcome.createWallet}
+                            type="primary"
+                            size="large"
+                            onPress={onSuccessCreate}
+                        >
                             {t('welcome.createNew')}
                         </Button>
-                        <Button type="secondary" size="large" onPress={handleSignIn}>
+                        <Button
+                            testID={TEST_ID.welcome.importWallet}
+                            type="secondary"
+                            size="large"
+                            onPress={handleSignIn}
+                        >
                             {t('welcome.importExisting')}
                         </Button>
                     </View>

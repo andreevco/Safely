@@ -1,3 +1,5 @@
+import type { Logger } from '@safely/sync';
+
 import type {
     CurrentPrice,
     GetCurrentPriceParams,
@@ -11,9 +13,9 @@ import { ApiClient } from '../../utils/fetch';
 export class PriceApi extends ApiClient implements IIdentifiable {
     public readonly id: string;
 
-    constructor(options: { baseUrl: string }) {
+    constructor(options: { baseUrl: string; logger?: Logger }) {
         const baseUrl = options.baseUrl.replace(/\/$/, '');
-        super(baseUrl);
+        super(baseUrl, {}, options.logger);
 
         this.id = `${this.constructor.name}:${baseUrl}`;
     }

@@ -1,5 +1,8 @@
 import { z } from 'zod';
 
+import type { Logger } from '@safely/sync';
+
+import { BtcApiError } from './errors';
 import {
     AddressSchema,
     ChainTipSchema,
@@ -10,9 +13,18 @@ import {
 } from './models';
 import { BtcWalletType } from '../../entities/blockchain/btc';
 import { ApiClient } from '../../utils/fetch';
+import { asyncRetry } from '../../utils/retry';
 import type { IIdentifiable } from '../../utils/types';
 
 export { BtcApiError } from './errors';
+
+function isTransientSendError(error: unknown): boolean {
+    if (error instanceof BtcApiError) {
+        return error.status === 408 || error.status === 429 || error.status >= 500;
+    }
+
+    return error instanceof TypeError;
+}
 
 export interface GetAddressParams {
     details?: 'basic' | 'tokens' | 'tokenBalances' | 'txids' | 'txslight' | 'txs';
@@ -42,11 +54,15 @@ const btcWalletTypeToDescriptor: Record<BtcWalletType, 'wpkh' | 'pkh' | 'tr' | '
 };
 
 export class BtcApi extends ApiClient implements IIdentifiable {
+    protected readonly timeoutMs = 10_000;
+
+    protected readonly errorConstructor = BtcApiError;
+
     public readonly id: string;
 
-    constructor(options: { baseUrl: string }) {
+    constructor(options: { baseUrl: string; logger?: Logger }) {
         const baseUrl = options.baseUrl.replace(/\/$/, '');
-        super(baseUrl);
+        super(baseUrl, {}, options.logger);
 
         this.id = `${this.constructor.name}:${baseUrl}`;
     }
@@ -81,10 +97,13 @@ export class BtcApi extends ApiClient implements IIdentifiable {
         return this.getJson('/v1/fees/estimate', EstimatedFeesSchema);
     }
 
-    public async sendTransaction(hex: string): Promise<{ txid: string }> {
-        const res = await this.postPlain('/v1/transactions/send', hex, SendTxResultSchema);
-        return { txid: res.result };
-    }
+    public readonly sendTransaction = asyncRetry(
+        async (hex: string): Promise<{ txid: string }> => {
+            const res = await this.postPlain('/v1/transactions/send', hex, SendTxResultSchema);
+            return { txid: res.result };
+        },
+        { maxAttempts: 3, backoff: 'fixed', baseWait: 1000, shouldRetry: isTransientSendError }
+    );
 
     private resolveDescriptorId(descriptor: BtcDescriptor): { endpoint: string; value: string } {
         if (isAddressDescriptor(descriptor)) {

@@ -1,20 +1,20 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any, @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-assignment */
 // noinspection SuspiciousTypeOfGuard
 
-import '@formatjs/intl-getcanonicallocales/polyfill';
-import '@formatjs/intl-locale/polyfill';
+import '@formatjs/intl-getcanonicallocales/polyfill.js';
+import '@formatjs/intl-locale/polyfill.js';
 
-import '@formatjs/intl-pluralrules/polyfill';
-import '@formatjs/intl-pluralrules/locale-data/en';
-import '@formatjs/intl-pluralrules/locale-data/ru';
+import '@formatjs/intl-pluralrules/polyfill.js';
+import '@formatjs/intl-pluralrules/locale-data/en.js';
+import '@formatjs/intl-pluralrules/locale-data/ru.js';
 
-import '@formatjs/intl-numberformat/polyfill';
-import '@formatjs/intl-numberformat/locale-data/en';
-import '@formatjs/intl-numberformat/locale-data/ru';
+import '@formatjs/intl-numberformat/polyfill.js';
+import '@formatjs/intl-numberformat/locale-data/en.js';
+import '@formatjs/intl-numberformat/locale-data/ru.js';
 
-import '@formatjs/intl-relativetimeformat/polyfill';
-import '@formatjs/intl-relativetimeformat/locale-data/en';
-import '@formatjs/intl-relativetimeformat/locale-data/ru';
+import '@formatjs/intl-relativetimeformat/polyfill.js';
+import '@formatjs/intl-relativetimeformat/locale-data/en.js';
+import '@formatjs/intl-relativetimeformat/locale-data/ru.js';
 import * as Crypto from 'expo-crypto';
 
 /**
@@ -43,9 +43,13 @@ if (typeof global.SuppressedError === 'undefined') {
 }
 
 /**
- *  Buffer polyfill
+ *  We use `require` (not `import`) below: ES `import` statements are hoisted
+ *  above the imperative polyfill assignments above `Symbol.dispose`.
  */
 
+/**
+ *  Buffer polyfill
+ */
 global.Buffer = require('@craftzdog/react-native-buffer').Buffer;
 
 /**
@@ -59,5 +63,10 @@ global.Buffer = require('@craftzdog/react-native-buffer').Buffer;
 /**
  *  EventSource polyfill
  */
-import { XHREventSource } from '@safely/xhr-event-source';
+const { XHREventSource } = require('@safely/xhr-event-source');
 (global as any).IsomorphicEventSource = XHREventSource;
+
+/**
+ * Safely crypto implementations
+ */
+require('./safely-crypto');

@@ -1,4 +1,4 @@
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/core';
 import { useCallback } from 'react';
 
 import type { BtcActivityItem } from '@safely/ux';
@@ -6,11 +6,10 @@ import { useActivePortfolio, useHasPortfolio } from '@safely/ux';
 
 import { HistoryList } from '@mobile/features/history';
 import { WalletSelector } from '@mobile/features/portfolio';
-import type { RootStackNavigationProp } from '@mobile/shared/navigation/types';
 import { Screen } from '@mobile/shared/ui';
 
 const HistoryContent = () => {
-    const navigation = useNavigation<RootStackNavigationProp<'TabsNavigator'>>();
+    const navigation = useNavigation();
     const portfolio = useActivePortfolio();
 
     const onNavigateToTransaction = useCallback(
