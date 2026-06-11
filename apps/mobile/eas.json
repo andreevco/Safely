@@ -12,6 +12,9 @@
       "android": {
         "buildType": "apk",
         "resourceClass": "large"
+      },
+      "env": {
+        "EXPO_PUBLIC_USE_RN_FETCH": "1"
       }
     },
     "production-cached": {
