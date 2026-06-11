@@ -1,4 +1,1 @@
-export {
-    mobileLayerSynchronousGlobalStorage,
-    useMobileLayerSynchronousGlobalStorage
-} from './global';
+export { useMobileLayerSynchronousGlobalStorage } from './global';
