@@ -22,18 +22,18 @@ const styles = StyleSheet.create(theme => ({
         variants: {
             variant: {
                 small: {
-                    height: 4,
+                    height: 2,
                     backgroundColor: theme.colors.icon.tertiary
                 },
                 medium: {
-                    height: 8,
+                    height: 4,
                     backgroundColor:
                         mediumTickColor === 'tertiary'
                             ? theme.colors.icon.tertiary
                             : theme.colors.icon.secondary
                 },
                 large: {
-                    height: 12,
+                    height: 8,
                     backgroundColor: theme.colors.icon.secondary
                 }
             }
