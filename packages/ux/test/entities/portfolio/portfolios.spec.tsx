@@ -307,7 +307,8 @@ describe('useImportPortfolio (add)', () => {
                 await result.current.mutateAsync({
                     mnemonicAccessor: accessor,
                     secretEncryptor: encryptor,
-                    meta: meta('Imported #1')
+                    meta: meta('Imported #1'),
+                    networkType: PortfolioNetworkType.MAINNET
                 });
             } catch (e) {
                 mutationError = e;
@@ -338,7 +339,8 @@ describe('useImportPortfolio (add)', () => {
                 await result.current.mutateAsync({
                     mnemonicAccessor: accessor,
                     secretEncryptor: new SecretEncryptor(account.secretEncryptor, secureStorage),
-                    meta: meta('Dup')
+                    meta: meta('Dup'),
+                    networkType: PortfolioNetworkType.MAINNET
                 });
             })
         ).rejects.toBeInstanceOf(PortfolioAlreadyExistsError);
@@ -368,7 +370,8 @@ describe('useImportPortfolio (add)', () => {
                 await result.current.mutateAsync({
                     mnemonicAccessor: accessor,
                     secretEncryptor: new SecretEncryptor(account.secretEncryptor, secureStorage),
-                    meta: meta('Bad')
+                    meta: meta('Bad'),
+                    networkType: PortfolioNetworkType.MAINNET
                 });
             } catch (e) {
                 mutationError = e;
