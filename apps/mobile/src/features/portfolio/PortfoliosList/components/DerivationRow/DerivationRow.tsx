@@ -1,7 +1,7 @@
+import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import type { IDerivation } from '@safely/core';
-import { ellipsisMiddle } from '@safely/core';
 import { useBtcBalance, useFormattedAmount } from '@safely/ux';
 
 import { Badge, Cell, Text } from '@mobile/shared/ui';
@@ -16,9 +16,12 @@ type DerivationRowProps = {
 export const DerivationRow = (props: DerivationRowProps) => {
     const { derivation, isSelected } = props;
 
+    const { t } = useTranslation();
     const wallet = derivation.chains.btc.wallets[0];
     const { data: balance } = useBtcBalance(wallet);
     const formatted = useFormattedAmount(balance?.display);
+
+    const name = derivation.name ?? t('portfolio.ledgerWallet', { number: derivation.index + 1 });
 
     return (
         <Cell background={isSelected ? 'tertiary' : 'secondary'} style={styles.cell}>
@@ -26,7 +29,7 @@ export const DerivationRow = (props: DerivationRowProps) => {
                 <Cell.Row style={styles.row}>
                     <View style={styles.address}>
                         <Badge>{`#${derivation.index + 1}`}</Badge>
-                        <Cell.Title>{ellipsisMiddle(wallet.address)}</Cell.Title>
+                        <Cell.Title>{name}</Cell.Title>
                     </View>
                     <Text
                         variant="bodyM"

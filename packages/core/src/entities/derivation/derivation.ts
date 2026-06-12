@@ -9,6 +9,8 @@ export class Derivation implements IDerivation {
 
     public readonly chains: IDerivationChains;
 
+    public readonly name?: string;
+
     public get index(): number {
         return this.id.derivationIndex;
     }
@@ -16,15 +18,18 @@ export class Derivation implements IDerivation {
     constructor(
         public portfolioRef: IPortfolioBase,
         index: number,
-        chains: IDerivationChains | ((self: Derivation) => IDerivationChains)
+        chains: IDerivationChains | ((self: Derivation) => IDerivationChains),
+        name?: string
     ) {
         this.id = new DerivationId(this.portfolioRef.id, index);
         this.chains = typeof chains === 'function' ? chains(this) : chains;
+        this.name = name;
     }
 
     public toJSON(): SDerivation {
         return sDerivation.toJson({
             index: this.index,
+            name: this.name,
             chains: derivationChainsToJSON(this.chains)
         });
     }

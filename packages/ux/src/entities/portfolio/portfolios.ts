@@ -411,6 +411,41 @@ export function useAddWatchOnlyPortfolio() {
     });
 }
 
+export function useAddLedgerPortfolio() {
+    const { mutateAsync: addPortfolio } = useAddPortfolio();
+    const { mutateAsync: setActivePortfolio } = useSetActivePortfolio();
+    const portfolios = usePortfolios();
+
+    return useMutation<
+        Portfolio,
+        Error,
+        {
+            masterFingerprint: string;
+            accounts: { index: number; xpub: string }[];
+            meta: PortfolioMeta;
+        }
+    >({
+        async mutationFn({ masterFingerprint, accounts, meta }) {
+            const portfolio = PortfolioLedger.create({
+                masterFingerprint,
+                networkType: PortfolioNetworkType.MAINNET,
+                accounts,
+                meta
+            });
+
+            const existing = portfolios.find(p => p.id.isEq(portfolio.id));
+            if (existing) {
+                throw new PortfolioAlreadyExistsError(existing);
+            }
+
+            await addPortfolio(portfolio.toJSON());
+            await setActivePortfolio(portfolio);
+
+            return portfolio;
+        }
+    });
+}
+
 export function useSetActivePortfolio() {
     const { set } = useActiveAccountLocalStorage('activePortfolio');
     const client = useQueryClient();
@@ -418,8 +453,8 @@ export function useSetActivePortfolio() {
     const portfolios = usePortfolios();
     const logger = useLogger('portfolio');
 
-    return useMutation<Portfolio, Error, Pick<Portfolio, 'id'>>({
-        async mutationFn({ id }) {
+    return useMutation<Portfolio, Error, { id: Portfolio['id']; derivationIndex?: number }>({
+        async mutationFn({ id, derivationIndex }) {
             logger.info('start set active portfolio', {
                 id
             });
@@ -430,7 +465,8 @@ export function useSetActivePortfolio() {
             }
 
             await set({
-                portfolioId: portfolioToSet.id.toString()
+                portfolioId: portfolioToSet.id.toString(),
+                derivationIndex
             });
 
             await client.invalidateQueries({

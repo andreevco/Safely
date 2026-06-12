@@ -59,14 +59,19 @@ export class PortfolioLedger implements IPortfolioLedger {
         sDerivationVal: SDerivation,
         sessionPort?: ILedgerSessionPort
     ): IDerivation {
-        return new Derivation(portfolioRef, sDerivationVal.index, derivationRef => ({
-            btc: new DerivationChainItemBtcLedger({
-                sDerivation: sDerivationVal.chains.btc,
-                masterFingerprint: portfolioRef.masterFingerprint,
-                sessionPort,
-                derivationRef
-            })
-        }));
+        return new Derivation(
+            portfolioRef,
+            sDerivationVal.index,
+            derivationRef => ({
+                btc: new DerivationChainItemBtcLedger({
+                    sDerivation: sDerivationVal.chains.btc,
+                    masterFingerprint: portfolioRef.masterFingerprint,
+                    sessionPort,
+                    derivationRef
+                })
+            }),
+            sDerivationVal.name
+        );
     }
 
     public readonly id: PortfolioIdLedger;

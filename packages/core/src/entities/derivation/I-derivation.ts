@@ -11,6 +11,7 @@ export interface IDerivationId extends Id {
 
 export interface IDerivation {
     index: number;
+    name?: string;
     id: IDerivationId;
     chains: IDerivationChains;
     portfolioRef: IPortfolioBase;

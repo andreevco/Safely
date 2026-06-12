@@ -12,6 +12,7 @@ export const sDerivationChains = z.object({
 export const sDerivation = zIndexedObject(
     {
         index: z.number(),
+        name: z.string().optional(),
         chains: sDerivationChains
     },
     value => String(value.index)
