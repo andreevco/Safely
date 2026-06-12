@@ -1,14 +1,12 @@
 import { StyleSheet } from 'react-native-unistyles';
 
 export const styles = StyleSheet.create(theme => ({
-    content: {
-        flex: 1,
-        justifyContent: 'center',
+    spinnerBackground: {
+        width: 72,
+        height: 72,
+        borderRadius: 36,
         alignItems: 'center',
-        gap: theme.spacing[16],
-        paddingHorizontal: theme.spacing[32]
-    },
-    textContainer: {
-        gap: theme.spacing[4]
+        justifyContent: 'center',
+        backgroundColor: theme.colors.background.secondary
     }
 }));

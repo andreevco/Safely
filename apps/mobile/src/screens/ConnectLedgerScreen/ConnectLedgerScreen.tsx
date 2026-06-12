@@ -5,7 +5,8 @@ import { View } from 'react-native';
 import { State } from 'react-native-ble-plx';
 
 import { getBluetoothState } from '@mobile/features/ledger';
-import { Button, Icon, Lock56, Screen, StepsList, Text } from '@mobile/shared/ui';
+import { resources } from '@mobile/shared/resources';
+import { Button, Image, Screen, StepsList, Text } from '@mobile/shared/ui';
 
 import { styles } from './ConnectLedgerScreen.styles';
 
@@ -43,7 +44,7 @@ export const ConnectLedgerScreen = () => {
             </Screen.Header>
             <Screen.Content>
                 <View style={styles.content}>
-                    <Icon icon={Lock56} />
+                    <Image source={resources.ledgerPreview} style={styles.image} />
                     <View style={styles.textContainer}>
                         <Text textAlign="center" variant="titleM">
                             {t('addWallet.connectLedger.screen.title')}

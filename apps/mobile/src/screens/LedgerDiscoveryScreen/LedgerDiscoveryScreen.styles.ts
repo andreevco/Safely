@@ -2,7 +2,8 @@ import { StyleSheet } from 'react-native-unistyles';
 
 export const styles = StyleSheet.create(theme => ({
     content: {
-        flex: 1
+        flex: 1,
+        justifyContent: 'center'
     },
     header: {
         alignItems: 'center',
@@ -10,23 +11,8 @@ export const styles = StyleSheet.create(theme => ({
         paddingHorizontal: theme.spacing[32]
     },
     textContainer: {
-        marginVertical: theme.spacing[16],
+        paddingVertical: theme.spacing[16],
         gap: theme.spacing[4],
         alignItems: 'center'
-    },
-    statusContainer: {
-        alignItems: 'center',
-        gap: theme.spacing[8],
-        paddingVertical: theme.spacing[24]
-    },
-    list: {
-        paddingHorizontal: theme.spacing[16]
-    },
-    signalIcon: {
-        width: 20,
-        height: 20
-    },
-    buttonContainer: {
-        padding: theme.spacing[24]
     }
 }));

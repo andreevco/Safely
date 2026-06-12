@@ -6,7 +6,7 @@ import { Linking, View } from 'react-native';
 import { State } from 'react-native-ble-plx';
 
 import { getBluetoothState } from '@mobile/features/ledger';
-import { Button, Icon, Lock56, Screen, Text, Xmark16 } from '@mobile/shared/ui';
+import { BluetoothRequired96, Button, Icon, Screen, Text, Xmark16 } from '@mobile/shared/ui';
 import { Button as HeaderButton } from '@mobile/shared/ui/Screen/components/Header/components/Button';
 
 import { styles } from './BluetoothAccessRequiredScreen.styles';
@@ -48,7 +48,7 @@ export const BluetoothAccessRequiredScreen = () => {
                 </HeaderButton>
             </Screen.Header>
             <View style={styles.content}>
-                <Icon icon={Lock56} />
+                <Icon icon={BluetoothRequired96} />
                 <View style={styles.textContainer}>
                     <Text textAlign="center" variant="titleM">
                         {t('addWallet.connectLedger.bluetoothAccess.title')}

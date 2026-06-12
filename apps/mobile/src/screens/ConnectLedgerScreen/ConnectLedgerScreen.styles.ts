@@ -7,6 +7,10 @@ export const styles = StyleSheet.create(theme => ({
         paddingTop: theme.spacing[16],
         paddingHorizontal: theme.spacing[32]
     },
+    image: {
+        width: 184,
+        height: 195
+    },
     textContainer: {
         paddingVertical: theme.spacing[16],
         gap: theme.spacing[4],

@@ -4,8 +4,8 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { useLedgerPairing } from '@mobile/features/ledger';
-import { CircularSpinner, Icon, Lock56, Screen, Text } from '@mobile/shared/ui';
+import { LedgerStatusScreen, useLedgerPairing } from '@mobile/features/ledger';
+import { CircularSpinner } from '@mobile/shared/ui';
 
 import { styles } from './LedgerPairingScreen.styles';
 
@@ -27,22 +27,17 @@ export const LedgerPairingScreen = () => {
     }, [status, navigation]);
 
     return (
-        <Screen>
-            <Screen.Header variant="left">
-                <Screen.Header.BackButton />
-            </Screen.Header>
-            <View style={styles.content}>
-                <Icon icon={Lock56} />
-                <View style={styles.textContainer}>
-                    <Text textAlign="center" variant="titleM">
-                        {t('addWallet.connectLedger.pairing.title', { device })}
-                    </Text>
-                    <Text textAlign="center" variant="bodyL" color="secondary">
-                        {t('addWallet.connectLedger.pairing.subtitle')}
-                    </Text>
+        <LedgerStatusScreen
+            hasBackButton
+            media={
+                <View style={styles.spinnerBackground}>
+                    <CircularSpinner />
                 </View>
-                <CircularSpinner />
-            </View>
-        </Screen>
+            }
+            title={t('addWallet.connectLedger.pairing.title', { device })}
+            subtitle={t('addWallet.connectLedger.pairing.subtitle')}
+            buttonLabel={t('common.continue')}
+            isButtonDisabled
+        />
     );
 };
