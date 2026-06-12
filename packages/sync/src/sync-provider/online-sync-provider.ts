@@ -30,23 +30,7 @@ export class OnlineSyncProvider<Latest extends StorageVersion, Rest>
     ): Promise<OnlineSyncProvider<Latest, Rest>> {
         syncStatusManager.setStatus(SyncStatus.DISCONNECTED);
 
-        const machine = createActor(createSyncMachine(), {
-            input: {
-                syncStateRepository: container.syncStateRepository,
-                deviceYManager: container.deviceYManager,
-
-                snapshotsApi: container.snapshotApi,
-                snapshotsSse: container.snapshotSse,
-                syncOperations: container.syncOperations,
-                syncStatusManager,
-                logger: container.logger
-            },
-            inspect: event => {
-                if (event.type === '@xstate.event') {
-                    // console.log(`[SyncMachine] Event: ${event.event.type}`);
-                }
-            }
-        });
+        const machine = machineFromContainer(container, syncStatusManager);
         machine.start();
 
         return new OnlineSyncProvider(container, machine, syncStatusManager);
@@ -120,11 +104,6 @@ function machineFromContainer<Latest extends StorageVersion, Rest>(
             syncOperations: container.syncOperations,
             syncStatusManager,
             logger: container.logger
-        },
-        inspect: event => {
-            if (event.type === '@xstate.event') {
-                // console.log(`[SyncMachine] Event: ${event.event.type}`);
-            }
         }
     });
 }

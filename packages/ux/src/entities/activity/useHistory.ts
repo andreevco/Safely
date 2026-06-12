@@ -25,12 +25,12 @@ export function useHistory<TData = InfiniteData<ActivityPage, IActivityPageParam
     filters: IActivityFilters = {},
     options?: IHistoryOptions<TData>
 ) {
-    const btcApi = useBtcApi();
+    const btcWallet = useActiveBtcWallet();
+    const btcApi = useBtcApi(btcWallet.network);
     const exchangeApi = useExchangeApi();
 
     const { i18n, userCountryInfo, logger } = useAppContext();
     const broadcastedTx = useLastBroadcastedBtcTx();
-    const btcWallet = useActiveBtcWallet();
 
     const ordersRequest = {
         lang: i18n.language,

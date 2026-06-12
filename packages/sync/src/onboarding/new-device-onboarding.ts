@@ -14,6 +14,7 @@ import type { ITreeStorage } from '../I-storage';
 import type { Logger } from '../logger';
 import { SyncFlowLogger } from '../logger';
 import { OnboardingAbortedError } from '../sync-error';
+import { abortableDelay } from '../utils/abortable-delay';
 
 export class NewDeviceOnboarding<Latest extends StorageVersion, Rest> {
     private readonly flow: SyncFlowLogger;
@@ -89,7 +90,6 @@ export class NewDeviceOnboarding<Latest extends StorageVersion, Rest> {
                     throw new OnboardingAbortedError();
                 }
 
-                this.flow.logStep('message.poll.empty', { attempt: i + 1 });
                 await this.waitBeforeRetry(signal);
                 continue;
             }
@@ -104,16 +104,9 @@ export class NewDeviceOnboarding<Latest extends StorageVersion, Rest> {
     }
 
     private async waitBeforeRetry(signal?: AbortSignal): Promise<void> {
-        await new Promise<void>((resolve, reject) => {
-            const timer = setTimeout(resolve, this.pollingTimeout);
-            signal?.addEventListener(
-                'abort',
-                () => {
-                    clearTimeout(timer);
-                    reject(new OnboardingAbortedError());
-                },
-                { once: true }
-            );
+        await abortableDelay(this.pollingTimeout, {
+            signal,
+            abortError: () => new OnboardingAbortedError()
         });
     }
 

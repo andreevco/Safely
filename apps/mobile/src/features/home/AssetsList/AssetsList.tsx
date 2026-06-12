@@ -30,9 +30,7 @@ export const AssetsList = () => {
                     token.amount.asset.id.blockchain === BLOCKCHAIN_NAME.BTC ? (
                         <BtcAssetCell
                             onPress={() => {
-                                void navigation.navigate('ReceiveAssetModal', {
-                                    asset: token.amount.asset
-                                });
+                                void navigation.navigate('HistoryScreen');
                             }}
                             key={token.amount.asset.id.toString()}
                             cryptoAssetAmount={token.amount}

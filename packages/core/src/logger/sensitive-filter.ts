@@ -1,17 +1,19 @@
 import { wordlist } from '@scure/bip39/wordlists/english.js';
 
+import { ellipsisMiddle } from '../utils/string';
+
 const MNEMONIC_WORDS = new Set(wordlist);
 const MNEMONIC_THRESHOLD = 12;
 
-const SENSITIVE_PATTERNS: [RegExp, string][] = [
-    [/\b(?:[0-9a-fA-F]{2}){16,}\b/g, '[REDACTED:key]'],
-    [/Bearer\s+[A-Za-z0-9\-._~+/]+=*/g, 'Bearer [REDACTED]'],
-    [/\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b/g, '[REDACTED:jwt]'],
-    [/\b[xtyz]prv[A-Za-z0-9]{107}\b/g, '[REDACTED:xprv]'],
-    [/\[\s*(?:"[a-z]{3,8}"\s*,\s*){11,}"[a-z]{3,8}"\s*]/g, '"[REDACTED:mnemonic]"'],
+const SENSITIVE_PATTERNS: [RegExp, (match: string) => string][] = [
+    [/\b(?:[0-9a-fA-F]{2}){16,}\b/g, match => `[REDACTED:key:${ellipsisMiddle(match)}]`],
+    [/Bearer\s+[A-Za-z0-9\-._~+/]+=*/g, () => 'Bearer [REDACTED]'],
+    [/\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b/g, () => '[REDACTED:jwt]'],
+    [/\b[xtyz]prv[A-Za-z0-9]{107}\b/g, () => '[REDACTED:xprv]'],
+    [/\[\s*(?:"[a-z]{3,8}"\s*,\s*){11,}"[a-z]{3,8}"\s*]/g, () => '"[REDACTED:mnemonic]"'],
     [
         /(?:api[_-]?key|apikey|token|secret|password|authorization)['":=\s]+['"]?[\w\-./+=]{16,}['"]?/gi,
-        '[REDACTED:credential]'
+        () => '[REDACTED:credential]'
     ]
 ];
 

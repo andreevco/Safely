@@ -23,6 +23,9 @@ export const styles = StyleSheet.create(theme => ({
             }
         }
     },
+    host: {
+        flex: 1
+    },
     text: {
         fontSize: 16,
         lineHeight: 24,

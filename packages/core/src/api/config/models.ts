@@ -19,7 +19,16 @@ export const bootConfigSchema = z.looseObject({
                 api_url: z.string(),
                 explorer_account_url: z.string(),
                 explorer_tx_url: z.string()
-            })
+            }),
+            testnet: z
+                .looseObject({
+                    api_url: z.string(),
+                    explorer_account_url: z.string(),
+                    explorer_tx_url: z.string()
+                })
+                // Required for testnet wallets to work, but made optional for not to throw
+                // on the app bootstrap if server gives wrong config and user doesn't have any testent wallets
+                .optional()
         })
     }),
 
@@ -27,7 +36,7 @@ export const bootConfigSchema = z.looseObject({
         home_screen_banners: z.array(
             z.looseObject({
                 id: z.string(),
-                type: z.enum(['default', 'warn', 'danger', 'alternate']).catch('default'),
+                type: z.enum(['default', 'warn', 'danger', 'transparent']).catch('default'),
                 text: z.string(),
                 icon: z.string().optional(),
                 banner_click_action_url: z.string().optional(),

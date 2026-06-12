@@ -48,6 +48,7 @@ export const createSendFormMachine = () =>
 
                     const result = validateRecipientInput(event.value, {
                         activeWalletAddress: context.activeWallet.address,
+                        networkType: context.networkType,
                         portfolioSuggestions: context.portfolioSuggestions,
                         contactSuggestions: context.contactSuggestions,
                         preferredSuggestionId: baseSuggestion.selectedId
@@ -83,6 +84,7 @@ export const createSendFormMachine = () =>
 
                     const result = validateRecipientInput(picked.address, {
                         activeWalletAddress: context.activeWallet.address,
+                        networkType: context.networkType,
                         portfolioSuggestions: context.portfolioSuggestions,
                         contactSuggestions: context.contactSuggestions,
                         preferredSuggestionId: event.id

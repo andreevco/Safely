@@ -1,11 +1,16 @@
+import type { Logger } from '@safely/sync';
+
 import type { About, BootConfig, ConfigParams } from './models';
 import { aboutSchema, bootConfigSchema } from './models';
 import type { IIdentifiable } from '../../utils';
 import { ApiClient } from '../../utils/fetch';
 
 export class ConfigApi extends ApiClient implements IIdentifiable {
-    constructor(private readonly params: ConfigParams) {
-        super('https://config.safely.app/v1');
+    constructor(
+        private readonly params: ConfigParams,
+        logger?: Logger
+    ) {
+        super('https://config.safely.app/v1', {}, logger);
     }
 
     public get id() {

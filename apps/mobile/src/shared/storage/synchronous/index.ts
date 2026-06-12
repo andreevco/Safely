@@ -1,0 +1,1 @@
+export { useMobileLayerSynchronousGlobalStorage } from './global';

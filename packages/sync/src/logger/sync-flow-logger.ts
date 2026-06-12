@@ -12,13 +12,22 @@ export type SyncFlowLoggerOptions = {
 type SyncFlowRunner<T> = (flow: SyncFlowLogger) => T | Promise<T>;
 
 type LogPhase = 'start' | 'step' | 'end' | 'fail' | 'incomplete';
+type BufferedLog = {
+    phase: LogPhase;
+    event: SyncFlowLogFields;
+};
+type SyncFlowLoggerState = {
+    flowId: string;
+    bufferedLogs: BufferedLog[];
+};
 
 const HEX_SHORT_LENGTH = 16;
 
 export class SyncFlowLogger {
-    private readonly flowId: string;
     private startedAt: number;
     private completed = false;
+    private startLogged = false;
+    private state: SyncFlowLoggerState;
 
     constructor(
         private readonly logger: Logger,
@@ -26,7 +35,10 @@ export class SyncFlowLogger {
         private readonly context: SyncFlowLogFields = {},
         private readonly options: SyncFlowLoggerOptions = {}
     ) {
-        this.flowId = options.flowId ?? makeFlowId();
+        this.state = {
+            flowId: options.flowId ?? makeFlowId(),
+            bufferedLogs: []
+        };
         this.startedAt = options.startedAt ?? Date.now();
     }
 
@@ -42,7 +54,7 @@ export class SyncFlowLogger {
     }
 
     public child(flow: string, context: SyncFlowLogFields = {}): SyncFlowLogger {
-        return new SyncFlowLogger(
+        const child = new SyncFlowLogger(
             this.logger,
             joinLogPath(this.flow, flow),
             {
@@ -51,28 +63,37 @@ export class SyncFlowLogger {
             },
             {
                 startedAt: this.startedAt,
-                flowId: this.flowId
+                flowId: this.state.flowId
             }
         );
+        child.state = this.state;
+        return child;
     }
 
     public logStart(fields: SyncFlowLogFields = {}): void {
         this.startedAt = Date.now();
-        this.log('start', undefined, fields);
+        this.startLogged = true;
+        this.write('start', undefined, fields);
     }
 
     public logStep(step: string, fields: SyncFlowLogFields = {}): void {
-        this.log('step', step, fields);
+        this.state.bufferedLogs.push({
+            phase: 'step',
+            event: this.makeEvent(step, fields)
+        });
     }
 
     public logEnd(step: string, fields: SyncFlowLogFields = {}): void {
         this.completed = true;
-        this.log('end', step, fields);
+        this.ensureStartLogged();
+        this.write('end', step, fields);
     }
 
     public logFail(error: unknown, step: string, fields: SyncFlowLogFields = {}): void {
         this.completed = true;
-        this.log('fail', step, {
+        this.ensureStartLogged();
+        this.flushBufferedLogs();
+        this.write('fail', step, {
             ...fields,
             error: summarizeError(error)
         });
@@ -80,22 +101,46 @@ export class SyncFlowLogger {
 
     public logIncomplete(step: string, fields: SyncFlowLogFields = {}): void {
         this.completed = true;
-        this.log('incomplete', step, fields);
+        this.ensureStartLogged();
+        this.flushBufferedLogs();
+        this.write('incomplete', step, fields);
     }
 
     public isCompleted(): boolean {
         return this.completed;
     }
 
-    private log(phase: LogPhase, step: string | undefined, fields: SyncFlowLogFields = {}): void {
-        const event = {
+    private ensureStartLogged(): void {
+        if (this.startLogged) {
+            return;
+        }
+
+        this.startLogged = true;
+        this.write('start');
+    }
+
+    private flushBufferedLogs(): void {
+        const logs = this.state.bufferedLogs.splice(0);
+        for (const log of logs) {
+            this.dispatch(log.phase, log.event);
+        }
+    }
+
+    private write(phase: LogPhase, step?: string, fields: SyncFlowLogFields = {}): void {
+        this.dispatch(phase, this.makeEvent(step, fields));
+    }
+
+    private makeEvent(step?: string, fields: SyncFlowLogFields = {}): SyncFlowLogFields {
+        return {
             flow: step === undefined ? this.flow : joinLogPath(this.flow, step),
-            flowId: this.flowId,
+            flowId: this.state.flowId,
             elapsedMs: this.elapsedMs(),
             ...this.context,
             ...fields
         };
+    }
 
+    private dispatch(phase: LogPhase, event: SyncFlowLogFields): void {
         if (phase === 'fail') {
             this.logger.error('sync.flow', event);
         } else if (phase === 'incomplete') {

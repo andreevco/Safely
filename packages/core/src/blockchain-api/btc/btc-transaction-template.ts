@@ -1,10 +1,16 @@
+import type { Logger } from '@safely/sync';
+
 import { type PsbtRequest, BtcPsbtBuilder } from './btc-psbt-builder';
 import { BtcSendDustError } from './errors';
 import type { BtcEstimation } from './types';
 import { getUtxoTotal, utxoPathToStruct } from './utils';
 import type { BtcApi, BtcApiUtxo } from '../../api/btc';
 import type { BtcAssetAmount, SignableBtcWallet, ExplorerFactory } from '../../entities';
-import { BLOCKCHAIN_NAME, btcNetworkConfig } from '../../entities/blockchain';
+import {
+    BLOCKCHAIN_NAME,
+    btcNetworkConfig,
+    portfolioNetworkTypeByBtcNetwork
+} from '../../entities/blockchain';
 import { getExternalErrorText } from '../../entities/errors/errors.service';
 import { ellipsisMiddle } from '../../utils';
 
@@ -16,6 +22,8 @@ export class BtcTransactionTemplate {
     private isSending = false;
 
     private readonly psbtBuilder: BtcPsbtBuilder;
+
+    private readonly logger?: Logger;
 
     public get outputs(): PsbtRequest['outputs'] {
         const total = getUtxoTotal(this.utxos);
@@ -50,8 +58,10 @@ export class BtcTransactionTemplate {
             hasChange: boolean;
         },
         private readonly utxos: BtcApiUtxo[],
-        public readonly estimation: BtcEstimation
+        public readonly estimation: BtcEstimation,
+        logger?: Logger
     ) {
+        this.logger = logger?.child('BtcTransactionTemplate');
         this.psbtBuilder = new BtcPsbtBuilder(btcNetworkConfig[this.wallet.network]);
     }
 
@@ -65,10 +75,15 @@ export class BtcTransactionTemplate {
         }
 
         this.isSending = true;
+        this.logger?.info('broadcasting transaction', { blockchain: this.blockchain });
 
         try {
             this.sendResult = await this._send();
+            this.logger?.info('transaction broadcast succeeded', { txId: this.sendResult.txId });
             return this.sendResult;
+        } catch (error) {
+            this.logger?.error('transaction broadcast failed', error);
+            throw error;
         } finally {
             this.isSending = false;
         }
@@ -97,6 +112,8 @@ export class BtcTransactionTemplate {
             throw error;
         }
 
+        const networkType = portfolioNetworkTypeByBtcNetwork(this.wallet.network);
+
         return {
             blockchain: BLOCKCHAIN_NAME.BTC,
             txId: result.txid,
@@ -104,7 +121,9 @@ export class BtcTransactionTemplate {
                 return ellipsisMiddle(result.txid, 6);
             },
             toExplorerUrl(explorerFactory: ExplorerFactory): string {
-                return explorerFactory.createExplorer(BLOCKCHAIN_NAME.BTC).transaction(result.txid);
+                return explorerFactory
+                    .createExplorer(BLOCKCHAIN_NAME.BTC, networkType)
+                    .transaction(result.txid);
             }
         };
     }

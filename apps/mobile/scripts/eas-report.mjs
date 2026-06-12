@@ -41,11 +41,13 @@ const e2eOk = STATUS_E2E === 'success';
 const ver = (v, b) => `v${v || '?'} (${b || '?'})`;
 
 const buildsOk = iosOk && firebaseOk;
+// "tests" in the headline = e2e.
+const testsOk = e2eOk;
 const headline = buildsOk
-    ? e2eOk
+    ? testsOk
         ? '✅ successful build and tests'
         : '❌ successful build; tests failed'
-    : e2eOk
+    : testsOk
         ? '❌ failed build; successful tests'
         : '❌ failed build and tests';
 

@@ -1,7 +1,8 @@
 {
     "currentLanguageName": "Русский",
     "portfolio": {
-        "watchOnly": "Только просмотр"
+        "watchOnly": "Только просмотр",
+        "testnet": "Testnet"
     },
     "walletAlreadyAdded": {
         "title": "Вы уже добавили этот кошелёк как {{name}}",
@@ -413,6 +414,10 @@
             "info": "Кошелёк только для просмотра не может подписывать транзакции и отправлять средства.",
             "invalidAddress": "Неверный Bitcoin адрес",
             "unsupportedExtendedKey": "ypub пока не поддерживается. Используйте xpub."
+        },
+        "testnet": {
+            "title": "Testnet",
+            "subtitle": "Добавить кошелёк в тестовой сети"
         }
     },
     "account": {
@@ -575,12 +580,10 @@
         "receiving": "Получение {{amount}}…"
     },
     "assetCell": {
-        "lastTransaction": "Последняя транзакция {{timeAgo}}",
-        "noTransactions": "Нет транзакций"
+        "history": "История"
     },
     "tabs": {
         "home": "Главная",
-        "history": "История",
         "about": "О приложении"
     },
     "safelyBeta": {

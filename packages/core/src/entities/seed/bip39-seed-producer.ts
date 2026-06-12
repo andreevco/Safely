@@ -1,5 +1,4 @@
-import { mnemonicToSeed } from '@scure/bip39';
-
+import { mnemonicToSeed } from './bip39-seed';
 import type { IMnemonicVault } from '../mnemonic';
 import type { ISeedProducer } from './I-seed-producer';
 

@@ -221,8 +221,10 @@ export const SlideButton = (props: SlideButtonProps) => {
             </Animated.View>
 
             <GestureDetector gesture={panGesture}>
-                <Animated.View style={styles.knobWrapper} testID={knobTestID}>
-                    <Animated.View style={[styles.knob, knobStyle]}>
+                <Animated.View style={styles.knobWrapper}>
+                    {/* testID on the knob itself: the wrapper stretches to the full track,
+                        so a directional swipe from its center falls short of the threshold */}
+                    <Animated.View style={[styles.knob, knobStyle]} testID={knobTestID}>
                         {loading ? (
                             <Animated.View style={loaderStyle}>
                                 <Icon icon={Loader28} color="primary" />

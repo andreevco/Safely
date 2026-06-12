@@ -131,6 +131,7 @@ export function buildInitialContext(input: SendFormMachineInput): SendFormMachin
 
     const result = validateRecipientInput(initialValues.recipient, {
         activeWalletAddress: input.activeWallet.address,
+        networkType: input.networkType,
         portfolioSuggestions: input.portfolioSuggestions,
         contactSuggestions: input.contactSuggestions,
         preferredSuggestionId: initialSuggestion?.selectedId

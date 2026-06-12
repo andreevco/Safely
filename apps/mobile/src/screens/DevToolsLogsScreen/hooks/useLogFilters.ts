@@ -46,11 +46,13 @@ export const useLogFilters = (records: LogRecord[]) => {
 
     const filtered = useMemo(
         () =>
-            records.filter(record => {
-                if (levelSel && !levelSel.has(record.level)) return false;
+            records
+                .filter(record => {
+                    if (levelSel && !levelSel.has(record.level)) return false;
 
-                return !(scopeSel && !scopeSel.has(scopeLabel(record.path)));
-            }),
+                    return !(scopeSel && !scopeSel.has(scopeLabel(record.path)));
+                })
+                .sort((a, b) => b.timestamp.localeCompare(a.timestamp)),
         [records, levelSel, scopeSel]
     );
 

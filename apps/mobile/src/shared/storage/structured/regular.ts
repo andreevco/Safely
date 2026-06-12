@@ -1,14 +1,13 @@
 import { useCallback } from 'react';
 import z from 'zod';
 
-// TODO IMPORT Find a way to keep on the app level
 // eslint-disable-next-line boundaries/element-types
 import { REGULAR_MOBILE_STORAGE_ONLY_APP_LEVEL_USE } from '@mobile/app/storage';
 
 const mobileLayerRegularStorageStructure = {
     passcodeLockout: z.union([
         z.null(),
-        z.object({
+        z.looseObject({
             failedAttempts: z.number(),
             lockedUntil: z.number().nullable()
         })

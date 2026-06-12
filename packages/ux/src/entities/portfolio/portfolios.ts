@@ -27,7 +27,13 @@ import {
 } from '@safely/core';
 import type { SPortfolio } from '@safely/sync-storage';
 
-import { useTranslate, useSecurityCheck, useAppContext, SecretEncryptor } from '../../shared';
+import {
+    useTranslate,
+    useSecurityCheck,
+    useAppContext,
+    useLogger,
+    SecretEncryptor
+} from '../../shared';
 import { useSuspenseQuery } from '../../shared';
 import type { SActivePortfolioSchema, UseAccountSyncStorageUpdateOptions } from '../account';
 import { useAccountSyncStorageUpdate } from '../account';
@@ -68,6 +74,7 @@ export function useGeneratePortfolio() {
     const { mutateAsync: setActivePortfolio } = useSetActivePortfolio();
     const { data: account } = useActiveAccountQuery();
     const update = useAccountSyncStorageUpdate();
+    const logger = useLogger('portfolio');
 
     const errorToast = useErrorToast({
         PortfolioGenerationFailedError: 'importWalletScreen.errors.failedToGenerate'
@@ -80,6 +87,7 @@ export function useGeneratePortfolio() {
         unknown
     >({
         async mutationFn(params) {
+            logger.info('generating portfolio');
             await delay();
 
             if (!account) {
@@ -126,8 +134,13 @@ export function useGeneratePortfolio() {
             });
 
             await setActivePortfolio({ id });
+
+            logger.info('portfolio generated', { index: nextWalletIndex });
         },
-        onError: errorToast
+        onError(error) {
+            logger.error('portfolio generation failed', error);
+            errorToast(error);
+        }
     });
 }
 
@@ -140,6 +153,7 @@ export function useImportPortfolio() {
         InvalidMnemonicError: 'importWalletScreen.errors.invalidMnemonic'
     });
     const { deviceInfo } = useAppContext();
+    const portfolioLogger = useLogger('portfolio');
     const portfolios = usePortfolios();
 
     return useMutation<
@@ -149,16 +163,15 @@ export function useImportPortfolio() {
             mnemonicAccessor: IMnemonicAccessor & IMnemonicVault;
             secretEncryptor: ISecretEncryptor;
             meta: PortfolioMeta;
+            networkType: PortfolioNetworkType;
         },
         unknown
     >({
-        async mutationFn({ mnemonicAccessor, secretEncryptor, meta }) {
+        async mutationFn({ mnemonicAccessor, secretEncryptor, meta, networkType }) {
+            portfolioLogger.info('importing portfolio');
             await delay();
 
-            const id = await PortfolioIdBip39Imported.create(
-                mnemonicAccessor,
-                PortfolioNetworkType.MAINNET
-            );
+            const id = await PortfolioIdBip39Imported.create(mnemonicAccessor, networkType);
 
             const portfolio = await PortfolioBip39.createSerializedPortfolio({
                 id,
@@ -179,15 +192,19 @@ export function useImportPortfolio() {
             await addPortfolio(portfolio);
 
             await setActivePortfolio({ id });
+
+            portfolioLogger.info('portfolio imported', { id: portfolio.id });
         },
         onSuccess() {
             toast(t('importWalletScreen.toastMessages.importedWallet'));
         },
         onError(error) {
             if (error instanceof PortfolioAlreadyExistsError) {
+                portfolioLogger.warn('import skipped: portfolio already exists');
                 return;
             }
 
+            portfolioLogger.error('portfolio import failed', error);
             errorToast(error);
         }
     });
@@ -198,14 +215,17 @@ export function useDeletePortfolio() {
     const check = useSecurityCheck();
     const client = useQueryClient();
     const accountQueryKey = useActiveAccountQueryKey();
+    const logger = useLogger('portfolio');
 
     return useMutation<void, Error, Portfolio>({
         async mutationFn(portfolio) {
+            logger.info('deleting portfolio', { id: portfolio.id });
             await check();
             await update(draft => draft.remove(portfolio.jsonArrayId()));
             await client.invalidateQueries({
                 queryKey: accountQueryKey.activePortfolio.toKey()
             });
+            logger.info('portfolio deleted', { id: portfolio.id });
         }
     });
 }
@@ -319,17 +339,26 @@ export function useHasPortfolio() {
     return useActivePortfolioEntitiesQuery().data !== null;
 }
 
-export function useIsActiveWalletWatchOnly(): boolean {
+export function useIsActivePortfolioWatchOnly(): boolean {
     return useActivePortfolioEntitiesQuery()?.data?.type === 'watch-only';
+}
+
+export function useIsActivePortfolioTestnet(): boolean {
+    return (
+        useActivePortfolioEntitiesQuery()?.data?.portfolio.networkType ===
+        PortfolioNetworkType.TESTNET
+    );
 }
 
 export function useAddWatchOnlyPortfolio() {
     const { mutateAsync: addPortfolio } = useAddPortfolio();
     const { mutateAsync: setActivePortfolio } = useSetActivePortfolio();
     const portfolios = usePortfolios();
+    const logger = useLogger('portfolio');
 
     return useMutation<Portfolio, Error, { input: string; meta: PortfolioMeta }>({
         async mutationFn({ input, meta }) {
+            logger.info('adding watch-only portfolio');
             const id = PortfolioWatchOnlyBtc.resolveUserInput(input, PortfolioNetworkType.MAINNET);
 
             const portfolio = PortfolioWatchOnlyBtc.create(id, meta);
@@ -342,6 +371,8 @@ export function useAddWatchOnlyPortfolio() {
             await addPortfolio(portfolio.toJSON());
             await setActivePortfolio(portfolio);
 
+            logger.info('watch-only portfolio added', { id: portfolio.id });
+
             return portfolio;
         }
     });
@@ -352,9 +383,13 @@ export function useSetActivePortfolio() {
     const client = useQueryClient();
     const accountQueryKey = useActiveAccountQueryKey();
     const portfolios = usePortfolios();
+    const logger = useLogger('portfolio');
 
     return useMutation<Portfolio, Error, Pick<Portfolio, 'id'>>({
         async mutationFn({ id }) {
+            logger.info('start set active portfolio', {
+                id
+            });
             const portfolioToSet = portfolios.find(a => a.id.isEq(id));
 
             if (!portfolioToSet) {
@@ -369,6 +404,9 @@ export function useSetActivePortfolio() {
                 queryKey: accountQueryKey.activePortfolio.toKey()
             });
 
+            logger.info('set active portfolio complete', {
+                id: portfolioToSet.id
+            });
             return portfolioToSet;
         }
     });
@@ -395,9 +433,11 @@ export function useRecordActivePortfolioSecretReveal() {
     const activePortfolio = useActivePortfolio();
     const update = useActiveAccountSyncStorageSlotUpdate('portfolios');
     const { deviceInfo } = useAppContext();
+    const logger = useLogger('portfolio');
 
     return useMutation({
         mutationFn() {
+            logger.info('recording portfolio secret reveal');
             return update(draft =>
                 draft.update(activePortfolio.jsonArrayId(), activePortfolioDraft => {
                     const bip39Draft = activePortfolioDraft.narrow(
