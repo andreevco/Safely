@@ -11,6 +11,7 @@
         "cancel": "Cancel",
         "title": "Review on Ledger",
         "subtitle": "Complete the following steps on your Ledger to approve the transaction.",
+        "deviceFallback": "Ledger",
         "steps": {
             "connect": "Connect your {{device}}",
             "openApp": "Open the Bitcoin app",

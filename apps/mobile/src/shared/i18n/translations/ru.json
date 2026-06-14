@@ -741,6 +741,7 @@
         "cancel": "Отмена",
         "title": "Подтвердите на Ledger",
         "subtitle": "Выполните следующие шаги на вашем Ledger, чтобы подтвердить транзакцию.",
+        "deviceFallback": "Ledger",
         "steps": {
             "connect": "Подключите {{device}}",
             "openApp": "Откройте приложение Bitcoin",

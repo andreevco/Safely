@@ -15,6 +15,8 @@ import {
 
 const CONNECT_TIMEOUT_MS = 30_000;
 
+export const LEDGER_FAILURE_STATES = ['failed', 'wrongDevice', 'unsupportedApp'];
+
 export type LedgerSigningInput = {
     dmk: DeviceManagementKit;
     expectedFingerprint: string;

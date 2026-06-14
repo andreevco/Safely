@@ -44,7 +44,7 @@ export function AppNavigation() {
         <LockScreenProvider>
             <LedgerSigningProvider
                 logger={logger}
-                openConnectScreen={() => navigationRef.navigate('ConnectToSignModal')}
+                openConnectScreen={() => navigationRef.navigate('ConnectToSignSheet')}
             >
                 <SyncStorageProvider>
                     <Navigation

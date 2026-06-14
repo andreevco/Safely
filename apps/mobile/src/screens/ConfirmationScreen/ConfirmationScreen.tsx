@@ -1,11 +1,13 @@
 import { useNavigation } from '@react-navigation/core';
-import type { StaticScreenProps } from '@react-navigation/native';
+import { CommonActions, type StaticScreenProps } from '@react-navigation/native';
 import { notificationAsync, NotificationFeedbackType } from 'expo-haptics';
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
+import { State } from 'react-native-ble-plx';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
+import { LedgerSigningCancelledError, PortfolioType } from '@safely/core';
 import type { SendFormResult } from '@safely/ux';
 import {
     useActiveBtcWallet,
@@ -18,6 +20,7 @@ import {
     useSendAssetTransfer
 } from '@safely/ux';
 
+import { getBluetoothState } from '@mobile/features/ledger';
 import { TransactionFee } from '@mobile/screens/ConfirmationScreen/components/TransactionFee';
 import { TransactionSendResult } from '@mobile/screens/ConfirmationScreen/components/TransactionSendResult';
 import { Checkmark96, Icon, List, Screen, Text, Image } from '@mobile/shared/ui';
@@ -72,6 +75,12 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
                 fiatSymbol: fiat.id.symbol
             });
         } catch (error) {
+            if (error instanceof LedgerSigningCancelledError) {
+                setConfirmationState({ type: 'idle' });
+
+                return;
+            }
+
             logger.error('[ConfirmationScreen] send failed', error);
             notificationAsync(NotificationFeedbackType.Error);
             setConfirmationState({ type: 'error', error });
@@ -83,6 +92,26 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
             });
         }
     }, [send, onSuccess, logger, confirmationResult, analytics, fiat.id.symbol]);
+
+    const isLedger = activePortfolio.type === PortfolioType.LEDGER;
+
+    const onLedgerContinue = useCallback(async () => {
+        const state = await getBluetoothState();
+
+        if (state === State.PoweredOn) {
+            void onSend();
+
+            return;
+        }
+
+        navigation.dispatch(
+            CommonActions.navigate('LedgerBluetoothRequiredModal', {
+                onReady: () => {
+                    void onSend();
+                }
+            })
+        );
+    }, [navigation, onSend]);
 
     const displayState = useMemo(() => {
         if (txTemplateError) {
@@ -192,6 +221,7 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
                     onGoBack={onGoBack}
                     state={displayState}
                     isEstimating={!txTemplate}
+                    onLedgerContinue={isLedger ? onLedgerContinue : undefined}
                 />
             </View>
         </Screen>
