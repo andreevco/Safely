@@ -167,6 +167,42 @@ export function useBtcBalances(wallets: BtcWallet[]) {
     });
 }
 
+export function useBtcWalletBalances(wallets: BtcWallet[]) {
+    const account = useActiveAccount();
+    const getBtcApi = useGetBtcApi();
+    const accessibleBtcWallets = useAccessibleBtcWallets();
+
+    return useQueries({
+        queries: wallets.map(btcWallet => {
+            const { schemaKey, ...rest } = btcWalletUtxoOptions({
+                api: getBtcApi(btcWallet.network),
+                accessibleBtcWallets,
+                accountId: account.accountId,
+                btcWallet
+            });
+
+            return {
+                ...rest,
+                meta: {
+                    persist: true,
+                    schemaKey
+                }
+            };
+        }),
+        combine: results =>
+            results.map(r =>
+                r.data
+                    ? {
+                          display: r.data.confirmed.totalAmount.amountAdd(
+                              r.data.unconfirmedSafe.totalAmount
+                          ),
+                          pending: r.data.unconfirmedUnsafe.totalAmount
+                      }
+                    : undefined
+            )
+    });
+}
+
 export function useBtcBalance(wallet: BtcWallet) {
     const utxosQuery = useBtcWalletUtxo(wallet);
 

@@ -12,6 +12,10 @@ export const styles = StyleSheet.create(theme => ({
     address: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: theme.spacing[16]
+        gap: theme.spacing[12]
+    },
+    badgeColumn: {
+        width: 32,
+        alignItems: 'flex-start'
     }
 }));

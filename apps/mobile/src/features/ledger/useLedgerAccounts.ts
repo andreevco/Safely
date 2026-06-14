@@ -1,67 +1,77 @@
-import { useInfiniteQuery } from '@tanstack/react-query';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { discoverLedgerAccounts } from '@safely/core';
-import { useBtcApi } from '@safely/ux';
+import {
+    BtcNetwork,
+    discoverLedgerAccounts,
+    getLedgerMasterFingerprint,
+    isLedgerSessionConnected,
+    ledgerAccountToBtcWallet
+} from '@safely/core';
+import { useBtcWalletBalances } from '@safely/ux';
 
-import { useLedgerSession } from './LedgerSessionProvider';
+import { ledgerKeys } from './keys';
+import { useLedgerSession } from './LedgerSigningProvider';
 
-const BATCH_SIZE = 5;
-
-const isSessionLost = (error: unknown): boolean => {
-    if (typeof error === 'object' && error !== null && '_tag' in error) {
-        return (error as { _tag?: unknown })._tag === 'DeviceSessionNotFound';
-    }
-
-    return String(error).includes('DeviceSessionNotFound');
-};
+const ACCOUNT_COUNT = 10;
+const DERIVATIONS_SEARCH_TIMEOUT = 20_000;
 
 export const useLedgerAccounts = () => {
-    const { getDmk, sessionId, selectedDevice, reconnect } = useLedgerSession();
-    const btcApi = useBtcApi();
+    const { getDmk, sessionId, selectedDevice } = useLedgerSession();
     const [selectedIndexes, setSelectedIndexes] = useState<Set<number>>(new Set());
-    const preselectedCount = useRef(0);
+    const hasPreselected = useRef(false);
 
-    const { data, isLoading, isFetchingNextPage, fetchNextPage } = useInfiniteQuery({
-        queryKey: ['ledger-accounts', selectedDevice?.id],
+    const { data, isError, refetch } = useQuery({
+        queryKey: ledgerKeys.accounts(selectedDevice?.id).toKey(),
         enabled: sessionId !== null,
-        initialPageParam: 0,
         staleTime: Infinity,
         retry: false,
-        queryFn: async ({ pageParam }) => {
-            const read = (id: string) =>
-                discoverLedgerAccounts(getDmk(), id, btcApi, pageParam, BATCH_SIZE);
-
-            try {
-                return await read(sessionId ?? '');
-            } catch (error) {
-                if (!isSessionLost(error)) {
-                    throw error;
-                }
-
-                return read(await reconnect());
-            }
-        },
-        getNextPageParam: (_lastPage, allPages) => allPages.length * BATCH_SIZE
+        queryFn: () => discoverLedgerAccounts(getDmk(), sessionId ?? '', { count: ACCOUNT_COUNT })
     });
 
-    const accounts = data?.pages.flat() ?? [];
+    const accounts = data ?? [];
+    const isLoading = !data && !isError;
+
+    const wallets = useMemo(
+        () => accounts.map(account => ledgerAccountToBtcWallet(account, BtcNetwork.MAINNET)),
+        [accounts]
+    );
+    const walletBalances = useBtcWalletBalances(wallets);
+    const balances = walletBalances.map(balance => balance?.display);
+
+    const [isTimedOut, setIsTimedOut] = useState(false);
 
     useEffect(() => {
-        if (accounts.length <= preselectedCount.current) {
+        if (!isLoading) {
+            setIsTimedOut(false);
+
             return;
         }
 
+        const id = setTimeout(() => setIsTimedOut(true), DERIVATIONS_SEARCH_TIMEOUT);
+
+        return () => clearTimeout(id);
+    }, [isLoading]);
+
+    useEffect(() => {
+        if (hasPreselected.current || accounts.length === 0) {
+            return;
+        }
+
+        if (balances.some(balance => balance === undefined)) {
+            return;
+        }
+
+        hasPreselected.current = true;
+
         const fundedIndexes = accounts
-            .slice(preselectedCount.current)
-            .filter(account => account.balance > 0n)
+            .filter((_, i) => (balances[i]?.weiAmount ?? 0n) > 0n)
             .map(account => account.index);
-        preselectedCount.current = accounts.length;
 
         if (fundedIndexes.length > 0) {
-            setSelectedIndexes(prev => new Set([...prev, ...fundedIndexes]));
+            setSelectedIndexes(new Set(fundedIndexes));
         }
-    }, [accounts]);
+    }, [accounts, balances]);
 
     const toggle = useCallback((index: number) => {
         setSelectedIndexes(prev => {
@@ -77,16 +87,36 @@ export const useLedgerAccounts = () => {
         });
     }, []);
 
-    const showNext = useCallback(() => {
-        void fetchNextPage();
-    }, [fetchNextPage]);
+    const readMasterFingerprint = useCallback(
+        (): Promise<string> => getLedgerMasterFingerprint(getDmk(), sessionId ?? ''),
+        [getDmk, sessionId]
+    );
+
+    const retry = useCallback(async (): Promise<boolean> => {
+        if (sessionId && (await isLedgerSessionConnected(getDmk(), sessionId))) {
+            setIsTimedOut(false);
+            await refetch();
+
+            return true;
+        }
+
+        return false;
+    }, [sessionId, getDmk, refetch]);
+
+    const selectedAccounts = accounts
+        .filter(account => selectedIndexes.has(account.index))
+        .map(account => ({ index: account.index, xpub: account.xpub }));
 
     return {
         accounts,
+        balances,
         selectedIndexes,
+        selectedAccounts,
         toggle,
-        showNext,
+        readMasterFingerprint,
+        retry,
         isLoading,
-        isLoadingMore: isFetchingNextPage
+        isError,
+        isTimedOut
     };
 };

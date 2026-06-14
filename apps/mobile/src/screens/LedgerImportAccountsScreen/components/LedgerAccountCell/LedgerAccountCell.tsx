@@ -1,8 +1,7 @@
-import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { BtcAssetAmount, ellipsisMiddle, type LedgerAccount } from '@safely/core';
+import { type BtcAssetAmount, ellipsisMiddle, type LedgerAccount } from '@safely/core';
 import { useFormattedAmount } from '@safely/ux';
 
 import { Cell, Checkbox, Text } from '@mobile/shared/ui';
@@ -11,13 +10,15 @@ import { styles } from './LedgerAccountCell.styles';
 
 type RealLedgerAccountCellProps = {
     account: LedgerAccount;
+    balance: BtcAssetAmount | undefined;
     isSkeleton?: false | undefined;
     isSelected: boolean;
     onPress: () => void;
 };
 
 type SkeletonLedgerAccountCellProps = {
-    account: Omit<LedgerAccount, 'xpub'>;
+    account: Pick<LedgerAccount, 'index'>;
+    balance?: undefined;
     isSkeleton: true;
     isSelected?: undefined;
     onPress?: undefined;
@@ -26,14 +27,14 @@ type SkeletonLedgerAccountCellProps = {
 type LedgerAccountCellProps = SkeletonLedgerAccountCellProps | RealLedgerAccountCellProps;
 
 export const LedgerAccountCell = (props: LedgerAccountCellProps) => {
-    const { account, isSelected = false, onPress, isSkeleton = false } = props;
+    const { account, balance, isSelected = false, onPress, isSkeleton = false } = props;
     const { t } = useTranslation();
 
-    const balance = useMemo(() => BtcAssetAmount.fromWeiAmount(account.balance), [account.balance]);
     const formattedBalance = useFormattedAmount(balance);
+    const isBalanceLoading = !isSkeleton && balance === undefined;
 
     return (
-        <Cell onPress={onPress} style={styles.container}>
+        <Cell skeleton={isSkeleton} onPress={onPress} style={styles.container}>
             <View style={styles.badgeColumn}>
                 <View style={styles.badge}>
                     <Text variant="bodyM" monospace>
@@ -52,8 +53,8 @@ export const LedgerAccountCell = (props: LedgerAccountCellProps) => {
                     </View>
                 </Cell.Row>
                 <Cell.Row>
-                    <Cell.Subtitle>
-                        {isSkeleton
+                    <Cell.Subtitle skeleton={isBalanceLoading} skeletonWidth={140}>
+                        {isSkeleton || isBalanceLoading || !('address' in account)
                             ? undefined
                             : `${formattedBalance} · ${ellipsisMiddle(account.address)}`}
                     </Cell.Subtitle>
