@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { AccountCreatedScreen } from '@mobile/screens/AccountCreatedScreen';
 import { AddAccountSheet } from '@mobile/screens/AddAccountSheet';
 import { BiometryScreen } from '@mobile/screens/BiometryScreen';
+import { BluetoothAccessRequiredScreen } from '@mobile/screens/BluetoothAccessRequiredScreen';
 import { ChangePasscodeScreen } from '@mobile/screens/ChangePasscodeScreen';
 import { CurrencyScreen } from '@mobile/screens/CurrencyScreen';
 import { CustomizeAccountModal } from '@mobile/screens/CustomizeAccountModal';
@@ -85,6 +86,13 @@ export const RootStack = createNativeStackNavigator({
                         presentation: 'fullScreenModal',
                         animation: 'fade',
                         animationDuration: 50
+                    }
+                },
+                LedgerBluetoothRequiredModal: {
+                    screen: BluetoothAccessRequiredScreen,
+                    options: {
+                        presentation: 'fullScreenModal',
+                        animation: 'fade'
                     }
                 }
             }

@@ -1,4 +1,4 @@
-import { useNavigation } from '@react-navigation/core';
+import { useNavigation, useRoute } from '@react-navigation/core';
 import { StackActions, useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -11,16 +11,30 @@ import { Button as HeaderButton } from '@mobile/shared/ui/Screen/components/Head
 
 import { styles } from './BluetoothAccessRequiredScreen.styles';
 
+type BluetoothAccessRequiredParams = {
+    onReady?: () => void;
+    onCancel?: () => void;
+};
+
 export const BluetoothAccessRequiredScreen = () => {
     const { t } = useTranslation();
     const navigation = useNavigation();
+    const route = useRoute();
+    const params = route.params as BluetoothAccessRequiredParams | undefined;
 
     useFocusEffect(
         useCallback(() => {
             let isActive = true;
 
             getBluetoothState().then(state => {
-                if (isActive && state === State.PoweredOn) {
+                if (!isActive || state !== State.PoweredOn) {
+                    return;
+                }
+
+                if (params?.onReady) {
+                    navigation.goBack();
+                    params.onReady();
+                } else {
                     navigation.dispatch(StackActions.replace('LedgerFlowModal'));
                 }
             });
@@ -28,12 +42,19 @@ export const BluetoothAccessRequiredScreen = () => {
             return () => {
                 isActive = false;
             };
-        }, [navigation])
+        }, [navigation, params])
     );
 
     const handleCancel = useCallback(() => {
+        if (params?.onCancel) {
+            navigation.goBack();
+            params.onCancel();
+
+            return;
+        }
+
         navigation.dispatch(StackActions.popToTop());
-    }, [navigation]);
+    }, [navigation, params]);
 
     const handleOpenSettings = useCallback(() => {
         void Linking.openSettings();
