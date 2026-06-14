@@ -57,6 +57,7 @@ import ExclamationmarkCircle96Svg from '@safely/ux/assets/icons/96/exclamationma
 import FaceidAndroid96Svg from '@safely/ux/assets/icons/96/faceid-android-96.svg';
 import FaceidIos96Svg from '@safely/ux/assets/icons/96/faceid-ios-96.svg';
 import Fingerprint96Svg from '@safely/ux/assets/icons/96/fingerprint-96.svg';
+import LedgerLogo96Svg from '@safely/ux/assets/icons/96/ledger-logo-96.svg';
 import ListKey96Svg from '@safely/ux/assets/icons/96/list-key-96.svg';
 import Notifications96Svg from '@safely/ux/assets/icons/96/notifications-96.svg';
 import Placeholder96Svg from '@safely/ux/assets/icons/96/placeholder-96.svg';
@@ -119,6 +120,7 @@ export const ExclamationmarkCircle96 = { image: ExclamationmarkCircle96Svg, size
 export const FaceidAndroid96 = { image: FaceidAndroid96Svg, size: 96 } as const;
 export const FaceidIos96 = { image: FaceidIos96Svg, size: 96 } as const;
 export const Fingerprint96 = { image: Fingerprint96Svg, size: 96 } as const;
+export const LedgerLogo96 = { image: LedgerLogo96Svg, size: 96 } as const;
 export const ListKey96 = { image: ListKey96Svg, size: 96 } as const;
 export const Notifications96 = { image: Notifications96Svg, size: 96 } as const;
 export const Placeholder96 = { image: Placeholder96Svg, size: 96 } as const;

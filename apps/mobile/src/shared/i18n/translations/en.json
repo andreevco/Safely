@@ -7,35 +7,14 @@
         "ledgerWallet": "Ledger Wallet {{number}}"
     },
     "ledgerSign": {
-        "retry": "Try again",
+        "retry": "Retry",
         "cancel": "Cancel",
-        "searching": {
-            "title": "Looking for your Ledger",
-            "subtitle": "Turn on your Ledger and keep it nearby."
-        },
-        "connecting": {
-            "title": "Connecting",
-            "subtitle": "Unlock your Ledger and open the Bitcoin app."
-        },
-        "verifying": {
-            "title": "Verifying device",
-            "subtitle": "Make sure this is the Ledger for this wallet."
-        },
-        "signing": {
-            "title": "Confirm on your Ledger",
-            "subtitle": "Review and approve the transaction on your device."
-        },
-        "wrongDevice": {
-            "title": "Wrong Ledger",
-            "subtitle": "This device doesn't match this wallet. Connect the Ledger you used to add it."
-        },
-        "unsupportedApp": {
-            "title": "Update your Bitcoin app",
-            "subtitle": "Open Ledger Live and update the Bitcoin app on your device to version 2.1.0 or newer, then try again."
-        },
-        "failed": {
-            "title": "Connection failed",
-            "subtitle": "Couldn't reach your Ledger. Check it's unlocked with the Bitcoin app open."
+        "title": "Review on Ledger",
+        "subtitle": "Complete the following steps on your Ledger to approve the transaction.",
+        "steps": {
+            "connect": "Connect your {{device}}",
+            "openApp": "Open the Bitcoin app",
+            "approve": "Review and approve the transaction."
         }
     },
     "walletAlreadyAdded": {
@@ -290,6 +269,7 @@
     "confirmation": {
         "title": "Send {{symbol}}",
         "success": "Sent",
+        "continueWithLedger": "Continue with Ledger",
         "from": "From",
         "to": "To",
         "amount": "Amount",
