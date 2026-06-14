@@ -7,6 +7,7 @@ import { LedgerSigningCancelledError } from '@safely/core';
 import {
     checkLedgerAppVersion,
     connectLedgerSession,
+    openBitcoinApp,
     runLedgerSession,
     scanLedgerDevices,
     verifyLedgerFingerprint
@@ -28,6 +29,7 @@ export type LedgerSigningOutput = {
 type LedgerSigningContext = LedgerSigningInput & {
     selectedDevice: DiscoveredDevice | null;
     sessionId: string | null;
+    step: number;
     result: unknown;
     error: unknown;
 };
@@ -47,6 +49,7 @@ export const ledgerSigningMachine = setup({
     actors: {
         scanLedgerDevices,
         connectLedgerSession,
+        openBitcoinApp,
         checkLedgerAppVersion,
         verifyLedgerFingerprint,
         runLedgerSession
@@ -67,6 +70,7 @@ export const ledgerSigningMachine = setup({
         ...input,
         selectedDevice: null,
         sessionId: null,
+        step: 0,
         result: undefined,
         error: undefined
     }),
@@ -76,6 +80,7 @@ export const ledgerSigningMachine = setup({
     },
     states: {
         scanning: {
+            entry: assign({ step: () => 0 }),
             invoke: {
                 src: 'scanLedgerDevices',
                 input: ({ context }) => ({ dmk: context.dmk })
@@ -94,6 +99,23 @@ export const ledgerSigningMachine = setup({
                 input: ({ context }) => ({ dmk: context.dmk, device: context.selectedDevice! }),
                 onDone: {
                     actions: assign({ sessionId: ({ event }) => event.output }),
+                    target: 'openingApp'
+                },
+                onError: {
+                    actions: assign({ error: ({ event }) => event.error }),
+                    target: 'failed'
+                }
+            },
+            after: {
+                connectTimeout: { target: 'failed' }
+            }
+        },
+        openingApp: {
+            entry: assign({ step: () => 1 }),
+            invoke: {
+                src: 'openBitcoinApp',
+                input: ({ context }) => ({ dmk: context.dmk, sessionId: context.sessionId! }),
+                onDone: {
                     target: 'checkingApp'
                 },
                 onError: {
@@ -106,6 +128,7 @@ export const ledgerSigningMachine = setup({
             }
         },
         checkingApp: {
+            entry: assign({ step: () => 1 }),
             invoke: {
                 src: 'checkLedgerAppVersion',
                 input: ({ context }) => ({ dmk: context.dmk, sessionId: context.sessionId! }),
@@ -120,6 +143,7 @@ export const ledgerSigningMachine = setup({
             }
         },
         verifying: {
+            entry: assign({ step: () => 1 }),
             invoke: {
                 src: 'verifyLedgerFingerprint',
                 input: ({ context }) => ({
@@ -138,6 +162,7 @@ export const ledgerSigningMachine = setup({
             }
         },
         signing: {
+            entry: assign({ step: () => 2 }),
             invoke: {
                 src: 'runLedgerSession',
                 input: ({ context }) => ({
@@ -172,7 +197,7 @@ export const ledgerSigningMachine = setup({
             type: 'final'
         },
         done: {
-            entry: 'disconnect',
+            entry: ['disconnect', assign({ step: () => 3 })],
             type: 'final'
         }
     },

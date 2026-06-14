@@ -64,19 +64,33 @@ export type ConnectLedgerSessionInput = {
 };
 
 export const connectLedgerSession = fromPromise<string, ConnectLedgerSessionInput>(
-    async ({ input }) => {
+    async ({ input, signal }) => {
         const sessionId = await input.dmk.connect({ device: input.device });
 
-        await awaitDeviceAction(
-            input.dmk.executeDeviceAction({
-                sessionId,
-                deviceAction: new OpenAppDeviceAction({ input: { appName: BITCOIN_APP_NAME } })
-            })
-        );
+        if (signal.aborted) {
+            void input.dmk.disconnect({ sessionId }).catch(() => {});
+
+            throw new Error('Ledger connect aborted');
+        }
 
         return sessionId;
     }
 );
+
+export type OpenBitcoinAppInput = {
+    dmk: DeviceManagementKit;
+    sessionId: string;
+};
+
+export const openBitcoinApp = fromPromise<void, OpenBitcoinAppInput>(async ({ input, signal }) => {
+    await awaitDeviceAction(
+        input.dmk.executeDeviceAction({
+            sessionId: input.sessionId,
+            deviceAction: new OpenAppDeviceAction({ input: { appName: BITCOIN_APP_NAME } })
+        }),
+        signal
+    );
+});
 
 export type VerifyLedgerFingerprintInput = {
     dmk: DeviceManagementKit;
