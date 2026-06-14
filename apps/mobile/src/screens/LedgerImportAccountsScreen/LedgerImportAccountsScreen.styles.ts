@@ -1,6 +1,9 @@
 import { StyleSheet } from 'react-native-unistyles';
 
-export const styles = StyleSheet.create(theme => ({
+export const styles = StyleSheet.create((theme, rt) => ({
+    content: {
+        flex: 1
+    },
     textContainer: {
         marginVertical: theme.spacing[16],
         paddingHorizontal: theme.spacing[32],
@@ -10,12 +13,16 @@ export const styles = StyleSheet.create(theme => ({
     list: {
         paddingHorizontal: theme.spacing[16]
     },
-    statusContainer: {
-        alignItems: 'center',
-        paddingVertical: theme.spacing[24]
+    caption: {
+        marginTop: theme.spacing[8],
+        paddingHorizontal: theme.spacing[32]
     },
     showNext: {
         alignSelf: 'center',
         marginTop: theme.spacing[8]
+    },
+    continueButton: {
+        padding: theme.spacing[24],
+        marginBottom: rt.insets.bottom
     }
 }));
