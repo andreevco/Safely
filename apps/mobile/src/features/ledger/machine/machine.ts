@@ -13,6 +13,7 @@ import {
     verifyLedgerFingerprint
 } from './actors';
 
+const SIGNED_DELAY_MS = 1_000;
 const CONNECT_TIMEOUT_MS = 30_000;
 
 export const LEDGER_FAILURE_STATES = ['failed', 'wrongDevice', 'unsupportedApp'];
@@ -64,7 +65,8 @@ export const ledgerSigningMachine = setup({
         }
     },
     delays: {
-        connectTimeout: CONNECT_TIMEOUT_MS
+        connectTimeout: CONNECT_TIMEOUT_MS,
+        signedDelay: SIGNED_DELAY_MS
     }
 }).createMachine({
     id: 'ledgerSigning',
@@ -173,13 +175,19 @@ export const ledgerSigningMachine = setup({
                     run: context.run
                 }),
                 onDone: {
-                    actions: assign({ result: ({ event }) => event.output }),
-                    target: 'done'
+                    actions: assign({ result: ({ event }) => event.output, step: () => 3 }),
+                    target: 'signed'
                 },
                 onError: {
                     actions: assign({ error: ({ event }) => event.error }),
                     target: 'failed'
                 }
+            }
+        },
+        signed: {
+            on: { CANCEL: {} },
+            after: {
+                signedDelay: { target: 'done' }
             }
         },
         wrongDevice: {
@@ -199,7 +207,7 @@ export const ledgerSigningMachine = setup({
             type: 'final'
         },
         done: {
-            entry: ['disconnect', assign({ step: () => 3 })],
+            entry: 'disconnect',
             type: 'final'
         }
     },
