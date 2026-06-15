@@ -3,24 +3,24 @@ import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Keyboard } from 'react-native';
 
-import type { Portfolio, PortfolioMeta } from '@safely/core';
+import type { Portfolio, PortfolioMeta, PortfolioMetaIcon } from '@safely/core';
+import { allowedPortfolioMetaEmojis } from '@safely/core';
 import { useChangePortfolioMeta, useNewPortfolioFallbackName } from '@safely/ux';
 
 import { TEST_ID } from '@mobile/shared/constants';
 import { Button, Icon, Screen, Xmark16 } from '@mobile/shared/ui';
 
-import type { WalletIcon } from './constants';
-import { WALLET_EMOJIS } from './constants';
 import { CustomizeWalletContent } from './CustomizeWalletContent';
 import { styles } from './CustomizeWalletModal.styles';
 
-const getDefaultIcon = (): WalletIcon => {
-    const randomIndex = Math.floor(Math.random() * WALLET_EMOJIS.length);
-    return { type: 'emoji', value: WALLET_EMOJIS[randomIndex] ?? '' };
+const getDefaultIcon = (): PortfolioMetaIcon => {
+    const randomIndex = Math.floor(Math.random() * allowedPortfolioMetaEmojis.length);
+    return { type: 'emoji', value: allowedPortfolioMetaEmojis[randomIndex] ?? '' };
 };
 
 type CustomizeWalletModalProps = StaticScreenProps<{
     portfolio?: Portfolio;
+    initialMeta?: Partial<PortfolioMeta>;
     onSave?: (meta: Pick<PortfolioMeta, 'icon' | 'name'>) => Promise<void>;
     // NOTE: this callback is for navigation actions only and calling in cases when user don't save changes
     onCompleteCustomize?: () => void;
@@ -28,14 +28,17 @@ type CustomizeWalletModalProps = StaticScreenProps<{
 }>;
 
 export const CustomizeWalletModal = (props: CustomizeWalletModalProps) => {
-    const { portfolio, onSave, onCompleteCustomize, hasBackButton } = props.route?.params ?? {};
+    const { portfolio, initialMeta, onSave, onCompleteCustomize, hasBackButton } =
+        props.route?.params ?? {};
     const { t } = useTranslation();
     const fallbackName = useNewPortfolioFallbackName();
     const { mutate: changePortfolioMeta } = useChangePortfolioMeta();
 
-    const [walletName, setWalletName] = useState(portfolio?.meta.name ?? fallbackName);
-    const [selectedIcon, setSelectedIcon] = useState<WalletIcon>(
-        () => portfolio?.meta.icon ?? getDefaultIcon()
+    const [walletName, setWalletName] = useState(
+        portfolio?.meta.name ?? initialMeta?.name ?? fallbackName
+    );
+    const [selectedIcon, setSelectedIcon] = useState<PortfolioMetaIcon>(
+        () => portfolio?.meta.icon ?? initialMeta?.icon ?? getDefaultIcon()
     );
 
     const handleSave = useCallback(async () => {

@@ -1,4 +1,5 @@
 export { LedgerStatusScreen } from './components/LedgerStatusScreen';
+export { LedgerDerivationRow } from './components/LedgerDerivationRow';
 export { LEDGER_FAILURE_STATES } from './machine';
 export { getBluetoothState } from './getBluetoothState';
 export { getSignalLevel, type SignalLevel } from './getSignalLevel';

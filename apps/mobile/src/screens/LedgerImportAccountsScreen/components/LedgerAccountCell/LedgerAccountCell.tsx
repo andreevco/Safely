@@ -4,15 +4,15 @@ import { View } from 'react-native';
 import { type BtcAssetAmount, ellipsisMiddle, type LedgerAccount } from '@safely/core';
 import { useFormattedAmount } from '@safely/ux';
 
-import { Cell, Checkbox, Text } from '@mobile/shared/ui';
-
-import { styles } from './LedgerAccountCell.styles';
+import { LedgerDerivationRow } from '@mobile/features/ledger';
+import { Checkbox } from '@mobile/shared/ui';
 
 type RealLedgerAccountCellProps = {
     account: LedgerAccount;
     balance: BtcAssetAmount | undefined;
     isSkeleton?: false | undefined;
     isSelected: boolean;
+    isLocked?: boolean;
     onPress: () => void;
 };
 
@@ -21,48 +21,47 @@ type SkeletonLedgerAccountCellProps = {
     balance?: undefined;
     isSkeleton: true;
     isSelected?: undefined;
+    isLocked?: undefined;
     onPress?: undefined;
 };
 
 type LedgerAccountCellProps = SkeletonLedgerAccountCellProps | RealLedgerAccountCellProps;
 
 export const LedgerAccountCell = (props: LedgerAccountCellProps) => {
-    const { account, balance, isSelected = false, onPress, isSkeleton = false } = props;
+    const {
+        account,
+        balance,
+        isSelected = false,
+        isLocked = false,
+        onPress,
+        isSkeleton = false
+    } = props;
     const { t } = useTranslation();
 
     const formattedBalance = useFormattedAmount(balance);
     const isBalanceLoading = !isSkeleton && balance === undefined;
 
+    const subtitle =
+        isSkeleton || isBalanceLoading || !('address' in account)
+            ? undefined
+            : `${formattedBalance} · ${ellipsisMiddle(account.address)}`;
+
     return (
-        <Cell skeleton={isSkeleton} onPress={onPress} style={styles.container}>
-            <View style={styles.badgeColumn}>
-                <View style={styles.badge}>
-                    <Text variant="bodyM" monospace>
-                        {account.index + 1}
-                    </Text>
+        <LedgerDerivationRow
+            index={account.index}
+            title={
+                isSkeleton ? undefined : t('portfolio.ledgerWallet', { number: account.index + 1 })
+            }
+            subtitle={subtitle}
+            isSubtitleLoading={isBalanceLoading}
+            isSkeleton={isSkeleton}
+            isDimmed={isLocked}
+            onPress={onPress}
+            accessory={
+                <View pointerEvents="none">
+                    <Checkbox isChecked={isSelected} disabled={isSkeleton || isLocked} />
                 </View>
-            </View>
-            <Cell.Content>
-                <Cell.Row>
-                    <View style={styles.titleRow}>
-                        <Cell.Title>
-                            {isSkeleton
-                                ? undefined
-                                : t('portfolio.ledgerWallet', { number: account.index + 1 })}
-                        </Cell.Title>
-                    </View>
-                </Cell.Row>
-                <Cell.Row>
-                    <Cell.Subtitle skeleton={isBalanceLoading} skeletonWidth={140}>
-                        {isSkeleton || isBalanceLoading || !('address' in account)
-                            ? undefined
-                            : `${formattedBalance} · ${ellipsisMiddle(account.address)}`}
-                    </Cell.Subtitle>
-                </Cell.Row>
-            </Cell.Content>
-            <View pointerEvents="none">
-                <Checkbox isChecked={isSelected} disabled={isSkeleton} />
-            </View>
-        </Cell>
+            }
+        />
     );
 };

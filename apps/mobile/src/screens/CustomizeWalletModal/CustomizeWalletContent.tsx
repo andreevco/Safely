@@ -6,11 +6,12 @@ import { TextInput, View } from 'react-native';
 import { KeyboardAwareScrollView, KeyboardStickyView } from 'react-native-keyboard-controller';
 import { useUnistyles } from 'react-native-unistyles';
 
+import type { PortfolioMetaIcon } from '@safely/core';
+import { allowedPortfolioMetaColors, allowedPortfolioMetaEmojis } from '@safely/core';
+
 import { ColorPicker, EmojiPicker, Text } from '@mobile/shared/ui';
 import { smoothstepGradient, useAutoFocus } from '@mobile/shared/utils';
 
-import type { WalletIcon } from './constants';
-import { WALLET_COLORS, WALLET_EMOJIS } from './constants';
 import { styles } from './CustomizeWalletContent.styles';
 
 interface CustomizeWalletContentProps {
@@ -18,8 +19,8 @@ interface CustomizeWalletContentProps {
     description: string;
     walletName: string;
     onWalletNameChange: (value: string) => void;
-    selectedIcon: WalletIcon;
-    onIconChange: (icon: WalletIcon) => void;
+    selectedIcon: PortfolioMetaIcon;
+    onIconChange: (icon: PortfolioMetaIcon) => void;
     disabled?: boolean;
     onSubmitEditing?: () => void;
 }
@@ -42,7 +43,7 @@ export const CustomizeWalletContent = ({
     styles.useVariants({ focused: isFocused });
 
     const handleIconChange = useCallback(
-        (icon: WalletIcon) => {
+        (icon: PortfolioMetaIcon) => {
             selectionAsync();
             onIconChange(icon);
         },
@@ -100,7 +101,7 @@ export const CustomizeWalletContent = ({
                     keyboardShouldPersistTaps="handled"
                 >
                     <ColorPicker
-                        colors={WALLET_COLORS}
+                        colors={allowedPortfolioMetaColors}
                         selectedColor={
                             selectedIcon.type === 'color' ? selectedIcon.value : undefined
                         }
@@ -108,7 +109,7 @@ export const CustomizeWalletContent = ({
                     />
 
                     <EmojiPicker
-                        emojis={WALLET_EMOJIS}
+                        emojis={allowedPortfolioMetaEmojis}
                         onEmojiSelect={emoji => handleIconChange({ type: 'emoji', value: emoji })}
                     />
                 </KeyboardAwareScrollView>

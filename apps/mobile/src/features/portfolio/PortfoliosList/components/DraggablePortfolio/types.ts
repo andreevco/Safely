@@ -10,6 +10,7 @@ export type DraggablePortfolioProps = {
     engine: ReorderEngine;
     activePortfolioId: Portfolio['id'];
     activeDerivationIndex: number | undefined;
+    isActiveOverview: boolean;
     onReorder: (orderedIds: string[]) => void;
     onMeasure: (id: string, height: number) => void;
     handleSelect: (portfolio: Portfolio, derivationIndex?: number) => void;

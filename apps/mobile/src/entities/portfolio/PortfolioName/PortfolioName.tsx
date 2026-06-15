@@ -66,13 +66,7 @@ export const PortfolioName = (props: PortfolioNameProps) => {
                     {meta.name}
                 </Text>
             </View>
-            {tag && (
-                <View style={styles.tag}>
-                    <Text variant="bodyS" color="secondary">
-                        #{tag}
-                    </Text>
-                </View>
-            )}
+            {tag && <Badge isUppercase>{String(tag)}</Badge>}
             {badgeLabel && (
                 <Badge type={watchOnlyBadgeType} isUppercase>
                     {badgeLabel}

@@ -16,9 +16,15 @@ import { useLedgerSession } from './LedgerSigningProvider';
 const ACCOUNT_COUNT = 10;
 const DERIVATIONS_SEARCH_TIMEOUT = 20_000;
 
-export const useLedgerAccounts = () => {
+export const useLedgerAccounts = (options?: { lockedIndexes?: number[] }) => {
     const { getDmk, sessionId, selectedDevice } = useLedgerSession();
-    const [selectedIndexes, setSelectedIndexes] = useState<Set<number>>(new Set());
+    const lockedIndexes = useMemo(
+        () => new Set(options?.lockedIndexes ?? []),
+        [options?.lockedIndexes]
+    );
+    const [selectedIndexes, setSelectedIndexes] = useState<Set<number>>(
+        () => new Set(lockedIndexes)
+    );
     const hasPreselected = useRef(false);
 
     const { data, isError, refetch } = useQuery({
@@ -54,7 +60,7 @@ export const useLedgerAccounts = () => {
     }, [isLoading]);
 
     useEffect(() => {
-        if (hasPreselected.current || accounts.length === 0) {
+        if (hasPreselected.current || accounts.length === 0 || lockedIndexes.size > 0) {
             return;
         }
 
@@ -71,21 +77,28 @@ export const useLedgerAccounts = () => {
         if (fundedIndexes.length > 0) {
             setSelectedIndexes(new Set(fundedIndexes));
         }
-    }, [accounts, balances]);
+    }, [accounts, balances, lockedIndexes]);
 
-    const toggle = useCallback((index: number) => {
-        setSelectedIndexes(prev => {
-            const next = new Set(prev);
-
-            if (next.has(index)) {
-                next.delete(index);
-            } else {
-                next.add(index);
+    const toggle = useCallback(
+        (index: number) => {
+            if (lockedIndexes.has(index)) {
+                return;
             }
 
-            return next;
-        });
-    }, []);
+            setSelectedIndexes(prev => {
+                const next = new Set(prev);
+
+                if (next.has(index)) {
+                    next.delete(index);
+                } else {
+                    next.add(index);
+                }
+
+                return next;
+            });
+        },
+        [lockedIndexes]
+    );
 
     const readMasterFingerprint = useCallback(
         (): Promise<string> => getLedgerMasterFingerprint(getDmk(), sessionId ?? ''),
@@ -111,6 +124,7 @@ export const useLedgerAccounts = () => {
         accounts,
         balances,
         selectedIndexes,
+        lockedIndexes,
         selectedAccounts,
         toggle,
         readMasterFingerprint,

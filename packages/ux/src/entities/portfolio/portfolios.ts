@@ -8,6 +8,7 @@ import type {
     IMnemonicAccessor,
     Portfolio,
     PortfolioMeta,
+    PortfolioMetaIcon,
     PortfolioWatchOnly,
     ISecretEncryptor,
     ITreeStorage,
@@ -26,7 +27,12 @@ import {
     PortfolioNetworkType,
     PortfolioType
 } from '@safely/core';
-import { isBip39SPortfolio, isDerivableSPortfolio, type SPortfolio } from '@safely/sync-storage';
+import {
+    isBip39SPortfolio,
+    isDerivableSPortfolio,
+    sDerivation,
+    type SPortfolio
+} from '@safely/sync-storage';
 
 import {
     useTranslate,
@@ -270,11 +276,75 @@ export function useReorderDerivations() {
     });
 }
 
+export function useUpdateDerivationMeta() {
+    const client = useQueryClient();
+    const accountQueryKey = useActiveAccountQueryKey();
+    const update = useActiveAccountSyncStorageSlotUpdate('portfolios');
+
+    return useMutation<
+        void,
+        Error,
+        { portfolio: Portfolio; derivationIndex: number; name?: string; icon?: PortfolioMetaIcon }
+    >({
+        async mutationFn({ portfolio, derivationIndex, name, icon }) {
+            if (portfolio.type === PortfolioType.WATCH_ONLY) return;
+
+            const next = portfolio.getDerivations().map(d => {
+                const json = d.toJSON();
+                return d.index === derivationIndex ? { ...json, name, icon } : json;
+            });
+
+            await update(draft =>
+                draft.update(portfolio.jsonArrayId(), portfolioDraft => {
+                    portfolioDraft.narrow(isDerivableSPortfolio)?.set('derivations', next);
+                })
+            );
+
+            await client.invalidateQueries({
+                queryKey: accountQueryKey.activePortfolio.toKey()
+            });
+        }
+    });
+}
+
+export function useHideDerivation() {
+    const client = useQueryClient();
+    const accountQueryKey = useActiveAccountQueryKey();
+    const update = useActiveAccountSyncStorageSlotUpdate('portfolios');
+
+    return useMutation<void, Error, { portfolio: Portfolio; derivationIndex: number }>({
+        async mutationFn({ portfolio, derivationIndex }) {
+            if (portfolio.type === PortfolioType.WATCH_ONLY) return;
+
+            const remaining = portfolio.getDerivations().filter(d => d.index !== derivationIndex);
+
+            await update(draft => {
+                if (remaining.length === 0) {
+                    draft.remove(portfolio.jsonArrayId());
+                    return;
+                }
+
+                draft.update(portfolio.jsonArrayId(), portfolioDraft => {
+                    portfolioDraft.narrow(isDerivableSPortfolio)?.set(
+                        'derivations',
+                        remaining.map(d => d.toJSON())
+                    );
+                });
+            });
+
+            await client.invalidateQueries({
+                queryKey: accountQueryKey.activePortfolio.toKey()
+            });
+        }
+    });
+}
+
 type ActivePortfolioEntitiesBip39 = {
     type: 'bip39';
     portfolio: PortfolioBip39 | PortfolioLedger;
     btcWallet: SignableBtcWallet;
     derivation: IDerivation;
+    isOverview: boolean;
 };
 
 type ActivePortfolioEntitiesWatchOnly = {
@@ -344,15 +414,19 @@ export function useActivePortfolioEntitiesQuery() {
                 }
 
                 const derivations = portfolio.getDerivations();
+                const derivationIndex = sActivePortfolioSchema?.derivationIndex;
                 const derivation =
-                    derivations.find(d => d.index === sActivePortfolioSchema?.derivationIndex) ??
-                    derivations[0];
+                    derivations.find(d => d.index === derivationIndex) ?? derivations[0];
+
+                const isOverview =
+                    portfolio.type === PortfolioType.LEDGER && derivationIndex === undefined;
 
                 return {
                     type: 'bip39' as const,
                     portfolio,
                     btcWallet: derivation.chains.btc.wallets[0],
-                    derivation
+                    derivation,
+                    isOverview
                 };
             },
             [portfolios]
@@ -370,6 +444,31 @@ export function useActivePortfolioEntities(): ActivePortfolioEntities {
 
 export function useHasPortfolio() {
     return useActivePortfolioEntitiesQuery().data !== null;
+}
+
+export function useIsActivePortfolioOverview(): boolean {
+    const entities = useActivePortfolioEntitiesQuery().data;
+    return entities?.type === 'bip39' && entities.isOverview;
+}
+
+export function useActiveWalletMeta(): PortfolioMeta {
+    const t = useTranslate();
+    const entities = useActivePortfolioEntities();
+
+    if (entities.type === 'watch-only') {
+        return entities.portfolio.meta;
+    }
+
+    const { portfolio, derivation, isOverview } = entities;
+
+    if (portfolio.type === PortfolioType.LEDGER && !isOverview) {
+        return {
+            name: derivation.name ?? t('portfolio.ledgerWallet', { number: derivation.index + 1 }),
+            icon: derivation.icon ?? portfolio.meta.icon
+        };
+    }
+
+    return portfolio.meta;
 }
 
 export function useIsActivePortfolioWatchOnly(): boolean {
@@ -442,6 +541,58 @@ export function useAddLedgerPortfolio() {
             await setActivePortfolio(portfolio);
 
             return portfolio;
+        }
+    });
+}
+
+export function useUpdateLedgerDerivations() {
+    const client = useQueryClient();
+    const accountQueryKey = useActiveAccountQueryKey();
+    const update = useActiveAccountSyncStorageSlotUpdate('portfolios');
+
+    return useMutation<
+        void,
+        Error,
+        {
+            portfolio: PortfolioLedger;
+            accounts: { index: number; xpub: string }[];
+            meta?: PortfolioMeta;
+        }
+    >({
+        async mutationFn({ portfolio, accounts, meta }) {
+            const byIndex = new Map(portfolio.getDerivations().map(d => [d.index, d.toJSON()]));
+
+            for (const account of accounts) {
+                if (!byIndex.has(account.index)) {
+                    byIndex.set(
+                        account.index,
+                        sDerivation.toJson({
+                            index: account.index,
+                            chains: { btc: { xpub: account.xpub } }
+                        })
+                    );
+                }
+            }
+
+            const next = [...byIndex.values()].sort((a, b) => a.index - b.index);
+
+            await update(draft =>
+                draft.update(portfolio.jsonArrayId(), portfolioDraft => {
+                    const derivableDraft = portfolioDraft.narrow(isDerivableSPortfolio);
+
+                    if (!derivableDraft) return;
+
+                    derivableDraft.set('derivations', next);
+
+                    if (meta) {
+                        derivableDraft.set('meta', meta);
+                    }
+                })
+            );
+
+            await client.invalidateQueries({
+                queryKey: accountQueryKey.activePortfolio.toKey()
+            });
         }
     });
 }
@@ -526,7 +677,13 @@ export function useActivePortfolio() {
 }
 
 export function useActiveBtcWallet(): BtcWalletReadOnly {
-    return resolveBtcWallet(useActivePortfolio());
+    const entities = useActivePortfolioEntities();
+
+    if (entities.type === 'watch-only') {
+        return entities.portfolio.wallet;
+    }
+
+    return entities.btcWallet;
 }
 
 export function useActiveSignableBtcWallet(): SignableBtcWallet {

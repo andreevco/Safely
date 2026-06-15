@@ -25,8 +25,9 @@ interface PortfoliosListProps {
 const estimateHeight = (portfolio: Portfolio): number => {
     const count =
         portfolio.type === PortfolioType.WATCH_ONLY ? 1 : portfolio.getDerivations().length;
+    const isGroup = portfolio.type === PortfolioType.LEDGER || count > 1;
 
-    return count > 1 ? ROW_HEIGHT * (count + 1) : ROW_HEIGHT;
+    return isGroup ? ROW_HEIGHT * (count + 1) : ROW_HEIGHT;
 };
 
 const buildHeights = (
@@ -50,7 +51,9 @@ export const PortfoliosList = (props: PortfoliosListProps) => {
 
     const active = useActivePortfolioEntities();
     const activePortfolioId = active.portfolio.id;
-    const activeDerivationIndex = active.type === 'bip39' ? active.derivation.index : undefined;
+    const isActiveOverview = active.type === 'bip39' && active.isOverview;
+    const activeDerivationIndex =
+        active.type === 'bip39' && !active.isOverview ? active.derivation.index : undefined;
 
     const gap = variant === 'compact' ? 0 : 2;
     const itemsCount = portfolios.length;
@@ -117,6 +120,7 @@ export const PortfoliosList = (props: PortfoliosListProps) => {
                         engine={engine}
                         activePortfolioId={activePortfolioId}
                         activeDerivationIndex={activeDerivationIndex}
+                        isActiveOverview={isActiveOverview}
                         onReorder={handleReorder}
                         onMeasure={handleMeasure}
                         handleSelect={handleSelect}

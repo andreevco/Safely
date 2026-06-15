@@ -1,9 +1,14 @@
-import type { BtcWallet, Portfolio } from '@safely/core';
+import { useMemo } from 'react';
+
+import type { BtcWallet, FiatAssetAmount, Portfolio } from '@safely/core';
+import { BTC_ASSET } from '@safely/core';
 
 import { useDerivedQuery } from '../../shared';
+import { useBtcWalletBalances } from '../btc-blockchain';
 import { useActiveFiat } from '../fiat';
 import { resolveBtcWallet } from '../portfolio';
 import { useWalletAssets } from './useAssets';
+import { useRate } from './useRate';
 import { calculateTotalBalance } from './utils';
 
 export function useBtcWalletFiatBalance(wallet: BtcWallet) {
@@ -23,4 +28,30 @@ export function useBtcWalletFiatBalance(wallet: BtcWallet) {
 
 export function usePortfolioBalance(portfolio: Portfolio) {
     return useBtcWalletFiatBalance(resolveBtcWallet(portfolio));
+}
+
+export function useBtcWalletsFiatBalance(wallets: BtcWallet[]): {
+    data: FiatAssetAmount | undefined;
+    isLoading: boolean;
+} {
+    const fiat = useActiveFiat();
+    const btcPriceQuery = useRate(BTC_ASSET);
+    const balances = useBtcWalletBalances(wallets);
+
+    const isLoading = btcPriceQuery.isPending || balances.some(balance => balance === undefined);
+
+    const data = useMemo(() => {
+        if (isLoading) {
+            return undefined;
+        }
+
+        const assets = balances.map(balance => ({
+            amount: balance!.display,
+            price: btcPriceQuery.data ?? null
+        }));
+
+        return calculateTotalBalance(assets, fiat);
+    }, [isLoading, balances, btcPriceQuery.data, fiat]);
+
+    return { data, isLoading };
 }

@@ -32,6 +32,8 @@ type LedgerSessionContextValue = {
     sessionId: string | null;
     setSessionId: (sessionId: string | null) => void;
     disconnectSession: () => void;
+    findMorePortfolioId: string | null;
+    setFindMorePortfolioId: (portfolioId: string | null) => void;
 };
 
 const LedgerSigningContext = createContext<LedgerSigningContextValue | null>(null);
@@ -49,6 +51,7 @@ export const LedgerSigningProvider = (props: LedgerSigningProviderProps) => {
     const [sessionId, setSessionIdState] = useState<string | null>(null);
     const [activeActor, setActiveActor] = useState<LedgerSigningActor | null>(null);
     const [selectedDevice, setSelectedDevice] = useState<DiscoveredDevice | null>(null);
+    const [findMorePortfolioId, setFindMorePortfolioId] = useState<string | null>(null);
     const dmkRef = useRef<DeviceManagementKit | null>(null);
     const sessionIdRef = useRef<string | null>(null);
 
@@ -131,9 +134,11 @@ export const LedgerSigningProvider = (props: LedgerSigningProviderProps) => {
             setSelectedDevice,
             sessionId,
             setSessionId,
-            disconnectSession
+            disconnectSession,
+            findMorePortfolioId,
+            setFindMorePortfolioId
         }),
-        [getDmk, selectedDevice, sessionId, setSessionId, disconnectSession]
+        [getDmk, selectedDevice, sessionId, setSessionId, disconnectSession, findMorePortfolioId]
     );
 
     return (

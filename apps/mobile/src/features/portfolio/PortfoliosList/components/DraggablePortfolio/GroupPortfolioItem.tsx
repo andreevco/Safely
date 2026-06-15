@@ -4,6 +4,8 @@ import type { GestureType } from 'react-native-gesture-handler';
 import { GestureDetector } from 'react-native-gesture-handler';
 import Animated from 'react-native-reanimated';
 
+import { PortfolioType } from '@safely/core';
+
 import { PortfolioName } from '@mobile/entities/portfolio';
 import { Cell, Draggable } from '@mobile/shared/ui';
 
@@ -20,6 +22,7 @@ export const GroupPortfolioItem = memo((props: DraggablePortfolioProps) => {
         engine,
         activePortfolioId,
         activeDerivationIndex,
+        isActiveOverview,
         onReorder,
         onMeasure,
         handleSelect
@@ -27,6 +30,11 @@ export const GroupPortfolioItem = memo((props: DraggablePortfolioProps) => {
 
     const derivations = getDerivations(portfolio);
     const isActivePortfolio = activePortfolioId.isEq(portfolio.id);
+    const isLedger = portfolio.type === PortfolioType.LEDGER;
+    const isOverviewActive = isActivePortfolio && isActiveOverview;
+
+    const handleHeaderPress = () =>
+        isLedger ? handleSelect(portfolio) : handleSelect(portfolio, derivations[0]?.index);
 
     const groupPanRef = useRef<GestureType | undefined>(undefined);
     const groupTapRef = useRef<GestureType | undefined>(undefined);
@@ -41,7 +49,7 @@ export const GroupPortfolioItem = memo((props: DraggablePortfolioProps) => {
             onReorder={onReorder}
             onMeasure={onMeasure}
             activationDelay={150}
-            onPress={() => handleSelect(portfolio, derivations[0]?.index)}
+            onPress={handleHeaderPress}
             panRef={groupPanRef}
             tapRef={groupTapRef}
         >
@@ -49,7 +57,10 @@ export const GroupPortfolioItem = memo((props: DraggablePortfolioProps) => {
                 <GestureDetector gesture={gesture}>
                     <View>
                         <Animated.View style={underlayStyle} />
-                        <Cell style={styles.item}>
+                        <Cell
+                            background={isOverviewActive ? 'tertiary' : undefined}
+                            style={styles.item}
+                        >
                             <Cell.Content>
                                 <Cell.Row style={styles.row}>
                                     <PortfolioName

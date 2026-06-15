@@ -6,8 +6,7 @@ export const styles = StyleSheet.create(theme => ({
     },
     row: {
         alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingRight: theme.spacing[6]
+        justifyContent: 'space-between'
     },
     address: {
         flexDirection: 'row',
@@ -15,7 +14,7 @@ export const styles = StyleSheet.create(theme => ({
         gap: theme.spacing[12]
     },
     badgeColumn: {
-        width: 32,
+        minWidth: 20,
         alignItems: 'flex-start'
     }
 }));

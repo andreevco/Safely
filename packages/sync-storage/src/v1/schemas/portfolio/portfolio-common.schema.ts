@@ -14,7 +14,7 @@ const sPortfolioMetaIconColor = z.object({
     value: z.string()
 });
 
-const sPortfolioMetaIcon = z.union([sPortfolioMetaIconEmoji, sPortfolioMetaIconColor]);
+export const sPortfolioMetaIcon = z.union([sPortfolioMetaIconEmoji, sPortfolioMetaIconColor]);
 
 export const sPortfolioMeta = z.object({
     name: z.string(),

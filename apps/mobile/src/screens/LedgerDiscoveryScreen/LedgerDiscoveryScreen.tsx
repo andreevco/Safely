@@ -14,12 +14,18 @@ export const LedgerDiscoveryScreen = () => {
     const { t } = useTranslation();
     const navigation = useNavigation();
     const { devices } = useLedgerDeviceScan();
-    const { setSelectedDevice, disconnectSession } = useLedgerSession();
+    const { setSelectedDevice, disconnectSession, setFindMorePortfolioId } = useLedgerSession();
     const hasNavigated = useRef(false);
 
     const device = devices[0];
 
-    useEffect(() => disconnectSession, [disconnectSession]);
+    useEffect(
+        () => () => {
+            disconnectSession();
+            setFindMorePortfolioId(null);
+        },
+        [disconnectSession, setFindMorePortfolioId]
+    );
 
     useEffect(() => {
         if (!device || hasNavigated.current) {

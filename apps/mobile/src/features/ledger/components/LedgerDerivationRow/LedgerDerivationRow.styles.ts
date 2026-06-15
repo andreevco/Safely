@@ -4,8 +4,11 @@ export const styles = StyleSheet.create(theme => ({
     container: {
         gap: 0
     },
+    dimmed: {
+        opacity: 0.4
+    },
     badgeColumn: {
-        width: 48,
+        minWidth: 46,
         alignItems: 'flex-start'
     },
     badge: {

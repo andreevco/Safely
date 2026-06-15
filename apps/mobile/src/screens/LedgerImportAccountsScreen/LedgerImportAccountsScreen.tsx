@@ -1,14 +1,22 @@
 import { useNavigation } from '@react-navigation/core';
 import { CommonActions, StackActions } from '@react-navigation/native';
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import type { PortfolioMeta } from '@safely/core';
-import { useAddLedgerPortfolio, useLoader, useToast } from '@safely/ux';
+import type { PortfolioLedger, PortfolioMeta } from '@safely/core';
+import { PortfolioType } from '@safely/core';
+import {
+    useAddLedgerPortfolio,
+    useLoader,
+    usePortfolios,
+    useSetActivePortfolio,
+    useToast,
+    useUpdateLedgerDerivations
+} from '@safely/ux';
 
 import { handleDuplicatePortfolio } from '@mobile/features/add-wallet/handleDuplicatePortfolio';
-import { useLedgerAccounts } from '@mobile/features/ledger';
+import { useLedgerAccounts, useLedgerSession } from '@mobile/features/ledger';
 import { Button, List, Screen, Text } from '@mobile/shared/ui';
 
 import { LedgerAccountCell } from './components';
@@ -22,22 +30,92 @@ export const LedgerImportAccountsScreen = () => {
     const { withLoader } = useLoader();
     const toast = useToast();
     const { mutateAsync: addLedgerPortfolio } = useAddLedgerPortfolio();
+    const { mutateAsync: setActivePortfolio } = useSetActivePortfolio();
+    const { mutateAsync: updateLedgerDerivations } = useUpdateLedgerDerivations();
+
+    const { findMorePortfolioId } = useLedgerSession();
+    const portfolios = usePortfolios();
+
+    const findMorePortfolio = useMemo(
+        () =>
+            findMorePortfolioId
+                ? (portfolios.find(
+                      p =>
+                          p.id.toString() === findMorePortfolioId && p.type === PortfolioType.LEDGER
+                  ) as PortfolioLedger | undefined)
+                : undefined,
+        [portfolios, findMorePortfolioId]
+    );
+
+    const lockedIndexes = useMemo(
+        () => findMorePortfolio?.getDerivations().map(d => d.index),
+        [findMorePortfolio]
+    );
+
     const {
         accounts,
         balances,
         selectedIndexes,
+        lockedIndexes: lockedSet,
         selectedAccounts,
         toggle,
         readMasterFingerprint,
         retry,
         isError,
         isTimedOut
-    } = useLedgerAccounts();
+    } = useLedgerAccounts({ lockedIndexes });
 
     const isDerived = accounts.length > 0;
     const showRetry = isError || isTimedOut;
 
     const handleContinue = useCallback(async () => {
+        if (findMorePortfolio) {
+            let masterFingerprint: string;
+            try {
+                masterFingerprint = await withLoader(() => readMasterFingerprint());
+            } catch {
+                return;
+            }
+
+            if (masterFingerprint !== findMorePortfolio.masterFingerprint) {
+                toast(t('addWallet.connectLedger.importAccounts.wrongDevice'));
+                return;
+            }
+
+            navigation.dispatch(
+                CommonActions.navigate('CustomizeWalletModal', {
+                    hasBackButton: true,
+                    initialMeta: {
+                        name: findMorePortfolio.meta.name,
+                        icon: findMorePortfolio.meta.icon
+                    },
+                    onSave: async (meta: PortfolioMeta) => {
+                        await withLoader(() =>
+                            updateLedgerDerivations({
+                                portfolio: findMorePortfolio,
+                                accounts: selectedAccounts,
+                                meta
+                            })
+                        );
+
+                        await setActivePortfolio({ id: findMorePortfolio.id });
+
+                        navigation.dispatch(
+                            CommonActions.reset({
+                                index: 0,
+                                routes: [{ name: 'TabsNavigator' }]
+                            })
+                        );
+                    },
+                    onCompleteCustomize: () => {
+                        navigation.goBack();
+                    }
+                })
+            );
+
+            return;
+        }
+
         let masterFingerprint: string;
         try {
             masterFingerprint = await withLoader(() => readMasterFingerprint());
@@ -73,7 +151,18 @@ export const LedgerImportAccountsScreen = () => {
                 }
             })
         );
-    }, [withLoader, readMasterFingerprint, navigation, addLedgerPortfolio, selectedAccounts]);
+    }, [
+        findMorePortfolio,
+        withLoader,
+        readMasterFingerprint,
+        navigation,
+        addLedgerPortfolio,
+        updateLedgerDerivations,
+        setActivePortfolio,
+        selectedAccounts,
+        toast,
+        t
+    ]);
 
     const handleRetry = useCallback(async () => {
         const recovered = await retry();
@@ -107,7 +196,16 @@ export const LedgerImportAccountsScreen = () => {
                                       account={account}
                                       balance={balances[i]}
                                       isSelected={selectedIndexes.has(account.index)}
-                                      onPress={() => toggle(account.index)}
+                                      isLocked={lockedSet.has(account.index)}
+                                      onPress={() =>
+                                          lockedSet.has(account.index)
+                                              ? toast(
+                                                    t(
+                                                        'addWallet.connectLedger.importAccounts.alreadyImported'
+                                                    )
+                                                )
+                                              : toggle(account.index)
+                                      }
                                   />
                               ))
                             : SkeletonAccounts.map((_, index) => (
