@@ -5,7 +5,7 @@ import { View } from 'react-native';
 
 import type { Provider } from '@safely/core';
 import { useDismissProvider, useLinking, useOpenOnramp } from '@safely/ux';
-import { useErrorToast } from '@safely/ux/entities/errors';
+import { useErrorToast } from '@safely/ux';
 
 import {
     BottomSheet,
@@ -34,7 +34,7 @@ export const ProviderSheet = ({
     const { openOnramp, isPending } = useOpenOnramp();
     const { mutateAsync: dismissProvider } = useDismissProvider();
 
-    const errorToast = useErrorToast();
+    const errorToast = useErrorToast({});
 
     const handleToggleDontShowAgain = () => {
         setDontShowAgain(prev => !prev);
@@ -42,18 +42,15 @@ export const ProviderSheet = ({
 
     const handleContinue = async () => {
         if (dontShowAgain) {
-            const handleContinue = async () => {
-                try {
-                    if (dontShowAgain) {
-                        await dismissProvider(provider.info.id);
-                    }
-                    await openOnramp(provider);
-                } catch (error) {
-                    errorToast(error);
+            try {
+                if (dontShowAgain) {
+                    await dismissProvider(provider.info.id);
                 }
-            };
+                await openOnramp(provider);
+            } catch (error) {
+                errorToast(error);
+            }
         }
-        await openOnramp(provider);
     };
 
     return (
