@@ -2,8 +2,8 @@ import { useNavigation } from '@react-navigation/core';
 import { CommonActions, useFocusEffect } from '@react-navigation/native';
 import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { TextInput, View } from 'react-native';
-import { useUnistyles } from 'react-native-unistyles';
+import type { TextInput } from 'react-native';
+import { View } from 'react-native';
 
 import type { PortfolioMeta } from '@safely/core';
 import {
@@ -18,15 +18,12 @@ import { useAddWatchOnlyPortfolio, useLoader, usePortfolios } from '@safely/ux';
 
 import { handleDuplicatePortfolio } from '@mobile/features/add-wallet/handleDuplicatePortfolio';
 import { TEST_ID } from '@mobile/shared/constants';
-import { Button, Screen, Text } from '@mobile/shared/ui';
-import { Icon, XmarkCircle16 } from '@mobile/shared/ui/Icon';
-import { TouchableOpacity } from '@mobile/shared/ui/TouchableOpacity';
+import { Button, Input, Screen, Text } from '@mobile/shared/ui';
 
 import { styles } from './AddWatchOnlyScreen.styles';
 
 export const AddWatchOnlyScreen = () => {
     const { t } = useTranslation();
-    const { theme } = useUnistyles();
     const navigation = useNavigation();
     const portfolios = usePortfolios();
     const { withLoader } = useLoader();
@@ -34,8 +31,6 @@ export const AddWatchOnlyScreen = () => {
 
     const inputRef = useRef<TextInput>(null);
     const [address, setAddress] = useState('');
-    const [isFocused, setIsFocused] = useState(false);
-    const hasValue = address.length > 0;
 
     useFocusEffect(
         useCallback(() => {
@@ -47,10 +42,6 @@ export const AddWatchOnlyScreen = () => {
         }, [])
     );
 
-    const handleClear = useCallback(() => {
-        setAddress('');
-    }, []);
-
     const trimmedInput = address.trim();
     const isValidAddress = BtcAddress.validate(trimmedInput);
     const isValidPubkey = BtcXpub.validate(trimmedInput);
@@ -58,11 +49,6 @@ export const AddWatchOnlyScreen = () => {
 
     const isValidInput = isValidAddress || isValidSupportedPubkey;
     const displayError = !isValidInput && trimmedInput.length >= 20;
-
-    styles.useVariants({
-        focused: isFocused,
-        error: displayError
-    });
 
     const handleNext = useCallback(() => {
         const portfolioId = toPortfolioIdWatchOnly(
@@ -133,15 +119,14 @@ export const AddWatchOnlyScreen = () => {
                     </Text>
                 </View>
 
-                <View style={styles.inputContainer}>
-                    <TextInput
+                <Input style={styles.inputWrapper}>
+                    <Input.Field
                         testID={TEST_ID.watchOnly.addressInput}
                         ref={inputRef}
                         value={address}
                         onChangeText={setAddress}
-                        onFocus={() => setIsFocused(true)}
-                        onBlur={() => setIsFocused(false)}
-                        style={[styles.input, { color: theme.colors.text.primary }]}
+                        errored={displayError}
+                        withClearButton
                         multiline
                         submitBehavior="submit"
                         returnKeyType="next"
@@ -150,28 +135,17 @@ export const AddWatchOnlyScreen = () => {
                         autoCorrect={false}
                         spellCheck={false}
                         placeholder={t('addWallet.watchAccount.placeholder')}
-                        placeholderTextColor={theme.colors.text.tertiary}
                     />
-                    {hasValue && (
-                        <TouchableOpacity
-                            hitSlop={12}
-                            style={styles.clearButton}
-                            onPress={handleClear}
-                        >
-                            <Icon icon={XmarkCircle16} color="tertiary" />
-                        </TouchableOpacity>
+                    {displayError && (
+                        <Input.Description color="accentRed">
+                            {t(
+                                isValidPubkey && !isValidSupportedPubkey
+                                    ? 'addWallet.watchAccount.unsupportedExtendedKey'
+                                    : 'addWallet.watchAccount.invalidAddress'
+                            )}
+                        </Input.Description>
                     )}
-                </View>
-
-                {displayError && (
-                    <Text style={styles.errorText}>
-                        {t(
-                            isValidPubkey && !isValidSupportedPubkey
-                                ? 'addWallet.watchAccount.unsupportedExtendedKey'
-                                : 'addWallet.watchAccount.invalidAddress'
-                        )}
-                    </Text>
-                )}
+                </Input>
 
                 <View style={styles.infoBox}>
                     <Text variant="bodyM" color="secondary">
