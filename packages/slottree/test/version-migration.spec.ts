@@ -178,6 +178,59 @@ describe('version migration', () => {
         expect(newV3.v.key4).toMatchObject({ t: 0, a: '' });
     });
 
+    it('migrates older-version slots up after merge when device metadata stays latest', () => {
+        const sharedDevice = Buffer.from('shared-device');
+        const sharedDeviceHex = sharedDevice.toString('hex');
+        const receivingRoot = createOriginContainer({
+            '3': slotFromJson(
+                {
+                    key1: 0,
+                    label: 'initial',
+                    key3: false,
+                    key4: 'v3'
+                },
+                0,
+                ''
+            ),
+            [DEVICES_KEY]: slotFromJson(
+                {
+                    [sharedDeviceHex]: { version: 3 }
+                },
+                100,
+                sharedDeviceHex
+            )
+        });
+        const incomingRoot = createOriginContainer({
+            '1': slotFromJson({ key1: 42, key2: 'from-v1' }, 50, sharedDeviceHex),
+            [DEVICES_KEY]: slotFromJson(
+                {
+                    [sharedDeviceHex]: { version: 1 }
+                },
+                50,
+                sharedDeviceHex
+            )
+        });
+        const receivingDevice = createStorage({
+            authorId: sharedDevice,
+            versions: v3,
+            root: receivingRoot
+        }) as StorageImpl<StorageV3>;
+        const incomingStorage = createStorage({
+            authorId: Buffer.from('reader'),
+            versions: v1,
+            root: incomingRoot
+        }) as StorageImpl<StorageV1>;
+
+        receivingDevice.merge(incomingStorage.export());
+
+        expect(receivingDevice.read()).toEqual({
+            key1: 42,
+            label: 'from-v1',
+            key3: false,
+            key4: 'v3'
+        });
+    });
+
     it('preserves tombstones through raw slot patches', () => {
         const schemaOptionalV1 = z.object({
             keep: z.string(),

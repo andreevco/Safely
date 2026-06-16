@@ -14,11 +14,11 @@ export class VersionPropagation {
         root: ContainerSlot,
         protocol: MergeProtocol
     ): void {
-        const deviceVersions = this.deviceVersions(root);
-        if (deviceVersions.size <= 1) {
+        const activeVersions = this.activeVersionsForMerge(root);
+        if (activeVersions.size <= 1) {
             return;
         }
-        const minVersion = Math.min(...deviceVersions);
+        const minVersion = Math.min(...activeVersions);
         const minVersionIndex = this.versions.findIndex(version => version.version === minVersion);
 
         let current: ContainerSlot | undefined;
@@ -113,6 +113,18 @@ export class VersionPropagation {
         }
 
         return deviceVersions;
+    }
+
+    private activeVersionsForMerge(root: ContainerSlot): Set<number> {
+        const activeVersions = this.deviceVersions(root);
+
+        for (const version of Object.keys(root.v)) {
+            if (this.versions.find(x => String(x.version) === version)) {
+                activeVersions.add(Number(version));
+            }
+        }
+
+        return activeVersions;
     }
 
     private mergeIntoExistingVersion(
