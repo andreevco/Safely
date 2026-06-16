@@ -3,6 +3,8 @@ import { CommonActions } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
+import { PortfolioNetworkType } from '@safely/core';
+
 import { BottomSheet, Button, Text, useBottomSheet, useCloseOnReturn } from '@mobile/shared/ui';
 
 import { styles } from './WatchOnlySheet.styles';
@@ -17,7 +19,10 @@ const WatchOnlyContent = () => {
         markNavigated();
         navigation.dispatch(
             CommonActions.navigate('AddWalletModal', {
-                screen: 'ImportWalletModal'
+                screen: 'ImportWalletModal',
+                params: {
+                    networkType: PortfolioNetworkType.MAINNET
+                }
             })
         );
     };

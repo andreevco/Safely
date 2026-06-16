@@ -77,6 +77,85 @@ describe('storage updates', () => {
         expect(calls).toBe(0);
     });
 
+    it('returns comparable revisions for top-level keys', () => {
+        const key1Before = storage.getTopLevelRevision('key1');
+        const key2Before = storage.getTopLevelRevision('key2');
+
+        storage.transaction(draft => {
+            draft.set('key1', 10);
+        });
+
+        const key1After = storage.getTopLevelRevision('key1');
+        const key2After = storage.getTopLevelRevision('key2');
+
+        if (
+            key1Before === undefined ||
+            key1After === undefined ||
+            key2Before === undefined ||
+            key2After === undefined
+        ) {
+            throw new Error('Expected existing keys to have revisions');
+        }
+
+        expect(key1After.compare(key1Before)).toBeGreaterThan(0);
+        expect(key2After.compare(key2Before)).toBe(0);
+    });
+
+    it('updates a top-level revision when a nested child changes', () => {
+        const schema = z.object({
+            profile: z.object({
+                meta: z.object({
+                    count: z.number()
+                })
+            }),
+            label: z.string()
+        });
+        const version = defineVersionHList(
+            hCons(
+                {
+                    version: 1,
+                    schema,
+                    initial: {
+                        profile: {
+                            meta: {
+                                count: 0
+                            }
+                        },
+                        label: 'initial'
+                    },
+                    projectUp: cloneSlot,
+                    projectDown: cloneSlot
+                },
+                hNil
+            )
+        );
+        const nestedStorage = createStorage({
+            authorId: Buffer.from('device-1'),
+            versions: version
+        });
+        const profileBefore = nestedStorage.getTopLevelRevision('profile');
+        const labelBefore = nestedStorage.getTopLevelRevision('label');
+
+        nestedStorage.transaction(draft => {
+            draft.at('profile').at('meta').set('count', 1);
+        });
+
+        const profileAfter = nestedStorage.getTopLevelRevision('profile');
+        const labelAfter = nestedStorage.getTopLevelRevision('label');
+
+        if (
+            profileBefore === undefined ||
+            profileAfter === undefined ||
+            labelBefore === undefined ||
+            labelAfter === undefined
+        ) {
+            throw new Error('Expected existing keys to have revisions');
+        }
+
+        expect(profileAfter.compare(profileBefore)).toBeGreaterThan(0);
+        expect(labelAfter.compare(labelBefore)).toBe(0);
+    });
+
     it('reads current values from an update draft', () => {
         storage.transaction(draft => {
             draft.set('key1', 10);

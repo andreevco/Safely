@@ -3,13 +3,13 @@ import Big from 'big.js';
 
 import type { Logger } from '@safely/sync';
 
+import type { NumberFormatLocale } from './locale-adapter';
+import type { CryptoCurrencyDisplay, FiatCurrencyDisplay } from './types';
 import type { CryptoAssetAmount, FiatAssetAmount } from '../../entities';
 import { isCryptoAsset } from '../../entities/asset/crypto-asset';
 import { isFiatAsset } from '../../entities/asset/fiat-asset';
-import { assertUnreachable } from '../types';
-import type { NumberFormatLocale } from './locale-adapter';
-import type { CryptoCurrencyDisplay, FiatCurrencyDisplay } from './types';
 import { SPACE } from '../string';
+import { assertUnreachable } from '../types';
 
 interface FormatCryptoOptions {
     fullPrecision?: boolean;
@@ -192,6 +192,17 @@ export class NumberFormatter {
         return `${sign}${prefix}${formatted}${suffix}`;
     }
 
+    public formatPercent(value: BigSource): string {
+        const bigValue = Big(value);
+        const rounded = this.roundToSignificantFractionDigits(bigValue.abs(), 1);
+        const formatted = this.formatFullPrecision(rounded);
+
+        const sign = bigValue.lt(0) ? '−' : bigValue.gt(0) ? '+' : '';
+        const signPrefix = sign ? `${sign}${SPACE.NNBSP}` : '';
+
+        return `${signPrefix}${formatted}${SPACE.NNBSP}%`;
+    }
+
     private formatNumber(
         value: BigSource,
         options?: { fullPrecision?: boolean; useGrouping?: boolean; minFractionDigits?: number }
@@ -203,6 +214,17 @@ export class NumberFormatter {
         return options?.fullPrecision
             ? this.formatFullPrecision(bigValue, useGrouping, minFractionDigits)
             : this.formatDynamicPrecision(bigValue, useGrouping, minFractionDigits);
+    }
+
+    private roundToSignificantFractionDigits(value: Big, digits: number): Big {
+        const abs = value.abs();
+
+        if (abs.eq(0)) {
+            return value;
+        }
+
+        const decimals = abs.gte(1) ? digits : -abs.e + digits - 1;
+        return value.round(decimals, Big.roundHalfUp);
     }
 
     private formatDynamicPrecision(

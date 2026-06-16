@@ -51,6 +51,7 @@ export function useSendFormMachineInput(props: UseSendFormMachineInputProps): Se
             address: activeBtcWallet.address,
             meta: activePortfolio.meta
         },
+        networkType: activePortfolio.networkType,
         shouldResetForm: () => shouldResetForm,
         onSubmit,
         createContact,

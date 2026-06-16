@@ -1,16 +1,11 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { ViewStyle } from 'react-native';
+import { View, type ViewStyle } from 'react-native';
 
 import type { CryptoAssetAmount, CryptoFiatRate } from '@safely/core';
-import {
-    useActiveBtcWalletUtxo,
-    useLastBtcTransactionTimestamp,
-    useNumberFormatter,
-    useRelativeTime
-} from '@safely/ux';
+import { useActiveBtcWalletUtxo, useNumberFormatter } from '@safely/ux';
 
-import { Cell } from '@mobile/shared/ui';
+import { Cell, ChevronRight12, Icon } from '@mobile/shared/ui';
 
 import { styles } from './BtcAssetCell.styles';
 import { ReceivingBadges } from './ReceivingBadge';
@@ -27,39 +22,14 @@ export const BtcAssetCell = (props: BtcAssetCellProps) => {
     const { t } = useTranslation();
     const formatter = useNumberFormatter();
 
-    const { data: btcUtxo, isPending: isUtxoPending } = useActiveBtcWalletUtxo();
-    const { data: lastTransactionTimestamp, isPending: isHistoryPending } =
-        useLastBtcTransactionTimestamp();
+    const { data: btcUtxo } = useActiveBtcWalletUtxo();
 
     const receivingUtxoValues = useMemo(
         () => btcUtxo?.unconfirmedUnsafe.utxos.map(u => u.value) ?? [],
         [btcUtxo]
     );
 
-    const timeAgo = useRelativeTime(lastTransactionTimestamp ?? null);
-
-    const isSubtitleLoading = isUtxoPending || isHistoryPending;
     const hasReceiving = receivingUtxoValues.length > 0;
-
-    let subtitle;
-
-    if (isSubtitleLoading) {
-        subtitle = <Cell.Subtitle skeletonWidth={140} />;
-    } else if (hasReceiving) {
-        subtitle = <ReceivingBadges utxos={btcUtxo!.unconfirmedUnsafe.utxos} />;
-    } else if (timeAgo) {
-        subtitle = (
-            <Cell.Subtitle color="secondary" numberOfLines={undefined} style={styles.subtitle}>
-                {t('assetCell.lastTransaction', { timeAgo })}
-            </Cell.Subtitle>
-        );
-    } else {
-        subtitle = (
-            <Cell.Subtitle color="secondary" numberOfLines={undefined} style={styles.subtitle}>
-                {t('assetCell.noTransactions')}
-            </Cell.Subtitle>
-        );
-    }
 
     return (
         <Cell showDivider={showDivider} onPress={onPress} style={styles.cell as ViewStyle}>
@@ -72,11 +42,20 @@ export const BtcAssetCell = (props: BtcAssetCellProps) => {
                     </Cell.Value>
                 </Cell.Row>
                 <Cell.Row style={styles.subtitleRow}>
-                    {subtitle}
+                    <View style={styles.subtitleContainer}>
+                        <Cell.Subtitle color="secondary">{t('assetCell.history')}</Cell.Subtitle>
+                        <Icon style={styles.chevron} icon={ChevronRight12} color="tertiary" />
+                    </View>
                     <Cell.Subvalue color="secondary" style={styles.subvalue}>
                         {cryptoAssetAmount.format(formatter, { fullPrecision: true })}
                     </Cell.Subvalue>
                 </Cell.Row>
+
+                {hasReceiving && (
+                    <Cell.Row>
+                        <ReceivingBadges utxos={btcUtxo!.unconfirmedUnsafe.utxos} />
+                    </Cell.Row>
+                )}
             </Cell.Content>
         </Cell>
     );

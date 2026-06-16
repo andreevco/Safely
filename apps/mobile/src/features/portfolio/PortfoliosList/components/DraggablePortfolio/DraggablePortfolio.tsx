@@ -4,7 +4,7 @@ import type { SharedValue } from 'react-native-reanimated';
 import Animated from 'react-native-reanimated';
 
 import type { Portfolio } from '@safely/core';
-import { PortfolioType } from '@safely/core';
+import { PortfolioNetworkType, PortfolioType } from '@safely/core';
 import { useActivePortfolio, useNumberFormatter, usePortfolioBalance } from '@safely/ux';
 
 import { PortfolioName } from '@mobile/entities/portfolio';
@@ -83,6 +83,9 @@ export const DraggablePortfolio = memo((props: DraggablePortfolioProps) => {
                                     gap={12}
                                     size={16}
                                     isWatchOnly={portfolio.type === PortfolioType.WATCH_ONLY}
+                                    isTestnet={
+                                        portfolio.networkType === PortfolioNetworkType.TESTNET
+                                    }
                                 />
                                 <Text
                                     variant="bodyM"

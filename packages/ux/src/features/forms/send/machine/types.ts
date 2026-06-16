@@ -3,6 +3,7 @@ import type {
     Contact,
     CryptoAsset,
     NumberFormatter,
+    PortfolioNetworkType,
     RatedCryptoAssetAmount,
     Recipient
 } from '@safely/core';
@@ -38,6 +39,7 @@ export interface SendFormMachineInput {
     contactSuggestions: ContactSuggestion[];
     ratedAssets: RatedCryptoAssetAmount[];
     activeWallet: PortfolioSuggestion;
+    networkType: PortfolioNetworkType;
 
     shouldResetForm: () => boolean;
     onSubmit: (result: SendFormResult, onSuccess: () => void) => void;
@@ -62,6 +64,7 @@ export interface SendFormMachineContext {
     contactSuggestions: ContactSuggestion[];
     ratedAssets: RatedCryptoAssetAmount[];
     activeWallet: PortfolioSuggestion;
+    networkType: PortfolioNetworkType;
 
     shouldResetForm: SendFormMachineInput['shouldResetForm'];
     onSubmit: SendFormMachineInput['onSubmit'];

@@ -12,6 +12,7 @@ import { BtcFeeType } from '../../../src/blockchain-api/btc/types';
 import type { ExplorerFactory, SignableBtcWallet } from '../../../src/entities';
 import { BtcAssetAmount } from '../../../src/entities/asset';
 import { BtcNetwork, BLOCKCHAIN_NAME } from '../../../src/entities/blockchain';
+import { PortfolioNetworkType } from '../../../src/entities/portfolio/portfolio-network-type';
 import type { BtcSigningRequest } from '../../../src/entities/signer';
 
 const mainnet = NETWORK;
@@ -288,7 +289,10 @@ describe('BtcTransactionTemplate', () => {
             expect(result.toExplorerUrl(explorerFactory)).toBe(
                 'https://explorer.test/tx/tx-explore'
             );
-            expect(explorerFactory.createExplorer).toHaveBeenCalledWith(BLOCKCHAIN_NAME.BTC);
+            expect(explorerFactory.createExplorer).toHaveBeenCalledWith(
+                BLOCKCHAIN_NAME.BTC,
+                PortfolioNetworkType.MAINNET
+            );
         });
     });
 });

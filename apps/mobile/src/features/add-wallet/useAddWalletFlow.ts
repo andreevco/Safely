@@ -5,7 +5,7 @@ import { useCallback } from 'react';
 import type { PortfolioMeta, PortfolioMetaIcon } from '@safely/core';
 import { PortfolioIdBip39Imported } from '@safely/core';
 import { PortfolioIdBip39MasterKeyDerived } from '@safely/core';
-import { MnemonicResource } from '@safely/core';
+import { MnemonicResource, PortfolioNetworkType } from '@safely/core';
 import {
     useActiveAccountStoreSlot,
     useAppContext,
@@ -75,11 +75,23 @@ export function useAddWalletFlow() {
     ]);
 
     const startImportFlow = useCallback(() => {
-        navigation.dispatch(CommonActions.navigate(routes.importWallet));
+        navigation.dispatch(
+            CommonActions.navigate(routes.importWallet, {
+                networkType: PortfolioNetworkType.MAINNET
+            })
+        );
+    }, [navigation]);
+
+    const startTestnetImportFlow = useCallback(() => {
+        navigation.dispatch(
+            CommonActions.navigate(routes.importWallet, {
+                networkType: PortfolioNetworkType.TESTNET
+            })
+        );
     }, [navigation]);
 
     const onMnemonicReady = useCallback(
-        (mnemonic: string[]) => {
+        (mnemonic: string[], networkType: PortfolioNetworkType) => {
             using accessor = new MnemonicResource(mnemonic);
             const defaultIcon = PortfolioIdBip39Imported.getFallbackEmoji(accessor);
 
@@ -92,7 +104,12 @@ export function useAddWalletFlow() {
                         await secretEncryptor.unlockEncryption();
 
                         using mnemonicAccessor = new MnemonicResource(mnemonic);
-                        await importPortfolio({ mnemonicAccessor, secretEncryptor, meta });
+                        await importPortfolio({
+                            mnemonicAccessor,
+                            secretEncryptor,
+                            meta,
+                            networkType
+                        });
 
                         navigation.dispatch(
                             CommonActions.reset({
@@ -115,6 +132,7 @@ export function useAddWalletFlow() {
     return {
         startCreateFlow,
         startImportFlow,
+        startTestnetImportFlow,
         onMnemonicReady
     };
 }

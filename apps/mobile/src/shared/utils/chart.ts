@@ -1,5 +1,6 @@
 /* eslint-disable no-irregular-whitespace */
-import { Skia, type SkPath } from '@shopify/react-native-skia';
+import type { SkPath } from '@shopify/react-native-skia';
+import { Skia } from '@shopify/react-native-skia';
 
 export function formatCompactPrice(value: number): string {
     const abs = Math.abs(value);
@@ -50,7 +51,8 @@ function elegantScale(minVal: number, maxVal: number): [number, number, number, 
     if (minVal > maxVal) [minVal, maxVal] = [maxVal, minVal];
 
     const range = maxVal - minVal;
-    const rawStep = Math.max(range / 3, 1e-12);
+    const magnitude = Math.max(Math.abs(minVal), Math.abs(maxVal), 1);
+    const rawStep = Math.max(range / 3, magnitude * 1e-3, 1e-12);
     const candidateSteps = niceStepsAround(rawStep).filter(s => s >= rawStep / 2);
 
     let bestScore = Infinity;
@@ -183,14 +185,14 @@ export const buildChartPoints = (
 };
 
 export const buildChartPath = (points: ChartPoint[]): SkPath => {
-    const path = Skia.Path.Make();
+    const builder = Skia.PathBuilder.Make();
     points.forEach((value, index) => {
         if (index === 0) {
-            path.moveTo(value.x, value.y);
+            builder.moveTo(value.x, value.y);
         } else {
-            path.lineTo(value.x, value.y);
+            builder.lineTo(value.x, value.y);
         }
     });
 
-    return path;
+    return builder.build();
 };

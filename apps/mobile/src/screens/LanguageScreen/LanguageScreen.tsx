@@ -3,7 +3,6 @@ import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-// TODO IMPORT find a way not to touch raw storage
 // eslint-disable-next-line boundaries/element-types
 import { mobileLayerSynchronousLocale } from '@mobile/app/storage';
 import type { LanguageCode } from '@mobile/shared/i18n';

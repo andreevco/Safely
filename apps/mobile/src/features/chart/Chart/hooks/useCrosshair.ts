@@ -10,7 +10,6 @@ import type { ChartPoint } from '@mobile/shared/utils/chart';
 
 import type { ChartPeriod } from '../config';
 import { CHART_CONFIG } from '../config';
-import { getPriceDiff, type PriceDiffValue } from '../utils/priceDiff';
 
 const findNearestIndex = (points: ChartPoint[], touchX: number): number => {
     'worklet';
@@ -108,7 +107,7 @@ type UseCrosshairResult = {
     secondaryCrosshair: SharedValue<CrosshairState>;
     isTimeLabelReady: SharedValue<boolean>;
     activePrice: number | undefined;
-    activePriceDiff?: PriceDiffValue;
+    activePriceDiff: number | null;
     gesture: GestureType;
     formattedTime: string;
 };
@@ -121,7 +120,7 @@ export const useCrosshair = (params: UseCrosshairParams): UseCrosshairResult => 
     const secondaryCrosshair = useSharedValue<CrosshairState>(createInactiveCrosshairState());
 
     const [activePrice, setActivePrice] = useState<number | undefined>(undefined);
-    const [activePriceDiff, setActivePriceDiff] = useState<PriceDiffValue>(null);
+    const [activePriceDiff, setActivePriceDiff] = useState<number | null>(null);
     const [formattedTime, setFormattedTime] = useState('');
     const dateFormatter = useDateFormatter();
 
@@ -154,7 +153,11 @@ export const useCrosshair = (params: UseCrosshairParams): UseCrosshairResult => 
             const [startPoint, endPoint] =
                 point1.timestamp <= point2.timestamp ? [point1, point2] : [point2, point1];
 
-            setActivePriceDiff(getPriceDiff(startPoint.price, endPoint.price));
+            const diff =
+                startPoint.price === 0
+                    ? null
+                    : ((endPoint.price - startPoint.price) / startPoint.price) * 100;
+            setActivePriceDiff(diff === 0 ? null : diff);
             setFormattedTime(
                 `${formatter.format(new Date(startPoint.timestamp))} — ${formatter.format(new Date(endPoint.timestamp))}`
             );

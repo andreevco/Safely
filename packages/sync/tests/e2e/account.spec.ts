@@ -163,7 +163,6 @@ describe('Account', { timeout: 10_000 }, () => {
         expect(statuses).toEqual([SyncStatus.DEVICE_DELETED]);
     }, 7000);
 
-    // TODO: this test emits error
     it('should delete online account', async () => {
         const account = await factory.createSyncAccount(secureEncryptedStorage);
         await onboardDevice(account, secureEncryptedStorage);

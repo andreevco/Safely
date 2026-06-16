@@ -5,10 +5,10 @@ import { useEffect, useState } from 'react';
 
 import { useHasPortfolio } from '@safely/ux';
 
-import { HistoryScreen } from '@mobile/screens/HistoryScreen';
-import { HomeScreen } from '@mobile/screens/HomeScreen';
 import { SafelyBetaScreen } from '@mobile/screens/SafelyBetaScreen';
-import { Bolt28, Home28, Icon, InformationCircle28 } from '@mobile/shared/ui/Icon';
+import { Home28, Icon, InformationCircle28 } from '@mobile/shared/ui/Icon';
+
+import { HomeStack } from '../stacks/HomeStack';
 
 const TabBar = (props: BottomTabBarProps) => {
     const hasPortfolio = useHasPortfolio();
@@ -28,18 +28,11 @@ const TabBar = (props: BottomTabBarProps) => {
 
 export const TabsNavigator = createBottomTabNavigator({
     screens: {
-        HomeScreen: {
-            screen: HomeScreen,
+        HomeStack: {
+            screen: HomeStack,
             options: () => ({
                 title: i18next.t('tabs.home'),
                 tabBarIcon: ({ color }) => <Icon icon={Home28} style={{ tintColor: color }} />
-            })
-        },
-        HistoryScreen: {
-            screen: HistoryScreen,
-            options: () => ({
-                title: i18next.t('tabs.history'),
-                tabBarIcon: ({ color }) => <Icon icon={Bolt28} style={{ tintColor: color }} />
             })
         },
         SafelyBetaScreen: {

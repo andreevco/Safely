@@ -123,6 +123,30 @@ describe('NumberFormatter', () => {
         ).toBe(`0.000000123456789${SPACE.NNBSP}USDT`);
     });
 
+    it('formats percent with sign and one significant fraction digit', () => {
+        const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'), testLogger);
+
+        expect(formatter.formatPercent(5.25)).toBe(`+${SPACE.NNBSP}5.3${SPACE.NNBSP}%`);
+        expect(formatter.formatPercent(5.04)).toBe(`+${SPACE.NNBSP}5${SPACE.NNBSP}%`);
+        expect(formatter.formatPercent(12)).toBe(`+${SPACE.NNBSP}12${SPACE.NNBSP}%`);
+        expect(formatter.formatPercent(0.5)).toBe(`+${SPACE.NNBSP}0.5${SPACE.NNBSP}%`);
+        expect(formatter.formatPercent(0.034)).toBe(`+${SPACE.NNBSP}0.03${SPACE.NNBSP}%`);
+        expect(formatter.formatPercent(0.0049)).toBe(`+${SPACE.NNBSP}0.005${SPACE.NNBSP}%`);
+        expect(formatter.formatPercent(0.0999)).toBe(`+${SPACE.NNBSP}0.1${SPACE.NNBSP}%`);
+        expect(formatter.formatPercent(12345.67)).toBe(`+${SPACE.NNBSP}12,345.7${SPACE.NNBSP}%`);
+        expect(formatter.formatPercent(-5.25)).toBe(`−${SPACE.NNBSP}5.3${SPACE.NNBSP}%`);
+        expect(formatter.formatPercent(-0.0049)).toBe(`−${SPACE.NNBSP}0.005${SPACE.NNBSP}%`);
+        expect(formatter.formatPercent(0)).toBe(`0${SPACE.NNBSP}%`);
+    });
+
+    it('formats percent in de-DE locale', () => {
+        const formatter = new NumberFormatter(new WebNumberFormatLocale('de-DE'), testLogger);
+
+        expect(formatter.formatPercent(5.25)).toBe(`+${SPACE.NNBSP}5,3${SPACE.NNBSP}%`);
+        expect(formatter.formatPercent(-0.034)).toBe(`−${SPACE.NNBSP}0,03${SPACE.NNBSP}%`);
+        expect(formatter.formatPercent(12345.67)).toBe(`+${SPACE.NNBSP}12.345,7${SPACE.NNBSP}%`);
+    });
+
     it('formats negative fiat correctly', () => {
         const formatter = new NumberFormatter(new WebNumberFormatLocale('en-US'), testLogger);
 

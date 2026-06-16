@@ -1,29 +1,27 @@
-/* eslint-disable no-irregular-whitespace */
-
 import Color from 'color';
 import { View } from 'react-native';
 import { StyleSheet } from 'react-native-unistyles';
 
-import type { PriceDiffValue } from '@mobile/features/chart/Chart/utils/priceDiff';
+import { SPACE } from '@safely/core';
+import { useNumberFormatter } from '@safely/ux';
+
 import { Text } from '@mobile/shared/ui';
 
 type PriceDiffProps = {
-    priceDiff?: PriceDiffValue;
+    priceDiff?: number | null;
 };
 
 export const PriceDiff = (props: PriceDiffProps) => {
     const { priceDiff } = props;
+    const formatter = useNumberFormatter();
+    const isPositive = priceDiff != null && priceDiff > 0;
 
-    styles.useVariants({ type: priceDiff?.isPositive ? 'positive' : 'negative' });
+    styles.useVariants({ type: isPositive ? 'positive' : 'negative' });
 
     return (
         <View style={styles.diff}>
-            <Text
-                variant="bodyM"
-                monospace
-                color={priceDiff?.isPositive ? 'accentGreen' : 'accentRed'}
-            >
-                {priceDiff?.isPositive ? '+' : '−'} {priceDiff?.formatted} %
+            <Text variant="bodyM" monospace color={isPositive ? 'accentGreen' : 'accentRed'}>
+                {priceDiff ? formatter.formatPercent(priceDiff) : `−${SPACE.NNBSP}%`}
             </Text>
         </View>
     );

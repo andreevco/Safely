@@ -33,6 +33,8 @@ export interface IAppContext {
 
     devToken?: string;
 
+    devIsTestnetAllowed?: boolean;
+
     storage: {
         ux: {
             regular: ITreeStorage;
