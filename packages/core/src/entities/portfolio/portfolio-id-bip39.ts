@@ -9,7 +9,7 @@ import { Bip39Source } from './I-portfolio';
 import type { PortfolioMetaIconEmoji } from './portfolio-meta';
 import { allowedPortfolioMetaEmojis } from './portfolio-meta';
 import type { PortfolioNetworkType } from './portfolio-network-type';
-import { assertUnreachable, sha256Prefix } from '../../utils';
+import { assertUnreachable, sha256PrefixNumber, sha256PrefixString } from '../../utils';
 import { Id } from '../../utils/id';
 import type { IMnemonicAccessor } from '../mnemonic';
 
@@ -67,7 +67,7 @@ export class PortfolioIdBip39Imported extends Id implements IPortfolioId {
         mnemonicAccessor: IMnemonicAccessor,
         network: PortfolioNetworkType
     ): Promise<PortfolioIdBip39Imported> {
-        const mnemonicHash = sha256Prefix(
+        const mnemonicHash = sha256PrefixString(
             `safely/v1/portfolio-id/imported/${mnemonicAccessor.value.join(' ').toLowerCase()}`,
             16
         );
@@ -104,13 +104,11 @@ export class PortfolioIdBip39Imported extends Id implements IPortfolioId {
 }
 
 function getEmojiByMnemonic(mnemonicAccessor: IMnemonicAccessor): PortfolioMetaIconEmoji {
-    const mnemonicHash = sha256Prefix(
-        `safely/v1/portfolio-emoji/${mnemonicAccessor.value.join(' ').toLowerCase()}`,
-        16
+    const mnemonicHash = sha256PrefixNumber(
+        `safely/v1/portfolio-emoji/mnemonic/${mnemonicAccessor.value.join(' ').toLowerCase()}`
     );
 
-    const index =
-        Buffer.from(mnemonicHash, 'hex').readUint32BE() % allowedPortfolioMetaEmojis.length;
+    const index = mnemonicHash % allowedPortfolioMetaEmojis.length;
 
     return { type: 'emoji', value: allowedPortfolioMetaEmojis[index] };
 }

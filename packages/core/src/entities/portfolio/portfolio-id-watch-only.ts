@@ -11,7 +11,7 @@ import type { PortfolioMetaIconEmoji } from './portfolio-meta';
 import { allowedPortfolioMetaEmojis } from './portfolio-meta';
 import type { PortfolioNetworkType } from './portfolio-network-type';
 import { BtcXpub } from '../../blockchain-api';
-import { assertUnreachable, Id } from '../../utils';
+import { assertUnreachable, Id, sha256PrefixNumber } from '../../utils';
 import { BtcNetwork, BtcWalletType } from '../blockchain';
 
 export class PortfolioIdWatchOnlyXpub extends Id implements IPortfolioId {
@@ -77,7 +77,9 @@ export class PortfolioIdWatchOnlyAddress extends Id implements IPortfolioId {
 }
 
 function getEmojiByBtcAddress(address: string): PortfolioMetaIconEmoji {
-    const index = Buffer.from(address, 'utf-8').readUint32BE() % allowedPortfolioMetaEmojis.length;
+    const index =
+        sha256PrefixNumber(`safely/v1/portfolio-emoji/address/${address}`) %
+        allowedPortfolioMetaEmojis.length;
 
     return { type: 'emoji', value: allowedPortfolioMetaEmojis[index] };
 }

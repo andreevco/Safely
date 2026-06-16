@@ -30,7 +30,7 @@ export const CustomizeWalletModal = (props: CustomizeWalletModalProps) => {
     const handleSave = useCallback(() => {
         Keyboard.dismiss();
 
-        onSave({ name: walletName.trim(), icon: selectedIcon });
+        void onSave({ name: walletName.trim(), icon: selectedIcon });
     }, [onSave, walletName, selectedIcon]);
 
     const isNameValid = walletName.trim().length > 0;
