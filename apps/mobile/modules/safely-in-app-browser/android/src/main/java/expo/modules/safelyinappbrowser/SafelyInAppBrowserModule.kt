@@ -55,7 +55,13 @@ class SafelyInAppBrowserModule : Module() {
                         )
                     }
 
-                    builder.build().launchUrl(activity, Uri.parse(url))
+                    val uri = Uri.parse(url)
+                    val scheme = uri.scheme?.lowercase()
+                    if (scheme != "http" && scheme != "https") {
+                        promise.reject(CodedException("openBrowser requires an http(s) URL"))
+                        return@runOnUiThread
+                    }
+                    builder.build().launchUrl(activity, uri)
                     promise.resolve(mapOf("type" to "dismiss"))
                 } catch (e: Exception) {
                     promise.reject(CodedException("Failed to open in-app browser: ${e.message}"))
