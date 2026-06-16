@@ -9,6 +9,7 @@ export default defineConfig({
     },
     test: {
         globals: true,
-        environment: 'happy-dom'
+        environment: 'happy-dom',
+        setupFiles: [path.resolve(__dirname, '../core/test/setup-crypto.ts')]
     }
 });
