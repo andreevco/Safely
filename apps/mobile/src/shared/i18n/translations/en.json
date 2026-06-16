@@ -630,8 +630,16 @@
             }
         },
         "orderInfo": {
-            "purchase": "Purchase",
-            "sale": "Sale",
+            "purchase": {
+                "default": "Purchase",
+                "failed": "Failed purchase",
+                "cancelled": "Cancelled purchase"
+            },
+            "sale": {
+                "default": "Sale",
+                "failed": "Failed sale",
+                "cancelled": "Cancelled sale"
+            },
             "provider": "Provider",
             "order": "Order",
             "transaction": "Transaction",

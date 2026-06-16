@@ -1,8 +1,12 @@
 import { memo } from 'react';
 import { View } from 'react-native';
 
-import type { ContactMeta, PortfolioMeta, RampOrder } from '@safely/core';
-import type { ActivityItem as ActivityItemData, BtcActivityItem } from '@safely/ux';
+import type { ContactMeta, PortfolioMeta } from '@safely/core';
+import type {
+    ActivityItem as ActivityItemData,
+    BtcActivityItem,
+    OrderActivityItem
+} from '@safely/ux';
 import { isOrderActivityItem } from '@safely/ux';
 
 import { ContactName } from '@mobile/entities/contact';
@@ -14,7 +18,8 @@ import { styles } from './ActivityItem.styles';
 export type ActivityItemCounterparty =
     | { kind: 'contact'; meta: ContactMeta }
     | { kind: 'portfolio'; meta: PortfolioMeta }
-    | { kind: 'address'; label: string };
+    | { kind: 'address'; label: string }
+    | { kind: 'provider'; label: string };
 
 export type ActivityItemProps = {
     activity: ActivityItemData;
@@ -27,7 +32,7 @@ export type ActivityItemProps = {
     background: 'tertiary' | 'secondary';
     counterparty: ActivityItemCounterparty;
     onNavigateToTransaction: (activity: BtcActivityItem) => void;
-    onNavigateToOrder: (order: RampOrder) => void;
+    onNavigateToOrder: (order: OrderActivityItem) => void;
 };
 
 const Counterparty = ({ counterparty }: { counterparty: ActivityItemCounterparty }) => {
@@ -54,6 +59,12 @@ const Counterparty = ({ counterparty }: { counterparty: ActivityItemCounterparty
             );
         case 'address':
             return <Cell.Subtitle color="secondary">{counterparty.label}</Cell.Subtitle>;
+        case 'provider':
+            return (
+                <Cell.Subtitle textTransform="capitalize" color="secondary">
+                    {counterparty.label}
+                </Cell.Subtitle>
+            );
     }
 };
 
@@ -79,7 +90,7 @@ export const ActivityItem = memo((props: ActivityItemProps) => {
             showDivider={false}
             onPress={() =>
                 isOrderActivityItem(activity)
-                    ? onNavigateToOrder(activity.order)
+                    ? onNavigateToOrder(activity)
                     : onNavigateToTransaction(activity)
             }
         >

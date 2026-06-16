@@ -1,5 +1,5 @@
+import { isRampOrderActive } from './api';
 import { isBtcTransactionPending } from './blockchain-specific/btc';
-import { isRampOrderActive } from './onramp';
 import type { ActivityItem } from './types';
 import { isBtcActivityItem } from './types';
 

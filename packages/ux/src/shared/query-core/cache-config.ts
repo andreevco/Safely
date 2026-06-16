@@ -31,7 +31,8 @@ const sOrderActivityItem = z.object({
     type: z.literal('order'),
     timestamp: z.number(),
     key: z.string(),
-    order: rampOrderSchema
+    order: rampOrderSchema,
+    cryptoAmount: sCryptoAssetAmount.nullable()
 });
 
 const sActivityItem = z.discriminatedUnion('type', [sBtcActivityItem, sOrderActivityItem]);

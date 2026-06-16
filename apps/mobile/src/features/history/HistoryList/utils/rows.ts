@@ -1,6 +1,5 @@
 import type { TFunction } from 'i18next';
 
-import type { RampOrder } from '@safely/core';
 import { assertUnreachable, ellipsisMiddle } from '@safely/core';
 import type {
     useActualBtcBlockNumber,
@@ -24,11 +23,6 @@ import {
 } from '@safely/ux';
 
 import type { ActivityItemProps } from '@mobile/entities/activity';
-import {
-    formatOrderCrypto,
-    formatOrderFiat,
-    getOrderProviderName
-} from '@mobile/entities/activity';
 
 export type HistoryHeaderRow = {
     key: string;
@@ -54,7 +48,7 @@ export type ActivityRowContext = {
     currentBlockNumber: ReturnType<typeof useActualBtcBlockNumber>['data'];
     providers: ReturnType<typeof useProvidersQuery>['data'];
     onNavigateToTransaction: (activity: BtcActivityItem) => void;
-    onNavigateToOrder: (order: RampOrder) => void;
+    onNavigateToOrder: (order: OrderActivityItem) => void;
 };
 
 export type TimeFormatDetails = 'time' | 'day-month-time';
@@ -190,24 +184,43 @@ const buildOrderRow = (
     const isSale = order.type === 'offramp';
     const isUnsuccessful = !isPending && order.status !== 'completed';
 
+    const formattedFiat = context.rateData
+        ? activity.cryptoAmount?.convert(context.rateData).format(context.numberFormatter)
+        : null;
+
+    const title = (() => {
+        switch (order.status) {
+            case 'failed':
+                return isSale
+                    ? context.t('history.orderInfo.sale.failed')
+                    : context.t('history.orderInfo.purchase.failed');
+            case 'expired':
+                return isSale
+                    ? context.t('history.orderInfo.sale.cancelled')
+                    : context.t('history.orderInfo.purchase.cancelled');
+            default:
+                return isSale
+                    ? context.t('history.orderInfo.sale.default')
+                    : context.t('history.orderInfo.purchase.default');
+        }
+    })();
+
     return {
         key: `activity-${groupKey}-${activity.key}`,
         type: 'activity',
         activity,
-        title: isSale
-            ? context.t('history.orderInfo.sale')
-            : context.t('history.orderInfo.purchase'),
+        title,
         amountSign: isSale ? '−' : '+',
-        formattedValue: formatOrderCrypto(order, context.numberFormatter),
+        formattedValue: activity.cryptoAmount?.format(context.numberFormatter) ?? '-',
         valueColor: isSale || isUnsuccessful ? 'primary' : 'accentGreen',
-        formattedFiat: formatOrderFiat(order, context.numberFormatter),
+        formattedFiat: formattedFiat ?? null,
         timestampLabel: isPending
             ? null
             : formatTimestampLabel(activity.timestamp, timeFormatDetails, context),
         background: isPending ? 'tertiary' : 'secondary',
         counterparty: {
-            kind: 'address',
-            label: getOrderProviderName(order, context.providers)
+            kind: 'provider',
+            label: order.provider
         },
         onNavigateToTransaction: context.onNavigateToTransaction,
         onNavigateToOrder: context.onNavigateToOrder

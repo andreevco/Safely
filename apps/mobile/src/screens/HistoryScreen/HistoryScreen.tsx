@@ -2,8 +2,7 @@ import { useNavigation } from '@react-navigation/core';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { RampOrder } from '@safely/core';
-import type { BtcActivityItem } from '@safely/ux';
+import type { BtcActivityItem, OrderActivityItem } from '@safely/ux';
 import { useActivePortfolio, useHasPortfolio } from '@safely/ux';
 
 import { HistoryList } from '@mobile/features/history';
@@ -22,8 +21,8 @@ const HistoryContent = () => {
     );
 
     const onNavigateToOrder = useCallback(
-        (order: RampOrder) => {
-            navigation.navigate('OrderScreen', { order });
+        (order: OrderActivityItem) => {
+            navigation.navigate('OrderScreen', { order: order });
         },
         [navigation]
     );

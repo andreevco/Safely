@@ -2,8 +2,13 @@ export { activityKeys } from './keys';
 export { useHistory } from './useHistory';
 export { useHasHistory } from './useHasHistory';
 export { useGroupedHistory } from './useGroupedHistory';
-export { fetchBtcActivity, fetchOrdersActivity, btcTxToActivityItem } from './api';
-export { isRampOrderActive, rampOrderToActivityItem } from './onramp';
+export {
+    fetchBtcActivity,
+    fetchOrdersActivity,
+    btcTxToActivityItem,
+    isRampOrderActive,
+    orderToActivityItem
+} from './api';
 export { isActivityItemPending } from './pending';
 export { dedupeOrderTxs } from './merge';
 export { applyActivityWaterline } from './waterline';

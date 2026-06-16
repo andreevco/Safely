@@ -26,6 +26,7 @@ export interface OrderActivityItem {
     timestamp: number;
     key: string;
     order: RampOrder;
+    cryptoAmount: CryptoAssetAmount | null;
 }
 
 export type ActivityItem = BtcActivityItem | OrderActivityItem;

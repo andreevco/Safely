@@ -635,8 +635,16 @@
             }
         },
         "orderInfo": {
-            "purchase": "Покупка",
-            "sale": "Продажа",
+            "purchase": {
+                "default": "Покупка",
+                "failed": "Не удалось купить",
+                "cancelled": "Отмена покупки"
+            },
+            "sale": {
+                "default": "Продажа",
+                "failed": "Не удалось продать",
+                "cancelled": "Отмена продажи"
+            },
             "provider": "Провайдер",
             "order": "Ордер",
             "transaction": "Транзакция",

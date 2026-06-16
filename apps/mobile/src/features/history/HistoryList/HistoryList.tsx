@@ -4,7 +4,7 @@ import { useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useWindowDimensions, View } from 'react-native';
 
-import { BTC_ASSET, type RampOrder } from '@safely/core';
+import { BTC_ASSET } from '@safely/core';
 import {
     type ActivityItemsDatedGroup,
     type BtcActivityItem,
@@ -19,6 +19,7 @@ import {
     useProvidersQuery,
     useRate
 } from '@safely/ux';
+import type { OrderActivityItem } from '@safely/ux';
 
 import { ActivityItem, ActivityItemSkeleton } from '@mobile/entities/activity';
 import { List, Screen, Text } from '@mobile/shared/ui';
@@ -44,7 +45,7 @@ const getFirstActivityKey = (groups: ActivityItemsDatedGroup[] | undefined): str
     groups?.[0]?.items?.[0]?.key;
 type HistoryListProps = {
     onNavigateToTransaction: (activity: BtcActivityItem) => void;
-    onNavigateToOrder: (order: RampOrder) => void;
+    onNavigateToOrder: (order: OrderActivityItem) => void;
 };
 
 export const HistoryList = (props: HistoryListProps) => {

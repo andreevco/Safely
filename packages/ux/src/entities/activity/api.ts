@@ -4,15 +4,16 @@ import type {
     BtcAsset,
     BtcWalletReadOnly,
     ExchangeApi,
+    RampOrder,
     TransactionFeeCrypto
 } from '@safely/core';
-import { BtcAssetAmount, toBig, toBigOrZero } from '@safely/core';
+import { BTC_ASSET, BtcAssetAmount, CryptoAssetAmount, toBig, toBigOrZero } from '@safely/core';
 
-import { rampOrderToActivityItem } from './onramp';
 import type {
     BtcActivityItem,
     BtcActivityPage,
     IActivityFilters,
+    OrderActivityItem,
     OrdersActivityPage
 } from './types';
 
@@ -55,8 +56,8 @@ export function btcTxToActivityItem(tx: BtcApiTx): BtcActivityItem | null {
 
     return {
         type: 'transaction',
-        timestamp: (tx.blockTime || 0) * 1000,
         key: tx.txid,
+        timestamp: (tx.blockTime || 0) * 1000,
         transaction: {
             isInitiator,
             fromAddress,
@@ -66,6 +67,36 @@ export function btcTxToActivityItem(tx: BtcApiTx): BtcActivityItem | null {
             raw: tx
         }
     };
+}
+
+export function orderToActivityItem(order: RampOrder): OrderActivityItem {
+    let cryptoAmount: CryptoAssetAmount | null = null;
+    try {
+        cryptoAmount = new CryptoAssetAmount({
+            asset: BTC_ASSET,
+            relativeAmount: order.cryptoAmount
+        });
+    } catch {
+        //
+    }
+
+    return {
+        type: 'order',
+        key: order.id,
+        timestamp: order.createdAt * 1000,
+        cryptoAmount,
+        order
+    };
+}
+
+const ACTIVE_ORDER_STATUSES: ReadonlySet<RampOrder['status']> = new Set([
+    'new',
+    'pending',
+    'processing'
+]);
+
+export function isRampOrderActive(order: Pick<RampOrder, 'status'>): boolean {
+    return ACTIVE_ORDER_STATUSES.has(order.status);
 }
 
 export async function fetchBtcActivity(
@@ -122,7 +153,7 @@ export async function fetchOrdersActivity(
                 filters.isInitiator === undefined ||
                 (order.type === 'offramp') === filters.isInitiator
         )
-        .map(rampOrderToActivityItem);
+        .map(orderToActivityItem);
 
     const nextCursor = result.orders.length > 0 ? (result.cursor ?? null) : null;
 
