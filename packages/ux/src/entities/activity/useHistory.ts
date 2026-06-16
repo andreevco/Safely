@@ -19,6 +19,7 @@ import {
     useInfinitePersistQuery
 } from '../../shared';
 import { useLastBroadcastedBtcTx } from '../btc-blockchain';
+import { useReadOnlyRequestSigner } from '../exchange';
 import { useActiveBtcWallet } from '../portfolio';
 
 export function useHistory<TData = InfiniteData<ActivityPage, IActivityPageParam>>(
@@ -27,7 +28,8 @@ export function useHistory<TData = InfiniteData<ActivityPage, IActivityPageParam
 ) {
     const btcWallet = useActiveBtcWallet();
     const btcApi = useBtcApi(btcWallet.network);
-    const exchangeApi = useExchangeApi();
+    const signer = useReadOnlyRequestSigner();
+    const exchangeApi = useExchangeApi(signer);
 
     const { i18n, userCountryInfo, logger } = useAppContext();
     const broadcastedTx = useLastBroadcastedBtcTx();
@@ -49,10 +51,10 @@ export function useHistory<TData = InfiniteData<ActivityPage, IActivityPageParam
             const { fetch, btcPage, ordersCursor } = pageParam;
 
             const [btcResult, ordersResult] = await Promise.all([
-                fetch !== 'orders' && btcPage !== null
+                ['btc', 'both'].includes(fetch) && btcPage !== null
                     ? fetchBtcActivity(btcApi, btcWallet, btcPage, filters)
                     : null,
-                fetch !== 'btc'
+                ['orders', 'both'].includes(fetch) && signer
                     ? fetchOrdersActivity(exchangeApi, ordersRequest, ordersCursor, filters).catch(
                           ordersFailed
                       )

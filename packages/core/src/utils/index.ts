@@ -9,3 +9,4 @@ export * from './retry';
 export * from './date-groups';
 export * from './semver';
 export * from './array';
+export type { RequestSigner } from './fetch';

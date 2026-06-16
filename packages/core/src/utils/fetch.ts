@@ -2,6 +2,10 @@ import { z } from 'zod';
 
 import type { Logger } from '@safely/sync';
 
+export interface RequestSigner {
+    sign(method: string, pathWithQuery: string, body: string): Promise<string>;
+}
+
 export class ApiError extends Error {
     public readonly name: string = 'ApiError';
 
@@ -35,22 +39,28 @@ export class ApiClient {
 
     protected readonly logger?: Logger;
 
+    protected readonly signer?: RequestSigner;
+
     constructor(
         protected readonly baseUrl: string,
         headers: Record<string, string> = {},
-        logger?: Logger
+        logger?: Logger,
+        signer?: RequestSigner
     ) {
         this.headers = { ...headers };
         this.logger = logger?.child(this.constructor.name);
+        this.signer = signer;
     }
 
     protected async getJson<T extends z.ZodTypeAny, Q extends object>(
         path: string,
         schema: T,
-        query?: Q
+        query?: Q,
+        opts?: { sign?: boolean }
     ): Promise<z.infer<T>> {
         const url = this.buildUrl(path, query);
-        const response = await this.performFetch(url, { method: 'GET' });
+        const headers = await this.authHeaders('GET', url, '', opts);
+        const response = await this.performFetch(url, { method: 'GET', headers });
         return await this.parseAndValidate(response, schema);
     }
 
@@ -73,19 +83,26 @@ export class ApiClient {
         path: string,
         body: unknown,
         schema: T,
-        query?: object
+        query?: object,
+        opts?: { sign?: boolean }
     ): Promise<z.infer<T>>;
     protected async postJson<T extends z.ZodTypeAny>(
         path: string,
         body: unknown,
         schema?: T,
-        query?: object
+        query?: object,
+        opts?: { sign?: boolean }
     ): Promise<z.infer<T> | void> {
         const url = this.buildUrl(path, query);
+        const bodyString = JSON.stringify(body);
+        const headers = {
+            'Content-Type': 'application/json',
+            ...(await this.authHeaders('POST', url, bodyString, opts))
+        };
         const response = await this.performFetch(url, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
+            headers,
+            body: bodyString
         });
 
         if (!schema) {
@@ -95,6 +112,18 @@ export class ApiClient {
         }
 
         return await this.parseAndValidate(response, schema);
+    }
+
+    private async authHeaders(
+        method: string,
+        url: string,
+        body: string,
+        opts?: { sign?: boolean }
+    ): Promise<Record<string, string>> {
+        if (!opts?.sign || !this.signer) return {};
+        const parsed = new URL(url);
+        const pathWithQuery = parsed.pathname + parsed.search;
+        return { Authorization: await this.signer.sign(method, pathWithQuery, body) };
     }
 
     private buildUrl(path: string, query?: object): string {

@@ -75,7 +75,8 @@ export const HomeActions = () => {
             <Actions.Button
                 title={t('home.actions.buy')}
                 icon={Plus28}
-                onPress={handleNavigateToExchange}
+                onPress={isWatchOnly ? handleWatchOnlyAction : handleNavigateToExchange}
+                opacity={isWatchOnly ? WATCH_ONLY_OPACITY : 1}
             />
             <Actions.Button
                 title={t('home.actions.scan')}

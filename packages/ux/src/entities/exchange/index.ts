@@ -6,3 +6,4 @@ export {
     useClearDismissedProviders,
     useDismissedProvidersQuery
 } from './useDismissedProviders';
+export { useReadOnlyRequestSigner } from './useReadOnlyRequestSigner';

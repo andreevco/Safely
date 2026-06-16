@@ -6,10 +6,12 @@ import { useExchangeApi } from '../../shared/api/useExchangeApi';
 import { useAppContext } from '../../shared/providers/AppContext';
 import { useActiveFiat } from '../fiat';
 import { useActiveBtcWallet } from '../portfolio';
+import { useReadOnlyRequestSigner } from './useReadOnlyRequestSigner';
 
 export function useOnrampWidgetMutation() {
     const wallet = useActiveBtcWallet();
-    const exchangeApi = useExchangeApi();
+    const signer = useReadOnlyRequestSigner();
+    const exchangeApi = useExchangeApi(signer);
     const { i18n, userCountryInfo } = useAppContext();
     const fiat = useActiveFiat();
 

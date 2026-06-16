@@ -6,6 +6,7 @@ import {
     sPortfolioBip39
 } from '@safely/sync-storage';
 
+import type { ReadOnlyCredential } from '../auth-cert';
 import type { IDerivation } from '../derivation';
 import { Derivation, DerivationChainItemBtcSeed } from '../derivation';
 import type { IPortfolioDerivable, PortfolioSecretRevealedStatus } from './I-portfolio';
@@ -220,6 +221,21 @@ export class PortfolioBip39 implements IPortfolioDerivable {
 
     public getMnemonic(): Promise<string[]> {
         return this.mnemonicVault.getMnemonic();
+    }
+
+    public async createReadOnlyCredential(
+        encryptor: ISecretEncryptor,
+        derivationIndex: number = this.derivations[0].index
+    ): Promise<ReadOnlyCredential> {
+        const vault = new MnemonicVault(encryptor, this.mnemonicVault.encryptedSecret);
+        const seedProducer = new BtcBip39SeedProducer(vault);
+
+        return DerivationChainItemBtcSeed.createReadOnlyCredential({
+            seedProducer,
+            walletType: BtcWalletType.NATIVE_SEGWIT,
+            network: this.networkType,
+            derivationIndex
+        });
     }
 
     public toJSON(): SPortfolioBip39 {
