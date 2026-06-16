@@ -1,5 +1,6 @@
 export { exchangeKeys } from './keys';
 export { useOnrampWidgetMutation } from './useOnrampWidgetMutation';
+export { useOpenOnramp } from './useOpenOnramp';
 export { useProvidersQuery } from './useProvidersQuery';
 export {
     useDismissProvider,

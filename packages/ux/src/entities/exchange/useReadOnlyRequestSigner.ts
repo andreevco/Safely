@@ -19,6 +19,7 @@ export function useReadOnlyRequestSigner(): RequestSigner | undefined {
 
         return new ReadOnlyRequestSigner(async () => {
             using secureStorage = storage.sync.getSecureEncrypted();
+            // skips security check for UX reason. We use it to sign requests with read-only credentials.
             secureStorage.UNSAFE_SKIP_SECURITY_CHECK_unlock();
             const encryptor = new SecretEncryptor(account.secretEncryptor, secureStorage);
             return await portfolio.createReadOnlyCredential(encryptor);

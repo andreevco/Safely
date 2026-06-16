@@ -4,7 +4,7 @@ import { Trans, useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import type { Provider } from '@safely/core';
-import { useDismissProvider, useLinking, useOnrampWidgetMutation } from '@safely/ux';
+import { useDismissProvider, useLinking, useOpenOnramp } from '@safely/ux';
 
 import {
     BottomSheet,
@@ -29,20 +29,19 @@ export const ProviderSheet = ({
 }: ProviderSheetProps) => {
     const { t } = useTranslation();
     const { openURL } = useLinking();
-    const [showAgain, setShowAgain] = useState(false);
-    const { mutateAsync: getOnrampWidgetUrl, isPending } = useOnrampWidgetMutation();
+    const [dontShowAgain, setDontShowAgain] = useState(false);
+    const { openOnramp, isPending } = useOpenOnramp();
     const { mutateAsync: dismissProvider } = useDismissProvider();
 
-    const handleShowAgain = async () => {
-        setShowAgain(prev => !prev);
+    const handleToggleDontShowAgain = () => {
+        setDontShowAgain(prev => !prev);
     };
 
     const handleContinue = async () => {
-        const { widgetUrl } = await getOnrampWidgetUrl(provider);
-        if (showAgain) {
+        if (dontShowAgain) {
             await dismissProvider(provider.info.id);
         }
-        openURL(widgetUrl, { preferInApp: true });
+        await openOnramp(provider);
     };
 
     return (
@@ -86,8 +85,11 @@ export const ProviderSheet = ({
                 <Button isLoading={isPending} type="primary" size="large" onPress={handleContinue}>
                     {t('exchange.continue', { providerName: provider.info.name })}
                 </Button>
-                <TouchableOpacity onPress={handleShowAgain} style={styles.showAgainContainer}>
-                    <Checkbox isChecked={showAgain} onPress={handleShowAgain} />
+                <TouchableOpacity
+                    onPress={handleToggleDontShowAgain}
+                    style={styles.showAgainContainer}
+                >
+                    <Checkbox isChecked={dontShowAgain} onPress={handleToggleDontShowAgain} />
                     <Text variant="bodyM" color="secondary">
                         {t('exchange.dontShowAgain')}
                     </Text>

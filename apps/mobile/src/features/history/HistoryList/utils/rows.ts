@@ -6,7 +6,6 @@ import type {
     useContacts,
     useNumberFormatter,
     usePortfolios,
-    useProvidersQuery,
     useRate
 } from '@safely/ux';
 import {
@@ -46,7 +45,6 @@ export type ActivityRowContext = {
     contacts: ReturnType<typeof useContacts>;
     rateData: ReturnType<typeof useRate>['data'];
     currentBlockNumber: ReturnType<typeof useActualBtcBlockNumber>['data'];
-    providers: ReturnType<typeof useProvidersQuery>['data'];
     onNavigateToTransaction: (activity: BtcActivityItem) => void;
     onNavigateToOrder: (order: OrderActivityItem) => void;
 };

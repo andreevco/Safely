@@ -2,6 +2,7 @@ import { useNavigation } from '@react-navigation/core';
 import { useTranslation } from 'react-i18next';
 
 import type { Provider } from '@safely/core';
+import { useDismissedProvidersQuery, useOpenOnramp } from '@safely/ux';
 
 import { Cell } from '@mobile/shared/ui';
 
@@ -18,11 +19,22 @@ export const ProviderCell = (props: ProviderCellProps) => {
 
     const { t } = useTranslation();
 
+    const { data: dismissedProviders } = useDismissedProvidersQuery();
+    const { openOnramp, isPending } = useOpenOnramp();
+
+    const handlePress = () => {
+        if (isPending) {
+            return;
+        }
+        if (dismissedProviders?.includes(provider.info.id)) {
+            void openOnramp(provider);
+        } else {
+            navigation.navigate('ProviderSheet', { provider });
+        }
+    };
+
     return (
-        <Cell
-            onPress={() => navigation.navigate('ProviderSheet', { provider })}
-            showDivider={showDivider}
-        >
+        <Cell onPress={handlePress} showDivider={showDivider}>
             <Cell.Image
                 containerStyle={styles.image}
                 type="image"

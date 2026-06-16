@@ -16,7 +16,6 @@ import {
     useInterval,
     useNumberFormatter,
     usePortfolios,
-    useProvidersQuery,
     useRate
 } from '@safely/ux';
 import type { OrderActivityItem } from '@safely/ux';
@@ -60,7 +59,6 @@ export const HistoryList = (props: HistoryListProps) => {
     const contacts = useContacts();
     const { data: rateData } = useRate(BTC_ASSET);
     const { data: currentBlockNumber } = useActualBtcBlockNumber();
-    const { data: providersData } = useProvidersQuery();
 
     const isFocused = useIsFocused();
     const listRef = useRef<ListRef<HistoryRowItem>>(null);
@@ -112,7 +110,6 @@ export const HistoryList = (props: HistoryListProps) => {
             contacts,
             rateData,
             currentBlockNumber,
-            providers: providersData,
             onNavigateToTransaction,
             onNavigateToOrder
         };
@@ -140,7 +137,6 @@ export const HistoryList = (props: HistoryListProps) => {
         portfolios,
         contacts,
         currentBlockNumber,
-        providersData,
         onNavigateToTransaction,
         onNavigateToOrder
     ]);

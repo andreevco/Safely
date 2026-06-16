@@ -59,7 +59,7 @@ export const OrderScreen = (props: OrderScreenProps) => {
     const providerName = provider?.info.name;
     const supportUrl = provider?.info.support.url;
 
-    const { data: rate } = useRate(order.cryptoAmount!.asset);
+    const { data: rate } = useRate(BTC_ASSET);
     const formatter = useNumberFormatter();
 
     return (
@@ -92,9 +92,9 @@ export const OrderScreen = (props: OrderScreenProps) => {
                         <Text variant="titleL" color="primary" textAlign="center">
                             {order.order.type === 'offramp' ? '−' : '+'} {order.order.cryptoAmount}
                         </Text>
-                        {rate && (
+                        {rate && order.cryptoAmount && (
                             <Text variant="bodyL" color="secondary" textAlign="center">
-                                ≈ {order.cryptoAmount!.convert(rate).format(formatter)}
+                                ≈ {order.cryptoAmount.convert(rate).format(formatter)}
                             </Text>
                         )}
                     </View>
