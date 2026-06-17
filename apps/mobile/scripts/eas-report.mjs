@@ -55,7 +55,8 @@ const notes = (RELEASE_NOTES || '').trim();
 const targetBranch = (TARGET_BRANCH || '').trim();
 const notesWithBranch = targetBranch ? `${targetBranch} <- ${notes}` : notes;
 
-const prUrl = PR_NUMBER !== undefined && REPOSITORY ? `https://github.com/${REPOSITORY}/pull/${PR_NUMBER}` : '';
+// In case of a direct push, use stub url to avoid slack button rendering errors
+const prUrl = PR_NUMBER !== undefined && REPOSITORY ? `https://github.com/${REPOSITORY}/pull/${PR_NUMBER}` : 'https://safely.app/';
 const workflowUrl = WORKFLOW_URL || '';
 
 function buildText() {
