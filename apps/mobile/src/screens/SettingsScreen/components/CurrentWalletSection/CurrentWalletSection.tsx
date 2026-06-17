@@ -8,6 +8,7 @@ import {
     useActivePortfolio,
     useActivePortfolioEntities,
     useActiveWalletMeta,
+    useChangePortfolioMeta,
     useIsActivePortfolioOverview,
     useUpdateDerivationMeta
 } from '@safely/ux';
@@ -27,6 +28,7 @@ export const CurrentWalletSection = () => {
     const navigation = useNavigation();
     // eslint-disable-next-line @typescript-eslint/no-empty-object-type
     const nativeStackNavigation = useNavigation<NativeStackNavigationProp<{}>>();
+    const { mutateAsync: changePortfolioMeta } = useChangePortfolioMeta();
 
     const derivationTarget =
         entities.type === 'bip39' &&
@@ -42,7 +44,8 @@ export const CurrentWalletSection = () => {
 
             navigation.navigate('CustomizeWalletModal', {
                 hasBackButton: true,
-                initialMeta: { name: derivation.name ?? fallbackName, icon: derivation.icon },
+                defaultName: derivation.name ?? fallbackName,
+                defaultIcon: derivation.icon ?? portfolio.meta.icon,
                 onSave: async meta => {
                     await updateDerivationMeta({
                         portfolio,
@@ -53,15 +56,20 @@ export const CurrentWalletSection = () => {
 
                     nativeStackNavigation.pop();
                 },
-                onCompleteCustomize: () => nativeStackNavigation.pop()
+                onClose: () => nativeStackNavigation.pop()
             });
 
             return;
         }
 
         navigation.navigate('CustomizeWalletModal', {
-            portfolio: activePortfolio,
-            onCompleteCustomize: () => {
+            defaultIcon: activePortfolio.meta.icon,
+            defaultName: activePortfolio.meta.name,
+            onSave: async meta => {
+                await changePortfolioMeta({ portfolio: activePortfolio, meta });
+                nativeStackNavigation.pop();
+            },
+            onClose: () => {
                 nativeStackNavigation.pop();
             }
         });

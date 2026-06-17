@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 import type { StorageImpl } from '../src';
 import { createStorage } from '../src';
-import { identityProjection } from './version-fixtures';
+import { identityPatch } from './version-fixtures';
 import { isContainerSlot, type ContainerSlot } from '../src/core/slots';
 import { stripSlot } from '../src/core/slots/slot-json';
 import { defineVersionHList, hCons, hNil } from '../src/core/versioning/version';
@@ -23,8 +23,8 @@ describe('records', () => {
                             key2: 1
                         }
                     },
-                    projectUp: identityProjection,
-                    projectDown: identityProjection
+                    projectUp: identityPatch,
+                    projectDown: identityPatch
                 },
                 hNil
             )
@@ -63,8 +63,8 @@ describe('records', () => {
                     initial: {
                         objects: {}
                     },
-                    projectUp: identityProjection,
-                    projectDown: identityProjection
+                    projectUp: identityPatch,
+                    projectDown: identityPatch
                 },
                 hNil
             )
@@ -119,8 +119,8 @@ describe('records', () => {
                     initial: {
                         objects: {}
                     },
-                    projectUp: identityProjection,
-                    projectDown: identityProjection
+                    projectUp: identityPatch,
+                    projectDown: identityPatch
                 },
                 hNil
             )

@@ -49,7 +49,8 @@ export const LedgerOverviewRow = (props: LedgerOverviewRowProps) => {
     const handleEdit = () => {
         navigation.navigate('CustomizeWalletModal', {
             hasBackButton: true,
-            initialMeta: { name, icon: derivation.icon },
+            defaultName: name,
+            defaultIcon: derivation.icon ?? portfolio.meta.icon,
             onSave: async meta => {
                 await updateDerivationMeta({
                     portfolio,
@@ -60,7 +61,7 @@ export const LedgerOverviewRow = (props: LedgerOverviewRowProps) => {
 
                 navigation.goBack();
             },
-            onCompleteCustomize: () => navigation.goBack()
+            onClose: () => navigation.goBack()
         });
     };
 

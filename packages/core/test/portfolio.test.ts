@@ -41,8 +41,11 @@ async function createBip39Portfolio(
         id,
         encryptor,
         mnemonicAccessor: accessor,
+        meta: {
+            name: options.meta.name,
+            icon: options.meta.icon ?? PortfolioIdBip39Imported.getFallbackEmoji(accessor)
+        },
         options: {
-            meta: options.meta,
             seedRevealedFromDevice: options.seedRevealedFromDevice
         }
     });
@@ -257,21 +260,27 @@ describe('PortfolioBip39 identity & determinism', () => {
         expect(encryptor.decrypt).not.toHaveBeenCalled();
     });
 
-    it('fills meta.icon with a deterministic fallback emoji when not provided', async () => {
-        const p1 = await createBip39Portfolio(
-            encryptor,
-            new ClosableMnemonicAccessorVault(TESTNET_KNOWN_MNEMONIC),
-            { network: PortfolioNetworkType.MAINNET, meta: { name: 'P1' } }
+    it('getFallbackEmoji is deterministic for the same mnemonic', () => {
+        const icon1 = PortfolioIdBip39Imported.getFallbackEmoji(
+            new ClosableMnemonicAccessorVault(TESTNET_KNOWN_MNEMONIC)
         );
-        const p2 = await createBip39Portfolio(
-            encryptor,
-            new ClosableMnemonicAccessorVault(TESTNET_KNOWN_MNEMONIC),
-            { network: PortfolioNetworkType.MAINNET, meta: { name: 'P2' } }
+        const icon2 = PortfolioIdBip39Imported.getFallbackEmoji(
+            new ClosableMnemonicAccessorVault(TESTNET_KNOWN_MNEMONIC)
         );
 
-        expect(p1.meta.icon).toBeDefined();
-        expect(p1.meta.icon.type).toBe('emoji');
-        expect(p1.meta.icon).toEqual(p2.meta.icon);
+        expect(icon1.type).toBe('emoji');
+        expect(icon1).toEqual(icon2);
+    });
+
+    it('getFallbackEmoji differs for different mnemonics', () => {
+        const icon1 = PortfolioIdBip39Imported.getFallbackEmoji(
+            new ClosableMnemonicAccessorVault(TESTNET_KNOWN_MNEMONIC)
+        );
+        const icon2 = PortfolioIdBip39Imported.getFallbackEmoji(
+            new ClosableMnemonicAccessorVault(MAINNET_KNOWN_MNEMONIC)
+        );
+
+        expect(icon1).not.toEqual(icon2);
     });
 
     it('respects a user-provided icon over the fallback', async () => {

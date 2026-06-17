@@ -51,7 +51,8 @@ function elegantScale(minVal: number, maxVal: number): [number, number, number, 
     if (minVal > maxVal) [minVal, maxVal] = [maxVal, minVal];
 
     const range = maxVal - minVal;
-    const rawStep = Math.max(range / 3, 1e-12);
+    const magnitude = Math.max(Math.abs(minVal), Math.abs(maxVal), 1);
+    const rawStep = Math.max(range / 3, magnitude * 1e-3, 1e-12);
     const candidateSteps = niceStepsAround(rawStep).filter(s => s >= rawStep / 2);
 
     let bestScore = Infinity;

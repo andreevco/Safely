@@ -11,7 +11,6 @@ import { CurrencyScreen } from '@mobile/screens/CurrencyScreen';
 import { CustomizeAccountModal } from '@mobile/screens/CustomizeAccountModal';
 import { CustomizeWalletModal } from '@mobile/screens/CustomizeWalletModal';
 import { DestructiveConfirmSheet } from '@mobile/screens/DestructiveConfirmSheet';
-import { HistoryScreen } from '@mobile/screens/HistoryScreen';
 import { LockScreen } from '@mobile/screens/LockScreen';
 import { NewContactModal } from '@mobile/screens/NewContactModal';
 import { ConfirmDeleteContactSheet } from '@mobile/screens/NewContactModal/screens/ConfirmDeleteContactSheet';
@@ -63,7 +62,6 @@ export const RootStack = createNativeStackNavigator({
                         path: 'tab'
                     }
                 },
-                HistoryScreen: HistoryScreen,
                 TransactionScreen: TransactionScreen,
                 LockScreen: {
                     screen: LockScreen,

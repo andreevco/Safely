@@ -104,7 +104,7 @@ async function makeImportedPortfolio(
         id,
         encryptor,
         mnemonicAccessor: accessor,
-        options: { meta: { name } }
+        meta: { name, icon: PortfolioIdBip39Imported.getFallbackEmoji(accessor) }
     });
     return PortfolioFactory.restorePortfolio(serialized, { encryptor }) as PortfolioBip39;
 }
@@ -125,11 +125,24 @@ async function makeDerivedPortfolio(
         id,
         encryptor: new SecretEncryptor(account.secretEncryptor, storage),
         mnemonicAccessor: accessor,
-        options: { meta: { name } }
+        meta: { name, icon: PortfolioIdBip39MasterKeyDerived.getFallbackEmoji(accessor) }
     });
     return PortfolioFactory.restorePortfolio(serialized, {
         encryptor: new SecretEncryptor(account.secretEncryptor, storage)
     }) as PortfolioBip39;
+}
+
+async function expectedNextDerivingInfo(
+    account: MockSyncAccount,
+    storage: InMemoryTreeStorage,
+    upcomingIndex: number
+): Promise<{ index: number; emoji: string }> {
+    const factory = new PortfolioMnemonicFactory(account, storage);
+    using accessor = await factory.deriveBip39MnemonicResource(upcomingIndex);
+    return {
+        index: upcomingIndex,
+        emoji: PortfolioIdBip39MasterKeyDerived.getFallbackEmoji(accessor).value
+    };
 }
 
 const ICON: PortfolioMeta['icon'] = { type: 'emoji', value: '🦊' };
@@ -188,9 +201,9 @@ describe('useAddPortfolio (add)', () => {
 });
 
 describe('useGeneratePortfolio (add)', () => {
-    it('derives, pushes, bumps latest index from null → 0 and sets active', async () => {
+    it('derives, pushes, advances nextDerivingPortfolioInfo from null → index 1 and sets active', async () => {
         const account = createMockSyncAccount({
-            initial: { latestDerivedBip39PortfolioIndex: null }
+            initial: { nextDerivingPortfolioInfo: null }
         });
         const secureStorage = new InMemoryTreeStorage(['secure']);
 
@@ -219,9 +232,11 @@ describe('useGeneratePortfolio (add)', () => {
             generated.id.toJSON()
         );
 
-        const indexSlot = recorder.slots.get('latestDerivedBip39PortfolioIndex');
-        expect(indexSlot?.get).toHaveBeenCalled();
-        expect(indexSlot?.set).toHaveBeenCalledWith(0);
+        const nextInfoSlot = recorder.slots.get('nextDerivingPortfolioInfo');
+        expect(nextInfoSlot?.get).toHaveBeenCalled();
+        expect(nextInfoSlot?.set).toHaveBeenCalledWith(
+            await expectedNextDerivingInfo(account, secureStorage, 1)
+        );
 
         const activeRaw = await appContext.storage.ux.regular
             .child(['account', account.accountId])
@@ -232,9 +247,9 @@ describe('useGeneratePortfolio (add)', () => {
         });
     });
 
-    it('starts at index 1 when latestDerivedBip39PortfolioIndex is 0', async () => {
+    it('starts at index 1 when nextDerivingPortfolioInfo.index is 1', async () => {
         const account = createMockSyncAccount({
-            initial: { latestDerivedBip39PortfolioIndex: 0 }
+            initial: { nextDerivingPortfolioInfo: { index: 1 } }
         });
         const secureStorage = new InMemoryTreeStorage(['secure']);
         const generated = await makeDerivedPortfolio(account, secureStorage, 1);
@@ -253,8 +268,10 @@ describe('useGeneratePortfolio (add)', () => {
         });
 
         const recorder = account.transactions[0];
-        const indexSlot = recorder.slots.get('latestDerivedBip39PortfolioIndex');
-        expect(indexSlot?.set).toHaveBeenCalledWith(1);
+        const nextInfoSlot = recorder.slots.get('nextDerivingPortfolioInfo');
+        expect(nextInfoSlot?.set).toHaveBeenCalledWith(
+            await expectedNextDerivingInfo(account, secureStorage, 2)
+        );
     });
 
     it('throws and toasts when there is no active account', async () => {

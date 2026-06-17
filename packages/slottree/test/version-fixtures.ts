@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import type { ContainerSlot } from '../src/core/slots';
 import { cloneSlot } from '../src/core/slots/slot-json';
-import { projection } from '../src/core/versioning/projection';
+import { patch } from '../src/core/versioning/patch';
 import { defineVersionHList, hCons, hNil } from '../src/core/versioning/version';
 
 export const schemaV1 = z.object({
@@ -26,31 +26,19 @@ export const schemaV3 = z.object({
 export type StorageV3 = z.output<typeof schemaV3>;
 export type StorageV1 = z.output<typeof schemaV1>;
 
-const projectV1ToV2 = projection(schemaV1, schemaV2, s => ({
-    key1: s.copy(),
-    key2: s.copy(),
-    key3: s.default(false)
-}));
+const projectV1ToV2 = patch(schemaV1, schemaV2, draft => draft.newField([], 'key3', false));
 
-const projectV2ToV1 = projection(schemaV2, schemaV1, s => ({
-    key1: s.copy(),
-    key2: s.copy()
-}));
+const projectV2ToV1 = patch(schemaV2, schemaV1, draft => draft.deleteField([], 'key3'));
 
-const projectV2ToV3 = projection(schemaV2, schemaV3, s => ({
-    key1: s.copy(),
-    label: s.from('key2'),
-    key3: s.copy(),
-    key4: s.default('v3')
-}));
+const projectV2ToV3 = patch(schemaV2, schemaV3, draft =>
+    draft.rename([], 'key2', 'label').newField([], 'key4', 'v3')
+);
 
-const projectV3ToV2 = projection(schemaV3, schemaV2, s => ({
-    key1: s.copy(),
-    key2: s.from('label'),
-    key3: s.copy()
-}));
+const projectV3ToV2 = patch(schemaV3, schemaV2, draft =>
+    draft.rename([], 'label', 'key2').deleteField([], 'key4')
+);
 
-export function identityProjection(source: ContainerSlot): ContainerSlot {
+export function identityPatch(source: ContainerSlot): ContainerSlot {
     return cloneSlot(source);
 }
 
@@ -88,8 +76,8 @@ export const v3 = defineVersionHList(
                         key1: 0,
                         key2: 'initial'
                     },
-                    projectUp: identityProjection,
-                    projectDown: identityProjection
+                    projectUp: identityPatch,
+                    projectDown: identityPatch
                 },
                 hNil
             )
@@ -106,8 +94,8 @@ export const v1 = defineVersionHList(
                 key1: 0,
                 key2: 'initial'
             },
-            projectUp: identityProjection,
-            projectDown: identityProjection
+            projectUp: identityPatch,
+            projectDown: identityPatch
         },
         hNil
     )

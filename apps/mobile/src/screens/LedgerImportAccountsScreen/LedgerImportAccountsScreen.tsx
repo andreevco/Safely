@@ -5,10 +5,11 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import type { PortfolioLedger, PortfolioMeta } from '@safely/core';
-import { PortfolioType } from '@safely/core';
+import { PortfolioIdLedger, PortfolioNetworkType, PortfolioType } from '@safely/core';
 import {
     useAddLedgerPortfolio,
     useLoader,
+    useNewPortfolioFallbackName,
     usePortfolios,
     useSetActivePortfolio,
     useToast,
@@ -32,6 +33,7 @@ export const LedgerImportAccountsScreen = () => {
     const { mutateAsync: addLedgerPortfolio } = useAddLedgerPortfolio();
     const { mutateAsync: setActivePortfolio } = useSetActivePortfolio();
     const { mutateAsync: updateLedgerDerivations } = useUpdateLedgerDerivations();
+    const defaultName = useNewPortfolioFallbackName();
 
     const { findMorePortfolioId } = useLedgerSession();
     const portfolios = usePortfolios();
@@ -85,10 +87,8 @@ export const LedgerImportAccountsScreen = () => {
             navigation.dispatch(
                 CommonActions.navigate('CustomizeWalletModal', {
                     hasBackButton: true,
-                    initialMeta: {
-                        name: findMorePortfolio.meta.name,
-                        icon: findMorePortfolio.meta.icon
-                    },
+                    defaultName: findMorePortfolio.meta.name,
+                    defaultIcon: findMorePortfolio.meta.icon,
                     onSave: async (meta: PortfolioMeta) => {
                         await withLoader(() =>
                             updateLedgerDerivations({
@@ -107,7 +107,7 @@ export const LedgerImportAccountsScreen = () => {
                             })
                         );
                     },
-                    onCompleteCustomize: () => {
+                    onClose: () => {
                         navigation.goBack();
                     }
                 })
@@ -123,9 +123,16 @@ export const LedgerImportAccountsScreen = () => {
             return;
         }
 
+        const defaultIcon = new PortfolioIdLedger({
+            masterFingerprint,
+            networkType: PortfolioNetworkType.MAINNET
+        }).getFallbackEmoji();
+
         navigation.dispatch(
             CommonActions.navigate('CustomizeWalletModal', {
                 hasBackButton: true,
+                defaultName,
+                defaultIcon,
                 onSave: async (meta: PortfolioMeta) => {
                     try {
                         await withLoader(() =>
@@ -146,7 +153,7 @@ export const LedgerImportAccountsScreen = () => {
                         handleDuplicatePortfolio(error, navigation);
                     }
                 },
-                onCompleteCustomize: () => {
+                onClose: () => {
                     navigation.goBack();
                 }
             })
@@ -160,6 +167,7 @@ export const LedgerImportAccountsScreen = () => {
         updateLedgerDerivations,
         setActivePortfolio,
         selectedAccounts,
+        defaultName,
         toast,
         t
     ]);

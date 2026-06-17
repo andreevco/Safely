@@ -10,11 +10,25 @@ import type { IPortfolioId } from './I-portfolio';
 import type { PortfolioMetaIconEmoji } from './portfolio-meta';
 import { allowedPortfolioMetaEmojis } from './portfolio-meta';
 import type { PortfolioNetworkType } from './portfolio-network-type';
-import { assertUnreachable, sha256Prefix } from '../../utils';
+import { assertUnreachable, sha256PrefixNumber, sha256PrefixString } from '../../utils';
 import { Id } from '../../utils/id';
 import type { IMnemonicAccessor } from '../mnemonic';
 
 export class PortfolioIdBip39MasterKeyDerived extends Id implements IPortfolioId {
+    public static getFallbackEmoji(derivationIndex: number): PortfolioMetaIconEmoji;
+    public static getFallbackEmoji(mnemonicAccessor: IMnemonicAccessor): PortfolioMetaIconEmoji;
+    public static getFallbackEmoji(
+        mnemonicAccessorOrIndex: IMnemonicAccessor | number
+    ): PortfolioMetaIconEmoji {
+        if (typeof mnemonicAccessorOrIndex === 'number') {
+            const index = mnemonicAccessorOrIndex % allowedPortfolioMetaEmojis.length;
+
+            return { type: 'emoji', value: allowedPortfolioMetaEmojis[index] };
+        } else {
+            return getEmojiByMnemonic(mnemonicAccessorOrIndex);
+        }
+    }
+
     public readonly source = Bip39Source.MASTER_KEY_DERIVED;
 
     public readonly network: PortfolioNetworkType;
@@ -26,12 +40,6 @@ export class PortfolioIdBip39MasterKeyDerived extends Id implements IPortfolioId
 
         this.network = serialized.networkType;
         this.derivationIndex = serialized.derivationIndex;
-    }
-
-    public getFallbackEmoji(): PortfolioMetaIconEmoji {
-        const index = this.derivationIndex % allowedPortfolioMetaEmojis.length;
-
-        return { type: 'emoji', value: allowedPortfolioMetaEmojis[index] };
     }
 
     public toString(): string {
@@ -48,11 +56,15 @@ export class PortfolioIdBip39MasterKeyDerived extends Id implements IPortfolioId
 }
 
 export class PortfolioIdBip39Imported extends Id implements IPortfolioId {
+    public static getFallbackEmoji(mnemonicAccessor: IMnemonicAccessor) {
+        return getEmojiByMnemonic(mnemonicAccessor);
+    }
+
     public static async create(
         mnemonicAccessor: IMnemonicAccessor,
         network: PortfolioNetworkType
     ): Promise<PortfolioIdBip39Imported> {
-        const mnemonicHash = sha256Prefix(
+        const mnemonicHash = sha256PrefixString(
             `safely/v1/portfolio-id/imported/${mnemonicAccessor.value.join(' ').toLowerCase()}`,
             16
         );
@@ -75,14 +87,6 @@ export class PortfolioIdBip39Imported extends Id implements IPortfolioId {
         this.mnemonicHash = serialized.mnemonicHash;
     }
 
-    public getFallbackEmoji(): PortfolioMetaIconEmoji {
-        const index =
-            Buffer.from(this.mnemonicHash, 'hex').readUint32BE() %
-            allowedPortfolioMetaEmojis.length;
-
-        return { type: 'emoji', value: allowedPortfolioMetaEmojis[index] };
-    }
-
     public toString(): string {
         return portfolioBip39IdToString(this.toJSON());
     }
@@ -94,6 +98,16 @@ export class PortfolioIdBip39Imported extends Id implements IPortfolioId {
             networkType: this.network
         };
     }
+}
+
+function getEmojiByMnemonic(mnemonicAccessor: IMnemonicAccessor): PortfolioMetaIconEmoji {
+    const mnemonicHash = sha256PrefixNumber(
+        `safely/v1/portfolio-emoji/mnemonic/${mnemonicAccessor.value.join(' ').toLowerCase()}`
+    );
+
+    const index = mnemonicHash % allowedPortfolioMetaEmojis.length;
+
+    return { type: 'emoji', value: allowedPortfolioMetaEmojis[index] };
 }
 
 export type PortfolioIdBip39 = PortfolioIdBip39MasterKeyDerived | PortfolioIdBip39Imported;

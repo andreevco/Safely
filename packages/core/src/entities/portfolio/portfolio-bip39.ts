@@ -12,7 +12,7 @@ import type { IPortfolioBip39, PortfolioSecretRevealedStatus } from './I-portfol
 import { PortfolioType } from './I-portfolio';
 import type { PortfolioIdBip39 } from './portfolio-id-bip39';
 import { toPortfolioIdBip39 } from './portfolio-id-bip39';
-import type { NoIconPortfolioMeta, PortfolioMeta } from './portfolio-meta';
+import type { PortfolioMeta } from './portfolio-meta';
 import type { ISecretEncryptor } from '../../di';
 import type { Id } from '../../utils';
 import { BtcWalletType } from '../blockchain';
@@ -32,13 +32,14 @@ export class PortfolioBip39 implements IPortfolioBip39 {
         mnemonicAccessor,
         id,
         options,
-        logger
+        logger,
+        meta
     }: {
         encryptor: ISecretEncryptor;
         mnemonicAccessor: IMnemonicAccessor & IMnemonicVault;
         id: PortfolioIdBip39;
-        options: {
-            meta: NoIconPortfolioMeta;
+        meta: PortfolioMeta;
+        options?: {
             seedRevealedFromDevice?: string;
         };
         logger?: Logger;
@@ -60,12 +61,7 @@ export class PortfolioBip39 implements IPortfolioBip39 {
                 await MnemonicVault.fromMnemonicAccessor(encryptor, mnemonicAccessor)
             ).encryptedSecret;
 
-            const meta = {
-                name: options.meta.name,
-                icon: options.meta.icon ?? id.getFallbackEmoji()
-            };
-
-            const secretRevealedStatus = options.seedRevealedFromDevice
+            const secretRevealedStatus = options?.seedRevealedFromDevice
                 ? {
                       revealedAt: Date.now(),
                       revealedFromDevice: options.seedRevealedFromDevice
