@@ -2,7 +2,7 @@ import type { StoreApi } from 'zustand/vanilla';
 import { createStore } from 'zustand/vanilla';
 
 import type { Contact, FiatAsset, Portfolio } from '@safely/core';
-import type { SAccountMeta, SDevicesMeta } from '@safely/sync-storage';
+import type { SAccountMeta, SDevicesMeta, SNextDerivingPortfolioInfo } from '@safely/sync-storage';
 
 export type AccountStoreData = {
     accountId: string;
@@ -11,6 +11,7 @@ export type AccountStoreData = {
     contacts: Contact[];
     preferredFiat: FiatAsset | null;
     devicesMeta: SDevicesMeta;
+    nextDerivingPortfolioInfo: SNextDerivingPortfolioInfo;
     analyticsId: string | null;
 };
 
@@ -20,6 +21,7 @@ export const SYNCED_SLOT_KEYS = [
     'contacts',
     'preferredFiat',
     'devicesMeta',
+    'nextDerivingPortfolioInfo',
     'analyticsId'
 ] as const satisfies readonly (keyof Omit<AccountStoreData, 'accountId'>)[];
 

@@ -14,7 +14,7 @@ import {
     PortfolioWatchOnlyBtc,
     toPortfolioIdWatchOnly
 } from '@safely/core';
-import { useAddWatchOnlyPortfolio, useLoader, usePortfolios } from '@safely/ux';
+import { useAddWatchOnlyPortfolio, useNewPortfolioFallbackName, usePortfolios } from '@safely/ux';
 
 import { handleDuplicatePortfolio } from '@mobile/features/add-wallet/handleDuplicatePortfolio';
 import { TEST_ID } from '@mobile/shared/constants';
@@ -26,8 +26,8 @@ export const AddWatchOnlyScreen = () => {
     const { t } = useTranslation();
     const navigation = useNavigation();
     const portfolios = usePortfolios();
-    const { withLoader } = useLoader();
     const { mutateAsync: addWatchOnlyPortfolio } = useAddWatchOnlyPortfolio();
+    const defaultPortfolioName = useNewPortfolioFallbackName();
 
     const inputRef = useRef<TextInput>(null);
     const [address, setAddress] = useState('');
@@ -65,34 +65,29 @@ export const AddWatchOnlyScreen = () => {
             return;
         }
 
-        navigation.dispatch(
-            CommonActions.navigate('CustomizeWalletModal', {
-                hasBackButton: true,
-                onSave: async (meta: PortfolioMeta) => {
-                    try {
-                        await withLoader(async () => {
-                            await addWatchOnlyPortfolio({
-                                input: trimmedInput,
-                                meta
-                            });
-                        });
+        navigation.navigate('CustomizeWalletModal', {
+            hasBackButton: true,
+            defaultName: defaultPortfolioName,
+            defaultIcon: portfolioId.getFallbackEmoji(),
+            onSave: async (meta: PortfolioMeta) => {
+                try {
+                    await addWatchOnlyPortfolio({
+                        input: trimmedInput,
+                        meta
+                    });
 
-                        navigation.dispatch(
-                            CommonActions.reset({
-                                index: 0,
-                                routes: [{ name: 'TabsNavigator' }]
-                            })
-                        );
-                    } catch (error) {
-                        handleDuplicatePortfolio(error, navigation);
-                    }
-                },
-                onCompleteCustomize: () => {
-                    navigation.goBack();
+                    navigation.dispatch(
+                        CommonActions.reset({
+                            index: 0,
+                            routes: [{ name: 'TabsNavigator' }]
+                        })
+                    );
+                } catch (error) {
+                    handleDuplicatePortfolio(error, navigation);
                 }
-            })
-        );
-    }, [trimmedInput, portfolios, navigation, withLoader, addWatchOnlyPortfolio]);
+            }
+        });
+    }, [trimmedInput, portfolios, navigation, addWatchOnlyPortfolio, defaultPortfolioName]);
 
     return (
         <Screen>
