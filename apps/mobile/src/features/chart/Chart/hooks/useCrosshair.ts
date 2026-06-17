@@ -200,22 +200,22 @@ export const useCrosshair = (params: UseCrosshairParams): UseCrosshairResult => 
                 const idx = findNearestIndex(points, touches[0].x);
                 if (idx !== -1) {
                     const previousPrimaryIndex = primaryCrosshair.value.pointIndex;
-                    setCrosshairPoint(primaryCrosshair, points, fractions, idx);
-                    nextPrimaryIndex = idx;
                     if (idx !== previousPrimaryIndex) {
+                        setCrosshairPoint(primaryCrosshair, points, fractions, idx);
                         shouldEmitPoints = true;
                     }
+                    nextPrimaryIndex = idx;
                 }
 
                 if (touches.length >= 2) {
                     const idx2 = findNearestIndex(points, touches[1].x);
                     if (idx2 !== -1) {
                         const previousSecondaryIndex = secondaryCrosshair.value.pointIndex;
-                        setCrosshairPoint(secondaryCrosshair, points, fractions, idx2);
-                        nextSecondaryIndex = idx2;
                         if (idx2 !== previousSecondaryIndex) {
+                            setCrosshairPoint(secondaryCrosshair, points, fractions, idx2);
                             shouldEmitPoints = true;
                         }
+                        nextSecondaryIndex = idx2;
                     }
                 }
 
@@ -236,11 +236,11 @@ export const useCrosshair = (params: UseCrosshairParams): UseCrosshairResult => 
                     const idx = findNearestIndex(points, touches[0].x);
                     if (idx !== -1) {
                         const previousPrimaryIndex = primaryCrosshair.value.pointIndex;
-                        setCrosshairPoint(primaryCrosshair, points, fractions, idx);
-                        nextPrimaryIndex = idx;
                         if (idx !== previousPrimaryIndex) {
+                            setCrosshairPoint(primaryCrosshair, points, fractions, idx);
                             shouldEmitPoints = true;
                         }
+                        nextPrimaryIndex = idx;
                     }
                 }
 
@@ -248,11 +248,11 @@ export const useCrosshair = (params: UseCrosshairParams): UseCrosshairResult => 
                     const idx2 = findNearestIndex(points, touches[1].x);
                     if (idx2 !== -1) {
                         const previousSecondaryIndex = secondaryCrosshair.value.pointIndex;
-                        setCrosshairPoint(secondaryCrosshair, points, fractions, idx2);
-                        nextSecondaryIndex = idx2;
                         if (idx2 !== previousSecondaryIndex) {
+                            setCrosshairPoint(secondaryCrosshair, points, fractions, idx2);
                             shouldEmitPoints = true;
                         }
+                        nextSecondaryIndex = idx2;
                     }
                 } else if (secondaryCrosshair.value.isActive) {
                     clearCrosshair(secondaryCrosshair);
