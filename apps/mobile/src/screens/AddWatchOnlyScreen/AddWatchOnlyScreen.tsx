@@ -14,12 +14,7 @@ import {
     PortfolioWatchOnlyBtc,
     toPortfolioIdWatchOnly
 } from '@safely/core';
-import {
-    useAddWatchOnlyPortfolio,
-    useLoader,
-    useNewPortfolioFallbackName,
-    usePortfolios
-} from '@safely/ux';
+import { useAddWatchOnlyPortfolio, useNewPortfolioFallbackName, usePortfolios } from '@safely/ux';
 
 import { handleDuplicatePortfolio } from '@mobile/features/add-wallet/handleDuplicatePortfolio';
 import { TEST_ID } from '@mobile/shared/constants';
@@ -31,7 +26,6 @@ export const AddWatchOnlyScreen = () => {
     const { t } = useTranslation();
     const navigation = useNavigation();
     const portfolios = usePortfolios();
-    const { withLoader } = useLoader();
     const { mutateAsync: addWatchOnlyPortfolio } = useAddWatchOnlyPortfolio();
     const defaultPortfolioName = useNewPortfolioFallbackName();
 
@@ -77,11 +71,9 @@ export const AddWatchOnlyScreen = () => {
             defaultIcon: portfolioId.getFallbackEmoji(),
             onSave: async (meta: PortfolioMeta) => {
                 try {
-                    await withLoader(async () => {
-                        await addWatchOnlyPortfolio({
-                            input: trimmedInput,
-                            meta
-                        });
+                    await addWatchOnlyPortfolio({
+                        input: trimmedInput,
+                        meta
                     });
 
                     navigation.dispatch(
@@ -95,14 +87,7 @@ export const AddWatchOnlyScreen = () => {
                 }
             }
         });
-    }, [
-        trimmedInput,
-        portfolios,
-        navigation,
-        withLoader,
-        addWatchOnlyPortfolio,
-        defaultPortfolioName
-    ]);
+    }, [trimmedInput, portfolios, navigation, addWatchOnlyPortfolio, defaultPortfolioName]);
 
     return (
         <Screen>
