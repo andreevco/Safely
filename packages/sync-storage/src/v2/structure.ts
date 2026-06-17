@@ -43,7 +43,6 @@ export const syncedStorageV2 = {
             .update(['nextDerivingPortfolioInfo'], index =>
                 index == null ? null : { index: index + 1 }
             )
-            .update(['analyticsId'], id => id ?? null)
     ),
     projectDown: patch(syncedStorageSchema, syncedStorageV1.schema, draft =>
         draft
