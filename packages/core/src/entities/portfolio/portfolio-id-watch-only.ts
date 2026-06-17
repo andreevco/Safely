@@ -12,7 +12,7 @@ import { allowedPortfolioMetaEmojis } from './portfolio-meta';
 import type { PortfolioNetworkType } from './portfolio-network-type';
 import { BtcXpub } from '../../blockchain-api';
 import { assertUnreachable, Id, sha256PrefixNumber } from '../../utils';
-import { BtcNetwork, BtcWalletType } from '../blockchain';
+import { btcNetworkByPortfolioNetworkType, BtcWalletType } from '../blockchain';
 
 export class PortfolioIdWatchOnlyXpub extends Id implements IPortfolioId {
     public readonly source = WatchOnlySource.XPUB;
@@ -33,7 +33,11 @@ export class PortfolioIdWatchOnlyXpub extends Id implements IPortfolioId {
 
     public getFallbackEmoji() {
         return getEmojiByBtcAddress(
-            BtcXpub.deriveAddress(this.xpub, BtcNetwork.MAINNET, BtcWalletType.NATIVE_SEGWIT)
+            BtcXpub.deriveAddress(
+                this.xpub,
+                btcNetworkByPortfolioNetworkType(this.network),
+                BtcWalletType.NATIVE_SEGWIT
+            )
         );
     }
 
