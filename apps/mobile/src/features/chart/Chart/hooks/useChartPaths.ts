@@ -1,10 +1,12 @@
-import { useMemo } from 'react';
+import { Skia, type SkPath } from '@shopify/react-native-skia';
+import { useEffect, useMemo } from 'react';
 import type { SharedValue } from 'react-native-reanimated';
 
 import { buildChartPath, buildChartPoints, type ChartPoint } from '@mobile/shared/utils/chart';
 
 import type { ChartPeriod } from '../config';
 import { CHART_CONFIG } from '../config';
+import { computePathFractions, computePeriodSplit } from '../utils/pathGeometry';
 
 type UseChartPathsParams = {
     prices: [number, number][];
@@ -14,28 +16,6 @@ type UseChartPathsParams = {
     selectedPeriod: ChartPeriod;
     chartPointsShared: SharedValue<ChartPoint[]>;
     pathFractionsShared: SharedValue<number[]>;
-};
-
-const computePathFractions = (points: ChartPoint[]): number[] => {
-    if (points.length === 0) return [];
-
-    const fractions: number[] = [0];
-    let cumulative = 0;
-
-    for (let i = 1; i < points.length; i++) {
-        const dx = points[i].x - points[i - 1].x;
-        const dy = points[i].y - points[i - 1].y;
-        cumulative += Math.sqrt(dx * dx + dy * dy);
-        fractions.push(cumulative);
-    }
-
-    if (cumulative > 0) {
-        for (let i = 1; i < fractions.length; i++) {
-            fractions[i] /= cumulative;
-        }
-    }
-
-    return fractions;
 };
 
 export const useChartPaths = (params: UseChartPathsParams) => {
@@ -49,7 +29,7 @@ export const useChartPaths = (params: UseChartPathsParams) => {
         pathFractionsShared
     } = params;
 
-    return useMemo(() => {
+    const result = useMemo(() => {
         const intermediatePoints =
             CHART_CONFIG[selectedPeriod].getPeriodIntermediatePoints(startDate);
 
@@ -58,26 +38,43 @@ export const useChartPaths = (params: UseChartPathsParams) => {
             endTimestamp: intermediatePoints[intermediatePoints.length - 1]
         });
 
-        chartPointsShared.value = chart.points;
-
         const fullPath = buildChartPath(chart.points);
         const fractions = computePathFractions(chart.points);
-        pathFractionsShared.value = fractions;
 
         const splitTimestamp = Date.now() - CHART_CONFIG[selectedPeriod].fullPeriodLength;
-        const splitIndex = chart.points.findIndex(point => point.timestamp >= splitTimestamp);
+        const { periodSplitEnd, splitPoint } = computePeriodSplit(
+            chart.points,
+            splitTimestamp,
+            fractions
+        );
 
         const last = chart.points[chart.points.length - 1];
-        const periodSplitEnd = splitIndex > 0 ? (fractions[splitIndex] ?? 0) : 0;
 
-        const splitPoint = chart.points[splitIndex];
+        const mainSplitPath: SkPath =
+            periodSplitEnd > 0
+                ? (Skia.Path.Trim(fullPath, periodSplitEnd, 1, false) ?? fullPath)
+                : fullPath;
+        const fadedSplitPath: SkPath | null =
+            periodSplitEnd > 0
+                ? (Skia.Path.Trim(fullPath, 0, periodSplitEnd, false) ?? null)
+                : null;
 
         return {
             fullPath,
+            mainSplitPath,
+            fadedSplitPath,
             elegantPrices: chart.elegantPrices,
-            periodSplitEnd,
             splitPoint,
-            lastPoint: last ? { x: last.x, y: last.y } : null
+            lastPoint: last ? { x: last.x, y: last.y } : null,
+            points: chart.points,
+            fractions
         };
-    }, [prices, height, width, startDate, selectedPeriod, chartPointsShared, pathFractionsShared]);
+    }, [prices, height, width, startDate, selectedPeriod]);
+
+    useEffect(() => {
+        chartPointsShared.value = result.points;
+        pathFractionsShared.value = result.fractions;
+    }, [result, chartPointsShared, pathFractionsShared]);
+
+    return result;
 };
