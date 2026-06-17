@@ -2,13 +2,12 @@ import { useMemo } from 'react';
 
 import { BtcEstimator } from '@safely/core';
 
-import { useActiveBtcWallet, useActiveSignableBtcWallet } from '../../../entities';
+import { useActiveSignableBtcWallet } from '../../../entities';
 import { useAppContext, useBtcApi } from '../../../shared';
 
 export function useBtcEstimator() {
-    const wallet = useActiveBtcWallet();
-    const btcApi = useBtcApi(wallet.network);
     const btcWallet = useActiveSignableBtcWallet();
+    const btcApi = useBtcApi(btcWallet.network);
     const { logger } = useAppContext();
 
     return useMemo(
