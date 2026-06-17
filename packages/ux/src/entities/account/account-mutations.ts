@@ -9,7 +9,11 @@ import { toPortfolioId } from '@safely/core';
 import { delay, PortfolioNetworkType } from '@safely/core';
 import type { ISyncAccount, OnboardingConnector as RawOnboardingConnector } from '@safely/sync';
 import { OnboardingAbortedError } from '@safely/sync';
-import type { SPortfolioBip39, SyncedStorageStructure } from '@safely/sync-storage';
+import type {
+    SNextDerivingPortfolioInfo,
+    SPortfolioBip39,
+    SyncedStorageStructure
+} from '@safely/sync-storage';
 
 import type { AccountMeta, OnboardingConnector, SyncAccount } from './account-state';
 import { useAccountsQueryConfig } from './account-state';
@@ -79,6 +83,7 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
             const account = await factory.createSyncAccount(params.secureEncryptedStorage);
 
             let createdPortfolio: SPortfolioBip39 | null = null;
+            let nextDerivingInfo: SNextDerivingPortfolioInfo = null;
             const firstPortfolioDerivationIndex = 0;
             if (options?.createWallet || options?.setActive) {
                 const portfolioMnemonicFactory = new PortfolioMnemonicFactory(
@@ -102,11 +107,21 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
                         account.secretEncryptor,
                         params.secureEncryptedStorage
                     ),
-                    options: {
-                        meta: { name: t('security.groups.wallet.defaultName', { number: 1 }) }
+                    meta: {
+                        name: t('security.groups.wallet.defaultName', { number: 1 }),
+                        icon: PortfolioIdBip39MasterKeyDerived.getFallbackEmoji(mnemonicAccessor)
                     },
                     logger
                 });
+
+                const nextIndex = firstPortfolioDerivationIndex + 1;
+                using nextMnemonicAccessor =
+                    await portfolioMnemonicFactory.deriveBip39MnemonicResource(nextIndex);
+                nextDerivingInfo = {
+                    index: nextIndex,
+                    emoji: PortfolioIdBip39MasterKeyDerived.getFallbackEmoji(nextMnemonicAccessor)
+                        .value
+                };
             }
 
             const analyticsId = await deriveAnalyticsAccountUuid(
@@ -124,7 +139,7 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
 
                 if (createdPortfolio) {
                     draft.set('portfolios', [createdPortfolio]);
-                    draft.set('latestDerivedBip39PortfolioIndex', firstPortfolioDerivationIndex);
+                    draft.set('nextDerivingPortfolioInfo', nextDerivingInfo);
                 }
             });
 

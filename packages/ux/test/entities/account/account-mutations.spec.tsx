@@ -178,7 +178,7 @@ describe('useCreateAccount (add)', () => {
         expect(analyticsSlot?.set).toHaveBeenCalled();
     });
 
-    it('with createWallet:true seeds portfolios + latestDerivedBip39PortfolioIndex', async () => {
+    it('with createWallet:true seeds portfolios + nextDerivingPortfolioInfo', async () => {
         const newAccount = createMockSyncAccount({ accountId: 'wallet-account' });
         const factory = createFactoryStub({
             createSyncAccount: vi.fn(async () => newAccount)
@@ -200,17 +200,17 @@ describe('useCreateAccount (add)', () => {
         });
 
         const recorder = newAccount.transactions[0];
-        // portfolios + latestDerivedBip39PortfolioIndex are written via root .set,
+        // portfolios + nextDerivingPortfolioInfo are written via root .set,
         // captured on the root recorder.
         const setCalls = recorder.set.mock.calls.map(c => c[0]);
         expect(setCalls).toEqual(
-            expect.arrayContaining(['meta', 'portfolios', 'latestDerivedBip39PortfolioIndex'])
+            expect.arrayContaining(['meta', 'portfolios', 'nextDerivingPortfolioInfo'])
         );
 
-        const latestIndexSet = recorder.set.mock.calls.find(
-            c => c[0] === 'latestDerivedBip39PortfolioIndex'
+        const nextInfoSet = recorder.set.mock.calls.find(
+            c => c[0] === 'nextDerivingPortfolioInfo'
         );
-        expect(latestIndexSet?.[1]).toBe(0);
+        expect(nextInfoSet?.[1]).toEqual({ index: 1, emoji: expect.any(String) });
     });
 
     it('with setActive:true invokes setActiveAccount with the new accountId', async () => {

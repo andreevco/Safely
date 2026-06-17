@@ -1,7 +1,13 @@
 name: CD
 
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      release_notes:
+        description: 'Release notes'
+        type: string
+        required: false
+        default: 'Manual dispatch'
   push:
     branches:
       - master
@@ -38,7 +44,11 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          MANUAL_NOTES: ${{ github.event.inputs.release_notes }}
         run: |
+          if [ -n "$MANUAL_NOTES" ]; then
+            NOTES="$MANUAL_NOTES"
+          else
           # commits/{sha}/pulls returns every PR containing the commit, including the
           # still-open release PR whose head branch we just pushed to. Match by
           # merge_commit_sha (= squash/merge commit) to get the PR that was actually merged.
@@ -57,6 +67,7 @@ jobs:
             else
               NOTES=$(printf '[%s] #%s %s' "$BRANCH" "$NUMBER" "$TITLE")
             fi
+          fi
           fi
 
           # Expose the just-merged PR number (empty for direct pushes / manual runs)
@@ -82,10 +93,11 @@ jobs:
         working-directory: apps/mobile
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          EVENT_NAME: ${{ github.event_name }}
         run: |
           RELEASE_NOTES="$(cat /tmp/release_notes.txt)"
-          # Cache only feature builds (release/*); master stays uncached for clean from-scratch builds.
-          if [[ "$GITHUB_REF_NAME" == release/* ]]; then
+          # Cache feature builds (release/*) and manual runs; master stays uncached for clean from-scratch builds.
+          if [[ "$GITHUB_REF_NAME" == release/* || "$EVENT_NAME" == workflow_dispatch ]]; then
             ANDROID_BUILD_PROFILE="production-cached"
           else
             ANDROID_BUILD_PROFILE="production"

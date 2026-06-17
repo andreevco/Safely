@@ -393,3 +393,15 @@ export function createStorage<Latest extends StorageVersion, Rest>(options: {
         root: options.root
     }) as SlotTree<z.output<NewOf<Latest>>>;
 }
+
+export function createStorageFromSnapshot<Latest extends StorageVersion, Rest>(options: {
+    authorId: Buffer;
+    versions: HCons<Latest, Rest> & AssertVersionHList<HCons<Latest, Rest>>;
+    snapshot: Buffer;
+}): SlotTree<z.output<NewOf<Latest>>> {
+    return createStorage({
+        authorId: options.authorId,
+        versions: options.versions,
+        root: cborEncoder.decode(options.snapshot)
+    });
+}

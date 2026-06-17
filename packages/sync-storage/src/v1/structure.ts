@@ -2,14 +2,17 @@ import { z } from 'zod';
 
 import { projectIdentity } from '@safely/slottree';
 
-import { sAnalyticsId, sLatestDerivedBip39PortfolioIndex } from './schemas';
-import { sAccountMeta } from './schemas/account-meta.schema';
-import type { SContacts } from './schemas/contacts.schema';
-import { sContacts } from './schemas/contacts.schema';
-import { sDevicesMeta } from './schemas/devices-meta.schema';
-import type { SPortfolios } from './schemas/portfolio/portfolios.schema';
-import { sPortfolios } from './schemas/portfolio/portfolios.schema';
-import { sPreferredFiat } from './schemas/preferred-fiat.schema';
+import {
+    sAnalyticsId,
+    sLatestDerivedBip39PortfolioIndex,
+    sPreferredFiat,
+    sAccountMeta,
+    sContacts,
+    sDevicesMeta,
+    sPortfolios,
+    type SContacts,
+    type SPortfolios
+} from './schemas';
 
 const syncedStorageSchema = z.object({
     preferredFiat: sPreferredFiat,

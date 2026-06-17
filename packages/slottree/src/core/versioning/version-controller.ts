@@ -53,7 +53,7 @@ export class VersionController {
         for (let index = fromIndex + 1; index < this.versions.length; index += 1) {
             const toVersion = this.versions[index];
             const projected = toVersion.projectUp(current);
-            this.validateProjection(toVersion, projected);
+            this.validateVersionSlot(toVersion, projected);
             current = projected;
         }
 
@@ -191,7 +191,7 @@ export class VersionController {
         return usedVersions;
     }
 
-    private validateProjection(version: StorageVersion, projected: ContainerSlot): void {
+    private validateVersionSlot(version: StorageVersion, projected: ContainerSlot): void {
         validateSlot(projected);
         version.schema.parse(stripSlot(projected));
     }

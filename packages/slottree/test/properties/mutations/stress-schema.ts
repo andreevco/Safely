@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { cloneSlot } from '../../src/core/slots/slot-json';
-import { defineVersionHList, hCons, hNil } from '../../src/core/versioning/version';
+import { cloneSlot } from '../../../src/core/slots/slot-json';
+import { defineVersionHList, hCons, hNil } from '../../../src/core/versioning/version';
 
 const Scalar = z.string();
 

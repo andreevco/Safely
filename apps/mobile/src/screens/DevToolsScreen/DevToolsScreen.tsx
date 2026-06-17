@@ -63,6 +63,20 @@ export const DevToolsScreen = () => {
                             </Cell.Content>
                             <Cell.Chevron />
                         </Cell>
+                        <Cell
+                            onPress={() =>
+                                navigation.navigate('SettingsModal', {
+                                    screen: 'DevToolsSyncStorageModal'
+                                })
+                            }
+                        >
+                            <Cell.Content>
+                                <Cell.Row>
+                                    <Cell.Title>Sync Storage</Cell.Title>
+                                </Cell.Row>
+                            </Cell.Content>
+                            <Cell.Chevron />
+                        </Cell>
                         {isDevVersion && (
                             <Cell
                                 onPress={() =>

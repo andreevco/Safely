@@ -15,8 +15,7 @@ export const styles = StyleSheet.create(theme => ({
     textContainer: {
         gap: theme.spacing[4],
         paddingVertical: theme.spacing[16],
-        paddingHorizontal: theme.spacing[16],
-        marginBottom: theme.spacing[12]
+        paddingHorizontal: theme.spacing[16]
     },
     inputContainer: {
         margin: theme.spacing[8],

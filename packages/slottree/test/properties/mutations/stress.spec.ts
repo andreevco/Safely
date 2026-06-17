@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { applyOps, opsArb } from './ops';
 import { stressVersionList } from './stress-schema';
-import { createStorage } from '../../src';
+import { createStorage } from '../../../src';
 
 function makeStorage(authorId: string) {
     return createStorage({
