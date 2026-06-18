@@ -1,12 +1,17 @@
 import { OpenAppDeviceAction } from '@ledgerhq/device-management-kit';
-import type { DeviceManagementKit, DiscoveredDevice } from '@ledgerhq/device-management-kit';
+import type {
+    DeviceManagementKit,
+    DeviceSessionState,
+    DiscoveredDevice
+} from '@ledgerhq/device-management-kit';
 import { rnBleTransportIdentifier } from '@ledgerhq/device-transport-kit-react-native-ble';
-import { firstValueFrom } from 'rxjs';
 import type { AnyEventObject } from 'xstate';
 import { fromCallback, fromPromise } from 'xstate';
 
 import type { LedgerSession } from '@safely/core';
 import { awaitDeviceAction, getLedgerMasterFingerprint } from '@safely/core';
+
+import { firstValueFrom } from '../first-value-from';
 
 const BITCOIN_APP_NAME = 'Bitcoin';
 
@@ -33,7 +38,7 @@ export type CheckLedgerAppVersionInput = {
 
 export const checkLedgerAppVersion = fromPromise<boolean, CheckLedgerAppVersionInput>(
     async ({ input }) => {
-        const state = await firstValueFrom(
+        const state = await firstValueFrom<DeviceSessionState>(
             input.dmk.getDeviceSessionState({ sessionId: input.sessionId })
         );
 

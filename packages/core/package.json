@@ -19,7 +19,6 @@
     "@scure/bip39": "2.2.0",
     "@scure/btc-signer": "2.2.0",
     "big.js": "catalog:",
-    "bitcoinjs-lib": "^6.1.7",
     "tweetnacl": "^1.0.3",
     "uuid": "catalog:",
     "zod": "catalog:"

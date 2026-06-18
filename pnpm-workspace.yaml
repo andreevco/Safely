@@ -31,8 +31,8 @@ catalog:
 
 minimumReleaseAge: 5760
 
-strictPeerDependencies: true
-autoInstallPeers: false
+strictPeerDependencies: false
+autoInstallPeers: true
 
 peerDependencyRules:
   allowedVersions:
