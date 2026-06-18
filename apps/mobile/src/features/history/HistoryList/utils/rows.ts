@@ -45,8 +45,7 @@ export type ActivityRowContext = {
     contacts: ReturnType<typeof useContacts>;
     rateData: ReturnType<typeof useRate>['data'];
     currentBlockNumber: ReturnType<typeof useActualBtcBlockNumber>['data'];
-    onNavigateToTransaction: (activity: BtcActivityItem) => void;
-    onNavigateToOrder: (order: OrderActivityItem) => void;
+    onNavigateToActivityItem: (activity: ActivityItem) => void;
 };
 
 export type TimeFormatDetails = 'time' | 'day-month-time';
@@ -166,8 +165,7 @@ const buildTransactionRow = (
         timestampLabel,
         background,
         counterparty,
-        onNavigateToTransaction: context.onNavigateToTransaction,
-        onNavigateToOrder: context.onNavigateToOrder
+        onNavigateToActivityItem: context.onNavigateToActivityItem
     };
 };
 
@@ -220,8 +218,7 @@ const buildOrderRow = (
             kind: 'provider',
             label: order.provider
         },
-        onNavigateToTransaction: context.onNavigateToTransaction,
-        onNavigateToOrder: context.onNavigateToOrder
+        onNavigateToActivityItem: context.onNavigateToActivityItem
     };
 };
 

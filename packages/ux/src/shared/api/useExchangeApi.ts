@@ -8,5 +8,8 @@ import { useBootConfig } from './useBootConfig';
 export function useExchangeApi(signer?: RequestSigner) {
     const { exchange } = useBootConfig();
 
-    return useMemo(() => new ExchangeApi({ baseUrl: exchange.url, signer }), [exchange.url, signer]);
+    return useMemo(
+        () => new ExchangeApi({ baseUrl: exchange.url, signer }),
+        [exchange.url, signer]
+    );
 }

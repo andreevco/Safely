@@ -6,8 +6,8 @@ import { useWindowDimensions, View } from 'react-native';
 
 import { BTC_ASSET } from '@safely/core';
 import {
+    type ActivityItem as ActivityItemData,
     type ActivityItemsDatedGroup,
-    type BtcActivityItem,
     assetKeys,
     useActualBtcBlockNumber,
     useContacts,
@@ -18,7 +18,6 @@ import {
     usePortfolios,
     useRate
 } from '@safely/ux';
-import type { OrderActivityItem } from '@safely/ux';
 
 import { ActivityItem, ActivityItemSkeleton } from '@mobile/entities/activity';
 import { List, Screen, Text } from '@mobile/shared/ui';
@@ -43,12 +42,11 @@ const DAY_MONTH_FORMAT_OPTIONS = { day: 'numeric', month: 'short' } as const;
 const getFirstActivityKey = (groups: ActivityItemsDatedGroup[] | undefined): string | undefined =>
     groups?.[0]?.items?.[0]?.key;
 type HistoryListProps = {
-    onNavigateToTransaction: (activity: BtcActivityItem) => void;
-    onNavigateToOrder: (order: OrderActivityItem) => void;
+    onNavigateToActivityItem: (activity: ActivityItemData) => void;
 };
 
 export const HistoryList = (props: HistoryListProps) => {
-    const { onNavigateToTransaction, onNavigateToOrder } = props;
+    const { onNavigateToActivityItem } = props;
     const { t } = useTranslation();
 
     const groupFormatter = useDateFormatter();
@@ -110,8 +108,7 @@ export const HistoryList = (props: HistoryListProps) => {
             contacts,
             rateData,
             currentBlockNumber,
-            onNavigateToTransaction,
-            onNavigateToOrder
+            onNavigateToActivityItem
         };
 
         return historyGroups.flatMap(group => {
@@ -137,8 +134,7 @@ export const HistoryList = (props: HistoryListProps) => {
         portfolios,
         contacts,
         currentBlockNumber,
-        onNavigateToTransaction,
-        onNavigateToOrder
+        onNavigateToActivityItem
     ]);
 
     const renderSeparator = useCallback(() => {
