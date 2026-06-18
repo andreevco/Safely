@@ -7,12 +7,12 @@ import {
 import { firstValueFrom } from './first-value-from';
 
 export const isLedgerSessionConnected = async (
-    dmk: DeviceManagementKit,
+    ledgerKit: DeviceManagementKit,
     sessionId: string
 ): Promise<boolean> => {
     try {
         const state = await firstValueFrom<DeviceSessionState>(
-            dmk.getDeviceSessionState({ sessionId })
+            ledgerKit.getDeviceSessionState({ sessionId })
         );
 
         return state.deviceStatus !== DeviceStatus.NOT_CONNECTED;

@@ -21,14 +21,13 @@ export type DiscoverLedgerAccountsOptions = {
 const LEDGER_DISCOVERY_OWNER = 'ledger-discovery';
 
 export const discoverLedgerAccounts = async (
-    dmk: DeviceManagementKit,
+    ledgerKit: DeviceManagementKit,
     sessionId: string,
     options: DiscoverLedgerAccountsOptions = {}
 ): Promise<LedgerAccount[]> => {
     const { startIndex = 0, count = 10 } = options;
-    const bitcoinApp = new SignerBtcBuilder({ dmk, sessionId }).build();
+    const bitcoinApp = new SignerBtcBuilder({ dmk: ledgerKit, sessionId }).build();
 
-    // The device is a single serialized APDU pipe — xpubs must be read one at a time.
     const accounts: LedgerAccount[] = [];
 
     for (let index = startIndex; index < startIndex + count; index++) {

@@ -1,7 +1,7 @@
 import type { DeviceManagementKit } from '@ledgerhq/device-management-kit';
 
 export interface LedgerSession {
-    dmk: DeviceManagementKit;
+    ledgerKit: DeviceManagementKit;
     sessionId: string;
 }
 

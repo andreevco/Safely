@@ -4,10 +4,10 @@ import { SignerBtcBuilder } from '@ledgerhq/device-signer-kit-bitcoin';
 import { awaitDeviceAction } from './await-device-action';
 
 export const getLedgerMasterFingerprint = async (
-    dmk: DeviceManagementKit,
+    ledgerKit: DeviceManagementKit,
     sessionId: string
 ): Promise<string> => {
-    const signer = new SignerBtcBuilder({ dmk, sessionId }).build();
+    const signer = new SignerBtcBuilder({ dmk: ledgerKit, sessionId }).build();
 
     const { masterFingerprint } = await awaitDeviceAction(
         signer.getMasterFingerprint({ skipOpenApp: true })

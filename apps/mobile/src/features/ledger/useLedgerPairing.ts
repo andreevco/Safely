@@ -8,7 +8,7 @@ export type PairingStatus = 'connecting' | 'connected' | 'error';
 const BITCOIN_APP_NAME = 'Bitcoin';
 
 export const useLedgerPairing = () => {
-    const { getDmk, selectedDevice, setSessionId } = useLedgerSession();
+    const { getLedgerKit, selectedDevice, setSessionId } = useLedgerSession();
     const [status, setStatus] = useState<PairingStatus>('connecting');
 
     useEffect(() => {
@@ -20,9 +20,10 @@ export const useLedgerPairing = () => {
 
         let isActive = true;
         let subscription: { unsubscribe: () => void } | undefined;
-        const dmk = getDmk();
+        const ledgerKit = getLedgerKit();
 
-        dmk.connect({ device: selectedDevice })
+        ledgerKit
+            .connect({ device: selectedDevice })
             .then(sessionId => {
                 if (!isActive) {
                     return;
@@ -30,7 +31,7 @@ export const useLedgerPairing = () => {
 
                 setSessionId(sessionId);
 
-                const action = dmk.executeDeviceAction({
+                const action = ledgerKit.executeDeviceAction({
                     sessionId,
                     deviceAction: new OpenAppDeviceAction({
                         input: { appName: BITCOIN_APP_NAME }
@@ -68,7 +69,7 @@ export const useLedgerPairing = () => {
             isActive = false;
             subscription?.unsubscribe();
         };
-    }, [getDmk, selectedDevice, setSessionId]);
+    }, [getLedgerKit, selectedDevice, setSessionId]);
 
     return { status };
 };

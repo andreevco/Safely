@@ -16,7 +16,7 @@ import type { ILedgerSessionPort, LedgerSession } from '@safely/core';
 import type { Logger } from '@safely/sync';
 import { LedgerSessionPortProvider } from '@safely/ux';
 
-import { createLedgerDmk } from './createLedgerDmk';
+import { createLedgerKit } from './createLedgerKit';
 import { ledgerSigningMachine } from './machine';
 
 export type LedgerSigningActor = ActorRefFrom<typeof ledgerSigningMachine>;
@@ -26,7 +26,7 @@ type LedgerSigningContextValue = {
 };
 
 type LedgerSessionContextValue = {
-    getDmk: () => DeviceManagementKit;
+    getLedgerKit: () => DeviceManagementKit;
     selectedDevice: DiscoveredDevice | null;
     setSelectedDevice: (device: DiscoveredDevice | null) => void;
     sessionId: string | null;
@@ -52,7 +52,7 @@ export const LedgerSigningProvider = (props: LedgerSigningProviderProps) => {
     const [activeActor, setActiveActor] = useState<LedgerSigningActor | null>(null);
     const [selectedDevice, setSelectedDevice] = useState<DiscoveredDevice | null>(null);
     const [findMorePortfolioId, setFindMorePortfolioId] = useState<string | null>(null);
-    const dmkRef = useRef<DeviceManagementKit | null>(null);
+    const ledgerKitRef = useRef<DeviceManagementKit | null>(null);
     const sessionIdRef = useRef<string | null>(null);
 
     const setSessionId = useCallback((id: string | null) => {
@@ -60,27 +60,27 @@ export const LedgerSigningProvider = (props: LedgerSigningProviderProps) => {
         setSessionIdState(id);
     }, []);
 
-    const getDmk = useCallback(() => {
-        if (!dmkRef.current) {
-            dmkRef.current = createLedgerDmk(logger);
+    const getLedgerKit = useCallback(() => {
+        if (!ledgerKitRef.current) {
+            ledgerKitRef.current = createLedgerKit(logger);
         }
 
-        return dmkRef.current;
+        return ledgerKitRef.current;
     }, [logger]);
 
     const disconnectSession = useCallback(() => {
         if (sessionIdRef.current) {
-            void getDmk()
+            void getLedgerKit()
                 .disconnect({ sessionId: sessionIdRef.current })
                 .catch(() => {});
             setSessionId(null);
         }
-    }, [getDmk, setSessionId]);
+    }, [getLedgerKit, setSessionId]);
 
     useEffect(() => {
         return () => {
-            dmkRef.current?.close();
-            dmkRef.current = null;
+            ledgerKitRef.current?.close();
+            ledgerKitRef.current = null;
         };
     }, []);
 
@@ -94,7 +94,7 @@ export const LedgerSigningProvider = (props: LedgerSigningProviderProps) => {
 
                 const actor = createActor(ledgerSigningMachine, {
                     input: {
-                        dmk: getDmk(),
+                        ledgerKit: getLedgerKit(),
                         expectedFingerprint: params.expectedFingerprint,
                         run
                     }
@@ -120,7 +120,7 @@ export const LedgerSigningProvider = (props: LedgerSigningProviderProps) => {
                 actor.start();
                 openConnectScreen();
             }),
-        [disconnectSession, getDmk, openConnectScreen]
+        [disconnectSession, getLedgerKit, openConnectScreen]
     );
 
     const port = useMemo<ILedgerSessionPort>(() => ({ withSession }), [withSession]);
@@ -129,7 +129,7 @@ export const LedgerSigningProvider = (props: LedgerSigningProviderProps) => {
 
     const sessionValue = useMemo(
         () => ({
-            getDmk,
+            getLedgerKit,
             selectedDevice,
             setSelectedDevice,
             sessionId,
@@ -138,7 +138,14 @@ export const LedgerSigningProvider = (props: LedgerSigningProviderProps) => {
             findMorePortfolioId,
             setFindMorePortfolioId
         }),
-        [getDmk, selectedDevice, sessionId, setSessionId, disconnectSession, findMorePortfolioId]
+        [
+            getLedgerKit,
+            selectedDevice,
+            sessionId,
+            setSessionId,
+            disconnectSession,
+            findMorePortfolioId
+        ]
     );
 
     return (

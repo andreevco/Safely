@@ -17,7 +17,7 @@ const ACCOUNT_COUNT = 10;
 const DERIVATIONS_SEARCH_TIMEOUT = 20_000;
 
 export const useLedgerAccounts = (options?: { lockedIndexes?: number[] }) => {
-    const { getDmk, sessionId, selectedDevice } = useLedgerSession();
+    const { getLedgerKit, sessionId, selectedDevice } = useLedgerSession();
     const lockedIndexes = useMemo(
         () => new Set(options?.lockedIndexes ?? []),
         [options?.lockedIndexes]
@@ -32,7 +32,8 @@ export const useLedgerAccounts = (options?: { lockedIndexes?: number[] }) => {
         enabled: sessionId !== null,
         staleTime: Infinity,
         retry: false,
-        queryFn: () => discoverLedgerAccounts(getDmk(), sessionId ?? '', { count: ACCOUNT_COUNT })
+        queryFn: () =>
+            discoverLedgerAccounts(getLedgerKit(), sessionId ?? '', { count: ACCOUNT_COUNT })
     });
 
     const accounts = data ?? [];
@@ -101,12 +102,12 @@ export const useLedgerAccounts = (options?: { lockedIndexes?: number[] }) => {
     );
 
     const readMasterFingerprint = useCallback(
-        (): Promise<string> => getLedgerMasterFingerprint(getDmk(), sessionId ?? ''),
-        [getDmk, sessionId]
+        (): Promise<string> => getLedgerMasterFingerprint(getLedgerKit(), sessionId ?? ''),
+        [getLedgerKit, sessionId]
     );
 
     const retry = useCallback(async (): Promise<boolean> => {
-        if (sessionId && (await isLedgerSessionConnected(getDmk(), sessionId))) {
+        if (sessionId && (await isLedgerSessionConnected(getLedgerKit(), sessionId))) {
             setIsTimedOut(false);
             await refetch();
 
@@ -114,7 +115,7 @@ export const useLedgerAccounts = (options?: { lockedIndexes?: number[] }) => {
         }
 
         return false;
-    }, [sessionId, getDmk, refetch]);
+    }, [sessionId, getLedgerKit, refetch]);
 
     const selectedAccounts = accounts
         .filter(account => selectedIndexes.has(account.index))

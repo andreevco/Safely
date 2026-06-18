@@ -7,11 +7,11 @@ import { useLedgerSession } from './LedgerSigningProvider';
 export type DiscoveryStatus = 'searching' | 'found';
 
 export const useLedgerDeviceScan = () => {
-    const { getDmk } = useLedgerSession();
+    const { getLedgerKit } = useLedgerSession();
     const [devices, setDevices] = useState<DiscoveredDevice[]>([]);
 
     useEffect(() => {
-        const subscription = getDmk()
+        const subscription = getLedgerKit()
             .listenToAvailableDevices({ transport: rnBleTransportIdentifier })
             .subscribe({
                 next: setDevices,
@@ -21,7 +21,7 @@ export const useLedgerDeviceScan = () => {
         return () => {
             subscription.unsubscribe();
         };
-    }, [getDmk]);
+    }, [getLedgerKit]);
 
     const status: DiscoveryStatus = devices.length > 0 ? 'found' : 'searching';
 

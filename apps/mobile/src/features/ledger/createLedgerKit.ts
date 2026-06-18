@@ -6,7 +6,7 @@ import type { Logger } from '@safely/sync';
 
 import { DmkLoggerAdapter } from './DmkLoggerAdapter';
 
-export const createLedgerDmk = (logger: Logger): DeviceManagementKit =>
+export const createLedgerKit = (logger: Logger): DeviceManagementKit =>
     new DeviceManagementKitBuilder()
         .addTransport(RNBleTransportFactory)
         .addLogger(new DmkLoggerAdapter(logger.child('ledger-dmk')))

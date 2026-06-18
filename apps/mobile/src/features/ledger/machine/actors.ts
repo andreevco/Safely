@@ -32,14 +32,14 @@ const isBitcoinAppSupported = (version: string | undefined): boolean => {
 };
 
 export type CheckLedgerAppVersionInput = {
-    dmk: DeviceManagementKit;
+    ledgerKit: DeviceManagementKit;
     sessionId: string;
 };
 
 export const checkLedgerAppVersion = fromPromise<boolean, CheckLedgerAppVersionInput>(
     async ({ input }) => {
         const state = await firstValueFrom<DeviceSessionState>(
-            input.dmk.getDeviceSessionState({ sessionId: input.sessionId })
+            input.ledgerKit.getDeviceSessionState({ sessionId: input.sessionId })
         );
 
         const version = 'currentApp' in state ? state.currentApp.version : undefined;
@@ -48,9 +48,9 @@ export const checkLedgerAppVersion = fromPromise<boolean, CheckLedgerAppVersionI
     }
 );
 
-export const scanLedgerDevices = fromCallback<AnyEventObject, { dmk: DeviceManagementKit }>(
+export const scanLedgerDevices = fromCallback<AnyEventObject, { ledgerKit: DeviceManagementKit }>(
     ({ sendBack, input }) => {
-        const subscription = input.dmk
+        const subscription = input.ledgerKit
             .listenToAvailableDevices({ transport: rnBleTransportIdentifier })
             .subscribe({
                 next: devices => sendBack({ type: 'DEVICES_FOUND', devices }),
@@ -64,16 +64,16 @@ export const scanLedgerDevices = fromCallback<AnyEventObject, { dmk: DeviceManag
 );
 
 export type ConnectLedgerSessionInput = {
-    dmk: DeviceManagementKit;
+    ledgerKit: DeviceManagementKit;
     device: DiscoveredDevice;
 };
 
 export const connectLedgerSession = fromPromise<string, ConnectLedgerSessionInput>(
     async ({ input, signal }) => {
-        const sessionId = await input.dmk.connect({ device: input.device });
+        const sessionId = await input.ledgerKit.connect({ device: input.device });
 
         if (signal.aborted) {
-            void input.dmk.disconnect({ sessionId }).catch(() => {});
+            void input.ledgerKit.disconnect({ sessionId }).catch(() => {});
 
             throw new Error('Ledger connect aborted');
         }
@@ -83,13 +83,13 @@ export const connectLedgerSession = fromPromise<string, ConnectLedgerSessionInpu
 );
 
 export type OpenBitcoinAppInput = {
-    dmk: DeviceManagementKit;
+    ledgerKit: DeviceManagementKit;
     sessionId: string;
 };
 
 export const openBitcoinApp = fromPromise<void, OpenBitcoinAppInput>(async ({ input }) => {
     await awaitDeviceAction(
-        input.dmk.executeDeviceAction({
+        input.ledgerKit.executeDeviceAction({
             sessionId: input.sessionId,
             deviceAction: new OpenAppDeviceAction({ input: { appName: BITCOIN_APP_NAME } })
         })
@@ -97,25 +97,25 @@ export const openBitcoinApp = fromPromise<void, OpenBitcoinAppInput>(async ({ in
 });
 
 export type VerifyLedgerFingerprintInput = {
-    dmk: DeviceManagementKit;
+    ledgerKit: DeviceManagementKit;
     sessionId: string;
     expectedFingerprint: string;
 };
 
 export const verifyLedgerFingerprint = fromPromise<boolean, VerifyLedgerFingerprintInput>(
     async ({ input }) => {
-        const fingerprint = await getLedgerMasterFingerprint(input.dmk, input.sessionId);
+        const fingerprint = await getLedgerMasterFingerprint(input.ledgerKit, input.sessionId);
 
         return fingerprint === input.expectedFingerprint;
     }
 );
 
 export type RunLedgerSessionInput = {
-    dmk: DeviceManagementKit;
+    ledgerKit: DeviceManagementKit;
     sessionId: string;
     run: (session: LedgerSession) => Promise<unknown>;
 };
 
 export const runLedgerSession = fromPromise<unknown, RunLedgerSessionInput>(({ input }) =>
-    input.run({ dmk: input.dmk, sessionId: input.sessionId })
+    input.run({ ledgerKit: input.ledgerKit, sessionId: input.sessionId })
 );
