@@ -17,7 +17,7 @@ export const providerSchema = z.object({
                     code: z.string(),
                     paymentOptions: z.array(
                         z.object({
-                            method: z.enum(['card', 'google_pay', 'apple_pay', 'revolut_pay']),
+                            method: z.string(),
                             min: z.string(),
                             max: z.string()
                         })
