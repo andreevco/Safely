@@ -5,11 +5,11 @@ import {
     BtcNetwork,
     discoverLedgerAccounts,
     getLedgerMasterFingerprint,
-    isLedgerSessionConnected,
     ledgerAccountToBtcWallet
 } from '@safely/core';
 import { useBtcWalletBalances } from '@safely/ux';
 
+import { isLedgerSessionConnected } from './is-ledger-session-connected';
 import { ledgerKeys } from './keys';
 import { useLedgerSession } from './LedgerSigningProvider';
 

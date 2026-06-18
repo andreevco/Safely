@@ -82,13 +82,12 @@ export type OpenBitcoinAppInput = {
     sessionId: string;
 };
 
-export const openBitcoinApp = fromPromise<void, OpenBitcoinAppInput>(async ({ input, signal }) => {
+export const openBitcoinApp = fromPromise<void, OpenBitcoinAppInput>(async ({ input }) => {
     await awaitDeviceAction(
         input.dmk.executeDeviceAction({
             sessionId: input.sessionId,
             deviceAction: new OpenAppDeviceAction({ input: { appName: BITCOIN_APP_NAME } })
-        }),
-        signal
+        })
     );
 });
 
