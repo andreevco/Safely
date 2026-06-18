@@ -30,24 +30,6 @@ export {
     type SPortfolioWatchOnlyIdXpub
 } from './portfolio-watch-only.schema';
 
-export {
-    sPortfolioLedgerId,
-    sPortfolioLedger,
-    type SPortfolioLedger,
-    type SPortfolioLedgerId
-} from './portfolio-ledger.schema';
+export { portfolioWatchOnlyIdToString, portfolioBip39IdToString } from './portfolio-id-string';
 
-export {
-    portfolioWatchOnlyIdToString,
-    portfolioBip39IdToString,
-    portfolioLedgerIdToString
-} from './portfolio-id-string';
-
-export {
-    sPortfolio,
-    sPortfolios,
-    isDerivableSPortfolio,
-    isBip39SPortfolio,
-    type SPortfolio,
-    type SPortfolios
-} from './portfolios.schema';
+export { sPortfolio, sPortfolios, type SPortfolio, type SPortfolios } from './portfolios.schema';

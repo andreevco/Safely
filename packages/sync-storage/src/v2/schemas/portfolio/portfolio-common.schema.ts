@@ -1,6 +1,6 @@
 import z from 'zod';
 
-export const sPortfolioType = z.enum(['BIP39', 'WATCH_ONLY']);
+export const sPortfolioType = z.enum(['BIP39', 'WATCH_ONLY', 'LEDGER']);
 
 export const sPortfolioNetworkType = z.enum(['MAINNET', 'TESTNET']);
 
@@ -14,7 +14,7 @@ const sPortfolioMetaIconColor = z.object({
     value: z.string()
 });
 
-const sPortfolioMetaIcon = z.union([sPortfolioMetaIconEmoji, sPortfolioMetaIconColor]);
+export const sPortfolioMetaIcon = z.union([sPortfolioMetaIconEmoji, sPortfolioMetaIconColor]);
 
 export const sPortfolioMeta = z.object({
     name: z.string(),
