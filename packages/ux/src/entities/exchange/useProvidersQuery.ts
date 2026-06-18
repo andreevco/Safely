@@ -22,8 +22,8 @@ export function useProvidersQuery() {
                 exchangeApi.id,
                 params.lang,
                 params.fiat,
-                params.storeCountryCode ?? '',
-                params.deviceCountryCode ?? ''
+                params.storeCountryCode,
+                params.deviceCountryCode
             )
             .toKey(),
         queryFn: () => exchangeApi.getProviders(params),
