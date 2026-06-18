@@ -23,10 +23,15 @@ export const CellContainer = (props: CellContainerProps) => {
         containerStyle,
         background = 'secondary',
         showDivider = true,
+        onPress,
+        underlayColor,
         ...rest
     } = props;
     const theme = useUnistyles().theme;
     const isPressing = useSharedValue(false);
+
+    const resolvedUnderlayColor =
+        underlayColor ?? (onPress ? theme.colors.other.hover : 'transparent');
 
     styles.useVariants({ background });
 
@@ -40,8 +45,9 @@ export const CellContainer = (props: CellContainerProps) => {
         <CellContext.Provider value={contextValue}>
             <View style={[styles.container, containerStyle]}>
                 <TouchableHighlight
-                    underlayColor={theme.colors.other.hover}
+                    underlayColor={resolvedUnderlayColor}
                     activeOpacity={1}
+                    onPress={onPress}
                     onPressIn={() => (isPressing.value = true)}
                     onPressOut={() => (isPressing.value = false)}
                     {...rest}
