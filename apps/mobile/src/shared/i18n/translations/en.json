@@ -19,7 +19,6 @@
         }
     },
     "ledgerOverview": {
-        "edit": "Edit",
         "hide": "Hide",
         "findMore": "Find more wallets",
         "cannotRemoveLast": "The last wallet can’t be removed. Disconnect the Ledger instead."

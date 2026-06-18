@@ -16,7 +16,7 @@ import {
 } from '@safely/ux';
 
 import { LedgerDerivationRow } from '@mobile/features/ledger';
-import { Button } from '@mobile/shared/ui';
+import { Button, Icon, Pencil16 } from '@mobile/shared/ui';
 
 import { styles } from './LedgerOverviewRow.styles';
 
@@ -82,11 +82,16 @@ export const LedgerOverviewRow = (props: LedgerOverviewRowProps) => {
             isSubtitleLoading={isBalanceLoading}
             accessory={
                 <View style={styles.actions}>
-                    <Button type="secondary" size="small" onPress={handleEdit}>
-                        {t('ledgerOverview.edit')}
-                    </Button>
-                    <Button type="secondary" size="small" onPress={handleHide}>
+                    <Button type="tertiary" size="small" onPress={handleHide}>
                         {t('ledgerOverview.hide')}
+                    </Button>
+                    <Button
+                        size="small"
+                        type="tertiary"
+                        onPress={handleEdit}
+                        style={styles.editButton}
+                    >
+                        <Icon icon={Pencil16} color="constantWhite" />
                     </Button>
                 </View>
             }
