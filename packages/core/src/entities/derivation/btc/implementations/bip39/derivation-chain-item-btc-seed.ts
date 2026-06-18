@@ -2,11 +2,11 @@ import type { SBtcAccountChainItem } from '@safely/sync-storage';
 
 import { BtcBip32NodeProducer } from './btc-bip32-node-producer';
 import { BtcXpub } from '../../../../../blockchain-api';
+import { createReadOnlyCertificate, type ReadOnlyCredential } from '../../../../auth-cert';
 import type { BtcNetwork } from '../../../../blockchain';
 import { btcNetworkByPortfolioNetworkType, BtcWalletType } from '../../../../blockchain';
 import type { PortfolioNetworkType } from '../../../../portfolio';
 import type { ISeedProducer } from '../../../../seed/I-seed-producer';
-import { createReadOnlyCertificate, type ReadOnlyCredential } from '../../../../auth-cert';
 import type { BtcSigningRequest } from '../../../../signer';
 import { BtcKeypairSigner } from '../../../../signer';
 import type { Derivation } from '../../../derivation';
