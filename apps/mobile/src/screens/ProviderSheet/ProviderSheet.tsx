@@ -41,15 +41,13 @@ export const ProviderSheet = ({
     };
 
     const handleContinue = async () => {
-        if (dontShowAgain) {
-            try {
-                if (dontShowAgain) {
-                    await dismissProvider(provider.info.id);
-                }
-                await openOnramp(provider);
-            } catch (error) {
-                errorToast(error);
+        try {
+            if (dontShowAgain) {
+                await dismissProvider(provider.info.id);
             }
+            await openOnramp(provider);
+        } catch (error) {
+            errorToast(error);
         }
     };
 
