@@ -1,20 +1,21 @@
 import { useNavigation } from '@react-navigation/core';
+import type { StaticScreenProps } from '@react-navigation/native';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { ellipsisMiddle, PortfolioType } from '@safely/core';
+import { PortfolioType } from '@safely/core';
 import {
     useActivePortfolioEntitiesQuery,
     useActiveWalletMeta,
     useDeletePortfolio,
-    useHideDerivation,
     useIsActivePortfolioOverview,
     useToast
 } from '@safely/ux';
 
 import { BottomSheet, Button, ConfirmCheckbox, Text, useBottomSheet } from '@mobile/shared/ui';
 
+import { HideDerivationContent } from './HideDerivationContent';
 import { styles } from './RemoveWalletSheet.styles';
 import { useRemoveWalletState } from './useRemoveWalletState';
 
@@ -26,30 +27,15 @@ const RemoveWalletContent = () => {
     const isLedgerDevice = useRef(useIsActivePortfolioOverview()).current;
     const activeMeta = useActiveWalletMeta();
     const toast = useToast();
-    const { mutateAsync: hideDerivation, isPending: isHiding } = useHideDerivation();
     const { mutateAsync: deletePortfolio, isPending: isDeleting } = useDeletePortfolio();
     const navigation = useNavigation();
     const state = useRemoveWalletState(portfolio, isLedgerDevice);
     const [isConfirmed, setIsConfirmed] = useState(false);
 
-    const isLedgerDerivation = portfolio.type === PortfolioType.LEDGER && !isLedgerDevice;
     const walletsCount =
         portfolio.type === PortfolioType.LEDGER ? portfolio.getDerivations().length : 0;
-    const address = entities.type === 'bip39' ? ellipsisMiddle(entities.btcWallet.address) : '';
 
     const handleRemove = async () => {
-        if (isLedgerDerivation && entities.type === 'bip39') {
-            if (walletsCount <= 1) {
-                toast(t('ledgerOverview.cannotRemoveLast'));
-                return;
-            }
-
-            await hideDerivation({ portfolio, derivationIndex: entities.derivation.index });
-            toast(t('removeWallet.toastMessages.walletRemoved'));
-            navigation.goBack();
-            return;
-        }
-
         try {
             await deletePortfolio(portfolio);
             toast(t('removeWallet.toastMessages.walletRemoved'));
@@ -67,7 +53,7 @@ const RemoveWalletContent = () => {
         <View>
             <View style={styles.titleBox}>
                 <Text textAlign="center" variant="titleM">
-                    {t(state.titleKey, { name: activeMeta.name, address })}
+                    {t(state.titleKey, { name: activeMeta.name })}
                 </Text>
                 <Text textAlign="center" variant="bodyL" color="secondary" style={styles.subtitle}>
                     {t(state.subtitleKey, { count: walletsCount })}{' '}
@@ -91,7 +77,7 @@ const RemoveWalletContent = () => {
                 <Button
                     type="destructive"
                     size="large"
-                    disabled={(state.hasCheckbox && !isConfirmed) || isDeleting || isHiding}
+                    disabled={(state.hasCheckbox && !isConfirmed) || isDeleting}
                     onPress={handleRemove}
                 >
                     {t(state.buttonKey)}
@@ -104,10 +90,34 @@ const RemoveWalletContent = () => {
     );
 };
 
-export const RemoveWalletSheet = () => {
+const RemoveWalletDispatch = ({ derivationIndex }: { derivationIndex?: number }) => {
+    const entities = useRef(useActivePortfolioEntitiesQuery().data!).current;
+    const isLedgerDevice = useRef(useIsActivePortfolioOverview()).current;
+    const portfolio = entities.portfolio;
+
+    const hideIndex =
+        derivationIndex ??
+        (portfolio.type === PortfolioType.LEDGER && !isLedgerDevice && entities.type === 'bip39'
+            ? entities.derivation.index
+            : undefined);
+
+    if (portfolio.type === PortfolioType.LEDGER && hideIndex !== undefined) {
+        const derivation = portfolio.getDerivations().find(item => item.index === hideIndex);
+
+        if (derivation) {
+            return <HideDerivationContent portfolio={portfolio} derivation={derivation} />;
+        }
+    }
+
+    return <RemoveWalletContent />;
+};
+
+type RemoveWalletSheetProps = StaticScreenProps<{ derivationIndex?: number } | undefined>;
+
+export const RemoveWalletSheet = (props: RemoveWalletSheetProps) => {
     return (
         <BottomSheet>
-            <RemoveWalletContent />
+            <RemoveWalletDispatch derivationIndex={props.route.params?.derivationIndex} />
         </BottomSheet>
     );
 };

@@ -1,7 +1,7 @@
 import { useNavigation } from '@react-navigation/core';
 import { useTranslation } from 'react-i18next';
 
-import { ellipsisMiddle, PortfolioType } from '@safely/core';
+import { PortfolioType } from '@safely/core';
 import {
     useActivePortfolioEntities,
     useActiveWalletMeta,
@@ -30,17 +30,14 @@ export const RemovePortfolioButton = (props: RemovePortfolioButtonProps) => {
         rootNavigation.navigate('RemoveWalletSheet');
     };
 
-    const label =
-        isLedgerDerivation && entities.type === 'bip39'
-            ? t('settings.removePortfolio.hideDerivation', {
-                  address: ellipsisMiddle(entities.btcWallet.address)
-              })
-            : t(
-                  isLedgerDevice
-                      ? 'settings.removePortfolio.disconnectLedger'
-                      : 'settings.removePortfolio.title',
-                  { name: activeMeta.name }
-              );
+    const label = t(
+        isLedgerDerivation
+            ? 'settings.removePortfolio.hideDerivation'
+            : isLedgerDevice
+              ? 'settings.removePortfolio.disconnectLedger'
+              : 'settings.removePortfolio.title',
+        { name: activeMeta.name }
+    );
 
     return (
         <Cell showDivider={showDivider} background="accentRed" onPress={handleDeletePortfolio}>

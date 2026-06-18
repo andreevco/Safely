@@ -599,7 +599,7 @@
         "removePortfolio": {
             "title": "Remove wallet “{{name}}”",
             "disconnectLedger": "Disconnect “{{name}}”",
-            "hideDerivation": "Hide wallet “{{address}}”",
+            "hideDerivation": "Hide wallet “{{name}}”",
             "confirm": {
                 "title": "Remove this wallet?",
                 "message": "This will remove wallet “{{name}}”. This action cannot be undone.",
@@ -641,8 +641,8 @@
             "subtitle": "This wallet will be removed from your account. You can add it again anytime using the address."
         },
         "hideDerivation": {
-            "title": "Hide wallet “{{address}}”?",
-            "subtitle": "This wallet will be hidden from your account. You can add it back anytime via “Find more wallets”.",
+            "title": "Hide “{{name}}”?",
+            "subtitle": "This wallet will be removed from your account. You can add it again later from your Ledger.",
             "button": "Hide wallet"
         },
         "disconnectLedger": {

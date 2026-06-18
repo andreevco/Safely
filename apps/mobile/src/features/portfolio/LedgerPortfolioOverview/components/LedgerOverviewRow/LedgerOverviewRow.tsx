@@ -8,12 +8,7 @@ import {
     type IDerivation,
     type PortfolioLedger
 } from '@safely/core';
-import {
-    useFormattedAmount,
-    useHideDerivation,
-    useToast,
-    useUpdateDerivationMeta
-} from '@safely/ux';
+import { useFormattedAmount, useToast, useUpdateDerivationMeta } from '@safely/ux';
 
 import { LedgerDerivationRow } from '@mobile/features/ledger';
 import { Button, Icon, Pencil16 } from '@mobile/shared/ui';
@@ -29,12 +24,11 @@ type LedgerOverviewRowProps = {
 export const LedgerOverviewRow = (props: LedgerOverviewRowProps) => {
     const { portfolio, derivation, balance } = props;
 
+    const toast = useToast();
     const { t } = useTranslation();
     const navigation = useNavigation();
 
-    const { mutate: hideDerivation } = useHideDerivation();
     const { mutateAsync: updateDerivationMeta } = useUpdateDerivationMeta();
-    const toast = useToast();
 
     const fallbackName = t('portfolio.ledgerWallet', { number: derivation.index + 1 });
     const name = derivation.name ?? fallbackName;
@@ -71,7 +65,7 @@ export const LedgerOverviewRow = (props: LedgerOverviewRowProps) => {
             return;
         }
 
-        hideDerivation({ portfolio, derivationIndex: derivation.index });
+        navigation.navigate('RemoveWalletSheet', { derivationIndex: derivation.index });
     };
 
     return (

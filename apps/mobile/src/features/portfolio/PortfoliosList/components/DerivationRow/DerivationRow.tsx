@@ -29,7 +29,7 @@ export const DerivationRow = (props: DerivationRowProps) => {
                 <Cell.Row style={styles.row}>
                     <View style={styles.address}>
                         <View style={styles.badgeColumn}>
-                            <Badge>{String(derivation.index + 8)}</Badge>
+                            <Badge>{String(derivation.index + 1)}</Badge>
                         </View>
                         <Cell.Title>{name}</Cell.Title>
                     </View>

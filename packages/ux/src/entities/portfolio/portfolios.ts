@@ -312,12 +312,15 @@ export function useUpdateDerivationMeta() {
 
 export function useHideDerivation() {
     const client = useQueryClient();
+    const check = useSecurityCheck();
     const accountQueryKey = useActiveAccountQueryKey();
     const update = useActiveAccountSyncStorageSlotUpdate('portfolios');
 
     return useMutation<void, Error, { portfolio: Portfolio; derivationIndex: number }>({
         async mutationFn({ portfolio, derivationIndex }) {
             if (portfolio.type === PortfolioType.WATCH_ONLY) return;
+
+            await check();
 
             const remaining = portfolio.getDerivations().filter(d => d.index !== derivationIndex);
 
