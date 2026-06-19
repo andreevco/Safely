@@ -9,7 +9,7 @@ export function useExchangeApi(signer?: RequestSigner) {
     const { exchange } = useBootConfig();
 
     return useMemo(
-        () => new ExchangeApi({ baseUrl: exchange.url, signer }),
+        () => new ExchangeApi({ baseUrl: exchange.api_url, signer }),
         [exchange.url, signer]
     );
 }
