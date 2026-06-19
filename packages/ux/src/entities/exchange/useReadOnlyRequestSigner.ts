@@ -6,11 +6,13 @@ import { PortfolioType, ReadOnlyRequestSigner } from '@safely/core';
 import { useAppContext, SecretEncryptor } from '../../shared';
 import { useActiveAccount } from '../account';
 import { useActivePortfolio } from '../portfolio';
+import { useReadOnlyCredentialCache } from './useReadOnlyCredentialCache';
 
 export function useReadOnlyRequestSigner(): RequestSigner | undefined {
     const account = useActiveAccount();
     const portfolio = useActivePortfolio();
     const { storage } = useAppContext();
+    const cache = useReadOnlyCredentialCache();
 
     const portfolioKey = portfolio.id.toString();
 
@@ -18,11 +20,18 @@ export function useReadOnlyRequestSigner(): RequestSigner | undefined {
         if (portfolio.type !== PortfolioType.BIP39) return undefined;
 
         return new ReadOnlyRequestSigner(async () => {
+            const cached = await cache.get(portfolio.id);
+            if (cached) return cached;
+
             using secureStorage = storage.sync.getSecureEncrypted();
             // skips security check for UX reason. We use it to sign requests with read-only credentials.
             secureStorage.UNSAFE_SKIP_SECURITY_CHECK_unlock();
             const encryptor = new SecretEncryptor(account.secretEncryptor, secureStorage);
-            return await portfolio.createReadOnlyCredential(encryptor);
+            const credential = await portfolio.createReadOnlyCredential(encryptor);
+
+            await cache.set(portfolio.id, credential).catch(() => undefined);
+
+            return credential;
         });
-    }, [portfolioKey, account.secretEncryptor, storage]);
+    }, [portfolioKey, account.secretEncryptor, storage, cache]);
 }
