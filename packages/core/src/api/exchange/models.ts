@@ -35,19 +35,10 @@ export type Provider = z.infer<typeof providerSchema>;
 export const providersSchema = z.object({ providers: z.array(providerSchema) });
 export type Providers = z.infer<typeof providersSchema>;
 
-export const rampOrderSchema = z.object({
+const rampOrderBase = z.object({
     id: z.string(),
     type: z.enum(['onramp', 'offramp']),
     provider: z.string(),
-    status: z.enum([
-        'new',
-        'pending',
-        'processing',
-        'completed',
-        'failed',
-        'expired',
-        'mismatched'
-    ]),
     createdAt: z.number(),
     updatedAt: z.number(),
     fiatAmount: z.string(),
@@ -55,9 +46,19 @@ export const rampOrderSchema = z.object({
     cryptoAmount: z.string(),
     blockchain: z.string(),
     token: z.string(),
-    supportDetails: z.string(),
-    txHash: z.string().optional()
+    supportDetails: z.string()
 });
+
+export const rampOrderSchema = z.discriminatedUnion('status', [
+    rampOrderBase.extend({
+        status: z.literal('completed'),
+        txHash: z.string()
+    }),
+    rampOrderBase.extend({
+        status: z.enum(['new', 'pending', 'processing', 'failed', 'expired', 'mismatched']),
+        txHash: z.string().optional()
+    })
+]);
 export type RampOrder = z.infer<typeof rampOrderSchema>;
 
 export const rampOrdersSchema = z.object({

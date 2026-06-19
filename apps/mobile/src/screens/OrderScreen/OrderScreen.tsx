@@ -57,6 +57,7 @@ export const OrderScreen = (props: OrderScreenProps) => {
     }, [order.order.txHash, explorer, openURL]);
 
     const provider = providers?.providers.find(p => p.info.id === order.order.provider);
+    const txHash = order.order.txHash;
     const providerName = provider?.info.name;
     const supportUrl = provider?.info.support.url;
 
@@ -136,9 +137,9 @@ export const OrderScreen = (props: OrderScreenProps) => {
                             )}
                         </TableCell>
                     </List.Group>
-                    {!!order.order.txHash && (
+                    {!!txHash && (
                         <List.Group withoutBottomMargin>
-                            <TableCell copyable={order.order.txHash}>
+                            <TableCell copyable={txHash}>
                                 {({ handleCopy }) => (
                                     <>
                                         <TableCell.Column leading>
@@ -148,7 +149,7 @@ export const OrderScreen = (props: OrderScreenProps) => {
                                         </TableCell.Column>
                                         <TableCell.Column>
                                             <TableCell.Value>
-                                                {ellipsisMiddle(order.order.txHash!, 8)}
+                                                {ellipsisMiddle(txHash, 8)}
                                             </TableCell.Value>
                                         </TableCell.Column>
                                         <View style={styles.iconsContainer}>
