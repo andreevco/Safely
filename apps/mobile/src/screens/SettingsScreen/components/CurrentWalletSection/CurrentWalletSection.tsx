@@ -65,6 +65,7 @@ export const CurrentWalletSection = () => {
         navigation.navigate('CustomizeWalletModal', {
             defaultIcon: activePortfolio.meta.icon,
             defaultName: activePortfolio.meta.name,
+            title: isOverview ? t('customizeWallet.ledgerTitle') : undefined,
             onSave: async meta => {
                 await changePortfolioMeta({ portfolio: activePortfolio, meta });
                 nativeStackNavigation.pop();

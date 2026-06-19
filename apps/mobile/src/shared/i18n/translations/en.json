@@ -262,6 +262,7 @@
     },
     "customizeWallet": {
         "title": "Customize your wallet",
+        "ledgerTitle": "Customize your Ledger",
         "description": "Set a name and icon to tell this wallet apart here. Sync across your devices.",
         "namePlaceholder": "Wallet name",
         "save": "Save"

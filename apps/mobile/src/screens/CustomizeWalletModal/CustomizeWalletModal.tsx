@@ -18,10 +18,11 @@ type CustomizeWalletModalProps = StaticScreenProps<{
     onClose?: () => void;
     hasBackButton?: boolean;
     tag?: number;
+    title?: string;
 }>;
 
 export const CustomizeWalletModal = (props: CustomizeWalletModalProps) => {
-    const { defaultIcon, defaultName, onSave, onClose, hasBackButton, tag } =
+    const { defaultIcon, defaultName, onSave, onClose, hasBackButton, tag, title } =
         props.route?.params ?? {};
     const { t } = useTranslation();
 
@@ -59,7 +60,7 @@ export const CustomizeWalletModal = (props: CustomizeWalletModalProps) => {
             </Screen.Header>
             <Screen.Content bottomInset={false}>
                 <CustomizeWalletContent
-                    title={t('customizeWallet.title')}
+                    title={title ?? t('customizeWallet.title')}
                     description={t('customizeWallet.description')}
                     walletName={walletName}
                     onWalletNameChange={setWalletName}

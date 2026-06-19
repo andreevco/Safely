@@ -89,6 +89,7 @@ export const LedgerImportAccountsScreen = () => {
                     hasBackButton: true,
                     defaultName: findMorePortfolio.meta.name,
                     defaultIcon: findMorePortfolio.meta.icon,
+                    title: t('customizeWallet.ledgerTitle'),
                     onSave: async (meta: PortfolioMeta) => {
                         await withLoader(() =>
                             updateLedgerDerivations({
@@ -133,6 +134,7 @@ export const LedgerImportAccountsScreen = () => {
                 hasBackButton: true,
                 defaultName,
                 defaultIcon,
+                title: t('customizeWallet.ledgerTitle'),
                 onSave: async (meta: PortfolioMeta) => {
                     try {
                         await withLoader(() =>
