@@ -17,10 +17,12 @@ type CustomizeWalletModalProps = StaticScreenProps<{
     onSave: (meta: Pick<PortfolioMeta, 'icon' | 'name'>) => Promise<void>;
     onClose?: () => void;
     hasBackButton?: boolean;
+    tag?: number;
 }>;
 
 export const CustomizeWalletModal = (props: CustomizeWalletModalProps) => {
-    const { defaultIcon, defaultName, onSave, onClose, hasBackButton } = props.route?.params ?? {};
+    const { defaultIcon, defaultName, onSave, onClose, hasBackButton, tag } =
+        props.route?.params ?? {};
     const { t } = useTranslation();
 
     const [walletName, setWalletName] = useState(defaultName);
@@ -63,6 +65,7 @@ export const CustomizeWalletModal = (props: CustomizeWalletModalProps) => {
                     onWalletNameChange={setWalletName}
                     selectedIcon={selectedIcon}
                     onIconChange={setSelectedIcon}
+                    tag={tag}
                     onSubmitEditing={isNameValid ? handleSave : undefined}
                 />
             </Screen.Content>

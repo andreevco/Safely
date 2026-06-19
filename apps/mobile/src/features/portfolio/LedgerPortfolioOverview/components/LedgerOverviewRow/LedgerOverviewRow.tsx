@@ -44,13 +44,13 @@ export const LedgerOverviewRow = (props: LedgerOverviewRowProps) => {
         navigation.navigate('CustomizeWalletModal', {
             hasBackButton: true,
             defaultName: name,
-            defaultIcon: derivation.icon ?? portfolio.meta.icon,
+            defaultIcon: portfolio.meta.icon,
+            tag: derivation.index + 1,
             onSave: async meta => {
                 await updateDerivationMeta({
                     portfolio,
                     derivationIndex: derivation.index,
-                    name: meta.name === fallbackName ? undefined : meta.name,
-                    icon: meta.icon
+                    name: meta.name === fallbackName ? undefined : meta.name
                 });
 
                 navigation.goBack();

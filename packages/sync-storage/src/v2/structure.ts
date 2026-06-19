@@ -13,7 +13,7 @@ import {
     type SPortfolios,
     sNextDerivingPortfolioInfo
 } from './schemas';
-import type { SPortfolios as SPortfoliosV1 } from '../v1';
+import { sPortfolios as sPortfoliosV1 } from '../v1';
 import { syncedStorageV1 } from '../v1/structure';
 
 const syncedStorageSchema = z.object({
@@ -51,22 +51,8 @@ export const syncedStorageV2 = {
             .update(['latestDerivedBip39PortfolioIndex'], info =>
                 info == null || info.index === 0 ? null : info.index - 1
             )
-            .update(
-                ['portfolios'],
-                portfolios =>
-                    portfolios
-                        .filter(portfolio => portfolio.type !== 'LEDGER')
-                        // TODO I think I will change it after inheriting icons from the parent portfolio
-                        .map(portfolio =>
-                            portfolio.type === 'BIP39'
-                                ? {
-                                      ...portfolio,
-                                      derivations: portfolio.derivations.map(
-                                          ({ name: _name, icon: _icon, ...rest }) => rest
-                                      )
-                                  }
-                                : portfolio
-                        ) as unknown as SPortfoliosV1
+            .update(['portfolios'], portfolios =>
+                sPortfoliosV1.parse(portfolios.filter(portfolio => portfolio.type !== 'LEDGER'))
             )
     )
 } as const;

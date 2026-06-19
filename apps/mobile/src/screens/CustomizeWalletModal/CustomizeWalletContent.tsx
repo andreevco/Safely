@@ -9,7 +9,7 @@ import { useUnistyles } from 'react-native-unistyles';
 import type { PortfolioMetaIcon } from '@safely/core';
 import { allowedPortfolioMetaColors, allowedPortfolioMetaEmojis } from '@safely/core';
 
-import { ColorPicker, EmojiPicker, Text } from '@mobile/shared/ui';
+import { Badge, ColorPicker, EmojiPicker, Text } from '@mobile/shared/ui';
 import { smoothstepGradient, useAutoFocus } from '@mobile/shared/utils';
 
 import { styles } from './CustomizeWalletContent.styles';
@@ -19,8 +19,9 @@ interface CustomizeWalletContentProps {
     description: string;
     walletName: string;
     onWalletNameChange: (value: string) => void;
-    selectedIcon: PortfolioMetaIcon;
-    onIconChange: (icon: PortfolioMetaIcon) => void;
+    selectedIcon?: PortfolioMetaIcon;
+    onIconChange?: (icon: PortfolioMetaIcon) => void;
+    tag?: number;
     disabled?: boolean;
     onSubmitEditing?: () => void;
 }
@@ -32,6 +33,7 @@ export const CustomizeWalletContent = ({
     onWalletNameChange,
     selectedIcon,
     onIconChange,
+    tag,
     disabled = false,
     onSubmitEditing
 }: CustomizeWalletContentProps) => {
@@ -45,22 +47,34 @@ export const CustomizeWalletContent = ({
     const handleIconChange = useCallback(
         (icon: PortfolioMetaIcon) => {
             selectionAsync();
-            onIconChange(icon);
+            onIconChange?.(icon);
         },
         [onIconChange]
     );
 
-    const iconDisplay = useMemo(() => {
-        if (selectedIcon.type === 'emoji') {
-            return <Text style={styles.inputEmoji}>{selectedIcon.value}</Text>;
+    const accessory = useMemo(() => {
+        if (tag !== undefined) {
+            return <Badge>{String(tag)}</Badge>;
         }
 
-        if (selectedIcon.type === 'color') {
-            return <View style={[styles.colorDot, { backgroundColor: selectedIcon.value }]} />;
+        if (selectedIcon?.type === 'emoji') {
+            return (
+                <View style={styles.iconContainer}>
+                    <Text style={styles.inputEmoji}>{selectedIcon.value}</Text>
+                </View>
+            );
+        }
+
+        if (selectedIcon?.type === 'color') {
+            return (
+                <View style={styles.iconContainer}>
+                    <View style={[styles.colorDot, { backgroundColor: selectedIcon.value }]} />
+                </View>
+            );
         }
 
         return null;
-    }, [selectedIcon]);
+    }, [tag, selectedIcon]);
 
     return (
         <>
@@ -90,29 +104,35 @@ export const CustomizeWalletContent = ({
                             returnKeyType="done"
                             onSubmitEditing={onSubmitEditing}
                         />
-                        {iconDisplay && <View style={styles.iconContainer}>{iconDisplay}</View>}
+                        {accessory}
                     </View>
                 </View>
 
-                <KeyboardAwareScrollView
-                    style={styles.scrollContainer}
-                    contentContainerStyle={styles.scrollContent}
-                    showsVerticalScrollIndicator={false}
-                    keyboardShouldPersistTaps="handled"
-                >
-                    <ColorPicker
-                        colors={allowedPortfolioMetaColors}
-                        selectedColor={
-                            selectedIcon.type === 'color' ? selectedIcon.value : undefined
-                        }
-                        onColorSelect={color => handleIconChange({ type: 'color', value: color })}
-                    />
+                {tag === undefined && (
+                    <KeyboardAwareScrollView
+                        style={styles.scrollContainer}
+                        contentContainerStyle={styles.scrollContent}
+                        showsVerticalScrollIndicator={false}
+                        keyboardShouldPersistTaps="handled"
+                    >
+                        <ColorPicker
+                            colors={allowedPortfolioMetaColors}
+                            selectedColor={
+                                selectedIcon?.type === 'color' ? selectedIcon.value : undefined
+                            }
+                            onColorSelect={color =>
+                                handleIconChange({ type: 'color', value: color })
+                            }
+                        />
 
-                    <EmojiPicker
-                        emojis={allowedPortfolioMetaEmojis}
-                        onEmojiSelect={emoji => handleIconChange({ type: 'emoji', value: emoji })}
-                    />
-                </KeyboardAwareScrollView>
+                        <EmojiPicker
+                            emojis={allowedPortfolioMetaEmojis}
+                            onEmojiSelect={emoji =>
+                                handleIconChange({ type: 'emoji', value: emoji })
+                            }
+                        />
+                    </KeyboardAwareScrollView>
+                )}
             </View>
             <KeyboardStickyView pointerEvents="none">
                 <LinearGradient

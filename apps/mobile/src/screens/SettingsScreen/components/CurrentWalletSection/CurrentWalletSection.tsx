@@ -45,13 +45,13 @@ export const CurrentWalletSection = () => {
             navigation.navigate('CustomizeWalletModal', {
                 hasBackButton: true,
                 defaultName: derivation.name ?? fallbackName,
-                defaultIcon: derivation.icon ?? portfolio.meta.icon,
+                defaultIcon: portfolio.meta.icon,
+                tag: derivation.index + 1,
                 onSave: async meta => {
                     await updateDerivationMeta({
                         portfolio,
                         derivationIndex: derivation.index,
-                        name: meta.name === fallbackName ? undefined : meta.name,
-                        icon: meta.icon
+                        name: meta.name === fallbackName ? undefined : meta.name
                     });
 
                     nativeStackNavigation.pop();

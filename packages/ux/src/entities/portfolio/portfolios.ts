@@ -8,7 +8,6 @@ import type {
     IMnemonicAccessor,
     Portfolio,
     PortfolioMeta,
-    PortfolioMetaIcon,
     PortfolioWatchOnly,
     ISecretEncryptor,
     ITreeStorage,
@@ -287,14 +286,14 @@ export function useUpdateDerivationMeta() {
     return useMutation<
         void,
         Error,
-        { portfolio: Portfolio; derivationIndex: number; name?: string; icon?: PortfolioMetaIcon }
+        { portfolio: Portfolio; derivationIndex: number; name?: string }
     >({
-        async mutationFn({ portfolio, derivationIndex, name, icon }) {
+        async mutationFn({ portfolio, derivationIndex, name }) {
             if (portfolio.type === PortfolioType.WATCH_ONLY) return;
 
             const next = portfolio.getDerivations().map(d => {
                 const json = d.toJSON();
-                return d.index === derivationIndex ? { ...json, name, icon } : json;
+                return d.index === derivationIndex ? { ...json, name } : json;
             });
 
             await update(draft =>
@@ -470,7 +469,7 @@ export function useActiveWalletMeta(): PortfolioMeta {
     if (portfolio.type === PortfolioType.LEDGER && !isOverview) {
         return {
             name: derivation.name ?? t('portfolio.ledgerWallet', { number: derivation.index + 1 }),
-            icon: derivation.icon ?? portfolio.meta.icon
+            icon: portfolio.meta.icon
         };
     }
 

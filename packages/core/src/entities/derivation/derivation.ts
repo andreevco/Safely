@@ -1,6 +1,6 @@
 import { type SDerivation, sDerivation } from '@safely/sync-storage';
 
-import type { IPortfolioBase, PortfolioMetaIcon } from '../portfolio';
+import type { IPortfolioBase } from '../portfolio';
 import { DerivationId } from './derivation-id';
 import type { IDerivation, IDerivationChains } from './I-derivation';
 
@@ -11,8 +11,6 @@ export class Derivation implements IDerivation {
 
     public readonly name?: string;
 
-    public readonly icon?: PortfolioMetaIcon;
-
     public get index(): number {
         return this.id.derivationIndex;
     }
@@ -21,20 +19,17 @@ export class Derivation implements IDerivation {
         public portfolioRef: IPortfolioBase,
         index: number,
         chains: IDerivationChains | ((self: Derivation) => IDerivationChains),
-        name?: string,
-        icon?: PortfolioMetaIcon
+        name?: string
     ) {
         this.id = new DerivationId(this.portfolioRef.id, index);
         this.chains = typeof chains === 'function' ? chains(this) : chains;
         this.name = name;
-        this.icon = icon;
     }
 
     public toJSON(): SDerivation {
         return sDerivation.toJson({
             index: this.index,
             name: this.name,
-            icon: this.icon,
             chains: derivationChainsToJSON(this.chains)
         });
     }
