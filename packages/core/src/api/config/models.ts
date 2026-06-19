@@ -82,7 +82,7 @@ export const bootConfigSchema = z.looseObject({
     }),
 
     exchange: z.looseObject({
-        url: z.string()
+        api_url: z.string()
     }),
 
     telemetry: z.looseObject({
