@@ -8,3 +8,4 @@ export {
     useDismissedProvidersQuery
 } from './useDismissedProviders';
 export { useReadOnlyRequestSigner } from './useReadOnlyRequestSigner';
+export { resolveAssetByBlockchainAndToken } from './resolveAssetByBlockchainAndToken';

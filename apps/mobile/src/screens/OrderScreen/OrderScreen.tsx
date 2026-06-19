@@ -5,15 +5,16 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import { BLOCKCHAIN_NAME, BTC_ASSET, ellipsisMiddle } from '@safely/core';
+import type { OrderActivityItem } from '@safely/ux';
 import {
     useDateFormatter,
     useExplorer,
     useLinking,
     useNumberFormatter,
     useProvidersQuery,
-    useRate
+    useRate,
+    resolveAssetByBlockchainAndToken
 } from '@safely/ux';
-import type { OrderActivityItem } from '@safely/ux';
 
 import {
     ArrowTop16,
@@ -59,7 +60,9 @@ export const OrderScreen = (props: OrderScreenProps) => {
     const providerName = provider?.info.name;
     const supportUrl = provider?.info.support.url;
 
-    const { data: rate } = useRate(BTC_ASSET);
+    const { data: rate } = useRate(
+        resolveAssetByBlockchainAndToken(order.order.blockchain, order.order.token)
+    );
     const formatter = useNumberFormatter();
 
     return (
