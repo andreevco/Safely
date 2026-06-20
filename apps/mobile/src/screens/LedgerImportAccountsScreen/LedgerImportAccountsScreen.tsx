@@ -35,7 +35,7 @@ export const LedgerImportAccountsScreen = () => {
     const { mutateAsync: updateLedgerDerivations } = useUpdateLedgerDerivations();
     const defaultName = useNewPortfolioFallbackName();
 
-    const { findMorePortfolioId } = useLedgerSession();
+    const { findMorePortfolioId, selectedDevice } = useLedgerSession();
     const portfolios = usePortfolios();
 
     const findMorePortfolio = useMemo(
@@ -140,6 +140,7 @@ export const LedgerImportAccountsScreen = () => {
                         await withLoader(() =>
                             addLedgerPortfolio({
                                 masterFingerprint,
+                                deviceModel: selectedDevice?.deviceModel.model ?? '',
                                 accounts: selectedAccounts,
                                 meta
                             })
@@ -169,6 +170,7 @@ export const LedgerImportAccountsScreen = () => {
         updateLedgerDerivations,
         setActivePortfolio,
         selectedAccounts,
+        selectedDevice,
         defaultName,
         toast,
         t

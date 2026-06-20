@@ -468,8 +468,12 @@
                 "subtitle": "Make sure your Ledger is unlocked and close to the mobile phone you want to pair with."
             },
             "pairing": {
-                "title": "Pairing with {{device}}",
-                "subtitle": "Complete the steps on your Ledger device, then open the Bitcoin app."
+                "title": "Pairing with Ledger {{device}}",
+                "subtitle": "Continue on your Ledger device",
+                "steps": {
+                    "connect": "Complete the steps on your Ledger",
+                    "openApp": "Open the Bitcoin app"
+                }
             },
             "pairingSuccess": {
                 "title": "Success",

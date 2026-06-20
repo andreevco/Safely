@@ -8,7 +8,7 @@ export const styles = StyleSheet.create(theme => ({
         paddingHorizontal: theme.spacing[32]
     },
     image: {
-        width: 184,
+        width: 390,
         height: 195
     },
     textContainer: {

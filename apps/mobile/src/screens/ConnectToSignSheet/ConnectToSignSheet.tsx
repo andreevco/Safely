@@ -3,11 +3,19 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import type { LedgerSigningActor } from '@mobile/features/ledger';
-import { LEDGER_FAILURE_STATES, useLedgerSigning } from '@mobile/features/ledger';
-import { BottomSheet, Button, Icon, LedgerLogo96, Text, useBottomSheet } from '@mobile/shared/ui';
+import { PortfolioType } from '@safely/core';
+import { useActivePortfolio } from '@safely/ux';
 
-import { LedgerSignSteps, type LedgerStepStatus } from './components/LedgerSignSteps';
+import type { LedgerSigningActor, LedgerStepStatus } from '@mobile/features/ledger';
+import {
+    getLedgerImage,
+    getLedgerModelName,
+    LEDGER_FAILURE_STATES,
+    LedgerSteps,
+    useLedgerSigning
+} from '@mobile/features/ledger';
+import { BottomSheet, Button, Image, Text, useBottomSheet } from '@mobile/shared/ui';
+
 import { styles } from './ConnectToSignSheet.styles';
 
 interface Props {
@@ -20,8 +28,10 @@ const ConnectToSignContent = ({ actor }: Props) => {
 
     const value = useSelector(actor, snapshot => snapshot.value);
     const step = useSelector(actor, snapshot => snapshot.context.step);
-    const deviceName = useSelector(actor, snapshot => snapshot.context.selectedDevice?.name);
     const isDone = useSelector(actor, snapshot => snapshot.status === 'done');
+
+    const portfolio = useActivePortfolio();
+    const deviceModel = portfolio.type === PortfolioType.LEDGER ? portfolio.deviceModel : undefined;
 
     const isFailed = LEDGER_FAILURE_STATES.includes(value);
 
@@ -46,7 +56,7 @@ const ConnectToSignContent = ({ actor }: Props) => {
     const steps = [
         {
             label: t('ledgerSign.steps.connect', {
-                device: deviceName ?? t('ledgerSign.deviceFallback')
+                device: getLedgerModelName(deviceModel)
             }),
             status: stepStatus(0)
         },
@@ -57,7 +67,7 @@ const ConnectToSignContent = ({ actor }: Props) => {
     return (
         <View style={styles.container}>
             <View style={styles.header}>
-                <Icon icon={LedgerLogo96} />
+                <Image source={getLedgerImage(deviceModel)} style={styles.image} />
                 <View style={styles.textContainer}>
                     <Text variant="titleM" textAlign="center">
                         {t('ledgerSign.title')}
@@ -68,7 +78,7 @@ const ConnectToSignContent = ({ actor }: Props) => {
                 </View>
             </View>
 
-            <LedgerSignSteps steps={steps} />
+            <LedgerSteps steps={steps} />
 
             <View style={styles.buttons}>
                 <View style={styles.buttonItem}>

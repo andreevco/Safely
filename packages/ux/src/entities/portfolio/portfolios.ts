@@ -525,14 +525,16 @@ export function useAddLedgerPortfolio() {
         Error,
         {
             masterFingerprint: string;
+            deviceModel: string;
             accounts: { index: number; xpub: string }[];
             meta: PortfolioMeta;
         }
     >({
-        async mutationFn({ masterFingerprint, accounts, meta }) {
+        async mutationFn({ masterFingerprint, deviceModel, accounts, meta }) {
             const portfolio = PortfolioLedger.create({
                 masterFingerprint,
                 networkType: PortfolioNetworkType.MAINNET,
+                deviceModel,
                 accounts,
                 meta
             });

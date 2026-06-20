@@ -15,6 +15,7 @@ export class PortfolioLedger implements IPortfolioLedger {
     public static create(params: {
         masterFingerprint: string;
         networkType: PortfolioNetworkType;
+        deviceModel: string;
         accounts: { index: number; xpub: string }[];
         meta: PortfolioMeta;
         sessionPort?: ILedgerSessionPort;
@@ -27,6 +28,7 @@ export class PortfolioLedger implements IPortfolioLedger {
         return new PortfolioLedger({
             id,
             meta: params.meta,
+            deviceModel: params.deviceModel,
             derivations: self =>
                 params.accounts.map(
                     account =>
@@ -49,6 +51,7 @@ export class PortfolioLedger implements IPortfolioLedger {
         return new PortfolioLedger({
             id: toPortfolioIdLedger(sPortfolio.id),
             meta: sPortfolio.meta,
+            deviceModel: sPortfolio.deviceModel,
             derivations: self =>
                 sPortfolio.derivations.map(d => this.restoreDerivation(self, d, sessionPort))
         });
@@ -78,6 +81,8 @@ export class PortfolioLedger implements IPortfolioLedger {
 
     public readonly meta: PortfolioMeta;
 
+    public readonly deviceModel: string;
+
     public readonly type = PortfolioType.LEDGER;
 
     public readonly derivations: IDerivation[];
@@ -93,10 +98,12 @@ export class PortfolioLedger implements IPortfolioLedger {
     constructor(params: {
         id: PortfolioIdLedger;
         meta: PortfolioMeta;
+        deviceModel: string;
         derivations: IDerivation[] | ((self: PortfolioLedger) => IDerivation[]);
     }) {
         this.id = params.id;
         this.meta = params.meta;
+        this.deviceModel = params.deviceModel;
         this.derivations = Array.isArray(params.derivations)
             ? params.derivations
             : params.derivations(this);
@@ -119,6 +126,7 @@ export class PortfolioLedger implements IPortfolioLedger {
             type: this.type,
             id: this.id.toJSON(),
             meta: this.meta,
+            deviceModel: this.deviceModel,
             derivations: this.derivations.map(d => d.toJSON())
         });
     }

@@ -8,11 +8,11 @@ import {
     Text
 } from '@mobile/shared/ui';
 
-import { styles } from './LedgerSignSteps.styles';
+import { styles } from './LedgerSteps.styles';
 
 export type LedgerStepStatus = 'pending' | 'active' | 'done' | 'error';
 
-export type LedgerSignStep = {
+export type LedgerStep = {
     label: string;
     status: LedgerStepStatus;
 };
@@ -32,10 +32,10 @@ const StepIndicator = ({ status }: { status: LedgerStepStatus }) => {
 };
 
 interface Props {
-    steps: LedgerSignStep[];
+    steps: LedgerStep[];
 }
 
-export const LedgerSignSteps = ({ steps }: Props) => (
+export const LedgerSteps = ({ steps }: Props) => (
     <View style={styles.container}>
         {steps.map(step => (
             <View key={step.label} style={styles.row}>

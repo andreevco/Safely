@@ -3,16 +3,27 @@ import { useEffect, useState } from 'react';
 
 import { useLedgerSession } from './LedgerSigningProvider';
 
-export type PairingStatus = 'connecting' | 'connected' | 'error';
+export type PairingStatus = 'connecting' | 'openingApp' | 'connected' | 'error';
 
 const BITCOIN_APP_NAME = 'Bitcoin';
 
+const CONNECT_STEP = 0;
+const OPEN_APP_STEP = 1;
+
 export const useLedgerPairing = () => {
-    const { getLedgerKit, selectedDevice, setSessionId } = useLedgerSession();
+    const {
+        getLedgerKit,
+        selectedDevice,
+        setSessionId,
+        disconnectSession,
+        awaitPendingDisconnect
+    } = useLedgerSession();
     const [status, setStatus] = useState<PairingStatus>('connecting');
+    const [failedStep, setFailedStep] = useState(CONNECT_STEP);
 
     useEffect(() => {
         if (!selectedDevice) {
+            setFailedStep(CONNECT_STEP);
             setStatus('error');
 
             return;
@@ -22,54 +33,62 @@ export const useLedgerPairing = () => {
         let subscription: { unsubscribe: () => void } | undefined;
         const ledgerKit = getLedgerKit();
 
-        ledgerKit
-            .connect({ device: selectedDevice })
-            .then(sessionId => {
-                if (!isActive) {
-                    return;
-                }
+        const handleError = (step: number) => {
+            if (!isActive) {
+                return;
+            }
 
-                setSessionId(sessionId);
+            disconnectSession();
+            setFailedStep(step);
+            setStatus('error');
+        };
 
-                const action = ledgerKit.executeDeviceAction({
-                    sessionId,
-                    deviceAction: new OpenAppDeviceAction({
-                        input: { appName: BITCOIN_APP_NAME }
-                    })
-                });
+        const pair = async () => {
+            await awaitPendingDisconnect();
+            if (!isActive) {
+                return;
+            }
 
-                subscription = action.observable.subscribe({
-                    next: state => {
-                        if (!isActive) {
-                            return;
-                        }
+            const sessionId = await ledgerKit.connect({ device: selectedDevice });
+            if (!isActive) {
+                return;
+            }
 
-                        if (state.status === DeviceActionStatus.Completed) {
-                            setStatus('connected');
-                        }
+            setSessionId(sessionId);
+            setStatus('openingApp');
 
-                        if (state.status === DeviceActionStatus.Error) {
-                            setStatus('error');
-                        }
-                    },
-                    error: () => {
-                        if (isActive) {
-                            setStatus('error');
-                        }
-                    }
-                });
-            })
-            .catch(() => {
-                if (isActive) {
-                    setStatus('error');
-                }
+            const action = ledgerKit.executeDeviceAction({
+                sessionId,
+                deviceAction: new OpenAppDeviceAction({
+                    input: { appName: BITCOIN_APP_NAME }
+                })
             });
+
+            subscription = action.observable.subscribe({
+                next: state => {
+                    if (!isActive) {
+                        return;
+                    }
+
+                    if (state.status === DeviceActionStatus.Completed) {
+                        setStatus('connected');
+                    }
+
+                    if (state.status === DeviceActionStatus.Error) {
+                        handleError(OPEN_APP_STEP);
+                    }
+                },
+                error: () => handleError(OPEN_APP_STEP)
+            });
+        };
+
+        void pair().catch(() => handleError(CONNECT_STEP));
 
         return () => {
             isActive = false;
             subscription?.unsubscribe();
         };
-    }, [getLedgerKit, selectedDevice, setSessionId]);
+    }, [getLedgerKit, selectedDevice, setSessionId, disconnectSession, awaitPendingDisconnect]);
 
-    return { status };
+    return { status, failedStep };
 };

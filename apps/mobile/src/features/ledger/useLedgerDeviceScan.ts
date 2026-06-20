@@ -1,6 +1,7 @@
 import type { DiscoveredDevice } from '@ledgerhq/device-management-kit';
 import { rnBleTransportIdentifier } from '@ledgerhq/device-transport-kit-react-native-ble';
-import { useEffect, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/core';
+import { useCallback, useState } from 'react';
 
 import { useLedgerSession } from './LedgerSigningProvider';
 
@@ -10,18 +11,21 @@ export const useLedgerDeviceScan = () => {
     const { getLedgerKit } = useLedgerSession();
     const [devices, setDevices] = useState<DiscoveredDevice[]>([]);
 
-    useEffect(() => {
-        const subscription = getLedgerKit()
-            .listenToAvailableDevices({ transport: rnBleTransportIdentifier })
-            .subscribe({
-                next: setDevices,
-                error: () => {}
-            });
+    useFocusEffect(
+        useCallback(() => {
+            const subscription = getLedgerKit()
+                .listenToAvailableDevices({ transport: rnBleTransportIdentifier })
+                .subscribe({
+                    next: setDevices,
+                    error: () => {}
+                });
 
-        return () => {
-            subscription.unsubscribe();
-        };
-    }, [getLedgerKit]);
+            return () => {
+                subscription.unsubscribe();
+                setDevices([]);
+            };
+        }, [getLedgerKit])
+    );
 
     const status: DiscoveryStatus = devices.length > 0 ? 'found' : 'searching';
 

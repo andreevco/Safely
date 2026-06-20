@@ -32,6 +32,7 @@ type LedgerSessionContextValue = {
     sessionId: string | null;
     setSessionId: (sessionId: string | null) => void;
     disconnectSession: () => void;
+    awaitPendingDisconnect: () => Promise<void>;
     findMorePortfolioId: string | null;
     setFindMorePortfolioId: (portfolioId: string | null) => void;
 };
@@ -68,14 +69,21 @@ export const LedgerSigningProvider = (props: LedgerSigningProviderProps) => {
         return ledgerKitRef.current;
     }, [logger]);
 
+    const pendingDisconnectRef = useRef<Promise<unknown>>(Promise.resolve());
+
     const disconnectSession = useCallback(() => {
         if (sessionIdRef.current) {
-            void getLedgerKit()
+            pendingDisconnectRef.current = getLedgerKit()
                 .disconnect({ sessionId: sessionIdRef.current })
                 .catch(() => {});
             setSessionId(null);
         }
     }, [getLedgerKit, setSessionId]);
+
+    const awaitPendingDisconnect = useCallback(
+        () => pendingDisconnectRef.current.then(() => undefined),
+        []
+    );
 
     useEffect(() => {
         return () => {
@@ -135,6 +143,7 @@ export const LedgerSigningProvider = (props: LedgerSigningProviderProps) => {
             sessionId,
             setSessionId,
             disconnectSession,
+            awaitPendingDisconnect,
             findMorePortfolioId,
             setFindMorePortfolioId
         }),
@@ -144,6 +153,7 @@ export const LedgerSigningProvider = (props: LedgerSigningProviderProps) => {
             sessionId,
             setSessionId,
             disconnectSession,
+            awaitPendingDisconnect,
             findMorePortfolioId
         ]
     );

@@ -1,43 +1,33 @@
-import { useNavigation, useRoute } from '@react-navigation/core';
-import { StackActions } from '@react-navigation/native';
-import { useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { LedgerStatusScreen, useLedgerPairing } from '@mobile/features/ledger';
-import { CircularSpinner } from '@mobile/shared/ui';
+import { LedgerSteps } from '@mobile/features/ledger';
+import { Image, Screen, Text } from '@mobile/shared/ui';
 
 import { styles } from './LedgerPairingScreen.styles';
+import { useLedgerPairingScreen } from './useLedgerPairingScreen';
 
 export const LedgerPairingScreen = () => {
-    const { t } = useTranslation();
-    const navigation = useNavigation();
-    const route = useRoute();
-    const device = (route.params as { device?: string })?.device ?? 'Ledger';
-    const { status } = useLedgerPairing();
-
-    useEffect(() => {
-        if (status === 'connected') {
-            navigation.dispatch(StackActions.replace('LedgerPairingSuccessModal'));
-        }
-
-        if (status === 'error') {
-            navigation.goBack();
-        }
-    }, [status, navigation]);
+    const { image, title, subtitle, steps } = useLedgerPairingScreen();
 
     return (
-        <LedgerStatusScreen
-            hasBackButton
-            media={
-                <View style={styles.spinnerBackground}>
-                    <CircularSpinner />
+        <Screen>
+            <Screen.Header variant="left">
+                <Screen.Header.BackButton />
+            </Screen.Header>
+            <Screen.Content>
+                <View style={styles.content}>
+                    <Image source={image} style={styles.image} />
+                    <View style={styles.textContainer}>
+                        <Text textAlign="center" variant="titleM">
+                            {title}
+                        </Text>
+                        <Text textAlign="center" variant="bodyL" color="secondary">
+                            {subtitle}
+                        </Text>
+                    </View>
+                    <LedgerSteps steps={steps} />
                 </View>
-            }
-            title={t('addWallet.connectLedger.pairing.title', { device })}
-            subtitle={t('addWallet.connectLedger.pairing.subtitle')}
-            buttonLabel={t('common.continue')}
-            isButtonDisabled
-        />
+            </Screen.Content>
+        </Screen>
     );
 };

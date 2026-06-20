@@ -1,6 +1,6 @@
-import { useNavigation } from '@react-navigation/core';
+import { useFocusEffect, useNavigation } from '@react-navigation/core';
 import { CommonActions } from '@react-navigation/native';
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
@@ -18,6 +18,12 @@ export const LedgerDiscoveryScreen = () => {
     const hasNavigated = useRef(false);
 
     const device = devices[0];
+
+    useFocusEffect(
+        useCallback(() => {
+            hasNavigated.current = false;
+        }, [])
+    );
 
     useEffect(
         () => () => {

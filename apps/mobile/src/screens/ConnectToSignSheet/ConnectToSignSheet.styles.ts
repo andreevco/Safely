@@ -9,6 +9,10 @@ export const styles = StyleSheet.create(theme => ({
         alignItems: 'center',
         gap: theme.spacing[16]
     },
+    image: {
+        width: 390,
+        height: 195
+    },
     textContainer: {
         gap: theme.spacing[4],
         paddingHorizontal: theme.spacing[8]

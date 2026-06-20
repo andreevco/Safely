@@ -453,8 +453,12 @@
                 "notFound": "Устройства не найдены"
             },
             "pairing": {
-                "title": "Сопряжение с {{device}}",
-                "subtitle": "Следуйте инструкциям на устройстве Ledger во время сопряжения."
+                "title": "Сопряжение с Ledger {{device}}",
+                "subtitle": "Продолжите на устройстве Ledger",
+                "steps": {
+                    "connect": "Выполните шаги на Ledger",
+                    "openApp": "Откройте приложение Bitcoin"
+                }
             },
             "pairingSuccess": {
                 "title": "Сопряжение выполнено",

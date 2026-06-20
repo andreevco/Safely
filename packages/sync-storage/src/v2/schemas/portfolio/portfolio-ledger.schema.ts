@@ -18,6 +18,7 @@ export const sPortfolioLedger = zIndexedObject(
         type: z.literal(sPortfolioType.enum.LEDGER),
         id: sPortfolioLedgerId,
         meta: sPortfolioMeta,
+        deviceModel: z.string(),
         derivations: z.array(sDerivation)
     },
     value => portfolioLedgerIdToString(value.id)

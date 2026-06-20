@@ -60,6 +60,7 @@ export interface IPortfolioWatchOnly extends IPortfolioBase {
 export interface IPortfolioLedger extends IPortfolioDerivable {
     type: typeof PortfolioType.LEDGER;
     masterFingerprint: string;
+    deviceModel: string;
 }
 
 export type PortfolioSecretRevealedStatus = {
