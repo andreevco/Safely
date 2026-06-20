@@ -17,8 +17,12 @@ import {
 } from '@safely/ux';
 
 import { handleDuplicatePortfolio } from '@mobile/features/add-wallet/handleDuplicatePortfolio';
-import { useLedgerAccounts, useLedgerSession } from '@mobile/features/ledger';
-import { Button, List, Screen, Text } from '@mobile/shared/ui';
+import {
+    useExitToConnectLedger,
+    useLedgerAccounts,
+    useLedgerSession
+} from '@mobile/features/ledger';
+import { ArrowLeft16, Button, Icon, List, Screen, Text } from '@mobile/shared/ui';
 
 import { LedgerAccountCell } from './components';
 import { styles } from './LedgerImportAccountsScreen.styles';
@@ -36,6 +40,7 @@ export const LedgerImportAccountsScreen = () => {
     const defaultName = useNewPortfolioFallbackName();
 
     const { findMorePortfolioId, selectedDevice } = useLedgerSession();
+    const exitToConnect = useExitToConnectLedger();
     const portfolios = usePortfolios();
 
     const findMorePortfolio = useMemo(
@@ -57,11 +62,11 @@ export const LedgerImportAccountsScreen = () => {
     const {
         accounts,
         balances,
+        masterFingerprint,
         selectedIndexes,
         lockedIndexes: lockedSet,
         selectedAccounts,
         toggle,
-        readMasterFingerprint,
         retry,
         isError,
         isTimedOut
@@ -70,15 +75,12 @@ export const LedgerImportAccountsScreen = () => {
     const isDerived = accounts.length > 0;
     const showRetry = isError || isTimedOut;
 
-    const handleContinue = useCallback(async () => {
-        if (findMorePortfolio) {
-            let masterFingerprint: string;
-            try {
-                masterFingerprint = await withLoader(() => readMasterFingerprint());
-            } catch {
-                return;
-            }
+    const handleContinue = useCallback(() => {
+        if (!masterFingerprint) {
+            return;
+        }
 
+        if (findMorePortfolio) {
             if (masterFingerprint !== findMorePortfolio.masterFingerprint) {
                 toast(t('addWallet.connectLedger.importAccounts.wrongDevice'));
                 return;
@@ -114,13 +116,6 @@ export const LedgerImportAccountsScreen = () => {
                 })
             );
 
-            return;
-        }
-
-        let masterFingerprint: string;
-        try {
-            masterFingerprint = await withLoader(() => readMasterFingerprint());
-        } catch {
             return;
         }
 
@@ -164,7 +159,7 @@ export const LedgerImportAccountsScreen = () => {
     }, [
         findMorePortfolio,
         withLoader,
-        readMasterFingerprint,
+        masterFingerprint,
         navigation,
         addLedgerPortfolio,
         updateLedgerDerivations,
@@ -187,7 +182,9 @@ export const LedgerImportAccountsScreen = () => {
     return (
         <Screen>
             <Screen.Header variant="left">
-                <Screen.Header.BackButton />
+                <Screen.Header.Button onPress={exitToConnect}>
+                    <Icon icon={ArrowLeft16} />
+                </Screen.Header.Button>
             </Screen.Header>
             <Screen.Scrollable style={styles.content}>
                 <View style={styles.textContainer}>

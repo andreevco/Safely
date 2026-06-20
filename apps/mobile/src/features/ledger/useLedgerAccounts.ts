@@ -32,11 +32,21 @@ export const useLedgerAccounts = (options?: { lockedIndexes?: number[] }) => {
         enabled: sessionId !== null,
         staleTime: Infinity,
         retry: false,
-        queryFn: () =>
-            discoverLedgerAccounts(getLedgerKit(), sessionId ?? '', { count: ACCOUNT_COUNT })
+        queryFn: async () => {
+            const accounts = await discoverLedgerAccounts(getLedgerKit(), sessionId ?? '', {
+                count: ACCOUNT_COUNT
+            });
+            const masterFingerprint = await getLedgerMasterFingerprint(
+                getLedgerKit(),
+                sessionId ?? ''
+            );
+
+            return { accounts, masterFingerprint };
+        }
     });
 
-    const accounts = data ?? [];
+    const accounts = data?.accounts ?? [];
+    const masterFingerprint = data?.masterFingerprint;
     const isLoading = !data && !isError;
 
     const wallets = useMemo(
@@ -101,11 +111,6 @@ export const useLedgerAccounts = (options?: { lockedIndexes?: number[] }) => {
         [lockedIndexes]
     );
 
-    const readMasterFingerprint = useCallback(
-        (): Promise<string> => getLedgerMasterFingerprint(getLedgerKit(), sessionId ?? ''),
-        [getLedgerKit, sessionId]
-    );
-
     const retry = useCallback(async (): Promise<boolean> => {
         if (sessionId && (await isLedgerSessionConnected(getLedgerKit(), sessionId))) {
             setIsTimedOut(false);
@@ -124,11 +129,11 @@ export const useLedgerAccounts = (options?: { lockedIndexes?: number[] }) => {
     return {
         accounts,
         balances,
+        masterFingerprint,
         selectedIndexes,
         lockedIndexes,
         selectedAccounts,
         toggle,
-        readMasterFingerprint,
         retry,
         isLoading,
         isError,

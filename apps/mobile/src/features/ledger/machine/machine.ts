@@ -21,6 +21,7 @@ export const LEDGER_FAILURE_STATES = ['failed', 'wrongDevice', 'unsupportedApp']
 export type LedgerSigningInput = {
     ledgerKit: DeviceManagementKit;
     expectedFingerprint: string;
+    sessionId: string | null;
     run: (session: LedgerSession) => Promise<unknown>;
 };
 
@@ -31,7 +32,6 @@ export type LedgerSigningOutput = {
 
 type LedgerSigningContext = LedgerSigningInput & {
     selectedDevice: DiscoveredDevice | null;
-    sessionId: string | null;
     step: number;
     result: unknown;
     error: unknown;
@@ -57,12 +57,8 @@ export const ledgerSigningMachine = setup({
         verifyLedgerFingerprint,
         runLedgerSession
     },
-    actions: {
-        disconnect: ({ context }) => {
-            if (context.sessionId) {
-                void context.ledgerKit.disconnect({ sessionId: context.sessionId }).catch(() => {});
-            }
-        }
+    guards: {
+        hasLiveSession: ({ context }) => context.sessionId !== null
     },
     delays: {
         connectTimeout: CONNECT_TIMEOUT_MS,
@@ -73,18 +69,20 @@ export const ledgerSigningMachine = setup({
     context: ({ input }) => ({
         ...input,
         selectedDevice: null,
-        sessionId: null,
         step: 0,
         result: undefined,
         error: undefined
     }),
-    initial: 'scanning',
+    initial: 'start',
     on: {
         CANCEL: { target: '.cancelled' }
     },
     states: {
+        start: {
+            always: [{ guard: 'hasLiveSession', target: 'openingApp' }, { target: 'scanning' }]
+        },
         scanning: {
-            entry: assign({ step: () => 0 }),
+            entry: assign({ step: () => 0, error: () => undefined, result: () => undefined }),
             invoke: {
                 src: 'scanLedgerDevices',
                 input: ({ context }) => ({ ledgerKit: context.ledgerKit })
@@ -200,23 +198,19 @@ export const ledgerSigningMachine = setup({
             }
         },
         wrongDevice: {
-            entry: 'disconnect',
             on: { RETRY: { target: 'scanning' } }
         },
         unsupportedApp: {
-            entry: 'disconnect',
             on: { RETRY: { target: 'scanning' } }
         },
         failed: {
-            entry: 'disconnect',
             on: { RETRY: { target: 'scanning' } }
         },
         cancelled: {
-            entry: ['disconnect', assign({ error: () => new LedgerSigningCancelledError() })],
+            entry: assign({ error: () => new LedgerSigningCancelledError() }),
             type: 'final'
         },
         done: {
-            entry: 'disconnect',
             type: 'final'
         }
     },

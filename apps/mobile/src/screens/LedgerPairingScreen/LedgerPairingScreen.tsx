@@ -1,18 +1,21 @@
 import { View } from 'react-native';
 
-import { LedgerSteps } from '@mobile/features/ledger';
-import { Image, Screen, Text } from '@mobile/shared/ui';
+import { LedgerSteps, useExitToConnectLedger } from '@mobile/features/ledger';
+import { ArrowLeft16, Icon, Screen, Image, Text } from '@mobile/shared/ui';
 
 import { styles } from './LedgerPairingScreen.styles';
 import { useLedgerPairingScreen } from './useLedgerPairingScreen';
 
 export const LedgerPairingScreen = () => {
     const { image, title, subtitle, steps } = useLedgerPairingScreen();
+    const exitToConnect = useExitToConnectLedger();
 
     return (
         <Screen>
             <Screen.Header variant="left">
-                <Screen.Header.BackButton />
+                <Screen.Header.Button onPress={exitToConnect}>
+                    <Icon icon={ArrowLeft16} />
+                </Screen.Header.Button>
             </Screen.Header>
             <Screen.Content>
                 <View style={styles.content}>

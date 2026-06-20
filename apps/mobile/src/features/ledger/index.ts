@@ -6,12 +6,14 @@ export { getBluetoothState } from './getBluetoothState';
 export { getLedgerImage } from './getLedgerImage';
 export { getLedgerModelName } from './getLedgerModelName';
 export { getSignalLevel, type SignalLevel } from './getSignalLevel';
+export { isLedgerSessionConnected } from './is-ledger-session-connected';
 export {
     LedgerSigningProvider,
     useLedgerSession,
     useLedgerSigning,
     type LedgerSigningActor
 } from './LedgerSigningProvider';
+export { useExitToConnectLedger } from './useExitToConnectLedger';
 export { useLedgerAccounts } from './useLedgerAccounts';
 export { useLedgerDeviceScan } from './useLedgerDeviceScan';
 export { useLedgerPairing } from './useLedgerPairing';

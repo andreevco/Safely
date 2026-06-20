@@ -1,19 +1,12 @@
-import { OpenAppDeviceAction } from '@ledgerhq/device-management-kit';
-import type {
-    DeviceManagementKit,
-    DeviceSessionState,
-    DiscoveredDevice
-} from '@ledgerhq/device-management-kit';
+import type { DeviceManagementKit, DiscoveredDevice } from '@ledgerhq/device-management-kit';
 import { rnBleTransportIdentifier } from '@ledgerhq/device-transport-kit-react-native-ble';
 import type { AnyEventObject } from 'xstate';
 import { fromCallback, fromPromise } from 'xstate';
 
 import type { LedgerSession } from '@safely/core';
-import { awaitDeviceAction, getLedgerMasterFingerprint } from '@safely/core';
+import { getLedgerAppVersion, getLedgerMasterFingerprint } from '@safely/core';
 
-import { firstValueFrom } from '../first-value-from';
-
-const BITCOIN_APP_NAME = 'Bitcoin';
+import { connectLedger, openBitcoinApp as openBitcoinAppOperation } from '../ledgerOperations';
 
 const MIN_BITCOIN_APP_MAJOR = 2;
 const MIN_BITCOIN_APP_MINOR = 1;
@@ -38,11 +31,7 @@ export type CheckLedgerAppVersionInput = {
 
 export const checkLedgerAppVersion = fromPromise<boolean, CheckLedgerAppVersionInput>(
     async ({ input }) => {
-        const state = await firstValueFrom<DeviceSessionState>(
-            input.ledgerKit.getDeviceSessionState({ sessionId: input.sessionId })
-        );
-
-        const version = 'currentApp' in state ? state.currentApp.version : undefined;
+        const version = await getLedgerAppVersion(input.ledgerKit, input.sessionId);
 
         return isBitcoinAppSupported(version);
     }
@@ -70,7 +59,7 @@ export type ConnectLedgerSessionInput = {
 
 export const connectLedgerSession = fromPromise<string, ConnectLedgerSessionInput>(
     async ({ input, signal }) => {
-        const sessionId = await input.ledgerKit.connect({ device: input.device });
+        const sessionId = await connectLedger(input.ledgerKit, input.device);
 
         if (signal.aborted) {
             void input.ledgerKit.disconnect({ sessionId }).catch(() => {});
@@ -87,14 +76,9 @@ export type OpenBitcoinAppInput = {
     sessionId: string;
 };
 
-export const openBitcoinApp = fromPromise<void, OpenBitcoinAppInput>(async ({ input }) => {
-    await awaitDeviceAction(
-        input.ledgerKit.executeDeviceAction({
-            sessionId: input.sessionId,
-            deviceAction: new OpenAppDeviceAction({ input: { appName: BITCOIN_APP_NAME } })
-        })
-    );
-});
+export const openBitcoinApp = fromPromise<void, OpenBitcoinAppInput>(({ input, signal }) =>
+    openBitcoinAppOperation(input.ledgerKit, input.sessionId, signal)
+);
 
 export type VerifyLedgerFingerprintInput = {
     ledgerKit: DeviceManagementKit;

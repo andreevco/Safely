@@ -4,7 +4,11 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { State } from 'react-native-ble-plx';
 
-import { getBluetoothState } from '@mobile/features/ledger';
+import {
+    getBluetoothState,
+    isLedgerSessionConnected,
+    useLedgerSession
+} from '@mobile/features/ledger';
 import { resources } from '@mobile/shared/resources';
 import { Button, Image, Screen, StepsList, Text } from '@mobile/shared/ui';
 
@@ -13,6 +17,7 @@ import { styles } from './ConnectLedgerScreen.styles';
 export const ConnectLedgerScreen = () => {
     const { t } = useTranslation();
     const navigation = useNavigation();
+    const { getLedgerKit, sessionId, setSessionId } = useLedgerSession();
 
     const steps = [
         {
@@ -31,10 +36,29 @@ export const ConnectLedgerScreen = () => {
 
     const handleContinue = async () => {
         const state = await getBluetoothState();
-        const route =
-            state === State.PoweredOn ? 'LedgerFlowModal' : 'BluetoothAccessRequiredModal';
 
-        navigation.dispatch(CommonActions.navigate(route));
+        if (state !== State.PoweredOn) {
+            navigation.dispatch(CommonActions.navigate('BluetoothAccessRequiredModal'));
+
+            return;
+        }
+
+        const canReuse = sessionId
+            ? await isLedgerSessionConnected(getLedgerKit(), sessionId)
+            : false;
+
+        if (canReuse) {
+            navigation.dispatch(
+                CommonActions.navigate('LedgerFlowModal', { screen: 'LedgerPairingModal' })
+            );
+
+            return;
+        }
+
+        setSessionId(null);
+        navigation.dispatch(
+            CommonActions.navigate('LedgerFlowModal', { screen: 'LedgerDiscoveryModal' })
+        );
     };
 
     return (
