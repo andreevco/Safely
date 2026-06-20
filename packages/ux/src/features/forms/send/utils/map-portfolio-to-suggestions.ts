@@ -10,7 +10,8 @@ export interface ActivePortfolioEntity {
 
 export function mapPortfolioToSuggestions(
     portfolio: Portfolio,
-    active?: ActivePortfolioEntity
+    active: ActivePortfolioEntity | undefined,
+    derivationName: (index: number) => string
 ): PortfolioSuggestion[] {
     const isActivePortfolio = !!active && portfolio.id.isEq(active.portfolioId);
 
@@ -28,12 +29,19 @@ export function mapPortfolioToSuggestions(
     }
 
     const derivations = portfolio.getDerivations();
+    const isMultiDerivation = derivations.length > 1;
+
     return derivations
         .filter(d => !(isActivePortfolio && active?.derivation && d.id.isEq(active.derivation.id)))
         .map(derivation => ({
             id: derivation.id.toString(),
             address: derivation.chains.btc.wallets[0]?.address,
-            meta: portfolio.meta,
-            tag: derivations.length > 1 ? derivation.index + 1 : undefined
+            meta: isMultiDerivation
+                ? {
+                      name: derivation.name ?? derivationName(derivation.index + 1),
+                      icon: portfolio.meta.icon
+                  }
+                : portfolio.meta,
+            tag: isMultiDerivation ? derivation.index + 1 : undefined
         }));
 }
