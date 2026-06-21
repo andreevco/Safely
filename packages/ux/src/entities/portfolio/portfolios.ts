@@ -266,12 +266,10 @@ export function useReorderDerivations() {
 
             await update(draft =>
                 draft.update(portfolio.jsonArrayId(), portfolioDraft => {
-                    const derivableDraft = portfolioDraft.narrow(isDerivableSPortfolio);
-
-                    derivableDraft?.set(
-                        'derivations',
-                        ordered.map(d => d.toJSON())
-                    );
+                    portfolioDraft
+                        .narrow(isDerivableSPortfolio)
+                        ?.at('derivations')
+                        .reorder(ordered.map(d => String(d.index)));
                 })
             );
         }
@@ -291,14 +289,18 @@ export function useUpdateDerivationMeta() {
         async mutationFn({ portfolio, derivationIndex, name }) {
             if (portfolio.type === PortfolioType.WATCH_ONLY) return;
 
-            const next = portfolio.getDerivations().map(d => {
-                const json = d.toJSON();
-                return d.index === derivationIndex ? { ...json, name } : json;
-            });
-
             await update(draft =>
                 draft.update(portfolio.jsonArrayId(), portfolioDraft => {
-                    portfolioDraft.narrow(isDerivableSPortfolio)?.set('derivations', next);
+                    portfolioDraft
+                        .narrow(isDerivableSPortfolio)
+                        ?.at('derivations')
+                        .update(String(derivationIndex), derivationDraft => {
+                            if (name === undefined) {
+                                derivationDraft.delete('name');
+                            } else {
+                                derivationDraft.set('name', name);
+                            }
+                        });
                 })
             );
 
@@ -330,10 +332,10 @@ export function useHideDerivation() {
                 }
 
                 draft.update(portfolio.jsonArrayId(), portfolioDraft => {
-                    portfolioDraft.narrow(isDerivableSPortfolio)?.set(
-                        'derivations',
-                        remaining.map(d => d.toJSON())
-                    );
+                    portfolioDraft
+                        .narrow(isDerivableSPortfolio)
+                        ?.at('derivations')
+                        .remove(String(derivationIndex));
                 });
             });
 
@@ -567,21 +569,10 @@ export function useUpdateLedgerDerivations() {
         }
     >({
         async mutationFn({ portfolio, accounts, meta }) {
-            const byIndex = new Map(portfolio.getDerivations().map(d => [d.index, d.toJSON()]));
-
-            for (const account of accounts) {
-                if (!byIndex.has(account.index)) {
-                    byIndex.set(
-                        account.index,
-                        sDerivation.toJson({
-                            index: account.index,
-                            chains: { btc: { xpub: account.xpub } }
-                        })
-                    );
-                }
-            }
-
-            const next = [...byIndex.values()].sort((a, b) => a.index - b.index);
+            const existingIndexes = new Set(portfolio.getDerivations().map(d => d.index));
+            const newAccounts = accounts
+                .filter(account => !existingIndexes.has(account.index))
+                .sort((a, b) => a.index - b.index);
 
             await update(draft =>
                 draft.update(portfolio.jsonArrayId(), portfolioDraft => {
@@ -589,7 +580,16 @@ export function useUpdateLedgerDerivations() {
 
                     if (!derivableDraft) return;
 
-                    derivableDraft.set('derivations', next);
+                    const derivationsDraft = derivableDraft.at('derivations');
+
+                    for (const account of newAccounts) {
+                        derivationsDraft.push(
+                            sDerivation.toJson({
+                                index: account.index,
+                                chains: { btc: { xpub: account.xpub } }
+                            })
+                        );
+                    }
 
                     if (meta) {
                         derivableDraft.set('meta', meta);
@@ -646,10 +646,15 @@ export function useChangePortfolioMeta() {
         mutationFn({ portfolio, meta }) {
             return update(draft =>
                 draft.update(portfolio.jsonArrayId(), activePortfolioDraft => {
-                    activePortfolioDraft.set('meta', {
-                        ...activePortfolioDraft.get().meta,
-                        ...meta
-                    });
+                    const metaDraft = activePortfolioDraft.at('meta');
+
+                    if (meta.name !== undefined) {
+                        metaDraft.set('name', meta.name);
+                    }
+
+                    if (meta.icon !== undefined) {
+                        metaDraft.set('icon', meta.icon);
+                    }
                 })
             );
         }
