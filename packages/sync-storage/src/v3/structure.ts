@@ -13,7 +13,8 @@ import {
     type SPortfolios,
     sNextDerivingPortfolioInfo
 } from './schemas';
-import { syncedStorageV1 } from '../v1/structure';
+import { sPortfolios as sPortfoliosV2 } from '../v2';
+import { syncedStorageV2 } from '../v2/structure';
 
 const syncedStorageSchema = z.object({
     preferredFiat: sPreferredFiat,
@@ -25,8 +26,8 @@ const syncedStorageSchema = z.object({
     analyticsId: sAnalyticsId
 });
 
-export const syncedStorageV2 = {
-    version: 2,
+export const syncedStorageV3 = {
+    version: 3,
     schema: syncedStorageSchema,
     initial: {
         preferredFiat: null,
@@ -37,18 +38,10 @@ export const syncedStorageV2 = {
         nextDerivingPortfolioInfo: null,
         analyticsId: null
     },
-    projectUp: patch(syncedStorageV1.schema, syncedStorageSchema, draft =>
-        draft
-            .rename('latestDerivedBip39PortfolioIndex', 'nextDerivingPortfolioInfo')
-            .update(['nextDerivingPortfolioInfo'], index =>
-                index == null ? null : { index: index + 1 }
-            )
-    ),
-    projectDown: patch(syncedStorageSchema, syncedStorageV1.schema, draft =>
-        draft
-            .rename('nextDerivingPortfolioInfo', 'latestDerivedBip39PortfolioIndex')
-            .update(['latestDerivedBip39PortfolioIndex'], info =>
-                info == null || info.index === 0 ? null : info.index - 1
-            )
+    projectUp: patch(syncedStorageV2.schema, syncedStorageSchema, draft => draft),
+    projectDown: patch(syncedStorageSchema, syncedStorageV2.schema, draft =>
+        draft.update(['portfolios'], portfolios =>
+            sPortfoliosV2.parse(portfolios.filter(portfolio => portfolio.type !== 'LEDGER'))
+        )
     )
 } as const;

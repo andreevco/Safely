@@ -8,35 +8,23 @@ export {
     sPreferredFiat,
     sDevicesMeta,
     sAccountMeta,
-    sPortfolioMeta,
     sPortfolioNetworkType,
-    sPortfolioType,
     sPortfolioBip39IdImported,
     sPortfolioBip39IdMasterKeyDerived,
     sPortfolioBip39Id,
     sPortfolioBip39Source,
-    sPortfolioBip39,
     sPortfolioSecretRevealedStatus,
     sPortfolioWatchOnlyId,
     sPortfolioWatchOnlyIdAddress,
     sPortfolioWatchOnlyIdXpub,
     sPortfolioWatchOnly,
     sPortfolioWatchOnlySource,
-    portfolioWatchOnlyIdToString,
-    portfolioBip39IdToString,
-    sPortfolio,
-    sPortfolios,
-    sDerivation,
-    sDerivationChains,
-    sBtcAccountChainItem,
     sAnalyticsId,
     type SFiatAsset,
     type SFiatAssetId,
     type SDevicesMeta,
     type SDeviceMeta,
     type SAccountMeta,
-    type SPortfolioMeta,
-    type SPortfolioBip39,
     type SPortfolioBip39Id,
     type SPortfolioBip39IdImported,
     type SPortfolioBip39IdMasterKeyDerived,
@@ -44,16 +32,50 @@ export {
     type SPortfolioWatchOnlyId,
     type SPortfolioWatchOnlyIdAddress,
     type SPortfolioWatchOnlyIdXpub,
-    type SPortfolio,
-    type SPortfolios,
-    type SDerivation,
-    type SBtcAccountChainItem,
     type SContacts,
     type SContact,
     type SContactAddress
 } from '../../v1';
 
 export {
+    sPortfolioType,
+    sPortfolioMeta,
+    type SPortfolioMeta
+} from './portfolio/portfolio-common.schema';
+
+export {
+    sDerivation,
+    sDerivationChains,
+    sBtcAccountChainItem,
+    type SDerivation,
+    type SBtcAccountChainItem
+} from './derivation';
+
+export { sPortfolioBip39, type SPortfolioBip39 } from './portfolio/portfolio-bip39.schema';
+
+export {
+    sPortfolioLedgerId,
+    sPortfolioLedger,
+    type SPortfolioLedger,
+    type SPortfolioLedgerId
+} from './portfolio/portfolio-ledger.schema';
+
+export {
+    portfolioWatchOnlyIdToString,
+    portfolioBip39IdToString,
+    portfolioLedgerIdToString
+} from './portfolio/portfolio-id-string';
+
+export {
+    sPortfolio,
+    sPortfolios,
+    isDerivableSPortfolio,
+    isBip39SPortfolio,
+    type SPortfolio,
+    type SPortfolios
+} from './portfolio/portfolios.schema';
+
+export {
     sNextDerivingPortfolioInfo,
     type SNextDerivingPortfolioInfo
-} from './next-deriving-portfolio-info.schema';
+} from '../../v2/schemas/next-deriving-portfolio-info.schema';
