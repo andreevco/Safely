@@ -100,6 +100,6 @@ export type RunLedgerSessionInput = {
     run: (session: LedgerSession) => Promise<unknown>;
 };
 
-export const runLedgerSession = fromPromise<unknown, RunLedgerSessionInput>(({ input }) =>
-    input.run({ ledgerKit: input.ledgerKit, sessionId: input.sessionId })
+export const runLedgerSession = fromPromise<unknown, RunLedgerSessionInput>(({ input, signal }) =>
+    input.run({ ledgerKit: input.ledgerKit, sessionId: input.sessionId, signal })
 );

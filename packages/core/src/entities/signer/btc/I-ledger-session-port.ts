@@ -3,6 +3,7 @@ import type { DeviceManagementKit } from '@ledgerhq/device-management-kit';
 export interface LedgerSession {
     ledgerKit: DeviceManagementKit;
     sessionId: string;
+    signal?: AbortSignal;
 }
 
 export interface ILedgerSessionPort {

@@ -79,10 +79,10 @@ export class LedgerBtcSigner implements IBtcSigner {
 
         const signatures = await this.sessionPort.withSession(
             { expectedFingerprint: this.context.masterFingerprint },
-            ({ ledgerKit, sessionId }) => {
+            ({ ledgerKit, sessionId, signal }) => {
                 const bitcoinApp = new SignerBtcBuilder({ dmk: ledgerKit, sessionId }).build();
 
-                return awaitDeviceAction(bitcoinApp.signPsbt(wallet, psbt.toPSBT()));
+                return awaitDeviceAction(bitcoinApp.signPsbt(wallet, psbt.toPSBT()), signal);
             }
         );
 
