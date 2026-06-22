@@ -16,6 +16,7 @@ import {
     resolveAssetByBlockchainAndToken
 } from '@safely/ux';
 
+import { TransactionConfirmationStatusBtc } from '@mobile/entities/activity';
 import {
     ArrowTop16,
     Button,
@@ -165,6 +166,13 @@ export const OrderScreen = (props: OrderScreenProps) => {
                                         </View>
                                     </>
                                 )}
+                            </TableCell>
+                        </List.Group>
+                    )}
+                    {order.transaction && (
+                        <List.Group withoutBottomMargin>
+                            <TableCell>
+                                <TransactionConfirmationStatusBtc tx={order.transaction.raw} />
                             </TableCell>
                         </List.Group>
                     )}

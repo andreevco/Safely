@@ -15,7 +15,7 @@ import {
     useRate
 } from '@safely/ux';
 
-import { TransactionConfirmationStatusBtc } from '@mobile/screens/TransactionScreen/TransactionConfirmationStatusBtc';
+import { TransactionConfirmationStatusBtc } from '@mobile/entities/activity';
 import {
     ArrowDown16,
     ArrowTop16,

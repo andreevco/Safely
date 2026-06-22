@@ -37,10 +37,19 @@ export function dedupeOrderTxs(
     data: InfiniteData<ActivityPage, IActivityPageParam>
 ): InfiniteData<ActivityPage, IActivityPageParam> {
     const orderTxHashes = new Set<string>();
+    const btcByTxId = new Map<string, BtcActivityItem['transaction']>();
+
     for (const page of data.pages) {
         for (const item of page.items) {
-            if (isOrderActivityItem(item) && item.order.txHash) {
-                orderTxHashes.add(item.order.txHash);
+            switch (item.type) {
+                case 'order':
+                    if (item.order.txHash) {
+                        orderTxHashes.add(item.order.txHash);
+                    }
+                    break;
+                case 'transaction':
+                    btcByTxId.set(item.transaction.raw.txid, item.transaction);
+                    break;
             }
         }
     }
@@ -63,9 +72,18 @@ export function dedupeOrderTxs(
         ...data,
         pages: data.pages.map(page => ({
             ...page,
-            items: page.items.filter(
-                item => !isBtcActivityItem(item) || !orderTxHashes.has(item.transaction.raw.txid)
-            )
+            items: page.items
+                .map(item =>
+                    isOrderActivityItem(item) &&
+                    item.order.txHash &&
+                    btcByTxId.has(item.order.txHash)
+                        ? { ...item, transaction: btcByTxId.get(item.order.txHash) }
+                        : item
+                )
+                .filter(
+                    item =>
+                        !isBtcActivityItem(item) || !orderTxHashes.has(item.transaction.raw.txid)
+                )
         }))
     };
 }
