@@ -6,7 +6,7 @@ import { act, cleanup } from '@testing-library/react';
 import type { Mock } from 'vitest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { Portfolio, PortfolioMeta } from '@safely/core';
+import type { ILedgerSessionPort, Portfolio, PortfolioMeta } from '@safely/core';
 import {
     Id,
     InvalidMnemonicError,
@@ -62,6 +62,12 @@ vi.mock('../../../src/entities/account/account-state', async () => {
     };
 });
 
+const ledgerSessionPort: ILedgerSessionPort = {
+    withSession: () => {
+        throw new Error('Ledger session is not used in this test');
+    }
+};
+
 const MAINNET_MNEMONIC =
     'ivory trouble wheat next depart dove choice easily enroll suffer lawsuit lend'.split(' ');
 const ANOTHER_MNEMONIC =
@@ -106,7 +112,10 @@ async function makeImportedPortfolio(
         mnemonicAccessor: accessor,
         meta: { name, icon: PortfolioIdBip39Imported.getFallbackEmoji(accessor) }
     });
-    return PortfolioFactory.restorePortfolio(serialized, { encryptor }) as PortfolioBip39;
+    return PortfolioFactory.restorePortfolio(serialized, {
+        encryptor,
+        ledgerSessionPort
+    }) as PortfolioBip39;
 }
 
 async function makeDerivedPortfolio(
@@ -128,7 +137,8 @@ async function makeDerivedPortfolio(
         meta: { name, icon: PortfolioIdBip39MasterKeyDerived.getFallbackEmoji(accessor) }
     });
     return PortfolioFactory.restorePortfolio(serialized, {
-        encryptor: new SecretEncryptor(account.secretEncryptor, storage)
+        encryptor: new SecretEncryptor(account.secretEncryptor, storage),
+        ledgerSessionPort
     }) as PortfolioBip39;
 }
 
@@ -589,7 +599,7 @@ describe('useSetActivePortfolio (change)', () => {
 });
 
 describe('useChangePortfolioMeta (change)', () => {
-    it('merges meta over the current value via draft.update().set("meta", ...)', async () => {
+    it('updates only the changed meta fields via draft.update().at("meta").set(...)', async () => {
         const portfolio = await makeImportedPortfolio(MAINNET_MNEMONIC);
         const account = createMockSyncAccount();
         setupAccountState({ account, portfolios: [portfolio] });
@@ -610,17 +620,18 @@ describe('useChangePortfolioMeta (change)', () => {
         expect(portfoliosSlot?.update).toHaveBeenCalledTimes(1);
         const [arrayId, updater] = portfoliosSlot!.update.mock.calls[0] as [
             unknown,
-            (sub: { set: Mock; get: Mock }) => void
+            (sub: { at: Mock }) => void
         ];
         expect(arrayId).toEqual(portfolio.jsonArrayId());
 
-        // Run the updater against a recording sub-draft to capture .set('meta', merged)
-        const sub = {
-            set: vi.fn(),
-            get: vi.fn(() => ({ meta: { name: 'Old', icon: undefined } }))
-        };
+        // Run the updater against a recording sub-draft to capture pointwise meta writes
+        const metaDraft = { set: vi.fn() };
+        const sub = { at: vi.fn(() => metaDraft) };
         updater(sub as never);
-        expect(sub.set).toHaveBeenCalledWith('meta', expect.objectContaining({ name: 'Renamed' }));
+
+        expect(sub.at).toHaveBeenCalledWith('meta');
+        expect(metaDraft.set).toHaveBeenCalledWith('name', 'Renamed');
+        expect(metaDraft.set).not.toHaveBeenCalledWith('icon', expect.anything());
     });
 });
 

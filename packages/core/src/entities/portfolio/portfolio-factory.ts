@@ -8,13 +8,9 @@ import type { ISecretEncryptor } from '../../di';
 import { assertUnreachable } from '../../utils';
 import type { ILedgerSessionPort } from '../signer';
 
-/*
-    TODO Discuss with Sergey, we dont need deps here, we can create some BtcSignerResolver
-    TODO to enrich portfolio with deps to be able to sign
-*/
 export type PortfolioRestoreDeps = {
     encryptor: ISecretEncryptor;
-    ledgerSessionPort?: ILedgerSessionPort;
+    ledgerSessionPort: ILedgerSessionPort;
 };
 
 export class PortfolioFactory {

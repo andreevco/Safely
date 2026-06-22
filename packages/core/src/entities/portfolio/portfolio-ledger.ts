@@ -1,4 +1,9 @@
-import { type SDerivation, type SPortfolioLedger, sPortfolioLedger } from '@safely/sync-storage';
+import {
+    type SDerivation,
+    type SPortfolioLedger,
+    sDerivation,
+    sPortfolioLedger
+} from '@safely/sync-storage';
 
 import type { IDerivation } from '../derivation';
 import { Derivation, DerivationChainItemBtcLedger } from '../derivation';
@@ -12,41 +17,35 @@ import type { Id } from '../../utils';
 import type { ILedgerSessionPort } from '../signer';
 
 export class PortfolioLedger implements IPortfolioLedger {
-    public static create(params: {
+    public static createSerializedPortfolio(params: {
         masterFingerprint: string;
         networkType: PortfolioNetworkType;
         deviceModel: string;
         accounts: { index: number; xpub: string }[];
         meta: PortfolioMeta;
-        sessionPort?: ILedgerSessionPort;
-    }): PortfolioLedger {
+    }): SPortfolioLedger {
         const id = toPortfolioIdLedger({
             masterFingerprint: params.masterFingerprint,
             networkType: params.networkType
         });
 
-        return new PortfolioLedger({
-            id,
+        return sPortfolioLedger.toJson({
+            type: PortfolioType.LEDGER,
+            id: id.toJSON(),
             meta: params.meta,
             deviceModel: params.deviceModel,
-            derivations: self =>
-                params.accounts.map(
-                    account =>
-                        new Derivation(self, account.index, derivationRef => ({
-                            btc: new DerivationChainItemBtcLedger({
-                                sDerivation: { xpub: account.xpub },
-                                masterFingerprint: params.masterFingerprint,
-                                sessionPort: params.sessionPort,
-                                derivationRef
-                            })
-                        }))
-                )
+            derivations: params.accounts.map(account =>
+                sDerivation.toJson({
+                    index: account.index,
+                    chains: { btc: { xpub: account.xpub } }
+                })
+            )
         });
     }
 
     public static restore(
         sPortfolio: SPortfolioLedger,
-        sessionPort?: ILedgerSessionPort
+        sessionPort: ILedgerSessionPort
     ): PortfolioLedger {
         return new PortfolioLedger({
             id: toPortfolioIdLedger(sPortfolio.id),
@@ -60,7 +59,7 @@ export class PortfolioLedger implements IPortfolioLedger {
     private static restoreDerivation(
         portfolioRef: PortfolioLedger,
         sDerivationVal: SDerivation,
-        sessionPort?: ILedgerSessionPort
+        sessionPort: ILedgerSessionPort
     ): IDerivation {
         return new Derivation(
             portfolioRef,

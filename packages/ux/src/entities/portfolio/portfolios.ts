@@ -523,7 +523,7 @@ export function useAddLedgerPortfolio() {
     const portfolios = usePortfolios();
 
     return useMutation<
-        Portfolio,
+        void,
         Error,
         {
             masterFingerprint: string;
@@ -533,7 +533,7 @@ export function useAddLedgerPortfolio() {
         }
     >({
         async mutationFn({ masterFingerprint, deviceModel, accounts, meta }) {
-            const portfolio = PortfolioLedger.create({
+            const serialized = PortfolioLedger.createSerializedPortfolio({
                 masterFingerprint,
                 networkType: PortfolioNetworkType.MAINNET,
                 deviceModel,
@@ -541,15 +541,15 @@ export function useAddLedgerPortfolio() {
                 meta
             });
 
-            const existing = portfolios.find(p => p.id.isEq(portfolio.id));
+            const id = toPortfolioId(serialized);
+
+            const existing = portfolios.find(p => p.id.isEq(id));
             if (existing) {
                 throw new PortfolioAlreadyExistsError(existing);
             }
 
-            await addPortfolio(portfolio.toJSON());
-            await setActivePortfolio(portfolio);
-
-            return portfolio;
+            await addPortfolio(serialized);
+            await setActivePortfolio({ id });
         }
     });
 }

@@ -11,7 +11,7 @@ type WithToJson<J> = { toJSON(): J };
 export class AccountStoreTransform {
     constructor(
         private readonly getSecretEncryptor: () => ISecretEncryptor,
-        private readonly getLedgerSessionPort: () => ILedgerSessionPort | null = () => null
+        private readonly getLedgerSessionPort: () => ILedgerSessionPort
     ) {}
 
     public restore<K extends SyncedSlotKey>(
@@ -76,7 +76,7 @@ export class AccountStoreTransform {
         return this.reconcileById(prev, json, p =>
             PortfolioFactory.restorePortfolio(p, {
                 encryptor: this.getSecretEncryptor(),
-                ledgerSessionPort: this.getLedgerSessionPort() ?? undefined
+                ledgerSessionPort: this.getLedgerSessionPort()
             })
         );
     }

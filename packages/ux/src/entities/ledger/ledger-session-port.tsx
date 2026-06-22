@@ -18,6 +18,12 @@ export const LedgerSessionPortProvider = (props: LedgerSessionPortProviderProps)
     );
 };
 
-export const useLedgerSessionPort = (): ILedgerSessionPort | null => {
-    return useContext(LedgerSessionPortContext);
+export const useLedgerSessionPort = (): ILedgerSessionPort => {
+    const port = useContext(LedgerSessionPortContext);
+
+    if (!port) {
+        throw new Error('useLedgerSessionPort must be used within LedgerSessionPortProvider');
+    }
+
+    return port;
 };

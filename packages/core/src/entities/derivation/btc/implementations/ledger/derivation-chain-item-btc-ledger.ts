@@ -25,7 +25,7 @@ export class DerivationChainItemBtcLedger implements IDerivationChainItemBtc {
     }: {
         sDerivation: SBtcAccountChainItem;
         masterFingerprint: string;
-        sessionPort?: ILedgerSessionPort;
+        sessionPort: ILedgerSessionPort;
         derivationRef: Derivation;
     }) {
         this.network = btcNetworkByPortfolioNetworkType(derivationRef.portfolioRef.networkType);
@@ -33,16 +33,14 @@ export class DerivationChainItemBtcLedger implements IDerivationChainItemBtc {
 
         const walletType = BtcWalletType.NATIVE_SEGWIT;
         const address = BtcXpub.deriveAddress(this.xpub, this.network, walletType);
-        const signer = sessionPort
-            ? new LedgerBtcSigner(
-                  {
-                      accountIndex: derivationRef.index,
-                      xpub: this.xpub,
-                      masterFingerprint
-                  },
-                  sessionPort
-              )
-            : null;
+        const signer = new LedgerBtcSigner(
+            {
+                accountIndex: derivationRef.index,
+                xpub: this.xpub,
+                masterFingerprint
+            },
+            sessionPort
+        );
 
         this.wallets = [
             {
@@ -53,10 +51,6 @@ export class DerivationChainItemBtcLedger implements IDerivationChainItemBtc {
                 xpub: this.xpub,
                 derivationRef,
                 sign(tx) {
-                    if (!signer) {
-                        throw new Error('Ledger signing is not available');
-                    }
-
                     return signer.sign(tx);
                 }
             }
