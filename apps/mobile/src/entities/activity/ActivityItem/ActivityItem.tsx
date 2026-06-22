@@ -1,3 +1,4 @@
+/* eslint-disable no-irregular-whitespace */
 import { memo } from 'react';
 import { View } from 'react-native';
 
@@ -94,7 +95,7 @@ export const ActivityItem = memo((props: ActivityItemProps) => {
                         )}
                     </View>
                     <Cell.Value color={valueColor}>
-                        {amountSign} {formattedValue}
+                        {amountSign} {formattedValue}
                     </Cell.Value>
                 </Cell.Row>
                 <Cell.Row>
