@@ -1,5 +1,6 @@
+import { utf8 } from '@safely/sync/buffer';
+
 import { signRequest } from './sign';
-import { utf8 } from './utils';
 import type { RequestSigner } from '../../utils/fetch';
 
 export interface ReadOnlyCredential {

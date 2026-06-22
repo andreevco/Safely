@@ -5,10 +5,11 @@ import { sha256 } from '@noble/hashes/sha2.js';
 import { HDKey } from '@scure/bip32';
 import { describe, it, expect } from 'vitest';
 
+import { hex, toUtf8, utf8 } from '@safely/sync/buffer';
+
 import { AUTH_CERT_CHILD_INDEX, CERT_DOMAIN } from './const';
 import { createReadOnlyCertificate } from './create-cert';
 import { buildRequestSigningPayload, signRequest } from './sign';
-import { bytesToUtf8, hexToBytes, utf8 } from './utils';
 
 describe('AuthCert', () => {
     it('should create an instance of AuthCert, sign and verify it', () => {
@@ -41,7 +42,7 @@ function validateRequest(input: {
 }) {
     const parsed = parseAuthorizationHeader(input.authorization);
 
-    const certBytes = hexToBytes(parsed.certHex);
+    const certBytes = hex(parsed.certHex);
 
     const { certSig, certBody: certBodyBytes } = parseCertEnvelope(certBytes);
     const certBody = parseCertBody(certBodyBytes);
@@ -59,7 +60,7 @@ function validateRequest(input: {
         })
     ).toBeTruthy();
 
-    const reqPublicKey = hexToBytes(certBody.req_pub);
+    const reqPublicKey = hex(certBody.req_pub);
 
     const bodyBytes = input.bodyBytes ?? new Uint8Array();
 
@@ -71,7 +72,7 @@ function validateRequest(input: {
         nonce: parsed.nonce,
         certBytes
     });
-    const reqSig = hexToBytes(parsed.sigHex);
+    const reqSig = hex(parsed.sigHex);
 
     expect(
         ed25519.verify(reqSig, reqToVerify, reqPublicKey, {
@@ -108,7 +109,7 @@ function parseCertEnvelope(certBytes: Uint8Array): {
 }
 
 function parseCertBody(certBodyBytes: Uint8Array): ReadOnlyCertBody {
-    const obj = JSON.parse(bytesToUtf8(certBodyBytes));
+    const obj = JSON.parse(toUtf8(certBodyBytes));
 
     expect(obj.v).toEqual(1);
     expect(obj.typ).toEqual('wallet-http-ro');

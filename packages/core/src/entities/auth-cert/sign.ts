@@ -1,8 +1,9 @@
 import { ed25519 } from '@noble/curves/ed25519.js';
 import { sha256 } from '@noble/hashes/sha2.js';
 
+import { hex, toHex, u16be, u32be, u64be, u8be, utf8 } from '@safely/sync/buffer';
+
 import { REQ_DOMAIN } from './const';
-import { bytesToHex, hexToBytes, u16be, u32be, u64be, u8be, utf8 } from './utils';
 
 export interface SignRequestInput {
     certHex: string;
@@ -18,7 +19,7 @@ export function signRequest(input: SignRequestInput): string {
 
     const bodyBytes = input.bodyBytes;
 
-    const certBytes = hexToBytes(input.certHex);
+    const certBytes = hex(input.certHex);
     const toSign = buildRequestSigningPayload({
         method: input.method,
         pathWithQuery: input.pathWithQuery,
@@ -34,7 +35,7 @@ export function signRequest(input: SignRequestInput): string {
         `Safely-RO cert=${input.certHex},` +
         `nonce=${nonce},` +
         `timestamp=${ts},` +
-        `sig=${bytesToHex(signature)}`
+        `sig=${toHex(signature)}`
     );
 }
 

@@ -4,8 +4,9 @@ import { hkdf } from '@noble/hashes/hkdf.js';
 import { sha256 } from '@noble/hashes/sha2.js';
 import type { HDKey } from '@scure/bip32';
 
+import { toHex, utf8 } from '@safely/sync/buffer';
+
 import { AUTH_CERT_CHILD_INDEX, CERT_DOMAIN, SEED_INFO } from './const';
-import { bytesToHex, utf8 } from './utils';
 
 export function createReadOnlyCertificate(accountNode: HDKey) {
     const authCertNode = deriveAuthCertNodeFromXpriv(accountNode);
@@ -21,7 +22,7 @@ export function createReadOnlyCertificate(accountNode: HDKey) {
         typ: 'wallet-http-ro',
         alg: 'ed25519',
         xpub: accountNode.publicExtendedKey,
-        req_pub: bytesToHex(reqPublicKey)
+        req_pub: toHex(reqPublicKey)
     };
 
     const certBodyBytes = utf8(JSON.stringify(certBody));
@@ -33,7 +34,7 @@ export function createReadOnlyCertificate(accountNode: HDKey) {
     });
 
     const certBytes = Buffer.concat([certSig, certBodyBytes]);
-    const certHex = bytesToHex(certBytes);
+    const certHex = toHex(certBytes);
 
     return {
         reqSecretKey,
