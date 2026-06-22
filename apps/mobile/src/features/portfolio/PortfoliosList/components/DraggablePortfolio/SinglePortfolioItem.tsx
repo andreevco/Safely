@@ -2,7 +2,7 @@ import { memo, useMemo } from 'react';
 import { GestureDetector } from 'react-native-gesture-handler';
 import Animated from 'react-native-reanimated';
 
-import { useNumberFormatter, usePortfolioBalance } from '@safely/ux';
+import { resolveBtcWallet, useBtcWalletFiatBalance, useNumberFormatter } from '@safely/ux';
 
 import { PortfolioName } from '@mobile/entities/portfolio';
 import { Cell, Draggable, Text } from '@mobile/shared/ui';
@@ -26,7 +26,7 @@ export const SinglePortfolioItem = memo((props: DraggablePortfolioProps) => {
         variant
     } = props;
 
-    const { data: balance } = usePortfolioBalance(portfolio);
+    const { data: balance } = useBtcWalletFiatBalance(resolveBtcWallet(portfolio));
 
     const formatter = useNumberFormatter();
     const skeletonWidth = useMemo(

@@ -1,12 +1,11 @@
 import { useMemo } from 'react';
 
-import type { BtcWallet, FiatAssetAmount, Portfolio } from '@safely/core';
+import type { BtcWallet, FiatAssetAmount } from '@safely/core';
 import { BTC_ASSET } from '@safely/core';
 
 import { useDerivedQuery } from '../../shared';
 import { useBtcWalletBalances } from '../btc-blockchain';
 import { useActiveFiat } from '../fiat';
-import { resolveBtcWallet } from '../portfolio';
 import { useWalletAssets } from './useAssets';
 import { useRate } from './useRate';
 import { calculateTotalBalance } from './utils';
@@ -24,10 +23,6 @@ export function useBtcWalletFiatBalance(wallet: BtcWallet) {
             return calculateTotalBalance(assets, fiat);
         }
     });
-}
-
-export function usePortfolioBalance(portfolio: Portfolio) {
-    return useBtcWalletFiatBalance(resolveBtcWallet(portfolio));
 }
 
 export function useBtcWalletsFiatBalance(wallets: BtcWallet[]): {
