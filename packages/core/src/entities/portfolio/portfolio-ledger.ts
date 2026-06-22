@@ -72,7 +72,7 @@ export class PortfolioLedger implements IPortfolioLedger {
                     derivationRef
                 })
             }),
-            sDerivationVal.name
+            sDerivationVal.meta
         );
     }
 

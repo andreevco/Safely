@@ -31,7 +31,7 @@ export const LedgerOverviewRow = (props: LedgerOverviewRowProps) => {
     const { mutateAsync: updateDerivationMeta } = useUpdateDerivationMeta();
 
     const fallbackName = t('portfolio.ledgerWallet', { number: derivation.index + 1 });
-    const name = derivation.name ?? fallbackName;
+    const name = derivation.meta?.name ?? fallbackName;
 
     const formattedBalance = useFormattedAmount(balance);
     const address = derivation.chains.btc.wallets[0].address;

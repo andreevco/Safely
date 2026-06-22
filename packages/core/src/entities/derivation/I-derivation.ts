@@ -9,9 +9,13 @@ export interface IDerivationId extends Id {
     portfolioId: Id;
 }
 
+export type DerivationMeta = {
+    name: string;
+};
+
 export interface IDerivation {
     index: number;
-    name?: string;
+    meta?: DerivationMeta;
     id: IDerivationId;
     chains: IDerivationChains;
     portfolioRef: IPortfolioBase;

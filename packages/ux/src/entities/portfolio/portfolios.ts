@@ -296,9 +296,9 @@ export function useUpdateDerivationMeta() {
                         ?.at('derivations')
                         .update(String(derivationIndex), derivationDraft => {
                             if (name === undefined) {
-                                derivationDraft.delete('name');
+                                derivationDraft.delete('meta');
                             } else {
-                                derivationDraft.set('name', name);
+                                derivationDraft.set('meta', { name });
                             }
                         });
                 })
@@ -470,7 +470,9 @@ export function useActiveWalletMeta(): PortfolioMeta {
 
     if (portfolio.type === PortfolioType.LEDGER && !isOverview) {
         return {
-            name: derivation.name ?? t('portfolio.ledgerWallet', { number: derivation.index + 1 }),
+            name:
+                derivation.meta?.name ??
+                t('portfolio.ledgerWallet', { number: derivation.index + 1 }),
             icon: portfolio.meta.icon
         };
     }

@@ -23,7 +23,8 @@ export const HideDerivationContent = (props: HideDerivationContentProps) => {
     const navigation = useNavigation();
     const { mutateAsync: hideDerivation, isPending } = useHideDerivation();
 
-    const name = derivation.name ?? t('portfolio.ledgerWallet', { number: derivation.index + 1 });
+    const name =
+        derivation.meta?.name ?? t('portfolio.ledgerWallet', { number: derivation.index + 1 });
 
     const handleHide = async () => {
         try {

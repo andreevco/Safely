@@ -44,7 +44,7 @@ export const CurrentWalletSection = () => {
 
             navigation.navigate('CustomizeWalletModal', {
                 hasBackButton: true,
-                defaultName: derivation.name ?? fallbackName,
+                defaultName: derivation.meta?.name ?? fallbackName,
                 defaultIcon: portfolio.meta.icon,
                 tag: derivation.index + 1,
                 onSave: async meta => {

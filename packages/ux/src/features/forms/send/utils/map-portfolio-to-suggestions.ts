@@ -38,7 +38,7 @@ export function mapPortfolioToSuggestions(
             address: derivation.chains.btc.wallets[0]?.address,
             meta: isMultiDerivation
                 ? {
-                      name: derivation.name ?? derivationName(derivation.index + 1),
+                      name: derivation.meta?.name ?? derivationName(derivation.index + 1),
                       icon: portfolio.meta.icon
                   }
                 : portfolio.meta,

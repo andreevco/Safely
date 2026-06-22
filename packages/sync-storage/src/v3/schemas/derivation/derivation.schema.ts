@@ -10,14 +10,19 @@ export const sDerivationChains = z.object({
     btc: sBtcAccountChainItem
 });
 
+export const sDerivationMeta = z.object({
+    name: z.string()
+});
+
 export const sDerivation = zIndexedObject(
     {
         index: z.number(),
-        name: z.string().optional(),
+        meta: sDerivationMeta.optional(),
         chains: sDerivationChains
     },
     value => String(value.index)
 );
 
 export type SDerivation = z.infer<typeof sDerivation>;
+export type SDerivationMeta = z.infer<typeof sDerivationMeta>;
 export type SBtcAccountChainItem = z.infer<typeof sBtcAccountChainItem>;

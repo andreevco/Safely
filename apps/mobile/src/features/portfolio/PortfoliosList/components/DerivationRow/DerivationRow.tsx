@@ -21,7 +21,8 @@ export const DerivationRow = (props: DerivationRowProps) => {
     const { data: balance } = useBtcWalletFiatBalance(wallet);
     const formatter = useNumberFormatter();
 
-    const name = derivation.name ?? t('portfolio.ledgerWallet', { number: derivation.index + 1 });
+    const name =
+        derivation.meta?.name ?? t('portfolio.ledgerWallet', { number: derivation.index + 1 });
 
     return (
         <Cell background={isSelected ? 'tertiary' : 'secondary'} style={styles.cell}>
