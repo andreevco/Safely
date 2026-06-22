@@ -114,6 +114,11 @@ export const OrderScreen = (props: OrderScreenProps) => {
                                 <TableCell.Value>{providerName}</TableCell.Value>
                             </TableCell.Column>
                         </TableCell>
+                        {order.transaction && (
+                            <TableCell>
+                                <TransactionConfirmationStatusBtc tx={order.transaction.raw} />
+                            </TableCell>
+                        )}
                     </List.Group>
                     <List.Group withoutBottomMargin>
                         <TableCell copyable={order.order.id}>
@@ -166,13 +171,6 @@ export const OrderScreen = (props: OrderScreenProps) => {
                                         </View>
                                     </>
                                 )}
-                            </TableCell>
-                        </List.Group>
-                    )}
-                    {order.transaction && (
-                        <List.Group withoutBottomMargin>
-                            <TableCell>
-                                <TransactionConfirmationStatusBtc tx={order.transaction.raw} />
                             </TableCell>
                         </List.Group>
                     )}
