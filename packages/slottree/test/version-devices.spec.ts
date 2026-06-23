@@ -1,9 +1,14 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { StorageImpl } from '../src';
-import { createStorage, DEVICES_KEY } from '../src';
+import {
+    createStorage,
+    DEVICES_KEY,
+    VERSION_DELETION_GRACE_PERIOD_SECONDS,
+    VERSION_DELETION_KEY
+} from '../src';
 import type { StorageV3 } from './version-fixtures';
-import { v3 } from './version-fixtures';
+import { v1, v3 } from './version-fixtures';
 import { createOriginContainer } from '../src/core/slots';
 import { slotFromJson, stripSlot } from '../src/core/slots/slot-json';
 
@@ -19,6 +24,10 @@ const deviceV1 = Buffer.from('device-v1').toString('hex');
 const oldDevice = Buffer.from('old-device').toString('hex');
 
 describe('storage device versions', () => {
+    afterEach(() => {
+        vi.useRealTimers();
+    });
+
     it('records the current device schema version when storage is created', () => {
         const storage = createStorage({
             authorId: Buffer.from('device-1'),
@@ -65,7 +74,9 @@ describe('storage device versions', () => {
         });
     });
 
-    it('deletes schema versions that are not used by any device', () => {
+    it('marks schema versions that are not used by any device for deletion', () => {
+        const now = Math.floor(new Date('2026-01-01T00:00:00.000Z').getTime() / 1000);
+        vi.setSystemTime(new Date(now * 1000));
         const root = createOriginContainer({
             '1': slotFromJson({ key1: 10, key2: 'legacy' }, 0, ''),
             '3': slotFromJson(v3Initial, 0, ''),
@@ -86,8 +97,13 @@ describe('storage device versions', () => {
 
         const exported = storage.exportSlot();
 
-        expect(exported.v['1']).toBeUndefined();
+        expect(exported.v['1']).toBeDefined();
         expect(exported.v['3']).toBeDefined();
+        expect(stripSlot(exported.v[VERSION_DELETION_KEY])).toEqual({
+            '1': {
+                shouldBeDeletedAt: now + VERSION_DELETION_GRACE_PERIOD_SECONDS
+            }
+        });
     });
 
     it('keeps schema versions that are still used by another device', () => {
@@ -113,6 +129,33 @@ describe('storage device versions', () => {
         const exported = storage.exportSlot();
 
         expect(exported.v['1']).toBeDefined();
+        expect(exported.v['3']).toBeDefined();
+    });
+
+    it('keeps storage versions newer than the latest known version when loading a snapshot', () => {
+        const root = createOriginContainer({
+            '1': slotFromJson({ key1: 10, key2: 'known' }, 0, ''),
+            '2': slotFromJson({ key1: 20, key2: 'future-v2', key3: true }, 0, ''),
+            '3': slotFromJson({ key1: 30, label: 'future-v3', key3: true, key4: 'v3' }, 0, ''),
+            [DEVICES_KEY]: slotFromJson(
+                {
+                    [device1]: { version: 3 }
+                },
+                0,
+                ''
+            )
+        });
+
+        const storage = createStorage({
+            authorId: Buffer.from('device-1'),
+            versions: v1,
+            root
+        }) as unknown as StorageImpl<unknown>;
+
+        const exported = storage.exportSlot();
+
+        expect(exported.v['1']).toBeDefined();
+        expect(exported.v['2']).toBeDefined();
         expect(exported.v['3']).toBeDefined();
     });
 
@@ -174,7 +217,9 @@ describe('storage device versions', () => {
         expect(storage.export().equals(before)).toBe(true);
     });
 
-    it('removes an author, prunes its unused version, and keeps exports importable', () => {
+    it('removes an author, marks its unused version for deletion, and keeps exports importable', () => {
+        const now = Math.floor(new Date('2026-01-01T00:00:00.000Z').getTime() / 1000);
+        vi.setSystemTime(new Date(now * 1000));
         const root = createOriginContainer({
             '1': slotFromJson({ key1: 10, key2: 'legacy' }, 0, ''),
             '3': slotFromJson(v3Initial, 0, ''),
@@ -214,7 +259,12 @@ describe('storage device versions', () => {
                 version: 3
             }
         });
-        expect(exported.v['1']).toBeUndefined();
+        expect(exported.v['1']).toBeDefined();
+        expect(stripSlot(exported.v[VERSION_DELETION_KEY])).toEqual({
+            '1': {
+                shouldBeDeletedAt: now + VERSION_DELETION_GRACE_PERIOD_SECONDS
+            }
+        });
         expect(imported.read()).toEqual(v3Initial);
     });
 

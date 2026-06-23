@@ -2,11 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
 import type { StorageImpl } from '../src';
-import { createStorage, DEVICES_KEY } from '../src';
+import { createStorage, DEVICES_KEY, VERSION_DELETION_KEY } from '../src';
 import type { StorageV1 } from './version-fixtures';
 import { identityPatch, type StorageV3, v1, v3 } from './version-fixtures';
 import { createOriginContainer, SlotKind, type ContainerSlot } from '../src/core/slots';
-import { slotFromJson } from '../src/core/slots/slot-json';
+import { slotFromJson, stripSlot } from '../src/core/slots/slot-json';
 import { patch } from '../src/core/versioning/patch';
 import { defineVersionHList, hCons, hNil } from '../src/core/versioning/version';
 
@@ -37,8 +37,14 @@ describe('version migration', () => {
         const exported = storage.exportSlot();
         const v3Slot = exported.v['3'] as ContainerSlot;
 
-        expect(exported.v['1']).toBeUndefined();
+        expect(exported.v['1']).toBeDefined();
         expect(exported.v['2']).toBeUndefined();
+        expect(stripSlot(exported.v[VERSION_DELETION_KEY])).toEqual({
+            '1': {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                shouldBeDeletedAt: expect.any(Number)
+            }
+        });
         expect(v3Slot.v.key1).toMatchObject({
             v: 42,
             t: 123,

@@ -1,12 +1,21 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { VersionController } from '../src';
-import { v3 } from './version-fixtures';
+import {
+    DEVICES_KEY,
+    VERSION_DELETION_GRACE_PERIOD_SECONDS,
+    VERSION_DELETION_KEY,
+    VersionController
+} from '../src';
+import { v1, v3 } from './version-fixtures';
 import { createOriginContainer, type ContainerSlot } from '../src/core/slots';
 import { slotFromJson, stripSlot } from '../src/core/slots/slot-json';
 import { hListToRuntimeArray } from '../src/core/versioning/version';
 
 describe('VersionController', () => {
+    afterEach(() => {
+        vi.useRealTimers();
+    });
+
     it('controls top-level version slots', () => {
         const versions = hListToRuntimeArray(v3);
         const root = createOriginContainer({
@@ -45,5 +54,89 @@ describe('VersionController', () => {
             key3: false,
             key4: 'v3'
         });
+    });
+
+    it('keeps versions newer than the latest known version', () => {
+        const versions = hListToRuntimeArray(v1);
+        const root = createOriginContainer({
+            '1': slotFromJson({ key1: 10, key2: 'known' }, 0, ''),
+            '2': slotFromJson({ key1: 20, key2: 'newer-v2', key3: true }, 0, ''),
+            '3': slotFromJson({ key1: 30, label: 'newer-v3', key3: true, key4: 'v3' }, 0, ''),
+            [DEVICES_KEY]: slotFromJson(
+                {
+                    newerDevice: { version: 3 }
+                },
+                0,
+                ''
+            )
+        });
+        const controller = new VersionController(root, versions);
+
+        controller.deleteVersionsUnusedByDevices();
+
+        expect(root.v['1']).toBeDefined();
+        expect(root.v['2']).toBeDefined();
+        expect(root.v['3']).toBeDefined();
+    });
+
+    it('marks unused known versions for deletion instead of deleting them immediately', () => {
+        const now = Math.floor(new Date('2026-01-01T00:00:00.000Z').getTime() / 1000);
+        vi.setSystemTime(new Date(now * 1000));
+        const versions = hListToRuntimeArray(v3);
+        const root = createOriginContainer({
+            '1': slotFromJson({ key1: 10, key2: 'legacy' }, 0, ''),
+            '3': slotFromJson({ key1: 0, label: 'initial', key3: false, key4: 'v3' }, 0, ''),
+            [DEVICES_KEY]: slotFromJson(
+                {
+                    latestDevice: { version: 3 }
+                },
+                0,
+                ''
+            )
+        });
+        const controller = new VersionController(root, versions);
+
+        controller.deleteVersionsUnusedByDevices();
+
+        expect(root.v['1']).toBeDefined();
+        expect(root.v['3']).toBeDefined();
+        expect(stripSlot(root.v[VERSION_DELETION_KEY])).toEqual({
+            '1': {
+                shouldBeDeletedAt: now + VERSION_DELETION_GRACE_PERIOD_SECONDS
+            }
+        });
+    });
+
+    it('deletes unused known versions after their deletion timestamp is reached', () => {
+        const expiredAt = Math.floor(new Date('2026-04-01T00:00:00.000Z').getTime() / 1000);
+        vi.setSystemTime(new Date('2026-04-02T00:00:00.000Z'));
+        const versions = hListToRuntimeArray(v3);
+        const root = createOriginContainer({
+            '1': slotFromJson({ key1: 10, key2: 'legacy' }, 0, ''),
+            '3': slotFromJson({ key1: 0, label: 'initial', key3: false, key4: 'v3' }, 0, ''),
+            [VERSION_DELETION_KEY]: slotFromJson(
+                {
+                    '1': {
+                        shouldBeDeletedAt: expiredAt
+                    }
+                },
+                0,
+                ''
+            ),
+            [DEVICES_KEY]: slotFromJson(
+                {
+                    latestDevice: { version: 3 }
+                },
+                0,
+                ''
+            )
+        });
+        const controller = new VersionController(root, versions);
+
+        controller.deleteVersionsUnusedByDevices();
+
+        expect(root.v['1']).toBeUndefined();
+        expect(root.v['3']).toBeDefined();
+        expect(stripSlot(root.v[VERSION_DELETION_KEY])).toEqual({});
     });
 });
