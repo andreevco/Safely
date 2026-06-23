@@ -46,11 +46,15 @@ export const ProviderCell = (props: ProviderCellProps) => {
                     <Cell.Title>{provider.info.name}</Cell.Title>
                 </Cell.Row>
                 <Cell.Row>
-                    <Cell.Subtitle color="secondary">{provider.info.description}</Cell.Subtitle>
+                    <Cell.Subtitle numberOfLines={2} color="secondary">
+                        {provider.info.description}
+                    </Cell.Subtitle>
                 </Cell.Row>
                 {provider.likelyUnavailable && (
                     <Cell.Row>
-                        <Cell.Subvalue>{t('exchange.provider.availabilityVaries')}</Cell.Subvalue>
+                        <Cell.Subvalue numberOfLines={2}>
+                            {t('exchange.provider.availabilityVaries')}
+                        </Cell.Subvalue>
                     </Cell.Row>
                 )}
             </Cell.Content>
