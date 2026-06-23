@@ -9,6 +9,7 @@ import {
     useRef,
     useState
 } from 'react';
+import { BleManager } from 'react-native-ble-plx';
 import type { ActorRefFrom } from 'xstate';
 import { createActor } from 'xstate';
 
@@ -28,6 +29,7 @@ type LedgerSigningContextValue = {
 
 type LedgerSessionContextValue = {
     getLedgerKit: () => DeviceManagementKit;
+    getBleManager: () => BleManager;
     selectedDevice: DiscoveredDevice | null;
     setSelectedDevice: (device: DiscoveredDevice | null) => void;
     sessionId: string | null;
@@ -53,6 +55,7 @@ export const LedgerSigningProvider = (props: LedgerSigningProviderProps) => {
     const [selectedDevice, setSelectedDevice] = useState<DiscoveredDevice | null>(null);
     const [findMorePortfolioId, setFindMorePortfolioId] = useState<string | null>(null);
     const ledgerKitRef = useRef<DeviceManagementKit | null>(null);
+    const bleManagerRef = useRef<BleManager | null>(null);
     const sessionIdRef = useRef<string | null>(null);
 
     const setSessionId = useCallback((id: string | null) => {
@@ -68,10 +71,19 @@ export const LedgerSigningProvider = (props: LedgerSigningProviderProps) => {
         return ledgerKitRef.current;
     }, [logger]);
 
+    const getBleManager = useCallback(() => {
+        if (!bleManagerRef.current) {
+            bleManagerRef.current = new BleManager();
+        }
+
+        return bleManagerRef.current;
+    }, []);
+
     useEffect(() => {
         return () => {
             ledgerKitRef.current?.close();
             ledgerKitRef.current = null;
+            bleManagerRef.current = null;
         };
     }, []);
 
@@ -135,6 +147,7 @@ export const LedgerSigningProvider = (props: LedgerSigningProviderProps) => {
     const sessionValue = useMemo(
         () => ({
             getLedgerKit,
+            getBleManager,
             selectedDevice,
             setSelectedDevice,
             sessionId,
@@ -142,7 +155,7 @@ export const LedgerSigningProvider = (props: LedgerSigningProviderProps) => {
             findMorePortfolioId,
             setFindMorePortfolioId
         }),
-        [getLedgerKit, selectedDevice, sessionId, setSessionId, findMorePortfolioId]
+        [getLedgerKit, getBleManager, selectedDevice, sessionId, setSessionId, findMorePortfolioId]
     );
 
     return (

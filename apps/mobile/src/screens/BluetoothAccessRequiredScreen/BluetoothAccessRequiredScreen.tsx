@@ -1,32 +1,33 @@
-import { useNavigation, useRoute } from '@react-navigation/core';
+import { useNavigation } from '@react-navigation/core';
+import type { StaticScreenProps } from '@react-navigation/native';
 import { StackActions, useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Linking, View } from 'react-native';
 import { State } from 'react-native-ble-plx';
 
-import { getBluetoothState } from '@mobile/features/ledger';
+import { getBluetoothState, useLedgerSession } from '@mobile/features/ledger';
 import { BluetoothRequired96, Button, Icon, Screen, Text, Xmark16 } from '@mobile/shared/ui';
 import { Button as HeaderButton } from '@mobile/shared/ui/Screen/components/Header/components/Button';
 
 import { styles } from './BluetoothAccessRequiredScreen.styles';
 
-type BluetoothAccessRequiredParams = {
-    onReady?: () => void;
-    onCancel?: () => void;
-};
+type BluetoothAccessRequiredScreenProps = StaticScreenProps<
+    { onReady?: () => void; onCancel?: () => void } | undefined
+>;
 
-export const BluetoothAccessRequiredScreen = () => {
+export const BluetoothAccessRequiredScreen = ({ route }: BluetoothAccessRequiredScreenProps) => {
+    const params = route.params;
+
     const { t } = useTranslation();
     const navigation = useNavigation();
-    const route = useRoute();
-    const params = route.params as BluetoothAccessRequiredParams | undefined;
+    const { getBleManager } = useLedgerSession();
 
     useFocusEffect(
         useCallback(() => {
             let isActive = true;
 
-            getBluetoothState().then(state => {
+            getBluetoothState(getBleManager()).then(state => {
                 if (!isActive || state !== State.PoweredOn) {
                     return;
                 }
@@ -42,7 +43,7 @@ export const BluetoothAccessRequiredScreen = () => {
             return () => {
                 isActive = false;
             };
-        }, [navigation, params])
+        }, [navigation, params, getBleManager])
     );
 
     const handleCancel = useCallback(() => {

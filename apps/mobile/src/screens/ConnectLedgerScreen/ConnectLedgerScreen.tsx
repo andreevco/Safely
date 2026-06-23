@@ -17,7 +17,7 @@ import { styles } from './ConnectLedgerScreen.styles';
 export const ConnectLedgerScreen = () => {
     const { t } = useTranslation();
     const navigation = useNavigation();
-    const { getLedgerKit, sessionId, setSessionId } = useLedgerSession();
+    const { getLedgerKit, getBleManager, sessionId, setSessionId } = useLedgerSession();
 
     const steps = [
         {
@@ -35,7 +35,7 @@ export const ConnectLedgerScreen = () => {
     ];
 
     const handleContinue = async () => {
-        const state = await getBluetoothState();
+        const state = await getBluetoothState(getBleManager());
 
         if (state !== State.PoweredOn) {
             navigation.dispatch(CommonActions.navigate('BluetoothAccessRequiredModal'));
