@@ -14,8 +14,8 @@ export function useOpenOnramp() {
     const openOnramp = useCallback(
         async (provider: Provider) => {
             try {
-                const { widgetUrl } = await mutateAsync(provider);
-                openURL(widgetUrl, { preferInApp: true });
+                const { widgetUrl, openInExternalBrowser } = await mutateAsync(provider);
+                openURL(widgetUrl, { preferInApp: !openInExternalBrowser });
             } catch (error) {
                 errorToast(error);
             }

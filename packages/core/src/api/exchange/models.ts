@@ -75,7 +75,10 @@ export const onrampWidgetRequestSchema = z.object({
 });
 export type OnrampWidgetRequest = z.infer<typeof onrampWidgetRequestSchema>;
 
-export const onrampWidgetResponseSchema = z.object({ widgetUrl: z.string() });
+export const onrampWidgetResponseSchema = z.object({
+    widgetUrl: z.string(),
+    openInExternalBrowser: z.boolean()
+});
 export type OnrampWidgetResponse = z.infer<typeof onrampWidgetResponseSchema>;
 
 export const exchangeErrorSchema = z.object({ code: z.number() });
