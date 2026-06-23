@@ -1,10 +1,9 @@
-/* eslint-disable no-irregular-whitespace */
 import type { StaticScreenProps } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { BLOCKCHAIN_NAME, BTC_ASSET, ellipsisMiddle } from '@safely/core';
+import { BLOCKCHAIN_NAME, BTC_ASSET, SPACE, ellipsisMiddle } from '@safely/core';
 import type { OrderActivityItem } from '@safely/ux';
 import {
     useDateFormatter,
@@ -95,7 +94,9 @@ export const OrderScreen = (props: OrderScreenProps) => {
                     </View>
                     <View style={styles.amountContainer}>
                         <Text variant="titleL" color="primary" textAlign="center">
-                            {order.order.type === 'offramp' ? '−' : '+'} {order.order.cryptoAmount}
+                            {order.order.type === 'offramp' ? '−' : '+'}
+                            {SPACE.THSP}
+                            {order.order.cryptoAmount}
                         </Text>
                         {rate && order.cryptoAmount && (
                             <Text variant="bodyL" color="secondary" textAlign="center">

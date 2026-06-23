@@ -1,12 +1,13 @@
-/* eslint-disable no-irregular-whitespace */
 import type { SkPath } from '@shopify/react-native-skia';
 import { Skia } from '@shopify/react-native-skia';
 
+import { SPACE } from '@safely/core';
+
 export function formatCompactPrice(value: number): string {
     const abs = Math.abs(value);
-    if (abs >= 1e9) return `${value / 1e9} B`;
-    if (abs >= 1e6) return `${value / 1e6} M`;
-    return `${value / 1e3} K`;
+    if (abs >= 1e9) return `${value / 1e9}${SPACE.THSP}B`;
+    if (abs >= 1e6) return `${value / 1e6}${SPACE.THSP}M`;
+    return `${value / 1e3}${SPACE.THSP}K`;
 }
 
 const NICE_MULTIPLIERS = [1, 2, 2.5, 5, 10];

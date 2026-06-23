@@ -1,7 +1,7 @@
-/* eslint-disable no-irregular-whitespace */
 import { memo } from 'react';
 import { View } from 'react-native';
 
+import { SPACE } from '@safely/core';
 import type { ContactMeta, PortfolioMeta } from '@safely/core';
 import type { ActivityItem as ActivityItemData } from '@safely/ux';
 
@@ -95,7 +95,9 @@ export const ActivityItem = memo((props: ActivityItemProps) => {
                         )}
                     </View>
                     <Cell.Value color={valueColor}>
-                        {amountSign} {formattedValue}
+                        {amountSign}
+                        {SPACE.THSP}
+                        {formattedValue}
                     </Cell.Value>
                 </Cell.Row>
                 <Cell.Row>

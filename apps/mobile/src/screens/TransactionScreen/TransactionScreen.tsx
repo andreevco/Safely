@@ -1,10 +1,9 @@
-/* eslint-disable no-irregular-whitespace */
 import type { StaticScreenProps } from '@react-navigation/native';
 import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { BLOCKCHAIN_NAME, BTC_ASSET, ellipsisMiddle } from '@safely/core';
+import { BLOCKCHAIN_NAME, BTC_ASSET, SPACE, ellipsisMiddle } from '@safely/core';
 import {
     type BtcActivityItem,
     isBtcTransactionPending,
@@ -115,7 +114,9 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
                     </View>
                     <View style={styles.amountContainer}>
                         <Text variant="titleL" color="primary" textAlign="center">
-                            {isInitiator ? '−' : '+'} {activity.transaction.value.format(formatter)}
+                            {isInitiator ? '−' : '+'}
+                            {SPACE.THSP}
+                            {activity.transaction.value.format(formatter)}
                         </Text>
                         {rate && (
                             <Text variant="bodyL" color="secondary" textAlign="center">
