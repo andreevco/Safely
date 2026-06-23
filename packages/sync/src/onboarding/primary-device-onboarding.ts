@@ -13,7 +13,6 @@ import type { DeviceManagementService } from '../device-manager/device-managemen
 import type { SyncFlowLogger } from '../logger';
 import { SyncError } from '../sync-error';
 import type { SyncOperations } from '../sync-operations/sync-operations';
-import { u8be, utf8 } from '../utils/buffer';
 
 export class PrimaryDeviceOnboarding {
     constructor(
@@ -137,12 +136,7 @@ export class PrimaryDeviceOnboarding {
     }
 
     private async signOnboardingMessage(newIkPub: Buffer): Promise<Buffer> {
-        const toSign = Buffer.concat([
-            utf8('safely/sync/v1/server/add_device'),
-            u8be(0x00),
-            newIkPub
-        ]);
-        return await this.dmkService.sign(toSign);
+        return await this.dmkService.signAddDeviceForServer(newIkPub);
     }
 
     private knownStorageVersion(version: number): number | undefined {

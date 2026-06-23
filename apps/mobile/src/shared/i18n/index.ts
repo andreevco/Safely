@@ -2,7 +2,6 @@ import { getLocales } from 'expo-localization';
 import i18next from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
-// TODO IMPORT find a way not to touch raw storage
 // eslint-disable-next-line boundaries/element-types
 import { mobileLayerSynchronousLocale } from '@mobile/app/storage';
 

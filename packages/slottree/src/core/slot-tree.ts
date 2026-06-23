@@ -4,8 +4,9 @@ import { cborEncoder } from './encoder/cbor/cbor-encoder';
 import type { DeepReadonly } from './json';
 import type { MergeStats } from './merge-protocol';
 import { MergeProtocol } from './merge-protocol';
+import { SlotRevision } from './slot-revision';
 import type { ContainerSlot, Slot } from './slots';
-import { createOriginContainer } from './slots';
+import { createOriginContainer, isRecursiveSlot } from './slots';
 import { cloneSlot } from './slots/slot-json';
 import { validateSlot } from './slots/slot-validation';
 import { StorageObservers } from './storage-observer';
@@ -79,6 +80,11 @@ export interface SlotTree<T> {
      * Returns a cleanup function that removes the observer.
      */
     onChange(observer: StorageObserver): () => void;
+
+    /**
+     * Returns the latest revision for a top-level storage value.
+     */
+    getTopLevelRevision<K extends Extract<keyof T, string>>(key: K): SlotRevision | undefined;
 
     /**
      * Exports the current storage as an encoded snapshot.
@@ -275,6 +281,13 @@ export class StorageImpl<T> implements SlotTree<T> {
         };
     }
 
+    public getTopLevelRevision<K extends Extract<keyof T, string>>(
+        key: K
+    ): SlotRevision | undefined {
+        const slot = this.committedRoot().topLevelSlot(key);
+        return slot === undefined ? undefined : maxSlotRevision(slot);
+    }
+
     public exportSlot(): ContainerSlot {
         return cloneSlot(this.root);
     }
@@ -347,6 +360,28 @@ function didMergeChangeStorage(stats: MergeStats): boolean {
     return stats.added > 0 || stats.updated > 0 || stats.replaced > 0;
 }
 
+function maxSlotRevision(slot: Slot): SlotRevision {
+    let revision = new SlotRevision(slot.t, slot.a);
+
+    if (!isRecursiveSlot(slot)) {
+        return revision;
+    }
+
+    for (const key of Object.keys(slot.v)) {
+        const child = slot.v[key];
+        if (child === undefined) {
+            continue;
+        }
+
+        const childRevision = maxSlotRevision(child);
+        if (childRevision.compare(revision) > 0) {
+            revision = childRevision;
+        }
+    }
+
+    return revision;
+}
+
 export function createStorage<Latest extends StorageVersion, Rest>(options: {
     authorId: Buffer;
     versions: HCons<Latest, Rest> & AssertVersionHList<HCons<Latest, Rest>>;
@@ -357,4 +392,16 @@ export function createStorage<Latest extends StorageVersion, Rest>(options: {
         versions: hListToRuntimeArray(options.versions),
         root: options.root
     }) as SlotTree<z.output<NewOf<Latest>>>;
+}
+
+export function createStorageFromSnapshot<Latest extends StorageVersion, Rest>(options: {
+    authorId: Buffer;
+    versions: HCons<Latest, Rest> & AssertVersionHList<HCons<Latest, Rest>>;
+    snapshot: Buffer;
+}): SlotTree<z.output<NewOf<Latest>>> {
+    return createStorage({
+        authorId: options.authorId,
+        versions: options.versions,
+        root: cborEncoder.decode(options.snapshot)
+    });
 }

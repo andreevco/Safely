@@ -7,6 +7,7 @@ import {
     useNumberFormatter
 } from '../../../../entities';
 import { useFetchMaxValue } from '../../../blockchain-send';
+import { useAmountInputType, useSetAmountInputType } from '../amountInputType';
 import type { SendFormMachineInput } from '../machine/types';
 import type {
     ContactSuggestion,
@@ -40,6 +41,9 @@ export function useSendFormMachineInput(props: UseSendFormMachineInputProps): Se
     const activePortfolio = useActivePortfolio();
     const { mutateAsync: createContact } = useCreateContact();
 
+    const rememberedInputType = useAmountInputType();
+    const persistAmountInputType = useSetAmountInputType();
+
     return {
         resolvedInitialValues: initialValues,
         formatter,
@@ -51,9 +55,12 @@ export function useSendFormMachineInput(props: UseSendFormMachineInputProps): Se
             address: activeBtcWallet.address,
             meta: activePortfolio.meta
         },
+        networkType: activePortfolio.networkType,
         shouldResetForm: () => shouldResetForm,
         onSubmit,
         createContact,
-        fetchMaxValue
+        fetchMaxValue,
+        persistAmountInputType,
+        initialAmountInputType: rememberedInputType
     };
 }

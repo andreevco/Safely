@@ -8,7 +8,6 @@ import { useActiveFiat, useNumberFormatter, useRate } from '@safely/ux';
 
 import type { ChartPeriod } from '@mobile/features/chart/Chart/config';
 import { usePriceDiff } from '@mobile/features/chart/Chart/hooks';
-import type { PriceDiffValue } from '@mobile/features/chart/Chart/utils/priceDiff';
 import { Text } from '@mobile/shared/ui';
 
 import { styles } from './ChartHeader.styles';
@@ -19,7 +18,7 @@ type ChartHeaderProps = {
     prices: [number, number][];
     selectedPeriod: ChartPeriod;
     activePrice?: number;
-    activePriceDiff?: PriceDiffValue;
+    activePriceDiff?: number | null;
 };
 
 export const ChartHeader = (props: ChartHeaderProps) => {

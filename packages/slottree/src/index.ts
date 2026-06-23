@@ -16,11 +16,14 @@ export type {
     ObjectDraft
 } from './core/write';
 
-export { createStorage, StorageObservers } from './core/slot-tree';
+export { SlotRevision } from './core/slot-revision';
+export { createStorage, createStorageFromSnapshot, StorageObservers } from './core/slot-tree';
 export type { SlotTree, StorageImpl } from './core/slot-tree';
 export type { StorageObserver } from './core/slot-tree';
 
 export type { StorageVersion } from './core/versioning/version';
+export { patch } from './core/versioning/patch';
+export type { PatchDraft, PatchPath, SlotPatch } from './core/versioning/patch';
 export { DEVICES_KEY, VersionController } from './core/versioning/version-controller';
 export type { VersionSelector } from './core/versioning/version-controller';
 

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import { PortfolioType } from '@safely/core';
-import { useActivePortfolio } from '@safely/ux';
+import { useActivePortfolio, useChangePortfolioMeta } from '@safely/ux';
 
 import { PortfolioName } from '@mobile/entities/portfolio';
 import { Button, Cell, List } from '@mobile/shared/ui';
@@ -17,11 +17,17 @@ export const CurrentWalletSection = () => {
     const navigation = useNavigation();
     // eslint-disable-next-line @typescript-eslint/no-empty-object-type
     const nativeStackNavigation = useNavigation<NativeStackNavigationProp<{}>>();
+    const { mutateAsync: changePortfolioMeta } = useChangePortfolioMeta();
 
     const handleEditPress = () => {
         navigation.navigate('CustomizeWalletModal', {
-            portfolio: activePortfolio,
-            onCompleteCustomize: () => {
+            defaultIcon: activePortfolio.meta.icon,
+            defaultName: activePortfolio.meta.name,
+            onSave: async meta => {
+                await changePortfolioMeta({ portfolio: activePortfolio, meta });
+                nativeStackNavigation.pop();
+            },
+            onClose: () => {
                 nativeStackNavigation.pop();
             }
         });

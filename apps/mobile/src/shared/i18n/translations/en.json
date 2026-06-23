@@ -1,7 +1,8 @@
 {
     "currentLanguageName": "English",
     "portfolio": {
-        "watchOnly": "Watch only"
+        "watchOnly": "Watch only",
+        "testnet": "Testnet"
     },
     "walletAlreadyAdded": {
         "title": "You've already added this wallet as {{name}}",
@@ -409,6 +410,10 @@
             "info": "Watch account cannot sign transactions and send funds.",
             "invalidAddress": "Invalid Bitcoin address",
             "unsupportedExtendedKey": "ypub is not supported yet. Use xpub."
+        },
+        "testnet": {
+            "title": "Testnet",
+            "subtitle": "Add a wallet on the test network"
         }
     },
     "account": {
@@ -569,12 +574,10 @@
         "receiving": "Receiving {{amount}}…"
     },
     "assetCell": {
-        "lastTransaction": "Last transaction {{timeAgo}}",
-        "noTransactions": "No transactions"
+        "history": "History"
     },
     "tabs": {
         "home": "Home",
-        "history": "History",
         "about": "About"
     },
     "safelyBeta": {

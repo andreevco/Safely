@@ -36,14 +36,18 @@ jobs:
         id: base
         env:
           BASE_REF: ${{ github.event.pull_request.base.ref }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          BASE_SHA=$(git merge-base "origin/$BASE_REF" "$HEAD_SHA")
+          # On pull_request the checkout is the PR *merge commit* (PR + current
+          # base tip), and the pnpm "...[ref]" filter diffs the working tree
+          # against BASE_SHA. So BASE_SHA must be the merge-base with HEAD, not
+          # with the PR head SHA — otherwise commits landed on the base branch
+          # after the fork point are picked up as "changed" packages.
+          BASE_SHA=$(git merge-base "origin/$BASE_REF" HEAD)
           echo "sha=$BASE_SHA" >> "$GITHUB_OUTPUT"
           echo "Comparing against merge-base with $BASE_REF: $BASE_SHA"
           # Root-level changes (lockfile, eslint/tsconfig, patches, …) affect
           # every package, so lint/test must fall back to a full run.
-          if git diff --name-only "$BASE_SHA" "$HEAD_SHA" | grep -qvE '^(apps|packages)/'; then
+          if git diff --name-only "$BASE_SHA" HEAD | grep -qvE '^(apps|packages)/'; then
             echo "root_changed=true" >> "$GITHUB_OUTPUT"
             echo "Root-level files changed — lint/test will run for all packages"
           else
@@ -61,6 +65,16 @@ jobs:
             pnpm -r run lint
           else
             pnpm --filter "...[$BASE_SHA]" --filter "!safely" run lint
+          fi
+
+      - name: Resolve dev-sync.safely.app
+        env:
+          DEV_SYNC_IP: ${{ secrets.DEV_SYNC_IP }}
+        run: |
+          if [ -n "$DEV_SYNC_IP" ]; then
+            echo "$DEV_SYNC_IP dev-sync.safely.app" | sudo tee -a /etc/hosts > /dev/null
+          else
+            echo "DEV_SYNC_IP secret is not set — dev-sync.safely.app will not resolve"
           fi
 
       - name: Test

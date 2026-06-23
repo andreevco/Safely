@@ -14,8 +14,8 @@ export function useHistory<TData = InfiniteData<ActivityPage, IActivityPageParam
     filters: IActivityFilters = {},
     options?: IHistoryOptions<TData>
 ) {
-    const btcApi = useBtcApi();
     const btcWallet = useActiveBtcWallet();
+    const btcApi = useBtcApi(btcWallet.network);
     const broadcastedTx = useLastBroadcastedBtcTx();
 
     return useInfinitePersistQuery<ActivityPage, unknown, TData, QueryKey, IActivityPageParam>({

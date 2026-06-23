@@ -3,53 +3,35 @@ import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Keyboard } from 'react-native';
 
-import type { Portfolio, PortfolioMeta } from '@safely/core';
-import { useChangePortfolioMeta, useNewPortfolioFallbackName } from '@safely/ux';
+import type { PortfolioMeta } from '@safely/core';
 
 import { TEST_ID } from '@mobile/shared/constants';
 import { Button, Icon, Screen, Xmark16 } from '@mobile/shared/ui';
 
 import type { WalletIcon } from './constants';
-import { WALLET_EMOJIS } from './constants';
 import { CustomizeWalletContent } from './CustomizeWalletContent';
 import { styles } from './CustomizeWalletModal.styles';
 
-const getDefaultIcon = (): WalletIcon => {
-    const randomIndex = Math.floor(Math.random() * WALLET_EMOJIS.length);
-    return { type: 'emoji', value: WALLET_EMOJIS[randomIndex] ?? '' };
-};
-
 type CustomizeWalletModalProps = StaticScreenProps<{
-    portfolio?: Portfolio;
-    onSave?: (meta: Pick<PortfolioMeta, 'icon' | 'name'>) => Promise<void>;
-    // NOTE: this callback is for navigation actions only and calling in cases when user don't save changes
-    onCompleteCustomize?: () => void;
+    defaultIcon: WalletIcon;
+    defaultName: string;
+    onSave: (meta: Pick<PortfolioMeta, 'icon' | 'name'>) => Promise<void>;
+    onClose?: () => void;
     hasBackButton?: boolean;
 }>;
 
 export const CustomizeWalletModal = (props: CustomizeWalletModalProps) => {
-    const { portfolio, onSave, onCompleteCustomize, hasBackButton } = props.route?.params ?? {};
+    const { defaultIcon, defaultName, onSave, onClose, hasBackButton } = props.route?.params ?? {};
     const { t } = useTranslation();
-    const fallbackName = useNewPortfolioFallbackName();
-    const { mutate: changePortfolioMeta } = useChangePortfolioMeta();
 
-    const [walletName, setWalletName] = useState(portfolio?.meta.name ?? fallbackName);
-    const [selectedIcon, setSelectedIcon] = useState<WalletIcon>(
-        () => portfolio?.meta.icon ?? getDefaultIcon()
-    );
+    const [walletName, setWalletName] = useState(defaultName);
+    const [selectedIcon, setSelectedIcon] = useState<WalletIcon>(defaultIcon);
 
-    const handleSave = useCallback(async () => {
+    const handleSave = useCallback(() => {
         Keyboard.dismiss();
-        if (portfolio) {
-            changePortfolioMeta({
-                portfolio,
-                meta: { name: walletName.trim(), icon: selectedIcon }
-            });
-            onCompleteCustomize?.();
-        } else {
-            await onSave?.({ name: walletName.trim(), icon: selectedIcon });
-        }
-    }, [onCompleteCustomize, onSave, changePortfolioMeta, portfolio, walletName, selectedIcon]);
+
+        void onSave({ name: walletName.trim(), icon: selectedIcon });
+    }, [onSave, walletName, selectedIcon]);
 
     const isNameValid = walletName.trim().length > 0;
 
@@ -58,11 +40,11 @@ export const CustomizeWalletModal = (props: CustomizeWalletModalProps) => {
             <Screen.Header variant="left">
                 {hasBackButton ? (
                     <Screen.Header.BackButton />
-                ) : (
-                    <Screen.Header.Button onPress={onCompleteCustomize}>
+                ) : onClose ? (
+                    <Screen.Header.Button onPress={onClose}>
                         <Icon icon={Xmark16} />
                     </Screen.Header.Button>
-                )}
+                ) : null}
                 <Button
                     testID={TEST_ID.customizeWallet.saveButton}
                     type="primary"

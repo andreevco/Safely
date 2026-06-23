@@ -30,6 +30,7 @@ interface SubtitleProps {
     isFetching: boolean;
     lastUpdatedAt: number;
     isWatchOnly?: boolean;
+    isTestnet?: boolean;
 }
 
 const AnimatedText = Animated.createAnimatedComponent(Text);
@@ -66,7 +67,13 @@ export const SubtitleAnimatedText = ({ children, ...props }: TextProps) => {
     );
 };
 
-export const Subtitle = ({ address, isFetching, lastUpdatedAt, isWatchOnly }: SubtitleProps) => {
+export const Subtitle = ({
+    address,
+    isFetching,
+    lastUpdatedAt,
+    isWatchOnly,
+    isTestnet
+}: SubtitleProps) => {
     const { t } = useTranslation();
     const navigation = useNavigation();
 
@@ -132,6 +139,11 @@ export const Subtitle = ({ address, isFetching, lastUpdatedAt, isWatchOnly }: Su
                                 </Badge>
                             </Pressable>
                         )}
+                        {isTestnet && (
+                            <Badge type="warning" isUppercase>
+                                {t('portfolio.testnet')}
+                            </Badge>
+                        )}
                     </View>
                 );
             case SubtitleStatus.ADDRESS_COPIED:
@@ -161,6 +173,7 @@ export const Subtitle = ({ address, isFetching, lastUpdatedAt, isWatchOnly }: Su
         handleCopyAddress,
         address,
         isWatchOnly,
+        isTestnet,
         handleWatchOnlyPress
     ]);
 

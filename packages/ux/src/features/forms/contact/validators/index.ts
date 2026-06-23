@@ -1,3 +1,5 @@
+import { PortfolioNetworkType } from '@safely/core';
+
 import { parseAddress, UnsupportedBlockchainError } from '../../../../shared/address';
 import { ContactFormError } from '../errors';
 import type { ContactFormParsedAddress } from '../types';
@@ -25,7 +27,8 @@ export function validateContactAddress(value: string): ContactAddressValidationR
     }
 
     try {
-        const parsed = parseAddress(trimmed);
+        // The address book stores mainnet addresses only
+        const parsed = parseAddress(trimmed, PortfolioNetworkType.MAINNET);
         return {
             parsed: { address: parsed.address, blockchain: parsed.blockchain },
             error: undefined

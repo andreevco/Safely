@@ -3,7 +3,8 @@ import { useCallback } from 'react';
 
 import { useClearDismissedBannerIds, useIsDevVersion } from '@safely/ux';
 
-import { Cell, List, Screen, Text } from '@mobile/shared/ui';
+import { useMobileLayerSynchronousGlobalStorage } from '@mobile/shared/storage';
+import { Cell, List, Screen, Switch, Text } from '@mobile/shared/ui';
 
 import { styles } from './DevToolsScreen.styles';
 
@@ -11,10 +12,16 @@ export const DevToolsScreen = () => {
     const isDevVersion = useIsDevVersion();
     const navigation = useNavigation();
     const { mutate: clearDismissedBannerIds } = useClearDismissedBannerIds();
+    const { value: devIsTestnetAllowed, set: setDevIsTestnetAllowed } =
+        useMobileLayerSynchronousGlobalStorage('devIsTestnetAllowed');
 
     const handleClearDismissedBannerIds = useCallback(() => {
         void clearDismissedBannerIds();
     }, [clearDismissedBannerIds]);
+
+    const handleTestnetToggle = useCallback(() => {
+        setDevIsTestnetAllowed(!devIsTestnetAllowed);
+    }, [devIsTestnetAllowed, setDevIsTestnetAllowed]);
 
     return (
         <Screen>
@@ -56,6 +63,20 @@ export const DevToolsScreen = () => {
                             </Cell.Content>
                             <Cell.Chevron />
                         </Cell>
+                        <Cell
+                            onPress={() =>
+                                navigation.navigate('SettingsModal', {
+                                    screen: 'DevToolsSyncStorageModal'
+                                })
+                            }
+                        >
+                            <Cell.Content>
+                                <Cell.Row>
+                                    <Cell.Title>Sync Storage</Cell.Title>
+                                </Cell.Row>
+                            </Cell.Content>
+                            <Cell.Chevron />
+                        </Cell>
                         {isDevVersion && (
                             <Cell
                                 onPress={() =>
@@ -72,6 +93,22 @@ export const DevToolsScreen = () => {
                                 <Cell.Chevron />
                             </Cell>
                         )}
+                    </List.Group>
+                    <List.Group variant="divided">
+                        <Cell>
+                            <Cell.Content>
+                                <Cell.Row>
+                                    <Cell.Title>Testnet</Cell.Title>
+                                </Cell.Row>
+                                <Cell.Row>
+                                    <Cell.Subtitle numberOfLines={0}>
+                                        Allow adding wallets on the test network for development
+                                        purposes.
+                                    </Cell.Subtitle>
+                                </Cell.Row>
+                            </Cell.Content>
+                            <Switch value={!!devIsTestnetAllowed} onPress={handleTestnetToggle} />
+                        </Cell>
                     </List.Group>
                     <List.Group variant="divided">
                         <Cell onPress={handleClearDismissedBannerIds}>

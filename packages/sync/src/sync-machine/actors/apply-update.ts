@@ -18,9 +18,10 @@ export const applyUpdate = fromPromise(
         const upd = input.config.remoteUpdates[0] ?? null;
         if (upd === null) return { hasLocalChanges: false };
         const flow = new SyncFlowLogger(input.config.logger, 'sync_machine.apply_update');
-        flow.logStep('received', {
+        const flowFields = {
             snapshotProof: upd.snapshotProof.toString('hex').slice(0, 16)
-        });
+        };
+        flow.logStep('received', flowFields);
 
         let result;
         try {
@@ -29,7 +30,8 @@ export const applyUpdate = fromPromise(
                     snapshotProofChain: [],
                     ...upd
                 },
-                signal
+                signal,
+                flow.child('update_handler', flowFields)
             );
         } catch (e) {
             flow.logFail(e, 'failed');

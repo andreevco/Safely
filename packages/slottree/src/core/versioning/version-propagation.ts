@@ -14,11 +14,11 @@ export class VersionPropagation {
         root: ContainerSlot,
         protocol: MergeProtocol
     ): void {
-        const deviceVersions = this.deviceVersions(root);
-        if (deviceVersions.size <= 1) {
+        const activeVersions = this.activeVersionsForMerge(root);
+        if (activeVersions.size <= 1) {
             return;
         }
-        const minVersion = Math.min(...deviceVersions);
+        const minVersion = Math.min(...activeVersions);
         const minVersionIndex = this.versions.findIndex(version => version.version === minVersion);
 
         let current: ContainerSlot | undefined;
@@ -39,7 +39,7 @@ export class VersionPropagation {
             }
 
             const projected = toVersion.projectUp(current);
-            this.validateProjection(toVersion, projected);
+            this.validateVersionSlot(toVersion, projected);
             current = this.mergeIntoExistingVersion(root, toVersion, projected, protocol, {
                 updateExisting: true,
                 createMissing: false
@@ -69,7 +69,7 @@ export class VersionPropagation {
             const toVersion = this.versions[index - 1];
 
             const projected = fromVersion.projectDown(current);
-            this.validateProjection(toVersion, projected);
+            this.validateVersionSlot(toVersion, projected);
             current = this.mergeIntoExistingVersion(root, toVersion, projected, protocol, {
                 updateExisting: deviceVersions.has(toVersion.version),
                 createMissing: deviceVersions.has(toVersion.version)
@@ -115,6 +115,18 @@ export class VersionPropagation {
         return deviceVersions;
     }
 
+    private activeVersionsForMerge(root: ContainerSlot): Set<number> {
+        const activeVersions = this.deviceVersions(root);
+
+        for (const version of Object.keys(root.v)) {
+            if (this.versions.find(x => String(x.version) === version)) {
+                activeVersions.add(Number(version));
+            }
+        }
+
+        return activeVersions;
+    }
+
     private mergeIntoExistingVersion(
         root: ContainerSlot,
         version: StorageVersion,
@@ -139,7 +151,7 @@ export class VersionPropagation {
         return projected;
     }
 
-    private validateProjection(version: StorageVersion, projected: ContainerSlot): void {
+    private validateVersionSlot(version: StorageVersion, projected: ContainerSlot): void {
         validateSlot(projected);
         version.schema.parse(stripSlot(projected));
     }

@@ -15,8 +15,11 @@ import type {
 } from '../../src/api/generated';
 import type { EncryptedState } from '../../src/api/types';
 import { ed25519_verify } from '../../src/crypto/ed25519';
+import {
+    getServerAddDeviceSignaturePayload,
+    getServerRevokeDeviceSignaturePayload
+} from '../../src/device-manager/device-signature-payload';
 import { getSnapshotProofFromCiphertextHash } from '../../src/update-handler/snapshot-proof';
-import { u8be, utf8 } from '../../src/utils/buffer';
 
 export class SyncServer {
     private readonly accounts: Account[] = [];
@@ -154,11 +157,9 @@ export class SyncServer {
 
     public removeDeviceFromAccount(req: RemoveDeviceFromAccountRequest, requesterIk: string): void {
         const acc = this.findAccountByIkPub(requesterIk);
-        const data = Buffer.concat([
-            utf8('safely/sync/v1/server/revoke_device'),
-            u8be(0x00),
+        const data = getServerRevokeDeviceSignaturePayload(
             Buffer.from(req.signedDeviceIdentity.identityPubKey, 'hex')
-        ]);
+        );
         const verified = ed25519_verify(
             Buffer.from(req.signedDeviceIdentity.signature, 'hex'),
             data,
@@ -235,11 +236,9 @@ export class SyncServer {
         account: Account,
         signedDeviceIdentity: AddDeviceToAccountRequest['signedDeviceIdentity']
     ): void {
-        const data = Buffer.concat([
-            utf8('safely/sync/v1/server/add_device'),
-            u8be(0x00),
+        const data = getServerAddDeviceSignaturePayload(
             Buffer.from(signedDeviceIdentity.identityPubKey, 'hex')
-        ]);
+        );
         const verified = ed25519_verify(
             Buffer.from(signedDeviceIdentity.signature, 'hex'),
             data,

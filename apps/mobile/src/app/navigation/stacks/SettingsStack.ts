@@ -4,6 +4,7 @@ import { AddressBookModal } from '@mobile/screens/AddressBookModal';
 import { DevToolsConfigScreen } from '@mobile/screens/DevToolsConfigScreen';
 import { DevToolsLogsScreen } from '@mobile/screens/DevToolsLogsScreen';
 import { DevToolsScreen } from '@mobile/screens/DevToolsScreen';
+import { DevToolsSyncStorageScreen } from '@mobile/screens/DevToolsSyncStorageScreen';
 import { DevToolsXpubScreen } from '@mobile/screens/DevToolsXpubScreen';
 import { LanguageScreen } from '@mobile/screens/LanguageScreen';
 import { SecurityScreen } from '@mobile/screens/SecurityScreen';
@@ -24,6 +25,7 @@ export const SettingsStack = createNativeStackNavigator({
                 DevToolsModal: DevToolsScreen,
                 DevToolsXpubModal: DevToolsXpubScreen,
                 DevToolsLogsModal: DevToolsLogsScreen,
+                DevToolsSyncStorageModal: DevToolsSyncStorageScreen,
                 DevToolsConfigModal: DevToolsConfigScreen
             }
         }

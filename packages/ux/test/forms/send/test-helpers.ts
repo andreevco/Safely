@@ -8,6 +8,7 @@ import {
     FiatAsset,
     FiatAssetId,
     NumberFormatter,
+    PortfolioNetworkType,
     type RatedCryptoAssetAmount,
     Rate,
     toBig,
@@ -148,9 +149,12 @@ export function makeMockInput(opts: MockInputOptions = {}): SendFormMachineInput
         contactSuggestions,
         ratedAssets,
         activeWallet,
+        networkType: opts.networkType ?? PortfolioNetworkType.MAINNET,
         shouldResetForm: () => shouldResetFormValue,
         onSubmit,
         createContact,
-        fetchMaxValue: opts.fetchMaxValue ?? (async () => undefined)
+        fetchMaxValue: opts.fetchMaxValue ?? (async () => undefined),
+        persistAmountInputType: opts.persistAmountInputType ?? (() => {}),
+        initialAmountInputType: opts.initialAmountInputType ?? 'crypto'
     };
 }

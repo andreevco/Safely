@@ -2,14 +2,13 @@ import { useMemo } from 'react';
 
 import type { ChartPeriod } from '../config';
 import { CHART_CONFIG } from '../config';
-import { getPriceDiff, type PriceDiffValue } from '../utils/priceDiff';
 
 type UsePriceDiffParams = {
     prices: [number, number][];
     selectedPeriod: ChartPeriod;
 };
 
-export const usePriceDiff = (params: UsePriceDiffParams): PriceDiffValue => {
+export const usePriceDiff = (params: UsePriceDiffParams): number | null => {
     const { prices, selectedPeriod } = params;
 
     return useMemo(() => {
@@ -27,6 +26,11 @@ export const usePriceDiff = (params: UsePriceDiffParams): PriceDiffValue => {
         const startPrice = periodStartPoint[1];
         const endPrice = prices[prices.length - 1][1];
 
-        return getPriceDiff(startPrice, endPrice);
+        if (startPrice === 0) {
+            return null;
+        }
+
+        const diff = ((endPrice - startPrice) / startPrice) * 100;
+        return diff === 0 ? null : diff;
     }, [prices, selectedPeriod]);
 };

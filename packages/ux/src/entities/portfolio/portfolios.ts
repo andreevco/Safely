@@ -99,8 +99,8 @@ export function useGeneratePortfolio() {
                 params.secureEncryptedStorage
             );
 
-            const latestWalletIndex = account.syncProvider.get('latestDerivedBip39PortfolioIndex');
-            const nextWalletIndex = latestWalletIndex === null ? 0 : latestWalletIndex + 1;
+            const nextWalletIndex =
+                account.syncProvider.get('nextDerivingPortfolioInfo')?.index ?? 0;
             using mnemonicAccessor =
                 await portfolioMnemonicFactory.deriveBip39MnemonicResource(nextWalletIndex);
 
@@ -116,20 +116,23 @@ export function useGeneratePortfolio() {
                     params.secureEncryptedStorage
                 ),
                 id,
-                options: { meta: params.meta }
+                meta: params.meta
             });
+
+            const upcomingIndex = nextWalletIndex + 1;
+            using upcomingMnemonicAccessor =
+                await portfolioMnemonicFactory.deriveBip39MnemonicResource(upcomingIndex);
+            const upcomingEmoji =
+                PortfolioIdBip39MasterKeyDerived.getFallbackEmoji(upcomingMnemonicAccessor).value;
 
             await update(account, draft => {
                 draft.at('portfolios').push(portfolio);
-                const latestDerivedBip39PortfolioIndex = draft
-                    .at('latestDerivedBip39PortfolioIndex')
-                    .get();
 
-                if (
-                    latestDerivedBip39PortfolioIndex === null ||
-                    nextWalletIndex > latestDerivedBip39PortfolioIndex
-                ) {
-                    draft.at('latestDerivedBip39PortfolioIndex').set(nextWalletIndex);
+                const nextInfoDraft = draft.at('nextDerivingPortfolioInfo');
+                const currentInfo = nextInfoDraft.get();
+
+                if (currentInfo === null || upcomingIndex > currentInfo.index) {
+                    nextInfoDraft.set({ index: upcomingIndex, emoji: upcomingEmoji });
                 }
             });
 
@@ -163,24 +166,22 @@ export function useImportPortfolio() {
             mnemonicAccessor: IMnemonicAccessor & IMnemonicVault;
             secretEncryptor: ISecretEncryptor;
             meta: PortfolioMeta;
+            networkType: PortfolioNetworkType;
         },
         unknown
     >({
-        async mutationFn({ mnemonicAccessor, secretEncryptor, meta }) {
+        async mutationFn({ mnemonicAccessor, secretEncryptor, meta, networkType }) {
             portfolioLogger.info('importing portfolio');
             await delay();
 
-            const id = await PortfolioIdBip39Imported.create(
-                mnemonicAccessor,
-                PortfolioNetworkType.MAINNET
-            );
+            const id = await PortfolioIdBip39Imported.create(mnemonicAccessor, networkType);
 
             const portfolio = await PortfolioBip39.createSerializedPortfolio({
                 id,
                 encryptor: secretEncryptor,
                 mnemonicAccessor,
+                meta,
                 options: {
-                    meta,
                     seedRevealedFromDevice: deviceInfo.name
                 }
             });
@@ -341,8 +342,15 @@ export function useHasPortfolio() {
     return useActivePortfolioEntitiesQuery().data !== null;
 }
 
-export function useIsActiveWalletWatchOnly(): boolean {
+export function useIsActivePortfolioWatchOnly(): boolean {
     return useActivePortfolioEntitiesQuery()?.data?.type === 'watch-only';
+}
+
+export function useIsActivePortfolioTestnet(): boolean {
+    return (
+        useActivePortfolioEntitiesQuery()?.data?.portfolio.networkType ===
+        PortfolioNetworkType.TESTNET
+    );
 }
 
 export function useAddWatchOnlyPortfolio() {

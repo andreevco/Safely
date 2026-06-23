@@ -14,13 +14,13 @@ import { build, deviceInfo, environment } from '@mobile/shared/app-meta';
 import { eraseLogs, logger } from '@mobile/shared/logger';
 import { useLoaderServiceContext } from '@mobile/shared/providers/loader';
 import { useToastServiceContext } from '@mobile/shared/providers/toast';
+import { useMobileLayerSynchronousGlobalStorage } from '@mobile/shared/storage';
 import { MobileNumberFormatLocale, MobileAppLinking } from '@mobile/shared/utils';
 
 import { navigationRef } from './navigation/navigationRef';
 import {
     CLEAR_ALL_MOBILE_STORAGE_ONLY_APP_LEVEL_USE_DANGER,
     ENCRYPTED_MOBILE_STORAGE_ONLY_APP_LEVEL_USE,
-    mobileLayerSynchronousDevToken,
     REGULAR_MOBILE_STORAGE_ONLY_APP_LEVEL_USE,
     SECURE_ENCRYPTED_MOBILE_STORAGE_ONLY_APP_LEVEL_USE
 } from './storage';
@@ -52,6 +52,9 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
     } = useTranslation();
     const { service: toastService } = useToastServiceContext();
     const { service: loaderService } = useLoaderServiceContext();
+    const { value: devIsTestnetAllowed } =
+        useMobileLayerSynchronousGlobalStorage('devIsTestnetAllowed');
+    const { value: devToken } = useMobileLayerSynchronousGlobalStorage('devToken');
 
     const appContext = useMemo<IAppContext>(
         () => ({
@@ -62,7 +65,8 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
             version: packageJson.version,
             build,
             environment,
-            devToken: mobileLayerSynchronousDevToken.storage.get() ?? undefined,
+            devToken: devToken ?? undefined,
+            devIsTestnetAllowed: devIsTestnetAllowed ?? undefined,
             deviceInfo,
             numberFormatLocale: new MobileNumberFormatLocale(getLocales()[0]),
             storage: {
@@ -122,7 +126,7 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
                 return () => subscription.remove();
             }
         }),
-        [t, toastService, loaderService, language]
+        [t, toastService, loaderService, language, devIsTestnetAllowed, devToken]
     );
 
     return <AppContext value={appContext}>{children}</AppContext>;

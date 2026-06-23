@@ -1,8 +1,28 @@
-import type { Recipient } from '@safely/core';
+import type { PortfolioNetworkType, Recipient } from '@safely/core';
+import { BLOCKCHAIN_NAME, BtcRecipient } from '@safely/core';
 
+import { detectAddressType } from '../../../../shared/address';
 import { SendFormError } from '../errors';
 import type { ContactSuggestion, PortfolioSuggestion } from '../types';
-import { MIN_RECIPIENT_ADDRESS_LENGTH, parseRecipient, recipientSchema } from '../utils';
+import { MIN_RECIPIENT_ADDRESS_LENGTH, createRecipientSchema } from '../utils';
+
+function parseRecipient(
+    input: string,
+    networkType: PortfolioNetworkType
+): Recipient | SendFormError {
+    const detected = detectAddressType(input, networkType);
+
+    if (!detected) {
+        return SendFormError.INVALID_WALLET_ADDRESS;
+    }
+
+    switch (detected.blockchain) {
+        case BLOCKCHAIN_NAME.BTC:
+            return new BtcRecipient(detected.address);
+        default:
+            return SendFormError.UNSUPPORTED_BLOCKCHAIN;
+    }
+}
 
 export interface RecipientValidationResult {
     recipient: Recipient | undefined;
@@ -20,6 +40,7 @@ export function validateRecipientInput(
     value: string,
     context: {
         activeWalletAddress: string;
+        networkType: PortfolioNetworkType;
         portfolioSuggestions: PortfolioSuggestion[];
         contactSuggestions: ContactSuggestion[];
         preferredSuggestionId?: string;
@@ -29,7 +50,7 @@ export function validateRecipientInput(
         return { recipient: undefined, error: undefined };
     }
 
-    const zodResult = recipientSchema.safeParse(value);
+    const zodResult = createRecipientSchema(context.networkType).safeParse(value);
     if (!zodResult.success) {
         return {
             recipient: undefined,
@@ -37,7 +58,7 @@ export function validateRecipientInput(
         };
     }
 
-    const parsedRecipient = parseRecipient(zodResult.data);
+    const parsedRecipient = parseRecipient(zodResult.data, context.networkType);
     if (typeof parsedRecipient === 'string') {
         return { recipient: undefined, error: parsedRecipient };
     }
