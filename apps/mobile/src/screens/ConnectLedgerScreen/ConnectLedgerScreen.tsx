@@ -1,5 +1,6 @@
 import { useNavigation } from '@react-navigation/core';
 import { CommonActions } from '@react-navigation/native';
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { State } from 'react-native-ble-plx';
@@ -34,15 +35,7 @@ export const ConnectLedgerScreen = () => {
         }
     ];
 
-    const handleContinue = async () => {
-        const state = await getBluetoothState(getBleManager());
-
-        if (state !== State.PoweredOn) {
-            navigation.dispatch(CommonActions.navigate('BluetoothAccessRequiredModal'));
-
-            return;
-        }
-
+    const proceedToLedgerFlow = useCallback(async () => {
         const canReuse = sessionId
             ? await isLedgerSessionConnected(getLedgerKit(), sessionId)
             : false;
@@ -58,6 +51,25 @@ export const ConnectLedgerScreen = () => {
         setSessionId(null);
         navigation.dispatch(
             CommonActions.navigate('LedgerFlowModal', { screen: 'LedgerDiscoveryModal' })
+        );
+    }, [navigation, sessionId, getLedgerKit, setSessionId]);
+
+    const handleContinue = async () => {
+        const state = await getBluetoothState(getBleManager());
+
+        if (state === State.PoweredOn) {
+            await proceedToLedgerFlow();
+
+            return;
+        }
+
+        navigation.dispatch(
+            CommonActions.navigate(
+                state === State.PoweredOff
+                    ? 'BluetoothDisabledModal'
+                    : 'BluetoothAccessRequiredModal',
+                { onReady: proceedToLedgerFlow }
+            )
         );
     };
 

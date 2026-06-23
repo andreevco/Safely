@@ -463,6 +463,12 @@
                 "description": "Allow Bluetooth access to discover and connect your Ledger device.",
                 "button": "Settings"
             },
+            "bluetoothDisabled": {
+                "title": "Turn on Bluetooth",
+                "description": "Enable Bluetooth in your device settings and try again.",
+                "button": "Try again",
+                "stillOff": "Bluetooth is still off"
+            },
             "discovery": {
                 "title": "Looking for devices…",
                 "subtitle": "Make sure your Ledger is unlocked and close to the mobile phone you want to pair with."

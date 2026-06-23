@@ -107,11 +107,16 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
         }
 
         navigation.dispatch(
-            CommonActions.navigate('LedgerBluetoothRequiredModal', {
-                onReady: () => {
-                    void onSend();
+            CommonActions.navigate(
+                state === State.PoweredOff
+                    ? 'BluetoothDisabledModal'
+                    : 'BluetoothAccessRequiredModal',
+                {
+                    onReady: () => {
+                        void onSend();
+                    }
                 }
-            })
+            )
         );
     }, [navigation, onSend, getBleManager]);
 

@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { AddWalletScreen } from '@mobile/screens/AddWalletModal';
 import { AddWatchOnlyScreen } from '@mobile/screens/AddWatchOnlyScreen';
 import { BluetoothAccessRequiredScreen } from '@mobile/screens/BluetoothAccessRequiredScreen';
+import { BluetoothDisabledScreen } from '@mobile/screens/BluetoothDisabledScreen';
 import { ConnectLedgerScreen } from '@mobile/screens/ConnectLedgerScreen';
 import { CustomizeWalletModal } from '@mobile/screens/CustomizeWalletModal';
 import { ImportWalletScreen } from '@mobile/screens/ImportWalletScreen';
@@ -18,6 +19,7 @@ export const AddWalletStack = createNativeStackNavigator({
         AddWatchOnlyModal: AddWatchOnlyScreen,
         ConnectLedgerModal: ConnectLedgerScreen,
         BluetoothAccessRequiredModal: BluetoothAccessRequiredScreen,
+        BluetoothDisabledModal: BluetoothDisabledScreen,
         LedgerFlowModal: LedgerFlow,
         CustomizeWalletModal: CustomizeWalletModal,
         WalletAlreadyAddedModal: WalletAlreadyAddedScreen

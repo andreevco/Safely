@@ -446,6 +446,12 @@
                 "description": "Разрешите доступ к Bluetooth, чтобы найти и подключить устройство Ledger.",
                 "button": "Открыть настройки"
             },
+            "bluetoothDisabled": {
+                "title": "Включите Bluetooth",
+                "description": "Включите Bluetooth в настройках устройства и попробуйте снова.",
+                "button": "Попробовать снова",
+                "stillOff": "Bluetooth всё ещё выключен"
+            },
             "discovery": {
                 "title": "Выберите Ledger",
                 "subtitle": "Выберите ближайший Ledger, чтобы начать сопряжение.",
