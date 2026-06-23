@@ -1,10 +1,6 @@
-import type {
-    BtcTransferScheme,
-    ExternalInputResult,
-    ExternalInputScheme,
-    ExternalInputSchemeName
-} from './schemes';
-import { BtcAddress } from '../blockchain-api';
+import { ParserUnrecognizedError, ParserUnsupportedSchemeError } from './errors';
+import type { BtcTransferScheme, ExternalInputScheme, ExternalInputSchemeName } from './schemes';
+import { BtcAddress } from '../blockchain-api/btc/btc-address';
 
 type Parser = (raw: string) => ExternalInputScheme | null;
 
@@ -17,12 +13,19 @@ const parseBip21: Parser = raw => {
     const withoutPrefix = raw.slice(prefix.length);
     const [address, queryString] = withoutPrefix.split('?', 2);
 
-    if (!address || !BtcAddress.validate(address)) {
+    if (!address) {
+        return null;
+    }
+
+    const network = BtcAddress.validForNetwork(address);
+
+    if (network === null) {
         return null;
     }
 
     const parsed: BtcTransferScheme['parsed'] = {
-        address
+        address,
+        network
     };
 
     if (queryString) {
@@ -46,14 +49,17 @@ const parseBip21: Parser = raw => {
 
 const parseBtcAddress: Parser = raw => {
     const trimmed = raw.trim();
-    if (!BtcAddress.validate(trimmed)) {
+    const network = BtcAddress.validForNetwork(trimmed);
+
+    if (network === null) {
         return null;
     }
 
     return {
         name: 'btc-transfer',
         parsed: {
-            address: trimmed
+            address: trimmed,
+            network
         }
     };
 };
@@ -61,7 +67,7 @@ const parseBtcAddress: Parser = raw => {
 export function parseExternalInput(
     raw: string,
     allowedSchemes?: readonly ExternalInputSchemeName[]
-): ExternalInputResult {
+) {
     const parsers: Parser[] = [parseBip21, parseBtcAddress];
 
     for (const parser of parsers) {
@@ -69,20 +75,11 @@ export function parseExternalInput(
         if (!scheme) continue;
 
         if (allowedSchemes && !allowedSchemes.includes(scheme.name)) {
-            return {
-                ok: false,
-                error: 'externalInput.errors.unsupportedScheme'
-            };
+            throw new ParserUnsupportedSchemeError();
         }
 
-        return {
-            ok: true,
-            scheme
-        };
+        return scheme;
     }
 
-    return {
-        ok: false,
-        error: 'externalInput.errors.unrecognized'
-    };
+    throw new ParserUnrecognizedError();
 }
