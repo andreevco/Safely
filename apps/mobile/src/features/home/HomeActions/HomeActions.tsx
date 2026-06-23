@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { BTC_ASSET } from '@safely/core';
-import { useAnalytics, useIsActivePortfolioWatchOnly, useScanQrScheme } from '@safely/ux';
+import { useAnalytics, useFlag, useIsActivePortfolioWatchOnly, useScanQrScheme } from '@safely/ux';
 
 import { TEST_ID } from '@mobile/shared/constants';
 import { Actions } from '@mobile/shared/ui';
@@ -18,6 +18,7 @@ export const HomeActions = () => {
     const analytics = useAnalytics();
     const navigation = useNavigation();
     const isWatchOnly = useIsActivePortfolioWatchOnly();
+    const isOnrampsEnabled = useFlag('enable_onramps');
 
     const handleQRScan = useScanQrScheme({
         onResult: useCallback(
@@ -72,12 +73,14 @@ export const HomeActions = () => {
                 icon={ArrowDown28}
                 onPress={handleNavigateToReceiveAsset}
             />
-            <Actions.Button
-                title={t('home.actions.buy')}
-                icon={Plus28}
-                onPress={isWatchOnly ? handleWatchOnlyAction : handleNavigateToExchange}
-                opacity={isWatchOnly ? WATCH_ONLY_OPACITY : 1}
-            />
+            {isOnrampsEnabled && (
+                <Actions.Button
+                    title={t('home.actions.buy')}
+                    icon={Plus28}
+                    onPress={isWatchOnly ? handleWatchOnlyAction : handleNavigateToExchange}
+                    opacity={isWatchOnly ? WATCH_ONLY_OPACITY : 1}
+                />
+            )}
             <Actions.Button
                 title={t('home.actions.scan')}
                 icon={QrCodeScan28}

@@ -7,3 +7,4 @@ export { usePriceApi } from './usePriceApi';
 export { useExchangeApi } from './useExchangeApi';
 export { useAvailableFiats } from './useAvailableFiats';
 export { useIsDevVersion } from './useIsDevVersion';
+export { useFlag } from './useFlag';
