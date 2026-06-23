@@ -35,6 +35,10 @@ export class OfflineSyncProvider<Latest extends StorageVersion, Rest> implements
         return this.container.yManager.getFull();
     }
 
+    public get hasNewerStorageVersions(): boolean {
+        return this.container.yManager.hasNewerStorageVersions;
+    }
+
     public async transaction(f: (draft: Draft<z.output<NewOf<Latest>>>) => void): Promise<void> {
         this.container.logger.info('SyncProvider.update');
         await this.container.yManager.transaction(f);

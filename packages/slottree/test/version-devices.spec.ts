@@ -154,6 +154,7 @@ describe('storage device versions', () => {
 
         const exported = storage.exportSlot();
 
+        expect(storage.hasNewerStorageVersions).toBe(true);
         expect(exported.v['1']).toBeDefined();
         expect(exported.v['2']).toBeDefined();
         expect(exported.v['3']).toBeDefined();
