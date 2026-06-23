@@ -2,6 +2,7 @@ import {
     useAccounts,
     useActiveAccountQuery,
     useActivePortfolioEntitiesIdsQuery,
+    useAmountInputType,
     useBootConfigQuery
 } from '@safely/ux';
 
@@ -15,6 +16,7 @@ export function RootSuspenseDependencies() {
     useLockScreenQuery();
     usePasscodeLockout();
     useActivePortfolioEntitiesIdsQuery();
+    useAmountInputType();
 
     return null;
 }

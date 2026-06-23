@@ -120,7 +120,13 @@ export function buildInitialContext(input: SendFormMachineInput): SendFormMachin
     const initialValues = input.resolvedInitialValues;
 
     if (!initialValues?.recipient) {
-        return baseContext;
+        return {
+            ...baseContext,
+            values: {
+                ...baseContext.values,
+                amountInputType: initialValues?.amountInputType ?? input.initialAmountInputType
+            }
+        };
     }
 
     const initialSuggestion = computeInitialSuggestion(
@@ -156,7 +162,7 @@ export function buildInitialContext(input: SendFormMachineInput): SendFormMachin
             recipient: initialValues.recipient,
             addressBookName: initialValues.addressBookName ?? '',
             amount: initialValues.amount ?? '',
-            amountInputType: initialValues.amountInputType ?? 'crypto'
+            amountInputType: initialValues.amountInputType ?? input.initialAmountInputType
         },
         parsed: {
             recipient: result.recipient,
