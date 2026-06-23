@@ -12,9 +12,15 @@ import { assertBtcFeeIsNotAbsurd } from './assert-btc-fee';
 import type { BtcSigningRequest, IBtcSigner } from './I-btc-signer';
 import type { ILedgerSessionPort, LedgerAccountContext } from './I-ledger-session-port';
 import { awaitDeviceAction } from '../../../ledger/await-device-action';
+import { BtcDerivationPath, BtcWalletType } from '../../blockchain';
+import type { BtcNetwork } from '../../blockchain';
 
-export function buildLedgerWalletPolicy(accountIndex: number): DefaultWallet {
-    return new DefaultWallet(`84'/0'/${accountIndex}'`, DefaultDescriptorTemplate.NATIVE_SEGWIT);
+export function buildLedgerWalletPolicy(accountIndex: number, network: BtcNetwork): DefaultWallet {
+    const path = new BtcDerivationPath(BtcWalletType.NATIVE_SEGWIT, network, accountIndex)
+        .account()
+        .replace(/^m\//, '');
+
+    return new DefaultWallet(path, DefaultDescriptorTemplate.NATIVE_SEGWIT);
 }
 
 export function enrichPsbtForLedger(
@@ -24,6 +30,11 @@ export function enrichPsbtForLedger(
 ): void {
     const node = HDKey.fromExtendedKey(context.xpub);
     const fingerprint = Buffer.from(context.masterFingerprint, 'hex').readUInt32BE(0);
+    const derivationPath = new BtcDerivationPath(
+        BtcWalletType.NATIVE_SEGWIT,
+        context.network,
+        context.accountIndex
+    );
 
     utxos.forEach((utxo, index) => {
         const { change, addressIndex } = utxo.derivationPath;
@@ -34,9 +45,7 @@ export function enrichPsbtForLedger(
                     derivePublicKey(node, change, addressIndex),
                     {
                         fingerprint,
-                        path: bip32Path(
-                            `m/84'/0'/${context.accountIndex}'/${change}/${addressIndex}`
-                        )
+                        path: bip32Path(derivationPath.address(change, addressIndex))
                     }
                 ]
             ]
@@ -75,7 +84,7 @@ export class LedgerBtcSigner implements IBtcSigner {
     public async sign({ psbt, utxos }: BtcSigningRequest): Promise<Buffer> {
         enrichPsbtForLedger(psbt, utxos, this.context);
 
-        const wallet = buildLedgerWalletPolicy(this.context.accountIndex);
+        const wallet = buildLedgerWalletPolicy(this.context.accountIndex, this.context.network);
 
         const signatures = await this.sessionPort.withSession(
             { expectedFingerprint: this.context.masterFingerprint },
