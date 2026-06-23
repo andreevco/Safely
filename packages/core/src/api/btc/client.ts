@@ -3,8 +3,10 @@ import { z } from 'zod';
 import type { Logger } from '@safely/sync';
 
 import { BtcApiError } from './errors';
+import type { BtcApiRawTx } from './models';
 import {
     AddressSchema,
+    BulkTxResponseSchema,
     ChainTipSchema,
     EstimatedFeesSchema,
     SendTxResultSchema,
@@ -53,12 +55,17 @@ const btcWalletTypeToDescriptor: Record<BtcWalletType, 'wpkh' | 'pkh' | 'tr' | '
     [BtcWalletType.NATIVE_SEGWIT]: 'wpkh'
 };
 
+// TODO Mb better to get from boot config
+const BULK_TX_CHUNK_SIZE = 20;
+
 export class BtcApi extends ApiClient implements IIdentifiable {
     protected readonly timeoutMs = 10_000;
 
     protected readonly errorConstructor = BtcApiError;
 
     public readonly id: string;
+
+    private readonly rawTxCache = new Map<string, string>();
 
     constructor(options: { baseUrl: string; logger?: Logger }) {
         const baseUrl = options.baseUrl.replace(/\/$/, '');
@@ -83,6 +90,30 @@ export class BtcApi extends ApiClient implements IIdentifiable {
 
     public async getTransaction(txid: string) {
         return await this.getJson(`/v1/transactions/${txid}`, TxSchema);
+    }
+
+    public async getRawTransactions(txids: string[]): Promise<BtcApiRawTx[]> {
+        const unique = [...new Set(txids)];
+        const missing = unique.filter(txid => !this.rawTxCache.has(txid));
+
+        for (let i = 0; i < missing.length; i += BULK_TX_CHUNK_SIZE) {
+            const chunk = missing.slice(i, i + BULK_TX_CHUNK_SIZE);
+            const { transactions } = await this.postJson(
+                '/v1/transactions/_bulk',
+                { txids: chunk },
+                BulkTxResponseSchema
+            );
+            transactions.forEach(tx => this.rawTxCache.set(tx.txid, tx.hex));
+        }
+
+        return unique.map(txid => {
+            const hex = this.rawTxCache.get(txid);
+            if (!hex) {
+                throw new BtcApiError(`missing raw transaction for ${txid}`, 0);
+            }
+
+            return { txid, hex };
+        });
     }
 
     public async getBlockTipHeight(): Promise<number> {

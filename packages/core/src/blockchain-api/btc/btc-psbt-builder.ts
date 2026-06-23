@@ -26,8 +26,8 @@ const RBF_SEQUENCE = 0xfffffffd;
 export class BtcPsbtBuilder {
     constructor(private readonly bitcoinNetwork: BTC_NETWORK) {}
 
-    public buildPsbt(req: PsbtRequest): Transaction {
-        return this.build(req, { forEstimation: false });
+    public buildPsbt(req: PsbtRequest, prevTxs: Map<string, Uint8Array>): Transaction {
+        return this.build(req, { forEstimation: false, prevTxs });
     }
 
     public calculateTransactionVSize(req: PsbtRequest): bigint {
@@ -37,7 +37,9 @@ export class BtcPsbtBuilder {
 
     private build(
         { inputs, outputs }: PsbtRequest,
-        options: { forEstimation: boolean }
+        options:
+            | { forEstimation: true }
+            | { forEstimation: false; prevTxs: Map<string, Uint8Array> }
     ): Transaction {
         const tx = new Transaction();
 
@@ -47,8 +49,6 @@ export class BtcPsbtBuilder {
             }
             tx.addOutputAddress(o.address, o.value, this.bitcoinNetwork);
         });
-
-        const ignoreSignStatus = options.forEstimation;
 
         inputs.forEach(utxo => {
             if (!utxo.address) {
@@ -60,18 +60,32 @@ export class BtcPsbtBuilder {
                 throw new Error('unsupported utxo type: only P2WPKH inputs are supported');
             }
 
-            tx.addInput(
-                {
-                    txid: Buffer.from(utxo.txid, 'hex'),
-                    index: utxo.vout,
-                    sequence: RBF_SEQUENCE,
-                    witnessUtxo: { script: OutScript.encode(decoded), amount: BigInt(utxo.value) },
-                    ...(options.forEstimation
-                        ? { finalScriptWitness: P2WPKH_ESTIMATION_WITNESS }
-                        : {})
-                },
-                ignoreSignStatus
-            );
+            const base = {
+                txid: Buffer.from(utxo.txid, 'hex'),
+                index: utxo.vout,
+                sequence: RBF_SEQUENCE,
+                witnessUtxo: { script: OutScript.encode(decoded), amount: BigInt(utxo.value) }
+            };
+
+            if (options.forEstimation) {
+                tx.addInput({ ...base, finalScriptWitness: P2WPKH_ESTIMATION_WITNESS }, true);
+                return;
+            }
+
+            const prevTx = options.prevTxs.get(utxo.txid);
+            if (!prevTx) {
+                throw new Error(`missing previous transaction for input ${utxo.txid}`);
+            }
+
+            const prevTxId = Transaction.fromRaw(prevTx, {
+                allowUnknownOutputs: true,
+                disableScriptCheck: true
+            }).id;
+            if (prevTxId !== utxo.txid) {
+                throw new Error(`previous transaction txid mismatch for input ${utxo.txid}`);
+            }
+
+            tx.addInput({ ...base, nonWitnessUtxo: prevTx });
         });
 
         return tx;

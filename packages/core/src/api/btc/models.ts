@@ -89,6 +89,16 @@ export const UtxoWithOptionalTxSchema = UtxoSchema.extend({
     tx: TxSchema.optional()
 });
 
+/** Raw transaction: a forward-compatible subset of Tx exposing only txid and hex. */
+export const RawTxSchema = z.object({
+    txid: z.string(),
+    hex: z.string()
+});
+
+export const BulkTxResponseSchema = z.object({
+    transactions: z.array(RawTxSchema)
+});
+
 export const ChainTipSchema = z.object({
     height: z.number()
 });
@@ -112,3 +122,4 @@ export type BtcApiUtxo = z.infer<typeof UtxoSchema>;
 export type BtcApiUtxoWithOptionalTx = z.infer<typeof UtxoWithOptionalTxSchema>;
 export type BtcApiEstimatedFee = z.infer<typeof EstimatedFeeSchema>;
 export type BtcApiTx = z.infer<typeof TxSchema>;
+export type BtcApiRawTx = z.infer<typeof RawTxSchema>;

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 
-import { Address, NETWORK } from '@scure/btc-signer';
+import { Address, NETWORK, Transaction } from '@scure/btc-signer';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { ellipsisMiddle } from '../../../src';
@@ -37,6 +37,28 @@ function makeUtxo(overrides: Partial<BtcApiUtxo> = {}): BtcApiUtxo {
     };
 }
 
+const rawTxRegistry = new Map<string, string>();
+
+function fundedUtxo(value: string): BtcApiUtxo {
+    const prev = new Transaction({ allowUnknownInputs: true, allowUnknownOutputs: true });
+    prev.addOutputAddress(WALLET_ADDR, BigInt(value), mainnet);
+    prev.addInput({
+        txid: new Uint8Array(32).fill(1),
+        index: 0,
+        finalScriptWitness: [new Uint8Array(72), new Uint8Array(33)]
+    });
+    rawTxRegistry.set(prev.id, Buffer.from(prev.toBytes(true, true)).toString('hex'));
+
+    return {
+        txid: prev.id,
+        vout: 0,
+        value,
+        confirmations: 5,
+        address: WALLET_ADDR,
+        path: "m/84'/0'/0'/0/0"
+    };
+}
+
 function makeWallet(overrides: Partial<SignableBtcWallet> = {}): SignableBtcWallet {
     return {
         address: WALLET_ADDR,
@@ -50,6 +72,9 @@ function makeWallet(overrides: Partial<SignableBtcWallet> = {}): SignableBtcWall
 function makeApi(overrides: Partial<BtcApi> = {}): BtcApi {
     return {
         sendTransaction: vi.fn(),
+        getRawTransactions: vi.fn((txids: string[]) =>
+            Promise.resolve(txids.map(id => ({ txid: id, hex: rawTxRegistry.get(id)! })))
+        ),
         ...overrides
     } as unknown as BtcApi;
 }
@@ -153,7 +178,7 @@ describe('BtcTransactionTemplate', () => {
 
     describe('send', () => {
         function makeTemplate(estimationFee = 1500n) {
-            const utxos = [makeUtxo({ value: '50000' })];
+            const utxos = [fundedUtxo('50000')];
             return new BtcTransactionTemplate(
                 api,
                 wallet,

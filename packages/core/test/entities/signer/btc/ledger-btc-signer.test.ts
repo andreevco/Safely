@@ -1,10 +1,11 @@
 import { DefaultDescriptorTemplate } from '@ledgerhq/device-signer-kit-bitcoin';
 import { HDKey } from '@scure/bip32';
-import { bip32Path, getAddress, NETWORK } from '@scure/btc-signer';
+import { bip32Path, getAddress, NETWORK, Transaction } from '@scure/btc-signer';
 import { describe, it, expect } from 'vitest';
 
 import type { BtcApiUtxo } from '../../../../src/api/btc';
 import { BtcPsbtBuilder } from '../../../../src/blockchain-api/btc/btc-psbt-builder';
+import { BtcNetwork } from '../../../../src/entities/blockchain';
 import type {
     ILedgerSessionPort,
     LedgerAccountContext
@@ -28,29 +29,44 @@ const RECIPIENT_ADDR = getAddress(
     accountNode.deriveChild(0).deriveChild(1).privateKey!,
     NETWORK
 );
-const TXID = 'a'.repeat(64);
+const INPUT_VALUE = '100000';
 
 const context: LedgerAccountContext = {
     accountIndex: 0,
     xpub: XPUB,
-    masterFingerprint: MASTER_FINGERPRINT
+    masterFingerprint: MASTER_FINGERPRINT,
+    network: BtcNetwork.MAINNET
 };
 
-function utxo(value: string): BtcApiUtxo {
-    return {
-        txid: TXID,
+function fundingInput(): { utxo: BtcApiUtxo; prevTxs: Map<string, Uint8Array> } {
+    const prev = new Transaction({ allowUnknownInputs: true, allowUnknownOutputs: true });
+    prev.addOutputAddress(WALLET_ADDR, BigInt(INPUT_VALUE), NETWORK);
+    prev.addInput({
+        txid: new Uint8Array(32).fill(1),
+        index: 0,
+        finalScriptWitness: [new Uint8Array(72), new Uint8Array(33)]
+    });
+
+    const utxo = {
+        txid: prev.id,
         vout: 0,
-        value,
+        value: INPUT_VALUE,
         confirmations: 5,
         address: WALLET_ADDR
     } as BtcApiUtxo;
+
+    return { utxo, prevTxs: new Map([[prev.id, prev.toBytes(true, true)]]) };
 }
 
 function buildPsbt(outputValue: bigint) {
-    return new BtcPsbtBuilder(NETWORK).buildPsbt({
-        inputs: [utxo('100000')],
-        outputs: [{ address: RECIPIENT_ADDR, value: outputValue }]
-    });
+    const { utxo, prevTxs } = fundingInput();
+    return new BtcPsbtBuilder(NETWORK).buildPsbt(
+        {
+            inputs: [utxo],
+            outputs: [{ address: RECIPIENT_ADDR, value: outputValue }]
+        },
+        prevTxs
+    );
 }
 
 function realPartialSignature(outputValue: bigint) {
@@ -62,11 +78,17 @@ function realPartialSignature(outputValue: bigint) {
 }
 
 describe('buildLedgerWalletPolicy', () => {
-    it('builds a native segwit default wallet at the account path', () => {
-        const wallet = buildLedgerWalletPolicy(3);
+    it('builds a native segwit default wallet at the mainnet account path', () => {
+        const wallet = buildLedgerWalletPolicy(3, BtcNetwork.MAINNET);
 
         expect(wallet.derivationPath).toBe("84'/0'/3'");
         expect(wallet.template).toBe(DefaultDescriptorTemplate.NATIVE_SEGWIT);
+    });
+
+    it('uses coin type 1 for testnet', () => {
+        const wallet = buildLedgerWalletPolicy(3, BtcNetwork.TESTNET);
+
+        expect(wallet.derivationPath).toBe("84'/1'/3'");
     });
 });
 

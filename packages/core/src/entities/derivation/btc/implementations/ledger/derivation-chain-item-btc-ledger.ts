@@ -37,7 +37,8 @@ export class DerivationChainItemBtcLedger implements IDerivationChainItemBtc {
             {
                 accountIndex: derivationRef.index,
                 xpub: this.xpub,
-                masterFingerprint
+                masterFingerprint,
+                network: this.network
             },
             sessionPort
         );

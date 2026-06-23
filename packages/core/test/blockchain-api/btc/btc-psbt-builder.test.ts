@@ -1,4 +1,4 @@
-import { Address, NETWORK, OutScript, TEST_NETWORK } from '@scure/btc-signer';
+import { Address, NETWORK, OutScript, TEST_NETWORK, Transaction } from '@scure/btc-signer';
 import type { BTC_NETWORK } from '@scure/btc-signer/utils.js';
 import { describe, it, expect } from 'vitest';
 
@@ -35,15 +35,42 @@ function utxo(overrides: Partial<BtcApiUtxo> = {}): BtcApiUtxo {
     };
 }
 
+function inputWithPrevTx(
+    network: BTC_NETWORK,
+    overrides: Partial<BtcApiUtxo> = {}
+): { utxo: BtcApiUtxo; prevBytes: Uint8Array } {
+    const base = utxo(overrides);
+    const prev = new Transaction({ allowUnknownInputs: true, allowUnknownOutputs: true });
+    for (let i = 0; i <= base.vout; i++) {
+        prev.addOutputAddress(base.address!, BigInt(base.value), network);
+    }
+    prev.addInput({
+        txid: new Uint8Array(32).fill(1),
+        index: 0,
+        finalScriptWitness: [new Uint8Array(72), new Uint8Array(33)]
+    });
+    const prevBytes = prev.toBytes(true, true);
+
+    return { utxo: { ...base, txid: prev.id }, prevBytes };
+}
+
+function prevTxMap(inputs: { utxo: BtcApiUtxo; prevBytes: Uint8Array }[]): Map<string, Uint8Array> {
+    return new Map(inputs.map(i => [i.utxo.txid, i.prevBytes]));
+}
+
 describe('BtcPsbtBuilder', () => {
     const builder = new BtcPsbtBuilder(mainnet);
 
     describe('buildPsbt', () => {
         it('builds a PSBT with given inputs and outputs', () => {
-            const psbt = builder.buildPsbt({
-                inputs: [utxo({ value: '50000' })],
-                outputs: [{ address: RECIPIENT_ADDR, value: 40000n }]
-            });
+            const input = inputWithPrevTx(mainnet, { value: '50000' });
+            const psbt = builder.buildPsbt(
+                {
+                    inputs: [input.utxo],
+                    outputs: [{ address: RECIPIENT_ADDR, value: 40000n }]
+                },
+                prevTxMap([input])
+            );
 
             expect(psbt.inputsLength).toBe(1);
             expect(psbt.outputsLength).toBe(1);
@@ -52,10 +79,17 @@ describe('BtcPsbtBuilder', () => {
         });
 
         it('marks every input with BIP125 RBF-enabled sequence', () => {
-            const psbt = builder.buildPsbt({
-                inputs: [utxo({ vout: 0 }), utxo({ vout: 1 })],
-                outputs: [{ address: RECIPIENT_ADDR, value: 100n }]
-            });
+            const inputs = [
+                inputWithPrevTx(mainnet, { vout: 0 }),
+                inputWithPrevTx(mainnet, { vout: 1 })
+            ];
+            const psbt = builder.buildPsbt(
+                {
+                    inputs: inputs.map(i => i.utxo),
+                    outputs: [{ address: RECIPIENT_ADDR, value: 100n }]
+                },
+                prevTxMap(inputs)
+            );
 
             for (let i = 0; i < psbt.inputsLength; i++) {
                 expect(psbt.getInput(i).sequence).toBe(RBF_SEQUENCE);
@@ -63,10 +97,14 @@ describe('BtcPsbtBuilder', () => {
         });
 
         it('attaches witnessUtxo derived from the input address script', () => {
-            const psbt = builder.buildPsbt({
-                inputs: [utxo({ value: '12345' })],
-                outputs: [{ address: RECIPIENT_ADDR, value: 100n }]
-            });
+            const input = inputWithPrevTx(mainnet, { value: '12345' });
+            const psbt = builder.buildPsbt(
+                {
+                    inputs: [input.utxo],
+                    outputs: [{ address: RECIPIENT_ADDR, value: 100n }]
+                },
+                prevTxMap([input])
+            );
 
             const dataInput = psbt.getInput(0);
             expect(dataInput.witnessUtxo).toBeDefined();
@@ -75,40 +113,92 @@ describe('BtcPsbtBuilder', () => {
             expect(Buffer.from(dataInput.witnessUtxo!.script).equals(expectedScript)).toBe(true);
         });
 
+        it('attaches nonWitnessUtxo for each input', () => {
+            const input = inputWithPrevTx(mainnet, { value: '50000' });
+            const psbt = builder.buildPsbt(
+                {
+                    inputs: [input.utxo],
+                    outputs: [{ address: RECIPIENT_ADDR, value: 100n }]
+                },
+                prevTxMap([input])
+            );
+
+            expect(psbt.getInput(0).nonWitnessUtxo).toBeDefined();
+        });
+
+        it('throws when the previous transaction for an input is missing', () => {
+            const input = inputWithPrevTx(mainnet, { value: '50000' });
+            expect(() =>
+                builder.buildPsbt(
+                    {
+                        inputs: [input.utxo],
+                        outputs: [{ address: RECIPIENT_ADDR, value: 100n }]
+                    },
+                    new Map()
+                )
+            ).toThrow(/missing previous transaction/);
+        });
+
+        it('throws when the previous transaction does not hash to the input txid', () => {
+            const input = inputWithPrevTx(mainnet, { value: '50000' });
+            const other = inputWithPrevTx(mainnet, { value: '777' });
+            expect(() =>
+                builder.buildPsbt(
+                    {
+                        inputs: [input.utxo],
+                        outputs: [{ address: RECIPIENT_ADDR, value: 100n }]
+                    },
+                    new Map([[input.utxo.txid, other.prevBytes]])
+                )
+            ).toThrow(/txid mismatch/);
+        });
+
         it('throws when input UTXO has no address', () => {
             expect(() =>
-                builder.buildPsbt({
-                    inputs: [utxo({ address: undefined })],
-                    outputs: [{ address: RECIPIENT_ADDR, value: 100n }]
-                })
+                builder.buildPsbt(
+                    {
+                        inputs: [utxo({ address: undefined })],
+                        outputs: [{ address: RECIPIENT_ADDR, value: 100n }]
+                    },
+                    new Map()
+                )
             ).toThrow(/invalid address/);
         });
 
         it('throws when input UTXO is a non-P2WPKH type (legacy P2PKH)', () => {
             const legacy = p2pkhAddress(mainnet, 0x44);
             expect(() =>
-                builder.buildPsbt({
-                    inputs: [utxo({ address: legacy })],
-                    outputs: [{ address: RECIPIENT_ADDR, value: 100n }]
-                })
+                builder.buildPsbt(
+                    {
+                        inputs: [utxo({ address: legacy })],
+                        outputs: [{ address: RECIPIENT_ADDR, value: 100n }]
+                    },
+                    new Map()
+                )
             ).toThrow(/unsupported utxo type/);
         });
 
         it('throws when output address is invalid for the configured network', () => {
             expect(() =>
-                builder.buildPsbt({
-                    inputs: [utxo()],
-                    outputs: [{ address: RECIPIENT_ADDR_TESTNET, value: 100n }]
-                })
+                builder.buildPsbt(
+                    {
+                        inputs: [utxo()],
+                        outputs: [{ address: RECIPIENT_ADDR_TESTNET, value: 100n }]
+                    },
+                    new Map()
+                )
             ).toThrow(/invalid output address/);
         });
 
         it('throws when output address is structurally garbage', () => {
             expect(() =>
-                builder.buildPsbt({
-                    inputs: [utxo()],
-                    outputs: [{ address: 'not-an-address', value: 100n }]
-                })
+                builder.buildPsbt(
+                    {
+                        inputs: [utxo()],
+                        outputs: [{ address: 'not-an-address', value: 100n }]
+                    },
+                    new Map()
+                )
             ).toThrow(/invalid output address/);
         });
     });
@@ -197,22 +287,30 @@ describe('BtcPsbtBuilder', () => {
     describe('network isolation', () => {
         it('a testnet builder accepts testnet addresses and rejects mainnet ones', () => {
             const testnetBuilder = new BtcPsbtBuilder(testnet);
-            const testnetUtxo = utxo({ address: p2wpkhAddress(testnet, 0x11) });
+            const testnetInput = inputWithPrevTx(testnet, {
+                address: p2wpkhAddress(testnet, 0x11)
+            });
 
             // testnet recipient is accepted
             expect(() =>
-                testnetBuilder.buildPsbt({
-                    inputs: [testnetUtxo],
-                    outputs: [{ address: RECIPIENT_ADDR_TESTNET, value: 100n }]
-                })
+                testnetBuilder.buildPsbt(
+                    {
+                        inputs: [testnetInput.utxo],
+                        outputs: [{ address: RECIPIENT_ADDR_TESTNET, value: 100n }]
+                    },
+                    prevTxMap([testnetInput])
+                )
             ).not.toThrow();
 
             // mainnet recipient is rejected
             expect(() =>
-                testnetBuilder.buildPsbt({
-                    inputs: [testnetUtxo],
-                    outputs: [{ address: RECIPIENT_ADDR, value: 100n }]
-                })
+                testnetBuilder.buildPsbt(
+                    {
+                        inputs: [testnetInput.utxo],
+                        outputs: [{ address: RECIPIENT_ADDR, value: 100n }]
+                    },
+                    prevTxMap([testnetInput])
+                )
             ).toThrow(/invalid output address/);
         });
     });

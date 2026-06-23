@@ -1,5 +1,5 @@
 import { HDKey } from '@scure/bip32';
-import { getAddress, NETWORK } from '@scure/btc-signer';
+import { getAddress, NETWORK, Transaction } from '@scure/btc-signer';
 import { describe, it, expect } from 'vitest';
 
 import type { BtcApiUtxo } from '../../../../src/api/btc';
@@ -17,27 +17,39 @@ const RECIPIENT_ADDR = getAddress(
     portfolioNode.deriveChild(0).deriveChild(1).privateKey!,
     NETWORK
 );
-const TXID = 'a'.repeat(64);
-
 const nodeProducer: IBtcNodeProducer = {
     getPortfolioDerivation: () => Promise.resolve(portfolioNode)
 };
 
-function utxo(value: string): BtcApiUtxo {
-    return {
-        txid: TXID,
+function fundingInput(value: string): { utxo: BtcApiUtxo; prevTxs: Map<string, Uint8Array> } {
+    const prev = new Transaction({ allowUnknownInputs: true, allowUnknownOutputs: true });
+    prev.addOutputAddress(WALLET_ADDR, BigInt(value), NETWORK);
+    prev.addInput({
+        txid: new Uint8Array(32).fill(1),
+        index: 0,
+        finalScriptWitness: [new Uint8Array(72), new Uint8Array(33)]
+    });
+
+    const utxo = {
+        txid: prev.id,
         vout: 0,
         value,
         confirmations: 5,
         address: WALLET_ADDR
     } as BtcApiUtxo;
+
+    return { utxo, prevTxs: new Map([[prev.id, prev.toBytes(true, true)]]) };
 }
 
 function sign(inputValue: string, outputValue: bigint): Promise<Buffer> {
-    const psbt = new BtcPsbtBuilder(NETWORK).buildPsbt({
-        inputs: [utxo(inputValue)],
-        outputs: [{ address: RECIPIENT_ADDR, value: outputValue }]
-    });
+    const { utxo, prevTxs } = fundingInput(inputValue);
+    const psbt = new BtcPsbtBuilder(NETWORK).buildPsbt(
+        {
+            inputs: [utxo],
+            outputs: [{ address: RECIPIENT_ADDR, value: outputValue }]
+        },
+        prevTxs
+    );
 
     return new BtcKeypairSigner(nodeProducer).sign({
         psbt,
