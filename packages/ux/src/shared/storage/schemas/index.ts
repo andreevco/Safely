@@ -3,6 +3,7 @@ import { sChartPeriod } from './chart-period.schema';
 import { sDismissedBannerIds } from './dismissed-banner-ids.schema';
 import { sDismissedProviders } from './dismissed-providers.schema';
 import { sNotificationsEnabled } from './notifications-enabled.schema';
+import { sSendAmountInputType } from './send-amount-input-type.schema';
 import { sWatchedBetaTimestamp } from './watched-beta-timestamp.schema';
 
 export const sharedStorageStructure = {
@@ -11,7 +12,8 @@ export const sharedStorageStructure = {
     notificationsEnabled: sNotificationsEnabled,
     dismissedBannerIds: sDismissedBannerIds,
     dismissedProviders: sDismissedProviders,
-    watchedBetaTimestamp: sWatchedBetaTimestamp
+    watchedBetaTimestamp: sWatchedBetaTimestamp,
+    sendAmountInputType: sSendAmountInputType
 };
 
 export type SharedStorageStructure = typeof sharedStorageStructure;

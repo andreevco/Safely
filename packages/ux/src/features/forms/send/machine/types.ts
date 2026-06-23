@@ -45,6 +45,8 @@ export interface SendFormMachineInput {
     onSubmit: (result: SendFormResult, onSuccess: () => void) => void;
     createContact: (input: CreateContactInput) => Promise<Contact>;
     fetchMaxValue: FetchMaxValue;
+    persistAmountInputType: (type: AmountInputType) => void;
+    initialAmountInputType: AmountInputType;
 }
 
 export interface SendFormMachineContext {
@@ -70,6 +72,8 @@ export interface SendFormMachineContext {
     onSubmit: SendFormMachineInput['onSubmit'];
     createContact: SendFormMachineInput['createContact'];
     fetchMaxValue: FetchMaxValue;
+    persistAmountInputType: SendFormMachineInput['persistAmountInputType'];
+    initialAmountInputType: SendFormMachineInput['initialAmountInputType'];
 }
 
 export type SendFormEvent =
