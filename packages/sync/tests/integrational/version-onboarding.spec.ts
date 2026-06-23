@@ -120,6 +120,26 @@ describe('versioned onboarding', () => {
         });
     });
 
+    it('onboards a v2 device from a v2 device', async () => {
+        const deviceA = makeVersionedFactory(versionsV2);
+        const deviceB = makeVersionedFactory(versionsV2);
+        const accountA = await deviceA.factory.createSyncAccount(deviceA.secureEncryptedStorage);
+        accounts.push(accountA);
+
+        await accountA.syncProvider.transaction(draft => {
+            draft.set('wallets', walletItems('wallet-a'));
+            draft.set('newField', 'from-v2');
+        });
+
+        const accountB = await onboardDevice(accountA, deviceA, deviceB);
+        accounts.push(accountB);
+
+        await vi.waitFor(() => {
+            expect(accountB.syncProvider.get('wallets')).toEqual(walletItems('wallet-a'));
+            expect(accountB.syncProvider.get('newField')).toBe('from-v2');
+        });
+    });
+
     function makeVersionedFactory<Versions extends VersionHList>(
         versions: Versions & AssertVersionHList<Versions>
     ): VersionedFactory<Versions> {
