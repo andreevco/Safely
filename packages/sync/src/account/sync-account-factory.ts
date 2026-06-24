@@ -9,6 +9,7 @@ import { SyncAccountRepository } from './sync-account-repository';
 import { Configuration } from '../api/generated';
 import type { SyncApiConfiguration } from '../api/sync-api-configuration';
 import { ed25519_keygen } from '../crypto/ed25519';
+import { DevicesVersions } from '../device-manager/device-storage-schema';
 import type { Logger } from '../logger';
 import type { OnboardingConnector } from '../onboarding/connector';
 import { accountsApiForOnboarding, NewDeviceOnboarding } from '../onboarding/new-device-onboarding';
@@ -99,7 +100,8 @@ export class SyncAccountFactory<Versions extends VersionHList> implements ISyncA
             secureEncryptedStorage,
             this.logger,
             this.pollingTimeout,
-            this.storageVersion
+            this.storageVersion,
+            DevicesVersions.head.version
         );
 
         return {

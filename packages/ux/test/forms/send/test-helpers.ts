@@ -153,6 +153,8 @@ export function makeMockInput(opts: MockInputOptions = {}): SendFormMachineInput
         shouldResetForm: () => shouldResetFormValue,
         onSubmit,
         createContact,
-        fetchMaxValue: opts.fetchMaxValue ?? (async () => undefined)
+        fetchMaxValue: opts.fetchMaxValue ?? (async () => undefined),
+        persistAmountInputType: opts.persistAmountInputType ?? (() => {}),
+        initialAmountInputType: opts.initialAmountInputType ?? 'crypto'
     };
 }

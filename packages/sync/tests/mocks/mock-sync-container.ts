@@ -70,9 +70,7 @@ export async function createMockSyncContainer<Latest extends StorageVersion, Res
     const deviceYManager = await YManager.create<tDevicesLatest, tDevicesRest>(
         deviceCrdtRepository
     );
-    const crdtController = new CrdtController();
-    crdtController.addManager(yManager);
-    crdtController.addManager(deviceYManager);
+    const crdtController = new CrdtController(yManager, deviceYManager);
 
     const deviceRepository = new DeviceRepository(deviceYManager);
     const deviceManager = new DeviceManagementService(

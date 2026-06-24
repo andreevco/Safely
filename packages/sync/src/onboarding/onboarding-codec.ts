@@ -12,12 +12,14 @@ export type QRMessageNewDeviceOnboarding = {
     ephemeralPub: Buffer;
     ikPub: Buffer;
     storageVersion: number;
+    devicesStorageVersion: number;
 };
 
 export type QRMessageReconnection = {
     type: QRMessageOperation.RECONNECTION;
     ikPub: Buffer;
     storageVersion: number;
+    devicesStorageVersion: number;
 };
 
 export type QRMessage = QRMessageNewDeviceOnboarding | QRMessageReconnection;
@@ -32,10 +34,12 @@ export class QRMessageCodec {
                 writer.write(0x02, payload.ephemeralPub);
                 writer.write(0x03, payload.ikPub);
                 writer.write(0x04, u8be(payload.storageVersion));
+                writer.write(0x05, u8be(payload.devicesStorageVersion));
                 break;
             case QRMessageOperation.RECONNECTION:
                 writer.write(0x02, payload.ikPub);
                 writer.write(0x04, u8be(payload.storageVersion));
+                writer.write(0x05, u8be(payload.devicesStorageVersion));
                 break;
             default:
                 throw new UnsupportedQRCodeOperationError();
@@ -59,6 +63,7 @@ export class QRMessageCodec {
                 const ephemeralPubChunk = chunks.find(d => d.type === 0x02);
                 const ikPubChunk = chunks.find(d => d.type === 0x03);
                 const storageVersionChunk = chunks.find(d => d.type === 0x04);
+                const devicesStorageVersionChunk = chunks.find(d => d.type === 0x05);
                 if (!ephemeralPubChunk || !ikPubChunk || !storageVersionChunk) {
                     throw new CorruptedQRCodeOperationError();
                 }
@@ -66,19 +71,26 @@ export class QRMessageCodec {
                     type: QRMessageOperation.NEW_DEVICE_ONBOARDING,
                     ephemeralPub: ephemeralPubChunk.value,
                     ikPub: ikPubChunk.value,
-                    storageVersion: storageVersionChunk.value[0]
+                    storageVersion: storageVersionChunk.value[0],
+                    devicesStorageVersion: QRMessageCodec.decodeDevicesStorageVersion(
+                        devicesStorageVersionChunk
+                    )
                 };
             }
             case QRMessageOperation.RECONNECTION: {
                 const ikPubChunk = chunks.find(d => d.type === 0x02);
                 const storageVersionChunk = chunks.find(d => d.type === 0x04);
+                const devicesStorageVersionChunk = chunks.find(d => d.type === 0x05);
                 if (!ikPubChunk || !storageVersionChunk) {
                     throw new CorruptedQRCodeOperationError();
                 }
                 return {
                     type: QRMessageOperation.RECONNECTION,
                     ikPub: ikPubChunk.value,
-                    storageVersion: storageVersionChunk.value[0]
+                    storageVersion: storageVersionChunk.value[0],
+                    devicesStorageVersion: QRMessageCodec.decodeDevicesStorageVersion(
+                        devicesStorageVersionChunk
+                    )
                 };
             }
             default:
@@ -95,6 +107,13 @@ export class QRMessageCodec {
             default:
                 throw new UnsupportedQRCodeOperationError();
         }
+    }
+
+    private static decodeDevicesStorageVersion(
+        chunk: { type: number; value: Buffer } | undefined
+    ): number {
+        // fallback to 1 for backward compatibility
+        return chunk?.value[0] ?? 1;
     }
 }
 

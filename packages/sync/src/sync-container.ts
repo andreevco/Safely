@@ -106,9 +106,7 @@ export async function createSyncContainer<Latest extends StorageVersion, Rest>(o
     const deviceYManager = await YManager.create<tDevicesLatest, tDevicesRest>(
         deviceCrdtRepository
     );
-    const crdtController = new CrdtController();
-    crdtController.addManager(yManager);
-    crdtController.addManager(deviceYManager);
+    const crdtController = new CrdtController(yManager, deviceYManager);
 
     const deviceRepository = new DeviceRepository(deviceYManager);
     const deviceManager = new DeviceManagementService(

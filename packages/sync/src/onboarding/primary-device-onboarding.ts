@@ -22,6 +22,7 @@ export class PrimaryDeviceOnboarding {
         private readonly deviceManager: DeviceManagementService,
         private readonly syncOperations: SyncOperations<StorageVersion, unknown>,
         private readonly storageVersion: number,
+        private readonly devicesStorageVersion: number,
         private readonly triggerSync: () => Promise<void>
     ) {}
 
@@ -59,7 +60,8 @@ export class PrimaryDeviceOnboarding {
 
         await this.syncOperations.addDevice(
             message.ikPub,
-            this.knownStorageVersion(message.storageVersion),
+            this.knownStorageVersion(message.storageVersion, this.storageVersion),
+            this.knownStorageVersion(message.devicesStorageVersion, this.devicesStorageVersion),
             this.dmkService
         );
         flow.logStep('device_storage.add_device', this.deviceLogFields(message));
@@ -107,7 +109,8 @@ export class PrimaryDeviceOnboarding {
 
         await this.syncOperations.addDevice(
             message.ikPub,
-            this.knownStorageVersion(message.storageVersion),
+            this.knownStorageVersion(message.storageVersion, this.storageVersion),
+            this.knownStorageVersion(message.devicesStorageVersion, this.devicesStorageVersion),
             this.dmkService
         );
         flow.logStep('device_storage.add_device', this.deviceLogFields(message));
@@ -139,8 +142,8 @@ export class PrimaryDeviceOnboarding {
         return await this.dmkService.signAddDeviceForServer(newIkPub);
     }
 
-    private knownStorageVersion(version: number): number | undefined {
-        return version <= this.storageVersion ? version : undefined;
+    private knownStorageVersion(version: number, latestKnownVersion: number): number | undefined {
+        return version <= latestKnownVersion ? version : undefined;
     }
 
     private async waitUntilDeviceVisible(

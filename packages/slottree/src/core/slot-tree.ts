@@ -6,7 +6,7 @@ import type { MergeStats } from './merge-protocol';
 import { MergeProtocol } from './merge-protocol';
 import { SlotRevision } from './slot-revision';
 import type { ContainerSlot, Slot } from './slots';
-import { createOriginContainer, isRecursiveSlot } from './slots';
+import { createOriginContainer, isContainerSlot, isRecursiveSlot } from './slots';
 import { cloneSlot } from './slots/slot-json';
 import { validateSlot } from './slots/slot-validation';
 import { StorageObservers } from './storage-observer';
@@ -23,6 +23,7 @@ export type { StorageObserver } from './storage-observer';
 
 export interface SlotTree<T> {
     readonly version: number;
+    readonly hasNewerStorageVersions: boolean;
 
     /**
      * Returns the current storage value projected to the latest schema version.
@@ -159,6 +160,23 @@ export class StorageImpl<T> implements SlotTree<T> {
 
     public get version(): number {
         return this.latestVersion().version;
+    }
+
+    public get hasNewerStorageVersions(): boolean {
+        const latestKnownVersion = this.latestVersion().version;
+
+        for (const key of Object.keys(this.root.v)) {
+            const version = Number(key);
+            if (!Number.isInteger(version) || version <= latestKnownVersion) {
+                continue;
+            }
+
+            if (isContainerSlot(this.root.v[key])) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public get(): T {

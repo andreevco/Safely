@@ -3,6 +3,6 @@ export {
     type BtcTransferScheme,
     type ExternalInputScheme,
     type ExternalInputSchemeName,
-    type SchemeByName,
-    type ExternalInputResult
+    type SchemeByName
 } from './schemes';
+export * from './errors';
