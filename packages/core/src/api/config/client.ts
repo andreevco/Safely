@@ -10,17 +10,18 @@ export class ConfigApi extends ApiClient implements IIdentifiable {
         private readonly params: ConfigParams,
         logger?: Logger
     ) {
-        super('https://config.safely.app/v1', {}, logger);
+        super('https://dev-config.safely.app/v1', {}, logger);
     }
 
     public get id() {
-        return `${this.constructor.name}:${this.params.build}:${this.params.version}:${this.params.lang}:${this.params.userCountryInfo?.storeCode}:${this.params.userCountryInfo?.storeCode}:${this.params.devToken ?? ''}`;
+        return `${this.constructor.name}:${this.params.build}:${this.params.version}:${this.params.lang}:${this.params.devToken ?? ''}`;
     }
 
-    private get searchParams() {
+    private async getSearchParams() {
         const dev_token = this.params.devToken;
-        const store_country_code = this.params.userCountryInfo?.storeCode;
-        const device_country_code = this.params.userCountryInfo?.deviceCode;
+        const userCountryInfo = await this.params.getUserCountryInfo();
+        const store_country_code = userCountryInfo.storeCode;
+        const device_country_code = userCountryInfo.deviceCode;
 
         return {
             lang: this.params.lang,
@@ -33,10 +34,10 @@ export class ConfigApi extends ApiClient implements IIdentifiable {
     }
 
     public async boot(): Promise<BootConfig> {
-        return this.getJson('/config', bootConfigSchema, this.searchParams);
+        return this.getJson('/config', bootConfigSchema, await this.getSearchParams());
     }
 
     public async getAbout(): Promise<About> {
-        return this.getJson('/about', aboutSchema, this.searchParams);
+        return this.getJson('/about', aboutSchema, await this.getSearchParams());
     }
 }

@@ -24,6 +24,7 @@ import {
     REGULAR_MOBILE_STORAGE_ONLY_APP_LEVEL_USE,
     SECURE_ENCRYPTED_MOBILE_STORAGE_ONLY_APP_LEVEL_USE
 } from './storage';
+import { getStoreCountryAsync } from '../../modules/safely-store-country/src';
 import packageJson from '../../package.json';
 
 const security: Security = {
@@ -65,6 +66,13 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
             version: packageJson.version,
             build,
             environment,
+            getUserCountryInfo: async () => {
+                const storeCode = await getStoreCountryAsync();
+                return {
+                    storeCode: storeCode ?? '',
+                    deviceCode: deviceInfo.countryCode
+                };
+            },
             devToken: devToken ?? undefined,
             devIsTestnetAllowed: devIsTestnetAllowed ?? undefined,
             deviceInfo,
