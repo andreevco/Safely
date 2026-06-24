@@ -640,7 +640,8 @@
                 "failed": "Failed sale",
                 "cancelled": "Cancelled sale"
             },
-            "amount": "Amount",
+            "paid": "Paid",
+            "received": "Received",
             "provider": "Provider",
             "order": "Order",
             "transaction": "Transaction",

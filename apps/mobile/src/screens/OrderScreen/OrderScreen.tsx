@@ -70,7 +70,7 @@ export const OrderScreen = (props: OrderScreenProps) => {
         try {
             return formatter.formatFiat(order.order.fiatAmount, {
                 currency: order.order.fiatCurrency,
-                currencyDisplay: 'symbol',
+                currencyDisplay: 'code',
                 useGrouping: true
             });
         } catch {
@@ -119,18 +119,6 @@ export const OrderScreen = (props: OrderScreenProps) => {
                 </View>
                 <List style={styles.list}>
                     <List.Group withoutBottomMargin>
-                        {!!formattedFiatAmount && (
-                            <TableCell>
-                                <TableCell.Column leading>
-                                    <TableCell.Label>
-                                        {t('history.orderInfo.amount')}
-                                    </TableCell.Label>
-                                </TableCell.Column>
-                                <TableCell.Column>
-                                    <TableCell.Value>{formattedFiatAmount}</TableCell.Value>
-                                </TableCell.Column>
-                            </TableCell>
-                        )}
                         <TableCell>
                             <TableCell.Column leading>
                                 <TableCell.Label>{t('history.orderInfo.provider')}</TableCell.Label>
@@ -146,6 +134,20 @@ export const OrderScreen = (props: OrderScreenProps) => {
                         )}
                     </List.Group>
                     <List.Group withoutBottomMargin>
+                        {!!formattedFiatAmount && (
+                            <TableCell>
+                                <TableCell.Column leading>
+                                    <TableCell.Label>
+                                        {order.order.type === 'onramp'
+                                            ? t('history.orderInfo.paid')
+                                            : t('history.orderInfo.received')}
+                                    </TableCell.Label>
+                                </TableCell.Column>
+                                <TableCell.Column>
+                                    <TableCell.Value>{formattedFiatAmount}</TableCell.Value>
+                                </TableCell.Column>
+                            </TableCell>
+                        )}
                         <TableCell copyable={order.order.id}>
                             {({ handleCopy }) => (
                                 <>
