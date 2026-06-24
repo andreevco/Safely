@@ -44,17 +44,6 @@ export const AddWalletOptions = () => {
                     </Cell.Content>
                     <Cell.Chevron />
                 </Cell>
-                <Cell testID={TEST_ID.addWallet.watchAccount} onPress={startWatchOnlyFlow}>
-                    <Cell.Content>
-                        <Cell.Row>
-                            <Cell.Title>{t('addWallet.watchAccount.title')}</Cell.Title>
-                        </Cell.Row>
-                        <Cell.Row>
-                            <Cell.Subtitle>{t('addWallet.watchAccount.subtitle')}</Cell.Subtitle>
-                        </Cell.Row>
-                    </Cell.Content>
-                    <Cell.Chevron />
-                </Cell>
                 <Cell onPress={startConnectLedgerFlow}>
                     <Cell.Content>
                         <Cell.Row>
@@ -62,6 +51,17 @@ export const AddWalletOptions = () => {
                         </Cell.Row>
                         <Cell.Row>
                             <Cell.Subtitle>{t('addWallet.connectLedger.subtitle')}</Cell.Subtitle>
+                        </Cell.Row>
+                    </Cell.Content>
+                    <Cell.Chevron />
+                </Cell>
+                <Cell testID={TEST_ID.addWallet.watchAccount} onPress={startWatchOnlyFlow}>
+                    <Cell.Content>
+                        <Cell.Row>
+                            <Cell.Title>{t('addWallet.watchAccount.title')}</Cell.Title>
+                        </Cell.Row>
+                        <Cell.Row>
+                            <Cell.Subtitle>{t('addWallet.watchAccount.subtitle')}</Cell.Subtitle>
                         </Cell.Row>
                     </Cell.Content>
                     <Cell.Chevron />
