@@ -1,5 +1,5 @@
 import type { StaticScreenProps } from '@react-navigation/native';
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
@@ -66,6 +66,18 @@ export const OrderScreen = (props: OrderScreenProps) => {
     );
     const formatter = useNumberFormatter();
 
+    const formattedFiatAmount = useMemo(() => {
+        try {
+            return formatter.formatFiat(order.order.fiatAmount, {
+                currency: order.order.fiatCurrency,
+                currencyDisplay: 'symbol',
+                useGrouping: true
+            });
+        } catch {
+            return null;
+        }
+    }, [formatter, order.order.fiatAmount, order.order.fiatCurrency]);
+
     return (
         <Screen>
             <Screen.Header>
@@ -107,6 +119,18 @@ export const OrderScreen = (props: OrderScreenProps) => {
                 </View>
                 <List style={styles.list}>
                     <List.Group withoutBottomMargin>
+                        {!!formattedFiatAmount && (
+                            <TableCell>
+                                <TableCell.Column leading>
+                                    <TableCell.Label>
+                                        {t('history.orderInfo.amount')}
+                                    </TableCell.Label>
+                                </TableCell.Column>
+                                <TableCell.Column>
+                                    <TableCell.Value>{formattedFiatAmount}</TableCell.Value>
+                                </TableCell.Column>
+                            </TableCell>
+                        )}
                         <TableCell>
                             <TableCell.Column leading>
                                 <TableCell.Label>{t('history.orderInfo.provider')}</TableCell.Label>
