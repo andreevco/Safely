@@ -558,7 +558,12 @@
                 "options": {
                     "editAccount": "Редактировать аккаунт",
                     "addressBook": "Адресная книга",
-                    "notifications": "Уведомления",
+                    "notifications": "Уведомления"
+                }
+            },
+            "application": {
+                "title": "Приложение",
+                "options": {
                     "security": "Безопасность",
                     "language": "Язык"
                 }
@@ -567,7 +572,7 @@
                 "title": "Инфо",
                 "options": {
                     "support": "Поддержка",
-                    "rate": "Оценить",
+                    "rate": "Оценить Safely",
                     "legal": "Правовая информация"
                 }
             }

@@ -576,7 +576,12 @@
                 "options": {
                     "editAccount": "Edit account",
                     "addressBook": "Address book",
-                    "notifications": "Notifications",
+                    "notifications": "Notifications"
+                }
+            },
+            "application": {
+                "title": "Application",
+                "options": {
                     "security": "Security",
                     "language": "Language"
                 }
@@ -585,7 +590,7 @@
                 "title": "Info",
                 "options": {
                     "support": "Support",
-                    "rate": "Rate",
+                    "rate": "Rate Safely",
                     "legal": "Legal"
                 }
             }
