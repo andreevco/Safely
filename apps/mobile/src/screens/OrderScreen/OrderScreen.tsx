@@ -1,5 +1,5 @@
 import type { StaticScreenProps } from '@react-navigation/native';
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
@@ -66,17 +66,13 @@ export const OrderScreen = (props: OrderScreenProps) => {
     );
     const formatter = useNumberFormatter();
 
-    const formattedFiatAmount = useMemo(() => {
-        try {
-            return formatter.formatFiat(order.order.fiatAmount, {
-                currency: order.order.fiatCurrency,
-                currencyDisplay: 'code',
-                useGrouping: true
-            });
-        } catch {
-            return null;
-        }
-    }, [formatter, order.order.fiatAmount, order.order.fiatCurrency]);
+    const formattedFiatAmount = order.order.fiatAmount
+        ? formatter.formatFiat(order.order.fiatAmount, {
+              currency: order.order.fiatCurrency,
+              currencyDisplay: 'code',
+              useGrouping: true
+          })
+        : null;
 
     return (
         <Screen>
@@ -134,7 +130,7 @@ export const OrderScreen = (props: OrderScreenProps) => {
                         )}
                     </List.Group>
                     <List.Group withoutBottomMargin>
-                        {!!formattedFiatAmount && (
+                        {formattedFiatAmount && (
                             <TableCell>
                                 <TableCell.Column leading>
                                     <TableCell.Label>
