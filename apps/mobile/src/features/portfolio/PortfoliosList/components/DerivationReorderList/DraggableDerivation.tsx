@@ -4,7 +4,7 @@ import type { GestureType } from 'react-native-gesture-handler';
 import { GestureDetector } from 'react-native-gesture-handler';
 import Animated from 'react-native-reanimated';
 
-import type { IDerivation } from '@safely/core';
+import type { ILedgerDerivation } from '@safely/core';
 
 import type { ReorderEngine } from '@mobile/shared/ui';
 import { Draggable } from '@mobile/shared/ui';
@@ -12,7 +12,7 @@ import { Draggable } from '@mobile/shared/ui';
 import { DerivationRow } from '../DerivationRow';
 
 type DraggableDerivationProps = {
-    derivation: IDerivation;
+    derivation: ILedgerDerivation;
     itemsCount: number;
     engine: ReorderEngine;
     isSelected: boolean;

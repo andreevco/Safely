@@ -5,7 +5,7 @@ import { View } from 'react-native';
 import {
     type BtcAssetAmount,
     ellipsisMiddle,
-    type IDerivation,
+    type ILedgerDerivation,
     type PortfolioLedger
 } from '@safely/core';
 import { useFormattedAmount, useToast, useUpdateDerivationMeta } from '@safely/ux';
@@ -17,7 +17,7 @@ import { styles } from './LedgerOverviewRow.styles';
 
 type LedgerOverviewRowProps = {
     portfolio: PortfolioLedger;
-    derivation: IDerivation;
+    derivation: ILedgerDerivation;
     balance: BtcAssetAmount | undefined;
 };
 
@@ -30,9 +30,6 @@ export const LedgerOverviewRow = (props: LedgerOverviewRowProps) => {
 
     const { mutateAsync: updateDerivationMeta } = useUpdateDerivationMeta();
 
-    const fallbackName = t('portfolio.ledgerWallet', { number: derivation.index + 1 });
-    const name = derivation.meta?.name ?? fallbackName;
-
     const formattedBalance = useFormattedAmount(balance);
     const address = derivation.chains.btc.wallets[0].address;
     const isBalanceLoading = balance === undefined;
@@ -43,14 +40,14 @@ export const LedgerOverviewRow = (props: LedgerOverviewRowProps) => {
     const handleEdit = () => {
         navigation.navigate('CustomizeWalletModal', {
             hasBackButton: true,
-            defaultName: name,
+            defaultName: derivation.meta.name,
             defaultIcon: portfolio.meta.icon,
             tag: derivation.index + 1,
             onSave: async meta => {
                 await updateDerivationMeta({
                     portfolio,
                     derivationIndex: derivation.index,
-                    name: meta.name === fallbackName ? undefined : meta.name
+                    name: meta.name
                 });
 
                 navigation.goBack();
@@ -71,7 +68,7 @@ export const LedgerOverviewRow = (props: LedgerOverviewRowProps) => {
     return (
         <LedgerDerivationRow
             index={derivation.index}
-            title={name}
+            title={derivation.meta.name}
             subtitle={subtitle}
             isSubtitleLoading={isBalanceLoading}
             accessory={

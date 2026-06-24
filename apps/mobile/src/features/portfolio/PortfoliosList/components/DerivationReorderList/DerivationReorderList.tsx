@@ -3,7 +3,7 @@ import type { RefObject } from 'react';
 import { View } from 'react-native';
 import type { GestureType } from 'react-native-gesture-handler';
 
-import type { IDerivation, Portfolio } from '@safely/core';
+import type { ILedgerDerivation, Portfolio } from '@safely/core';
 import { useReorderDerivations, useSetActivePortfolio } from '@safely/ux';
 
 import { useReorderEngine } from '@mobile/shared/ui';
@@ -13,7 +13,7 @@ import { ROW_HEIGHT } from '../../constants';
 
 type DerivationReorderListProps = {
     portfolio: Portfolio;
-    derivations: IDerivation[];
+    derivations: ILedgerDerivation[];
     isActivePortfolio: boolean;
     activeDerivationIndex: number | undefined;
     blockExternalRefs: RefObject<GestureType | undefined>[];

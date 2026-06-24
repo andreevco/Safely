@@ -4,7 +4,7 @@ import { zIndexedObject } from '@safely/slottree';
 
 import { sPortfolioType, sPortfolioMeta, sPortfolioNetworkType } from './portfolio-common.schema';
 import { portfolioLedgerIdToString } from './portfolio-id-string';
-import { sDerivation } from '../derivation';
+import { sLedgerDerivation } from '../derivation';
 
 export const sPortfolioLedgerId = z.object({
     masterFingerprint: z.string(),
@@ -19,7 +19,7 @@ export const sPortfolioLedger = zIndexedObject(
         id: sPortfolioLedgerId,
         meta: sPortfolioMeta,
         deviceModel: z.string(),
-        derivations: z.array(sDerivation)
+        derivations: z.array(sLedgerDerivation)
     },
     value => portfolioLedgerIdToString(value.id)
 );

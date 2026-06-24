@@ -1,5 +1,5 @@
-import type { IDerivation, Portfolio } from '@safely/core';
+import type { ILedgerDerivation, Portfolio } from '@safely/core';
 import { PortfolioType } from '@safely/core';
 
-export const getDerivations = (portfolio: Portfolio): IDerivation[] =>
-    portfolio.type === PortfolioType.WATCH_ONLY ? [] : portfolio.getDerivations();
+export const getDerivations = (portfolio: Portfolio): ILedgerDerivation[] =>
+    portfolio.type === PortfolioType.LEDGER ? portfolio.getDerivations() : [];

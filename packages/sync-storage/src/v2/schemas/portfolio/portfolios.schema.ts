@@ -25,3 +25,6 @@ export const isDerivableSPortfolio = (
 
 export const isBip39SPortfolio = (portfolio: SPortfolio): portfolio is SPortfolioBip39 =>
     portfolio.type === sPortfolioType.enum.BIP39;
+
+export const isLedgerSPortfolio = (portfolio: SPortfolio): portfolio is SPortfolioLedger =>
+    portfolio.type === sPortfolioType.enum.LEDGER;

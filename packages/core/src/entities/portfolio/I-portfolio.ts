@@ -8,7 +8,7 @@ import {
 
 import type { Id } from '../../utils/id';
 import type { VM_TYPE } from '../blockchain';
-import type { IDerivation, WalletReadOnly } from '../derivation';
+import type { IDerivation, ILedgerDerivation, WalletReadOnly } from '../derivation';
 import type { PortfolioMeta } from './portfolio-meta';
 import type { PortfolioNetworkType } from './portfolio-network-type';
 
@@ -61,6 +61,9 @@ export interface IPortfolioLedger extends IPortfolioDerivable {
     type: typeof PortfolioType.LEDGER;
     masterFingerprint: string;
     deviceModel: string;
+
+    derivations: ILedgerDerivation[];
+    getDerivations(): ILedgerDerivation[];
 }
 
 export type PortfolioSecretRevealedStatus = {

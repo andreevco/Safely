@@ -1,5 +1,5 @@
 import type { IDerivation, IPortfolioId, Portfolio } from '@safely/core';
-import { PortfolioType } from '@safely/core';
+import { isLedgerDerivation, PortfolioType } from '@safely/core';
 
 import type { PortfolioSuggestion } from '../types';
 
@@ -38,7 +38,9 @@ export function mapPortfolioToSuggestions(
             address: derivation.chains.btc.wallets[0]?.address,
             meta: isMultiDerivation
                 ? {
-                      name: derivation.meta?.name ?? derivationName(derivation.index + 1),
+                      name: isLedgerDerivation(derivation)
+                          ? derivation.meta.name
+                          : derivationName(derivation.index + 1),
                       icon: portfolio.meta.icon
                   }
                 : portfolio.meta,

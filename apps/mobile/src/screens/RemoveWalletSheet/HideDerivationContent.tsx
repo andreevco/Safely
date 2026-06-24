@@ -2,7 +2,7 @@ import { useNavigation } from '@react-navigation/core';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import type { IDerivation, PortfolioLedger } from '@safely/core';
+import type { ILedgerDerivation, PortfolioLedger } from '@safely/core';
 import { useHideDerivation, useToast } from '@safely/ux';
 
 import { Button, Text, useBottomSheet } from '@mobile/shared/ui';
@@ -11,7 +11,7 @@ import { styles } from './RemoveWalletSheet.styles';
 
 type HideDerivationContentProps = {
     portfolio: PortfolioLedger;
-    derivation: IDerivation;
+    derivation: ILedgerDerivation;
 };
 
 export const HideDerivationContent = (props: HideDerivationContentProps) => {
@@ -22,9 +22,6 @@ export const HideDerivationContent = (props: HideDerivationContentProps) => {
     const { close } = useBottomSheet();
     const navigation = useNavigation();
     const { mutateAsync: hideDerivation, isPending } = useHideDerivation();
-
-    const name =
-        derivation.meta?.name ?? t('portfolio.ledgerWallet', { number: derivation.index + 1 });
 
     const handleHide = async () => {
         try {
@@ -40,7 +37,7 @@ export const HideDerivationContent = (props: HideDerivationContentProps) => {
         <View>
             <View style={styles.titleBox}>
                 <Text textAlign="center" variant="titleM">
-                    {t('removeWallet.hideDerivation.title', { name })}
+                    {t('removeWallet.hideDerivation.title', { name: derivation.meta.name })}
                 </Text>
                 <Text textAlign="center" variant="bodyL" color="secondary" style={styles.subtitle}>
                     {t('removeWallet.hideDerivation.subtitle')}

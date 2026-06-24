@@ -14,7 +14,7 @@ import type {
     IMnemonicVault
 } from '@safely/core';
 import { PortfolioWatchOnlyBtc } from '@safely/core';
-import { PortfolioLedger } from '@safely/core';
+import { isLedgerDerivation, PortfolioLedger } from '@safely/core';
 import { PortfolioIdBip39Imported } from '@safely/core';
 import { PortfolioBip39, PortfolioIdBip39MasterKeyDerived } from '@safely/core';
 import { PortfolioMnemonicFactory } from '@safely/core';
@@ -29,7 +29,8 @@ import {
 import {
     isBip39SPortfolio,
     isDerivableSPortfolio,
-    sDerivation,
+    isLedgerSPortfolio,
+    sLedgerDerivation,
     type SPortfolio
 } from '@safely/sync-storage';
 
@@ -284,22 +285,18 @@ export function useUpdateDerivationMeta() {
     return useMutation<
         void,
         Error,
-        { portfolio: Portfolio; derivationIndex: number; name?: string }
+        { portfolio: Portfolio; derivationIndex: number; name: string }
     >({
         async mutationFn({ portfolio, derivationIndex, name }) {
-            if (portfolio.type === PortfolioType.WATCH_ONLY) return;
+            if (portfolio.type !== PortfolioType.LEDGER) return;
 
             await update(draft =>
                 draft.update(portfolio.jsonArrayId(), portfolioDraft => {
                     portfolioDraft
-                        .narrow(isDerivableSPortfolio)
+                        .narrow(isLedgerSPortfolio)
                         ?.at('derivations')
                         .update(String(derivationIndex), derivationDraft => {
-                            if (name === undefined) {
-                                derivationDraft.delete('meta');
-                            } else {
-                                derivationDraft.set('meta', { name });
-                            }
+                            derivationDraft.set('meta', { name });
                         });
                 })
             );
@@ -459,7 +456,6 @@ export function useIsActivePortfolioOverview(): boolean {
 }
 
 export function useActiveWalletMeta(): PortfolioMeta {
-    const t = useTranslate();
     const entities = useActivePortfolioEntities();
 
     if (entities.type === 'watch-only') {
@@ -468,11 +464,9 @@ export function useActiveWalletMeta(): PortfolioMeta {
 
     const { portfolio, derivation, isOverview } = entities;
 
-    if (portfolio.type === PortfolioType.LEDGER && !isOverview) {
+    if (portfolio.type === PortfolioType.LEDGER && !isOverview && isLedgerDerivation(derivation)) {
         return {
-            name:
-                derivation.meta?.name ??
-                t('portfolio.ledgerWallet', { number: derivation.index + 1 }),
+            name: derivation.meta.name,
             icon: portfolio.meta.icon
         };
     }
@@ -520,6 +514,7 @@ export function useAddWatchOnlyPortfolio() {
 }
 
 export function useAddLedgerPortfolio() {
+    const t = useTranslate();
     const { mutateAsync: addPortfolio } = useAddPortfolio();
     const { mutateAsync: setActivePortfolio } = useSetActivePortfolio();
     const portfolios = usePortfolios();
@@ -539,7 +534,10 @@ export function useAddLedgerPortfolio() {
                 masterFingerprint,
                 networkType: PortfolioNetworkType.MAINNET,
                 deviceModel,
-                accounts,
+                accounts: accounts.map(account => ({
+                    ...account,
+                    name: t('portfolio.ledgerWallet', { number: account.index + 1 })
+                })),
                 meta
             });
 
@@ -557,6 +555,7 @@ export function useAddLedgerPortfolio() {
 }
 
 export function useUpdateLedgerDerivations() {
+    const t = useTranslate();
     const client = useQueryClient();
     const accountQueryKey = useActiveAccountQueryKey();
     const update = useActiveAccountSyncStorageSlotUpdate('portfolios');
@@ -578,23 +577,26 @@ export function useUpdateLedgerDerivations() {
 
             await update(draft =>
                 draft.update(portfolio.jsonArrayId(), portfolioDraft => {
-                    const derivableDraft = portfolioDraft.narrow(isDerivableSPortfolio);
+                    const ledgerDraft = portfolioDraft.narrow(isLedgerSPortfolio);
 
-                    if (!derivableDraft) return;
+                    if (!ledgerDraft) return;
 
-                    const derivationsDraft = derivableDraft.at('derivations');
+                    const derivationsDraft = ledgerDraft.at('derivations');
 
                     for (const account of newAccounts) {
                         derivationsDraft.push(
-                            sDerivation.toJson({
+                            sLedgerDerivation.toJson({
                                 index: account.index,
+                                meta: {
+                                    name: t('portfolio.ledgerWallet', { number: account.index + 1 })
+                                },
                                 chains: { btc: { xpub: account.xpub } }
                             })
                         );
                     }
 
                     if (meta) {
-                        derivableDraft.set('meta', meta);
+                        ledgerDraft.set('meta', meta);
                     }
                 })
             );

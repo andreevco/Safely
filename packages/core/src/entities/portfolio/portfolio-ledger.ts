@@ -1,12 +1,12 @@
 import {
-    type SDerivation,
+    type SLedgerDerivation,
     type SPortfolioLedger,
-    sDerivation,
+    sLedgerDerivation,
     sPortfolioLedger
 } from '@safely/sync-storage';
 
-import type { IDerivation } from '../derivation';
-import { Derivation, DerivationChainItemBtcLedger } from '../derivation';
+import type { ILedgerDerivation } from '../derivation';
+import { DerivationChainItemBtcLedger, LedgerDerivation } from '../derivation';
 import type { IPortfolioLedger } from './I-portfolio';
 import { PortfolioType } from './I-portfolio';
 import type { PortfolioIdLedger } from './portfolio-id-ledger';
@@ -21,7 +21,7 @@ export class PortfolioLedger implements IPortfolioLedger {
         masterFingerprint: string;
         networkType: PortfolioNetworkType;
         deviceModel: string;
-        accounts: { index: number; xpub: string }[];
+        accounts: { index: number; xpub: string; name: string }[];
         meta: PortfolioMeta;
     }): SPortfolioLedger {
         const id = toPortfolioIdLedger({
@@ -35,8 +35,9 @@ export class PortfolioLedger implements IPortfolioLedger {
             meta: params.meta,
             deviceModel: params.deviceModel,
             derivations: params.accounts.map(account =>
-                sDerivation.toJson({
+                sLedgerDerivation.toJson({
                     index: account.index,
+                    meta: { name: account.name },
                     chains: { btc: { xpub: account.xpub } }
                 })
             )
@@ -58,10 +59,10 @@ export class PortfolioLedger implements IPortfolioLedger {
 
     private static restoreDerivation(
         portfolioRef: PortfolioLedger,
-        sDerivationVal: SDerivation,
+        sDerivationVal: SLedgerDerivation,
         sessionPort: ILedgerSessionPort
-    ): IDerivation {
-        return new Derivation(
+    ): ILedgerDerivation {
+        return new LedgerDerivation(
             portfolioRef,
             sDerivationVal.index,
             derivationRef => ({
@@ -84,7 +85,7 @@ export class PortfolioLedger implements IPortfolioLedger {
 
     public readonly type = PortfolioType.LEDGER;
 
-    public readonly derivations: IDerivation[];
+    public readonly derivations: ILedgerDerivation[];
 
     public get masterFingerprint(): string {
         return this.id.masterFingerprint;
@@ -98,7 +99,7 @@ export class PortfolioLedger implements IPortfolioLedger {
         id: PortfolioIdLedger;
         meta: PortfolioMeta;
         deviceModel: string;
-        derivations: IDerivation[] | ((self: PortfolioLedger) => IDerivation[]);
+        derivations: ILedgerDerivation[] | ((self: PortfolioLedger) => ILedgerDerivation[]);
     }) {
         this.id = params.id;
         this.meta = params.meta;
@@ -112,11 +113,11 @@ export class PortfolioLedger implements IPortfolioLedger {
         }
     }
 
-    public getDerivation(id: Id): IDerivation | undefined {
+    public getDerivation(id: Id): ILedgerDerivation | undefined {
         return this.derivations.find(d => d.id.isEq(id));
     }
 
-    public getDerivations(): IDerivation[] {
+    public getDerivations(): ILedgerDerivation[] {
         return this.derivations;
     }
 

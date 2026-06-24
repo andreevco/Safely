@@ -3,7 +3,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { PortfolioType } from '@safely/core';
+import { isLedgerDerivation, PortfolioType } from '@safely/core';
 import {
     useActivePortfolio,
     useActivePortfolioEntities,
@@ -33,25 +33,25 @@ export const CurrentWalletSection = () => {
     const derivationTarget =
         entities.type === 'bip39' &&
         entities.portfolio.type === PortfolioType.LEDGER &&
-        !entities.isOverview
+        !entities.isOverview &&
+        isLedgerDerivation(entities.derivation)
             ? { portfolio: entities.portfolio, derivation: entities.derivation }
             : null;
 
     const handleEditPress = () => {
         if (derivationTarget) {
             const { portfolio, derivation } = derivationTarget;
-            const fallbackName = t('portfolio.ledgerWallet', { number: derivation.index + 1 });
 
             navigation.navigate('CustomizeWalletModal', {
                 hasBackButton: true,
-                defaultName: derivation.meta?.name ?? fallbackName,
+                defaultName: derivation.meta.name,
                 defaultIcon: portfolio.meta.icon,
                 tag: derivation.index + 1,
                 onSave: async meta => {
                     await updateDerivationMeta({
                         portfolio,
                         derivationIndex: derivation.index,
-                        name: meta.name === fallbackName ? undefined : meta.name
+                        name: meta.name
                     });
 
                     nativeStackNavigation.pop();

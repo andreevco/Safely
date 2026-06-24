@@ -1,4 +1,4 @@
-import type { SDerivation } from '@safely/sync-storage';
+import type { SDerivation, SLedgerDerivation } from '@safely/sync-storage';
 
 import type { IPortfolioBase } from '../portfolio';
 import type { IDerivationChainItemBtc } from './btc/I-derivation-chain-item-btc';
@@ -15,12 +15,17 @@ export type DerivationMeta = {
 
 export interface IDerivation {
     index: number;
-    meta?: DerivationMeta;
     id: IDerivationId;
     chains: IDerivationChains;
     portfolioRef: IPortfolioBase;
 
     toJSON(): SDerivation;
+}
+
+export interface ILedgerDerivation extends IDerivation {
+    meta: DerivationMeta;
+
+    toJSON(): SLedgerDerivation;
 }
 
 export interface IDerivationChains {

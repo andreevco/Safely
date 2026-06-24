@@ -17,12 +17,21 @@ export const sDerivationMeta = z.object({
 export const sDerivation = zIndexedObject(
     {
         index: z.number(),
-        meta: sDerivationMeta.optional(),
+        chains: sDerivationChains
+    },
+    value => String(value.index)
+);
+
+export const sLedgerDerivation = zIndexedObject(
+    {
+        index: z.number(),
+        meta: sDerivationMeta,
         chains: sDerivationChains
     },
     value => String(value.index)
 );
 
 export type SDerivation = z.infer<typeof sDerivation>;
+export type SLedgerDerivation = z.infer<typeof sLedgerDerivation>;
 export type SDerivationMeta = z.infer<typeof sDerivationMeta>;
 export type SBtcAccountChainItem = z.infer<typeof sBtcAccountChainItem>;
