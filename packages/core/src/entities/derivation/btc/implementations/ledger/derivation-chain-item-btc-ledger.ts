@@ -51,6 +51,7 @@ export class DerivationChainItemBtcLedger implements IDerivationChainItemBtc {
                 network: this.network,
                 xpub: this.xpub,
                 derivationRef,
+                isPrevTxsRequired: true,
                 sign(tx) {
                     return signer.sign(tx);
                 }

@@ -90,8 +90,11 @@ export class BtcTransactionTemplate {
     }
 
     private async _send(): Promise<BtcSendResult> {
-        const rawTxs = await this.btcApi.getRawTransactions(this.utxos.map(u => u.txid));
-        const prevTxs = new Map(rawTxs.map(tx => [tx.txid, Buffer.from(tx.hex, 'hex')]));
+        let prevTxs: Map<string, Uint8Array> | undefined;
+        if (this.wallet.isPrevTxsRequired) {
+            const rawTxs = await this.btcApi.getRawTransactions(this.utxos.map(u => u.txid));
+            prevTxs = new Map(rawTxs.map(tx => [tx.txid, Buffer.from(tx.hex, 'hex')]));
+        }
 
         const psbt = this.psbtBuilder.buildPsbt(
             {

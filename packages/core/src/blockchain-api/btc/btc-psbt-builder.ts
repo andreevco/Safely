@@ -26,7 +26,7 @@ const RBF_SEQUENCE = 0xfffffffd;
 export class BtcPsbtBuilder {
     constructor(private readonly bitcoinNetwork: BTC_NETWORK) {}
 
-    public buildPsbt(req: PsbtRequest, prevTxs: Map<string, Uint8Array>): Transaction {
+    public buildPsbt(req: PsbtRequest, prevTxs?: Map<string, Uint8Array>): Transaction {
         return this.build(req, { forEstimation: false, prevTxs });
     }
 
@@ -39,7 +39,7 @@ export class BtcPsbtBuilder {
         { inputs, outputs }: PsbtRequest,
         options:
             | { forEstimation: true }
-            | { forEstimation: false; prevTxs: Map<string, Uint8Array> }
+            | { forEstimation: false; prevTxs?: Map<string, Uint8Array> }
     ): Transaction {
         const tx = new Transaction();
 
@@ -69,6 +69,11 @@ export class BtcPsbtBuilder {
 
             if (options.forEstimation) {
                 tx.addInput({ ...base, finalScriptWitness: P2WPKH_ESTIMATION_WITNESS }, true);
+                return;
+            }
+
+            if (!options.prevTxs) {
+                tx.addInput(base);
                 return;
             }
 

@@ -63,8 +63,9 @@ function makeWallet(overrides: Partial<SignableBtcWallet> = {}): SignableBtcWall
     return {
         address: WALLET_ADDR,
         network: BtcNetwork.MAINNET,
+        isPrevTxsRequired: false,
         sign: vi.fn(),
-        // The template only touches address/network/sign; cast the rest.
+        // The template only touches address/network/isPrevTxsRequired/sign; cast the rest.
         ...overrides
     } as unknown as SignableBtcWallet;
 }
@@ -216,6 +217,37 @@ describe('BtcTransactionTemplate', () => {
 
             expect(result.txId).toBe('tx-1234567890abcdef');
             expect(result.toString()).toBe(ellipsisMiddle(txid, 6));
+        });
+
+        it('skips fetching previous transactions when the wallet does not require them', async () => {
+            (wallet.sign as ReturnType<typeof vi.fn>).mockResolvedValue(Buffer.from([0]));
+            (api.sendTransaction as ReturnType<typeof vi.fn>).mockResolvedValue({ txid: 'tx-1' });
+
+            await makeTemplate().send();
+
+            expect(api.getRawTransactions).not.toHaveBeenCalled();
+        });
+
+        it('fetches previous transactions when the wallet requires them', async () => {
+            wallet = makeWallet({ isPrevTxsRequired: true });
+            (wallet.sign as ReturnType<typeof vi.fn>).mockResolvedValue(Buffer.from([0]));
+            (api.sendTransaction as ReturnType<typeof vi.fn>).mockResolvedValue({ txid: 'tx-1' });
+
+            const utxos = [fundedUtxo('50000')];
+            const tpl = new BtcTransactionTemplate(
+                api,
+                wallet,
+                {
+                    recipientAddress: RECIPIENT_ADDR,
+                    amount: BtcAssetAmount.fromWeiAmount(40000n),
+                    hasChange: true
+                },
+                utxos,
+                makeEstimation(1500n)
+            );
+            await tpl.send();
+
+            expect(api.getRawTransactions).toHaveBeenCalledWith(utxos.map(u => u.txid));
         });
 
         it('passes the wallet-network PSBT to the signer (recipient address is honored)', async () => {

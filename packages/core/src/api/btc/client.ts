@@ -55,7 +55,6 @@ const btcWalletTypeToDescriptor: Record<BtcWalletType, 'wpkh' | 'pkh' | 'tr' | '
     [BtcWalletType.NATIVE_SEGWIT]: 'wpkh'
 };
 
-// TODO Mb better to get from boot config
 const BULK_TX_CHUNK_SIZE = 20;
 
 export class BtcApi extends ApiClient implements IIdentifiable {
