@@ -11,14 +11,14 @@
 // must match the variables defined in that Slack workflow. This script sends:
 //   text              — message body (overall status + iOS/Android version+build)
 //   eas_workflow_url  — link to this EAS workflow run
-//   github_pr_url     — link to the merged release -> master PR (empty if none)
+//   github_pr_url     — link to the commit this build was made from (empty if unknown)
 //   e2e_log           — Maestro result; on failure a link to the full log artifact
 // Configure those four variables in your Slack workflow trigger.
 
 let {
     SLACK_WEBHOOK_URL,
     WORKFLOW_URL,
-    PR_NUMBER,
+    COMMIT_SHA,
     REPOSITORY,
     RELEASE_NOTES,
     TARGET_BRANCH,
@@ -55,7 +55,7 @@ const notes = (RELEASE_NOTES || '').trim();
 const targetBranch = (TARGET_BRANCH || '').trim();
 const notesWithBranch = targetBranch ? `${targetBranch} <- ${notes}` : notes;
 
-const prUrl = PR_NUMBER !== undefined && REPOSITORY ? `https://github.com/${REPOSITORY}/pull/${PR_NUMBER}` : '';
+const commitUrl = COMMIT_SHA && REPOSITORY ? `https://github.com/${REPOSITORY}/commit/${COMMIT_SHA}` : '';
 const workflowUrl = WORKFLOW_URL || '';
 
 function buildText() {
@@ -85,7 +85,7 @@ async function postSlack() {
     const payload = {
         text: buildText(),
         eas_workflow_url: workflowUrl,
-        github_pr_url: prUrl,
+        github_commit_url: commitUrl,
         notes: notesWithBranch.slice(0, 1000)
     };
 
