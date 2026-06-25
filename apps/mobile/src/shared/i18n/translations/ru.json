@@ -18,7 +18,8 @@
             "approve": "Проверьте и подтвердите транзакцию."
         }
     },
-    "ledgerOverview": {
+    "derivedWallets": {
+        "active": "Активна",
         "hide": "Скрыть",
         "findMore": "Найти ещё кошельки",
         "cannotRemoveLast": "Нельзя удалить последний кошелёк. Отключите Ledger целиком."
@@ -568,15 +569,25 @@
                 "title": "Текущий кошелёк",
                 "ledgerTitle": "Устройство Ledger",
                 "options": {
-                    "wallet": "Кошелёк"
+                    "wallet": "Кошелёк",
+                    "editWallet": "Редактировать кошелёк",
+                    "editLedger": "Редактировать Ledger"
                 }
+            },
+            "derivedWallets": {
+                "title": "Производные кошельки"
             },
             "account": {
                 "title": "Настройки",
                 "options": {
                     "editAccount": "Редактировать аккаунт",
                     "addressBook": "Адресная книга",
-                    "notifications": "Уведомления",
+                    "notifications": "Уведомления"
+                }
+            },
+            "application": {
+                "title": "Приложение",
+                "options": {
                     "security": "Безопасность",
                     "language": "Язык"
                 }
@@ -585,7 +596,7 @@
                 "title": "Инфо",
                 "options": {
                     "support": "Поддержка",
-                    "rate": "Оценить",
+                    "rate": "Оценить Safely",
                     "legal": "Правовая информация"
                 }
             }
