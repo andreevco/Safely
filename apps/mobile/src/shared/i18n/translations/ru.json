@@ -550,8 +550,13 @@
                 "title": "Текущий кошелёк",
                 "ledgerTitle": "Устройство Ledger",
                 "options": {
-                    "wallet": "Кошелёк"
+                    "wallet": "Кошелёк",
+                    "editWallet": "Редактировать кошелёк",
+                    "editLedger": "Редактировать Ledger"
                 }
+            },
+            "derivedWallets": {
+                "title": "Производные кошельки"
             },
             "account": {
                 "title": "Настройки",
@@ -780,7 +785,8 @@
             "approve": "Проверьте и подтвердите транзакцию."
         }
     },
-    "ledgerOverview": {
+    "derivedWallets": {
+        "active": "Активна",
         "hide": "Скрыть",
         "findMore": "Найти ещё кошельки",
         "cannotRemoveLast": "Нельзя удалить последний кошелёк. Отключите Ledger целиком."

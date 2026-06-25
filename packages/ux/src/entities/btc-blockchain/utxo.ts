@@ -129,42 +129,20 @@ export function useBtcWalletUtxo(btcWallet: BtcWallet) {
     );
 }
 
-export function useBtcBalances(wallets: BtcWallet[]) {
-    const getBtcApi = useGetBtcApi();
-    const accessibleBtcWallets = useAccessibleBtcWallets();
-    const account = useActiveAccount();
+export function sumBtcDisplay(
+    balances: ReturnType<typeof useBtcWalletBalances>
+): BtcAssetAmount | null {
+    let total = BtcAssetAmount.fromWeiAmount('0');
 
-    return useQueries({
-        queries: wallets.map(btcWallet => {
-            const { schemaKey, ...rest } = btcWalletUtxoOptions({
-                api: getBtcApi(btcWallet.network),
-                accessibleBtcWallets,
-                accountId: account.accountId,
-                btcWallet
-            });
-
-            return {
-                ...rest,
-                meta: {
-                    persist: true,
-                    schemaKey
-                }
-            };
-        }),
-        combine: results => {
-            let total = BtcAssetAmount.fromWeiAmount('0');
-
-            for (const r of results) {
-                if (r.data === undefined) return null;
-
-                total = total.amountAdd(
-                    r.data.confirmed.totalAmount.amountAdd(r.data.unconfirmedSafe.totalAmount)
-                );
-            }
-
-            return total;
+    for (const balance of balances) {
+        if (balance === undefined) {
+            return null;
         }
-    });
+
+        total = total.amountAdd(balance.display);
+    }
+
+    return total;
 }
 
 export function useBtcWalletBalances(wallets: BtcWallet[]) {

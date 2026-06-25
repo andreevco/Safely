@@ -8,10 +8,12 @@ import { styles } from './LedgerDerivationRow.styles';
 type LedgerDerivationRowProps = {
     index: number;
     title?: string;
-    subtitle?: string;
+    subtitle?: ReactNode;
+    badge?: ReactNode;
     isSubtitleLoading?: boolean;
     isSkeleton?: boolean;
     isDimmed?: boolean;
+    showDivider?: boolean;
     accessory?: ReactNode;
     onPress?: () => void;
 };
@@ -21,9 +23,11 @@ export const LedgerDerivationRow = (props: LedgerDerivationRowProps) => {
         index,
         title,
         subtitle,
+        badge,
         isSubtitleLoading = false,
         isSkeleton = false,
         isDimmed = false,
+        showDivider,
         accessory,
         onPress
     } = props;
@@ -31,6 +35,7 @@ export const LedgerDerivationRow = (props: LedgerDerivationRowProps) => {
     return (
         <Cell
             skeleton={isSkeleton}
+            showDivider={showDivider}
             onPress={onPress}
             style={[styles.container, isDimmed && styles.dimmed]}
         >
@@ -45,6 +50,7 @@ export const LedgerDerivationRow = (props: LedgerDerivationRowProps) => {
                 <Cell.Row>
                     <View style={styles.titleRow}>
                         <Cell.Title>{isSkeleton ? undefined : title}</Cell.Title>
+                        {!isSkeleton && badge}
                     </View>
                 </Cell.Row>
                 <Cell.Row>

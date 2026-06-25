@@ -2,40 +2,58 @@ import { useNavigation } from '@react-navigation/core';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
+import { ellipsisMiddle, type ILedgerDerivation, type PortfolioLedger } from '@safely/core';
 import {
-    type BtcAssetAmount,
-    ellipsisMiddle,
-    type ILedgerDerivation,
-    type PortfolioLedger
-} from '@safely/core';
-import { useFormattedAmount, useToast, useUpdateDerivationMeta } from '@safely/ux';
+    useActivePortfolioEntities,
+    useBtcBalance,
+    useFormattedAmount,
+    useToast,
+    useUpdateDerivationMeta
+} from '@safely/ux';
 
 import { LedgerDerivationRow } from '@mobile/features/ledger';
-import { Button, Icon, Pencil16 } from '@mobile/shared/ui';
+import { Badge, Button, Icon, Pencil16, Text } from '@mobile/shared/ui';
 
-import { styles } from './LedgerOverviewRow.styles';
+import { styles } from './DerivedWalletRow.styles';
 
-type LedgerOverviewRowProps = {
+type DerivedWalletRowProps = {
     portfolio: PortfolioLedger;
     derivation: ILedgerDerivation;
-    balance: BtcAssetAmount | undefined;
+    showDivider?: boolean;
 };
 
-export const LedgerOverviewRow = (props: LedgerOverviewRowProps) => {
-    const { portfolio, derivation, balance } = props;
+export const DerivedWalletRow = (props: DerivedWalletRowProps) => {
+    const { portfolio, derivation, showDivider } = props;
 
     const toast = useToast();
     const { t } = useTranslation();
     const navigation = useNavigation();
+    const entities = useActivePortfolioEntities();
 
     const { mutateAsync: updateDerivationMeta } = useUpdateDerivationMeta();
 
-    const formattedBalance = useFormattedAmount(balance);
-    const address = derivation.chains.btc.wallets[0].address;
+    const wallet = derivation.chains.btc.wallets[0];
+    const { data: balance } = useBtcBalance(wallet);
+
+    const formattedBalance = useFormattedAmount(balance?.display);
+    const address = wallet.address;
     const isBalanceLoading = balance === undefined;
-    const subtitle = isBalanceLoading
-        ? undefined
-        : `${formattedBalance} · ${ellipsisMiddle(address)}`;
+
+    const isActive =
+        entities.type === 'bip39' &&
+        entities.portfolio.id.isEq(portfolio.id) &&
+        entities.derivation.index === derivation.index;
+
+    const subtitle = isBalanceLoading ? undefined : (
+        <>
+            <Text variant="bodyM" color="secondary">
+                {formattedBalance}
+            </Text>
+            <Text variant="bodyM" color="tertiary">
+                {` · ${ellipsisMiddle(address)}`}
+            </Text>
+        </>
+    );
 
     const handleEdit = () => {
         navigation.navigate('CustomizeWalletModal', {
@@ -50,15 +68,15 @@ export const LedgerOverviewRow = (props: LedgerOverviewRowProps) => {
                     name: meta.name
                 });
 
-                navigation.goBack();
+                navigation.getParent()?.goBack();
             },
-            onClose: () => navigation.goBack()
+            onClose: () => navigation.getParent()?.goBack()
         });
     };
 
     const handleHide = () => {
         if (portfolio.getDerivations().length <= 1) {
-            toast(t('ledgerOverview.cannotRemoveLast'));
+            toast(t('derivedWallets.cannotRemoveLast'));
             return;
         }
 
@@ -70,11 +88,13 @@ export const LedgerOverviewRow = (props: LedgerOverviewRowProps) => {
             index={derivation.index}
             title={derivation.meta.name}
             subtitle={subtitle}
+            badge={isActive ? <Badge isUppercase>{t('derivedWallets.active')}</Badge> : undefined}
             isSubtitleLoading={isBalanceLoading}
+            showDivider={showDivider}
             accessory={
                 <View style={styles.actions}>
                     <Button type="tertiary" size="small" onPress={handleHide}>
-                        {t('ledgerOverview.hide')}
+                        {t('derivedWallets.hide')}
                     </Button>
                     <Button
                         size="small"

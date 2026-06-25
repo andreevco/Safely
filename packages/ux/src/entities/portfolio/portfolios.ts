@@ -348,7 +348,6 @@ type ActivePortfolioEntitiesBip39 = {
     portfolio: PortfolioBip39 | PortfolioLedger;
     btcWallet: SignableBtcWallet;
     derivation: IDerivation;
-    isOverview: boolean;
 };
 
 type ActivePortfolioEntitiesWatchOnly = {
@@ -422,15 +421,11 @@ export function useActivePortfolioEntitiesQuery() {
                 const derivation =
                     derivations.find(d => d.index === derivationIndex) ?? derivations[0];
 
-                const isOverview =
-                    portfolio.type === PortfolioType.LEDGER && derivationIndex === undefined;
-
                 return {
                     type: 'bip39' as const,
                     portfolio,
                     btcWallet: derivation.chains.btc.wallets[0],
-                    derivation,
-                    isOverview
+                    derivation
                 };
             },
             [portfolios]
@@ -450,11 +445,6 @@ export function useHasPortfolio() {
     return useActivePortfolioEntitiesQuery().data !== null;
 }
 
-export function useIsActivePortfolioOverview(): boolean {
-    const entities = useActivePortfolioEntitiesQuery().data;
-    return entities?.type === 'bip39' && entities.isOverview;
-}
-
 export function useActiveWalletMeta(): PortfolioMeta {
     const entities = useActivePortfolioEntities();
 
@@ -462,9 +452,9 @@ export function useActiveWalletMeta(): PortfolioMeta {
         return entities.portfolio.meta;
     }
 
-    const { portfolio, derivation, isOverview } = entities;
+    const { portfolio, derivation } = entities;
 
-    if (portfolio.type === PortfolioType.LEDGER && !isOverview && isLedgerDerivation(derivation)) {
+    if (portfolio.type === PortfolioType.LEDGER && isLedgerDerivation(derivation)) {
         return {
             name: derivation.meta.name,
             icon: portfolio.meta.icon

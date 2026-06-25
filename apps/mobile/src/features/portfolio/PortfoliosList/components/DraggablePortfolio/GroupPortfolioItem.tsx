@@ -22,19 +22,18 @@ export const GroupPortfolioItem = memo((props: DraggablePortfolioProps) => {
         engine,
         activePortfolioId,
         activeDerivationIndex,
-        isActiveOverview,
         onReorder,
         onMeasure,
         handleSelect
     } = props;
 
     const derivations = getDerivations(portfolio);
-    const isActivePortfolio = activePortfolioId.isEq(portfolio.id);
     const isLedger = portfolio.type === PortfolioType.LEDGER;
-    const isOverviewActive = isActivePortfolio && isActiveOverview;
+    const isActivePortfolio = activePortfolioId.isEq(portfolio.id);
 
-    const handleHeaderPress = () =>
-        isLedger ? handleSelect(portfolio) : handleSelect(portfolio, derivations[0]?.index);
+    const handleHeaderPress = isLedger
+        ? undefined
+        : () => handleSelect(portfolio, derivations[0]?.index);
 
     const groupPanRef = useRef<GestureType | undefined>(undefined);
     const groupTapRef = useRef<GestureType | undefined>(undefined);
@@ -57,10 +56,7 @@ export const GroupPortfolioItem = memo((props: DraggablePortfolioProps) => {
                 <GestureDetector gesture={gesture}>
                     <View>
                         <Animated.View style={underlayStyle} />
-                        <Cell
-                            background={isOverviewActive ? 'tertiary' : undefined}
-                            style={styles.item}
-                        >
+                        <Cell style={styles.item}>
                             <Cell.Content>
                                 <Cell.Row style={styles.row}>
                                     <PortfolioName
@@ -68,6 +64,7 @@ export const GroupPortfolioItem = memo((props: DraggablePortfolioProps) => {
                                         gap={12}
                                         size={16}
                                         type={portfolio.type}
+                                        color={isLedger ? 'tertiary' : undefined}
                                     />
                                 </Cell.Row>
                             </Cell.Content>

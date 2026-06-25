@@ -51,9 +51,7 @@ export const PortfoliosList = (props: PortfoliosListProps) => {
 
     const active = useActivePortfolioEntities();
     const activePortfolioId = active.portfolio.id;
-    const isActiveOverview = active.type === 'bip39' && active.isOverview;
-    const activeDerivationIndex =
-        active.type === 'bip39' && !active.isOverview ? active.derivation.index : undefined;
+    const activeDerivationIndex = active.type === 'bip39' ? active.derivation.index : undefined;
 
     const gap = variant === 'compact' ? 0 : 2;
     const itemsCount = portfolios.length;
@@ -120,7 +118,6 @@ export const PortfoliosList = (props: PortfoliosListProps) => {
                         engine={engine}
                         activePortfolioId={activePortfolioId}
                         activeDerivationIndex={activeDerivationIndex}
-                        isActiveOverview={isActiveOverview}
                         onReorder={handleReorder}
                         onMeasure={handleMeasure}
                         handleSelect={handleSelect}

@@ -2,21 +2,20 @@ import { useNavigation } from '@react-navigation/core';
 import { useTranslation } from 'react-i18next';
 
 import { PortfolioType } from '@safely/core';
-import { useActivePortfolio, useDateFormatter } from '@safely/ux';
+import { useActivePortfolio, useChangePortfolioMeta, useDateFormatter } from '@safely/ux';
 
 import { PortfolioName } from '@mobile/entities/portfolio';
-import { Cell, List, Text } from '@mobile/shared/ui';
+import { RemovePortfolioButton } from '@mobile/screens/SettingsScreen/components';
+import { Cell, List } from '@mobile/shared/ui';
 import { Icon, Switch16 } from '@mobile/shared/ui/Icon';
 
-import { styles } from '../../SecurityScreen.styles';
+import { styles } from './WalletSettings.styles';
 
-export const WalletSecuritySection = () => {
+export const StandardWalletSettings = () => {
     const { t } = useTranslation();
+    const navigation = useNavigation();
     const portfolio = useActivePortfolio();
-    const isWatchOnly = portfolio.type === PortfolioType.WATCH_ONLY;
-    const secretRevealedStatus =
-        portfolio.type === PortfolioType.BIP39 ? portfolio.secretRevealedStatus : null;
-    const rootNavigation = useNavigation();
+    const { mutateAsync: changePortfolioMeta } = useChangePortfolioMeta();
     const formatDate = useDateFormatter({
         month: 'long',
         day: 'numeric',
@@ -26,19 +25,26 @@ export const WalletSecuritySection = () => {
         hour12: false
     });
 
-    const handleSelectWallet = () => {
-        rootNavigation.navigate('SelectAccountModal');
-    };
+    const secretRevealedStatus =
+        portfolio.type === PortfolioType.BIP39 ? portfolio.secretRevealedStatus : null;
 
-    const handleRecoveryPress = () => {
-        rootNavigation.navigate('RecoveryConfirmSheet');
+    const handleEdit = () => {
+        navigation.navigate('CustomizeWalletModal', {
+            hasBackButton: true,
+            defaultName: portfolio.meta.name,
+            defaultIcon: portfolio.meta.icon,
+            onSave: async meta => {
+                await changePortfolioMeta({ portfolio, meta });
+                navigation.getParent()?.goBack();
+            },
+            onClose: () => navigation.getParent()?.goBack()
+        });
     };
 
     return (
         <List>
-            <List.Title>{t('security.groups.wallet.title')}</List.Title>
-            <List.Group style={styles.listGroupMargin}>
-                <Cell onPress={handleSelectWallet}>
+            <List.Group variant="separated" style={styles.selector}>
+                <Cell onPress={() => navigation.navigate('SelectAccountModal')}>
                     <Cell.Content>
                         <Cell.Row>
                             <PortfolioName meta={portfolio.meta} type={portfolio.type} />
@@ -47,13 +53,19 @@ export const WalletSecuritySection = () => {
                     <Icon icon={Switch16} color="tertiary" />
                 </Cell>
             </List.Group>
-            {isWatchOnly ? (
-                <Text variant="bodyM" color="tertiary" style={styles.watchInfoText}>
-                    {t('addWallet.watchAccount.info')}
-                </Text>
-            ) : (
-                <List.Group>
-                    <Cell onPress={handleRecoveryPress}>
+            <List.Group variant="separated">
+                <Cell onPress={handleEdit}>
+                    <Cell.Content>
+                        <Cell.Row>
+                            <Cell.Title>
+                                {t('settings.groups.currentWallet.options.editWallet')}
+                            </Cell.Title>
+                        </Cell.Row>
+                    </Cell.Content>
+                    <Cell.Chevron />
+                </Cell>
+                {portfolio.type === PortfolioType.BIP39 && (
+                    <Cell onPress={() => navigation.navigate('RecoveryConfirmSheet')}>
                         <Cell.Content>
                             <Cell.Row>
                                 <Cell.Title>
@@ -75,8 +87,11 @@ export const WalletSecuritySection = () => {
                         </Cell.Content>
                         <Cell.Chevron />
                     </Cell>
-                </List.Group>
-            )}
+                )}
+            </List.Group>
+            <List.Group variant="separated" style={styles.button}>
+                <RemovePortfolioButton />
+            </List.Group>
         </List>
     );
 };

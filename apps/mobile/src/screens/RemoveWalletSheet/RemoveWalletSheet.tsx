@@ -5,13 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import { PortfolioType } from '@safely/core';
-import {
-    useActivePortfolioEntitiesQuery,
-    useActiveWalletMeta,
-    useDeletePortfolio,
-    useIsActivePortfolioOverview,
-    useToast
-} from '@safely/ux';
+import { useActivePortfolioEntitiesQuery, useDeletePortfolio, useToast } from '@safely/ux';
 
 import { BottomSheet, Button, ConfirmCheckbox, Text, useBottomSheet } from '@mobile/shared/ui';
 
@@ -24,8 +18,7 @@ const RemoveWalletContent = () => {
     const { close } = useBottomSheet();
     const entities = useRef(useActivePortfolioEntitiesQuery().data!).current;
     const portfolio = entities.portfolio;
-    const isLedgerDevice = useRef(useIsActivePortfolioOverview()).current;
-    const activeMeta = useActiveWalletMeta();
+    const isLedgerDevice = portfolio.type === PortfolioType.LEDGER;
     const toast = useToast();
     const { mutateAsync: deletePortfolio, isPending: isDeleting } = useDeletePortfolio();
     const navigation = useNavigation();
@@ -53,7 +46,7 @@ const RemoveWalletContent = () => {
         <View>
             <View style={styles.titleBox}>
                 <Text textAlign="center" variant="titleM">
-                    {t(state.titleKey, { name: activeMeta.name })}
+                    {t(state.titleKey, { name: portfolio.meta.name })}
                 </Text>
                 <Text textAlign="center" variant="bodyL" color="secondary" style={styles.subtitle}>
                     {t(state.subtitleKey, { count: walletsCount })}{' '}
@@ -92,17 +85,10 @@ const RemoveWalletContent = () => {
 
 const RemoveWalletDispatch = ({ derivationIndex }: { derivationIndex?: number }) => {
     const entities = useRef(useActivePortfolioEntitiesQuery().data!).current;
-    const isLedgerDevice = useRef(useIsActivePortfolioOverview()).current;
     const portfolio = entities.portfolio;
 
-    const hideIndex =
-        derivationIndex ??
-        (portfolio.type === PortfolioType.LEDGER && !isLedgerDevice && entities.type === 'bip39'
-            ? entities.derivation.index
-            : undefined);
-
-    if (portfolio.type === PortfolioType.LEDGER && hideIndex !== undefined) {
-        const derivation = portfolio.getDerivations().find(item => item.index === hideIndex);
+    if (portfolio.type === PortfolioType.LEDGER && derivationIndex !== undefined) {
+        const derivation = portfolio.getDerivations().find(item => item.index === derivationIndex);
 
         if (derivation) {
             return <HideDerivationContent portfolio={portfolio} derivation={derivation} />;
