@@ -18,7 +18,8 @@
             "approve": "Review and approve the transaction."
         }
     },
-    "ledgerOverview": {
+    "derivedWallets": {
+        "active": "Active",
         "hide": "Hide",
         "findMore": "Find more wallets",
         "cannotRemoveLast": "The last wallet can’t be removed. Disconnect the Ledger instead."
@@ -568,15 +569,25 @@
                 "title": "Current wallet",
                 "ledgerTitle": "Ledger device",
                 "options": {
-                    "wallet": "Wallet"
+                    "wallet": "Wallet",
+                    "editWallet": "Edit wallet",
+                    "editLedger": "Edit Ledger"
                 }
+            },
+            "derivedWallets": {
+                "title": "Derived wallets"
             },
             "account": {
                 "title": "Settings",
                 "options": {
                     "editAccount": "Edit account",
                     "addressBook": "Address book",
-                    "notifications": "Notifications",
+                    "notifications": "Notifications"
+                }
+            },
+            "application": {
+                "title": "Application",
+                "options": {
                     "security": "Security",
                     "language": "Language"
                 }
@@ -585,7 +596,7 @@
                 "title": "Info",
                 "options": {
                     "support": "Support",
-                    "rate": "Rate",
+                    "rate": "Rate Safely",
                     "legal": "Legal"
                 }
             }
