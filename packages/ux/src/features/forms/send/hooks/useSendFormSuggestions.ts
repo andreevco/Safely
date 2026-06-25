@@ -2,7 +2,12 @@ import { useMemo } from 'react';
 
 import { PortfolioNetworkType } from '@safely/core';
 
-import { useActivePortfolioEntities, useContacts, usePortfolios } from '../../../../entities';
+import {
+    isDerivableEntities,
+    useActivePortfolioEntities,
+    useContacts,
+    usePortfolios
+} from '../../../../entities';
 import { useTranslate } from '../../../../shared';
 import type { ContactSuggestion, PortfolioSuggestion } from '../types';
 import { mapContactToSuggestions, mapPortfolioToSuggestions } from '../utils';
@@ -23,7 +28,7 @@ export function useSendFormSuggestions(): SendFormSuggestions {
     const activePortfolio = useMemo(
         () => ({
             portfolioId: entities.portfolio.id,
-            derivation: entities.type === 'bip39' ? entities.derivation : undefined
+            derivation: isDerivableEntities(entities) ? entities.derivation : undefined
         }),
         [entities]
     );

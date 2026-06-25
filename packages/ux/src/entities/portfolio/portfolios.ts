@@ -5,6 +5,7 @@ import type {
     BtcWalletReadOnly,
     SignableBtcWallet,
     IDerivation,
+    ILedgerDerivation,
     IMnemonicAccessor,
     Portfolio,
     PortfolioMeta,
@@ -14,7 +15,7 @@ import type {
     IMnemonicVault
 } from '@safely/core';
 import { PortfolioWatchOnlyBtc } from '@safely/core';
-import { isLedgerDerivation, PortfolioLedger } from '@safely/core';
+import { PortfolioLedger } from '@safely/core';
 import { PortfolioIdBip39Imported } from '@safely/core';
 import { PortfolioBip39, PortfolioIdBip39MasterKeyDerived } from '@safely/core';
 import { PortfolioMnemonicFactory } from '@safely/core';
@@ -345,9 +346,16 @@ export function useHideDerivation() {
 
 type ActivePortfolioEntitiesBip39 = {
     type: 'bip39';
-    portfolio: PortfolioBip39 | PortfolioLedger;
+    portfolio: PortfolioBip39;
     btcWallet: SignableBtcWallet;
     derivation: IDerivation;
+};
+
+type ActivePortfolioEntitiesLedger = {
+    type: 'ledger';
+    portfolio: PortfolioLedger;
+    btcWallet: SignableBtcWallet;
+    derivation: ILedgerDerivation;
 };
 
 type ActivePortfolioEntitiesWatchOnly = {
@@ -355,7 +363,16 @@ type ActivePortfolioEntitiesWatchOnly = {
     portfolio: PortfolioWatchOnly;
 };
 
-type ActivePortfolioEntities = ActivePortfolioEntitiesBip39 | ActivePortfolioEntitiesWatchOnly;
+type ActivePortfolioEntities =
+    | ActivePortfolioEntitiesBip39
+    | ActivePortfolioEntitiesLedger
+    | ActivePortfolioEntitiesWatchOnly;
+
+export function isDerivableEntities(
+    entities: ActivePortfolioEntities
+): entities is ActivePortfolioEntitiesBip39 | ActivePortfolioEntitiesLedger {
+    return entities.type !== 'watch-only';
+}
 
 export function useActivePortfolioEntitiesIdsQuery<TData = SActivePortfolioSchema>(
     select?: (data: SActivePortfolioSchema) => TData
@@ -416,8 +433,22 @@ export function useActivePortfolioEntitiesQuery() {
                     return { type: 'watch-only' as const, portfolio };
                 }
 
-                const derivations = portfolio.getDerivations();
                 const derivationIndex = sActivePortfolioSchema?.derivationIndex;
+
+                if (portfolio.type === PortfolioType.LEDGER) {
+                    const derivations = portfolio.getDerivations();
+                    const derivation =
+                        derivations.find(d => d.index === derivationIndex) ?? derivations[0];
+
+                    return {
+                        type: 'ledger' as const,
+                        portfolio,
+                        btcWallet: derivation.chains.btc.wallets[0],
+                        derivation
+                    };
+                }
+
+                const derivations = portfolio.getDerivations();
                 const derivation =
                     derivations.find(d => d.index === derivationIndex) ?? derivations[0];
 
@@ -448,20 +479,14 @@ export function useHasPortfolio() {
 export function useActiveWalletMeta(): PortfolioMeta {
     const entities = useActivePortfolioEntities();
 
-    if (entities.type === 'watch-only') {
-        return entities.portfolio.meta;
-    }
-
-    const { portfolio, derivation } = entities;
-
-    if (portfolio.type === PortfolioType.LEDGER && isLedgerDerivation(derivation)) {
+    if (entities.type === 'ledger') {
         return {
-            name: derivation.meta.name,
-            icon: portfolio.meta.icon
+            name: entities.derivation.meta.name,
+            icon: entities.portfolio.meta.icon
         };
     }
 
-    return portfolio.meta;
+    return entities.portfolio.meta;
 }
 
 export function useIsActivePortfolioWatchOnly(): boolean {
@@ -695,7 +720,7 @@ export function useActiveBtcWallet(): BtcWalletReadOnly {
 export function useActiveSignableBtcWallet(): SignableBtcWallet {
     const entities = useActivePortfolioEntities();
 
-    if (entities.type !== 'bip39') {
+    if (!isDerivableEntities(entities)) {
         throw new Error('Signable wallet unavailable for watch-only portfolio');
     }
 

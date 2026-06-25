@@ -5,6 +5,7 @@ import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 import type { Portfolio } from '@safely/core';
 import { PortfolioType } from '@safely/core';
 import {
+    isDerivableEntities,
     useActivePortfolioEntities,
     useReorderPortfolios,
     useSetActivePortfolio
@@ -51,7 +52,7 @@ export const PortfoliosList = (props: PortfoliosListProps) => {
 
     const active = useActivePortfolioEntities();
     const activePortfolioId = active.portfolio.id;
-    const activeDerivationIndex = active.type === 'bip39' ? active.derivation.index : undefined;
+    const activeDerivationIndex = isDerivableEntities(active) ? active.derivation.index : undefined;
 
     const gap = variant === 'compact' ? 0 : 2;
     const itemsCount = portfolios.length;

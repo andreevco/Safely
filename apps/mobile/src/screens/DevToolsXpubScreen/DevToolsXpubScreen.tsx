@@ -2,7 +2,7 @@ import { useNavigation } from '@react-navigation/core';
 import { useCallback, useMemo } from 'react';
 
 import { BtcXpub } from '@safely/core';
-import { useActivePortfolioEntities } from '@safely/ux';
+import { isDerivableEntities, useActivePortfolioEntities } from '@safely/ux';
 
 import { PortfolioName } from '@mobile/entities/portfolio';
 import { Button, Cell, List, Screen, Text } from '@mobile/shared/ui';
@@ -17,7 +17,7 @@ export const DevToolsXpubScreen = () => {
     const navigation = useNavigation();
 
     const xpub = useMemo(() => {
-        if (entities.type === 'bip39') {
+        if (isDerivableEntities(entities)) {
             return BtcXpub.toZpub(entities.btcWallet.xpub);
         }
 

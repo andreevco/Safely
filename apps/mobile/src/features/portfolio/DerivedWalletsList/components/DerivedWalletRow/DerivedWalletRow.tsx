@@ -4,6 +4,7 @@ import { View } from 'react-native';
 
 import { ellipsisMiddle, type ILedgerDerivation, type PortfolioLedger } from '@safely/core';
 import {
+    isDerivableEntities,
     useActivePortfolioEntities,
     useBtcBalance,
     useFormattedAmount,
@@ -40,7 +41,7 @@ export const DerivedWalletRow = (props: DerivedWalletRowProps) => {
     const isBalanceLoading = balance === undefined;
 
     const isActive =
-        entities.type === 'bip39' &&
+        isDerivableEntities(entities) &&
         entities.portfolio.id.isEq(portfolio.id) &&
         entities.derivation.index === derivation.index;
 
