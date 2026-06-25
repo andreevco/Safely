@@ -37,6 +37,7 @@ import InformationCircle28Svg from '@safely/ux/assets/icons/28/information-circl
 import Loader28Svg from '@safely/ux/assets/icons/28/loader-28.svg';
 import More28Svg from '@safely/ux/assets/icons/28/more-28.svg';
 import QrCodeScan28Svg from '@safely/ux/assets/icons/28/qr-code-scan-28.svg';
+import QrCodeScanShield28Svg from '@safely/ux/assets/icons/28/qr-code-scan-shield-28.svg';
 import FrameCorner48Svg from '@safely/ux/assets/icons/48/frame-corner-48.svg';
 import DeviceLinkSvg from '@safely/ux/assets/icons/56/device-link.svg';
 import Loader56Svg from '@safely/ux/assets/icons/56/loader-56.svg';
@@ -93,6 +94,7 @@ export const InformationCircle28 = { image: InformationCircle28Svg, size: 28 } a
 export const Loader28 = { image: Loader28Svg, size: 28 } as const;
 export const More28 = { image: More28Svg, size: 28 } as const;
 export const QrCodeScan28 = { image: QrCodeScan28Svg, size: 28 } as const;
+export const QrCodeScanShield28 = { image: QrCodeScanShield28Svg, size: 28 } as const;
 export const FrameCorner48 = { image: FrameCorner48Svg, size: 48 } as const;
 export const DeviceLink = { image: DeviceLinkSvg, size: 56 } as const;
 export const Loader56 = { image: Loader56Svg, size: 56 } as const;

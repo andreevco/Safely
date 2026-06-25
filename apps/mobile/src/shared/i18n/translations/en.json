@@ -308,12 +308,7 @@
     },
     "signIn": {
         "title": "Scan to sign in",
-        "description": {
-            "top": "Open Safely on another device.",
-            "iconLineStart": "Go to Settings",
-            "iconLineEnd": "tap “Link device”",
-            "bottom": "and scan this QR code."
-        },
+        "description": "On another device, open Safely, go to Safety, tap “Link device”, then scan this QR code.",
         "banner": "This device will have full access to your account. It can be used if your other device is lost.",
         "timeout": "Connection timed out. Please try again.",
         "success": {

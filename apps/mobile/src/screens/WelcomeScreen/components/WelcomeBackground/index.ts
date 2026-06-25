@@ -1,0 +1,1 @@
+export { WelcomeBackground } from './WelcomeBackground';

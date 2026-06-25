@@ -1,7 +1,7 @@
 import { useNavigation } from '@react-navigation/core';
 import { useCallback } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
-import { ImageBackground, View } from 'react-native';
+import { View } from 'react-native';
 
 import {
     useAppContext,
@@ -12,9 +12,9 @@ import {
 
 import { useOnboardingFlow } from '@mobile/features/onboarding';
 import { TEST_ID } from '@mobile/shared/constants';
-import { resources } from '@mobile/shared/resources';
-import { Button, Icon, Safely96, Screen, Text } from '@mobile/shared/ui';
+import { Button, Icon, QrCodeScanShield28, Safely96, Screen, Text } from '@mobile/shared/ui';
 
+import { WelcomeBackground } from './components';
 import { styles } from './WelcomeScreen.styles';
 
 const TERMS_URL = 'https://google.com';
@@ -45,74 +45,101 @@ export const WelcomeScreen = () => {
 
         const connector = await signIn.mutateAsync({ secureEncryptedStorage });
 
-        navigation.navigate('SignInScreen', {
-            connector,
-            closeStorage: () => secureEncryptedStorage[Symbol.dispose](),
-            onSuccess: () =>
-                navigation.navigate('SignInSuccessScreen', { onContinue: onSuccessSignIn })
+        navigation.navigate('SignInModal', {
+            screen: 'SignInQRModal',
+            params: {
+                connector,
+                closeStorage: () => secureEncryptedStorage[Symbol.dispose](),
+                onSuccess: () =>
+                    navigation.navigate('SignInModal', {
+                        screen: 'SignInSuccessModal',
+                        params: { onContinue: onSuccessSignIn }
+                    })
+            }
         });
     }, [signIn, navigation, getSecureEncrypted, onSuccessSignIn]);
 
     return (
         <Screen background="transparent">
-            <ImageBackground source={resources.welcomeScreenBg} style={styles.background}>
-                <Screen.Content>
-                    <Icon icon={Safely96} style={styles.logo} />
+            <Screen.Content>
+                <WelcomeBackground />
+                <Icon icon={Safely96} style={styles.logo} />
 
-                    <View style={styles.textContainer}>
-                        <Text variant="titleM">{t('welcome.title')}</Text>
-                        <Text variant="bodyL" color="secondary" textAlign="center">
-                            {t('welcome.subtitle')}
-                        </Text>
-                    </View>
+                <View style={styles.textContainer}>
+                    <Text variant="titleM">{t('welcome.title')}</Text>
+                    <Text variant="bodyL" color="secondary" textAlign="center">
+                        {t('welcome.subtitle')}
+                    </Text>
+                </View>
 
-                    <View style={styles.buttonsContainer}>
-                        <Button
-                            testID={TEST_ID.welcome.createWallet}
-                            type="primary"
-                            size="large"
-                            onPress={onSuccessCreate}
-                        >
-                            {t('welcome.createNew')}
-                        </Button>
-                        <Button
-                            testID={TEST_ID.welcome.importWallet}
-                            type="secondary"
-                            size="large"
-                            onPress={handleSignIn}
-                        >
-                            {t('welcome.importExisting')}
-                        </Button>
-                    </View>
+                <View style={styles.buttonsContainer}>
+                    <Button
+                        testID={TEST_ID.welcome.createWallet}
+                        type="primary"
+                        size="large"
+                        onPress={onSuccessCreate}
+                    >
+                        New wallet
+                    </Button>
+                    <Button
+                        testID={TEST_ID.welcome.importWallet}
+                        type="secondary"
+                        size="large"
+                        onPress={handleSignIn}
+                    >
+                        Import wallet
+                    </Button>
+                    <Button
+                        testID={TEST_ID.welcome.importWallet}
+                        type="secondary"
+                        size="large"
+                        onPress={handleSignIn}
+                    >
+                        More options
+                    </Button>
+                    <Button
+                        style={styles.lastButton}
+                        testID={TEST_ID.welcome.importWallet}
+                        type="blue"
+                        size="large"
+                        onPress={handleSignIn}
+                    >
+                        <View style={styles.buttonTextWithIcon}>
+                            <Text variant="labelL" color="link">
+                                Link with QR
+                            </Text>
+                            <Icon icon={QrCodeScanShield28} />
+                        </View>
+                    </Button>
+                </View>
 
-                    <View style={styles.legalContainer}>
-                        <Text variant="bodyS" color="tertiary" textAlign="center">
-                            {t('welcome.legalLine1')}
-                        </Text>
-                        <Text variant="bodyS" color="tertiary" textAlign="center">
-                            <Trans
-                                i18nKey="welcome.legalLine2"
-                                components={{
-                                    terms: (
-                                        <Text
-                                            variant="bodyS"
-                                            color="secondary"
-                                            onPress={() => openURL(TERMS_URL)}
-                                        />
-                                    ),
-                                    privacy: (
-                                        <Text
-                                            variant="bodyS"
-                                            color="secondary"
-                                            onPress={() => openURL(PRIVACY_URL)}
-                                        />
-                                    )
-                                }}
-                            />
-                        </Text>
-                    </View>
-                </Screen.Content>
-            </ImageBackground>
+                <View style={styles.legalContainer}>
+                    <Text variant="bodyS" color="tertiary" textAlign="center">
+                        {t('welcome.legalLine1')}
+                    </Text>
+                    <Text variant="bodyS" color="tertiary" textAlign="center">
+                        <Trans
+                            i18nKey="welcome.legalLine2"
+                            components={{
+                                terms: (
+                                    <Text
+                                        variant="bodyS"
+                                        color="secondary"
+                                        onPress={() => openURL(TERMS_URL)}
+                                    />
+                                ),
+                                privacy: (
+                                    <Text
+                                        variant="bodyS"
+                                        color="secondary"
+                                        onPress={() => openURL(PRIVACY_URL)}
+                                    />
+                                )
+                            }}
+                        />
+                    </Text>
+                </View>
+            </Screen.Content>
         </Screen>
     );
 };
