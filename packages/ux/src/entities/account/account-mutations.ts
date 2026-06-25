@@ -3,15 +3,26 @@ import { useCallback, useEffect, useMemo } from 'react';
 
 import type { ITreeStorage } from '@safely/core';
 import { deriveAnalyticsAccountUuid } from '@safely/core';
-import { PortfolioBip39, PortfolioIdBip39MasterKeyDerived } from '@safely/core';
+import {
+    MnemonicResource,
+    PortfolioBip39,
+    PortfolioIdBip39Imported,
+    PortfolioIdBip39MasterKeyDerived,
+    PortfolioWatchOnlyBtc,
+    toPortfolioIdWatchOnly
+} from '@safely/core';
 import { PortfolioMnemonicFactory } from '@safely/core';
 import { toPortfolioId } from '@safely/core';
 import { delay, PortfolioNetworkType } from '@safely/core';
-import type { ISyncAccount, OnboardingConnector as RawOnboardingConnector } from '@safely/sync';
+import type {
+    ISyncAccount,
+    Logger,
+    OnboardingConnector as RawOnboardingConnector
+} from '@safely/sync';
 import { OnboardingAbortedError } from '@safely/sync';
 import type {
     SNextDerivingPortfolioInfo,
-    SPortfolioBip39,
+    SPortfolio,
     SyncedStorageStructure
 } from '@safely/sync-storage';
 
@@ -57,7 +68,79 @@ export function useNewAccountDefaultName() {
     );
 }
 
-export function useCreateAccount(options?: { createWallet?: boolean; setActive?: boolean }) {
+export type AccountPortfolioSource =
+    | { kind: 'generated' }
+    | { kind: 'imported'; mnemonic: string[]; networkType: PortfolioNetworkType }
+    | { kind: 'watchOnly'; input: string; networkType: PortfolioNetworkType };
+
+async function buildFirstPortfolio(params: {
+    account: ISyncAccount<SyncedStorageStructure>;
+    secureEncryptedStorage: ITreeStorage;
+    source: AccountPortfolioSource;
+    portfolioName: string;
+    deviceName: string;
+    logger: Logger;
+}): Promise<{ portfolio: SPortfolio; nextDerivingInfo: SNextDerivingPortfolioInfo }> {
+    const { account, secureEncryptedStorage, source, portfolioName, deviceName, logger } = params;
+
+    const portfolioMnemonicFactory = new PortfolioMnemonicFactory(account, secureEncryptedStorage);
+
+    let portfolio: SPortfolio;
+
+    if (source.kind === 'watchOnly') {
+        const id = PortfolioWatchOnlyBtc.resolveUserInput(source.input, source.networkType);
+        portfolio = PortfolioWatchOnlyBtc.create(id, {
+            name: portfolioName,
+            icon: toPortfolioIdWatchOnly(id).getFallbackEmoji()
+        }).toJSON();
+    } else {
+        const encryptor = new SecretEncryptor(account.secretEncryptor, secureEncryptedStorage);
+
+        if (source.kind === 'imported') {
+            using mnemonicAccessor = new MnemonicResource(source.mnemonic);
+            const id = await PortfolioIdBip39Imported.create(mnemonicAccessor, source.networkType);
+            portfolio = await PortfolioBip39.createSerializedPortfolio({
+                id,
+                mnemonicAccessor,
+                encryptor,
+                meta: {
+                    name: portfolioName,
+                    icon: PortfolioIdBip39Imported.getFallbackEmoji(mnemonicAccessor)
+                },
+                options: { seedRevealedFromDevice: deviceName },
+                logger
+            });
+        } else {
+            using mnemonicAccessor = await portfolioMnemonicFactory.deriveBip39MnemonicResource(0);
+            const id = new PortfolioIdBip39MasterKeyDerived({
+                derivationIndex: 0,
+                networkType: PortfolioNetworkType.MAINNET
+            });
+            portfolio = await PortfolioBip39.createSerializedPortfolio({
+                id,
+                mnemonicAccessor,
+                encryptor,
+                meta: {
+                    name: portfolioName,
+                    icon: PortfolioIdBip39MasterKeyDerived.getFallbackEmoji(mnemonicAccessor)
+                },
+                logger
+            });
+        }
+    }
+
+    const nextIndex = source.kind === 'generated' ? 1 : 0;
+    using nextMnemonicAccessor =
+        await portfolioMnemonicFactory.deriveBip39MnemonicResource(nextIndex);
+    const nextDerivingInfo: SNextDerivingPortfolioInfo = {
+        index: nextIndex,
+        emoji: PortfolioIdBip39MasterKeyDerived.getFallbackEmoji(nextMnemonicAccessor).value
+    };
+
+    return { portfolio, nextDerivingInfo };
+}
+
+export function useCreateAccount(options?: { setActive?: boolean }) {
     const t = useTranslate();
     const client = useQueryClient();
     const factory = useAccountsFactory();
@@ -65,63 +148,41 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
     const newAccountName = useNewAccountDefaultName();
     const updateSyncStorage = useAccountSyncStorageUpdate();
     const generateOwnMeta = useGenerateOwnSyncedDeviceMeta();
+    const { deviceInfo } = useAppContext();
     const logger = useLogger('account');
 
     return useMutation<
         ISyncAccount<SyncedStorageStructure>,
         Error,
-        { name?: string; secureEncryptedStorage: ITreeStorage },
+        {
+            name?: string;
+            secureEncryptedStorage: ITreeStorage;
+            firstPortfolio?: AccountPortfolioSource;
+        },
         unknown
     >({
         async mutationFn(params) {
             logger.info('creating account', {
-                createWallet: !!options?.createWallet,
+                firstPortfolio: params.firstPortfolio?.kind ?? 'none',
                 setActive: !!options?.setActive
             });
             await delay();
 
             const account = await factory.createSyncAccount(params.secureEncryptedStorage);
 
-            let createdPortfolio: SPortfolioBip39 | null = null;
+            let createdPortfolio: SPortfolio | null = null;
             let nextDerivingInfo: SNextDerivingPortfolioInfo = null;
-            const firstPortfolioDerivationIndex = 0;
-            if (options?.createWallet || options?.setActive) {
-                const portfolioMnemonicFactory = new PortfolioMnemonicFactory(
+            if (params.firstPortfolio) {
+                const built = await buildFirstPortfolio({
                     account,
-                    params.secureEncryptedStorage
-                );
-
-                using mnemonicAccessor = await portfolioMnemonicFactory.deriveBip39MnemonicResource(
-                    firstPortfolioDerivationIndex
-                );
-
-                const id = new PortfolioIdBip39MasterKeyDerived({
-                    derivationIndex: firstPortfolioDerivationIndex,
-                    networkType: PortfolioNetworkType.MAINNET
-                });
-
-                createdPortfolio = await PortfolioBip39.createSerializedPortfolio({
-                    id,
-                    mnemonicAccessor,
-                    encryptor: new SecretEncryptor(
-                        account.secretEncryptor,
-                        params.secureEncryptedStorage
-                    ),
-                    meta: {
-                        name: t('security.groups.wallet.defaultName', { number: 1 }),
-                        icon: PortfolioIdBip39MasterKeyDerived.getFallbackEmoji(mnemonicAccessor)
-                    },
+                    secureEncryptedStorage: params.secureEncryptedStorage,
+                    source: params.firstPortfolio,
+                    portfolioName: t('security.groups.wallet.defaultName', { number: 1 }),
+                    deviceName: deviceInfo.name,
                     logger
                 });
-
-                const nextIndex = firstPortfolioDerivationIndex + 1;
-                using nextMnemonicAccessor =
-                    await portfolioMnemonicFactory.deriveBip39MnemonicResource(nextIndex);
-                nextDerivingInfo = {
-                    index: nextIndex,
-                    emoji: PortfolioIdBip39MasterKeyDerived.getFallbackEmoji(nextMnemonicAccessor)
-                        .value
-                };
+                createdPortfolio = built.portfolio;
+                nextDerivingInfo = built.nextDerivingInfo;
             }
 
             const analyticsId = await deriveAnalyticsAccountUuid(

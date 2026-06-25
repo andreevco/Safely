@@ -7,7 +7,7 @@ import { useAppContext, useConnectAccountToNewDevice } from '@safely/ux';
 
 import { Button, DeviceLinkExclamationmark96, Icon, Screen, Text } from '@mobile/shared/ui';
 
-import { styles } from './ProtectAccountModal.styles';
+import { styles } from './SafetyScreen.styles';
 
 const steps = [
     'onboarding.accountCreated.steps.step1',
@@ -15,7 +15,7 @@ const steps = [
     'onboarding.accountCreated.steps.step3'
 ] as const;
 
-export const ProtectAccountModal = () => {
+export const SafetyScreen = () => {
     const { t } = useTranslation();
     const {
         storage: {
@@ -36,7 +36,9 @@ export const ProtectAccountModal = () => {
     return (
         <Screen>
             <Screen.Header>
-                <Screen.Header.BackButton />
+                <Button style={styles.headerButton} size="small" type="secondary">
+                    About Sync
+                </Button>
             </Screen.Header>
             <Screen.Content>
                 <View style={styles.content}>
@@ -66,7 +68,7 @@ export const ProtectAccountModal = () => {
                 </View>
                 <View style={styles.buttonContainer}>
                     <Button type="primary" size="large" onPress={handleConnect}>
-                        {t('onboarding.accountCreated.addDevice')}
+                        Link device
                     </Button>
                 </View>
             </Screen.Content>

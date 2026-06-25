@@ -113,32 +113,6 @@ export const SecurityScreen = () => {
                                     <Cell.Chevron />
                                 </Cell>
                             )}
-                            {linkState === AccountLinkState.SOLO && (
-                                <Cell
-                                    onPress={() =>
-                                        navigation.navigate('SettingsModal', {
-                                            screen: 'ProtectAccountModal'
-                                        })
-                                    }
-                                >
-                                    <Cell.Content>
-                                        <View style={styles.badgeRow}>
-                                            <Cell.Title>
-                                                {t('security.groups.account.protect.title')}
-                                            </Cell.Title>
-                                            <Badge type="warning" isUppercase>
-                                                {t('security.groups.account.protect.badge')}
-                                            </Badge>
-                                        </View>
-                                        <Cell.Row>
-                                            <Cell.Subtitle numberOfLines={0}>
-                                                {t('security.groups.account.protect.subtitle')}
-                                            </Cell.Subtitle>
-                                        </Cell.Row>
-                                    </Cell.Content>
-                                    <Cell.Chevron />
-                                </Cell>
-                            )}
                         </List.Group>
                     </List>
 

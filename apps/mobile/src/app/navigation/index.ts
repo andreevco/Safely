@@ -13,7 +13,9 @@ import { LockScreen } from '@mobile/screens/LockScreen';
 import { MoreOptionsSheet } from '@mobile/screens/MoreOptionsSheet';
 import { NewContactModal } from '@mobile/screens/NewContactModal';
 import { ConfirmDeleteContactSheet } from '@mobile/screens/NewContactModal/screens/ConfirmDeleteContactSheet';
+import { OnboardingImportWalletScreen } from '@mobile/screens/OnboardingImportWalletScreen';
 import { OnboardingPasscodeScreen } from '@mobile/screens/OnboardingPasscodeScreen';
+import { OnboardingWatchAccountScreen } from '@mobile/screens/OnboardingWatchAccountScreen';
 import { PasscodeVerificationScreen } from '@mobile/screens/PasscodeVerificationScreen';
 import { PendingFundsSheet } from '@mobile/screens/PendingFundsSheet';
 import { QRScanModal } from '@mobile/screens/QRScanModal';
@@ -46,6 +48,8 @@ export const RootStack = createNativeStackNavigator({
         Onboarding: {
             screens: {
                 WelcomeScreen: WelcomeScreen,
+                OnboardingImportWalletScreen: OnboardingImportWalletScreen,
+                OnboardingWatchAccountModal: OnboardingWatchAccountScreen,
                 OnboardingPasscodeScreen: OnboardingPasscodeScreen,
                 BiometryScreen: BiometryScreen,
                 AccountCreatedScreen: AccountCreatedScreen,

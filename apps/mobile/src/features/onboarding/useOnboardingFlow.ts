@@ -3,6 +3,8 @@ import { CommonActions } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { Keyboard } from 'react-native';
 
+import type { PortfolioNetworkType } from '@safely/core';
+import type { AccountPortfolioSource } from '@safely/ux';
 import { useAppContext, useCreateAccount, useLoader } from '@safely/ux';
 
 // TODO IMPORT Discuss with Max what to do with this
@@ -17,12 +19,31 @@ const routes = {
     accountCreated: 'AccountCreatedScreen'
 } as const;
 
-let _isSignInFlow = false;
+type OnboardingIntent =
+    | { type: 'create' }
+    | { type: 'signIn' }
+    | { type: 'import'; mnemonic: string[]; networkType: PortfolioNetworkType }
+    | { type: 'watchOnly'; input: string; networkType: PortfolioNetworkType };
+
+// TODO: Don't like this
+let _intent: OnboardingIntent = { type: 'create' };
+
+function intentToPortfolioSource(intent: OnboardingIntent): AccountPortfolioSource | null {
+    switch (intent.type) {
+        case 'create':
+            return { kind: 'generated' };
+        case 'import':
+            return { kind: 'imported', mnemonic: intent.mnemonic, networkType: intent.networkType };
+        case 'watchOnly':
+            return { kind: 'watchOnly', input: intent.input, networkType: intent.networkType };
+        case 'signIn':
+            return null;
+    }
+}
 
 export function useOnboardingFlow() {
     const navigation = useNavigation();
     const { mutateAsync: createAccount } = useCreateAccount({
-        createWallet: true,
         setActive: true
     });
     const { withLoader } = useLoader();
@@ -34,20 +55,38 @@ export function useOnboardingFlow() {
     } = useAppContext();
 
     const onSuccessCreate = useCallback(() => {
-        _isSignInFlow = false;
+        _intent = { type: 'create' };
         navigation.dispatch(CommonActions.navigate(routes.passcode));
     }, [navigation]);
 
     const onSuccessSignIn = useCallback(() => {
-        _isSignInFlow = true;
+        _intent = { type: 'signIn' };
         navigation.dispatch(CommonActions.navigate(routes.passcode));
     }, [navigation]);
+
+    const onMnemonicReady = useCallback(
+        (mnemonic: string[], networkType: PortfolioNetworkType) => {
+            _intent = { type: 'import', mnemonic, networkType };
+            navigation.dispatch(CommonActions.navigate(routes.passcode));
+        },
+        [navigation]
+    );
+
+    const onWatchOnlyReady = useCallback(
+        (input: string, networkType: PortfolioNetworkType) => {
+            _intent = { type: 'watchOnly', input, networkType };
+            navigation.dispatch(CommonActions.navigate(routes.passcode));
+        },
+        [navigation]
+    );
 
     const onPasscodeReady = useCallback(
         async (passcode: string) => {
             await setPasscode(passcode);
 
-            if (!_isSignInFlow) {
+            const firstPortfolio = intentToPortfolioSource(_intent);
+
+            if (firstPortfolio) {
                 Keyboard.dismiss();
                 await withLoader(async () => {
                     using secureEncryptedStorage = getSecureEncrypted();
@@ -55,8 +94,9 @@ export function useOnboardingFlow() {
                     // don't ask for the password while setting app initially after first account creation during onboarding to provide smooth user experience
                     secureEncryptedStorage.UNSAFE_SKIP_SECURITY_CHECK_unlock();
 
-                    await createAccount({ secureEncryptedStorage });
+                    await createAccount({ secureEncryptedStorage, firstPortfolio });
                 });
+                _intent = { type: 'create' };
             }
 
             navigation.dispatch(CommonActions.navigate(routes.biometry));
@@ -65,7 +105,7 @@ export function useOnboardingFlow() {
     );
 
     const onBiometryFinished = useCallback(() => {
-        if (_isSignInFlow) {
+        if (_intent.type === 'signIn') {
             navigation.dispatch(
                 CommonActions.reset({
                     index: 0,
@@ -89,6 +129,8 @@ export function useOnboardingFlow() {
     return {
         onSuccessCreate,
         onSuccessSignIn,
+        onMnemonicReady,
+        onWatchOnlyReady,
         onPasscodeReady,
         onBiometryFinished,
         onAccountCreatedFinished

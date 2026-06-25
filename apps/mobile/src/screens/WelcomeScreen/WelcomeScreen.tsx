@@ -85,7 +85,7 @@ export const WelcomeScreen = () => {
                         testID={TEST_ID.welcome.importWallet}
                         type="secondary"
                         size="large"
-                        onPress={handleSignIn}
+                        onPress={() => navigation.navigate('OnboardingImportWalletScreen')}
                     >
                         {t('welcome.importWallet')}
                     </Button>
