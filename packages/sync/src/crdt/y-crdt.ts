@@ -3,6 +3,10 @@ import type { Draft, SlotRevision, SlotTree } from '@safely/slottree';
 export class YCRDT<T extends object> {
     constructor(private readonly doc: SlotTree<T>) {}
 
+    public get hasNewerStorageVersions(): boolean {
+        return this.doc.hasNewerStorageVersions;
+    }
+
     public applyUpdate(update: Buffer): void {
         this.doc.merge(update);
     }

@@ -114,11 +114,12 @@ describe('YManager', () => {
         const storage = new InMemStorage();
         const manager = await createManager(storage, 'device-1');
         const deviceManager = await createManager(storage, 'device-1', 'devices_crdt');
-        const controller = new CrdtController();
-        controller.addManager(manager);
-        controller.addManager(deviceManager);
+        const controller = new CrdtController(manager, deviceManager);
 
-        await controller.addAuthor(Buffer.from('device-2'), 1);
+        await controller.addAuthor(Buffer.from('device-2'), {
+            storageVersion: 1,
+            devicesStorageVersion: 1
+        });
         expect(await deviceVersion(storage, 'crdt', 'device-2')).toBe(1);
         expect(await deviceVersion(storage, 'devices_crdt', 'device-2')).toBe(1);
 

@@ -27,7 +27,8 @@ export class NewDeviceOnboarding<Latest extends StorageVersion, Rest> {
         private readonly secureEncryptedStorage: ITreeStorage,
         private readonly logger: Logger,
         private readonly pollingTimeout: number,
-        private readonly storageVersion: number
+        private readonly storageVersion: number,
+        private readonly devicesStorageVersion: number
     ) {
         this.flow = new SyncFlowLogger(logger, 'onboarding.new_device', {
             ikPub: this.ik.publicKey.toString('hex')
@@ -47,7 +48,8 @@ export class NewDeviceOnboarding<Latest extends StorageVersion, Rest> {
             type: QRMessageOperation.NEW_DEVICE_ONBOARDING,
             ephemeralPub: this.ephemeralKeyPair.publicKey,
             ikPub: this.ik.publicKey,
-            storageVersion: this.storageVersion
+            storageVersion: this.storageVersion,
+            devicesStorageVersion: this.devicesStorageVersion
         });
         this.flow.logStep('qr.generated');
 

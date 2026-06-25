@@ -63,6 +63,10 @@ export class YManager<Latest extends StorageVersion, Rest> {
         return this.yDoc.getFull();
     }
 
+    public get hasNewerStorageVersions(): boolean {
+        return this.yDoc.hasNewerStorageVersions;
+    }
+
     public get(key: string): unknown {
         const value = this.yDoc.get(key);
         if (value === undefined) {
