@@ -108,13 +108,14 @@ jobs:
         run: npm install -g firebase-tools
 
       - name: Upload to Firebase App Distribution
+        env:
+          # Pass notes as data (env var), not concatenated into the shell — no injection surface.
+          RELEASE_NOTES: ${{ needs.prepare.outputs.notes }}
         run: |
           echo '${{ env.SERVICE_ACCOUNT }}' > /tmp/sa-key.json
           export GOOGLE_APPLICATION_CREDENTIALS=/tmp/sa-key.json
 
-          cat > /tmp/release_notes.txt << 'EAS_RELEASE_NOTES_EOF'
-          ${{ needs.prepare.outputs.notes }}
-          EAS_RELEASE_NOTES_EOF
+          printf '%s' "$RELEASE_NOTES" > /tmp/release_notes.txt
 
           APK_PATH=$(find ${{ steps.download_build.outputs.artifact_path }} -name "*.apk" -type f | head -1)
           if [ -z "$APK_PATH" ]; then
