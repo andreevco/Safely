@@ -24,7 +24,12 @@ export type { StorageObserver } from './core/slot-tree';
 export type { StorageVersion } from './core/versioning/version';
 export { patch } from './core/versioning/patch';
 export type { PatchDraft, PatchPath, SlotPatch } from './core/versioning/patch';
-export { DEVICES_KEY, VersionController } from './core/versioning/version-controller';
+export {
+    DEVICES_KEY,
+    VERSION_DELETION_GRACE_PERIOD_SECONDS,
+    VERSION_DELETION_KEY,
+    VersionController
+} from './core/versioning/version-controller';
 export type { VersionSelector } from './core/versioning/version-controller';
 
 export type { HNil, HCons, AssertVersionHList, NewOf } from './core/versioning/version';

@@ -109,7 +109,14 @@ describe('SyncAccount reconnect onboarding', () => {
         } as unknown as OnlineSyncProvider<TestLatest, TestRest>;
         const info = vi.fn();
         const logger = { info } as unknown as Logger;
-        const onboarding = new ReconnectOnboarding(Buffer.alloc(0), syncProvider, logger, 1000, 0);
+        const onboarding = new ReconnectOnboarding(
+            Buffer.alloc(0),
+            syncProvider,
+            logger,
+            1000,
+            0,
+            1
+        );
 
         const promise = onboarding.waitForOnboarding();
 

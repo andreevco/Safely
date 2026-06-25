@@ -1,4 +1,5 @@
 export { useSendForm, type UseSendFormOptions } from './hooks/useSendForm';
+export { useAmountInputType } from './amountInputType';
 export type { SendFormView, RecipientView, AmountView, SubmittedView } from './view';
 export { SendFormError } from './errors';
 export type {

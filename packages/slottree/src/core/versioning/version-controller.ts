@@ -12,6 +12,9 @@ import { validateSlot } from '../slots/slot-validation';
 
 export type VersionSelector = number | Pick<StorageVersion, 'version'>;
 export const DEVICES_KEY = 'devices';
+export const VERSION_DELETION_KEY = 'versionDeletion';
+export const VERSION_DELETION_GRACE_PERIOD_SECONDS = 90 * 24 * 60 * 60; // 90 days
+const SHOULD_BE_DELETED_AT_KEY = 'shouldBeDeletedAt';
 
 export class VersionController {
     constructor(
@@ -113,10 +116,34 @@ export class VersionController {
 
     public deleteVersionsUnusedByDevices(): void {
         const usedVersions = this.usedDeviceVersions();
+        const now = this.wallTime();
 
         for (const version of this.versions) {
-            if (!usedVersions.has(version.version)) {
+            const versionKey = this.versionKey(version);
+
+            if (this.get(version) === undefined) {
+                this.deleteVersionDeletionMarker(versionKey);
+                continue;
+            }
+
+            if (usedVersions.has(version.version)) {
+                this.deleteVersionDeletionMarker(versionKey);
+                continue;
+            }
+
+            const shouldBeDeletedAt = this.getVersionShouldBeDeletedAt(versionKey);
+
+            if (shouldBeDeletedAt === undefined) {
+                this.setVersionShouldBeDeletedAt(
+                    versionKey,
+                    now + VERSION_DELETION_GRACE_PERIOD_SECONDS
+                );
+                continue;
+            }
+
+            if (now >= shouldBeDeletedAt) {
                 this.delete(version);
+                this.deleteVersionDeletionMarker(versionKey);
             }
         }
     }
@@ -150,6 +177,10 @@ export class VersionController {
         return typeof version === 'number' ? version : version.version;
     }
 
+    private wallTime(): number {
+        return Math.floor(Date.now() / 1000);
+    }
+
     private devicesContainer(): ContainerSlot {
         const devices = this.root.v[DEVICES_KEY];
 
@@ -160,6 +191,58 @@ export class VersionController {
         const created = createOriginContainer();
         this.root.v[DEVICES_KEY] = created;
         return created;
+    }
+
+    private versionDeletionContainer(): ContainerSlot {
+        const versionDeletion = this.root.v[VERSION_DELETION_KEY];
+
+        if (isContainerSlot(versionDeletion)) {
+            return versionDeletion;
+        }
+
+        const created = createOriginContainer();
+        this.root.v[VERSION_DELETION_KEY] = created;
+        return created;
+    }
+
+    private getVersionShouldBeDeletedAt(versionKey: string): number | undefined {
+        const versionDeletion = this.root.v[VERSION_DELETION_KEY];
+        if (!isContainerSlot(versionDeletion)) {
+            return undefined;
+        }
+
+        const marker = versionDeletion.v[versionKey];
+        if (!isContainerSlot(marker)) {
+            return undefined;
+        }
+
+        const shouldBeDeletedAt = marker.v[SHOULD_BE_DELETED_AT_KEY];
+        if (
+            shouldBeDeletedAt === undefined ||
+            isContainerSlot(shouldBeDeletedAt) ||
+            isTombstoneSlot(shouldBeDeletedAt)
+        ) {
+            return undefined;
+        }
+
+        return typeof shouldBeDeletedAt.v === 'number' ? shouldBeDeletedAt.v : undefined;
+    }
+
+    private setVersionShouldBeDeletedAt(versionKey: string, shouldBeDeletedAt: number): void {
+        const versionDeletion = this.versionDeletionContainer();
+        versionDeletion.v[versionKey] = slotFromJson(
+            { [SHOULD_BE_DELETED_AT_KEY]: shouldBeDeletedAt },
+            0,
+            ''
+        );
+    }
+
+    private deleteVersionDeletionMarker(versionKey: string): void {
+        const versionDeletion = this.root.v[VERSION_DELETION_KEY];
+
+        if (isContainerSlot(versionDeletion)) {
+            delete versionDeletion.v[versionKey];
+        }
     }
 
     private usedDeviceVersions(): Set<number> {

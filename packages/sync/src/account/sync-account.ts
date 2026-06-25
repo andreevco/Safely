@@ -1,8 +1,10 @@
 import type { AssertVersionHList, HCons, NewOf, StorageVersion } from '@safely/slottree';
 
 import type { ISyncAccount } from './I-sync-account';
+import type { SyncAccountRepository } from './sync-account-repository';
 import type { MKDerivationDomain } from '../crypto/service/master-key-service';
 import type { Device } from '../device-manager/device-repository';
+import { DevicesVersions } from '../device-manager/device-storage-schema';
 import type { ITreeStorage } from '../I-storage';
 import type { SyncFlowLogger } from '../logger';
 import { withSyncFlow } from '../logger';
@@ -11,7 +13,6 @@ import { PrimaryDeviceOnboarding } from '../onboarding/primary-device-onboarding
 import { ReconnectOnboardingCoordinator } from '../onboarding/reconnect/reconnect-onboarding-coordinator';
 import type { ISecretEncryptor } from '../secret-encryptor';
 import type { SyncContainer } from '../sync-container';
-import type { SyncAccountRepository } from './sync-account-repository';
 import type { ISyncProvider } from '../sync-provider/I-sync-provider';
 import { OnlineSyncProvider } from '../sync-provider/online-sync-provider';
 import type { SyncStatusManager } from '../sync-provider/sync-status';
@@ -52,7 +53,8 @@ export class SyncAccount<Latest extends StorageVersion, Rest> implements ISyncAc
             opts.container.deviceManager,
             opts.container.logger,
             opts.container.pollingTimeout,
-            this.structure.head.version
+            this.structure.head.version,
+            DevicesVersions.head.version
         );
     }
 
@@ -89,6 +91,7 @@ export class SyncAccount<Latest extends StorageVersion, Rest> implements ISyncAc
             this.container.deviceManager,
             this.container.syncOperations,
             this.structure.head.version,
+            DevicesVersions.head.version,
             async () => {
                 this.syncProvider.triggerSync();
                 await this.syncProvider.syncStatusManager.waitForStatus(SyncStatus.SYNCHRONIZED);
