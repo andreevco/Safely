@@ -79,7 +79,7 @@ export const WelcomeScreen = () => {
                         size="large"
                         onPress={onSuccessCreate}
                     >
-                        New wallet
+                        {t('welcome.newWallet')}
                     </Button>
                     <Button
                         testID={TEST_ID.welcome.importWallet}
@@ -87,26 +87,26 @@ export const WelcomeScreen = () => {
                         size="large"
                         onPress={handleSignIn}
                     >
-                        Import wallet
+                        {t('welcome.importWallet')}
                     </Button>
                     <Button
-                        testID={TEST_ID.welcome.importWallet}
+                        testID={TEST_ID.welcome.moreOptions}
                         type="secondary"
                         size="large"
-                        onPress={handleSignIn}
+                        onPress={() => navigation.navigate('MoreOptionsSheet')}
                     >
-                        More options
+                        {t('welcome.moreOptions')}
                     </Button>
                     <Button
                         style={styles.lastButton}
-                        testID={TEST_ID.welcome.importWallet}
+                        testID={TEST_ID.welcome.qrSignIn}
                         type="blue"
                         size="large"
                         onPress={handleSignIn}
                     >
                         <View style={styles.buttonTextWithIcon}>
                             <Text variant="labelL" color="link">
-                                Link with QR
+                                {t('welcome.linkWithQr')}
                             </Text>
                             <Icon icon={QrCodeScanShield28} />
                         </View>

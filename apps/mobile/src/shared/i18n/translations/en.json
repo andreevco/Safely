@@ -335,10 +335,18 @@
     "welcome": {
         "title": "Safely",
         "subtitle": "Your personal wallet. Receive, buy and spend crypto with ease.",
-        "createNew": "Start",
-        "importExisting": "Link with QR",
+        "newWallet": "New wallet",
+        "importWallet": "Import wallet",
+        "moreOptions": "More options",
+        "linkWithQr": "Link with QR",
         "legalLine1": "By using Safely, you agree to accept",
         "legalLine2": "our <terms>Terms of Use</terms> and <privacy>Privacy Policy</privacy>."
+    },
+    "moreOptions": {
+        "title": "More options",
+        "subtitle": "Use Ledger or add a watch account.",
+        "connectLedger": "Connect Ledger",
+        "watchAccount": "Watch account"
     },
     "onboarding": {
         "recoveryPhrase": {

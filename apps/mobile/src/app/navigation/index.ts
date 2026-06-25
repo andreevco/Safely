@@ -10,6 +10,7 @@ import { CustomizeAccountModal } from '@mobile/screens/CustomizeAccountModal';
 import { CustomizeWalletModal } from '@mobile/screens/CustomizeWalletModal';
 import { DestructiveConfirmSheet } from '@mobile/screens/DestructiveConfirmSheet';
 import { LockScreen } from '@mobile/screens/LockScreen';
+import { MoreOptionsSheet } from '@mobile/screens/MoreOptionsSheet';
 import { NewContactModal } from '@mobile/screens/NewContactModal';
 import { ConfirmDeleteContactSheet } from '@mobile/screens/NewContactModal/screens/ConfirmDeleteContactSheet';
 import { OnboardingPasscodeScreen } from '@mobile/screens/OnboardingPasscodeScreen';
@@ -118,6 +119,7 @@ export const RootStack = createNativeStackNavigator({
                 SignOutAccountSheet: SignOutAccountSheet,
                 WatchOnlySheet: WatchOnlySheet,
                 PendingFundsSheet: PendingFundsSheet,
+                MoreOptionsSheet: MoreOptionsSheet,
                 ConfirmDeleteContactSheet: ConfirmDeleteContactSheet
             },
             screenOptions: {

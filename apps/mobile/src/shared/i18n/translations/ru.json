@@ -346,10 +346,18 @@
     "welcome": {
         "title": "Safely",
         "subtitle": "Ваш личный криптокошелёк. Простое управление криптовалютой.",
-        "createNew": "Начать",
-        "importExisting": "Войти по QR-коду",
+        "newWallet": "Новый кошелёк",
+        "importWallet": "Импортировать кошелёк",
+        "moreOptions": "Другие способы",
+        "linkWithQr": "Войти по QR-коду",
         "legalLine1": "Используя Safely, вы соглашаетесь и принимаете",
         "legalLine2": "наши <terms>Условия использования</terms> и <privacy>Политику приватности</privacy>."
+    },
+    "moreOptions": {
+        "title": "Другие способы",
+        "subtitle": "Подключите Ledger или добавьте аккаунт только для просмотра.",
+        "connectLedger": "Подключить Ledger",
+        "watchAccount": "Только просмотр"
     },
     "onboarding": {
         "recoveryPhrase": {
