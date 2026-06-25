@@ -16,3 +16,4 @@ export * from './linking';
 export * from './dismissed-banners';
 export * from './beta-feed-watched';
 export * from './analytics';
+export * from './sync-onboarding';

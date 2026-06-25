@@ -1,13 +1,20 @@
 import { useNavigation } from '@react-navigation/core';
-import { useCallback } from 'react';
+import { useFocusEffect, useIsFocused } from '@react-navigation/native';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { useAppContext, useConnectAccountToNewDevice } from '@safely/ux';
+import {
+    useAppContext,
+    useConnectAccountToNewDevice,
+    useSyncOnboardingCompletedQuery
+} from '@safely/ux';
 
 import { Button, DeviceLinkExclamationmark96, Icon, Screen, Text } from '@mobile/shared/ui';
 
+import { SyncOnboarding } from './components/SyncOnboarding';
 import { styles } from './SafetyScreen.styles';
+import { shouldShowSyncOnboarding } from './shouldShowSyncOnboarding';
 
 const steps = [
     'onboarding.accountCreated.steps.step1',
@@ -25,6 +32,29 @@ export const SafetyScreen = () => {
     const { mutateAsync: connectToNewDevice } = useConnectAccountToNewDevice();
     const navigation = useNavigation();
 
+    const { data: completed } = useSyncOnboardingCompletedQuery();
+    const isFocused = useIsFocused();
+    const [forceOpen, setForceOpen] = useState(false);
+    const [dismissed, setDismissed] = useState(false);
+
+    useFocusEffect(useCallback(() => () => setDismissed(false), []));
+
+    const overlayVisible = shouldShowSyncOnboarding({
+        forceOpen,
+        isFocused,
+        completed,
+        dismissed
+    });
+
+    const handleOnboardingClose = useCallback(() => {
+        setForceOpen(false);
+        setDismissed(true);
+    }, []);
+
+    const handleOnboardingFinish = useCallback(() => {
+        setForceOpen(false);
+    }, []);
+
     const handleConnect = useCallback(async () => {
         using secureEncryptedStorage = getSecureEncrypted();
         await secureEncryptedStorage.unlock();
@@ -36,7 +66,12 @@ export const SafetyScreen = () => {
     return (
         <Screen>
             <Screen.Header>
-                <Button style={styles.headerButton} size="small" type="secondary">
+                <Button
+                    style={styles.headerButton}
+                    size="small"
+                    type="secondary"
+                    onPress={() => setForceOpen(true)}
+                >
                     About Sync
                 </Button>
             </Screen.Header>
@@ -72,6 +107,9 @@ export const SafetyScreen = () => {
                     </Button>
                 </View>
             </Screen.Content>
+            {overlayVisible && (
+                <SyncOnboarding onClose={handleOnboardingClose} onFinish={handleOnboardingFinish} />
+            )}
         </Screen>
     );
 };

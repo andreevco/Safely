@@ -240,6 +240,24 @@
             }
         }
     },
+    "safety": {
+        "syncOnboarding": {
+            "steps": {
+                "protect": {
+                    "title": "How to protect your wallets",
+                    "subtitle": "Safely is a self-custody app: you are responsible for keeping your wallet recovery phrases safe."
+                },
+                "noPaper": {
+                    "title": "Do not write down recovery phrases",
+                    "subtitle": "Paper notes can be lost, damaged, or stolen. Keeping track of many wallets quickly becomes difficult."
+                },
+                "useSync": {
+                    "title": "Use Safely Sync to protect your wallets",
+                    "subtitle": "Safely automatically and securely synchronizes recovery phrases across your devices. <link>How Safely Sync works?</link>"
+                }
+            }
+        }
+    },
     "customizeWallet": {
         "title": "Customize your wallet",
         "description": "Set a name and icon to tell this wallet apart here. Sync across your devices.",
