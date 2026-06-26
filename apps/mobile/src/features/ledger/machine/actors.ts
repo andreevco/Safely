@@ -52,6 +52,19 @@ export const scanLedgerDevices = fromCallback<AnyEventObject, { ledgerKit: Devic
     }
 );
 
+export type DisconnectLedgerSessionInput = {
+    ledgerKit: DeviceManagementKit;
+    sessionId: string | null;
+};
+
+export const disconnectLedgerSession = fromPromise<void, DisconnectLedgerSessionInput>(
+    async ({ input }) => {
+        if (input.sessionId) {
+            await input.ledgerKit.disconnect({ sessionId: input.sessionId }).catch(() => {});
+        }
+    }
+);
+
 export type ConnectLedgerSessionInput = {
     ledgerKit: DeviceManagementKit;
     device: DiscoveredDevice;

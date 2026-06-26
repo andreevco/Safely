@@ -14,7 +14,7 @@ export const useLedgerPairing = () => {
     });
 
     const machineSessionId = snapshot.context.sessionId;
-    const { failedStep } = snapshot.context;
+    const { failedStep, error } = snapshot.context;
 
     useEffect(() => {
         if (machineSessionId) {
@@ -32,6 +32,7 @@ export const useLedgerPairing = () => {
 
     return {
         status,
-        failedStep: status === 'error' ? failedStep : PAIRING_CONNECT_STEP
+        failedStep: status === 'error' ? failedStep : PAIRING_CONNECT_STEP,
+        error: status === 'error' ? error : undefined
     };
 };

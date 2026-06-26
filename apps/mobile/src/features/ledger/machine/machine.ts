@@ -7,6 +7,7 @@ import { LedgerSigningCancelledError } from '@safely/core';
 import {
     checkLedgerAppVersion,
     connectLedgerSession,
+    disconnectLedgerSession,
     openBitcoinApp,
     runLedgerSession,
     scanLedgerDevices,
@@ -52,6 +53,7 @@ export const ledgerSigningMachine = setup({
     actors: {
         scanLedgerDevices,
         connectLedgerSession,
+        disconnectLedgerSession,
         openBitcoinApp,
         checkLedgerAppVersion,
         verifyLedgerFingerprint,
@@ -197,14 +199,25 @@ export const ledgerSigningMachine = setup({
                 signedDelay: { target: 'done' }
             }
         },
+        disconnecting: {
+            invoke: {
+                src: 'disconnectLedgerSession',
+                input: ({ context }) => ({
+                    ledgerKit: context.ledgerKit,
+                    sessionId: context.sessionId
+                }),
+                onDone: { actions: assign({ sessionId: () => null }), target: 'scanning' },
+                onError: { actions: assign({ sessionId: () => null }), target: 'scanning' }
+            }
+        },
         wrongDevice: {
-            on: { RETRY: { target: 'scanning' } }
+            on: { RETRY: { target: 'disconnecting' } }
         },
         unsupportedApp: {
-            on: { RETRY: { target: 'scanning' } }
+            on: { RETRY: { target: 'disconnecting' } }
         },
         failed: {
-            on: { RETRY: { target: 'scanning' } }
+            on: { RETRY: { target: 'disconnecting' } }
         },
         cancelled: {
             entry: assign({ error: () => new LedgerSigningCancelledError() }),

@@ -5,6 +5,8 @@ import type {
     ExecuteDeviceActionReturnType
 } from '@ledgerhq/device-management-kit';
 
+import { LedgerDeviceBusyError } from '../entities/errors';
+
 type ActionType<Output> = ExecuteDeviceActionReturnType<
     Output,
     DmkError,
@@ -38,7 +40,11 @@ export const awaitDeviceAction = <Output>(
                 } else if (state.status === DeviceActionStatus.Error) {
                     signal?.removeEventListener('abort', onAbort);
                     subscription.unsubscribe();
-                    reject(new Error(`${state.error._tag} ${state.error?.message}`));
+                    reject(
+                        state.error._tag === 'UnknownDeviceExchangeError'
+                            ? new LedgerDeviceBusyError()
+                            : new Error(`${state.error._tag} ${state.error?.message}`)
+                    );
                 }
             },
             error: error => {

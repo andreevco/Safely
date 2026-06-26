@@ -12,6 +12,7 @@
         "title": "Review on Ledger",
         "subtitle": "Complete the following steps on your Ledger to approve the transaction.",
         "deviceFallback": "Ledger",
+        "deviceBusyToast": "Cancel the pending action on your Ledger, then retry",
         "steps": {
             "connect": "Connect your {{device}}",
             "openApp": "Open the Bitcoin app",

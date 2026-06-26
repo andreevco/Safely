@@ -9,7 +9,6 @@ import {
 } from '@safely/core';
 import { useBtcWalletBalances } from '@safely/ux';
 
-import { isLedgerSessionConnected } from './is-ledger-session-connected';
 import { ledgerKeys } from './keys';
 import { useLedgerSession } from './LedgerSigningProvider';
 
@@ -17,7 +16,7 @@ const ACCOUNT_COUNT = 10;
 const DERIVATIONS_SEARCH_TIMEOUT = 20_000;
 
 export const useLedgerAccounts = (options?: { lockedIndexes?: number[] }) => {
-    const { getLedgerKit, sessionId, selectedDevice } = useLedgerSession();
+    const { getLedgerKit, sessionId, setSessionId, selectedDevice } = useLedgerSession();
     const lockedIndexes = useMemo(
         () => new Set(options?.lockedIndexes ?? []),
         [options?.lockedIndexes]
@@ -27,7 +26,7 @@ export const useLedgerAccounts = (options?: { lockedIndexes?: number[] }) => {
     );
     const hasPreselected = useRef(false);
 
-    const { data, isError, refetch } = useQuery({
+    const { data, isError } = useQuery({
         queryKey: ledgerKeys.accounts(selectedDevice?.id).toKey(),
         enabled: sessionId !== null,
         staleTime: Infinity,
@@ -112,15 +111,15 @@ export const useLedgerAccounts = (options?: { lockedIndexes?: number[] }) => {
     );
 
     const retry = useCallback(async (): Promise<boolean> => {
-        if (sessionId && (await isLedgerSessionConnected(getLedgerKit(), sessionId))) {
-            setIsTimedOut(false);
-            await refetch();
-
-            return true;
+        if (sessionId) {
+            await getLedgerKit()
+                .disconnect({ sessionId })
+                .catch(() => {});
+            setSessionId(null);
         }
 
         return false;
-    }, [sessionId, getLedgerKit, refetch]);
+    }, [sessionId, getLedgerKit, setSessionId]);
 
     const selectedAccounts = accounts
         .filter(account => selectedIndexes.has(account.index))

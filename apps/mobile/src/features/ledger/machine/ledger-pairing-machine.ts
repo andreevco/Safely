@@ -14,6 +14,7 @@ type LedgerPairingInput = {
 
 type LedgerPairingContext = LedgerPairingInput & {
     failedStep: number;
+    error: unknown;
 };
 
 export const ledgerPairingMachine = setup({
@@ -30,7 +31,7 @@ export const ledgerPairingMachine = setup({
     }
 }).createMachine({
     id: 'ledgerPairing',
-    context: ({ input }) => ({ ...input, failedStep: PAIRING_CONNECT_STEP }),
+    context: ({ input }) => ({ ...input, failedStep: PAIRING_CONNECT_STEP, error: undefined }),
     initial: 'start',
     states: {
         start: {
@@ -45,7 +46,10 @@ export const ledgerPairingMachine = setup({
                     target: 'openingApp'
                 },
                 onError: {
-                    actions: assign({ failedStep: () => PAIRING_CONNECT_STEP }),
+                    actions: assign({
+                        failedStep: () => PAIRING_CONNECT_STEP,
+                        error: ({ event }) => event.error
+                    }),
                     target: 'failed'
                 }
             }
@@ -59,7 +63,10 @@ export const ledgerPairingMachine = setup({
                 }),
                 onDone: 'connected',
                 onError: {
-                    actions: assign({ failedStep: () => PAIRING_OPEN_APP_STEP }),
+                    actions: assign({
+                        failedStep: () => PAIRING_OPEN_APP_STEP,
+                        error: ({ event }) => event.error
+                    }),
                     target: 'failed'
                 }
             }

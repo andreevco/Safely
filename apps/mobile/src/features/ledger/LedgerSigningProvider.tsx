@@ -18,7 +18,6 @@ import type { Logger } from '@safely/sync';
 import { LedgerSessionPortProvider } from '@safely/ux';
 
 import { createLedgerKit } from './createLedgerKit';
-import { isLedgerSessionConnected } from './is-ledger-session-connected';
 import { ledgerSigningMachine } from './machine';
 
 export type LedgerSigningActor = ActorRefFrom<typeof ledgerSigningMachine>;
@@ -93,19 +92,22 @@ export const LedgerSigningProvider = (props: LedgerSigningProviderProps) => {
             run: (session: LedgerSession) => Promise<T>
         ): Promise<T> =>
             new Promise<T>((resolve, reject) => {
-                void (async () => {
+                (async () => {
                     const ledgerKit = getLedgerKit();
-                    const reusableSessionId =
-                        sessionIdRef.current &&
-                        (await isLedgerSessionConnected(ledgerKit, sessionIdRef.current))
-                            ? sessionIdRef.current
-                            : null;
+
+                    const previousSessionId = sessionIdRef.current;
+                    if (previousSessionId) {
+                        await ledgerKit
+                            .disconnect({ sessionId: previousSessionId })
+                            .catch(() => {});
+                        setSessionId(null);
+                    }
 
                     const actor = createActor(ledgerSigningMachine, {
                         input: {
                             ledgerKit,
                             expectedFingerprint: params.expectedFingerprint,
-                            sessionId: reusableSessionId,
+                            sessionId: null,
                             run
                         }
                     });
@@ -135,7 +137,7 @@ export const LedgerSigningProvider = (props: LedgerSigningProviderProps) => {
                     setActiveActor(actor);
                     actor.start();
                     openConnectScreen();
-                })();
+                })().catch(reject);
             }),
         [getLedgerKit, openConnectScreen, setSessionId]
     );

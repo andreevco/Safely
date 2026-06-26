@@ -5,6 +5,9 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ImageSourcePropType } from 'react-native';
 
+import { LedgerDeviceBusyError } from '@safely/core';
+import { useToast } from '@safely/ux';
+
 import type { LedgerStep, LedgerStepStatus } from '@mobile/features/ledger';
 import { getLedgerImage, useLedgerPairing, useLedgerSession } from '@mobile/features/ledger';
 
@@ -25,12 +28,15 @@ type LedgerPairingScreenState = {
 };
 
 export const useLedgerPairingScreen = (): LedgerPairingScreenState => {
+    const toast = useToast();
     const { t } = useTranslation();
     const navigation = useNavigation();
     const { selectedDevice } = useLedgerSession();
-    const { status, failedStep } = useLedgerPairing();
+    const { status, failedStep, error } = useLedgerPairing();
 
     const modelLabel = selectedDevice ? (MODEL_LABEL[selectedDevice.deviceModel.model] ?? '') : '';
+
+    const isDeviceBusy = error instanceof LedgerDeviceBusyError;
 
     useEffect(() => {
         if (status === 'connected') {
@@ -42,10 +48,16 @@ export const useLedgerPairingScreen = (): LedgerPairingScreenState => {
             return () => clearTimeout(timer);
         }
 
-        if (status === 'error') {
-            navigation.dispatch(StackActions.replace('LedgerPairingUnsuccessModal'));
+        if (status !== 'error') {
+            return;
         }
-    }, [status, navigation]);
+
+        if (isDeviceBusy) {
+            toast(t('ledgerSign.deviceBusyToast'));
+        }
+
+        navigation.dispatch(StackActions.replace('LedgerPairingUnsuccessModal'));
+    }, [status, navigation, isDeviceBusy, toast, t]);
 
     const currentStep = status === 'connecting' ? 0 : status === 'openingApp' ? 1 : 2;
 

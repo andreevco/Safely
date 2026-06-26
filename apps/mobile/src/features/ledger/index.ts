@@ -6,7 +6,6 @@ export { getBluetoothState } from './getBluetoothState';
 export { getLedgerImage } from './getLedgerImage';
 export { getLedgerModelName } from './getLedgerModelName';
 export { getSignalLevel, type SignalLevel } from './getSignalLevel';
-export { isLedgerSessionConnected } from './is-ledger-session-connected';
 export {
     LedgerSigningProvider,
     useLedgerSession,

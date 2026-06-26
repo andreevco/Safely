@@ -11,3 +11,4 @@ export * from './portfolio-already-exists.error';
 export * from './portfolio-generation-failed.error';
 export * from './outputs-are-spending-more-than-inputs.error';
 export * from './ledger-signing-cancelled.error';
+export * from './ledger-device-busy.error';

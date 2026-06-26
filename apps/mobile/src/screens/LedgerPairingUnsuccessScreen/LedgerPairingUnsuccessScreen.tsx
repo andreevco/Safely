@@ -2,11 +2,7 @@ import { useNavigation } from '@react-navigation/core';
 import { CommonActions } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 
-import {
-    isLedgerSessionConnected,
-    LedgerStatusScreen,
-    useLedgerSession
-} from '@mobile/features/ledger';
+import { LedgerStatusScreen, useLedgerSession } from '@mobile/features/ledger';
 import { ExclamationmarkCircle96, Icon } from '@mobile/shared/ui';
 
 export const LedgerPairingUnsuccessScreen = () => {
@@ -15,17 +11,13 @@ export const LedgerPairingUnsuccessScreen = () => {
     const { getLedgerKit, sessionId, setSessionId } = useLedgerSession();
 
     const handleRetry = async () => {
-        const canReuse = sessionId
-            ? await isLedgerSessionConnected(getLedgerKit(), sessionId)
-            : false;
-
-        if (canReuse) {
-            navigation.dispatch(CommonActions.navigate('LedgerPairingModal'));
-
-            return;
+        if (sessionId) {
+            await getLedgerKit()
+                .disconnect({ sessionId })
+                .catch(() => {});
+            setSessionId(null);
         }
 
-        setSessionId(null);
         navigation.dispatch(CommonActions.navigate('LedgerDiscoveryModal'));
     };
 

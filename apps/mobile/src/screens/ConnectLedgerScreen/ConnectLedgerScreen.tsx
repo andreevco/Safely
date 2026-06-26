@@ -5,11 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { State } from 'react-native-ble-plx';
 
-import {
-    getBluetoothState,
-    isLedgerSessionConnected,
-    useLedgerSession
-} from '@mobile/features/ledger';
+import { getBluetoothState, useLedgerSession } from '@mobile/features/ledger';
 import { resources } from '@mobile/shared/resources';
 import { Button, Image, Screen, StepsList, Text } from '@mobile/shared/ui';
 
@@ -36,19 +32,13 @@ export const ConnectLedgerScreen = () => {
     ];
 
     const proceedToLedgerFlow = useCallback(async () => {
-        const canReuse = sessionId
-            ? await isLedgerSessionConnected(getLedgerKit(), sessionId)
-            : false;
-
-        if (canReuse) {
-            navigation.dispatch(
-                CommonActions.navigate('LedgerFlowModal', { screen: 'LedgerPairingModal' })
-            );
-
-            return;
+        if (sessionId) {
+            await getLedgerKit()
+                .disconnect({ sessionId })
+                .catch(() => {});
+            setSessionId(null);
         }
 
-        setSessionId(null);
         navigation.dispatch(
             CommonActions.navigate('LedgerFlowModal', { screen: 'LedgerDiscoveryModal' })
         );

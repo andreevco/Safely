@@ -3,8 +3,8 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { PortfolioType } from '@safely/core';
-import { useActivePortfolio } from '@safely/ux';
+import { LedgerDeviceBusyError, PortfolioType } from '@safely/core';
+import { useActivePortfolio, useToast } from '@safely/ux';
 
 import type { LedgerSigningActor, LedgerStepStatus } from '@mobile/features/ledger';
 import {
@@ -23,11 +23,13 @@ interface Props {
 }
 
 const ConnectToSignContent = ({ actor }: Props) => {
+    const toast = useToast();
     const { t } = useTranslation();
     const { close } = useBottomSheet();
 
     const value = useSelector(actor, snapshot => snapshot.value);
     const step = useSelector(actor, snapshot => snapshot.context.step);
+    const error = useSelector(actor, snapshot => snapshot.context.error);
     const isDone = useSelector(actor, snapshot => snapshot.status === 'done');
 
     const portfolio = useActivePortfolio();
@@ -40,6 +42,12 @@ const ConnectToSignContent = ({ actor }: Props) => {
             close();
         }
     }, [isDone, close]);
+
+    useEffect(() => {
+        if (error instanceof LedgerDeviceBusyError) {
+            toast(t('ledgerSign.deviceBusyToast'));
+        }
+    }, [error, toast, t]);
 
     const stepStatus = (index: number): LedgerStepStatus => {
         if (index < step) {
