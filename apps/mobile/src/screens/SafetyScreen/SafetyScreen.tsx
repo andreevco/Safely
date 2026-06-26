@@ -1,5 +1,5 @@
-import { useFocusEffect, useIsFocused } from '@react-navigation/native';
-import { useCallback, useState } from 'react';
+import { useFocusEffect, useIsFocused, useNavigation } from '@react-navigation/native';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
@@ -11,7 +11,13 @@ import {
     useSyncOnboardingCompletedQuery
 } from '@safely/ux';
 
-import { Button, Screen } from '@mobile/shared/ui';
+import {
+    Button,
+    Icon,
+    Screen,
+    ShieldCheckmark28,
+    ShieldExclamationmark28
+} from '@mobile/shared/ui';
 
 import { ProtectedView } from './components/ProtectedView';
 import { SoloView } from './components/SoloView';
@@ -29,8 +35,26 @@ export const SafetyScreen = () => {
     } = useAppContext();
     const { mutateAsync: connectToNewDevice } = useConnectAccountToNewDevice();
 
+    const navigation = useNavigation();
     const linkState = useAccountLinkState();
     const isFocused = useIsFocused();
+
+    useEffect(() => {
+        navigation.setOptions({
+            tabBarIcon: ({ color }: { color: string }) => (
+                <Icon
+                    icon={
+                        linkState === AccountLinkState.PROTECTED
+                            ? ShieldCheckmark28
+                            : ShieldExclamationmark28
+                    }
+                    style={{ tintColor: color }}
+                />
+            ),
+            tabBarBadge: linkState === AccountLinkState.PROTECTED ? undefined : '',
+            tabBarBadgeStyle: styles.badge(linkState)
+        });
+    }, [linkState, navigation]);
 
     const { data: completed } = useSyncOnboardingCompletedQuery();
     const [forceOpen, setForceOpen] = useState(false);
