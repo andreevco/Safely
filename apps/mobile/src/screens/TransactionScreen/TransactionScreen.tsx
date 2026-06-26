@@ -120,7 +120,10 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
                         </Text>
                         {rate && (
                             <Text variant="bodyL" color="secondary" textAlign="center">
-                                ≈ {activity.transaction.value.convert(rate).format(formatter)}
+                                ≈{SPACE.THSP}
+                                {activity.transaction.value
+                                    .convert(rate)
+                                    .format(formatter, { currencyDisplay: 'code' })}
                             </Text>
                         )}
                     </View>

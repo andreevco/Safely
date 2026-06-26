@@ -74,6 +74,8 @@ export const OrderScreen = (props: OrderScreenProps) => {
           })
         : null;
 
+    const formattedCryptoAmount = order.cryptoAmount?.format(formatter);
+
     return (
         <Screen>
             <Screen.Header>
@@ -101,14 +103,19 @@ export const OrderScreen = (props: OrderScreenProps) => {
                         </View>
                     </View>
                     <View style={styles.amountContainer}>
-                        <Text variant="titleL" color="primary" textAlign="center">
-                            {order.order.type === 'offramp' ? '−' : '+'}
-                            {SPACE.THSP}
-                            {order.order.cryptoAmount}
-                        </Text>
+                        {formattedCryptoAmount && (
+                            <Text variant="titleL" color="primary" textAlign="center">
+                                {order.order.type === 'offramp' ? '−' : '+'}
+                                {SPACE.THSP}
+                                {formattedCryptoAmount}
+                            </Text>
+                        )}
                         {rate && order.cryptoAmount && (
                             <Text variant="bodyL" color="secondary" textAlign="center">
-                                ≈ {order.cryptoAmount.convert(rate).format(formatter)}
+                                ≈{SPACE.THSP}
+                                {order.cryptoAmount
+                                    .convert(rate)
+                                    .format(formatter, { currencyDisplay: 'code' })}
                             </Text>
                         )}
                     </View>
