@@ -1,4 +1,4 @@
-import { useFocusEffect, useIsFocused } from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
@@ -31,7 +31,6 @@ export const SafetyScreen = () => {
     const linkState = useAccountLinkState();
 
     const { data: completed } = useSyncOnboardingCompletedQuery();
-    const isFocused = useIsFocused();
     const [forceOpen, setForceOpen] = useState(false);
     const [dismissed, setDismissed] = useState(false);
 
@@ -39,7 +38,6 @@ export const SafetyScreen = () => {
 
     const overlayVisible = shouldShowSyncOnboarding({
         forceOpen,
-        isFocused,
         completed,
         dismissed
     });
