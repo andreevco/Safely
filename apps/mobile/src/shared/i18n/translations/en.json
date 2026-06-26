@@ -342,7 +342,7 @@
         },
         "reconnect": {
             "title": "Link device",
-            "description": "On another device, open Safely, go to Safety, tap “Link device”, then scan this QR code.",
+            "description": "Open Safely on another device where this account is active. go to Safety, tap “Link device”, then scan this QR code.",
             "banner": "This device will have full access to your account. It can be used if your other device is lost.",
             "timeout": "Connection timed out. Please try again.",
             "successToast": "Device re-linked"

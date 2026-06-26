@@ -1,4 +1,4 @@
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
@@ -16,6 +16,7 @@ import { Button, Screen } from '@mobile/shared/ui';
 import { ProtectedView } from './components/ProtectedView';
 import { SoloView } from './components/SoloView';
 import { SyncOnboarding } from './components/SyncOnboarding';
+import { UnlinkedView } from './components/UnlinkedView';
 import { styles } from './SafetyScreen.styles';
 import { shouldShowSyncOnboarding } from './shouldShowSyncOnboarding';
 
@@ -29,6 +30,7 @@ export const SafetyScreen = () => {
     const { mutateAsync: connectToNewDevice } = useConnectAccountToNewDevice();
 
     const linkState = useAccountLinkState();
+    const isFocused = useIsFocused();
 
     const { data: completed } = useSyncOnboardingCompletedQuery();
     const [forceOpen, setForceOpen] = useState(false);
@@ -58,6 +60,19 @@ export const SafetyScreen = () => {
         await connectToNewDevice({ secureEncryptedStorage });
     }, [getSecureEncrypted, connectToNewDevice]);
 
+    const renderContent = () => {
+        switch (linkState) {
+            case AccountLinkState.PROTECTED:
+                return <ProtectedView />;
+            case AccountLinkState.SOLO:
+                return <SoloView />;
+            case AccountLinkState.UNLINKED:
+                return isFocused ? <UnlinkedView /> : null;
+            default:
+                return null;
+        }
+    };
+
     return (
         <Screen>
             <Screen.Header>
@@ -71,22 +86,19 @@ export const SafetyScreen = () => {
                 </Button>
             </Screen.Header>
 
-            {linkState === AccountLinkState.PROTECTED && <ProtectedView />}
-            {[AccountLinkState.SOLO, AccountLinkState.UNLINKED].includes(linkState) && <SoloView />}
+            {renderContent()}
 
-            <View style={styles.buttonContainer}>
-                <Button
-                    type={
-                        [AccountLinkState.UNLINKED, AccountLinkState.SOLO].includes(linkState)
-                            ? 'primary'
-                            : 'secondary'
-                    }
-                    size="large"
-                    onPress={handleConnect}
-                >
-                    {t('safety.linkDevice')}
-                </Button>
-            </View>
+            {linkState !== AccountLinkState.UNLINKED && (
+                <View style={styles.buttonContainer}>
+                    <Button
+                        type={linkState === AccountLinkState.SOLO ? 'primary' : 'secondary'}
+                        size="large"
+                        onPress={handleConnect}
+                    >
+                        {t('safety.linkDevice')}
+                    </Button>
+                </View>
+            )}
 
             {overlayVisible && (
                 <SyncOnboarding onClose={handleOnboardingClose} onFinish={handleOnboardingFinish} />

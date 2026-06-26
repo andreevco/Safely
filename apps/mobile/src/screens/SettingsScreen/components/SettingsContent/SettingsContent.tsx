@@ -27,7 +27,7 @@ export const SettingsContent = () => {
 
     return (
         <Screen.Scrollable contentContainerStyle={styles.container}>
-            <DeviceUnlinkedBanner style={styles.banner} />
+            <DeviceUnlinkedBanner style={styles.banner} inModal />
             {hasPortfolio && <CurrentWalletSection />}
             <AccountSection />
             <SettingsGroups />
