@@ -19,7 +19,7 @@ export const DeviceUnlinkedBanner = ({ style }: DeviceUnlinkedBannerProps) => {
     const linkState = useAccountLinkState();
 
     const handlePress = useCallback(() => {
-        navigation.navigate('TabsNavigator', { screen: 'SafetyScreen' });
+        navigation.navigate('ReconnectDeviceModal');
     }, [navigation]);
 
     if (linkState !== AccountLinkState.UNLINKED) {
