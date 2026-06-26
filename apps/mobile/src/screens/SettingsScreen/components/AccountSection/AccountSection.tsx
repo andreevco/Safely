@@ -16,7 +16,6 @@ import {
 
 import { Button, Cell, List } from '@mobile/shared/ui';
 
-import { SyncDot } from '../SyncDot';
 import { styles } from './AccountSection.styles';
 import { AccountSelector } from './AccountSelector';
 
@@ -118,7 +117,6 @@ export const AccountSection = () => {
                             <Cell.Title>{t('settings.groups.account.options.security')}</Cell.Title>
                         </Cell.Row>
                     </Cell.Content>
-                    <SyncDot />
                 </Cell>
             </List.Group>
             <View style={styles.buttonsContainer}>
