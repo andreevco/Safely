@@ -1,26 +1,24 @@
-import { useNavigation } from '@react-navigation/core';
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import {
+    AccountLinkState,
+    useAccountLinkState,
     useAppContext,
     useConnectAccountToNewDevice,
     useSyncOnboardingCompletedQuery
 } from '@safely/ux';
 
-import { Button, DeviceLinkExclamationmark96, Icon, Screen, Text } from '@mobile/shared/ui';
+import { Button, Screen } from '@mobile/shared/ui';
 
+import { ProtectedView } from './components/ProtectedView';
+import { SoloView } from './components/SoloView';
 import { SyncOnboarding } from './components/SyncOnboarding';
+import { UnlinkedView } from './components/UnlinkedView';
 import { styles } from './SafetyScreen.styles';
 import { shouldShowSyncOnboarding } from './shouldShowSyncOnboarding';
-
-const steps = [
-    'onboarding.accountCreated.steps.step1',
-    'onboarding.accountCreated.steps.step2',
-    'onboarding.accountCreated.steps.step3'
-] as const;
 
 export const SafetyScreen = () => {
     const { t } = useTranslation();
@@ -30,7 +28,8 @@ export const SafetyScreen = () => {
         }
     } = useAppContext();
     const { mutateAsync: connectToNewDevice } = useConnectAccountToNewDevice();
-    const navigation = useNavigation();
+
+    const linkState = useAccountLinkState();
 
     const { data: completed } = useSyncOnboardingCompletedQuery();
     const isFocused = useIsFocused();
@@ -60,8 +59,7 @@ export const SafetyScreen = () => {
         await secureEncryptedStorage.unlock();
 
         await connectToNewDevice({ secureEncryptedStorage });
-        navigation.goBack();
-    }, [getSecureEncrypted, connectToNewDevice, navigation]);
+    }, [getSecureEncrypted, connectToNewDevice]);
 
     return (
         <Screen>
@@ -72,41 +70,20 @@ export const SafetyScreen = () => {
                     type="secondary"
                     onPress={() => setForceOpen(true)}
                 >
-                    About Sync
+                    {t('safety.aboutSync')}
                 </Button>
             </Screen.Header>
-            <Screen.Content>
-                <View style={styles.content}>
-                    <Icon icon={DeviceLinkExclamationmark96} />
-                    <View style={styles.textContainer}>
-                        <Text textAlign="center" variant="titleM">
-                            {t('security.protectAccount.title')}
-                        </Text>
-                        <Text textAlign="center" variant="bodyL" color="secondary">
-                            {t('security.protectAccount.subtitle')}
-                        </Text>
-                    </View>
-                    <View style={styles.stepsContainer}>
-                        {steps.map((step, index) => (
-                            <View key={step} style={styles.stepRow}>
-                                <View style={styles.stepNumber}>
-                                    <Text variant="bodyM" color="tertiary" monospace>
-                                        {index + 1}.
-                                    </Text>
-                                </View>
-                                <View style={styles.stepText}>
-                                    <Text variant="bodyM">{t(step)}</Text>
-                                </View>
-                            </View>
-                        ))}
-                    </View>
-                </View>
-                <View style={styles.buttonContainer}>
-                    <Button type="primary" size="large" onPress={handleConnect}>
-                        Link device
-                    </Button>
-                </View>
-            </Screen.Content>
+
+            {linkState === AccountLinkState.PROTECTED && <ProtectedView />}
+            {linkState === AccountLinkState.UNLINKED && <UnlinkedView />}
+            {linkState === AccountLinkState.SOLO && <SoloView />}
+
+            <View style={styles.buttonContainer}>
+                <Button type="primary" size="large" onPress={handleConnect}>
+                    {t('safety.linkDevice')}
+                </Button>
+            </View>
+
             {overlayVisible && (
                 <SyncOnboarding onClose={handleOnboardingClose} onFinish={handleOnboardingFinish} />
             )}

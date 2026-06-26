@@ -177,11 +177,6 @@
             "warning": "Do not share this phrase.\nAnyone with it can access your wallet.",
             "copy": "Copy"
         },
-        "protectAccount": {
-            "title": "No linked device",
-            "subtitle": "Link another device as a redundant storage for your wallets. If this phone is lost and you don't have linked devices, you won't be able to restore your wallets.",
-            "linkDevice": "Link device"
-        },
         "accountProtected": {
             "title": "Linked devices",
             "subtitle": "These devices have access to your wallets and can help restore access if another device is lost. "
@@ -241,6 +236,12 @@
         }
     },
     "safety": {
+        "aboutSync": "About Sync",
+        "linkDevice": "Link device",
+        "protectAccount": {
+            "title": "No linked device",
+            "subtitle": "Link another device as a redundant storage for your wallets. If this phone is lost and you don't have linked devices, you won't be able to restore your wallets."
+        },
         "syncOnboarding": {
             "steps": {
                 "protect": {
