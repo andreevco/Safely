@@ -1,6 +1,7 @@
 import { StyleSheet } from 'react-native-unistyles';
 
 const HEADER_HEIGHT = 64;
+const CARD_BORDER_HEIGHT = 64;
 
 export const styles = StyleSheet.create((theme, rt) => ({
     overlay: {
@@ -38,12 +39,30 @@ export const styles = StyleSheet.create((theme, rt) => ({
     card: {
         flex: 1,
         marginTop: -theme.spacing[24],
-        paddingHorizontal: theme.spacing[32],
-        paddingTop: theme.spacing[24],
+        borderTopLeftRadius: theme.radius.xl,
+        borderTopRightRadius: theme.radius.xl,
+        borderCurve: 'continuous',
+        overflow: 'hidden',
+        backgroundColor: theme.colors.background.primary
+    },
+    cardBorder: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: CARD_BORDER_HEIGHT
+    },
+    cardContent: {
+        flex: 1,
+        marginTop: theme.border.hairline,
+        marginHorizontal: theme.border.hairline,
+        paddingHorizontal: theme.spacing[32] - theme.border.hairline,
+        paddingTop: theme.spacing[24] - theme.border.hairline,
         gap: theme.spacing[16],
         backgroundColor: theme.colors.background.primary,
-        borderTopWidth: theme.border.hairline,
-        borderTopColor: theme.colors.other.transparentElement
+        borderTopLeftRadius: theme.radius.xl - theme.border.hairline,
+        borderTopRightRadius: theme.radius.xl - theme.border.hairline,
+        borderCurve: 'continuous'
     },
     footer: {
         flexDirection: 'row',
