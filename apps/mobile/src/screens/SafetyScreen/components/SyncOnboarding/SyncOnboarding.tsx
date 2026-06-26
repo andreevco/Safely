@@ -1,41 +1,60 @@
-import { useEffect, useRef } from 'react';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
-import PagerView, { type PagerViewOnPageSelectedEvent } from 'react-native-pager-view';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
-import { useSyncOnboardingFlow, useToast } from '@safely/ux';
+import { useToast } from '@safely/ux';
 
 import { Button, Icon } from '@mobile/shared/ui';
 import { ArrowLeft16, Xmark16 } from '@mobile/shared/ui/Icon';
+import { smoothstepGradient } from '@mobile/shared/utils';
 
+import { StepContent } from './StepContent';
+import { StepIllustration } from './StepIllustration';
 import { SYNC_ONBOARDING_STEPS } from './steps';
 import { styles } from './SyncOnboarding.styles';
-import { SyncOnboardingStep } from './SyncOnboardingStep';
+import { useStepTransition } from './useStepTransition';
+import { useSyncOnboardingFlow } from './useSyncOnboardingFlow';
 
 interface Props {
     onClose: () => void;
     onFinish: () => void;
 }
 
+const CARD_BORDER_COLORS = smoothstepGradient('#ffffff', 16, 0.16);
+const CARD_BORDER_START = { x: 0, y: 1 };
+const CARD_BORDER_END = { x: 0, y: 0 };
+
 export const SyncOnboarding = ({ onClose, onFinish }: Props) => {
     const { t } = useTranslation();
-    const pagerRef = useRef<PagerView>(null);
-    const { index, isFirst, goNext, goBack, moveToIndex } = useSyncOnboardingFlow({
+    const { index, isFirst, goNext, goBack } = useSyncOnboardingFlow({
         stepCount: SYNC_ONBOARDING_STEPS.length,
         onFinish
     });
+    const { previousIndex, outgoingStyle, incomingStyle, isAnimating } = useStepTransition(index);
     const toast = useToast();
-    useEffect(() => {
-        pagerRef.current?.setPage(index);
-    }, [index]);
 
-    const handlePageSelected = (e: PagerViewOnPageSelectedEvent) => {
-        moveToIndex(e.nativeEvent.position);
-    };
+    const currentStep = SYNC_ONBOARDING_STEPS[index];
+    const previousStep = previousIndex !== null ? SYNC_ONBOARDING_STEPS[previousIndex] : null;
 
     const handleLinkPress = () => {
         toast('TODO: Link');
+    };
+
+    const handleNext = () => {
+        if (isAnimating) {
+            return;
+        }
+
+        void goNext();
+    };
+
+    const handleBack = () => {
+        if (isAnimating) {
+            return;
+        }
+
+        goBack();
     };
 
     return (
@@ -50,23 +69,46 @@ export const SyncOnboarding = ({ onClose, onFinish }: Props) => {
                 </Pressable>
             </View>
 
-            <PagerView ref={pagerRef} style={styles.pager} onPageSelected={handlePageSelected}>
-                {SYNC_ONBOARDING_STEPS.map(step => (
-                    <SyncOnboardingStep key={step.id} step={step} onLinkPress={handleLinkPress} />
-                ))}
-            </PagerView>
+            <View style={styles.illustrationZone}>
+                {previousStep && <StepIllustration step={previousStep} style={outgoingStyle} />}
+                <StepIllustration step={currentStep} style={incomingStyle} />
+            </View>
+
+            <View style={styles.card}>
+                <LinearGradient
+                    colors={CARD_BORDER_COLORS}
+                    start={CARD_BORDER_START}
+                    end={CARD_BORDER_END}
+                    style={styles.cardBorder}
+                    pointerEvents="none"
+                />
+                <View style={styles.cardContent}>
+                    {previousStep && (
+                        <StepContent
+                            step={previousStep}
+                            style={outgoingStyle}
+                            onLinkPress={handleLinkPress}
+                        />
+                    )}
+                    <StepContent
+                        step={currentStep}
+                        style={incomingStyle}
+                        onLinkPress={handleLinkPress}
+                    />
+                </View>
+            </View>
 
             <View style={styles.footer}>
                 {!isFirst ? (
                     <Animated.View entering={FadeIn.duration(150)} exiting={FadeOut.duration(150)}>
-                        <Pressable style={styles.backButton} onPress={goBack} hitSlop={12}>
+                        <Pressable style={styles.backButton} onPress={handleBack} hitSlop={12}>
                             <Icon icon={ArrowLeft16} color="primary" />
                         </Pressable>
                     </Animated.View>
                 ) : (
                     <View />
                 )}
-                <Button type="primary" size="medium" onPress={() => void goNext()}>
+                <Button type="primary" size="medium" onPress={handleNext}>
                     {t('common.next')}
                 </Button>
             </View>

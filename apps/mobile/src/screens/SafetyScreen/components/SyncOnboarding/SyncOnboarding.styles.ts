@@ -24,17 +24,18 @@ export const styles = StyleSheet.create((theme, rt) => ({
         justifyContent: 'center',
         backgroundColor: 'rgba(255, 255, 255, 0.12)'
     },
-    pager: {
-        flex: 1
-    },
-    page: {
-        flex: 1
-    },
-    illustration: {
+    illustrationZone: {
         width: '100%',
-        marginTop: -HEADER_HEIGHT,
         aspectRatio: 1,
-        backgroundColor: theme.colors.background.secondary
+        marginTop: -HEADER_HEIGHT,
+        backgroundColor: theme.colors.background.secondary,
+        overflow: 'hidden'
+    },
+    illustrationLayer: {
+        ...StyleSheet.absoluteFillObject
+    },
+    illustrationImage: {
+        flex: 1
     },
     card: {
         flex: 1,
@@ -56,13 +57,16 @@ export const styles = StyleSheet.create((theme, rt) => ({
         flex: 1,
         marginTop: theme.border.hairline,
         marginHorizontal: theme.border.hairline,
-        paddingHorizontal: theme.spacing[32] - theme.border.hairline,
-        paddingTop: theme.spacing[24] - theme.border.hairline,
-        gap: theme.spacing[16],
         backgroundColor: theme.colors.background.primary,
         borderTopLeftRadius: theme.radius.xl - theme.border.hairline,
         borderTopRightRadius: theme.radius.xl - theme.border.hairline,
         borderCurve: 'continuous'
+    },
+    contentLayer: {
+        ...StyleSheet.absoluteFillObject,
+        paddingHorizontal: theme.spacing[32] - theme.border.hairline,
+        paddingTop: theme.spacing[24] - theme.border.hairline,
+        gap: theme.spacing[16]
     },
     footer: {
         flexDirection: 'row',

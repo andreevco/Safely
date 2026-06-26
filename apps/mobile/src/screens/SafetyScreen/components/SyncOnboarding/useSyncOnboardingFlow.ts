@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 
-import { useCompleteSyncOnboarding } from '../../entities';
+import { useCompleteSyncOnboarding } from '@safely/ux';
 
 interface UseSyncOnboardingFlowParams {
     stepCount: number;
@@ -27,14 +27,8 @@ export function useSyncOnboardingFlow({ stepCount, onFinish }: UseSyncOnboarding
         setIndex(i => Math.max(i - 1, 0));
     }, []);
 
-    const moveToIndex = useCallback(
-        (next: number) =>
-            setIndex(prev => (prev === next ? prev : Math.max(0, Math.min(next, stepCount - 1)))),
-        [stepCount]
-    );
-
     return useMemo(
-        () => ({ index, isFirst, isLast, goNext, goBack, moveToIndex }),
-        [index, isFirst, isLast, goNext, goBack, moveToIndex]
+        () => ({ index, isFirst, isLast, goNext, goBack }),
+        [index, isFirst, isLast, goNext, goBack]
     );
 }
