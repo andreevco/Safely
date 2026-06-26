@@ -16,7 +16,6 @@ import { Button, Screen } from '@mobile/shared/ui';
 import { ProtectedView } from './components/ProtectedView';
 import { SoloView } from './components/SoloView';
 import { SyncOnboarding } from './components/SyncOnboarding';
-import { UnlinkedView } from './components/UnlinkedView';
 import { styles } from './SafetyScreen.styles';
 import { shouldShowSyncOnboarding } from './shouldShowSyncOnboarding';
 
@@ -75,11 +74,18 @@ export const SafetyScreen = () => {
             </Screen.Header>
 
             {linkState === AccountLinkState.PROTECTED && <ProtectedView />}
-            {linkState === AccountLinkState.UNLINKED && <UnlinkedView />}
-            {linkState === AccountLinkState.SOLO && <SoloView />}
+            {[AccountLinkState.SOLO, AccountLinkState.UNLINKED].includes(linkState) && <SoloView />}
 
             <View style={styles.buttonContainer}>
-                <Button type="primary" size="large" onPress={handleConnect}>
+                <Button
+                    type={
+                        [AccountLinkState.UNLINKED, AccountLinkState.SOLO].includes(linkState)
+                            ? 'primary'
+                            : 'secondary'
+                    }
+                    size="large"
+                    onPress={handleConnect}
+                >
                     {t('safety.linkDevice')}
                 </Button>
             </View>
