@@ -2,7 +2,7 @@ import { useNavigation } from '@react-navigation/core';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { useAccountLinkState, useHasPortfolio, useSecurityCheck } from '@safely/ux';
+import { useHasPortfolio, useSecurityCheck } from '@safely/ux';
 
 import { useLockScreenQuery, useSetLockScreenEnabled } from '@mobile/entities/security';
 import {
@@ -27,8 +27,6 @@ export const SecurityScreen = () => {
 
     const { data: lockScreenEnabled } = useLockScreenQuery();
     const { mutateAsync: setLockScreenEnabled } = useSetLockScreenEnabled();
-
-    const linkState = useAccountLinkState();
 
     const handleBiometryToggle = async () => {
         if (biometry) {
