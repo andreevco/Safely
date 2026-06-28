@@ -35,12 +35,12 @@ let {
 
 // EAS job statuses: success | failure | error | skipped | canceled | (empty when not run)
 const iosOk = STATUS_IOS === 'success' || STATUS_IOS_CRUTCH === 'success';
-const firebaseOk = STATUS_ANDROID === 'success';
+const androidOk = STATUS_ANDROID === 'success';
 const e2eOk = STATUS_E2E === 'success';
 
 const ver = (v, b) => `v${v || '?'} (${b || '?'})`;
 
-const buildsOk = iosOk && firebaseOk;
+const buildsOk = iosOk && androidOk;
 // "tests" in the headline = e2e.
 const testsOk = e2eOk;
 const headline = buildsOk
@@ -62,7 +62,7 @@ function buildText() {
     const lines = [
         headline,
         iosOk ? `📱 iOS · ${ver(IOS_VERSION, IOS_BUILD)}` : '📱 iOS build failed ❌',
-        firebaseOk ? `🤖 Android · ${ver(ANDROID_VERSION, ANDROID_BUILD)}` : '🤖 Android build failed ❌',
+        androidOk ? `🤖 Android · ${ver(ANDROID_VERSION, ANDROID_BUILD)}` : '🤖 Android build failed ❌',
     ];
 
     if (!e2eOk) {
