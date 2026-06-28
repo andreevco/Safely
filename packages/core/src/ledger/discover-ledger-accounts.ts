@@ -3,7 +3,7 @@ import { SignerBtcBuilder } from '@ledgerhq/device-signer-kit-bitcoin';
 
 import { awaitDeviceAction } from './await-device-action';
 import { BtcXpub } from '../blockchain-api';
-import { BtcNetwork, BtcWalletType } from '../entities/blockchain';
+import { BtcDerivationPath, BtcNetwork, BtcWalletType } from '../entities/blockchain';
 import { BtcWalletId } from '../entities/derivation/btc/btc-wallet-id';
 import type { BtcWalletReadOnly } from '../entities/derivation/btc/I-btc-wallet';
 
@@ -31,8 +31,13 @@ export const discoverLedgerAccounts = async (
     const accounts: LedgerAccount[] = [];
 
     for (let index = startIndex; index < startIndex + count; index++) {
+        // TODO Support ledger testnet in the next iteration, hardcoded for now
+        const path = new BtcDerivationPath(BtcWalletType.NATIVE_SEGWIT, BtcNetwork.MAINNET, index)
+            .account()
+            .replace(/^m\//, '');
+
         const { extendedPublicKey } = await awaitDeviceAction(
-            bitcoinApp.getExtendedPublicKey(`84'/0'/${index}'`, {
+            bitcoinApp.getExtendedPublicKey(path, {
                 checkOnDevice: false,
                 skipOpenApp: true
             })
