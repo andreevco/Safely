@@ -12,7 +12,6 @@ type LedgerDerivationRowProps = {
     badge?: ReactNode;
     isSubtitleLoading?: boolean;
     isSkeleton?: boolean;
-    isDimmed?: boolean;
     showDivider?: boolean;
     accessory?: ReactNode;
     onPress?: () => void;
@@ -26,7 +25,6 @@ export const LedgerDerivationRow = (props: LedgerDerivationRowProps) => {
         badge,
         isSubtitleLoading = false,
         isSkeleton = false,
-        isDimmed = false,
         showDivider,
         accessory,
         onPress
@@ -37,7 +35,7 @@ export const LedgerDerivationRow = (props: LedgerDerivationRowProps) => {
             skeleton={isSkeleton}
             showDivider={showDivider}
             onPress={onPress}
-            style={[styles.container, isDimmed && styles.dimmed]}
+            style={styles.container}
         >
             <View style={styles.badgeColumn}>
                 <View style={styles.badge}>

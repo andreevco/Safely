@@ -54,7 +54,7 @@ export const LedgerImportAccountsScreen = () => {
         [portfolios, findMorePortfolioId]
     );
 
-    const lockedIndexes = useMemo(
+    const existingIndexes = useMemo(
         () => findMorePortfolio?.getDerivations().map(d => d.index),
         [findMorePortfolio]
     );
@@ -64,13 +64,12 @@ export const LedgerImportAccountsScreen = () => {
         balances,
         masterFingerprint,
         selectedIndexes,
-        lockedIndexes: lockedSet,
         selectedAccounts,
         toggle,
         retry,
         isError,
         isTimedOut
-    } = useLedgerAccounts({ lockedIndexes });
+    } = useLedgerAccounts({ existingIndexes });
 
     const isDerived = accounts.length > 0;
     const showRetry = isError || isTimedOut;
@@ -205,16 +204,7 @@ export const LedgerImportAccountsScreen = () => {
                                       account={account}
                                       balance={balances[i]}
                                       isSelected={selectedIndexes.has(account.index)}
-                                      isLocked={lockedSet.has(account.index)}
-                                      onPress={() =>
-                                          lockedSet.has(account.index)
-                                              ? toast(
-                                                    t(
-                                                        'addWallet.connectLedger.importAccounts.alreadyImported'
-                                                    )
-                                                )
-                                              : toggle(account.index)
-                                      }
+                                      onPress={() => toggle(account.index)}
                                   />
                               ))
                             : SkeletonAccounts.map((_, index) => (

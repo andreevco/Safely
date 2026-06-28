@@ -4,9 +4,6 @@ export const styles = StyleSheet.create(theme => ({
     container: {
         gap: 0
     },
-    dimmed: {
-        opacity: 0.4
-    },
     badgeColumn: {
         minWidth: 46,
         alignItems: 'flex-start'

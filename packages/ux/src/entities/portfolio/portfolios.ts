@@ -585,10 +585,15 @@ export function useUpdateLedgerDerivations() {
         }
     >({
         async mutationFn({ portfolio, accounts, meta }) {
+            const selectedIndexes = new Set(accounts.map(account => account.index));
             const existingIndexes = new Set(portfolio.getDerivations().map(d => d.index));
+
             const newAccounts = accounts
                 .filter(account => !existingIndexes.has(account.index))
                 .sort((a, b) => a.index - b.index);
+            const removedIndexes = [...existingIndexes].filter(
+                index => !selectedIndexes.has(index)
+            );
 
             await update(draft =>
                 draft.update(portfolio.jsonArrayId(), portfolioDraft => {
@@ -597,6 +602,10 @@ export function useUpdateLedgerDerivations() {
                     if (!ledgerDraft) return;
 
                     const derivationsDraft = ledgerDraft.at('derivations');
+
+                    for (const index of removedIndexes) {
+                        derivationsDraft.remove(String(index));
+                    }
 
                     for (const account of newAccounts) {
                         derivationsDraft.push(

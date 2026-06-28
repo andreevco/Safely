@@ -15,14 +15,14 @@ import { useLedgerSession } from './LedgerSigningProvider';
 const ACCOUNT_COUNT = 10;
 const DERIVATIONS_SEARCH_TIMEOUT = 20_000;
 
-export const useLedgerAccounts = (options?: { lockedIndexes?: number[] }) => {
+export const useLedgerAccounts = (options?: { existingIndexes?: number[] }) => {
     const { getLedgerKit, sessionId, setSessionId, selectedDevice } = useLedgerSession();
-    const lockedIndexes = useMemo(
-        () => new Set(options?.lockedIndexes ?? []),
-        [options?.lockedIndexes]
+    const existingIndexes = useMemo(
+        () => new Set(options?.existingIndexes ?? []),
+        [options?.existingIndexes]
     );
     const [selectedIndexes, setSelectedIndexes] = useState<Set<number>>(
-        () => new Set(lockedIndexes)
+        () => new Set(existingIndexes)
     );
     const hasPreselected = useRef(false);
 
@@ -70,7 +70,7 @@ export const useLedgerAccounts = (options?: { lockedIndexes?: number[] }) => {
     }, [isLoading]);
 
     useEffect(() => {
-        if (hasPreselected.current || accounts.length === 0 || lockedIndexes.size > 0) {
+        if (hasPreselected.current || accounts.length === 0) {
             return;
         }
 
@@ -84,31 +84,22 @@ export const useLedgerAccounts = (options?: { lockedIndexes?: number[] }) => {
             .filter((_, i) => (balances[i]?.weiAmount ?? 0n) > 0n)
             .map(account => account.index);
 
-        if (fundedIndexes.length > 0) {
-            setSelectedIndexes(new Set(fundedIndexes));
-        }
-    }, [accounts, balances, lockedIndexes]);
+        setSelectedIndexes(new Set([...existingIndexes, ...fundedIndexes]));
+    }, [accounts, balances, existingIndexes]);
 
-    const toggle = useCallback(
-        (index: number) => {
-            if (lockedIndexes.has(index)) {
-                return;
+    const toggle = useCallback((index: number) => {
+        setSelectedIndexes(prev => {
+            const next = new Set(prev);
+
+            if (next.has(index)) {
+                next.delete(index);
+            } else {
+                next.add(index);
             }
 
-            setSelectedIndexes(prev => {
-                const next = new Set(prev);
-
-                if (next.has(index)) {
-                    next.delete(index);
-                } else {
-                    next.add(index);
-                }
-
-                return next;
-            });
-        },
-        [lockedIndexes]
-    );
+            return next;
+        });
+    }, []);
 
     const retry = useCallback(async (): Promise<boolean> => {
         if (sessionId) {
@@ -130,7 +121,6 @@ export const useLedgerAccounts = (options?: { lockedIndexes?: number[] }) => {
         balances,
         masterFingerprint,
         selectedIndexes,
-        lockedIndexes,
         selectedAccounts,
         toggle,
         retry,

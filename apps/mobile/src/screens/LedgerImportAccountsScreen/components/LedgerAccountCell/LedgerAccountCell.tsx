@@ -12,7 +12,6 @@ type RealLedgerAccountCellProps = {
     balance: BtcAssetAmount | undefined;
     isSkeleton?: false | undefined;
     isSelected: boolean;
-    isLocked?: boolean;
     onPress: () => void;
 };
 
@@ -21,21 +20,13 @@ type SkeletonLedgerAccountCellProps = {
     balance?: undefined;
     isSkeleton: true;
     isSelected?: undefined;
-    isLocked?: undefined;
     onPress?: undefined;
 };
 
 type LedgerAccountCellProps = SkeletonLedgerAccountCellProps | RealLedgerAccountCellProps;
 
 export const LedgerAccountCell = (props: LedgerAccountCellProps) => {
-    const {
-        account,
-        balance,
-        isSelected = false,
-        isLocked = false,
-        onPress,
-        isSkeleton = false
-    } = props;
+    const { account, balance, isSelected = false, onPress, isSkeleton = false } = props;
     const { t } = useTranslation();
 
     const formattedBalance = useFormattedAmount(balance);
@@ -55,11 +46,10 @@ export const LedgerAccountCell = (props: LedgerAccountCellProps) => {
             subtitle={subtitle}
             isSubtitleLoading={isBalanceLoading}
             isSkeleton={isSkeleton}
-            isDimmed={isLocked}
             onPress={onPress}
             accessory={
                 <View pointerEvents="none">
-                    <Checkbox isChecked={isSelected} disabled={isSkeleton || isLocked} />
+                    <Checkbox isChecked={isSelected} disabled={isSkeleton} />
                 </View>
             }
         />

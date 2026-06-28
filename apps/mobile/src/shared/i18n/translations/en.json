@@ -493,14 +493,13 @@
                 "retry": "Retry pairing"
             },
             "importAccounts": {
-                "title": "Import accounts",
-                "subtitle": "Select the accounts you want to add.",
+                "title": "Import wallets",
+                "subtitle": "Select the wallets you want to add.",
                 "takingTooLong": "Taking too long? Retry",
                 "featureNote": "Support for additional Ledger wallets is planned. ",
                 "featureRequest": "I’d like this feature",
                 "featureRequested": "Got it",
-                "wrongDevice": "This is a different Ledger. Connect the original device.",
-                "alreadyImported": "This wallet is already imported."
+                "wrongDevice": "This is a different Ledger. Connect the original device."
             }
         }
     },
