@@ -29,14 +29,15 @@ export function mapPortfolioToSuggestions(
     }
 
     const derivations = portfolio.getDerivations();
-    const isMultiDerivation = derivations.length > 1;
+    const isLedger = portfolio.type === PortfolioType.LEDGER;
+    const isPerDerivation = isLedger || derivations.length > 1;
 
     return derivations
         .filter(d => !(isActivePortfolio && active?.derivation && d.id.isEq(active.derivation.id)))
         .map(derivation => ({
             id: derivation.id.toString(),
             address: derivation.chains.btc.wallets[0]?.address,
-            meta: isMultiDerivation
+            meta: isPerDerivation
                 ? {
                       name: isLedgerDerivation(derivation)
                           ? derivation.meta.name
@@ -44,6 +45,6 @@ export function mapPortfolioToSuggestions(
                       icon: portfolio.meta.icon
                   }
                 : portfolio.meta,
-            tag: isMultiDerivation ? derivation.index + 1 : undefined
+            tag: isPerDerivation ? derivation.index + 1 : undefined
         }));
 }

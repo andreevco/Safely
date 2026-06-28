@@ -38,13 +38,16 @@ export const Wallet: FC<WalletProps> = props => {
                         {testnetBadge}
                     </View>
                 ) : (
-                    <PortfolioName
-                        meta={meta.meta}
-                        size={12}
-                        gap={6}
-                        fontVariant="bodyM"
-                        networkType={networkType}
-                    />
+                    <View style={styles.row}>
+                        <PortfolioName
+                            meta={meta.meta}
+                            size={12}
+                            gap={6}
+                            fontVariant="bodyM"
+                            networkType={networkType}
+                        />
+                        {meta.tag !== undefined && <Badge>{String(meta.tag)}</Badge>}
+                    </View>
                 )}
                 <Text variant="bodyM" color="tertiary" numberOfLines={1}>
                     {ellipsisMiddle(address)}

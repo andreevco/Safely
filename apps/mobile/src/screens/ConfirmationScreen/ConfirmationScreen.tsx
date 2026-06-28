@@ -13,6 +13,8 @@ import {
     useActiveBtcWallet,
     useActiveFiat,
     useActivePortfolio,
+    useActivePortfolioLedgerIndex,
+    useActiveWalletMeta,
     useAnalytics,
     useAppContext,
     useEstimateAssetTransfer,
@@ -46,6 +48,8 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
     const navigation = useNavigation();
     const btcWallet = useActiveBtcWallet();
     const activePortfolio = useActivePortfolio();
+    const activeWalletMeta = useActiveWalletMeta();
+    const activeLedgerIndex = useActivePortfolioLedgerIndex();
     const { logger } = useAppContext();
 
     const [confirmationState, setConfirmationState] = useState<ConfirmationState>({ type: 'idle' });
@@ -190,7 +194,14 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
                             value={
                                 <Wallet
                                     address={btcWallet.address}
-                                    meta={{ kind: 'portfolio', meta: activePortfolio.meta }}
+                                    meta={{
+                                        kind: 'portfolio',
+                                        meta: activeWalletMeta,
+                                        tag:
+                                            activeLedgerIndex !== undefined
+                                                ? activeLedgerIndex + 1
+                                                : undefined
+                                    }}
                                     networkType={activePortfolio.networkType}
                                 />
                             }

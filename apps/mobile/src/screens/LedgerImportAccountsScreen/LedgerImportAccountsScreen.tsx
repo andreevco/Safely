@@ -237,7 +237,7 @@ export const LedgerImportAccountsScreen = () => {
                     type={showRetry ? 'secondary' : 'primary'}
                     size="large"
                     onPress={showRetry ? handleRetry : handleContinue}
-                    disabled={!showRetry && selectedIndexes.size === 0}
+                    disabled={!showRetry && (!isDerived || selectedIndexes.size === 0)}
                 >
                     {showRetry
                         ? t('addWallet.connectLedger.importAccounts.takingTooLong')
