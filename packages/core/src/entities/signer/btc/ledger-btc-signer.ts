@@ -12,6 +12,7 @@ import { assertBtcFeeIsNotAbsurd } from './assert-btc-fee';
 import type { BtcSigningRequest, IBtcSigner } from './I-btc-signer';
 import type { ILedgerSessionPort, LedgerAccountContext } from './I-ledger-session-port';
 import { awaitDeviceAction } from '../../../ledger/await-device-action';
+import { buildLedgerAccountPath } from '../../../ledger/ledger-account-path';
 import { BtcDerivationPath, BtcWalletType } from '../../blockchain';
 
 export class LedgerBtcSigner implements IBtcSigner {
@@ -94,13 +95,7 @@ export class LedgerBtcSigner implements IBtcSigner {
     }
 
     private buildWalletPolicy(): DefaultWallet {
-        const path = new BtcDerivationPath(
-            BtcWalletType.NATIVE_SEGWIT,
-            this.context.network,
-            this.context.accountIndex
-        )
-            .account()
-            .replace(/^m\//, '');
+        const path = buildLedgerAccountPath(this.context.network, this.context.accountIndex);
 
         return new DefaultWallet(path, DefaultDescriptorTemplate.NATIVE_SEGWIT);
     }
