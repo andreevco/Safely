@@ -13,67 +13,6 @@ import type { BtcSigningRequest, IBtcSigner } from './I-btc-signer';
 import type { ILedgerSessionPort, LedgerAccountContext } from './I-ledger-session-port';
 import { awaitDeviceAction } from '../../../ledger/await-device-action';
 import { BtcDerivationPath, BtcWalletType } from '../../blockchain';
-import type { BtcNetwork } from '../../blockchain';
-
-export function buildLedgerWalletPolicy(accountIndex: number, network: BtcNetwork): DefaultWallet {
-    const path = new BtcDerivationPath(BtcWalletType.NATIVE_SEGWIT, network, accountIndex)
-        .account()
-        .replace(/^m\//, '');
-
-    return new DefaultWallet(path, DefaultDescriptorTemplate.NATIVE_SEGWIT);
-}
-
-export function enrichPsbtForLedger(
-    psbt: Transaction,
-    utxos: BtcSigningRequest['utxos'],
-    context: LedgerAccountContext
-): void {
-    const node = HDKey.fromExtendedKey(context.xpub);
-    const fingerprint = Buffer.from(context.masterFingerprint, 'hex').readUInt32BE(0);
-    const derivationPath = new BtcDerivationPath(
-        BtcWalletType.NATIVE_SEGWIT,
-        context.network,
-        context.accountIndex
-    );
-
-    utxos.forEach((utxo, index) => {
-        const { change, addressIndex } = utxo.derivationPath;
-
-        psbt.updateInput(index, {
-            bip32Derivation: [
-                [
-                    derivePublicKey(node, change, addressIndex),
-                    {
-                        fingerprint,
-                        path: bip32Path(derivationPath.address(change, addressIndex))
-                    }
-                ]
-            ]
-        });
-    });
-}
-
-export function applyLedgerSignatures(psbt: Transaction, signatures: SignPsbtDAOutput): void {
-    signatures.forEach(signature => {
-        if (!('signature' in signature)) {
-            throw new Error('Unexpected signature type from Ledger');
-        }
-
-        psbt.updateInput(signature.inputIndex, {
-            partialSig: [[signature.pubkey, signature.signature]]
-        });
-    });
-}
-
-function derivePublicKey(node: HDKey, change: number, addressIndex: number): Uint8Array {
-    const publicKey = node.deriveChild(change).deriveChild(addressIndex).publicKey;
-
-    if (!publicKey) {
-        throw new Error('Failed to derive public key for Ledger input');
-    }
-
-    return publicKey;
-}
 
 export class LedgerBtcSigner implements IBtcSigner {
     constructor(
@@ -81,10 +20,12 @@ export class LedgerBtcSigner implements IBtcSigner {
         private readonly sessionPort: ILedgerSessionPort
     ) {}
 
-    public async sign({ psbt, utxos }: BtcSigningRequest): Promise<Buffer> {
-        enrichPsbtForLedger(psbt, utxos, this.context);
+    public async sign(request: BtcSigningRequest): Promise<Buffer> {
+        const { psbt } = request;
 
-        const wallet = buildLedgerWalletPolicy(this.context.accountIndex, this.context.network);
+        this.enrichPsbt(request);
+
+        const wallet = this.buildWalletPolicy();
 
         const signatures = await this.sessionPort.withSession(
             { expectedFingerprint: this.context.masterFingerprint },
@@ -95,12 +36,72 @@ export class LedgerBtcSigner implements IBtcSigner {
             }
         );
 
-        applyLedgerSignatures(psbt, signatures);
+        this.applySignatures(psbt, signatures);
 
         psbt.finalize();
 
         assertBtcFeeIsNotAbsurd(psbt);
 
         return Buffer.from(psbt.extract());
+    }
+
+    private enrichPsbt({ psbt, utxos }: BtcSigningRequest): void {
+        const node = HDKey.fromExtendedKey(this.context.xpub);
+        const fingerprint = Buffer.from(this.context.masterFingerprint, 'hex').readUInt32BE(0);
+        const derivationPath = new BtcDerivationPath(
+            BtcWalletType.NATIVE_SEGWIT,
+            this.context.network,
+            this.context.accountIndex
+        );
+
+        utxos.forEach((utxo, index) => {
+            const { change, addressIndex } = utxo.derivationPath;
+
+            psbt.updateInput(index, {
+                bip32Derivation: [
+                    [
+                        this.derivePublicKey(node, change, addressIndex),
+                        {
+                            fingerprint,
+                            path: bip32Path(derivationPath.address(change, addressIndex))
+                        }
+                    ]
+                ]
+            });
+        });
+    }
+
+    private applySignatures(psbt: Transaction, signatures: SignPsbtDAOutput): void {
+        signatures.forEach(signature => {
+            if (!('signature' in signature)) {
+                throw new Error('Unexpected signature type from Ledger');
+            }
+
+            psbt.updateInput(signature.inputIndex, {
+                partialSig: [[signature.pubkey, signature.signature]]
+            });
+        });
+    }
+
+    private derivePublicKey(node: HDKey, change: number, addressIndex: number): Uint8Array {
+        const publicKey = node.deriveChild(change).deriveChild(addressIndex).publicKey;
+
+        if (!publicKey) {
+            throw new Error('Failed to derive public key for Ledger input');
+        }
+
+        return publicKey;
+    }
+
+    private buildWalletPolicy(): DefaultWallet {
+        const path = new BtcDerivationPath(
+            BtcWalletType.NATIVE_SEGWIT,
+            this.context.network,
+            this.context.accountIndex
+        )
+            .account()
+            .replace(/^m\//, '');
+
+        return new DefaultWallet(path, DefaultDescriptorTemplate.NATIVE_SEGWIT);
     }
 }
