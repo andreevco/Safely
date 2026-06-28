@@ -500,6 +500,12 @@ export function useIsActivePortfolioTestnet(): boolean {
     );
 }
 
+export function useActivePortfolioLedgerIndex(): number | undefined {
+    const entities = useActivePortfolioEntitiesQuery()?.data;
+
+    return entities?.type === 'ledger' ? entities.derivation.index : undefined;
+}
+
 export function useAddWatchOnlyPortfolio() {
     const { mutateAsync: addPortfolio } = useAddPortfolio();
     const { mutateAsync: setActivePortfolio } = useSetActivePortfolio();
