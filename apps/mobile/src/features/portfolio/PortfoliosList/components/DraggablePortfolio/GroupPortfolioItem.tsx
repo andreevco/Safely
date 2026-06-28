@@ -24,12 +24,15 @@ export const GroupPortfolioItem = memo((props: DraggablePortfolioProps) => {
         activeDerivationIndex,
         onReorder,
         onMeasure,
-        handleSelect
+        handleSelect,
+        variant
     } = props;
 
     const derivations = getDerivations(portfolio);
     const isLedger = portfolio.type === PortfolioType.LEDGER;
     const isActivePortfolio = activePortfolioId.isEq(portfolio.id);
+
+    styles.useVariants({ variant });
 
     const handleHeaderPress = isLedger
         ? undefined
@@ -54,7 +57,7 @@ export const GroupPortfolioItem = memo((props: DraggablePortfolioProps) => {
         >
             {({ gesture, underlayStyle }) => (
                 <GestureDetector gesture={gesture}>
-                    <View>
+                    <View style={styles.itemContainer}>
                         <Animated.View style={underlayStyle} />
                         <Cell style={styles.item}>
                             <Cell.Content>

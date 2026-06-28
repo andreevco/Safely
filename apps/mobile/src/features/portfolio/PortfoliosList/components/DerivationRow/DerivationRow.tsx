@@ -10,17 +10,22 @@ import { styles } from './DerivationRow.styles';
 type DerivationRowProps = {
     derivation: ILedgerDerivation;
     isSelected: boolean;
+    showDivider: boolean;
 };
 
 export const DerivationRow = (props: DerivationRowProps) => {
-    const { derivation, isSelected } = props;
+    const { derivation, isSelected, showDivider } = props;
 
     const wallet = derivation.chains.btc.wallets[0];
     const { data: balance } = useBtcWalletFiatBalance(wallet);
     const formatter = useNumberFormatter();
 
     return (
-        <Cell background={isSelected ? 'tertiary' : 'secondary'} style={styles.cell}>
+        <Cell
+            background={isSelected ? 'tertiary' : 'secondary'}
+            style={styles.cell}
+            showDivider={showDivider}
+        >
             <Cell.Content>
                 <Cell.Row style={styles.row}>
                     <View style={styles.address}>

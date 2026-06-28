@@ -16,14 +16,23 @@ type DraggableDerivationProps = {
     itemsCount: number;
     engine: ReorderEngine;
     isSelected: boolean;
+    showDivider: boolean;
     blockExternalRefs: RefObject<GestureType | undefined>[];
     onReorder: (orderedIds: string[]) => void;
     onPress: () => void;
 };
 
 export const DraggableDerivation = (props: DraggableDerivationProps) => {
-    const { derivation, itemsCount, engine, isSelected, blockExternalRefs, onReorder, onPress } =
-        props;
+    const {
+        derivation,
+        itemsCount,
+        engine,
+        isSelected,
+        showDivider,
+        blockExternalRefs,
+        onReorder,
+        onPress
+    } = props;
 
     return (
         <Draggable
@@ -39,7 +48,11 @@ export const DraggableDerivation = (props: DraggableDerivationProps) => {
                 <GestureDetector gesture={gesture}>
                     <View>
                         <Animated.View style={underlayStyle} />
-                        <DerivationRow derivation={derivation} isSelected={isSelected} />
+                        <DerivationRow
+                            derivation={derivation}
+                            isSelected={isSelected}
+                            showDivider={showDivider}
+                        />
                     </View>
                 </GestureDetector>
             )}
