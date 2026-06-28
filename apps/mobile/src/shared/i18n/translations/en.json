@@ -489,7 +489,7 @@
             },
             "pairingUnsuccess": {
                 "title": "Pairing unsuccessful",
-                "subtitle": "Make sure your Ledger Flex is close to your mobile phone and try again.",
+                "subtitle": "Make sure your {{device}} is close to your mobile phone and try again.",
                 "retry": "Retry pairing"
             },
             "importAccounts": {

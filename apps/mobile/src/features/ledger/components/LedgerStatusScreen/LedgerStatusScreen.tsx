@@ -1,5 +1,3 @@
-import { useNavigation } from '@react-navigation/core';
-import { CommonActions } from '@react-navigation/native';
 import type { ReactNode } from 'react';
 import { View } from 'react-native';
 
@@ -14,23 +12,18 @@ interface LedgerStatusScreenProps {
     buttonLabel: string;
     onButtonPress?: () => void;
     isButtonDisabled?: boolean;
-    hasBackButton?: boolean;
+    onBackPress?: () => void;
 }
 
 export const LedgerStatusScreen = (props: LedgerStatusScreenProps) => {
-    const { media, title, subtitle, buttonLabel, onButtonPress, isButtonDisabled, hasBackButton } =
+    const { media, title, subtitle, buttonLabel, onButtonPress, isButtonDisabled, onBackPress } =
         props;
-    const navigation = useNavigation();
 
     return (
         <Screen>
             <Screen.Header variant="left">
-                {hasBackButton && (
-                    <Screen.Header.Button
-                        onPress={() =>
-                            navigation.dispatch(CommonActions.navigate('AddWalletRootModal'))
-                        }
-                    >
+                {onBackPress && (
+                    <Screen.Header.Button onPress={onBackPress}>
                         <Icon icon={ArrowLeft16} />
                     </Screen.Header.Button>
                 )}

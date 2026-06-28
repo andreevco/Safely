@@ -1,16 +1,22 @@
-import { useNavigation, useRoute } from '@react-navigation/core';
+import { useNavigation } from '@react-navigation/core';
 import { StackActions } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { LedgerStatusScreen } from '@mobile/features/ledger';
+import {
+    getLedgerModelName,
+    LedgerStatusScreen,
+    useExitToConnectLedger,
+    useLedgerSession
+} from '@mobile/features/ledger';
 import { Checkmark96, Icon } from '@mobile/shared/ui';
 
 export const LedgerPairingSuccessScreen = () => {
-    const route = useRoute();
     const { t } = useTranslation();
     const navigation = useNavigation();
-    const device = (route.params as { device?: string })?.device ?? 'Ledger';
+    const exitToConnect = useExitToConnectLedger();
+    const { selectedDevice } = useLedgerSession();
+    const device = getLedgerModelName(selectedDevice?.deviceModel.model);
 
     const handlePairingSuccess = useCallback(() => {
         navigation.dispatch(StackActions.replace('LedgerImportAccountsModal'));
@@ -23,6 +29,7 @@ export const LedgerPairingSuccessScreen = () => {
             subtitle={t('addWallet.connectLedger.pairingSuccess.subtitle', { device })}
             buttonLabel={t('common.continue')}
             onButtonPress={handlePairingSuccess}
+            onBackPress={exitToConnect}
         />
     );
 };
