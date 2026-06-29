@@ -64,8 +64,6 @@ export class BtcApi extends ApiClient implements IIdentifiable {
 
     public readonly id: string;
 
-    private readonly rawTxCache = new Map<string, string>();
-
     constructor(options: { baseUrl: string; logger?: Logger }) {
         const baseUrl = options.baseUrl.replace(/\/$/, '');
         super(baseUrl, {}, options.logger);
@@ -93,20 +91,20 @@ export class BtcApi extends ApiClient implements IIdentifiable {
 
     public async getRawTransactions(txids: string[]): Promise<BtcApiRawTx[]> {
         const unique = [...new Set(txids)];
-        const missing = unique.filter(txid => !this.rawTxCache.has(txid));
+        const hexByTxid = new Map<string, string>();
 
-        for (let i = 0; i < missing.length; i += BULK_TX_CHUNK_SIZE) {
-            const chunk = missing.slice(i, i + BULK_TX_CHUNK_SIZE);
+        for (let i = 0; i < unique.length; i += BULK_TX_CHUNK_SIZE) {
+            const chunk = unique.slice(i, i + BULK_TX_CHUNK_SIZE);
             const { transactions } = await this.postJson(
                 '/v1/transactions/_bulk',
                 { txids: chunk },
                 BulkTxResponseSchema
             );
-            transactions.forEach(tx => this.rawTxCache.set(tx.txid, tx.hex));
+            transactions.forEach(tx => hexByTxid.set(tx.txid, tx.hex));
         }
 
         return unique.map(txid => {
-            const hex = this.rawTxCache.get(txid);
+            const hex = hexByTxid.get(txid);
             if (!hex) {
                 throw new BtcApiError(`missing raw transaction for ${txid}`, 0);
             }
