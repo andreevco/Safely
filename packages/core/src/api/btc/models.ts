@@ -90,7 +90,7 @@ export const UtxoWithOptionalTxSchema = UtxoSchema.extend({
 });
 
 /** Raw transaction: a forward-compatible subset of Tx exposing only txid and hex. */
-export const RawTxSchema = z.object({
+export const RawTxSchema = z.looseObject({
     txid: z.string(),
     hex: z.string()
 });
