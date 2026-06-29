@@ -2,6 +2,7 @@ import { useFocusEffect, useIsFocused, useNavigation } from '@react-navigation/n
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
+import { useUnistyles } from 'react-native-unistyles';
 
 import {
     AccountLinkState,
@@ -11,13 +12,8 @@ import {
     useSyncOnboardingCompletedQuery
 } from '@safely/ux';
 
-import {
-    Button,
-    Icon,
-    Screen,
-    ShieldCheckmark28,
-    ShieldExclamationmark28
-} from '@mobile/shared/ui';
+import { DottedShieldIcon } from '@mobile/shared/resources';
+import { Button, Icon, Screen, ShieldCheckmark28 } from '@mobile/shared/ui';
 
 import { ProtectedView } from './components/ProtectedView';
 import { SoloView } from './components/SoloView';
@@ -33,6 +29,7 @@ export const SafetyScreen = () => {
             sync: { getSecureEncrypted }
         }
     } = useAppContext();
+    const { theme } = useUnistyles();
     const { mutateAsync: connectToNewDevice } = useConnectAccountToNewDevice();
 
     const navigation = useNavigation();
@@ -41,20 +38,25 @@ export const SafetyScreen = () => {
 
     useEffect(() => {
         navigation.setOptions({
-            tabBarIcon: ({ color }: { color: string }) => (
-                <Icon
-                    icon={
-                        linkState === AccountLinkState.PROTECTED
-                            ? ShieldCheckmark28
-                            : ShieldExclamationmark28
-                    }
-                    style={{ tintColor: color }}
-                />
-            ),
-            tabBarBadge: linkState === AccountLinkState.PROTECTED ? undefined : '',
-            tabBarBadgeStyle: styles.badge(linkState)
+            tabBarIcon: ({ color }: { color: string }) => {
+                if (linkState === AccountLinkState.PROTECTED) {
+                    return <Icon icon={ShieldCheckmark28} style={{ tintColor: color }} />;
+                }
+
+                return (
+                    <DottedShieldIcon
+                        size={28}
+                        fillShield={color}
+                        fillDot={
+                            linkState === AccountLinkState.UNLINKED
+                                ? theme.colors.accent.red
+                                : theme.colors.accent.orange
+                        }
+                    />
+                );
+            }
         });
-    }, [linkState, navigation]);
+    }, [linkState, navigation, theme]);
 
     const { data: completed } = useSyncOnboardingCompletedQuery();
     const [forceOpen, setForceOpen] = useState(false);

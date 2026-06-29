@@ -6,6 +6,8 @@ import SyncStepProtect from './images/sync-step-protect.png';
 import SyncStepUseSync from './images/sync-step-use-sync.png';
 import WelcomeScreenBg from './images/welcome-screen-bg.png';
 
+export { DottedShieldIcon } from './vectors/DottedShieldIcon';
+
 export const resources = {
     safelyLogo: SafelyLogo,
     safelyLogoWithBg: SafelyLogoWithBg,

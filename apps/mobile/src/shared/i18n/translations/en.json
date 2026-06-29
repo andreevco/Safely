@@ -597,7 +597,8 @@
     },
     "tabs": {
         "home": "Home",
-        "about": "About"
+        "about": "About",
+        "safety": "Safety"
     },
     "safelyBeta": {
         "title": "Safely",
