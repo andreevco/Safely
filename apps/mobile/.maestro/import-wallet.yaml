@@ -2,7 +2,7 @@
 # Needs an onboarded state: a wallet on the home screen, passcode 1234,
 # biometry skipped. Must run right before send-asset — the imported wallet
 # becomes the active one, and send-asset sends from the active wallet.
-appId: com.aco.swallet
+appId: com.safely.wallet
 name: import-wallet
 tags:
     - smoke

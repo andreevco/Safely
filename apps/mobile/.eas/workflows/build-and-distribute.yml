@@ -94,48 +94,7 @@ jobs:
       build_id: ${{ after.build_ios.outputs.build_id }}
       profile: production
 
-  distribute_android:
-    name: Upload to Firebase
-    needs: [prepare, build_android]
-    steps:
-      - uses: eas/download_build
-        id: download_build
-        with:
-          build_id: ${{ needs.build_android.outputs.build_id }}
-          extensions: [apk]
-
-      - name: Install Firebase CLI
-        run: npm install -g firebase-tools
-
-      - name: Upload to Firebase App Distribution
-        env:
-          # Pass notes as data (env var), not concatenated into the shell — no injection surface.
-          RELEASE_NOTES: ${{ needs.prepare.outputs.notes }}
-        run: |
-          echo '${{ env.SERVICE_ACCOUNT }}' > /tmp/sa-key.json
-          export GOOGLE_APPLICATION_CREDENTIALS=/tmp/sa-key.json
-
-          printf '%s' "$RELEASE_NOTES" > /tmp/release_notes.txt
-
-          APK_PATH=$(find ${{ steps.download_build.outputs.artifact_path }} -name "*.apk" -type f | head -1)
-          if [ -z "$APK_PATH" ]; then
-            echo "No .apk file found in artifact. Contents:"
-            ls -R ${{ steps.download_build.outputs.artifact_path }}
-            exit 1
-          fi
-
-          NOTES_ARGS=()
-          if [ -s /tmp/release_notes.txt ]; then
-            NOTES_ARGS=(--release-notes-file /tmp/release_notes.txt)
-          fi
-
-          firebase appdistribution:distribute "$APK_PATH" \
-            --app "${{ env.FIREBASE_APP_ID }}" \
-            --groups "testers" \
-            "${NOTES_ARGS[@]}"
-
-  # Runs on the same APK we ship to Firebase (no separate e2e build),
-  # in parallel with distribute_android.
+  # Runs on the APK from build_android (no separate e2e build).
   # The flows are a chain — each starts from the state the previous one left
   # (onboarding -> add wallets -> import wallet -> send), so the order below
   # matters. The flows read MAESTRO_SEED_PHRASE / MAESTRO_IMPORTED_WALLET_ADDRESS /
@@ -156,7 +115,7 @@ jobs:
           '.maestro/send-asset.yaml',
         ]
 
-  # Aggregates TestFlight + Firebase + e2e results into a Slack message.
+  # Aggregates TestFlight + Android build + e2e results into a Slack message.
   # `after` => runs regardless of upstream success/failure, and lets us read
   # both the statuses and the build outputs (version / build number).
   report:
@@ -167,7 +126,6 @@ jobs:
       - build_android
       - distribute_ios
       - distribute_ios_crutch
-      - distribute_android
       - e2e_android
     steps:
       # Custom steps jobs start with an empty workdir — check out the repo to reach the script.
@@ -186,6 +144,6 @@ jobs:
           export ANDROID_BUILD="${{ after.build_android.outputs.app_build_version }}"
           export STATUS_IOS="${{ after.distribute_ios.status }}"
           export STATUS_IOS_CRUTCH="${{ after.distribute_ios_crutch.status }}"
-          export STATUS_ANDROID="${{ after.distribute_android.status }}"
+          export STATUS_ANDROID="${{ after.build_android.status }}"
           export STATUS_E2E="${{ after.e2e_android.status }}"
           node scripts/eas-report.mjs
