@@ -4,7 +4,7 @@ import type { AnyEventObject } from 'xstate';
 import { fromCallback, fromPromise } from 'xstate';
 
 import type { LedgerSession } from '@safely/core';
-import { getLedgerAppVersion, getLedgerMasterFingerprint } from '@safely/core';
+import { LedgerController } from '@safely/core';
 
 import { connectLedger, openBitcoinApp as openBitcoinAppOperation } from '../ledgerOperations';
 
@@ -31,7 +31,10 @@ export type CheckLedgerAppVersionInput = {
 
 export const checkLedgerAppVersion = fromPromise<boolean, CheckLedgerAppVersionInput>(
     async ({ input }) => {
-        const version = await getLedgerAppVersion(input.ledgerKit, input.sessionId);
+        const version = await new LedgerController(
+            input.ledgerKit,
+            input.sessionId
+        ).getAppVersion();
 
         return isBitcoinAppSupported(version);
     }
@@ -101,7 +104,10 @@ export type VerifyLedgerFingerprintInput = {
 
 export const verifyLedgerFingerprint = fromPromise<boolean, VerifyLedgerFingerprintInput>(
     async ({ input }) => {
-        const fingerprint = await getLedgerMasterFingerprint(input.ledgerKit, input.sessionId);
+        const fingerprint = await new LedgerController(
+            input.ledgerKit,
+            input.sessionId
+        ).getMasterFingerprint();
 
         return fingerprint === input.expectedFingerprint;
     }

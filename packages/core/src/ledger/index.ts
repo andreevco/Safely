@@ -1,9 +1,8 @@
 export {
-    discoverLedgerAccounts,
+    LedgerController,
     ledgerAccountToBtcWallet,
-    type LedgerAccount
-} from './discover-ledger-accounts';
-export { getLedgerMasterFingerprint } from './get-ledger-master-fingerprint';
+    type LedgerAccount,
+    type DiscoverLedgerAccountsOptions
+} from './ledger-controller';
 export { buildLedgerAccountPath } from './ledger-account-path';
-export { getLedgerAppVersion } from './get-ledger-app-version';
 export { awaitDeviceAction } from './await-device-action';

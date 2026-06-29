@@ -1,12 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import {
-    BtcNetwork,
-    discoverLedgerAccounts,
-    getLedgerMasterFingerprint,
-    ledgerAccountToBtcWallet
-} from '@safely/core';
+import { BtcNetwork, LedgerController, ledgerAccountToBtcWallet } from '@safely/core';
 import { useBtcWalletBalances } from '@safely/ux';
 
 import { ledgerKeys } from './keys';
@@ -32,13 +27,10 @@ export const useLedgerAccounts = (options?: { existingIndexes?: number[] }) => {
         staleTime: Infinity,
         retry: false,
         queryFn: async () => {
-            const accounts = await discoverLedgerAccounts(getLedgerKit(), sessionId ?? '', {
-                count: ACCOUNT_COUNT
-            });
-            const masterFingerprint = await getLedgerMasterFingerprint(
-                getLedgerKit(),
-                sessionId ?? ''
-            );
+            const ledger = new LedgerController(getLedgerKit(), sessionId ?? '');
+
+            const accounts = await ledger.discoverAccounts({ count: ACCOUNT_COUNT });
+            const masterFingerprint = await ledger.getMasterFingerprint();
 
             return { accounts, masterFingerprint };
         }
