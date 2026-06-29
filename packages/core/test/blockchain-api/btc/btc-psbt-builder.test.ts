@@ -153,6 +153,19 @@ describe('BtcPsbtBuilder', () => {
             ).toThrow(/txid mismatch/);
         });
 
+        it('throws when the previous output amount does not match the input value', () => {
+            const input = inputWithPrevTx(mainnet, { value: '50000' });
+            expect(() =>
+                builder.buildPsbt(
+                    {
+                        inputs: [{ ...input.utxo, value: '40000' }],
+                        outputs: [{ address: RECIPIENT_ADDR, value: 100n }]
+                    },
+                    prevTxMap([input])
+                )
+            ).toThrow(/amount mismatch/);
+        });
+
         it('throws when input UTXO has no address', () => {
             expect(() =>
                 builder.buildPsbt(

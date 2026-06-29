@@ -82,12 +82,18 @@ export class BtcPsbtBuilder {
                 throw new Error(`missing previous transaction for input ${utxo.txid}`);
             }
 
-            const prevTxId = Transaction.fromRaw(prevTx, {
+            const parsedPrevTx = Transaction.fromRaw(prevTx, {
                 allowUnknownOutputs: true,
                 disableScriptCheck: true
-            }).id;
-            if (prevTxId !== utxo.txid) {
+            });
+            if (parsedPrevTx.id !== utxo.txid) {
                 throw new Error(`previous transaction txid mismatch for input ${utxo.txid}`);
+            }
+
+            if (parsedPrevTx.getOutput(utxo.vout).amount !== BigInt(utxo.value)) {
+                throw new Error(
+                    `previous transaction output amount mismatch for input ${utxo.txid}`
+                );
             }
 
             tx.addInput({ ...base, nonWitnessUtxo: prevTx });
