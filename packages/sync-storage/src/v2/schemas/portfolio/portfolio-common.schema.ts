@@ -1,24 +1,9 @@
 import z from 'zod';
 
+export {
+    sPortfolioMeta,
+    sPortfolioNetworkType,
+    type SPortfolioMeta
+} from '../../../v1/schemas/portfolio/portfolio-common.schema';
+
 export const sPortfolioType = z.enum(['BIP39', 'WATCH_ONLY', 'LEDGER']);
-
-export const sPortfolioNetworkType = z.enum(['MAINNET', 'TESTNET']);
-
-const sPortfolioMetaIconEmoji = z.object({
-    type: z.literal('emoji'),
-    value: z.string()
-});
-
-const sPortfolioMetaIconColor = z.object({
-    type: z.literal('color'),
-    value: z.string()
-});
-
-export const sPortfolioMetaIcon = z.union([sPortfolioMetaIconEmoji, sPortfolioMetaIconColor]);
-
-export const sPortfolioMeta = z.object({
-    name: z.string(),
-    icon: sPortfolioMetaIcon
-});
-
-export type SPortfolioMeta = z.infer<typeof sPortfolioMeta>;

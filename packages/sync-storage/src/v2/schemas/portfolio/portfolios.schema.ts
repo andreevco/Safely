@@ -2,9 +2,12 @@ import z from 'zod';
 
 import { zIndexedArray } from '@safely/slottree';
 
-import { sPortfolioBip39, type SPortfolioBip39 } from './portfolio-bip39.schema';
 import { sPortfolioType } from './portfolio-common.schema';
 import { sPortfolioLedger, type SPortfolioLedger } from './portfolio-ledger.schema';
+import {
+    sPortfolioBip39,
+    type SPortfolioBip39
+} from '../../../v1/schemas/portfolio/portfolio-bip39.schema';
 import { sPortfolioWatchOnly } from '../../../v1/schemas/portfolio/portfolio-watch-only.schema';
 
 export const sPortfolio = z.discriminatedUnion('type', [

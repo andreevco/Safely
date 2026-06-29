@@ -55,7 +55,10 @@ export {
     type SBtcAccountChainItem
 } from './derivation';
 
-export { sPortfolioBip39, type SPortfolioBip39 } from './portfolio/portfolio-bip39.schema';
+export {
+    sPortfolioBip39,
+    type SPortfolioBip39
+} from '../../v1/schemas/portfolio/portfolio-bip39.schema';
 
 export {
     sPortfolioLedgerId,

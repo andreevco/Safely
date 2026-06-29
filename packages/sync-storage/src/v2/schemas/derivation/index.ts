@@ -1,11 +1,14 @@
 export {
     sDerivation,
-    sLedgerDerivation,
     sDerivationChains,
-    sDerivationMeta,
     sBtcAccountChainItem,
     type SDerivation,
-    type SLedgerDerivation,
-    type SDerivationMeta,
     type SBtcAccountChainItem
+} from '../../../v1/schemas/derivation';
+
+export {
+    sLedgerDerivation,
+    sDerivationMeta,
+    type SLedgerDerivation,
+    type SDerivationMeta
 } from './derivation.schema';
