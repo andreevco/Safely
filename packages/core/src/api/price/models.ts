@@ -21,11 +21,13 @@ export interface GetHistoricalPriceParams {
 
 export const HistoricalPriceSchema = z.object({
     prices: z.array(z.tuple([z.number(), z.number()])).describe('[timestamp, price] pair'),
-    attribution: z.looseObject({
-        provider: z.string(),
-        label: z.string().optional(),
-        url: z.string().optional()
-    })
+    attribution: z
+        .looseObject({
+            provider: z.string(),
+            label: z.string().optional(),
+            url: z.string().optional()
+        })
+        .optional()
 });
 
 export type CurrentPrice = z.infer<typeof CurrentPriceSchema>;
