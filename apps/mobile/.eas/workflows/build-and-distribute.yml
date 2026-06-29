@@ -16,17 +16,20 @@ on:
 jobs:
   prepare:
     name: Prepare release notes & profile
+    # `env` must be job-level (step-level `env:` is unsupported and left as raw
+    # literals); passing values as env vars also keeps them shell-injection-safe.
+    # `|| ''` guards github.* fields that are empty on workflow_dispatch runs.
+    env:
+      COMMIT_MESSAGE: ${{ github.commit_message || '' }}
+      MANUAL_NOTES: ${{ inputs.release_notes || '' }}
+      REF_NAME: ${{ github.ref_name || '' }}
+      EVENT_NAME: ${{ github.event_name }}
     outputs:
       notes: ${{ steps.prep.outputs.notes }}
       android_profile: ${{ steps.prep.outputs.android_profile }}
     steps:
       - name: Compute notes & profile
         id: prep
-        env:
-          COMMIT_MESSAGE: ${{ github.commit_message }}
-          MANUAL_NOTES: ${{ inputs.release_notes }}
-          REF_NAME: ${{ github.ref_name }}
-          EVENT_NAME: ${{ github.event_name }}
         run: |
           if [ -n "$MANUAL_NOTES" ]; then
             RAW="$MANUAL_NOTES"
@@ -47,6 +50,7 @@ jobs:
             | tr -s ' ')
           # TestFlight "What to Test" caps at 4000 chars.
           NOTES=$(printf '%s' "$NOTES" | head -c 4000)
+          echo "Resolved notes: $NOTES"
           set-output notes "$NOTES"
 
           # Cache feature builds (release/*) and manual runs; master stays uncached
