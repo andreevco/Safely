@@ -21,7 +21,7 @@ export const LEDGER_FAILURE_STATES = ['failed', 'wrongDevice', 'unsupportedApp']
 
 export type LedgerSigningInput = {
     ledgerKit: DeviceManagementKit;
-    expectedFingerprint: string;
+    expectedFingerprint: Buffer;
     sessionId: string | null;
     run: (session: LedgerSession) => Promise<unknown>;
 };

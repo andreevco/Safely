@@ -60,12 +60,12 @@ export class LedgerController {
         return accounts;
     }
 
-    public async getMasterFingerprint(): Promise<string> {
+    public async getMasterFingerprint(): Promise<Buffer> {
         const { masterFingerprint } = await awaitDeviceAction(
             this.buildBitcoinApp().getMasterFingerprint({ skipOpenApp: true })
         );
 
-        return Buffer.from(masterFingerprint).toString('hex');
+        return Buffer.from(masterFingerprint);
     }
 
     public async getAppVersion(): Promise<string | undefined> {

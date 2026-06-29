@@ -24,7 +24,7 @@ export class DerivationChainItemBtcLedger implements IDerivationChainItemBtc {
         derivationRef
     }: {
         sDerivation: SBtcAccountChainItem;
-        masterFingerprint: string;
+        masterFingerprint: Buffer;
         sessionPort: ILedgerSessionPort;
         derivationRef: Derivation;
     }) {

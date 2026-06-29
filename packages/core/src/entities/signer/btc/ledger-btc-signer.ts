@@ -48,7 +48,7 @@ export class LedgerBtcSigner implements IBtcSigner {
 
     private enrichPsbt({ psbt, utxos }: BtcSigningRequest): void {
         const node = HDKey.fromExtendedKey(this.context.xpub);
-        const fingerprint = Buffer.from(this.context.masterFingerprint, 'hex').readUInt32BE(0);
+        const fingerprint = this.context.masterFingerprint.readUInt32BE(0);
         const derivationPath = new BtcDerivationPath(
             BtcWalletType.NATIVE_SEGWIT,
             this.context.network,

@@ -18,14 +18,14 @@ import type { ILedgerSessionPort } from '../signer';
 
 export class PortfolioLedger implements IPortfolioLedger {
     public static createSerializedPortfolio(params: {
-        masterFingerprint: string;
+        masterFingerprint: Buffer;
         networkType: PortfolioNetworkType;
         deviceModel: string;
         accounts: { index: number; xpub: string; name: string }[];
         meta: PortfolioMeta;
     }): SPortfolioLedger {
         const id = toPortfolioIdLedger({
-            masterFingerprint: params.masterFingerprint,
+            masterFingerprint: params.masterFingerprint.toString('hex'),
             networkType: params.networkType
         });
 
@@ -87,7 +87,7 @@ export class PortfolioLedger implements IPortfolioLedger {
 
     public readonly derivations: ILedgerDerivation[];
 
-    public get masterFingerprint(): string {
+    public get masterFingerprint(): Buffer {
         return this.id.masterFingerprint;
     }
 

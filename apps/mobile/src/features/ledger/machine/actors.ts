@@ -99,7 +99,7 @@ export const openBitcoinApp = fromPromise<void, OpenBitcoinAppInput>(({ input, s
 export type VerifyLedgerFingerprintInput = {
     ledgerKit: DeviceManagementKit;
     sessionId: string;
-    expectedFingerprint: string;
+    expectedFingerprint: Buffer;
 };
 
 export const verifyLedgerFingerprint = fromPromise<boolean, VerifyLedgerFingerprintInput>(
@@ -109,7 +109,7 @@ export const verifyLedgerFingerprint = fromPromise<boolean, VerifyLedgerFingerpr
             input.sessionId
         ).getMasterFingerprint();
 
-        return fingerprint === input.expectedFingerprint;
+        return fingerprint.equals(input.expectedFingerprint);
     }
 );
 

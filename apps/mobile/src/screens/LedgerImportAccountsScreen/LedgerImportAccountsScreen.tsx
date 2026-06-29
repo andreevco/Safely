@@ -80,7 +80,7 @@ export const LedgerImportAccountsScreen = () => {
         }
 
         if (findMorePortfolio) {
-            if (masterFingerprint !== findMorePortfolio.masterFingerprint) {
+            if (!masterFingerprint.equals(findMorePortfolio.masterFingerprint)) {
                 toast(t('addWallet.connectLedger.importAccounts.wrongDevice'));
                 return;
             }
@@ -119,7 +119,7 @@ export const LedgerImportAccountsScreen = () => {
         }
 
         const defaultIcon = new PortfolioIdLedger({
-            masterFingerprint,
+            masterFingerprint: masterFingerprint.toString('hex'),
             networkType: PortfolioNetworkType.MAINNET
         }).getFallbackEmoji();
 

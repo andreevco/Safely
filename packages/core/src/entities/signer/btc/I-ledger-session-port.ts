@@ -10,7 +10,7 @@ export interface LedgerSession {
 
 export interface ILedgerSessionPort {
     withSession<T>(
-        params: { expectedFingerprint: string },
+        params: { expectedFingerprint: Buffer },
         run: (session: LedgerSession) => Promise<T>
     ): Promise<T>;
 }
@@ -19,5 +19,5 @@ export type LedgerAccountContext = {
     xpub: string;
     network: BtcNetwork;
     accountIndex: number;
-    masterFingerprint: string;
+    masterFingerprint: Buffer;
 };

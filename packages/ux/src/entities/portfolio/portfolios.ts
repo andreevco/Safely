@@ -544,7 +544,7 @@ export function useAddLedgerPortfolio() {
         void,
         Error,
         {
-            masterFingerprint: string;
+            masterFingerprint: Buffer;
             deviceModel: string;
             accounts: { index: number; xpub: string }[];
             meta: PortfolioMeta;

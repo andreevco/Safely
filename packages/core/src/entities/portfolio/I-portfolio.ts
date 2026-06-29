@@ -59,7 +59,7 @@ export interface IPortfolioWatchOnly extends IPortfolioBase {
 
 export interface IPortfolioLedger extends IPortfolioDerivable {
     type: typeof PortfolioType.LEDGER;
-    masterFingerprint: string;
+    masterFingerprint: Buffer;
     deviceModel: string;
 
     derivations: ILedgerDerivation[];

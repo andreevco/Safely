@@ -88,7 +88,7 @@ export const LedgerSigningProvider = (props: LedgerSigningProviderProps) => {
 
     const withSession = useCallback(
         <T,>(
-            params: { expectedFingerprint: string },
+            params: { expectedFingerprint: Buffer },
             run: (session: LedgerSession) => Promise<T>
         ): Promise<T> =>
             new Promise<T>((resolve, reject) => {

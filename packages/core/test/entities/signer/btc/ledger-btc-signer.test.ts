@@ -28,7 +28,7 @@ const INPUT_VALUE = '100000';
 const context: LedgerAccountContext = {
     accountIndex: 0,
     xpub: XPUB,
-    masterFingerprint: MASTER_FINGERPRINT,
+    masterFingerprint: Buffer.from(MASTER_FINGERPRINT, 'hex'),
     network: BtcNetwork.MAINNET
 };
 
@@ -73,7 +73,7 @@ function realPartialSignature(outputValue: bigint) {
 
 function portReturning(signatures: unknown): ILedgerSessionPort {
     return {
-        withSession: <T>(_params: { expectedFingerprint: string }) =>
+        withSession: <T>(_params: { expectedFingerprint: Buffer }) =>
             Promise.resolve(signatures as T)
     };
 }

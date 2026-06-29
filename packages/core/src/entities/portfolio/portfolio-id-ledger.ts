@@ -10,19 +10,17 @@ import { Id } from '../../utils/id';
 export class PortfolioIdLedger extends Id implements IPortfolioId {
     public readonly network: PortfolioNetworkType;
 
-    public readonly masterFingerprint: string;
+    public readonly masterFingerprint: Buffer;
 
     constructor(serialized: SPortfolioLedgerId) {
         super();
 
         this.network = serialized.networkType;
-        this.masterFingerprint = serialized.masterFingerprint;
+        this.masterFingerprint = Buffer.from(serialized.masterFingerprint, 'hex');
     }
 
     public getFallbackEmoji(): PortfolioMetaIconEmoji {
-        const index =
-            Buffer.from(this.masterFingerprint, 'hex').readUint32BE() %
-            allowedPortfolioMetaEmojis.length;
+        const index = this.masterFingerprint.readUint32BE() % allowedPortfolioMetaEmojis.length;
 
         return { type: 'emoji', value: allowedPortfolioMetaEmojis[index] };
     }
@@ -33,7 +31,7 @@ export class PortfolioIdLedger extends Id implements IPortfolioId {
 
     public toJSON(): SPortfolioLedgerId {
         return {
-            masterFingerprint: this.masterFingerprint,
+            masterFingerprint: this.masterFingerprint.toString('hex'),
             networkType: this.network
         };
     }
