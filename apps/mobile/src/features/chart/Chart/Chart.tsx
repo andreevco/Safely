@@ -67,10 +67,10 @@ export const Chart = () => {
                 formattedTime={crosshair.formattedTime}
                 secondaryCrosshair={crosshair.secondaryCrosshair}
             />
-            {chart.data?.attribution?.label && (
+            {chart.data?.attribution.label && (
                 <ProviderLabel
-                    label={chart.data?.attribution?.label}
-                    url={chart.data?.attribution?.url}
+                    label={chart.data?.attribution.label}
+                    url={chart.data?.attribution.url}
                 />
             )}
         </View>
