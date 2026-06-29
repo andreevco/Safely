@@ -4,7 +4,14 @@ import { aboutSchema, bootConfigSchema, sCryptoAssetAmount, sCryptoFiatRate } fr
 import { UtxoSchema, UtxoWithOptionalTxSchema } from '@safely/core/api/btc';
 
 const sHistoricalPrice = z.object({
-    prices: z.array(z.tuple([z.number(), z.number()])).describe('[timestamp, price] pair')
+    prices: z.array(z.tuple([z.number(), z.number()])).describe('[timestamp, price] pair'),
+    attribution: z
+        .looseObject({
+            provider: z.string(),
+            label: z.string().optional(),
+            url: z.string().optional()
+        })
+        .optional()
 });
 
 const sActivityItem = z.object({
