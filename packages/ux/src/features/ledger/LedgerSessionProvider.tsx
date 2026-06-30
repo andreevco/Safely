@@ -73,12 +73,16 @@ export const LedgerSessionProvider = (props: LedgerSessionProviderProps) => {
         };
     }, []);
 
+    useEffect(() => () => activeActor?.stop(), [activeActor]);
+
     const withSession = useCallback(
         <T,>(
             params: { expectedFingerprint: Buffer },
             run: (session: LedgerSession) => Promise<T>
         ): Promise<T> =>
             new Promise<T>((resolve, reject) => {
+                let actor: LedgerSigningActor | undefined;
+
                 (async () => {
                     const ledgerKit = getLedgerKit();
 
@@ -90,7 +94,7 @@ export const LedgerSessionProvider = (props: LedgerSessionProviderProps) => {
                         setSessionId(null);
                     }
 
-                    const actor = createActor(ledgerSigningMachine, {
+                    const sessionActor = createActor(ledgerSigningMachine, {
                         input: {
                             ledgerKit,
                             transportIdentifier: ledgerTransport.transportIdentifier,
@@ -99,8 +103,9 @@ export const LedgerSessionProvider = (props: LedgerSessionProviderProps) => {
                             run
                         }
                     });
+                    actor = sessionActor;
 
-                    actor.subscribe(snapshot => {
+                    sessionActor.subscribe(snapshot => {
                         if (snapshot.context.sessionId) {
                             setSessionId(snapshot.context.sessionId);
                         }
@@ -109,7 +114,7 @@ export const LedgerSessionProvider = (props: LedgerSessionProviderProps) => {
                             return;
                         }
 
-                        actor.stop();
+                        sessionActor.stop();
 
                         const { error, result } = snapshot.output;
 
@@ -122,10 +127,13 @@ export const LedgerSessionProvider = (props: LedgerSessionProviderProps) => {
                         }
                     });
 
-                    setActiveActor(actor);
-                    actor.start();
+                    setActiveActor(sessionActor);
+                    sessionActor.start();
                     openConnectScreen();
-                })().catch(reject);
+                })().catch((error: unknown) => {
+                    actor?.stop();
+                    reject(error instanceof Error ? error : new Error('Ledger signing failed'));
+                });
             }),
         [getLedgerKit, ledgerTransport, openConnectScreen, setSessionId]
     );
