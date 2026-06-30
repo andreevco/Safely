@@ -2,7 +2,7 @@ import { useQueries } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
 import type { BtcWallet, RequiredProperties } from '@safely/core';
-import { assertUnreachable, BtcAssetAmount, PortfolioType } from '@safely/core';
+import { BtcAssetAmount } from '@safely/core';
 import type { BtcApi, BtcApiUtxoWithOptionalTx } from '@safely/core/api/btc';
 
 import {
@@ -13,7 +13,7 @@ import {
     usePersistQuery
 } from '../../shared';
 import { useActiveAccount } from '../account';
-import { resolveBtcWallet, useActiveBtcWallet, usePortfolios } from '../portfolio';
+import { resolveBtcWallets, useActiveBtcWallet, usePortfolios } from '../portfolio';
 import { utxo } from './keys';
 import {
     BroadcastedBtcTxService,
@@ -23,23 +23,7 @@ import { getBiggestBtcIOAddress } from '../activity/api';
 
 function useAccessibleBtcWallets() {
     const portfolios = usePortfolios();
-    return useMemo(
-        () =>
-            portfolios
-                .filter(p => {
-                    switch (p.type) {
-                        case PortfolioType.BIP39:
-                        case PortfolioType.LEDGER:
-                            return true;
-                        case PortfolioType.WATCH_ONLY:
-                            return false;
-                        default:
-                            assertUnreachable(p);
-                    }
-                })
-                .map(p => resolveBtcWallet(p)),
-        [portfolios]
-    );
+    return useMemo(() => portfolios.flatMap(resolveBtcWallets), [portfolios]);
 }
 
 function getTotal(utxos: { value: string }[]) {

@@ -19,7 +19,7 @@ import { PortfolioLedger } from '@safely/core';
 import { PortfolioIdBip39Imported } from '@safely/core';
 import { PortfolioBip39, PortfolioIdBip39MasterKeyDerived } from '@safely/core';
 import { PortfolioMnemonicFactory } from '@safely/core';
-import { toPortfolioId } from '@safely/core';
+import { assertUnreachable, toPortfolioId } from '@safely/core';
 import {
     delay,
     Id,
@@ -752,7 +752,24 @@ export function findPortfolioMetaByAddress(
     portfolios: Portfolio[],
     address: string
 ): PortfolioMeta | undefined {
-    return portfolios.find(p => resolveBtcWallet(p).address === address)?.meta;
+    for (const portfolio of portfolios) {
+        if (portfolio.type === PortfolioType.LEDGER) {
+            const derivation = portfolio.derivations.find(
+                d => d.chains.btc.wallets[0]?.address === address
+            );
+            if (derivation) {
+                return { name: derivation.meta.name, icon: portfolio.meta.icon };
+            }
+
+            continue;
+        }
+
+        if (resolveBtcWallet(portfolio).address === address) {
+            return portfolio.meta;
+        }
+    }
+
+    return undefined;
 }
 
 export function resolveBtcWallet(portfolio: Portfolio): BtcWalletReadOnly {
@@ -761,6 +778,18 @@ export function resolveBtcWallet(portfolio: Portfolio): BtcWalletReadOnly {
     }
 
     return portfolio.derivations[0].chains.btc.wallets[0];
+}
+
+export function resolveBtcWallets(portfolio: Portfolio): BtcWalletReadOnly[] {
+    switch (portfolio.type) {
+        case PortfolioType.LEDGER:
+            return portfolio.derivations.map(d => d.chains.btc.wallets[0]);
+        case PortfolioType.BIP39:
+        case PortfolioType.WATCH_ONLY:
+            return [resolveBtcWallet(portfolio)];
+        default:
+            return assertUnreachable(portfolio);
+    }
 }
 
 export function getPortfolioDisplayName(meta: PortfolioMeta): string {
