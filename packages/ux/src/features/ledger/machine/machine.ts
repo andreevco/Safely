@@ -15,6 +15,7 @@ import {
 } from './actors';
 
 const SIGNED_DELAY_MS = 1_000;
+const SCAN_TIMEOUT_MS = 30_000;
 const CONNECT_TIMEOUT_MS = 30_000;
 
 export const LEDGER_FAILURE_STATES = ['failed', 'wrongDevice', 'unsupportedApp'];
@@ -65,6 +66,7 @@ export const ledgerSigningMachine = setup({
     },
     delays: {
         connectTimeout: CONNECT_TIMEOUT_MS,
+        scanTimeout: SCAN_TIMEOUT_MS,
         signedDelay: SIGNED_DELAY_MS
     }
 }).createMachine({
@@ -99,6 +101,9 @@ export const ledgerSigningMachine = setup({
                     actions: assign({ selectedDevice: ({ event }) => event.devices[0] }),
                     target: 'connecting'
                 }
+            },
+            after: {
+                scanTimeout: { target: 'failed' }
             }
         },
         connecting: {

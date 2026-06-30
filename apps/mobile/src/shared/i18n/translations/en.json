@@ -472,6 +472,7 @@
                 "stillOff": "Bluetooth is still off"
             },
             "discovery": {
+                "notFound": "No devices found",
                 "title": "Looking for devices…",
                 "subtitle": "Make sure your Ledger is unlocked and close to the mobile phone you want to pair with."
             },
