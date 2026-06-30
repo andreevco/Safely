@@ -61,14 +61,13 @@ export const DerivationReorderList = (props: DerivationReorderListProps) => {
 
     return (
         <View style={{ height: derivations.length * ROW_HEIGHT }}>
-            {derivations.map((derivation, index) => (
+            {derivations.map(derivation => (
                 <DraggableDerivation
                     key={derivation.id.toString()}
                     derivation={derivation}
                     itemsCount={derivations.length}
                     engine={engine}
                     isSelected={isActivePortfolio && activeDerivationIndex === derivation.index}
-                    showDivider={index !== derivations.length - 1}
                     blockExternalRefs={blockExternalRefs}
                     onReorder={handleReorder}
                     onPress={() => onSelectDerivation(derivation.index)}

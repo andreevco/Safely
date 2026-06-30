@@ -59,7 +59,7 @@ export const GroupPortfolioItem = memo((props: DraggablePortfolioProps) => {
                 <GestureDetector gesture={gesture}>
                     <View style={styles.itemContainer}>
                         <Animated.View style={underlayStyle} />
-                        <Cell style={styles.item}>
+                        <Cell style={styles.item} showDivider={false}>
                             <Cell.Content>
                                 <Cell.Row style={styles.row}>
                                     <PortfolioName
