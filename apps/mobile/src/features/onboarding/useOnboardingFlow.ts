@@ -1,6 +1,6 @@
 import { useNavigation } from '@react-navigation/core';
 import { CommonActions } from '@react-navigation/native';
-import { useCallback, useRef } from 'react';
+import { useCallback } from 'react';
 import { Keyboard } from 'react-native';
 
 import type { PortfolioNetworkType } from '@safely/core';
@@ -24,8 +24,6 @@ export function useOnboardingFlow() {
             sync: { getSecureEncrypted }
         }
     } = useAppContext();
-
-    const createdRef = useRef(false);
 
     const onSuccessCreate = useCallback(() => {
         navigation.navigate('OnboardingPasscodeScreen', { source: { kind: 'generated' } });
@@ -57,7 +55,7 @@ export function useOnboardingFlow() {
         async (passcode: string, source: AccountPortfolioSource | null) => {
             await setPasscode(passcode);
 
-            if (source && !createdRef.current) {
+            if (source) {
                 Keyboard.dismiss();
                 await withLoader(async () => {
                     using secureEncryptedStorage = getSecureEncrypted();
@@ -67,7 +65,6 @@ export function useOnboardingFlow() {
 
                     await createAccount({ secureEncryptedStorage, firstPortfolio: source });
                 });
-                createdRef.current = true;
             }
 
             navigation.navigate('BiometryScreen', { isSignIn: source === null });
