@@ -1,11 +1,25 @@
+import type { StaticScreenProps } from '@react-navigation/native';
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+
+import type { AccountPortfolioSource } from '@safely/ux';
 
 import { useOnboardingFlow } from '@mobile/features/onboarding';
 import { PasscodeSetup } from '@mobile/shared/ui';
 
-export const OnboardingPasscodeScreen = () => {
+type OnboardingPasscodeScreenProps = StaticScreenProps<{
+    source: AccountPortfolioSource | null;
+}>;
+
+export const OnboardingPasscodeScreen = (props: OnboardingPasscodeScreenProps) => {
     const { t } = useTranslation();
+    const { source } = props.route.params;
     const { onPasscodeReady } = useOnboardingFlow();
+
+    const handleComplete = useCallback(
+        (passcode: string) => onPasscodeReady(passcode, source),
+        [onPasscodeReady, source]
+    );
 
     return (
         <PasscodeSetup
@@ -14,7 +28,7 @@ export const OnboardingPasscodeScreen = () => {
             reenterTitle={t('onboarding.passcode.reenter.title')}
             description={t('onboarding.passcode.description')}
             reenterDescription={t('onboarding.passcode.reenter.description')}
-            onComplete={onPasscodeReady}
+            onComplete={handleComplete}
         />
     );
 };

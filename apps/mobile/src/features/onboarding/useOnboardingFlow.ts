@@ -1,6 +1,6 @@
 import { useNavigation } from '@react-navigation/core';
 import { CommonActions } from '@react-navigation/native';
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import { Keyboard } from 'react-native';
 
 import type { PortfolioNetworkType } from '@safely/core';
@@ -11,34 +11,6 @@ import { useAppContext, useCreateAccount, useLoader } from '@safely/ux';
 // eslint-disable-next-line boundaries/element-types
 import { tabsInitialState } from '@mobile/app/navigation/tabs';
 import { usePasscode } from '@mobile/entities/security';
-
-const routes = {
-    passcode: 'OnboardingPasscodeScreen',
-    biometry: 'BiometryScreen',
-    accountCreated: 'AccountCreatedScreen'
-} as const;
-
-type OnboardingIntent =
-    | { type: 'create' }
-    | { type: 'signIn' }
-    | { type: 'import'; mnemonic: string[]; networkType: PortfolioNetworkType }
-    | { type: 'watchOnly'; input: string; networkType: PortfolioNetworkType };
-
-// TODO: Don't like this
-let _intent: OnboardingIntent = { type: 'create' };
-
-function intentToPortfolioSource(intent: OnboardingIntent): AccountPortfolioSource | null {
-    switch (intent.type) {
-        case 'create':
-            return { kind: 'generated' };
-        case 'import':
-            return { kind: 'imported', mnemonic: intent.mnemonic, networkType: intent.networkType };
-        case 'watchOnly':
-            return { kind: 'watchOnly', input: intent.input, networkType: intent.networkType };
-        case 'signIn':
-            return null;
-    }
-}
 
 export function useOnboardingFlow() {
     const navigation = useNavigation();
@@ -53,39 +25,39 @@ export function useOnboardingFlow() {
         }
     } = useAppContext();
 
+    const createdRef = useRef(false);
+
     const onSuccessCreate = useCallback(() => {
-        _intent = { type: 'create' };
-        navigation.dispatch(CommonActions.navigate(routes.passcode));
+        navigation.navigate('OnboardingPasscodeScreen', { source: { kind: 'generated' } });
     }, [navigation]);
 
     const onSuccessSignIn = useCallback(() => {
-        _intent = { type: 'signIn' };
-        navigation.dispatch(CommonActions.navigate(routes.passcode));
+        navigation.navigate('OnboardingPasscodeScreen', { source: null });
     }, [navigation]);
 
     const onMnemonicReady = useCallback(
         (mnemonic: string[], networkType: PortfolioNetworkType) => {
-            _intent = { type: 'import', mnemonic, networkType };
-            navigation.dispatch(CommonActions.navigate(routes.passcode));
+            navigation.navigate('OnboardingPasscodeScreen', {
+                source: { kind: 'imported', mnemonic, networkType }
+            });
         },
         [navigation]
     );
 
     const onWatchOnlyReady = useCallback(
         (input: string, networkType: PortfolioNetworkType) => {
-            _intent = { type: 'watchOnly', input, networkType };
-            navigation.dispatch(CommonActions.navigate(routes.passcode));
+            navigation.navigate('OnboardingPasscodeScreen', {
+                source: { kind: 'watchOnly', input, networkType }
+            });
         },
         [navigation]
     );
 
     const onPasscodeReady = useCallback(
-        async (passcode: string) => {
+        async (passcode: string, source: AccountPortfolioSource | null) => {
             await setPasscode(passcode);
 
-            const firstPortfolio = intentToPortfolioSource(_intent);
-
-            if (firstPortfolio) {
+            if (source && !createdRef.current) {
                 Keyboard.dismiss();
                 await withLoader(async () => {
                     using secureEncryptedStorage = getSecureEncrypted();
@@ -93,28 +65,31 @@ export function useOnboardingFlow() {
                     // don't ask for the password while setting app initially after first account creation during onboarding to provide smooth user experience
                     secureEncryptedStorage.UNSAFE_SKIP_SECURITY_CHECK_unlock();
 
-                    await createAccount({ secureEncryptedStorage, firstPortfolio });
+                    await createAccount({ secureEncryptedStorage, firstPortfolio: source });
                 });
-                _intent = { type: 'create' };
+                createdRef.current = true;
             }
 
-            navigation.dispatch(CommonActions.navigate(routes.biometry));
+            navigation.navigate('BiometryScreen', { isSignIn: source === null });
         },
         [navigation, setPasscode, createAccount, withLoader, getSecureEncrypted]
     );
 
-    const onBiometryFinished = useCallback(() => {
-        if (_intent.type === 'signIn') {
-            navigation.dispatch(
-                CommonActions.reset({
-                    index: 0,
-                    routes: [{ name: 'TabsNavigator', state: tabsInitialState }]
-                })
-            );
-        } else {
-            navigation.dispatch(CommonActions.navigate(routes.accountCreated));
-        }
-    }, [navigation]);
+    const onBiometryFinished = useCallback(
+        (isSignIn: boolean) => {
+            if (isSignIn) {
+                navigation.dispatch(
+                    CommonActions.reset({
+                        index: 0,
+                        routes: [{ name: 'TabsNavigator', state: tabsInitialState }]
+                    })
+                );
+            } else {
+                navigation.navigate('AccountCreatedScreen');
+            }
+        },
+        [navigation]
+    );
 
     const onAccountCreatedFinished = useCallback(() => {
         navigation.dispatch(
