@@ -9,26 +9,27 @@ import { styles } from './ProviderLabel.styles';
 
 type ProviderLabelProps = {
     label: string;
-    url?: string;
+    link?: string;
 };
 
 export const ProviderLabel = (props: ProviderLabelProps) => {
-    const { label, url } = props;
+    const { label, link } = props;
     const { openURL } = useLinking();
+
     return (
         <Animated.View entering={FadeIn.duration(100)} exiting={FadeOut.duration(100)}>
             <TouchableOpacity
-                disabled={!url}
-                onPress={() => openURL(url!, [LinkingProtocol.HTTPS])}
+                disabled={!link}
+                onPress={() => openURL(link!, [LinkingProtocol.HTTPS])}
                 style={styles.container}
             >
                 <Text variant="bodyS" color="tertiary">
                     <Trans
                         defaults={label}
-                        components={{ link: <Text variant="bodyS" color="secondary" /> }}
+                        components={{ a: <Text variant="bodyS" color="secondary" /> }}
                     />
                 </Text>
-                {url && <Icon icon={ChevronRight8} color="tertiary" />}
+                {link && <Icon style={styles.chevron} icon={ChevronRight8} color="tertiary" />}
             </TouchableOpacity>
         </Animated.View>
     );
