@@ -29,7 +29,7 @@ export const ProviderLabel = (props: ProviderLabelProps) => {
                         components={{ a: <Text variant="bodyS" color="secondary" /> }}
                     />
                 </Text>
-                {link && <Icon icon={ChevronRight8} color="tertiary" />}
+                {link && <Icon style={styles.chevron} icon={ChevronRight8} color="tertiary" />}
             </TouchableOpacity>
         </Animated.View>
     );
