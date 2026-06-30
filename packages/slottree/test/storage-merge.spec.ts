@@ -5,7 +5,12 @@ import type { StorageImpl } from '../src';
 import { createStorage } from '../src';
 import type { schemaV1 } from './version-fixtures';
 import { v1 } from './version-fixtures';
-import { createContainerSlot, createOriginContainer } from '../src/core/slots';
+import {
+    createContainerSlot,
+    createOrderedArraySlot,
+    createOriginContainer,
+    SlotKind
+} from '../src/core/slots';
 import { slotFromJson } from '../src/core/slots/slot-json';
 
 describe('storage merge', () => {
@@ -99,7 +104,7 @@ describe('storage merge', () => {
     });
 
     it('rejects storage initialized with a non-origin root', () => {
-        const root = createContainerSlot(1, '', {
+        const root = createContainerSlot(1, 'remote', {
             '1': slotFromJson({ key1: 1, key2: 'value2' }, 2_000_000_000, 'remote')
         });
 
@@ -119,6 +124,33 @@ describe('storage merge', () => {
 
         expect(() => storage1.mergeSlot(incoming)).toThrow(
             'Slot tree root must be an origin container slot'
+        );
+        expect(storage1.read()).toEqual({ key1: 0, key2: 'initial' });
+    });
+
+    it.each([1.5, 2 ** 31])('rejects incoming ordered array item order %s', invalidOrder => {
+        const incoming = createOriginContainer({
+            '1': createContainerSlot(2_000_000_000, 'remote', {
+                portfolios: createOrderedArraySlot(2_000_000_000, 'remote', {
+                    item: createContainerSlot(2_000_000_000, 'remote', {
+                        order: {
+                            s: SlotKind.Atomic,
+                            v: invalidOrder,
+                            t: 2_000_000_000,
+                            a: 'remote'
+                        },
+                        value: slotFromJson(
+                            { __setId: 'item', name: 'Invalid' },
+                            2_000_000_000,
+                            'remote'
+                        )
+                    })
+                })
+            })
+        });
+
+        expect(() => storage1.mergeSlot(incoming)).toThrow(
+            'Ordered array item "item" order must be a 32-bit integer atomic slot'
         );
         expect(storage1.read()).toEqual({ key1: 0, key2: 'initial' });
     });

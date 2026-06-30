@@ -103,7 +103,7 @@ describe('CborEncoder', () => {
     });
 
     it('rejects a decoded root with a non-origin timestamp', () => {
-        const root = createContainerSlot(1, '', {
+        const root = createContainerSlot(1, stringAuthor, {
             value: atomic('invalid root stamp', 2)
         });
 

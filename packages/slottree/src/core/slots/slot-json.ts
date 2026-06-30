@@ -5,6 +5,7 @@ import {
     createSlotMap,
     createTombstoneSlot,
     isJsonObject,
+    isOrderedArrayOrderIndex,
     isOrderedArraySlot,
     isTombstoneSlot,
     ORDERED_ARRAY_ITEM_ID_KEY,
@@ -103,13 +104,8 @@ export function orderedArrayItemOrder(item: Slot, id: string): number {
     }
 
     const order = item.v.order;
-    if (
-        order === undefined ||
-        order.s !== SlotKind.Atomic ||
-        typeof order.v !== 'number' ||
-        !Number.isFinite(order.v)
-    ) {
-        throw new Error(`Ordered array item "${id}" must have a finite numeric order`);
+    if (order === undefined || order.s !== SlotKind.Atomic || !isOrderedArrayOrderIndex(order.v)) {
+        throw new Error(`Ordered array item "${id}" must have a 32-bit integer order`);
     }
 
     return order.v;

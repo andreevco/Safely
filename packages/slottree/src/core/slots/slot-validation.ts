@@ -1,5 +1,11 @@
 import type { JsonValue } from '../json';
-import { ORDERED_ARRAY_ITEM_ID_KEY, SlotKind, type ContainerSlot, type Slot } from './slot';
+import {
+    isOrderedArrayOrderIndex,
+    ORDERED_ARRAY_ITEM_ID_KEY,
+    SlotKind,
+    type ContainerSlot,
+    type Slot
+} from './slot';
 import { stripSlot } from './slot-json';
 
 export function validateSlotTreeRoot(root: unknown): asserts root is ContainerSlot {
@@ -120,13 +126,8 @@ function validateOrderedArrayItem(key: string, item: unknown): void {
 
     const values = record.v as Record<string, unknown>;
     const order = values.order as Record<string, unknown> | undefined;
-    if (
-        order === undefined ||
-        order.s !== SlotKind.Atomic ||
-        typeof order.v !== 'number' ||
-        !Number.isFinite(order.v)
-    ) {
-        throw new Error(`Ordered array item "${key}" order must be a finite number atomic slot`);
+    if (order === undefined || order.s !== SlotKind.Atomic || !isOrderedArrayOrderIndex(order.v)) {
+        throw new Error(`Ordered array item "${key}" order must be a 32-bit integer atomic slot`);
     }
 
     const value = values.value;
