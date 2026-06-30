@@ -48,8 +48,13 @@ export const PasscodeSetup = ({
                 passcodeState.isSuccess.value = true;
 
                 const inputValue = passcodeState.inputValue;
-                setTimeout(() => {
-                    void onComplete(inputValue);
+                setTimeout(async () => {
+                    try {
+                        await onComplete(inputValue);
+                    } catch {
+                        passcodeState.reset();
+                        setFirstPasscode(null);
+                    }
                 }, 300);
             } else {
                 await notificationAsync(NotificationFeedbackType.Error);

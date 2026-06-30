@@ -5,7 +5,7 @@ import { Keyboard } from 'react-native';
 
 import type { PortfolioMeta, PortfolioMetaIcon, PortfolioNetworkType } from '@safely/core';
 import type { AccountPortfolioSource } from '@safely/ux';
-import { useAppContext, useCreateAccount, useLoader } from '@safely/ux';
+import { useAppContext, useCreateAccount, useErrorToast, useLoader } from '@safely/ux';
 
 // TODO IMPORT Discuss with Max what to do with this
 // eslint-disable-next-line boundaries/element-types
@@ -27,6 +27,10 @@ export function useOnboardingFlow() {
     });
     const { withLoader } = useLoader();
     const { set: setPasscode } = usePasscode();
+    const errorToast = useErrorToast({
+        InvalidMnemonicError: 'importWalletScreen.errors.invalidMnemonic',
+        PortfolioGenerationFailedError: 'importWalletScreen.errors.failedToGenerate'
+    });
     const {
         storage: {
             sync: { getSecureEncrypted }
@@ -65,14 +69,19 @@ export function useOnboardingFlow() {
 
             if (source) {
                 Keyboard.dismiss();
-                await withLoader(async () => {
-                    using secureEncryptedStorage = getSecureEncrypted();
+                try {
+                    await withLoader(async () => {
+                        using secureEncryptedStorage = getSecureEncrypted();
 
-                    // don't ask for the password while setting app initially after first account creation during onboarding to provide smooth user experience
-                    secureEncryptedStorage.UNSAFE_SKIP_SECURITY_CHECK_unlock();
+                        // don't ask for the password while setting app initially after first account creation during onboarding to provide smooth user experience
+                        secureEncryptedStorage.UNSAFE_SKIP_SECURITY_CHECK_unlock();
 
-                    await createAccount({ secureEncryptedStorage, firstPortfolio: source });
-                });
+                        await createAccount({ secureEncryptedStorage, firstPortfolio: source });
+                    });
+                } catch (error) {
+                    errorToast(error);
+                    throw error;
+                }
             }
 
             navigation.navigate('BiometryScreen', {
@@ -80,7 +89,7 @@ export function useOnboardingFlow() {
                 shouldCustomize: shouldCustomizePortfolio(source)
             });
         },
-        [navigation, setPasscode, createAccount, withLoader, getSecureEncrypted]
+        [navigation, setPasscode, createAccount, withLoader, getSecureEncrypted, errorToast]
     );
 
     const resetToTabs = useCallback(() => {
