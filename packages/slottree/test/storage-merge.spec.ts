@@ -5,7 +5,7 @@ import type { StorageImpl } from '../src';
 import { createStorage } from '../src';
 import type { schemaV1 } from './version-fixtures';
 import { v1 } from './version-fixtures';
-import { createOriginContainer } from '../src/core/slots';
+import { createContainerSlot, createOriginContainer } from '../src/core/slots';
 import { slotFromJson } from '../src/core/slots/slot-json';
 
 describe('storage merge', () => {
@@ -96,5 +96,30 @@ describe('storage merge', () => {
         expect(() => storage1.mergeSlot(incoming)).toThrow();
 
         expect(calls).toBe(0);
+    });
+
+    it('rejects storage initialized with a non-origin root', () => {
+        const root = createContainerSlot(1, '', {
+            '1': slotFromJson({ key1: 1, key2: 'value2' }, 2_000_000_000, 'remote')
+        });
+
+        expect(() =>
+            createStorage({
+                authorId: Buffer.from('device-1'),
+                versions: v1,
+                root
+            })
+        ).toThrow('Slot tree root must be an origin container slot');
+    });
+
+    it('rejects raw merges whose root is not an origin container', () => {
+        const incoming = createContainerSlot(0, 'remote', {
+            '1': slotFromJson({ key1: 1, key2: 'value2' }, 2_000_000_000, 'remote')
+        });
+
+        expect(() => storage1.mergeSlot(incoming)).toThrow(
+            'Slot tree root must be an origin container slot'
+        );
+        expect(storage1.read()).toEqual({ key1: 0, key2: 'initial' });
     });
 });

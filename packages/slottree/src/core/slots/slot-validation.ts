@@ -1,6 +1,14 @@
 import type { JsonValue } from '../json';
-import { ORDERED_ARRAY_ITEM_ID_KEY, SlotKind, type Slot } from './slot';
+import { ORDERED_ARRAY_ITEM_ID_KEY, SlotKind, type ContainerSlot, type Slot } from './slot';
 import { stripSlot } from './slot-json';
+
+export function validateSlotTreeRoot(root: unknown): asserts root is ContainerSlot {
+    validateSlot(root);
+
+    if (root.s !== SlotKind.Container || root.t !== 0 || root.a !== '') {
+        throw new Error('Slot tree root must be an origin container slot');
+    }
+}
 
 export function validateSlot(slot: unknown): asserts slot is Slot {
     validateSlotInner(slot, 0);

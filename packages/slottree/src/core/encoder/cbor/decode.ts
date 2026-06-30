@@ -4,8 +4,8 @@ import { decodeAuthor } from './authors';
 import { binaryPayloadSchema } from './format';
 import type { EncodedKey, SlotTuple } from './format';
 import type { ContainerSlot, Slot } from '../../slots';
-import { createSlotMap, isContainerSlot, SlotKind } from '../../slots';
-import { validateSlot } from '../../slots/slot-validation';
+import { createSlotMap, SlotKind } from '../../slots';
+import { validateSlotTreeRoot } from '../../slots/slot-validation';
 
 export function decodeCbor(data: Buffer): ContainerSlot {
     const payload = binaryPayloadSchema.parse(cbor.decode(data));
@@ -13,11 +13,7 @@ export function decodeCbor(data: Buffer): ContainerSlot {
     const keys = payload[1];
     const root = tupleToSlot(payload[2], authors, keys);
 
-    validateSlot(root);
-
-    if (!isContainerSlot(root)) {
-        throw new Error('Encoded storage root must be a container slot');
-    }
+    validateSlotTreeRoot(root);
 
     return root;
 }

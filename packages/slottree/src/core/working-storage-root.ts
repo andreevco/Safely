@@ -37,7 +37,7 @@ export class WorkingStorageRoot {
         return updated;
     }
 
-    public merge(protocol: MergeProtocol, incoming: Slot): MergeStats {
+    public merge(protocol: MergeProtocol, incoming: ContainerSlot): MergeStats {
         validateSlot(incoming);
 
         const before = cloneDeep(this.root);

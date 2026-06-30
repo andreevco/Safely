@@ -8,7 +8,7 @@ import { SlotRevision } from './slot-revision';
 import type { ContainerSlot, Slot } from './slots';
 import { createOriginContainer, isContainerSlot, isRecursiveSlot } from './slots';
 import { cloneSlot } from './slots/slot-json';
-import { validateSlot } from './slots/slot-validation';
+import { validateSlotTreeRoot } from './slots/slot-validation';
 import { StorageObservers } from './storage-observer';
 import type { StorageObserver } from './storage-observer';
 import type { AssertVersionHList, HCons, NewOf, StorageVersion } from './versioning/version';
@@ -123,7 +123,7 @@ export class StorageImpl<T> implements SlotTree<T> {
         this.versions = options.versions;
 
         if (options.root !== undefined) {
-            validateSlot(options.root);
+            validateSlotTreeRoot(options.root);
         }
 
         this.root = options.root === undefined ? createOriginContainer() : cloneSlot(options.root);
@@ -235,7 +235,9 @@ export class StorageImpl<T> implements SlotTree<T> {
         return true;
     }
 
-    public mergeSlot(incoming: Slot): MergeStats {
+    public mergeSlot(incoming: ContainerSlot): MergeStats {
+        validateSlotTreeRoot(incoming);
+
         const workingRoot = this.createWorkingRoot();
         const validationProtocol = new MergeProtocol(this.protocol.id);
         validationProtocol.observeTree(this.root);
@@ -257,9 +259,11 @@ export class StorageImpl<T> implements SlotTree<T> {
     }
 
     public async unsafeAsyncMergeSlot(
-        incoming: Slot,
+        incoming: ContainerSlot,
         commit: (snapshot: ContainerSlot) => Promise<boolean>
     ): Promise<boolean> {
+        validateSlotTreeRoot(incoming);
+
         const workingRoot = this.createWorkingRoot();
         const validationProtocol = new MergeProtocol(this.protocol.id);
         validationProtocol.observeTree(this.root);
