@@ -47,7 +47,9 @@ export const LedgerDerivationRow = (props: LedgerDerivationRowProps) => {
             <Cell.Content>
                 <Cell.Row>
                     <View style={styles.titleRow}>
-                        <Cell.Title>{isSkeleton ? undefined : title}</Cell.Title>
+                        <Cell.Title style={styles.title}>
+                            {isSkeleton ? undefined : title}
+                        </Cell.Title>
                         {!isSkeleton && badge}
                     </View>
                 </Cell.Row>

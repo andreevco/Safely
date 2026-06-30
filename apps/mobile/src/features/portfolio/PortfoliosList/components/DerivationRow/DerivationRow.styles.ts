@@ -9,9 +9,13 @@ export const styles = StyleSheet.create(theme => ({
         justifyContent: 'space-between'
     },
     address: {
+        flexShrink: 1,
         flexDirection: 'row',
         alignItems: 'center',
         gap: theme.spacing[12]
+    },
+    title: {
+        flexShrink: 1
     },
     badgeColumn: {
         minWidth: 20,

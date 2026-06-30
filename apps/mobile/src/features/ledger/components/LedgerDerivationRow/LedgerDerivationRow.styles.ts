@@ -16,8 +16,12 @@ export const styles = StyleSheet.create(theme => ({
         borderRadius: theme.radius.xs
     },
     titleRow: {
+        flexShrink: 1,
         flexDirection: 'row',
         alignItems: 'center',
         gap: theme.spacing[4]
+    },
+    title: {
+        flexShrink: 1
     }
 }));
