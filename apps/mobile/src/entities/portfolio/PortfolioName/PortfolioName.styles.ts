@@ -23,12 +23,6 @@ export const styles = StyleSheet.create(theme => ({
         fontSize: size * 0.75,
         lineHeight: size
     }),
-    tag: {
-        paddingVertical: 1,
-        paddingHorizontal: theme.spacing[4],
-        borderRadius: theme.radius.xss,
-        backgroundColor: theme.colors.background.tertiary
-    },
     name: {
         flexShrink: 1
     },

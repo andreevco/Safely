@@ -6,16 +6,13 @@ import type {
 import { portfolioBip39IdToString } from '@safely/sync-storage';
 
 import { Bip39Source } from './I-portfolio';
+import type { IPortfolioId } from './I-portfolio';
 import type { PortfolioMetaIconEmoji } from './portfolio-meta';
 import { allowedPortfolioMetaEmojis } from './portfolio-meta';
 import type { PortfolioNetworkType } from './portfolio-network-type';
 import { assertUnreachable, sha256PrefixNumber, sha256PrefixString } from '../../utils';
 import { Id } from '../../utils/id';
 import type { IMnemonicAccessor } from '../mnemonic';
-
-export interface IPortfolioId extends Id {
-    network: PortfolioNetworkType;
-}
 
 export class PortfolioIdBip39MasterKeyDerived extends Id implements IPortfolioId {
     public static getFallbackEmoji(derivationIndex: number): PortfolioMetaIconEmoji;

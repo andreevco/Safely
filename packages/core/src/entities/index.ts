@@ -9,3 +9,4 @@ export * from './recipient';
 export * from './errors';
 export * from './explorer';
 export * from './seed';
+export * from './signer';

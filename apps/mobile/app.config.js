@@ -67,6 +67,13 @@ module.exports = {
                     icon: './assets/icon.png'
                 }
             ],
+            [
+                'react-native-ble-plx',
+                {
+                    bluetoothAlwaysPermission:
+                        '$(PRODUCT_NAME) needs access to Bluetooth to connect to your Ledger hardware wallet.'
+                }
+            ],
             './plugins/withMMKVNoBackup'
         ],
         extra: {

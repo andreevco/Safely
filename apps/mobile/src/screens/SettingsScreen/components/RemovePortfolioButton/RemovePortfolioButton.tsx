@@ -1,6 +1,7 @@
 import { useNavigation } from '@react-navigation/core';
 import { useTranslation } from 'react-i18next';
 
+import { PortfolioType } from '@safely/core';
 import { useActivePortfolio } from '@safely/ux';
 
 import { Cell, Text } from '@mobile/shared/ui';
@@ -21,14 +22,19 @@ export const RemovePortfolioButton = (props: RemovePortfolioButtonProps) => {
         rootNavigation.navigate('RemoveWalletSheet');
     };
 
+    const label = t(
+        portfolio.type === PortfolioType.LEDGER
+            ? 'settings.removePortfolio.disconnectLedger'
+            : 'settings.removePortfolio.title',
+        { name: portfolio.meta.name }
+    );
+
     return (
         <Cell showDivider={showDivider} background="accentRed" onPress={handleDeletePortfolio}>
             <Cell.Content>
                 <Cell.Row style={styles.row}>
                     <Text variant="labelL" textAlign="center" style={styles.text}>
-                        {t('settings.removePortfolio.title', {
-                            name: portfolio.meta.name
-                        })}
+                        {label}
                     </Text>
                 </Cell.Row>
             </Cell.Content>

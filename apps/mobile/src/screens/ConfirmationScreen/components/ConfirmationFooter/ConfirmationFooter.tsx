@@ -15,10 +15,11 @@ interface Props {
     onGoBack: () => void;
     state: ConfirmationState;
     isEstimating: boolean;
+    onLedgerContinue?: () => void;
 }
 
 export const ConfirmationFooter = (props: Props) => {
-    const { onSend, onGoBack, state, isEstimating } = props;
+    const { onSend, onGoBack, state, isEstimating, onLedgerContinue } = props;
     const { t } = useTranslation();
 
     const parseSendError = useParseError(
@@ -55,22 +56,35 @@ export const ConfirmationFooter = (props: Props) => {
 
     return (
         <View style={styles.container}>
-            {(state.type === 'idle' || state.type === 'sending') && (
-                <Animated.View exiting={FadeOut.duration(150)}>
-                    <SlideButton
-                        knobTestID={TEST_ID.confirmation.sliderKnob}
-                        label={t('confirmation.slider.send')}
-                        description={
-                            isEstimating
-                                ? t('confirmation.slider.estimatingFee')
-                                : t('confirmation.slider.slideToConfirm')
-                        }
-                        disabled={isEstimating}
-                        loading={state.type === 'sending'}
-                        onSlideComplete={onSend}
-                    />
-                </Animated.View>
-            )}
+            {(state.type === 'idle' || state.type === 'sending') &&
+                (onLedgerContinue ? (
+                    <Animated.View exiting={FadeOut.duration(150)}>
+                        <Button
+                            type="primary"
+                            size="large"
+                            disabled={isEstimating}
+                            isLoading={state.type === 'sending'}
+                            onPress={onLedgerContinue}
+                        >
+                            {t('confirmation.continueWithLedger')}
+                        </Button>
+                    </Animated.View>
+                ) : (
+                    <Animated.View exiting={FadeOut.duration(150)}>
+                        <SlideButton
+                            knobTestID={TEST_ID.confirmation.sliderKnob}
+                            label={t('confirmation.slider.send')}
+                            description={
+                                isEstimating
+                                    ? t('confirmation.slider.estimatingFee')
+                                    : t('confirmation.slider.slideToConfirm')
+                            }
+                            disabled={isEstimating}
+                            loading={state.type === 'sending'}
+                            onSlideComplete={onSend}
+                        />
+                    </Animated.View>
+                ))}
             {state.type === 'success' && (
                 <Animated.View
                     style={styles.buttonContainer}

@@ -1,1 +1,0 @@
-export { SyncDot } from './SyncDot';

@@ -5,11 +5,18 @@ import { View } from 'react-native';
 
 import { useAppContext, useConnectAccountToNewDevice } from '@safely/ux';
 
-import { Button, DeviceLinkExclamationmark96, Icon, Screen, Text } from '@mobile/shared/ui';
+import {
+    Button,
+    DeviceLinkExclamationmark96,
+    Icon,
+    Screen,
+    StepsList,
+    Text
+} from '@mobile/shared/ui';
 
 import { styles } from './ProtectAccountModal.styles';
 
-const steps = [
+const stepKeys = [
     'onboarding.accountCreated.steps.step1',
     'onboarding.accountCreated.steps.step2',
     'onboarding.accountCreated.steps.step3'
@@ -24,6 +31,8 @@ export const ProtectAccountModal = () => {
     } = useAppContext();
     const { mutateAsync: connectToNewDevice } = useConnectAccountToNewDevice();
     const navigation = useNavigation();
+
+    const steps = stepKeys.map(key => ({ title: t(key) }));
 
     const handleConnect = useCallback(async () => {
         using secureEncryptedStorage = getSecureEncrypted();
@@ -49,20 +58,7 @@ export const ProtectAccountModal = () => {
                             {t('security.protectAccount.subtitle')}
                         </Text>
                     </View>
-                    <View style={styles.stepsContainer}>
-                        {steps.map((step, index) => (
-                            <View key={step} style={styles.stepRow}>
-                                <View style={styles.stepNumber}>
-                                    <Text variant="bodyM" color="tertiary" monospace>
-                                        {index + 1}.
-                                    </Text>
-                                </View>
-                                <View style={styles.stepText}>
-                                    <Text variant="bodyM">{t(step)}</Text>
-                                </View>
-                            </View>
-                        ))}
-                    </View>
+                    <StepsList steps={steps} />
                 </View>
                 <View style={styles.buttonContainer}>
                     <Button type="primary" size="large" onPress={handleConnect}>

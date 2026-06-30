@@ -10,6 +10,7 @@ import { LanguageScreen } from '@mobile/screens/LanguageScreen';
 import { SecurityScreen } from '@mobile/screens/SecurityScreen';
 import { AccountProtectedModal, ProtectAccountModal } from '@mobile/screens/SecurityScreen/screens';
 import { SettingsScreen } from '@mobile/screens/SettingsScreen';
+import { WalletSettingsScreen } from '@mobile/screens/WalletSettingsScreen';
 
 export const SettingsStack = createNativeStackNavigator({
     initialRouteName: 'SettingsRootModal',
@@ -17,6 +18,7 @@ export const SettingsStack = createNativeStackNavigator({
         Screens: {
             screens: {
                 SettingsRootModal: SettingsScreen,
+                WalletSettingsModal: WalletSettingsScreen,
                 LanguageModal: LanguageScreen,
                 SecurityModal: SecurityScreen,
                 ProtectAccountModal: ProtectAccountModal,

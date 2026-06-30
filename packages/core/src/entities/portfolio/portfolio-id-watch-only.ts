@@ -6,7 +6,7 @@ import type {
 import { portfolioWatchOnlyIdToString } from '@safely/sync-storage';
 
 import { WatchOnlySource } from './I-portfolio';
-import type { IPortfolioId } from './portfolio-id-bip39';
+import type { IPortfolioId } from './I-portfolio';
 import type { PortfolioMetaIconEmoji } from './portfolio-meta';
 import { allowedPortfolioMetaEmojis } from './portfolio-meta';
 import type { PortfolioNetworkType } from './portfolio-network-type';

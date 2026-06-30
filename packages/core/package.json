@@ -9,9 +9,12 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@ledgerhq/device-management-kit": "catalog:",
+    "@ledgerhq/device-signer-kit-bitcoin": "catalog:",
+    "@ledgerhq/signer-utils": "catalog:",
+    "@noble/hashes": "catalog:",
     "@safely/sync": "workspace:*",
     "@safely/sync-storage": "workspace:*",
-    "@noble/hashes": "catalog:",
     "@scure/bip32": "2.2.0",
     "@scure/bip39": "2.2.0",
     "@scure/btc-signer": "2.2.0",

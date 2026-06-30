@@ -29,6 +29,7 @@ function useAccessibleBtcWallets() {
                 .filter(p => {
                     switch (p.type) {
                         case PortfolioType.BIP39:
+                        case PortfolioType.LEDGER:
                             return true;
                         case PortfolioType.WATCH_ONLY:
                             return false;
@@ -128,10 +129,26 @@ export function useBtcWalletUtxo(btcWallet: BtcWallet) {
     );
 }
 
-export function useBtcBalances(wallets: BtcWallet[]) {
+export function sumBtcDisplay(
+    balances: ReturnType<typeof useBtcWalletBalances>
+): BtcAssetAmount | null {
+    let total = BtcAssetAmount.fromWeiAmount('0');
+
+    for (const balance of balances) {
+        if (balance === undefined) {
+            return null;
+        }
+
+        total = total.amountAdd(balance.display);
+    }
+
+    return total;
+}
+
+export function useBtcWalletBalances(wallets: BtcWallet[]) {
+    const account = useActiveAccount();
     const getBtcApi = useGetBtcApi();
     const accessibleBtcWallets = useAccessibleBtcWallets();
-    const account = useActiveAccount();
 
     return useQueries({
         queries: wallets.map(btcWallet => {
@@ -150,19 +167,17 @@ export function useBtcBalances(wallets: BtcWallet[]) {
                 }
             };
         }),
-        combine: results => {
-            let total = BtcAssetAmount.fromWeiAmount('0');
-
-            for (const r of results) {
-                if (r.data === undefined) return null;
-
-                total = total.amountAdd(
-                    r.data.confirmed.totalAmount.amountAdd(r.data.unconfirmedSafe.totalAmount)
-                );
-            }
-
-            return total;
-        }
+        combine: results =>
+            results.map(r =>
+                r.data
+                    ? {
+                          display: r.data.confirmed.totalAmount.amountAdd(
+                              r.data.unconfirmedSafe.totalAmount
+                          ),
+                          pending: r.data.unconfirmedUnsafe.totalAmount
+                      }
+                    : undefined
+            )
     });
 }
 

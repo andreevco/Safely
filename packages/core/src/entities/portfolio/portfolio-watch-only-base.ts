@@ -1,8 +1,7 @@
-import type { IPortfolioWatchOnly } from './I-portfolio';
+import type { IPortfolioId, IPortfolioWatchOnly } from './I-portfolio';
 import { PortfolioType } from './I-portfolio';
 import type { PortfolioMeta } from './portfolio-meta';
 import type { VM_TYPE } from '../blockchain';
-import type { IPortfolioId } from './portfolio-id-bip39';
 import type { PortfolioNetworkType } from './portfolio-network-type';
 import type { WalletReadOnly } from '../derivation/wallet-read-only';
 

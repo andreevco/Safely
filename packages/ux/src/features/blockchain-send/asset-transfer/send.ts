@@ -5,12 +5,12 @@ import { BtcTransactionTemplate } from '@safely/core';
 
 import { BroadcastedBtcTx, useBtcSendLocked, useSetLastBroadcastedBtcTx } from '../../../entities';
 
-export function useSendAssetTransfer(transactionTemplate: TransactionTemplate | undefined) {
+export function useSendAssetTransfer() {
     const { mutateAsync: setLastBroadcastedBtcTx } = useSetLastBroadcastedBtcTx();
     const isLocked = useBtcSendLocked();
 
     return useMutation({
-        async mutationFn() {
+        async mutationFn(transactionTemplate: TransactionTemplate | undefined) {
             if (!transactionTemplate) {
                 throw new Error('Estimation not found');
             }
@@ -21,7 +21,7 @@ export function useSendAssetTransfer(transactionTemplate: TransactionTemplate | 
 
             return transactionTemplate.send();
         },
-        async onSuccess() {
+        async onSuccess(_result, transactionTemplate) {
             if (transactionTemplate instanceof BtcTransactionTemplate) {
                 await setLastBroadcastedBtcTx(
                     BroadcastedBtcTx.fromTransactionTemplate(transactionTemplate)

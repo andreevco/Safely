@@ -2,12 +2,7 @@ import { useNavigation } from '@react-navigation/core';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import {
-    AccountLinkState,
-    useAccountLinkState,
-    useHasPortfolio,
-    useSecurityCheck
-} from '@safely/ux';
+import { AccountLinkState, useAccountLinkState, useSecurityCheck } from '@safely/ux';
 
 import { useLockScreenQuery, useSetLockScreenEnabled } from '@mobile/entities/security';
 import {
@@ -19,7 +14,6 @@ import { useLogOutAllConfirmation } from '@mobile/features/settings/useLogOutAll
 import { Badge, Cell, List, Screen, Switch } from '@mobile/shared/ui';
 import { ArrowLeft16, Icon } from '@mobile/shared/ui/Icon';
 
-import { WalletSecuritySection } from './components';
 import { styles } from './SecurityScreen.styles';
 
 export const SecurityScreen = () => {
@@ -27,7 +21,6 @@ export const SecurityScreen = () => {
     const { data: biometry } = useBiometryQuery();
     const { mutateAsync: setBiometryEnabled } = useSetBiometryEnabled();
     const check = useSecurityCheck();
-    const hasPortfolio = useHasPortfolio();
     const navigation = useNavigation();
 
     const { data: lockScreenEnabled } = useLockScreenQuery();
@@ -211,8 +204,6 @@ export const SecurityScreen = () => {
                             </Cell>
                         </List.Group>
                     </List>
-
-                    {hasPortfolio && <WalletSecuritySection />}
                 </View>
             </Screen.Scrollable>
         </Screen>

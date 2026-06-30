@@ -3,29 +3,31 @@ import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Keyboard } from 'react-native';
 
-import type { PortfolioMeta } from '@safely/core';
+import type { PortfolioMeta, PortfolioMetaIcon } from '@safely/core';
 
 import { TEST_ID } from '@mobile/shared/constants';
 import { Button, Icon, Screen, Xmark16 } from '@mobile/shared/ui';
 
-import type { WalletIcon } from './constants';
 import { CustomizeWalletContent } from './CustomizeWalletContent';
 import { styles } from './CustomizeWalletModal.styles';
 
 type CustomizeWalletModalProps = StaticScreenProps<{
-    defaultIcon: WalletIcon;
+    defaultIcon: PortfolioMetaIcon;
     defaultName: string;
     onSave: (meta: Pick<PortfolioMeta, 'icon' | 'name'>) => Promise<void>;
     onClose?: () => void;
     hasBackButton?: boolean;
+    tag?: number;
+    title?: string;
 }>;
 
 export const CustomizeWalletModal = (props: CustomizeWalletModalProps) => {
-    const { defaultIcon, defaultName, onSave, onClose, hasBackButton } = props.route?.params ?? {};
+    const { defaultIcon, defaultName, onSave, onClose, hasBackButton, tag, title } =
+        props.route?.params ?? {};
     const { t } = useTranslation();
 
     const [walletName, setWalletName] = useState(defaultName);
-    const [selectedIcon, setSelectedIcon] = useState<WalletIcon>(defaultIcon);
+    const [selectedIcon, setSelectedIcon] = useState<PortfolioMetaIcon>(defaultIcon);
 
     const handleSave = useCallback(() => {
         Keyboard.dismiss();
@@ -58,12 +60,13 @@ export const CustomizeWalletModal = (props: CustomizeWalletModalProps) => {
             </Screen.Header>
             <Screen.Content bottomInset={false}>
                 <CustomizeWalletContent
-                    title={t('customizeWallet.title')}
+                    title={title ?? t('customizeWallet.title')}
                     description={t('customizeWallet.description')}
                     walletName={walletName}
                     onWalletNameChange={setWalletName}
                     selectedIcon={selectedIcon}
                     onIconChange={setSelectedIcon}
+                    tag={tag}
                     onSubmitEditing={isNameValid ? handleSave : undefined}
                 />
             </Screen.Content>
