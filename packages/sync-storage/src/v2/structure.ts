@@ -13,6 +13,7 @@ import {
     type SPortfolios,
     sNextDerivingPortfolioInfo
 } from './schemas';
+import { sPortfolios as sPortfoliosV1 } from '../v1';
 import { syncedStorageV1 } from '../v1/structure';
 
 const syncedStorageSchema = z.object({
@@ -49,6 +50,9 @@ export const syncedStorageV2 = {
             .rename('nextDerivingPortfolioInfo', 'latestDerivedBip39PortfolioIndex')
             .update(['latestDerivedBip39PortfolioIndex'], info =>
                 info == null || info.index === 0 ? null : info.index - 1
+            )
+            .update(['portfolios'], portfolios =>
+                sPortfoliosV1.parse(portfolios.filter(portfolio => portfolio.type !== 'LEDGER'))
             )
     )
 } as const;

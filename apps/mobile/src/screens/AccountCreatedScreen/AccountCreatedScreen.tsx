@@ -6,11 +6,11 @@ import { useActiveAccountQuery, useAppContext, useConnectAccountToNewDevice } fr
 
 import { useOnboardingFlow } from '@mobile/features/onboarding';
 import { TEST_ID } from '@mobile/shared/constants';
-import { Button, Icon, Checkmark96, Screen, Text } from '@mobile/shared/ui';
+import { Button, Checkmark96, Icon, Screen, StepsList, Text } from '@mobile/shared/ui';
 
 import { styles } from './AccountCreatedScreen.styles';
 
-const steps = [
+const stepKeys = [
     'onboarding.accountCreated.steps.step1',
     'onboarding.accountCreated.steps.step2',
     'onboarding.accountCreated.steps.step3'
@@ -26,6 +26,8 @@ export const AccountCreatedScreen = () => {
     const { data: activeAccount } = useActiveAccountQuery();
     const { onAccountCreatedFinished } = useOnboardingFlow();
     const { mutateAsync: connectAccountToNewDevice } = useConnectAccountToNewDevice();
+
+    const steps = stepKeys.map(key => ({ title: t(key) }));
 
     const handleAddDevice = useCallback(async () => {
         if (!activeAccount) return;
@@ -56,23 +58,8 @@ export const AccountCreatedScreen = () => {
                             {t('onboarding.accountCreated.subtitle')}
                         </Text>
                     </View>
-                    <View style={styles.stepsContainerWrapper}>
-                        <View style={styles.stepsContainer}>
-                            {steps.map((step, index) => (
-                                <View key={step} style={styles.stepRow}>
-                                    <View style={styles.stepNumber}>
-                                        <Text variant="bodyM" monospace color="tertiary">
-                                            {index + 1}.
-                                        </Text>
-                                    </View>
-                                    <View style={styles.stepText}>
-                                        <Text variant="bodyM" color="primary">
-                                            {t(step)}
-                                        </Text>
-                                    </View>
-                                </View>
-                            ))}
-                        </View>
+                    <View style={styles.stepsWrapper}>
+                        <StepsList steps={steps} />
                     </View>
                 </View>
                 <View style={styles.buttonContainer}>

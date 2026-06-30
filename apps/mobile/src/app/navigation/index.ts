@@ -5,6 +5,7 @@ import { AccountCreatedScreen } from '@mobile/screens/AccountCreatedScreen';
 import { AddAccountSheet } from '@mobile/screens/AddAccountSheet';
 import { BiometryScreen } from '@mobile/screens/BiometryScreen';
 import { ChangePasscodeScreen } from '@mobile/screens/ChangePasscodeScreen';
+import { ConnectToSignSheet } from '@mobile/screens/ConnectToSignSheet';
 import { CurrencyScreen } from '@mobile/screens/CurrencyScreen';
 import { CustomizeAccountModal } from '@mobile/screens/CustomizeAccountModal';
 import { CustomizeWalletModal } from '@mobile/screens/CustomizeWalletModal';
@@ -122,7 +123,8 @@ export const RootStack = createNativeStackNavigator({
                 WatchOnlySheet: WatchOnlySheet,
                 PendingFundsSheet: PendingFundsSheet,
                 MoreOptionsSheet: MoreOptionsSheet,
-                ConfirmDeleteContactSheet: ConfirmDeleteContactSheet
+                ConfirmDeleteContactSheet: ConfirmDeleteContactSheet,
+                ConnectToSignSheet: ConnectToSignSheet
             },
             screenOptions: {
                 animationDuration: 0,

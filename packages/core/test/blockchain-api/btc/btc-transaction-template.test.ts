@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 
-import { Address, NETWORK } from '@scure/btc-signer';
+import { Address, NETWORK, Transaction } from '@scure/btc-signer';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { ellipsisMiddle } from '../../../src';
@@ -37,12 +37,35 @@ function makeUtxo(overrides: Partial<BtcApiUtxo> = {}): BtcApiUtxo {
     };
 }
 
+const rawTxRegistry = new Map<string, string>();
+
+function fundedUtxo(value: string): BtcApiUtxo {
+    const prev = new Transaction({ allowUnknownInputs: true, allowUnknownOutputs: true });
+    prev.addOutputAddress(WALLET_ADDR, BigInt(value), mainnet);
+    prev.addInput({
+        txid: new Uint8Array(32).fill(1),
+        index: 0,
+        finalScriptWitness: [new Uint8Array(72), new Uint8Array(33)]
+    });
+    rawTxRegistry.set(prev.id, Buffer.from(prev.toBytes(true, true)).toString('hex'));
+
+    return {
+        txid: prev.id,
+        vout: 0,
+        value,
+        confirmations: 5,
+        address: WALLET_ADDR,
+        path: "m/84'/0'/0'/0/0"
+    };
+}
+
 function makeWallet(overrides: Partial<SignableBtcWallet> = {}): SignableBtcWallet {
     return {
         address: WALLET_ADDR,
         network: BtcNetwork.MAINNET,
+        isPrevTxsRequired: false,
         sign: vi.fn(),
-        // The template only touches address/network/sign; cast the rest.
+        // The template only touches address/network/isPrevTxsRequired/sign; cast the rest.
         ...overrides
     } as unknown as SignableBtcWallet;
 }
@@ -50,6 +73,9 @@ function makeWallet(overrides: Partial<SignableBtcWallet> = {}): SignableBtcWall
 function makeApi(overrides: Partial<BtcApi> = {}): BtcApi {
     return {
         sendTransaction: vi.fn(),
+        getRawTransactions: vi.fn((txids: string[]) =>
+            Promise.resolve(txids.map(id => ({ txid: id, hex: rawTxRegistry.get(id)! })))
+        ),
         ...overrides
     } as unknown as BtcApi;
 }
@@ -153,7 +179,7 @@ describe('BtcTransactionTemplate', () => {
 
     describe('send', () => {
         function makeTemplate(estimationFee = 1500n) {
-            const utxos = [makeUtxo({ value: '50000' })];
+            const utxos = [fundedUtxo('50000')];
             return new BtcTransactionTemplate(
                 api,
                 wallet,
@@ -191,6 +217,37 @@ describe('BtcTransactionTemplate', () => {
 
             expect(result.txId).toBe('tx-1234567890abcdef');
             expect(result.toString()).toBe(ellipsisMiddle(txid, 6));
+        });
+
+        it('skips fetching previous transactions when the wallet does not require them', async () => {
+            (wallet.sign as ReturnType<typeof vi.fn>).mockResolvedValue(Buffer.from([0]));
+            (api.sendTransaction as ReturnType<typeof vi.fn>).mockResolvedValue({ txid: 'tx-1' });
+
+            await makeTemplate().send();
+
+            expect(api.getRawTransactions).not.toHaveBeenCalled();
+        });
+
+        it('fetches previous transactions when the wallet requires them', async () => {
+            wallet = makeWallet({ isPrevTxsRequired: true });
+            (wallet.sign as ReturnType<typeof vi.fn>).mockResolvedValue(Buffer.from([0]));
+            (api.sendTransaction as ReturnType<typeof vi.fn>).mockResolvedValue({ txid: 'tx-1' });
+
+            const utxos = [fundedUtxo('50000')];
+            const tpl = new BtcTransactionTemplate(
+                api,
+                wallet,
+                {
+                    recipientAddress: RECIPIENT_ADDR,
+                    amount: BtcAssetAmount.fromWeiAmount(40000n),
+                    hasChange: true
+                },
+                utxos,
+                makeEstimation(1500n)
+            );
+            await tpl.send();
+
+            expect(api.getRawTransactions).toHaveBeenCalledWith(utxos.map(u => u.txid));
         });
 
         it('passes the wallet-network PSBT to the signer (recipient address is honored)', async () => {

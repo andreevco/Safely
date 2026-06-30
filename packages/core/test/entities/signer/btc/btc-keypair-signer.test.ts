@@ -17,11 +17,11 @@ const RECIPIENT_ADDR = getAddress(
     portfolioNode.deriveChild(0).deriveChild(1).privateKey!,
     NETWORK
 );
-const TXID = 'a'.repeat(64);
-
 const nodeProducer: IBtcNodeProducer = {
     getPortfolioDerivation: () => Promise.resolve(portfolioNode)
 };
+
+const TXID = 'a'.repeat(64);
 
 function utxo(value: string): BtcApiUtxo {
     return {

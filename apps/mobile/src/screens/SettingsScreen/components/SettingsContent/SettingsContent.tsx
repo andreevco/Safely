@@ -8,8 +8,8 @@ import { DeviceUnlinkedBanner } from '@mobile/features/device-link';
 import { List, Screen, Text } from '@mobile/shared/ui';
 
 import { AccountSection } from '../AccountSection';
+import { ApplicationSection } from '../ApplicationSection';
 import { CurrentWalletSection } from '../CurrentWalletSection';
-import { RemovePortfolioButton } from '../RemovePortfolioButton';
 import { SettingsGroups } from '../SettingsGroups';
 import { SignOutAccountButton } from '../SignOutAccountButton';
 import { styles } from './SettingsContent.styles';
@@ -30,10 +30,10 @@ export const SettingsContent = () => {
             <DeviceUnlinkedBanner style={styles.banner} inModal />
             {hasPortfolio && <CurrentWalletSection />}
             <AccountSection />
+            <ApplicationSection />
             <SettingsGroups />
             <List style={{ marginTop: 8 }}>
                 <List.Group variant="separated">
-                    {hasPortfolio && <RemovePortfolioButton />}
                     <SignOutAccountButton />
                 </List.Group>
             </List>

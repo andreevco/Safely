@@ -3,7 +3,7 @@ const { version } = require('./package.json');
 module.exports = {
     expo: {
         name: 'Safely',
-        slug: 'swallet',
+        slug: 'safely',
         version,
         orientation: 'portrait',
         icon: './assets/icon.png',
@@ -28,8 +28,8 @@ module.exports = {
                 It's better to double-check app on ARM Macs and iPads before public release
             */
             requireFullScreen: true,
-            bundleIdentifier: 'com.aco.swallet',
-            appleTeamId: '9N49283836'
+            bundleIdentifier: 'com.safely.wallet',
+            appleTeamId: '3ZVCUSJU6R'
         },
         android: {
             permissions: ["android.permission.CAMERA"],
@@ -37,7 +37,7 @@ module.exports = {
                 foregroundImage: './assets/adaptive-icon.png',
                 backgroundImage: './assets/android-icon-bg.png'
             },
-            package: 'com.aco.swallet',
+            package: 'com.safely.wallet',
             allowBackup: false
         },
         plugins: [
@@ -67,13 +67,20 @@ module.exports = {
                     icon: './assets/icon.png'
                 }
             ],
+            [
+                'react-native-ble-plx',
+                {
+                    bluetoothAlwaysPermission:
+                        '$(PRODUCT_NAME) needs access to Bluetooth to connect to your Ledger hardware wallet.'
+                }
+            ],
             './plugins/withMMKVNoBackup'
         ],
         extra: {
             eas: {
-                projectId: '2987418a-1c20-4389-9796-485f4e37c78a'
+                projectId: 'ba0507d3-f22e-49b9-8925-aa436d193658'
             }
         },
-        owner: 'acom'
+        owner: 'treadsafely'
     }
 };

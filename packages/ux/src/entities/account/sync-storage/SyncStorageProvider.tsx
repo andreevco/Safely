@@ -5,17 +5,19 @@ import { useEffect } from 'react';
 import type { ISyncAccount } from '@safely/sync';
 import type { SyncedStorageStructure } from '@safely/sync-storage';
 
-import { SecretEncryptor, useAppContext } from '../../../shared';
-import { useAppState } from '../../../shared/app/useAppState';
-import { useAccounts } from '../account-state';
-import { accountKey } from '../keys';
 import { accountStore, accountStoreActions, SYNCED_SLOT_KEYS } from './account-store';
 import { AccountStoreTransform } from './account-store-transform';
+import { SecretEncryptor, useAppContext } from '../../../shared';
+import { useAppState } from '../../../shared/app/useAppState';
+import { useLedgerSessionPort } from '../../ledger';
+import { useAccounts } from '../account-state';
+import { accountKey } from '../keys';
 
 function useSyncObserver() {
     const { storage } = useAppContext();
     const accounts = useAccounts();
     const queryClient = useQueryClient();
+    const ledgerSessionPort = useLedgerSessionPort();
 
     useEffect(() => {
         if (!accounts || accounts.length === 0) {
@@ -30,7 +32,8 @@ function useSyncObserver() {
         accounts.forEach((account: ISyncAccount<SyncedStorageStructure>) => {
             const transform = new AccountStoreTransform(
                 () =>
-                    new SecretEncryptor(account.secretEncryptor, storage.sync.getSecureEncrypted())
+                    new SecretEncryptor(account.secretEncryptor, storage.sync.getSecureEncrypted()),
+                () => ledgerSessionPort
             );
 
             accountStoreActions.attachSnapshot(
@@ -59,7 +62,7 @@ function useSyncObserver() {
         return () => {
             unsubscribes.forEach(fn => fn());
         };
-    }, [accounts, storage.sync, queryClient]);
+    }, [accounts, storage.sync, queryClient, ledgerSessionPort]);
 }
 
 function useSyncRestartOnForeground() {
