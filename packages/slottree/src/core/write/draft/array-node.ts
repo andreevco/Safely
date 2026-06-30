@@ -23,7 +23,8 @@ import {
 import {
     createOrderedArrayItemSlot,
     orderedArrayItemOrder,
-    orderedArrayItemValue
+    orderedArrayItemValue,
+    slotFromJson
 } from '../../slots/slot-json';
 import { selectJsonStorage } from '../selection';
 
@@ -108,17 +109,23 @@ export class ArrayDraftNode extends ObjectDraftNode {
 
         const arraySlot = this.ensureOrderedArraySlot();
         const existing = orderedArraySlotById(arraySlot, id);
-        const order =
-            existing === undefined || isTombstoneSlot(existing)
-                ? this.ids().length
-                : orderedArrayItemOrder(existing, id);
+        if (existing === undefined || isTombstoneSlot(existing)) {
+            arraySlot.v[id] = createOrderedArrayItemSlot(
+                this.ids().length,
+                value,
+                this.cursor.timestamp(),
+                this.cursor.author()
+            );
+            this.cursor.notifyUpdate();
+            return;
+        }
 
-        arraySlot.v[id] = createOrderedArrayItemSlot(
-            order,
-            value,
-            this.cursor.timestamp(),
-            this.cursor.author()
-        );
+        orderedArrayItemOrder(existing, id);
+        if (!isContainerSlot(existing)) {
+            throw new Error(`Ordered array item "${id}" must be a container slot`);
+        }
+
+        existing.v.value = slotFromJson(value, this.cursor.timestamp(), this.cursor.author());
         this.cursor.notifyUpdate();
     }
 
