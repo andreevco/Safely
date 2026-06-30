@@ -13,7 +13,7 @@ import {
 } from '@safely/core';
 import { PortfolioMnemonicFactory } from '@safely/core';
 import { toPortfolioId } from '@safely/core';
-import { delay, PortfolioNetworkType } from '@safely/core';
+import { assertUnreachable, delay, PortfolioNetworkType } from '@safely/core';
 import type {
     ISyncAccount,
     Logger,
@@ -87,16 +87,17 @@ async function buildFirstPortfolio(params: {
 
     let portfolio: SPortfolio;
 
-    if (source.kind === 'watchOnly') {
-        const id = PortfolioWatchOnlyBtc.resolveUserInput(source.input, source.networkType);
-        portfolio = PortfolioWatchOnlyBtc.create(id, {
-            name: portfolioName,
-            icon: toPortfolioIdWatchOnly(id).getFallbackEmoji()
-        }).toJSON();
-    } else {
-        const encryptor = new SecretEncryptor(account.secretEncryptor, secureEncryptedStorage);
-
-        if (source.kind === 'imported') {
+    switch (source.kind) {
+        case 'watchOnly': {
+            const id = PortfolioWatchOnlyBtc.resolveUserInput(source.input, source.networkType);
+            portfolio = PortfolioWatchOnlyBtc.create(id, {
+                name: portfolioName,
+                icon: toPortfolioIdWatchOnly(id).getFallbackEmoji()
+            }).toJSON();
+            break;
+        }
+        case 'imported': {
+            const encryptor = new SecretEncryptor(account.secretEncryptor, secureEncryptedStorage);
             using mnemonicAccessor = new MnemonicResource(source.mnemonic);
             const id = await PortfolioIdBip39Imported.create(mnemonicAccessor, source.networkType);
             portfolio = await PortfolioBip39.createSerializedPortfolio({
@@ -110,7 +111,10 @@ async function buildFirstPortfolio(params: {
                 options: { seedRevealedFromDevice: deviceName },
                 logger
             });
-        } else {
+            break;
+        }
+        case 'generated': {
+            const encryptor = new SecretEncryptor(account.secretEncryptor, secureEncryptedStorage);
             using mnemonicAccessor = await portfolioMnemonicFactory.deriveBip39MnemonicResource(0);
             const id = new PortfolioIdBip39MasterKeyDerived({
                 derivationIndex: 0,
@@ -126,7 +130,10 @@ async function buildFirstPortfolio(params: {
                 },
                 logger
             });
+            break;
         }
+        default:
+            assertUnreachable(source);
     }
 
     const nextIndex = source.kind === 'generated' ? 1 : 0;
