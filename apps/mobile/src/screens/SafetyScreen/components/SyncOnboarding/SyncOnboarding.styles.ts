@@ -32,7 +32,8 @@ export const styles = StyleSheet.create((theme, rt) => ({
         overflow: 'hidden'
     },
     illustrationLayer: {
-        ...StyleSheet.absoluteFillObject
+        ...StyleSheet.absoluteFillObject,
+        bottom: theme.spacing[24]
     },
     illustrationImage: {
         flex: 1

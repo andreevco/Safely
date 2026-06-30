@@ -13,7 +13,7 @@ import {
 import { getStepDirection, incomingTransform, outgoingTransform } from './stepTransition';
 
 const OUT_DURATION = 80;
-const IN_DELAY = 60;
+const IN_DELAY = 80;
 const IN_DURATION = 120;
 const EASING = Easing.bezier(0, 0, 0.58, 1);
 
