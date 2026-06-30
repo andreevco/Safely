@@ -52,6 +52,10 @@ function validateSlotMetadata(record: Record<string, unknown>): void {
     if (typeof record.a !== 'string') {
         throw new Error('Slot author must be a string');
     }
+
+    if (record.a === '' && record.t !== 0) {
+        throw new Error('Non-origin slot author must not be empty');
+    }
 }
 
 function validateSlotKind(kind: unknown): asserts kind is Slot['s'] {

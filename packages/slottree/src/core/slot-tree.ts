@@ -119,7 +119,7 @@ export class StorageImpl<T> implements SlotTree<T> {
         versions: readonly StorageVersion[];
         root?: ContainerSlot;
     }) {
-        this.protocol = new MergeProtocol(options.authorId.toString('hex'));
+        this.protocol = new MergeProtocol(authorIdToHex(options.authorId));
         this.versions = options.versions;
 
         if (options.root !== undefined) {
@@ -137,7 +137,7 @@ export class StorageImpl<T> implements SlotTree<T> {
     public addAuthor(authorId: Buffer, storageVersion: number): void {
         const controller = new VersionController(this.root, this.versions);
         controller.setDeviceVersion(
-            authorId.toString('hex'),
+            authorIdToHex(authorId),
             storageVersion,
             this.protocol.tick(),
             this.protocol.id
@@ -149,7 +149,7 @@ export class StorageImpl<T> implements SlotTree<T> {
 
     public removeAuthor(authorId: Buffer): void {
         const controller = new VersionController(this.root, this.versions);
-        const deleted = controller.deleteAuthor(authorId.toString('hex'));
+        const deleted = controller.deleteAuthor(authorIdToHex(authorId));
         if (!deleted) {
             return;
         }
@@ -380,6 +380,14 @@ export class StorageImpl<T> implements SlotTree<T> {
 
 function didMergeChangeStorage(stats: MergeStats): boolean {
     return stats.added > 0 || stats.updated > 0 || stats.replaced > 0;
+}
+
+function authorIdToHex(authorId: Buffer): string {
+    if (authorId.length === 0) {
+        throw new Error('AuthorId must not be empty');
+    }
+
+    return authorId.toString('hex');
 }
 
 function maxSlotRevision(slot: Slot): SlotRevision {
