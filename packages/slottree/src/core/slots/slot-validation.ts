@@ -134,6 +134,10 @@ function validateOrderedArrayItem(key: string, item: unknown): void {
         throw new Error(`Ordered array item "${key}" value must be a valid slot`);
     }
 
+    if ((value as Record<string, unknown>).s === SlotKind.Tombstone) {
+        throw new Error(`Ordered array item "${key}" value must not be a tombstone`);
+    }
+
     const stripped = stripSlot(value as Slot);
     if (
         stripped !== undefined &&
