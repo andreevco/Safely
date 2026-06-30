@@ -141,9 +141,6 @@ export const ledgerSigningMachine = setup({
                     actions: assign({ error: ({ event }) => event.error }),
                     target: 'failed'
                 }
-            },
-            after: {
-                connectTimeout: { target: 'failed' }
             }
         },
         checkingApp: {
