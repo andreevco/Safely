@@ -3,9 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import type { PortfolioLedger } from '@safely/core';
-import { useActivePortfolio } from '@safely/ux';
+import { useActivePortfolio, useLedgerSession } from '@safely/ux';
 
-import { useLedgerSession } from '@mobile/features/ledger';
 import { Button, List } from '@mobile/shared/ui';
 
 import { DerivedWalletRow } from './components/DerivedWalletRow';

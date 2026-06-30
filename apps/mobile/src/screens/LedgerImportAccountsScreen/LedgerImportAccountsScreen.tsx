@@ -8,6 +8,8 @@ import type { PortfolioLedger, PortfolioMeta } from '@safely/core';
 import { PortfolioIdLedger, PortfolioNetworkType, PortfolioType } from '@safely/core';
 import {
     useAddLedgerPortfolio,
+    useLedgerAccounts,
+    useLedgerSession,
     useLoader,
     useNewPortfolioFallbackName,
     usePortfolios,
@@ -17,11 +19,7 @@ import {
 } from '@safely/ux';
 
 import { handleDuplicatePortfolio } from '@mobile/features/add-wallet/handleDuplicatePortfolio';
-import {
-    useExitToConnectLedger,
-    useLedgerAccounts,
-    useLedgerSession
-} from '@mobile/features/ledger';
+import { useExitToConnectLedger } from '@mobile/features/ledger';
 import { ArrowLeft16, Button, Icon, List, Screen, Text } from '@mobile/shared/ui';
 
 import { LedgerAccountCell } from './components';

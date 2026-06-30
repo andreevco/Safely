@@ -22,7 +22,7 @@ import {
     useSendAssetTransfer
 } from '@safely/ux';
 
-import { getBluetoothState, useLedgerSession } from '@mobile/features/ledger';
+import { getBluetoothState, useBleManager } from '@mobile/features/ledger';
 import { TransactionFee } from '@mobile/screens/ConfirmationScreen/components/TransactionFee';
 import { TransactionSendResult } from '@mobile/screens/ConfirmationScreen/components/TransactionSendResult';
 import { Checkmark96, Icon, List, Screen, Text, Image } from '@mobile/shared/ui';
@@ -46,6 +46,7 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
     const analytics = useAnalytics();
     const fiat = useActiveFiat();
     const navigation = useNavigation();
+    const getBleManager = useBleManager();
     const btcWallet = useActiveBtcWallet();
     const activePortfolio = useActivePortfolio();
     const activeWalletMeta = useActiveWalletMeta();
@@ -98,8 +99,6 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
     }, [send, onSuccess, logger, confirmationResult, analytics, fiat.id.symbol]);
 
     const isLedger = activePortfolio.type === PortfolioType.LEDGER;
-
-    const { getBleManager } = useLedgerSession();
 
     const onLedgerContinue = useCallback(async () => {
         const state = await getBluetoothState(getBleManager());

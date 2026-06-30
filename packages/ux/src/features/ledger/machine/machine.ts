@@ -21,6 +21,7 @@ export const LEDGER_FAILURE_STATES = ['failed', 'wrongDevice', 'unsupportedApp']
 
 export type LedgerSigningInput = {
     ledgerKit: DeviceManagementKit;
+    transportIdentifier: string;
     expectedFingerprint: Buffer;
     sessionId: string | null;
     run: (session: LedgerSession) => Promise<unknown>;
@@ -87,7 +88,10 @@ export const ledgerSigningMachine = setup({
             entry: assign({ step: () => 0, error: () => undefined, result: () => undefined }),
             invoke: {
                 src: 'scanLedgerDevices',
-                input: ({ context }) => ({ ledgerKit: context.ledgerKit })
+                input: ({ context }) => ({
+                    ledgerKit: context.ledgerKit,
+                    transportIdentifier: context.transportIdentifier
+                })
             },
             on: {
                 DEVICES_FOUND: {

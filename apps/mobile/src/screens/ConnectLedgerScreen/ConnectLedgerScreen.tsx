@@ -5,7 +5,9 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { State } from 'react-native-ble-plx';
 
-import { getBluetoothState, useLedgerSession } from '@mobile/features/ledger';
+import { useLedgerSession } from '@safely/ux';
+
+import { getBluetoothState, useBleManager } from '@mobile/features/ledger';
 import { resources } from '@mobile/shared/resources';
 import { Button, Image, Screen, StepsList, Text } from '@mobile/shared/ui';
 
@@ -14,7 +16,8 @@ import { styles } from './ConnectLedgerScreen.styles';
 export const ConnectLedgerScreen = () => {
     const { t } = useTranslation();
     const navigation = useNavigation();
-    const { getLedgerKit, getBleManager, sessionId, setSessionId } = useLedgerSession();
+    const getBleManager = useBleManager();
+    const { getLedgerKit, sessionId, setSessionId } = useLedgerSession();
 
     const steps = [
         {

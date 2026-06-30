@@ -598,6 +598,9 @@ importers:
 
   packages/ux:
     dependencies:
+      '@ledgerhq/device-management-kit':
+        specifier: 'catalog:'
+        version: 1.6.0(rxjs@7.8.2)
       '@noble/hashes':
         specifier: 'catalog:'
         version: 2.2.0

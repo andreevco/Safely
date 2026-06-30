@@ -6,10 +6,10 @@ import { useTranslation } from 'react-i18next';
 import type { ImageSourcePropType } from 'react-native';
 
 import { LedgerDeviceBusyError } from '@safely/core';
-import { useToast } from '@safely/ux';
+import { useLedgerPairing, useLedgerSession, useToast } from '@safely/ux';
 
 import type { LedgerStep, LedgerStepStatus } from '@mobile/features/ledger';
-import { getLedgerImage, useLedgerPairing, useLedgerSession } from '@mobile/features/ledger';
+import { getLedgerImage } from '@mobile/features/ledger';
 
 const SUCCESS_DELAY_MS = 1_000;
 

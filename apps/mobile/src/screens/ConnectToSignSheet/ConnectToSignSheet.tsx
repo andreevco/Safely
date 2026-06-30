@@ -4,16 +4,16 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import { LedgerDeviceBusyError, PortfolioType } from '@safely/core';
-import { useActivePortfolio, useToast } from '@safely/ux';
-
-import type { LedgerSigningActor, LedgerStepStatus } from '@mobile/features/ledger';
 import {
-    getLedgerImage,
-    getLedgerModelName,
     LEDGER_FAILURE_STATES,
-    LedgerSteps,
-    useLedgerSigning
-} from '@mobile/features/ledger';
+    useActivePortfolio,
+    useLedgerSigning,
+    useToast,
+    type LedgerSigningActor
+} from '@safely/ux';
+
+import type { LedgerStepStatus } from '@mobile/features/ledger';
+import { getLedgerImage, getLedgerModelName, LedgerSteps } from '@mobile/features/ledger';
 import { BottomSheet, Button, Image, Text, useBottomSheet } from '@mobile/shared/ui';
 
 import { styles } from './ConnectToSignSheet.styles';

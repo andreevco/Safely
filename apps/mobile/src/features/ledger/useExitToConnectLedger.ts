@@ -2,7 +2,7 @@ import { useNavigation } from '@react-navigation/core';
 import { CommonActions } from '@react-navigation/native';
 import { useCallback } from 'react';
 
-import { useLedgerSession } from './LedgerSigningProvider';
+import { useLedgerSession } from '@safely/ux';
 
 export const useExitToConnectLedger = () => {
     const navigation = useNavigation();

@@ -6,11 +6,10 @@ import * as SystemUI from 'expo-system-ui';
 import { useEffect, useMemo } from 'react';
 import { useUnistyles } from 'react-native-unistyles';
 
-import { SyncStorageProvider } from '@safely/ux';
+import { LedgerSessionProvider, SyncStorageProvider } from '@safely/ux';
 
 import { LockScreenProvider } from '@mobile/entities/security';
-import { LedgerSigningProvider } from '@mobile/features/ledger';
-import { logger } from '@mobile/shared/logger';
+import { BleManagerProvider } from '@mobile/features/ledger';
 
 import Navigation from './navigation';
 import { navigationRef } from './navigation/navigationRef';
@@ -42,23 +41,24 @@ export function AppNavigation() {
 
     return (
         <LockScreenProvider>
-            <LedgerSigningProvider
-                logger={logger}
-                openConnectScreen={() => navigationRef.navigate('ConnectToSignSheet')}
-            >
-                <SyncStorageProvider>
-                    <Navigation
-                        ref={navigationRef}
-                        initialState={initialState}
-                        onReady={() => SplashScreen.hideAsync()}
-                        theme={NavigationTheme}
-                        linking={{
-                            enabled: true,
-                            prefixes: [Linking.createURL('/')]
-                        }}
-                    />
-                </SyncStorageProvider>
-            </LedgerSigningProvider>
+            <BleManagerProvider>
+                <LedgerSessionProvider
+                    openConnectScreen={() => navigationRef.navigate('ConnectToSignSheet')}
+                >
+                    <SyncStorageProvider>
+                        <Navigation
+                            ref={navigationRef}
+                            initialState={initialState}
+                            onReady={() => SplashScreen.hideAsync()}
+                            theme={NavigationTheme}
+                            linking={{
+                                enabled: true,
+                                prefixes: [Linking.createURL('/')]
+                            }}
+                        />
+                    </SyncStorageProvider>
+                </LedgerSessionProvider>
+            </BleManagerProvider>
         </LockScreenProvider>
     );
 }

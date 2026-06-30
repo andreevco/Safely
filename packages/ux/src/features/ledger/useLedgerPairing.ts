@@ -1,7 +1,7 @@
 import { useMachine } from '@xstate/react';
 import { useEffect } from 'react';
 
-import { useLedgerSession } from './LedgerSigningProvider';
+import { useLedgerSession } from './LedgerSessionProvider';
 import { ledgerPairingMachine, PAIRING_CONNECT_STEP } from './machine/ledger-pairing-machine';
 
 export type PairingStatus = 'connecting' | 'openingApp' | 'connected' | 'error';

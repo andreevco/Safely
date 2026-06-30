@@ -8,7 +8,7 @@ import { State } from 'react-native-ble-plx';
 
 import { useToast } from '@safely/ux';
 
-import { getBluetoothState, useLedgerSession } from '@mobile/features/ledger';
+import { getBluetoothState, useBleManager } from '@mobile/features/ledger';
 import { BluetoothExclamationmark96, Button, Icon, Screen, Text, Xmark16 } from '@mobile/shared/ui';
 import { Button as HeaderButton } from '@mobile/shared/ui/Screen/components/Header/components/Button';
 
@@ -24,7 +24,7 @@ export const BluetoothDisabledScreen = ({ route }: BluetoothDisabledScreenProps)
     const toast = useToast();
     const { t } = useTranslation();
     const navigation = useNavigation();
-    const { getBleManager } = useLedgerSession();
+    const getBleManager = useBleManager();
 
     const proceed = useCallback(() => {
         navigation.goBack();
@@ -44,7 +44,7 @@ export const BluetoothDisabledScreen = ({ route }: BluetoothDisabledScreenProps)
             }, true);
 
             return () => subscription.remove();
-        }, [navigation, params, getBleManager, proceed])
+        }, [navigation, params, proceed, getBleManager])
     );
 
     const handleTryAgain = useCallback(async () => {
@@ -55,7 +55,7 @@ export const BluetoothDisabledScreen = ({ route }: BluetoothDisabledScreenProps)
         } else {
             toast(t('addWallet.connectLedger.bluetoothDisabled.stillOff'));
         }
-    }, [getBleManager, proceed, toast, t]);
+    }, [proceed, toast, t, getBleManager]);
 
     const handleCancel = useCallback(() => {
         navigation.goBack();

@@ -4,7 +4,8 @@ import { useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { useLedgerDeviceScan, useLedgerSession } from '@mobile/features/ledger';
+import { useLedgerDeviceScan, useLedgerSession } from '@safely/ux';
+
 import { Screen, Text } from '@mobile/shared/ui';
 
 import { BluetoothPulse } from './components/BluetoothPulse';

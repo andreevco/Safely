@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { Linking, View } from 'react-native';
 import { State } from 'react-native-ble-plx';
 
-import { useLedgerSession } from '@mobile/features/ledger';
+import { useBleManager } from '@mobile/features/ledger';
 import { BluetoothRequired96, Button, Icon, Screen, Text, Xmark16 } from '@mobile/shared/ui';
 import { Button as HeaderButton } from '@mobile/shared/ui/Screen/components/Header/components/Button';
 
@@ -21,7 +21,7 @@ export const BluetoothAccessRequiredScreen = ({ route }: BluetoothAccessRequired
 
     const { t } = useTranslation();
     const navigation = useNavigation();
-    const { getBleManager } = useLedgerSession();
+    const getBleManager = useBleManager();
 
     useFocusEffect(
         useCallback(() => {

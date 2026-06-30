@@ -9,16 +9,14 @@ import {
     useRef,
     useState
 } from 'react';
-import { BleManager } from 'react-native-ble-plx';
 import type { ActorRefFrom } from 'xstate';
 import { createActor } from 'xstate';
 
 import type { ILedgerSessionPort, LedgerSession } from '@safely/core';
-import type { Logger } from '@safely/sync';
-import { LedgerSessionPortProvider } from '@safely/ux';
 
-import { createLedgerKit } from './createLedgerKit';
 import { ledgerSigningMachine } from './machine';
+import { LedgerSessionPortProvider } from '../../entities/ledger';
+import { useAppContext } from '../../shared';
 
 export type LedgerSigningActor = ActorRefFrom<typeof ledgerSigningMachine>;
 
@@ -28,7 +26,6 @@ type LedgerSigningContextValue = {
 
 type LedgerSessionContextValue = {
     getLedgerKit: () => DeviceManagementKit;
-    getBleManager: () => BleManager;
     selectedDevice: DiscoveredDevice | null;
     setSelectedDevice: (device: DiscoveredDevice | null) => void;
     sessionId: string | null;
@@ -40,21 +37,20 @@ type LedgerSessionContextValue = {
 const LedgerSigningContext = createContext<LedgerSigningContextValue | null>(null);
 const LedgerSessionContext = createContext<LedgerSessionContextValue | null>(null);
 
-type LedgerSigningProviderProps = {
+type LedgerSessionProviderProps = {
     children: ReactNode;
-    logger: Logger;
     openConnectScreen: () => void;
 };
 
-export const LedgerSigningProvider = (props: LedgerSigningProviderProps) => {
-    const { children, logger, openConnectScreen } = props;
+export const LedgerSessionProvider = (props: LedgerSessionProviderProps) => {
+    const { children, openConnectScreen } = props;
+    const { ledgerTransport } = useAppContext();
 
     const [sessionId, setSessionIdState] = useState<string | null>(null);
     const [activeActor, setActiveActor] = useState<LedgerSigningActor | null>(null);
     const [selectedDevice, setSelectedDevice] = useState<DiscoveredDevice | null>(null);
     const [findMorePortfolioId, setFindMorePortfolioId] = useState<string | null>(null);
     const ledgerKitRef = useRef<DeviceManagementKit | null>(null);
-    const bleManagerRef = useRef<BleManager | null>(null);
     const sessionIdRef = useRef<string | null>(null);
 
     const setSessionId = useCallback((id: string | null) => {
@@ -64,25 +60,16 @@ export const LedgerSigningProvider = (props: LedgerSigningProviderProps) => {
 
     const getLedgerKit = useCallback(() => {
         if (!ledgerKitRef.current) {
-            ledgerKitRef.current = createLedgerKit(logger);
+            ledgerKitRef.current = ledgerTransport.createKit();
         }
 
         return ledgerKitRef.current;
-    }, [logger]);
-
-    const getBleManager = useCallback(() => {
-        if (!bleManagerRef.current) {
-            bleManagerRef.current = new BleManager();
-        }
-
-        return bleManagerRef.current;
-    }, []);
+    }, [ledgerTransport]);
 
     useEffect(() => {
         return () => {
             ledgerKitRef.current?.close();
             ledgerKitRef.current = null;
-            bleManagerRef.current = null;
         };
     }, []);
 
@@ -106,6 +93,7 @@ export const LedgerSigningProvider = (props: LedgerSigningProviderProps) => {
                     const actor = createActor(ledgerSigningMachine, {
                         input: {
                             ledgerKit,
+                            transportIdentifier: ledgerTransport.transportIdentifier,
                             expectedFingerprint: params.expectedFingerprint,
                             sessionId: null,
                             run
@@ -139,7 +127,7 @@ export const LedgerSigningProvider = (props: LedgerSigningProviderProps) => {
                     openConnectScreen();
                 })().catch(reject);
             }),
-        [getLedgerKit, openConnectScreen, setSessionId]
+        [getLedgerKit, ledgerTransport, openConnectScreen, setSessionId]
     );
 
     const port = useMemo<ILedgerSessionPort>(() => ({ withSession }), [withSession]);
@@ -149,7 +137,6 @@ export const LedgerSigningProvider = (props: LedgerSigningProviderProps) => {
     const sessionValue = useMemo(
         () => ({
             getLedgerKit,
-            getBleManager,
             selectedDevice,
             setSelectedDevice,
             sessionId,
@@ -157,7 +144,7 @@ export const LedgerSigningProvider = (props: LedgerSigningProviderProps) => {
             findMorePortfolioId,
             setFindMorePortfolioId
         }),
-        [getLedgerKit, getBleManager, selectedDevice, sessionId, setSessionId, findMorePortfolioId]
+        [getLedgerKit, selectedDevice, sessionId, setSessionId, findMorePortfolioId]
     );
 
     return (
@@ -175,7 +162,7 @@ export const useLedgerSigning = (): LedgerSigningContextValue => {
     const context = useContext(LedgerSigningContext);
 
     if (!context) {
-        throw new Error('useLedgerSigning must be used within LedgerSigningProvider');
+        throw new Error('useLedgerSigning must be used within LedgerSessionProvider');
     }
 
     return context;
@@ -185,7 +172,7 @@ export const useLedgerSession = (): LedgerSessionContextValue => {
     const context = useContext(LedgerSessionContext);
 
     if (!context) {
-        throw new Error('useLedgerSession must be used within LedgerSigningProvider');
+        throw new Error('useLedgerSession must be used within LedgerSessionProvider');
     }
 
     return context;

@@ -3,11 +3,12 @@ import { StackActions } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { useLedgerSession } from '@safely/ux';
+
 import {
     getLedgerModelName,
     LedgerStatusScreen,
-    useExitToConnectLedger,
-    useLedgerSession
+    useExitToConnectLedger
 } from '@mobile/features/ledger';
 import { Checkmark96, Icon } from '@mobile/shared/ui';
 

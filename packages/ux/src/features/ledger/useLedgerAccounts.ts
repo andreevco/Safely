@@ -2,10 +2,10 @@ import { useQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { BtcNetwork, LedgerController, ledgerAccountToBtcWallet } from '@safely/core';
-import { useBtcWalletBalances } from '@safely/ux';
 
 import { ledgerKeys } from './keys';
-import { useLedgerSession } from './LedgerSigningProvider';
+import { useLedgerSession } from './LedgerSessionProvider';
+import { useBtcWalletBalances } from '../../entities/btc-blockchain';
 
 const ACCOUNT_COUNT = 10;
 const DERIVATIONS_SEARCH_TIMEOUT = 20_000;

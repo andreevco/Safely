@@ -1,5 +1,4 @@
 import type { DeviceManagementKit, DiscoveredDevice } from '@ledgerhq/device-management-kit';
-import { rnBleTransportIdentifier } from '@ledgerhq/device-transport-kit-react-native-ble';
 import type { AnyEventObject } from 'xstate';
 import { fromCallback, fromPromise } from 'xstate';
 
@@ -40,20 +39,21 @@ export const checkLedgerAppVersion = fromPromise<boolean, CheckLedgerAppVersionI
     }
 );
 
-export const scanLedgerDevices = fromCallback<AnyEventObject, { ledgerKit: DeviceManagementKit }>(
-    ({ sendBack, input }) => {
-        const subscription = input.ledgerKit
-            .listenToAvailableDevices({ transport: rnBleTransportIdentifier })
-            .subscribe({
-                next: devices => sendBack({ type: 'DEVICES_FOUND', devices }),
-                error: () => {
-                    // TODO Think again what to do, log? timeout? Too much noise from here
-                }
-            });
+export const scanLedgerDevices = fromCallback<
+    AnyEventObject,
+    { ledgerKit: DeviceManagementKit; transportIdentifier: string }
+>(({ sendBack, input }) => {
+    const subscription = input.ledgerKit
+        .listenToAvailableDevices({ transport: input.transportIdentifier })
+        .subscribe({
+            next: devices => sendBack({ type: 'DEVICES_FOUND', devices }),
+            error: () => {
+                // TODO Think again what to do, log? timeout? Too much noise from here
+            }
+        });
 
-        return () => subscription.unsubscribe();
-    }
-);
+    return () => subscription.unsubscribe();
+});
 
 export type DisconnectLedgerSessionInput = {
     ledgerKit: DeviceManagementKit;
