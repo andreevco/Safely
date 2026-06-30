@@ -15,7 +15,6 @@ import { usePasscode } from '@mobile/entities/security';
 const routes = {
     passcode: 'OnboardingPasscodeScreen',
     biometry: 'BiometryScreen',
-    notifications: 'OnboardingNotificationsScreen',
     accountCreated: 'AccountCreatedScreen'
 } as const;
 
