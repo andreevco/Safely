@@ -270,6 +270,7 @@ export class StorageImpl<T> implements SlotTree<T> {
         const stats = workingRoot.merge(validationProtocol, incoming);
 
         if (!didMergeChangeStorage(stats)) {
+            this.protocol.observeTree(incoming);
             return false;
         }
 
