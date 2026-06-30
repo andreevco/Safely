@@ -48,13 +48,18 @@ export const RootStack = createNativeStackNavigator({
         Onboarding: {
             screens: {
                 WelcomeScreen: WelcomeScreen,
-                OnboardingImportWalletScreen: OnboardingImportWalletScreen,
-                OnboardingWatchAccountModal: OnboardingWatchAccountScreen,
                 OnboardingPasscodeScreen: OnboardingPasscodeScreen,
                 BiometryScreen: BiometryScreen,
                 AccountCreatedScreen: AccountCreatedScreen,
                 SignInScreen: SignInScreen,
-                SignInSuccessScreen: SignInSuccessScreen
+                SignInSuccessScreen: SignInSuccessScreen,
+                OnboardingImportWalletScreen: OnboardingImportWalletScreen,
+                OnboardingWatchAccountScreen: {
+                    screen: OnboardingWatchAccountScreen,
+                    options: {
+                        presentation: 'card'
+                    }
+                }
             }
         },
         Screens: {

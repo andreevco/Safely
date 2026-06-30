@@ -18,7 +18,7 @@ export const MoreOptionsSheet = () => {
     };
 
     const handleWatchAccount = () => {
-        navigation.navigate('OnboardingWatchAccountModal');
+        navigation.navigate('OnboardingWatchAccountScreen');
     };
 
     return (
