@@ -95,10 +95,15 @@ Old data contained in a slot replaced by a Tombstone is lost and cannot be recov
 An OrderedArray is a recursive slot that stores items in a key-value map. Each key identifies one array item. 
 OrderedArray items MUST be addressed by key. The order index is used only to derive the ordered view.
 
-Each non-Tombstone OrderedArray item MUST be a Container slot with exactly the following child slots:
+Each non-Tombstone OrderedArray item MUST be a Container slot with at least the following child slots:
 
 - `order`, an Atomic slot containing the order index.
 - `value`, a slot containing the item value.
+
+An item Container MAY contain other child slots. An implementation that does not recognize an extra child slot MUST 
+preserve and merge it using normal recursive slot rules, but MUST NOT use it to derive the ordered view, expose it as 
+part of the item value, mutate it as part of ordinary item order or value operations, or reject the item solely because 
+the extra child slot is present.
 
 The order index is a 32-bit integer. The `order` child slot MUST be an Atomic slot containing a 32-bit integer.
 
@@ -127,7 +132,6 @@ An item Container is invalid if any of the following is true:
 - It contains a Tombstone `value` child slot and a non-Tombstone `order` child slot.
 - Its `order` child slot is not an Atomic slot containing a 32-bit integer.
 - Its `value` child slot is a Tombstone.
-- It contains child slots other than `order` and `value`.
 
 An incoming Slot Tree that contains an invalid OrderedArray item is invalid.
 
