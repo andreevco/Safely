@@ -1,13 +1,12 @@
-import { useFocusEffect } from '@react-navigation/native';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { TextInput } from 'react-native';
 import { View } from 'react-native';
 
 import { BtcAddress, BtcXpub } from '@safely/core';
 
 import { TEST_ID } from '@mobile/shared/constants';
 import { Button, Input, Screen, Text } from '@mobile/shared/ui';
+import { useAutoFocus } from '@mobile/shared/utils';
 
 import { styles } from './WatchOnlyAddressForm.styles';
 
@@ -18,18 +17,8 @@ type WatchOnlyAddressFormProps = {
 export const WatchOnlyAddressForm = ({ onSubmit }: WatchOnlyAddressFormProps) => {
     const { t } = useTranslation();
 
-    const inputRef = useRef<TextInput>(null);
+    const inputRef = useAutoFocus();
     const [address, setAddress] = useState('');
-
-    useFocusEffect(
-        useCallback(() => {
-            const timer = setTimeout(() => {
-                inputRef.current?.focus();
-            }, 400);
-
-            return () => clearTimeout(timer);
-        }, [])
-    );
 
     const trimmedInput = address.trim();
     const isValidAddress = BtcAddress.validate(trimmedInput);
