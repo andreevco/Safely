@@ -70,7 +70,7 @@ export const Chart = () => {
             {chart.data?.attribution?.label && (
                 <ProviderLabel
                     label={chart.data?.attribution.label}
-                    url={chart.data?.attribution.url}
+                    link={chart.data?.attribution.link}
                 />
             )}
         </View>

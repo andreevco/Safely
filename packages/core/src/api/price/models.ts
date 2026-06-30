@@ -25,7 +25,7 @@ export const HistoricalPriceSchema = z.object({
         .looseObject({
             provider: z.string(),
             label: z.string().optional(),
-            url: z.string().optional()
+            link: z.string().optional()
         })
         .optional()
 });
