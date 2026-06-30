@@ -135,7 +135,7 @@ export class StorageImpl<T> implements SlotTree<T> {
     }
 
     public addAuthor(authorId: Buffer, storageVersion: number): void {
-        const controller = new VersionController(this.root, this.versions);
+        const controller = new VersionController(this.root, this.versions, this.protocol);
         controller.setDeviceVersion(
             authorIdToHex(authorId),
             storageVersion,
@@ -148,7 +148,7 @@ export class StorageImpl<T> implements SlotTree<T> {
     }
 
     public removeAuthor(authorId: Buffer): void {
-        const controller = new VersionController(this.root, this.versions);
+        const controller = new VersionController(this.root, this.versions, this.protocol);
         const deleted = controller.deleteAuthor(authorIdToHex(authorId));
         if (!deleted) {
             return;
@@ -335,7 +335,7 @@ export class StorageImpl<T> implements SlotTree<T> {
 
     private ensureLatestInitialized(): void {
         const latest = this.latestVersion();
-        const controller = new VersionController(this.root, this.versions);
+        const controller = new VersionController(this.root, this.versions, this.protocol);
 
         if (controller.get(latest) !== undefined) {
             this.committedRoot().get<T>();
@@ -356,7 +356,7 @@ export class StorageImpl<T> implements SlotTree<T> {
 
     private syncDeviceVersion(): void {
         const latest = this.latestVersion();
-        const controller = new VersionController(this.root, this.versions);
+        const controller = new VersionController(this.root, this.versions, this.protocol);
 
         if (controller.getDeviceVersion(this.protocol.id) === latest.version) {
             return;
@@ -371,7 +371,11 @@ export class StorageImpl<T> implements SlotTree<T> {
     }
 
     private deleteUnusedVersions(): void {
-        new VersionController(this.root, this.versions).deleteVersionsUnusedByDevices();
+        new VersionController(
+            this.root,
+            this.versions,
+            this.protocol
+        ).deleteVersionsUnusedByDevices();
     }
 
     public export(): Buffer {

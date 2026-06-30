@@ -7,7 +7,7 @@ import {
     VersionController
 } from '../src';
 import { v1, v3 } from './version-fixtures';
-import { createOriginContainer, type ContainerSlot } from '../src/core/slots';
+import { createOriginContainer, isTombstoneSlot, type ContainerSlot } from '../src/core/slots';
 import { slotFromJson, stripSlot } from '../src/core/slots/slot-json';
 import { hListToRuntimeArray } from '../src/core/versioning/version';
 
@@ -21,7 +21,7 @@ describe('VersionController', () => {
         const root = createOriginContainer({
             '1': slotFromJson({ key1: 42, key2: 'from-v1' }, 123, 'old-device')
         });
-        const controller = new VersionController(root, versions);
+        const controller = new VersionController(root, versions, fixedProtocol(200));
 
         expect(controller.get(1)).toBe(root.v['1']);
 
@@ -37,13 +37,17 @@ describe('VersionController', () => {
 
         controller.delete(1);
 
-        expect(controller.get(1)).toBeUndefined();
+        expect(controller.get(1)).toMatchObject({
+            t: 200,
+            a: 'cleanup-device'
+        });
+        expect(isTombstoneSlot(controller.get(1))).toBe(true);
     });
 
     it('creates the latest version from initial data', () => {
         const versions = hListToRuntimeArray(v3);
         const root = createOriginContainer();
-        const controller = new VersionController(root, versions);
+        const controller = new VersionController(root, versions, fixedProtocol(200));
 
         const latest = controller.createInitialVersion();
 
@@ -70,7 +74,7 @@ describe('VersionController', () => {
                 ''
             )
         });
-        const controller = new VersionController(root, versions);
+        const controller = new VersionController(root, versions, fixedProtocol(200));
 
         controller.deleteVersionsUnusedByDevices();
 
@@ -94,7 +98,7 @@ describe('VersionController', () => {
                 ''
             )
         });
-        const controller = new VersionController(root, versions);
+        const controller = new VersionController(root, versions, fixedProtocol(200));
 
         controller.deleteVersionsUnusedByDevices();
 
@@ -131,12 +135,23 @@ describe('VersionController', () => {
                 ''
             )
         });
-        const controller = new VersionController(root, versions);
+        const controller = new VersionController(root, versions, fixedProtocol(200));
 
         controller.deleteVersionsUnusedByDevices();
 
-        expect(root.v['1']).toBeUndefined();
+        expect(isTombstoneSlot(root.v['1'])).toBe(true);
+        expect(root.v['1']).toMatchObject({
+            t: 200,
+            a: 'cleanup-device'
+        });
         expect(root.v['3']).toBeDefined();
         expect(stripSlot(root.v[VERSION_DELETION_KEY])).toEqual({});
     });
 });
+
+function fixedProtocol(timestamp: number): { id: string; tick: () => number } {
+    return {
+        id: 'cleanup-device',
+        tick: () => timestamp
+    };
+}
