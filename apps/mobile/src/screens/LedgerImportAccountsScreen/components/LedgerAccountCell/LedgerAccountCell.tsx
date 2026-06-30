@@ -12,6 +12,7 @@ type RealLedgerAccountCellProps = {
     balance: BtcAssetAmount | undefined;
     isSkeleton?: false | undefined;
     isSelected: boolean;
+    name?: string;
     onPress: () => void;
 };
 
@@ -20,15 +21,16 @@ type SkeletonLedgerAccountCellProps = {
     balance?: undefined;
     isSkeleton: true;
     isSelected?: undefined;
+    name?: undefined;
     onPress?: undefined;
 };
 
 type LedgerAccountCellProps = SkeletonLedgerAccountCellProps | RealLedgerAccountCellProps;
 
 export const LedgerAccountCell = (props: LedgerAccountCellProps) => {
-    const { account, balance, isSelected = false, onPress, isSkeleton = false } = props;
-    const { t } = useTranslation();
+    const { account, balance, isSelected = false, name, onPress, isSkeleton = false } = props;
 
+    const { t } = useTranslation();
     const formattedBalance = useFormattedAmount(balance);
     const isBalanceLoading = !isSkeleton && balance === undefined;
 
@@ -41,7 +43,9 @@ export const LedgerAccountCell = (props: LedgerAccountCellProps) => {
         <LedgerDerivationRow
             index={account.index}
             title={
-                isSkeleton ? undefined : t('portfolio.ledgerWallet', { number: account.index + 1 })
+                isSkeleton
+                    ? undefined
+                    : (name ?? t('portfolio.ledgerWallet', { number: account.index + 1 }))
             }
             subtitle={subtitle}
             isSubtitleLoading={isBalanceLoading}

@@ -52,22 +52,25 @@ export const LedgerImportAccountsScreen = () => {
         [portfolios, findMorePortfolioId]
     );
 
-    const existingIndexes = useMemo(
-        () => findMorePortfolio?.getDerivations().map(d => d.index),
-        [findMorePortfolio]
-    );
-
     const {
         accounts,
         balances,
         masterFingerprint,
+        existingPortfolio,
         selectedIndexes,
         selectedAccounts,
         toggle,
         retry,
         isError,
         isTimedOut
-    } = useLedgerAccounts({ existingIndexes });
+    } = useLedgerAccounts();
+
+    const targetPortfolio = findMorePortfolio ?? existingPortfolio;
+
+    const existingNames = useMemo(
+        () => new Map(targetPortfolio?.getDerivations().map(d => [d.index, d.meta.name]) ?? []),
+        [targetPortfolio]
+    );
 
     const isDerived = accounts.length > 0;
     const showRetry = isError || isTimedOut;
@@ -77,8 +80,11 @@ export const LedgerImportAccountsScreen = () => {
             return;
         }
 
-        if (findMorePortfolio) {
-            if (!masterFingerprint.equals(findMorePortfolio.masterFingerprint)) {
+        if (targetPortfolio) {
+            if (
+                findMorePortfolio &&
+                !masterFingerprint.equals(findMorePortfolio.masterFingerprint)
+            ) {
                 toast(t('addWallet.connectLedger.importAccounts.wrongDevice'));
                 return;
             }
@@ -86,19 +92,19 @@ export const LedgerImportAccountsScreen = () => {
             navigation.dispatch(
                 CommonActions.navigate('CustomizeWalletModal', {
                     hasBackButton: true,
-                    defaultName: findMorePortfolio.meta.name,
-                    defaultIcon: findMorePortfolio.meta.icon,
+                    defaultName: targetPortfolio.meta.name,
+                    defaultIcon: targetPortfolio.meta.icon,
                     title: t('customizeWallet.ledgerTitle'),
                     onSave: async (meta: PortfolioMeta) => {
                         await withLoader(() =>
                             updateLedgerDerivations({
-                                portfolio: findMorePortfolio,
+                                portfolio: targetPortfolio,
                                 accounts: selectedAccounts,
                                 meta
                             })
                         );
 
-                        await setActivePortfolio({ id: findMorePortfolio.id });
+                        await setActivePortfolio({ id: targetPortfolio.id });
 
                         navigation.dispatch(
                             CommonActions.reset({
@@ -155,6 +161,7 @@ export const LedgerImportAccountsScreen = () => {
         );
     }, [
         findMorePortfolio,
+        targetPortfolio,
         withLoader,
         masterFingerprint,
         navigation,
@@ -202,6 +209,7 @@ export const LedgerImportAccountsScreen = () => {
                                       account={account}
                                       balance={balances[i]}
                                       isSelected={selectedIndexes.has(account.index)}
+                                      name={existingNames.get(account.index)}
                                       onPress={() => toggle(account.index)}
                                   />
                               ))

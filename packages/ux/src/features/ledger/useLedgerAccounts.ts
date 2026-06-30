@@ -1,24 +1,27 @@
 import { useQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { BtcNetwork, LedgerController, ledgerAccountToBtcWallet } from '@safely/core';
+import type { PortfolioLedger } from '@safely/core';
+import {
+    BtcNetwork,
+    LedgerController,
+    ledgerAccountToBtcWallet,
+    PortfolioNetworkType,
+    PortfolioType
+} from '@safely/core';
 
 import { ledgerKeys } from './keys';
 import { useLedgerSession } from './LedgerSessionProvider';
 import { useBtcWalletBalances } from '../../entities/btc-blockchain';
+import { usePortfolios } from '../../entities/portfolio';
 
 const ACCOUNT_COUNT = 10;
 const DERIVATIONS_SEARCH_TIMEOUT = 20_000;
 
-export const useLedgerAccounts = (options?: { existingIndexes?: number[] }) => {
+export const useLedgerAccounts = () => {
     const { getLedgerKit, sessionId, setSessionId, selectedDevice } = useLedgerSession();
-    const existingIndexes = useMemo(
-        () => new Set(options?.existingIndexes ?? []),
-        [options?.existingIndexes]
-    );
-    const [selectedIndexes, setSelectedIndexes] = useState<Set<number>>(
-        () => new Set(existingIndexes)
-    );
+    const portfolios = usePortfolios();
+    const [selectedIndexes, setSelectedIndexes] = useState<Set<number>>(() => new Set());
     const hasPreselected = useRef(false);
 
     const { data, isError } = useQuery({
@@ -39,6 +42,23 @@ export const useLedgerAccounts = (options?: { existingIndexes?: number[] }) => {
     const accounts = data?.accounts ?? [];
     const masterFingerprint = data?.masterFingerprint;
     const isLoading = !data && !isError;
+
+    const existingPortfolio = useMemo<PortfolioLedger | undefined>(
+        () =>
+            masterFingerprint
+                ? (portfolios.find(
+                      p =>
+                          p.type === PortfolioType.LEDGER &&
+                          p.networkType === PortfolioNetworkType.MAINNET &&
+                          p.masterFingerprint.equals(masterFingerprint)
+                  ) as PortfolioLedger | undefined)
+                : undefined,
+        [portfolios, masterFingerprint]
+    );
+    const existingIndexes = useMemo(
+        () => new Set(existingPortfolio?.getDerivations().map(d => d.index) ?? []),
+        [existingPortfolio]
+    );
 
     const wallets = useMemo(
         () => accounts.map(account => ledgerAccountToBtcWallet(account, BtcNetwork.MAINNET)),
@@ -112,6 +132,7 @@ export const useLedgerAccounts = (options?: { existingIndexes?: number[] }) => {
         accounts,
         balances,
         masterFingerprint,
+        existingPortfolio,
         selectedIndexes,
         selectedAccounts,
         toggle,
