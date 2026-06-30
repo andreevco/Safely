@@ -42,7 +42,7 @@ export const TabsNavigator = createBottomTabNavigator({
                 path: 'beta'
             },
             options: () => ({
-                title: i18next.t('tabs.about'),
+                title: i18next.t('tabs.updates'),
                 tabBarIcon: ({ color }) => <Icon icon={Message28} style={{ tintColor: color }} />
             })
         },
