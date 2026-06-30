@@ -61,7 +61,7 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
             enabled: confirmationState.type !== 'success'
         }
     );
-    const { mutateAsync: send, data: sendResult } = useSendAssetTransfer(txTemplate);
+    const { mutateAsync: send, data: sendResult } = useSendAssetTransfer();
     const formatter = useNumberFormatter();
 
     const onSend = useCallback(async () => {
@@ -70,7 +70,7 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
 
         try {
             setConfirmationState({ type: 'sending' });
-            await send();
+            await send(txTemplate);
             onSuccess?.();
             notificationAsync(NotificationFeedbackType.Success);
             setConfirmationState({ type: 'success' });
@@ -96,7 +96,7 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
                 error
             });
         }
-    }, [send, onSuccess, logger, confirmationResult, analytics, fiat.id.symbol]);
+    }, [send, txTemplate, onSuccess, logger, confirmationResult, analytics, fiat.id.symbol]);
 
     const isLedger = activePortfolio.type === PortfolioType.LEDGER;
 
