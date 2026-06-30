@@ -3,7 +3,7 @@ import { CommonActions } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { Keyboard } from 'react-native';
 
-import type { PortfolioNetworkType } from '@safely/core';
+import type { PortfolioMeta, PortfolioMetaIcon, PortfolioNetworkType } from '@safely/core';
 import type { AccountPortfolioSource } from '@safely/ux';
 import { useAppContext, useCreateAccount, useLoader } from '@safely/ux';
 
@@ -11,6 +11,14 @@ import { useAppContext, useCreateAccount, useLoader } from '@safely/ux';
 // eslint-disable-next-line boundaries/element-types
 import { tabsInitialState } from '@mobile/app/navigation/tabs';
 import { usePasscode } from '@mobile/entities/security';
+
+import { shouldCustomizePortfolio } from './shouldCustomizePortfolio';
+
+type OnboardingCustomizeParams = {
+    defaultName: string;
+    defaultIcon: PortfolioMetaIcon;
+    onSave: (meta: Pick<PortfolioMeta, 'name' | 'icon'>) => Promise<void>;
+};
 
 export function useOnboardingFlow() {
     const navigation = useNavigation();
@@ -67,28 +75,15 @@ export function useOnboardingFlow() {
                 });
             }
 
-            navigation.navigate('BiometryScreen', { isSignIn: source === null });
+            navigation.navigate('BiometryScreen', {
+                isSignIn: source === null,
+                shouldCustomize: shouldCustomizePortfolio(source)
+            });
         },
         [navigation, setPasscode, createAccount, withLoader, getSecureEncrypted]
     );
 
-    const onBiometryFinished = useCallback(
-        (isSignIn: boolean) => {
-            if (isSignIn) {
-                navigation.dispatch(
-                    CommonActions.reset({
-                        index: 0,
-                        routes: [{ name: 'TabsNavigator', state: tabsInitialState }]
-                    })
-                );
-            } else {
-                navigation.navigate('AccountCreatedScreen');
-            }
-        },
-        [navigation]
-    );
-
-    const onAccountCreatedFinished = useCallback(() => {
+    const resetToTabs = useCallback(() => {
         navigation.dispatch(
             CommonActions.reset({
                 index: 0,
@@ -96,6 +91,37 @@ export function useOnboardingFlow() {
             })
         );
     }, [navigation]);
+
+    const onBiometryFinished = useCallback(
+        (isSignIn: boolean, shouldCustomize: boolean) => {
+            if (isSignIn) {
+                resetToTabs();
+            } else {
+                navigation.navigate('AccountCreatedScreen', { shouldCustomize });
+            }
+        },
+        [navigation, resetToTabs]
+    );
+
+    const onAccountCreatedFinished = useCallback(
+        (customize?: OnboardingCustomizeParams) => {
+            if (!customize) {
+                resetToTabs();
+                return;
+            }
+
+            navigation.dispatch(
+                CommonActions.reset({
+                    index: 1,
+                    routes: [
+                        { name: 'TabsNavigator', state: tabsInitialState },
+                        { name: 'CustomizeWalletModal', params: customize }
+                    ]
+                })
+            );
+        },
+        [navigation, resetToTabs]
+    );
 
     return {
         onSuccessCreate,

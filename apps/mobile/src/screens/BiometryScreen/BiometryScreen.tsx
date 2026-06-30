@@ -18,17 +18,18 @@ import { styles } from './BiometryScreen.styles';
 
 type BiometryScreenProps = StaticScreenProps<{
     isSignIn: boolean;
+    shouldCustomize: boolean;
 }>;
 
 export const BiometryScreen = (props: BiometryScreenProps) => {
-    const { isSignIn } = props.route.params;
+    const { isSignIn, shouldCustomize } = props.route.params;
     const { onBiometryFinished } = useOnboardingFlow();
     const { data: biometry, isLoading } = useBiometryQuery();
     const { mutateAsync: setBiometryEnabled } = useSetBiometryEnabled();
 
     const handleFinished = useCallback(
-        () => onBiometryFinished(isSignIn),
-        [onBiometryFinished, isSignIn]
+        () => onBiometryFinished(isSignIn, shouldCustomize),
+        [onBiometryFinished, isSignIn, shouldCustomize]
     );
 
     useEffect(() => {
