@@ -71,7 +71,7 @@ module.exports = {
                 'react-native-ble-plx',
                 {
                     bluetoothAlwaysPermission:
-                        '$(PRODТUCT_NAME) needs access to Bluetooth to connect to your Ledger hardware wallet.'
+                        '$(PRODUCT_NAME) needs access to Bluetooth to connect to your Ledger hardware wallet.'
                 }
             ],
             './plugins/withMMKVNoBackup'
