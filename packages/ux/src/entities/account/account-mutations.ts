@@ -1,10 +1,9 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo } from 'react';
 
-import type { ITreeStorage } from '@safely/core';
+import type { IMnemonicAccessor, IMnemonicVault, ITreeStorage } from '@safely/core';
 import { deriveAnalyticsAccountUuid } from '@safely/core';
 import {
-    MnemonicResource,
     PortfolioBip39,
     PortfolioIdBip39Imported,
     PortfolioIdBip39MasterKeyDerived,
@@ -70,7 +69,11 @@ export function useNewAccountDefaultName() {
 
 export type AccountPortfolioSource =
     | { kind: 'generated' }
-    | { kind: 'imported'; mnemonic: string[]; networkType: PortfolioNetworkType }
+    | {
+          kind: 'imported';
+          mnemonicAccessor: IMnemonicAccessor & IMnemonicVault;
+          networkType: PortfolioNetworkType;
+      }
     | { kind: 'watchOnly'; input: string; networkType: PortfolioNetworkType };
 
 async function buildFirstPortfolio(params: {
@@ -98,15 +101,17 @@ async function buildFirstPortfolio(params: {
         }
         case 'imported': {
             const encryptor = new SecretEncryptor(account.secretEncryptor, secureEncryptedStorage);
-            using mnemonicAccessor = new MnemonicResource(source.mnemonic);
-            const id = await PortfolioIdBip39Imported.create(mnemonicAccessor, source.networkType);
+            const id = await PortfolioIdBip39Imported.create(
+                source.mnemonicAccessor,
+                source.networkType
+            );
             portfolio = await PortfolioBip39.createSerializedPortfolio({
                 id,
-                mnemonicAccessor,
+                mnemonicAccessor: source.mnemonicAccessor,
                 encryptor,
                 meta: {
                     name: portfolioName,
-                    icon: PortfolioIdBip39Imported.getFallbackEmoji(mnemonicAccessor)
+                    icon: PortfolioIdBip39Imported.getFallbackEmoji(source.mnemonicAccessor)
                 },
                 options: { seedRevealedFromDevice: deviceName },
                 logger
