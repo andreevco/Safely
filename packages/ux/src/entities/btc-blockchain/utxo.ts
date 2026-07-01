@@ -13,7 +13,12 @@ import {
     usePersistQuery
 } from '../../shared';
 import { useActiveAccount } from '../account';
-import { resolveBtcWallets, useActiveBtcWallet, usePortfolios } from '../portfolio';
+import {
+    isDerivablePortfolio,
+    resolveBtcWallets,
+    useActiveBtcWallet,
+    usePortfolios
+} from '../portfolio';
 import { utxo } from './keys';
 import {
     BroadcastedBtcTxService,
@@ -23,7 +28,10 @@ import { getBiggestBtcIOAddress } from '../activity/api';
 
 function useAccessibleBtcWallets() {
     const portfolios = usePortfolios();
-    return useMemo(() => portfolios.flatMap(resolveBtcWallets), [portfolios]);
+    return useMemo(
+        () => portfolios.filter(isDerivablePortfolio).flatMap(resolveBtcWallets),
+        [portfolios]
+    );
 }
 
 function getTotal(utxos: { value: string }[]) {

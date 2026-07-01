@@ -774,12 +774,27 @@ export function resolveBtcWallet(portfolio: Portfolio): BtcWalletReadOnly {
     return portfolio.derivations[0].chains.btc.wallets[0];
 }
 
-export function resolveBtcWallets(portfolio: Portfolio): BtcWalletReadOnly[] {
+export function isDerivablePortfolio(
+    portfolio: Portfolio
+): portfolio is PortfolioBip39 | PortfolioLedger {
+    switch (portfolio.type) {
+        case PortfolioType.BIP39:
+        case PortfolioType.LEDGER:
+            return true;
+        case PortfolioType.WATCH_ONLY:
+            return false;
+        default:
+            return assertUnreachable(portfolio);
+    }
+}
+
+export function resolveBtcWallets(
+    portfolio: PortfolioBip39 | PortfolioLedger
+): BtcWalletReadOnly[] {
     switch (portfolio.type) {
         case PortfolioType.LEDGER:
             return portfolio.derivations.map(d => d.chains.btc.wallets[0]!);
         case PortfolioType.BIP39:
-        case PortfolioType.WATCH_ONLY:
             return [resolveBtcWallet(portfolio)];
         default:
             return assertUnreachable(portfolio);
