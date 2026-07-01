@@ -7,7 +7,13 @@ import { act, cleanup } from '@testing-library/react';
 import type { Mock } from 'vitest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { Bip39Source, PortfolioNetworkType, PortfolioType, WatchOnlySource } from '@safely/core';
+import {
+    Bip39Source,
+    MnemonicResource,
+    PortfolioNetworkType,
+    PortfolioType,
+    WatchOnlySource
+} from '@safely/core';
 
 import {
     useChangeAccountMeta,
@@ -239,7 +245,7 @@ describe('useCreateAccount (add)', () => {
                 >[0]['secureEncryptedStorage'],
                 firstPortfolio: {
                     kind: 'imported',
-                    mnemonic,
+                    mnemonicAccessor: new MnemonicResource(mnemonic),
                     networkType: PortfolioNetworkType.MAINNET
                 }
             });
