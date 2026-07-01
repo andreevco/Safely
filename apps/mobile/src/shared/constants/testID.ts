@@ -10,7 +10,8 @@ export const TEST_ID = {
         createWallet: 'welcome.createWallet',
         importWallet: 'welcome.importWallet',
         moreOptions: 'welcome.moreOptions',
-        qrSignIn: 'welcome.qrSignIn'
+        qrSignIn: 'welcome.qrSignIn',
+        watchAccount: 'welcome.watchAccount'
     },
     biometry: {
         skip: 'biometry.skip'

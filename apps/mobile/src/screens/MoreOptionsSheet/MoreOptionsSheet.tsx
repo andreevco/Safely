@@ -2,6 +2,8 @@ import { useNavigation } from '@react-navigation/core';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
+import { useToast } from '@safely/ux';
+
 import { BottomSheet, Button, Text, useCallOnClose } from '@mobile/shared/ui';
 
 import { styles } from './MoreOptionsSheet.styles';
@@ -9,7 +11,12 @@ import { styles } from './MoreOptionsSheet.styles';
 const MoreOptionsContent = () => {
     const { t } = useTranslation();
     const navigation = useNavigation();
+    const toast = useToast();
     const callOnClose = useCallOnClose();
+
+    const handleConnectLedger = () => {
+        toast('TODO: implement Ledger');
+    };
 
     const handleWatchAccount = () => {
         callOnClose(() => navigation.navigate('OnboardingWatchAccountScreen'));
@@ -26,6 +33,9 @@ const MoreOptionsContent = () => {
                 </Text>
             </View>
             <View style={styles.footer}>
+                <Button type="secondary" size="large" onPress={handleConnectLedger}>
+                    {t('moreOptions.connectLedger')}
+                </Button>
                 <Button type="secondary" size="large" onPress={handleWatchAccount}>
                     {t('moreOptions.watchAccount')}
                 </Button>
