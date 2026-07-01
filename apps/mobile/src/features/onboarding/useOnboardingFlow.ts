@@ -52,7 +52,7 @@ export function useOnboardingFlow() {
 
     const onMnemonicReady = useCallback(
         (mnemonic: string[], networkType: PortfolioNetworkType) => {
-            using accessor = new MnemonicResource(mnemonic);
+            const accessor = new MnemonicResource(mnemonic);
 
             navigation.navigate('OnboardingPasscodeScreen', {
                 source: { kind: 'imported', mnemonicAccessor: accessor, networkType }

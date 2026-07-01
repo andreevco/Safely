@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo } from 'react';
 
 import type { IMnemonicAccessor, IMnemonicVault, ITreeStorage } from '@safely/core';
-import { deriveAnalyticsAccountUuid } from '@safely/core';
+import { deriveAnalyticsAccountUuid, MnemonicResource } from '@safely/core';
 import {
     PortfolioBip39,
     PortfolioIdBip39Imported,
@@ -105,13 +105,20 @@ async function buildFirstPortfolio(params: {
                 source.mnemonicAccessor,
                 source.networkType
             );
+
+            const mnemonic = await source.mnemonicAccessor.getMnemonic();
+            using accessor = new MnemonicResource(mnemonic);
+
+            const defaultIcon = PortfolioIdBip39Imported.getFallbackEmoji(accessor);
+            using mnemonicAccessor = new MnemonicResource(mnemonic);
+
             portfolio = await PortfolioBip39.createSerializedPortfolio({
                 id,
-                mnemonicAccessor: source.mnemonicAccessor,
+                mnemonicAccessor: mnemonicAccessor,
                 encryptor,
                 meta: {
                     name: portfolioName,
-                    icon: PortfolioIdBip39Imported.getFallbackEmoji(source.mnemonicAccessor)
+                    icon: defaultIcon
                 },
                 options: { seedRevealedFromDevice: deviceName },
                 logger
