@@ -45,17 +45,11 @@ export const WelcomeScreen = () => {
 
         const connector = await signIn.mutateAsync({ secureEncryptedStorage });
 
-        navigation.navigate('SignInModal', {
-            screen: 'SignInQRModal',
-            params: {
-                connector,
-                closeStorage: () => secureEncryptedStorage[Symbol.dispose](),
-                onSuccess: () =>
-                    navigation.navigate('SignInModal', {
-                        screen: 'SignInSuccessModal',
-                        params: { onContinue: onSuccessSignIn }
-                    })
-            }
+        navigation.navigate('SignInScreen', {
+            connector,
+            closeStorage: () => secureEncryptedStorage[Symbol.dispose](),
+            onSuccess: () =>
+                navigation.navigate('SignInSuccessScreen', { onContinue: onSuccessSignIn })
         });
     }, [signIn, navigation, getSecureEncrypted, onSuccessSignIn]);
 

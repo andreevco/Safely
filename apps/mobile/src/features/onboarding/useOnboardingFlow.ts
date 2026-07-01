@@ -3,7 +3,12 @@ import { CommonActions } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { Keyboard } from 'react-native';
 
-import type { PortfolioMeta, PortfolioMetaIcon, PortfolioNetworkType } from '@safely/core';
+import {
+    MnemonicResource,
+    type PortfolioMeta,
+    type PortfolioMetaIcon,
+    type PortfolioNetworkType
+} from '@safely/core';
 import type { AccountPortfolioSource } from '@safely/ux';
 import { useAppContext, useCreateAccount, useErrorToast, useLoader } from '@safely/ux';
 
@@ -47,8 +52,10 @@ export function useOnboardingFlow() {
 
     const onMnemonicReady = useCallback(
         (mnemonic: string[], networkType: PortfolioNetworkType) => {
+            const accessor = new MnemonicResource(mnemonic);
+
             navigation.navigate('OnboardingPasscodeScreen', {
-                source: { kind: 'imported', mnemonic, networkType }
+                source: { kind: 'imported', mnemonicAccessor: accessor, networkType }
             });
         },
         [navigation]
