@@ -276,7 +276,7 @@
                 },
                 "useSync": {
                     "title": "Use Safely Sync to protect your wallets",
-                    "subtitle": "Safely automatically and securely synchronizes recovery phrases across your devices. <link>How Safely Sync works?</link>"
+                    "subtitle": "Safely automatically and securely synchronizes recovery phrases across your devices. <a>How Safely Sync works?</a>"
                 }
             }
         }

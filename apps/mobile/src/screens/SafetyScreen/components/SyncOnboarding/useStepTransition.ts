@@ -10,10 +10,10 @@ import {
     type AnimatedStyle
 } from 'react-native-reanimated';
 
-import { getStepDirection, incomingTransform, outgoingTransform } from './stepTransition';
+const STEP_OFFSET = 16;
 
 const OUT_DURATION = 80;
-const IN_DELAY = 80;
+const IN_DELAY = 60;
 const IN_DURATION = 120;
 const EASING = Easing.bezier(0, 0, 0.58, 1);
 
@@ -46,7 +46,7 @@ export function useStepTransition(index: number): StepTransition {
         }
 
         prevIndexRef.current = index;
-        direction.value = getStepDirection(from, index);
+        direction.value = index >= from ? 1 : -1;
         setPreviousIndex(from);
         setIsAnimating(true);
 
@@ -63,17 +63,14 @@ export function useStepTransition(index: number): StepTransition {
         );
     }, [index, direction, outProgress, inProgress, endTransition]);
 
-    const outgoingStyle = useAnimatedStyle(() => {
-        const { opacity, translateX } = outgoingTransform(outProgress.value, direction.value);
+    const outgoingStyle = useAnimatedStyle(() => ({
+        opacity: 1 - outProgress.value
+    }));
 
-        return { opacity, transform: [{ translateX }] };
-    });
-
-    const incomingStyle = useAnimatedStyle(() => {
-        const { opacity, translateX } = incomingTransform(inProgress.value, direction.value);
-
-        return { opacity, transform: [{ translateX }] };
-    });
+    const incomingStyle = useAnimatedStyle(() => ({
+        opacity: inProgress.value,
+        transform: [{ translateX: (1 - inProgress.value) * STEP_OFFSET * direction.value }]
+    }));
 
     return { previousIndex, outgoingStyle, incomingStyle, isAnimating };
 }

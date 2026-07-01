@@ -23,7 +23,7 @@ export const StepContent = ({ step, style, onLinkPress }: Props) => {
                 <Trans
                     i18nKey={step.subtitleKey}
                     components={{
-                        link: <Text variant="bodyL" color="link" onPress={onLinkPress} />
+                        a: <Text variant="bodyL" color="link" onPress={onLinkPress} />
                     }}
                 />
             </Text>
