@@ -777,7 +777,7 @@ export function resolveBtcWallet(portfolio: Portfolio): BtcWalletReadOnly {
 export function resolveBtcWallets(portfolio: Portfolio): BtcWalletReadOnly[] {
     switch (portfolio.type) {
         case PortfolioType.LEDGER:
-            return portfolio.derivations.map(d => d.chains.btc.wallets[0]);
+            return portfolio.derivations.map(d => d.chains.btc.wallets[0]!);
         case PortfolioType.BIP39:
         case PortfolioType.WATCH_ONLY:
             return [resolveBtcWallet(portfolio)];
