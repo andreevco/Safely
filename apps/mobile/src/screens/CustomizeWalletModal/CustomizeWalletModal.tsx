@@ -46,7 +46,9 @@ export const CustomizeWalletModal = (props: CustomizeWalletModalProps) => {
                     <Screen.Header.Button onPress={onClose}>
                         <Icon icon={Xmark16} />
                     </Screen.Header.Button>
-                ) : null}
+                ) : (
+                    <Screen.Header.CloseButton />
+                )}
                 <Button
                     testID={TEST_ID.customizeWallet.saveButton}
                     type="primary"

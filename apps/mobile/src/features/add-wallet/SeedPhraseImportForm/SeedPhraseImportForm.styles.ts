@@ -19,10 +19,5 @@ export const styles = StyleSheet.create(theme => ({
         alignItems: 'center',
         gap: theme.spacing[4],
         padding: theme.spacing[16]
-    },
-    footer: {
-        paddingHorizontal: theme.spacing[16],
-        paddingVertical: theme.spacing[16],
-        gap: theme.spacing[12]
     }
 }));

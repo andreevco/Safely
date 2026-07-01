@@ -8,7 +8,6 @@ import { DevToolsSyncStorageScreen } from '@mobile/screens/DevToolsSyncStorageSc
 import { DevToolsXpubScreen } from '@mobile/screens/DevToolsXpubScreen';
 import { LanguageScreen } from '@mobile/screens/LanguageScreen';
 import { SecurityScreen } from '@mobile/screens/SecurityScreen';
-import { AccountProtectedModal, ProtectAccountModal } from '@mobile/screens/SecurityScreen/screens';
 import { SettingsScreen } from '@mobile/screens/SettingsScreen';
 import { WalletSettingsScreen } from '@mobile/screens/WalletSettingsScreen';
 
@@ -21,8 +20,6 @@ export const SettingsStack = createNativeStackNavigator({
                 WalletSettingsModal: WalletSettingsScreen,
                 LanguageModal: LanguageScreen,
                 SecurityModal: SecurityScreen,
-                ProtectAccountModal: ProtectAccountModal,
-                AccountProtectedModal: AccountProtectedModal,
                 AddressBookModal: AddressBookModal,
                 DevToolsModal: DevToolsScreen,
                 DevToolsXpubModal: DevToolsXpubScreen,

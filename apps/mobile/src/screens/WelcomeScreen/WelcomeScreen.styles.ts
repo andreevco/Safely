@@ -16,11 +16,20 @@ export const styles = StyleSheet.create(theme => ({
     },
     buttonsContainer: {
         gap: theme.spacing[8],
-        margin: theme.spacing[24]
+        margin: theme.spacing[24],
+        marginHorizontal: theme.spacing[64]
     },
     legalContainer: {
         alignItems: 'center',
         paddingBottom: theme.spacing[8],
         paddingHorizontal: theme.spacing[16]
+    },
+    buttonTextWithIcon: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: theme.spacing[8]
+    },
+    lastButton: {
+        marginTop: theme.spacing[24]
     }
 }));

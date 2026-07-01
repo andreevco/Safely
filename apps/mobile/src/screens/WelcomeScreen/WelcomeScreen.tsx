@@ -13,7 +13,7 @@ import {
 import { useOnboardingFlow } from '@mobile/features/onboarding';
 import { TEST_ID } from '@mobile/shared/constants';
 import { resources } from '@mobile/shared/resources';
-import { Button, Icon, Safely96, Screen, Text } from '@mobile/shared/ui';
+import { Button, Icon, QrCodeScanShield28, Safely96, Screen, Text } from '@mobile/shared/ui';
 
 import { styles } from './WelcomeScreen.styles';
 
@@ -45,18 +45,24 @@ export const WelcomeScreen = () => {
 
         const connector = await signIn.mutateAsync({ secureEncryptedStorage });
 
-        navigation.navigate('SignInScreen', {
-            connector,
-            closeStorage: () => secureEncryptedStorage[Symbol.dispose](),
-            onSuccess: () =>
-                navigation.navigate('SignInSuccessScreen', { onContinue: onSuccessSignIn })
+        navigation.navigate('SignInModal', {
+            screen: 'SignInQRModal',
+            params: {
+                connector,
+                closeStorage: () => secureEncryptedStorage[Symbol.dispose](),
+                onSuccess: () =>
+                    navigation.navigate('SignInModal', {
+                        screen: 'SignInSuccessModal',
+                        params: { onContinue: onSuccessSignIn }
+                    })
+            }
         });
     }, [signIn, navigation, getSecureEncrypted, onSuccessSignIn]);
 
     return (
         <Screen background="transparent">
-            <ImageBackground source={resources.welcomeScreenBg} style={styles.background}>
-                <Screen.Content>
+            <Screen.Content>
+                <ImageBackground source={resources.welcomeScreenBg} style={styles.background}>
                     <Icon icon={Safely96} style={styles.logo} />
 
                     <View style={styles.textContainer}>
@@ -73,15 +79,37 @@ export const WelcomeScreen = () => {
                             size="large"
                             onPress={onSuccessCreate}
                         >
-                            {t('welcome.createNew')}
+                            {t('welcome.newWallet')}
                         </Button>
                         <Button
                             testID={TEST_ID.welcome.importWallet}
                             type="secondary"
                             size="large"
+                            onPress={() => navigation.navigate('OnboardingImportWalletScreen')}
+                        >
+                            {t('welcome.importWallet')}
+                        </Button>
+                        <Button
+                            testID={TEST_ID.welcome.watchAccount}
+                            type="secondary"
+                            size="large"
+                            onPress={() => navigation.navigate('OnboardingWatchAccountScreen')}
+                        >
+                            {t('moreOptions.watchAccount')}
+                        </Button>
+                        <Button
+                            style={styles.lastButton}
+                            testID={TEST_ID.welcome.qrSignIn}
+                            type="blue"
+                            size="large"
                             onPress={handleSignIn}
                         >
-                            {t('welcome.importExisting')}
+                            <View style={styles.buttonTextWithIcon}>
+                                <Text variant="labelL" color="link">
+                                    {t('welcome.linkWithQr')}
+                                </Text>
+                                <Icon icon={QrCodeScanShield28} />
+                            </View>
                         </Button>
                     </View>
 
@@ -111,8 +139,8 @@ export const WelcomeScreen = () => {
                             />
                         </Text>
                     </View>
-                </Screen.Content>
-            </ImageBackground>
+                </ImageBackground>
+            </Screen.Content>
         </Screen>
     );
 };

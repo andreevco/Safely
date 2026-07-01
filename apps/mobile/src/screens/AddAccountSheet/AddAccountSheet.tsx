@@ -26,7 +26,6 @@ const AddAccountContent = () => {
     const navigation = useNavigation();
     const signIn = useCreateExistingAccountConnector();
     const { mutateAsync: createAccount } = useCreateAccount({
-        createWallet: true,
         setActive: true
     });
     const { withLoader } = useLoader();
@@ -45,7 +44,11 @@ const AddAccountContent = () => {
                 Keyboard.dismiss();
 
                 await withLoader(async () => {
-                    await createAccount({ name, secureEncryptedStorage });
+                    await createAccount({
+                        name,
+                        secureEncryptedStorage,
+                        firstPortfolio: { kind: 'generated' }
+                    });
                 });
 
                 toast(t('addAccount.toastAccountCreated'));

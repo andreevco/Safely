@@ -1,8 +1,15 @@
+import type { StaticScreenProps } from '@react-navigation/native';
 import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { useActiveAccountQuery, useAppContext, useConnectAccountToNewDevice } from '@safely/ux';
+import {
+    useActiveAccountQuery,
+    useActivePortfolio,
+    useAppContext,
+    useChangePortfolioMeta,
+    useConnectAccountToNewDevice
+} from '@safely/ux';
 
 import { useOnboardingFlow } from '@mobile/features/onboarding';
 import { TEST_ID } from '@mobile/shared/constants';
@@ -16,7 +23,12 @@ const stepKeys = [
     'onboarding.accountCreated.steps.step3'
 ] as const;
 
-export const AccountCreatedScreen = () => {
+type AccountCreatedScreenProps = StaticScreenProps<{
+    shouldCustomize: boolean;
+}>;
+
+export const AccountCreatedScreen = (props: AccountCreatedScreenProps) => {
+    const { shouldCustomize } = props.route.params;
     const { t } = useTranslation();
     const {
         storage: {
@@ -24,10 +36,28 @@ export const AccountCreatedScreen = () => {
         }
     } = useAppContext();
     const { data: activeAccount } = useActiveAccountQuery();
+    const portfolio = useActivePortfolio();
     const { onAccountCreatedFinished } = useOnboardingFlow();
     const { mutateAsync: connectAccountToNewDevice } = useConnectAccountToNewDevice();
+    const { mutateAsync: changePortfolioMeta } = useChangePortfolioMeta();
 
     const steps = stepKeys.map(key => ({ title: t(key) }));
+
+    const finish = useCallback(() => {
+        if (!shouldCustomize) {
+            onAccountCreatedFinished();
+            return;
+        }
+
+        onAccountCreatedFinished({
+            defaultName: portfolio.meta.name,
+            defaultIcon: portfolio.meta.icon,
+            onSave: async meta => {
+                await changePortfolioMeta({ portfolio, meta });
+                onAccountCreatedFinished();
+            }
+        });
+    }, [shouldCustomize, portfolio, changePortfolioMeta, onAccountCreatedFinished]);
 
     const handleAddDevice = useCallback(async () => {
         if (!activeAccount) return;
@@ -38,12 +68,12 @@ export const AccountCreatedScreen = () => {
         secureEncryptedStorage.UNSAFE_SKIP_SECURITY_CHECK_unlock();
 
         await connectAccountToNewDevice({ secureEncryptedStorage });
-        onAccountCreatedFinished();
-    }, [connectAccountToNewDevice, activeAccount, getSecureEncrypted, onAccountCreatedFinished]);
+        finish();
+    }, [connectAccountToNewDevice, activeAccount, getSecureEncrypted, finish]);
 
     const handleProtectLater = useCallback(() => {
-        onAccountCreatedFinished();
-    }, [onAccountCreatedFinished]);
+        finish();
+    }, [finish]);
 
     return (
         <Screen>

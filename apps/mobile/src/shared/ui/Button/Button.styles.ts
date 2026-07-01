@@ -47,6 +47,11 @@ export const styles = StyleSheet.create(theme => ({
                 },
                 overlay: {
                     backgroundColor: theme.colors.other.constant.white
+                },
+                blue: {
+                    backgroundColor: 'rgba(1, 120, 255, 0.08)',
+                    borderColor: 'rgba(1, 120, 255, 0.2)',
+                    borderWidth: 0.75
                 }
             }
         }
@@ -76,6 +81,9 @@ export const styles = StyleSheet.create(theme => ({
                 },
                 overlay: {
                     color: theme.colors.other.constant.black
+                },
+                blue: {
+                    color: theme.colors.text.link
                 }
             }
         }

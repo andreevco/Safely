@@ -1,0 +1,1 @@
+export { OnboardingWatchAccountScreen } from './OnboardingWatchAccountScreen';

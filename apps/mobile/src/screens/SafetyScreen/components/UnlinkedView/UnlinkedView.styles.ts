@@ -26,11 +26,6 @@ export const styles = StyleSheet.create(theme => ({
         alignItems: 'center',
         justifyContent: 'center'
     },
-    iconImage: {
-        width: 23,
-        height: 20,
-        transform: [{ translateY: 7 }]
-    },
     banner: {
         flexDirection: 'row',
         alignItems: 'center',
