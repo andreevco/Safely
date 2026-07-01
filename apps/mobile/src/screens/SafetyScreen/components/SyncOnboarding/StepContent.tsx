@@ -1,23 +1,26 @@
+import { memo, type ComponentProps } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
-import type { ViewStyle } from 'react-native';
-import Animated, { type AnimatedStyle } from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 
 import { Text } from '@mobile/shared/ui';
 
 import type { SyncOnboardingStepConfig } from './steps';
 import { styles } from './SyncOnboarding.styles';
 
+type AnimatedViewProps = ComponentProps<typeof Animated.View>;
+
 interface Props {
     step: SyncOnboardingStepConfig;
-    style: AnimatedStyle<ViewStyle>;
+    entering?: AnimatedViewProps['entering'];
+    exiting?: AnimatedViewProps['exiting'];
     onLinkPress: () => void;
 }
 
-export const StepContent = ({ step, style, onLinkPress }: Props) => {
+export const StepContent = memo(({ step, entering, exiting, onLinkPress }: Props) => {
     const { t } = useTranslation();
 
     return (
-        <Animated.View style={[styles.contentLayer, style]}>
+        <Animated.View style={styles.contentLayer} entering={entering} exiting={exiting}>
             <Text variant="titleL">{t(step.titleKey)}</Text>
             <Text variant="bodyL" color="secondary">
                 <Trans
@@ -29,4 +32,6 @@ export const StepContent = ({ step, style, onLinkPress }: Props) => {
             </Text>
         </Animated.View>
     );
-};
+});
+
+StepContent.displayName = 'StepContent';

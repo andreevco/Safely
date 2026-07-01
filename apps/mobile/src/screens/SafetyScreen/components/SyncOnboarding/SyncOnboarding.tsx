@@ -31,11 +31,10 @@ export const SyncOnboarding = ({ onClose, onFinish }: Props) => {
         stepCount: SYNC_ONBOARDING_STEPS.length,
         onFinish
     });
-    const { previousIndex, outgoingStyle, incomingStyle } = useStepTransition(index);
+    const { layerKey, entering, exiting } = useStepTransition(index);
     const toast = useToast();
 
     const currentStep = SYNC_ONBOARDING_STEPS[index];
-    const previousStep = previousIndex !== null ? SYNC_ONBOARDING_STEPS[previousIndex] : null;
 
     const handleLinkPress = () => {
         toast('TODO: Link');
@@ -62,8 +61,12 @@ export const SyncOnboarding = ({ onClose, onFinish }: Props) => {
             </View>
 
             <View style={styles.illustrationZone}>
-                {previousStep && <StepIllustration step={previousStep} style={outgoingStyle} />}
-                <StepIllustration step={currentStep} style={incomingStyle} />
+                <StepIllustration
+                    key={layerKey}
+                    step={currentStep}
+                    entering={entering}
+                    exiting={exiting}
+                />
             </View>
 
             <View style={styles.card}>
@@ -75,16 +78,11 @@ export const SyncOnboarding = ({ onClose, onFinish }: Props) => {
                     pointerEvents="none"
                 />
                 <View style={styles.cardContent}>
-                    {previousStep && (
-                        <StepContent
-                            step={previousStep}
-                            style={outgoingStyle}
-                            onLinkPress={handleLinkPress}
-                        />
-                    )}
                     <StepContent
+                        key={layerKey}
                         step={currentStep}
-                        style={incomingStyle}
+                        entering={entering}
+                        exiting={exiting}
                         onLinkPress={handleLinkPress}
                     />
                 </View>

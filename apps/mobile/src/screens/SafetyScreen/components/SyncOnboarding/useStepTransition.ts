@@ -1,14 +1,5 @@
-import { useCallback, useLayoutEffect, useRef, useState } from 'react';
-import type { ViewStyle } from 'react-native';
-import {
-    Easing,
-    runOnJS,
-    useAnimatedStyle,
-    useSharedValue,
-    withDelay,
-    withTiming,
-    type AnimatedStyle
-} from 'react-native-reanimated';
+import { useEffect, useMemo, useRef } from 'react';
+import { Easing, Keyframe } from 'react-native-reanimated';
 
 const STEP_OFFSET = 16;
 
@@ -17,68 +8,49 @@ const IN_DELAY = 60;
 const IN_DURATION = 120;
 const EASING = Easing.bezier(0, 0, 0.58, 1);
 
+type KeyframeAnimation = InstanceType<typeof Keyframe>;
+
 export interface StepTransition {
-    previousIndex: number | null;
-    outgoingStyle: AnimatedStyle<ViewStyle>;
-    incomingStyle: AnimatedStyle<ViewStyle>;
-    isAnimating: boolean;
+    layerKey: number;
+    entering: KeyframeAnimation | undefined;
+    exiting: KeyframeAnimation;
 }
 
 export function useStepTransition(index: number): StepTransition {
     const prevIndexRef = useRef(index);
-    const generationRef = useRef(0);
-    const [previousIndex, setPreviousIndex] = useState<number | null>(null);
-    const [isAnimating, setIsAnimating] = useState(false);
+    const isFirstRef = useRef(true);
 
-    const outProgress = useSharedValue(1);
-    const inProgress = useSharedValue(1);
-    const direction = useSharedValue<1 | -1>(1);
+    const { entering, exiting } = useMemo(() => {
+        const direction = index >= prevIndexRef.current ? 1 : -1;
 
-    const finalize = useCallback((generation: number) => {
-        if (generation !== generationRef.current) {
-            return;
-        }
+        const enter = isFirstRef.current
+            ? undefined
+            : new Keyframe({
+                  0: {
+                      opacity: 0,
+                      transform: [{ translateX: STEP_OFFSET * direction }]
+                  },
+                  100: {
+                      opacity: 1,
+                      transform: [{ translateX: 0 }],
+                      easing: EASING
+                  }
+              })
+                  .duration(IN_DURATION)
+                  .delay(IN_DELAY);
 
-        setPreviousIndex(null);
-        setIsAnimating(false);
-    }, []);
+        const exit = new Keyframe({
+            0: { opacity: 1 },
+            100: { opacity: 0, easing: EASING }
+        }).duration(OUT_DURATION);
 
-    useLayoutEffect(() => {
-        const from = prevIndexRef.current;
+        return { entering: enter, exiting: exit };
+    }, [index]);
 
-        if (from === index) {
-            return;
-        }
-
+    useEffect(() => {
+        isFirstRef.current = false;
         prevIndexRef.current = index;
-        const generation = ++generationRef.current;
+    }, [index]);
 
-        direction.value = index >= from ? 1 : -1;
-        setPreviousIndex(from);
-        setIsAnimating(true);
-
-        outProgress.value = 1 - inProgress.value;
-        inProgress.value = 0;
-
-        outProgress.value = withTiming(1, { duration: OUT_DURATION, easing: EASING });
-        inProgress.value = withDelay(
-            IN_DELAY,
-            withTiming(1, { duration: IN_DURATION, easing: EASING }, finished => {
-                if (finished) {
-                    runOnJS(finalize)(generation);
-                }
-            })
-        );
-    }, [index, direction, outProgress, inProgress, finalize]);
-
-    const outgoingStyle = useAnimatedStyle(() => ({
-        opacity: 1 - outProgress.value
-    }));
-
-    const incomingStyle = useAnimatedStyle(() => ({
-        opacity: inProgress.value,
-        transform: [{ translateX: (1 - inProgress.value) * STEP_OFFSET * direction.value }]
-    }));
-
-    return { previousIndex, outgoingStyle, incomingStyle, isAnimating };
+    return { layerKey: index, entering, exiting };
 }
