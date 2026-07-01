@@ -31,7 +31,7 @@ export const SyncOnboarding = ({ onClose, onFinish }: Props) => {
         stepCount: SYNC_ONBOARDING_STEPS.length,
         onFinish
     });
-    const { previousIndex, outgoingStyle, incomingStyle, isAnimating } = useStepTransition(index);
+    const { previousIndex, outgoingStyle, incomingStyle } = useStepTransition(index);
     const toast = useToast();
 
     const currentStep = SYNC_ONBOARDING_STEPS[index];
@@ -42,18 +42,10 @@ export const SyncOnboarding = ({ onClose, onFinish }: Props) => {
     };
 
     const handleNext = () => {
-        if (isAnimating) {
-            return;
-        }
-
         void goNext();
     };
 
     const handleBack = () => {
-        if (isAnimating) {
-            return;
-        }
-
         goBack();
     };
 

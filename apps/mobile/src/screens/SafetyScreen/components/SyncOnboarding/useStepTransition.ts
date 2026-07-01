@@ -26,6 +26,7 @@ export interface StepTransition {
 
 export function useStepTransition(index: number): StepTransition {
     const prevIndexRef = useRef(index);
+    const generationRef = useRef(0);
     const [previousIndex, setPreviousIndex] = useState<number | null>(null);
     const [isAnimating, setIsAnimating] = useState(false);
 
@@ -33,7 +34,11 @@ export function useStepTransition(index: number): StepTransition {
     const inProgress = useSharedValue(1);
     const direction = useSharedValue<1 | -1>(1);
 
-    const endTransition = useCallback(() => {
+    const finalize = useCallback((generation: number) => {
+        if (generation !== generationRef.current) {
+            return;
+        }
+
         setPreviousIndex(null);
         setIsAnimating(false);
     }, []);
@@ -46,22 +51,25 @@ export function useStepTransition(index: number): StepTransition {
         }
 
         prevIndexRef.current = index;
+        const generation = ++generationRef.current;
+
         direction.value = index >= from ? 1 : -1;
         setPreviousIndex(from);
         setIsAnimating(true);
 
-        outProgress.value = 0;
+        outProgress.value = 1 - inProgress.value;
         inProgress.value = 0;
+
         outProgress.value = withTiming(1, { duration: OUT_DURATION, easing: EASING });
         inProgress.value = withDelay(
             IN_DELAY,
             withTiming(1, { duration: IN_DURATION, easing: EASING }, finished => {
                 if (finished) {
-                    runOnJS(endTransition)();
+                    runOnJS(finalize)(generation);
                 }
             })
         );
-    }, [index, direction, outProgress, inProgress, endTransition]);
+    }, [index, direction, outProgress, inProgress, finalize]);
 
     const outgoingStyle = useAnimatedStyle(() => ({
         opacity: 1 - outProgress.value

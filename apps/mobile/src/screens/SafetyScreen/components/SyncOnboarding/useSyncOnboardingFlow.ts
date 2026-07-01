@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 
 import { useCompleteSyncOnboarding } from '@safely/ux';
 
@@ -9,6 +9,7 @@ interface UseSyncOnboardingFlowParams {
 
 export function useSyncOnboardingFlow({ stepCount, onFinish }: UseSyncOnboardingFlowParams) {
     const [index, setIndex] = useState(0);
+    const isFinishingRef = useRef(false);
     const { mutateAsync: complete } = useCompleteSyncOnboarding();
 
     const isFirst = index === 0;
@@ -16,6 +17,10 @@ export function useSyncOnboardingFlow({ stepCount, onFinish }: UseSyncOnboarding
 
     const goNext = useCallback(async () => {
         if (isLast) {
+            if (isFinishingRef.current) {
+                return;
+            }
+            isFinishingRef.current = true;
             await complete();
             onFinish();
             return;
