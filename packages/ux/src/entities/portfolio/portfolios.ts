@@ -536,7 +536,6 @@ export function useAddWatchOnlyPortfolio() {
 
 export function useAddLedgerPortfolio() {
     const t = useTranslate();
-    const check = useSecurityCheck();
     const portfolios = usePortfolios();
     const { mutateAsync: addPortfolio } = useAddPortfolio();
     const { mutateAsync: setActivePortfolio } = useSetActivePortfolio();
@@ -552,8 +551,6 @@ export function useAddLedgerPortfolio() {
         }
     >({
         async mutationFn({ masterFingerprint, deviceModel, accounts, meta }) {
-            await check();
-
             const serialized = PortfolioLedger.createSerializedPortfolio({
                 masterFingerprint,
                 networkType: PortfolioNetworkType.MAINNET,
@@ -581,7 +578,6 @@ export function useAddLedgerPortfolio() {
 export function useUpdateLedgerDerivations() {
     const t = useTranslate();
     const client = useQueryClient();
-    const check = useSecurityCheck();
     const accountQueryKey = useActiveAccountQueryKey();
     const update = useActiveAccountSyncStorageSlotUpdate('portfolios');
 
@@ -595,8 +591,6 @@ export function useUpdateLedgerDerivations() {
         }
     >({
         async mutationFn({ portfolio, accounts, meta }) {
-            await check();
-
             const selectedIndexes = new Set(accounts.map(account => account.index));
             const existingIndexes = new Set(portfolio.getDerivations().map(d => d.index));
 

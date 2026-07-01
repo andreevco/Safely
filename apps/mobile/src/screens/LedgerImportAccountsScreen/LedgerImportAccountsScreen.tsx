@@ -13,6 +13,7 @@ import {
     useLoader,
     useNewPortfolioFallbackName,
     usePortfolios,
+    useSecurityCheck,
     useSetActivePortfolio,
     useToast,
     useUpdateLedgerDerivations
@@ -28,10 +29,11 @@ import { styles } from './LedgerImportAccountsScreen.styles';
 const SkeletonAccounts = new Array(10).fill(null);
 
 export const LedgerImportAccountsScreen = () => {
+    const toast = useToast();
     const { t } = useTranslation();
     const navigation = useNavigation();
     const { withLoader } = useLoader();
-    const toast = useToast();
+    const check = useSecurityCheck();
     const { mutateAsync: addLedgerPortfolio } = useAddLedgerPortfolio();
     const { mutateAsync: setActivePortfolio } = useSetActivePortfolio();
     const { mutateAsync: updateLedgerDerivations } = useUpdateLedgerDerivations();
@@ -96,6 +98,8 @@ export const LedgerImportAccountsScreen = () => {
                     defaultIcon: targetPortfolio.meta.icon,
                     title: t('customizeWallet.ledgerTitle'),
                     onSave: async (meta: PortfolioMeta) => {
+                        await check();
+
                         await withLoader(() =>
                             updateLedgerDerivations({
                                 portfolio: targetPortfolio,
@@ -134,6 +138,8 @@ export const LedgerImportAccountsScreen = () => {
                 defaultIcon,
                 title: t('customizeWallet.ledgerTitle'),
                 onSave: async (meta: PortfolioMeta) => {
+                    await check();
+
                     try {
                         await withLoader(() =>
                             addLedgerPortfolio({
@@ -163,6 +169,7 @@ export const LedgerImportAccountsScreen = () => {
         findMorePortfolio,
         targetPortfolio,
         withLoader,
+        check,
         masterFingerprint,
         navigation,
         addLedgerPortfolio,
