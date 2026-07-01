@@ -200,7 +200,7 @@
         },
         "accountProtected": {
             "title": "Linked devices",
-            "subtitle": "These devices have access to your wallets and can help restore access if another device is lost. "
+            "subtitle": "Linked devices have full access to your account and can be used to restore access if another device is lost."
         },
         "device": {
             "added": "Linked {{date}}",
@@ -261,8 +261,8 @@
         "aboutSync": "About Sync",
         "linkDevice": "Link device",
         "protectAccount": {
-            "title": "No linked device",
-            "subtitle": "Link another device as a redundant storage for your wallets. If this phone is lost and you don't have linked devices, you won't be able to restore your wallets."
+            "title": "No linked devices",
+            "subtitle": "Link another device as redundant storage. If this phone is lost, a linked device will restore access to your wallets."
         },
         "syncOnboarding": {
             "steps": {
