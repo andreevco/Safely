@@ -67,6 +67,7 @@ export const bootConfigSchema = z.looseObject({
     }),
 
     references: z.looseObject({
+        sync_learn_more_url: z.string().optional(),
         legal: z.looseObject({
             privacy_url: z.string(),
             terms_url: z.string()
