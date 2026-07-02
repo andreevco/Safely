@@ -123,7 +123,7 @@ export function useBtcWalletUtxo(btcWallet: BtcWallet) {
     );
 }
 
-export function useBtcConfirmedBalances(wallets: BtcWallet[]) {
+export function useAccountlessBtcConfirmedBalances(wallets: BtcWallet[]) {
     const getBtcApi = useGetBtcApi();
 
     return useQueries({
