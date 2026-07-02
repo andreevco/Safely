@@ -21,7 +21,7 @@ function Tab(props: TabProps) {
     return (
         <TouchableOpacity onPress={onSelect} style={styles.tabContainer}>
             <View style={styles.tab}>
-                <Text variant="bodyM" color="primary">
+                <Text variant="bodyM" color="primary" numberOfLines={1}>
                     {label}
                 </Text>
             </View>
