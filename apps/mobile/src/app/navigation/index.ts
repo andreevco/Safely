@@ -37,6 +37,7 @@ import { WatchOnlySheet } from '@mobile/screens/WatchOnlySheet';
 import { WelcomeScreen } from '@mobile/screens/WelcomeScreen';
 
 import { AddWalletStack } from './stacks/AddWalletStack';
+import { OnboardingLedgerStack } from './stacks/OnboardingLedgerStack';
 import { SendStack } from './stacks/SendStack';
 import { SettingsStack } from './stacks/SettingsStack';
 import { SignInStack } from './stacks/SignInStack';
@@ -56,6 +57,12 @@ export const RootStack = createNativeStackNavigator({
                 OnboardingImportWalletScreen: OnboardingImportWalletScreen,
                 OnboardingWatchAccountScreen: {
                     screen: OnboardingWatchAccountScreen,
+                    options: {
+                        presentation: 'card'
+                    }
+                },
+                OnboardingConnectLedgerModal: {
+                    screen: OnboardingLedgerStack,
                     options: {
                         presentation: 'card'
                     }

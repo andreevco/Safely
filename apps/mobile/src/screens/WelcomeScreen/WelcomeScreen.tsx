@@ -84,12 +84,12 @@ export const WelcomeScreen = () => {
                             {t('welcome.importWallet')}
                         </Button>
                         <Button
-                            testID={TEST_ID.welcome.watchAccount}
+                            testID={TEST_ID.welcome.moreOptions}
                             type="secondary"
                             size="large"
-                            onPress={() => navigation.navigate('OnboardingWatchAccountScreen')}
+                            onPress={() => navigation.navigate('MoreOptionsSheet')}
                         >
-                            {t('moreOptions.watchAccount')}
+                            {t('welcome.moreOptions')}
                         </Button>
                         <Button
                             style={styles.lastButton}

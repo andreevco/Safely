@@ -5,5 +5,6 @@ export { getBluetoothState } from './getBluetoothState';
 export { BleManagerProvider, useBleManager } from './BleManagerProvider';
 export { getLedgerImage } from './getLedgerImage';
 export { getLedgerModelName } from './getLedgerModelName';
+export { getLedgerWalletName } from './getLedgerWalletName';
 export { getSignalLevel, type SignalLevel } from './getSignalLevel';
 export { useExitToConnectLedger } from './useExitToConnectLedger';

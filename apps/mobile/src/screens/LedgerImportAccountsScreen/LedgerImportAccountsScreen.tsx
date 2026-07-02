@@ -2,16 +2,15 @@ import { useNavigation } from '@react-navigation/core';
 import { CommonActions, StackActions } from '@react-navigation/native';
 import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
 
 import type { PortfolioLedger, PortfolioMeta } from '@safely/core';
 import { PortfolioIdLedger, PortfolioNetworkType, PortfolioType } from '@safely/core';
 import {
     useAddLedgerPortfolio,
     useLedgerAccounts,
+    useLedgerAccountSelection,
     useLedgerSession,
     useLoader,
-    useNewPortfolioFallbackName,
     usePortfolios,
     useSecurityCheck,
     useSetActivePortfolio,
@@ -20,13 +19,9 @@ import {
 } from '@safely/ux';
 
 import { handleDuplicatePortfolio } from '@mobile/features/add-wallet/handleDuplicatePortfolio';
-import { useExitToConnectLedger } from '@mobile/features/ledger';
-import { ArrowLeft16, Button, Icon, List, Screen, Text } from '@mobile/shared/ui';
+import { getLedgerWalletName, useExitToConnectLedger } from '@mobile/features/ledger';
 
-import { LedgerAccountCell } from './components';
-import { styles } from './LedgerImportAccountsScreen.styles';
-
-const SkeletonAccounts = new Array(10).fill(null);
+import { LedgerImportAccountsView } from './LedgerImportAccountsView';
 
 export const LedgerImportAccountsScreen = () => {
     const toast = useToast();
@@ -37,11 +32,15 @@ export const LedgerImportAccountsScreen = () => {
     const { mutateAsync: addLedgerPortfolio } = useAddLedgerPortfolio();
     const { mutateAsync: setActivePortfolio } = useSetActivePortfolio();
     const { mutateAsync: updateLedgerDerivations } = useUpdateLedgerDerivations();
-    const defaultName = useNewPortfolioFallbackName();
 
     const { findMorePortfolioId, selectedDevice } = useLedgerSession();
     const exitToConnect = useExitToConnectLedger();
     const portfolios = usePortfolios();
+
+    const defaultName = getLedgerWalletName(
+        selectedDevice?.deviceModel.model,
+        portfolios.length + 1
+    );
 
     const findMorePortfolio = useMemo(
         () =>
@@ -54,20 +53,34 @@ export const LedgerImportAccountsScreen = () => {
         [portfolios, findMorePortfolioId]
     );
 
-    const {
-        accounts,
-        balances,
-        masterFingerprint,
-        existingPortfolio,
-        selectedIndexes,
-        selectedAccounts,
-        toggle,
-        retry,
-        isError,
-        isTimedOut
-    } = useLedgerAccounts();
+    const { accounts, balances, masterFingerprint, retry, isError, isTimedOut } =
+        useLedgerAccounts();
+
+    const existingPortfolio = useMemo<PortfolioLedger | undefined>(
+        () =>
+            masterFingerprint
+                ? (portfolios.find(
+                      p =>
+                          p.type === PortfolioType.LEDGER &&
+                          p.networkType === PortfolioNetworkType.MAINNET &&
+                          p.masterFingerprint.equals(masterFingerprint)
+                  ) as PortfolioLedger | undefined)
+                : undefined,
+        [portfolios, masterFingerprint]
+    );
 
     const targetPortfolio = findMorePortfolio ?? existingPortfolio;
+
+    const existingIndexes = useMemo(
+        () => existingPortfolio?.getDerivations().map(d => d.index) ?? [],
+        [existingPortfolio]
+    );
+
+    const { selectedIndexes, selectedAccounts, toggle } = useLedgerAccountSelection({
+        accounts,
+        balances,
+        preselectedIndexes: existingIndexes
+    });
 
     const existingNames = useMemo(
         () => new Map(targetPortfolio?.getDerivations().map(d => [d.index, d.meta.name]) ?? []),
@@ -191,72 +204,17 @@ export const LedgerImportAccountsScreen = () => {
     }, [retry, navigation]);
 
     return (
-        <Screen>
-            <Screen.Header variant="left">
-                <Screen.Header.Button onPress={exitToConnect}>
-                    <Icon icon={ArrowLeft16} />
-                </Screen.Header.Button>
-            </Screen.Header>
-            <Screen.Scrollable style={styles.content}>
-                <View style={styles.textContainer}>
-                    <Text textAlign="center" variant="titleM">
-                        {t('addWallet.connectLedger.importAccounts.title')}
-                    </Text>
-                    <Text textAlign="center" variant="bodyL" color="secondary">
-                        {t('addWallet.connectLedger.importAccounts.subtitle')}
-                    </Text>
-                </View>
-
-                <List style={styles.list}>
-                    <List.Group variant="divided">
-                        {isDerived
-                            ? accounts.map((account, i) => (
-                                  <LedgerAccountCell
-                                      key={account.index}
-                                      account={account}
-                                      balance={balances[i]}
-                                      isSelected={selectedIndexes.has(account.index)}
-                                      name={existingNames.get(account.index)}
-                                      onPress={() => toggle(account.index)}
-                                  />
-                              ))
-                            : SkeletonAccounts.map((_, index) => (
-                                  <LedgerAccountCell key={index} account={{ index }} isSkeleton />
-                              ))}
-                    </List.Group>
-                </List>
-                {isDerived && (
-                    <Text
-                        variant="bodyM"
-                        color="tertiary"
-                        textAlign="center"
-                        style={styles.caption}
-                    >
-                        {t('addWallet.connectLedger.importAccounts.featureNote')}
-                        <Text
-                            variant="bodyM"
-                            color="secondary"
-                            onPress={() =>
-                                toast(t('addWallet.connectLedger.importAccounts.featureRequested'))
-                            }
-                        >
-                            {t('addWallet.connectLedger.importAccounts.featureRequest')}
-                        </Text>
-                    </Text>
-                )}
-            </Screen.Scrollable>
-            <View style={styles.continueButton}>
-                <Button
-                    type={showRetry ? 'secondary' : 'primary'}
-                    size="large"
-                    onPress={showRetry ? handleRetry : handleContinue}
-                    disabled={!showRetry && (!isDerived || selectedIndexes.size === 0)}
-                >
-                    {showRetry
-                        ? t('addWallet.connectLedger.importAccounts.takingTooLong')
-                        : t('common.continue')}
-                </Button>
-            </View>
-        </Screen>
+        <LedgerImportAccountsView
+            accounts={accounts}
+            balances={balances}
+            selectedIndexes={selectedIndexes}
+            existingNames={existingNames}
+            isDerived={isDerived}
+            showRetry={showRetry}
+            isContinueDisabled={!showRetry && (!isDerived || selectedIndexes.size === 0)}
+            onToggle={toggle}
+            onPrimary={showRetry ? handleRetry : handleContinue}
+            onBack={exitToConnect}
+        />
     );
 };

@@ -1,5 +1,5 @@
 import { useNavigation } from '@react-navigation/core';
-import { CommonActions } from '@react-navigation/native';
+import { StackActions } from '@react-navigation/native';
 import { useCallback } from 'react';
 
 import { useLedgerSession } from '@safely/ux';
@@ -10,11 +10,6 @@ export const useExitToConnectLedger = () => {
 
     return useCallback(() => {
         setFindMorePortfolioId(null);
-        navigation.getParent()?.dispatch(
-            CommonActions.reset({
-                index: 1,
-                routes: [{ name: 'AddWalletRootModal' }, { name: 'ConnectLedgerModal' }]
-            })
-        );
+        navigation.getParent()?.dispatch(StackActions.popTo('ConnectLedgerModal'));
     }, [navigation, setFindMorePortfolioId]);
 };
