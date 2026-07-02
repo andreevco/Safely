@@ -2,13 +2,10 @@ import { useNavigation } from '@react-navigation/core';
 import { CommonActions } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 
+import { getLedgerModelName } from '@safely/core';
 import { useLedgerSession } from '@safely/ux';
 
-import {
-    getLedgerModelName,
-    LedgerStatusScreen,
-    useExitToConnectLedger
-} from '@mobile/features/ledger';
+import { LedgerStatusScreen, useExitToConnectLedger } from '@mobile/features/ledger';
 import { ExclamationmarkCircle96, Icon } from '@mobile/shared/ui';
 
 export const LedgerPairingUnsuccessScreen = () => {

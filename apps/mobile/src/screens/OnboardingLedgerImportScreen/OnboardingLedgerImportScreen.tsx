@@ -3,9 +3,14 @@ import { StackActions } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { useLedgerAccounts, useLedgerAccountSelection, useLedgerSession } from '@safely/ux';
+import {
+    useLedgerAccounts,
+    useLedgerAccountSelection,
+    useLedgerSession,
+    useLedgerWalletName
+} from '@safely/ux';
 
-import { getLedgerWalletName, useExitToConnectLedger } from '@mobile/features/ledger';
+import { useExitToConnectLedger } from '@mobile/features/ledger';
 import { useOnboardingFlow } from '@mobile/features/onboarding';
 import { LedgerImportAccountsView } from '@mobile/screens/LedgerImportAccountsScreen/LedgerImportAccountsView';
 
@@ -15,6 +20,7 @@ export const OnboardingLedgerImportScreen = () => {
     const navigation = useNavigation();
     const { selectedDevice } = useLedgerSession();
     const { onLedgerReady } = useOnboardingFlow();
+    const walletName = useLedgerWalletName(selectedDevice?.deviceModel.model);
 
     const { accounts, balances, masterFingerprint, retry, isError, isTimedOut } =
         useLedgerAccounts();
@@ -40,10 +46,10 @@ export const OnboardingLedgerImportScreen = () => {
         onLedgerReady(
             masterFingerprint.toString('hex'),
             selectedDevice?.deviceModel.model ?? '',
-            getLedgerWalletName(selectedDevice?.deviceModel.model, 1),
+            walletName,
             accountsWithNames
         );
-    }, [masterFingerprint, selectedAccounts, selectedDevice, onLedgerReady, t]);
+    }, [masterFingerprint, selectedAccounts, selectedDevice, walletName, onLedgerReady, t]);
 
     const handleRetry = useCallback(async () => {
         const recovered = await retry();

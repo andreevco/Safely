@@ -3,13 +3,10 @@ import { StackActions } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { getLedgerModelName } from '@safely/core';
 import { useLedgerSession } from '@safely/ux';
 
-import {
-    getLedgerModelName,
-    LedgerStatusScreen,
-    useExitToConnectLedger
-} from '@mobile/features/ledger';
+import { LedgerStatusScreen, useExitToConnectLedger } from '@mobile/features/ledger';
 import { Checkmark96, Icon } from '@mobile/shared/ui';
 
 export const LedgerPairingSuccessScreen = () => {

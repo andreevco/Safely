@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { LedgerDeviceBusyError, PortfolioType } from '@safely/core';
+import { getLedgerModelName, LedgerDeviceBusyError, PortfolioType } from '@safely/core';
 import {
     LEDGER_FAILURE_STATES,
     useActivePortfolio,
@@ -13,7 +13,7 @@ import {
 } from '@safely/ux';
 
 import type { LedgerStepStatus } from '@mobile/features/ledger';
-import { getLedgerImage, getLedgerModelName, LedgerSteps } from '@mobile/features/ledger';
+import { getLedgerImage, LedgerSteps } from '@mobile/features/ledger';
 import { BottomSheet, Button, Image, Text, useBottomSheet } from '@mobile/shared/ui';
 
 import { styles } from './ConnectToSignSheet.styles';

@@ -19,7 +19,7 @@ import { PortfolioLedger } from '@safely/core';
 import { PortfolioIdBip39Imported } from '@safely/core';
 import { PortfolioBip39, PortfolioIdBip39MasterKeyDerived } from '@safely/core';
 import { PortfolioMnemonicFactory } from '@safely/core';
-import { assertUnreachable, toPortfolioId } from '@safely/core';
+import { assertUnreachable, getLedgerModelName, toPortfolioId } from '@safely/core';
 import {
     delay,
     Id,
@@ -76,6 +76,13 @@ export function useNewPortfolioFallbackName() {
     const t = useTranslate();
 
     return t('security.groups.wallet.defaultName', { number: portfolios.length + 1 });
+}
+
+export function useLedgerWalletName(model: string | undefined) {
+    const modelName = getLedgerModelName(model);
+    const fallbackName = useNewPortfolioFallbackName();
+
+    return modelName === 'Ledger' ? fallbackName : modelName;
 }
 
 export function useGeneratePortfolio() {
