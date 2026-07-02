@@ -17,6 +17,11 @@
             "connect": "Connect your {{device}}",
             "openApp": "Open the Bitcoin app",
             "approve": "Review and approve the transaction."
+        },
+        "updateApp": {
+            "title": "Update your Bitcoin app",
+            "subtitle": "This action requires a newer version of the Bitcoin app. Update it in Ledger Wallet and try again.",
+            "gotIt": "Got it"
         }
     },
     "derivedWallets": {

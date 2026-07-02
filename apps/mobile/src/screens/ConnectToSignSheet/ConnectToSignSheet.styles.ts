@@ -13,6 +13,10 @@ export const styles = StyleSheet.create(theme => ({
         width: 390,
         height: 195
     },
+    updateIcon: {
+        width: 96,
+        height: 96
+    },
     textContainer: {
         gap: theme.spacing[4],
         paddingHorizontal: theme.spacing[8]
