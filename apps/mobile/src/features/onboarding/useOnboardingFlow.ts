@@ -70,6 +70,19 @@ export function useOnboardingFlow() {
         [navigation]
     );
 
+    const onLedgerReady = useCallback(
+        (
+            masterFingerprint: string,
+            deviceModel: string,
+            accounts: { index: number; xpub: string; name: string }[]
+        ) => {
+            navigation.navigate('OnboardingPasscodeScreen', {
+                source: { kind: 'ledger', masterFingerprint, deviceModel, accounts }
+            });
+        },
+        [navigation]
+    );
+
     const onPasscodeReady = useCallback(
         async (passcode: string, source: AccountPortfolioSource | null) => {
             await setPasscode(passcode);
@@ -144,6 +157,7 @@ export function useOnboardingFlow() {
         onSuccessSignIn,
         onMnemonicReady,
         onWatchOnlyReady,
+        onLedgerReady,
         onPasscodeReady,
         onBiometryFinished,
         onAccountCreatedFinished

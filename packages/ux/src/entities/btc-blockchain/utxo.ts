@@ -19,7 +19,7 @@ import {
     useActiveBtcWallet,
     usePortfolios
 } from '../portfolio';
-import { utxo } from './keys';
+import { confirmedBalance, utxo } from './keys';
 import {
     BroadcastedBtcTxService,
     getLastBroadcastedBtcTxForWallet
@@ -33,6 +33,8 @@ function useAccessibleBtcWallets() {
         [portfolios]
     );
 }
+
+const isConfirmed = (u: { confirmations: number }) => u.confirmations > 0;
 
 function getTotal(utxos: { value: string }[]) {
     return utxos.reduce(
@@ -54,8 +56,8 @@ function btcWalletUtxoOptions(deps: {
         queryFn: async () => {
             const utxos = await api.getUtxos(btcWallet, true);
 
-            const serverConfirmed = utxos.filter(u => u.confirmations > 0);
-            const unconfirmed = utxos.filter(u => u.confirmations === 0);
+            const serverConfirmed = utxos.filter(isConfirmed);
+            const unconfirmed = utxos.filter(u => !isConfirmed(u));
 
             const { safe: serverSafe, unsafe: serverUnsafe } = unconfirmed.reduce(
                 (acc, item) => {
@@ -119,6 +121,23 @@ export function useBtcWalletUtxo(btcWallet: BtcWallet) {
             btcWallet
         })
     );
+}
+
+export function useBtcConfirmedBalances(wallets: BtcWallet[]) {
+    const getBtcApi = useGetBtcApi();
+
+    return useQueries({
+        queries: wallets.map(btcWallet => {
+            const api = getBtcApi(btcWallet.network);
+
+            return {
+                queryKey: confirmedBalance.wallet({ wallet: btcWallet, api }).toKey(),
+                queryFn: async () => getTotal((await api.getUtxos(btcWallet)).filter(isConfirmed)),
+                refetchInterval: QUERIES_REFETCH_INTERVAL.UTXO
+            };
+        }),
+        combine: results => results.map(r => r.data)
+    });
 }
 
 export function sumBtcDisplay(

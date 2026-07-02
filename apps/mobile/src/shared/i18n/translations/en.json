@@ -248,6 +248,7 @@
                 "title": "Wallet",
                 "main": "Main",
                 "defaultName": "Wallet {{number}}",
+                "defaultLedgerName": "Ledger {{number}}",
                 "recovery": {
                     "title": "Recovery phrase",
                     "subtitle": "Keep it private. View only if necessary. This phrase has never been viewed.",

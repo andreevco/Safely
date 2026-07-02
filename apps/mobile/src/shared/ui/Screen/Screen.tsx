@@ -5,7 +5,7 @@ import type { UnistylesVariants } from 'react-native-unistyles';
 
 import { resolveLayoutByScreenName } from '@mobile/shared/utils';
 
-import { ScreenContext } from './Screen.context';
+import { ScreenContext, type ScreenContextType } from './Screen.context';
 import { styles } from './Screen.styles';
 
 type ScreenContainerProps = { children: React.ReactNode } & UnistylesVariants<typeof styles>;
@@ -13,12 +13,13 @@ type ScreenContainerProps = { children: React.ReactNode } & UnistylesVariants<ty
 export function ScreenContainer({ children, background }: PropsWithChildren<ScreenContainerProps>) {
     const resolvedBackground = background ?? 'primary';
 
-    const screenName = useRoute().name;
+    const { name, params } = useRoute();
+    const layoutOverride = (params as { layout?: ScreenContextType['layout'] } | undefined)?.layout;
 
     styles.useVariants({ background: resolvedBackground });
 
     const content = <View style={styles.container}>{children}</View>;
-    const layout = resolveLayoutByScreenName(screenName);
+    const layout = layoutOverride ?? resolveLayoutByScreenName(name);
 
     return (
         <ScreenContext.Provider

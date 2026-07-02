@@ -7,6 +7,8 @@ import {
     PortfolioBip39,
     PortfolioIdBip39Imported,
     PortfolioIdBip39MasterKeyDerived,
+    PortfolioIdLedger,
+    PortfolioLedger,
     PortfolioWatchOnlyBtc,
     toPortfolioIdWatchOnly
 } from '@safely/core';
@@ -74,7 +76,13 @@ export type AccountPortfolioSource =
           mnemonicAccessor: IMnemonicAccessor & IMnemonicVault;
           networkType: PortfolioNetworkType;
       }
-    | { kind: 'watchOnly'; input: string; networkType: PortfolioNetworkType };
+    | { kind: 'watchOnly'; input: string; networkType: PortfolioNetworkType }
+    | {
+          kind: 'ledger';
+          masterFingerprint: string;
+          deviceModel: string;
+          accounts: { index: number; xpub: string; name: string }[];
+      };
 
 async function buildFirstPortfolio(params: {
     account: ISyncAccount<SyncedStorageStructure>;
@@ -122,6 +130,20 @@ async function buildFirstPortfolio(params: {
                 },
                 options: { seedRevealedFromDevice: deviceName },
                 logger
+            });
+            break;
+        }
+        case 'ledger': {
+            const id = new PortfolioIdLedger({
+                masterFingerprint: source.masterFingerprint,
+                networkType: PortfolioNetworkType.MAINNET
+            });
+            portfolio = PortfolioLedger.createSerializedPortfolio({
+                masterFingerprint: Buffer.from(source.masterFingerprint, 'hex'),
+                networkType: PortfolioNetworkType.MAINNET,
+                deviceModel: source.deviceModel,
+                accounts: source.accounts,
+                meta: { name: portfolioName, icon: id.getFallbackEmoji() }
             });
             break;
         }
@@ -196,7 +218,10 @@ export function useCreateAccount(options?: { setActive?: boolean }) {
                     account,
                     secureEncryptedStorage: params.secureEncryptedStorage,
                     source: params.firstPortfolio,
-                    portfolioName: t('security.groups.wallet.defaultName', { number: 1 }),
+                    portfolioName:
+                        params.firstPortfolio.kind === 'ledger'
+                            ? t('security.groups.wallet.defaultLedgerName', { number: 1 })
+                            : t('security.groups.wallet.defaultName', { number: 1 }),
                     deviceName: deviceInfo.name,
                     logger
                 });
