@@ -1,3 +1,4 @@
+import BtcAppLogo from './images/ledger/btc-app-logo-96.png';
 import LedgerFlex from './images/ledger/ledger-flex-cover.png';
 import LedgerNanoGen5 from './images/ledger/ledger-nano-gen-5-cover.png';
 import LedgerPreview from './images/ledger/ledger-preview.png';
@@ -21,6 +22,7 @@ export const resources = {
     syncStepProtect: SyncStepProtect,
     syncStepUseSync: SyncStepUseSync,
     ledgerPreview: LedgerPreview,
+    btcAppLogo: BtcAppLogo,
     ledgerCovers: {
         xNanoGen5: LedgerNanoGen5,
         stax: LedgerStax,

@@ -808,6 +808,11 @@
             "connect": "Подключите {{device}}",
             "openApp": "Откройте приложение Bitcoin",
             "approve": "Проверьте и подтвердите транзакцию."
+        },
+        "updateApp": {
+            "title": "Обновите приложение Bitcoin",
+            "subtitle": "Для этого действия нужна новая версия приложения Bitcoin. Обновите его в Ledger Wallet и попробуйте снова.",
+            "gotIt": "Понятно"
         }
     },
     "derivedWallets": {

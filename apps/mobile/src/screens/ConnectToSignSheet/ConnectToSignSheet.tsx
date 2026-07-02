@@ -14,6 +14,7 @@ import {
 
 import type { LedgerStepStatus } from '@mobile/features/ledger';
 import { getLedgerImage, getLedgerModelName, LedgerSteps } from '@mobile/features/ledger';
+import { resources } from '@mobile/shared/resources';
 import { BottomSheet, Button, Image, Text, useBottomSheet } from '@mobile/shared/ui';
 
 import { styles } from './ConnectToSignSheet.styles';
@@ -36,6 +37,7 @@ const ConnectToSignContent = ({ actor }: Props) => {
     const deviceModel = portfolio.type === PortfolioType.LEDGER ? portfolio.deviceModel : undefined;
 
     const isFailed = LEDGER_FAILURE_STATES.includes(value);
+    const isUnsupportedApp = value === 'unsupportedApp';
 
     useEffect(() => {
         if (isDone) {
@@ -71,6 +73,32 @@ const ConnectToSignContent = ({ actor }: Props) => {
         { label: t('ledgerSign.steps.openApp'), status: stepStatus(1) },
         { label: t('ledgerSign.steps.approve'), status: stepStatus(2) }
     ];
+
+    if (isUnsupportedApp) {
+        return (
+            <View style={styles.container}>
+                <View style={styles.header}>
+                    <Image source={resources.btcAppLogo} style={styles.updateIcon} />
+                    <View style={styles.textContainer}>
+                        <Text variant="titleM" textAlign="center">
+                            {t('ledgerSign.updateApp.title')}
+                        </Text>
+                        <Text variant="bodyL" color="secondary" textAlign="center">
+                            {t('ledgerSign.updateApp.subtitle')}
+                        </Text>
+                    </View>
+                </View>
+
+                <View style={styles.buttons}>
+                    <View style={styles.buttonItem}>
+                        <Button type="primary" size="large" onPress={close}>
+                            {t('ledgerSign.updateApp.gotIt')}
+                        </Button>
+                    </View>
+                </View>
+            </View>
+        );
+    }
 
     return (
         <View style={styles.container}>
