@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Pressable, View } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
-import { useToast } from '@safely/ux';
+import { useBootConfig, useLinking } from '@safely/ux';
 
 import { Button, Icon } from '@mobile/shared/ui';
 import { ArrowLeft16, Xmark16 } from '@mobile/shared/ui/Icon';
@@ -31,13 +31,17 @@ export const SyncOnboarding = ({ onClose, onFinish }: Props) => {
         stepCount: SYNC_ONBOARDING_STEPS.length,
         onFinish
     });
+    const config = useBootConfig();
     const { layerKey, entering, exiting } = useStepTransition(index);
-    const toast = useToast();
+    const linking = useLinking();
 
     const currentStep = SYNC_ONBOARDING_STEPS[index];
 
     const handleLinkPress = () => {
-        toast('TODO: Link');
+        if (!config.references.sync_learn_more_url) {
+            return;
+        }
+        void linking.openURL(config.references.sync_learn_more_url);
     };
 
     const handleNext = () => {
