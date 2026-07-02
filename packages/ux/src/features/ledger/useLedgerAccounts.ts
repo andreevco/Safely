@@ -5,7 +5,7 @@ import { BtcNetwork, LedgerController, ledgerAccountToBtcWallet } from '@safely/
 
 import { ledgerKeys } from './keys';
 import { useLedgerSession } from './LedgerSessionProvider';
-import { useBtcConfirmedBalances } from '../../entities/btc-blockchain';
+import { useBtcWalletBalances } from '../../entities/btc-blockchain';
 
 const ACCOUNT_COUNT = 10;
 const DERIVATIONS_SEARCH_TIMEOUT = 20_000;
@@ -36,7 +36,8 @@ export const useLedgerAccounts = () => {
         () => accounts.map(account => ledgerAccountToBtcWallet(account, BtcNetwork.MAINNET)),
         [accounts]
     );
-    const balances = useBtcConfirmedBalances(wallets);
+    const walletBalances = useBtcWalletBalances(wallets);
+    const balances = useMemo(() => walletBalances.map(b => b?.display), [walletBalances]);
 
     const [isTimedOut, setIsTimedOut] = useState(false);
 

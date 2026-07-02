@@ -22,10 +22,3 @@ export const utxo = defineQueryKeys('utxo', {
         wallet => [wallet.id]
     )
 });
-
-export const confirmedBalance = defineQueryKeys('btc-confirmed-balance', {
-    wallet: mappedParams(
-        (_: { wallet: BtcWallet; api: BtcApi }) => finalKey,
-        ({ wallet, api }) => [wallet.id, api.id]
-    )
-});
