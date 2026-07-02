@@ -10,7 +10,6 @@ import {
     useLedgerAccounts,
     useLedgerAccountSelection,
     useLedgerSession,
-    useLedgerWalletName,
     useLoader,
     usePortfolios,
     useSecurityCheck,
@@ -20,7 +19,7 @@ import {
 } from '@safely/ux';
 
 import { handleDuplicatePortfolio } from '@mobile/features/add-wallet/handleDuplicatePortfolio';
-import { useExitToConnectLedger } from '@mobile/features/ledger';
+import { getLedgerWalletName, useExitToConnectLedger } from '@mobile/features/ledger';
 
 import { LedgerImportAccountsView } from './LedgerImportAccountsView';
 
@@ -38,7 +37,10 @@ export const LedgerImportAccountsScreen = () => {
     const exitToConnect = useExitToConnectLedger();
     const portfolios = usePortfolios();
 
-    const defaultName = useLedgerWalletName(selectedDevice?.deviceModel.model);
+    const defaultName = getLedgerWalletName(
+        selectedDevice?.deviceModel.model,
+        portfolios.length + 1
+    );
 
     const findMorePortfolio = useMemo(
         () =>
