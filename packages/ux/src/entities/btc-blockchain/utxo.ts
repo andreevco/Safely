@@ -12,14 +12,14 @@ import {
     useDerivedQuery,
     usePersistQuery
 } from '../../shared';
-import { useActiveAccountQuery } from '../account';
+import { useActiveAccount } from '../account';
 import {
     isDerivablePortfolio,
     resolveBtcWallets,
     useActiveBtcWallet,
     usePortfolios
 } from '../portfolio';
-import { utxo } from './keys';
+import { confirmedBalance, utxo } from './keys';
 import {
     BroadcastedBtcTxService,
     getLastBroadcastedBtcTxForWallet
@@ -46,7 +46,7 @@ function getTotal(utxos: { value: string }[]) {
 function btcWalletUtxoOptions(deps: {
     api: BtcApi;
     accessibleBtcWallets: BtcWallet[];
-    accountId: string | undefined;
+    accountId: string;
     btcWallet: BtcWallet;
 }) {
     const { api, accessibleBtcWallets, accountId, btcWallet } = deps;
@@ -82,9 +82,7 @@ function btcWalletUtxoOptions(deps: {
                 }
             );
 
-            const lastBroadcastedBtcTx = accountId
-                ? getLastBroadcastedBtcTxForWallet(accountId, btcWallet)
-                : null;
+            const lastBroadcastedBtcTx = getLastBroadcastedBtcTxForWallet(accountId, btcWallet);
 
             const service = new BroadcastedBtcTxService(lastBroadcastedBtcTx, btcWallet.address, {
                 serverConfirmed,
@@ -112,17 +110,34 @@ function btcWalletUtxoOptions(deps: {
 
 export function useBtcWalletUtxo(btcWallet: BtcWallet) {
     const api = useBtcApi(btcWallet.network);
-    const { data: account } = useActiveAccountQuery();
+    const account = useActiveAccount();
     const accessibleBtcWallets = useAccessibleBtcWallets();
 
     return usePersistQuery(
         btcWalletUtxoOptions({
             api,
             accessibleBtcWallets,
-            accountId: account?.accountId,
+            accountId: account.accountId,
             btcWallet
         })
     );
+}
+
+export function useBtcConfirmedBalances(wallets: BtcWallet[]) {
+    const getBtcApi = useGetBtcApi();
+
+    return useQueries({
+        queries: wallets.map(btcWallet => {
+            const api = getBtcApi(btcWallet.network);
+
+            return {
+                queryKey: confirmedBalance.wallet({ wallet: btcWallet, api }).toKey(),
+                queryFn: async () => getTotal((await api.getUtxos(btcWallet)).filter(isConfirmed)),
+                refetchInterval: QUERIES_REFETCH_INTERVAL.UTXO
+            };
+        }),
+        combine: results => results.map(r => r.data)
+    });
 }
 
 export function sumBtcDisplay(
@@ -142,7 +157,7 @@ export function sumBtcDisplay(
 }
 
 export function useBtcWalletBalances(wallets: BtcWallet[]) {
-    const { data: account } = useActiveAccountQuery();
+    const account = useActiveAccount();
     const getBtcApi = useGetBtcApi();
     const accessibleBtcWallets = useAccessibleBtcWallets();
 
@@ -151,7 +166,7 @@ export function useBtcWalletBalances(wallets: BtcWallet[]) {
             const { schemaKey, ...rest } = btcWalletUtxoOptions({
                 api: getBtcApi(btcWallet.network),
                 accessibleBtcWallets,
-                accountId: account?.accountId,
+                accountId: account.accountId,
                 btcWallet
             });
 
