@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import { useLedgerAccounts, useLedgerAccountSelection, useLedgerSession } from '@safely/ux';
 
-import { useExitToConnectLedger } from '@mobile/features/ledger';
+import { getLedgerWalletName, useExitToConnectLedger } from '@mobile/features/ledger';
 import { useOnboardingFlow } from '@mobile/features/onboarding';
 import { LedgerImportAccountsView } from '@mobile/screens/LedgerImportAccountsScreen/LedgerImportAccountsView';
 
@@ -40,6 +40,7 @@ export const OnboardingLedgerImportScreen = () => {
         onLedgerReady(
             masterFingerprint.toString('hex'),
             selectedDevice?.deviceModel.model ?? '',
+            getLedgerWalletName(selectedDevice?.deviceModel.model, 1),
             accountsWithNames
         );
     }, [masterFingerprint, selectedAccounts, selectedDevice, onLedgerReady, t]);

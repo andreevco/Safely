@@ -74,10 +74,11 @@ export function useOnboardingFlow() {
         (
             masterFingerprint: string,
             deviceModel: string,
+            walletName: string,
             accounts: { index: number; xpub: string; name: string }[]
         ) => {
             navigation.navigate('OnboardingPasscodeScreen', {
-                source: { kind: 'ledger', masterFingerprint, deviceModel, accounts }
+                source: { kind: 'ledger', masterFingerprint, deviceModel, walletName, accounts }
             });
         },
         [navigation]

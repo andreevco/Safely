@@ -81,6 +81,7 @@ export type AccountPortfolioSource =
           kind: 'ledger';
           masterFingerprint: string;
           deviceModel: string;
+          walletName: string;
           accounts: { index: number; xpub: string; name: string }[];
       };
 
@@ -143,7 +144,7 @@ async function buildFirstPortfolio(params: {
                 networkType: PortfolioNetworkType.MAINNET,
                 deviceModel: source.deviceModel,
                 accounts: source.accounts,
-                meta: { name: portfolioName, icon: id.getFallbackEmoji() }
+                meta: { name: source.walletName, icon: id.getFallbackEmoji() }
             });
             break;
         }
@@ -218,10 +219,7 @@ export function useCreateAccount(options?: { setActive?: boolean }) {
                     account,
                     secureEncryptedStorage: params.secureEncryptedStorage,
                     source: params.firstPortfolio,
-                    portfolioName:
-                        params.firstPortfolio.kind === 'ledger'
-                            ? t('security.groups.wallet.defaultLedgerName', { number: 1 })
-                            : t('security.groups.wallet.defaultName', { number: 1 }),
+                    portfolioName: t('security.groups.wallet.defaultName', { number: 1 }),
                     deviceName: deviceInfo.name,
                     logger
                 });
