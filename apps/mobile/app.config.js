@@ -33,6 +33,11 @@ module.exports = {
         },
         android: {
             permissions: ["android.permission.CAMERA"],
+            /** 
+             * READ_MEDIA_IMAGES is needed as fallback in expo-screen-capture for older android versions
+             * on method (addScreenshotListener) that we don't use
+             */
+            blockedPermissions: ["android.permission.READ_MEDIA_IMAGES"],
             adaptiveIcon: {
                 foregroundImage: './assets/adaptive-icon.png',
                 backgroundImage: './assets/android-icon-bg.png'
