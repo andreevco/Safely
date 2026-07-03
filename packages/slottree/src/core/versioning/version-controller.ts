@@ -258,8 +258,8 @@ export class VersionController {
         const versionDeletion = this.versionDeletionContainer();
         versionDeletion.v[versionKey] = slotFromJson(
             { [SHOULD_BE_DELETED_AT_KEY]: shouldBeDeletedAt },
-            0,
-            ''
+            this.protocol.tick(),
+            this.protocol.id
         );
     }
 
