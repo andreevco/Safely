@@ -135,16 +135,18 @@ export class StorageImpl<T> implements SlotTree<T> {
     }
 
     public addAuthor(authorId: Buffer, storageVersion: number): void {
-        const controller = new VersionController(this.root, this.versions, this.protocol);
-        controller.setDeviceVersion(
-            authorIdToHex(authorId),
-            storageVersion,
-            this.protocol.tick(),
-            this.protocol.id
-        );
-        const propagation = new VersionPropagation(this.versions, this.protocol);
-        propagation.propagateToOlderVersions(this.root);
-        this.observers.notify();
+        this.commitRootMutation(root => {
+            const controller = new VersionController(root, this.versions, this.protocol);
+            controller.setDeviceVersion(
+                authorIdToHex(authorId),
+                storageVersion,
+                this.protocol.tick(),
+                this.protocol.id
+            );
+
+            const propagation = new VersionPropagation(this.versions, this.protocol);
+            propagation.propagateToOlderVersions(root);
+        });
     }
 
     public removeAuthor(authorId: Buffer): void {
@@ -321,6 +323,17 @@ export class StorageImpl<T> implements SlotTree<T> {
 
     private createWorkingRoot(): WorkingStorageRoot {
         return new WorkingStorageRoot(cloneSlot(this.root), this.versions);
+    }
+
+    private commitRootMutation(fn: (root: ContainerSlot) => void): void {
+        const nextRoot = cloneSlot(this.root);
+
+        fn(nextRoot);
+        validateSlotTreeRoot(nextRoot);
+
+        this.root = nextRoot;
+        this.protocol.observeTree(this.root);
+        this.observers.notify();
     }
 
     private latestVersion(): StorageVersion {

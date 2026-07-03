@@ -1,9 +1,14 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { z } from 'zod';
 
 import type { StorageImpl } from '../src';
 import {
     createStorage,
     DEVICES_KEY,
+    defineVersionHList,
+    hCons,
+    hNil,
+    projectIdentity,
     VERSION_DELETION_GRACE_PERIOD_SECONDS,
     VERSION_DELETION_KEY
 } from '../src';
@@ -214,6 +219,55 @@ describe('storage device versions', () => {
         expect(() => {
             storage.addAuthor(Buffer.from('device-unknown'), 999);
         }).toThrow('Unknown storage version 999');
+
+        expect(storage.export().equals(before)).toBe(true);
+    });
+
+    it('leaves storage unchanged when adding an author fails version projection', () => {
+        const schemaV1 = z.object({
+            key: z.string()
+        });
+        const schemaV2 = z.object({
+            key: z.string(),
+            extra: z.boolean()
+        });
+        const brokenVersions = defineVersionHList(
+            hCons(
+                {
+                    version: 2,
+                    schema: schemaV2,
+                    initial: {
+                        key: 'initial',
+                        extra: false
+                    },
+                    projectUp: projectIdentity,
+                    projectDown: () => {
+                        throw new Error('broken projection');
+                    }
+                },
+                hCons(
+                    {
+                        version: 1,
+                        schema: schemaV1,
+                        initial: {
+                            key: 'initial'
+                        },
+                        projectUp: projectIdentity,
+                        projectDown: projectIdentity
+                    },
+                    hNil
+                )
+            )
+        );
+        const storage = createStorage({
+            authorId: Buffer.from('device-1'),
+            versions: brokenVersions
+        });
+        const before = storage.export();
+
+        expect(() => {
+            storage.addAuthor(Buffer.from('device-v1'), 1);
+        }).toThrow('broken projection');
 
         expect(storage.export().equals(before)).toBe(true);
     });
