@@ -377,7 +377,7 @@ keys.
 Remote device revocation is used when an active device removes another device from the account. This operation 
 **does not** remove the revoked device's local account data or keys, The only purpose of this operation is to 
 clear device list from unused devices. If the device is lost or stolen, threat model is considered lost 
-(see Threat Model section) and the user should create a new account.
+(see Threat Model section) and the user should create a new account instead of revoking the lost device.
 
 1. The client creates a DMK-signed revocation for the target `IK` and applies it to the shared device state.
     ```
