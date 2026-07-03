@@ -1,5 +1,5 @@
 import { useNavigation } from '@react-navigation/core';
-import type { StaticScreenProps } from '@react-navigation/native';
+import { CommonActions, type StaticScreenProps } from '@react-navigation/native';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
@@ -32,7 +32,10 @@ const RemoveWalletContent = () => {
         try {
             await deletePortfolio(portfolio);
             toast(t('removeWallet.toastMessages.walletRemoved'));
-            navigation.goBack();
+
+            navigation.dispatch(
+                CommonActions.reset({ index: 0, routes: [{ name: 'TabsNavigator' }] })
+            );
         } catch {
             // Security check cancelled
         }
