@@ -7,9 +7,17 @@ import {
     VersionController
 } from '../src';
 import { v1, v3 } from './version-fixtures';
-import { createOriginContainer, isTombstoneSlot, type ContainerSlot } from '../src/core/slots';
+import {
+    createOriginContainer,
+    createTombstoneSlot,
+    isContainerSlot,
+    isTombstoneSlot,
+    type ContainerSlot
+} from '../src/core/slots';
+import { MergeProtocol } from '../src/core/merge-protocol';
 import { slotFromJson, stripSlot } from '../src/core/slots/slot-json';
 import { hListToRuntimeArray } from '../src/core/versioning/version';
+import { VersionPropagation } from '../src/core/versioning/version-propagation';
 
 describe('VersionController', () => {
     afterEach(() => {
@@ -146,6 +154,44 @@ describe('VersionController', () => {
         });
         expect(root.v['3']).toBeDefined();
         expect(stripSlot(root.v[VERSION_DELETION_KEY])).toEqual({});
+    });
+
+    it('recreates older versions with clocks that beat prior tombstones', () => {
+        const versions = hListToRuntimeArray(v3);
+        const tombstoneTimestamp = 9_999_999_999;
+        const root = createOriginContainer({
+            '1': createTombstoneSlot(tombstoneTimestamp, 'cleanup-device'),
+            '3': slotFromJson(
+                { key1: 42, label: 'latest-value', key3: true, key4: 'v3' },
+                10,
+                'latest-device'
+            ),
+            [DEVICES_KEY]: slotFromJson(
+                {
+                    legacyDevice: { version: 1 },
+                    latestDevice: { version: 3 }
+                },
+                10,
+                'latest-device'
+            )
+        });
+        const protocol = new MergeProtocol('recreate-device');
+        protocol.observeTree(root);
+
+        new VersionPropagation(versions, protocol).propagateToOlderVersions(root);
+
+        const recreated = root.v['1'];
+        expect(isContainerSlot(recreated)).toBe(true);
+        if (!isContainerSlot(recreated)) {
+            throw new Error('Expected v1 to be recreated as a container');
+        }
+
+        expect(recreated.t).toBeGreaterThan(tombstoneTimestamp);
+        expect(recreated.a).toBe('recreate-device');
+        expect(stripSlot(recreated)).toEqual({
+            key1: 42,
+            key2: 'latest-value'
+        });
     });
 });
 

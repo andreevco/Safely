@@ -32,7 +32,7 @@ export class WorkingStorageRoot {
         fn(draft);
 
         this.validateLatest();
-        new VersionPropagation(this.versions).propagateToOlderVersions(this.root, protocol);
+        new VersionPropagation(this.versions, protocol).propagateToOlderVersions(this.root);
 
         return updated;
     }
@@ -43,11 +43,11 @@ export class WorkingStorageRoot {
         const before = cloneDeep(this.root);
         const stats = protocol.merge(this.root, incoming);
 
-        const propagation = new VersionPropagation(this.versions);
-        propagation.propagateChangedOlderVersionsToNewer(before, this.root, protocol);
+        const propagation = new VersionPropagation(this.versions, protocol);
+        propagation.propagateChangedOlderVersionsToNewer(before, this.root);
 
         this.validateLatest();
-        propagation.propagateToOlderVersions(this.root, protocol);
+        propagation.propagateToOlderVersions(this.root);
 
         return stats;
     }

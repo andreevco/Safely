@@ -142,8 +142,8 @@ export class StorageImpl<T> implements SlotTree<T> {
             this.protocol.tick(),
             this.protocol.id
         );
-        const propagation = new VersionPropagation(this.versions);
-        propagation.propagateToOlderVersions(this.root, this.protocol);
+        const propagation = new VersionPropagation(this.versions, this.protocol);
+        propagation.propagateToOlderVersions(this.root);
         this.observers.notify();
     }
 
