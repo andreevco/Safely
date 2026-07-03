@@ -364,7 +364,7 @@
         "moreOptions": "Другие способы",
         "linkWithQr": "Войти по QR-коду",
         "legalLine1": "Используя Safely, вы соглашаетесь и принимаете",
-        "legalLine2": "наши <terms>Условия использования</terms> и <privacy>Политику приватности</privacy>."
+        "legalLine2": "нашу <privacy>Политику приватности</privacy>."
     },
     "moreOptions": {
         "title": "Другие способы",
@@ -834,5 +834,9 @@
             "12m": "12 м",
             "all": "Всё"
         }
+    },
+    "legal": {
+        "title": "Правовая информация",
+        "privacyPolicy": "Политика приватности"
     }
 }

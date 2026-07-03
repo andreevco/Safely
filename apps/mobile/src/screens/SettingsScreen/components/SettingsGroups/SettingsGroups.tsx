@@ -1,3 +1,4 @@
+import { useNavigation } from '@react-navigation/core';
 import { useTranslation } from 'react-i18next';
 
 import { useBootConfig, useLinking, useToast } from '@safely/ux';
@@ -6,6 +7,7 @@ import { Cell, List } from '@mobile/shared/ui';
 
 export const SettingsGroups = () => {
     const { t } = useTranslation();
+    const navigation = useNavigation();
     const supportEmail = useBootConfig().references.support.email;
     const { openURL } = useLinking();
     const toast = useToast();
@@ -32,7 +34,9 @@ export const SettingsGroups = () => {
                     </Cell.Content>
                     <Cell.Chevron />
                 </Cell>
-                <Cell onPress={() => toast({ message: t('common.comingSoon') })}>
+                <Cell
+                    onPress={() => navigation.navigate('SettingsModal', { screen: 'LegalModal' })}
+                >
                     <Cell.Content>
                         <Cell.Row>
                             <Cell.Title>{t('settings.groups.info.options.legal')}</Cell.Title>

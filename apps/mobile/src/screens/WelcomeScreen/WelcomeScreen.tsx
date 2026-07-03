@@ -5,6 +5,7 @@ import { ImageBackground, View } from 'react-native';
 
 import {
     useAppContext,
+    useBootConfig,
     useCreateExistingAccountConnector,
     useLinking,
     useTrackOnboardingOpen
@@ -17,14 +18,13 @@ import { Button, Icon, QrCodeScanShield28, Safely96, Screen, Text } from '@mobil
 
 import { styles } from './WelcomeScreen.styles';
 
-const TERMS_URL = 'https://google.com';
-const PRIVACY_URL = 'https://google.com';
-
 export const WelcomeScreen = () => {
     const { t } = useTranslation();
     const { onSuccessCreate, onSuccessSignIn } = useOnboardingFlow();
     const signIn = useCreateExistingAccountConnector();
     const navigation = useNavigation();
+    const privacyUrl = useBootConfig().references.legal.privacy_url;
+
     const {
         storage: {
             sync: { getSecureEncrypted }
@@ -115,18 +115,11 @@ export const WelcomeScreen = () => {
                             <Trans
                                 i18nKey="welcome.legalLine2"
                                 components={{
-                                    terms: (
-                                        <Text
-                                            variant="bodyS"
-                                            color="secondary"
-                                            onPress={() => openURL(TERMS_URL)}
-                                        />
-                                    ),
                                     privacy: (
                                         <Text
                                             variant="bodyS"
                                             color="secondary"
-                                            onPress={() => openURL(PRIVACY_URL)}
+                                            onPress={() => openURL(privacyUrl)}
                                         />
                                     )
                                 }}
