@@ -4,7 +4,8 @@ import {
     createContainerSlot,
     createTombstoneSlot,
     isContainerSlot,
-    isTombstoneSlot
+    isTombstoneSlot,
+    ORDERED_ARRAY_ITEM_ID_KEY
 } from '../slots';
 import { slotFromJson } from '../slots/slot-json';
 
@@ -56,18 +57,22 @@ export class JsonStorageSelection {
     }
 
     public set(prop: string, value: JsonValue): void {
+        this.assertWritable(prop);
         this.container.v[prop] = slotFromJson(value, this.timestamp, this.author);
     }
 
     public setSlot(prop: string, slot: Slot): void {
+        this.assertWritable(prop);
         this.container.v[prop] = slot;
     }
 
     public delete(prop: string): void {
+        this.assertWritable(prop);
         this.container.v[prop] = createTombstoneSlot(this.timestamp, this.author);
     }
 
     public selectOrCreate(prop: string): JsonStorageSelection {
+        this.assertWritable(prop);
         const child = this.container.v[prop];
 
         if (!isContainerSlot(child)) {
@@ -79,6 +84,14 @@ export class JsonStorageSelection {
             this.timestamp,
             this.author
         );
+    }
+
+    private assertWritable(prop: string): void {
+        if (prop !== ORDERED_ARRAY_ITEM_ID_KEY) {
+            return;
+        }
+
+        throw new Error(`Draft field "${prop}" is readonly`);
     }
 }
 
