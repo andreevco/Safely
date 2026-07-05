@@ -28,7 +28,7 @@ export const BiometryScreen = (props: BiometryScreenProps) => {
     const { mutateAsync: setBiometryEnabled } = useSetBiometryEnabled();
 
     const handleFinished = useCallback(
-        () => onBiometryFinished(isSignIn, shouldCustomize),
+        () => onBiometryFinished(),
         [onBiometryFinished, isSignIn, shouldCustomize]
     );
 
