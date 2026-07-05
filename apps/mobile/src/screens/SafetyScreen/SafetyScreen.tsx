@@ -1,4 +1,4 @@
-import { useFocusEffect, useIsFocused, useNavigation } from '@react-navigation/native';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
@@ -9,6 +9,7 @@ import {
     useAccountLinkState,
     useAppContext,
     useConnectAccountToNewDevice,
+    useCompleteSyncOnboarding,
     useSyncOnboardingCompletedQuery
 } from '@safely/ux';
 
@@ -59,25 +60,18 @@ export const SafetyScreen = () => {
     }, [linkState, navigation, theme]);
 
     const { data: completed } = useSyncOnboardingCompletedQuery();
+    const { mutateAsync: complete } = useCompleteSyncOnboarding();
     const [forceOpen, setForceOpen] = useState(false);
-    const [dismissed, setDismissed] = useState(false);
-
-    useFocusEffect(useCallback(() => () => setDismissed(false), []));
 
     const overlayVisible = shouldShowSyncOnboarding({
         forceOpen,
-        completed,
-        dismissed
+        completed
     });
-
-    const handleOnboardingClose = useCallback(() => {
-        setForceOpen(false);
-        setDismissed(true);
-    }, []);
 
     const handleOnboardingFinish = useCallback(() => {
         setForceOpen(false);
-    }, []);
+        void complete();
+    }, [complete]);
 
     const handleConnect = useCallback(async () => {
         using secureEncryptedStorage = getSecureEncrypted();
@@ -126,9 +120,7 @@ export const SafetyScreen = () => {
                 </View>
             )}
 
-            {overlayVisible && (
-                <SyncOnboarding onClose={handleOnboardingClose} onFinish={handleOnboardingFinish} />
-            )}
+            {overlayVisible && <SyncOnboarding onFinish={handleOnboardingFinish} />}
         </Screen>
     );
 };

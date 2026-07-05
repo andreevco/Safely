@@ -267,7 +267,12 @@
         "linkDevice": "Link device",
         "protectAccount": {
             "title": "No linked devices",
-            "subtitle": "Link another device as redundant storage. If this phone is lost, a linked device will restore access to your wallets."
+            "subtitle": "Link another device as redundant storage. If this phone is lost, a linked device will restore access to your wallets.",
+            "steps": {
+                "step1": "Open Safely on another device.",
+                "step2": "Tap \"Link with QR\".",
+                "step3": "Scan the QR code shown there."
+            }
         },
         "syncOnboarding": {
             "steps": {
@@ -423,18 +428,6 @@
             "title": "Notifications",
             "description": "Get alerts when funds arrive. No need to check manually.",
             "enable": "Enable notifications"
-        },
-        "accountCreated": {
-            "title": "Account created",
-            "subtitle": "Add a second device to avoid losing access to your wallets if your phone is lost.",
-            "steps": {
-                "step1": "Open Safely on another device.",
-                "step2": "Tap \"Link with QR\".",
-                "step3": "Scan the QR code shown there."
-            },
-            "addDevice": "Add second device",
-            "protectLater": "Later",
-            "deviceNotAdded": "Device was not added. Please try again."
         }
     },
     "compactAccountSelector": {

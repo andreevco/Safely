@@ -122,16 +122,9 @@ export function useOnboardingFlow() {
         );
     }, [navigation]);
 
-    const onBiometryFinished = useCallback(
-        (isSignIn: boolean, shouldCustomize: boolean) => {
-            if (isSignIn) {
-                resetToTabs();
-            } else {
-                navigation.navigate('AccountCreatedScreen', { shouldCustomize });
-            }
-        },
-        [navigation, resetToTabs]
-    );
+    const onBiometryFinished = useCallback(() => {
+        resetToTabs();
+    }, [resetToTabs]);
 
     const onAccountCreatedFinished = useCallback(
         (customize?: OnboardingCustomizeParams) => {

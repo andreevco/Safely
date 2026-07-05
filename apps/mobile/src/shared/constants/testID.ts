@@ -16,10 +16,6 @@ export const TEST_ID = {
     biometry: {
         skip: 'biometry.skip'
     },
-    accountCreated: {
-        protectLater: 'accountCreated.protectLater',
-        addDevice: 'accountCreated.addDevice'
-    },
     home: {
         settingsButton: 'home.settingsButton',
         walletSelector: 'home.walletSelector',

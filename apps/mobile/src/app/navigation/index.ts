@@ -1,7 +1,6 @@
 import { createStaticNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import { AccountCreatedScreen } from '@mobile/screens/AccountCreatedScreen';
 import { AddAccountSheet } from '@mobile/screens/AddAccountSheet';
 import { BiometryScreen } from '@mobile/screens/BiometryScreen';
 import { ChangePasscodeScreen } from '@mobile/screens/ChangePasscodeScreen';
@@ -51,7 +50,6 @@ export const RootStack = createNativeStackNavigator({
                 WelcomeScreen: WelcomeScreen,
                 OnboardingPasscodeScreen: OnboardingPasscodeScreen,
                 BiometryScreen: BiometryScreen,
-                AccountCreatedScreen: AccountCreatedScreen,
                 SignInScreen: SignInScreen,
                 SignInSuccessScreen: SignInSuccessScreen,
                 OnboardingImportWalletScreen: OnboardingImportWalletScreen,
