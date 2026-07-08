@@ -14,7 +14,8 @@ import {
 } from '@safely/ux';
 
 import { DottedShieldIcon } from '@mobile/shared/resources';
-import { Button, Icon, Screen, ShieldCheckmark28 } from '@mobile/shared/ui';
+import { Button, Icon, Screen, ShieldCheckmark28, Xmark16 } from '@mobile/shared/ui';
+import { Button as HeaderButton } from '@mobile/shared/ui/Screen/components/Header/components/Button';
 
 import { ProtectedView } from './components/ProtectedView';
 import { SoloView } from './components/SoloView';
@@ -73,6 +74,10 @@ export const SafetyScreen = () => {
         void complete();
     }, [complete]);
 
+    const handleClose = useCallback(() => {
+        navigation.navigate('TabsNavigator', { screen: 'HomeStack' });
+    }, [navigation]);
+
     const handleConnect = useCallback(async () => {
         using secureEncryptedStorage = getSecureEncrypted();
         await secureEncryptedStorage.unlock();
@@ -104,6 +109,9 @@ export const SafetyScreen = () => {
                 >
                     {t('safety.aboutSync')}
                 </Button>
+                <HeaderButton onPress={handleClose}>
+                    <Icon icon={Xmark16} />
+                </HeaderButton>
             </Screen.Header>
 
             {renderContent()}
