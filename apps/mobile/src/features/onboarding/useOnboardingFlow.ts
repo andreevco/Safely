@@ -17,8 +17,6 @@ import { useAppContext, useCreateAccount, useErrorToast, useLoader } from '@safe
 import { tabsInitialState } from '@mobile/app/navigation/tabs';
 import { usePasscode } from '@mobile/entities/security';
 
-import { shouldCustomizePortfolio } from './shouldCustomizePortfolio';
-
 type OnboardingCustomizeParams = {
     defaultName: string;
     defaultIcon: PortfolioMetaIcon;
@@ -105,10 +103,7 @@ export function useOnboardingFlow() {
                 }
             }
 
-            navigation.navigate('BiometryScreen', {
-                isSignIn: source === null,
-                shouldCustomize: shouldCustomizePortfolio(source)
-            });
+            navigation.navigate('BiometryScreen');
         },
         [navigation, setPasscode, createAccount, withLoader, getSecureEncrypted, errorToast]
     );
@@ -122,16 +117,9 @@ export function useOnboardingFlow() {
         );
     }, [navigation]);
 
-    const onBiometryFinished = useCallback(
-        (isSignIn: boolean, shouldCustomize: boolean) => {
-            if (isSignIn) {
-                resetToTabs();
-            } else {
-                navigation.navigate('AccountCreatedScreen', { shouldCustomize });
-            }
-        },
-        [navigation, resetToTabs]
-    );
+    const onBiometryFinished = useCallback(() => {
+        resetToTabs();
+    }, [resetToTabs]);
 
     const onAccountCreatedFinished = useCallback(
         (customize?: OnboardingCustomizeParams) => {

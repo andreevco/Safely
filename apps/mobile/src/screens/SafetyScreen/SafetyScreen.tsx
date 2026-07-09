@@ -1,4 +1,4 @@
-import { useFocusEffect, useIsFocused, useNavigation } from '@react-navigation/native';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
@@ -9,11 +9,13 @@ import {
     useAccountLinkState,
     useAppContext,
     useConnectAccountToNewDevice,
+    useCompleteSyncOnboarding,
     useSyncOnboardingCompletedQuery
 } from '@safely/ux';
 
 import { DottedShieldIcon } from '@mobile/shared/resources';
-import { Button, Icon, Screen, ShieldCheckmark28 } from '@mobile/shared/ui';
+import { Button, Icon, Screen, ShieldCheckmark28, Xmark16 } from '@mobile/shared/ui';
+import { Button as HeaderButton } from '@mobile/shared/ui/Screen/components/Header/components/Button';
 
 import { ProtectedView } from './components/ProtectedView';
 import { SoloView } from './components/SoloView';
@@ -59,25 +61,22 @@ export const SafetyScreen = () => {
     }, [linkState, navigation, theme]);
 
     const { data: completed } = useSyncOnboardingCompletedQuery();
+    const { mutateAsync: complete } = useCompleteSyncOnboarding();
     const [forceOpen, setForceOpen] = useState(false);
-    const [dismissed, setDismissed] = useState(false);
-
-    useFocusEffect(useCallback(() => () => setDismissed(false), []));
 
     const overlayVisible = shouldShowSyncOnboarding({
         forceOpen,
-        completed,
-        dismissed
+        completed
     });
-
-    const handleOnboardingClose = useCallback(() => {
-        setForceOpen(false);
-        setDismissed(true);
-    }, []);
 
     const handleOnboardingFinish = useCallback(() => {
         setForceOpen(false);
-    }, []);
+        void complete();
+    }, [complete]);
+
+    const handleClose = useCallback(() => {
+        navigation.navigate('TabsNavigator', { screen: 'HomeStack' });
+    }, [navigation]);
 
     const handleConnect = useCallback(async () => {
         using secureEncryptedStorage = getSecureEncrypted();
@@ -110,6 +109,9 @@ export const SafetyScreen = () => {
                 >
                     {t('safety.aboutSync')}
                 </Button>
+                <HeaderButton onPress={handleClose}>
+                    <Icon icon={Xmark16} />
+                </HeaderButton>
             </Screen.Header>
 
             {renderContent()}
@@ -126,9 +128,7 @@ export const SafetyScreen = () => {
                 </View>
             )}
 
-            {overlayVisible && (
-                <SyncOnboarding onClose={handleOnboardingClose} onFinish={handleOnboardingFinish} />
-            )}
+            {overlayVisible && <SyncOnboarding onFinish={handleOnboardingFinish} />}
         </Screen>
     );
 };

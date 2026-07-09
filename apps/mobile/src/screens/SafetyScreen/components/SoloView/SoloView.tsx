@@ -6,9 +6,9 @@ import { DeviceLinkExclamationmark96, Icon, Screen, Text } from '@mobile/shared/
 import { styles } from './SoloView.styles';
 
 const steps = [
-    'onboarding.accountCreated.steps.step1',
-    'onboarding.accountCreated.steps.step2',
-    'onboarding.accountCreated.steps.step3'
+    'safety.protectAccount.steps.step1',
+    'safety.protectAccount.steps.step2',
+    'safety.protectAccount.steps.step3'
 ] as const;
 
 export const SoloView = () => {

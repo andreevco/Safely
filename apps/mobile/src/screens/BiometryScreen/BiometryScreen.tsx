@@ -1,4 +1,3 @@
-import type { StaticScreenProps } from '@react-navigation/native';
 import type { FC } from 'react';
 import React, { useCallback, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -16,27 +15,16 @@ import { Button, Icon, Screen, Text } from '@mobile/shared/ui';
 
 import { styles } from './BiometryScreen.styles';
 
-type BiometryScreenProps = StaticScreenProps<{
-    isSignIn: boolean;
-    shouldCustomize: boolean;
-}>;
-
-export const BiometryScreen = (props: BiometryScreenProps) => {
-    const { isSignIn, shouldCustomize } = props.route.params;
+export const BiometryScreen = () => {
     const { onBiometryFinished } = useOnboardingFlow();
     const { data: biometry, isLoading } = useBiometryQuery();
     const { mutateAsync: setBiometryEnabled } = useSetBiometryEnabled();
 
-    const handleFinished = useCallback(
-        () => onBiometryFinished(isSignIn, shouldCustomize),
-        [onBiometryFinished, isSignIn, shouldCustomize]
-    );
-
     useEffect(() => {
         if (biometry?.availableType === null) {
-            handleFinished();
+            onBiometryFinished();
         }
-    }, [biometry?.availableType, handleFinished]);
+    }, [biometry?.availableType, onBiometryFinished]);
 
     if (isLoading || !biometry) {
         return (
@@ -57,7 +45,7 @@ export const BiometryScreen = (props: BiometryScreenProps) => {
         <BiometrySupportedScreen
             availableType={biometry.availableType}
             setBiometryEnabled={setBiometryEnabled}
-            onFinish={handleFinished}
+            onFinish={onBiometryFinished}
         />
     );
 };

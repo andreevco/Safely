@@ -1,16 +1,14 @@
 interface ShouldShowSyncOnboardingParams {
     forceOpen: boolean;
     completed: boolean | undefined;
-    dismissed: boolean;
 }
 
 export function shouldShowSyncOnboarding({
     forceOpen,
-    completed,
-    dismissed
+    completed
 }: ShouldShowSyncOnboardingParams): boolean {
     if (forceOpen) {
         return true;
     }
-    return completed === false && !dismissed;
+    return completed === false;
 }

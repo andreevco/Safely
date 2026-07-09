@@ -1,7 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 
-import { useCompleteSyncOnboarding } from '@safely/ux';
-
 interface UseSyncOnboardingFlowParams {
     stepCount: number;
     onFinish: () => void;
@@ -10,7 +8,6 @@ interface UseSyncOnboardingFlowParams {
 export function useSyncOnboardingFlow({ stepCount, onFinish }: UseSyncOnboardingFlowParams) {
     const [index, setIndex] = useState(0);
     const isFinishingRef = useRef(false);
-    const { mutateAsync: complete } = useCompleteSyncOnboarding();
 
     const isFirst = index === 0;
     const isLast = index === stepCount - 1;
@@ -21,12 +18,11 @@ export function useSyncOnboardingFlow({ stepCount, onFinish }: UseSyncOnboarding
                 return;
             }
             isFinishingRef.current = true;
-            await complete();
             onFinish();
             return;
         }
         setIndex(i => Math.min(i + 1, stepCount - 1));
-    }, [isLast, complete, onFinish, stepCount]);
+    }, [isLast, onFinish, stepCount]);
 
     const goBack = useCallback(() => {
         setIndex(i => Math.max(i - 1, 0));
