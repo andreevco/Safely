@@ -8,6 +8,14 @@ import type { Mock } from 'vitest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
+    Bip39Source,
+    MnemonicResource,
+    PortfolioNetworkType,
+    PortfolioType,
+    WatchOnlySource
+} from '@safely/core';
+
+import {
     useChangeAccountMeta,
     useConnectAccountToNewDevice,
     useCreateAccount,
@@ -178,7 +186,7 @@ describe('useCreateAccount (add)', () => {
         expect(analyticsSlot?.set).toHaveBeenCalled();
     });
 
-    it('with createWallet:true seeds portfolios + latestDerivedBip39PortfolioIndex', async () => {
+    it('with firstPortfolio generated seeds portfolios + nextDerivingPortfolioInfo', async () => {
         const newAccount = createMockSyncAccount({ accountId: 'wallet-account' });
         const factory = createFactoryStub({
             createSyncAccount: vi.fn(async () => newAccount)
@@ -187,7 +195,7 @@ describe('useCreateAccount (add)', () => {
         setupSyncedDevice();
 
         const appContext = createTestAppContext();
-        const { result } = renderHookWithProviders(() => useCreateAccount({ createWallet: true }), {
+        const { result } = renderHookWithProviders(() => useCreateAccount(), {
             appContext
         });
 
@@ -195,22 +203,113 @@ describe('useCreateAccount (add)', () => {
             await result.current.mutateAsync({
                 secureEncryptedStorage: appContext.storage.sync.encrypted as unknown as Parameters<
                     typeof result.current.mutateAsync
-                >[0]['secureEncryptedStorage']
+                >[0]['secureEncryptedStorage'],
+                firstPortfolio: { kind: 'generated' }
             });
         });
 
         const recorder = newAccount.transactions[0];
-        // portfolios + latestDerivedBip39PortfolioIndex are written via root .set,
+        // portfolios + nextDerivingPortfolioInfo are written via root .set,
         // captured on the root recorder.
         const setCalls = recorder.set.mock.calls.map(c => c[0]);
         expect(setCalls).toEqual(
-            expect.arrayContaining(['meta', 'portfolios', 'latestDerivedBip39PortfolioIndex'])
+            expect.arrayContaining(['meta', 'portfolios', 'nextDerivingPortfolioInfo'])
         );
 
-        const latestIndexSet = recorder.set.mock.calls.find(
-            c => c[0] === 'latestDerivedBip39PortfolioIndex'
-        );
-        expect(latestIndexSet?.[1]).toBe(0);
+        const nextInfoSet = recorder.set.mock.calls.find(c => c[0] === 'nextDerivingPortfolioInfo');
+        expect(nextInfoSet?.[1]).toEqual({ index: 1, emoji: expect.any(String) });
+    });
+
+    it('with firstPortfolio imported seeds an imported bip39 portfolio at deriving index 0', async () => {
+        const newAccount = createMockSyncAccount({ accountId: 'imported-account' });
+        const factory = createFactoryStub({
+            createSyncAccount: vi.fn(async () => newAccount)
+        });
+        setupAccountState({ accounts: [], factory });
+        setupSyncedDevice();
+
+        const mnemonic =
+            'world ceiling fine urge fringe gap item muffin another eyebrow search vault'.split(
+                ' '
+            );
+
+        const appContext = createTestAppContext();
+        const { result } = renderHookWithProviders(() => useCreateAccount(), {
+            appContext
+        });
+
+        await act(async () => {
+            await result.current.mutateAsync({
+                secureEncryptedStorage: appContext.storage.sync.encrypted as unknown as Parameters<
+                    typeof result.current.mutateAsync
+                >[0]['secureEncryptedStorage'],
+                firstPortfolio: {
+                    kind: 'imported',
+                    mnemonicAccessor: new MnemonicResource(mnemonic),
+                    networkType: PortfolioNetworkType.MAINNET
+                }
+            });
+        });
+
+        const recorder = newAccount.transactions[0];
+
+        const portfoliosSet = recorder.set.mock.calls.find(c => c[0] === 'portfolios');
+        const portfolios = portfoliosSet?.[1] as Array<{
+            type: string;
+            id: { source: string; networkType: string };
+        }>;
+        expect(portfolios).toHaveLength(1);
+        expect(portfolios[0].type).toBe(PortfolioType.BIP39);
+        expect(portfolios[0].id.source).toBe(Bip39Source.IMPORTED);
+        expect(portfolios[0].id.networkType).toBe(PortfolioNetworkType.MAINNET);
+
+        const nextInfoSet = recorder.set.mock.calls.find(c => c[0] === 'nextDerivingPortfolioInfo');
+        expect(nextInfoSet?.[1]).toEqual({ index: 0, emoji: expect.any(String) });
+    });
+
+    it('with firstPortfolio watchOnly seeds a watch-only portfolio at deriving index 0', async () => {
+        const newAccount = createMockSyncAccount({ accountId: 'watch-only-account' });
+        const factory = createFactoryStub({
+            createSyncAccount: vi.fn(async () => newAccount)
+        });
+        setupAccountState({ accounts: [], factory });
+        setupSyncedDevice();
+
+        const address = 'bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4';
+
+        const appContext = createTestAppContext();
+        const { result } = renderHookWithProviders(() => useCreateAccount(), {
+            appContext
+        });
+
+        await act(async () => {
+            await result.current.mutateAsync({
+                secureEncryptedStorage: appContext.storage.sync.encrypted as unknown as Parameters<
+                    typeof result.current.mutateAsync
+                >[0]['secureEncryptedStorage'],
+                firstPortfolio: {
+                    kind: 'watchOnly',
+                    input: address,
+                    networkType: PortfolioNetworkType.MAINNET
+                }
+            });
+        });
+
+        const recorder = newAccount.transactions[0];
+
+        const portfoliosSet = recorder.set.mock.calls.find(c => c[0] === 'portfolios');
+        const portfolios = portfoliosSet?.[1] as Array<{
+            type: string;
+            id: { source: string; address?: string; networkType: string };
+        }>;
+        expect(portfolios).toHaveLength(1);
+        expect(portfolios[0].type).toBe(PortfolioType.WATCH_ONLY);
+        expect(portfolios[0].id.source).toBe(WatchOnlySource.ADDRESS);
+        expect(portfolios[0].id.address).toBe(address);
+        expect(portfolios[0].id.networkType).toBe(PortfolioNetworkType.MAINNET);
+
+        const nextInfoSet = recorder.set.mock.calls.find(c => c[0] === 'nextDerivingPortfolioInfo');
+        expect(nextInfoSet?.[1]).toEqual({ index: 0, emoji: expect.any(String) });
     });
 
     it('with setActive:true invokes setActiveAccount with the new accountId', async () => {

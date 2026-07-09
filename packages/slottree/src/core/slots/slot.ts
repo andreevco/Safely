@@ -11,6 +11,8 @@ export const SlotKind = {
 
 export const ORDERED_ARRAY_ITEM_ID_KEY = '__setId';
 export const ORDERED_ARRAY_ITEM_ID_KEY_TYPE = z.string();
+export const ORDERED_ARRAY_ORDER_MIN = -(2 ** 31);
+export const ORDERED_ARRAY_ORDER_MAX = 2 ** 31 - 1;
 
 export interface AtomicSlot {
     s: typeof SlotKind.Atomic;
@@ -66,6 +68,15 @@ export function isRecursiveSlot(slot: Slot | undefined): slot is ContainerSlot |
 
 export function isTombstoneSlot(slot: Slot | undefined): slot is TombstoneSlot {
     return slot !== undefined && slot.s === SlotKind.Tombstone;
+}
+
+export function isOrderedArrayOrderIndex(value: unknown): value is number {
+    return (
+        typeof value === 'number' &&
+        Number.isInteger(value) &&
+        value >= ORDERED_ARRAY_ORDER_MIN &&
+        value <= ORDERED_ARRAY_ORDER_MAX
+    );
 }
 
 export function createContainerSlot(

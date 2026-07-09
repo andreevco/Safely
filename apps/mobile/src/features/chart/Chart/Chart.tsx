@@ -8,7 +8,14 @@ import { useChart } from '@safely/ux';
 import type { ChartPoint } from '@mobile/shared/utils/chart';
 
 import { styles } from './Chart.styles';
-import { ChartHeader, ChartLine, ChartPeriods, ChartFooter, ChartLineSkeleton } from './components';
+import {
+    ChartHeader,
+    ChartLine,
+    ChartPeriods,
+    ChartFooter,
+    ChartLineSkeleton,
+    ProviderLabel
+} from './components';
 import { CHART_CONFIG, ChartPeriod } from './config';
 import { useChartPeriodQuery, useSetChartPeriod, useCrosshair } from './hooks';
 
@@ -60,6 +67,12 @@ export const Chart = () => {
                 formattedTime={crosshair.formattedTime}
                 secondaryCrosshair={crosshair.secondaryCrosshair}
             />
+            {chart.data?.attribution?.label && (
+                <ProviderLabel
+                    label={chart.data?.attribution.label}
+                    link={chart.data?.attribution.link}
+                />
+            )}
         </View>
     );
 };

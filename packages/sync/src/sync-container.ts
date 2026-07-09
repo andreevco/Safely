@@ -106,9 +106,7 @@ export async function createSyncContainer<Latest extends StorageVersion, Rest>(o
     const deviceYManager = await YManager.create<tDevicesLatest, tDevicesRest>(
         deviceCrdtRepository
     );
-    const crdtController = new CrdtController();
-    crdtController.addManager(yManager);
-    crdtController.addManager(deviceYManager);
+    const crdtController = new CrdtController(yManager, deviceYManager);
 
     const deviceRepository = new DeviceRepository(deviceYManager);
     const deviceManager = new DeviceManagementService(
@@ -117,13 +115,14 @@ export async function createSyncContainer<Latest extends StorageVersion, Rest>(o
         dmkVerifierService,
         opts.logger
     );
+    await deviceManager.cleanupStaleAddedDevices();
 
     const updateEncryptor = new UpdateEncryptorService(
         syncKeyService,
         ikService,
         syncStateRepository
     );
-    const updateDecryptor = new UpdateDecryptorService(syncKeyService, deviceManager);
+    const updateDecryptor = new UpdateDecryptorService(syncKeyService);
 
     const updateHandler = new UpdateHandler<Latest, Rest>(
         syncStateRepository,
@@ -131,7 +130,6 @@ export async function createSyncContainer<Latest extends StorageVersion, Rest>(o
         deviceYManager,
         updateDecryptor,
         deviceManager,
-        snapshotsApi,
         opts.logger
     );
     const snapshotSender = new SnapshotSender(

@@ -6,7 +6,11 @@ import type { BtcEstimation } from './types';
 import { getUtxoTotal, utxoPathToStruct } from './utils';
 import type { BtcApi, BtcApiUtxo } from '../../api/btc';
 import type { BtcAssetAmount, SignableBtcWallet, ExplorerFactory } from '../../entities';
-import { BLOCKCHAIN_NAME, btcNetworkConfig } from '../../entities/blockchain';
+import {
+    BLOCKCHAIN_NAME,
+    btcNetworkConfig,
+    portfolioNetworkTypeByBtcNetwork
+} from '../../entities/blockchain';
 import { getExternalErrorText } from '../../entities/errors/errors.service';
 import { ellipsisMiddle } from '../../utils';
 
@@ -86,10 +90,19 @@ export class BtcTransactionTemplate {
     }
 
     private async _send(): Promise<BtcSendResult> {
-        const psbt = this.psbtBuilder.buildPsbt({
-            inputs: this.utxos,
-            outputs: this.outputs
-        });
+        let prevTxs: Map<string, Uint8Array> | undefined;
+        if (this.wallet.isPrevTxsRequired) {
+            const rawTxs = await this.btcApi.getRawTransactions(this.utxos.map(u => u.txid));
+            prevTxs = new Map(rawTxs.map(tx => [tx.txid, Buffer.from(tx.hex, 'hex')]));
+        }
+
+        const psbt = this.psbtBuilder.buildPsbt(
+            {
+                inputs: this.utxos,
+                outputs: this.outputs
+            },
+            prevTxs
+        );
 
         const signed = await this.wallet.sign({
             psbt,
@@ -108,6 +121,8 @@ export class BtcTransactionTemplate {
             throw error;
         }
 
+        const networkType = portfolioNetworkTypeByBtcNetwork(this.wallet.network);
+
         return {
             blockchain: BLOCKCHAIN_NAME.BTC,
             txId: result.txid,
@@ -115,7 +130,9 @@ export class BtcTransactionTemplate {
                 return ellipsisMiddle(result.txid, 6);
             },
             toExplorerUrl(explorerFactory: ExplorerFactory): string {
-                return explorerFactory.createExplorer(BLOCKCHAIN_NAME.BTC).transaction(result.txid);
+                return explorerFactory
+                    .createExplorer(BLOCKCHAIN_NAME.BTC, networkType)
+                    .transaction(result.txid);
             }
         };
     }

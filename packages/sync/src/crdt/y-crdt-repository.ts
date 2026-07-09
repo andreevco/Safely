@@ -1,7 +1,7 @@
 import type { z } from 'zod';
 
 import type { AssertVersionHList, HCons, NewOf, StorageVersion } from '@safely/slottree';
-import { createStorage } from '@safely/slottree';
+import { createStorage, createStorageFromSnapshot } from '@safely/slottree';
 
 import { YCRDT } from './y-crdt';
 import type { IStorage } from '../I-storage';
@@ -17,7 +17,6 @@ export class YCRDTRepository<Latest extends StorageVersion, Rest> {
     public async loadCRDT(): Promise<YCRDT<z.output<NewOf<Latest>>>> {
         let crdtRaw = await this.storage.getItem(this.storageKey);
         if (!crdtRaw) {
-            // TODO: fix
             await this.initialize();
             crdtRaw = await this.storage.getItem(this.storageKey);
             if (!crdtRaw) {
@@ -33,11 +32,11 @@ export class YCRDTRepository<Latest extends StorageVersion, Rest> {
     }
 
     public createCRDTFromSnapshot(snapshot: Buffer): YCRDT<z.output<NewOf<Latest>>> {
-        const crdt = createStorage({
+        const crdt = createStorageFromSnapshot({
             authorId: this.ikPub,
-            versions: this.versions
+            versions: this.versions,
+            snapshot
         });
-        crdt.merge(snapshot);
         return new YCRDT(crdt);
     }
 

@@ -3,9 +3,7 @@ import { View } from 'react-native';
 
 import { useAppContext } from '@safely/ux';
 
-// TODO IMPORT Find a way to keep on the app level
-// eslint-disable-next-line boundaries/element-types
-import { mobileLayerSynchronousDevToken } from '@mobile/app/storage';
+import { useMobileLayerSynchronousGlobalStorage } from '@mobile/shared/storage';
 import { Button, Input, Screen, Text } from '@mobile/shared/ui';
 
 import { styles } from './DevToolsConfigScreen.styles';
@@ -14,7 +12,12 @@ const ALPHANUMERIC_REGEX = /[^a-zA-Z0-9]/g;
 
 export const DevToolsConfigScreen = () => {
     const { reloadApp } = useAppContext();
-    const [token, setToken] = useState(() => mobileLayerSynchronousDevToken.storage.get() ?? '');
+    const {
+        value: storedToken,
+        set: setStoredToken,
+        remove: removeStoredToken
+    } = useMobileLayerSynchronousGlobalStorage('devToken');
+    const [token, setToken] = useState(() => storedToken ?? '');
 
     const handleChangeText = useCallback((value: string) => {
         setToken(value.replace(ALPHANUMERIC_REGEX, ''));
@@ -22,13 +25,13 @@ export const DevToolsConfigScreen = () => {
 
     const handleSaveAndReload = useCallback(() => {
         if (token.length > 0) {
-            mobileLayerSynchronousDevToken.storage.set(token);
+            setStoredToken(token);
         } else {
-            mobileLayerSynchronousDevToken.storage.clear();
+            removeStoredToken();
         }
 
         reloadApp();
-    }, [token, reloadApp]);
+    }, [token, reloadApp, setStoredToken, removeStoredToken]);
 
     return (
         <Screen>

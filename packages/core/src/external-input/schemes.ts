@@ -1,7 +1,10 @@
+import type { BtcNetwork } from '../entities';
+
 export interface BtcTransferScheme {
     name: 'btc-transfer';
     parsed: {
         address: string;
+        network: BtcNetwork;
         amount?: string;
         label?: string;
         message?: string;
@@ -15,7 +18,3 @@ export type SchemeByName<SName extends ExternalInputSchemeName = ExternalInputSc
     ExternalInputScheme,
     { name: SName }
 >;
-
-export type ExternalInputResult<S extends ExternalInputScheme = ExternalInputScheme> =
-    | { ok: true; scheme: S }
-    | { ok: false; error: string };

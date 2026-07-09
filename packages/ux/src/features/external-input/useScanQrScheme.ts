@@ -21,8 +21,8 @@ export function useScanQrScheme(options: UseScanQrSchemeOptions): () => void {
         qrScanner.scan(scannerOptions).then(raw => {
             const result = parse(raw);
 
-            if (result.ok) {
-                onResult(result.scheme);
+            if (result !== null) {
+                onResult(result);
             }
         });
     }, [qrScanner, scannerOptions, parse, onResult]);

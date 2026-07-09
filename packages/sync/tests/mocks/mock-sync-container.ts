@@ -70,9 +70,7 @@ export async function createMockSyncContainer<Latest extends StorageVersion, Res
     const deviceYManager = await YManager.create<tDevicesLatest, tDevicesRest>(
         deviceCrdtRepository
     );
-    const crdtController = new CrdtController();
-    crdtController.addManager(yManager);
-    crdtController.addManager(deviceYManager);
+    const crdtController = new CrdtController(yManager, deviceYManager);
 
     const deviceRepository = new DeviceRepository(deviceYManager);
     const deviceManager = new DeviceManagementService(
@@ -81,13 +79,14 @@ export async function createMockSyncContainer<Latest extends StorageVersion, Res
         dmkVerifierService,
         logger
     );
+    await deviceManager.cleanupStaleAddedDevices();
 
     const updateEncryptor = new UpdateEncryptorService(
         syncKeyService,
         ikService,
         syncStateRepository
     );
-    const updateDecryptor = new UpdateDecryptorService(syncKeyService, deviceManager);
+    const updateDecryptor = new UpdateDecryptorService(syncKeyService);
 
     const updateHandler = new UpdateHandler<Latest, Rest>(
         syncStateRepository,
@@ -95,7 +94,6 @@ export async function createMockSyncContainer<Latest extends StorageVersion, Res
         deviceYManager,
         updateDecryptor,
         deviceManager,
-        snapshotApi as unknown as SnapshotsApi,
         logger
     );
     const snapshotSender = new SnapshotSender(

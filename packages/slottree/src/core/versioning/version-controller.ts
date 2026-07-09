@@ -1,8 +1,10 @@
 import type { JsonValue } from '../json';
+import type { MergeProtocol } from '../merge-protocol';
 import type { ContainerSlot, Slot } from '../slots';
 import {
     createContainerSlot,
     createOriginContainer,
+    createTombstoneSlot,
     isContainerSlot,
     isTombstoneSlot
 } from '../slots';
@@ -12,11 +14,22 @@ import { validateSlot } from '../slots/slot-validation';
 
 export type VersionSelector = number | Pick<StorageVersion, 'version'>;
 export const DEVICES_KEY = 'devices';
+export const VERSION_DELETION_KEY = 'versionDeletion';
+export const VERSION_DELETION_GRACE_PERIOD_SECONDS = 90 * 24 * 60 * 60; // 90 days
+const SHOULD_BE_DELETED_AT_KEY = 'shouldBeDeletedAt';
+
+export type TombstoneStamp = {
+    timestamp: number;
+    author: string;
+};
+
+type VersionControllerProtocol = Pick<MergeProtocol, 'id' | 'tick'>;
 
 export class VersionController {
     constructor(
         private readonly root: ContainerSlot,
-        private readonly versions: readonly StorageVersion[]
+        private readonly versions: readonly StorageVersion[],
+        private readonly protocol: VersionControllerProtocol
     ) {}
 
     public get(version: VersionSelector): Slot | undefined {
@@ -53,7 +66,7 @@ export class VersionController {
         for (let index = fromIndex + 1; index < this.versions.length; index += 1) {
             const toVersion = this.versions[index];
             const projected = toVersion.projectUp(current);
-            this.validateProjection(toVersion, projected);
+            this.validateVersionSlot(toVersion, projected);
             current = projected;
         }
 
@@ -62,7 +75,7 @@ export class VersionController {
     }
 
     public delete(version: VersionSelector): void {
-        delete this.root.v[this.versionKey(version)];
+        this.deleteWithStamp(version);
     }
 
     public getDeviceVersion(authorId: string): number | undefined {
@@ -103,22 +116,62 @@ export class VersionController {
 
     public deleteAuthor(authorId: string): boolean {
         const devices = this.root.v[DEVICES_KEY];
-        if (!isContainerSlot(devices) || devices.v[authorId] === undefined) {
+        if (!isContainerSlot(devices)) {
             return false;
         }
 
-        delete devices.v[authorId];
+        const device = devices.v[authorId];
+        if (device === undefined || isTombstoneSlot(device)) {
+            return false;
+        }
+
+        devices.v[authorId] = this.tombstoneFor();
         return true;
     }
 
     public deleteVersionsUnusedByDevices(): void {
         const usedVersions = this.usedDeviceVersions();
+        const now = this.wallTime();
 
         for (const version of this.versions) {
-            if (!usedVersions.has(version.version)) {
+            const versionKey = this.versionKey(version);
+            const versionSlot = this.get(version);
+
+            if (versionSlot === undefined || isTombstoneSlot(versionSlot)) {
+                this.deleteVersionDeletionMarker(versionKey);
+                continue;
+            }
+
+            if (usedVersions.has(version.version)) {
+                this.deleteVersionDeletionMarker(versionKey);
+                continue;
+            }
+
+            const shouldBeDeletedAt = this.getVersionShouldBeDeletedAt(versionKey);
+
+            if (shouldBeDeletedAt === undefined) {
+                this.setVersionShouldBeDeletedAt(
+                    versionKey,
+                    now + VERSION_DELETION_GRACE_PERIOD_SECONDS
+                );
+                continue;
+            }
+
+            if (now >= shouldBeDeletedAt) {
                 this.delete(version);
+                this.deleteVersionDeletionMarker(versionKey);
             }
         }
+    }
+
+    private deleteWithStamp(version: VersionSelector, stamp?: TombstoneStamp): void {
+        const key = this.versionKey(version);
+        const existing = this.root.v[key];
+        if (existing === undefined) {
+            return;
+        }
+
+        this.root.v[key] = this.tombstoneFor(stamp);
     }
 
     private latestVersion(): StorageVersion {
@@ -150,6 +203,10 @@ export class VersionController {
         return typeof version === 'number' ? version : version.version;
     }
 
+    private wallTime(): number {
+        return Math.floor(Date.now() / 1000);
+    }
+
     private devicesContainer(): ContainerSlot {
         const devices = this.root.v[DEVICES_KEY];
 
@@ -160,6 +217,62 @@ export class VersionController {
         const created = createOriginContainer();
         this.root.v[DEVICES_KEY] = created;
         return created;
+    }
+
+    private versionDeletionContainer(): ContainerSlot {
+        const versionDeletion = this.root.v[VERSION_DELETION_KEY];
+
+        if (isContainerSlot(versionDeletion)) {
+            return versionDeletion;
+        }
+
+        const created = createOriginContainer();
+        this.root.v[VERSION_DELETION_KEY] = created;
+        return created;
+    }
+
+    private getVersionShouldBeDeletedAt(versionKey: string): number | undefined {
+        const versionDeletion = this.root.v[VERSION_DELETION_KEY];
+        if (!isContainerSlot(versionDeletion)) {
+            return undefined;
+        }
+
+        const marker = versionDeletion.v[versionKey];
+        if (!isContainerSlot(marker)) {
+            return undefined;
+        }
+
+        const shouldBeDeletedAt = marker.v[SHOULD_BE_DELETED_AT_KEY];
+        if (
+            shouldBeDeletedAt === undefined ||
+            isContainerSlot(shouldBeDeletedAt) ||
+            isTombstoneSlot(shouldBeDeletedAt)
+        ) {
+            return undefined;
+        }
+
+        return typeof shouldBeDeletedAt.v === 'number' ? shouldBeDeletedAt.v : undefined;
+    }
+
+    private setVersionShouldBeDeletedAt(versionKey: string, shouldBeDeletedAt: number): void {
+        const versionDeletion = this.versionDeletionContainer();
+        versionDeletion.v[versionKey] = slotFromJson(
+            { [SHOULD_BE_DELETED_AT_KEY]: shouldBeDeletedAt },
+            this.protocol.tick(),
+            this.protocol.id
+        );
+    }
+
+    private deleteVersionDeletionMarker(versionKey: string): void {
+        const versionDeletion = this.root.v[VERSION_DELETION_KEY];
+        if (!isContainerSlot(versionDeletion)) {
+            return;
+        }
+
+        const marker = versionDeletion.v[versionKey];
+        if (marker !== undefined && !isTombstoneSlot(marker)) {
+            versionDeletion.v[versionKey] = this.tombstoneFor();
+        }
     }
 
     private usedDeviceVersions(): Set<number> {
@@ -191,8 +304,21 @@ export class VersionController {
         return usedVersions;
     }
 
-    private validateProjection(version: StorageVersion, projected: ContainerSlot): void {
+    private validateVersionSlot(version: StorageVersion, projected: ContainerSlot): void {
         validateSlot(projected);
         version.schema.parse(stripSlot(projected));
+    }
+
+    private tombstoneFor(stamp?: TombstoneStamp): Slot {
+        const resolved = stamp ?? this.createProtocolStamp();
+
+        return createTombstoneSlot(resolved.timestamp, resolved.author);
+    }
+
+    private createProtocolStamp(): TombstoneStamp {
+        return {
+            timestamp: this.protocol.tick(),
+            author: this.protocol.id
+        };
     }
 }

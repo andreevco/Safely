@@ -4,11 +4,13 @@ import { AddressBookModal } from '@mobile/screens/AddressBookModal';
 import { DevToolsConfigScreen } from '@mobile/screens/DevToolsConfigScreen';
 import { DevToolsLogsScreen } from '@mobile/screens/DevToolsLogsScreen';
 import { DevToolsScreen } from '@mobile/screens/DevToolsScreen';
+import { DevToolsSyncStorageScreen } from '@mobile/screens/DevToolsSyncStorageScreen';
 import { DevToolsXpubScreen } from '@mobile/screens/DevToolsXpubScreen';
 import { LanguageScreen } from '@mobile/screens/LanguageScreen';
+import { LegalScreen } from '@mobile/screens/LegalScreen';
 import { SecurityScreen } from '@mobile/screens/SecurityScreen';
-import { AccountProtectedModal, ProtectAccountModal } from '@mobile/screens/SecurityScreen/screens';
 import { SettingsScreen } from '@mobile/screens/SettingsScreen';
+import { WalletSettingsScreen } from '@mobile/screens/WalletSettingsScreen';
 
 export const SettingsStack = createNativeStackNavigator({
     initialRouteName: 'SettingsRootModal',
@@ -16,14 +18,15 @@ export const SettingsStack = createNativeStackNavigator({
         Screens: {
             screens: {
                 SettingsRootModal: SettingsScreen,
+                WalletSettingsModal: WalletSettingsScreen,
                 LanguageModal: LanguageScreen,
+                LegalModal: LegalScreen,
                 SecurityModal: SecurityScreen,
-                ProtectAccountModal: ProtectAccountModal,
-                AccountProtectedModal: AccountProtectedModal,
                 AddressBookModal: AddressBookModal,
                 DevToolsModal: DevToolsScreen,
                 DevToolsXpubModal: DevToolsXpubScreen,
                 DevToolsLogsModal: DevToolsLogsScreen,
+                DevToolsSyncStorageModal: DevToolsSyncStorageScreen,
                 DevToolsConfigModal: DevToolsConfigScreen
             }
         }

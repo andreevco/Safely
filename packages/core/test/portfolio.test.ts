@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import type { SPortfolioBip39, SPortfolioBip39IdImported } from '@safely/sync-storage';
 import { sPortfolio } from '@safely/sync-storage';
 
-import type { ISecretEncryptor, NoIconPortfolioMeta } from '../src';
+import type { ILedgerSessionPort, ISecretEncryptor, NoIconPortfolioMeta } from '../src';
 import {
     BtcNetwork,
     BtcWalletType,
@@ -19,6 +19,12 @@ import {
     WatchOnlySource
 } from '../src';
 import { ClosableMnemonicAccessorVault, MockSecretEncryptor } from './utils/mocks';
+
+const ledgerSessionPort: ILedgerSessionPort = {
+    withSession: () => {
+        throw new Error('Ledger session is not used in this test');
+    }
+};
 
 const MAINNET_KNOWN_MNEMONIC =
     'teach lecture visa divorce gas teach zone dignity return issue relief cool'.split(' ');
@@ -41,12 +47,18 @@ async function createBip39Portfolio(
         id,
         encryptor,
         mnemonicAccessor: accessor,
+        meta: {
+            name: options.meta.name,
+            icon: options.meta.icon ?? PortfolioIdBip39Imported.getFallbackEmoji(accessor)
+        },
         options: {
-            meta: options.meta,
             seedRevealedFromDevice: options.seedRevealedFromDevice
         }
     });
-    return PortfolioFactory.restorePortfolio(encryptor, serialized) as PortfolioBip39;
+    return PortfolioFactory.restorePortfolio(serialized, {
+        encryptor,
+        ledgerSessionPort
+    }) as PortfolioBip39;
 }
 
 describe('PortfolioBip39 generation', () => {
@@ -122,7 +134,10 @@ describe('PortfolioBip39 serialization', () => {
 
         const json = portfolio.toJSON();
         const parsed = sPortfolio.parse(JSON.parse(JSON.stringify(json))) as SPortfolioBip39;
-        const restored = PortfolioFactory.restorePortfolio(encryptor, parsed) as PortfolioBip39;
+        const restored = PortfolioFactory.restorePortfolio(parsed, {
+            encryptor,
+            ledgerSessionPort
+        }) as PortfolioBip39;
 
         expect(restored.derivations[0].chains.btc.wallets[0].address).toBe(
             portfolio.derivations[0].chains.btc.wallets[0].address
@@ -148,7 +163,10 @@ describe('PortfolioBip39 serialization', () => {
         expect(portfolio.secretRevealedStatus?.revealedFromDevice).toBe('TEST_DEVICE_NAME');
 
         const parsed = sPortfolio.parse(JSON.parse(JSON.stringify(portfolio))) as SPortfolioBip39;
-        const restored = PortfolioFactory.restorePortfolio(encryptor, parsed) as PortfolioBip39;
+        const restored = PortfolioFactory.restorePortfolio(parsed, {
+            encryptor,
+            ledgerSessionPort
+        }) as PortfolioBip39;
 
         expect(restored.secretRevealedStatus?.revealedFromDevice).toBe('TEST_DEVICE_NAME');
         expect(restored.secretRevealedStatus?.revealedAt.getTime()).toBe(
@@ -257,21 +275,27 @@ describe('PortfolioBip39 identity & determinism', () => {
         expect(encryptor.decrypt).not.toHaveBeenCalled();
     });
 
-    it('fills meta.icon with a deterministic fallback emoji when not provided', async () => {
-        const p1 = await createBip39Portfolio(
-            encryptor,
-            new ClosableMnemonicAccessorVault(TESTNET_KNOWN_MNEMONIC),
-            { network: PortfolioNetworkType.MAINNET, meta: { name: 'P1' } }
+    it('getFallbackEmoji is deterministic for the same mnemonic', () => {
+        const icon1 = PortfolioIdBip39Imported.getFallbackEmoji(
+            new ClosableMnemonicAccessorVault(TESTNET_KNOWN_MNEMONIC)
         );
-        const p2 = await createBip39Portfolio(
-            encryptor,
-            new ClosableMnemonicAccessorVault(TESTNET_KNOWN_MNEMONIC),
-            { network: PortfolioNetworkType.MAINNET, meta: { name: 'P2' } }
+        const icon2 = PortfolioIdBip39Imported.getFallbackEmoji(
+            new ClosableMnemonicAccessorVault(TESTNET_KNOWN_MNEMONIC)
         );
 
-        expect(p1.meta.icon).toBeDefined();
-        expect(p1.meta.icon.type).toBe('emoji');
-        expect(p1.meta.icon).toEqual(p2.meta.icon);
+        expect(icon1.type).toBe('emoji');
+        expect(icon1).toEqual(icon2);
+    });
+
+    it('getFallbackEmoji differs for different mnemonics', () => {
+        const icon1 = PortfolioIdBip39Imported.getFallbackEmoji(
+            new ClosableMnemonicAccessorVault(TESTNET_KNOWN_MNEMONIC)
+        );
+        const icon2 = PortfolioIdBip39Imported.getFallbackEmoji(
+            new ClosableMnemonicAccessorVault(MAINNET_KNOWN_MNEMONIC)
+        );
+
+        expect(icon1).not.toEqual(icon2);
     });
 
     it('respects a user-provided icon over the fallback', async () => {
@@ -404,10 +428,10 @@ describe('PortfolioBip39 derivations', () => {
             { network: PortfolioNetworkType.TESTNET, meta: { name: 'BTC Testnet Portfolio' } }
         );
 
-        const restored = PortfolioFactory.restorePortfolio(
+        const restored = PortfolioFactory.restorePortfolio(sPortfolio.parse(portfolio.toJSON()), {
             encryptor,
-            sPortfolio.parse(portfolio.toJSON())
-        ) as PortfolioBip39;
+            ledgerSessionPort
+        }) as PortfolioBip39;
 
         expect(restored.networkType).toBe(PortfolioNetworkType.TESTNET);
         expect(restored.meta.name).toBe('BTC Testnet Portfolio');
@@ -513,10 +537,10 @@ describe('PortfolioWatchOnlyBtc', () => {
             META
         );
 
-        const restored = PortfolioFactory.restorePortfolio(
+        const restored = PortfolioFactory.restorePortfolio(sPortfolio.parse(portfolio.toJSON()), {
             encryptor,
-            sPortfolio.parse(portfolio.toJSON())
-        );
+            ledgerSessionPort
+        });
 
         if (restored.type !== PortfolioType.WATCH_ONLY) {
             throw new Error('expected watch-only');
@@ -556,10 +580,10 @@ describe('PortfolioWatchOnlyBtc', () => {
         expect(portfolio.wallet.xpub).toBe(xpub);
         expect(portfolio.wallet.address.startsWith('bc1q')).toBe(true);
 
-        const restored = PortfolioFactory.restorePortfolio(
+        const restored = PortfolioFactory.restorePortfolio(sPortfolio.parse(portfolio.toJSON()), {
             encryptor,
-            sPortfolio.parse(portfolio.toJSON())
-        );
+            ledgerSessionPort
+        });
         if (restored.type !== PortfolioType.WATCH_ONLY) {
             throw new Error('expected watch-only');
         }

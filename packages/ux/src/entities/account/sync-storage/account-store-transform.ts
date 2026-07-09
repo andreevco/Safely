@@ -1,4 +1,4 @@
-import type { ISecretEncryptor } from '@safely/core';
+import type { ILedgerSessionPort, ISecretEncryptor } from '@safely/core';
 import { assertUnreachable } from '@safely/core';
 import { Contact, FiatAsset, PortfolioFactory } from '@safely/core';
 import type { SContact, SPortfolio, SyncedStorageSchema } from '@safely/sync-storage';
@@ -9,7 +9,10 @@ type WithId = { id: string | { toString(): string } };
 type WithToJson<J> = { toJSON(): J };
 
 export class AccountStoreTransform {
-    constructor(private readonly getSecretEncryptor: () => ISecretEncryptor) {}
+    constructor(
+        private readonly getSecretEncryptor: () => ISecretEncryptor,
+        private readonly getLedgerSessionPort: () => ILedgerSessionPort
+    ) {}
 
     public restore<K extends SyncedSlotKey>(
         key: K,
@@ -37,6 +40,10 @@ export class AccountStoreTransform {
                 ) as AccountStoreData[K];
             case 'meta':
                 return this.meta(json as SyncedStorageSchema['meta']) as AccountStoreData[K];
+            case 'nextDerivingPortfolioInfo':
+                return this.nextDerivingPortfolioInfo(
+                    json as SyncedStorageSchema['nextDerivingPortfolioInfo']
+                ) as AccountStoreData[K];
             case 'analyticsId':
                 return this.analyticsId(
                     json as SyncedStorageSchema['analyticsId']
@@ -54,6 +61,9 @@ export class AccountStoreTransform {
             contacts: this.contacts(raw.contacts),
             preferredFiat: this.preferredFiat(raw.preferredFiat),
             devicesMeta: this.devicesMeta(raw.devicesMeta),
+            nextDerivingPortfolioInfo: this.nextDerivingPortfolioInfo(
+                raw.nextDerivingPortfolioInfo
+            ),
             analyticsId: this.analyticsId(raw.analyticsId)
         };
     }
@@ -64,7 +74,10 @@ export class AccountStoreTransform {
     ): AccountStoreData['portfolios'] {
         if (!json) return [];
         return this.reconcileById(prev, json, p =>
-            PortfolioFactory.restorePortfolio(this.getSecretEncryptor(), p)
+            PortfolioFactory.restorePortfolio(p, {
+                encryptor: this.getSecretEncryptor(),
+                ledgerSessionPort: this.getLedgerSessionPort()
+            })
         );
     }
 
@@ -88,6 +101,12 @@ export class AccountStoreTransform {
     }
 
     private meta(json: SyncedStorageSchema['meta']): AccountStoreData['meta'] {
+        return json;
+    }
+
+    private nextDerivingPortfolioInfo(
+        json: SyncedStorageSchema['nextDerivingPortfolioInfo']
+    ): AccountStoreData['nextDerivingPortfolioInfo'] {
         return json;
     }
 

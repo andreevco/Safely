@@ -1,1 +1,0 @@
-export { AccountProtectedModal } from './AccountProtectedModal';

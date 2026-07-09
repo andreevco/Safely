@@ -1,13 +1,12 @@
-import type { Portfolio } from '@safely/core';
+import type { BtcWallet } from '@safely/core';
 
 import { useDerivedQuery } from '../../shared';
 import { useActiveFiat } from '../fiat';
-import { resolveBtcWallet } from '../portfolio';
 import { useWalletAssets } from './useAssets';
 import { calculateTotalBalance } from './utils';
 
-export function usePortfolioBalance(portfolio: Portfolio) {
-    const assetsQuery = useWalletAssets(resolveBtcWallet(portfolio));
+export function useBtcWalletFiatBalance(wallet: BtcWallet) {
+    const assetsQuery = useWalletAssets(wallet);
     const fiat = useActiveFiat();
 
     return useDerivedQuery({

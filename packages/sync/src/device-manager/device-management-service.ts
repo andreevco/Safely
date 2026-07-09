@@ -1,15 +1,19 @@
 import type { DeviceRepository } from './device-repository';
 import type { Device, StoredDevice } from './device-storage-schema';
-import { ed25519_verify } from '../crypto/ed25519';
 import type { DmkSignerService } from '../crypto/service/dmk-signer-service';
 import type { DmkVerifierService } from '../crypto/service/dmk-verifier-service';
 import type { IkService } from '../crypto/service/ik-service';
 import type { Logger } from '../logger';
 import { SyncFlowLogger } from '../logger';
 import { SyncError } from '../sync-error';
-import { u64be, utf8 } from '../utils/buffer';
+import {
+    getAddDeviceSignaturePayload,
+    getRevokeDeviceSignaturePayload
+} from './device-signature-payload';
 import { getKID } from '../utils/kid';
 import { waitForChange } from '../utils/wait-for-change';
+
+const STALE_ADDED_DEVICE_TTL_MS = 24 * 60 * 60 * 1000;
 
 export class DeviceManagementService {
     constructor(
@@ -80,6 +84,18 @@ export class DeviceManagementService {
             .info('Device activated', { ikPub: device.info.ikPub.toString('hex') });
     }
 
+    public async cleanupStaleAddedDevices(): Promise<void> {
+        const now = Date.now();
+        const ttlMs = STALE_ADDED_DEVICE_TTL_MS;
+        const devices = await this.deviceRepository.getStoredDevices();
+
+        for (const device of Object.values(devices)) {
+            if (device.type === 'added' && device.info.addedAt <= now - ttlMs) {
+                await this.deviceRepository.deleteDevice(device.info.ikPub);
+            }
+        }
+    }
+
     public async isThisDeviceActive(): Promise<boolean> {
         const device = await this.getThisStoredDevice();
         return device?.type === 'active';
@@ -116,10 +132,7 @@ export class DeviceManagementService {
                 throw new Error('Device not found.');
             }
 
-            const sign = await this.signRevokedDevice({
-                ikPub,
-                dmkSignerService
-            });
+            const sign = await dmkSignerService.signRevokeDeviceForStorage(ikPub);
 
             await this.deviceRepository.revokeDevice(ikPub, sign);
             flow.logEnd('revoked');
@@ -145,27 +158,6 @@ export class DeviceManagementService {
         await this.deviceRepository.applyUpdate(update);
     }
 
-    public async verifyDeviceIKSig(opts: {
-        kid: Buffer;
-        sig: Buffer;
-        data: Buffer;
-    }): Promise<boolean> {
-        const devices = await this.getDevices();
-        if (devices.length === 0) {
-            return true; // first sync
-        }
-
-        for (const device of devices) {
-            const kid = Buffer.from(getKID(device.info.ikPub), 'hex');
-            if (kid.equals(opts.kid)) {
-                return ed25519_verify(opts.sig, opts.data, device.info.ikPub);
-            }
-        }
-        throw new UnknownDeviceError(
-            `Device with the given KID ${opts.kid.toString('hex')} not found.`
-        );
-    }
-
     public async verifyStoredDevice(device: StoredDevice): Promise<void> {
         const isValid = this.dmkVerifierService.verify(
             device.sign,
@@ -183,11 +175,7 @@ export class DeviceManagementService {
             throw new DeviceAlreadyExistsError('Device with the same ikPub already exists.');
         }
         const addedAt = Date.now();
-        const sign = await this.signDevice({
-            ikPub,
-            addedAt,
-            dmkSignerService
-        });
+        const sign = await dmkSignerService.signAddDeviceForStorage(ikPub, addedAt);
         return {
             info: {
                 ikPub,
@@ -197,34 +185,6 @@ export class DeviceManagementService {
         };
     }
 
-    private async signDevice(opts: {
-        ikPub: Buffer;
-        addedAt: number;
-        dmkSignerService: DmkSignerService;
-    }): Promise<Buffer> {
-        const dataToSign = Buffer.concat([
-            utf8(`safely/sync/v1/device/add`),
-            Buffer.from([0x00]),
-            opts.ikPub,
-            u64be(opts.addedAt)
-        ]);
-
-        return await opts.dmkSignerService.sign(dataToSign);
-    }
-
-    private async signRevokedDevice(opts: {
-        ikPub: Buffer;
-        dmkSignerService: DmkSignerService;
-    }): Promise<Buffer> {
-        const dataToSign = Buffer.concat([
-            utf8(`safely/sync/v1/device/revoke`),
-            Buffer.from([0x00]),
-            opts.ikPub
-        ]);
-
-        return await opts.dmkSignerService.sign(dataToSign);
-    }
-
     private async getThisStoredDevice(): Promise<StoredDevice | undefined> {
         const ikPub = this.ikService.getPub();
         return await this.deviceRepository.getStoredDevice(getKID(ikPub));
@@ -232,19 +192,10 @@ export class DeviceManagementService {
 
     private getStoredDeviceSignData(device: StoredDevice): Buffer {
         if (device.type === 'active' || device.type === 'added') {
-            return Buffer.concat([
-                utf8(`safely/sync/v1/device/add`),
-                Buffer.from([0x00]),
-                device.info.ikPub,
-                u64be(device.info.addedAt)
-            ]);
+            return getAddDeviceSignaturePayload(device.info);
         }
 
-        return Buffer.concat([
-            utf8(`safely/sync/v1/device/revoke`),
-            Buffer.from([0x00]),
-            device.info.ikPub
-        ]);
+        return getRevokeDeviceSignaturePayload(device.info);
     }
 
     private startFlow(flow: string, fields: Record<string, unknown> = {}): SyncFlowLogger {

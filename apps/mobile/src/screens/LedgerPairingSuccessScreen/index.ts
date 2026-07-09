@@ -1,0 +1,1 @@
+export { LedgerPairingSuccessScreen } from './LedgerPairingSuccessScreen';

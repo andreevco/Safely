@@ -13,7 +13,9 @@
 //   eas_workflow_url  — link to this EAS workflow run
 //   github_pr_url     — link to the commit this build was made from (empty if unknown)
 //   e2e_log           — Maestro result; on failure a link to the full log artifact
-// Configure those four variables in your Slack workflow trigger.
+//   build_type_name   — "Production" (master, ships to Play) vs "Staging"
+//   build_type_emoji  — emoji matching build_type_name
+// Configure those variables in your Slack workflow trigger.
 
 let {
     SLACK_WEBHOOK_URL,
@@ -21,6 +23,7 @@ let {
     COMMIT_SHA,
     REPOSITORY,
     RELEASE_NOTES,
+    BUILD_TYPE,
     TARGET_BRANCH,
     IOS_VERSION,
     IOS_BUILD,
@@ -58,6 +61,10 @@ const notesWithBranch = targetBranch ? `${targetBranch} <- ${notes}` : notes;
 const commitUrl = COMMIT_SHA && REPOSITORY ? `https://github.com/${REPOSITORY}/commit/${COMMIT_SHA}` : '';
 const workflowUrl = WORKFLOW_URL || '';
 
+const buildType = (BUILD_TYPE || '').trim() === 'production'
+    ? { name: 'Production', emoji: '🚀' }
+    : { name: 'Staging', emoji: '🏗️' };
+
 function buildText() {
     const lines = [
         headline,
@@ -86,7 +93,9 @@ async function postSlack() {
         text: buildText(),
         eas_workflow_url: workflowUrl,
         github_commit_url: commitUrl,
-        notes: notesWithBranch.slice(0, 1000)
+        notes: notesWithBranch.slice(0, 1000),
+        build_type_name: buildType.name,
+        build_type_emoji: buildType.emoji
     };
 
     const res = await fetch(SLACK_WEBHOOK_URL, {

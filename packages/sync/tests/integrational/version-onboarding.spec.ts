@@ -2,9 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 
 import type { AssertVersionHList, HCons, StorageVersion } from '@safely/slottree';
-import { defineVersionHList, hCons, hNil, projectIdentity } from '@safely/slottree';
+import { defineVersionHList, hCons, hNil, patch, projectIdentity } from '@safely/slottree';
 
-import { projection } from '../../../slottree/src/core/versioning/projection';
 import type { ISyncAccount } from '../../src';
 import { SyncAccountFactory } from '../../src';
 import { Logger } from '../../src/logger/logger';
@@ -29,14 +28,11 @@ const schemaV2 = z.object({
     newField: z.string().default('new-field-initial')
 });
 
-const projectV1ToV2 = projection(schemaV1, schemaV2, s => ({
-    wallets: s.copy(),
-    newField: s.default('new-field-initial')
-}));
+const projectV1ToV2 = patch(schemaV1, schemaV2, draft =>
+    draft.newField([], 'newField', 'new-field-initial')
+);
 
-const projectV2ToV1 = projection(schemaV2, schemaV1, s => ({
-    wallets: s.copy()
-}));
+const projectV2ToV1 = patch(schemaV2, schemaV1, draft => draft.deleteField([], 'newField'));
 
 const accountV1 = {
     version: 1,
@@ -121,6 +117,26 @@ describe('versioned onboarding', () => {
         await vi.waitFor(() => {
             expect(accountB.syncProvider.get('wallets')).toEqual(walletItems('wallet-a'));
             expect(accountB.syncProvider.get('newField')).toBe('new-field-initial');
+        });
+    });
+
+    it('onboards a v2 device from a v2 device', async () => {
+        const deviceA = makeVersionedFactory(versionsV2);
+        const deviceB = makeVersionedFactory(versionsV2);
+        const accountA = await deviceA.factory.createSyncAccount(deviceA.secureEncryptedStorage);
+        accounts.push(accountA);
+
+        await accountA.syncProvider.transaction(draft => {
+            draft.set('wallets', walletItems('wallet-a'));
+            draft.set('newField', 'from-v2');
+        });
+
+        const accountB = await onboardDevice(accountA, deviceA, deviceB);
+        accounts.push(accountB);
+
+        await vi.waitFor(() => {
+            expect(accountB.syncProvider.get('wallets')).toEqual(walletItems('wallet-a'));
+            expect(accountB.syncProvider.get('newField')).toBe('from-v2');
         });
     });
 

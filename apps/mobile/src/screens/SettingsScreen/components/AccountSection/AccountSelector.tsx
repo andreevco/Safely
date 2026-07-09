@@ -13,7 +13,6 @@ import type { PopupMenuRef } from '@mobile/shared/ui/PopupMenu';
 
 import { ModalAccountSelector } from './ModalAccountSelector';
 import { PopupAccountSelector } from './PopupAccountSelector';
-import { SingleAccountDisplay } from './SingleAccountDisplay';
 
 const MAX_POPUP_ACCOUNTS = 5;
 
@@ -45,10 +44,6 @@ export const AccountSelector = (props: AccountSelectorProps) => {
     const handleOpenAccountSelector = () => {
         onSelectAccountNavigate();
     };
-
-    if (accountCount <= 1) {
-        return <SingleAccountDisplay name={activeAccountName} walletsCount={activeWalletsCount} />;
-    }
 
     if (accountCount <= MAX_POPUP_ACCOUNTS) {
         return (

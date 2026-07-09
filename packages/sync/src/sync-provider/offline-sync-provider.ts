@@ -1,9 +1,9 @@
 import type { output, z } from 'zod';
 
-import type { Draft, NewOf, StorageVersion } from '@safely/slottree';
+import type { Draft, NewOf, SlotRevision, StorageVersion } from '@safely/slottree';
 
 import type { ISyncProvider } from './I-sync-provider';
-import { StorageError } from '../crdt/y-manager';
+import { KeyNotFoundError } from '../crdt/y-manager';
 import type { Device } from '../device-manager/device-repository';
 import type { SyncContainer } from '../sync-container';
 import type { SyncError } from '../sync-error';
@@ -27,21 +27,16 @@ export class OfflineSyncProvider<Latest extends StorageVersion, Rest> implements
     }
 
     public get<K extends keyof NewOf<Latest>>(k: K): z.output<NewOf<Latest>[K]> {
-        let v: unknown;
-        try {
-            v = this.container.yManager.get(k.toString());
-        } catch (e) {
-            if (e instanceof StorageError) {
-                v = null;
-            } else {
-                throw e;
-            }
-        }
+        const v = this.getOrNull(k);
         return v as z.output<NewOf<Latest>[K]>;
     }
 
     public getAll(): z.output<NewOf<Latest>> {
         return this.container.yManager.getFull();
+    }
+
+    public get hasNewerStorageVersions(): boolean {
+        return this.container.yManager.hasNewerStorageVersions;
     }
 
     public async transaction(f: (draft: Draft<z.output<NewOf<Latest>>>) => void): Promise<void> {
@@ -53,26 +48,22 @@ export class OfflineSyncProvider<Latest extends StorageVersion, Rest> implements
         k: K,
         observer: (v: z.output<NewOf<Latest>[K]>) => void
     ): () => void {
-        let lastStored: string | undefined;
+        let lastRevision: SlotRevision | undefined;
         return this.container.yManager.onChange(() => {
-            let v: unknown;
-            try {
-                v = this.container.yManager.get(k.toString());
-            } catch (e) {
-                if (e instanceof StorageError) {
-                    v = null;
-                } else {
-                    throw e;
-                }
-            }
+            const v = this.getOrNull(k);
 
-            // TODO: remove this ugliness and do proper change checks through timestamps.
-            const currentStored = JSON.stringify(v);
-            if (lastStored !== undefined && currentStored === lastStored) {
+            const currentRevision = this.container.yManager.getTopLevelRevision(
+                k.toString() as Extract<keyof z.output<NewOf<Latest>>, string>
+            );
+            if (
+                currentRevision === undefined
+                    ? lastRevision === undefined
+                    : lastRevision !== undefined && currentRevision.compare(lastRevision) === 0
+            ) {
                 return;
             }
 
-            lastStored = currentStored;
+            lastRevision = currentRevision;
             observer(v as z.output<NewOf<Latest>[K]>);
         });
     }
@@ -98,5 +89,17 @@ export class OfflineSyncProvider<Latest extends StorageVersion, Rest> implements
 
     public triggerSync(): void {
         // in offline mode, triggerSync doesn't do anything
+    }
+
+    private getOrNull<K extends keyof NewOf<Latest>>(k: K): unknown {
+        try {
+            return this.container.yManager.get(k.toString());
+        } catch (e) {
+            if (e instanceof KeyNotFoundError) {
+                return null;
+            }
+
+            throw e;
+        }
     }
 }

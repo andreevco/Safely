@@ -8,8 +8,7 @@ import {
 
 import type { Id } from '../../utils/id';
 import type { VM_TYPE } from '../blockchain';
-import type { IDerivation, WalletReadOnly } from '../derivation';
-import type { IPortfolioId } from './portfolio-id-bip39';
+import type { IDerivation, ILedgerDerivation, WalletReadOnly } from '../derivation';
 import type { PortfolioMeta } from './portfolio-meta';
 import type { PortfolioNetworkType } from './portfolio-network-type';
 
@@ -25,6 +24,10 @@ export const WatchOnlySource = sPortfolioWatchOnlySource.enum;
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export type WatchOnlySource = z.infer<typeof sPortfolioWatchOnlySource>;
 
+export interface IPortfolioId extends Id {
+    network: PortfolioNetworkType;
+}
+
 export interface IPortfolioBase {
     id: IPortfolioId;
     meta: PortfolioMeta;
@@ -34,22 +37,33 @@ export interface IPortfolioBase {
 }
 
 export interface IPortfolioDerivable extends IPortfolioBase {
+    derivations: IDerivation[];
+    getDerivation(id: Id): IDerivation | undefined;
+    getDerivations(): IDerivation[];
+}
+
+export interface IPortfolioBip39 extends IPortfolioDerivable {
     type: typeof PortfolioType.BIP39;
     secretRevealedStatus: PortfolioSecretRevealedStatus;
 
-    derivations: IDerivation[];
-
-    withAddedDerivation(index: number): Promise<IPortfolioDerivable>;
-    withAddedNextDerivation(): Promise<IPortfolioDerivable>;
-    withoutDerivation(index: number): IPortfolioDerivable;
-    getDerivation(id: Id): IDerivation | undefined;
-    getDerivations(): IDerivation[];
+    withAddedDerivation(index: number): Promise<IPortfolioBip39>;
+    withAddedNextDerivation(): Promise<IPortfolioBip39>;
+    withoutDerivation(index: number): IPortfolioBip39;
 }
 
 export interface IPortfolioWatchOnly extends IPortfolioBase {
     type: typeof PortfolioType.WATCH_ONLY;
     vmType: VM_TYPE;
     wallet: WalletReadOnly;
+}
+
+export interface IPortfolioLedger extends IPortfolioDerivable {
+    type: typeof PortfolioType.LEDGER;
+    masterFingerprint: Buffer;
+    deviceModel: string;
+
+    derivations: ILedgerDerivation[];
+    getDerivations(): ILedgerDerivation[];
 }
 
 export type PortfolioSecretRevealedStatus = {

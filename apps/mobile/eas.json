@@ -4,7 +4,7 @@
     "appVersionSource": "remote"
   },
   "build": {
-    "production": {
+    "staging-base": {
       "autoIncrement": true,
       "ios": {
         "distribution": "store"
@@ -14,11 +14,18 @@
         "resourceClass": "large"
       }
     },
-    "production-cached": {
-      "extends": "production",
+    "staging-cached": {
+      "extends": "staging-base",
       "env": {
         "EAS_USE_CACHE": "1",
         "EAS_GRADLE_CACHE": "1"
+      }
+    },
+    "production": {
+      "extends": "staging-base",
+      "android": {
+        "buildType": "app-bundle",
+        "resourceClass": "large"
       }
     }
   },
@@ -26,6 +33,9 @@
     "production": {
       "ios": {
         "ascAppId": "6784663848"
+      },
+      "android": {
+        "track": "internal"
       }
     }
   }

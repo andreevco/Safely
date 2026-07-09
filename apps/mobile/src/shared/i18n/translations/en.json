@@ -1,7 +1,34 @@
 {
     "currentLanguageName": "English",
     "portfolio": {
-        "watchOnly": "Watch only"
+        "watchOnly": "Watch only",
+        "testnet": "Testnet",
+        "ledger": "Ledger",
+        "ledgerWallet": "Ledger Wallet {{number}}"
+    },
+    "ledgerSign": {
+        "retry": "Retry",
+        "cancel": "Cancel",
+        "title": "Review on Ledger",
+        "subtitle": "Complete the following steps on your Ledger to approve the transaction.",
+        "deviceFallback": "Ledger",
+        "deviceBusyToast": "Cancel the pending action on your Ledger, then retry",
+        "steps": {
+            "connect": "Connect your {{device}}",
+            "openApp": "Open the Bitcoin app",
+            "approve": "Review and approve the transaction."
+        },
+        "updateApp": {
+            "title": "Update your Bitcoin app",
+            "subtitle": "This action requires a newer version of the Bitcoin app. Update it in Ledger Wallet and try again.",
+            "gotIt": "Got it"
+        }
+    },
+    "derivedWallets": {
+        "active": "Active",
+        "hide": "Hide",
+        "findMore": "Find more wallets",
+        "cannotRemoveLast": "The last wallet can’t be removed. Disconnect the Ledger instead."
     },
     "walletAlreadyAdded": {
         "title": "You've already added this wallet as {{name}}",
@@ -176,14 +203,9 @@
             "warning": "Do not share this phrase.\nAnyone with it can access your wallet.",
             "copy": "Copy"
         },
-        "protectAccount": {
-            "title": "No linked device",
-            "subtitle": "Link another device as a redundant storage for your wallets. If this phone is lost and you don't have linked devices, you won't be able to restore your wallets.",
-            "linkDevice": "Link device"
-        },
         "accountProtected": {
             "title": "Linked devices",
-            "subtitle": "These devices have access to your wallets and can help restore access if another device is lost. "
+            "subtitle": "Linked devices have full access to your account and can be used to restore access if another device is lost."
         },
         "device": {
             "added": "Linked {{date}}",
@@ -235,12 +257,43 @@
                     "title": "Recovery phrase",
                     "subtitle": "Keep it private. View only if necessary. This phrase has never been viewed.",
                     "revealed": "First viewed on {{date}} on {{device}}."
+                },
+                "ledgerInfo": "This wallet is secured by your Ledger device."
+            }
+        }
+    },
+    "safety": {
+        "aboutSync": "About Sync",
+        "linkDevice": "Link device",
+        "protectAccount": {
+            "title": "No linked devices",
+            "subtitle": "Link another device as redundant storage. If this phone is lost, a linked device will restore access to your wallets.",
+            "steps": {
+                "step1": "Open Safely on another device.",
+                "step2": "Tap \"Link with QR\".",
+                "step3": "Scan the QR code shown there."
+            }
+        },
+        "syncOnboarding": {
+            "steps": {
+                "protect": {
+                    "title": "How to protect your wallets",
+                    "subtitle": "Safely is a self-custody app: you are responsible for keeping your wallet recovery phrases safe."
+                },
+                "noPaper": {
+                    "title": "Do not write down recovery phrases",
+                    "subtitle": "Paper notes can be lost, damaged, or stolen. Keeping track of many wallets quickly becomes difficult."
+                },
+                "useSync": {
+                    "title": "Use Safely Sync to protect your wallets",
+                    "subtitle": "Safely automatically and securely synchronizes recovery phrases across your devices. <a>How Safely Sync works?</a>"
                 }
             }
         }
     },
     "customizeWallet": {
         "title": "Customize your wallet",
+        "ledgerTitle": "Customize your Ledger",
         "description": "Set a name and icon to tell this wallet apart here. Sync across your devices.",
         "namePlaceholder": "Wallet name",
         "save": "Save"
@@ -254,6 +307,7 @@
     "confirmation": {
         "title": "Send {{symbol}}",
         "success": "Sent",
+        "continueWithLedger": "Continue with Ledger",
         "from": "From",
         "to": "To",
         "amount": "Amount",
@@ -307,12 +361,7 @@
     },
     "signIn": {
         "title": "Scan to sign in",
-        "description": {
-            "top": "Open Safely on another device.",
-            "iconLineStart": "Go to Settings",
-            "iconLineEnd": "tap “Link device”",
-            "bottom": "and scan this QR code."
-        },
+        "description": "On another device, open Safely, go to Safety, tap “Link device”, then scan this QR code.",
         "banner": "This device will have full access to your account. It can be used if your other device is lost.",
         "timeout": "Connection timed out. Please try again.",
         "success": {
@@ -327,10 +376,7 @@
         },
         "reconnect": {
             "title": "Link device",
-            "description": {
-                "beforeIcon": "Open Safely on another device where this account is active. Go to ",
-                "afterIcon": " Settings, tap “Link device” and scan this QR code."
-            },
+            "description": "Open Safely on another device where this account is active. go to Safety, tap “Link device”, then scan this QR code.",
             "banner": "This device will have full access to your account. It can be used if your other device is lost.",
             "timeout": "Connection timed out. Please try again.",
             "successToast": "Device re-linked"
@@ -339,10 +385,18 @@
     "welcome": {
         "title": "Safely",
         "subtitle": "Your personal wallet. Receive, buy and spend crypto with ease.",
-        "createNew": "Start",
-        "importExisting": "Link with QR",
+        "newWallet": "New wallet",
+        "importWallet": "Import wallet",
+        "moreOptions": "More options",
+        "linkWithQr": "Link with QR",
         "legalLine1": "By using Safely, you agree to accept",
-        "legalLine2": "our <terms>Terms of Use</terms> and <privacy>Privacy Policy</privacy>."
+        "legalLine2": "our <privacy>Privacy Policy</privacy>."
+    },
+    "moreOptions": {
+        "title": "More options",
+        "subtitle": "Use Ledger or add a watch account.",
+        "connectLedger": "Connect Ledger",
+        "watchAccount": "Watch account"
     },
     "onboarding": {
         "recoveryPhrase": {
@@ -374,18 +428,6 @@
             "title": "Notifications",
             "description": "Get alerts when funds arrive. No need to check manually.",
             "enable": "Enable notifications"
-        },
-        "accountCreated": {
-            "title": "Account created",
-            "subtitle": "Add a second device to avoid losing access to your wallets if your phone is lost.",
-            "steps": {
-                "step1": "Open Safely on another device.",
-                "step2": "Tap \"Link with QR\".",
-                "step3": "Scan the QR code shown there."
-            },
-            "addDevice": "Add second device",
-            "protectLater": "Later",
-            "deviceNotAdded": "Device was not added. Please try again."
         }
     },
     "compactAccountSelector": {
@@ -409,6 +451,74 @@
             "info": "Watch account cannot sign transactions and send funds.",
             "invalidAddress": "Invalid Bitcoin address",
             "unsupportedExtendedKey": "ypub is not supported yet. Use xpub."
+        },
+        "testnet": {
+            "title": "Testnet",
+            "subtitle": "Add a wallet on the test network"
+        },
+        "connectLedger": {
+            "title": "Ledger",
+            "subtitle": "Connect a hardware wallet",
+            "screen": {
+                "title": "Connect your Ledger",
+                "subtitle": "Use your Ledger to securely manage assets and approve transactions.",
+                "steps": {
+                    "bluetooth": {
+                        "title": "Turn on Bluetooth.",
+                        "description": "Allow access when prompted."
+                    },
+                    "unlock": {
+                        "title": "Unlock your Ledger.",
+                        "description": "Make sure it's unlocked and nearby."
+                    },
+                    "import": {
+                        "title": "Connect and import accounts.",
+                        "description": "We'll look for activity in any accounts you might have used."
+                    }
+                }
+            },
+            "bluetoothAccess": {
+                "title": "Bluetooth access required",
+                "description": "Allow Bluetooth access to discover and connect your Ledger device.",
+                "button": "Settings"
+            },
+            "bluetoothDisabled": {
+                "title": "Turn on Bluetooth",
+                "description": "Enable Bluetooth in your device settings and try again.",
+                "button": "Try again",
+                "stillOff": "Bluetooth is still off"
+            },
+            "discovery": {
+                "notFound": "No devices found",
+                "title": "Looking for devices…",
+                "subtitle": "Make sure your Ledger is unlocked and close to the mobile phone you want to pair with."
+            },
+            "pairing": {
+                "title": "Pairing with Ledger {{device}}",
+                "subtitle": "Continue on your Ledger device",
+                "steps": {
+                    "connect": "Complete the steps on your Ledger",
+                    "openApp": "Open the Bitcoin app"
+                }
+            },
+            "pairingSuccess": {
+                "title": "Success",
+                "subtitle": "You have successfully paired and connected your {{device}}."
+            },
+            "pairingUnsuccess": {
+                "title": "Pairing unsuccessful",
+                "subtitle": "Make sure your {{device}} is close to your mobile phone and try again.",
+                "retry": "Retry pairing"
+            },
+            "importAccounts": {
+                "title": "Import wallets",
+                "subtitle": "Select the wallets you want to add.",
+                "takingTooLong": "Taking too long? Retry",
+                "featureNote": "Support for additional Ledger wallets is planned. ",
+                "featureRequest": "I’d like this feature",
+                "featureRequested": "Got it",
+                "wrongDevice": "This is a different Ledger. Connect the original device."
+            }
         }
     },
     "account": {
@@ -475,16 +585,27 @@
             },
             "currentWallet": {
                 "title": "Current wallet",
+                "ledgerTitle": "Ledger device",
                 "options": {
-                    "wallet": "Wallet"
+                    "wallet": "Wallet",
+                    "editWallet": "Edit wallet",
+                    "editLedger": "Edit Ledger"
                 }
+            },
+            "derivedWallets": {
+                "title": "Derived wallets"
             },
             "account": {
                 "title": "Settings",
                 "options": {
                     "editAccount": "Edit account",
                     "addressBook": "Address book",
-                    "notifications": "Notifications",
+                    "notifications": "Notifications"
+                }
+            },
+            "application": {
+                "title": "Application",
+                "options": {
                     "security": "Security",
                     "language": "Language"
                 }
@@ -493,7 +614,7 @@
                 "title": "Info",
                 "options": {
                     "support": "Support",
-                    "rate": "Rate",
+                    "rate": "Rate Safely",
                     "legal": "Legal"
                 }
             }
@@ -517,6 +638,8 @@
         },
         "removePortfolio": {
             "title": "Remove wallet “{{name}}”",
+            "disconnectLedger": "Disconnect “{{name}}”",
+            "hideDerivation": "Hide wallet “{{name}}”",
             "confirm": {
                 "title": "Remove this wallet?",
                 "message": "This will remove wallet “{{name}}”. This action cannot be undone.",
@@ -556,6 +679,18 @@
         },
         "watchOnly": {
             "subtitle": "This wallet will be removed from your account. You can add it again anytime using the address."
+        },
+        "hideDerivation": {
+            "title": "Hide “{{name}}”?",
+            "subtitle": "This wallet will be removed from your account. You can add it again later from your Ledger.",
+            "button": "Hide wallet"
+        },
+        "disconnectLedger": {
+            "title": "Disconnect “{{name}}”?",
+            "subtitle_one": "This will remove {{count}} imported wallet from the app. You can reconnect this Ledger later to restore it.",
+            "subtitle_other": "This will remove {{count}} imported wallets from the app. You can reconnect this Ledger later to restore them.",
+            "checkbox": "I understand that this action cannot be undone.",
+            "button": "Disconnect Ledger"
         }
     },
     "pendingFunds": {
@@ -569,13 +704,12 @@
         "receiving": "Receiving {{amount}}…"
     },
     "assetCell": {
-        "lastTransaction": "Last transaction {{timeAgo}}",
-        "noTransactions": "No transactions"
+        "history": "History"
     },
     "tabs": {
         "home": "Home",
-        "history": "History",
-        "about": "About"
+        "updates": "Updates",
+        "safety": "Safety"
     },
     "safelyBeta": {
         "title": "Safely",
@@ -685,5 +819,9 @@
             "unsafeProtocol": "Unsafe protocol",
             "failedToOpen": "Couldn't open the link"
         }
+    },
+    "legal": {
+        "title": "Legal",
+        "privacyPolicy": "Privacy Policy"
     }
 }

@@ -5,7 +5,7 @@ import { Pressable, View } from 'react-native';
 import QRCode from 'react-native-qrcode-skia';
 
 import type { CryptoAsset } from '@safely/core';
-import { useIsActiveWalletWatchOnly } from '@safely/ux';
+import { useIsActivePortfolioTestnet, useIsActivePortfolioWatchOnly } from '@safely/ux';
 
 import { TEST_ID } from '@mobile/shared/constants';
 import { Badge, Text, Image, TouchableOpacity } from '@mobile/shared/ui';
@@ -23,7 +23,8 @@ export const QRCodeBlock = (props: QRCodeBlockProps) => {
     const copy = useReceiveCopy();
     const { t } = useTranslation();
     const navigation = useNavigation();
-    const isWatchOnly = useIsActiveWalletWatchOnly();
+    const isWatchOnly = useIsActivePortfolioWatchOnly();
+    const isTestnet = useIsActivePortfolioTestnet();
 
     const handleCopyAddress = useCallback(() => {
         copy(address);
@@ -65,6 +66,13 @@ export const QRCodeBlock = (props: QRCodeBlockProps) => {
                         {t('portfolio.watchOnly')}
                     </Badge>
                 </Pressable>
+            )}
+            {isTestnet && (
+                <View style={styles.badgeContainer}>
+                    <Badge type="warningFilled" isUppercase>
+                        {t('portfolio.testnet')}
+                    </Badge>
+                </View>
             )}
         </View>
     );

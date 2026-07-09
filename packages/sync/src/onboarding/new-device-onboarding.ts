@@ -14,6 +14,7 @@ import type { ITreeStorage } from '../I-storage';
 import type { Logger } from '../logger';
 import { SyncFlowLogger } from '../logger';
 import { OnboardingAbortedError } from '../sync-error';
+import { abortableDelay } from '../utils/abortable-delay';
 
 export class NewDeviceOnboarding<Latest extends StorageVersion, Rest> {
     private readonly flow: SyncFlowLogger;
@@ -26,7 +27,8 @@ export class NewDeviceOnboarding<Latest extends StorageVersion, Rest> {
         private readonly secureEncryptedStorage: ITreeStorage,
         private readonly logger: Logger,
         private readonly pollingTimeout: number,
-        private readonly storageVersion: number
+        private readonly storageVersion: number,
+        private readonly devicesStorageVersion: number
     ) {
         this.flow = new SyncFlowLogger(logger, 'onboarding.new_device', {
             ikPub: this.ik.publicKey.toString('hex')
@@ -46,7 +48,8 @@ export class NewDeviceOnboarding<Latest extends StorageVersion, Rest> {
             type: QRMessageOperation.NEW_DEVICE_ONBOARDING,
             ephemeralPub: this.ephemeralKeyPair.publicKey,
             ikPub: this.ik.publicKey,
-            storageVersion: this.storageVersion
+            storageVersion: this.storageVersion,
+            devicesStorageVersion: this.devicesStorageVersion
         });
         this.flow.logStep('qr.generated');
 
@@ -89,7 +92,6 @@ export class NewDeviceOnboarding<Latest extends StorageVersion, Rest> {
                     throw new OnboardingAbortedError();
                 }
 
-                this.flow.logStep('message.poll.empty', { attempt: i + 1 });
                 await this.waitBeforeRetry(signal);
                 continue;
             }
@@ -104,16 +106,9 @@ export class NewDeviceOnboarding<Latest extends StorageVersion, Rest> {
     }
 
     private async waitBeforeRetry(signal?: AbortSignal): Promise<void> {
-        await new Promise<void>((resolve, reject) => {
-            const timer = setTimeout(resolve, this.pollingTimeout);
-            signal?.addEventListener(
-                'abort',
-                () => {
-                    clearTimeout(timer);
-                    reject(new OnboardingAbortedError());
-                },
-                { once: true }
-            );
+        await abortableDelay(this.pollingTimeout, {
+            signal,
+            abortError: () => new OnboardingAbortedError()
         });
     }
 

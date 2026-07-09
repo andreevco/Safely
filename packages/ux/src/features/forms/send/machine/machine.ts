@@ -48,6 +48,7 @@ export const createSendFormMachine = () =>
 
                     const result = validateRecipientInput(event.value, {
                         activeWalletAddress: context.activeWallet.address,
+                        networkType: context.networkType,
                         portfolioSuggestions: context.portfolioSuggestions,
                         contactSuggestions: context.contactSuggestions,
                         preferredSuggestionId: baseSuggestion.selectedId
@@ -83,6 +84,7 @@ export const createSendFormMachine = () =>
 
                     const result = validateRecipientInput(picked.address, {
                         activeWalletAddress: context.activeWallet.address,
+                        networkType: context.networkType,
                         portfolioSuggestions: context.portfolioSuggestions,
                         contactSuggestions: context.contactSuggestions,
                         preferredSuggestionId: event.id
@@ -182,6 +184,10 @@ export const createSendFormMachine = () =>
                         parsed: { ...context.parsed, amount: result.parsed }
                     };
                 }),
+                persistAmountInputType: ({ context, event }) => {
+                    assertEvent(event, 'SET_AMOUNT_INPUT_TYPE');
+                    context.persistAmountInputType(event.value);
+                },
                 handleSetAsset: assign(({ context, event }) => {
                     assertEvent(event, 'SET_ASSET');
 
@@ -514,7 +520,7 @@ export const createSendFormMachine = () =>
                                     target: '.routing'
                                 },
                                 SET_AMOUNT_INPUT_TYPE: {
-                                    actions: 'handleSetAmountInputType'
+                                    actions: ['handleSetAmountInputType', 'persistAmountInputType']
                                 },
                                 ENTER_MAX: {
                                     guard: 'canEnterMax',
@@ -568,7 +574,11 @@ export const createSendFormMachine = () =>
                                             target: 'idle'
                                         },
                                         SET_AMOUNT_INPUT_TYPE: {
-                                            actions: ['handleSetAmountInputType', 'enterMax']
+                                            actions: [
+                                                'handleSetAmountInputType',
+                                                'enterMax',
+                                                'persistAmountInputType'
+                                            ]
                                         },
                                         SET_ASSET: {
                                             actions: 'handleSetAsset',

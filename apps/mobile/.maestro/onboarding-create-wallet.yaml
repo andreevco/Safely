@@ -42,13 +42,6 @@ tags:
           - tapOn:
                 id: 'biometry.skip'
 
-- extendedWaitUntil:
-      visible:
-          id: 'accountCreated.protectLater'
-      timeout: 30000
-- tapOn:
-      id: 'accountCreated.protectLater'
-
 # We should now be on the home tab.
 - extendedWaitUntil:
       visible:

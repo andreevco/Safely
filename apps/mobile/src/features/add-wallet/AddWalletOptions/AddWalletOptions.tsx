@@ -1,7 +1,6 @@
-import { useNavigation } from '@react-navigation/core';
-import { CommonActions } from '@react-navigation/native';
-import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+
+import { useAppContext } from '@safely/ux';
 
 import { TEST_ID } from '@mobile/shared/constants';
 import { Cell, List } from '@mobile/shared/ui';
@@ -11,12 +10,14 @@ import { styles } from './AddWalletOptions.styles';
 
 export const AddWalletOptions = () => {
     const { t } = useTranslation();
-    const navigation = useNavigation();
-    const { startCreateFlow, startImportFlow } = useAddWalletFlow();
-
-    const startWatchOnlyFlow = useCallback(() => {
-        navigation.dispatch(CommonActions.navigate('AddWatchOnlyModal'));
-    }, [navigation]);
+    const { devIsTestnetAllowed } = useAppContext();
+    const {
+        startCreateFlow,
+        startImportFlow,
+        startWatchOnlyFlow,
+        startConnectLedgerFlow,
+        startTestnetImportFlow
+    } = useAddWalletFlow();
 
     return (
         <List style={styles.list}>
@@ -43,6 +44,17 @@ export const AddWalletOptions = () => {
                     </Cell.Content>
                     <Cell.Chevron />
                 </Cell>
+                <Cell onPress={startConnectLedgerFlow}>
+                    <Cell.Content>
+                        <Cell.Row>
+                            <Cell.Title>{t('addWallet.connectLedger.title')}</Cell.Title>
+                        </Cell.Row>
+                        <Cell.Row>
+                            <Cell.Subtitle>{t('addWallet.connectLedger.subtitle')}</Cell.Subtitle>
+                        </Cell.Row>
+                    </Cell.Content>
+                    <Cell.Chevron />
+                </Cell>
                 <Cell testID={TEST_ID.addWallet.watchAccount} onPress={startWatchOnlyFlow}>
                     <Cell.Content>
                         <Cell.Row>
@@ -54,6 +66,19 @@ export const AddWalletOptions = () => {
                     </Cell.Content>
                     <Cell.Chevron />
                 </Cell>
+                {devIsTestnetAllowed && (
+                    <Cell testID={TEST_ID.addWallet.testnet} onPress={startTestnetImportFlow}>
+                        <Cell.Content>
+                            <Cell.Row>
+                                <Cell.Title>{t('addWallet.testnet.title')}</Cell.Title>
+                            </Cell.Row>
+                            <Cell.Row>
+                                <Cell.Subtitle>{t('addWallet.testnet.subtitle')}</Cell.Subtitle>
+                            </Cell.Row>
+                        </Cell.Content>
+                        <Cell.Chevron />
+                    </Cell>
+                )}
             </List.Group>
         </List>
     );

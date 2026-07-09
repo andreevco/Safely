@@ -1,0 +1,1 @@
+export { DerivedWalletsList } from './DerivedWalletsList';

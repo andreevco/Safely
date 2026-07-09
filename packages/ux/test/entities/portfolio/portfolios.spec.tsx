@@ -6,7 +6,7 @@ import { act, cleanup } from '@testing-library/react';
 import type { Mock } from 'vitest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { Portfolio, PortfolioMeta } from '@safely/core';
+import type { ILedgerSessionPort, Portfolio, PortfolioMeta } from '@safely/core';
 import {
     Id,
     InvalidMnemonicError,
@@ -62,6 +62,12 @@ vi.mock('../../../src/entities/account/account-state', async () => {
     };
 });
 
+const ledgerSessionPort: ILedgerSessionPort = {
+    withSession: () => {
+        throw new Error('Ledger session is not used in this test');
+    }
+};
+
 const MAINNET_MNEMONIC =
     'ivory trouble wheat next depart dove choice easily enroll suffer lawsuit lend'.split(' ');
 const ANOTHER_MNEMONIC =
@@ -104,9 +110,12 @@ async function makeImportedPortfolio(
         id,
         encryptor,
         mnemonicAccessor: accessor,
-        options: { meta: { name } }
+        meta: { name, icon: PortfolioIdBip39Imported.getFallbackEmoji(accessor) }
     });
-    return PortfolioFactory.restorePortfolio(encryptor, serialized) as PortfolioBip39;
+    return PortfolioFactory.restorePortfolio(serialized, {
+        encryptor,
+        ledgerSessionPort
+    }) as PortfolioBip39;
 }
 
 async function makeDerivedPortfolio(
@@ -125,12 +134,25 @@ async function makeDerivedPortfolio(
         id,
         encryptor: new SecretEncryptor(account.secretEncryptor, storage),
         mnemonicAccessor: accessor,
-        options: { meta: { name } }
+        meta: { name, icon: PortfolioIdBip39MasterKeyDerived.getFallbackEmoji(accessor) }
     });
-    return PortfolioFactory.restorePortfolio(
-        new SecretEncryptor(account.secretEncryptor, storage),
-        serialized
-    ) as PortfolioBip39;
+    return PortfolioFactory.restorePortfolio(serialized, {
+        encryptor: new SecretEncryptor(account.secretEncryptor, storage),
+        ledgerSessionPort
+    }) as PortfolioBip39;
+}
+
+async function expectedNextDerivingInfo(
+    account: MockSyncAccount,
+    storage: InMemoryTreeStorage,
+    upcomingIndex: number
+): Promise<{ index: number; emoji: string }> {
+    const factory = new PortfolioMnemonicFactory(account, storage);
+    using accessor = await factory.deriveBip39MnemonicResource(upcomingIndex);
+    return {
+        index: upcomingIndex,
+        emoji: PortfolioIdBip39MasterKeyDerived.getFallbackEmoji(accessor).value
+    };
 }
 
 const ICON: PortfolioMeta['icon'] = { type: 'emoji', value: '🦊' };
@@ -189,9 +211,9 @@ describe('useAddPortfolio (add)', () => {
 });
 
 describe('useGeneratePortfolio (add)', () => {
-    it('derives, pushes, bumps latest index from null → 0 and sets active', async () => {
+    it('derives, pushes, advances nextDerivingPortfolioInfo from null → index 1 and sets active', async () => {
         const account = createMockSyncAccount({
-            initial: { latestDerivedBip39PortfolioIndex: null }
+            initial: { nextDerivingPortfolioInfo: null }
         });
         const secureStorage = new InMemoryTreeStorage(['secure']);
 
@@ -220,9 +242,11 @@ describe('useGeneratePortfolio (add)', () => {
             generated.id.toJSON()
         );
 
-        const indexSlot = recorder.slots.get('latestDerivedBip39PortfolioIndex');
-        expect(indexSlot?.get).toHaveBeenCalled();
-        expect(indexSlot?.set).toHaveBeenCalledWith(0);
+        const nextInfoSlot = recorder.slots.get('nextDerivingPortfolioInfo');
+        expect(nextInfoSlot?.get).toHaveBeenCalled();
+        expect(nextInfoSlot?.set).toHaveBeenCalledWith(
+            await expectedNextDerivingInfo(account, secureStorage, 1)
+        );
 
         const activeRaw = await appContext.storage.ux.regular
             .child(['account', account.accountId])
@@ -233,9 +257,9 @@ describe('useGeneratePortfolio (add)', () => {
         });
     });
 
-    it('starts at index 1 when latestDerivedBip39PortfolioIndex is 0', async () => {
+    it('starts at index 1 when nextDerivingPortfolioInfo.index is 1', async () => {
         const account = createMockSyncAccount({
-            initial: { latestDerivedBip39PortfolioIndex: 0 }
+            initial: { nextDerivingPortfolioInfo: { index: 1 } }
         });
         const secureStorage = new InMemoryTreeStorage(['secure']);
         const generated = await makeDerivedPortfolio(account, secureStorage, 1);
@@ -254,8 +278,10 @@ describe('useGeneratePortfolio (add)', () => {
         });
 
         const recorder = account.transactions[0];
-        const indexSlot = recorder.slots.get('latestDerivedBip39PortfolioIndex');
-        expect(indexSlot?.set).toHaveBeenCalledWith(1);
+        const nextInfoSlot = recorder.slots.get('nextDerivingPortfolioInfo');
+        expect(nextInfoSlot?.set).toHaveBeenCalledWith(
+            await expectedNextDerivingInfo(account, secureStorage, 2)
+        );
     });
 
     it('throws and toasts when there is no active account', async () => {
@@ -307,7 +333,8 @@ describe('useImportPortfolio (add)', () => {
                 await result.current.mutateAsync({
                     mnemonicAccessor: accessor,
                     secretEncryptor: encryptor,
-                    meta: meta('Imported #1')
+                    meta: meta('Imported #1'),
+                    networkType: PortfolioNetworkType.MAINNET
                 });
             } catch (e) {
                 mutationError = e;
@@ -338,7 +365,8 @@ describe('useImportPortfolio (add)', () => {
                 await result.current.mutateAsync({
                     mnemonicAccessor: accessor,
                     secretEncryptor: new SecretEncryptor(account.secretEncryptor, secureStorage),
-                    meta: meta('Dup')
+                    meta: meta('Dup'),
+                    networkType: PortfolioNetworkType.MAINNET
                 });
             })
         ).rejects.toBeInstanceOf(PortfolioAlreadyExistsError);
@@ -368,7 +396,8 @@ describe('useImportPortfolio (add)', () => {
                 await result.current.mutateAsync({
                     mnemonicAccessor: accessor,
                     secretEncryptor: new SecretEncryptor(account.secretEncryptor, secureStorage),
-                    meta: meta('Bad')
+                    meta: meta('Bad'),
+                    networkType: PortfolioNetworkType.MAINNET
                 });
             } catch (e) {
                 mutationError = e;
@@ -570,7 +599,7 @@ describe('useSetActivePortfolio (change)', () => {
 });
 
 describe('useChangePortfolioMeta (change)', () => {
-    it('merges meta over the current value via draft.update().set("meta", ...)', async () => {
+    it('updates only the changed meta fields via draft.update().at("meta").set(...)', async () => {
         const portfolio = await makeImportedPortfolio(MAINNET_MNEMONIC);
         const account = createMockSyncAccount();
         setupAccountState({ account, portfolios: [portfolio] });
@@ -591,17 +620,18 @@ describe('useChangePortfolioMeta (change)', () => {
         expect(portfoliosSlot?.update).toHaveBeenCalledTimes(1);
         const [arrayId, updater] = portfoliosSlot!.update.mock.calls[0] as [
             unknown,
-            (sub: { set: Mock; get: Mock }) => void
+            (sub: { at: Mock }) => void
         ];
         expect(arrayId).toEqual(portfolio.jsonArrayId());
 
-        // Run the updater against a recording sub-draft to capture .set('meta', merged)
-        const sub = {
-            set: vi.fn(),
-            get: vi.fn(() => ({ meta: { name: 'Old', icon: undefined } }))
-        };
+        // Run the updater against a recording sub-draft to capture pointwise meta writes
+        const metaDraft = { set: vi.fn() };
+        const sub = { at: vi.fn(() => metaDraft) };
         updater(sub as never);
-        expect(sub.set).toHaveBeenCalledWith('meta', expect.objectContaining({ name: 'Renamed' }));
+
+        expect(sub.at).toHaveBeenCalledWith('meta');
+        expect(metaDraft.set).toHaveBeenCalledWith('name', 'Renamed');
+        expect(metaDraft.set).not.toHaveBeenCalledWith('icon', expect.anything());
     });
 });
 

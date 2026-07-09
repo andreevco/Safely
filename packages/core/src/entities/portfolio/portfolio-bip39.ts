@@ -8,11 +8,11 @@ import {
 
 import type { IDerivation } from '../derivation';
 import { Derivation, DerivationChainItemBtcSeed } from '../derivation';
-import type { IPortfolioDerivable, PortfolioSecretRevealedStatus } from './I-portfolio';
+import type { IPortfolioBip39, PortfolioSecretRevealedStatus } from './I-portfolio';
 import { PortfolioType } from './I-portfolio';
 import type { PortfolioIdBip39 } from './portfolio-id-bip39';
 import { toPortfolioIdBip39 } from './portfolio-id-bip39';
-import type { NoIconPortfolioMeta, PortfolioMeta } from './portfolio-meta';
+import type { PortfolioMeta } from './portfolio-meta';
 import type { ISecretEncryptor } from '../../di';
 import type { Id } from '../../utils';
 import { BtcWalletType } from '../blockchain';
@@ -26,19 +26,20 @@ import { MNEMONIC_TYPE, validateMnemonic } from '../mnemonic';
 import { MnemonicResource, MnemonicVault } from '../mnemonic';
 import { BtcBip39SeedProducer } from '../seed';
 
-export class PortfolioBip39 implements IPortfolioDerivable {
+export class PortfolioBip39 implements IPortfolioBip39 {
     public static async createSerializedPortfolio({
         encryptor,
         mnemonicAccessor,
         id,
         options,
-        logger
+        logger,
+        meta
     }: {
         encryptor: ISecretEncryptor;
         mnemonicAccessor: IMnemonicAccessor & IMnemonicVault;
         id: PortfolioIdBip39;
-        options: {
-            meta: NoIconPortfolioMeta;
+        meta: PortfolioMeta;
+        options?: {
             seedRevealedFromDevice?: string;
         };
         logger?: Logger;
@@ -60,12 +61,7 @@ export class PortfolioBip39 implements IPortfolioDerivable {
                 await MnemonicVault.fromMnemonicAccessor(encryptor, mnemonicAccessor)
             ).encryptedSecret;
 
-            const meta = {
-                name: options.meta.name,
-                icon: options.meta.icon ?? id.getFallbackEmoji()
-            };
-
-            const secretRevealedStatus = options.seedRevealedFromDevice
+            const secretRevealedStatus = options?.seedRevealedFromDevice
                 ? {
                       revealedAt: Date.now(),
                       revealedFromDevice: options.seedRevealedFromDevice

@@ -18,19 +18,19 @@ import Animated, {
 import { useUnistyles } from 'react-native-unistyles';
 
 import { ellipsisMiddle } from '@safely/core';
-import { useDateFormatter } from '@safely/ux';
+import {
+    useActiveBtcWallet,
+    useActivePortfolioLedgerIndex,
+    useDateFormatter,
+    useIsActivePortfolioTestnet,
+    useIsActivePortfolioWatchOnly,
+    useTotalBalance
+} from '@safely/ux';
 
 import type { TextProps } from '@mobile/shared/ui';
 import { Badge, Text } from '@mobile/shared/ui';
 
 import { SubtitleStatus, useSubtitleStatus } from './useSubtitleStatus';
-
-interface SubtitleProps {
-    address: string;
-    isFetching: boolean;
-    lastUpdatedAt: number;
-    isWatchOnly?: boolean;
-}
 
 const AnimatedText = Animated.createAnimatedComponent(Text);
 
@@ -66,11 +66,20 @@ export const SubtitleAnimatedText = ({ children, ...props }: TextProps) => {
     );
 };
 
-export const Subtitle = ({ address, isFetching, lastUpdatedAt, isWatchOnly }: SubtitleProps) => {
+export const Subtitle = () => {
     const { t } = useTranslation();
     const navigation = useNavigation();
+    const totalBalance = useTotalBalance();
+    const { address } = useActiveBtcWallet();
+    const isTestnet = useIsActivePortfolioTestnet();
+    const isWatchOnly = useIsActivePortfolioWatchOnly();
+    const ledgerIndex = useActivePortfolioLedgerIndex();
+    const lastUpdatedAt = totalBalance.dataUpdatedAt;
 
-    const { status, onCopyAddress } = useSubtitleStatus({ isFetching, lastUpdatedAt });
+    const { status, onCopyAddress } = useSubtitleStatus({
+        isFetching: totalBalance.isFetching,
+        lastUpdatedAt
+    });
 
     const handleWatchOnlyPress = useCallback(() => {
         navigation.navigate('WatchOnlySheet');
@@ -132,6 +141,17 @@ export const Subtitle = ({ address, isFetching, lastUpdatedAt, isWatchOnly }: Su
                                 </Badge>
                             </Pressable>
                         )}
+                        {isTestnet && (
+                            <Badge type="warning" isUppercase>
+                                {t('portfolio.testnet')}
+                            </Badge>
+                        )}
+                        {ledgerIndex !== undefined && (
+                            <>
+                                <Badge>{String(ledgerIndex + 1)}</Badge>
+                                <Badge isUppercase>{t('portfolio.ledger')}</Badge>
+                            </>
+                        )}
                     </View>
                 );
             case SubtitleStatus.ADDRESS_COPIED:
@@ -161,6 +181,8 @@ export const Subtitle = ({ address, isFetching, lastUpdatedAt, isWatchOnly }: Su
         handleCopyAddress,
         address,
         isWatchOnly,
+        isTestnet,
+        ledgerIndex,
         handleWatchOnlyPress
     ]);
 

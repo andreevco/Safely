@@ -5,6 +5,7 @@ import { ImageBackground, View } from 'react-native';
 
 import {
     useAppContext,
+    useBootConfig,
     useCreateExistingAccountConnector,
     useLinking,
     useTrackOnboardingOpen
@@ -13,18 +14,17 @@ import {
 import { useOnboardingFlow } from '@mobile/features/onboarding';
 import { TEST_ID } from '@mobile/shared/constants';
 import { resources } from '@mobile/shared/resources';
-import { Button, Icon, Safely96, Screen, Text } from '@mobile/shared/ui';
+import { Button, Icon, QrCodeScanShield28, Safely96, Screen, Text } from '@mobile/shared/ui';
 
 import { styles } from './WelcomeScreen.styles';
-
-const TERMS_URL = 'https://google.com';
-const PRIVACY_URL = 'https://google.com';
 
 export const WelcomeScreen = () => {
     const { t } = useTranslation();
     const { onSuccessCreate, onSuccessSignIn } = useOnboardingFlow();
     const signIn = useCreateExistingAccountConnector();
     const navigation = useNavigation();
+    const privacyUrl = useBootConfig().references.legal.privacy_url;
+
     const {
         storage: {
             sync: { getSecureEncrypted }
@@ -55,8 +55,8 @@ export const WelcomeScreen = () => {
 
     return (
         <Screen background="transparent">
-            <ImageBackground source={resources.welcomeScreenBg} style={styles.background}>
-                <Screen.Content>
+            <Screen.Content>
+                <ImageBackground source={resources.welcomeScreenBg} style={styles.background}>
                     <Icon icon={Safely96} style={styles.logo} />
 
                     <View style={styles.textContainer}>
@@ -73,15 +73,37 @@ export const WelcomeScreen = () => {
                             size="large"
                             onPress={onSuccessCreate}
                         >
-                            {t('welcome.createNew')}
+                            {t('welcome.newWallet')}
                         </Button>
                         <Button
                             testID={TEST_ID.welcome.importWallet}
                             type="secondary"
                             size="large"
+                            onPress={() => navigation.navigate('OnboardingImportWalletScreen')}
+                        >
+                            {t('welcome.importWallet')}
+                        </Button>
+                        <Button
+                            testID={TEST_ID.welcome.moreOptions}
+                            type="secondary"
+                            size="large"
+                            onPress={() => navigation.navigate('MoreOptionsSheet')}
+                        >
+                            {t('welcome.moreOptions')}
+                        </Button>
+                        <Button
+                            style={styles.lastButton}
+                            testID={TEST_ID.welcome.qrSignIn}
+                            type="blue"
+                            size="large"
                             onPress={handleSignIn}
                         >
-                            {t('welcome.importExisting')}
+                            <View style={styles.buttonTextWithIcon}>
+                                <Text variant="labelL" color="link">
+                                    {t('welcome.linkWithQr')}
+                                </Text>
+                                <Icon icon={QrCodeScanShield28} />
+                            </View>
                         </Button>
                     </View>
 
@@ -93,26 +115,19 @@ export const WelcomeScreen = () => {
                             <Trans
                                 i18nKey="welcome.legalLine2"
                                 components={{
-                                    terms: (
-                                        <Text
-                                            variant="bodyS"
-                                            color="secondary"
-                                            onPress={() => openURL(TERMS_URL)}
-                                        />
-                                    ),
                                     privacy: (
                                         <Text
                                             variant="bodyS"
                                             color="secondary"
-                                            onPress={() => openURL(PRIVACY_URL)}
+                                            onPress={() => openURL(privacyUrl)}
                                         />
                                     )
                                 }}
                             />
                         </Text>
                     </View>
-                </Screen.Content>
-            </ImageBackground>
+                </ImageBackground>
+            </Screen.Content>
         </Screen>
     );
 };

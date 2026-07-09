@@ -27,6 +27,7 @@ jobs:
     outputs:
       notes: ${{ steps.prep.outputs.notes }}
       android_profile: ${{ steps.prep.outputs.android_profile }}
+      build_type: ${{ steps.prep.outputs.build_type }}
     steps:
       - name: Compute notes & profile
         id: prep
@@ -54,11 +55,14 @@ jobs:
           set-output notes "$NOTES"
 
           # Cache feature builds (release/*) and manual runs; master stays uncached
-          # for clean from-scratch builds.
+          # for clean from-scratch builds. master also ships the AAB to Play, so it's
+          # the "production" build type; everything else is "staging".
           if [[ "$REF_NAME" == release/* || "$EVENT_NAME" == "workflow_dispatch" ]]; then
-            set-output android_profile "production-cached"
+            set-output android_profile "staging-cached"
+            set-output build_type "staging"
           else
-            set-output android_profile "production"
+            set-output android_profile "staging-base"
+            set-output build_type "production"
           fi
 
   build_ios:
@@ -67,7 +71,7 @@ jobs:
     needs: [prepare]
     params:
       platform: ios
-      profile: production
+      profile: staging-base
       message: ${{ needs.prepare.outputs.notes }}
 
   build_android:
@@ -78,6 +82,29 @@ jobs:
       platform: android
       profile: ${{ needs.prepare.outputs.android_profile }}
       message: ${{ needs.prepare.outputs.notes }}
+
+  build_android_play:
+    name: Build AAB (Play)
+    type: build
+    needs: [prepare]
+    if: ${{ github.ref_name == 'master' }}
+    params:
+      platform: android
+      profile: production
+      message: ${{ needs.prepare.outputs.notes }}
+
+  submit_android_play:
+    name: Submit to Google Play (internal)
+    type: submit
+    needs: [build_android_play]
+    if: ${{ github.ref_name == 'master' }}
+    params:
+      build_id: ${{ needs.build_android_play.outputs.build_id }}
+      profile: production
+    # Temporary: surfaces the real "failed to resolve submission config" cause.
+    # Remove once the submit succeeds.
+    env:
+      EXPO_DEBUG: '1'
 
   distribute_ios:
     type: testflight
@@ -137,6 +164,7 @@ jobs:
       - name: Post report
         run: |
           export RELEASE_NOTES="${{ after.prepare.outputs.notes }}"
+          export BUILD_TYPE="${{ after.prepare.outputs.build_type }}"
           export SLACK_WEBHOOK_URL="${{ env.SLACK_WEBHOOK_URL }}"
           export WORKFLOW_URL="${{ workflow.url }}"
           export REPOSITORY="${{ github.repository }}"

@@ -6,6 +6,7 @@ import type { EncryptedStateAndProofChain } from '../api/types';
 import type { CrdtController } from '../crdt/crdt-controller';
 import type { DmkSignerService } from '../crypto/service/dmk-signer-service';
 import type { DeviceManagementService } from '../device-manager/device-management-service';
+import type { SyncFlowLogger } from '../logger';
 import type { UpdateHandler } from '../update-handler/handler';
 
 export class SyncOperations<Latest extends StorageVersion, Rest> {
@@ -20,11 +21,12 @@ export class SyncOperations<Latest extends StorageVersion, Rest> {
 
     public async applyRemoteUpdate(
         update: EncryptedStateAndProofChain,
-        signal?: AbortSignal
+        signal: AbortSignal | undefined,
+        flow: SyncFlowLogger
     ): Promise<{ hasLocalChanges: boolean; revoked?: boolean }> {
         return await this.queue.run(async () => {
             this.throwIfAborted(signal);
-            return await this.updateHandler.handle(update);
+            return await this.updateHandler.handle(update, flow);
         });
     }
 
@@ -38,15 +40,17 @@ export class SyncOperations<Latest extends StorageVersion, Rest> {
     public async addDevice(
         ikPub: Buffer,
         storageVersion: number | undefined,
+        devicesStorageVersion: number | undefined,
         dmkSignerService: DmkSignerService,
         signal?: AbortSignal
     ): Promise<void> {
         await this.queue.run(async () => {
             this.throwIfAborted(signal);
             await this.deviceManager.addDevice(ikPub, dmkSignerService);
-            if (storageVersion !== undefined) {
-                await this.crdtController.addAuthor(ikPub, storageVersion);
-            }
+            await this.crdtController.addAuthor(ikPub, {
+                storageVersion,
+                devicesStorageVersion
+            });
         });
     }
 

@@ -2,12 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
 import type { StorageImpl } from '../src';
-import { createStorage, DEVICES_KEY } from '../src';
+import { createStorage, DEVICES_KEY, VERSION_DELETION_KEY } from '../src';
 import type { StorageV1 } from './version-fixtures';
-import { identityProjection, type StorageV3, v1, v3 } from './version-fixtures';
+import { identityPatch, type StorageV3, v1, v3 } from './version-fixtures';
 import { createOriginContainer, SlotKind, type ContainerSlot } from '../src/core/slots';
-import { slotFromJson } from '../src/core/slots/slot-json';
-import { projection } from '../src/core/versioning/projection';
+import { slotFromJson, stripSlot } from '../src/core/slots/slot-json';
+import { patch } from '../src/core/versioning/patch';
 import { defineVersionHList, hCons, hNil } from '../src/core/versioning/version';
 
 const device1 = Buffer.from('device-1').toString('hex');
@@ -37,8 +37,14 @@ describe('version migration', () => {
         const exported = storage.exportSlot();
         const v3Slot = exported.v['3'] as ContainerSlot;
 
-        expect(exported.v['1']).toBeUndefined();
+        expect(exported.v['1']).toBeDefined();
         expect(exported.v['2']).toBeUndefined();
+        expect(stripSlot(exported.v[VERSION_DELETION_KEY])).toEqual({
+            '1': {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                shouldBeDeletedAt: expect.any(Number)
+            }
+        });
         expect(v3Slot.v.key1).toMatchObject({
             v: 42,
             t: 123,
@@ -178,7 +184,60 @@ describe('version migration', () => {
         expect(newV3.v.key4).toMatchObject({ t: 0, a: '' });
     });
 
-    it('preserves tombstones through raw slot projections', () => {
+    it('migrates older-version slots up after merge when device metadata stays latest', () => {
+        const sharedDevice = Buffer.from('shared-device');
+        const sharedDeviceHex = sharedDevice.toString('hex');
+        const receivingRoot = createOriginContainer({
+            '3': slotFromJson(
+                {
+                    key1: 0,
+                    label: 'initial',
+                    key3: false,
+                    key4: 'v3'
+                },
+                0,
+                ''
+            ),
+            [DEVICES_KEY]: slotFromJson(
+                {
+                    [sharedDeviceHex]: { version: 3 }
+                },
+                100,
+                sharedDeviceHex
+            )
+        });
+        const incomingRoot = createOriginContainer({
+            '1': slotFromJson({ key1: 42, key2: 'from-v1' }, 50, sharedDeviceHex),
+            [DEVICES_KEY]: slotFromJson(
+                {
+                    [sharedDeviceHex]: { version: 1 }
+                },
+                50,
+                sharedDeviceHex
+            )
+        });
+        const receivingDevice = createStorage({
+            authorId: sharedDevice,
+            versions: v3,
+            root: receivingRoot
+        }) as StorageImpl<StorageV3>;
+        const incomingStorage = createStorage({
+            authorId: Buffer.from('reader'),
+            versions: v1,
+            root: incomingRoot
+        }) as StorageImpl<StorageV1>;
+
+        receivingDevice.merge(incomingStorage.export());
+
+        expect(receivingDevice.read()).toEqual({
+            key1: 42,
+            label: 'from-v1',
+            key3: false,
+            key4: 'v3'
+        });
+    });
+
+    it('preserves tombstones through raw slot patches', () => {
         const schemaOptionalV1 = z.object({
             keep: z.string(),
             optional: z.string().optional()
@@ -189,16 +248,13 @@ describe('version migration', () => {
             added: z.boolean()
         });
 
-        const projectOptionalV1ToV2 = projection(schemaOptionalV1, schemaOptionalV2, s => ({
-            keep: s.copy(),
-            renamed: s.from('optional'),
-            added: s.default(false)
-        }));
+        const projectOptionalV1ToV2 = patch(schemaOptionalV1, schemaOptionalV2, draft =>
+            draft.rename([], 'optional', 'renamed').newField([], 'added', false)
+        );
 
-        const projectOptionalV2ToV1 = projection(schemaOptionalV2, schemaOptionalV1, s => ({
-            keep: s.copy(),
-            optional: s.from('renamed')
-        }));
+        const projectOptionalV2ToV1 = patch(schemaOptionalV2, schemaOptionalV1, draft =>
+            draft.rename([], 'renamed', 'optional').deleteField([], 'added')
+        );
 
         const optionalV2 = defineVersionHList(
             hCons(
@@ -221,8 +277,8 @@ describe('version migration', () => {
                             keep: '',
                             optional: 'initial'
                         },
-                        projectUp: identityProjection,
-                        projectDown: identityProjection
+                        projectUp: identityPatch,
+                        projectDown: identityPatch
                     },
                     hNil
                 )
@@ -237,8 +293,8 @@ describe('version migration', () => {
                         keep: '',
                         optional: 'initial'
                     },
-                    projectUp: identityProjection,
-                    projectDown: identityProjection
+                    projectUp: identityPatch,
+                    projectDown: identityPatch
                 },
                 hNil
             )
@@ -262,10 +318,10 @@ describe('version migration', () => {
         const oldExport = oldDevice.exportSlot();
         const newExport = newDevice.exportSlot();
         const oldTombstone = (oldExport.v['1'] as ContainerSlot).v.optional;
-        const projectedTombstone = (newExport.v['2'] as ContainerSlot).v.renamed;
+        const migratedTombstone = (newExport.v['2'] as ContainerSlot).v.renamed;
 
-        expect(projectedTombstone).toEqual(oldTombstone);
-        expect(projectedTombstone).toMatchObject({
+        expect(migratedTombstone).toEqual(oldTombstone);
+        expect(migratedTombstone).toMatchObject({
             s: SlotKind.Tombstone,
             a: oldDeviceAuthor
         });

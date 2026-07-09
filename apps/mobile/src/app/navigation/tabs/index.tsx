@@ -5,10 +5,11 @@ import { useEffect, useState } from 'react';
 
 import { useHasPortfolio } from '@safely/ux';
 
-import { HistoryScreen } from '@mobile/screens/HistoryScreen';
-import { HomeScreen } from '@mobile/screens/HomeScreen';
 import { SafelyBetaScreen } from '@mobile/screens/SafelyBetaScreen';
-import { Bolt28, Home28, Icon, InformationCircle28 } from '@mobile/shared/ui/Icon';
+import { SafetyScreen } from '@mobile/screens/SafetyScreen';
+import { Home28, Icon, Message28, ShieldExclamationmark28 } from '@mobile/shared/ui/Icon';
+
+import { HomeStack } from '../stacks/HomeStack';
 
 const TabBar = (props: BottomTabBarProps) => {
     const hasPortfolio = useHasPortfolio();
@@ -28,18 +29,11 @@ const TabBar = (props: BottomTabBarProps) => {
 
 export const TabsNavigator = createBottomTabNavigator({
     screens: {
-        HomeScreen: {
-            screen: HomeScreen,
+        HomeStack: {
+            screen: HomeStack,
             options: () => ({
                 title: i18next.t('tabs.home'),
                 tabBarIcon: ({ color }) => <Icon icon={Home28} style={{ tintColor: color }} />
-            })
-        },
-        HistoryScreen: {
-            screen: HistoryScreen,
-            options: () => ({
-                title: i18next.t('tabs.history'),
-                tabBarIcon: ({ color }) => <Icon icon={Bolt28} style={{ tintColor: color }} />
             })
         },
         SafelyBetaScreen: {
@@ -48,9 +42,16 @@ export const TabsNavigator = createBottomTabNavigator({
                 path: 'beta'
             },
             options: () => ({
-                title: i18next.t('tabs.about'),
+                title: i18next.t('tabs.updates'),
+                tabBarIcon: ({ color }) => <Icon icon={Message28} style={{ tintColor: color }} />
+            })
+        },
+        SafetyScreen: {
+            screen: SafetyScreen,
+            options: () => ({
+                title: i18next.t('tabs.safety'),
                 tabBarIcon: ({ color }) => (
-                    <Icon icon={InformationCircle28} style={{ tintColor: color }} />
+                    <Icon icon={ShieldExclamationmark28} style={{ tintColor: color }} />
                 )
             })
         }

@@ -1,7 +1,7 @@
 import { HDKey } from '@scure/bip32';
 
-import { assertUnreachable } from '../../../../../utils/types';
-import { BtcNetwork, BtcWalletType } from '../../../../blockchain';
+import type { BtcNetwork, BtcWalletType } from '../../../../blockchain';
+import { BtcDerivationPath } from '../../../../blockchain';
 import type { ISeedProducer } from '../../../../seed/I-seed-producer';
 import type { IBtcNodeProducer } from '../../I-btc-node-producer';
 
@@ -14,20 +14,7 @@ export class BtcBip32NodeProducer implements IBtcNodeProducer {
     ) {}
 
     private getDerivationPath(): string {
-        if (this.walletType === BtcWalletType.NATIVE_SEGWIT) {
-            let networkValue;
-            if (this.network === BtcNetwork.MAINNET) {
-                networkValue = '0';
-            } else if (this.network === BtcNetwork.TESTNET) {
-                networkValue = '1';
-            } else {
-                assertUnreachable(this.network);
-            }
-
-            return `m/84'/${networkValue}'/${this.derivationIndex}'`;
-        } else {
-            assertUnreachable(this.walletType);
-        }
+        return new BtcDerivationPath(this.walletType, this.network, this.derivationIndex).account();
     }
 
     public async getPortfolioDerivation(): Promise<HDKey> {

@@ -5,7 +5,9 @@ export const assetKeys = defineQueryKeys('assets', {
         fiat: (_fiatId: string) => finalKey
     }),
     rate: (_assetId: string) => ({
-        fiat: (_fiatId: string) => finalKey
+        fiat: (_fiatId: string) => ({
+            params: (_: { isTestnet: boolean }) => finalKey
+        })
     }),
     chart: (_assetId: string) => ({
         fiat: (_fiatId: string) => ({

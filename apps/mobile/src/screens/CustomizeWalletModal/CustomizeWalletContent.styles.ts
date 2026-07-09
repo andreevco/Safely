@@ -13,10 +13,9 @@ export const styles = StyleSheet.create(theme => ({
         flex: 1
     },
     textContainer: {
-        gap: theme.spacing[8],
+        gap: theme.spacing[4],
         paddingVertical: theme.spacing[16],
-        paddingHorizontal: theme.spacing[32],
-        marginBottom: theme.spacing[12]
+        paddingHorizontal: theme.spacing[32]
     },
     inputContainer: {
         marginVertical: theme.spacing[8],
@@ -25,7 +24,7 @@ export const styles = StyleSheet.create(theme => ({
     inputWrapper: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: theme.colors.background.tertiary,
+        backgroundColor: theme.colors.input.background,
         borderRadius: theme.radius.md,
         paddingHorizontal: theme.spacing[16],
         borderWidth: 1,

@@ -29,6 +29,9 @@ export const styles = StyleSheet.create(theme => ({
                 },
                 accentRed: {
                     tintColor: theme.colors.accent.red
+                },
+                accentOrange: {
+                    tintColor: theme.colors.accent.orange
                 }
             }
         }

@@ -7,6 +7,7 @@ import { OutputsAreSpendingMoreThanInputsError } from './outputs-are-spending-mo
 import { PortfolioAlreadyExistsError } from './portfolio-already-exists.error';
 import { PortfolioGenerationFailedError } from './portfolio-generation-failed.error';
 import { BtcSendDustError } from '../../blockchain-api/btc/errors';
+import { ParserUnrecognizedError, ParserUnsupportedSchemeError } from '../../external-input/errors';
 
 export const customErrors = {
     InvalidMnemonicError,
@@ -16,7 +17,9 @@ export const customErrors = {
     OutputsAreSpendingMoreThanInputsError,
     LinkingUnsafeProtocolError,
     LinkingFailedToOpenError,
-    ReconnectFromAnotherAccountError
+    ReconnectFromAnotherAccountError,
+    ParserUnrecognizedError,
+    ParserUnsupportedSchemeError
 } as const;
 export type CustomError = InstanceType<(typeof customErrors)[keyof typeof customErrors]>;
 

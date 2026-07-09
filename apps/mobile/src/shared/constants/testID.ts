@@ -8,14 +8,13 @@
 export const TEST_ID = {
     welcome: {
         createWallet: 'welcome.createWallet',
-        importWallet: 'welcome.importWallet'
+        importWallet: 'welcome.importWallet',
+        moreOptions: 'welcome.moreOptions',
+        qrSignIn: 'welcome.qrSignIn',
+        watchAccount: 'welcome.watchAccount'
     },
     biometry: {
         skip: 'biometry.skip'
-    },
-    accountCreated: {
-        protectLater: 'accountCreated.protectLater',
-        addDevice: 'accountCreated.addDevice'
     },
     home: {
         settingsButton: 'home.settingsButton',
@@ -32,7 +31,8 @@ export const TEST_ID = {
     addWallet: {
         createNew: 'addWallet.createNew',
         importExisting: 'addWallet.importExisting',
-        watchAccount: 'addWallet.watchAccount'
+        watchAccount: 'addWallet.watchAccount',
+        testnet: 'addWallet.testnet'
     },
     watchOnly: {
         addressInput: 'watchOnly.addressInput',

@@ -3,10 +3,12 @@ import type { RatedCryptoAssetAmount } from '@safely/core';
 import {
     useActiveBtcWallet,
     useActivePortfolio,
+    useActiveWalletMeta,
     useCreateContact,
     useNumberFormatter
 } from '../../../../entities';
 import { useFetchMaxValue } from '../../../blockchain-send';
+import { useAmountInputType, useSetAmountInputType } from '../amountInputType';
 import type { SendFormMachineInput } from '../machine/types';
 import type {
     ContactSuggestion,
@@ -38,7 +40,11 @@ export function useSendFormMachineInput(props: UseSendFormMachineInputProps): Se
     const fetchMaxValue = useFetchMaxValue();
     const activeBtcWallet = useActiveBtcWallet();
     const activePortfolio = useActivePortfolio();
+    const activeWalletMeta = useActiveWalletMeta();
     const { mutateAsync: createContact } = useCreateContact();
+
+    const rememberedInputType = useAmountInputType();
+    const persistAmountInputType = useSetAmountInputType();
 
     return {
         resolvedInitialValues: initialValues,
@@ -49,11 +55,14 @@ export function useSendFormMachineInput(props: UseSendFormMachineInputProps): Se
         activeWallet: {
             id: activePortfolio.id.toString(),
             address: activeBtcWallet.address,
-            meta: activePortfolio.meta
+            meta: activeWalletMeta
         },
+        networkType: activePortfolio.networkType,
         shouldResetForm: () => shouldResetForm,
         onSubmit,
         createContact,
-        fetchMaxValue
+        fetchMaxValue,
+        persistAmountInputType,
+        initialAmountInputType: rememberedInputType
     };
 }

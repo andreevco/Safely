@@ -11,6 +11,7 @@ type SchemaKey<S extends z.ZodObject<z.ZodRawShape>> = Extract<keyof ShapeOf<S>,
 
 export interface ISyncProvider<S extends ZodObject> {
     syncStatusManager: ISyncStatusManager;
+    readonly hasNewerStorageVersions: boolean;
 
     get<K extends SchemaKey<S>>(key: K): z.output<ShapeOf<S>[K]>;
     getAll(): z.output<S>;

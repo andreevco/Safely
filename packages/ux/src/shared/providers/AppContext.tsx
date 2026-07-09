@@ -11,6 +11,7 @@ import type { Logger } from '@safely/sync';
 
 import type { TranslateFn } from '../i18n/types';
 import type { Linking } from '../linking';
+import type { LedgerTransport } from './ledger-transport';
 import type { LoaderService } from '../loader/types';
 import type { IUnlockableSecuredEncryptedStorage, Security } from '../security/types';
 import type { ToastService } from '../toast/types';
@@ -32,6 +33,8 @@ export interface IAppContext {
     userCountryInfo?: UserCountryInfo;
 
     devToken?: string;
+
+    devIsTestnetAllowed?: boolean;
 
     storage: {
         ux: {
@@ -64,6 +67,8 @@ export interface IAppContext {
     reloadApp: () => void;
 
     logger: Logger;
+
+    ledgerTransport: LedgerTransport;
 
     security: Security;
 

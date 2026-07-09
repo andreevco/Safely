@@ -1,0 +1,23 @@
+import Svg, { Circle, Path, G } from 'react-native-svg';
+
+export interface DottedShieldIconProps {
+    size: number;
+    fillShield: string;
+    fillDot: string;
+}
+
+export const DottedShieldIcon = (props: DottedShieldIconProps) => {
+    const { size, fillShield, fillDot } = props;
+
+    return (
+        <Svg width={size} height={size} viewBox="0 0 28 28" fill="none">
+            <G clipPath="url(#clip0_8239_4294)">
+                <Path
+                    d="M18.168 3.58789C18.0587 4.04079 18 4.51354 18 5C18 8.31371 20.6863 11 24 11C24.1685 11 24.3351 10.9902 24.5 10.9766V15C24.5 23.5 14 27 14 27C14 27 3.5 23.5 3.5 15V6L14 2L18.168 3.58789ZM13 19.5H15V17.5H13V19.5ZM13 15.5H15V8.5H13V15.5Z"
+                    fill={fillShield}
+                />
+                <Circle cx="24" cy="5" r="4" fill={fillDot} />
+            </G>
+        </Svg>
+    );
+};
