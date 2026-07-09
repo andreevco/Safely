@@ -186,7 +186,19 @@ describe('ordered array slots', () => {
                     item.set('__setId', 'p2');
                 });
             })
-        ).toThrow('Updated item id must remain "p1"');
+        ).toThrow('Draft field "__setId" is readonly');
+
+        expect(() =>
+            storage.transaction(draft => {
+                draft.at('portfolios').entry('p1').unwrap().at('__setId').set('p2');
+            })
+        ).toThrow('Draft field "__setId" is readonly');
+
+        expect(() =>
+            storage.transaction(draft => {
+                draft.at('portfolios').entry('p1').unwrap().delete('__setId');
+            })
+        ).toThrow('Draft field "__setId" is readonly');
 
         expect(storage.get().portfolios).toEqual([{ __setId: 'p1', name: 'One' }]);
     });

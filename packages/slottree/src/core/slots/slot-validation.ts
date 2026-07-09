@@ -1,6 +1,20 @@
 import type { JsonValue } from '../json';
-import { ORDERED_ARRAY_ITEM_ID_KEY, SlotKind, type Slot } from './slot';
+import {
+    isOrderedArrayOrderIndex,
+    ORDERED_ARRAY_ITEM_ID_KEY,
+    SlotKind,
+    type ContainerSlot,
+    type Slot
+} from './slot';
 import { stripSlot } from './slot-json';
+
+export function validateSlotTreeRoot(root: unknown): asserts root is ContainerSlot {
+    validateSlot(root);
+
+    if (root.s !== SlotKind.Container || root.t !== 0 || root.a !== '') {
+        throw new Error('Slot tree root must be an origin container slot');
+    }
+}
 
 export function validateSlot(slot: unknown): asserts slot is Slot {
     validateSlotInner(slot, 0);
@@ -43,6 +57,10 @@ function validateSlotMetadata(record: Record<string, unknown>): void {
 
     if (typeof record.a !== 'string') {
         throw new Error('Slot author must be a string');
+    }
+
+    if (record.a === '' && record.t !== 0) {
+        throw new Error('Non-origin slot author must not be empty');
     }
 }
 
@@ -108,18 +126,17 @@ function validateOrderedArrayItem(key: string, item: unknown): void {
 
     const values = record.v as Record<string, unknown>;
     const order = values.order as Record<string, unknown> | undefined;
-    if (
-        order === undefined ||
-        order.s !== SlotKind.Atomic ||
-        typeof order.v !== 'number' ||
-        !Number.isFinite(order.v)
-    ) {
-        throw new Error(`Ordered array item "${key}" order must be a finite number atomic slot`);
+    if (order === undefined || order.s !== SlotKind.Atomic || !isOrderedArrayOrderIndex(order.v)) {
+        throw new Error(`Ordered array item "${key}" order must be a 32-bit integer atomic slot`);
     }
 
     const value = values.value;
     if (value === undefined) {
         throw new Error(`Ordered array item "${key}" value must be a valid slot`);
+    }
+
+    if ((value as Record<string, unknown>).s === SlotKind.Tombstone) {
+        throw new Error(`Ordered array item "${key}" value must not be a tombstone`);
     }
 
     const stripped = stripSlot(value as Slot);
