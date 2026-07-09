@@ -7,6 +7,7 @@ import {
     VersionController
 } from '../src';
 import { v1, v3 } from './version-fixtures';
+import { MergeProtocol } from '../src/core/merge-protocol';
 import {
     createOriginContainer,
     createTombstoneSlot,
@@ -14,7 +15,6 @@ import {
     isTombstoneSlot,
     type ContainerSlot
 } from '../src/core/slots';
-import { MergeProtocol } from '../src/core/merge-protocol';
 import { slotFromJson, stripSlot } from '../src/core/slots/slot-json';
 import { hListToRuntimeArray } from '../src/core/versioning/version';
 import { VersionPropagation } from '../src/core/versioning/version-propagation';
