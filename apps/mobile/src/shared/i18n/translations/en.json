@@ -385,7 +385,7 @@
         "moreOptions": "More options",
         "linkWithQr": "Link with QR",
         "legalLine1": "By using Safely, you agree to accept",
-        "legalLine2": "our <terms>Terms of Use</terms> and <privacy>Privacy Policy</privacy>."
+        "legalLine2": "our <privacy>Privacy Policy</privacy>."
     },
     "moreOptions": {
         "title": "More options",
@@ -826,5 +826,9 @@
             "unsafeProtocol": "Unsafe protocol",
             "failedToOpen": "Couldn't open the link"
         }
+    },
+    "legal": {
+        "title": "Legal",
+        "privacyPolicy": "Privacy Policy"
     }
 }
