@@ -150,14 +150,15 @@ export class StorageImpl<T> implements SlotTree<T> {
     }
 
     public removeAuthor(authorId: Buffer): void {
-        const controller = new VersionController(this.root, this.versions, this.protocol);
-        const deleted = controller.deleteAuthor(authorIdToHex(authorId));
-        if (!deleted) {
-            return;
-        }
+        this.commitRootMutation(root => {
+            const controller = new VersionController(root, this.versions, this.protocol);
+            const deleted = controller.deleteAuthor(authorIdToHex(authorId));
+            if (!deleted) {
+                return;
+            }
 
-        controller.deleteVersionsUnusedByDevices();
-        this.observers.notify();
+            controller.deleteVersionsUnusedByDevices();
+        });
     }
 
     public get version(): number {

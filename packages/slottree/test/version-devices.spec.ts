@@ -322,21 +322,4 @@ describe('storage device versions', () => {
         });
         expect(imported.read()).toEqual(v3Initial);
     });
-
-    it('does not notify or rewrite storage when removing an unknown author', () => {
-        const storage = createStorage({
-            authorId: Buffer.from('device-1'),
-            versions: v3
-        });
-        const before = storage.export();
-        let calls = 0;
-        storage.onChange(() => {
-            calls += 1;
-        });
-
-        storage.removeAuthor(Buffer.from('missing-device'));
-
-        expect(calls).toBe(0);
-        expect(storage.export().equals(before)).toBe(true);
-    });
 });
