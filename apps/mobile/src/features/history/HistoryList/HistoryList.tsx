@@ -9,14 +9,14 @@ import {
     type ActivityItemsDatedGroup,
     type BtcActivityItem,
     assetKeys,
+    useActivePortfolioRate,
     useActualBtcBlockNumber,
     useContacts,
     useDateFormatter,
     useGroupedHistory,
     useInterval,
     useNumberFormatter,
-    usePortfolios,
-    useRate
+    usePortfolios
 } from '@safely/ux';
 
 import { ActivityItem, ActivityItemSkeleton } from '@mobile/entities/activity';
@@ -55,7 +55,7 @@ export const HistoryList = (props: HistoryListProps) => {
     const numberFormatter = useNumberFormatter();
     const portfolios = usePortfolios();
     const contacts = useContacts();
-    const { data: rateData } = useRate(BTC_ASSET);
+    const { data: rateData } = useActivePortfolioRate(BTC_ASSET);
     const { data: currentBlockNumber } = useActualBtcBlockNumber();
 
     const isFocused = useIsFocused();

@@ -4,7 +4,7 @@ import { BTC_ASSET, PortfolioType } from '@safely/core';
 
 import { useAnalytics } from './useAnalytics';
 import { useOnboardingId } from '../../shared/analytics/useOnboardingId';
-import { useRate } from '../asset/useRate';
+import { useActivePortfolioRate } from '../asset/useRate';
 import { sumBtcDisplay, useBtcWalletBalances } from '../btc-blockchain';
 import { useActiveFiat } from '../fiat/useActiveFiat';
 import { resolveBtcWallet, usePortfolios } from '../portfolio';
@@ -25,7 +25,7 @@ export function useTrackWalletOpen() {
     const linkState = useAccountLinkState();
     const totalBtc = sumBtcDisplay(useBtcWalletBalances(wallets));
     const { value: onboardingId } = useOnboardingId();
-    const { data: btcRate } = useRate(BTC_ASSET);
+    const { data: btcRate } = useActivePortfolioRate(BTC_ASSET);
 
     const fiatAmount = useMemo(() => {
         if (wallets.length === 0) return 0;
