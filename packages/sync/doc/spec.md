@@ -1,66 +1,5 @@
 # Specification
 
-# 0. Threat Model
-
-### 0.1 Secrets
-
-Secrets that need to be protected consists of 2 groups:
-1. High-value secrets. These are secrets which allow to access high-value assets, such as wallet private keys. These
-    secrets require user presence to be unlocked and used.
-2. Operational secrets. These secrets can be used to gain access to metadata, such as wallets name, but are not enough
-    to access high-value assets.
-
-**High-value secrets** (requires user-presence)
-
-- `MasterKey`
-- `VaultKey`
-- `DeviceManagementKey` private key
-
-**Operational secrets**
-
-- `SyncKey`
-- `IdentityKey` private key
-
-**Non-secrets**
-
-- Encrypted sync blobs (`ciphertext`, `nonce`, `snapshotProof`, `signature`)
-- Public keys (`DeviceManagementKey`, `IdentityKey`)
-
-### 0.2 Adversaries
-
-This is a complete list of adversaries that are considered in the threat model. 
-
-**A) Buggy clients (non-malicious)**
-
-- A client may produce corrupted local state or malformed snapshots due to bugs, crashes, or storage corruption.
-- **Defense goal:** other clients must validate all received data and refuse to apply invalid updates, preventing 
-corruption propagation.
-
-**B) Curious or compromised server (untrusted server)**
-
-- Server may try to read user data.
-- Server may attempt rollback, censorship, or history manipulation.
-- **Defense goals:**
-    - Confidentiality: server cannot read synced data without a `SyncKey`.
-    - Integrity: server cannot forge valid client updates without a `SyncKey`.
-    - Rollback resistance: server cannot roll back client state.
-
-**C) Server data loss / deletion**
-
-- Server may lose or delete all stored snapshots.
-- **Defense goal:** local-first means devices retain data and can continue functioning.
-
-**D) Offline access to encrypted mnemonics**
-
-- If an attacker reads the ciphertext+nonce but cannot unlock keychain/secure enclave, mnemonics should remain protected.
-- **Policy goal:** difficulty of extracting mnemonics should be comparable to directly extracting them from the device.
-
-### 0.3 Non-goals
-
-- **Post-compromise security:** if an attacker can exfiltrate `MasterKey` or `VaultKey`, the model is considered lost.
-- **Perfect-Forward Secrecy**: reasoning is the same as above.
-- **Physical device access**: if an attacker can access physical device, the model is considered lost.
-
 # **1. Key Hierarchy & Cryptography**
 
 The system utilizes a hierarchical key structure.
@@ -125,8 +64,18 @@ Child keys are derived from the Master Key.
 
 ### **1.4. Key Storage Policies**
 
-- **High Value (Master Key, Vault Key, DMK):** Stored in the Keychain. Access requires user presence.
-- **Operational (Sync Key, IK):** Stored in Keychain but accessible for background processes without user interaction.
+- **High Value (MasterKey, VaultKey, DMK):** Stored in the Keychain or comparable secure storage. Before accessing 
+  these keys, the client application MUST request explicit user approval using a biometric or device-credential check.
+- **Operational (SyncKey, IdentityKey)**: Stored in the Keychain or comparable secure storage and accessible to the 
+  application without user interaction, because they are required for background synchronization and authenticated API 
+  communication.
+
+User presence MUST be enforced by the client application and is not an access-control property of the stored Keychain
+item. Therefore, the operating system does not independently prevent a malfunctioning or malicious client from
+accessing these keys after obtaining access to the application's Keychain storage.
+
+This is intentional, as Keychain-level user-presence enforcement creates problems for application UI/UX. Specific
+issues are out of scope of this specification.
 
 ### **1.5. Account ID**
 
@@ -423,7 +372,7 @@ Each entry has the following properties:
 - `type`: device state:
     - `active`: the device is authorized to sync and author CRDT updates.
     - `added`: the device has been added to the account but is not activated locally yet.
-    - `revoked`: the device was removed from the account and MUST NOT author future updates.
+    - `revoked`: the device was removed from the account.
 - `ikPub`: 32-byte hex-encoded Ed25519 identity public key of the device.
 - `addedAt`: local timestamp from the add-device operation. Present only for `active` and `added` entries.
 - `sign`: 64-byte hex-encoded DMK signature authorizing the device-list entry.
@@ -445,7 +394,7 @@ A device enters the device list as `added` when another active device authorizes
 reconnect onboarding. At this point the device is present in the shared device state, but it is not considered fully
 active locally yet.
 
-`added` entries that never become active are temporary. Clients may delete stale `added` entries after the onboarding
+`added` entries that never become active are temporary. Clients MAY delete stale `added` entries after the onboarding
 window expires.
 
 **`active`**
@@ -458,6 +407,11 @@ that entry to `active`. This operation does not require separate DMK signature.
 
 A device becomes `revoked` when an active device applies a DMK-signed revoke operation for that device `IK`. Revocation
 replaces the previous `added` or `active` entry with a revoked entry containing the same `ikPub` and a revoke signature.
+
+The device has been removed from normal protocol participation. The server MUST reject future API operations and CRDT 
+updates attributed to that device.
+
+Revocation does not invalidate account keys already stored by the revoked device and is not a cryptographic security boundary. A malicious revoked device retaining SyncKey and its IdentityKey may still construct cryptographically valid snapshots. Protection against such a device is out of scope; a lost or compromised device requires migration to a new account.
 
 #### 3.2.2 Device List Signatures
 
