@@ -1,5 +1,5 @@
 import type { BtcWallet, RatedCryptoAssetAmount } from '@safely/core';
-import { BTC_ASSET } from '@safely/core';
+import { BTC_ASSET, BtcNetwork } from '@safely/core';
 
 import { useDerivedQuery } from '../../shared';
 import { useActiveBtcWallet } from '../portfolio';
@@ -9,7 +9,7 @@ import { useRate } from './useRate';
 
 export function useWalletAssets(wallet: BtcWallet) {
     const btcWalletUtxosQuery = useBtcBalance(wallet);
-    const btcPriceQuery = useRate(BTC_ASSET);
+    const btcPriceQuery = useRate(BTC_ASSET, wallet.network === BtcNetwork.TESTNET);
 
     return useDerivedQuery({
         queries: [btcWalletUtxosQuery, btcPriceQuery],

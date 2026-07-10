@@ -1,12 +1,12 @@
-import { BTC_ASSET, CryptoFiatRate } from '@safely/core/entities';
-import { useRate } from '@safely/ux';
+import { BTC_ASSET, CryptoFiatRate } from '@safely/core';
+import { useActivePortfolioRate } from '@safely/ux';
 
 export function BtcPriceBadge() {
     const {
         data: rate,
         isLoading,
         error
-    } = useRate(BTC_ASSET) as {
+    } = useActivePortfolioRate(BTC_ASSET) as {
         data: CryptoFiatRate | null | undefined;
         isLoading: boolean;
         error: Error | null;

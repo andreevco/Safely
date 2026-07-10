@@ -2,11 +2,11 @@ import type { TFunction } from 'i18next';
 
 import { ellipsisMiddle } from '@safely/core';
 import type {
+    useActivePortfolioRate,
     useActualBtcBlockNumber,
     useContacts,
     useNumberFormatter,
-    usePortfolios,
-    useRate
+    usePortfolios
 } from '@safely/ux';
 import {
     type ActivityItemsDatedGroupMeta,
@@ -40,7 +40,7 @@ export type ActivityRowContext = {
     numberFormatter: ReturnType<typeof useNumberFormatter>;
     portfolios: ReturnType<typeof usePortfolios>;
     contacts: ReturnType<typeof useContacts>;
-    rateData: ReturnType<typeof useRate>['data'];
+    rateData: ReturnType<typeof useActivePortfolioRate>['data'];
     currentBlockNumber: ReturnType<typeof useActualBtcBlockNumber>['data'];
     onNavigateToTransaction: (activity: BtcActivityItem) => void;
 };
