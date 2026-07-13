@@ -16,7 +16,12 @@ export function useAmountStepView(params: UseAmountStepViewParams) {
     const asset = view.parsed.asset;
     const decimals = asset?.amount.asset.decimals ?? BTC_ASSET.decimals;
     const hasPrice = !!asset?.price;
-    const hasInsufficientBalance = view.errors.amount === SendFormError.INSUFFICIENT_BALANCE;
+    const rawAmountError = view.errors.amount;
+    const amountError =
+        rawAmountError === SendFormError.INSUFFICIENT_BALANCE ||
+        rawAmountError === SendFormError.UNRECOGNIZED_AMOUNT
+            ? rawAmountError
+            : undefined;
     const isMax = view.status === 'max';
     const inputType = view.values.amountInputType;
 
@@ -55,7 +60,7 @@ export function useAmountStepView(params: UseAmountStepViewParams) {
     return {
         decimals,
         hasPrice,
-        hasInsufficientBalance,
+        amountError,
         isMax,
         inputType,
         alternativeAmount,

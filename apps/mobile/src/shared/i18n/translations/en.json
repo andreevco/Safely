@@ -356,7 +356,8 @@
             "selectTokenFirst": "Select token first",
             "unableToValidateToken": "Unable to validate token",
             "invalidAmount": "Invalid amount",
-            "insufficientBalance": "Insufficient balance"
+            "insufficientBalance": "Insufficient balance",
+            "unrecognizedAmount": "Couldn't recognize the amount"
         }
     },
     "signIn": {

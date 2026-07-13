@@ -161,6 +161,42 @@ export const createSendFormMachine = () =>
                         errors: { ...context.errors, amount: result.error }
                     };
                 }),
+                handlePasteAmount: assign(({ context, event }) => {
+                    assertEvent(event, 'PASTE_AMOUNT');
+
+                    const { value, status } = context.formatter.normalizePastedInput(event.raw);
+
+                    if (status === 'ambiguous') {
+                        return {
+                            values: {
+                                ...context.values,
+                                amount: '',
+                                isMax: false
+                            },
+                            parsed: {
+                                ...context.parsed,
+                                amount: undefined
+                            },
+                            errors: {
+                                ...context.errors,
+                                amount: SendFormError.UNRECOGNIZED_AMOUNT
+                            }
+                        };
+                    }
+
+                    const result = validateAmount(
+                        value,
+                        context.values.amountInputType,
+                        context.parsed.asset,
+                        context.formatter
+                    );
+
+                    return {
+                        values: { ...context.values, amount: result.formatted, isMax: false },
+                        parsed: { ...context.parsed, amount: result.parsed },
+                        errors: { ...context.errors, amount: result.error }
+                    };
+                }),
                 handleSetAmountInputType: assign(({ context, event }) => {
                     assertEvent(event, 'SET_AMOUNT_INPUT_TYPE');
 
@@ -517,6 +553,10 @@ export const createSendFormMachine = () =>
                                 },
                                 SET_AMOUNT: {
                                     actions: 'handleSetAmount',
+                                    target: '.routing'
+                                },
+                                PASTE_AMOUNT: {
+                                    actions: 'handlePasteAmount',
                                     target: '.routing'
                                 },
                                 SET_AMOUNT_INPUT_TYPE: {

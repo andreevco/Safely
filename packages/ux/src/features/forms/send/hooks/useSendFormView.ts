@@ -47,6 +47,7 @@ export function useSendFormView(props: UseSendFormViewProps): SendFormView {
         setRecipient,
         setAddressBookName,
         setAmount,
+        pasteAmount,
         setAmountInputType,
         setAsset,
         enterMax,
@@ -180,6 +181,7 @@ export function useSendFormView(props: UseSendFormViewProps): SendFormView {
                 availableAssets,
                 isMaxAvailable,
                 setAmount,
+                pasteAmount,
                 setAmountInputType,
                 setAsset,
                 prev: goPrev
@@ -219,6 +221,7 @@ export function useSendFormView(props: UseSendFormViewProps): SendFormView {
         setAddressBookName,
         selectSuggestion,
         setAmount,
+        pasteAmount,
         setAmountInputType,
         setAsset,
         enterMax,
