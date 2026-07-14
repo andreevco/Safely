@@ -1,17 +1,53 @@
 # Specification
 
+This specification describes the Safely Sync protocol, which is a local-first, end-to-end encrypted, real-time 
+synchronization protocol for user data across multiple devices.
+
+# 0. Overview
+
+The protocol goal is to securely synchronize user secrets and related metadata between multiple devices. It is designed
+for small and rarely editable storages. It is not designed for collaborative editing, large files, or high-frequency 
+updates. 
+
+It is assumed that one account can have only one owner. It is assumed that one user can have multiple accounts. 
+
+## Local-First Design
+
+The Safely Sync protocol is **local-first**. It means that client data is source of truth, and server acts only as an
+intermediate relay between user devices. Synchronization process in this context is a process of merging changes to the 
+storage between devices locally on the user device.
+
+To meet specifics of the protocol, SlotTree storage was implemented. SlotTree is a CRDT storage that allows to merge 
+changes from multiple devices without conflicts. SlotTree is designed to have undeletable history and versioning. More
+about SlotTree read in TODO.
+
+## End-to-End Encryption
+
+The protocol is **end-to-end encrypted**. It means that **all** user data is encrypted before uploading to the server.
+Data is encrypted as a single ciphertext, so server cannot make assumptions about inner structure of the storage.
+
+Data is encrypted using shared key `SyncKey` derived from the `MasterKey`. `MasterKey` is generated once when creating 
+account, and then shared with other devices using Onboarding flow. Neither `SyncKey` nor `MasterKey` are ever revealed
+as plaintext to the user, network or the server.
+
+## Real-time Synchronization
+
+The protocol is designed to be **real-time**. It means that when a device makes a change to the storage, it is 
+immediately uploaded to the server and other devices are notified about the change. No manual interaction from the user
+is required to synchronize the storage between devices.
+
 # **1. Key Hierarchy & Cryptography**
 
 The system utilizes a hierarchical key structure.
 
 ### **1.1. The Master Key**
 
-- **Definition:** The root key shared across all user devices.
+- **Definition:** The root key shared across all user devices. Every other key that must be shared between devices
+  MUST be derived from the `MasterKey`. It is generated once upon account creation and is never rotated. It is 
+  transferred to new devices via Onboarding flow.
 - **Format**: 32 bytes.
-- **Generation:** Generated once upon account creation on the initial device.
-- **Usage:** Exclusively used to derive child keys (`Sync Key`, `Vault Key`). It is **never** used directly for 
+- **Usage:** Exclusively used to derive child keys (`Sync Key`, `Vault Key`). It MUST NOT be used directly for 
   encryption or signing.
-- **Transmission:** Transferred to new devices during the onboarding process.
 
 ### **1.2. Derived Keys**
 
@@ -27,13 +63,14 @@ Child keys are derived from the Master Key.
     - **Format:** 32-byte key.
     - **Usage:** Encrypts sensitive secrets (specifically mnemonics) within local storage. These secrets will after
       be also encrypted with the `SyncKey` for transmission to the server. Reasoning for double encryption is to
-      ensure that `VaultKey` is locked under user-presence flag and is accessed only by the user, while `SyncKey` 
-      is used for server communication and can be accessed without user presence.
+      ensure that sensitive `VaultKey` is locked under user-presence flag and is accessed only by the user, while 
+      operational `SyncKey` is used for server communication and can be accessed without user presence.
     - **Derivation:** `VaultKey = HKDF(MasterKey, "safely/sync/v1/vault-key", 32)`
 - **Device Management Key (DMK):**
     - **Definition:** A key used for signing device management operations, such as adding or removing devices.
     - **Format:** Ed25519 key pair.
-    - **Usage:** Signs device management operations (add/revoke device operations)
+    - **Usage:** Signs device management operations (add/revoke device operations). Signatures are used by the server 
+      and the clients to verify that the new device is added by the owner of the account.
     - **Derivation:**
       ```
       DeviceMgmtSeed = HKDF(MasterKey, "safely/sync/v1/dmk-seed", 32)
@@ -42,30 +79,33 @@ Child keys are derived from the Master Key.
 - **Client-derived MasterKey keys:**
     - **Definition:** A public account API that lets clients derive additional account-scoped 32-byte keys from
       `MasterKey` without exposing the `MasterKey` itself.
+    - **Format:** Client-defined.
     - **Usage:** Used by client features that need stable account keys outside the core sync protocol. Each feature
-      MUST use a unique derivation domain.
-    - **API:** `deriveKeyFromMasterKey(domain, secureEncryptedStorage)`
+      MUST use a unique derivation domain. Specific derivations are implementation-defined.
     - **Derivation:**
       ```
-      DerivedKey(domain) = HKDF(
+      Input:
+        - domain: UTF-8 string, unique to the feature requesting a derived key
+      Derivation:
+        DerivedKey(domain) = HKDF( 
           ikm  = MasterKey,
           salt = empty,
           info = "safely/sync/v1/derived-from-master/" || domain,
           L    = 32
-      )
+        )
       ```
 
 
 ### **1.3. Identity Key**
 
-- **Definition:** A unique Ed25519 keypair generated locally by every device. Its private key MUST remain on the
-  device and never be shared with other devices.
-- **Usage:** Authorizing API calls.
+- **Definition:** A unique Ed25519 keypair defining specific device.
+- **Format:** Ed25519 key pair.
+- **Usage:** Authorizing API calls. Private key MUST NOT leave the device.
 
 ### **1.4. Key Storage Policies**
 
-- **High Value (MasterKey, VaultKey, DMK):** Stored in the Keychain or comparable secure storage. Before accessing 
-  these keys, the client application MUST request explicit user approval using a biometric or device-credential check.
+- **Sensitive (MasterKey, VaultKey, DMK):** Stored in the Keychain or comparable secure storage. Before accessing 
+  these keys, the client application MUST request explicit user approval using appropriate user-presence check.
 - **Operational (SyncKey, IdentityKey)**: Stored in the Keychain or comparable secure storage and accessible to the 
   application without user interaction, because they are required for background synchronization and authenticated API 
   communication.
@@ -148,6 +188,8 @@ QRMessage = {
 
 ### Sender (Existing Device)
 
+1. Ensure that local account is online.
+  - If account is not online, make account online using `/v1/accounts` endpoint.
 1. Decode the QR message and read `new_eph_pk`, `new_IK_pk`, `storageVersion`, and `devicesStorageVersion`.
 2. Generate `(old_eph_sk, old_eph_pk) = X25519 keypair`.
 3. Compute SharedSecret:
@@ -411,7 +453,10 @@ replaces the previous `added` or `active` entry with a revoked entry containing 
 The device has been removed from normal protocol participation. The server MUST reject future API operations and CRDT 
 updates attributed to that device.
 
-Revocation does not invalidate account keys already stored by the revoked device and is not a cryptographic security boundary. A malicious revoked device retaining SyncKey and its IdentityKey may still construct cryptographically valid snapshots. Protection against such a device is out of scope; a lost or compromised device requires migration to a new account.
+Revocation does not invalidate account keys already stored by the revoked device and is not a cryptographic security 
+boundary. A malicious revoked device retaining SyncKey and its IdentityKey may still construct cryptographically valid 
+snapshots. Protection against such a device is out of scope; a lost or compromised device requires migration to a new 
+account.
 
 #### 3.2.2 Device List Signatures
 
@@ -596,6 +641,9 @@ enforcing proof-chain verification.
 
 # **5. Server**
 
+This section contains vital endpoints that are required for the current specification. More endpoints may be added by 
+the implementation.
+
 ### **5.1. Authorization Header**
 
 All requests must be signed by the device's IK.
@@ -649,6 +697,9 @@ u32be(5)
 Upon receiving a request, the server must:
 
 1. Check if the `pub` (IK) is registered.
+   - For `POST /v1/accounts` endpoint, this step MUST be skipped.
+   - For `GET /v1/devices/onboarding/message` and `POST /v1/devices/onboarding/confirm` endpoints, check onboarding
+     messages instead.
 2. Check that the `nonce` has not been used in the last N minutes (requires a cache of nonces).
 3. Verify `timestamp + TTL > current_server_time`.
 4. Validate the Ed25519 signature against the payload.
