@@ -846,7 +846,8 @@
         },
         "disclaimer": "You’ll be redirected to {{providerName}}. {{providerName}}’s <terms>Terms</terms> and <privacy>Privacy Policy</privacy> apply.",
         "continue": "Continue with {{providerName}}",
-        "dontShowAgain": "Don’t show this again"
+        "dontShowAgain": "Don’t show this again",
+        "buyingGuide": "Buying guide"
     },
     "legal": {
         "title": "Legal",

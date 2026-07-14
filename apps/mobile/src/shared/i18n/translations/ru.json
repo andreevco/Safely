@@ -816,7 +816,8 @@
         },
         "disclaimer": "Вы будете перенаправлены на {{providerName}}. <terms>Условия</terms> и <privacy>Политика конфиденциальности</privacy> {{providerName}} применяются.",
         "continue": "Продолжить с {{providerName}}",
-        "dontShowAgain": "Не показывать это снова"
+        "dontShowAgain": "Не показывать это снова",
+        "buyingGuide": "Инструкция по покупке"
     },
     "ledgerSign": {
         "retry": "Повторить",

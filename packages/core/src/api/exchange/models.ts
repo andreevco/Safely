@@ -6,6 +6,7 @@ export const providerSchema = z.object({
         name: z.string(),
         description: z.string(),
         logo: z.string(),
+        buyingGuide: z.string().optional(),
         legal: z.object({ tos: z.string(), privacy: z.string() }),
         support: z.object({ email: z.string(), url: z.string() })
     }),

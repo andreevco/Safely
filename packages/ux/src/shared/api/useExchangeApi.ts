@@ -10,6 +10,6 @@ export function useExchangeApi(signer?: RequestSigner) {
 
     return useMemo(
         () => new ExchangeApi({ baseUrl: exchange.api_url, signer }),
-        [exchange.url, signer]
+        [exchange.api_url, signer]
     );
 }

@@ -36,6 +36,8 @@ export const ProviderSheet = ({
 
     const errorToast = useErrorToast({});
 
+    const { id, name: providerName, description, logo, legal, buyingGuide } = provider.info;
+
     const handleToggleDontShowAgain = () => {
         setDontShowAgain(prev => !prev);
     };
@@ -43,7 +45,7 @@ export const ProviderSheet = ({
     const handleContinue = async () => {
         try {
             if (dontShowAgain) {
-                await dismissProvider(provider.info.id);
+                await dismissProvider(id);
             }
             await openOnramp(provider);
         } catch (error) {
@@ -54,14 +56,24 @@ export const ProviderSheet = ({
     return (
         <BottomSheet shortHeader>
             <View style={styles.content}>
-                <Image source={{ uri: provider.info.logo }} style={styles.logo} />
+                <Image source={{ uri: logo }} style={styles.logo} />
                 <View style={styles.nameContainer}>
                     <Text textAlign="center" variant="titleM">
-                        {provider.info.name}
+                        {providerName}
                     </Text>
                     <Text textAlign="center" variant="bodyL" color="secondary">
-                        {provider.info.description}
+                        {description}
                     </Text>
+                    {buyingGuide && (
+                        <Text
+                            textAlign="center"
+                            variant="bodyL"
+                            color="link"
+                            onPress={() => openURL(buyingGuide)}
+                        >
+                            {t('exchange.buyingGuide')}
+                        </Text>
+                    )}
                 </View>
             </View>
             <Banner style={styles.banner}>
@@ -69,19 +81,11 @@ export const ProviderSheet = ({
                     <Banner.Text style={styles.disclaimerText}>
                         <Trans
                             i18nKey="exchange.disclaimer"
-                            values={{ providerName: provider.info.name }}
+                            values={{ providerName }}
                             components={{
-                                terms: (
-                                    <Text
-                                        color="primary"
-                                        onPress={() => openURL(provider.info.legal.tos)}
-                                    />
-                                ),
+                                terms: <Text color="primary" onPress={() => openURL(legal.tos)} />,
                                 privacy: (
-                                    <Text
-                                        color="primary"
-                                        onPress={() => openURL(provider.info.legal.privacy)}
-                                    />
+                                    <Text color="primary" onPress={() => openURL(legal.privacy)} />
                                 )
                             }}
                         />
@@ -90,7 +94,7 @@ export const ProviderSheet = ({
             </Banner>
             <View style={styles.actionBar}>
                 <Button isLoading={isPending} type="primary" size="large" onPress={handleContinue}>
-                    {t('exchange.continue', { providerName: provider.info.name })}
+                    {t('exchange.continue', { providerName })}
                 </Button>
                 <TouchableOpacity
                     onPress={handleToggleDontShowAgain}
