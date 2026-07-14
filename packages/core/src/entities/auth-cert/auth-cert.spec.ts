@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-assignment,@typescript-eslint/dot-notation */
 import { ed25519 } from '@noble/curves/ed25519.js';
 import { secp256k1 } from '@noble/curves/secp256k1.js';
 import { sha256 } from '@noble/hashes/sha2.js';
@@ -8,33 +8,32 @@ import { describe, it, expect } from 'vitest';
 import { hex, toUtf8, utf8 } from '@safely/sync/buffer';
 
 import { AUTH_CERT_CHILD_INDEX, CERT_DOMAIN } from './const';
-import { createReadOnlyCertificate } from './create-cert';
-import { buildRequestSigningPayload, signRequest } from './sign';
+import { ReadOnlyRequestSigner } from './read-only-request-signer';
 
 describe('AuthCert', () => {
-    it('should create an instance of AuthCert, sign and verify it', () => {
+    it('should create an instance of AuthCert, sign and verify it', async () => {
         const hdKey = HDKey.fromMasterSeed(Buffer.alloc(32, 0x01));
-        const { reqSecretKey, certHex } = createReadOnlyCertificate(hdKey);
+        const credential = ReadOnlyRequestSigner.createCredential(hdKey);
 
-        const reqInput = {
-            method: 'GET',
-            pathWithQuery: '/test/path?query=1',
-            bodyBytes: utf8('test-body'),
-            certHex,
-            reqSecretKey
-        };
-        const authHeader = signRequest(reqInput);
+        const signer = new ReadOnlyRequestSigner(() => Promise.resolve(credential));
+        const method = 'GET';
+        const pathWithQuery = '/test/path?query=1';
+        const body = 'test-body';
+
+        const authHeader = await signer.sign(method, pathWithQuery, body);
 
         validateRequest({
+            signer,
             authorization: authHeader,
-            method: reqInput.method,
-            pathWithQuery: reqInput.pathWithQuery,
-            bodyBytes: reqInput.bodyBytes
+            method,
+            pathWithQuery,
+            bodyBytes: utf8(body)
         });
     });
 });
 
 function validateRequest(input: {
+    signer: ReadOnlyRequestSigner;
     authorization: string;
     method: string;
     pathWithQuery: string;
@@ -64,7 +63,7 @@ function validateRequest(input: {
 
     const bodyBytes = input.bodyBytes ?? new Uint8Array();
 
-    const reqToVerify = buildRequestSigningPayload({
+    const reqToVerify = input.signer['buildSigningPayload']({
         method: input.method,
         pathWithQuery: input.pathWithQuery,
         bodyBytes,

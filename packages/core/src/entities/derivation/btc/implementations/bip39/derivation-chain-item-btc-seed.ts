@@ -2,7 +2,7 @@ import type { SBtcAccountChainItem } from '@safely/sync-storage';
 
 import { BtcBip32NodeProducer } from './btc-bip32-node-producer';
 import { BtcXpub } from '../../../../../blockchain-api';
-import { createReadOnlyCertificate, type ReadOnlyCredential } from '../../../../auth-cert';
+import { ReadOnlyRequestSigner, type ReadOnlyCredential } from '../../../../auth-cert';
 import type { BtcNetwork } from '../../../../blockchain';
 import { btcNetworkByPortfolioNetworkType, BtcWalletType } from '../../../../blockchain';
 import type { PortfolioNetworkType } from '../../../../portfolio';
@@ -54,7 +54,7 @@ export class DerivationChainItemBtcSeed implements IDerivationChainItemBtc {
             derivationIndex
         ).getPortfolioDerivation();
 
-        return createReadOnlyCertificate(accountNode);
+        return ReadOnlyRequestSigner.createCredential(accountNode);
     }
 
     public static generate({
