@@ -5,6 +5,7 @@ import type { JsonValue } from '../src';
 import { cborEncoder } from '../src/core/encoder/cbor/cbor-encoder';
 import {
     createContainerSlot,
+    createOriginContainer,
     createOrderedArraySlot,
     createTombstoneSlot,
     ORDERED_ARRAY_ITEM_ID_KEY,
@@ -27,7 +28,7 @@ describe('CborEncoder', () => {
     }
 
     it('roundtrips all slot kinds and JSON atomic values', () => {
-        const root = createContainerSlot(1, stringAuthor, {
+        const root = createOriginContainer({
             stringValue: atomic('text', 2),
             numberValue: atomic(42, 3),
             booleanValue: atomic(true, 4),
@@ -55,7 +56,7 @@ describe('CborEncoder', () => {
     });
 
     it('roundtrips ordered array item __setId as a regular slot', () => {
-        const root = createContainerSlot(1, stringAuthor, {
+        const root = createOriginContainer({
             orderedItems: createOrderedArraySlot(2, stringAuthor, {
                 itemA: createContainerSlot(3, stringAuthor, {
                     order: atomic(1, 4),
@@ -78,7 +79,7 @@ describe('CborEncoder', () => {
     });
 
     it('stores repeated long keys in the payload key table', () => {
-        const root = createContainerSlot(1, stringAuthor, {
+        const root = createOriginContainer({
             left: createContainerSlot(2, stringAuthor, {
                 a: atomic('left-short', 9),
                 id: atomic('left-id', 3),
@@ -99,6 +100,22 @@ describe('CborEncoder', () => {
         expect(payload[1]).not.toContain('a');
         expect(payload[1]).not.toContain('singleKey');
         expect(roundtrip(root)).toEqual(root);
+    });
+
+    it('rejects a decoded root with a non-origin timestamp', () => {
+        const root = createContainerSlot(1, stringAuthor, {
+            value: atomic('invalid root stamp', 2)
+        });
+
+        expect(() => roundtrip(root)).toThrow('Slot tree root must be an origin container slot');
+    });
+
+    it('rejects a decoded root with a non-empty author', () => {
+        const root = createContainerSlot(0, stringAuthor, {
+            value: atomic('invalid root author', 2)
+        });
+
+        expect(() => roundtrip(root)).toThrow('Slot tree root must be an origin container slot');
     });
 
     function roundtrip(root: ContainerSlot): ContainerSlot {

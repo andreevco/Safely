@@ -3,10 +3,7 @@ import { z } from 'zod';
 import { aboutSchema, bootConfigSchema, sCryptoAssetAmount, sCryptoFiatRate } from '@safely/core';
 import { UtxoSchema, UtxoWithOptionalTxSchema } from '@safely/core/api/btc';
 import { providersSchema, rampOrderSchema } from '@safely/core/api/exchange';
-
-const sHistoricalPrice = z.object({
-    prices: z.array(z.tuple([z.number(), z.number()])).describe('[timestamp, price] pair')
-});
+import { HistoricalPriceSchema } from '@safely/core/api/price';
 
 const sBtcActivityItem = z.object({
     type: z.literal('transaction'),
@@ -68,7 +65,7 @@ export const cacheSchemas = {
     about: aboutSchema,
     exchangeProviders: providersSchema,
     infiniteActivityData: sInfiniteActivityData,
-    sHistoricalPrice: sHistoricalPrice,
+    sHistoricalPrice: HistoricalPriceSchema,
     sCryptoFiatRate: sCryptoFiatRate
 } satisfies Record<string, z.ZodType>;
 

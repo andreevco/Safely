@@ -1,4 +1,5 @@
 import { useNavigation } from '@react-navigation/core';
+import { CommonActions } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
@@ -11,16 +12,29 @@ import { styles } from './DeviceUnlinkedBanner.styles';
 
 type DeviceUnlinkedBannerProps = {
     style?: StyleProp<ViewStyle>;
+    inModal?: boolean;
 };
 
-export const DeviceUnlinkedBanner = ({ style }: DeviceUnlinkedBannerProps) => {
+export const DeviceUnlinkedBanner = ({ style, inModal = false }: DeviceUnlinkedBannerProps) => {
     const { t } = useTranslation();
     const navigation = useNavigation();
     const linkState = useAccountLinkState();
 
     const handlePress = useCallback(() => {
-        navigation.navigate('ReconnectDeviceModal');
-    }, [navigation]);
+        if (inModal) {
+            navigation.dispatch(
+                CommonActions.reset({
+                    index: 0,
+                    routes: [
+                        { name: 'TabsNavigator', state: { routes: [{ name: 'SafetyScreen' }] } }
+                    ]
+                })
+            );
+            return;
+        }
+
+        navigation.navigate('TabsNavigator', { screen: 'SafetyScreen' });
+    }, [inModal, navigation]);
 
     if (linkState !== AccountLinkState.UNLINKED) {
         return null;

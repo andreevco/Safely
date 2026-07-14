@@ -1,26 +1,28 @@
 import { createStaticNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import { AccountCreatedScreen } from '@mobile/screens/AccountCreatedScreen';
 import { AddAccountSheet } from '@mobile/screens/AddAccountSheet';
 import { BiometryScreen } from '@mobile/screens/BiometryScreen';
 import { ChangePasscodeScreen } from '@mobile/screens/ChangePasscodeScreen';
+import { ConnectToSignSheet } from '@mobile/screens/ConnectToSignSheet';
 import { CurrencyScreen } from '@mobile/screens/CurrencyScreen';
 import { CustomizeAccountModal } from '@mobile/screens/CustomizeAccountModal';
 import { CustomizeWalletModal } from '@mobile/screens/CustomizeWalletModal';
 import { DestructiveConfirmSheet } from '@mobile/screens/DestructiveConfirmSheet';
 import { ExchangeModal } from '@mobile/screens/ExchangeModal';
 import { LockScreen } from '@mobile/screens/LockScreen';
+import { MoreOptionsSheet } from '@mobile/screens/MoreOptionsSheet';
 import { NewContactModal } from '@mobile/screens/NewContactModal';
 import { ConfirmDeleteContactSheet } from '@mobile/screens/NewContactModal/screens/ConfirmDeleteContactSheet';
+import { OnboardingImportWalletScreen } from '@mobile/screens/OnboardingImportWalletScreen';
 import { OnboardingPasscodeScreen } from '@mobile/screens/OnboardingPasscodeScreen';
+import { OnboardingWatchAccountScreen } from '@mobile/screens/OnboardingWatchAccountScreen';
 import { OrderScreen } from '@mobile/screens/OrderScreen';
 import { PasscodeVerificationScreen } from '@mobile/screens/PasscodeVerificationScreen';
 import { PendingFundsSheet } from '@mobile/screens/PendingFundsSheet';
 import { ProviderSheet } from '@mobile/screens/ProviderSheet';
 import { QRScanModal } from '@mobile/screens/QRScanModal';
 import { ReceiveAssetModal } from '@mobile/screens/ReceiveAssetModal';
-import { ReconnectDeviceModal } from '@mobile/screens/ReconnectDeviceModal';
 import { RemoveWalletSheet } from '@mobile/screens/RemoveWalletSheet';
 import {
     DisconnectDeviceSheet,
@@ -37,6 +39,7 @@ import { WatchOnlySheet } from '@mobile/screens/WatchOnlySheet';
 import { WelcomeScreen } from '@mobile/screens/WelcomeScreen';
 
 import { AddWalletStack } from './stacks/AddWalletStack';
+import { OnboardingLedgerStack } from './stacks/OnboardingLedgerStack';
 import { SendStack } from './stacks/SendStack';
 import { SettingsStack } from './stacks/SettingsStack';
 import { SignInStack } from './stacks/SignInStack';
@@ -50,9 +53,21 @@ export const RootStack = createNativeStackNavigator({
                 WelcomeScreen: WelcomeScreen,
                 OnboardingPasscodeScreen: OnboardingPasscodeScreen,
                 BiometryScreen: BiometryScreen,
-                AccountCreatedScreen: AccountCreatedScreen,
                 SignInScreen: SignInScreen,
-                SignInSuccessScreen: SignInSuccessScreen
+                SignInSuccessScreen: SignInSuccessScreen,
+                OnboardingImportWalletScreen: OnboardingImportWalletScreen,
+                OnboardingWatchAccountScreen: {
+                    screen: OnboardingWatchAccountScreen,
+                    options: {
+                        presentation: 'card'
+                    }
+                },
+                OnboardingConnectLedgerModal: {
+                    screen: OnboardingLedgerStack,
+                    options: {
+                        presentation: 'card'
+                    }
+                }
             }
         },
         Screens: {
@@ -106,7 +121,6 @@ export const RootStack = createNativeStackNavigator({
                 SelectAccountModal: SelectAccountModal,
                 SelectAccountSelectorModal: SelectAccountSelectorModal,
                 ReceiveAssetModal: ReceiveAssetModal,
-                ReconnectDeviceModal: ReconnectDeviceModal,
                 SendAssetModal: SendStack
             },
             screenOptions: {
@@ -123,7 +137,9 @@ export const RootStack = createNativeStackNavigator({
                 SignOutAccountSheet: SignOutAccountSheet,
                 WatchOnlySheet: WatchOnlySheet,
                 PendingFundsSheet: PendingFundsSheet,
+                MoreOptionsSheet: MoreOptionsSheet,
                 ConfirmDeleteContactSheet: ConfirmDeleteContactSheet,
+                ConnectToSignSheet: ConnectToSignSheet,
                 ProviderSheet: ProviderSheet
             },
             screenOptions: {

@@ -1,19 +1,18 @@
 import type { MergeProtocol } from '../merge-protocol';
 import type { ContainerSlot, Slot } from '../slots';
-import { isContainerSlot, SlotKind } from '../slots';
+import { isContainerSlot, isTombstoneSlot, SlotKind } from '../slots';
 import type { StorageVersion } from './version';
 import { DEVICES_KEY } from './version-controller';
 import { stripSlot } from '../slots/slot-json';
 import { validateSlot } from '../slots/slot-validation';
 
 export class VersionPropagation {
-    constructor(private readonly versions: readonly StorageVersion[]) {}
+    constructor(
+        private readonly versions: readonly StorageVersion[],
+        private readonly protocol: MergeProtocol
+    ) {}
 
-    public propagateChangedOlderVersionsToNewer(
-        before: ContainerSlot,
-        root: ContainerSlot,
-        protocol: MergeProtocol
-    ): void {
+    public propagateChangedOlderVersionsToNewer(before: ContainerSlot, root: ContainerSlot): void {
         const activeVersions = this.activeVersionsForMerge(root);
         if (activeVersions.size <= 1) {
             return;
@@ -40,14 +39,14 @@ export class VersionPropagation {
 
             const projected = toVersion.projectUp(current);
             this.validateVersionSlot(toVersion, projected);
-            current = this.mergeIntoExistingVersion(root, toVersion, projected, protocol, {
+            current = this.mergeIntoExistingVersion(root, toVersion, projected, {
                 updateExisting: true,
                 createMissing: false
             });
         }
     }
 
-    public propagateToOlderVersions(root: ContainerSlot, protocol: MergeProtocol): void {
+    public propagateToOlderVersions(root: ContainerSlot): void {
         const deviceVersions = this.deviceVersions(root);
 
         if (deviceVersions.size <= 1) {
@@ -70,7 +69,7 @@ export class VersionPropagation {
 
             const projected = fromVersion.projectDown(current);
             this.validateVersionSlot(toVersion, projected);
-            current = this.mergeIntoExistingVersion(root, toVersion, projected, protocol, {
+            current = this.mergeIntoExistingVersion(root, toVersion, projected, {
                 updateExisting: deviceVersions.has(toVersion.version),
                 createMissing: deviceVersions.has(toVersion.version)
             });
@@ -131,7 +130,6 @@ export class VersionPropagation {
         root: ContainerSlot,
         version: StorageVersion,
         projected: ContainerSlot,
-        protocol: MergeProtocol,
         options: {
             updateExisting: boolean;
             createMissing: boolean;
@@ -140,14 +138,24 @@ export class VersionPropagation {
         const target = root.v[String(version.version)];
 
         if (options.updateExisting && isContainerSlot(target)) {
-            protocol.merge(target, projected);
+            this.protocol.merge(target, projected);
             return target;
         }
 
         if (options.createMissing) {
-            root.v[String(version.version)] = projected;
+            root.v[String(version.version)] = isTombstoneSlot(target)
+                ? this.recreateVersionOverTombstone(projected)
+                : projected;
         }
 
+        return projected;
+    }
+
+    private recreateVersionOverTombstone(projected: ContainerSlot): ContainerSlot {
+        // New versions created with origin stamp, but in order to win against tombstone
+        // it is required to provide stamp greater than the one from tombstone
+        projected.t = this.protocol.tick();
+        projected.a = this.protocol.id;
         return projected;
     }
 

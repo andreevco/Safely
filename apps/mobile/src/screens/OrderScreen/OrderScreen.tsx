@@ -11,7 +11,7 @@ import {
     useLinking,
     useNumberFormatter,
     useProvidersQuery,
-    useRate,
+    useActivePortfolioRate,
     resolveAssetByBlockchainAndToken
 } from '@safely/ux';
 
@@ -61,7 +61,7 @@ export const OrderScreen = (props: OrderScreenProps) => {
     const providerName = provider?.info.name;
     const supportUrl = provider?.info.support.url;
 
-    const { data: rate } = useRate(
+    const { data: rate } = useActivePortfolioRate(
         resolveAssetByBlockchainAndToken(order.order.blockchain, order.order.token)
     );
     const formatter = useNumberFormatter();

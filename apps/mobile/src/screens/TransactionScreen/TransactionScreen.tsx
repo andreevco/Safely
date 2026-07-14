@@ -7,11 +7,11 @@ import { BLOCKCHAIN_NAME, BTC_ASSET, SPACE, ellipsisMiddle } from '@safely/core'
 import {
     type BtcActivityItem,
     isBtcTransactionPending,
+    useActivePortfolioRate,
     useDateFormatter,
     useExplorer,
     useLinking,
-    useNumberFormatter,
-    useRate
+    useNumberFormatter
 } from '@safely/ux';
 
 import { TransactionConfirmationStatusBtc } from '@mobile/entities/activity';
@@ -45,7 +45,7 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
     const isInitiator = activity.transaction.isInitiator;
     const isPending = isBtcTransactionPending(activity.transaction.raw);
     const formatter = useNumberFormatter();
-    const { data: rate } = useRate(BTC_ASSET);
+    const { data: rate } = useActivePortfolioRate(BTC_ASSET);
     const explorer = useExplorer(BLOCKCHAIN_NAME.BTC);
     const dateFormatter = useDateFormatter({
         day: 'numeric',

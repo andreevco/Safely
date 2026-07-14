@@ -7,9 +7,17 @@ import {
     VersionController
 } from '../src';
 import { v1, v3 } from './version-fixtures';
-import { createOriginContainer, type ContainerSlot } from '../src/core/slots';
+import { MergeProtocol } from '../src/core/merge-protocol';
+import {
+    createOriginContainer,
+    createTombstoneSlot,
+    isContainerSlot,
+    isTombstoneSlot,
+    type ContainerSlot
+} from '../src/core/slots';
 import { slotFromJson, stripSlot } from '../src/core/slots/slot-json';
 import { hListToRuntimeArray } from '../src/core/versioning/version';
+import { VersionPropagation } from '../src/core/versioning/version-propagation';
 
 describe('VersionController', () => {
     afterEach(() => {
@@ -21,7 +29,7 @@ describe('VersionController', () => {
         const root = createOriginContainer({
             '1': slotFromJson({ key1: 42, key2: 'from-v1' }, 123, 'old-device')
         });
-        const controller = new VersionController(root, versions);
+        const controller = new VersionController(root, versions, fixedProtocol(200));
 
         expect(controller.get(1)).toBe(root.v['1']);
 
@@ -37,13 +45,17 @@ describe('VersionController', () => {
 
         controller.delete(1);
 
-        expect(controller.get(1)).toBeUndefined();
+        expect(controller.get(1)).toMatchObject({
+            t: 200,
+            a: 'cleanup-device'
+        });
+        expect(isTombstoneSlot(controller.get(1))).toBe(true);
     });
 
     it('creates the latest version from initial data', () => {
         const versions = hListToRuntimeArray(v3);
         const root = createOriginContainer();
-        const controller = new VersionController(root, versions);
+        const controller = new VersionController(root, versions, fixedProtocol(200));
 
         const latest = controller.createInitialVersion();
 
@@ -70,7 +82,7 @@ describe('VersionController', () => {
                 ''
             )
         });
-        const controller = new VersionController(root, versions);
+        const controller = new VersionController(root, versions, fixedProtocol(200));
 
         controller.deleteVersionsUnusedByDevices();
 
@@ -94,7 +106,7 @@ describe('VersionController', () => {
                 ''
             )
         });
-        const controller = new VersionController(root, versions);
+        const controller = new VersionController(root, versions, fixedProtocol(200));
 
         controller.deleteVersionsUnusedByDevices();
 
@@ -131,12 +143,61 @@ describe('VersionController', () => {
                 ''
             )
         });
-        const controller = new VersionController(root, versions);
+        const controller = new VersionController(root, versions, fixedProtocol(200));
 
         controller.deleteVersionsUnusedByDevices();
 
-        expect(root.v['1']).toBeUndefined();
+        expect(isTombstoneSlot(root.v['1'])).toBe(true);
+        expect(root.v['1']).toMatchObject({
+            t: 200,
+            a: 'cleanup-device'
+        });
         expect(root.v['3']).toBeDefined();
         expect(stripSlot(root.v[VERSION_DELETION_KEY])).toEqual({});
     });
+
+    it('recreates older versions with clocks that beat prior tombstones', () => {
+        const versions = hListToRuntimeArray(v3);
+        const tombstoneTimestamp = 9_999_999_999;
+        const root = createOriginContainer({
+            '1': createTombstoneSlot(tombstoneTimestamp, 'cleanup-device'),
+            '3': slotFromJson(
+                { key1: 42, label: 'latest-value', key3: true, key4: 'v3' },
+                10,
+                'latest-device'
+            ),
+            [DEVICES_KEY]: slotFromJson(
+                {
+                    legacyDevice: { version: 1 },
+                    latestDevice: { version: 3 }
+                },
+                10,
+                'latest-device'
+            )
+        });
+        const protocol = new MergeProtocol('recreate-device');
+        protocol.observeTree(root);
+
+        new VersionPropagation(versions, protocol).propagateToOlderVersions(root);
+
+        const recreated = root.v['1'];
+        expect(isContainerSlot(recreated)).toBe(true);
+        if (!isContainerSlot(recreated)) {
+            throw new Error('Expected v1 to be recreated as a container');
+        }
+
+        expect(recreated.t).toBeGreaterThan(tombstoneTimestamp);
+        expect(recreated.a).toBe('recreate-device');
+        expect(stripSlot(recreated)).toEqual({
+            key1: 42,
+            key2: 'latest-value'
+        });
+    });
 });
+
+function fixedProtocol(timestamp: number): { id: string; tick: () => number } {
+    return {
+        id: 'cleanup-device',
+        tick: () => timestamp
+    };
+}

@@ -3,6 +3,7 @@ import type { RatedCryptoAssetAmount } from '@safely/core';
 import {
     useActiveBtcWallet,
     useActivePortfolio,
+    useActiveWalletMeta,
     useCreateContact,
     useNumberFormatter
 } from '../../../../entities';
@@ -39,6 +40,7 @@ export function useSendFormMachineInput(props: UseSendFormMachineInputProps): Se
     const fetchMaxValue = useFetchMaxValue();
     const activeBtcWallet = useActiveBtcWallet();
     const activePortfolio = useActivePortfolio();
+    const activeWalletMeta = useActiveWalletMeta();
     const { mutateAsync: createContact } = useCreateContact();
 
     const rememberedInputType = useAmountInputType();
@@ -53,7 +55,7 @@ export function useSendFormMachineInput(props: UseSendFormMachineInputProps): Se
         activeWallet: {
             id: activePortfolio.id.toString(),
             address: activeBtcWallet.address,
-            meta: activePortfolio.meta
+            meta: activeWalletMeta
         },
         networkType: activePortfolio.networkType,
         shouldResetForm: () => shouldResetForm,

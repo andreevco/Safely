@@ -50,9 +50,6 @@ export const usePopupMenu = (screenHeight: number, menuMargin = 8) => {
     }, [offsetY, triggerHeight, triggerFrame, isClosing]);
 
     const hide = useCallback(() => {
-        triggerFrame.value = { x: 0, y: 0, width: 0, height: 0 };
-        triggerHeight.value = 0;
-        menuHeight.value = 0;
         isClosing.value = false;
         setVisible(false);
     }, [triggerFrame, triggerHeight, menuHeight, isClosing]);

@@ -1,7 +1,7 @@
 import { useNavigation } from '@react-navigation/core';
 import { impactAsync, ImpactFeedbackStyle } from 'expo-haptics';
 
-import { useActivePortfolio } from '@safely/ux';
+import { useActiveWalletMeta } from '@safely/ux';
 
 import { PortfolioName } from '@mobile/entities/portfolio';
 import { TEST_ID } from '@mobile/shared/constants';
@@ -11,7 +11,7 @@ import { styles } from './AccountSelector.styles';
 
 export const AccountSelector = () => {
     const navigation = useNavigation();
-    const portfolio = useActivePortfolio();
+    const meta = useActiveWalletMeta();
 
     return (
         <TouchableOpacity
@@ -22,7 +22,7 @@ export const AccountSelector = () => {
             }}
             style={styles.container}
         >
-            <PortfolioName meta={portfolio.meta} />
+            <PortfolioName meta={meta} />
             <Icon icon={ChevronDown16} color="tertiary" />
         </TouchableOpacity>
     );

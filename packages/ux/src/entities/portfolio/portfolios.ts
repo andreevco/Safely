@@ -5,6 +5,7 @@ import type {
     BtcWalletReadOnly,
     SignableBtcWallet,
     IDerivation,
+    ILedgerDerivation,
     IMnemonicAccessor,
     Portfolio,
     PortfolioMeta,
@@ -14,10 +15,11 @@ import type {
     IMnemonicVault
 } from '@safely/core';
 import { PortfolioWatchOnlyBtc } from '@safely/core';
+import { PortfolioLedger } from '@safely/core';
 import { PortfolioIdBip39Imported } from '@safely/core';
 import { PortfolioBip39, PortfolioIdBip39MasterKeyDerived } from '@safely/core';
 import { PortfolioMnemonicFactory } from '@safely/core';
-import { toPortfolioId } from '@safely/core';
+import { assertUnreachable, toPortfolioId } from '@safely/core';
 import {
     delay,
     Id,
@@ -25,7 +27,13 @@ import {
     PortfolioNetworkType,
     PortfolioType
 } from '@safely/core';
-import type { SPortfolio } from '@safely/sync-storage';
+import {
+    isBip39SPortfolio,
+    isDerivableSPortfolio,
+    isLedgerSPortfolio,
+    sLedgerDerivation,
+    type SPortfolio
+} from '@safely/sync-storage';
 
 import {
     useTranslate,
@@ -251,6 +259,99 @@ export function useReorderPortfolios() {
     });
 }
 
+export function useReorderDerivations() {
+    const update = useActiveAccountSyncStorageSlotUpdate('portfolios');
+
+    return useMutation<void, Error, { portfolio: Portfolio; orderedDerivationIds: string[] }>({
+        async mutationFn({ portfolio, orderedDerivationIds }) {
+            if (portfolio.type === PortfolioType.WATCH_ONLY) return;
+
+            const derivations = portfolio.getDerivations();
+            const byId = new Map(derivations.map(d => [d.id.toString(), d]));
+            const ordered = orderedDerivationIds
+                .map(id => byId.get(id))
+                .filter((d): d is IDerivation => d !== undefined);
+
+            if (ordered.length !== derivations.length) return;
+
+            await update(draft =>
+                draft.update(portfolio.jsonArrayId(), portfolioDraft => {
+                    portfolioDraft
+                        .narrow(isDerivableSPortfolio)
+                        ?.at('derivations')
+                        .reorder(ordered.map(d => String(d.index)));
+                })
+            );
+        }
+    });
+}
+
+export function useUpdateDerivationMeta() {
+    const client = useQueryClient();
+    const accountQueryKey = useActiveAccountQueryKey();
+    const update = useActiveAccountSyncStorageSlotUpdate('portfolios');
+
+    return useMutation<
+        void,
+        Error,
+        { portfolio: Portfolio; derivationIndex: number; name: string }
+    >({
+        async mutationFn({ portfolio, derivationIndex, name }) {
+            if (portfolio.type !== PortfolioType.LEDGER) return;
+
+            await update(draft =>
+                draft.update(portfolio.jsonArrayId(), portfolioDraft => {
+                    portfolioDraft
+                        .narrow(isLedgerSPortfolio)
+                        ?.at('derivations')
+                        .update(String(derivationIndex), derivationDraft => {
+                            derivationDraft.set('meta', { name });
+                        });
+                })
+            );
+
+            await client.invalidateQueries({
+                queryKey: accountQueryKey.activePortfolio.toKey()
+            });
+        }
+    });
+}
+
+export function useHideDerivation() {
+    const client = useQueryClient();
+    const check = useSecurityCheck();
+    const accountQueryKey = useActiveAccountQueryKey();
+    const update = useActiveAccountSyncStorageSlotUpdate('portfolios');
+
+    return useMutation<void, Error, { portfolio: Portfolio; derivationIndex: number }>({
+        async mutationFn({ portfolio, derivationIndex }) {
+            if (portfolio.type === PortfolioType.WATCH_ONLY) return;
+
+            await check();
+
+            const remaining = portfolio.getDerivations().filter(d => d.index !== derivationIndex);
+
+            await update(draft => {
+                if (remaining.length === 0) {
+                    draft.remove(portfolio.jsonArrayId());
+                    return;
+                }
+
+                draft.update(portfolio.jsonArrayId(), portfolioDraft => {
+                    portfolioDraft
+                        .narrow(isDerivableSPortfolio)
+                        ?.at('derivations')
+                        .remove(String(derivationIndex));
+                });
+            });
+
+            await client.invalidateQueries({
+                queryKey: accountQueryKey.activePortfolio.toKey()
+            });
+        }
+    });
+}
+
 type ActivePortfolioEntitiesBip39 = {
     type: 'bip39';
     portfolio: PortfolioBip39;
@@ -258,12 +359,28 @@ type ActivePortfolioEntitiesBip39 = {
     derivation: IDerivation;
 };
 
+type ActivePortfolioEntitiesLedger = {
+    type: 'ledger';
+    portfolio: PortfolioLedger;
+    btcWallet: SignableBtcWallet;
+    derivation: ILedgerDerivation;
+};
+
 type ActivePortfolioEntitiesWatchOnly = {
     type: 'watch-only';
     portfolio: PortfolioWatchOnly;
 };
 
-type ActivePortfolioEntities = ActivePortfolioEntitiesBip39 | ActivePortfolioEntitiesWatchOnly;
+type ActivePortfolioEntities =
+    | ActivePortfolioEntitiesBip39
+    | ActivePortfolioEntitiesLedger
+    | ActivePortfolioEntitiesWatchOnly;
+
+export function isDerivableEntities(
+    entities: ActivePortfolioEntities
+): entities is ActivePortfolioEntitiesBip39 | ActivePortfolioEntitiesLedger {
+    return entities.type !== 'watch-only';
+}
 
 export function useActivePortfolioEntitiesIdsQuery<TData = SActivePortfolioSchema>(
     select?: (data: SActivePortfolioSchema) => TData
@@ -324,7 +441,24 @@ export function useActivePortfolioEntitiesQuery() {
                     return { type: 'watch-only' as const, portfolio };
                 }
 
-                const derivation = portfolio.getDerivations()[0];
+                const derivationIndex = sActivePortfolioSchema?.derivationIndex;
+
+                if (portfolio.type === PortfolioType.LEDGER) {
+                    const derivations = portfolio.getDerivations();
+                    const derivation =
+                        derivations.find(d => d.index === derivationIndex) ?? derivations[0];
+
+                    return {
+                        type: 'ledger' as const,
+                        portfolio,
+                        btcWallet: derivation.chains.btc.wallets[0],
+                        derivation
+                    };
+                }
+
+                const derivations = portfolio.getDerivations();
+                const derivation =
+                    derivations.find(d => d.index === derivationIndex) ?? derivations[0];
 
                 return {
                     type: 'bip39' as const,
@@ -350,6 +484,19 @@ export function useHasPortfolio() {
     return useActivePortfolioEntitiesQuery().data !== null;
 }
 
+export function useActiveWalletMeta(): PortfolioMeta {
+    const entities = useActivePortfolioEntities();
+
+    if (entities.type === 'ledger') {
+        return {
+            name: entities.derivation.meta.name,
+            icon: entities.portfolio.meta.icon
+        };
+    }
+
+    return entities.portfolio.meta;
+}
+
 export function useIsActivePortfolioWatchOnly(): boolean {
     return useActivePortfolioEntitiesQuery()?.data?.type === 'watch-only';
 }
@@ -359,6 +506,12 @@ export function useIsActivePortfolioTestnet(): boolean {
         useActivePortfolioEntitiesQuery()?.data?.portfolio.networkType ===
         PortfolioNetworkType.TESTNET
     );
+}
+
+export function useActivePortfolioLedgerIndex(): number | undefined {
+    const entities = useActivePortfolioEntitiesQuery()?.data;
+
+    return entities?.type === 'ledger' ? entities.derivation.index : undefined;
 }
 
 export function useAddWatchOnlyPortfolio() {
@@ -389,6 +542,110 @@ export function useAddWatchOnlyPortfolio() {
     });
 }
 
+export function useAddLedgerPortfolio() {
+    const t = useTranslate();
+    const portfolios = usePortfolios();
+    const { mutateAsync: addPortfolio } = useAddPortfolio();
+    const { mutateAsync: setActivePortfolio } = useSetActivePortfolio();
+
+    return useMutation<
+        void,
+        Error,
+        {
+            masterFingerprint: Buffer;
+            deviceModel: string;
+            accounts: { index: number; xpub: string }[];
+            meta: PortfolioMeta;
+        }
+    >({
+        async mutationFn({ masterFingerprint, deviceModel, accounts, meta }) {
+            const serialized = PortfolioLedger.createSerializedPortfolio({
+                masterFingerprint,
+                networkType: PortfolioNetworkType.MAINNET,
+                deviceModel,
+                accounts: accounts.map(account => ({
+                    ...account,
+                    name: t('portfolio.ledgerWallet', { number: account.index + 1 })
+                })),
+                meta
+            });
+
+            const id = toPortfolioId(serialized);
+
+            const existing = portfolios.find(p => p.id.isEq(id));
+            if (existing) {
+                throw new PortfolioAlreadyExistsError(existing);
+            }
+
+            await addPortfolio(serialized);
+            await setActivePortfolio({ id });
+        }
+    });
+}
+
+export function useUpdateLedgerDerivations() {
+    const t = useTranslate();
+    const client = useQueryClient();
+    const accountQueryKey = useActiveAccountQueryKey();
+    const update = useActiveAccountSyncStorageSlotUpdate('portfolios');
+
+    return useMutation<
+        void,
+        Error,
+        {
+            portfolio: PortfolioLedger;
+            accounts: { index: number; xpub: string }[];
+            meta?: PortfolioMeta;
+        }
+    >({
+        async mutationFn({ portfolio, accounts, meta }) {
+            const selectedIndexes = new Set(accounts.map(account => account.index));
+            const existingIndexes = new Set(portfolio.getDerivations().map(d => d.index));
+
+            const newAccounts = accounts
+                .filter(account => !existingIndexes.has(account.index))
+                .sort((a, b) => a.index - b.index);
+            const removedIndexes = [...existingIndexes].filter(
+                index => !selectedIndexes.has(index)
+            );
+
+            await update(draft =>
+                draft.update(portfolio.jsonArrayId(), portfolioDraft => {
+                    const ledgerDraft = portfolioDraft.narrow(isLedgerSPortfolio);
+
+                    if (!ledgerDraft) return;
+
+                    const derivationsDraft = ledgerDraft.at('derivations');
+
+                    for (const index of removedIndexes) {
+                        derivationsDraft.remove(String(index));
+                    }
+
+                    for (const account of newAccounts) {
+                        derivationsDraft.push(
+                            sLedgerDerivation.toJson({
+                                index: account.index,
+                                meta: {
+                                    name: t('portfolio.ledgerWallet', { number: account.index + 1 })
+                                },
+                                chains: { btc: { xpub: account.xpub } }
+                            })
+                        );
+                    }
+
+                    if (meta) {
+                        ledgerDraft.set('meta', meta);
+                    }
+                })
+            );
+
+            await client.invalidateQueries({
+                queryKey: accountQueryKey.activePortfolio.toKey()
+            });
+        }
+    });
+}
+
 export function useSetActivePortfolio() {
     const { set } = useActiveAccountLocalStorage('activePortfolio');
     const client = useQueryClient();
@@ -396,8 +653,8 @@ export function useSetActivePortfolio() {
     const portfolios = usePortfolios();
     const logger = useLogger('portfolio');
 
-    return useMutation<Portfolio, Error, Pick<Portfolio, 'id'>>({
-        async mutationFn({ id }) {
+    return useMutation<Portfolio, Error, { id: Portfolio['id']; derivationIndex?: number }>({
+        async mutationFn({ id, derivationIndex }) {
             logger.info('start set active portfolio', {
                 id
             });
@@ -408,7 +665,8 @@ export function useSetActivePortfolio() {
             }
 
             await set({
-                portfolioId: portfolioToSet.id.toString()
+                portfolioId: portfolioToSet.id.toString(),
+                derivationIndex
             });
 
             await client.invalidateQueries({
@@ -430,10 +688,15 @@ export function useChangePortfolioMeta() {
         mutationFn({ portfolio, meta }) {
             return update(draft =>
                 draft.update(portfolio.jsonArrayId(), activePortfolioDraft => {
-                    activePortfolioDraft.set('meta', {
-                        ...activePortfolioDraft.get().meta,
-                        ...meta
-                    });
+                    const metaDraft = activePortfolioDraft.at('meta');
+
+                    if (meta.name !== undefined) {
+                        metaDraft.set('name', meta.name);
+                    }
+
+                    if (meta.icon !== undefined) {
+                        metaDraft.set('icon', meta.icon);
+                    }
                 })
             );
         }
@@ -451,10 +714,7 @@ export function useRecordActivePortfolioSecretReveal() {
             logger.info('recording portfolio secret reveal');
             return update(draft =>
                 draft.update(activePortfolio.jsonArrayId(), activePortfolioDraft => {
-                    const bip39Draft = activePortfolioDraft.narrow(
-                        (p): p is Extract<typeof p, { type: typeof PortfolioType.BIP39 }> =>
-                            p.type === PortfolioType.BIP39
-                    );
+                    const bip39Draft = activePortfolioDraft.narrow(isBip39SPortfolio);
 
                     bip39Draft?.set('secretRevealedStatus', {
                         revealedAt: new Date().getTime(),
@@ -471,13 +731,19 @@ export function useActivePortfolio() {
 }
 
 export function useActiveBtcWallet(): BtcWalletReadOnly {
-    return resolveBtcWallet(useActivePortfolio());
+    const entities = useActivePortfolioEntities();
+
+    if (entities.type === 'watch-only') {
+        return entities.portfolio.wallet;
+    }
+
+    return entities.btcWallet;
 }
 
 export function useActiveSignableBtcWallet(): SignableBtcWallet {
     const entities = useActivePortfolioEntities();
 
-    if (entities.type !== 'bip39') {
+    if (!isDerivableEntities(entities)) {
         throw new Error('Signable wallet unavailable for watch-only portfolio');
     }
 
@@ -488,7 +754,24 @@ export function findPortfolioMetaByAddress(
     portfolios: Portfolio[],
     address: string
 ): PortfolioMeta | undefined {
-    return portfolios.find(p => resolveBtcWallet(p).address === address)?.meta;
+    for (const portfolio of portfolios) {
+        if (portfolio.type === PortfolioType.LEDGER) {
+            const derivation = portfolio.derivations.find(
+                d => d.chains.btc.wallets[0]?.address === address
+            );
+            if (derivation) {
+                return { name: derivation.meta.name, icon: portfolio.meta.icon };
+            }
+
+            continue;
+        }
+
+        if (resolveBtcWallet(portfolio).address === address) {
+            return portfolio.meta;
+        }
+    }
+
+    return undefined;
 }
 
 export function resolveBtcWallet(portfolio: Portfolio): BtcWalletReadOnly {
@@ -497,6 +780,33 @@ export function resolveBtcWallet(portfolio: Portfolio): BtcWalletReadOnly {
     }
 
     return portfolio.derivations[0].chains.btc.wallets[0];
+}
+
+export function isDerivablePortfolio(
+    portfolio: Portfolio
+): portfolio is PortfolioBip39 | PortfolioLedger {
+    switch (portfolio.type) {
+        case PortfolioType.BIP39:
+        case PortfolioType.LEDGER:
+            return true;
+        case PortfolioType.WATCH_ONLY:
+            return false;
+        default:
+            return assertUnreachable(portfolio);
+    }
+}
+
+export function resolveBtcWallets(
+    portfolio: PortfolioBip39 | PortfolioLedger
+): BtcWalletReadOnly[] {
+    switch (portfolio.type) {
+        case PortfolioType.LEDGER:
+            return portfolio.derivations.map(d => d.chains.btc.wallets[0]!);
+        case PortfolioType.BIP39:
+            return [resolveBtcWallet(portfolio)];
+        default:
+            return assertUnreachable(portfolio);
+    }
 }
 
 export function getPortfolioDisplayName(meta: PortfolioMeta): string {

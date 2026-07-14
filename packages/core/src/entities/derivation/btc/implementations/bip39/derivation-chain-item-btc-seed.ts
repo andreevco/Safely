@@ -116,6 +116,7 @@ export class DerivationChainItemBtcSeed implements IDerivationChainItemBtc {
                 network: this.network,
                 xpub: this.xpub,
                 derivationRef,
+                isPrevTxsRequired: false,
                 sign(tx: BtcSigningRequest) {
                     return signer.sign(tx);
                 }

@@ -24,15 +24,18 @@ interface PopupAccountSelectorProps {
 interface AccountRowProps {
     accountId: string;
     isActive: boolean;
+    showDivider?: boolean;
     onPress: () => void;
 }
 
-const AccountRow = ({ accountId, isActive, onPress }: AccountRowProps) => {
+const AccountRow = (props: AccountRowProps) => {
+    const { accountId, isActive, showDivider, onPress } = props;
+
     const name = useAccountMeta(accountId).name;
     const walletsCount = useAccountStoreSlot(accountId, 'portfolios')?.length ?? 0;
 
     return (
-        <Cell onPress={onPress}>
+        <Cell showDivider={showDivider} onPress={onPress}>
             <AccountCell name={name} walletsCount={walletsCount} />
             {isActive && <Icon icon={Checkmark28} color="accent" />}
         </Cell>

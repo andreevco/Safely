@@ -4,6 +4,7 @@ import { sDismissedBannerIds } from './dismissed-banner-ids.schema';
 import { sDismissedProviders } from './dismissed-providers.schema';
 import { sNotificationsEnabled } from './notifications-enabled.schema';
 import { sSendAmountInputType } from './send-amount-input-type.schema';
+import { sSyncOnboardingCompleted } from './sync-onboarding-completed.schema';
 import { sWatchedBetaTimestamp } from './watched-beta-timestamp.schema';
 
 export const sharedStorageStructure = {
@@ -13,7 +14,8 @@ export const sharedStorageStructure = {
     dismissedBannerIds: sDismissedBannerIds,
     dismissedProviders: sDismissedProviders,
     watchedBetaTimestamp: sWatchedBetaTimestamp,
-    sendAmountInputType: sSendAmountInputType
+    sendAmountInputType: sSendAmountInputType,
+    syncOnboardingCompleted: sSyncOnboardingCompleted
 };
 
 export type SharedStorageStructure = typeof sharedStorageStructure;

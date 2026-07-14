@@ -151,9 +151,12 @@ async function deviceVersion(
     }) as StorageImpl<z.output<typeof Schema>>;
     snapshotStorage.merge(Buffer.from(raw, 'base64url'));
 
-    return new VersionController(snapshotStorage.exportSlot(), [Version]).getDeviceVersion(
-        Buffer.from(authorId).toString('hex')
-    );
+    return new VersionController(snapshotStorage.exportSlot(), [Version], {
+        id: authorId,
+        tick: () => {
+            return 100;
+        }
+    }).getDeviceVersion(Buffer.from(authorId).toString('hex'));
 }
 
 class FailingSetStorage extends InMemStorage {

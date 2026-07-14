@@ -1,5 +1,5 @@
 import type { IDerivation, IPortfolioId, Portfolio } from '@safely/core';
-import { PortfolioType } from '@safely/core';
+import { isLedgerDerivation, PortfolioType } from '@safely/core';
 
 import type { PortfolioSuggestion } from '../types';
 
@@ -10,7 +10,8 @@ export interface ActivePortfolioEntity {
 
 export function mapPortfolioToSuggestions(
     portfolio: Portfolio,
-    active?: ActivePortfolioEntity
+    active: ActivePortfolioEntity | undefined,
+    derivationName: (index: number) => string
 ): PortfolioSuggestion[] {
     const isActivePortfolio = !!active && portfolio.id.isEq(active.portfolioId);
 
@@ -28,12 +29,22 @@ export function mapPortfolioToSuggestions(
     }
 
     const derivations = portfolio.getDerivations();
+    const isLedger = portfolio.type === PortfolioType.LEDGER;
+    const isPerDerivation = isLedger || derivations.length > 1;
+
     return derivations
         .filter(d => !(isActivePortfolio && active?.derivation && d.id.isEq(active.derivation.id)))
         .map(derivation => ({
-            id: portfolio.id.toString(),
+            id: derivation.id.toString(),
             address: derivation.chains.btc.wallets[0]?.address,
-            meta: portfolio.meta,
-            tag: derivations.length > 1 ? derivation.index + 1 : undefined
+            meta: isPerDerivation
+                ? {
+                      name: isLedgerDerivation(derivation)
+                          ? derivation.meta.name
+                          : derivationName(derivation.index + 1),
+                      icon: portfolio.meta.icon
+                  }
+                : portfolio.meta,
+            tag: isPerDerivation ? derivation.index + 1 : undefined
         }));
 }

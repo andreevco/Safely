@@ -1,0 +1,1 @@
+export { ProtectedView } from './ProtectedView';

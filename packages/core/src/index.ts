@@ -7,6 +7,7 @@ export * from './analytics';
 export * from './blockchain-api';
 export * from './di';
 export * from './entities';
+export * from './ledger';
 export * from './utils';
 export * from './storage';
 export * from './external-input';
