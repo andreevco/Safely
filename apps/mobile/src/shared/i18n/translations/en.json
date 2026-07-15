@@ -841,6 +841,7 @@
     },
     "exchange": {
         "title": "Choose a payment option to buy Bitcoin",
+        "availabilityVaries": "Availability may vary by region",
         "provider": {
             "availabilityVaries": "Availability may vary by region"
         },
