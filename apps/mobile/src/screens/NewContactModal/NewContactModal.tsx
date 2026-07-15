@@ -7,7 +7,7 @@ import { Keyboard } from 'react-native';
 import { CONTACT_NAME_MAX_LENGTH } from '@safely/core';
 import { useContactForm, useContacts, useDateFormatter } from '@safely/ux';
 
-import { Button, Input, Screen } from '@mobile/shared/ui';
+import { Button, Cell, Input, List, Screen, Text } from '@mobile/shared/ui';
 
 import { styles } from './NewContactModal.styles';
 
@@ -54,7 +54,9 @@ export const NewContactModal = ({ route }: NewContactModalProps) => {
         <Screen>
             <Screen.Header>
                 <Screen.Header.CloseButton />
-                <Screen.Header.Title>{t('newContact.title')}</Screen.Header.Title>
+                <Screen.Header.Title>
+                    {meta.isEditMode ? t('newContact.editTitle') : t('newContact.title')}
+                </Screen.Header.Title>
                 <Button
                     hitSlop={12}
                     type="primary"
@@ -86,46 +88,69 @@ export const NewContactModal = ({ route }: NewContactModalProps) => {
                         </Input.Description>
                     )}
                 </Input>
-                {state.values.addresses.map((address, index) => {
-                    const errorKey = state.errors.addresses[index];
-                    const errorText = errorKey ? t(errorKey) : undefined;
-                    const isLast = index === state.values.addresses.length - 1;
-                    const showAddedOn = isLast && !!initialContact && !errorText;
 
-                    return (
-                        <Input key={index}>
-                            {index === 0 && (
-                                <Input.Label>{t('newContact.form.address')}</Input.Label>
-                            )}
-                            <Input.Field
-                                withClearButton
-                                multiline
-                                value={address.value}
-                                onChangeText={value => actions.setAddress(index, value)}
-                                placeholder={t('newContact.form.addressPlaceholder')}
-                                errored={!!errorText}
-                                autoCapitalize="none"
-                                autoCorrect={false}
-                                returnKeyType="done"
-                                onSubmitEditing={meta.canSubmit ? handleSave : undefined}
-                            />
-                            {errorText && (
-                                <Input.Description color="accentRed">{errorText}</Input.Description>
-                            )}
-                            {showAddedOn && initialContact && (
-                                <Input.Description>
-                                    {t('newContact.form.addedOn', {
-                                        date: dateFormatter.format(initialContact.createdAt)
-                                    })}
-                                </Input.Description>
-                            )}
-                        </Input>
-                    );
-                })}
-                {initialContact && (
-                    <Input.Description color="accentRed" onPress={handleRemove}>
-                        {t('newContact.form.remove')}
-                    </Input.Description>
+                {initialContact ? (
+                    <>
+                        <List.Group style={styles.addressGroup}>
+                            <Cell>
+                                <Cell.Content>
+                                    <Cell.Subtitle>{t('newContact.form.address')}</Cell.Subtitle>
+                                    <Cell.Value variant="bodyL" numberOfLines={0}>
+                                        {state.values.addresses[0].value}
+                                    </Cell.Value>
+                                </Cell.Content>
+                            </Cell>
+                        </List.Group>
+
+                        <Text variant="bodyM" color="tertiary" style={styles.note}>
+                            {t('newContact.form.addressReadonly')}
+                        </Text>
+
+                        <Text variant="bodyM" color="tertiary" style={styles.note}>
+                            {t('newContact.form.addedOn', {
+                                date: dateFormatter.format(initialContact.createdAt)
+                            })}
+                        </Text>
+
+                        <Text
+                            variant="bodyM"
+                            color="accentRed"
+                            style={styles.note}
+                            onPress={handleRemove}
+                        >
+                            {t('newContact.form.remove')}
+                        </Text>
+                    </>
+                ) : (
+                    state.values.addresses.map((address, index) => {
+                        const errorKey = state.errors.addresses[index];
+                        const errorText = errorKey ? t(errorKey) : undefined;
+
+                        return (
+                            <Input key={index}>
+                                {index === 0 && (
+                                    <Input.Label>{t('newContact.form.address')}</Input.Label>
+                                )}
+                                <Input.Field
+                                    withClearButton
+                                    multiline
+                                    value={address.value}
+                                    onChangeText={value => actions.setAddress(index, value)}
+                                    placeholder={t('newContact.form.addressPlaceholder')}
+                                    errored={!!errorText}
+                                    autoCapitalize="none"
+                                    autoCorrect={false}
+                                    returnKeyType="done"
+                                    onSubmitEditing={meta.canSubmit ? handleSave : undefined}
+                                />
+                                {errorText && (
+                                    <Input.Description color="accentRed">
+                                        {errorText}
+                                    </Input.Description>
+                                )}
+                            </Input>
+                        );
+                    })
                 )}
             </Screen.Content>
         </Screen>
