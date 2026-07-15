@@ -96,7 +96,7 @@ export const NewContactModal = ({ route }: NewContactModalProps) => {
                                 <Cell.Content>
                                     <Cell.Subtitle>{t('newContact.form.address')}</Cell.Subtitle>
                                     <Cell.Value variant="bodyL" numberOfLines={0}>
-                                        {state.values.addresses[0].value}
+                                        {initialContact.addresses[0].address}
                                     </Cell.Value>
                                 </Cell.Content>
                             </Cell>
