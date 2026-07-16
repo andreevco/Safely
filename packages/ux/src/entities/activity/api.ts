@@ -89,11 +89,7 @@ export function orderToActivityItem(order: RampOrder): OrderActivityItem {
     };
 }
 
-const ACTIVE_ORDER_STATUSES: ReadonlySet<RampOrder['status']> = new Set([
-    'new',
-    'pending',
-    'processing'
-]);
+const ACTIVE_ORDER_STATUSES: ReadonlySet<RampOrder['status']> = new Set(['pending', 'processing']);
 
 export function isRampOrderActive(order: Pick<RampOrder, 'status'>): boolean {
     return ACTIVE_ORDER_STATUSES.has(order.status);

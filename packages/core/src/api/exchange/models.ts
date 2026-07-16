@@ -56,7 +56,7 @@ export const rampOrderSchema = z.discriminatedUnion('status', [
         txHash: z.string()
     }),
     rampOrderBase.extend({
-        status: z.enum(['new', 'pending', 'processing', 'failed', 'expired', 'mismatched']),
+        status: z.enum(['pending', 'processing', 'failed', 'expired', 'mismatched']),
         txHash: z.string().optional()
     })
 ]);
