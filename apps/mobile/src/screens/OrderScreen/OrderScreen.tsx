@@ -12,10 +12,11 @@ import {
     useNumberFormatter,
     useProvidersQuery,
     useActivePortfolioRate,
-    resolveAssetByBlockchainAndToken
+    resolveAssetByBlockchainAndToken,
+    isBtcTransactionPending
 } from '@safely/ux';
 
-import { TransactionConfirmationStatusBtc } from '@mobile/entities/activity';
+import { OrderStatus } from '@mobile/entities/activity';
 import {
     ArrowTop16,
     Button,
@@ -76,6 +77,8 @@ export const OrderScreen = (props: OrderScreenProps) => {
 
     const formattedCryptoAmount = order.cryptoAmount?.format(formatter);
 
+    const isConfirmed = !!order.transaction && !isBtcTransactionPending(order.transaction.raw);
+
     return (
         <Screen>
             <Screen.Header>
@@ -86,9 +89,11 @@ export const OrderScreen = (props: OrderScreenProps) => {
                             ? t('history.orderInfo.sale.default')
                             : t('history.orderInfo.purchase.default')}
                     </Text>
-                    <Text variant="bodyM" color="secondary" textAlign="center">
-                        {dateFormatter.format(order.timestamp)}
-                    </Text>
+                    {isConfirmed && (
+                        <Text variant="bodyM" color="secondary" textAlign="center">
+                            {dateFormatter.format(order.timestamp)}
+                        </Text>
+                    )}
                 </Screen.Header.Title>
             </Screen.Header>
             <Screen.Scrollable>
@@ -130,11 +135,7 @@ export const OrderScreen = (props: OrderScreenProps) => {
                                 <TableCell.Value>{providerName}</TableCell.Value>
                             </TableCell.Column>
                         </TableCell>
-                        {order.transaction && (
-                            <TableCell>
-                                <TransactionConfirmationStatusBtc tx={order.transaction.raw} />
-                            </TableCell>
-                        )}
+                        <OrderStatus order={order} />
                     </List.Group>
                     <List.Group withoutBottomMargin>
                         {formattedFiatAmount && (

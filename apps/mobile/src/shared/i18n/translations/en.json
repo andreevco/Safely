@@ -702,7 +702,8 @@
         "total": "Total",
         "estimatedTime": "≈ {{minutes}} minutes",
         "ok": "OK",
-        "receiving": "Receiving {{amount}}…"
+        "receiving": "Receiving {{amount}}…",
+        "purchase": "Purchase {{amount}}…"
     },
     "assetCell": {
         "history": "History"
@@ -776,7 +777,15 @@
             "provider": "Provider",
             "order": "Order",
             "transaction": "Transaction",
-            "support": "Support"
+            "support": "Support",
+            "status": {
+                "title": "Status",
+                "pending": "Pending",
+                "failed": "Failed",
+                "cancelled": "Cancelled",
+                "completed": "Completed",
+                "contactSupport": "Contact support for more details"
+            }
         }
     },
     "chart": {

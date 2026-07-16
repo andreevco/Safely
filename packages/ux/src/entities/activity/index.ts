@@ -1,5 +1,6 @@
 export { activityKeys } from './keys';
 export { useHistory } from './useHistory';
+export { useOnrampTxids } from './useOnrampTxids';
 export { useHasHistory } from './useHasHistory';
 export { useGroupedHistory } from './useGroupedHistory';
 export {

@@ -683,7 +683,8 @@
         "total": "Итого",
         "estimatedTime": "≈ {{minutes}} минут",
         "ok": "OK",
-        "receiving": "Получение {{amount}}…"
+        "receiving": "Получение {{amount}}…",
+        "purchase": "Покупка {{amount}}…"
     },
     "assetCell": {
         "history": "История"
@@ -757,7 +758,15 @@
             "provider": "Провайдер",
             "order": "Ордер",
             "transaction": "Транзакция",
-            "support": "Поддержка"
+            "support": "Поддержка",
+            "status": {
+                "title": "Статус",
+                "pending": "В обработке",
+                "failed": "Ошибка",
+                "cancelled": "Отменён",
+                "completed": "Завершён",
+                "contactSupport": "Обратитесь в поддержку за подробностями"
+            }
         }
     },
     "importWalletScreen": {
