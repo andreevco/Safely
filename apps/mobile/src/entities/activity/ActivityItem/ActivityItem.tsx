@@ -20,9 +20,9 @@ export type ActivityItemCounterparty =
 export type ActivityItemProps = {
     activity: ActivityItemData;
     title: string;
-    amountSign: '+' | '−';
+    amountSign: '+' | '−' | null;
     formattedValue: string;
-    valueColor: 'primary' | 'accentGreen';
+    valueColor: 'primary' | 'accentGreen' | 'tertiary';
     formattedFiat: string | null;
     timestampLabel: string | null;
     background: 'tertiary' | 'secondary';
@@ -95,8 +95,7 @@ export const ActivityItem = memo((props: ActivityItemProps) => {
                         )}
                     </View>
                     <Cell.Value color={valueColor}>
-                        {amountSign}
-                        {SPACE.THSP}
+                        {amountSign !== null && `${amountSign}${SPACE.THSP}`}
                         {formattedValue}
                     </Cell.Value>
                 </Cell.Row>

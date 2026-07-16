@@ -201,14 +201,26 @@ const buildOrderRow = (
         }
     })();
 
+    const amountSign: ActivityRow['amountSign'] = (() => {
+        if (isUnsuccessful) return null;
+
+        return isSale ? '−' : '+';
+    })();
+
+    const valueColor: ActivityRow['valueColor'] = (() => {
+        if (isUnsuccessful) return 'tertiary';
+
+        return isSale ? 'primary' : 'accentGreen';
+    })();
+
     return {
         key: `activity-${groupKey}-${activity.key}`,
         type: 'activity',
         activity,
         title,
-        amountSign: isSale ? '−' : '+',
+        amountSign,
         formattedValue: activity.cryptoAmount?.format(context.numberFormatter) ?? '-',
-        valueColor: isSale || isUnsuccessful ? 'primary' : 'accentGreen',
+        valueColor,
         formattedFiat: formattedFiat ?? null,
         timestampLabel: isPending
             ? null
