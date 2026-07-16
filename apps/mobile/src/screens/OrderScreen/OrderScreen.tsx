@@ -152,7 +152,7 @@ export const OrderScreen = (props: OrderScreenProps) => {
                                 </TableCell.Column>
                             </TableCell>
                         )}
-                        <TableCell copyable={order.order.id}>
+                        <TableCell copyable={order.order.supportDetails}>
                             {({ handleCopy }) => (
                                 <>
                                     <TableCell.Column leading>
@@ -162,7 +162,7 @@ export const OrderScreen = (props: OrderScreenProps) => {
                                     </TableCell.Column>
                                     <TableCell.Column>
                                         <TableCell.Value>
-                                            {ellipsisMiddle(order.order.id, 6)}
+                                            {ellipsisMiddle(order.order.supportDetails, 6)}
                                         </TableCell.Value>
                                     </TableCell.Column>
                                     <View style={styles.iconsContainer}>
