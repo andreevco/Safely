@@ -8,6 +8,7 @@ import { CONTACT_NAME_MAX_LENGTH } from '@safely/core';
 import { useContactForm, useContacts, useDateFormatter } from '@safely/ux';
 
 import { Button, Cell, Input, List, Screen, Text } from '@mobile/shared/ui';
+import { useCopy } from '@mobile/shared/utils/copy';
 
 import { styles } from './NewContactModal.styles';
 
@@ -21,6 +22,7 @@ export const NewContactModal = ({ route }: NewContactModalProps) => {
 
     const contactId = route.params?.contactId;
     const contacts = useContacts();
+    const copy = useCopy();
 
     const dateFormatter = useDateFormatter({
         month: 'short',
@@ -76,7 +78,7 @@ export const NewContactModal = ({ route }: NewContactModalProps) => {
                         onChangeText={actions.setName}
                         errored={!!state.errors.name}
                         placeholder={t('newContact.form.namePlaceholder')}
-                        autoFocus={!meta.isEditMode}
+                        autoFocus
                         autoCapitalize="words"
                         maxLength={CONTACT_NAME_MAX_LENGTH}
                         returnKeyType="next"
@@ -92,14 +94,18 @@ export const NewContactModal = ({ route }: NewContactModalProps) => {
                 {initialContact ? (
                     <>
                         <List.Group style={styles.addressGroup}>
-                            <Cell>
-                                <Cell.Content>
-                                    <Cell.Subtitle>{t('newContact.form.address')}</Cell.Subtitle>
-                                    <Cell.Value variant="bodyL" numberOfLines={0}>
-                                        {initialContact.addresses[0].address}
-                                    </Cell.Value>
-                                </Cell.Content>
-                            </Cell>
+                            {initialContact.addresses.map(({ address }, index) => (
+                                <Cell key={index} onPress={() => copy(address)}>
+                                    <Cell.Content>
+                                        <Cell.Subtitle>
+                                            {t('newContact.form.address')}
+                                        </Cell.Subtitle>
+                                        <Cell.Value variant="bodyL" numberOfLines={0}>
+                                            {address}
+                                        </Cell.Value>
+                                    </Cell.Content>
+                                </Cell>
+                            ))}
                         </List.Group>
 
                         <Text variant="bodyM" color="tertiary" style={styles.note}>
