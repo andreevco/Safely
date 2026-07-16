@@ -821,9 +821,6 @@
     "exchange": {
         "title": "Выберите способ оплаты для покупки Bitcoin",
         "availabilityVaries": "Доступность может различаться в зависимости от региона",
-        "provider": {
-            "availabilityVaries": "Доступность может различаться в зависимости от региона"
-        },
         "disclaimer": "Вы будете перенаправлены на {{providerName}}. <terms>Условия</terms> и <privacy>Политика конфиденциальности</privacy> {{providerName}} применяются.",
         "continue": "Продолжить с {{providerName}}",
         "dontShowAgain": "Не показывать это снова",

@@ -1,5 +1,4 @@
 import { useNavigation } from '@react-navigation/core';
-import { useTranslation } from 'react-i18next';
 
 import type { Provider } from '@safely/core';
 import { useDismissedProvidersQuery, useOpenOnramp } from '@safely/ux';
@@ -16,8 +15,6 @@ type ProviderCellProps = {
 export const ProviderCell = (props: ProviderCellProps) => {
     const { provider, showDivider = true } = props;
     const navigation = useNavigation();
-
-    const { t } = useTranslation();
 
     const { data: dismissedProviders } = useDismissedProvidersQuery();
     const { openOnramp, isPending } = useOpenOnramp();
@@ -50,13 +47,6 @@ export const ProviderCell = (props: ProviderCellProps) => {
                         {provider.info.description}
                     </Cell.Subtitle>
                 </Cell.Row>
-                {provider.likelyUnavailable && (
-                    <Cell.Row>
-                        <Cell.Subvalue numberOfLines={2}>
-                            {t('exchange.provider.availabilityVaries')}
-                        </Cell.Subvalue>
-                    </Cell.Row>
-                )}
             </Cell.Content>
             <Cell.Chevron />
         </Cell>
