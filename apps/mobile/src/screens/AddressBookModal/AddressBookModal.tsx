@@ -42,28 +42,34 @@ export const AddressBookModal = () => {
             <Screen.Header>
                 <Screen.Header.BackButton />
                 <Screen.Header.Title />
-                <Button
-                    hitSlop={12}
-                    type="primary"
-                    size="small"
-                    style={styles.button}
-                    onPress={() => navigation.navigate('NewContactModal')}
-                >
-                    {t('addressBook.addContact')}
-                </Button>
             </Screen.Header>
             <Screen.Content bottomInset={false}>
-                <AddressBook
-                    contacts={contacts}
-                    onContactPress={contact =>
-                        navigation.navigate('NewContactModal', { contactId: contact.id.toString() })
-                    }
-                    ListHeaderComponent={
-                        <View style={styles.listHeader}>
-                            <AddressBookHeader description={t('addressBook.subtitle_not_empty')} />
-                        </View>
-                    }
-                />
+                <View style={styles.listWrapper}>
+                    <AddressBook
+                        contacts={contacts}
+                        onContactPress={contact =>
+                            navigation.navigate('NewContactModal', {
+                                contactId: contact.id.toString()
+                            })
+                        }
+                        ListHeaderComponent={
+                            <View style={styles.listHeader}>
+                                <AddressBookHeader
+                                    description={t('addressBook.subtitle_not_empty')}
+                                />
+                            </View>
+                        }
+                    />
+                </View>
+                <View style={styles.footer}>
+                    <Button
+                        type="secondary"
+                        size="large"
+                        onPress={() => navigation.navigate('NewContactModal')}
+                    >
+                        {t('addressBook.addContact')}
+                    </Button>
+                </View>
             </Screen.Content>
         </Screen>
     );

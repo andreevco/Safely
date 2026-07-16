@@ -8,10 +8,17 @@ export const styles = StyleSheet.create((theme, rt) => ({
         padding: theme.spacing[24],
         paddingBottom: theme.spacing[24] + rt.insets.bottom
     },
-    button: {
-        marginRight: theme.spacing[12]
-    },
     listHeader: {
         marginBottom: theme.spacing[24]
+    },
+    listWrapper: {
+        flex: 1
+    },
+    footer: {
+        padding: theme.spacing[24],
+        paddingBottom: theme.spacing[24] + rt.insets.bottom,
+        backgroundColor: theme.colors.background.primary,
+        borderTopWidth: theme.border.hairline,
+        borderTopColor: theme.colors.other.transparentElement
     }
 }));
