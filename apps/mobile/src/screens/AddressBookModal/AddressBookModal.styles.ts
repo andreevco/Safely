@@ -14,11 +14,11 @@ export const styles = StyleSheet.create((theme, rt) => ({
     listWrapper: {
         flex: 1
     },
-    footer: {
+    footer: (hasBorder: boolean) => ({
         padding: theme.spacing[24],
         paddingBottom: theme.spacing[24] + rt.insets.bottom,
         backgroundColor: theme.colors.background.primary,
-        borderTopWidth: theme.border.hairline,
+        borderTopWidth: hasBorder ? theme.border.hairline : 0,
         borderTopColor: theme.colors.other.transparentElement
-    }
+    })
 }));

@@ -1,4 +1,5 @@
 import { useNavigation } from '@react-navigation/core';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
@@ -14,6 +15,7 @@ export const AddressBookModal = () => {
     const navigation = useNavigation();
     const { t } = useTranslation();
     const contacts = useContacts();
+    const [isScrollable, setIsScrollable] = useState(false);
 
     if (contacts.length === 0) {
         return (
@@ -59,9 +61,10 @@ export const AddressBookModal = () => {
                                 />
                             </View>
                         }
+                        onScrollableChange={setIsScrollable}
                     />
                 </View>
-                <View style={styles.footer}>
+                <View style={styles.footer(isScrollable)}>
                     <Button
                         type="secondary"
                         size="large"
