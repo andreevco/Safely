@@ -20,7 +20,7 @@ export const ProviderLabel = (props: ProviderLabelProps) => {
         <Animated.View entering={FadeIn.duration(100)} exiting={FadeOut.duration(100)}>
             <TouchableOpacity
                 disabled={!link}
-                onPress={() => openURL(link!, [LinkingProtocol.HTTPS])}
+                onPress={() => openURL(link!, { allowedProtocols: [LinkingProtocol.HTTPS] })}
                 style={styles.container}
             >
                 <Text variant="bodyS" color="tertiary">

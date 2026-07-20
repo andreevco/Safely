@@ -121,6 +121,7 @@
         "actions": {
             "send": "Send",
             "receive": "Receive",
+            "buy": "Buy",
             "scan": "Scan"
         },
         "status": {
@@ -702,7 +703,8 @@
         "total": "Total",
         "estimatedTime": "≈ {{minutes}} minutes",
         "ok": "OK",
-        "receiving": "Receiving {{amount}}…"
+        "receiving": "Receiving {{amount}}…",
+        "purchase": "Purchase {{amount}}…"
     },
     "assetCell": {
         "history": "History"
@@ -758,6 +760,32 @@
                     "title": "Confirmed at {{date}}",
                     "description": "More than 6 confirmations"
                 }
+            }
+        },
+        "orderInfo": {
+            "purchase": {
+                "default": "Purchase",
+                "failed": "Failed purchase",
+                "cancelled": "Cancelled purchase"
+            },
+            "sale": {
+                "default": "Sale",
+                "failed": "Failed sale",
+                "cancelled": "Cancelled sale"
+            },
+            "paid": "Paid",
+            "received": "Received",
+            "provider": "Provider",
+            "order": "Order",
+            "transaction": "Transaction",
+            "support": "Support",
+            "status": {
+                "title": "Status",
+                "pending": "Pending",
+                "failed": "Failed",
+                "cancelled": "Cancelled",
+                "completed": "Completed",
+                "contactSupport": "Contact support for more details"
             }
         }
     },
@@ -822,6 +850,14 @@
             "unsafeProtocol": "Unsafe protocol",
             "failedToOpen": "Couldn't open the link"
         }
+    },
+    "exchange": {
+        "title": "Choose a payment option to buy Bitcoin",
+        "availabilityVaries": "Availability may vary by region",
+        "disclaimer": "You’ll be redirected to {{providerName}}. {{providerName}}’s <terms>Terms</terms> and <privacy>Privacy Policy</privacy> apply.",
+        "continue": "Continue with {{providerName}}",
+        "dontShowAgain": "Don’t show this again",
+        "buyingGuide": "Buying guide"
     },
     "legal": {
         "title": "Legal",

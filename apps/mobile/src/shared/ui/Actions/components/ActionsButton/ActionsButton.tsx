@@ -27,7 +27,9 @@ export const ActionsButton = (props: ActionsButtonProps) => {
             <View style={styles.iconContainer}>
                 <Icon icon={icon} size={28} />
             </View>
-            <Text variant="bodyM">{title}</Text>
+            <Text numberOfLines={1} variant="bodyM">
+                {title}
+            </Text>
         </TouchableOpacity>
     );
 };

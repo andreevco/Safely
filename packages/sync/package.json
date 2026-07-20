@@ -12,7 +12,7 @@
     "dependencies": {
         "@safely/slottree": "workspace:*",
         "@noble/ciphers": "2.2.0",
-        "@noble/curves": "2.2.0",
+        "@noble/curves": "catalog:",
         "@noble/hashes": "catalog:",
         "cbor-x": "catalog:",
         "eventsource": "^4.1.0",
@@ -24,6 +24,7 @@
         "fast-check": "^4.7.0"
     },
     "exports": {
-        ".": "./src/index.ts"
+        ".": "./src/index.ts",
+        "./buffer": "./src/utils/buffer.ts"
     }
 }

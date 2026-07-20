@@ -6,8 +6,8 @@ import { useWindowDimensions, View } from 'react-native';
 
 import { BTC_ASSET } from '@safely/core';
 import {
+    type ActivityItem as ActivityItemData,
     type ActivityItemsDatedGroup,
-    type BtcActivityItem,
     assetKeys,
     useActivePortfolioRate,
     useActualBtcBlockNumber,
@@ -42,11 +42,11 @@ const DAY_MONTH_FORMAT_OPTIONS = { day: 'numeric', month: 'short' } as const;
 const getFirstActivityKey = (groups: ActivityItemsDatedGroup[] | undefined): string | undefined =>
     groups?.[0]?.items?.[0]?.key;
 type HistoryListProps = {
-    onNavigateToTransaction: (activity: BtcActivityItem) => void;
+    onNavigateToActivityItem: (activity: ActivityItemData) => void;
 };
 
 export const HistoryList = (props: HistoryListProps) => {
-    const { onNavigateToTransaction } = props;
+    const { onNavigateToActivityItem } = props;
     const { t } = useTranslation();
 
     const groupFormatter = useDateFormatter();
@@ -108,7 +108,7 @@ export const HistoryList = (props: HistoryListProps) => {
             contacts,
             rateData,
             currentBlockNumber,
-            onNavigateToTransaction
+            onNavigateToActivityItem
         };
 
         return historyGroups.flatMap(group => {
@@ -134,7 +134,7 @@ export const HistoryList = (props: HistoryListProps) => {
         portfolios,
         contacts,
         currentBlockNumber,
-        onNavigateToTransaction
+        onNavigateToActivityItem
     ]);
 
     const renderSeparator = useCallback(() => {
