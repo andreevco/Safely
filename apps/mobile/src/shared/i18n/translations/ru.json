@@ -765,12 +765,14 @@
     },
     "newContact": {
         "title": "Контакт",
+        "editTitle": "Изменить",
         "form": {
             "name": "Имя",
             "namePlaceholder": "Имя",
             "address": "Bitcoin-адрес",
             "addressPlaceholder": "Адрес",
             "addedOn": "Добавлен {{date}}",
+            "addressReadonly": "Адрес нельзя изменить. Создайте новый контакт, чтобы использовать другой адрес.",
             "remove": "Удалить контакт"
         },
         "confirmDelete": {
