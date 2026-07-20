@@ -1,6 +1,5 @@
 packages:
   - 'packages/*'
-  - 'apps/web'
   - 'apps/mobile'
 
 catalog:

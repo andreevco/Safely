@@ -1,6 +1,6 @@
 import { StyleSheet } from 'react-native-unistyles';
 
-export const styles = StyleSheet.create((theme, rt) => ({
+export const styles = StyleSheet.create(theme => ({
     cell: ({ isLast, isFirst }: { isLast: boolean; isFirst: boolean }) => ({
         borderTopLeftRadius: isFirst ? theme.radius.md : 0,
         borderTopRightRadius: isFirst ? theme.radius.md : 0,
@@ -9,7 +9,7 @@ export const styles = StyleSheet.create((theme, rt) => ({
     }),
     contentContainer: {
         flexGrow: 1,
-        paddingBottom: rt.insets.bottom + theme.spacing[8],
+        paddingBottom: theme.spacing[8],
         paddingHorizontal: theme.spacing[8]
     }
 }));

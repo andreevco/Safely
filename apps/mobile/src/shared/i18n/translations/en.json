@@ -823,12 +823,14 @@
     },
     "newContact": {
         "title": "Contact",
+        "editTitle": "Edit",
         "form": {
             "name": "Name",
             "namePlaceholder": "Name",
             "address": "Bitcoin address",
             "addressPlaceholder": "Address",
             "addedOn": "Added on {{date}}",
+            "addressReadonly": "Address can’t be edited. Add a new contact to use another address.",
             "remove": "Remove contact"
         },
         "confirmDelete": {
