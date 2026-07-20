@@ -4,14 +4,14 @@ import Big from 'big.js';
 import type { Logger } from '@safely/sync';
 
 import type { NumberFormatLocale } from './locale-adapter';
+import type { NormalizedPastedAmount } from './pasted-amount-normalizer';
+import { PastedAmountNormalizer } from './pasted-amount-normalizer';
 import type { CryptoCurrencyDisplay, FiatCurrencyDisplay } from './types';
 import type { CryptoAssetAmount, FiatAssetAmount } from '../../entities';
 import { isCryptoAsset } from '../../entities/asset/crypto-asset';
 import { isFiatAsset } from '../../entities/asset/fiat-asset';
 import { SPACE } from '../string';
 import { assertUnreachable } from '../types';
-
-type NormalizedPaste = { value: string; status: 'ok' | 'ambiguous' };
 
 interface FormatCryptoOptions {
     fullPrecision?: boolean;
@@ -42,17 +42,9 @@ interface FormatFiatOptionsNoSymbol {
 }
 
 export class NumberFormatter {
-    private static readonly GROUP_WHITESPACE = [0x20, 0xa0, 0x202f, 0x2009, 0x27, 0x2019]
-        .map(code => String.fromCharCode(code))
-        .join('');
-
-    private static readonly AMBIGUOUS: NormalizedPaste = { value: '', status: 'ambiguous' };
-
-    private static resolved(value: string): NormalizedPaste {
-        return { value, status: 'ok' };
-    }
-
     private readonly logger: Logger;
+
+    private readonly pastedAmountNormalizer = new PastedAmountNormalizer();
 
     constructor(
         private readonly locale: NumberFormatLocale,
@@ -61,165 +53,11 @@ export class NumberFormatter {
         this.logger = logger.child('NumberFormatter');
     }
 
-    public normalizePastedInput(raw: string): NormalizedPaste {
-        const result = this.resolveCanonical(raw);
+    public normalizePastedInput(raw: string): NormalizedPastedAmount {
+        const result = this.pastedAmountNormalizer.normalize(raw);
         if (result.status === 'ambiguous') return result;
 
-        return NumberFormatter.resolved(result.value.split('.').join(this.locale.decimalSeparator));
-    }
-
-    private resolveCanonical(raw: string): NormalizedPaste {
-        const t = raw.trim();
-
-        if (t === '') return NumberFormatter.resolved('');
-        if (/[-+−]/.test(t)) return NumberFormatter.AMBIGUOUS;
-        if (new RegExp(`[^0-9.,${NumberFormatter.GROUP_WHITESPACE}]`).test(t))
-            return NumberFormatter.AMBIGUOUS;
-
-        const whitespace = this.normalizeWhitespace(t);
-        if (!whitespace) return NumberFormatter.AMBIGUOUS;
-
-        const { cleaned, hasWhitespace } = whitespace;
-
-        const bare = cleaned.replace(/ /g, '');
-        const dotCount = this.countChar(bare, '.');
-        const commaCount = this.countChar(bare, ',');
-
-        if (dotCount === 0 && commaCount === 0) {
-            if (hasWhitespace && !this.isValidGrouping(cleaned, ' ')) {
-                return NumberFormatter.AMBIGUOUS;
-            }
-
-            return NumberFormatter.resolved(this.trimInteger(bare));
-        }
-
-        if (dotCount > 0 && commaCount > 0) {
-            return this.parseBothSeparators(bare, hasWhitespace);
-        }
-
-        const separator = dotCount > 0 ? '.' : ',';
-        const count = dotCount > 0 ? dotCount : commaCount;
-
-        if (hasWhitespace) return this.parseWhitespaceDecimal(cleaned, separator, count);
-        if (count >= 2) return this.parseGroupedInteger(bare, separator);
-
-        return this.resolveSingleSeparator(bare, separator);
-    }
-
-    private normalizeWhitespace(t: string): { cleaned: string; hasWhitespace: boolean } | null {
-        const cleaned = t.replace(new RegExp(`[${NumberFormatter.GROUP_WHITESPACE}]`, 'g'), ' ');
-        const whitespaceRun = / +/g;
-        let hasWhitespace = false;
-        let run: RegExpExecArray | null;
-
-        while ((run = whitespaceRun.exec(cleaned)) !== null) {
-            hasWhitespace = true;
-            const flankedByDigits =
-                this.isDigit(cleaned[run.index - 1]) &&
-                this.isDigit(cleaned[run.index + run[0].length]);
-
-            if (run[0].length !== 1 || !flankedByDigits) return null;
-        }
-
-        return { cleaned, hasWhitespace };
-    }
-
-    private parseBothSeparators(bare: string, hasWhitespace: boolean): NormalizedPaste {
-        const decimalChar = bare.lastIndexOf('.') > bare.lastIndexOf(',') ? '.' : ',';
-        const groupChar = decimalChar === '.' ? ',' : '.';
-
-        if (this.countChar(bare, decimalChar) !== 1) return NumberFormatter.AMBIGUOUS;
-        if (bare.lastIndexOf(groupChar) > bare.indexOf(decimalChar))
-            return NumberFormatter.AMBIGUOUS;
-        if (hasWhitespace) return NumberFormatter.AMBIGUOUS;
-
-        const [intSide, fracSide] = bare.split(decimalChar);
-        if (/\D/.test(fracSide)) return NumberFormatter.AMBIGUOUS;
-        if (!this.isValidGrouping(intSide, groupChar)) return NumberFormatter.AMBIGUOUS;
-
-        return NumberFormatter.resolved(
-            this.joinCanonical(this.trimInteger(intSide.split(groupChar).join('')), fracSide)
-        );
-    }
-
-    private parseWhitespaceDecimal(
-        cleaned: string,
-        separator: string,
-        count: number
-    ): NormalizedPaste {
-        if (count !== 1) return NumberFormatter.AMBIGUOUS;
-
-        const [intSide, fracSide] = cleaned.split(separator);
-        if (fracSide.includes(' ') || /\D/.test(fracSide.replace(/ /g, '')))
-            return NumberFormatter.AMBIGUOUS;
-        if (!this.isValidGrouping(intSide, ' ')) return NumberFormatter.AMBIGUOUS;
-
-        return NumberFormatter.resolved(
-            this.joinCanonical(this.trimInteger(intSide.replace(/ /g, '')), fracSide)
-        );
-    }
-
-    private parseGroupedInteger(bare: string, separator: string): NormalizedPaste {
-        if (!this.isValidGrouping(bare, separator)) return NumberFormatter.AMBIGUOUS;
-
-        return NumberFormatter.resolved(this.trimInteger(bare.split(separator).join('')));
-    }
-
-    private resolveSingleSeparator(bare: string, separator: string): NormalizedPaste {
-        const [before, after] = bare.split(separator);
-
-        if (before === '') {
-            return after === ''
-                ? NumberFormatter.AMBIGUOUS
-                : NumberFormatter.resolved(`0.${after}`);
-        }
-        if (after === '') return NumberFormatter.resolved(this.trimInteger(before));
-        if (after.length !== 3 || /^0+$/.test(before) || before.length >= 4) {
-            return NumberFormatter.resolved(this.joinCanonical(this.trimInteger(before), after));
-        }
-
-        return NumberFormatter.AMBIGUOUS;
-    }
-
-    private isDigit(char: string | undefined): boolean {
-        return char !== undefined && char >= '0' && char <= '9';
-    }
-
-    private countChar(value: string, char: string): number {
-        let count = 0;
-
-        for (const ch of value) {
-            if (ch === char) count++;
-        }
-
-        return count;
-    }
-
-    private trimInteger(digits: string): string {
-        const trimmed = digits.replace(/^0+/, '');
-
-        return trimmed === '' ? '0' : trimmed;
-    }
-
-    private joinCanonical(intPart: string, fracPart: string): string {
-        return fracPart === '' ? intPart : `${intPart}.${fracPart}`;
-    }
-
-    private isValidGrouping(integerWithSeparators: string, groupChar: string): boolean {
-        const parts = integerWithSeparators.split(groupChar);
-        if (parts.length < 2) return false;
-        if (parts.some(part => part === '' || /\D/.test(part))) return false;
-
-        const lengths = parts.map(part => part.length);
-        const first = lengths[0];
-        const last = lengths[lengths.length - 1];
-        const interior = lengths.slice(1, -1);
-
-        const western = first >= 1 && first <= 3 && lengths.slice(1).every(length => length === 3);
-        const indian =
-            last === 3 && first >= 1 && first <= 2 && interior.every(length => length === 2);
-
-        return western || indian;
+        return { value: result.value.split('.').join(this.locale.decimalSeparator), status: 'ok' };
     }
 
     public parseInput(value: string, decimalPlaces: number): { parsed: Big; formatted: string } {
