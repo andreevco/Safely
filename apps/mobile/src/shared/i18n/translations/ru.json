@@ -335,7 +335,8 @@
             "selectTokenFirst": "Сначала выберите токен",
             "unableToValidateToken": "Не удалось проверить токен",
             "invalidAmount": "Неверная сумма",
-            "insufficientBalance": "Недостаточно средств"
+            "insufficientBalance": "Недостаточно средств",
+            "unrecognizedAmount": "Не удалось распознать сумму"
         }
     },
     "signIn": {

@@ -12,12 +12,12 @@ import { styles } from './AmountStatus.styles';
 
 interface AmountStatusProps {
     isMax: boolean;
-    hasInsufficientBalance?: boolean;
+    amountError?: string;
     remainingBalance?: string;
 }
 
 export const AmountStatus = (props: AmountStatusProps) => {
-    const { isMax, hasInsufficientBalance, remainingBalance } = props;
+    const { isMax, amountError, remainingBalance } = props;
 
     const formatter = useNumberFormatter();
     const { data: balance } = useActiveWalletBtcBalance();
@@ -37,10 +37,10 @@ export const AmountStatus = (props: AmountStatusProps) => {
         );
     }
 
-    if (hasInsufficientBalance) {
+    if (amountError) {
         return (
             <Text variant="bodyM" color="accentRed">
-                {t('send.insufficientBalance')}
+                {t(amountError)}
             </Text>
         );
     }

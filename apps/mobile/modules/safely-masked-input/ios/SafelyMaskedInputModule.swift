@@ -33,7 +33,7 @@ public class SafelyMaskedInputModule: Module {
         }
 
         View(SafelyMaskedInputView.self) {
-            Events("onChangeText", "onFocusChange")
+            Events("onChangeText", "onFocusChange", "onPaste")
 
             Prop("decimals") { (view: SafelyMaskedInputView, decimals: Int) in
                 view.setDecimals(decimals)

@@ -24,7 +24,7 @@ class SafelyMaskedInputModule : Module() {
         }
 
         View(SafelyMaskedInputView::class) {
-            Events("onChangeText", "onFocusChange")
+            Events("onChangeText", "onFocusChange", "onPaste")
 
             Prop("decimals") { view: SafelyMaskedInputView, decimals: Int ->
                 view.setDecimals(decimals)
@@ -45,7 +45,7 @@ class SafelyMaskedInputModule : Module() {
             Prop("fontFamily") { view: SafelyMaskedInputView, family: String ->
                 view.setFontFamilyValue(family)
             }
-            
+
             Prop("textColor") { view: SafelyMaskedInputView, color: String ->
                 view.setTextColorValue(color)
             }

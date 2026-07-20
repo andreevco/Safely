@@ -13,6 +13,7 @@ private class InsetCaretTextField: UITextField {
 
 class SafelyMaskedInputView: ExpoView, UITextFieldDelegate {
 
+    let onPaste = EventDispatcher()
     let onChangeText = EventDispatcher()
     let onFocusChange = EventDispatcher()
 
@@ -404,6 +405,11 @@ class SafelyMaskedInputView: ExpoView, UITextFieldDelegate {
         let end = currentEditableText.index(start, offsetBy: replacedLength)
         let nextRawInput = currentEditableText.replacingCharacters(in: start..<end, with: string)
         let rawCursorPosition = range.location + string.count
+
+        if string.count > 1 {
+            onPaste(["raw": nextRawInput])
+            return false
+        }
 
         let result = MaskEngine.apply(
             rawInput: nextRawInput,
