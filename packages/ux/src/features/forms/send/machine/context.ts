@@ -1,3 +1,5 @@
+import type { NumberFormatter } from '@safely/core';
+
 import {
     type ContactSuggestion,
     type PortfolioSuggestion,
@@ -114,6 +116,14 @@ export function buildEmptyContext(deps: ResetDeps): SendFormMachineContext {
     };
 }
 
+function resolveInitialAmount(amount: string | undefined, formatter: NumberFormatter): string {
+    if (!amount) return '';
+
+    const normalized = formatter.normalizeCanonicalInput(amount);
+
+    return normalized.status === 'ok' ? normalized.value : '';
+}
+
 export function buildInitialContext(input: SendFormMachineInput): SendFormMachineContext {
     const baseContext = buildEmptyContext(input);
 
@@ -161,7 +171,7 @@ export function buildInitialContext(input: SendFormMachineInput): SendFormMachin
             ...DEFAULT_VALUES,
             recipient: initialValues.recipient,
             addressBookName: initialValues.addressBookName ?? '',
-            amount: initialValues.amount ?? '',
+            amount: resolveInitialAmount(initialValues.amount, input.formatter),
             amountInputType: initialValues.amountInputType ?? input.initialAmountInputType
         },
         parsed: {

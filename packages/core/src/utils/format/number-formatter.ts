@@ -60,6 +60,16 @@ export class NumberFormatter {
         return { value: result.value.split('.').join(this.locale.decimalSeparator), status: 'ok' };
     }
 
+    public normalizeCanonicalInput(raw: string): NormalizedPastedAmount {
+        const canonical = raw.trim();
+        const canonicalDecimalRegex = /^\d+(\.\d+)?$/;
+        if (!canonicalDecimalRegex.test(canonical)) {
+            return { value: '', status: 'ambiguous' };
+        }
+
+        return { value: canonical.split('.').join(this.locale.decimalSeparator), status: 'ok' };
+    }
+
     public parseInput(value: string, decimalPlaces: number): { parsed: Big; formatted: string } {
         const trimmed = value.trim();
 
