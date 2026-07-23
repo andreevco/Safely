@@ -13,7 +13,8 @@ export interface ConfigParams {
 // GET /config
 
 export const flagsSchema = z.looseObject({
-    enable_onramps: z.boolean().default(false)
+    enable_onramps: z.boolean().default(false),
+    enable_app_restrictions: z.boolean().default(false)
 });
 
 export type Flags = z.infer<typeof flagsSchema>;
