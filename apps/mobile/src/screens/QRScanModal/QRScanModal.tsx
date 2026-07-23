@@ -156,6 +156,8 @@ export const QRScanModal = (props: QRScanModalProps) => {
     const [isLightOn, setIsLightOn] = useState(false);
 
     const scanningTimeoutId = useRef<NodeJS.Timeout | null>(null);
+    const cancelledRef = useRef(false);
+    const completedRef = useRef(false);
 
     const barcodeValues = useSharedValue<Rect>({
         x: width / 2,
@@ -172,11 +174,12 @@ export const QRScanModal = (props: QRScanModalProps) => {
                 if (scanningTimeoutId.current) {
                     clearTimeout(scanningTimeoutId.current);
                 }
-                if (!isProcessing.value) {
+                if (!completedRef.current) {
+                    cancelledRef.current = true;
                     onClose?.();
                 }
             };
-        }, [onClose, isProcessing.value])
+        }, [onClose])
     );
 
     useEffect(() => {
@@ -199,8 +202,15 @@ export const QRScanModal = (props: QRScanModalProps) => {
             }
 
             await delay(SCAN_SUCCESS_DELAY_MS);
+            if (cancelledRef.current) {
+                return;
+            }
             notificationAsync(NotificationFeedbackType.Success);
             await delay(SCAN_SUCCESS_DELAY_MS);
+            if (cancelledRef.current) {
+                return;
+            }
+            completedRef.current = true;
             onSuccess(value);
             navigation.goBack();
         },
