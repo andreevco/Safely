@@ -288,6 +288,7 @@
         "from": "От",
         "to": "Кому",
         "amount": "Сумма",
+        "allAvailableBalance": "Весь доступный баланс",
         "networkFee": {
             "title": "Комиссия сети",
             "timeMinutes_one": "≈ {{count}} минута",

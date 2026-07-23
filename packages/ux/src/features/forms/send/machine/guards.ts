@@ -30,10 +30,13 @@ export const shouldCreateContact = ({ context }: GuardArg): boolean =>
     !context.suggestion.selectedId;
 
 export const canEnterMax = ({ context }: GuardArg): boolean =>
-    !!context.parsed.maxValue && !!context.parsed.asset;
+    !!context.parsed.maxValue && context.parsed.maxValue.weiAmount > 0n && !!context.parsed.asset;
 
 export const shouldRestoreMax = ({ context }: GuardArg): boolean =>
-    context.values.isMax && !!context.parsed.maxValue && !!context.parsed.asset;
+    context.values.isMax &&
+    !!context.parsed.maxValue &&
+    context.parsed.maxValue.weiAmount > 0n &&
+    !!context.parsed.asset;
 
 export const shouldResetOnSubmit = ({ context }: GuardArg): boolean => context.shouldResetForm();
 
