@@ -201,8 +201,7 @@
         },
         "phraseSheet": {
             "title": "Recovery phrase",
-            "warning": "Do not share this phrase.\nAnyone with it can access your wallet.",
-            "copy": "Copy"
+            "warning": "Do not share this phrase.\nAnyone with it can access your wallet."
         },
         "accountProtected": {
             "title": "Linked devices",

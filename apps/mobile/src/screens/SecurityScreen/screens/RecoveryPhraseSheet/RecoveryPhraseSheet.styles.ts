@@ -36,13 +36,5 @@ export const styles = StyleSheet.create(theme => ({
     },
     column: {
         flex: 1
-    },
-    copyButton: {
-        marginHorizontal: 'auto',
-        paddingVertical: theme.spacing[8],
-        paddingHorizontal: theme.spacing[16],
-        backgroundColor: theme.colors.button.secondary.background,
-        borderRadius: theme.radius.full,
-        marginBottom: theme.spacing[24]
     }
 }));
