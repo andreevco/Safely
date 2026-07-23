@@ -68,6 +68,50 @@ describe('sendFormMachine — restoring (initial state)', () => {
     });
 });
 
+describe('sendFormMachine — initial canonical amount (QR)', () => {
+    it('canonical amount with trailing zeros is displayed clean', () => {
+        const actor = start(
+            makeMockInput({
+                resolvedInitialValues: { recipient: VALID_ADDRESS, amount: '0.500' }
+            })
+        );
+        actor.send({ type: 'NEXT' });
+        const s = actor.getSnapshot();
+
+        expect(s.context.values.amount).toBe('0.5');
+        expect(s.context.values.amountInputType).toBe('crypto');
+        expect(s.context.parsed.amount).toBeDefined();
+        expect(s.context.errors.amount).toBeUndefined();
+    });
+
+    it('sub-satoshi canonical amount clamps to 0 and is flagged invalid', () => {
+        const actor = start(
+            makeMockInput({
+                resolvedInitialValues: { recipient: VALID_ADDRESS, amount: '0.0000000000001' }
+            })
+        );
+        actor.send({ type: 'NEXT' });
+        const s = actor.getSnapshot();
+
+        expect(s.context.values.amount).toBe('0');
+        expect(s.context.errors.amount).toBe(SendFormError.INVALID_AMOUNT);
+    });
+
+    it('non-canonical amount is dropped, inputType falls back to remembered', () => {
+        const actor = start(
+            makeMockInput({
+                resolvedInitialValues: { recipient: VALID_ADDRESS, amount: '10,5' },
+                initialAmountInputType: 'fiat'
+            })
+        );
+        actor.send({ type: 'NEXT' });
+        const s = actor.getSnapshot();
+
+        expect(s.context.values.amount).toBe('');
+        expect(s.context.values.amountInputType).toBe('fiat');
+    });
+});
+
 describe('sendFormMachine — recipient transitions', () => {
     it('SET_RECIPIENT to valid → recipient.valid', () => {
         const actor = start();
