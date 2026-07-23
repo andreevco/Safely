@@ -278,6 +278,7 @@ export const createSendFormMachine = () =>
                 })),
                 enterMax: assign(({ context }) => {
                     if (!context.parsed.asset || !context.parsed.maxValue) return {};
+                    if (context.parsed.maxValue.weiAmount <= 0n) return {};
 
                     const result = calculateMaxAmount(
                         {

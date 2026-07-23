@@ -311,6 +311,7 @@
         "from": "From",
         "to": "To",
         "amount": "Amount",
+        "allAvailableBalance": "All available balance",
         "networkFee": {
             "title": "Network Fee",
             "timeMinutes_one": "≈ {{count}} minute",

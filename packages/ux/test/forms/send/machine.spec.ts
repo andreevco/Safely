@@ -11,6 +11,7 @@ import {
     VALID_ADDRESS,
     makeContactSuggestion,
     makeMaxSendValue,
+    makeZeroMaxSendValue,
     makeMockContact,
     makePortfolioSuggestion,
     makeMockInput,
@@ -410,6 +411,16 @@ describe('sendFormMachine — amount transitions', () => {
 
     it('ENTER_MAX without maxSendValue → no transition (canEnterMax guard blocks)', () => {
         const actor = setupAtAmountIdle();
+        actor.send({ type: 'ENTER_MAX' });
+
+        expect(actor.getSnapshot().matches({ editing: { amount: 'idle' } })).toBe(true);
+        expect(actor.getSnapshot().context.values.isMax).toBe(false);
+    });
+
+    it('ENTER_MAX with zero maxValue → no transition (canEnterMax guard blocks)', async () => {
+        // When balance <= fee the max value is 0; the guard must not let a
+        // zero-amount max reach confirmation.
+        const actor = await setupAtAmountWithMax(makeZeroMaxSendValue());
         actor.send({ type: 'ENTER_MAX' });
 
         expect(actor.getSnapshot().matches({ editing: { amount: 'idle' } })).toBe(true);

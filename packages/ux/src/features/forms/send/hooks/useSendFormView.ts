@@ -187,7 +187,8 @@ export function useSendFormView(props: UseSendFormViewProps): SendFormView {
                 prev: goPrev
             };
 
-            const canEnterMax = !!ctxParsedAsset && !!ctxParsedMaxValue;
+            const canEnterMax =
+                !!ctxParsedAsset && !!ctxParsedMaxValue && ctxParsedMaxValue.weiAmount > 0n;
             const enterMaxIfAvailable = canEnterMax ? enterMax : undefined;
 
             switch (status) {

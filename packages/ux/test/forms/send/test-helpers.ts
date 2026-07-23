@@ -49,6 +49,10 @@ export function makeMaxSendValue(): BtcAssetAmount {
     return BtcAssetAmount.fromRelativeAmount('0.5');
 }
 
+export function makeZeroMaxSendValue(): BtcAssetAmount {
+    return BtcAssetAmount.fromWeiAmount(0n);
+}
+
 export function makePortfolioSuggestion(opts: {
     id: string;
     address: string;
