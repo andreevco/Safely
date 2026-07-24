@@ -264,12 +264,23 @@
     },
     "safety": {
         "aboutSync": "About Sync",
+        "about": "About",
         "linkDevice": "Link device",
+        "linkDeviceWarning": {
+            "title": "Link account “{{name}}” with another device",
+            "subtitle": "The linked device will have access to this account. Future changes will sync across all linked devices.",
+            "warning": "Anyone who can unlock the linked device can access this account.",
+            "wallets": "Wallets",
+            "contacts": "Contacts",
+            "contactsCount_one": "{{count}} contact",
+            "contactsCount_other": "{{count}} contacts",
+            "continue": "Continue"
+        },
         "protectAccount": {
             "title": "No linked devices",
             "subtitle": "Link another device as redundant storage. If this phone is lost, a linked device will restore access to your wallets.",
             "steps": {
-                "step1": "Open Safely on another device.",
+                "step1": "Install Safely on another device.",
                 "step2": "Tap \"Link with QR\".",
                 "step3": "Scan the QR code shown there."
             }
