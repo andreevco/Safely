@@ -1,6 +1,7 @@
 import { createStaticNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
+import { useIsAppRestricted, useIsAppUnrestricted } from '@mobile/entities/restrictions';
 import { AddAccountSheet } from '@mobile/screens/AddAccountSheet';
 import { BiometryScreen } from '@mobile/screens/BiometryScreen';
 import { ChangePasscodeScreen } from '@mobile/screens/ChangePasscodeScreen';
@@ -24,6 +25,7 @@ import { ProviderSheet } from '@mobile/screens/ProviderSheet';
 import { QRScanModal } from '@mobile/screens/QRScanModal';
 import { ReceiveAssetModal } from '@mobile/screens/ReceiveAssetModal';
 import { RemoveWalletSheet } from '@mobile/screens/RemoveWalletSheet';
+import { RestrictedRecoveryScreen } from '@mobile/screens/RestrictedRecoveryScreen';
 import {
     DisconnectDeviceSheet,
     RecoveryConfirmSheet,
@@ -46,7 +48,6 @@ import { SignInStack } from './stacks/SignInStack';
 import { TabsNavigator } from './tabs';
 
 export const RootStack = createNativeStackNavigator({
-    initialRouteName: 'TabsNavigator',
     groups: {
         Onboarding: {
             screens: {
@@ -73,10 +74,15 @@ export const RootStack = createNativeStackNavigator({
         Screens: {
             screens: {
                 TabsNavigator: {
+                    if: useIsAppUnrestricted,
                     screen: TabsNavigator,
                     linking: {
                         path: 'tab'
                     }
+                },
+                RestrictedRecoveryScreen: {
+                    if: useIsAppRestricted,
+                    screen: RestrictedRecoveryScreen
                 },
                 TransactionScreen: TransactionScreen,
                 OrderScreen: OrderScreen,

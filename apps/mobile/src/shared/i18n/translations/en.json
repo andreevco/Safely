@@ -1,5 +1,10 @@
 {
     "currentLanguageName": "English",
+    "restrictedRecovery": {
+        "title": "Recovery phrases",
+        "subtitle": "Wallet features aren't currently available. Choose a wallet to export its recovery phrase.",
+        "wallets": "Wallets"
+    },
     "portfolio": {
         "watchOnly": "Watch only",
         "testnet": "Testnet",
@@ -196,11 +201,13 @@
             "description": "The recovery phrase is used to back up your wallet.",
             "warning1": "Sharing it gives full control over your wallet.",
             "warning2": "Anyone with it can use your wallet without your account.",
+            "confirmReveal": "Confirm to reveal the recovery phrase for “{{name}}”.",
             "cancel": "Cancel",
             "reveal": "Reveal"
         },
         "phraseSheet": {
             "title": "Recovery phrase",
+            "titleSuffix": "recovery phrase",
             "warning": "Do not share this phrase.\nAnyone with it can access your wallet."
         },
         "accountProtected": {
