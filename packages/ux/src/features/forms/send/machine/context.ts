@@ -114,17 +114,30 @@ export function buildEmptyContext(deps: ResetDeps): SendFormMachineContext {
     };
 }
 
+function normalizeInitialAmount(input: SendFormMachineInput): string | undefined {
+    const raw = input.resolvedInitialValues?.amount;
+    if (raw === undefined) return undefined;
+
+    const normalized = input.formatter.normalizeCanonicalInput(raw);
+
+    return normalized.status === 'ok' ? normalized.value : undefined;
+}
+
 export function buildInitialContext(input: SendFormMachineInput): SendFormMachineContext {
     const baseContext = buildEmptyContext(input);
 
     const initialValues = input.resolvedInitialValues;
+    const initialAmount = normalizeInitialAmount(input);
+    const amountInputType =
+        initialValues?.amountInputType ??
+        (initialAmount === undefined ? input.initialAmountInputType : 'crypto');
 
     if (!initialValues?.recipient) {
         return {
             ...baseContext,
             values: {
                 ...baseContext.values,
-                amountInputType: initialValues?.amountInputType ?? input.initialAmountInputType
+                amountInputType
             }
         };
     }
@@ -161,8 +174,8 @@ export function buildInitialContext(input: SendFormMachineInput): SendFormMachin
             ...DEFAULT_VALUES,
             recipient: initialValues.recipient,
             addressBookName: initialValues.addressBookName ?? '',
-            amount: initialValues.amount ?? '',
-            amountInputType: initialValues.amountInputType ?? input.initialAmountInputType
+            amount: initialAmount ?? '',
+            amountInputType
         },
         parsed: {
             recipient: result.recipient,

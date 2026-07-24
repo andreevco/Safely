@@ -46,15 +46,8 @@ export function useSendFormMachineInput(props: UseSendFormMachineInputProps): Se
     const rememberedInputType = useAmountInputType();
     const persistAmountInputType = useSetAmountInputType();
 
-    const normalizedInitialAmount =
-        initialValues?.amount === undefined
-            ? undefined
-            : formatter.normalizeCanonicalInput(initialValues.amount);
-    const initialAmount =
-        normalizedInitialAmount?.status === 'ok' ? normalizedInitialAmount.value : undefined;
-
     return {
-        resolvedInitialValues: initialValues && { ...initialValues, amount: initialAmount },
+        resolvedInitialValues: initialValues,
         formatter,
         portfolioSuggestions,
         contactSuggestions,
@@ -70,6 +63,6 @@ export function useSendFormMachineInput(props: UseSendFormMachineInputProps): Se
         createContact,
         fetchMaxValue,
         persistAmountInputType,
-        initialAmountInputType: initialAmount === undefined ? rememberedInputType : 'crypto'
+        initialAmountInputType: rememberedInputType
     };
 }
