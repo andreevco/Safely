@@ -40,14 +40,11 @@ export const LinkDeviceWarningModal = () => {
     const contactsCount = useContacts().length;
 
     const handleContinue = async () => {
-        try {
-            using secureEncryptedStorage = getSecureEncrypted();
-            await secureEncryptedStorage.unlock();
+        using secureEncryptedStorage = getSecureEncrypted();
+        await secureEncryptedStorage.unlock();
 
-            await connectToNewDevice({ secureEncryptedStorage });
-        } finally {
-            navigation.goBack();
-        }
+        await connectToNewDevice({ secureEncryptedStorage });
+        navigation.goBack();
     };
 
     return (
