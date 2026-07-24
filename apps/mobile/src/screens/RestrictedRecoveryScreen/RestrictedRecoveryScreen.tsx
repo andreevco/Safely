@@ -76,13 +76,7 @@ export const RestrictedRecoveryScreen = () => {
                             variant="separated"
                             style={!hasMultipleAccounts && styles.listWithoutTitle}
                         >
-                            {[
-                                ...recoverablePortfolios,
-                                ...recoverablePortfolios,
-                                ...recoverablePortfolios,
-                                ...recoverablePortfolios,
-                                ...recoverablePortfolios
-                            ].map(portfolio => (
+                            {recoverablePortfolios.map(portfolio => (
                                 <Cell
                                     key={portfolio.id.toString()}
                                     onPress={() => handleSelectWallet(portfolio)}
