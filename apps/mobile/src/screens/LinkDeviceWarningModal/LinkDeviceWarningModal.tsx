@@ -71,7 +71,7 @@ export const LinkDeviceWarningModal = () => {
                 </View>
 
                 <View style={styles.table}>
-                    <Banner variant="danger">
+                    <Banner variant="danger" nonInteractive>
                         <Banner.Content>
                             <Banner.Text>{t('safety.linkDeviceWarning.warning')}</Banner.Text>
                             <Banner.Icon icon={ExclamationmarkCircle16} />
