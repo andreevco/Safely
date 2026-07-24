@@ -5,6 +5,7 @@ import { View } from 'react-native';
 import { PortfolioType } from '@safely/core';
 import { useActivePortfolio, useRecordActivePortfolioSecretReveal } from '@safely/ux';
 
+import { useSecurityPromptOptions } from '@mobile/entities/security';
 import { BottomSheet, Button, Text, useBottomSheet, useCloseOnReturn } from '@mobile/shared/ui';
 import { Icon, ListKey96 } from '@mobile/shared/ui/Icon';
 
@@ -21,17 +22,25 @@ const RecoveryConfirmContent = () => {
 
     const navigation = useNavigation();
     const markNavigated = useCloseOnReturn();
+    const promptOptions = useSecurityPromptOptions();
 
     const { mutate: recordSeedReveal } = useRecordActivePortfolioSecretReveal();
 
     const handleReveal = async () => {
+        const name = portfolio.meta.name;
+        promptOptions.current = {
+            subtitle: t('security.recoverySheet.confirmReveal', { name })
+        };
+
         try {
             const mnemonic = await portfolio.getMnemonic();
             recordSeedReveal();
             markNavigated();
-            navigation.navigate('RecoveryPhraseModal', { mnemonic });
+            navigation.navigate('RecoveryPhraseModal', { mnemonic, name });
         } catch {
             // Security check failed
+        } finally {
+            promptOptions.current = undefined;
         }
     };
 

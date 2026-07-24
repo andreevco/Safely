@@ -1,12 +1,13 @@
 import { useCallback } from 'react';
 
 import type { PromptAndCheckOptions } from '@mobile/entities/security';
-import { usePasscode } from '@mobile/entities/security';
+import { usePasscode, useSecurityPromptOptions } from '@mobile/entities/security';
 import { authenticateBiometry, useBiometryQuery } from '@mobile/features/biometry';
 
 export function useMobileSecurityCheck() {
     const { data: biometry } = useBiometryQuery();
     const passcode = usePasscode();
+    const promptOptions = useSecurityPromptOptions();
 
     return useCallback(
         async (options?: PromptAndCheckOptions) => {
@@ -19,8 +20,8 @@ export function useMobileSecurityCheck() {
                     return;
                 }
             }
-            await passcode.promptAndCheck(options);
+            await passcode.promptAndCheck(options ?? promptOptions.current);
         },
-        [biometry?.isEnabled, passcode.isSet, passcode.promptAndCheck]
+        [biometry?.isEnabled, passcode.isSet, passcode.promptAndCheck, promptOptions]
     );
 }

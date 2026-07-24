@@ -12,12 +12,13 @@ import { CapturePreventionView } from '../../../../../modules/safely-capture-pre
 
 type RecoveryPhraseSheetProps = StaticScreenProps<{
     mnemonic: string[];
+    name?: string;
 }>;
 
 export const RecoveryPhraseSheet = (props: RecoveryPhraseSheetProps) => {
     const { t } = useTranslation();
     const { logger } = useAppContext();
-    const phrase = props.route.params.mnemonic;
+    const { mnemonic: phrase, name } = props.route.params;
 
     const halfLength = Math.ceil(phrase.length / 2);
     const leftColumn = phrase.slice(0, halfLength);
@@ -26,7 +27,25 @@ export const RecoveryPhraseSheet = (props: RecoveryPhraseSheetProps) => {
     return (
         <Screen>
             <Screen.Header variant="left">
-                <Screen.Header.Title>{t('security.phraseSheet.title')}</Screen.Header.Title>
+                <Screen.Header.Title>
+                    {name ? (
+                        <View style={styles.titleRow}>
+                            <Text
+                                variant="titleS"
+                                numberOfLines={1}
+                                ellipsizeMode="tail"
+                                style={styles.titleName}
+                            >
+                                {`“${name}`}
+                            </Text>
+                            <Text variant="titleS" numberOfLines={1}>
+                                {`” ${t('security.phraseSheet.titleSuffix')}`}
+                            </Text>
+                        </View>
+                    ) : (
+                        t('security.phraseSheet.title')
+                    )}
+                </Screen.Header.Title>
                 <Screen.Header.CloseButton />
             </Screen.Header>
             <Screen.Content>
