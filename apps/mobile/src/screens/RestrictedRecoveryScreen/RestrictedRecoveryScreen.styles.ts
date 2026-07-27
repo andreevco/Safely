@@ -16,5 +16,11 @@ export const styles = StyleSheet.create(theme => ({
     },
     listWithoutTitle: {
         marginTop: theme.spacing[16]
+    },
+    nonRecoverableName: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flexShrink: 1,
+        gap: theme.spacing[4]
     }
 }));

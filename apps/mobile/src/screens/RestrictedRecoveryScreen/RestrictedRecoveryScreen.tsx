@@ -5,10 +5,9 @@ import { View } from 'react-native';
 
 import type { Portfolio } from '@safely/core';
 import { PortfolioType } from '@safely/core';
-import { useAccounts, usePortfolios, useSetActivePortfolio } from '@safely/ux';
+import { useAccounts, usePortfolios, useSetActivePortfolio, useToast } from '@safely/ux';
 
 import { PortfolioName } from '@mobile/entities/portfolio';
-import { useLogOutAllConfirmation } from '@mobile/features/settings/useLogOutAllConfirmation';
 import { Cell, List, Screen, Text } from '@mobile/shared/ui';
 import { Icon, ListKey96 } from '@mobile/shared/ui/Icon';
 
@@ -18,8 +17,8 @@ import { AccountSelector } from '../SettingsScreen/components/AccountSection/Acc
 export const RestrictedRecoveryScreen = () => {
     const { t } = useTranslation();
     const navigation = useNavigation();
-    const handleLogOut = useLogOutAllConfirmation();
 
+    const toast = useToast();
     const accounts = useAccounts();
     const portfolios = usePortfolios();
     const { mutateAsync: setActivePortfolio } = useSetActivePortfolio();
@@ -28,23 +27,28 @@ export const RestrictedRecoveryScreen = () => {
         () => portfolios.filter(portfolio => portfolio.type === PortfolioType.BIP39),
         [portfolios]
     );
+    const nonRecoverablePortfolios = useMemo(
+        () => portfolios.filter(portfolio => portfolio.type !== PortfolioType.BIP39),
+        [portfolios]
+    );
 
     const hasMultipleAccounts = (accounts?.length ?? 0) > 1;
+    const showWalletsTitle = hasMultipleAccounts || nonRecoverablePortfolios.length > 0;
 
     const handleSelectWallet = async (portfolio: Portfolio) => {
         await setActivePortfolio({ id: portfolio.id });
         navigation.navigate('RecoveryConfirmSheet');
     };
 
+    const handleNoRecoveryPhrase = () => {
+        toast({ message: t('restrictedRecovery.noRecoveryPhrase') });
+    };
+
     return (
         <Screen>
             <Screen.Header variant="left">
+                <Screen.Header.BackButton />
                 <Screen.Header.Title />
-                <Screen.Header.Button type="small" onPress={handleLogOut}>
-                    <Text variant="labelM" color="primary">
-                        {t('passcode.lockout.signOut')}
-                    </Text>
-                </Screen.Header.Button>
             </Screen.Header>
 
             <Screen.Scrollable contentContainerStyle={styles.content}>
@@ -69,12 +73,12 @@ export const RestrictedRecoveryScreen = () => {
 
                 {recoverablePortfolios.length > 0 && (
                     <View>
-                        {hasMultipleAccounts && (
+                        {showWalletsTitle && (
                             <List.Title>{t('restrictedRecovery.wallets')}</List.Title>
                         )}
                         <List.Group
                             variant="separated"
-                            style={!hasMultipleAccounts && styles.listWithoutTitle}
+                            style={!showWalletsTitle && styles.listWithoutTitle}
                         >
                             {recoverablePortfolios.map(portfolio => (
                                 <Cell
@@ -93,6 +97,41 @@ export const RestrictedRecoveryScreen = () => {
                                         </Cell.Row>
                                     </Cell.Content>
                                     <Cell.Chevron />
+                                </Cell>
+                            ))}
+                        </List.Group>
+                    </View>
+                )}
+
+                {nonRecoverablePortfolios.length > 0 && (
+                    <View>
+                        <List.Title>{t('restrictedRecovery.withoutRecoveryPhrase')}</List.Title>
+                        <List.Group variant="separated">
+                            {nonRecoverablePortfolios.map(portfolio => (
+                                <Cell
+                                    key={portfolio.id.toString()}
+                                    onPress={handleNoRecoveryPhrase}
+                                >
+                                    <Cell.Content>
+                                        <Cell.Row>
+                                            <View style={styles.nonRecoverableName}>
+                                                <PortfolioName
+                                                    meta={portfolio.meta}
+                                                    gap={12}
+                                                    size={16}
+                                                    type={portfolio.type}
+                                                    networkType={portfolio.networkType}
+                                                />
+                                                {portfolio.type === PortfolioType.LEDGER && (
+                                                    <Text variant="bodyM" color="tertiary">
+                                                        {`· ${t('settings.walletsCount', {
+                                                            count: portfolio.getDerivations().length
+                                                        })}`}
+                                                    </Text>
+                                                )}
+                                            </View>
+                                        </Cell.Row>
+                                    </Cell.Content>
                                 </Cell>
                             ))}
                         </List.Group>
