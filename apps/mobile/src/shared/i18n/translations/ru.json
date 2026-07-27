@@ -1,9 +1,16 @@
 {
     "currentLanguageName": "Русский",
+    "restrictedRegion": {
+        "title": "Safely недоступен в вашем регионе",
+        "subtitle": "Для получения дополнительной информации напишите на",
+        "exportRecoveryPhrases": "Экспортировать фразы восстановления"
+    },
     "restrictedRecovery": {
         "title": "Фразы восстановления",
         "subtitle": "Функции кошелька сейчас недоступны. Выберите кошелёк, чтобы экспортировать его фразу восстановления.",
-        "wallets": "Кошельки"
+        "wallets": "Кошельки",
+        "withoutRecoveryPhrase": "Без фразы восстановления",
+        "noRecoveryPhrase": "Нет фразы восстановления"
     },
     "portfolio": {
         "watchOnly": "Только просмотр",

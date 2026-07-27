@@ -14,11 +14,17 @@ export function useInitialNavigationState(): NavigationContainerProps['initialSt
 
     const ref = useRef(
         (() => {
+            if (isRestricted) {
+                return hasPasscode
+                    ? { routes: [{ name: 'LockScreen' as const }] }
+                    : { routes: [{ name: 'RestrictedScreen' as const }] };
+            }
+
             if (!hasPasscode || !hasAccount) {
                 return { routes: [{ name: 'WelcomeScreen' as const }] };
             }
 
-            if (isRestricted || isLockScreenEnabled) {
+            if (isLockScreenEnabled) {
                 return { routes: [{ name: 'LockScreen' as const }] };
             }
 

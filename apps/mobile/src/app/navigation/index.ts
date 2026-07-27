@@ -26,6 +26,7 @@ import { QRScanModal } from '@mobile/screens/QRScanModal';
 import { ReceiveAssetModal } from '@mobile/screens/ReceiveAssetModal';
 import { RemoveWalletSheet } from '@mobile/screens/RemoveWalletSheet';
 import { RestrictedRecoveryScreen } from '@mobile/screens/RestrictedRecoveryScreen';
+import { RestrictedScreen } from '@mobile/screens/RestrictedScreen';
 import {
     DisconnectDeviceSheet,
     RecoveryConfirmSheet,
@@ -79,6 +80,10 @@ export const RootStack = createNativeStackNavigator({
                     linking: {
                         path: 'tab'
                     }
+                },
+                RestrictedScreen: {
+                    if: useIsAppRestricted,
+                    screen: RestrictedScreen
                 },
                 RestrictedRecoveryScreen: {
                     if: useIsAppRestricted,

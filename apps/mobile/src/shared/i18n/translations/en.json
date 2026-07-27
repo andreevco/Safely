@@ -1,9 +1,16 @@
 {
     "currentLanguageName": "English",
+    "restrictedRegion": {
+        "title": "Safely isn't available in your region",
+        "subtitle": "For more information, contact",
+        "exportRecoveryPhrases": "Export recovery phrases"
+    },
     "restrictedRecovery": {
         "title": "Recovery phrases",
         "subtitle": "Wallet features aren't currently available. Choose a wallet to export its recovery phrase.",
-        "wallets": "Wallets"
+        "wallets": "Wallets",
+        "withoutRecoveryPhrase": "Without recovery phrase",
+        "noRecoveryPhrase": "No recovery phrase"
     },
     "portfolio": {
         "watchOnly": "Watch only",

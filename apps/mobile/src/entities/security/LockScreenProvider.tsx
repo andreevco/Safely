@@ -75,7 +75,7 @@ export const LockScreenProvider: FC<PropsWithChildren> = ({ children }) => {
             navigationRef.dispatch(
                 CommonActions.reset({
                     index: 0,
-                    routes: [{ name: isRestricted ? 'RestrictedRecoveryScreen' : 'TabsNavigator' }]
+                    routes: [{ name: isRestricted ? 'RestrictedScreen' : 'TabsNavigator' }]
                 })
             );
         }
