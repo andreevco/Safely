@@ -57,17 +57,5 @@ export const TEST_ID = {
         fee: 'confirmation.fee',
         sliderKnob: 'confirmation.sliderKnob',
         backToWallet: 'confirmation.backToWallet'
-    },
-    settings: {
-        devToolsTrigger: 'settings.devToolsTrigger'
-    },
-    devTools: {
-        countryCode: 'devTools.countryCode',
-        saveAndReload: 'devTools.saveAndReload'
-    },
-    restricted: {
-        screen: 'restricted.screen',
-        exportRecoveryPhrases: 'restricted.exportRecoveryPhrases',
-        logOut: 'restricted.logOut'
     }
 } as const;

@@ -3,7 +3,6 @@ import { View } from 'react-native';
 
 import { useAppContext } from '@safely/ux';
 
-import { TEST_ID } from '@mobile/shared/constants';
 import { useMobileLayerSynchronousGlobalStorage } from '@mobile/shared/storage';
 import { Button, Input, Screen, Text } from '@mobile/shared/ui';
 
@@ -18,20 +17,10 @@ export const DevToolsConfigScreen = () => {
         set: setStoredToken,
         remove: removeStoredToken
     } = useMobileLayerSynchronousGlobalStorage('devToken');
-    const {
-        value: storedCountryCode,
-        set: setStoredCountryCode,
-        remove: removeStoredCountryCode
-    } = useMobileLayerSynchronousGlobalStorage('devCountryCode');
     const [token, setToken] = useState(() => storedToken ?? '');
-    const [countryCode, setCountryCode] = useState(() => storedCountryCode ?? '');
 
     const handleChangeText = useCallback((value: string) => {
         setToken(value.replace(ALPHANUMERIC_REGEX, ''));
-    }, []);
-
-    const handleChangeCountryCode = useCallback((value: string) => {
-        setCountryCode(value.replace(ALPHANUMERIC_REGEX, '').toUpperCase());
     }, []);
 
     const handleSaveAndReload = useCallback(() => {
@@ -41,22 +30,8 @@ export const DevToolsConfigScreen = () => {
             removeStoredToken();
         }
 
-        if (countryCode.length > 0) {
-            setStoredCountryCode(countryCode);
-        } else {
-            removeStoredCountryCode();
-        }
-
         reloadApp();
-    }, [
-        token,
-        countryCode,
-        reloadApp,
-        setStoredToken,
-        removeStoredToken,
-        setStoredCountryCode,
-        removeStoredCountryCode
-    ]);
+    }, [token, reloadApp, setStoredToken, removeStoredToken]);
 
     return (
         <Screen>
@@ -80,26 +55,8 @@ export const DevToolsConfigScreen = () => {
                     />
                 </Input>
 
-                <Input>
-                    <Input.Label>Country code (ISO 3166-1 alpha-2)</Input.Label>
-                    <Input.Field
-                        testID={TEST_ID.devTools.countryCode}
-                        value={countryCode}
-                        onChangeText={handleChangeCountryCode}
-                        placeholder="e.g. GB"
-                        autoCapitalize="characters"
-                        autoCorrect={false}
-                        withClearButton
-                    />
-                </Input>
-
                 <View style={styles.reloadButton}>
-                    <Button
-                        testID={TEST_ID.devTools.saveAndReload}
-                        type="primary"
-                        size="large"
-                        onPress={handleSaveAndReload}
-                    >
+                    <Button type="primary" size="large" onPress={handleSaveAndReload}>
                         Save and reload
                     </Button>
                 </View>

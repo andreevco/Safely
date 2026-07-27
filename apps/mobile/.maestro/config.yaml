@@ -17,4 +17,3 @@ executionOrder:
         - add-watch-only
         - import-wallet
         - send-asset
-        - geo-restriction

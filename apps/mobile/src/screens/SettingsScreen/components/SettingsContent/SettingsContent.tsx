@@ -5,7 +5,6 @@ import { Pressable } from 'react-native';
 import { useAppContext, useHasPortfolio } from '@safely/ux';
 
 import { DeviceUnlinkedBanner } from '@mobile/features/device-link';
-import { TEST_ID } from '@mobile/shared/constants';
 import { List, Screen, Text } from '@mobile/shared/ui';
 
 import { AccountSection } from '../AccountSection';
@@ -38,7 +37,7 @@ export const SettingsContent = () => {
                     <SignOutAccountButton />
                 </List.Group>
             </List>
-            <Pressable testID={TEST_ID.settings.devToolsTrigger} onLongPress={openDevTools}>
+            <Pressable onLongPress={openDevTools}>
                 <Text variant="bodyM" color="tertiary" textAlign="center" style={styles.version}>
                     Safely · {version}
                 </Text>

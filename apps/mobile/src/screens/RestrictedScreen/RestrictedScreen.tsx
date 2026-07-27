@@ -5,7 +5,6 @@ import { View } from 'react-native';
 import { useBootConfig, useHasAccount, useLinking } from '@safely/ux';
 
 import { useLogOutAllConfirmation } from '@mobile/features/settings/useLogOutAllConfirmation';
-import { TEST_ID } from '@mobile/shared/constants';
 import { Button, Screen, Text } from '@mobile/shared/ui';
 import { Globe56, Icon } from '@mobile/shared/ui/Icon';
 
@@ -27,7 +26,7 @@ export const RestrictedScreen = () => {
             </Screen.Header>
 
             <Screen.Content>
-                <View testID={TEST_ID.restricted.screen} style={styles.hero}>
+                <View style={styles.hero}>
                     <Icon icon={Globe56} />
                     <View style={styles.heroText}>
                         <Text variant="titleM" textAlign="center">
@@ -49,7 +48,6 @@ export const RestrictedScreen = () => {
                 {hasAccount && (
                     <View style={styles.footer}>
                         <Button
-                            testID={TEST_ID.restricted.exportRecoveryPhrases}
                             type="secondary"
                             size="large"
                             onPress={() => navigation.navigate('RestrictedRecoveryScreen')}
@@ -57,7 +55,6 @@ export const RestrictedScreen = () => {
                             {t('restrictedRegion.exportRecoveryPhrases')}
                         </Button>
                         <Text
-                            testID={TEST_ID.restricted.logOut}
                             variant="bodyM"
                             color="tertiary"
                             textAlign="center"

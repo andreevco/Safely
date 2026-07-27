@@ -6,8 +6,7 @@ import { mobileLayerSynchronousGlobal } from '@mobile/app/storage';
 
 const mobileLayerSynchronousGlobalStructure = {
     devToken: z.string().nullable(),
-    devIsTestnetAllowed: z.boolean().nullable(),
-    devCountryCode: z.string().nullable()
+    devIsTestnetAllowed: z.boolean().nullable()
 };
 
 type MobileLayerSynchronousGlobalStructure = typeof mobileLayerSynchronousGlobalStructure;
