@@ -23,13 +23,6 @@ export const RestrictedScreen = () => {
         <Screen>
             <Screen.Header variant="left">
                 <Screen.Header.Title />
-                {hasAccount && (
-                    <Screen.Header.Button type="small" onPress={handleLogOut}>
-                        <Text variant="labelM" color="primary">
-                            {t('passcode.lockout.signOut')}
-                        </Text>
-                    </Screen.Header.Button>
-                )}
             </Screen.Header>
 
             <Screen.Content>
@@ -53,14 +46,23 @@ export const RestrictedScreen = () => {
                 </View>
 
                 {hasAccount && (
-                    <Button
-                        type="secondary"
-                        size="large"
-                        style={styles.exportButton}
-                        onPress={() => navigation.navigate('RestrictedRecoveryScreen')}
-                    >
-                        {t('restrictedRegion.exportRecoveryPhrases')}
-                    </Button>
+                    <View style={styles.footer}>
+                        <Button
+                            type="secondary"
+                            size="large"
+                            onPress={() => navigation.navigate('RestrictedRecoveryScreen')}
+                        >
+                            {t('restrictedRegion.exportRecoveryPhrases')}
+                        </Button>
+                        <Text
+                            variant="bodyM"
+                            color="tertiary"
+                            textAlign="center"
+                            onPress={handleLogOut}
+                        >
+                            {t('restrictedRegion.logOutAndErase')}
+                        </Text>
+                    </View>
                 )}
             </Screen.Content>
         </Screen>

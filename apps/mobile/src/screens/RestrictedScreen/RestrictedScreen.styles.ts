@@ -12,7 +12,8 @@ export const styles = StyleSheet.create(theme => ({
         gap: theme.spacing[4],
         paddingHorizontal: theme.spacing[32]
     },
-    exportButton: {
-        margin: theme.spacing[24]
+    footer: {
+        margin: theme.spacing[24],
+        gap: theme.spacing[16]
     }
 }));

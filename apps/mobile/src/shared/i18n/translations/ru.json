@@ -3,7 +3,8 @@
     "restrictedRegion": {
         "title": "Safely недоступен в вашем регионе",
         "subtitle": "Для получения дополнительной информации напишите на",
-        "exportRecoveryPhrases": "Экспортировать фразы восстановления"
+        "exportRecoveryPhrases": "Экспортировать фразы восстановления",
+        "logOutAndErase": "Выйти и стереть все данные приложения"
     },
     "restrictedRecovery": {
         "title": "Фразы восстановления",

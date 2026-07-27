@@ -3,7 +3,8 @@
     "restrictedRegion": {
         "title": "Safely isn't available in your region",
         "subtitle": "For more information, contact",
-        "exportRecoveryPhrases": "Export recovery phrases"
+        "exportRecoveryPhrases": "Export recovery phrases",
+        "logOutAndErase": "Log out and erase all app data"
     },
     "restrictedRecovery": {
         "title": "Recovery phrases",
