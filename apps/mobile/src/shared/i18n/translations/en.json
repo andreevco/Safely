@@ -115,7 +115,17 @@
         }
     },
     "currency": {
-        "title": "Currency"
+        "title": "Currency",
+        "localCurrency": {
+            "title": "Local currency"
+        },
+        "mainBalance": {
+            "title": "Main balance",
+            "options": {
+                "fiat": "In local currency",
+                "crypto": "In bitcoin"
+            }
+        }
     },
     "home": {
         "actions": {

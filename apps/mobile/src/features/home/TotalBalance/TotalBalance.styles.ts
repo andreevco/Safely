@@ -8,6 +8,12 @@ export const styles = StyleSheet.create(theme => ({
         justifyContent: 'center',
         gap: theme.spacing[4]
     },
+    cryptoAmount: {
+        flexDirection: 'row',
+        alignItems: 'baseline',
+        justifyContent: 'center',
+        gap: theme.spacing[4]
+    },
     skeletonContainer: {
         paddingVertical: theme.spacing[12]
     }

@@ -94,7 +94,17 @@
         }
     },
     "currency": {
-        "title": "Валюта"
+        "title": "Валюта",
+        "localCurrency": {
+            "title": "Локальная валюта"
+        },
+        "mainBalance": {
+            "title": "Основной баланс",
+            "options": {
+                "fiat": "В локальной валюте",
+                "crypto": "В биткоине"
+            }
+        }
     },
     "home": {
         "actions": {

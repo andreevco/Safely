@@ -2,6 +2,7 @@ import { sActiveAccountId } from './active-account-id.schema';
 import { sChartPeriod } from './chart-period.schema';
 import { sDismissedBannerIds } from './dismissed-banner-ids.schema';
 import { sDismissedProviders } from './dismissed-providers.schema';
+import { sMainBalanceUnit } from './main-balance-unit.schema';
 import { sNotificationsEnabled } from './notifications-enabled.schema';
 import { sSendAmountInputType } from './send-amount-input-type.schema';
 import { sSyncOnboardingCompleted } from './sync-onboarding-completed.schema';
@@ -14,6 +15,7 @@ export const sharedStorageStructure = {
     dismissedBannerIds: sDismissedBannerIds,
     dismissedProviders: sDismissedProviders,
     watchedBetaTimestamp: sWatchedBetaTimestamp,
+    mainBalanceUnit: sMainBalanceUnit,
     sendAmountInputType: sSendAmountInputType,
     syncOnboardingCompleted: sSyncOnboardingCompleted
 };
