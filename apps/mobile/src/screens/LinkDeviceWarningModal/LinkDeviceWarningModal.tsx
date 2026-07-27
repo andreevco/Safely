@@ -76,7 +76,7 @@ export const LinkDeviceWarningModal = () => {
                     </Banner>
 
                     <List.Group withoutBottomMargin>
-                        <TableCell showDivider={contactsCount > 0}>
+                        <TableCell columnDivider rowDivider={contactsCount > 0}>
                             <TableCell.Column leading>
                                 <TableCell.Label>
                                     {t('safety.linkDeviceWarning.wallets')}
@@ -94,7 +94,7 @@ export const LinkDeviceWarningModal = () => {
                             </TableCell.Column>
                         </TableCell>
                         {contactsCount > 0 && (
-                            <TableCell showDivider={false}>
+                            <TableCell columnDivider rowDivider={false}>
                                 <TableCell.Column leading>
                                     <TableCell.Label>
                                         {t('safety.linkDeviceWarning.contacts')}

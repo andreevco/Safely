@@ -2,7 +2,8 @@ import Color from 'color';
 import { setStringAsync } from 'expo-clipboard';
 import { notificationAsync, NotificationFeedbackType } from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useCallback } from 'react';
+import type { ReactNode } from 'react';
+import { Children, Fragment, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ViewStyle } from 'react-native';
 import { TouchableOpacity, View } from 'react-native';
@@ -27,7 +28,8 @@ type TableCellChildrenRenderProps = {
 export type TableCellContainerProps = {
     children: React.ReactNode | ((props: TableCellChildrenRenderProps) => React.ReactNode);
     style?: ViewStyle;
-    showDivider?: boolean;
+    rowDivider?: boolean;
+    columnDivider?: boolean;
     copyable?: string;
 };
 
@@ -35,11 +37,11 @@ const COPIED_FADE_IN_DURATION = 180;
 const COPIED_VISIBLE_DURATION = 800;
 
 export const TableCellContainer = (props: TableCellContainerProps) => {
-    const { children, style, showDivider = true, copyable } = props;
+    const { children, style, rowDivider = true, columnDivider = false, copyable } = props;
 
     const { t } = useTranslation();
 
-    styles.useVariants({ showDivider });
+    styles.useVariants({ rowDivider });
 
     const theme = useUnistyles().theme;
 
@@ -69,6 +71,20 @@ export const TableCellContainer = (props: TableCellContainerProps) => {
         );
     }, [copyable, copiedOpacity]);
 
+    let content: ReactNode;
+    if (typeof children === 'function') {
+        content = children({ handleCopy });
+    } else if (columnDivider) {
+        content = Children.toArray(children).map((child, index) => (
+            <Fragment key={index}>
+                {index > 0 && <View style={styles.columnDivider} />}
+                {child}
+            </Fragment>
+        ));
+    } else {
+        content = children;
+    }
+
     return (
         <TouchableOpacity
             activeOpacity={1}
@@ -76,7 +92,7 @@ export const TableCellContainer = (props: TableCellContainerProps) => {
             onPress={handleCopy}
             disabled={!copyable}
         >
-            {typeof children === 'function' ? children({ handleCopy }) : children}
+            {content}
             {copyable != null && (
                 <Animated.View pointerEvents="none" style={[styles.copiedIndicator, copiedStyle]}>
                     <LinearGradient

@@ -23,7 +23,8 @@ export const Group = (props: GroupProps) => {
                 const last = items[items.length - 1];
                 if (isValidElement(last)) {
                     items[items.length - 1] = cloneElement(last, {
-                        showDivider: false
+                        showDivider: false,
+                        rowDivider: false
                     } as Record<string, unknown>);
                 }
                 return items;
@@ -33,10 +34,10 @@ export const Group = (props: GroupProps) => {
                     if (isValidElement(child)) {
                         return (
                             <View style={styles.separatedContainer} key={`item-${index}`}>
-                                {cloneElement(child, { showDivider: false } as Record<
-                                    string,
-                                    unknown
-                                >)}
+                                {cloneElement(child, {
+                                    showDivider: false,
+                                    rowDivider: false
+                                } as Record<string, unknown>)}
                             </View>
                         );
                     }
