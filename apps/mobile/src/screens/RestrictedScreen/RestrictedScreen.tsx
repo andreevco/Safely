@@ -2,7 +2,7 @@ import { useNavigation } from '@react-navigation/core';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { useBootConfig, useHasAccount, useLinking } from '@safely/ux';
+import { useBootConfig, useHasAccount } from '@safely/ux';
 
 import { useLogOutAllConfirmation } from '@mobile/features/settings/useLogOutAllConfirmation';
 import { Button, Screen, Text } from '@mobile/shared/ui';
@@ -16,7 +16,6 @@ export const RestrictedScreen = () => {
     const hasAccount = useHasAccount();
     const handleLogOut = useLogOutAllConfirmation();
 
-    const { openURL } = useLinking();
     const supportEmail = useBootConfig().references.support.email;
 
     return (
@@ -33,14 +32,7 @@ export const RestrictedScreen = () => {
                             {t('restrictedRegion.title')}
                         </Text>
                         <Text variant="bodyL" color="secondary" textAlign="center">
-                            {t('restrictedRegion.subtitle')}{' '}
-                            <Text
-                                variant="bodyL"
-                                color="secondary"
-                                onPress={() => openURL(`mailto:${supportEmail}`)}
-                            >
-                                {supportEmail}
-                            </Text>
+                            {t('restrictedRegion.subtitle')} {supportEmail}
                         </Text>
                     </View>
                 </View>
