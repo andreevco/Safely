@@ -36,8 +36,12 @@ export const RestrictedRecoveryScreen = () => {
     const showWalletsTitle = hasMultipleAccounts || nonRecoverablePortfolios.length > 0;
 
     const handleSelectWallet = async (portfolio: Portfolio) => {
-        await setActivePortfolio({ id: portfolio.id });
-        navigation.navigate('RecoveryConfirmSheet');
+        try {
+            await setActivePortfolio({ id: portfolio.id });
+            navigation.navigate('RecoveryConfirmSheet');
+        } catch {
+            toast({ message: t('common.errors.unknown') });
+        }
     };
 
     const handleNoRecoveryPhrase = () => {
