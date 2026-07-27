@@ -50,6 +50,7 @@ export const RestrictedScreen = () => {
                         <Button
                             type="secondary"
                             size="large"
+                            textProps={{ textAlign: 'center' }}
                             onPress={() => navigation.navigate('RestrictedRecoveryScreen')}
                         >
                             {t('restrictedRegion.exportRecoveryPhrases')}

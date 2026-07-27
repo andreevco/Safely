@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import type { UnistylesVariants } from 'react-native-unistyles';
 
 import { CircularSpinner } from '@mobile/shared/ui/CircularSpinner';
+import type { TextProps } from '@mobile/shared/ui/Text';
 import { Text } from '@mobile/shared/ui/Text';
 
 import { styles } from './Button.styles';
@@ -13,6 +14,7 @@ type ButtonProps = Omit<PressableProps, 'style' | 'children'> &
         style?: StyleProp<ViewStyle>;
         isLoading?: boolean;
         children?: ReactNode;
+        textProps?: Omit<TextProps, 'children'>;
     };
 
 const SPINNER_SIZE_BY_BUTTON_SIZE = {
@@ -29,6 +31,7 @@ export const Button = (props: ButtonProps) => {
         disabled,
         isLoading,
         style,
+        textProps,
         ...rest
     } = props;
 
@@ -47,7 +50,11 @@ export const Button = (props: ButtonProps) => {
         >
             <View style={{ opacity: isLoading ? 0 : 1 }}>
                 {typeof children === 'string' ? (
-                    <Text variant={size === 'small' ? 'labelM' : 'labelL'} style={styles.text}>
+                    <Text
+                        variant={size === 'small' ? 'labelM' : 'labelL'}
+                        {...textProps}
+                        style={[styles.text, textProps?.style]}
+                    >
                         {children}
                     </Text>
                 ) : (
