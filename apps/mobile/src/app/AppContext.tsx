@@ -57,6 +57,7 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
     const { value: devIsTestnetAllowed } =
         useMobileLayerSynchronousGlobalStorage('devIsTestnetAllowed');
     const { value: devToken } = useMobileLayerSynchronousGlobalStorage('devToken');
+    const { value: devCountryCode } = useMobileLayerSynchronousGlobalStorage('devCountryCode');
 
     const appContext = useMemo<IAppContext>(
         () => ({
@@ -69,6 +70,9 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
             environment,
             devToken: devToken ?? undefined,
             devIsTestnetAllowed: devIsTestnetAllowed ?? undefined,
+            userCountryInfo: devCountryCode
+                ? { deviceCode: devCountryCode, storeCode: devCountryCode }
+                : undefined,
             deviceInfo,
             numberFormatLocale: new MobileNumberFormatLocale(getLocales()[0]),
             storage: {
@@ -132,7 +136,7 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
                 return () => subscription.remove();
             }
         }),
-        [t, toastService, loaderService, language, devIsTestnetAllowed, devToken]
+        [t, toastService, loaderService, language, devIsTestnetAllowed, devToken, devCountryCode]
     );
 
     return <AppContext value={appContext}>{children}</AppContext>;
