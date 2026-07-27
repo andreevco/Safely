@@ -57,6 +57,10 @@ export const CurrencyScreen = () => {
         [setMainBalanceUnit]
     );
 
+    const handleAmountDisplayPress = useCallback(() => {
+        navigation.navigate('CurrencyModal', { screen: 'AmountDisplayModal' });
+    }, [navigation]);
+
     return (
         <Screen>
             <Screen.Header variant="left">
@@ -109,6 +113,24 @@ export const CurrencyScreen = () => {
                                 )}
                             </Cell>
                         ))}
+                    </List.Group>
+                    <List.Title>{t('currency.moreOptions.title')}</List.Title>
+                    <List.Group variant="divided">
+                        <Cell onPress={handleAmountDisplayPress}>
+                            <Cell.Content>
+                                <Cell.Row>
+                                    <Cell.Title>
+                                        {t('currency.moreOptions.amountDisplay.title')}
+                                    </Cell.Title>
+                                </Cell.Row>
+                                <Cell.Row>
+                                    <Cell.Subtitle numberOfLines={0}>
+                                        {t('currency.moreOptions.amountDisplay.subtitle')}
+                                    </Cell.Subtitle>
+                                </Cell.Row>
+                            </Cell.Content>
+                            <Cell.Chevron />
+                        </Cell>
                     </List.Group>
                 </List>
             </Screen.Scrollable>

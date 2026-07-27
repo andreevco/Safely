@@ -125,7 +125,17 @@
                 "fiat": "In local currency",
                 "crypto": "In bitcoin"
             }
+        },
+        "moreOptions": {
+            "title": "More options",
+            "amountDisplay": {
+                "title": "Amount display",
+                "subtitle": "Home screen, history, full sent amounts."
+            }
         }
+    },
+    "amountDisplay": {
+        "title": "Amount display"
     },
     "home": {
         "actions": {
