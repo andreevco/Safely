@@ -320,6 +320,6 @@ describe('storage device versions', () => {
                 shouldBeDeletedAt: now + VERSION_DELETION_GRACE_PERIOD_SECONDS
             }
         });
-        expect(imported.read()).toEqual(v3Initial);
+        expect(imported.get()).toEqual(v3Initial);
     });
 });

@@ -131,7 +131,6 @@ describe('ordered array slots', () => {
         });
 
         expect(storage.get().portfolios.map(item => item.__setId)).toEqual(['p3', 'p1', 'p2']);
-        expect(storage.read().portfolios.map(item => item.__setId)).toEqual(['p3', 'p1', 'p2']);
     });
 
     it('removes items with tombstones', () => {

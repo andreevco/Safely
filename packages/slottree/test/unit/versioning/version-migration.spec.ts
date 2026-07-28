@@ -27,7 +27,7 @@ describe('version migration', () => {
             root
         }) as StorageImpl<StorageV3>;
 
-        expect(storage.read()).toEqual({
+        expect(storage.get()).toEqual({
             key1: 42,
             label: 'from-v1',
             key3: false,
@@ -171,7 +171,7 @@ describe('version migration', () => {
         const oldV1 = oldExport.v['1'] as ContainerSlot;
         const newV3 = newExport.v['3'] as ContainerSlot;
 
-        expect(newDevice.read()).toEqual({
+        expect(newDevice.get()).toEqual({
             key1: 42,
             label: 'from-v1',
             key3: false,
@@ -229,7 +229,7 @@ describe('version migration', () => {
 
         receivingDevice.merge(incomingStorage.export());
 
-        expect(receivingDevice.read()).toEqual({
+        expect(receivingDevice.get()).toEqual({
             key1: 42,
             label: 'from-v1',
             key3: false,

@@ -26,8 +26,8 @@ describe('storage updates', () => {
             draft.set('key2', 'value2');
         });
 
-        expect(storage.read().key1).toEqual(10);
-        expect(storage.read().key2).toEqual('value2');
+        expect(storage.get().key1).toEqual(10);
+        expect(storage.get().key2).toEqual('value2');
     });
 
     it('notifies observers after successful updates', () => {
@@ -164,8 +164,8 @@ describe('storage updates', () => {
             draft.set('key2', `${draft.at('key2').get()}-updated`);
         });
 
-        expect(storage.read().key1).toEqual(15);
-        expect(storage.read().key2).toEqual('value-updated');
+        expect(storage.get().key1).toEqual(15);
+        expect(storage.get().key2).toEqual('value-updated');
     });
 
     describe('async transactions', () => {
@@ -182,7 +182,7 @@ describe('storage updates', () => {
                 },
                 async snapshot => {
                     snapshots.push(snapshot);
-                    expect(storage.read()).toEqual({
+                    expect(storage.get()).toEqual({
                         key1: 0,
                         key2: 'initial'
                     });
@@ -192,7 +192,7 @@ describe('storage updates', () => {
 
             expect(committed).toBe(true);
             expect(snapshots).toHaveLength(1);
-            expect(storage.read()).toEqual({
+            expect(storage.get()).toEqual({
                 key1: 10,
                 key2: 'initial'
             });
@@ -213,7 +213,7 @@ describe('storage updates', () => {
             );
 
             expect(committed).toBe(false);
-            expect(storage.read()).toEqual({
+            expect(storage.get()).toEqual({
                 key1: 0,
                 key2: 'initial'
             });
@@ -237,7 +237,7 @@ describe('storage updates', () => {
                 )
             ).rejects.toThrow('persist failed');
 
-            expect(storage.read()).toEqual({
+            expect(storage.get()).toEqual({
                 key1: 0,
                 key2: 'initial'
             });
@@ -259,7 +259,7 @@ describe('storage updates', () => {
             });
 
             const committed = await storage.unsafeAsyncMerge(remote.export(), async () => {
-                expect(storage.read()).toEqual({
+                expect(storage.get()).toEqual({
                     key1: 0,
                     key2: 'initial'
                 });
@@ -267,7 +267,7 @@ describe('storage updates', () => {
             });
 
             expect(committed).toBe(true);
-            expect(storage.read()).toEqual({
+            expect(storage.get()).toEqual({
                 key1: 10,
                 key2: 'initial'
             });
@@ -292,7 +292,7 @@ describe('storage updates', () => {
                 return false;
             });
             expect(committed).toBe(false);
-            expect(storage.read()).toEqual({
+            expect(storage.get()).toEqual({
                 key1: 0,
                 key2: 'initial'
             });
@@ -319,7 +319,7 @@ describe('storage updates', () => {
                 })
             ).rejects.toThrow('persist failed');
 
-            expect(storage.read()).toEqual({
+            expect(storage.get()).toEqual({
                 key1: 0,
                 key2: 'initial'
             });
@@ -344,7 +344,7 @@ describe('storage updates', () => {
             })
         ).toThrow();
 
-        expect(isolatedStorage.read()).toEqual({
+        expect(isolatedStorage.get()).toEqual({
             key1: 10,
             key2: 'initial'
         });
@@ -379,7 +379,7 @@ describe('storage updates', () => {
             })
         ).toThrow('boom');
 
-        expect(isolatedStorage.read()).toEqual({
+        expect(isolatedStorage.get()).toEqual({
             key1: 0,
             key2: 'initial'
         });
@@ -401,7 +401,7 @@ describe('storage updates', () => {
 
         key1Slot.v = 999;
 
-        expect(isolatedStorage.read()).toEqual({
+        expect(isolatedStorage.get()).toEqual({
             key1: 0,
             key2: 'initial'
         });
@@ -426,157 +426,6 @@ describe('storage updates', () => {
         });
 
         expect(storageFromReorderedRoot.export().equals(isolatedStorage.export())).toBe(true);
-    });
-
-    it('prevents runtime writes through read proxies', () => {
-        const isolatedStorage = createStorage({
-            authorId: Buffer.from('device-1'),
-            versions: v1
-        });
-
-        const readable = isolatedStorage.read();
-
-        expect(() => {
-            // @ts-expect-error intentional runtime write attempt
-            readable.key1 = 999;
-        }).toThrow(TypeError);
-        expect(() => {
-            // @ts-expect-error intentional runtime delete attempt
-            delete readable.key2;
-        }).toThrow(TypeError);
-        expect(() =>
-            Object.defineProperty(readable, 'key1', {
-                value: 999
-            })
-        ).toThrow(TypeError);
-        expect(() => {
-            Object.setPrototypeOf(readable, {});
-        }).toThrow(TypeError);
-        expect(isolatedStorage.read()).toEqual({
-            key1: 0,
-            key2: 'initial'
-        });
-    });
-
-    it('supports object helpers on read proxies', () => {
-        const isolatedStorage = createStorage({
-            authorId: Buffer.from('device-1'),
-            versions: v1
-        });
-
-        isolatedStorage.transaction(draft => {
-            draft.set('key1', 10);
-            draft.set('key2', 'updated');
-        });
-
-        const readable = isolatedStorage.read();
-
-        expect(Object.keys(readable)).toEqual(['key1', 'key2']);
-        expect('key1' in readable).toBe(true);
-        expect('missing' in readable).toBe(false);
-        expect({ ...readable }).toEqual({
-            key1: 10,
-            key2: 'updated'
-        });
-        expect(JSON.stringify(readable)).toBe(
-            JSON.stringify({
-                key1: 10,
-                key2: 'updated'
-            })
-        );
-        expect(Object.getOwnPropertyDescriptor(readable, 'key1')).toMatchObject({
-            configurable: true,
-            enumerable: true,
-            writable: false,
-            value: 10
-        });
-    });
-
-    it('prevents runtime writes through nested read proxies', () => {
-        const schema = z.object({
-            settings: z.object({
-                theme: z.string()
-            })
-        });
-
-        const versions = defineVersionHList(
-            hCons(
-                {
-                    version: 1,
-                    schema,
-                    initial: {
-                        settings: {
-                            theme: 'light'
-                        }
-                    },
-                    projectUp: cloneSlot,
-                    projectDown: cloneSlot
-                },
-                hNil
-            )
-        );
-
-        const isolatedStorage = createStorage({
-            authorId: Buffer.from('device-1'),
-            versions
-        });
-        const readable = isolatedStorage.read();
-
-        expect(() => {
-            // @ts-expect-error intentional runtime write attempt
-            readable.settings.theme = 'dark';
-        }).toThrow(TypeError);
-        expect(() => {
-            // @ts-expect-error intentional runtime delete attempt
-            delete readable.settings.theme;
-        }).toThrow(TypeError);
-        expect(isolatedStorage.read()).toEqual({
-            settings: {
-                theme: 'light'
-            }
-        });
-    });
-
-    it('returns cloned arrays from read proxies', () => {
-        const schema = z.object({
-            items: z.array(
-                z.object({
-                    __setId: z.string(),
-                    value: z.string()
-                })
-            )
-        });
-
-        const versions = defineVersionHList(
-            hCons(
-                {
-                    version: 1,
-                    schema,
-                    initial: {
-                        items: [{ __setId: 'one', value: 'one' }]
-                    },
-                    projectUp: cloneSlot,
-                    projectDown: cloneSlot
-                },
-                hNil
-            )
-        );
-
-        const isolatedStorage = createStorage({
-            authorId: Buffer.from('device-1'),
-            versions
-        });
-
-        const items = isolatedStorage.read().items as Array<{ __setId: string; value: string }>;
-        items.push({ __setId: 'mutated', value: 'mutated clone' });
-
-        expect(items).toEqual([
-            { __setId: 'one', value: 'one' },
-            { __setId: 'mutated', value: 'mutated clone' }
-        ]);
-        expect(isolatedStorage.read()).toEqual({
-            items: [{ __setId: 'one', value: 'one' }]
-        });
     });
 
     it('uses one timestamp for all writes in one transaction', () => {
@@ -628,7 +477,7 @@ describe('storage updates', () => {
             draft.set('maybe', null);
         });
 
-        expect(isolatedStorage.read()).toEqual({
+        expect(isolatedStorage.get()).toEqual({
             maybe: null
         });
 
@@ -636,7 +485,7 @@ describe('storage updates', () => {
             draft.delete('maybe');
         });
 
-        expect(isolatedStorage.read()).toEqual({});
+        expect(isolatedStorage.get()).toEqual({});
     });
 });
 

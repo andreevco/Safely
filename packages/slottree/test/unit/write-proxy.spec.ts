@@ -119,7 +119,7 @@ describe('Draft', () => {
             draft.at('settings').set('layout', 'dense');
         });
 
-        expect(storage.read()).toEqual({
+        expect(storage.get()).toEqual({
             count: 0,
             title: 'initial',
             users: {
@@ -150,7 +150,7 @@ describe('Draft', () => {
             });
         });
 
-        expect(storage.read()).toEqual({
+        expect(storage.get()).toEqual({
             count: 0,
             title: 'initial',
             users: {
@@ -179,7 +179,7 @@ describe('Draft', () => {
             draft.at('settings').delete('layout');
         });
 
-        expect(storage.read()).toEqual({
+        expect(storage.get()).toEqual({
             count: 0,
             title: 'initial',
             users: {},
@@ -233,7 +233,7 @@ describe('Draft', () => {
             draft.set('title', 'assigned');
         });
 
-        expect(storage.read()).toEqual({
+        expect(storage.get()).toEqual({
             count: 2,
             title: 'assigned',
             users: {},
@@ -281,7 +281,7 @@ describe('Draft', () => {
             alice.set({ name: 'Alice Restored' });
         });
 
-        expect(storage.read().users).toEqual({
+        expect(storage.get().users).toEqual({
             alice: {
                 name: 'Alice Restored'
             }
@@ -300,7 +300,7 @@ describe('Draft', () => {
             });
         });
 
-        expect(storage.read()).toMatchObject({
+        expect(storage.get()).toMatchObject({
             title: 'copied-title',
             settings: {
                 theme: 'copied-title'
@@ -322,7 +322,7 @@ describe('Draft', () => {
             });
         });
 
-        expect(storage.read()).toEqual({
+        expect(storage.get()).toEqual({
             count: 0,
             title: 'initial',
             users: {},
@@ -369,7 +369,7 @@ describe('Draft', () => {
             expect(users.unwrap().entry('bob').get()).toEqual({ name: 'Bob' });
         });
 
-        expect(storage.read()).toEqual({
+        expect(storage.get()).toEqual({
             users: {
                 bob: {
                     name: 'Bob'
@@ -398,7 +398,7 @@ describe('Draft', () => {
             expect(title.unwrap().get()).toBe('assigned');
         });
 
-        expect(storage.read()).toEqual({
+        expect(storage.get()).toEqual({
             users: null,
             title: 'assigned'
         });

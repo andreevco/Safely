@@ -37,12 +37,12 @@ describe('storage merge', () => {
         });
 
         storage1.merge(storage2.export());
-        expect(storage1.read().key1).toEqual(10);
-        expect(storage1.read().key2).toEqual('value2');
+        expect(storage1.get().key1).toEqual(10);
+        expect(storage1.get().key2).toEqual('value2');
 
         storage2.merge(storage1.export());
-        expect(storage2.read().key1).toEqual(10);
-        expect(storage2.read().key2).toEqual('value2');
+        expect(storage2.get().key1).toEqual(10);
+        expect(storage2.get().key2).toEqual('value2');
     });
 
     it('notifies observers after successful merges that change storage', () => {
@@ -77,7 +77,7 @@ describe('storage merge', () => {
         });
 
         expect(() => storage1.mergeSlot(incoming)).toThrow();
-        expect(storage1.read()).toEqual({ key1: 0, key2: 'initial' });
+        expect(storage1.get()).toEqual({ key1: 0, key2: 'initial' });
 
         storage1.transaction(draft => {
             draft.set('key1', 1);
@@ -125,7 +125,7 @@ describe('storage merge', () => {
         expect(() => storage1.mergeSlot(incoming)).toThrow(
             'Slot tree root must be an origin container slot'
         );
-        expect(storage1.read()).toEqual({ key1: 0, key2: 'initial' });
+        expect(storage1.get()).toEqual({ key1: 0, key2: 'initial' });
     });
 
     it.each([1.5, 2 ** 31])('rejects incoming ordered array item order %s', invalidOrder => {
@@ -152,6 +152,6 @@ describe('storage merge', () => {
         expect(() => storage1.mergeSlot(incoming)).toThrow(
             'Ordered array item "item" order must be a 32-bit integer atomic slot'
         );
-        expect(storage1.read()).toEqual({ key1: 0, key2: 'initial' });
+        expect(storage1.get()).toEqual({ key1: 0, key2: 'initial' });
     });
 });

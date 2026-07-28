@@ -40,7 +40,7 @@ describe('records', () => {
             draft.at('objects').delete('key1');
         });
 
-        expect(storage.read().objects).toEqual({
+        expect(storage.get().objects).toEqual({
             key2: 1,
             key3: 3
         });
