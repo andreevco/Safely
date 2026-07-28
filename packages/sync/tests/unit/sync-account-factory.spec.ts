@@ -3,11 +3,11 @@ import { z } from 'zod';
 
 import { defineVersionHList, hCons, hNil, projectIdentity } from '@safely/slottree';
 
-import { InMemStorage } from './impl/storage';
-import type { ISyncAccount } from '../src/account/I-sync-account';
-import { SyncAccountFactory } from '../src/account/sync-account-factory';
-import { Logger } from '../src/logger/logger';
-import { NewDeviceOnboarding } from '../src/onboarding/new-device-onboarding';
+import type { ISyncAccount } from '../../src/account/I-sync-account';
+import { SyncAccountFactory } from '../../src/account/sync-account-factory';
+import { Logger } from '../../src/logger/logger';
+import { NewDeviceOnboarding } from '../../src/onboarding/new-device-onboarding';
+import { InMemStorage } from '../mocks/server-mock/storage';
 
 const AccountV1 = {
     version: 1,

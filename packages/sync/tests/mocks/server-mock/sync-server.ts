@@ -12,14 +12,14 @@ import type {
     Snapshot,
     SnapshotProofChain,
     SnapshotWithProofs
-} from '../../src/api/generated';
-import type { EncryptedState } from '../../src/api/types';
-import { ed25519_verify } from '../../src/crypto/ed25519';
+} from '../../../src/api/generated';
+import type { EncryptedState } from '../../../src/api/types';
+import { ed25519_verify } from '../../../src/crypto/ed25519';
 import {
     getServerAddDeviceSignaturePayload,
     getServerRevokeDeviceSignaturePayload
-} from '../../src/device-manager/device-signature-payload';
-import { getSnapshotProofFromCiphertextHash } from '../../src/update-handler/snapshot-proof';
+} from '../../../src/device-manager/device-signature-payload';
+import { getSnapshotProofFromCiphertextHash } from '../../../src/update-handler/snapshot-proof';
 
 export class SyncServer {
     private readonly accounts: Account[] = [];

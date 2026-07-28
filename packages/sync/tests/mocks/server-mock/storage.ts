@@ -1,4 +1,4 @@
-import type { ITreeStorage } from '../../src';
+import type { ITreeStorage } from '../../../src';
 
 export class InMemStorage implements ITreeStorage {
     constructor(

@@ -1,9 +1,9 @@
 import { InMemStorage } from './storage';
 import { createSyncServerApiImplementations } from './sync-server-api-implementations';
 import { getSyncServer } from './sync-server-registry';
-import { SyncAccountFactory } from '../../src';
-import { Logger } from '../../src/logger/logger';
-import { Versions } from '../e2e/helpers';
+import { SyncAccountFactory } from '../../../src';
+import { Logger } from '../../../src/logger/logger';
+import { Versions } from '../../e2e/helpers';
 
 let factoryCounter = 0;
 

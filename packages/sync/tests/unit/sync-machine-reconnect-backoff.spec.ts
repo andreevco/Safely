@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { getReconnectDelayMs } from '../src/sync-machine/reconnect-backoff';
+import { getReconnectDelayMs } from '../../src/sync-machine/reconnect-backoff';
 
 describe('sync machine reconnect backoff', () => {
     it('grows exponentially up to 30 seconds', () => {

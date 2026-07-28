@@ -7,9 +7,10 @@ import { defineVersionHList, hCons, hNil, patch, projectIdentity } from '@safely
 import type { ISyncAccount } from '../../src';
 import { SyncAccountFactory } from '../../src';
 import { Logger } from '../../src/logger/logger';
-import { InMemStorage } from '../impl/storage';
-import { SyncServer } from '../impl/sync-server';
-import { createSyncServerApiImplementations } from '../impl/sync-server-api-implementations';
+import { SyncStatus } from '../../src/sync-provider/sync-status';
+import { InMemStorage } from '../mocks/server-mock/storage';
+import { SyncServer } from '../mocks/server-mock/sync-server';
+import { createSyncServerApiImplementations } from '../mocks/server-mock/sync-server-api-implementations';
 
 const walletSchema = z.object({
     __setId: z.string(),
@@ -116,6 +117,50 @@ describe('versioned onboarding', () => {
         });
     });
 
+    it('syncs post-onboarding v1 updates to a v2 device', async () => {
+        const deviceA = makeVersionedFactory(versionsV2);
+        const deviceB = makeVersionedFactory(versionsV1);
+        const accountA = await deviceA.factory.createSyncAccount(deviceA.secureEncryptedStorage);
+        accounts.push(accountA);
+
+        const accountB = await onboardDevice(accountA, deviceA, deviceB);
+        accounts.push(accountB);
+
+        await accountB.syncProvider.transaction(draft => {
+            draft.set('wallets', walletItems('from-v1'));
+        });
+
+        await vi.waitFor(() => {
+            expect(accountA.syncProvider.get('wallets')).toEqual(walletItems('from-v1'));
+        });
+    });
+
+    it('preserves v2-only data after receiving subsequent v1 updates', async () => {
+        const deviceA = makeVersionedFactory(versionsV2);
+        const deviceB = makeVersionedFactory(versionsV1);
+        const accountA = await deviceA.factory.createSyncAccount(deviceA.secureEncryptedStorage);
+        accounts.push(accountA);
+
+        const accountB = await onboardDevice(accountA, deviceA, deviceB);
+        accounts.push(accountB);
+
+        const accountASynchronized = waitForNextSynchronizationCycle(accountA);
+        const accountBSynchronized = waitForNextSynchronizationCycle(accountB);
+        await accountA.syncProvider.transaction(draft => {
+            draft.set('newField', 'v2-only');
+        });
+        await Promise.all([accountASynchronized, accountBSynchronized]);
+
+        await accountB.syncProvider.transaction(draft => {
+            draft.set('wallets', walletItems('from-v1'));
+        });
+
+        await vi.waitFor(() => {
+            expect(accountA.syncProvider.get('wallets')).toEqual(walletItems('from-v1'));
+            expect(accountA.syncProvider.get('newField')).toBe('v2-only');
+        });
+    });
+
     it('onboards a v2 device from a v2 device', async () => {
         const deviceA = makeVersionedFactory(versionsV2);
         const deviceB = makeVersionedFactory(versionsV2);
@@ -191,4 +236,34 @@ function walletItems(...values: string[]) {
         __setId: value,
         value
     }));
+}
+
+async function waitForNextSynchronizationCycle(
+    account: ISyncAccount<StorageVersion>
+): Promise<void> {
+    const statusManager = account.syncProvider.syncStatusManager;
+    let sawSynchronizing = statusManager.getStatus() === SyncStatus.SYNCHRONIZING;
+    let unsubscribe: () => void = () => undefined;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+    try {
+        await new Promise<void>((resolve, reject) => {
+            timeoutId = setTimeout(() => {
+                reject(new Error('Timed out waiting for synchronization cycle'));
+            }, 2000);
+            unsubscribe = statusManager.subscribe(status => {
+                if (status === SyncStatus.SYNCHRONIZING) {
+                    sawSynchronizing = true;
+                }
+                if (sawSynchronizing && status === SyncStatus.SYNCHRONIZED) {
+                    resolve();
+                }
+            });
+        });
+    } finally {
+        if (timeoutId !== undefined) {
+            clearTimeout(timeoutId);
+        }
+        unsubscribe();
+    }
 }

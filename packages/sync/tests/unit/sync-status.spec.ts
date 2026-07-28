@@ -4,7 +4,7 @@ import {
     SyncStatus,
     SyncStatusManager,
     SyncStatusTimeoutError
-} from '../src/sync-provider/sync-status';
+} from '../../src/sync-provider/sync-status';
 
 describe('SyncStatusManager', () => {
     afterEach(() => {

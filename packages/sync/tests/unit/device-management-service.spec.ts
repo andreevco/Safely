@@ -1,15 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { MockSnapshotsServer } from './mocks/mock-snapshots-api';
-import type { MachineContext } from './mocks/mock-sync-context';
-import { createMachineContext, getMasterKey, waitFor } from './mocks/mock-sync-context';
-import { ed25519_keygen } from '../src/crypto/ed25519';
+import { ed25519_keygen } from '../../src/crypto/ed25519';
 import {
     DeviceAlreadyExistsError,
     ReconnectFromAnotherAccountError
-} from '../src/device-manager/device-management-service';
-import { OfflineSyncProvider } from '../src/sync-provider/offline-sync-provider';
-import { getKID } from '../src/utils/kid';
+} from '../../src/device-manager/device-management-service';
+import { OfflineSyncProvider } from '../../src/sync-provider/offline-sync-provider';
+import { getKID } from '../../src/utils/kid';
+import { MockSnapshotsServer } from '../mocks/mock-snapshots-api';
+import { createMachineContext, getMasterKey, waitFor } from '../mocks/mock-sync-context';
+import type { MachineContext } from '../mocks/mock-sync-context';
 
 describe('device management service', () => {
     const DAY_MS = 24 * 60 * 60 * 1000;

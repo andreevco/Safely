@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { QRMessageCodec, QRMessageOperation } from '../src/onboarding/onboarding-codec';
-import { u8be } from '../src/utils/buffer';
-import { TLVWriter } from '../src/utils/tlv';
+import { QRMessageCodec, QRMessageOperation } from '../../src/onboarding/onboarding-codec';
+import { u8be } from '../../src/utils/buffer';
+import { TLVWriter } from '../../src/utils/tlv';
 
 describe('QRMessageCodec', () => {
     it('encodes and decodes new-device onboarding devices storage version', () => {

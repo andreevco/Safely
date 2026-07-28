@@ -11,10 +11,10 @@ import {
     type StorageImpl
 } from '@safely/slottree';
 
-import { InMemStorage } from './impl/storage';
-import { CrdtController } from '../src/crdt/crdt-controller';
-import { CrdtManager } from '../src/crdt/crdt-manager';
-import { CrdtRepository } from '../src/crdt/crdt-repository';
+import { CrdtController } from '../../src/crdt/crdt-controller';
+import { CrdtManager } from '../../src/crdt/crdt-manager';
+import { CrdtRepository } from '../../src/crdt/crdt-repository';
+import { InMemStorage } from '../mocks/server-mock/storage';
 
 const Schema = z
     .object({
@@ -33,7 +33,7 @@ const Version = {
 
 const Versions = defineVersionHList(hCons(Version, hNil));
 
-describe('YManager', () => {
+describe('CrdtManager', () => {
     it('leaves in-memory state unchanged when transaction persistence fails', async () => {
         const storage = new FailingSetStorage();
         const manager = await createManager(storage);

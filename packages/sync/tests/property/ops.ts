@@ -4,9 +4,9 @@ import { expect, vi } from 'vitest';
 import type { Device } from '../../src/device-manager/device-repository';
 import { SyncStatus } from '../../src/sync-provider/sync-status';
 import type { TestSyncAccount } from '../e2e/helpers';
-import { InMemStorage } from '../impl/storage';
-import { makeFactory } from '../impl/sync-server-factory';
-import { initializeSyncServer } from '../impl/sync-server-registry';
+import { InMemStorage } from '../mocks/server-mock/storage';
+import { makeFactory } from '../mocks/server-mock/sync-server-factory';
+import { initializeSyncServer } from '../mocks/server-mock/sync-server-registry';
 
 type MockFactory = ReturnType<typeof makeFactory>;
 

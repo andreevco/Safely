@@ -1,5 +1,5 @@
 import type { SyncServer } from './sync-server';
-import type { EncryptedState } from '../../src/api/types';
+import type { EncryptedState } from '../../../src/api/types';
 
 export class SyncServerSnapshotsSse {
     constructor(

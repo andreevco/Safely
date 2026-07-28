@@ -4,16 +4,16 @@ import { z } from 'zod';
 import { defineVersionHList, hCons, hNil, projectIdentity } from '@safely/slottree';
 import type { NewOf } from '@safely/slottree';
 
-import { SyncAccount } from '../src/account/sync-account';
-import type { SyncAccountRepository } from '../src/account/sync-account-repository';
-import { Logger } from '../src/logger/logger';
-import { ReconnectOnboarding } from '../src/onboarding/reconnect/reconnect-onboarding';
-import type { ISecretEncryptor } from '../src/secret-encryptor';
-import type { SyncContainer } from '../src/sync-container';
-import { SyncMachineRunResult } from '../src/sync-machine/run-result';
-import type { ISyncProvider } from '../src/sync-provider/I-sync-provider';
-import type { OnlineSyncProvider } from '../src/sync-provider/online-sync-provider';
-import { SyncStatus, SyncStatusManager } from '../src/sync-provider/sync-status';
+import { SyncAccount } from '../../src/account/sync-account';
+import type { SyncAccountRepository } from '../../src/account/sync-account-repository';
+import { Logger } from '../../src/logger/logger';
+import { ReconnectOnboarding } from '../../src/onboarding/reconnect/reconnect-onboarding';
+import type { ISecretEncryptor } from '../../src/secret-encryptor';
+import type { SyncContainer } from '../../src/sync-container';
+import { SyncMachineRunResult } from '../../src/sync-machine/run-result';
+import type { ISyncProvider } from '../../src/sync-provider/I-sync-provider';
+import type { OnlineSyncProvider } from '../../src/sync-provider/online-sync-provider';
+import { SyncStatus, SyncStatusManager } from '../../src/sync-provider/sync-status';
 
 const TestSchema = z
     .object({

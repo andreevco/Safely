@@ -5,7 +5,7 @@ import type {
     OnboardingMessage,
     PostOnboardingMessageRequest,
     RemoveDeviceFromAccountRequest
-} from '../../src/api/generated';
+} from '../../../src/api/generated';
 
 export class SyncServerAccountsApi {
     constructor(

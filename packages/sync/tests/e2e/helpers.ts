@@ -5,7 +5,7 @@ import { defineVersionHList, hCons, hNil, projectIdentity } from '@safely/slottr
 import type { ISyncAccount } from '../../src';
 import { SyncAccountFactory } from '../../src';
 import { Logger } from '../../src/logger/logger';
-import { InMemStorage } from '../impl/storage';
+import { InMemStorage } from '../mocks/server-mock/storage';
 
 export const Schema = z
     .object({

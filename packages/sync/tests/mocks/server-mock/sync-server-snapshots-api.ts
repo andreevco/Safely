@@ -1,12 +1,12 @@
 import type { SyncServer } from './sync-server';
-import { Configuration } from '../../src/api/generated';
+import { Configuration } from '../../../src/api/generated';
 import type {
     GetActualSnapshotRequest,
     GetSnapshotProofChainRequest,
     SaveSnapshotRequest,
     SnapshotProofChain,
     SnapshotWithProofs
-} from '../../src/api/generated';
+} from '../../../src/api/generated';
 
 export class SyncServerSnapshotsApi {
     public readonly configuration: Configuration;

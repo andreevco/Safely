@@ -3,9 +3,9 @@ import { z } from 'zod';
 
 import { defineVersionHList, hCons, hNil, patch, projectIdentity } from '@safely/slottree';
 
-import { InMemStorage } from './impl/storage';
-import { CrdtManager } from '../src/crdt/crdt-manager';
-import { CrdtRepository } from '../src/crdt/crdt-repository';
+import { CrdtManager } from '../../src/crdt/crdt-manager';
+import { CrdtRepository } from '../../src/crdt/crdt-repository';
+import { InMemStorage } from '../mocks/server-mock/storage';
 
 const walletSchema = z.object({
     __setId: z.string(),

@@ -1,13 +1,13 @@
 import { randomBytes } from '@noble/ciphers/utils.js';
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import type { ITreeStorage } from '../src';
-import { InMemStorage } from './impl/storage';
-import { EncryptedKeyRepository } from '../src/crypto/encrypted-key-repository';
-import { SecureEncryptedKeyRepository } from '../src/crypto/secure-encrypted-key-repository';
-import { KeyServiceFactory } from '../src/crypto/service/key-service-factory';
-import { generateAccountID, initializeKeys } from '../src/initialize';
-import { SecretEncryptor } from '../src/secret-encryptor';
+import type { ITreeStorage } from '../../src';
+import { EncryptedKeyRepository } from '../../src/crypto/encrypted-key-repository';
+import { SecureEncryptedKeyRepository } from '../../src/crypto/secure-encrypted-key-repository';
+import { KeyServiceFactory } from '../../src/crypto/service/key-service-factory';
+import { generateAccountID, initializeKeys } from '../../src/initialize';
+import { SecretEncryptor } from '../../src/secret-encryptor';
+import { InMemStorage } from '../mocks/server-mock/storage';
 
 describe('sync machine', () => {
     let secretEncryptor: SecretEncryptor;

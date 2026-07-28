@@ -2,13 +2,13 @@ import { sha256 } from '@noble/hashes/sha2.js';
 import { describe, expect, it } from 'vitest';
 
 import { SyncServer } from './sync-server';
-import type { OnboardingMessage, Snapshot } from '../../src/api/generated';
-import { ed25519_keygen, ed25519_sign } from '../../src/crypto/ed25519';
+import type { OnboardingMessage, Snapshot } from '../../../src/api/generated';
+import { ed25519_keygen, ed25519_sign } from '../../../src/crypto/ed25519';
 import {
     getServerAddDeviceSignaturePayload,
     getServerRevokeDeviceSignaturePayload
-} from '../../src/device-manager/device-signature-payload';
-import { getSnapshotProofFromCiphertextHash } from '../../src/update-handler/snapshot-proof';
+} from '../../../src/device-manager/device-signature-payload';
+import { getSnapshotProofFromCiphertextHash } from '../../../src/update-handler/snapshot-proof';
 
 describe('SyncServer', () => {
     it('stores onboarding messages and confirms them', () => {
