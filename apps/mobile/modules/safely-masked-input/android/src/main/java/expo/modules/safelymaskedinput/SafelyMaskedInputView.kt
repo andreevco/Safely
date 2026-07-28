@@ -1,5 +1,6 @@
 package expo.modules.safelymaskedinput
 
+import android.content.ClipboardManager
 import android.content.Context
 import android.graphics.Color
 import android.graphics.Typeface
@@ -15,6 +16,8 @@ import android.text.style.MetricAffectingSpan
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputConnection
+import android.view.inputmethod.InputConnectionWrapper
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.widget.AppCompatEditText
 import expo.modules.kotlin.AppContext
@@ -23,10 +26,40 @@ import expo.modules.kotlin.views.ExpoView
 
 private class MaskedEditText(context: Context) : AppCompatEditText(context) {
     var onSelectionChangedListener: ((Int, Int) -> Unit)? = null
+    var onPasteListener: ((String) -> Unit)? = null
 
     override fun onSelectionChanged(selStart: Int, selEnd: Int) {
         super.onSelectionChanged(selStart, selEnd)
         onSelectionChangedListener?.invoke(selStart, selEnd)
+    }
+
+    override fun onTextContextMenuItem(id: Int): Boolean {
+        if (id != android.R.id.paste && id != android.R.id.pasteAsPlainText) {
+            return super.onTextContextMenuItem(id)
+        }
+
+        clipboardText()?.let { onPasteListener?.invoke(it) }
+        return true
+    }
+
+    override fun onCreateInputConnection(outAttrs: EditorInfo): InputConnection? {
+        val connection = super.onCreateInputConnection(outAttrs) ?: return null
+
+        return object : InputConnectionWrapper(connection, false) {
+            override fun commitText(text: CharSequence?, newCursorPosition: Int): Boolean {
+                val committed = text?.toString() ?: return super.commitText(text, newCursorPosition)
+                if (committed.length <= 1) return super.commitText(text, newCursorPosition)
+
+                onPasteListener?.invoke(committed)
+                return true
+            }
+        }
+    }
+
+    private fun clipboardText(): String? {
+        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
+        val item = clipboard?.primaryClip?.takeIf { it.itemCount > 0 }?.getItemAt(0)
+        return item?.coerceToText(context)?.toString()?.takeIf { it.isNotEmpty() }
     }
 }
 
@@ -107,9 +140,20 @@ class SafelyMaskedInputView(context: Context, appContext: AppContext) : ExpoView
             }
         }
 
+        editText.onPasteListener = { pasted -> handlePaste(pasted) }
+
         editText.setOnFocusChangeListener { _, hasFocus ->
             onFocusChange(mapOf("focused" to hasFocus))
         }
+    }
+
+    private fun handlePaste(pasted: String) {
+        val current = stripSuffix(editText.text?.toString() ?: "")
+        val start = editText.selectionStart.coerceIn(0, current.length)
+        val end = editText.selectionEnd.coerceIn(start, current.length)
+
+        onPaste(mapOf("raw" to current.substring(0, start) + pasted + current.substring(end)))
+        applyMask()
     }
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
@@ -146,11 +190,13 @@ class SafelyMaskedInputView(context: Context, appContext: AppContext) : ExpoView
     fun setPlaceholderValue(placeholder: String) { placeholderText = placeholder; applyPlaceholder() }
     fun setPlaceholderTextColorValue(hex: String) { tryParseColor(hex) { placeholderColor = it; editText.setHintTextColor(it); applyPlaceholder() } }
     fun setKeyboardTypeValue(type: String) {
-        editText.inputType = when (type) {
-            "numeric" -> EditorInfo.TYPE_CLASS_NUMBER
-            "decimal-pad" -> EditorInfo.TYPE_CLASS_NUMBER or EditorInfo.TYPE_NUMBER_FLAG_DECIMAL
-            else -> EditorInfo.TYPE_CLASS_TEXT
-        }
+        editText.setRawInputType(
+            when (type) {
+                "numeric" -> EditorInfo.TYPE_CLASS_NUMBER
+                "decimal-pad" -> EditorInfo.TYPE_CLASS_NUMBER or EditorInfo.TYPE_NUMBER_FLAG_DECIMAL
+                else -> EditorInfo.TYPE_CLASS_TEXT
+            }
+        )
     }
     fun setEditableValue(editable: Boolean) {
         editText.isEnabled = editable
