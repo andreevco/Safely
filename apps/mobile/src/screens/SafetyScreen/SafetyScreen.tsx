@@ -7,15 +7,12 @@ import { useUnistyles } from 'react-native-unistyles';
 import {
     AccountLinkState,
     useAccountLinkState,
-    useAppContext,
-    useConnectAccountToNewDevice,
     useCompleteSyncOnboarding,
     useSyncOnboardingCompletedQuery
 } from '@safely/ux';
 
 import { DottedShieldIcon } from '@mobile/shared/resources';
-import { Button, Icon, Screen, ShieldCheckmark28, Xmark16 } from '@mobile/shared/ui';
-import { Button as HeaderButton } from '@mobile/shared/ui/Screen/components/Header/components/Button';
+import { Button, Icon, Screen, ShieldCheckmark28 } from '@mobile/shared/ui';
 
 import { ProtectedView } from './components/ProtectedView';
 import { SoloView } from './components/SoloView';
@@ -26,13 +23,7 @@ import { shouldShowSyncOnboarding } from './shouldShowSyncOnboarding';
 
 export const SafetyScreen = () => {
     const { t } = useTranslation();
-    const {
-        storage: {
-            sync: { getSecureEncrypted }
-        }
-    } = useAppContext();
     const { theme } = useUnistyles();
-    const { mutateAsync: connectToNewDevice } = useConnectAccountToNewDevice();
 
     const navigation = useNavigation();
     const linkState = useAccountLinkState();
@@ -74,23 +65,16 @@ export const SafetyScreen = () => {
         void complete();
     }, [complete]);
 
-    const handleClose = useCallback(() => {
-        navigation.navigate('TabsNavigator', { screen: 'HomeStack' });
+    const handleConnect = useCallback(() => {
+        navigation.navigate('LinkDeviceWarningModal');
     }, [navigation]);
-
-    const handleConnect = useCallback(async () => {
-        using secureEncryptedStorage = getSecureEncrypted();
-        await secureEncryptedStorage.unlock();
-
-        await connectToNewDevice({ secureEncryptedStorage });
-    }, [getSecureEncrypted, connectToNewDevice]);
 
     const renderContent = () => {
         switch (linkState) {
             case AccountLinkState.PROTECTED:
                 return <ProtectedView />;
             case AccountLinkState.SOLO:
-                return <SoloView />;
+                return <SoloView onLinkDevice={handleConnect} onAbout={() => setForceOpen(true)} />;
             case AccountLinkState.UNLINKED:
                 return isFocused ? <UnlinkedView /> : null;
             default:
@@ -101,28 +85,23 @@ export const SafetyScreen = () => {
     return (
         <Screen>
             <Screen.Header>
-                <Button
-                    style={styles.headerButton}
-                    size="small"
-                    type="secondary"
-                    onPress={() => setForceOpen(true)}
-                >
-                    {t('safety.aboutSync')}
-                </Button>
-                <HeaderButton onPress={handleClose}>
-                    <Icon icon={Xmark16} />
-                </HeaderButton>
+                {linkState !== AccountLinkState.SOLO && (
+                    <Button
+                        style={styles.headerButton}
+                        size="small"
+                        type="secondary"
+                        onPress={() => setForceOpen(true)}
+                    >
+                        {t('safety.aboutSync')}
+                    </Button>
+                )}
             </Screen.Header>
 
             {renderContent()}
 
-            {linkState !== AccountLinkState.UNLINKED && (
+            {linkState === AccountLinkState.PROTECTED && (
                 <View style={styles.buttonContainer}>
-                    <Button
-                        type={linkState === AccountLinkState.SOLO ? 'primary' : 'secondary'}
-                        size="large"
-                        onPress={handleConnect}
-                    >
+                    <Button type="secondary" size="large" onPress={handleConnect}>
                         {t('safety.linkDevice')}
                     </Button>
                 </View>

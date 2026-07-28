@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { DeviceLinkExclamationmark96, Icon, Screen, Text } from '@mobile/shared/ui';
+import { Button, DeviceLinkExclamationmark96, Icon, Screen, Text } from '@mobile/shared/ui';
 
 import { styles } from './SoloView.styles';
 
@@ -11,7 +11,12 @@ const steps = [
     'safety.protectAccount.steps.step3'
 ] as const;
 
-export const SoloView = () => {
+type SoloViewProps = {
+    onLinkDevice: () => void;
+    onAbout: () => void;
+};
+
+export const SoloView = ({ onLinkDevice, onAbout }: SoloViewProps) => {
     const { t } = useTranslation();
 
     return (
@@ -25,6 +30,14 @@ export const SoloView = () => {
                     <Text textAlign="center" variant="bodyL" color="secondary">
                         {t('safety.protectAccount.subtitle')}
                     </Text>
+                </View>
+                <View style={styles.buttonsRow}>
+                    <Button size="small" type="primary" onPress={onLinkDevice}>
+                        {t('safety.linkDevice')}
+                    </Button>
+                    <Button size="small" type="secondary" onPress={onAbout}>
+                        {t('safety.about')}
+                    </Button>
                 </View>
                 <View style={styles.stepsContainer}>
                     {steps.map((step, index) => (

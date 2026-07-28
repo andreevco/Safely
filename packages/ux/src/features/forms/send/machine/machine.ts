@@ -23,7 +23,12 @@ import {
 } from './context';
 import { guards } from './guards';
 import type { SendFormEvent, SendFormMachineContext, SendFormMachineInput } from './types';
-import { calculateMaxAmount, reformatForInputType, validateAmount } from '../validators/amount';
+import {
+    calculateMaxAmount,
+    formatAmountForDisplay,
+    reformatForInputType,
+    validateAmount
+} from '../validators/amount';
 import { validateRecipientInput } from '../validators/recipient';
 
 export const createSendFormMachine = () =>
@@ -376,8 +381,17 @@ export const createSendFormMachine = () =>
                         context.formatter
                     );
 
+                    const formatted = result.parsed
+                        ? formatAmountForDisplay(
+                              result.parsed.inputType,
+                              result.parsed.fiatAssetAmount,
+                              result.parsed.cryptoAssetAmount,
+                              context.formatter
+                          )
+                        : result.formatted;
+
                     return {
-                        values: { ...context.values, amount: result.formatted },
+                        values: { ...context.values, amount: formatted },
                         parsed: { ...context.parsed, amount: result.parsed },
                         errors: { ...context.errors, amount: result.error }
                     };

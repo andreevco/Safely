@@ -60,6 +60,7 @@ import BluetoothExclamationmark96Svg from '@safely/ux/assets/icons/96/bluetooth-
 import BluetoothRequired96Svg from '@safely/ux/assets/icons/96/bluetooth-required-96.svg';
 import CameraLock96Svg from '@safely/ux/assets/icons/96/camera-lock-96.svg';
 import Checkmark96Svg from '@safely/ux/assets/icons/96/checkmark-96.svg';
+import DeviceLinkArrowRight96Svg from '@safely/ux/assets/icons/96/device-link-arrow-right-96.svg';
 import DeviceLinkCheckmark96Svg from '@safely/ux/assets/icons/96/device-link-checkmark-96.svg';
 import DeviceLinkExclamationmark96Svg from '@safely/ux/assets/icons/96/device-link-exclamationmark-96.svg';
 import ExclamationmarkCircle96Svg from '@safely/ux/assets/icons/96/exclamationmark-circle-96.svg';
@@ -132,6 +133,7 @@ export const BluetoothExclamationmark96 = { image: BluetoothExclamationmark96Svg
 export const BluetoothRequired96 = { image: BluetoothRequired96Svg, size: 96 } as const;
 export const CameraLock96 = { image: CameraLock96Svg, size: 96 } as const;
 export const Checkmark96 = { image: Checkmark96Svg, size: 96 } as const;
+export const DeviceLinkArrowRight96 = { image: DeviceLinkArrowRight96Svg, size: 96 } as const;
 export const DeviceLinkCheckmark96 = { image: DeviceLinkCheckmark96Svg, size: 96 } as const;
 export const DeviceLinkExclamationmark96 = { image: DeviceLinkExclamationmark96Svg, size: 96 } as const;
 export const ExclamationmarkCircle96 = { image: ExclamationmarkCircle96Svg, size: 96 } as const;

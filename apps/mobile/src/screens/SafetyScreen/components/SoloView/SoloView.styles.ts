@@ -12,12 +12,21 @@ export const styles = StyleSheet.create(theme => ({
         gap: theme.spacing[4],
         alignItems: 'center'
     },
+    buttonsRow: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'center',
+        gap: theme.spacing[8],
+        marginBottom: theme.spacing[16]
+    },
     stepsContainer: {
         width: '100%',
         paddingVertical: theme.spacing[8],
         paddingHorizontal: theme.spacing[16],
         marginVertical: theme.spacing[16],
         backgroundColor: theme.colors.background.secondary,
+        borderWidth: theme.border.hairline,
+        borderColor: theme.colors.other.transparentElement,
         borderRadius: theme.radius.md
     },
     stepRow: {

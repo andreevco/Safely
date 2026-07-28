@@ -42,7 +42,7 @@ const MaxAmountValue = ({ amount }: { amount: BtcAssetAmount }) => {
     return (
         <View>
             <Text variant="bodyM" color="secondary">
-                {`≈ ${amount.format(formatter)}`}
+                {amount.format(formatter)}
             </Text>
             {!!fiat && (
                 <Text variant="bodyM" color="secondary">
