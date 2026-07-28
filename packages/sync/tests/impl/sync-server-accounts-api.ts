@@ -10,15 +10,15 @@ import type {
 export class SyncServerAccountsApi {
     constructor(
         private readonly server: SyncServer,
-        private readonly getRequesterIk: () => string | Promise<string>
+        private readonly requesterIk: string
     ) {}
 
     public async addDeviceToAccount(request: AddDeviceToAccountRequest): Promise<void> {
-        this.server.addDeviceToAccount(request, await this.getRequesterIk());
+        this.server.addDeviceToAccount(request, this.requesterIk);
     }
 
     public async confirmOnboarding(): Promise<void> {
-        this.server.confirmOnboarding(await this.getRequesterIk());
+        this.server.confirmOnboarding(this.requesterIk);
     }
 
     public async createAccount(request: CreateAccountRequest): Promise<void> {
@@ -28,23 +28,22 @@ export class SyncServerAccountsApi {
     public async getOnboardingMessage(request?: {
         signal?: AbortSignal;
     }): Promise<OnboardingMessage> {
-        const requesterIk = await this.getRequesterIk();
         try {
-            return this.server.getOnboardingMessage(requesterIk);
+            return this.server.getOnboardingMessage(this.requesterIk);
         } catch {
-            await this.server.waitForOnboardingMessage(requesterIk, {
+            await this.server.waitForOnboardingMessage(this.requesterIk, {
                 signal: request?.signal,
                 timeoutMs: 100
             });
-            return this.server.getOnboardingMessage(requesterIk);
+            return this.server.getOnboardingMessage(this.requesterIk);
         }
     }
 
     public async postOnboardingMessage(request: PostOnboardingMessageRequest): Promise<void> {
-        this.server.postOnboardingMessage(request, await this.getRequesterIk());
+        this.server.postOnboardingMessage(request, this.requesterIk);
     }
 
     public async removeDeviceFromAccount(request: RemoveDeviceFromAccountRequest): Promise<void> {
-        this.server.removeDeviceFromAccount(request, await this.getRequesterIk());
+        this.server.removeDeviceFromAccount(request, this.requesterIk);
     }
 }

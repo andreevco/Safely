@@ -13,7 +13,7 @@ export class SyncServerSnapshotsApi {
 
     constructor(
         private readonly server: SyncServer,
-        private readonly getRequesterIk: () => string | Promise<string>
+        private readonly requesterIk: string
     ) {
         this.configuration = new Configuration({ basePath: 'sync-server://mock' });
     }
@@ -21,16 +21,16 @@ export class SyncServerSnapshotsApi {
     public async getActualSnapshot(
         request: GetActualSnapshotRequest = {}
     ): Promise<SnapshotWithProofs> {
-        return this.server.getActualSnapshot(request, await this.getRequesterIk());
+        return this.server.getActualSnapshot(request, this.requesterIk);
     }
 
     public async getSnapshotProofChain(
         request: GetSnapshotProofChainRequest
     ): Promise<SnapshotProofChain> {
-        return this.server.getSnapshotProofChain(request, await this.getRequesterIk());
+        return this.server.getSnapshotProofChain(request, this.requesterIk);
     }
 
     public async saveSnapshot(request: SaveSnapshotRequest): Promise<void> {
-        this.server.saveSnapshot(request, await this.getRequesterIk());
+        this.server.saveSnapshot(request, this.requesterIk);
     }
 }

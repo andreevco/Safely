@@ -7,8 +7,6 @@ import { defineVersionHList, hCons, hNil, patch, projectIdentity } from '@safely
 import type { ISyncAccount } from '../../src';
 import { SyncAccountFactory } from '../../src';
 import { Logger } from '../../src/logger/logger';
-import { QRMessageCodec, QRMessageOperation } from '../../src/onboarding/onboarding-codec';
-import type { SyncApiImplementations } from '../../src/sync-container';
 import { InMemStorage } from '../impl/storage';
 import { SyncServer } from '../impl/sync-server';
 import { createSyncServerApiImplementations } from '../impl/sync-server-api-implementations';
@@ -63,8 +61,6 @@ type VersionHList = HCons<StorageVersion, unknown>;
 type VersionedFactory<Versions extends VersionHList> = {
     factory: SyncAccountFactory<Versions>;
     secureEncryptedStorage: InMemStorage;
-    setRequesterIk: (ikPub: Buffer) => void;
-    setRequesterIkFromOnboardingData: (data: Buffer) => void;
 };
 
 describe('versioned onboarding', () => {
@@ -146,17 +142,6 @@ describe('versioned onboarding', () => {
         const storage = new InMemStorage();
         const encryptedStorage = new InMemStorage();
         const secureEncryptedStorage = new InMemStorage();
-        let requesterIk: string | undefined;
-        const apiImplementations: SyncApiImplementations = createSyncServerApiImplementations(
-            server,
-            () => {
-                if (!requesterIk) {
-                    throw new Error('Requester IK is not set');
-                }
-
-                return requesterIk;
-            }
-        );
         const logger = new Logger({ log: () => undefined });
 
         return {
@@ -167,22 +152,12 @@ describe('versioned onboarding', () => {
                 apiConfiguration: {
                     basePath: 'sync-server://mock'
                 },
-                apiImplementations,
+                apiImplementationsFactory: requesterIk =>
+                    createSyncServerApiImplementations(server, requesterIk),
                 pollingTimeout: 1,
                 logger
             }),
-            secureEncryptedStorage,
-            setRequesterIk: ikPub => {
-                requesterIk = ikPub.toString('hex');
-            },
-            setRequesterIkFromOnboardingData: data => {
-                const onboardingMessage = QRMessageCodec.decode(data);
-                if (onboardingMessage.type !== QRMessageOperation.NEW_DEVICE_ONBOARDING) {
-                    throw new Error('Unexpected onboarding message type');
-                }
-
-                requesterIk = onboardingMessage.ikPub.toString('hex');
-            }
+            secureEncryptedStorage
         };
     }
 });
@@ -198,9 +173,6 @@ async function onboardDevice<
     const onboardingConnector = await newDevice.factory.connectToExistingSyncAccount(
         newDevice.secureEncryptedStorage
     );
-
-    existingDevice.setRequesterIk(existingAccount.getMyDeviceIkPub());
-    newDevice.setRequesterIkFromOnboardingData(onboardingConnector.data);
 
     const primaryOnboarding = existingAccount.connectToNewDevice(
         onboardingConnector.data,

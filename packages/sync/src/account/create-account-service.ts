@@ -2,7 +2,7 @@ import type { AssertVersionHList, HCons, StorageVersion } from '@safely/slottree
 
 import { generateAccountID, generateMasterKey, initializeSyncAccount } from '../initialize';
 import { getSyncAccountStorage } from './sync-account-storage';
-import { createSyncContainer, type SyncApiImplementations } from '../sync-container';
+import { createSyncContainer, type SyncApiImplementationsFactory } from '../sync-container';
 import { SyncAccount } from './sync-account';
 import type { SyncAccountRepository } from './sync-account-repository';
 import type { Configuration } from '../api/generated';
@@ -23,7 +23,7 @@ export class CreateAccountService<Latest extends StorageVersion, Rest> {
         private readonly versions: HCons<Latest, Rest> & AssertVersionHList<HCons<Latest, Rest>>,
         private readonly apiConfiguration: Configuration,
         private readonly pollingTimeout: number,
-        private readonly apiImplementations: SyncApiImplementations | undefined,
+        private readonly apiImplementationsFactory: SyncApiImplementationsFactory | undefined,
         private readonly logger: Logger
     ) {}
 
@@ -56,7 +56,7 @@ export class CreateAccountService<Latest extends StorageVersion, Rest> {
             encryptedStorage,
             apiConfiguration: this.apiConfiguration,
             pollingTimeout: this.pollingTimeout,
-            apiImplementations: this.apiImplementations,
+            apiImplementationsFactory: this.apiImplementationsFactory,
             logger: this.logger
         });
 
@@ -116,7 +116,7 @@ export class CreateAccountService<Latest extends StorageVersion, Rest> {
             encryptedStorage,
             apiConfiguration: this.apiConfiguration,
             pollingTimeout: this.pollingTimeout,
-            apiImplementations: this.apiImplementations,
+            apiImplementationsFactory: this.apiImplementationsFactory,
             logger: this.logger
         });
         flow.logStep('container_initialized');

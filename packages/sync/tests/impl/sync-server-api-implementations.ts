@@ -8,11 +8,13 @@ import type { SyncApiImplementations } from '../../src/sync-container';
 
 export function createSyncServerApiImplementations(
     server: SyncServer,
-    getRequesterIk: () => string | Promise<string>
+    requesterIk: Buffer
 ): SyncApiImplementations {
+    const requesterIkHex = requesterIk.toString('hex');
+
     return {
-        accountsApi: new SyncServerAccountsApi(server, getRequesterIk) as unknown as AccountsApi,
-        snapshotsApi: new SyncServerSnapshotsApi(server, getRequesterIk) as unknown as SnapshotsApi,
-        snapshotsSse: new SyncServerSnapshotsSse(server, getRequesterIk) as unknown as SnapshotsSse
+        accountsApi: new SyncServerAccountsApi(server, requesterIkHex) as unknown as AccountsApi,
+        snapshotsApi: new SyncServerSnapshotsApi(server, requesterIkHex) as unknown as SnapshotsApi,
+        snapshotsSse: new SyncServerSnapshotsSse(server, requesterIkHex) as unknown as SnapshotsSse
     };
 }

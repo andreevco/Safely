@@ -31,6 +31,8 @@ export type SyncApiImplementations = {
     snapshotsSse: SnapshotsSse;
 };
 
+export type SyncApiImplementationsFactory = (requesterIk: Buffer) => SyncApiImplementations;
+
 export type SyncContainer<Latest extends StorageVersion, Rest> = {
     versions: HCons<Latest, Rest> & AssertVersionHList<HCons<Latest, Rest>>;
     storage: IStorage;
@@ -76,7 +78,7 @@ export async function createSyncContainer<Latest extends StorageVersion, Rest>(o
     logger: Logger;
     apiConfiguration?: Configuration;
     pollingTimeout: number;
-    apiImplementations?: SyncApiImplementations;
+    apiImplementationsFactory?: SyncApiImplementationsFactory;
 }): Promise<SyncContainer<Latest, Rest>> {
     const keyRepository = await EncryptedKeyRepository.initialize(opts.encryptedStorage);
     const syncStateRepository = new SyncStateRepository(opts.storage, opts.logger);
@@ -87,12 +89,13 @@ export async function createSyncContainer<Latest extends StorageVersion, Rest>(o
     const keyServiceFactory = new KeyServiceFactory(opts.accountId);
 
     const apiSigner = new ApiSigner(ikService);
+    const apiImplementations = opts.apiImplementationsFactory?.(ikService.getPub());
     const accountsApi =
-        opts.apiImplementations?.accountsApi ?? new AccountsApi(apiSigner, opts.apiConfiguration);
+        apiImplementations?.accountsApi ?? new AccountsApi(apiSigner, opts.apiConfiguration);
     const snapshotsApi =
-        opts.apiImplementations?.snapshotsApi ?? new SnapshotsApi(apiSigner, opts.apiConfiguration);
+        apiImplementations?.snapshotsApi ?? new SnapshotsApi(apiSigner, opts.apiConfiguration);
     const snapshotSse =
-        opts.apiImplementations?.snapshotsSse ??
+        apiImplementations?.snapshotsSse ??
         new SnapshotsSse(syncStateRepository, snapshotsApi, apiSigner, opts.logger);
 
     const crdtRepository = new CrdtRepository(opts.storage, ikService.getPub(), opts.versions);

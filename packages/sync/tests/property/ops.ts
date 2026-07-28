@@ -357,7 +357,6 @@ async function removeDeviceFromOnlineDevice(
     }
 
     const targetIkPub = target.account.getMyDeviceIkPub();
-    await setRequesterIk(actor);
     await waitForNextSynchronizationCycle(actor, 'device revocation synchronized', async () =>
         actor.account.revokeRemoteDevice(targetIkPub, actor.secureEncryptedStorage)
     );
@@ -429,8 +428,6 @@ async function reconnectDeletedDevice(
     }
 
     const connector = await target.account.reconnectToAccount();
-    target.factory.setRequesterIkFromOnboardingData(connector.data);
-    await setRequesterIk(actor);
 
     await waitForNextSynchronizationCycle(actor, 'device reconnection synchronized', async () => {
         const connectActor = actor.account.connectToNewDevice(
@@ -457,7 +454,6 @@ async function deleteLocalOnlineSelfDevice(
         return;
     }
 
-    await setRequesterIk(target);
     await target.factory.factory.deleteLocalAccount(
         target.account.accountId,
         target.secureEncryptedStorage
@@ -548,9 +544,6 @@ async function onboardMockDevice(actor: SyncTestDevice): Promise<SyncTestDevice>
         newDeviceSecureEncryptedStorage
     );
 
-    newDeviceFactory.setRequesterIkFromOnboardingData(connector.data);
-    await setRequesterIk(actor);
-
     const connectActor = waitForNextSynchronizationCycle(
         actor,
         'new device addition synchronized',
@@ -575,8 +568,4 @@ async function onboardMockDevice(actor: SyncTestDevice): Promise<SyncTestDevice>
         deleted: false,
         reconnectable: false
     };
-}
-
-async function setRequesterIk(device: SyncTestDevice): Promise<void> {
-    device.factory.setRequesterIk(device.account.getMyDeviceIkPub().toString('hex'));
 }
