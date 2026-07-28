@@ -13,8 +13,8 @@ import {
 
 import { InMemStorage } from './impl/storage';
 import { CrdtController } from '../src/crdt/crdt-controller';
-import { YCRDTRepository } from '../src/crdt/y-crdt-repository';
-import { YManager } from '../src/crdt/y-manager';
+import { CrdtManager } from '../src/crdt/crdt-manager';
+import { CrdtRepository } from '../src/crdt/crdt-repository';
 
 const Schema = z
     .object({
@@ -131,8 +131,8 @@ describe('YManager', () => {
 });
 
 async function createManager(storage: InMemStorage, authorId = 'device', storageKey = 'crdt') {
-    const repository = new YCRDTRepository(storage, Buffer.from(authorId), Versions, storageKey);
-    return await YManager.create(repository);
+    const repository = new CrdtRepository(storage, Buffer.from(authorId), Versions, storageKey);
+    return await CrdtManager.create(repository);
 }
 
 async function deviceVersion(

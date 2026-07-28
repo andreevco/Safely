@@ -4,8 +4,8 @@ import { z } from 'zod';
 import { defineVersionHList, hCons, hNil, patch, projectIdentity } from '@safely/slottree';
 
 import { InMemStorage } from './impl/storage';
-import { YCRDTRepository } from '../src/crdt/y-crdt-repository';
-import { YManager } from '../src/crdt/y-manager';
+import { CrdtManager } from '../src/crdt/crdt-manager';
+import { CrdtRepository } from '../src/crdt/crdt-repository';
 
 const walletSchema = z.object({
     __setId: z.string(),
@@ -66,8 +66,8 @@ async function persistLegacyV1Data(
     storage: InMemStorage,
     opts: { secondV1Device?: boolean } = {}
 ): Promise<void> {
-    const repository = new YCRDTRepository(storage, DEVICE_A, v1OnlyVersions);
-    const manager = await YManager.create(repository);
+    const repository = new CrdtRepository(storage, DEVICE_A, v1OnlyVersions);
+    const manager = await CrdtManager.create(repository);
 
     await manager.transaction(draft => {
         draft.at('wallets').push({ __setId: 'w1', name: 'Main' });
@@ -81,11 +81,11 @@ async function persistLegacyV1Data(
 
 // New (v2-latest) build of the app starts over the same persisted storage
 async function restartWithV2(storage: InMemStorage) {
-    const repository = new YCRDTRepository(storage, DEVICE_A, v1v2Versions);
-    return await YManager.create(repository);
+    const repository = new CrdtRepository(storage, DEVICE_A, v1v2Versions);
+    return await CrdtManager.create(repository);
 }
 
-describe('v1 -> v2 migration of locally persisted CRDT', () => {
+describe('v1 -> v2 migration of locally persisted Crdt', () => {
     afterEach(() => {
         vi.useRealTimers();
     });

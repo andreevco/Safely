@@ -1,4 +1,4 @@
-export class SyncOperationQueue {
+export class AsyncOperationQueue {
     private current: Promise<void> = Promise.resolve();
 
     public run<T>(operation: () => Promise<T>): Promise<T> {

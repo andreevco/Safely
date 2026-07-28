@@ -21,7 +21,7 @@ type ExportableStorage = {
     merge(incoming: Buffer): void;
 };
 
-describe('Versioning CRDT properties', () => {
+describe('Versioning Crdt properties', () => {
     describe('Idempotence', () => {
         it('merging the same incoming state twice does not change normalized visible state', () => {
             fc.assert(

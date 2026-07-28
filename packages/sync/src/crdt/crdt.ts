@@ -1,6 +1,6 @@
 import type { Draft, SlotRevision, SlotTree } from '@safely/slottree';
 
-export class YCRDT<T extends object> {
+export class CRDT<T extends object> {
     constructor(private readonly doc: SlotTree<T>) {}
 
     public get hasNewerStorageVersions(): boolean {

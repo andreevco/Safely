@@ -4,8 +4,8 @@ import { ApiSigner } from './api/api-signer';
 import { AccountsApi, type Configuration, SnapshotsApi } from './api/generated';
 import { SnapshotsSse } from './api/snapshots-sse';
 import { CrdtController } from './crdt/crdt-controller';
-import { YCRDTRepository } from './crdt/y-crdt-repository';
-import { YManager } from './crdt/y-manager';
+import { CrdtManager } from './crdt/crdt-manager';
+import { CrdtRepository } from './crdt/crdt-repository';
 import { EncryptedKeyRepository } from './crypto/encrypted-key-repository';
 import { DmkVerifierService } from './crypto/service/dmk-verifier-service';
 import { IkService } from './crypto/service/ik-service';
@@ -39,8 +39,8 @@ export type SyncContainer<Latest extends StorageVersion, Rest> = {
     pollingTimeout: number;
 
     keyRepository: EncryptedKeyRepository;
-    crdtRepository: YCRDTRepository<Latest, Rest>;
-    deviceCrdtRepository: YCRDTRepository<tDevicesLatest, tDevicesRest>;
+    crdtRepository: CrdtRepository<Latest, Rest>;
+    deviceCrdtRepository: CrdtRepository<tDevicesLatest, tDevicesRest>;
     syncStateRepository: SyncStateRepository;
     deviceRepository: DeviceRepository;
 
@@ -56,8 +56,8 @@ export type SyncContainer<Latest extends StorageVersion, Rest> = {
     syncOperations: SyncOperations<Latest, Rest>;
     crdtController: CrdtController;
 
-    yManager: YManager<Latest, Rest>;
-    deviceYManager: YManager<tDevicesLatest, tDevicesRest>;
+    yManager: CrdtManager<Latest, Rest>;
+    deviceYManager: CrdtManager<tDevicesLatest, tDevicesRest>;
     deviceManager: DeviceManagementService;
 
     apiSigner: ApiSigner;
@@ -95,15 +95,15 @@ export async function createSyncContainer<Latest extends StorageVersion, Rest>(o
         opts.apiImplementations?.snapshotsSse ??
         new SnapshotsSse(syncStateRepository, snapshotsApi, apiSigner, opts.logger);
 
-    const crdtRepository = new YCRDTRepository(opts.storage, ikService.getPub(), opts.versions);
-    const yManager = await YManager.create(crdtRepository);
-    const deviceCrdtRepository = new YCRDTRepository<tDevicesLatest, tDevicesRest>(
+    const crdtRepository = new CrdtRepository(opts.storage, ikService.getPub(), opts.versions);
+    const yManager = await CrdtManager.create(crdtRepository);
+    const deviceCrdtRepository = new CrdtRepository<tDevicesLatest, tDevicesRest>(
         opts.storage,
         ikService.getPub(),
         DevicesVersions,
         'devices_crdt'
     );
-    const deviceYManager = await YManager.create<tDevicesLatest, tDevicesRest>(
+    const deviceYManager = await CrdtManager.create<tDevicesLatest, tDevicesRest>(
         deviceCrdtRepository
     );
     const crdtController = new CrdtController(yManager, deviceYManager);

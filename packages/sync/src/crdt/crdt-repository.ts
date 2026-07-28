@@ -3,10 +3,10 @@ import type { z } from 'zod';
 import type { AssertVersionHList, HCons, NewOf, StorageVersion } from '@safely/slottree';
 import { createStorage, createStorageFromSnapshot } from '@safely/slottree';
 
-import { YCRDT } from './y-crdt';
+import { CRDT } from './crdt';
 import type { IStorage } from '../I-storage';
 
-export class YCRDTRepository<Latest extends StorageVersion, Rest> {
+export class CrdtRepository<Latest extends StorageVersion, Rest> {
     constructor(
         private readonly storage: IStorage,
         private readonly ikPub: Buffer,
@@ -14,13 +14,13 @@ export class YCRDTRepository<Latest extends StorageVersion, Rest> {
         private readonly storageKey = 'crdt'
     ) {}
 
-    public async loadCRDT(): Promise<YCRDT<z.output<NewOf<Latest>>>> {
+    public async loadCRDT(): Promise<CRDT<z.output<NewOf<Latest>>>> {
         let crdtRaw = await this.storage.getItem(this.storageKey);
         if (!crdtRaw) {
             await this.initialize();
             crdtRaw = await this.storage.getItem(this.storageKey);
             if (!crdtRaw) {
-                throw new Error('CRDT not found in storage');
+                throw new Error('Crdt not found in storage');
             }
         }
         const crdt = this.createCRDTFromSnapshot(Buffer.from(crdtRaw, 'base64url'));
@@ -31,16 +31,16 @@ export class YCRDTRepository<Latest extends StorageVersion, Rest> {
         return crdt;
     }
 
-    public createCRDTFromSnapshot(snapshot: Buffer): YCRDT<z.output<NewOf<Latest>>> {
+    public createCRDTFromSnapshot(snapshot: Buffer): CRDT<z.output<NewOf<Latest>>> {
         const crdt = createStorageFromSnapshot({
             authorId: this.ikPub,
             versions: this.versions,
             snapshot
         });
-        return new YCRDT(crdt);
+        return new CRDT(crdt);
     }
 
-    public async saveCRDT(crdt: YCRDT<z.output<NewOf<Latest>>>): Promise<void> {
+    public async saveCRDT(crdt: CRDT<z.output<NewOf<Latest>>>): Promise<void> {
         await this.saveSnapshot(crdt.encodeAsSnapshot());
     }
 
