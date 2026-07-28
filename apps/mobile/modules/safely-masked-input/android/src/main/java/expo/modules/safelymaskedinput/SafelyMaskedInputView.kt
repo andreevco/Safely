@@ -4,8 +4,10 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.graphics.Color
 import android.graphics.Typeface
+import android.os.Build
 import android.text.Editable
 import android.text.InputFilter
+import android.text.InputType
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.TextPaint
@@ -19,6 +21,8 @@ import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
 import android.view.inputmethod.InputConnectionWrapper
 import android.view.inputmethod.InputMethodManager
+import android.view.inputmethod.TextAttribute
+import androidx.annotation.RequiresApi
 import androidx.appcompat.widget.AppCompatEditText
 import expo.modules.kotlin.AppContext
 import expo.modules.kotlin.viewevent.EventDispatcher
@@ -47,14 +51,33 @@ private class MaskedEditText(context: Context) : AppCompatEditText(context) {
 
         return object : InputConnectionWrapper(connection, false) {
             override fun commitText(text: CharSequence?, newCursorPosition: Int): Boolean {
-                val committed = text?.toString() ?: return super.commitText(text, newCursorPosition)
-                if (committed.length <= 1) return super.commitText(text, newCursorPosition)
+                if (interceptAsPaste(text)) return true
+                return super.commitText(text, newCursorPosition)
+            }
 
-                onPasteListener?.invoke(committed)
-                return true
+            @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+            override fun commitText(
+                text: CharSequence,
+                newCursorPosition: Int,
+                textAttribute: TextAttribute?
+            ): Boolean {
+                if (interceptAsPaste(text)) return true
+                return super.commitText(text, newCursorPosition, textAttribute)
             }
         }
     }
+
+    private fun interceptAsPaste(text: CharSequence?): Boolean {
+        if (!isNumericInput) return false
+
+        val committed = text?.toString()?.takeIf { it.length > 1 } ?: return false
+
+        onPasteListener?.invoke(committed)
+        return true
+    }
+
+    private val isNumericInput: Boolean
+        get() = inputType and InputType.TYPE_MASK_CLASS == InputType.TYPE_CLASS_NUMBER
 
     private fun clipboardText(): String? {
         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
