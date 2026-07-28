@@ -1,17 +1,17 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { z } from 'zod';
 
-import type { StorageImpl } from '../src';
-import { createStorage } from '../src';
-import type { schemaV1 } from './version-fixtures';
-import { v1 } from './version-fixtures';
+import type { StorageImpl } from '../../../src';
+import { createStorage } from '../../../src';
 import {
     createContainerSlot,
     createOrderedArraySlot,
     createOriginContainer,
     SlotKind
-} from '../src/core/slots';
-import { slotFromJson } from '../src/core/slots/slot-json';
+} from '../../../src/core/slots';
+import { slotFromJson } from '../../../src/core/slots/slot-json';
+import type { schemaV1 } from '../versioning/version-fixtures';
+import { v1 } from '../versioning/version-fixtures';
 
 describe('storage merge', () => {
     let storage1: StorageImpl<z.output<typeof schemaV1>>;

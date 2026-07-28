@@ -1,7 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 
-import type { StorageImpl } from '../src';
+import type { StorageV3 } from './version-fixtures';
+import { v1, v3 } from './version-fixtures';
+import type { StorageImpl } from '../../../src';
 import {
     createStorage,
     DEVICES_KEY,
@@ -11,11 +13,9 @@ import {
     projectIdentity,
     VERSION_DELETION_GRACE_PERIOD_SECONDS,
     VERSION_DELETION_KEY
-} from '../src';
-import type { StorageV3 } from './version-fixtures';
-import { v1, v3 } from './version-fixtures';
-import { createOriginContainer } from '../src/core/slots';
-import { slotFromJson, stripSlot } from '../src/core/slots/slot-json';
+} from '../../../src';
+import { createOriginContainer } from '../../../src/core/slots';
+import { slotFromJson, stripSlot } from '../../../src/core/slots/slot-json';
 
 const v3Initial = {
     key1: 0,

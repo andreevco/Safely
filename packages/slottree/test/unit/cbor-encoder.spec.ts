@@ -1,8 +1,8 @@
 import * as cbor from 'cbor-x';
 import { describe, expect, it } from 'vitest';
 
-import type { JsonValue } from '../src';
-import { cborEncoder } from '../src/core/encoder/cbor/cbor-encoder';
+import type { JsonValue } from '../../src';
+import { cborEncoder } from '../../src/core/encoder/cbor/cbor-encoder';
 import {
     createContainerSlot,
     createOriginContainer,
@@ -12,7 +12,7 @@ import {
     SlotKind,
     type ContainerSlot,
     type Slot
-} from '../src/core/slots';
+} from '../../src/core/slots';
 
 describe('CborEncoder', () => {
     const hexAuthor = 'a'.repeat(64);

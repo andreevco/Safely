@@ -1,14 +1,14 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
-import type { StorageImpl } from '../src';
-import { createStorage, type SlotTree } from '../src';
-import type { schemaV1, StorageV1 } from './version-fixtures';
-import { v1 } from './version-fixtures';
-import type { ContainerSlot } from '../src/core/slots';
-import { isContainerSlot, isTombstoneSlot } from '../src/core/slots';
-import { cloneSlot } from '../src/core/slots/slot-json';
-import { defineVersionHList, hCons, hNil } from '../src/core/versioning/version';
+import type { StorageImpl } from '../../../src';
+import { createStorage, type SlotTree } from '../../../src';
+import type { ContainerSlot } from '../../../src/core/slots';
+import { isContainerSlot, isTombstoneSlot } from '../../../src/core/slots';
+import { cloneSlot } from '../../../src/core/slots/slot-json';
+import { defineVersionHList, hCons, hNil } from '../../../src/core/versioning/version';
+import { v1 } from '../versioning/version-fixtures';
+import type { schemaV1, StorageV1 } from '../versioning/version-fixtures';
 
 describe('storage updates', () => {
     let storage: SlotTree<z.output<typeof schemaV1>>;
@@ -168,6 +168,165 @@ describe('storage updates', () => {
         expect(storage.read().key2).toEqual('value-updated');
     });
 
+    describe('async transactions', () => {
+        it('commits async transactions only after commit hook resolves true', async () => {
+            const snapshots: Buffer[] = [];
+            let calls = 0;
+            storage.onChange(() => {
+                calls += 1;
+            });
+
+            const committed = await storage.unsafeAsyncTransaction(
+                draft => {
+                    draft.set('key1', 10);
+                },
+                async snapshot => {
+                    snapshots.push(snapshot);
+                    expect(storage.read()).toEqual({
+                        key1: 0,
+                        key2: 'initial'
+                    });
+                    return true;
+                }
+            );
+
+            expect(committed).toBe(true);
+            expect(snapshots).toHaveLength(1);
+            expect(storage.read()).toEqual({
+                key1: 10,
+                key2: 'initial'
+            });
+            expect(calls).toBe(1);
+        });
+
+        it('leaves async transaction state unpublished when commit hook resolves false', async () => {
+            let calls = 0;
+            storage.onChange(() => {
+                calls += 1;
+            });
+
+            const committed = await storage.unsafeAsyncTransaction(
+                draft => {
+                    draft.set('key1', 10);
+                },
+                async () => false
+            );
+
+            expect(committed).toBe(false);
+            expect(storage.read()).toEqual({
+                key1: 0,
+                key2: 'initial'
+            });
+            expect(calls).toBe(0);
+        });
+
+        it('leaves async transaction state unpublished when commit hook rejects', async () => {
+            let calls = 0;
+            storage.onChange(() => {
+                calls += 1;
+            });
+
+            await expect(
+                storage.unsafeAsyncTransaction(
+                    draft => {
+                        draft.set('key1', 10);
+                    },
+                    async () => {
+                        throw new Error('persist failed');
+                    }
+                )
+            ).rejects.toThrow('persist failed');
+
+            expect(storage.read()).toEqual({
+                key1: 0,
+                key2: 'initial'
+            });
+            expect(calls).toBe(0);
+        });
+
+        it('commits unsafe async merges only after commit hook resolves true', async () => {
+            const remote = createStorage({
+                authorId: Buffer.from('device-2'),
+                versions: v1
+            });
+            remote.transaction(draft => {
+                draft.set('key1', 10);
+            });
+
+            let calls = 0;
+            storage.onChange(() => {
+                calls += 1;
+            });
+
+            const committed = await storage.unsafeAsyncMerge(remote.export(), async () => {
+                expect(storage.read()).toEqual({
+                    key1: 0,
+                    key2: 'initial'
+                });
+                return true;
+            });
+
+            expect(committed).toBe(true);
+            expect(storage.read()).toEqual({
+                key1: 10,
+                key2: 'initial'
+            });
+            expect(calls).toBe(1);
+        });
+
+        it('leaves unsafe async merge state unpublished when commit hook resolves false', async () => {
+            const remote = createStorage({
+                authorId: Buffer.from('device-2'),
+                versions: v1
+            });
+            remote.transaction(draft => {
+                draft.set('key1', 10);
+            });
+
+            let calls = 0;
+            storage.onChange(() => {
+                calls += 1;
+            });
+
+            const committed = await storage.unsafeAsyncMerge(remote.export(), async () => {
+                return false;
+            });
+            expect(committed).toBe(false);
+            expect(storage.read()).toEqual({
+                key1: 0,
+                key2: 'initial'
+            });
+            expect(calls).toBe(0);
+        });
+
+        it('leaves unsafe async merge state unpublished when commit hook rejects', async () => {
+            const remote = createStorage({
+                authorId: Buffer.from('device-2'),
+                versions: v1
+            });
+            remote.transaction(draft => {
+                draft.set('key1', 10);
+            });
+
+            let calls = 0;
+            storage.onChange(() => {
+                calls += 1;
+            });
+
+            await expect(
+                storage.unsafeAsyncMerge(remote.export(), async () => {
+                    throw new Error('persist failed');
+                })
+            ).rejects.toThrow('persist failed');
+
+            expect(storage.read()).toEqual({
+                key1: 0,
+                key2: 'initial'
+            });
+            expect(calls).toBe(0);
+        });
+    });
+
     it('leaves storage unchanged when update fails schema validation', () => {
         const isolatedStorage = createStorage({
             authorId: Buffer.from('device-1'),
@@ -204,138 +363,6 @@ describe('storage updates', () => {
             })
         ).toThrow('boom');
 
-        expect(calls).toBe(0);
-    });
-
-    it('commits async transactions only after commit hook resolves true', async () => {
-        const snapshots: Buffer[] = [];
-        let calls = 0;
-        storage.onChange(() => {
-            calls += 1;
-        });
-
-        const committed = await storage.unsafeAsyncTransaction(
-            draft => {
-                draft.set('key1', 10);
-            },
-            async snapshot => {
-                snapshots.push(snapshot);
-                expect(storage.read()).toEqual({
-                    key1: 0,
-                    key2: 'initial'
-                });
-                return true;
-            }
-        );
-
-        expect(committed).toBe(true);
-        expect(snapshots).toHaveLength(1);
-        expect(storage.read()).toEqual({
-            key1: 10,
-            key2: 'initial'
-        });
-        expect(calls).toBe(1);
-    });
-
-    it('leaves async transaction state unpublished when commit hook resolves false', async () => {
-        let calls = 0;
-        storage.onChange(() => {
-            calls += 1;
-        });
-
-        const committed = await storage.unsafeAsyncTransaction(
-            draft => {
-                draft.set('key1', 10);
-            },
-            async () => false
-        );
-
-        expect(committed).toBe(false);
-        expect(storage.read()).toEqual({
-            key1: 0,
-            key2: 'initial'
-        });
-        expect(calls).toBe(0);
-    });
-
-    it('leaves async transaction state unpublished when commit hook rejects', async () => {
-        let calls = 0;
-        storage.onChange(() => {
-            calls += 1;
-        });
-
-        await expect(
-            storage.unsafeAsyncTransaction(
-                draft => {
-                    draft.set('key1', 10);
-                },
-                async () => {
-                    throw new Error('persist failed');
-                }
-            )
-        ).rejects.toThrow('persist failed');
-
-        expect(storage.read()).toEqual({
-            key1: 0,
-            key2: 'initial'
-        });
-        expect(calls).toBe(0);
-    });
-
-    it('commits unsafe async merges only after commit hook resolves true', async () => {
-        const remote = createStorage({
-            authorId: Buffer.from('device-2'),
-            versions: v1
-        });
-        remote.transaction(draft => {
-            draft.set('key1', 10);
-        });
-
-        let calls = 0;
-        storage.onChange(() => {
-            calls += 1;
-        });
-
-        const committed = await storage.unsafeAsyncMerge(remote.export(), async () => {
-            expect(storage.read()).toEqual({
-                key1: 0,
-                key2: 'initial'
-            });
-            return true;
-        });
-
-        expect(committed).toBe(true);
-        expect(storage.read()).toEqual({
-            key1: 10,
-            key2: 'initial'
-        });
-        expect(calls).toBe(1);
-    });
-
-    it('leaves unsafe async merge state unpublished when commit hook rejects', async () => {
-        const remote = createStorage({
-            authorId: Buffer.from('device-2'),
-            versions: v1
-        });
-        remote.transaction(draft => {
-            draft.set('key1', 10);
-        });
-
-        let calls = 0;
-        storage.onChange(() => {
-            calls += 1;
-        });
-
-        await expect(
-            storage.unsafeAsyncMerge(remote.export(), async () => {
-                throw new Error('persist failed');
-            })
-        ).rejects.toThrow('persist failed');
-
-        expect(storage.read()).toEqual({
-            key1: 0,
-            key2: 'initial'
-        });
         expect(calls).toBe(0);
     });
 

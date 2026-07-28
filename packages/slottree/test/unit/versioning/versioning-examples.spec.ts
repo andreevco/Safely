@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
-import { zIndexedArray, zIndexedObject } from '../src/core/schemas';
+import { zIndexedArray, zIndexedObject } from '../../../src/core/schemas';
 import {
     isContainerSlot,
     isOrderedArraySlot,
     type ContainerSlot,
     type Slot
-} from '../src/core/slots';
-import { slotFromJson, stripSlot } from '../src/core/slots/slot-json';
-import { patch } from '../src/core/versioning/patch';
+} from '../../../src/core/slots';
+import { slotFromJson, stripSlot } from '../../../src/core/slots/slot-json';
+import { patch } from '../../../src/core/versioning/patch';
 
 describe('versioning patch examples', () => {
     it('renames a root field', () => {

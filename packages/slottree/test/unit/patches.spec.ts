@@ -1,16 +1,16 @@
 import { describe, expect, it } from 'vitest';
 
-import type { JsonValue } from '../src/core/json';
+import type { JsonValue } from '../../src/core/json';
 import {
     createTombstoneSlot,
     isContainerSlot,
     isOrderedArraySlot,
     type ContainerSlot,
     type Slot
-} from '../src/core/slots';
-import { slotFromJson, stripSlot } from '../src/core/slots/slot-json';
-import { PatchCursor } from '../src/core/versioning/patch/cursor';
-import { createPatchDraft } from '../src/core/versioning/patch/draft';
+} from '../../src/core/slots';
+import { slotFromJson, stripSlot } from '../../src/core/slots/slot-json';
+import { PatchCursor } from '../../src/core/versioning/patch/cursor';
+import { createPatchDraft } from '../../src/core/versioning/patch/draft';
 
 type RuntimeMatcher = JsonValue | ((value: unknown) => boolean);
 

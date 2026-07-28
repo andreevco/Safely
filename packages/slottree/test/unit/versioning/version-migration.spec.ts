@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
-import type { StorageImpl } from '../src';
-import { createStorage, DEVICES_KEY, VERSION_DELETION_KEY } from '../src';
 import type { StorageV1 } from './version-fixtures';
 import { identityPatch, type StorageV3, v1, v3 } from './version-fixtures';
-import { createOriginContainer, SlotKind, type ContainerSlot } from '../src/core/slots';
-import { slotFromJson, stripSlot } from '../src/core/slots/slot-json';
-import { patch } from '../src/core/versioning/patch';
-import { defineVersionHList, hCons, hNil } from '../src/core/versioning/version';
+import type { StorageImpl } from '../../../src';
+import { createStorage, DEVICES_KEY, VERSION_DELETION_KEY } from '../../../src';
+import { createOriginContainer, SlotKind, type ContainerSlot } from '../../../src/core/slots';
+import { slotFromJson, stripSlot } from '../../../src/core/slots/slot-json';
+import { patch } from '../../../src/core/versioning/patch';
+import { defineVersionHList, hCons, hNil } from '../../../src/core/versioning/version';
 
 const device1 = Buffer.from('device-1').toString('hex');
 const deviceV1 = Buffer.from('device-v1').toString('hex');

@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
-import type { StorageImpl } from '../src';
-import { createStorage } from '../src';
-import { identityPatch } from './version-fixtures';
-import { isContainerSlot, type ContainerSlot } from '../src/core/slots';
-import { stripSlot } from '../src/core/slots/slot-json';
-import { defineVersionHList, hCons, hNil } from '../src/core/versioning/version';
+import type { StorageImpl } from '../../src';
+import { createStorage } from '../../src';
+import { identityPatch } from './versioning/version-fixtures';
+import { isContainerSlot, type ContainerSlot } from '../../src/core/slots';
+import { stripSlot } from '../../src/core/slots/slot-json';
+import { defineVersionHList, hCons, hNil } from '../../src/core/versioning/version';
 
 describe('records', () => {
     it('sets and deletes keys', () => {

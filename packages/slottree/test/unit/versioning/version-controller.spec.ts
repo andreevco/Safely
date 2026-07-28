@@ -1,23 +1,23 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { v1, v3 } from './version-fixtures';
 import {
     DEVICES_KEY,
     VERSION_DELETION_GRACE_PERIOD_SECONDS,
     VERSION_DELETION_KEY,
     VersionController
-} from '../src';
-import { v1, v3 } from './version-fixtures';
-import { MergeProtocol } from '../src/core/merge-protocol';
+} from '../../../src';
+import { MergeProtocol } from '../../../src/core/merge-protocol';
 import {
     createOriginContainer,
     createTombstoneSlot,
     isContainerSlot,
     isTombstoneSlot,
     type ContainerSlot
-} from '../src/core/slots';
-import { slotFromJson, stripSlot } from '../src/core/slots/slot-json';
-import { hListToRuntimeArray } from '../src/core/versioning/version';
-import { VersionPropagation } from '../src/core/versioning/version-propagation';
+} from '../../../src/core/slots';
+import { slotFromJson, stripSlot } from '../../../src/core/slots/slot-json';
+import { hListToRuntimeArray } from '../../../src/core/versioning/version';
+import { VersionPropagation } from '../../../src/core/versioning/version-propagation';
 
 describe('VersionController', () => {
     afterEach(() => {

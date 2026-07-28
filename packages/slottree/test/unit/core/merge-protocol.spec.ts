@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import { MergeProtocol } from '../src/core/merge-protocol';
+import { MergeProtocol } from '../../../src/core/merge-protocol';
 import {
     createContainerSlot,
     createOriginContainer,
     createTombstoneSlot,
     SlotKind,
     type Slot
-} from '../src/core/slots';
+} from '../../../src/core/slots';
 
 describe('MergeProtocol', () => {
     function atomicSlot(value: string, timestamp: number, author: string): Slot {

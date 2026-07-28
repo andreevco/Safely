@@ -1,9 +1,9 @@
 import { z } from 'zod';
 
-import type { ContainerSlot } from '../src/core/slots';
-import { cloneSlot } from '../src/core/slots/slot-json';
-import { patch } from '../src/core/versioning/patch';
-import { defineVersionHList, hCons, hNil } from '../src/core/versioning/version';
+import type { ContainerSlot } from '../../../src/core/slots';
+import { cloneSlot } from '../../../src/core/slots/slot-json';
+import { patch } from '../../../src/core/versioning/patch';
+import { defineVersionHList, hCons, hNil } from '../../../src/core/versioning/version';
 
 export const schemaV1 = z.object({
     key1: z.number(),

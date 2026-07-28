@@ -1,17 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
-import type { StorageImpl } from '../src';
-import { createStorage } from '../src';
+import type { StorageImpl } from '../../../src';
+import { createStorage } from '../../../src';
 import {
     isContainerSlot,
     isOrderedArraySlot,
     isTombstoneSlot,
     SlotKind,
     type ContainerSlot
-} from '../src/core/slots';
-import { cloneSlot, slotFromJson } from '../src/core/slots/slot-json';
-import { defineVersionHList, hCons, hNil } from '../src/core/versioning/version';
+} from '../../../src/core/slots';
+import { cloneSlot, slotFromJson } from '../../../src/core/slots/slot-json';
+import { defineVersionHList, hCons, hNil } from '../../../src/core/versioning/version';
 
 const sPortfolio = z.object({
     __setId: z.string(),
