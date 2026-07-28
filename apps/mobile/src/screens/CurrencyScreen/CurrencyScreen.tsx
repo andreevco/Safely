@@ -92,7 +92,9 @@ export const CurrencyScreen = () => {
                                             </View>
                                         </Cell.Row>
                                     </Cell.Content>
-                                    {isSelected && <Icon icon={Checkmark28} color="accent" />}
+                                    <View style={styles.checkmarkSlot}>
+                                        {isSelected && <Icon icon={Checkmark28} color="accent" />}
+                                    </View>
                                 </Cell>
                             );
                         })}
@@ -108,9 +110,11 @@ export const CurrencyScreen = () => {
                                         </Cell.Title>
                                     </Cell.Row>
                                 </Cell.Content>
-                                {mainBalanceUnit === unit && (
-                                    <Icon icon={Checkmark28} color="accent" />
-                                )}
+                                <View style={styles.checkmarkSlot}>
+                                    {mainBalanceUnit === unit && (
+                                        <Icon icon={Checkmark28} color="accent" />
+                                    )}
+                                </View>
                             </Cell>
                         ))}
                     </List.Group>
