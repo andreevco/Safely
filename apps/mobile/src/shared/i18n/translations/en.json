@@ -135,7 +135,27 @@
         }
     },
     "amountDisplay": {
-        "title": "Amount display"
+        "title": "Amount display",
+        "transactionHistory": {
+            "title": "Transaction history",
+            "footer": "Applies to transaction history and details. Fiat values",
+            "footerRates": "use current exchange rates."
+        },
+        "homeScreen": {
+            "title": "Home screen",
+            "footer": "Applies to asset cards on the Home screen."
+        },
+        "transactionAmounts": {
+            "title": "Transaction amounts",
+            "showFull": {
+                "title": "Show full sent amount",
+                "subtitle": "Sent crypto amounts include network fees and are shown without rounding."
+            }
+        },
+        "options": {
+            "crypto": "Crypto first",
+            "fiat": "Local currency first"
+        }
     },
     "home": {
         "actions": {

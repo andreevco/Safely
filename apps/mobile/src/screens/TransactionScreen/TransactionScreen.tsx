@@ -11,7 +11,9 @@ import {
     useDateFormatter,
     useExplorer,
     useLinking,
-    useNumberFormatter
+    useNumberFormatter,
+    useShowFullSentAmount,
+    resolveSentAmount
 } from '@safely/ux';
 
 import { TransactionConfirmationStatusBtc } from '@mobile/entities/activity';
@@ -54,6 +56,14 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
         minute: '2-digit'
     });
     const { openURL } = useLinking();
+    const showFullSentAmount = useShowFullSentAmount();
+
+    const { amount, isFullPrecision } = resolveSentAmount({
+        isInitiator,
+        value: activity.transaction.value,
+        fee: activity.transaction.fee?.amount,
+        showFullSentAmount
+    });
 
     const handleOpen = useCallback(() => {
         const url = explorer.transaction(activity.transaction.raw.txid);
@@ -116,14 +126,14 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
                         <Text variant="titleL" color="primary" textAlign="center">
                             {isInitiator ? '−' : '+'}
                             {SPACE.THSP}
-                            {activity.transaction.value.format(formatter)}
+                            {amount.format(formatter, { fullPrecision: isFullPrecision })}
                         </Text>
                         {rate && (
                             <Text variant="bodyL" color="secondary" textAlign="center">
                                 ≈{SPACE.THSP}
-                                {activity.transaction.value
-                                    .convert(rate)
-                                    .format(formatter, { currencyDisplay: 'code' })}
+                                {amount.convert(rate).format(formatter, {
+                                    currencyDisplay: 'code'
+                                })}
                             </Text>
                         )}
                     </View>

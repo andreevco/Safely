@@ -3,7 +3,7 @@ import { View } from 'react-native';
 
 import { SPACE } from '@safely/core';
 import type { ContactMeta, PortfolioMeta } from '@safely/core';
-import type { ActivityItem as ActivityItemData } from '@safely/ux';
+import { useTransactionHistoryAmountOrder } from '@safely/ux';
 
 import { ContactName } from '@mobile/entities/contact';
 import { PortfolioName } from '@mobile/entities/portfolio';
@@ -18,7 +18,6 @@ export type ActivityItemCounterparty =
     | { kind: 'provider'; label: string };
 
 export type ActivityItemProps = {
-    activity: ActivityItemData;
     title: string;
     amountSign: '+' | '−' | null;
     formattedValue: string;
@@ -27,7 +26,7 @@ export type ActivityItemProps = {
     timestampLabel: string | null;
     background: 'tertiary' | 'secondary';
     counterparty: ActivityItemCounterparty;
-    onNavigateToActivityItem: (activity: ActivityItemData) => void;
+    onPress?: () => void;
 };
 
 const Counterparty = ({ counterparty }: { counterparty: ActivityItemCounterparty }) => {
@@ -65,7 +64,6 @@ const Counterparty = ({ counterparty }: { counterparty: ActivityItemCounterparty
 
 export const ActivityItem = memo((props: ActivityItemProps) => {
     const {
-        activity,
         title,
         amountSign,
         formattedValue,
@@ -74,15 +72,21 @@ export const ActivityItem = memo((props: ActivityItemProps) => {
         timestampLabel,
         background,
         counterparty,
-        onNavigateToActivityItem
+        onPress
     } = props;
+    const amountOrder = useTransactionHistoryAmountOrder();
+
+    const [primaryAmount, secondaryAmount] =
+        amountOrder === 'fiat' && formattedFiat !== null
+            ? [formattedFiat, formattedValue]
+            : [formattedValue, formattedFiat];
 
     return (
         <Cell
             containerStyle={styles.border}
             background={background}
             showDivider={false}
-            onPress={() => onNavigateToActivityItem(activity)}
+            onPress={onPress}
         >
             <Cell.Content>
                 <Cell.Row>
@@ -96,12 +100,12 @@ export const ActivityItem = memo((props: ActivityItemProps) => {
                     </View>
                     <Cell.Value color={valueColor}>
                         {amountSign !== null && `${amountSign}${SPACE.THSP}`}
-                        {formattedValue}
+                        {primaryAmount}
                     </Cell.Value>
                 </Cell.Row>
                 <Cell.Row>
                     <Counterparty counterparty={counterparty} />
-                    <Cell.Subvalue>{formattedFiat}</Cell.Subvalue>
+                    <Cell.Subvalue>{secondaryAmount}</Cell.Subvalue>
                 </Cell.Row>
             </Cell.Content>
         </Cell>

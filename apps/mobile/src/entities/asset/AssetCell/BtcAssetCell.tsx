@@ -3,7 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { View, type ViewStyle } from 'react-native';
 
 import type { CryptoAssetAmount, CryptoFiatRate } from '@safely/core';
-import { useActiveBtcWalletUtxo, useNumberFormatter, useOnrampTxids } from '@safely/ux';
+import {
+    useActiveBtcWalletUtxo,
+    useHomeScreenAmountOrder,
+    useNumberFormatter,
+    useOnrampTxids
+} from '@safely/ux';
 
 import { Cell, ChevronRight12, Icon } from '@mobile/shared/ui';
 
@@ -14,30 +19,44 @@ type BtcAssetCellProps = {
     cryptoAssetAmount: CryptoAssetAmount;
     price: CryptoFiatRate | null;
     showDivider?: boolean;
+    style?: ViewStyle;
+    background?: 'tertiary' | 'secondary';
     onPress?: () => void;
 };
 
 export const BtcAssetCell = (props: BtcAssetCellProps) => {
-    const { cryptoAssetAmount, price, showDivider = true, onPress } = props;
+    const { cryptoAssetAmount, price, showDivider = true, style, background, onPress } = props;
+
     const { t } = useTranslation();
     const formatter = useNumberFormatter();
     const purchaseTxids = useOnrampTxids();
 
+    const amountOrder = useHomeScreenAmountOrder();
+
     const { data: btcUtxo } = useActiveBtcWalletUtxo();
+
+    const fiatAmount = price ? cryptoAssetAmount.convert(price).format(formatter) : '–';
+    const cryptoAmount = cryptoAssetAmount.format(formatter, { fullPrecision: true });
+
+    const [primaryAmount, secondaryAmount] =
+        amountOrder === 'crypto' ? [cryptoAmount, fiatAmount] : [fiatAmount, cryptoAmount];
 
     const receivingUtxos = useMemo(() => btcUtxo?.unconfirmedUnsafe.utxos ?? [], [btcUtxo]);
 
     const hasReceiving = receivingUtxos.length > 0;
 
     return (
-        <Cell showDivider={showDivider} onPress={onPress} style={styles.cell as ViewStyle}>
+        <Cell
+            showDivider={showDivider}
+            onPress={onPress}
+            background={background}
+            style={[styles.cell as ViewStyle, style]}
+        >
             <Cell.Image style={styles.image} type="image" image={cryptoAssetAmount.asset.image} />
             <Cell.Content>
                 <Cell.Row style={styles.titleRow}>
                     <Cell.Title color="primary">{cryptoAssetAmount.asset.name}</Cell.Title>
-                    <Cell.Value color="primary">
-                        {price ? cryptoAssetAmount.convert(price).format(formatter) : '–'}
-                    </Cell.Value>
+                    <Cell.Value color="primary">{primaryAmount}</Cell.Value>
                 </Cell.Row>
                 <Cell.Row style={styles.subtitleRow}>
                     <View style={styles.subtitleContainer}>
@@ -45,7 +64,7 @@ export const BtcAssetCell = (props: BtcAssetCellProps) => {
                         <Icon style={styles.chevron} icon={ChevronRight12} color="tertiary" />
                     </View>
                     <Cell.Subvalue color="secondary" style={styles.subvalue}>
-                        {cryptoAssetAmount.format(formatter, { fullPrecision: true })}
+                        {secondaryAmount}
                     </Cell.Subvalue>
                 </Cell.Row>
 

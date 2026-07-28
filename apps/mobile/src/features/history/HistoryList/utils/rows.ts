@@ -18,7 +18,8 @@ import {
     findContactMetaByAddress,
     findPortfolioMetaByAddress,
     getBtcTransactionDisplayStatus,
-    isRampOrderActive
+    isRampOrderActive,
+    resolveSentAmount
 } from '@safely/ux';
 
 import type { ActivityItemProps } from '@mobile/entities/activity';
@@ -45,6 +46,7 @@ export type ActivityRowContext = {
     contacts: ReturnType<typeof useContacts>;
     rateData: ReturnType<typeof useActivePortfolioRate>['data'];
     currentBlockNumber: ReturnType<typeof useActualBtcBlockNumber>['data'];
+    showFullSentAmount: boolean;
     onNavigateToActivityItem: (activity: ActivityItem) => void;
 };
 
@@ -130,9 +132,17 @@ const buildTransactionRow = (
           : context.t('history.transactionInfo.received');
 
     const amountSign: ActivityRow['amountSign'] = isInitiator ? '−' : '+';
-    const formattedValue = activity.transaction.value.format(context.numberFormatter);
+    const { amount, isFullPrecision } = resolveSentAmount({
+        isInitiator,
+        value: activity.transaction.value,
+        fee: activity.transaction.fee?.amount,
+        showFullSentAmount: context.showFullSentAmount
+    });
+    const formattedValue = amount.format(context.numberFormatter, {
+        fullPrecision: isFullPrecision
+    });
     const formattedFiat = context.rateData
-        ? activity.transaction.value.convert(context.rateData).format(context.numberFormatter)
+        ? amount.convert(context.rateData).format(context.numberFormatter)
         : null;
     const valueColor: ActivityRow['valueColor'] = isInitiator ? 'primary' : 'accentGreen';
 
@@ -156,7 +166,6 @@ const buildTransactionRow = (
     return {
         key: `activity-${groupKey}-${activity.key}`,
         type: 'activity',
-        activity,
         title,
         amountSign,
         formattedValue,
@@ -165,7 +174,7 @@ const buildTransactionRow = (
         timestampLabel,
         background,
         counterparty,
-        onNavigateToActivityItem: context.onNavigateToActivityItem
+        onPress: () => context.onNavigateToActivityItem(activity)
     };
 };
 
@@ -216,7 +225,6 @@ const buildOrderRow = (
     return {
         key: `activity-${groupKey}-${activity.key}`,
         type: 'activity',
-        activity,
         title,
         amountSign,
         formattedValue: activity.cryptoAmount?.format(context.numberFormatter) ?? '-',
@@ -230,7 +238,7 @@ const buildOrderRow = (
             kind: 'provider',
             label: order.provider
         },
-        onNavigateToActivityItem: context.onNavigateToActivityItem
+        onPress: () => context.onNavigateToActivityItem(activity)
     };
 };
 
