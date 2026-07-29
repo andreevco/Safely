@@ -1,96 +1,77 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useCallback } from 'react';
+import { useMutation } from '@tanstack/react-query';
 
 import type { AmountUnit } from './types';
-import type { AmountDisplay } from '../../shared';
-import { defineQueryKeys, finalKey, sAmountDisplay, useSharedUxStorage } from '../../shared';
+import {
+    useAccountStore,
+    useActiveAccount,
+    useActiveAccountSyncStorageSlotUpdate
+} from '../../entities';
 
-const amountDisplayKeys = defineQueryKeys('amountDisplay', {
-    settings: finalKey
-});
+type AmountUnitKey = 'mainBalanceUnit' | 'homeScreenOrder' | 'transactionHistoryOrder';
 
-const defaultAmountDisplay = sAmountDisplay.parse(null);
+const DEFAULT_AMOUNT_UNIT: AmountUnit = 'fiat';
+const DEFAULT_SHOW_FULL_SENT_AMOUNT = false;
 
-function useAmountDisplay<T>(select: (settings: AmountDisplay) => T): T {
-    const { get } = useSharedUxStorage('amountDisplay');
+function useAmountUnit(key: AmountUnitKey): AmountUnit {
+    const account = useActiveAccount();
 
-    const { data } = useQuery({
-        queryKey: amountDisplayKeys.settings.toKey(),
-        queryFn: get,
-        staleTime: Infinity,
-        select
-    });
-
-    return data ?? select(defaultAmountDisplay);
+    return useAccountStore(
+        state =>
+            state.accountsData.get(account.accountId)?.amountDisplay?.[key] ?? DEFAULT_AMOUNT_UNIT
+    );
 }
 
-function useSetAmountDisplay(): (patch: Partial<AmountDisplay>) => void {
-    const queryClient = useQueryClient();
-    const { get, set } = useSharedUxStorage('amountDisplay');
+function useSetAmountUnit(key: AmountUnitKey): (unit: AmountUnit) => void {
+    const update = useActiveAccountSyncStorageSlotUpdate('amountDisplay');
 
     const { mutate } = useMutation({
-        mutationFn: async (patch: Partial<AmountDisplay>) => {
-            const settings = { ...(await get()), ...patch };
-            await set(settings);
-
-            return settings;
-        },
-        onSuccess: settings => {
-            queryClient.setQueryData(amountDisplayKeys.settings.toKey(), settings);
-        }
+        mutationFn: (unit: AmountUnit) => update(draft => draft.set(key, unit))
     });
 
     return mutate;
 }
 
 export function useMainBalanceUnit(): AmountUnit {
-    return useAmountDisplay(settings => settings.mainBalanceUnit);
+    return useAmountUnit('mainBalanceUnit');
 }
 
 export function useSetMainBalanceUnit(): (unit: AmountUnit) => void {
-    const setAmountDisplay = useSetAmountDisplay();
-
-    return useCallback(
-        (unit: AmountUnit) => setAmountDisplay({ mainBalanceUnit: unit }),
-        [setAmountDisplay]
-    );
+    return useSetAmountUnit('mainBalanceUnit');
 }
 
 export function useHomeScreenAmountOrder(): AmountUnit {
-    return useAmountDisplay(settings => settings.homeScreenOrder);
+    return useAmountUnit('homeScreenOrder');
 }
 
 export function useSetHomeScreenAmountOrder(): (order: AmountUnit) => void {
-    const setAmountDisplay = useSetAmountDisplay();
-
-    return useCallback(
-        (order: AmountUnit) => setAmountDisplay({ homeScreenOrder: order }),
-        [setAmountDisplay]
-    );
+    return useSetAmountUnit('homeScreenOrder');
 }
 
 export function useTransactionHistoryAmountOrder(): AmountUnit {
-    return useAmountDisplay(settings => settings.transactionHistoryOrder);
+    return useAmountUnit('transactionHistoryOrder');
 }
 
 export function useSetTransactionHistoryAmountOrder(): (order: AmountUnit) => void {
-    const setAmountDisplay = useSetAmountDisplay();
-
-    return useCallback(
-        (order: AmountUnit) => setAmountDisplay({ transactionHistoryOrder: order }),
-        [setAmountDisplay]
-    );
+    return useSetAmountUnit('transactionHistoryOrder');
 }
 
 export function useShowFullSentAmount(): boolean {
-    return useAmountDisplay(settings => settings.showFullSentAmount);
+    const account = useActiveAccount();
+
+    return useAccountStore(
+        state =>
+            state.accountsData.get(account.accountId)?.amountDisplay?.showFullSentAmount ??
+            DEFAULT_SHOW_FULL_SENT_AMOUNT
+    );
 }
 
 export function useSetShowFullSentAmount(): (isEnabled: boolean) => void {
-    const setAmountDisplay = useSetAmountDisplay();
+    const update = useActiveAccountSyncStorageSlotUpdate('amountDisplay');
 
-    return useCallback(
-        (isEnabled: boolean) => setAmountDisplay({ showFullSentAmount: isEnabled }),
-        [setAmountDisplay]
-    );
+    const { mutate } = useMutation({
+        mutationFn: (isEnabled: boolean) =>
+            update(draft => draft.set('showFullSentAmount', isEnabled))
+    });
+
+    return mutate;
 }

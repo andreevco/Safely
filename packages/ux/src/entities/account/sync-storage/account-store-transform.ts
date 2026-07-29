@@ -48,6 +48,10 @@ export class AccountStoreTransform {
                 return this.analyticsId(
                     json as SyncedStorageSchema['analyticsId']
                 ) as AccountStoreData[K];
+            case 'amountDisplay':
+                return this.amountDisplay(
+                    json as SyncedStorageSchema['amountDisplay']
+                ) as AccountStoreData[K];
             default:
                 assertUnreachable(key);
         }
@@ -64,7 +68,8 @@ export class AccountStoreTransform {
             nextDerivingPortfolioInfo: this.nextDerivingPortfolioInfo(
                 raw.nextDerivingPortfolioInfo
             ),
-            analyticsId: this.analyticsId(raw.analyticsId)
+            analyticsId: this.analyticsId(raw.analyticsId),
+            amountDisplay: this.amountDisplay(raw.amountDisplay)
         };
     }
 
@@ -111,6 +116,12 @@ export class AccountStoreTransform {
     }
 
     private analyticsId(json: SyncedStorageSchema['analyticsId']): AccountStoreData['analyticsId'] {
+        return json;
+    }
+
+    private amountDisplay(
+        json: SyncedStorageSchema['amountDisplay']
+    ): AccountStoreData['amountDisplay'] {
         return json;
     }
 
