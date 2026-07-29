@@ -34,20 +34,10 @@ export const CurrencyScreen = () => {
     const handlePress = useCallback(
         (fiat: FiatAsset) => () => {
             if (activeFiat.id.symbol !== fiat.id.symbol) {
-                // TODO: persist the selection when sync is ready
-                setActiveFiat.mutate(
-                    { fiat },
-                    {
-                        onSuccess: () => {
-                            navigation.goBack();
-                        }
-                    }
-                );
-            } else {
-                navigation.goBack();
+                setActiveFiat.mutate({ fiat });
             }
         },
-        [activeFiat, setActiveFiat, navigation]
+        [activeFiat, setActiveFiat]
     );
 
     const handleMainBalanceUnitPress = useCallback(
