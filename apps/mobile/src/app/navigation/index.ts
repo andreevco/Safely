@@ -9,6 +9,8 @@ import { CurrencyScreen } from '@mobile/screens/CurrencyScreen';
 import { CustomizeAccountModal } from '@mobile/screens/CustomizeAccountModal';
 import { CustomizeWalletModal } from '@mobile/screens/CustomizeWalletModal';
 import { DestructiveConfirmSheet } from '@mobile/screens/DestructiveConfirmSheet';
+import { ExchangeModal } from '@mobile/screens/ExchangeModal';
+import { LinkDeviceWarningModal } from '@mobile/screens/LinkDeviceWarningModal';
 import { LockScreen } from '@mobile/screens/LockScreen';
 import { MoreOptionsSheet } from '@mobile/screens/MoreOptionsSheet';
 import { NewContactModal } from '@mobile/screens/NewContactModal';
@@ -16,8 +18,10 @@ import { ConfirmDeleteContactSheet } from '@mobile/screens/NewContactModal/scree
 import { OnboardingImportWalletScreen } from '@mobile/screens/OnboardingImportWalletScreen';
 import { OnboardingPasscodeScreen } from '@mobile/screens/OnboardingPasscodeScreen';
 import { OnboardingWatchAccountScreen } from '@mobile/screens/OnboardingWatchAccountScreen';
+import { OrderScreen } from '@mobile/screens/OrderScreen';
 import { PasscodeVerificationScreen } from '@mobile/screens/PasscodeVerificationScreen';
 import { PendingFundsSheet } from '@mobile/screens/PendingFundsSheet';
+import { ProviderSheet } from '@mobile/screens/ProviderSheet';
 import { QRScanModal } from '@mobile/screens/QRScanModal';
 import { ReceiveAssetModal } from '@mobile/screens/ReceiveAssetModal';
 import { RemoveWalletSheet } from '@mobile/screens/RemoveWalletSheet';
@@ -76,6 +80,7 @@ export const RootStack = createNativeStackNavigator({
                     }
                 },
                 TransactionScreen: TransactionScreen,
+                OrderScreen: OrderScreen,
                 LockScreen: {
                     screen: LockScreen,
                     options: {
@@ -106,11 +111,13 @@ export const RootStack = createNativeStackNavigator({
             screens: {
                 SettingsModal: SettingsStack,
                 CurrencyModal: CurrencyScreen,
+                ExchangeModal: ExchangeModal,
                 RecoveryPhraseModal: RecoveryPhraseSheet,
                 SignInModal: SignInStack,
                 CustomizeAccountModal: CustomizeAccountModal,
                 CustomizeWalletModal: CustomizeWalletModal,
                 QRScanModal: QRScanModal,
+                LinkDeviceWarningModal: LinkDeviceWarningModal,
                 NewContactModal: NewContactModal,
                 AddWalletModal: AddWalletStack,
                 SelectAccountModal: SelectAccountModal,
@@ -134,7 +141,8 @@ export const RootStack = createNativeStackNavigator({
                 PendingFundsSheet: PendingFundsSheet,
                 MoreOptionsSheet: MoreOptionsSheet,
                 ConfirmDeleteContactSheet: ConfirmDeleteContactSheet,
-                ConnectToSignSheet: ConnectToSignSheet
+                ConnectToSignSheet: ConnectToSignSheet,
+                ProviderSheet: ProviderSheet
             },
             screenOptions: {
                 animationDuration: 0,

@@ -13,7 +13,7 @@ export const ExternalLinkCard = ({ title, description, url, img_url }: ExternalL
     return (
         <TouchableOpacity
             style={styles.container}
-            onPress={() => openURL(url, [LinkingProtocol.HTTPS])}
+            onPress={() => openURL(url, { allowedProtocols: [LinkingProtocol.HTTPS] })}
         >
             <View style={styles.body}>
                 <Text variant="labelM">{title}</Text>

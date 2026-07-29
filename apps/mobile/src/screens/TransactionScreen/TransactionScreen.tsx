@@ -1,21 +1,20 @@
-/* eslint-disable no-irregular-whitespace */
 import type { StaticScreenProps } from '@react-navigation/native';
 import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { BLOCKCHAIN_NAME, BTC_ASSET, ellipsisMiddle } from '@safely/core';
+import { BLOCKCHAIN_NAME, BTC_ASSET, SPACE, ellipsisMiddle } from '@safely/core';
 import {
     type BtcActivityItem,
     isBtcTransactionPending,
+    useActivePortfolioRate,
     useDateFormatter,
     useExplorer,
     useLinking,
-    useNumberFormatter,
-    useRate
+    useNumberFormatter
 } from '@safely/ux';
 
-import { TransactionConfirmationStatusBtc } from '@mobile/screens/TransactionScreen/TransactionConfirmationStatusBtc';
+import { TransactionConfirmationStatusBtc } from '@mobile/entities/activity';
 import {
     ArrowDown16,
     ArrowTop16,
@@ -46,7 +45,7 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
     const isInitiator = activity.transaction.isInitiator;
     const isPending = isBtcTransactionPending(activity.transaction.raw);
     const formatter = useNumberFormatter();
-    const { data: rate } = useRate(BTC_ASSET);
+    const { data: rate } = useActivePortfolioRate(BTC_ASSET);
     const explorer = useExplorer(BLOCKCHAIN_NAME.BTC);
     const dateFormatter = useDateFormatter({
         day: 'numeric',
@@ -115,11 +114,16 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
                     </View>
                     <View style={styles.amountContainer}>
                         <Text variant="titleL" color="primary" textAlign="center">
-                            {isInitiator ? '−' : '+'} {activity.transaction.value.format(formatter)}
+                            {isInitiator ? '−' : '+'}
+                            {SPACE.THSP}
+                            {activity.transaction.value.format(formatter)}
                         </Text>
                         {rate && (
                             <Text variant="bodyL" color="secondary" textAlign="center">
-                                ≈ {activity.transaction.value.convert(rate).format(formatter)}
+                                ≈{SPACE.THSP}
+                                {activity.transaction.value
+                                    .convert(rate)
+                                    .format(formatter, { currencyDisplay: 'code' })}
                             </Text>
                         )}
                     </View>

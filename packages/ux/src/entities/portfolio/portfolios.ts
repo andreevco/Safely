@@ -53,6 +53,7 @@ import {
     useActiveAccountQueryKey
 } from '../account';
 import { useErrorToast } from '../errors';
+import { useReadOnlyCredentialCache } from '../exchange/useReadOnlyCredentialCache';
 import { useToast } from '../toast';
 
 const EMPTY_PORTFOLIOS: Portfolio[] = Object.freeze([]) as unknown as Portfolio[];
@@ -223,6 +224,7 @@ export function useImportPortfolio() {
 
 export function useDeletePortfolio() {
     const update = useActiveAccountSyncStorageSlotUpdate('portfolios');
+    const credentialCache = useReadOnlyCredentialCache();
     const check = useSecurityCheck();
     const client = useQueryClient();
     const accountQueryKey = useActiveAccountQueryKey();
@@ -233,9 +235,15 @@ export function useDeletePortfolio() {
             logger.info('deleting portfolio', { id: portfolio.id });
             await check();
             await update(draft => draft.remove(portfolio.jsonArrayId()));
+
+            if (portfolio.type === PortfolioType.BIP39) {
+                await credentialCache.remove(portfolio.id);
+            }
+
             await client.invalidateQueries({
                 queryKey: accountQueryKey.activePortfolio.toKey()
             });
+
             logger.info('portfolio deleted', { id: portfolio.id });
         }
     });

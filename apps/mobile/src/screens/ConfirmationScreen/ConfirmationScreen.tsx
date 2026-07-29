@@ -27,7 +27,7 @@ import { TransactionFee } from '@mobile/screens/ConfirmationScreen/components/Tr
 import { TransactionSendResult } from '@mobile/screens/ConfirmationScreen/components/TransactionSendResult';
 import { Checkmark96, Icon, List, Screen, Text, Image } from '@mobile/shared/ui';
 
-import { Amount, ConfirmationFooter, Wallet, TransactionCell } from './components';
+import { Amount, MaxAmount, ConfirmationFooter, Wallet, TransactionCell } from './components';
 import { styles } from './ConfirmationScreen.styles';
 import type { ConfirmationState } from './ConfirmationScreen.types';
 
@@ -217,14 +217,20 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
                         />
                     </List.Group>
                     <List.Group style={styles.listGroup}>
-                        <Amount
-                            fiatAmount={confirmationResult.amount.fiatAssetAmount.format(formatter)}
-                            cryptoAmount={confirmationResult.amount.cryptoAssetAmount.format(
-                                formatter,
-                                { fullPrecision: true }
-                            )}
-                            inputType={confirmationResult.amount.inputType}
-                        />
+                        {confirmationResult.isMax ? (
+                            <MaxAmount amount={txTemplate?.request.amount} />
+                        ) : (
+                            <Amount
+                                fiatAmount={confirmationResult.amount.fiatAssetAmount.format(
+                                    formatter
+                                )}
+                                cryptoAmount={confirmationResult.amount.cryptoAssetAmount.format(
+                                    formatter,
+                                    { fullPrecision: true }
+                                )}
+                                inputType={confirmationResult.amount.inputType}
+                            />
+                        )}
                         <TransactionFee estimation={txTemplate?.estimation} />
                     </List.Group>
                     {!!sendResult && (

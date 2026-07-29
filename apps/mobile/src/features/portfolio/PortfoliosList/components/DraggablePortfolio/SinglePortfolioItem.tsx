@@ -66,6 +66,7 @@ export const SinglePortfolioItem = memo((props: DraggablePortfolioProps) => {
                                     gap={12}
                                     size={16}
                                     type={portfolio.type}
+                                    networkType={portfolio.networkType}
                                 />
                                 <Text
                                     variant="bodyM"

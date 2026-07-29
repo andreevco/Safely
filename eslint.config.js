@@ -111,9 +111,7 @@ export default [
                     pattern: 'apps/mobile/src/shared/**/*',
                     mode: 'full'
                 },
-                { type: 'mobile', pattern: 'apps/mobile/**/*', mode: 'full' },
-                { type: 'web-common', pattern: 'apps/web/common/**/*', mode: 'full' },
-                { type: 'web-browser', pattern: 'apps/web/browser/**/*', mode: 'full' }
+                { type: 'mobile', pattern: 'apps/mobile/**/*', mode: 'full' }
             ]
         },
         rules: {

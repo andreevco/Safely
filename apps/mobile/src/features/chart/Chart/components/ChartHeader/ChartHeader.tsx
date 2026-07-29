@@ -4,7 +4,7 @@ import Animated, { useAnimatedStyle, withTiming, Easing } from 'react-native-rea
 
 import type { CryptoAsset } from '@safely/core';
 import { SPACE } from '@safely/core';
-import { useActiveFiat, useNumberFormatter, useRate } from '@safely/ux';
+import { useActiveFiat, useActivePortfolioRate, useNumberFormatter } from '@safely/ux';
 
 import type { ChartPeriod } from '@mobile/features/chart/Chart/config';
 import { usePriceDiff } from '@mobile/features/chart/Chart/hooks';
@@ -23,7 +23,7 @@ type ChartHeaderProps = {
 
 export const ChartHeader = (props: ChartHeaderProps) => {
     const { prices, asset, selectedPeriod, activePrice, activePriceDiff } = props;
-    const rate = useRate(asset);
+    const rate = useActivePortfolioRate(asset);
     const fiat = useActiveFiat();
     const formatter = useNumberFormatter();
     const priceDiff = usePriceDiff({ prices, selectedPeriod });

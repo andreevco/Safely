@@ -12,6 +12,13 @@ export interface ConfigParams {
 
 // GET /config
 
+export const flagsSchema = z.looseObject({
+    enable_onramps: z.boolean().default(false)
+});
+
+export type Flags = z.infer<typeof flagsSchema>;
+export type FlagKey = keyof typeof flagsSchema.shape;
+
 export const bootConfigSchema = z.looseObject({
     blockchains: z.looseObject({
         bitcoin: z.looseObject({
@@ -60,7 +67,7 @@ export const bootConfigSchema = z.looseObject({
         )
     }),
 
-    flags: z.looseObject({}),
+    flags: flagsSchema,
 
     latest_app_version: z.looseObject({
         version: z.string()
@@ -79,6 +86,10 @@ export const bootConfigSchema = z.looseObject({
     }),
 
     sync: z.looseObject({
+        api_url: z.string()
+    }),
+
+    exchange: z.looseObject({
         api_url: z.string()
     }),
 

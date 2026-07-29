@@ -1,8 +1,9 @@
 import { memo } from 'react';
 import { View } from 'react-native';
 
+import { SPACE } from '@safely/core';
 import type { ContactMeta, PortfolioMeta } from '@safely/core';
-import type { BtcActivityItem } from '@safely/ux';
+import type { ActivityItem as ActivityItemData } from '@safely/ux';
 
 import { ContactName } from '@mobile/entities/contact';
 import { PortfolioName } from '@mobile/entities/portfolio';
@@ -13,19 +14,20 @@ import { styles } from './ActivityItem.styles';
 export type ActivityItemCounterparty =
     | { kind: 'contact'; meta: ContactMeta }
     | { kind: 'portfolio'; meta: PortfolioMeta }
-    | { kind: 'address'; label: string };
+    | { kind: 'address'; label: string }
+    | { kind: 'provider'; label: string };
 
 export type ActivityItemProps = {
-    activity: BtcActivityItem;
+    activity: ActivityItemData;
     title: string;
-    amountSign: '+' | '−';
+    amountSign: '+' | '−' | null;
     formattedValue: string;
-    valueColor: 'primary' | 'accentGreen';
+    valueColor: 'primary' | 'accentGreen' | 'tertiary';
     formattedFiat: string | null;
     timestampLabel: string | null;
     background: 'tertiary' | 'secondary';
     counterparty: ActivityItemCounterparty;
-    onNavigateToTransaction: (activity: BtcActivityItem) => void;
+    onNavigateToActivityItem: (activity: ActivityItemData) => void;
 };
 
 const Counterparty = ({ counterparty }: { counterparty: ActivityItemCounterparty }) => {
@@ -52,6 +54,12 @@ const Counterparty = ({ counterparty }: { counterparty: ActivityItemCounterparty
             );
         case 'address':
             return <Cell.Subtitle color="secondary">{counterparty.label}</Cell.Subtitle>;
+        case 'provider':
+            return (
+                <Cell.Subtitle textTransform="capitalize" color="secondary">
+                    {counterparty.label}
+                </Cell.Subtitle>
+            );
     }
 };
 
@@ -66,7 +74,7 @@ export const ActivityItem = memo((props: ActivityItemProps) => {
         timestampLabel,
         background,
         counterparty,
-        onNavigateToTransaction
+        onNavigateToActivityItem
     } = props;
 
     return (
@@ -74,7 +82,7 @@ export const ActivityItem = memo((props: ActivityItemProps) => {
             containerStyle={styles.border}
             background={background}
             showDivider={false}
-            onPress={() => onNavigateToTransaction(activity)}
+            onPress={() => onNavigateToActivityItem(activity)}
         >
             <Cell.Content>
                 <Cell.Row>
@@ -87,7 +95,8 @@ export const ActivityItem = memo((props: ActivityItemProps) => {
                         )}
                     </View>
                     <Cell.Value color={valueColor}>
-                        {amountSign} {formattedValue}
+                        {amountSign !== null && `${amountSign}${SPACE.THSP}`}
+                        {formattedValue}
                     </Cell.Value>
                 </Cell.Row>
                 <Cell.Row>

@@ -18,6 +18,7 @@ import Globe16Svg from '@safely/ux/assets/icons/16/globe-16.svg';
 import Human16Svg from '@safely/ux/assets/icons/16/human-16.svg';
 import More16Svg from '@safely/ux/assets/icons/16/more-16.svg';
 import Pencil16Svg from '@safely/ux/assets/icons/16/pencil-16.svg';
+import Plus16Svg from '@safely/ux/assets/icons/16/plus-16.svg';
 import Reorder16Svg from '@safely/ux/assets/icons/16/reorder-16.svg';
 import SignalHigh16Svg from '@safely/ux/assets/icons/16/signal-high-16.svg';
 import SignalLow16Svg from '@safely/ux/assets/icons/16/signal-low-16.svg';
@@ -40,6 +41,7 @@ import InformationCircle28Svg from '@safely/ux/assets/icons/28/information-circl
 import Loader28Svg from '@safely/ux/assets/icons/28/loader-28.svg';
 import Message28Svg from '@safely/ux/assets/icons/28/message-28.svg';
 import More28Svg from '@safely/ux/assets/icons/28/more-28.svg';
+import Plus28Svg from '@safely/ux/assets/icons/28/plus-28.svg';
 import QrCodeScan28Svg from '@safely/ux/assets/icons/28/qr-code-scan-28.svg';
 import QrCodeScanShield28Svg from '@safely/ux/assets/icons/28/qr-code-scan-shield-28.svg';
 import ShieldCheckmark28Svg from '@safely/ux/assets/icons/28/shield-checkmark-28.svg';
@@ -57,6 +59,7 @@ import BluetoothExclamationmark96Svg from '@safely/ux/assets/icons/96/bluetooth-
 import BluetoothRequired96Svg from '@safely/ux/assets/icons/96/bluetooth-required-96.svg';
 import CameraLock96Svg from '@safely/ux/assets/icons/96/camera-lock-96.svg';
 import Checkmark96Svg from '@safely/ux/assets/icons/96/checkmark-96.svg';
+import DeviceLinkArrowRight96Svg from '@safely/ux/assets/icons/96/device-link-arrow-right-96.svg';
 import DeviceLinkCheckmark96Svg from '@safely/ux/assets/icons/96/device-link-checkmark-96.svg';
 import DeviceLinkExclamationmark96Svg from '@safely/ux/assets/icons/96/device-link-exclamationmark-96.svg';
 import ExclamationmarkCircle96Svg from '@safely/ux/assets/icons/96/exclamationmark-circle-96.svg';
@@ -87,6 +90,7 @@ export const Globe16 = { image: Globe16Svg, size: 16 } as const;
 export const Human16 = { image: Human16Svg, size: 16 } as const;
 export const More16 = { image: More16Svg, size: 16 } as const;
 export const Pencil16 = { image: Pencil16Svg, size: 16 } as const;
+export const Plus16 = { image: Plus16Svg, size: 16 } as const;
 export const Reorder16 = { image: Reorder16Svg, size: 16 } as const;
 export const SignalHigh16 = { image: SignalHigh16Svg, size: 16 } as const;
 export const SignalLow16 = { image: SignalLow16Svg, size: 16 } as const;
@@ -109,6 +113,7 @@ export const InformationCircle28 = { image: InformationCircle28Svg, size: 28 } a
 export const Loader28 = { image: Loader28Svg, size: 28 } as const;
 export const Message28 = { image: Message28Svg, size: 28 } as const;
 export const More28 = { image: More28Svg, size: 28 } as const;
+export const Plus28 = { image: Plus28Svg, size: 28 } as const;
 export const QrCodeScan28 = { image: QrCodeScan28Svg, size: 28 } as const;
 export const QrCodeScanShield28 = { image: QrCodeScanShield28Svg, size: 28 } as const;
 export const ShieldCheckmark28 = { image: ShieldCheckmark28Svg, size: 28 } as const;
@@ -126,6 +131,7 @@ export const BluetoothExclamationmark96 = { image: BluetoothExclamationmark96Svg
 export const BluetoothRequired96 = { image: BluetoothRequired96Svg, size: 96 } as const;
 export const CameraLock96 = { image: CameraLock96Svg, size: 96 } as const;
 export const Checkmark96 = { image: Checkmark96Svg, size: 96 } as const;
+export const DeviceLinkArrowRight96 = { image: DeviceLinkArrowRight96Svg, size: 96 } as const;
 export const DeviceLinkCheckmark96 = { image: DeviceLinkCheckmark96Svg, size: 96 } as const;
 export const DeviceLinkExclamationmark96 = { image: DeviceLinkExclamationmark96Svg, size: 96 } as const;
 export const ExclamationmarkCircle96 = { image: ExclamationmarkCircle96Svg, size: 96 } as const;

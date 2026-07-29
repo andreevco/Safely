@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { View, type ViewStyle } from 'react-native';
 
 import type { CryptoAssetAmount, CryptoFiatRate } from '@safely/core';
-import { useActiveBtcWalletUtxo, useNumberFormatter } from '@safely/ux';
+import { useActiveBtcWalletUtxo, useNumberFormatter, useOnrampTxids } from '@safely/ux';
 
 import { Cell, ChevronRight12, Icon } from '@mobile/shared/ui';
 
@@ -21,15 +21,13 @@ export const BtcAssetCell = (props: BtcAssetCellProps) => {
     const { cryptoAssetAmount, price, showDivider = true, onPress } = props;
     const { t } = useTranslation();
     const formatter = useNumberFormatter();
+    const purchaseTxids = useOnrampTxids();
 
     const { data: btcUtxo } = useActiveBtcWalletUtxo();
 
-    const receivingUtxoValues = useMemo(
-        () => btcUtxo?.unconfirmedUnsafe.utxos.map(u => u.value) ?? [],
-        [btcUtxo]
-    );
+    const receivingUtxos = useMemo(() => btcUtxo?.unconfirmedUnsafe.utxos ?? [], [btcUtxo]);
 
-    const hasReceiving = receivingUtxoValues.length > 0;
+    const hasReceiving = receivingUtxos.length > 0;
 
     return (
         <Cell showDivider={showDivider} onPress={onPress} style={styles.cell as ViewStyle}>
@@ -53,7 +51,7 @@ export const BtcAssetCell = (props: BtcAssetCellProps) => {
 
                 {hasReceiving && (
                     <Cell.Row>
-                        <ReceivingBadges utxos={btcUtxo!.unconfirmedUnsafe.utxos} />
+                        <ReceivingBadges utxos={receivingUtxos} purchaseTxids={purchaseTxids} />
                     </Cell.Row>
                 )}
             </Cell.Content>

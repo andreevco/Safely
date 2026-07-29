@@ -8,10 +8,9 @@ import { usePersistQuery, usePriceApi } from '../../shared';
 import { useActiveFiat } from '../fiat/useActiveFiat';
 import { useIsActivePortfolioTestnet } from '../portfolio';
 
-export function useRate(asset: CryptoAsset) {
+export function useRate(asset: CryptoAsset, isTestnet: boolean) {
     const fiat = useActiveFiat();
     const priceApi = usePriceApi();
-    const isTestnet = useIsActivePortfolioTestnet();
 
     return usePersistQuery<CryptoFiatRate | null>({
         queryKey: assetKeys
@@ -23,4 +22,8 @@ export function useRate(asset: CryptoAsset) {
             isTestnet ? new Rate(asset, fiat, toBig(0)) : getRateFn(priceApi, asset, fiat),
         schemaKey: 'sCryptoFiatRate'
     });
+}
+
+export function useActivePortfolioRate(asset: CryptoAsset) {
+    return useRate(asset, useIsActivePortfolioTestnet());
 }

@@ -6,5 +6,6 @@ export enum SendFormError {
     SELECT_TOKEN_FIRST = 'sendForm.errors.selectTokenFirst',
     UNABLE_TO_VALIDATE_TOKEN = 'sendForm.errors.unableToValidateToken',
     INVALID_AMOUNT = 'sendForm.errors.invalidAmount',
-    INSUFFICIENT_BALANCE = 'sendForm.errors.insufficientBalance'
+    INSUFFICIENT_BALANCE = 'sendForm.errors.insufficientBalance',
+    UNRECOGNIZED_AMOUNT = 'sendForm.errors.unrecognizedAmount'
 }

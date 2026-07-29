@@ -1,21 +1,24 @@
 import type { TFunction } from 'i18next';
 
-import { ellipsisMiddle } from '@safely/core';
+import { assertUnreachable, ellipsisMiddle } from '@safely/core';
 import type {
+    useActivePortfolioRate,
     useActualBtcBlockNumber,
     useContacts,
     useNumberFormatter,
-    usePortfolios,
-    useRate
+    usePortfolios
 } from '@safely/ux';
 import {
+    type ActivityItem,
     type ActivityItemsDatedGroupMeta,
     type BtcActivityItem,
     type DateFormatter,
+    type OrderActivityItem,
     ACTIVITY_GROUP_LABEL,
     findContactMetaByAddress,
     findPortfolioMetaByAddress,
-    getBtcTransactionDisplayStatus
+    getBtcTransactionDisplayStatus,
+    isRampOrderActive
 } from '@safely/ux';
 
 import type { ActivityItemProps } from '@mobile/entities/activity';
@@ -40,9 +43,9 @@ export type ActivityRowContext = {
     numberFormatter: ReturnType<typeof useNumberFormatter>;
     portfolios: ReturnType<typeof usePortfolios>;
     contacts: ReturnType<typeof useContacts>;
-    rateData: ReturnType<typeof useRate>['data'];
+    rateData: ReturnType<typeof useActivePortfolioRate>['data'];
     currentBlockNumber: ReturnType<typeof useActualBtcBlockNumber>['data'];
-    onNavigateToTransaction: (activity: BtcActivityItem) => void;
+    onNavigateToActivityItem: (activity: ActivityItem) => void;
 };
 
 export type TimeFormatDetails = 'time' | 'day-month-time';
@@ -96,7 +99,16 @@ export const buildHeaderRow = (
     title: getGroupTitle(meta, t, groupFormatter)
 });
 
-export const buildActivityRow = (
+const formatTimestampLabel = (
+    timestamp: number,
+    timeFormatDetails: TimeFormatDetails,
+    context: ActivityRowContext
+): string =>
+    timeFormatDetails === 'time'
+        ? context.dateFormatterTime.format(timestamp)
+        : context.dateFormatterDayMonth.format(timestamp);
+
+const buildTransactionRow = (
     activity: BtcActivityItem,
     groupKey: string,
     timeFormatDetails: TimeFormatDetails,
@@ -126,9 +138,7 @@ export const buildActivityRow = (
 
     const timestampLabel = isPending
         ? null
-        : timeFormatDetails === 'time'
-          ? context.dateFormatterTime.format(activity.timestamp)
-          : context.dateFormatterDayMonth.format(activity.timestamp);
+        : formatTimestampLabel(activity.timestamp, timeFormatDetails, context);
 
     const counterpartyAddress = isInitiator
         ? activity.transaction.toAddress
@@ -155,6 +165,87 @@ export const buildActivityRow = (
         timestampLabel,
         background,
         counterparty,
-        onNavigateToTransaction: context.onNavigateToTransaction
+        onNavigateToActivityItem: context.onNavigateToActivityItem
     };
 };
+
+const buildOrderRow = (
+    activity: OrderActivityItem,
+    groupKey: string,
+    timeFormatDetails: TimeFormatDetails,
+    context: ActivityRowContext
+): ActivityRow => {
+    const { order } = activity;
+    const isPending = isRampOrderActive(order);
+    const isSale = order.type === 'offramp';
+    const isUnsuccessful = !isPending && order.status !== 'completed';
+
+    const formattedFiat = context.rateData
+        ? activity.cryptoAmount?.convert(context.rateData).format(context.numberFormatter)
+        : null;
+
+    const title = (() => {
+        switch (order.status) {
+            case 'failed':
+                return isSale
+                    ? context.t('history.orderInfo.sale.failed')
+                    : context.t('history.orderInfo.purchase.failed');
+            case 'expired':
+                return isSale
+                    ? context.t('history.orderInfo.sale.cancelled')
+                    : context.t('history.orderInfo.purchase.cancelled');
+            default:
+                return isSale
+                    ? context.t('history.orderInfo.sale.default')
+                    : context.t('history.orderInfo.purchase.default');
+        }
+    })();
+
+    const amountSign: ActivityRow['amountSign'] = (() => {
+        if (isUnsuccessful) return null;
+
+        return isSale ? '−' : '+';
+    })();
+
+    const valueColor: ActivityRow['valueColor'] = (() => {
+        if (isUnsuccessful) return 'tertiary';
+
+        return isSale ? 'primary' : 'accentGreen';
+    })();
+
+    return {
+        key: `activity-${groupKey}-${activity.key}`,
+        type: 'activity',
+        activity,
+        title,
+        amountSign,
+        formattedValue: activity.cryptoAmount?.format(context.numberFormatter) ?? '-',
+        valueColor,
+        formattedFiat: formattedFiat ?? null,
+        timestampLabel: isPending
+            ? null
+            : formatTimestampLabel(activity.timestamp, timeFormatDetails, context),
+        background: isPending ? 'tertiary' : 'secondary',
+        counterparty: {
+            kind: 'provider',
+            label: order.provider
+        },
+        onNavigateToActivityItem: context.onNavigateToActivityItem
+    };
+};
+
+export function buildActivityRow(
+    activity: ActivityItem,
+    groupKey: string,
+    timeFormatDetails: TimeFormatDetails,
+    context: ActivityRowContext
+): ActivityRow {
+    switch (activity.type) {
+        case 'transaction':
+            return buildTransactionRow(activity, groupKey, timeFormatDetails, context);
+        case 'order':
+            return buildOrderRow(activity, groupKey, timeFormatDetails, context);
+        default:
+            return assertUnreachable(activity as never);
+    }
+}

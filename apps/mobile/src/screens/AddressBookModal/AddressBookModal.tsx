@@ -1,4 +1,5 @@
 import { useNavigation } from '@react-navigation/core';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
@@ -14,6 +15,7 @@ export const AddressBookModal = () => {
     const navigation = useNavigation();
     const { t } = useTranslation();
     const contacts = useContacts();
+    const [isScrollable, setIsScrollable] = useState(false);
 
     if (contacts.length === 0) {
         return (
@@ -42,28 +44,35 @@ export const AddressBookModal = () => {
             <Screen.Header>
                 <Screen.Header.BackButton />
                 <Screen.Header.Title />
-                <Button
-                    hitSlop={12}
-                    type="primary"
-                    size="small"
-                    style={styles.button}
-                    onPress={() => navigation.navigate('NewContactModal')}
-                >
-                    {t('addressBook.addContact')}
-                </Button>
             </Screen.Header>
             <Screen.Content bottomInset={false}>
-                <AddressBook
-                    contacts={contacts}
-                    onContactPress={contact =>
-                        navigation.navigate('NewContactModal', { contactId: contact.id.toString() })
-                    }
-                    ListHeaderComponent={
-                        <View style={styles.listHeader}>
-                            <AddressBookHeader description={t('addressBook.subtitle_not_empty')} />
-                        </View>
-                    }
-                />
+                <View style={styles.listWrapper}>
+                    <AddressBook
+                        contacts={contacts}
+                        onContactPress={contact =>
+                            navigation.navigate('NewContactModal', {
+                                contactId: contact.id.toString()
+                            })
+                        }
+                        ListHeaderComponent={
+                            <View style={styles.listHeader}>
+                                <AddressBookHeader
+                                    description={t('addressBook.subtitle_not_empty')}
+                                />
+                            </View>
+                        }
+                        onScrollableChange={setIsScrollable}
+                    />
+                </View>
+                <View style={styles.footer(isScrollable)}>
+                    <Button
+                        type="secondary"
+                        size="large"
+                        onPress={() => navigation.navigate('NewContactModal')}
+                    >
+                        {t('addressBook.addContact')}
+                    </Button>
+                </View>
             </Screen.Content>
         </Screen>
     );

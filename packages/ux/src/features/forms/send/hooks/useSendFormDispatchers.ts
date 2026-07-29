@@ -9,6 +9,7 @@ export interface SendFormDispatchers {
     setRecipient: (value: string) => void;
     setAddressBookName: (name: string) => void;
     setAmount: (value: string) => void;
+    pasteAmount: (raw: string) => void;
     setAmountInputType: (value: AmountInputType) => void;
     setAsset: (assetId: string) => void;
     enterMax: () => void;
@@ -25,6 +26,7 @@ export function useSendFormDispatchers(send: Send): SendFormDispatchers {
             setRecipient: value => send({ type: 'SET_RECIPIENT', value }),
             setAddressBookName: name => send({ type: 'SET_ADDRESS_BOOK_NAME', name }),
             setAmount: value => send({ type: 'SET_AMOUNT', value }),
+            pasteAmount: raw => send({ type: 'PASTE_AMOUNT', raw }),
             setAmountInputType: value => send({ type: 'SET_AMOUNT_INPUT_TYPE', value }),
             setAsset: assetId => send({ type: 'SET_ASSET', assetId }),
             enterMax: () => send({ type: 'ENTER_MAX' }),

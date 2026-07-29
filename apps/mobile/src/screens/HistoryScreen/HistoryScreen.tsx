@@ -2,7 +2,8 @@ import { useNavigation } from '@react-navigation/core';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { BtcActivityItem } from '@safely/ux';
+import { assertUnreachable } from '@safely/core';
+import type { ActivityItem } from '@safely/ux';
 import { useActivePortfolio, useHasPortfolio } from '@safely/ux';
 
 import { HistoryList } from '@mobile/features/history';
@@ -13,9 +14,18 @@ const HistoryContent = () => {
     const portfolio = useActivePortfolio();
     const { t } = useTranslation();
 
-    const onNavigateToTransaction = useCallback(
-        (activity: BtcActivityItem) => {
-            navigation.navigate('TransactionScreen', { activity });
+    const onNavigateToActivityItem = useCallback(
+        (activity: ActivityItem) => {
+            switch (activity.type) {
+                case 'order':
+                    navigation.navigate('OrderScreen', { order: activity });
+                    break;
+                case 'transaction':
+                    navigation.navigate('TransactionScreen', { activity });
+                    break;
+                default:
+                    assertUnreachable(activity);
+            }
         },
         [navigation]
     );
@@ -28,7 +38,7 @@ const HistoryContent = () => {
             </Screen.Header>
             <HistoryList
                 key={portfolio?.id.toString()}
-                onNavigateToTransaction={onNavigateToTransaction}
+                onNavigateToActivityItem={onNavigateToActivityItem}
             />
         </>
     );
