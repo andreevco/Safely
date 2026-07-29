@@ -1,13 +1,12 @@
 export {
+    useMainBalanceUnit,
+    useSetMainBalanceUnit,
     useHomeScreenAmountOrder,
     useSetHomeScreenAmountOrder,
     useTransactionHistoryAmountOrder,
-    useSetTransactionHistoryAmountOrder
-} from './amountDisplayOrder';
-export {
+    useSetTransactionHistoryAmountOrder,
     useShowFullSentAmount,
-    useSetShowFullSentAmount,
-    resolveSentAmount,
-    type DisplayedCryptoAmount
-} from './sentAmount';
-export type { AmountDisplayOrder } from './types';
+    useSetShowFullSentAmount
+} from './amountDisplaySettings';
+export { resolveSentAmount, type DisplayedCryptoAmount } from './sentAmount';
+export type { AmountUnit } from './types';

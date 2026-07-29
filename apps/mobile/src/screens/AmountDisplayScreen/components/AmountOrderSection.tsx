@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import type { AmountDisplayOrder } from '@safely/ux';
+import type { AmountUnit } from '@safely/ux';
 
 import { Cell, List, Text } from '@mobile/shared/ui';
 import { Checkmark28, Icon } from '@mobile/shared/ui/Icon';
@@ -10,13 +10,13 @@ import { Checkmark28, Icon } from '@mobile/shared/ui/Icon';
 import { styles } from '../AmountDisplayScreen.styles';
 import { PreviewCard } from './PreviewCard';
 
-const AMOUNT_DISPLAY_ORDERS: AmountDisplayOrder[] = ['crypto', 'fiat'];
+const AMOUNT_DISPLAY_ORDERS: AmountUnit[] = ['crypto', 'fiat'];
 
 type AmountOrderSectionProps = {
     title: string;
     footer: ReactNode;
-    order: AmountDisplayOrder;
-    onSelect: (order: AmountDisplayOrder) => void;
+    order: AmountUnit;
+    onSelect: (order: AmountUnit) => void;
     children: ReactNode;
 };
 

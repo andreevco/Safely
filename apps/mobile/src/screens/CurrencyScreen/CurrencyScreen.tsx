@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import type { FiatAsset } from '@safely/core';
-import type { MainBalanceUnit } from '@safely/ux';
+import type { AmountUnit } from '@safely/ux';
 import {
     useActiveFiat,
     useAvailableFiats,
@@ -18,7 +18,7 @@ import { Checkmark28, Icon } from '@mobile/shared/ui/Icon';
 
 import { styles } from './CurrencyScreen.styles';
 
-const MAIN_BALANCE_UNITS: MainBalanceUnit[] = ['fiat', 'crypto'];
+const MAIN_BALANCE_UNITS: AmountUnit[] = ['fiat', 'crypto'];
 
 export const CurrencyScreen = () => {
     const { t } = useTranslation();
@@ -51,7 +51,7 @@ export const CurrencyScreen = () => {
     );
 
     const handleMainBalanceUnitPress = useCallback(
-        (unit: MainBalanceUnit) => () => {
+        (unit: AmountUnit) => () => {
             setMainBalanceUnit(unit);
         },
         [setMainBalanceUnit]

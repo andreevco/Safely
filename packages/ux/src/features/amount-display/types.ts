@@ -1,3 +1,1 @@
-export type AmountDisplayOrder = 'crypto' | 'fiat';
-
-export type AmountDisplayScope = 'homeScreenAmountOrder' | 'transactionHistoryAmountOrder';
+export type AmountUnit = 'crypto' | 'fiat';
