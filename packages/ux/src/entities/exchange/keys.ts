@@ -5,8 +5,8 @@ export const exchangeKeys = defineQueryKeys('exchange', {
         _apiId: string,
         _lang: string,
         _fiat: string,
-        _storeCountryCode?: string,
-        _deviceCountryCode?: string
+        _storeCountryCode?: string | null,
+        _deviceCountryCode?: string | null
     ) => finalKey
 });
 

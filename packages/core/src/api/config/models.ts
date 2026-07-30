@@ -5,7 +5,7 @@ import type { Build, UserCountryInfo } from '../../entities';
 export interface ConfigParams {
     build: Build;
     version: string; // x.y.z
-    userCountryInfo?: Partial<UserCountryInfo>;
+    userCountryInfo: UserCountryInfo;
     lang: string;
     devToken?: string;
 }

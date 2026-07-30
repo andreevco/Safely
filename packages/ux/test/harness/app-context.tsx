@@ -99,7 +99,7 @@ export function createTestAppContext(opts: CreateTestAppContextOptions = {}): IA
             name: opts.deviceName ?? 'TEST_DEVICE',
             osVersion: '0.0.0'
         },
-        userCountryInfo: undefined,
+        getUserCountryInfo: async () => ({ storeCode: 'US', deviceCode: 'US' }),
         devToken: undefined,
         storage: {
             ux: { regular: rootUxStorage },

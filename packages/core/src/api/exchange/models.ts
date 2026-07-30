@@ -87,8 +87,8 @@ export type ExchangeError = z.infer<typeof exchangeErrorSchema>;
 
 export interface BaseParams {
     lang: string;
-    storeCountryCode?: string;
-    deviceCountryCode?: string;
+    storeCountryCode?: string | null;
+    deviceCountryCode?: string | null;
 }
 
 export interface GetProvidersParams extends BaseParams {

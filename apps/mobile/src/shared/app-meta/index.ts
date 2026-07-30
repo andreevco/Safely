@@ -1,4 +1,5 @@
 import * as Device from 'expo-device';
+import { getLocales } from 'expo-localization';
 import { Platform } from 'react-native';
 
 import type { Build } from '@safely/core';
@@ -15,7 +16,8 @@ const fallbackName = Platform.OS === 'ios' ? 'iPhone' : 'Android device';
 
 export const deviceInfo = {
     name: isIOSAppOnMac ? 'Apple Silicon Mac (iOS App)' : (Device.modelName ?? fallbackName),
-    osVersion: Device.osVersion ?? String(Platform.Version)
+    osVersion: Device.osVersion ?? String(Platform.Version),
+    countryCode: getLocales()[0]?.regionCode ?? null
 };
 
 export const environment: 'production' | 'development' = __DEV__ ? 'development' : 'production';
