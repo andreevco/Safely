@@ -16,7 +16,8 @@ import {
     useGroupedHistory,
     useInterval,
     useNumberFormatter,
-    usePortfolios
+    usePortfolios,
+    useShowFullSentAmount
 } from '@safely/ux';
 
 import { ActivityItem, ActivityItemSkeleton } from '@mobile/entities/activity';
@@ -57,6 +58,7 @@ export const HistoryList = (props: HistoryListProps) => {
     const contacts = useContacts();
     const { data: rateData } = useActivePortfolioRate(BTC_ASSET);
     const { data: currentBlockNumber } = useActualBtcBlockNumber();
+    const showFullSentAmount = useShowFullSentAmount();
 
     const isFocused = useIsFocused();
     const listRef = useRef<ListRef<HistoryRowItem>>(null);
@@ -108,6 +110,7 @@ export const HistoryList = (props: HistoryListProps) => {
             contacts,
             rateData,
             currentBlockNumber,
+            showFullSentAmount,
             onNavigateToActivityItem
         };
 
@@ -134,6 +137,7 @@ export const HistoryList = (props: HistoryListProps) => {
         portfolios,
         contacts,
         currentBlockNumber,
+        showFullSentAmount,
         onNavigateToActivityItem
     ]);
 
