@@ -3,20 +3,27 @@ import { useCallback } from 'react';
 
 import type { AmountUnit } from './types';
 import type { AmountDisplay } from '../../shared';
-import { defineQueryKeys, finalKey, sAmountDisplay, useSharedUxStorage } from '../../shared';
+import { defineQueryKeys, finalKey, useSharedUxStorage } from '../../shared';
+
+type AmountDisplaySettings = Required<NonNullable<AmountDisplay>>;
 
 const amountDisplayKeys = defineQueryKeys('amountDisplay', {
     settings: finalKey
 });
 
-const defaultAmountDisplay = sAmountDisplay.parse(null);
+const defaultAmountDisplay: AmountDisplaySettings = {
+    mainBalanceUnit: 'fiat',
+    homeScreenOrder: 'fiat',
+    transactionHistoryOrder: 'fiat',
+    showFullSentAmount: false
+};
 
-function useAmountDisplay<T>(select: (settings: AmountDisplay) => T): T {
+function useAmountDisplay<T>(select: (settings: AmountDisplaySettings) => T): T {
     const { get } = useSharedUxStorage('amountDisplay');
 
     const { data } = useQuery({
         queryKey: amountDisplayKeys.settings.toKey(),
-        queryFn: get,
+        queryFn: async () => ({ ...defaultAmountDisplay, ...(await get()) }),
         staleTime: Infinity,
         select
     });
@@ -24,13 +31,13 @@ function useAmountDisplay<T>(select: (settings: AmountDisplay) => T): T {
     return data ?? select(defaultAmountDisplay);
 }
 
-function useSetAmountDisplay(): (patch: Partial<AmountDisplay>) => void {
+function useSetAmountDisplay(): (patch: Partial<AmountDisplaySettings>) => void {
     const queryClient = useQueryClient();
     const { get, set } = useSharedUxStorage('amountDisplay');
 
     const { mutate } = useMutation({
-        mutationFn: async (patch: Partial<AmountDisplay>) => {
-            const settings = { ...(await get()), ...patch };
+        mutationFn: async (patch: Partial<AmountDisplaySettings>) => {
+            const settings = { ...defaultAmountDisplay, ...(await get()), ...patch };
             await set(settings);
 
             return settings;

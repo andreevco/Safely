@@ -22,4 +22,4 @@ export const sharedStorageStructure = {
 
 export type SharedStorageStructure = typeof sharedStorageStructure;
 
-export { sAmountDisplay, type AmountDisplay } from './amount-display.schema';
+export { type AmountDisplay } from './amount-display.schema';

@@ -1,2 +1,2 @@
 export { useSharedUxStorage } from './shared-storage';
-export { sAmountDisplay, type AmountDisplay } from './schemas';
+export { type AmountDisplay } from './schemas';
