@@ -10,34 +10,35 @@ export class ConfigApi extends ApiClient implements IIdentifiable {
         private readonly params: ConfigParams,
         logger?: Logger
     ) {
-        super('https://dev-config.safely.app/v1', {}, logger);
+        super('https://config.safely.app/v1', {}, logger);
     }
 
     public get id() {
-        return `${this.constructor.name}:${this.params.build}:${this.params.version}:${this.params.lang}:${this.params.devToken ?? ''}`;
+        const { storeCode, deviceCode } = this.params.userCountryInfo;
+
+        return `${this.constructor.name}:${this.params.build}:${this.params.version}:${this.params.lang}:${storeCode ?? ''}:${deviceCode ?? ''}:${this.params.devToken ?? ''}`;
     }
 
-    private async getSearchParams() {
+    private get searchParams() {
         const dev_token = this.params.devToken;
-        const userCountryInfo = await this.params.getUserCountryInfo();
-        const store_country_code = userCountryInfo.storeCode;
-        const device_country_code = userCountryInfo.deviceCode;
+        const store_country_code = this.params.userCountryInfo.storeCode;
+        const device_country_code = this.params.userCountryInfo.deviceCode;
 
         return {
             lang: this.params.lang,
             platform: this.params.build,
             version: this.params.version,
-            ...(device_country_code !== undefined && { device_country_code }),
-            ...(store_country_code !== undefined && { store_country_code }),
+            ...(device_country_code && { device_country_code }),
+            ...(store_country_code && { store_country_code }),
             ...(dev_token && { dev_token })
         };
     }
 
     public async boot(): Promise<BootConfig> {
-        return this.getJson('/config', bootConfigSchema, await this.getSearchParams());
+        return this.getJson('/config', bootConfigSchema, this.searchParams);
     }
 
     public async getAbout(): Promise<About> {
-        return this.getJson('/about', aboutSchema, await this.getSearchParams());
+        return this.getJson('/about', aboutSchema, this.searchParams);
     }
 }

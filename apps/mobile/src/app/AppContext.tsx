@@ -66,13 +66,10 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
             version: packageJson.version,
             build,
             environment,
-            getUserCountryInfo: async () => {
-                const storeCode = await getStoreCountryAsync();
-                return {
-                    storeCode: storeCode ?? '',
-                    deviceCode: deviceInfo.countryCode
-                };
-            },
+            getUserCountryInfo: async () => ({
+                storeCode: await getStoreCountryAsync().catch(() => null),
+                deviceCode: deviceInfo.countryCode
+            }),
             devToken: devToken ?? undefined,
             devIsTestnetAllowed: devIsTestnetAllowed ?? undefined,
             deviceInfo,

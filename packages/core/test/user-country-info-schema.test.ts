@@ -10,6 +10,13 @@ describe('userCountryInfoSchema', () => {
         });
     });
 
+    it('parses an unresolved store code as null', () => {
+        expect(userCountryInfoSchema.parse({ storeCode: null, deviceCode: 'GB' })).toEqual({
+            storeCode: null,
+            deviceCode: 'GB'
+        });
+    });
+
     it('rejects when a field is missing', () => {
         expect(() => userCountryInfoSchema.parse({ storeCode: 'US' })).toThrow();
     });

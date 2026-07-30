@@ -7,10 +7,14 @@ import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.GetBillingConfigParams
 import com.android.billingclient.api.PendingPurchasesParams
 import com.android.billingclient.api.PurchasesUpdatedListener
+import android.os.Handler
+import android.os.Looper
 import expo.modules.kotlin.Promise
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
 import java.util.concurrent.atomic.AtomicBoolean
+
+private const val RESOLVE_TIMEOUT_MS = 5_000L
 
 class SafelyStoreCountryModule : Module() {
     override fun definition() = ModuleDefinition {
@@ -24,6 +28,7 @@ class SafelyStoreCountryModule : Module() {
             }
 
             val settled = AtomicBoolean(false)
+            val timeoutHandler = Handler(Looper.getMainLooper())
             val client = BillingClient.newBuilder(context)
                 .setListener(PurchasesUpdatedListener { _, _ -> })
                 .enablePendingPurchases(
@@ -33,6 +38,7 @@ class SafelyStoreCountryModule : Module() {
 
             fun finish(code: String?) {
                 if (settled.compareAndSet(false, true)) {
+                    timeoutHandler.removeCallbacksAndMessages(null)
                     promise.resolve(code)
                     try {
                         client.endConnection()
@@ -40,6 +46,8 @@ class SafelyStoreCountryModule : Module() {
                     }
                 }
             }
+
+            timeoutHandler.postDelayed({ finish(null) }, RESOLVE_TIMEOUT_MS)
 
             client.startConnection(object : BillingClientStateListener {
                 override fun onBillingSetupFinished(result: BillingResult) {
