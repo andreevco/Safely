@@ -136,7 +136,7 @@
             "title": "Main balance",
             "options": {
                 "fiat": "In local currency",
-                "crypto": "In bitcoin"
+                "crypto": "In Bitcoins"
             }
         },
         "moreOptions": {

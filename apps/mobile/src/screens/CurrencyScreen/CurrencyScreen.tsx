@@ -53,7 +53,7 @@ export const CurrencyScreen = () => {
 
     return (
         <Screen>
-            <Screen.Header variant="left">
+            <Screen.Header variant="center">
                 <Screen.Header.Title>{t('currency.title')}</Screen.Header.Title>
                 <Screen.Header.CloseButton />
             </Screen.Header>

@@ -19,9 +19,5 @@ export const styles = StyleSheet.create((theme, rt) => ({
     },
     cellSymbol: {
         minWidth: 44
-    },
-    headerPlaceholder: {
-        width: 40,
-        padding: theme.spacing[12]
     }
 }));
