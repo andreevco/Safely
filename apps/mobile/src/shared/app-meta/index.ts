@@ -20,7 +20,11 @@ export const deviceInfo = {
 };
 
 export function getDeviceCountryCode(): string | null {
-    return getLocales()[0]?.regionCode ?? null;
+    try {
+        return getLocales()[0]?.regionCode ?? null;
+    } catch {
+        return null;
+    }
 }
 
 export const environment: 'production' | 'development' = __DEV__ ? 'development' : 'production';
