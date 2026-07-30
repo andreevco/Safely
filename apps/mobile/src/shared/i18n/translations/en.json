@@ -810,6 +810,7 @@
             "sender": "Sender",
             "fee": "Network fee",
             "hash": "Transaction",
+            "fiatRateNote": "Fiat values use the current exchange rate.",
             "status": {
                 "title": "Status",
                 "pending": {

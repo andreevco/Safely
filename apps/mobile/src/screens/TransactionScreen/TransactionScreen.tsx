@@ -13,6 +13,7 @@ import {
     useLinking,
     useNumberFormatter,
     useShowFullSentAmount,
+    useTransactionHistoryAmountOrder,
     resolveSentAmount
 } from '@safely/ux';
 
@@ -57,6 +58,7 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
     });
     const { openURL } = useLinking();
     const showFullSentAmount = useShowFullSentAmount();
+    const amountOrder = useTransactionHistoryAmountOrder();
 
     const { amount, isFullPrecision } = resolveSentAmount({
         isInitiator,
@@ -64,6 +66,17 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
         fee: activity.transaction.fee?.amount,
         showFullSentAmount
     });
+
+    const formattedValue = amount.format(formatter, { fullPrecision: isFullPrecision });
+    const formattedFiat = rate
+        ? amount.convert(rate).format(formatter, { currencyDisplay: 'code' })
+        : null;
+
+    const isFiatFirst = amountOrder === 'fiat' && formattedFiat !== null;
+    const primaryAmount = isFiatFirst ? formattedFiat : formattedValue;
+    const secondaryAmount = isFiatFirst
+        ? formattedValue
+        : formattedFiat && `≈${SPACE.THSP}${formattedFiat}`;
 
     const handleOpen = useCallback(() => {
         const url = explorer.transaction(activity.transaction.raw.txid);
@@ -126,14 +139,11 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
                         <Text variant="titleL" color="primary" textAlign="center">
                             {isInitiator ? '−' : '+'}
                             {SPACE.THSP}
-                            {amount.format(formatter, { fullPrecision: isFullPrecision })}
+                            {primaryAmount}
                         </Text>
-                        {rate && (
+                        {secondaryAmount && (
                             <Text variant="bodyL" color="secondary" textAlign="center">
-                                ≈{SPACE.THSP}
-                                {amount.convert(rate).format(formatter, {
-                                    currencyDisplay: 'code'
-                                })}
+                                {secondaryAmount}
                             </Text>
                         )}
                     </View>
@@ -203,6 +213,13 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
                             )}
                         </TableCell>
                     </List.Group>
+                    {isFiatFirst && showFullSentAmount && (
+                        <List.Footer>
+                            <Text variant="bodyM" color="tertiary">
+                                {t('history.transactionInfo.fiatRateNote')}
+                            </Text>
+                        </List.Footer>
+                    )}
                 </List>
             </Screen.Scrollable>
         </Screen>
