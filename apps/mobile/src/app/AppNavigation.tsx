@@ -14,13 +14,10 @@ import { BleManagerProvider } from '@mobile/features/ledger';
 import Navigation from './navigation';
 import { navigationRef } from './navigation/navigationRef';
 import { useInitialNavigationState } from './navigation/useInitialNavigationState';
-import { useRestrictionRedirect } from './navigation/useRestrictionRedirect';
 
 export function AppNavigation() {
     const { theme } = useUnistyles();
     const initialState = useInitialNavigationState();
-
-    useRestrictionRedirect();
 
     const NavigationTheme: Theme = useMemo(
         () => ({
