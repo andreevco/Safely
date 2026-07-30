@@ -7,6 +7,7 @@ import { useAppState } from '@safely/ux';
 // TODO: IMPORT find a way to navigate without this ref
 // eslint-disable-next-line boundaries/element-types
 import { navigationRef } from '@mobile/app/navigation/navigationRef';
+import { useIsAppRestricted } from '@mobile/entities/restrictions';
 
 import { useLockScreenQuery } from './useLockScreen';
 import { usePasscode } from './usePasscode';
@@ -28,6 +29,7 @@ export function useLockScreenControl() {
 }
 
 export const LockScreenProvider: FC<PropsWithChildren> = ({ children }) => {
+    const isRestricted = useIsAppRestricted();
     const { current, previous } = useAppState();
     const { isSet: hasPasscode } = usePasscode();
     const { data: isLockScreenEnabled } = useLockScreenQuery();
@@ -73,11 +75,11 @@ export const LockScreenProvider: FC<PropsWithChildren> = ({ children }) => {
             navigationRef.dispatch(
                 CommonActions.reset({
                     index: 0,
-                    routes: [{ name: 'TabsNavigator' }]
+                    routes: [{ name: isRestricted ? 'RestrictedFlow' : 'TabsNavigator' }]
                 })
             );
         }
-    }, []);
+    }, [isRestricted]);
 
     return <LockScreenContext value={{ unlock }}>{children}</LockScreenContext>;
 };

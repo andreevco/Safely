@@ -1,5 +1,18 @@
 {
     "currentLanguageName": "English",
+    "restrictedRegion": {
+        "title": "Safely isn't available in your region",
+        "subtitle": "For more information, contact",
+        "exportRecoveryPhrases": "Export recovery phrases",
+        "logOutAndErase": "Log out and erase all app data"
+    },
+    "restrictedRecovery": {
+        "title": "Recovery phrases",
+        "subtitle": "Wallet features aren't currently available. Choose a wallet to export its recovery phrase.",
+        "wallets": "Wallets",
+        "withoutRecoveryPhrase": "Without recovery phrase",
+        "noRecoveryPhrase": "No recovery phrase"
+    },
     "portfolio": {
         "watchOnly": "Watch only",
         "testnet": "Testnet",
@@ -241,6 +254,7 @@
         },
         "phraseSheet": {
             "title": "Recovery phrase",
+            "titleSuffix": "recovery phrase",
             "warning": "Do not share this phrase.\nAnyone with it can access your wallet."
         },
         "accountProtected": {

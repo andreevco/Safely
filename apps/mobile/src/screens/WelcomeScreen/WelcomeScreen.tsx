@@ -1,5 +1,5 @@
 import { useNavigation } from '@react-navigation/core';
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { ImageBackground, View } from 'react-native';
 
@@ -7,10 +7,12 @@ import {
     useAppContext,
     useBootConfig,
     useCreateExistingAccountConnector,
+    useHasAccount,
     useLinking,
     useTrackOnboardingOpen
 } from '@safely/ux';
 
+import { usePasscode } from '@mobile/entities/security';
 import { useOnboardingFlow } from '@mobile/features/onboarding';
 import { TEST_ID } from '@mobile/shared/constants';
 import { resources } from '@mobile/shared/resources';
@@ -20,6 +22,10 @@ import { styles } from './WelcomeScreen.styles';
 
 export const WelcomeScreen = () => {
     const { t } = useTranslation();
+    const hasAccount = useHasAccount();
+    const { isSet: hasPasscode } = usePasscode();
+    const hasExistingAccountOnOpen = useRef(hasAccount && hasPasscode).current;
+
     const { onSuccessCreate, onSuccessSignIn } = useOnboardingFlow();
     const signIn = useCreateExistingAccountConnector();
     const navigation = useNavigation();
@@ -52,6 +58,10 @@ export const WelcomeScreen = () => {
                 navigation.navigate('SignInSuccessScreen', { onContinue: onSuccessSignIn })
         });
     }, [signIn, navigation, getSecureEncrypted, onSuccessSignIn]);
+
+    if (hasExistingAccountOnOpen) {
+        throw new Error('WelcomeScreen opened with an existing account');
+    }
 
     return (
         <Screen background="transparent">

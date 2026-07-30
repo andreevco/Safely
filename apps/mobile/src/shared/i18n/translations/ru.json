@@ -1,5 +1,18 @@
 {
     "currentLanguageName": "Русский",
+    "restrictedRegion": {
+        "title": "Safely недоступен в вашем регионе",
+        "subtitle": "Для получения дополнительной информации напишите на",
+        "exportRecoveryPhrases": "Экспортировать фразы восстановления",
+        "logOutAndErase": "Выйти и стереть все данные приложения"
+    },
+    "restrictedRecovery": {
+        "title": "Фразы восстановления",
+        "subtitle": "Функции кошелька сейчас недоступны. Выберите кошелёк, чтобы экспортировать его фразу восстановления.",
+        "wallets": "Кошельки",
+        "withoutRecoveryPhrase": "Без фразы восстановления",
+        "noRecoveryPhrase": "Нет фразы восстановления"
+    },
     "portfolio": {
         "watchOnly": "Только просмотр",
         "testnet": "Testnet",
@@ -220,6 +233,7 @@
         },
         "phraseSheet": {
             "title": "Фраза восстановления",
+            "titleSuffix": "фраза восстановления",
             "warning": "Храните эту фразу в секрете. Она даёт полный доступ к этому кошельку."
         },
         "accountProtected": {

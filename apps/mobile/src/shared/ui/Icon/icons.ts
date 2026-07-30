@@ -48,6 +48,7 @@ import ShieldCheckmark28Svg from '@safely/ux/assets/icons/28/shield-checkmark-28
 import ShieldExclamationmark28Svg from '@safely/ux/assets/icons/28/shield-exclamationmark-28.svg';
 import FrameCorner48Svg from '@safely/ux/assets/icons/48/frame-corner-48.svg';
 import DeviceLinkSvg from '@safely/ux/assets/icons/56/device-link.svg';
+import Globe56Svg from '@safely/ux/assets/icons/56/globe-56.svg';
 import Loader56Svg from '@safely/ux/assets/icons/56/loader-56.svg';
 import Lock56Svg from '@safely/ux/assets/icons/56/lock-56.svg';
 import XmarkCircle56Svg from '@safely/ux/assets/icons/56/xmark-circle-56.svg';
@@ -120,6 +121,7 @@ export const ShieldCheckmark28 = { image: ShieldCheckmark28Svg, size: 28 } as co
 export const ShieldExclamationmark28 = { image: ShieldExclamationmark28Svg, size: 28 } as const;
 export const FrameCorner48 = { image: FrameCorner48Svg, size: 48 } as const;
 export const DeviceLink = { image: DeviceLinkSvg, size: 56 } as const;
+export const Globe56 = { image: Globe56Svg, size: 56 } as const;
 export const Loader56 = { image: Loader56Svg, size: 56 } as const;
 export const Lock56 = { image: Lock56Svg, size: 56 } as const;
 export const XmarkCircle56 = { image: XmarkCircle56Svg, size: 56 } as const;

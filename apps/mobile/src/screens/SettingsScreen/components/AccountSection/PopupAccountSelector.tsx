@@ -17,7 +17,7 @@ interface PopupAccountSelectorProps {
     accounts: SyncAccount[];
     activeAccountId: string;
     onSwitchAccount: (accountId: string) => void;
-    onAddAccount: () => void;
+    onAddAccount?: () => void;
     popupMenuRef: RefObject<PopupMenuRef | null>;
 }
 
@@ -77,17 +77,19 @@ export const PopupAccountSelector = (props: PopupAccountSelectorProps) => {
                     />
                 ))}
             </List.Group>
-            <Button
-                style={styles.addButton}
-                type="secondary"
-                size="small"
-                onPress={() => {
-                    popupMenuRef.current?.close();
-                    onAddAccount();
-                }}
-            >
-                {t('settings.addAccount')}
-            </Button>
+            {onAddAccount && (
+                <Button
+                    style={styles.addButton}
+                    type="secondary"
+                    size="small"
+                    onPress={() => {
+                        popupMenuRef.current?.close();
+                        onAddAccount();
+                    }}
+                >
+                    {t('settings.addAccount')}
+                </Button>
+            )}
         </PopupMenu>
     );
 };

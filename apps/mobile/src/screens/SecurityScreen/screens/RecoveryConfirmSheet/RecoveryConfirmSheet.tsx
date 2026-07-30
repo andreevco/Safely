@@ -25,11 +25,13 @@ const RecoveryConfirmContent = () => {
     const { mutate: recordSeedReveal } = useRecordActivePortfolioSecretReveal();
 
     const handleReveal = async () => {
+        const name = portfolio.meta.name;
+
         try {
             const mnemonic = await portfolio.getMnemonic();
             recordSeedReveal();
             markNavigated();
-            navigation.navigate('RecoveryPhraseModal', { mnemonic });
+            navigation.navigate('RecoveryPhraseModal', { mnemonic, name });
         } catch {
             // Security check failed
         }

@@ -1,0 +1,1 @@
+export { RestrictedScreen } from './RestrictedScreen';

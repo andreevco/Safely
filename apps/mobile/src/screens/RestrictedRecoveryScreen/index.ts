@@ -1,0 +1,1 @@
+export { RestrictedRecoveryScreen } from './RestrictedRecoveryScreen';

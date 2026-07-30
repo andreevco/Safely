@@ -132,7 +132,7 @@ export async function fetchBtcActivity(
 
 export async function fetchOrdersActivity(
     exchangeApi: ExchangeApi,
-    request: { lang: string; storeCountryCode?: string; deviceCountryCode?: string },
+    request: { lang: string; storeCountryCode?: string | null; deviceCountryCode?: string | null },
     cursor: string | null,
     filters: IActivityFilters
 ): Promise<OrdersActivityPage> {
