@@ -1,7 +1,6 @@
 import { createStaticNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import { useIsAppRestricted, useIsAppUnrestricted } from '@mobile/entities/restrictions';
 import { AddAccountSheet } from '@mobile/screens/AddAccountSheet';
 import { BiometryScreen } from '@mobile/screens/BiometryScreen';
 import { ChangePasscodeScreen } from '@mobile/screens/ChangePasscodeScreen';
@@ -25,8 +24,6 @@ import { ProviderSheet } from '@mobile/screens/ProviderSheet';
 import { QRScanModal } from '@mobile/screens/QRScanModal';
 import { ReceiveAssetModal } from '@mobile/screens/ReceiveAssetModal';
 import { RemoveWalletSheet } from '@mobile/screens/RemoveWalletSheet';
-import { RestrictedRecoveryScreen } from '@mobile/screens/RestrictedRecoveryScreen';
-import { RestrictedScreen } from '@mobile/screens/RestrictedScreen';
 import {
     DisconnectDeviceSheet,
     RecoveryConfirmSheet,
@@ -44,6 +41,7 @@ import { WelcomeScreen } from '@mobile/screens/WelcomeScreen';
 import { AddWalletStack } from './stacks/AddWalletStack';
 import { CurrencyStack } from './stacks/CurrencyStack';
 import { OnboardingLedgerStack } from './stacks/OnboardingLedgerStack';
+import { RestrictedStack } from './stacks/RestrictedStack';
 import { SendStack } from './stacks/SendStack';
 import { SettingsStack } from './stacks/SettingsStack';
 import { SignInStack } from './stacks/SignInStack';
@@ -76,20 +74,12 @@ export const RootStack = createNativeStackNavigator({
         Screens: {
             screens: {
                 TabsNavigator: {
-                    if: useIsAppUnrestricted,
                     screen: TabsNavigator,
                     linking: {
                         path: 'tab'
                     }
                 },
-                RestrictedScreen: {
-                    if: useIsAppRestricted,
-                    screen: RestrictedScreen
-                },
-                RestrictedRecoveryScreen: {
-                    if: useIsAppRestricted,
-                    screen: RestrictedRecoveryScreen
-                },
+                RestrictedFlow: RestrictedStack,
                 TransactionScreen: TransactionScreen,
                 OrderScreen: OrderScreen,
                 LockScreen: {

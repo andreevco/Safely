@@ -1,1 +1,1 @@
-export { useIsAppRestricted, useIsAppUnrestricted } from './useIsAppRestricted';
+export { useIsAppRestricted } from './useIsAppRestricted';

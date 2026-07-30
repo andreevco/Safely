@@ -17,7 +17,7 @@ export function useInitialNavigationState(): NavigationContainerProps['initialSt
             if (isRestricted) {
                 return isLockScreenEnabled
                     ? { routes: [{ name: 'LockScreen' as const }] }
-                    : { routes: [{ name: 'RestrictedScreen' as const }] };
+                    : { routes: [{ name: 'RestrictedFlow' as const }] };
             }
 
             if (!hasPasscode || !hasAccount) {
