@@ -209,7 +209,6 @@
             "description": "The recovery phrase is used to back up your wallet.",
             "warning1": "Sharing it gives full control over your wallet.",
             "warning2": "Anyone with it can use your wallet without your account.",
-            "confirmReveal": "Confirm to reveal the recovery phrase for “{{name}}”.",
             "cancel": "Cancel",
             "reveal": "Reveal"
         },
