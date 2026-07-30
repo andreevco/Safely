@@ -12,7 +12,7 @@ import { AppContext, UnlockableSecuredEncryptedStorage } from '@safely/ux';
 
 import { createLedgerKit } from '@mobile/features/ledger/createLedgerKit';
 import { useMobileSecurityCheck } from '@mobile/features/security';
-import { build, deviceInfo, environment } from '@mobile/shared/app-meta';
+import { build, deviceInfo, environment, getDeviceCountryCode } from '@mobile/shared/app-meta';
 import { eraseLogs, logger } from '@mobile/shared/logger';
 import { useLoaderServiceContext } from '@mobile/shared/providers/loader';
 import { useToastServiceContext } from '@mobile/shared/providers/toast';
@@ -70,7 +70,7 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
             environment,
             getUserCountryInfo: async () => ({
                 storeCode: await getStoreCountryAsync().catch(() => null),
-                deviceCode: deviceInfo.countryCode
+                deviceCode: getDeviceCountryCode()
             }),
             devToken: devToken ?? undefined,
             devIsTestnetAllowed: devIsTestnetAllowed ?? undefined,

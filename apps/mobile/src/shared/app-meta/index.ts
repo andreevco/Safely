@@ -16,8 +16,11 @@ const fallbackName = Platform.OS === 'ios' ? 'iPhone' : 'Android device';
 
 export const deviceInfo = {
     name: isIOSAppOnMac ? 'Apple Silicon Mac (iOS App)' : (Device.modelName ?? fallbackName),
-    osVersion: Device.osVersion ?? String(Platform.Version),
-    countryCode: getLocales()[0]?.regionCode ?? null
+    osVersion: Device.osVersion ?? String(Platform.Version)
 };
+
+export function getDeviceCountryCode(): string | null {
+    return getLocales()[0]?.regionCode ?? null;
+}
 
 export const environment: 'production' | 'development' = __DEV__ ? 'development' : 'production';
