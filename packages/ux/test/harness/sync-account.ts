@@ -42,6 +42,7 @@ export function createMockSyncAccount(opts: MockSyncAccountOptions = {}): MockSy
         preferredFiat: null,
         devicesMeta: null,
         nextDerivingPortfolioInfo: null,
+        amountDisplay: {},
         ...opts.initial
     };
 

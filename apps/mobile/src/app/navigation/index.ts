@@ -5,7 +5,6 @@ import { AddAccountSheet } from '@mobile/screens/AddAccountSheet';
 import { BiometryScreen } from '@mobile/screens/BiometryScreen';
 import { ChangePasscodeScreen } from '@mobile/screens/ChangePasscodeScreen';
 import { ConnectToSignSheet } from '@mobile/screens/ConnectToSignSheet';
-import { CurrencyScreen } from '@mobile/screens/CurrencyScreen';
 import { CustomizeAccountModal } from '@mobile/screens/CustomizeAccountModal';
 import { CustomizeWalletModal } from '@mobile/screens/CustomizeWalletModal';
 import { DestructiveConfirmSheet } from '@mobile/screens/DestructiveConfirmSheet';
@@ -40,6 +39,7 @@ import { WatchOnlySheet } from '@mobile/screens/WatchOnlySheet';
 import { WelcomeScreen } from '@mobile/screens/WelcomeScreen';
 
 import { AddWalletStack } from './stacks/AddWalletStack';
+import { CurrencyStack } from './stacks/CurrencyStack';
 import { OnboardingLedgerStack } from './stacks/OnboardingLedgerStack';
 import { SendStack } from './stacks/SendStack';
 import { SettingsStack } from './stacks/SettingsStack';
@@ -110,7 +110,7 @@ export const RootStack = createNativeStackNavigator({
         Modals: {
             screens: {
                 SettingsModal: SettingsStack,
-                CurrencyModal: CurrencyScreen,
+                CurrencyModal: CurrencyStack,
                 ExchangeModal: ExchangeModal,
                 RecoveryPhraseModal: RecoveryPhraseSheet,
                 SignInModal: SignInStack,
