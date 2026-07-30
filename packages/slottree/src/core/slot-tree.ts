@@ -1,7 +1,6 @@
 import type { z } from 'zod';
 
 import { cborEncoder } from './encoder/cbor/cbor-encoder';
-import type { DeepReadonly } from './json';
 import type { MergeStats } from './merge-protocol';
 import { MergeProtocol } from './merge-protocol';
 import { SlotRevision } from './slot-revision';
@@ -29,11 +28,6 @@ export interface SlotTree<T> {
      * Returns the current storage value projected to the latest schema version.
      */
     get(): T;
-
-    /**
-     * Returns a readonly proxy over the current storage value.
-     */
-    read(): DeepReadonly<T>;
 
     /**
      * Atomic storage transaction
@@ -184,10 +178,6 @@ export class StorageImpl<T> implements SlotTree<T> {
 
     public get(): T {
         return this.committedRoot().get<T>();
-    }
-
-    public read(): DeepReadonly<T> {
-        return this.committedRoot().read<T>();
     }
 
     public transaction(fn: (draft: Draft<T>) => void): void {

@@ -4,7 +4,7 @@ import type { SyncStateRepository } from './sync-state-repository';
 import type { UpdatePayload } from './update-payload';
 import { decodeUpdatePayload } from './update-payload';
 import type { EncryptedStateAndProofChain } from '../api/types';
-import type { YManager } from '../crdt/y-manager';
+import type { CrdtManager } from '../crdt/crdt-manager';
 import type { DeviceManagementService } from '../device-manager/device-management-service';
 import type { tDevicesLatest, tDevicesRest } from '../device-manager/device-storage-schema';
 import type { Logger, SyncFlowLogger } from '../logger';
@@ -28,8 +28,8 @@ import type { UpdateDecryptorService } from '../update-encryptor/update-decrypto
 export class UpdateHandler<Latest extends StorageVersion, Rest> {
     constructor(
         private readonly syncStateRepository: SyncStateRepository,
-        private readonly yManager: YManager<Latest, Rest>,
-        private readonly deviceYManager: YManager<tDevicesLatest, tDevicesRest>,
+        private readonly yManager: CrdtManager<Latest, Rest>,
+        private readonly deviceYManager: CrdtManager<tDevicesLatest, tDevicesRest>,
         private readonly updateDecryptor: UpdateDecryptorService,
         private readonly deviceManagementService: DeviceManagementService,
         private readonly logger: Logger
@@ -66,7 +66,7 @@ export class UpdateHandler<Latest extends StorageVersion, Rest> {
         await this.deviceManagementService.activate();
         flow.logStep('device.activated');
 
-        this.logger.debug('Applying update to local CRDT document...');
+        this.logger.debug('Applying update to local Crdt document...');
         await this.yManager.applyUpdate(payload.userStorage, 'remote');
         flow.logStep('user_storage.applied');
 

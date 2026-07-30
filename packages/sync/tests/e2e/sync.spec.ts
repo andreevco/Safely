@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { TestSyncAccount, TestSyncAccountFactory } from './helpers';
 import { makeFactory, onboardDevice } from './helpers';
 import { SyncStatus } from '../../src';
-import { InMemStorage } from '../impl/storage';
+import { InMemStorage } from '../mocks/server-mock/storage';
 
 type WalletItem = {
     __setId: string;
