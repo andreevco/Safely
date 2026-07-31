@@ -8,7 +8,14 @@ import { usePasscode } from '@mobile/entities/security';
 
 import { navigationRef } from './navigationRef';
 
-const ALLOWED_WHEN_RESTRICTED = ['RestrictedFlow', 'PasscodeVerificationScreen', 'LockScreen'];
+const ALLOWED_WHEN_RESTRICTED = [
+    'RestrictedFlow',
+    'PasscodeVerificationScreen',
+    'LockScreen',
+    'RecoveryConfirmSheet',
+    'RecoveryPhraseModal',
+    'DestructiveConfirmSheet'
+];
 
 export function useRestrictionGuard() {
     const hasAccount = useHasAccount();
