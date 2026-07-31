@@ -41,7 +41,9 @@ export const AccountSection = () => {
             <List.Title>{t('settings.groups.account.title')}</List.Title>
             <AccountSelector
                 accounts={accounts ?? []}
-                onSelectAccountNavigate={() => navigation.navigate('SelectAccountSelectorModal')}
+                onSelectAccountNavigate={() =>
+                    navigation.navigate('SelectAccountSelectorModal', { hasAddAccount: true })
+                }
                 onAddAccount={handleAddAccount}
             />
             <List.Group variant="divided" style={styles.accountOptions}>
