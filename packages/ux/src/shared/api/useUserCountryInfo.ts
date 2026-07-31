@@ -2,14 +2,14 @@ import type { UserCountryInfo } from '@safely/core';
 
 import { apiKeys } from './keys';
 import { useAppContext } from '../providers';
-import { usePersistSuspenseQuery } from '../query-core';
+import { useSuspenseQuery } from '../query-core';
 
 export function useUserCountryInfo(): UserCountryInfo {
     const { getUserCountryInfo } = useAppContext();
 
-    return usePersistSuspenseQuery<UserCountryInfo>({
+    return useSuspenseQuery<UserCountryInfo>({
         queryKey: apiKeys.userCountryInfo().toKey(),
         queryFn: () => getUserCountryInfo(),
-        schemaKey: 'userCountryInfo'
+        staleTime: Infinity
     }).data;
 }
