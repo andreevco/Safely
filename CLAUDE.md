@@ -19,8 +19,6 @@ Dependencies flow strictly bottom-up in this table; imports in the other directi
 | `apps/mobile`               | Expo dev-client (iOS/Android): FSD + `screens`, native modules `modules/safely-*`, unistyles, i18n.                                            |
 | `packages/xhr-event-source` | EventSource over XHR for platforms without native SSE.                                                                                         |
 
-`apps/desktop`, `apps/browser` and `packages/web` are empty placeholders — no stack chosen, no code.
-
 Platform capabilities reach the domain through DI interfaces from `@safely/core` (`src/di/`:
 `IStorage`, `ISecretEncryptor`, `ILoggerTransport`, `QrScanner`). Implementations live in the app,
 never in a package: a package that needs a native API declares an interface instead of importing the
@@ -98,7 +96,7 @@ goes into a new `.claude/rules/` file with `paths:` frontmatter, not into more l
 file under ~150 lines. Removing a stale instruction matters as much as adding a new one: a wrong rule
 costs more than a missing one.
 
-## Before opening a PR
+## Before finishing a task
 
 1. `pnpm -r run compile` (or `--filter` the packages you touched)
 2. lint and test for the packages you touched
