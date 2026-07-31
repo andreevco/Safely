@@ -96,6 +96,12 @@ goes into a new `.claude/rules/` file with `paths:` frontmatter, not into more l
 file under ~150 lines. Removing a stale instruction matters as much as adding a new one: a wrong rule
 costs more than a missing one.
 
+Never put secrets or sensitive data in these files — `CLAUDE.md`, nested `CLAUDE.md`s,
+`.claude/rules/*.md`, `CLAUDE.local.md`: no keys, tokens, passwords, mnemonics, xprv/xpub, real
+addresses or user data. Every one is read verbatim into the model's context each session, and all
+but `CLAUDE.local.md` are committed — a value written here lands in every transcript, and usually in
+git history too. Point at where the value lives (`.env`, the secret manager) instead.
+
 ## Before finishing a task
 
 1. `pnpm -r run compile` (or `--filter` the packages you touched)
