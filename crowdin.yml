@@ -1,5 +1,0 @@
-preserve_hierarchy: true
-
-files:
-  - source: /apps/mobile/src/shared/i18n/translations/en.json
-    translation: /apps/mobile/src/shared/i18n/translations/%two_letters_code%.json
