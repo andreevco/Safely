@@ -6,8 +6,30 @@ import { TreeStorage } from '@safely/core';
 
 import { SafelySecureStoreEnum } from '../../modules/safely-secure-store-enum/src';
 
-function createMMKVEnumerableStorage(id: string) {
+function createMMKVInstance(id: string) {
     const mmkv = createMMKV({ id });
+    let isCleared = false;
+
+    return {
+        getString: (key: string) => mmkv.getString(key),
+        set: (key: string, value: string) => mmkv.set(key, value),
+        remove: (key: string) => mmkv.remove(key),
+        getAllKeys: () => mmkv.getAllKeys(),
+        clearAll: () => {
+            isCleared = true;
+            mmkv.clearAll();
+        },
+        addOnValueChangedListener: (onChange: (key: string) => void) =>
+            mmkv.addOnValueChangedListener(key => {
+                if (isCleared) return;
+
+                onChange(key);
+            })
+    };
+}
+
+function createMMKVEnumerableStorage(id: string) {
+    const mmkv = createMMKVInstance(id);
     const storage: IEnumerableStorage = {
         getItem: async (key: string) => mmkv.getString(key) ?? null,
         setItem: async (key: string, value: string) => mmkv.set(key, value),
@@ -44,7 +66,7 @@ function createMMKVTreeStorage(id: string) {
 }
 
 function createMMKVSyncSingleStorage(id: string) {
-    const mmkv = createMMKV({ id });
+    const mmkv = createMMKVInstance(id);
     const storage: ISyncSingleStorage = {
         get: () => mmkv.getString(id) ?? null,
         set: (value: string) => mmkv.set(id, value),
@@ -58,7 +80,7 @@ function createMMKVSyncSingleStorage(id: string) {
 }
 
 function createMMKVSyncKeyValueStorage(id: string) {
-    const mmkv = createMMKV({ id });
+    const mmkv = createMMKVInstance(id);
     const storage: ISyncKeyValueStorage = {
         get: key => mmkv.getString(key) ?? null,
         set: (key, value) => mmkv.set(key, value),
