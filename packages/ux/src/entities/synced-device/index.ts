@@ -1,6 +1,8 @@
 import { useMutation } from '@tanstack/react-query';
 import { useCallback, useMemo, useSyncExternalStore } from 'react';
 
+import type { Portfolio } from '@safely/core';
+import { Id, PortfolioType } from '@safely/core';
 import type { ISyncAccount } from '@safely/sync';
 import { SyncStatus } from '@safely/sync';
 import type { SDeviceMeta, SyncedStorageStructure } from '@safely/sync-storage';
@@ -10,7 +12,7 @@ import type { SyncAccount } from '../account/account-state';
 import { useActiveAccount, useActiveAccountStoreSlot } from '../account/account-state';
 import {
     useAccountSyncStorageSlotUpdate,
-    useActiveAccountSyncStorageSlotUpdate
+    useActiveAccountSyncStorageUpdate
 } from '../account/useAccountSyncStorageUpdate';
 
 export function useSyncedDevicesMeta(): Record<string, SDeviceMeta> | null {
@@ -21,6 +23,55 @@ export function useCurrentDeviceIkPub(): string {
     const account = useActiveAccount();
 
     return useMemo(() => account.getMyDeviceIkPub().toString('hex'), [account]);
+}
+
+export enum SyncedDeviceDataStatus {
+    SYNCED = 'synced',
+    NOT_SYNCED = 'not_synced'
+}
+
+export type SyncedDeviceDetails = {
+    ikPubHex: string;
+    meta: SDeviceMeta;
+    isCurrent: boolean;
+    lastSyncAt: number;
+    dataStatus: SyncedDeviceDataStatus;
+    pendingPortfolios: readonly Portfolio[];
+};
+
+export function useSyncedDeviceDetails(ikPubHex: string): SyncedDeviceDetails | null {
+    const devicesMeta = useSyncedDevicesMeta();
+    const devicesSyncState = useActiveAccountStoreSlot('devicesSyncState');
+    const portfolios = useActiveAccountStoreSlot('portfolios') ?? [];
+    const currentIkPubHex = useCurrentDeviceIkPub();
+    const meta = devicesMeta?.[ikPubHex] ?? null;
+    const syncState = devicesSyncState?.[ikPubHex] ?? null;
+
+    return useMemo(() => {
+        if (meta === null) return null;
+
+        const isCurrent = ikPubHex === currentIkPubHex;
+        const pendingPortfolios =
+            syncState === null || isCurrent
+                ? []
+                : portfolios.filter(
+                      p =>
+                          p.type === PortfolioType.BIP39 &&
+                          !syncState.portfolioIds.some(id => p.id.isEq(Id.fromString(id)))
+                  );
+
+        return {
+            ikPubHex,
+            meta,
+            isCurrent,
+            lastSyncAt: syncState?.lastSyncAt ?? meta.pairedAt,
+            dataStatus:
+                pendingPortfolios.length === 0
+                    ? SyncedDeviceDataStatus.SYNCED
+                    : SyncedDeviceDataStatus.NOT_SYNCED,
+            pendingPortfolios
+        };
+    }, [ikPubHex, currentIkPubHex, meta, syncState, portfolios]);
 }
 
 export enum AccountLinkState {
@@ -61,7 +112,7 @@ export function useAccountLinkState(): AccountLinkState {
 export function useRevokeSyncedDevice() {
     const account = useActiveAccount();
     const { storage } = useAppContext();
-    const update = useActiveAccountSyncStorageSlotUpdate('devicesMeta');
+    const update = useActiveAccountSyncStorageUpdate();
 
     return useMutation({
         async mutationFn(ikPubHex: string) {
@@ -71,7 +122,8 @@ export function useRevokeSyncedDevice() {
             await account.revokeRemoteDevice(Buffer.from(ikPubHex, 'hex'), secureStorage);
 
             await update(draft => {
-                draft.ifPresent(devicesMeta => devicesMeta.delete(ikPubHex));
+                draft.at('devicesMeta').ifPresent(devicesMeta => devicesMeta.delete(ikPubHex));
+                draft.at('devicesSyncState').delete(ikPubHex);
             });
         }
     });
