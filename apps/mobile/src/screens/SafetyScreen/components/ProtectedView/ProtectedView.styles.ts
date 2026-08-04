@@ -12,6 +12,13 @@ export const styles = StyleSheet.create(theme => ({
         gap: theme.spacing[4],
         alignItems: 'center'
     },
+    buttonsRow: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'center',
+        gap: theme.spacing[8],
+        marginBottom: theme.spacing[16]
+    },
     deviceList: {
         width: '100%',
         gap: theme.spacing[2],

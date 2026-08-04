@@ -1,13 +1,20 @@
 import { useNavigation } from '@react-navigation/core';
-import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import type { SDeviceMeta } from '@safely/sync-storage';
 import { useCurrentDeviceIkPub, useDateFormatter, useSyncedDevicesMeta } from '@safely/ux';
 
-import type { PopupMenuRef } from '@mobile/shared/ui';
-import { Badge, Button, DeviceLinkCheckmark96, Icon, Screen, Text } from '@mobile/shared/ui';
+import {
+    Badge,
+    Button,
+    ChevronRight16,
+    DeviceLinkCheckmark96,
+    Icon,
+    Screen,
+    Text,
+    TouchableOpacity
+} from '@mobile/shared/ui';
 
 import { styles } from './ProtectedView.styles';
 
@@ -16,19 +23,14 @@ function DeviceItem(props: { ikPubHex: string; meta: SDeviceMeta; isCurrent: boo
 
     const { t } = useTranslation();
     const rootNavigation = useNavigation();
-    const menuRef = useRef<PopupMenuRef>(null);
     const formatDate = useDateFormatter({ month: 'short', day: 'numeric', year: 'numeric' });
 
-    const handleDisconnect = () => {
-        menuRef.current?.close();
-        rootNavigation.navigate('DisconnectDeviceSheet', {
-            deviceName: meta.name,
-            ikPubHex
-        });
+    const handlePress = () => {
+        rootNavigation.navigate('DeviceDetailsScreen', { ikPubHex });
     };
 
     return (
-        <View style={styles.deviceRow}>
+        <TouchableOpacity style={styles.deviceRow} onPress={handlePress}>
             <View style={styles.deviceInfo}>
                 <View style={styles.deviceNameRow}>
                     <Text variant="labelL">{meta.name}</Text>
@@ -38,16 +40,19 @@ function DeviceItem(props: { ikPubHex: string; meta: SDeviceMeta; isCurrent: boo
                     {t('security.device.added', { date: formatDate.format(meta.pairedAt) })}
                 </Text>
             </View>
-            {!isCurrent && (
-                <Button type="tertiary" size="small" onPress={handleDisconnect}>
-                    {t('security.device.unlink')}
-                </Button>
-            )}
-        </View>
+            <Icon icon={ChevronRight16} color="tertiary" />
+        </TouchableOpacity>
     );
 }
 
-export const ProtectedView = () => {
+type ProtectedViewProps = {
+    onLinkDevice: () => void;
+    onAbout: () => void;
+};
+
+export const ProtectedView = (props: ProtectedViewProps) => {
+    const { onLinkDevice, onAbout } = props;
+
     const { t } = useTranslation();
     const devicesMeta = useSyncedDevicesMeta();
     const myIkPubHex = useCurrentDeviceIkPub();
@@ -71,6 +76,14 @@ export const ProtectedView = () => {
                     <Text textAlign="center" variant="bodyL" color="secondary">
                         {t('security.accountProtected.subtitle')}
                     </Text>
+                </View>
+                <View style={styles.buttonsRow}>
+                    <Button size="small" type="secondary" onPress={onLinkDevice}>
+                        {t('safety.linkDevice')}
+                    </Button>
+                    <Button size="small" type="secondary" onPress={onAbout}>
+                        {t('safety.about')}
+                    </Button>
                 </View>
                 <View style={styles.deviceList}>
                     {devices.map(([ikPubHex, meta]) => (

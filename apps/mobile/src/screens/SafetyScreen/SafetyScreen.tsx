@@ -1,7 +1,6 @@
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View } from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';
 
 import {
@@ -72,7 +71,12 @@ export const SafetyScreen = () => {
     const renderContent = () => {
         switch (linkState) {
             case AccountLinkState.PROTECTED:
-                return <ProtectedView />;
+                return (
+                    <ProtectedView
+                        onLinkDevice={handleConnect}
+                        onAbout={() => setForceOpen(true)}
+                    />
+                );
             case AccountLinkState.SOLO:
                 return <SoloView onLinkDevice={handleConnect} onAbout={() => setForceOpen(true)} />;
             case AccountLinkState.UNLINKED:
@@ -85,7 +89,7 @@ export const SafetyScreen = () => {
     return (
         <Screen>
             <Screen.Header>
-                {linkState !== AccountLinkState.SOLO && (
+                {linkState === AccountLinkState.UNLINKED && (
                     <Button
                         style={styles.headerButton}
                         size="small"
@@ -98,14 +102,6 @@ export const SafetyScreen = () => {
             </Screen.Header>
 
             {renderContent()}
-
-            {linkState === AccountLinkState.PROTECTED && (
-                <View style={styles.buttonContainer}>
-                    <Button type="secondary" size="large" onPress={handleConnect}>
-                        {t('safety.linkDevice')}
-                    </Button>
-                </View>
-            )}
 
             {overlayVisible && <SyncOnboarding onFinish={handleOnboardingFinish} />}
         </Screen>

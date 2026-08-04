@@ -24,6 +24,7 @@ import { ProviderSheet } from '@mobile/screens/ProviderSheet';
 import { QRScanModal } from '@mobile/screens/QRScanModal';
 import { ReceiveAssetModal } from '@mobile/screens/ReceiveAssetModal';
 import { RemoveWalletSheet } from '@mobile/screens/RemoveWalletSheet';
+import { DeviceDetailsScreen } from '@mobile/screens/SafetyScreen/screens';
 import {
     DisconnectDeviceSheet,
     RecoveryConfirmSheet,
@@ -82,6 +83,7 @@ export const RootStack = createNativeStackNavigator({
                 RestrictedFlow: RestrictedStack,
                 TransactionScreen: TransactionScreen,
                 OrderScreen: OrderScreen,
+                DeviceDetailsScreen: DeviceDetailsScreen,
                 LockScreen: {
                     screen: LockScreen,
                     options: {
