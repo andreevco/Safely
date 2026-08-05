@@ -6,6 +6,7 @@ import type {
     SAccountMeta,
     SAmountDisplay,
     SDevicesMeta,
+    SDevicesArchive,
     SDevicesSyncState,
     SNextDerivingPortfolioInfo
 } from '@safely/sync-storage';
@@ -18,6 +19,7 @@ export type AccountStoreData = {
     preferredFiat: FiatAsset | null;
     devicesMeta: SDevicesMeta;
     devicesSyncState: SDevicesSyncState;
+    devicesArchive: SDevicesArchive;
     nextDerivingPortfolioInfo: SNextDerivingPortfolioInfo;
     analyticsId: string | null;
     amountDisplay: SAmountDisplay;
@@ -30,6 +32,7 @@ export const SYNCED_SLOT_KEYS = [
     'preferredFiat',
     'devicesMeta',
     'devicesSyncState',
+    'devicesArchive',
     'nextDerivingPortfolioInfo',
     'analyticsId',
     'amountDisplay'

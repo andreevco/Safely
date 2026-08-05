@@ -42,6 +42,10 @@ export class AccountStoreTransform {
                 return this.devicesSyncState(
                     json as SyncedStorageSchema['devicesSyncState']
                 ) as AccountStoreData[K];
+            case 'devicesArchive':
+                return this.devicesArchive(
+                    json as SyncedStorageSchema['devicesArchive']
+                ) as AccountStoreData[K];
             case 'meta':
                 return this.meta(json as SyncedStorageSchema['meta']) as AccountStoreData[K];
             case 'nextDerivingPortfolioInfo':
@@ -70,6 +74,7 @@ export class AccountStoreTransform {
             preferredFiat: this.preferredFiat(raw.preferredFiat),
             devicesMeta: this.devicesMeta(raw.devicesMeta),
             devicesSyncState: this.devicesSyncState(raw.devicesSyncState),
+            devicesArchive: this.devicesArchive(raw.devicesArchive),
             nextDerivingPortfolioInfo: this.nextDerivingPortfolioInfo(
                 raw.nextDerivingPortfolioInfo
             ),
@@ -113,6 +118,12 @@ export class AccountStoreTransform {
     private devicesSyncState(
         json: SyncedStorageSchema['devicesSyncState']
     ): AccountStoreData['devicesSyncState'] {
+        return json;
+    }
+
+    private devicesArchive(
+        json: SyncedStorageSchema['devicesArchive']
+    ): AccountStoreData['devicesArchive'] {
         return json;
     }
 
