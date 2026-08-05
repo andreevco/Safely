@@ -4,7 +4,12 @@ import { useCallback, useMemo, useSyncExternalStore } from 'react';
 import type { Portfolio } from '@safely/core';
 import type { ISyncAccount } from '@safely/sync';
 import { SyncStatus } from '@safely/sync';
-import type { SDeviceMeta, SDeviceSyncState, SyncedStorageStructure } from '@safely/sync-storage';
+import type {
+    SDeviceArchive,
+    SDeviceMeta,
+    SDeviceSyncState,
+    SyncedStorageStructure
+} from '@safely/sync-storage';
 
 import { isSensitivePortfolio } from './utils';
 import { useAppContext } from '../../shared';
@@ -16,6 +21,7 @@ import {
 } from '../account/useAccountSyncStorageUpdate';
 
 export { useIsDeviceWarningHidden, useHideDeviceWarning } from './hidden-warnings';
+export { useArchiveDevice, useUnarchiveDevice } from './device-archive';
 
 export function useSyncedDevicesMeta(): Record<string, SDeviceMeta> | null {
     return useActiveAccountStoreSlot('devicesMeta') ?? null;
@@ -33,6 +39,11 @@ export enum SyncedDeviceDataStatus {
     UNKNOWN = 'unknown'
 }
 
+export type SyncedDeviceArchive = {
+    archivedAt: number;
+    archivedFromDeviceName: string | null;
+};
+
 export type SyncedDeviceDetails = {
     ikPubHex: string;
     meta: SDeviceMeta;
@@ -41,6 +52,7 @@ export type SyncedDeviceDetails = {
     isStale: boolean;
     dataStatus: SyncedDeviceDataStatus;
     pendingPortfolios: readonly Portfolio[];
+    archive: SyncedDeviceArchive | null;
 };
 
 const STALE_CONNECTION_MS = 30 * 24 * 60 * 60 * 1000;
@@ -69,10 +81,12 @@ function buildDeviceDetails(params: {
     ikPubHex: string;
     meta: SDeviceMeta;
     syncState: SDeviceSyncState | null;
+    archive: SDeviceArchive | null;
+    devicesMeta: Record<string, SDeviceMeta>;
     currentIkPubHex: string;
     portfolios: readonly Portfolio[];
 }): SyncedDeviceDetails {
-    const { ikPubHex, meta, syncState, currentIkPubHex, portfolios } = params;
+    const { ikPubHex, meta, syncState, archive, devicesMeta, currentIkPubHex, portfolios } = params;
 
     const isCurrent = ikPubHex === currentIkPubHex;
     const pendingPortfolios =
@@ -93,29 +107,50 @@ function buildDeviceDetails(params: {
             hasReported: syncState !== null,
             pendingPortfolios
         }),
-        pendingPortfolios
+        pendingPortfolios,
+        archive:
+            archive === null
+                ? null
+                : {
+                      archivedAt: archive.archivedAt,
+                      archivedFromDeviceName:
+                          archive.archivedFromIkPubHex === null
+                              ? null
+                              : (devicesMeta[archive.archivedFromIkPubHex]?.name ?? null)
+                  }
     };
 }
 
 export function useSyncedDeviceDetails(ikPubHex: string): SyncedDeviceDetails | null {
     const devicesMeta = useSyncedDevicesMeta();
+    const devicesArchive = useActiveAccountStoreSlot('devicesArchive');
     const devicesSyncState = useActiveAccountStoreSlot('devicesSyncState');
     const portfolios = useActiveAccountStoreSlot('portfolios') ?? [];
     const currentIkPubHex = useCurrentDeviceIkPub();
     const meta = devicesMeta?.[ikPubHex] ?? null;
     const syncState = devicesSyncState?.[ikPubHex] ?? null;
+    const archive = devicesArchive?.[ikPubHex] ?? null;
 
     return useMemo(
         () =>
             meta === null
                 ? null
-                : buildDeviceDetails({ ikPubHex, meta, syncState, currentIkPubHex, portfolios }),
-        [ikPubHex, currentIkPubHex, meta, syncState, portfolios]
+                : buildDeviceDetails({
+                      ikPubHex,
+                      meta,
+                      syncState,
+                      archive,
+                      devicesMeta: devicesMeta ?? {},
+                      currentIkPubHex,
+                      portfolios
+                  }),
+        [ikPubHex, currentIkPubHex, meta, syncState, archive, devicesMeta, portfolios]
     );
 }
 
 export function useSyncedDevices(): SyncedDeviceDetails[] {
     const devicesMeta = useSyncedDevicesMeta();
+    const devicesArchive = useActiveAccountStoreSlot('devicesArchive');
     const devicesSyncState = useActiveAccountStoreSlot('devicesSyncState');
     const portfolios = useActiveAccountStoreSlot('portfolios') ?? [];
     const currentIkPubHex = useCurrentDeviceIkPub();
@@ -128,12 +163,14 @@ export function useSyncedDevices(): SyncedDeviceDetails[] {
                         ikPubHex,
                         meta,
                         syncState: devicesSyncState?.[ikPubHex] ?? null,
+                        archive: devicesArchive?.[ikPubHex] ?? null,
+                        devicesMeta: devicesMeta ?? {},
                         currentIkPubHex,
                         portfolios
                     })
                 )
                 .sort((a, b) => Number(b.isCurrent) - Number(a.isCurrent)),
-        [devicesMeta, devicesSyncState, currentIkPubHex, portfolios]
+        [devicesMeta, devicesSyncState, devicesArchive, currentIkPubHex, portfolios]
     );
 }
 
