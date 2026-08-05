@@ -1,0 +1,45 @@
+import { useNavigation } from '@react-navigation/core';
+import { useTranslation } from 'react-i18next';
+import { View } from 'react-native';
+
+import type { SyncedDeviceDetails } from '@safely/ux';
+import { useDateFormatter } from '@safely/ux';
+
+import { Badge, ChevronRight16, Icon, Text, TouchableOpacity } from '@mobile/shared/ui';
+
+import { styles } from './DeviceItem.styles';
+import { resolveDeviceRowStatus } from './deviceRowStatus';
+
+type DeviceItemProps = {
+    device: SyncedDeviceDetails;
+    devices: SyncedDeviceDetails[];
+};
+
+export const DeviceItem = ({ device, devices }: DeviceItemProps) => {
+    const { t } = useTranslation();
+    const rootNavigation = useNavigation();
+    const formatDate = useDateFormatter({ month: 'short', day: 'numeric', year: 'numeric' });
+    const status = resolveDeviceRowStatus(device, devices);
+
+    const handlePress = () => {
+        rootNavigation.navigate('DeviceDetailsScreen', { ikPubHex: device.ikPubHex });
+    };
+
+    return (
+        <TouchableOpacity style={styles.row} onPress={handlePress}>
+            <View style={styles.info}>
+                <View style={styles.nameRow}>
+                    <Text variant="labelL">{device.meta.name}</Text>
+                    {device.isCurrent && <Badge isUppercase>{t('security.device.current')}</Badge>}
+                </View>
+                <Text variant="bodyM" color={status.color}>
+                    {t(status.labelKey)}
+                </Text>
+                <Text variant="bodyM" color="tertiary">
+                    {t('security.device.added', { date: formatDate.format(device.meta.pairedAt) })}
+                </Text>
+            </View>
+            <Icon icon={ChevronRight16} color="tertiary" />
+        </TouchableOpacity>
+    );
+};

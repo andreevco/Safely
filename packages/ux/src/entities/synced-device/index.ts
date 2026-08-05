@@ -4,7 +4,7 @@ import { useCallback, useMemo, useSyncExternalStore } from 'react';
 import type { Portfolio } from '@safely/core';
 import type { ISyncAccount } from '@safely/sync';
 import { SyncStatus } from '@safely/sync';
-import type { SDeviceMeta, SyncedStorageStructure } from '@safely/sync-storage';
+import type { SDeviceMeta, SDeviceSyncState, SyncedStorageStructure } from '@safely/sync-storage';
 
 import { isSensitivePortfolio } from './utils';
 import { useAppContext } from '../../shared';
@@ -36,9 +36,12 @@ export type SyncedDeviceDetails = {
     meta: SDeviceMeta;
     isCurrent: boolean;
     lastSyncAt: number | null;
+    isStale: boolean;
     dataStatus: SyncedDeviceDataStatus;
     pendingPortfolios: readonly Portfolio[];
 };
+
+const STALE_CONNECTION_MS = 30 * 24 * 60 * 60 * 1000;
 
 function resolveDataStatus(params: {
     isCurrent: boolean;
@@ -60,6 +63,38 @@ function resolveDataStatus(params: {
         : SyncedDeviceDataStatus.NOT_SYNCED;
 }
 
+function buildDeviceDetails(params: {
+    ikPubHex: string;
+    meta: SDeviceMeta;
+    syncState: SDeviceSyncState | null;
+    currentIkPubHex: string;
+    portfolios: readonly Portfolio[];
+}): SyncedDeviceDetails {
+    const { ikPubHex, meta, syncState, currentIkPubHex, portfolios } = params;
+
+    const isCurrent = ikPubHex === currentIkPubHex;
+    const pendingPortfolios =
+        syncState === null || isCurrent
+            ? []
+            : portfolios.filter(
+                  p => isSensitivePortfolio(p) && !syncState.portfolioIds[p.id.toString()]
+              );
+
+    return {
+        ikPubHex,
+        meta,
+        isCurrent,
+        lastSyncAt: syncState?.lastSyncAt ?? null,
+        isStale: syncState !== null && Date.now() - syncState.lastSyncAt > STALE_CONNECTION_MS,
+        dataStatus: resolveDataStatus({
+            isCurrent,
+            hasReported: syncState !== null,
+            pendingPortfolios
+        }),
+        pendingPortfolios
+    };
+}
+
 export function useSyncedDeviceDetails(ikPubHex: string): SyncedDeviceDetails | null {
     const devicesMeta = useSyncedDevicesMeta();
     const devicesSyncState = useActiveAccountStoreSlot('devicesSyncState');
@@ -68,30 +103,36 @@ export function useSyncedDeviceDetails(ikPubHex: string): SyncedDeviceDetails | 
     const meta = devicesMeta?.[ikPubHex] ?? null;
     const syncState = devicesSyncState?.[ikPubHex] ?? null;
 
-    return useMemo(() => {
-        if (meta === null) return null;
+    return useMemo(
+        () =>
+            meta === null
+                ? null
+                : buildDeviceDetails({ ikPubHex, meta, syncState, currentIkPubHex, portfolios }),
+        [ikPubHex, currentIkPubHex, meta, syncState, portfolios]
+    );
+}
 
-        const isCurrent = ikPubHex === currentIkPubHex;
-        const pendingPortfolios =
-            syncState === null || isCurrent
-                ? []
-                : portfolios.filter(
-                      p => isSensitivePortfolio(p) && !syncState.portfolioIds[p.id.toString()]
-                  );
+export function useSyncedDevices(): SyncedDeviceDetails[] {
+    const devicesMeta = useSyncedDevicesMeta();
+    const devicesSyncState = useActiveAccountStoreSlot('devicesSyncState');
+    const portfolios = useActiveAccountStoreSlot('portfolios') ?? [];
+    const currentIkPubHex = useCurrentDeviceIkPub();
 
-        return {
-            ikPubHex,
-            meta,
-            isCurrent,
-            lastSyncAt: syncState?.lastSyncAt ?? null,
-            dataStatus: resolveDataStatus({
-                isCurrent,
-                hasReported: syncState !== null,
-                pendingPortfolios
-            }),
-            pendingPortfolios
-        };
-    }, [ikPubHex, currentIkPubHex, meta, syncState, portfolios]);
+    return useMemo(
+        () =>
+            Object.entries(devicesMeta ?? {})
+                .map(([ikPubHex, meta]) =>
+                    buildDeviceDetails({
+                        ikPubHex,
+                        meta,
+                        syncState: devicesSyncState?.[ikPubHex] ?? null,
+                        currentIkPubHex,
+                        portfolios
+                    })
+                )
+                .sort((a, b) => Number(b.isCurrent) - Number(a.isCurrent)),
+        [devicesMeta, devicesSyncState, currentIkPubHex, portfolios]
+    );
 }
 
 export enum AccountLinkState {

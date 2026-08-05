@@ -259,12 +259,22 @@
         },
         "accountProtected": {
             "title": "Linked devices",
-            "subtitle": "Linked devices have full access to your account and can be used to restore access if another device is lost."
+            "subtitle": "Linked devices have full access to your account and can be used to restore access if another device is lost.",
+            "listTitle": "Linked devices",
+            "attention": "Some devices need attention. Check sync status on linked devices."
         },
         "device": {
-            "added": "Linked {{date}}",
+            "added": "Added {{date}}",
             "unlink": "Unlink",
-            "current": "Current"
+            "current": "Current",
+            "status": {
+                "upToDate": "Up to date",
+                "synced": "Synced",
+                "essentialDataSynced": "Essential data synced",
+                "notSynced": "Not synced",
+                "unknown": "Unknown",
+                "staleConnection": "Last connected over a month ago"
+            }
         },
         "deviceDetails": {
             "currentDevice": "Current device",

@@ -1,49 +1,12 @@
-import { useNavigation } from '@react-navigation/core';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import type { SDeviceMeta } from '@safely/sync-storage';
-import { useCurrentDeviceIkPub, useDateFormatter, useSyncedDevicesMeta } from '@safely/ux';
+import { SyncedDeviceDataStatus, useSyncedDevices } from '@safely/ux';
 
-import {
-    Badge,
-    Button,
-    ChevronRight16,
-    DeviceLinkCheckmark96,
-    Icon,
-    Screen,
-    Text,
-    TouchableOpacity
-} from '@mobile/shared/ui';
+import { Banner, Button, DeviceLinkCheckmark96, Icon, List, Screen, Text } from '@mobile/shared/ui';
 
+import { DeviceItem } from './components';
 import { styles } from './ProtectedView.styles';
-
-function DeviceItem(props: { ikPubHex: string; meta: SDeviceMeta; isCurrent: boolean }) {
-    const { ikPubHex, meta, isCurrent } = props;
-
-    const { t } = useTranslation();
-    const rootNavigation = useNavigation();
-    const formatDate = useDateFormatter({ month: 'short', day: 'numeric', year: 'numeric' });
-
-    const handlePress = () => {
-        rootNavigation.navigate('DeviceDetailsScreen', { ikPubHex });
-    };
-
-    return (
-        <TouchableOpacity style={styles.deviceRow} onPress={handlePress}>
-            <View style={styles.deviceInfo}>
-                <View style={styles.deviceNameRow}>
-                    <Text variant="labelL">{meta.name}</Text>
-                    {isCurrent && <Badge isUppercase>{t('security.device.current')}</Badge>}
-                </View>
-                <Text variant="bodyM" color="tertiary">
-                    {t('security.device.added', { date: formatDate.format(meta.pairedAt) })}
-                </Text>
-            </View>
-            <Icon icon={ChevronRight16} color="tertiary" />
-        </TouchableOpacity>
-    );
-}
 
 type ProtectedViewProps = {
     onLinkDevice: () => void;
@@ -54,16 +17,10 @@ export const ProtectedView = (props: ProtectedViewProps) => {
     const { onLinkDevice, onAbout } = props;
 
     const { t } = useTranslation();
-    const devicesMeta = useSyncedDevicesMeta();
-    const myIkPubHex = useCurrentDeviceIkPub();
-
-    const currentDevice = devicesMeta?.[myIkPubHex];
-    const otherDevices = Object.entries(devicesMeta ?? {}).filter(
-        ([ikPubHex]) => ikPubHex !== myIkPubHex
+    const devices = useSyncedDevices();
+    const needsAttention = devices.some(
+        device => device.isStale || device.dataStatus !== SyncedDeviceDataStatus.SYNCED
     );
-    const devices = currentDevice
-        ? [[myIkPubHex, currentDevice] as const, ...otherDevices]
-        : otherDevices;
 
     return (
         <Screen.Scrollable>
@@ -85,16 +42,23 @@ export const ProtectedView = (props: ProtectedViewProps) => {
                         {t('safety.about')}
                     </Button>
                 </View>
-                <View style={styles.deviceList}>
-                    {devices.map(([ikPubHex, meta]) => (
-                        <DeviceItem
-                            key={ikPubHex}
-                            ikPubHex={ikPubHex}
-                            meta={meta}
-                            isCurrent={ikPubHex === myIkPubHex}
-                        />
-                    ))}
-                </View>
+                <List style={styles.deviceList}>
+                    <List.Title>{t('security.accountProtected.listTitle')}</List.Title>
+                    {needsAttention && (
+                        <Banner variant="danger" nonInteractive style={styles.attentionBanner}>
+                            <Banner.Content>
+                                <Banner.Text>
+                                    {t('security.accountProtected.attention')}
+                                </Banner.Text>
+                            </Banner.Content>
+                        </Banner>
+                    )}
+                    <View style={styles.deviceRows}>
+                        {devices.map(device => (
+                            <DeviceItem key={device.ikPubHex} device={device} devices={devices} />
+                        ))}
+                    </View>
+                </List>
             </View>
         </Screen.Scrollable>
     );
