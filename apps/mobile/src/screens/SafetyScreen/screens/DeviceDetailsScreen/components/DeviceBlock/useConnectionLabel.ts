@@ -9,9 +9,13 @@ const DAY_MS = 24 * HOUR_MS;
 const DAYS_IN_WEEK = 7;
 const MAX_RELATIVE_WEEKS = 4;
 
-export function useConnectionLabel(lastSyncAt: number): string {
+export function useConnectionLabel(lastSyncAt: number | null): string {
     const { t } = useTranslation();
     const formatDate = useDateFormatter({ day: 'numeric', month: 'short', year: 'numeric' });
+
+    if (lastSyncAt === null) {
+        return t('security.deviceDetails.noConnectionYet');
+    }
 
     const diffMs = Math.max(0, Date.now() - lastSyncAt);
     const days = Math.floor(diffMs / DAY_MS);

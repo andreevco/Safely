@@ -27,7 +27,8 @@ export function useCurrentDeviceIkPub(): string {
 
 export enum SyncedDeviceDataStatus {
     SYNCED = 'synced',
-    NOT_SYNCED = 'not_synced'
+    NOT_SYNCED = 'not_synced',
+    UNKNOWN = 'unknown'
 }
 
 export type SyncedDeviceDetails = {
@@ -38,6 +39,26 @@ export type SyncedDeviceDetails = {
     dataStatus: SyncedDeviceDataStatus;
     pendingPortfolios: readonly Portfolio[];
 };
+
+function resolveDataStatus(params: {
+    isCurrent: boolean;
+    hasReported: boolean;
+    pendingPortfolios: readonly Portfolio[];
+}): SyncedDeviceDataStatus {
+    const { isCurrent, hasReported, pendingPortfolios } = params;
+
+    if (isCurrent) {
+        return SyncedDeviceDataStatus.SYNCED;
+    }
+
+    if (!hasReported) {
+        return SyncedDeviceDataStatus.UNKNOWN;
+    }
+
+    return pendingPortfolios.length === 0
+        ? SyncedDeviceDataStatus.SYNCED
+        : SyncedDeviceDataStatus.NOT_SYNCED;
+}
 
 export function useSyncedDeviceDetails(ikPubHex: string): SyncedDeviceDetails | null {
     const devicesMeta = useSyncedDevicesMeta();
@@ -64,11 +85,12 @@ export function useSyncedDeviceDetails(ikPubHex: string): SyncedDeviceDetails | 
             ikPubHex,
             meta,
             isCurrent,
-            lastSyncAt: syncState?.lastSyncAt ?? meta.pairedAt,
-            dataStatus:
-                pendingPortfolios.length === 0
-                    ? SyncedDeviceDataStatus.SYNCED
-                    : SyncedDeviceDataStatus.NOT_SYNCED,
+            lastSyncAt: syncState?.lastSyncAt ?? null,
+            dataStatus: resolveDataStatus({
+                isCurrent,
+                hasReported: syncState !== null,
+                pendingPortfolios
+            }),
             pendingPortfolios
         };
     }, [ikPubHex, currentIkPubHex, meta, syncState, portfolios]);
