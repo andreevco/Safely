@@ -1,11 +1,12 @@
 import { useTranslation } from 'react-i18next';
 
 import type { SyncedDeviceDetails } from '@safely/ux';
-import { useDateFormatter } from '@safely/ux';
+import { useDateFormatter, useIsDeviceWarningHidden } from '@safely/ux';
 
 import { List, TableCell } from '@mobile/shared/ui';
 
 import { useConnectionLabel } from './useConnectionLabel';
+import { StaleWarningBanner } from '../StaleWarningBanner';
 
 type DeviceBlockProps = {
     details: SyncedDeviceDetails;
@@ -15,11 +16,13 @@ export const DeviceBlock = ({ details }: DeviceBlockProps) => {
     const { t } = useTranslation();
     const formatDate = useDateFormatter({ day: 'numeric', month: 'short', year: 'numeric' });
     const connectionLabel = useConnectionLabel(details.lastSyncAt);
+    const isWarningHidden = useIsDeviceWarningHidden(details.ikPubHex);
+    const showStaleWarning = details.isStale && !isWarningHidden;
 
     return (
         <List>
             <List.Title>{t('security.deviceDetails.device')}</List.Title>
-            <List.Group>
+            <List.Group withoutBottomMargin={showStaleWarning}>
                 <TableCell columnDivider>
                     <TableCell.Column leading>
                         <TableCell.Label>{t('security.deviceDetails.added')}</TableCell.Label>
@@ -39,6 +42,7 @@ export const DeviceBlock = ({ details }: DeviceBlockProps) => {
                     </TableCell.Column>
                 </TableCell>
             </List.Group>
+            {showStaleWarning && <StaleWarningBanner details={details} />}
         </List>
     );
 };

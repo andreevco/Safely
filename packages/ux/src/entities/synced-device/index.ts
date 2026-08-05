@@ -15,6 +15,8 @@ import {
     useActiveAccountSyncStorageUpdate
 } from '../account/useAccountSyncStorageUpdate';
 
+export { useIsDeviceWarningHidden, useHideDeviceWarning } from './hidden-warnings';
+
 export function useSyncedDevicesMeta(): Record<string, SDeviceMeta> | null {
     return useActiveAccountStoreSlot('devicesMeta') ?? null;
 }
