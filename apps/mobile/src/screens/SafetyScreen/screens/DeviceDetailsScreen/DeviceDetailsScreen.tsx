@@ -8,7 +8,7 @@ import { useSyncedDeviceDetails } from '@safely/ux';
 
 import { Screen } from '@mobile/shared/ui';
 
-import { DataSyncBlock, DeviceBlock, DeviceHeaderTitle } from './components';
+import { DataSyncBlock, DeviceBlock, DeviceHelpCell, DeviceHeaderTitle } from './components';
 import { styles } from './DeviceDetailsScreen.styles';
 
 type DeviceDetailsScreenProps = StaticScreenProps<{
@@ -28,6 +28,7 @@ const DeviceDetailsContent = ({ details }: { details: SyncedDeviceDetails }) => 
             <Screen.Scrollable contentContainerStyle={styles.content}>
                 <DeviceBlock details={details} />
                 <DataSyncBlock details={details} />
+                <DeviceHelpCell details={details} />
             </Screen.Scrollable>
         </Screen>
     );

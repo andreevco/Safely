@@ -296,6 +296,10 @@
             "wallets": "Wallets",
             "allWallets": "All wallets",
             "notOnThisDevice": "Not on this device",
+            "help": {
+                "title": "Need help with this device?",
+                "subtitle": "Answer a few questions to find the best next step."
+            },
             "connectedNow": "Connected now",
             "minutesAgo_one": "{{count}} minute ago",
             "minutesAgo_other": "{{count}} minutes ago",
@@ -355,6 +359,13 @@
                 },
                 "ledgerInfo": "This wallet is secured by your Ledger device."
             }
+        }
+    },
+    "deviceSupportWizard": {
+        "title": "Support",
+        "intro": {
+            "title": "What happened to {{deviceName}}?",
+            "subtitle": "{{deviceName}} can't be removed remotely. Answer a few questions to find the best way to protect your account."
         }
     },
     "safety": {
