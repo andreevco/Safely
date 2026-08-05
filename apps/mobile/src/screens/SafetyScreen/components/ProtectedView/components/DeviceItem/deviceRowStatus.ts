@@ -8,17 +8,11 @@ type DeviceRowStatus = {
     color: TextProps['color'];
 };
 
-function isHealthyPair(devices: SyncedDeviceDetails[]): boolean {
-    return (
-        devices.length === 2 &&
-        devices.every(d => !d.isStale && d.dataStatus === SyncedDeviceDataStatus.SYNCED)
-    );
-}
+export function resolveDeviceRowStatus(device: SyncedDeviceDetails): DeviceRowStatus {
+    if (device.archive !== null) {
+        return { labelKey: 'security.device.status.archived', color: 'secondary' };
+    }
 
-export function resolveDeviceRowStatus(
-    device: SyncedDeviceDetails,
-    devices: SyncedDeviceDetails[]
-): DeviceRowStatus {
     if (device.isStale) {
         return { labelKey: 'security.device.status.staleConnection', color: 'accentRed' };
     }
@@ -31,14 +25,5 @@ export function resolveDeviceRowStatus(
         return { labelKey: 'security.device.status.unknown', color: 'accentOrange' };
     }
 
-    if (!isHealthyPair(devices)) {
-        return { labelKey: 'security.device.status.synced', color: 'secondary' };
-    }
-
-    return {
-        labelKey: device.isCurrent
-            ? 'security.device.status.upToDate'
-            : 'security.device.status.essentialDataSynced',
-        color: 'secondary'
-    };
+    return { labelKey: 'security.device.status.synced', color: 'secondary' };
 }

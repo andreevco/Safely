@@ -5,7 +5,7 @@ import { SyncedDeviceDataStatus, useSyncedDevices } from '@safely/ux';
 
 import { Banner, Button, DeviceLinkCheckmark96, Icon, List, Screen, Text } from '@mobile/shared/ui';
 
-import { DeviceItem } from './components';
+import { ArchivedDevicesSection, DeviceItem } from './components';
 import { styles } from './ProtectedView.styles';
 
 type ProtectedViewProps = {
@@ -13,11 +13,11 @@ type ProtectedViewProps = {
     onAbout: () => void;
 };
 
-export const ProtectedView = (props: ProtectedViewProps) => {
-    const { onLinkDevice, onAbout } = props;
-
+export const ProtectedView = ({ onLinkDevice, onAbout }: ProtectedViewProps) => {
     const { t } = useTranslation();
-    const devices = useSyncedDevices();
+    const allDevices = useSyncedDevices();
+    const devices = allDevices.filter(device => device.archive === null);
+    const archivedDevices = allDevices.filter(device => device.archive !== null);
     const needsAttention = devices.some(
         device => device.isStale || device.dataStatus !== SyncedDeviceDataStatus.SYNCED
     );
@@ -55,10 +55,11 @@ export const ProtectedView = (props: ProtectedViewProps) => {
                     )}
                     <View style={styles.deviceRows}>
                         {devices.map(device => (
-                            <DeviceItem key={device.ikPubHex} device={device} devices={devices} />
+                            <DeviceItem key={device.ikPubHex} device={device} />
                         ))}
                     </View>
                 </List>
+                <ArchivedDevicesSection devices={archivedDevices} />
             </View>
         </Screen.Scrollable>
     );

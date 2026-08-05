@@ -22,7 +22,7 @@ export const DeviceBlock = ({ details }: DeviceBlockProps) => {
     return (
         <List>
             <List.Title>{t('security.deviceDetails.device')}</List.Title>
-            <List.Group withoutBottomMargin={showStaleWarning}>
+            <List.Group withoutBottomMargin={showStaleWarning || details.archive !== null}>
                 <TableCell columnDivider>
                     <TableCell.Column leading>
                         <TableCell.Label>{t('security.deviceDetails.added')}</TableCell.Label>
@@ -33,14 +33,50 @@ export const DeviceBlock = ({ details }: DeviceBlockProps) => {
                         </TableCell.Value>
                     </TableCell.Column>
                 </TableCell>
-                <TableCell columnDivider>
-                    <TableCell.Column leading>
-                        <TableCell.Label>{t('security.deviceDetails.connection')}</TableCell.Label>
-                    </TableCell.Column>
-                    <TableCell.Column>
-                        <TableCell.Value>{connectionLabel}</TableCell.Value>
-                    </TableCell.Column>
-                </TableCell>
+                {details.archive === null && (
+                    <TableCell columnDivider>
+                        <TableCell.Column leading>
+                            <TableCell.Label>
+                                {t('security.deviceDetails.connection')}
+                            </TableCell.Label>
+                        </TableCell.Column>
+                        <TableCell.Column>
+                            <TableCell.Value>{connectionLabel}</TableCell.Value>
+                        </TableCell.Column>
+                    </TableCell>
+                )}
+                {details.archive !== null && (
+                    <TableCell columnDivider>
+                        <TableCell.Column leading>
+                            <TableCell.Label>
+                                {t('security.deviceDetails.archived')}
+                            </TableCell.Label>
+                        </TableCell.Column>
+                        <TableCell.Column>
+                            <TableCell.Value>
+                                {formatDate.format(details.archive.archivedAt)}
+                            </TableCell.Value>
+                        </TableCell.Column>
+                    </TableCell>
+                )}
+                {details.archive !== null && (
+                    <TableCell columnDivider>
+                        <TableCell.Column leading>
+                            <TableCell.Label>{t('security.deviceDetails.reason')}</TableCell.Label>
+                        </TableCell.Column>
+                        <TableCell.Column>
+                            <TableCell.Value>
+                                {details.archive.archivedFromDeviceName === null
+                                    ? t('security.deviceDetails.reasonSignedOut', {
+                                          deviceName: details.meta.name
+                                      })
+                                    : t('security.deviceDetails.reasonArchivedFrom', {
+                                          deviceName: details.archive.archivedFromDeviceName
+                                      })}
+                            </TableCell.Value>
+                        </TableCell.Column>
+                    </TableCell>
+                )}
             </List.Group>
             {showStaleWarning && <StaleWarningBanner details={details} />}
         </List>

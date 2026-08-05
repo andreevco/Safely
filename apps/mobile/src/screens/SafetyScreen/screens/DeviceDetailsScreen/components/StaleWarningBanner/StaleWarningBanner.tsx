@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 
 import type { SyncedDeviceDetails } from '@safely/ux';
-import { useHideDeviceWarning, useToast } from '@safely/ux';
+import { useHideDeviceWarning } from '@safely/ux';
 
 import { Banner, Button } from '@mobile/shared/ui';
 
@@ -12,15 +12,10 @@ type StaleWarningBannerProps = {
 };
 
 export const StaleWarningBanner = ({ details }: StaleWarningBannerProps) => {
-    const toast = useToast();
     const { t } = useTranslation();
     const { mutate: hideWarning } = useHideDeviceWarning();
 
-    const handleHide = () => {
-        hideWarning(details.ikPubHex, {
-            onSuccess: () => toast(t('security.deviceDetails.staleWarningHidden'))
-        });
-    };
+    const handleHide = () => hideWarning(details.ikPubHex);
 
     return (
         <Banner variant="warn" nonInteractive style={styles.banner}>

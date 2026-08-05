@@ -11,10 +11,22 @@ type DeviceHeaderTitleProps = {
     details: SyncedDeviceDetails;
 };
 
+function captionKey(details: SyncedDeviceDetails): string | null {
+    if (details.archive !== null) {
+        return 'security.deviceDetails.archivedDevice';
+    }
+
+    if (details.isCurrent) {
+        return 'security.deviceDetails.currentDevice';
+    }
+
+    return null;
+}
+
 export const DeviceHeaderTitle = ({ details }: DeviceHeaderTitleProps) => {
     const { t } = useTranslation();
 
-    const caption = details.isCurrent ? t('security.deviceDetails.currentDevice') : null;
+    const caption = captionKey(details);
 
     return (
         <View style={styles.container}>
@@ -23,7 +35,7 @@ export const DeviceHeaderTitle = ({ details }: DeviceHeaderTitleProps) => {
             </Text>
             {caption !== null && (
                 <Text variant="bodyM" color="secondary" numberOfLines={1}>
-                    {caption}
+                    {t(caption)}
                 </Text>
             )}
         </View>

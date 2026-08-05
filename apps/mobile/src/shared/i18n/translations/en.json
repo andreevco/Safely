@@ -263,17 +263,22 @@
             "listTitle": "Linked devices",
             "attention": "Some devices need attention. Check sync status on linked devices."
         },
+        "archivedDevices": {
+            "show": "Tap to show archived devices",
+            "title": "Archived devices",
+            "footnote": "Devices are archived instead of removed because access cannot be safely revoked remotely.",
+            "archivedAt": "Archived {{date}}"
+        },
         "device": {
             "added": "Added {{date}}",
             "unlink": "Unlink",
             "current": "Current",
             "status": {
-                "upToDate": "Up to date",
                 "synced": "Synced",
-                "essentialDataSynced": "Essential data synced",
                 "notSynced": "Not synced",
                 "unknown": "Unknown",
-                "staleConnection": "Last connected over a month ago"
+                "staleConnection": "Last connected over a month ago",
+                "archived": "Archived {{date}}"
             }
         },
         "deviceDetails": {
@@ -281,12 +286,19 @@
             "device": "Device",
             "added": "Added",
             "connection": "Connection",
+            "archivedDevice": "Archived device",
+            "archived": "Archived",
+            "reason": "Reason",
+            "reasonArchivedFrom": "Archived from {{deviceName}}",
+            "reasonSignedOut": "Signed out on {{deviceName}}",
+            "unarchive": "Unarchive {{deviceName}}",
+            "unarchived": "{{deviceName}} unarchived",
+            "unarchiveVerify": "Unarchive {{deviceName}}",
             "noConnectionYet": "No connection yet",
             "unknown": "Unknown",
             "unknownHint": "Open Safely on this device to update its sync status.",
             "staleWarning": "Last connected over a month ago. Open Safely on {{deviceName}} to update its connection status.",
             "hideWarning": "Hide warning for 30 days",
-            "staleWarningHidden": "Warning hidden for 30 days.",
             "dataSync": "Data sync",
             "status": "Status",
             "synced": "Synced",
@@ -361,11 +373,48 @@
             }
         }
     },
+    "deviceUnarchived": {
+        "title": "This device is active again",
+        "subtitle": "Because you're using this device again, it has been removed from Archived devices.",
+        "source": "This device was previously archived from {{deviceName}}.",
+        "action": "Got it"
+    },
     "deviceSupportWizard": {
         "title": "Support",
+        "done": "Done",
         "intro": {
             "title": "What happened to {{deviceName}}?",
             "subtitle": "{{deviceName}} can't be removed remotely. Answer a few questions to find the best way to protect your account."
+        },
+        "access": {
+            "title": "Do you still have this device and can you unlock it?",
+            "options": {
+                "has": "Yes, I have it",
+                "lost": "No, I can’t access it"
+            }
+        },
+        "others": {
+            "title": "Was this device stolen, sold, or can someone else access it?",
+            "options": {
+                "possible": "Yes, someone else could access it",
+                "impossible": "No, no one else can access it"
+            }
+        },
+        "signOut": {
+            "title": "Open Safely on {{deviceName}} and sign out",
+            "description": "After signing out, this device will no longer have access to your account."
+        },
+        "moveFunds": {
+            "title": "Move your funds to a new account",
+            "description": "Someone may still be able to access your account from this device.",
+            "action": "Create new account"
+        },
+        "archive": {
+            "title": "Archive this device",
+            "description": "Since no one can access this device, your account isn't at risk. Archiving hides it from your linked devices list. It doesn't remove access or stop syncing if the device comes back online.",
+            "action": "Archive {{deviceName}}",
+            "verify": "Archive {{deviceName}}",
+            "done": "{{deviceName}} archived"
         }
     },
     "safety": {

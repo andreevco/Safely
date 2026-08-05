@@ -9,6 +9,7 @@ import { CustomizeAccountModal } from '@mobile/screens/CustomizeAccountModal';
 import { CustomizeWalletModal } from '@mobile/screens/CustomizeWalletModal';
 import { DestructiveConfirmSheet } from '@mobile/screens/DestructiveConfirmSheet';
 import { DeviceSupportWizardModal } from '@mobile/screens/DeviceSupportWizardModal';
+import { DeviceUnarchivedSheet } from '@mobile/screens/DeviceUnarchivedSheet';
 import { ExchangeModal } from '@mobile/screens/ExchangeModal';
 import { LinkDeviceWarningModal } from '@mobile/screens/LinkDeviceWarningModal';
 import { LockScreen } from '@mobile/screens/LockScreen';
@@ -137,6 +138,7 @@ export const RootStack = createNativeStackNavigator({
         Sheets: {
             screens: {
                 AddAccountSheet: AddAccountSheet,
+                DeviceUnarchivedSheet: DeviceUnarchivedSheet,
                 RecoveryConfirmSheet: RecoveryConfirmSheet,
                 DestructiveConfirmSheet: DestructiveConfirmSheet,
                 DisconnectDeviceSheet: DisconnectDeviceSheet,
