@@ -35,44 +35,29 @@ function createDeviceSyncStateReporter(deps: DeviceSyncStateReporterDeps) {
         }
 
         const ikPubHex = account.getMyDeviceIkPub().toString('hex');
-        const syncState = account.syncProvider.get('devicesSyncState') ?? {};
-        const devicesMeta = account.syncProvider.get('devicesMeta') ?? {};
-        const stored = syncState[ikPubHex];
+        const stored = account.syncProvider.get('devicesSyncState')?.[ikPubHex];
         const ids = portfolioIds(getPortfolios());
         const now = Date.now();
 
-        const unseededPeers = Object.keys(devicesMeta).filter(
-            peer => peer !== ikPubHex && !syncState[peer]
-        );
-        const shouldWriteOwn =
-            !stored ||
-            now - stored.lastSyncAt >= MIN_WRITE_INTERVAL_MS ||
-            !areIdsEqual(stored.portfolioIds, ids);
+        const isUpToDate =
+            stored &&
+            now - stored.lastSyncAt < MIN_WRITE_INTERVAL_MS &&
+            areIdsEqual(stored.portfolioIds, ids);
 
-        if (!shouldWriteOwn && unseededPeers.length === 0) return;
+        if (isUpToDate) return;
 
         isWriting = true;
         try {
             await account.syncProvider.transaction(draft => {
-                const slot = draft.at('devicesSyncState');
-
-                if (shouldWriteOwn) {
-                    slot.entry(ikPubHex).set({ lastSyncAt: now, portfolioIds: ids });
-                }
-
-                unseededPeers.forEach(peer => {
-                    slot.entry(peer).set({
-                        lastSyncAt: devicesMeta[peer].pairedAt,
-                        portfolioIds: ids
-                    });
-                });
+                draft
+                    .at('devicesSyncState')
+                    .entry(ikPubHex)
+                    .set({ lastSyncAt: now, portfolioIds: ids });
             });
 
-            logger.debug('device_sync_state.reported', {
-                wroteOwn: shouldWriteOwn,
-                seededPeers: unseededPeers.length,
-                portfolios: ids.length
-            });
+            logger.debug('device_sync_state.reported', { ikPubHex, portfolios: ids.length });
+        } catch (e) {
+            logger.error('device_sync_state.failed', e);
         } finally {
             isWriting = false;
         }

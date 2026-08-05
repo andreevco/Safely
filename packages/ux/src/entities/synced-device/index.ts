@@ -2,11 +2,11 @@ import { useMutation } from '@tanstack/react-query';
 import { useCallback, useMemo, useSyncExternalStore } from 'react';
 
 import type { Portfolio } from '@safely/core';
-import { Id, PortfolioType } from '@safely/core';
 import type { ISyncAccount } from '@safely/sync';
 import { SyncStatus } from '@safely/sync';
 import type { SDeviceMeta, SyncedStorageStructure } from '@safely/sync-storage';
 
+import { isSensitivePortfolio } from './utils';
 import { useAppContext } from '../../shared';
 import type { SyncAccount } from '../account/account-state';
 import { useActiveAccount, useActiveAccountStoreSlot } from '../account/account-state';
@@ -35,7 +35,7 @@ export type SyncedDeviceDetails = {
     ikPubHex: string;
     meta: SDeviceMeta;
     isCurrent: boolean;
-    lastSyncAt: number;
+    lastSyncAt: number | null;
     dataStatus: SyncedDeviceDataStatus;
     pendingPortfolios: readonly Portfolio[];
 };
@@ -76,9 +76,7 @@ export function useSyncedDeviceDetails(ikPubHex: string): SyncedDeviceDetails | 
             syncState === null || isCurrent
                 ? []
                 : portfolios.filter(
-                      p =>
-                          p.type === PortfolioType.BIP39 &&
-                          !syncState.portfolioIds.some(id => p.id.isEq(Id.fromString(id)))
+                      p => isSensitivePortfolio(p) && !syncState.portfolioIds[p.id.toString()]
                   );
 
         return {
