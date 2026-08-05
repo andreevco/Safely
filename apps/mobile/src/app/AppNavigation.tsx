@@ -15,6 +15,7 @@ import Navigation from './navigation';
 import { navigationRef } from './navigation/navigationRef';
 import { useInitialNavigationState } from './navigation/useInitialNavigationState';
 import { useRestrictionGuard } from './navigation/useRestrictionGuard';
+import { SelfUnarchiveWatcher } from './SelfUnarchiveWatcher';
 
 export function AppNavigation() {
     const { theme } = useUnistyles();
@@ -48,6 +49,7 @@ export function AppNavigation() {
                     openConnectScreen={() => navigationRef.navigate('ConnectToSignSheet')}
                 >
                     <SyncStorageProvider>
+                        <SelfUnarchiveWatcher />
                         <Navigation
                             ref={navigationRef}
                             initialState={initialState}
