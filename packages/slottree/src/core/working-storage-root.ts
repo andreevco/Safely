@@ -1,4 +1,3 @@
-import type { DeepReadonly } from './json';
 import type { MergeProtocol, MergeStats } from './merge-protocol';
 import type { ContainerSlot, Slot } from './slots';
 import { createOriginContainer, isContainerSlot } from './slots';
@@ -7,7 +6,7 @@ import { validateSlot } from './slots/slot-validation';
 import type { StorageVersion } from './versioning/version';
 import { VersionPropagation } from './versioning/version-propagation';
 import type { Draft } from './write';
-import { createDraft, createReadProxy, JsonStorageSelection, selectJsonStorage } from './write';
+import { createDraft, selectJsonStorage } from './write';
 
 export class WorkingStorageRoot {
     constructor(
@@ -56,12 +55,6 @@ export class WorkingStorageRoot {
         const value = stripSlot(this.latestContainer());
 
         return this.latestVersion().schema.parse(value) as T;
-    }
-
-    public read<T>(): DeepReadonly<T> {
-        return createReadProxy(
-            new JsonStorageSelection(this.latestContainer(), 0, '')
-        ) as DeepReadonly<T>;
     }
 
     public topLevelSlot(key: string): Slot | undefined {

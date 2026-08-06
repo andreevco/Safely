@@ -13,10 +13,11 @@ type PasscodeVerificationScreenProps = StaticScreenProps<{
     onSuccess: () => void;
     onClose?: () => void;
     title?: string;
+    subtitle?: string;
 }>;
 
 export const PasscodeVerificationScreen = (props: PasscodeVerificationScreenProps) => {
-    const { onSuccess, onClose, title } = props.route.params;
+    const { onSuccess, onClose, title, subtitle } = props.route.params;
 
     const { t } = useTranslation();
     const navigation = useNavigation();
@@ -72,6 +73,7 @@ export const PasscodeVerificationScreen = (props: PasscodeVerificationScreenProp
             <PasscodeView
                 testID={TEST_ID.passcodeVerification.screen}
                 title={title ?? t('passcode.verify.title')}
+                description={subtitle}
                 numberOfDigits={digitsAmount}
                 value={inputValue}
                 onChange={handleInputChange}

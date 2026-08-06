@@ -6,7 +6,7 @@ import { FiatAsset } from '@safely/core';
 import { useAvailableFiats } from '../../shared';
 import { useActiveAccountStoreSlot, useActiveAccountSyncStorageSlotUpdate } from '../account';
 
-const USD_FIAT = FiatAsset.create({ symbol: 'USD', name: 'US Dollar' });
+const USD_FIAT = FiatAsset.create({ symbol: 'USD', name: 'United States Dollar' });
 
 export function useActiveFiat(): FiatAsset {
     const stored = useActiveAccountStoreSlot('preferredFiat');

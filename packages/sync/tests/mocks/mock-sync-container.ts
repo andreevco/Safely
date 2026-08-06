@@ -6,8 +6,8 @@ import { ApiSigner } from '../../src/api/api-signer';
 import type { Configuration, SnapshotsApi } from '../../src/api/generated';
 import { AccountsApi } from '../../src/api/generated';
 import { CrdtController } from '../../src/crdt/crdt-controller';
-import { YCRDTRepository } from '../../src/crdt/y-crdt-repository';
-import { YManager } from '../../src/crdt/y-manager';
+import { CrdtManager } from '../../src/crdt/crdt-manager';
+import { CrdtRepository } from '../../src/crdt/crdt-repository';
 import { EncryptedKeyRepository } from '../../src/crypto/encrypted-key-repository';
 import { DmkVerifierService } from '../../src/crypto/service/dmk-verifier-service';
 import { IkService } from '../../src/crypto/service/ik-service';
@@ -59,15 +59,15 @@ export async function createMockSyncContainer<Latest extends StorageVersion, Res
     const snapshotApi = new MockSnapshotsApi(server);
     const snapshotSse = new MockSnapshotsSse(server);
 
-    const crdtRepository = new YCRDTRepository(storage, ikService.getPub(), versions);
-    const yManager = await YManager.create(crdtRepository);
-    const deviceCrdtRepository = new YCRDTRepository<tDevicesLatest, tDevicesRest>(
+    const crdtRepository = new CrdtRepository(storage, ikService.getPub(), versions);
+    const yManager = await CrdtManager.create(crdtRepository);
+    const deviceCrdtRepository = new CrdtRepository<tDevicesLatest, tDevicesRest>(
         storage,
         ikService.getPub(),
         DevicesVersions,
         'devices_crdt'
     );
-    const deviceYManager = await YManager.create<tDevicesLatest, tDevicesRest>(
+    const deviceYManager = await CrdtManager.create<tDevicesLatest, tDevicesRest>(
         deviceCrdtRepository
     );
     const crdtController = new CrdtController(yManager, deviceYManager);

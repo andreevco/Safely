@@ -74,7 +74,8 @@ export function usePasscode(): UsePasscodeResult {
                 navigationRef.current?.navigate('PasscodeVerificationScreen', {
                     onSuccess: resolve,
                     onClose: reject,
-                    title: options?.title
+                    title: options?.title,
+                    subtitle: options?.subtitle
                 });
             }),
         []

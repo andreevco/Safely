@@ -14,10 +14,12 @@ import { BleManagerProvider } from '@mobile/features/ledger';
 import Navigation from './navigation';
 import { navigationRef } from './navigation/navigationRef';
 import { useInitialNavigationState } from './navigation/useInitialNavigationState';
+import { useRestrictionGuard } from './navigation/useRestrictionGuard';
 
 export function AppNavigation() {
     const { theme } = useUnistyles();
     const initialState = useInitialNavigationState();
+    const enforceRestriction = useRestrictionGuard();
 
     const NavigationTheme: Theme = useMemo(
         () => ({
@@ -49,7 +51,10 @@ export function AppNavigation() {
                         <Navigation
                             ref={navigationRef}
                             initialState={initialState}
-                            onReady={() => SplashScreen.hideAsync()}
+                            onReady={() => {
+                                enforceRestriction();
+                                SplashScreen.hideAsync();
+                            }}
                             theme={NavigationTheme}
                             linking={{
                                 enabled: true,

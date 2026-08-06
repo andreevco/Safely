@@ -7,6 +7,7 @@ import type { MockSnapshotsServer } from './mock-snapshots-api';
 import type { MockSyncContainer } from './mock-sync-container';
 import { createMockSyncContainer } from './mock-sync-container';
 import { SyncStatus } from '../../src';
+import { InMemStorage } from './server-mock/storage';
 import type { SnapshotsApi } from '../../src/api/generated';
 import type { SnapshotsSse } from '../../src/api/snapshots-sse';
 import { generateAccountID, initializeSyncAccount } from '../../src/initialize';
@@ -15,7 +16,6 @@ import type { SyncMachine } from '../../src/sync-machine/machine';
 import { createSyncMachine } from '../../src/sync-machine/machine';
 import { SyncStatusManager } from '../../src/sync-provider/sync-status';
 import { encodeUpdatePayload } from '../../src/update-handler/update-payload';
-import { InMemStorage } from '../impl/storage';
 
 const TestSchema = z
     .object({

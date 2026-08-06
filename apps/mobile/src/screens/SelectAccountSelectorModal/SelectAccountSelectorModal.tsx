@@ -1,4 +1,5 @@
 import { useNavigation } from '@react-navigation/core';
+import type { StaticScreenProps } from '@react-navigation/native';
 import { impactAsync, ImpactFeedbackStyle } from 'expo-haptics';
 import { useTranslation } from 'react-i18next';
 import { ScrollView } from 'react-native-gesture-handler';
@@ -18,16 +19,19 @@ import { styles } from './SelectAccountSelectorModal.styles';
 interface AccountListItemProps {
     accountId: string;
     isActive: boolean;
+    showDivider?: boolean;
     onPress: () => void;
 }
 
-const AccountListItem = ({ accountId, isActive, onPress }: AccountListItemProps) => {
+const AccountListItem = (props: AccountListItemProps) => {
+    const { accountId, isActive, showDivider, onPress } = props;
+
     const { t } = useTranslation();
     const name = useAccountMeta(accountId).name;
     const walletsCount = useAccountStoreSlot(accountId, 'portfolios')?.length ?? 0;
 
     return (
-        <Cell onPress={onPress}>
+        <Cell showDivider={showDivider} onPress={onPress}>
             <Cell.Content>
                 <Cell.Row>
                     <Cell.Title>{name}</Cell.Title>
@@ -43,7 +47,11 @@ const AccountListItem = ({ accountId, isActive, onPress }: AccountListItemProps)
     );
 };
 
-export const SelectAccountSelectorModal = () => {
+type SelectAccountSelectorModalProps = StaticScreenProps<{ hasAddAccount?: boolean } | undefined>;
+
+export const SelectAccountSelectorModal = (props: SelectAccountSelectorModalProps) => {
+    const hasAddAccount = props.route.params?.hasAddAccount ?? false;
+
     const { t } = useTranslation();
     const accounts = useAccounts();
     const account = useActiveAccount();
@@ -83,14 +91,16 @@ export const SelectAccountSelectorModal = () => {
                         />
                     ))}
                 </List.Group>
-                <Button
-                    type="secondary"
-                    size="small"
-                    style={styles.addButton}
-                    onPress={() => navigation.navigate('AddAccountSheet')}
-                >
-                    {t('settings.addAccount')}
-                </Button>
+                {hasAddAccount && (
+                    <Button
+                        type="secondary"
+                        size="small"
+                        style={styles.addButton}
+                        onPress={() => navigation.navigate('AddAccountSheet')}
+                    >
+                        {t('settings.addAccount')}
+                    </Button>
+                )}
             </ScrollView>
         </Screen>
     );

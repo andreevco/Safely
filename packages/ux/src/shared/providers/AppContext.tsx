@@ -30,7 +30,7 @@ export interface IAppContext {
         osVersion: string;
     };
 
-    userCountryInfo?: UserCountryInfo;
+    getUserCountryInfo(this: void): Promise<UserCountryInfo>;
 
     devToken?: string;
 

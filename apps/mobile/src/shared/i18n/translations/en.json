@@ -1,5 +1,18 @@
 {
     "currentLanguageName": "English",
+    "restrictedRegion": {
+        "title": "Safely isn't available in your region",
+        "subtitle": "For more information, contact",
+        "exportRecoveryPhrases": "Export recovery phrases",
+        "logOutAndErase": "Log out and erase all app data"
+    },
+    "restrictedRecovery": {
+        "title": "Recovery phrases",
+        "subtitle": "Wallet features aren't currently available. Choose a wallet to export its recovery phrase.",
+        "wallets": "Wallets",
+        "withoutRecoveryPhrase": "Without recovery phrase",
+        "noRecoveryPhrase": "No recovery phrase"
+    },
     "portfolio": {
         "watchOnly": "Watch only",
         "testnet": "Testnet",
@@ -115,7 +128,47 @@
         }
     },
     "currency": {
-        "title": "Currency"
+        "title": "Currency",
+        "localCurrency": {
+            "title": "Local currency"
+        },
+        "mainBalance": {
+            "title": "Main balance",
+            "options": {
+                "fiat": "In local currency",
+                "crypto": "In Bitcoins"
+            }
+        },
+        "moreOptions": {
+            "title": "More options",
+            "amountDisplay": {
+                "title": "Amount display",
+                "subtitle": "Home screen, history, full sent amounts."
+            }
+        }
+    },
+    "amountDisplay": {
+        "title": "Amount display",
+        "transactionHistory": {
+            "title": "Transaction history",
+            "footer": "Applies to transaction history and details. Fiat values",
+            "footerRates": "use current exchange rates."
+        },
+        "homeScreen": {
+            "title": "Home screen",
+            "footer": "Applies to asset cards on the Home screen."
+        },
+        "transactionAmounts": {
+            "title": "Transaction amounts",
+            "showFull": {
+                "title": "Show full sent amount",
+                "subtitle": "Sent crypto amounts include network fees and are shown without rounding."
+            }
+        },
+        "options": {
+            "crypto": "Crypto first",
+            "fiat": "Local currency first"
+        }
     },
     "home": {
         "actions": {
@@ -201,6 +254,7 @@
         },
         "phraseSheet": {
             "title": "Recovery phrase",
+            "titleSuffix": "recovery phrase",
             "warning": "Do not share this phrase.\nAnyone with it can access your wallet."
         },
         "accountProtected": {
@@ -756,6 +810,7 @@
             "sender": "Sender",
             "fee": "Network fee",
             "hash": "Transaction",
+            "fiatRateNote": "Fiat values use the current exchange rate.",
             "status": {
                 "title": "Status",
                 "pending": {

@@ -5,7 +5,7 @@ import type { Build, UserCountryInfo } from '../../entities';
 export interface ConfigParams {
     build: Build;
     version: string; // x.y.z
-    userCountryInfo?: Partial<UserCountryInfo>;
+    userCountryInfo: UserCountryInfo;
     lang: string;
     devToken?: string;
 }
@@ -13,7 +13,8 @@ export interface ConfigParams {
 // GET /config
 
 export const flagsSchema = z.looseObject({
-    enable_onramps: z.boolean().default(false)
+    enable_onramps: z.boolean().default(false),
+    enable_app_restrictions: z.boolean().default(false)
 });
 
 export type Flags = z.infer<typeof flagsSchema>;
