@@ -16,7 +16,7 @@ export const styles = StyleSheet.create((theme, rt) => ({
         gap: theme.spacing[4],
         alignItems: 'center'
     },
-    doneButton: {
+    dismissButton: {
         marginHorizontal: theme.spacing[24],
         alignSelf: 'center'
     }

@@ -71,7 +71,9 @@ export const DataSyncBlock = ({ details }: DataSyncBlockProps) => {
                             <TableCell.Label>
                                 {isSynced
                                     ? t('security.deviceDetails.wallets')
-                                    : t('security.deviceDetails.notOnThisDevice')}
+                                    : t('security.deviceDetails.notOnThisDevice', {
+                                          deviceName: details.meta.name
+                                      })}
                             </TableCell.Label>
                         </TableCell.Column>
                         <TableCell.Column style={styles.walletsColumn}>

@@ -102,12 +102,12 @@ const WizardContent = ({ details }: { details: SyncedDeviceDetails }) => {
 
             {deviceAccess === 'has' && (
                 <Button
-                    style={styles.doneButton}
+                    style={styles.dismissButton}
                     size="medium"
                     type="secondary"
                     onPress={navigation.goBack}
                 >
-                    {t('deviceSupportWizard.done')}
+                    {t('deviceSupportWizard.dismiss')}
                 </Button>
             )}
 
@@ -152,12 +152,12 @@ const WizardContent = ({ details }: { details: SyncedDeviceDetails }) => {
 
             {othersAccess === 'impossible' && (
                 <Button
-                    style={styles.doneButton}
+                    style={styles.dismissButton}
                     size="medium"
                     type="secondary"
                     onPress={navigation.goBack}
                 >
-                    {t('deviceSupportWizard.done')}
+                    {t('deviceSupportWizard.dismiss')}
                 </Button>
             )}
         </>

@@ -307,7 +307,7 @@
             "fullAccess": "This device has full access to your account and wallets. It can be used if another device is lost.",
             "wallets": "Wallets",
             "allWallets": "All wallets",
-            "notOnThisDevice": "Not on this device",
+            "notOnThisDevice": "Not on {{deviceName}}",
             "help": {
                 "title": "Need help with this device?",
                 "subtitle": "Answer a few questions to find the best next step."
@@ -381,7 +381,7 @@
     },
     "deviceSupportWizard": {
         "title": "Support",
-        "done": "Done",
+        "dismiss": "Dismiss",
         "intro": {
             "title": "What happened to {{deviceName}}?",
             "subtitle": "{{deviceName}} can't be removed remotely. Answer a few questions to find the best way to protect your account."
