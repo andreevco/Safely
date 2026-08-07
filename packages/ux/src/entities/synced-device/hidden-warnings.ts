@@ -5,18 +5,19 @@ import { useSharedUxStorage } from '../../shared';
 
 const HIDE_DURATION_MS = 30 * 24 * 60 * 60 * 1000;
 
-export function useIsDeviceWarningHidden(ikPubHex: string): boolean {
+export function useIsDeviceWarningHiddenQuery(ikPubHex: string) {
     const { get } = useSharedUxStorage('hiddenDeviceWarnings');
 
-    const { data } = useQuery({
+    return useQuery({
         queryKey: syncedDeviceKeys.hiddenWarnings.toKey(),
         queryFn: async () => (await get()) ?? {},
-        staleTime: Infinity
+        staleTime: Infinity,
+        select: (hiddenWarnings: Record<string, number>) => {
+            const hiddenUntil = hiddenWarnings[ikPubHex];
+
+            return hiddenUntil !== undefined && hiddenUntil > Date.now();
+        }
     });
-
-    const hiddenUntil = data?.[ikPubHex];
-
-    return hiddenUntil !== undefined && hiddenUntil > Date.now();
 }
 
 export function useHideDeviceWarning() {

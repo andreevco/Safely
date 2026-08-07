@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 
 import type { SyncedDeviceDetails } from '@safely/ux';
-import { useDateFormatter, useIsDeviceWarningHidden } from '@safely/ux';
+import { useDateFormatter, useIsDeviceWarningHiddenQuery } from '@safely/ux';
 
 import { List, TableCell } from '@mobile/shared/ui';
 
@@ -16,8 +16,8 @@ export const DeviceBlock = ({ details }: DeviceBlockProps) => {
     const { t } = useTranslation();
     const formatDate = useDateFormatter({ day: 'numeric', month: 'short', year: 'numeric' });
     const connectionLabel = useConnectionLabel(details.lastSyncAt);
-    const isWarningHidden = useIsDeviceWarningHidden(details.ikPubHex);
-    const showStaleWarning = details.isStale && !isWarningHidden;
+    const { data: isWarningHidden, isPending } = useIsDeviceWarningHiddenQuery(details.ikPubHex);
+    const showStaleWarning = !isPending && details.isStale && !isWarningHidden;
 
     return (
         <List>

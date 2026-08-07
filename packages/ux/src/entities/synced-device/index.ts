@@ -20,7 +20,7 @@ import {
     useActiveAccountSyncStorageUpdate
 } from '../account/useAccountSyncStorageUpdate';
 
-export { useIsDeviceWarningHidden, useHideDeviceWarning } from './hidden-warnings';
+export { useIsDeviceWarningHiddenQuery, useHideDeviceWarning } from './hidden-warnings';
 export { useArchiveDevice, useUnarchiveDevice } from './device-archive';
 
 export function useSyncedDevicesMeta(): Record<string, SDeviceMeta> | null {
