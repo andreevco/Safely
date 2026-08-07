@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 import {
     useCurrentDeviceIkPub,
     useHasAccount,
+    useLogger,
     useSyncedDeviceDetails,
     useUnarchiveDevice
 } from '@safely/ux';
@@ -13,6 +14,7 @@ const SelfUnarchiveWatcherInner = () => {
     const currentIkPubHex = useCurrentDeviceIkPub();
     const { mutateAsync: unarchiveDevice } = useUnarchiveDevice();
     const details = useSyncedDeviceDetails(currentIkPubHex);
+    const logger = useLogger('self-unarchive');
     const isHandlingRef = useRef(false);
 
     const archive = details?.archive ?? null;
@@ -30,10 +32,11 @@ const SelfUnarchiveWatcherInner = () => {
                     archivedFromDeviceName: archive.archivedFromDeviceName
                 })
             )
+            .catch(e => logger.error('self_unarchive.failed', e))
             .finally(() => {
                 isHandlingRef.current = false;
             });
-    }, [archive, currentIkPubHex, unarchiveDevice]);
+    }, [archive, currentIkPubHex, unarchiveDevice, logger]);
 
     return null;
 };
