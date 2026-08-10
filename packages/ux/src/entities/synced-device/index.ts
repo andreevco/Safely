@@ -14,10 +14,7 @@ import { isSensitivePortfolio } from './utils';
 import { useAppContext } from '../../shared';
 import type { SyncAccount } from '../account/account-state';
 import { useActiveAccount, useActiveAccountStoreSlot } from '../account/account-state';
-import {
-    useAccountSyncStorageSlotUpdate,
-    useActiveAccountSyncStorageUpdate
-} from '../account/useAccountSyncStorageUpdate';
+import { useAccountSyncStorageSlotUpdate } from '../account/useAccountSyncStorageUpdate';
 
 export { useIsDeviceWarningHiddenQuery, useHideDeviceWarning } from './hidden-warnings';
 export { useArchiveDevice, useUnarchiveDevice } from './device-archive';
@@ -40,6 +37,7 @@ export enum SyncedDeviceDataStatus {
 
 export type SyncedDeviceArchive = {
     archivedAt: number;
+    isSignedOut: boolean;
     archivedFromDeviceName: string | null;
 };
 
@@ -55,20 +53,22 @@ export type SyncedDeviceDetails = {
 };
 
 const STALE_CONNECTION_MS = 30 * 24 * 60 * 60 * 1000;
+const PAIRING_GRACE_MS = 60 * 1000;
 
 function resolveDataStatus(params: {
     isCurrent: boolean;
     hasReported: boolean;
+    isJustPaired: boolean;
     pendingPortfolios: readonly Portfolio[];
 }): SyncedDeviceDataStatus {
-    const { isCurrent, hasReported, pendingPortfolios } = params;
+    const { isCurrent, hasReported, isJustPaired, pendingPortfolios } = params;
 
     if (isCurrent) {
         return SyncedDeviceDataStatus.SYNCED;
     }
 
     if (!hasReported) {
-        return SyncedDeviceDataStatus.UNKNOWN;
+        return isJustPaired ? SyncedDeviceDataStatus.SYNCED : SyncedDeviceDataStatus.UNKNOWN;
     }
 
     return pendingPortfolios.length === 0
@@ -104,6 +104,7 @@ function buildDeviceDetails(params: {
         dataStatus: resolveDataStatus({
             isCurrent,
             hasReported: syncState !== null,
+            isJustPaired: Date.now() - meta.pairedAt < PAIRING_GRACE_MS,
             pendingPortfolios
         }),
         pendingPortfolios,
@@ -112,6 +113,7 @@ function buildDeviceDetails(params: {
                 ? null
                 : {
                       archivedAt: archive.archivedAt,
+                      isSignedOut: archive.archivedFromIkPubHex === null,
                       archivedFromDeviceName:
                           archive.archivedFromIkPubHex === null
                               ? null
@@ -170,6 +172,28 @@ export function useSyncedDevices(): SyncedDeviceDetails[] {
                 )
                 .sort((a, b) => Number(b.isCurrent) - Number(a.isCurrent)),
         [devicesMeta, devicesSyncState, devicesArchive, currentIkPubHex, portfolios]
+    );
+}
+
+export function useHasActivePeer(): boolean {
+    const devices = useSyncedDevices();
+
+    return devices.some(device => !device.isCurrent && device.archive === null);
+}
+
+export function useIsAttentionRequired(): boolean {
+    const devices = useSyncedDevices();
+    const hasActivePeer = useHasActivePeer();
+
+    const hasPeers = devices.some(device => !device.isCurrent);
+
+    return (
+        (hasPeers && !hasActivePeer) ||
+        devices.some(
+            device =>
+                device.archive === null &&
+                (device.isStale || device.dataStatus !== SyncedDeviceDataStatus.SYNCED)
+        )
     );
 }
 

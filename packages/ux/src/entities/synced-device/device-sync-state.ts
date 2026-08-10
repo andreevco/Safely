@@ -28,9 +28,7 @@ function createDeviceSyncStateReporter(deps: DeviceSyncStateReporterDeps) {
     return async function report(): Promise<void> {
         if (isWriting) return;
 
-        const status = account.syncProvider.syncStatusManager.getStatus();
-        if (status !== SyncStatus.SYNCHRONIZED) {
-            logger.debug('device_sync_state.skipped', { status });
+        if (account.syncProvider.syncStatusManager.getStatus() !== SyncStatus.SYNCHRONIZED) {
             return;
         }
 

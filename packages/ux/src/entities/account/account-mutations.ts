@@ -52,7 +52,8 @@ import {
 import { useToast } from '../toast';
 import {
     useAccountSyncStorageUpdate,
-    useActiveAccountSyncStorageSlotUpdate
+    useActiveAccountSyncStorageSlotUpdate,
+    useActiveAccountSyncStorageUpdate
 } from './useAccountSyncStorageUpdate';
 
 export * from './local-storage';
@@ -450,14 +451,17 @@ export function useDeleteAccount() {
     const client = useQueryClient();
     const ikPub = useCurrentDeviceIkPub();
     const clearActiveAccountLocalStorage = useClearActiveAccountLocalStorage();
-    const update = useActiveAccountSyncStorageSlotUpdate('devicesMeta');
+    const update = useActiveAccountSyncStorageUpdate();
     const logger = useLogger('account');
 
     return useMutation<void, Error, ITreeStorage>({
         async mutationFn(secureEncryptedStorage) {
             logger.info('deleting account', { accountId: account.accountId });
             await update(draft => {
-                draft.ifPresent(devicesMeta => devicesMeta.delete(ikPub));
+                draft
+                    .at('devicesArchive')
+                    .entry(ikPub)
+                    .set({ archivedAt: Date.now(), archivedFromIkPubHex: null });
             });
 
             await accountFactory.deleteLocalAccount(account.accountId, secureEncryptedStorage);

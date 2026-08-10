@@ -20,7 +20,7 @@ const SelfUnarchiveWatcherInner = () => {
     const archive = details?.archive ?? null;
 
     useEffect(() => {
-        if (archive === null || isHandlingRef.current) {
+        if (archive === null || archive.isSignedOut || isHandlingRef.current) {
             return;
         }
 

@@ -17,7 +17,8 @@ export const DeviceBlock = ({ details }: DeviceBlockProps) => {
     const formatDate = useDateFormatter({ day: 'numeric', month: 'short', year: 'numeric' });
     const connectionLabel = useConnectionLabel(details.lastSyncAt);
     const { data: isWarningHidden, isPending } = useIsDeviceWarningHiddenQuery(details.ikPubHex);
-    const showStaleWarning = !isPending && details.isStale && !isWarningHidden;
+    const showStaleWarning =
+        details.archive === null && details.isStale && !isPending && !isWarningHidden;
 
     return (
         <List>
@@ -66,7 +67,7 @@ export const DeviceBlock = ({ details }: DeviceBlockProps) => {
                         </TableCell.Column>
                         <TableCell.Column>
                             <TableCell.Value>
-                                {details.archive.archivedFromDeviceName === null
+                                {details.archive.isSignedOut
                                     ? t('security.deviceDetails.reasonSignedOut', {
                                           deviceName: details.meta.name
                                       })

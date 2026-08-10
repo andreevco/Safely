@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { SyncedDeviceDataStatus, useSyncedDevices } from '@safely/ux';
+import { useIsAttentionRequired, useSyncedDevices } from '@safely/ux';
 
 import { Banner, Button, DeviceLinkCheckmark96, Icon, List, Screen, Text } from '@mobile/shared/ui';
 
@@ -15,12 +15,8 @@ type ProtectedViewProps = {
 
 export const ProtectedView = ({ onLinkDevice, onAbout }: ProtectedViewProps) => {
     const { t } = useTranslation();
-    const allDevices = useSyncedDevices();
-    const devices = allDevices.filter(device => device.archive === null);
-    const archivedDevices = allDevices.filter(device => device.archive !== null);
-    const needsAttention = devices.some(
-        device => device.isStale || device.dataStatus !== SyncedDeviceDataStatus.SYNCED
-    );
+    const devices = useSyncedDevices().filter(device => device.archive === null);
+    const isAttentionRequired = useIsAttentionRequired();
 
     return (
         <Screen.Scrollable>
@@ -44,7 +40,7 @@ export const ProtectedView = ({ onLinkDevice, onAbout }: ProtectedViewProps) => 
                 </View>
                 <List style={styles.deviceList}>
                     <List.Title>{t('security.accountProtected.listTitle')}</List.Title>
-                    {needsAttention && (
+                    {isAttentionRequired && (
                         <Banner variant="danger" nonInteractive style={styles.attentionBanner}>
                             <Banner.Content>
                                 <Banner.Text>
@@ -59,7 +55,7 @@ export const ProtectedView = ({ onLinkDevice, onAbout }: ProtectedViewProps) => 
                         ))}
                     </View>
                 </List>
-                <ArchivedDevicesSection devices={archivedDevices} />
+                <ArchivedDevicesSection />
             </View>
         </Screen.Scrollable>
     );

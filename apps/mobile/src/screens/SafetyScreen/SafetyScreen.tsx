@@ -5,7 +5,7 @@ import { useUnistyles } from 'react-native-unistyles';
 import {
     AccountLinkState,
     useAccountLinkState,
-    useDevicesNeedAttention,
+    useIsAttentionRequired,
     useCompleteSyncOnboarding,
     useSyncOnboardingCompletedQuery
 } from '@safely/ux';
@@ -20,10 +20,14 @@ import { shouldShowSyncOnboarding } from './shouldShowSyncOnboarding';
 
 type Theme = ReturnType<typeof useUnistyles>['theme'];
 
-function resolveDotColor(params: { needsAttention: boolean; theme: Theme }): string {
-    const { needsAttention, theme } = params;
-
-    return needsAttention ? theme.colors.wallet.red : theme.colors.accent.orange;
+function resolveDotColor({
+    isAttentionRequired,
+    theme
+}: {
+    isAttentionRequired: boolean;
+    theme: Theme;
+}): string {
+    return isAttentionRequired ? theme.colors.wallet.red : theme.colors.accent.orange;
 }
 
 export const SafetyScreen = () => {
@@ -31,12 +35,12 @@ export const SafetyScreen = () => {
 
     const navigation = useNavigation();
     const linkState = useAccountLinkState();
-    const needsAttention = useDevicesNeedAttention();
+    const isAttentionRequired = useIsAttentionRequired();
 
     useEffect(() => {
         navigation.setOptions({
             tabBarIcon: ({ color }: { color: string }) => {
-                if (linkState === AccountLinkState.PROTECTED && !needsAttention) {
+                if (linkState === AccountLinkState.PROTECTED && !isAttentionRequired) {
                     return <Icon icon={ShieldCheckmark28} style={{ tintColor: color }} />;
                 }
 
@@ -44,12 +48,12 @@ export const SafetyScreen = () => {
                     <DottedShieldIcon
                         size={28}
                         fillShield={color}
-                        fillDot={resolveDotColor({ needsAttention, theme })}
+                        fillDot={resolveDotColor({ isAttentionRequired, theme })}
                     />
                 );
             }
         });
-    }, [linkState, needsAttention, navigation, theme]);
+    }, [linkState, isAttentionRequired, navigation, theme]);
 
     const { data: completed } = useSyncOnboardingCompletedQuery();
     const { mutateAsync: complete } = useCompleteSyncOnboarding();

@@ -2,20 +2,17 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import type { SyncedDeviceDetails } from '@safely/ux';
+import { useSyncedDevices } from '@safely/ux';
 
 import { ChevronRight16, Icon, List, Text, TouchableOpacity } from '@mobile/shared/ui';
 
 import { styles } from './ArchivedDevicesSection.styles';
 import { DeviceItem } from '../DeviceItem';
 
-type ArchivedDevicesSectionProps = {
-    devices: SyncedDeviceDetails[];
-};
-
-export const ArchivedDevicesSection = ({ devices }: ArchivedDevicesSectionProps) => {
+export const ArchivedDevicesSection = () => {
     const { t } = useTranslation();
     const [isExpanded, setIsExpanded] = useState(false);
+    const devices = useSyncedDevices().filter(device => device.archive !== null);
 
     if (devices.length === 0) {
         return null;
