@@ -1,0 +1,74 @@
+{
+  "name": "@safely/web-ui",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "codegen": "panda codegen",
+    "compile": "panda codegen && tsc --noEmit",
+    "dev": "tsc --watch",
+    "lint": "panda codegen && eslint ./src ./panda ./build ./panda.config.ts",
+    "test": "panda codegen && vitest run --passWithNoTests",
+    "prepare": "panda codegen"
+  },
+  "dependencies": {
+    "@base-ui/react": "1.6.0",
+    "@safely/core": "workspace:*",
+    "@safely/sync": "workspace:*",
+    "@safely/ux": "workspace:*",
+    "@safely/xhr-event-source": "workspace:*",
+    "@vitejs/plugin-react": "5.2.0",
+    "buffer": "6.0.3",
+    "i18next": "catalog:",
+    "react-i18next": "catalog:",
+    "zustand": "catalog:"
+  },
+  "devDependencies": {
+    "@pandacss/dev": "1.12.0",
+    "@tanstack/react-query": "catalog:",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/react": "^16.3.0",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "happy-dom": "^20.9.0",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "^4.0.18"
+  },
+  "peerDependencies": {
+    "@tanstack/react-query": "catalog:",
+    "@types/react": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "vite": "catalog:"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./bootstrap": "./src/bootstrap.ts",
+    "./styles.css": "./src/shared/styles/global.css",
+    "./vite-preset": "./build/vite-preset.ts",
+    "./panda.config": "./panda.config.ts",
+    "./styled-system/css": {
+      "types": "./styled-system/css/index.d.ts",
+      "default": "./styled-system/css/index.mjs"
+    },
+    "./styled-system/recipes": {
+      "types": "./styled-system/recipes/index.d.ts",
+      "default": "./styled-system/recipes/index.mjs"
+    },
+    "./styled-system/patterns": {
+      "types": "./styled-system/patterns/index.d.ts",
+      "default": "./styled-system/patterns/index.mjs"
+    },
+    "./styled-system/jsx": {
+      "types": "./styled-system/jsx/index.d.ts",
+      "default": "./styled-system/jsx/index.mjs"
+    },
+    "./styled-system/tokens": {
+      "types": "./styled-system/tokens/index.d.ts",
+      "default": "./styled-system/tokens/index.mjs"
+    },
+    "./styled-system/types": "./styled-system/types/index.d.ts"
+  }
+}

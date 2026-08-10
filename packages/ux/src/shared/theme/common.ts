@@ -1,3 +1,7 @@
+/**
+ * Must stay dependency-free: consumed by the unistyles config (mobile) and by the Panda
+ * config (web) under plain node. Numbers are unitless — the consumer adds `px` or not.
+ */
 export const commonTheme = {
     border: {
         hairline: 0.5,

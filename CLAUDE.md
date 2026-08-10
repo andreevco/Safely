@@ -15,8 +15,11 @@ Dependencies flow strictly bottom-up in this table; imports in the other directi
 | `packages/sync`             | E2EE sync protocol: key hierarchy, device onboarding, device list, snapshots, SSE stream, xstate machine, generated OpenAPI client.            |
 | `packages/sync-storage`     | Versioned schemas of user state (`v1`, `v2`, …) on top of slottree, plus migrations.                                                           |
 | `packages/core`             | Wallet domain: BTC (xpub, PSBT, fee estimation), Ledger, external APIs (config/price/rate/exchange), entities, DI interfaces. No React.        |
-| `packages/ux`               | React layer shared by every app: FSD (`shared` → `entities` → `features`), react-query, zustand, xstate forms. No RN/DOM specifics.            |
+| `packages/ux`               | React layer shared by every app: FSD (`shared` → `entities` → `features`), react-query, zustand, xstate forms, plus the design tokens (`./theme`) and the strings (`./translations`). No RN/DOM specifics. |
+| `packages/web-ui`           | React layer shared by the web targets: design system (Base UI + Panda), pages, platform interfaces. FSD + `pages`. No Electron/extension code.  |
 | `apps/mobile`               | Expo dev-client (iOS/Android): FSD + `screens`, native modules `modules/safely-*`, unistyles, i18n.                                            |
+| `apps/desktop`              | Electron (forge + vite): split by process (`main`/`preload`/`renderer`/`shared`), platform implementation for the web UI.                       |
+| `apps/browser`              | MV3 extension — placeholder, see its README.                                                                                                    |
 | `packages/xhr-event-source` | EventSource over XHR for platforms without native SSE.                                                                                         |
 
 Platform capabilities reach the domain through DI interfaces from `@safely/core` (`src/di/`:
@@ -33,11 +36,17 @@ Node version comes from `.nvmrc` (`nvm use`); pnpm only (`preinstall` blocks npm
   e.g. `@safely/core`, `mobile`)
 - `pnpm -r run lint`, `pnpm -r run test` — everything; CI runs them only for changed packages
   (`--filter "...[<merge-base>]"`), and for all packages when root-level files change
-- mobile: `pnpm --filter mobile ios|android|start` — dev-client, not Expo Go
+- mobile: `pnpm --filter @safely/mobile ios|android|start` — dev-client, not Expo Go
+- desktop: `pnpm --filter @safely/desktop start|package|make`
+- `packages/web-ui` generates `styled-system/` with `panda codegen`; its `compile`/`lint`/`test`
+  scripts run it first, and `pnpm -r run` is topological, so the apps that depend on it build after.
+  A standalone run in an app may need `pnpm --filter @safely/web-ui run codegen` first.
 
-Dependency versions go through `catalog:` in `pnpm-workspace.yaml` only: add the version to the
-catalog and reference `catalog:` from the package's package.json. `minimumReleaseAge: 5760` means
-pnpm refuses packages published less than four days ago.
+A dependency shared by more than one workspace package gets its version in the `catalog:` of
+`pnpm-workspace.yaml`, and the package.json references `catalog:` — so the version is stated once.
+A dependency only one package uses pins its version in that package's package.json; don't grow the
+catalog with single-consumer entries. `minimumReleaseAge: 5760` means pnpm refuses packages
+published less than four days ago.
 
 Root-level tooling stays at the root: `eslint`, its plugins and `prettier` are installed once in the
 root package.json, and a package only adds the `"lint": "eslint ./src"` script. Model a new package's
@@ -55,6 +64,11 @@ root tooling no.
 - **Import cycles are an eslint error** (`import/no-cycle`) — never suppress it. Modules call helpers
   at module-load time (e.g. `defineQueryKeys(...)` in `keys.ts`), so a cycle yields `undefined`
   instead of the export and crashes the app at startup.
+- **Design tokens live only in `packages/ux/src/shared/theme`** (`@safely/ux/theme`) — mobile feeds
+  them to unistyles, the web to Panda. A colour or spacing literal written anywhere else silently
+  desynchronises the platforms.
+- **Panda extracts styles statically and fails silently** — a runtime value in a style yields no CSS,
+  no error. See `.claude/rules/web-ui.md`; `styled-system/` must be generated before `tsc`/eslint.
 
 Everything else is enforced mechanically — layer boundaries, `any`, `console`, import order, type
 imports, naming. The full rule set lives in `eslint.config.js`; run lint instead of memorising it, and
@@ -64,7 +78,8 @@ message.
 ## Where the details are
 
 Topic rules in `.claude/rules/` load automatically when you open files in the matching area:
-`typescript-style.md`, `fsd-layers.md`, `sync-and-crypto.md`, `mobile-app.md`, `testing.md`.
+`typescript-style.md`, `fsd-layers.md`, `sync-and-crypto.md`, `mobile-app.md`, `web-ui.md`,
+`desktop-app.md`, `testing.md`.
 
 Specs — read before changing the sync protocol or the state format; the rules files do not restate
 them:

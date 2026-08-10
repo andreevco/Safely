@@ -51,19 +51,21 @@ when you touch that module.
 
 ## UI
 
-- Styling is `react-native-unistyles`. The theme is configured once in `src/shared/unistyles`
-  (currently only `dark`, which is also the initial theme). Take colors and spacing from the theme
-  instead of hardcoding them.
+- Styling is `react-native-unistyles`. The token values live in `@safely/ux/theme` — shared with the
+  web targets — and `src/shared/unistyles` only feeds them to `StyleSheet.configure` (currently only
+  `dark`, which is also the initial theme). Take colors and spacing from the theme instead of
+  hardcoding them, and edit the values in `packages/ux/src/shared/theme`, not here.
 - A screen is a directory under `src/screens`; navigation and providers live in `src/app`
   (`AppNavigation.tsx`, `AppContext.tsx`, `root-error-boundary`, `root-suspense`).
 - Layers and the `@mobile/*` aliases: see `fsd-layers.md`.
 
 ## i18n
 
-The source of strings is `src/shared/i18n/translations/en.json`; the other locale files are produced
-by translation and are not edited by hand. Add new copy to `en.json` and read it through
-`useTranslate()`. Supported locales are also listed in `app.config.js` (`CFBundleLocalizations`) —
-update it when adding a language.
+The strings live in `@safely/ux/translations` (`packages/ux/src/shared/i18n/translations/`), shared
+with the web targets; `src/shared/i18n` only creates the i18next instance and detects the language.
+The source of strings is `en.json`; the other locale files are produced by translation and are not
+edited by hand. Add new copy to `en.json` and read it through `useTranslate()`. Supported locales are
+also listed in `app.config.js` (`CFBundleLocalizations`) — update it when adding a language.
 
 ## Build and release
 

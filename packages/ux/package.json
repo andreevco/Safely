@@ -43,6 +43,8 @@
   },
   "exports": {
     ".": "./src/index.ts",
+    "./theme": "./src/shared/theme/index.ts",
+    "./translations": "./src/shared/i18n/translations/index.ts",
     "./assets/icons/*": "./src/shared/assets/icons/*"
   }
 }

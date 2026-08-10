@@ -1,16 +1,20 @@
 ---
 paths:
   - 'packages/ux/src/**/*.{ts,tsx}'
+  - 'packages/web-ui/src/**/*.{ts,tsx}'
   - 'apps/mobile/src/**/*.{ts,tsx}'
 ---
 
-# FSD layers in `@safely/ux` and `apps/mobile`
+# FSD layers in `@safely/ux`, `@safely/web-ui` and `apps/mobile`
 
 Boundaries are enforced by `eslint-plugin-boundaries` (`eslint.config.js`, `boundaries/element-types`).
 An "upward" import is a build error, not a style nit.
 
 `packages/ux/src`: `shared` → `entities` → `features`
+`packages/web-ui/src`: `shared` → `entities` → `features` → `pages` → `app`
 `apps/mobile/src`: `shared` → `entities` → `features` → `screens` → `app`
+
+`apps/desktop` is not layered this way — it is split by Electron process; see `desktop-app.md`.
 
 A layer may only import layers to its left. `shared` knows nothing about `entities`; `entities`
 knows nothing about `features`; in mobile, `features` knows nothing about `screens` or `app`, and so on.
@@ -27,6 +31,11 @@ knows nothing about `features`; in mobile, `features` knows nothing about `scree
   `<Name>Modal.tsx`. A screen composes features and holds no domain logic of its own.
 - `apps/mobile/src/app` — entry point: navigation, providers, error boundary, storage and
   tanstack-query bootstrapping.
+- `packages/web-ui/src/shared` — the web design system (`shared/ui`, Panda recipes live in
+  `packages/web-ui/panda/recipes`) and the platform interfaces the apps implement.
+- `packages/web-ui/src/pages` — one route target, the web counterpart of a mobile screen.
+- `packages/web-ui/src/app` — router and providers, exported as the single component an app mounts.
+  The app passes in its platform implementation; `web-ui` never imports app code (enforced).
 
 Put new code in the lowest layer that fits. If a feature needs something from `screens`, the logic
 should move down into `features` — don't move the import up.
@@ -34,9 +43,15 @@ should move down into `features` — don't move the import up.
 ## Layer public API
 
 Every layer and every module inside it is re-exported through `index.ts` (`packages/ux/src/index.ts`
-→ `shared`/`entities`/`features` → modules). Externally the `@safely/ux` package exposes a single
-barrel plus `@safely/ux/assets/icons/*`. Inside the package, import a module through its `index.ts`,
-not through an internal file.
+→ `shared`/`entities`/`features` → modules). Externally the `@safely/ux` package exposes the barrel
+plus three subpaths: `@safely/ux/assets/icons/*`, `@safely/ux/theme` and `@safely/ux/translations`.
+Inside the package, import a module through its `index.ts`, not through an internal file.
+
+`shared/theme` and `shared/i18n/translations` have their own subpaths because their consumers run
+outside React — the unistyles config and the i18next bootstrap in `apps/mobile`, the Panda config in
+`packages/web-ui` (plain node). Importing the barrel there would drag react and react-query into a
+build script or into module-init order, so keep both modules dependency-free: plain data, no imports
+beyond the JSON files.
 
 Mobile uses the `tsconfig.json` aliases for internal imports: `@mobile/shared`, `@mobile/entities`,
 `@mobile/features`, `@mobile/screens`, `@mobile/app` (and their `/*` variants). Relative paths are

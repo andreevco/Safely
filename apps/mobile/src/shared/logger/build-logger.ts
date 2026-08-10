@@ -6,9 +6,9 @@ import {
     LogLevel,
     logsFilterMinSeverityLevel
 } from '@safely/sync';
+import { SanitizedTransport } from '@safely/ux';
 
 import type { FileTransport } from './file-transport';
-import { SanitizedTransport } from './sanitized-transport';
 
 export function buildLogger(fileTransport: FileTransport, isDev: boolean): Logger {
     let filter;
