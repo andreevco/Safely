@@ -1,37 +1,42 @@
-import { useIsFocused, useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { useCallback, useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { useUnistyles } from 'react-native-unistyles';
 
 import {
     AccountLinkState,
     useAccountLinkState,
+    useDevicesNeedAttention,
     useCompleteSyncOnboarding,
     useSyncOnboardingCompletedQuery
 } from '@safely/ux';
 
 import { DottedShieldIcon } from '@mobile/shared/resources';
-import { Button, Icon, Screen, ShieldCheckmark28 } from '@mobile/shared/ui';
+import { Icon, Screen, ShieldCheckmark28 } from '@mobile/shared/ui';
 
 import { ProtectedView } from './components/ProtectedView';
 import { SoloView } from './components/SoloView';
 import { SyncOnboarding } from './components/SyncOnboarding';
-import { UnlinkedView } from './components/UnlinkedView';
-import { styles } from './SafetyScreen.styles';
 import { shouldShowSyncOnboarding } from './shouldShowSyncOnboarding';
 
+type Theme = ReturnType<typeof useUnistyles>['theme'];
+
+function resolveDotColor(params: { needsAttention: boolean; theme: Theme }): string {
+    const { needsAttention, theme } = params;
+
+    return needsAttention ? theme.colors.wallet.red : theme.colors.accent.orange;
+}
+
 export const SafetyScreen = () => {
-    const { t } = useTranslation();
     const { theme } = useUnistyles();
 
     const navigation = useNavigation();
     const linkState = useAccountLinkState();
-    const isFocused = useIsFocused();
+    const needsAttention = useDevicesNeedAttention();
 
     useEffect(() => {
         navigation.setOptions({
             tabBarIcon: ({ color }: { color: string }) => {
-                if (linkState === AccountLinkState.PROTECTED) {
+                if (linkState === AccountLinkState.PROTECTED && !needsAttention) {
                     return <Icon icon={ShieldCheckmark28} style={{ tintColor: color }} />;
                 }
 
@@ -39,16 +44,12 @@ export const SafetyScreen = () => {
                     <DottedShieldIcon
                         size={28}
                         fillShield={color}
-                        fillDot={
-                            linkState === AccountLinkState.UNLINKED
-                                ? theme.colors.accent.red
-                                : theme.colors.accent.orange
-                        }
+                        fillDot={resolveDotColor({ needsAttention, theme })}
                     />
                 );
             }
         });
-    }, [linkState, navigation, theme]);
+    }, [linkState, needsAttention, navigation, theme]);
 
     const { data: completed } = useSyncOnboardingCompletedQuery();
     const { mutateAsync: complete } = useCompleteSyncOnboarding();
@@ -79,8 +80,6 @@ export const SafetyScreen = () => {
                 );
             case AccountLinkState.SOLO:
                 return <SoloView onLinkDevice={handleConnect} onAbout={() => setForceOpen(true)} />;
-            case AccountLinkState.UNLINKED:
-                return isFocused ? <UnlinkedView /> : null;
             default:
                 return null;
         }
@@ -88,18 +87,7 @@ export const SafetyScreen = () => {
 
     return (
         <Screen>
-            <Screen.Header>
-                {linkState === AccountLinkState.UNLINKED && (
-                    <Button
-                        style={styles.headerButton}
-                        size="small"
-                        type="secondary"
-                        onPress={() => setForceOpen(true)}
-                    >
-                        {t('safety.aboutSync')}
-                    </Button>
-                )}
-            </Screen.Header>
+            <Screen.Header />
 
             {renderContent()}
 

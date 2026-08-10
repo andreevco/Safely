@@ -299,12 +299,6 @@ export function useCreateExistingAccountConnector() {
     );
 }
 
-export function useCreateReconnectConnector() {
-    const account = useActiveAccount();
-
-    return useConnectorMutation<void>(() => account.reconnectToAccount());
-}
-
 export function useAccountConnectedCallback(
     connector: OnboardingConnector | undefined,
     callback: (account: SyncAccount) => void,

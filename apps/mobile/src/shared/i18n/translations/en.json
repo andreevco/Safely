@@ -266,12 +266,10 @@
         "archivedDevices": {
             "show": "Tap to show archived devices",
             "title": "Archived devices",
-            "footnote": "Devices are archived instead of removed because access cannot be safely revoked remotely.",
-            "archivedAt": "Archived {{date}}"
+            "footnote": "Devices are archived instead of removed because access cannot be safely revoked remotely."
         },
         "device": {
             "added": "Added {{date}}",
-            "unlink": "Unlink",
             "current": "Current",
             "status": {
                 "synced": "Synced",
@@ -322,11 +320,6 @@
             "daysAgo_other": "{{count}} days ago",
             "weeksAgo_one": "{{count}} week ago",
             "weeksAgo_other": "{{count}} weeks ago"
-        },
-        "unlinkDevice": {
-            "title": "Unlink {{deviceName}}",
-            "subtitle": "This device will be removed from your linked devices and will no longer sync with this account.",
-            "confirm": "Unlink {{deviceName}}"
         },
         "groups": {
             "account": {
@@ -418,7 +411,6 @@
         }
     },
     "safety": {
-        "aboutSync": "About Sync",
         "about": "About",
         "linkDevice": "Link device",
         "linkDeviceWarning": {
@@ -536,18 +528,6 @@
             "title": "Done",
             "subtitle": "Device linked.",
             "continue": "Continue"
-        }
-    },
-    "deviceUnlinked": {
-        "banner": {
-            "text": "This device is unlinked from your account and does not synchronise with other devices."
-        },
-        "reconnect": {
-            "title": "Link device",
-            "description": "Open Safely on another device where this account is active. go to Safety, tap “Link device”, then scan this QR code.",
-            "banner": "This device will have full access to your account. It can be used if your other device is lost.",
-            "timeout": "Connection timed out. Please try again.",
-            "successToast": "Device re-linked"
         }
     },
     "welcome": {

@@ -27,11 +27,7 @@ import { QRScanModal } from '@mobile/screens/QRScanModal';
 import { ReceiveAssetModal } from '@mobile/screens/ReceiveAssetModal';
 import { RemoveWalletSheet } from '@mobile/screens/RemoveWalletSheet';
 import { DeviceDetailsScreen } from '@mobile/screens/SafetyScreen/screens';
-import {
-    DisconnectDeviceSheet,
-    RecoveryConfirmSheet,
-    RecoveryPhraseSheet
-} from '@mobile/screens/SecurityScreen/screens';
+import { RecoveryConfirmSheet, RecoveryPhraseSheet } from '@mobile/screens/SecurityScreen/screens';
 import { SelectAccountModal } from '@mobile/screens/SelectAccountModal';
 import { SelectAccountSelectorModal } from '@mobile/screens/SelectAccountSelectorModal';
 import { SignInScreen } from '@mobile/screens/SignInScreen';
@@ -141,7 +137,6 @@ export const RootStack = createNativeStackNavigator({
                 DeviceUnarchivedSheet: DeviceUnarchivedSheet,
                 RecoveryConfirmSheet: RecoveryConfirmSheet,
                 DestructiveConfirmSheet: DestructiveConfirmSheet,
-                DisconnectDeviceSheet: DisconnectDeviceSheet,
                 RemoveWalletSheet: RemoveWalletSheet,
                 SignOutAccountSheet: SignOutAccountSheet,
                 WatchOnlySheet: WatchOnlySheet,

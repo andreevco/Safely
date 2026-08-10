@@ -4,7 +4,6 @@ import { Pressable } from 'react-native';
 
 import { useAppContext, useHasPortfolio } from '@safely/ux';
 
-import { DeviceUnlinkedBanner } from '@mobile/features/device-link';
 import { List, Screen, Text } from '@mobile/shared/ui';
 
 import { AccountSection } from '../AccountSection';
@@ -27,7 +26,6 @@ export const SettingsContent = () => {
 
     return (
         <Screen.Scrollable contentContainerStyle={styles.container}>
-            <DeviceUnlinkedBanner style={styles.banner} inModal />
             {hasPortfolio && <CurrentWalletSection />}
             <AccountSection />
             <ApplicationSection />
