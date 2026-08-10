@@ -18,6 +18,7 @@ import { useAccountSyncStorageSlotUpdate } from '../account/useAccountSyncStorag
 
 export { useIsDeviceWarningHiddenQuery, useHideDeviceWarning } from './hidden-warnings';
 export { useArchiveDevice, useUnarchiveDevice } from './device-archive';
+export { useDevSetDeviceLastSyncAt } from './dev-sync-time';
 
 export function useSyncedDevicesMeta(): Record<string, SDeviceMeta> | null {
     return useActiveAccountStoreSlot('devicesMeta') ?? null;
