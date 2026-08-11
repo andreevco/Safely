@@ -20,7 +20,7 @@ class SafelyMaskedInputView: ExpoView, UITextFieldDelegate {
     private let textField = InsetCaretTextField()
     private var isUpdatingFromCode = false
     private var rawValue = ""
-    private var lastEmittedValue: String?
+    private var userEditCount = 0
 
     // MARK: - Mask config
 
@@ -84,17 +84,13 @@ class SafelyMaskedInputView: ExpoView, UITextFieldDelegate {
         applyMask()
     }
 
+    func setValueUpdate(_ update: ValueUpdate) {
+        guard update.eventCount >= userEditCount else { return }
+        setRawValue(update.text)
+    }
+
     func setRawValue(_ value: String?) {
-        guard let value else { return }
-        guard value != rawValue else {
-            lastEmittedValue = nil
-            return
-        }
-        if let lastEmitted = lastEmittedValue, lastEmitted == value {
-            lastEmittedValue = nil
-            return
-        }
-        lastEmittedValue = nil
+        guard let value, value != rawValue else { return }
         rawValue = value
         applyMask()
     }
@@ -382,8 +378,12 @@ class SafelyMaskedInputView: ExpoView, UITextFieldDelegate {
         isUpdatingFromCode = false
 
         rawValue = result.extracted
-        lastEmittedValue = result.extracted
-        onChangeText(["rawText": result.extracted, "formattedText": result.formatted])
+        userEditCount += 1
+        onChangeText([
+            "rawText": result.extracted,
+            "formattedText": result.formatted,
+            "eventCount": userEditCount
+        ])
     }
 
     // MARK: - UITextFieldDelegate

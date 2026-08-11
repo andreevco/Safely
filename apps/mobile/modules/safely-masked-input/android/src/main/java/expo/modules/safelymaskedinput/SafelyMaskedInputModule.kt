@@ -2,6 +2,16 @@ package expo.modules.safelymaskedinput
 
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
+import expo.modules.kotlin.records.Field
+import expo.modules.kotlin.records.Record
+
+class ValueUpdate : Record {
+    @Field
+    var text: String? = null
+
+    @Field
+    var eventCount: Int = 0
+}
 
 class SafelyMaskedInputModule : Module() {
     override fun definition() = ModuleDefinition {
@@ -34,8 +44,8 @@ class SafelyMaskedInputModule : Module() {
                 view.setDecimalSeparator(separator)
             }
 
-            Prop("value") { view: SafelyMaskedInputView, value: String? ->
-                view.setRawValue(value)
+            Prop("value") { view: SafelyMaskedInputView, update: ValueUpdate? ->
+                update?.let { view.setValueUpdate(it) }
             }
 
             Prop("fontSize") { view: SafelyMaskedInputView, size: Double ->

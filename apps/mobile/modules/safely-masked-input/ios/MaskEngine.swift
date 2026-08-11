@@ -36,28 +36,38 @@ extension MaskResult {
 
 class MaskEngine {
 
+    private static let decimalSeparators: Set<Character> = [".", ","]
+
+    private static let ambiguous = MaskResult(formatted: "", extracted: "", segments: [], mapping: [])
+
     static func apply(rawInput: String, decimals: Int, decimalSeparator: String) -> MaskResult {
         let sep = decimalSeparator.isEmpty ? "." : decimalSeparator
 
         var integerEntries: [(rawIndex: Int, char: Character)] = []
         var decimalEntries: [(rawIndex: Int, char: Character)] = []
         var separatorRawIndex: Int?
-        var hasDecimal = false
+        var separatorChar: Character?
 
         for (rawIndex, ch) in rawInput.enumerated() {
             if ch.isNumber {
-                if hasDecimal {
+                if separatorChar != nil {
                     if decimalEntries.count < decimals {
                         decimalEntries.append((rawIndex, ch))
                     }
                 } else {
                     integerEntries.append((rawIndex, ch))
                 }
-            } else if String(ch) == sep && !hasDecimal && decimals > 0 {
-                hasDecimal = true
-                separatorRawIndex = rawIndex
+            } else if decimalSeparators.contains(ch) && decimals > 0 {
+                if separatorChar == nil {
+                    separatorChar = ch
+                    separatorRawIndex = rawIndex
+                } else if ch != separatorChar {
+                    return ambiguous
+                }
             }
         }
+
+        let hasDecimal = separatorChar != nil
 
         while integerEntries.count > 1 && integerEntries.first?.char == "0" {
             integerEntries.removeFirst()

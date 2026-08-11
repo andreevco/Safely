@@ -1,5 +1,10 @@
 import ExpoModulesCore
 
+struct ValueUpdate: Record {
+    @Field var text: String? = nil
+    @Field var eventCount: Int = 0
+}
+
 public class SafelyMaskedInputModule: Module {
     public func definition() -> ModuleDefinition {
         Name("SafelyMaskedInput")
@@ -43,8 +48,9 @@ public class SafelyMaskedInputModule: Module {
                 view.setDecimalSeparator(separator)
             }
 
-            Prop("value") { (view: SafelyMaskedInputView, value: String?) in
-                view.setRawValue(value)
+            Prop("value") { (view: SafelyMaskedInputView, update: ValueUpdate?) in
+                guard let update else { return }
+                view.setValueUpdate(update)
             }
 
             Prop("fontSize") { (view: SafelyMaskedInputView, size: Double) in

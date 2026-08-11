@@ -45,7 +45,7 @@ class SafelyMaskedInputView(context: Context, appContext: AppContext) : ExpoView
     }
 
     private var rawValue = ""
-    private var lastEmittedValue: String? = null
+    private var userEditCount = 0
     private var isUpdating = false
     private var pendingPaste = false
 
@@ -90,8 +90,14 @@ class SafelyMaskedInputView(context: Context, appContext: AppContext) : ExpoView
                 val result = MaskEngine.apply(text, decimals, decimalSeparator)
                 updateDisplay(result)
                 rawValue = result.extracted
-                lastEmittedValue = result.extracted
-                onChangeText(mapOf("rawText" to result.extracted, "formattedText" to result.formatted))
+                userEditCount++
+                onChangeText(
+                    mapOf(
+                        "rawText" to result.extracted,
+                        "formattedText" to result.formatted,
+                        "eventCount" to userEditCount
+                    )
+                )
             }
         })
 
@@ -129,10 +135,14 @@ class SafelyMaskedInputView(context: Context, appContext: AppContext) : ExpoView
     fun setDecimals(value: Int) { decimals = value; applyMask() }
     fun setDecimalSeparator(separator: String) { decimalSeparator = separator.ifEmpty { "." }; applyMask() }
 
+    fun setValueUpdate(update: ValueUpdate) {
+        if (update.eventCount < userEditCount) return
+        setRawValue(update.text)
+    }
+
     fun setRawValue(value: String?) {
         value ?: return
-        if (lastEmittedValue != null && lastEmittedValue == value) { lastEmittedValue = null; return }
-        lastEmittedValue = null
+        if (value == rawValue) return
         rawValue = value
         applyMask()
     }
@@ -146,11 +156,13 @@ class SafelyMaskedInputView(context: Context, appContext: AppContext) : ExpoView
     fun setPlaceholderValue(placeholder: String) { placeholderText = placeholder; applyPlaceholder() }
     fun setPlaceholderTextColorValue(hex: String) { tryParseColor(hex) { placeholderColor = it; editText.setHintTextColor(it); applyPlaceholder() } }
     fun setKeyboardTypeValue(type: String) {
-        editText.inputType = when (type) {
-            "numeric" -> EditorInfo.TYPE_CLASS_NUMBER
-            "decimal-pad" -> EditorInfo.TYPE_CLASS_NUMBER or EditorInfo.TYPE_NUMBER_FLAG_DECIMAL
-            else -> EditorInfo.TYPE_CLASS_TEXT
-        }
+        editText.setRawInputType(
+            when (type) {
+                "numeric" -> EditorInfo.TYPE_CLASS_NUMBER
+                "decimal-pad" -> EditorInfo.TYPE_CLASS_NUMBER or EditorInfo.TYPE_NUMBER_FLAG_DECIMAL
+                else -> EditorInfo.TYPE_CLASS_TEXT
+            }
+        )
     }
     fun setEditableValue(editable: Boolean) {
         editText.isEnabled = editable

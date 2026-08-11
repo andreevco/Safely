@@ -15,25 +15,37 @@ data class MaskResult(
 
 object MaskEngine {
 
+    private const val DECIMAL_SEPARATORS = ".,"
+
+    private val AMBIGUOUS = MaskResult("", "", emptyList(), 0)
+
     fun apply(rawInput: String, decimals: Int, decimalSeparator: String): MaskResult {
         val sep = decimalSeparator.ifEmpty { "." }
 
         val integerDigits = StringBuilder()
         val decimalDigits = StringBuilder()
-        var hasDecimal = false
+        var separatorChar: Char? = null
 
         for (ch in rawInput) {
             when {
                 ch.isDigit() -> {
-                    if (hasDecimal) {
+                    if (separatorChar != null) {
                         if (decimalDigits.length < decimals) decimalDigits.append(ch)
                     } else {
                         integerDigits.append(ch)
                     }
                 }
-                ch.toString() == sep && !hasDecimal && decimals > 0 -> hasDecimal = true
+                ch in DECIMAL_SEPARATORS && decimals > 0 -> {
+                    if (separatorChar == null) {
+                        separatorChar = ch
+                    } else if (ch != separatorChar) {
+                        return AMBIGUOUS
+                    }
+                }
             }
         }
+
+        val hasDecimal = separatorChar != null
 
         var intStr = integerDigits.toString()
         while (intStr.length > 1 && intStr.startsWith("0")) {
