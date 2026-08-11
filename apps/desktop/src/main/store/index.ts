@@ -2,11 +2,18 @@ import { app, safeStorage } from 'electron';
 import path from 'node:path';
 
 import { JsonStore, plainCodec, type ValueCodec } from './json-store';
-import type { StoreScope } from '../../shared/ipc';
+
+/** Main-side only: the IPC contract addresses a store by channel, not by a name on the wire. */
+export type StoreScope = 'regular' | 'encrypted';
 
 /**
- * Sealed with the OS keychain (Keychain on macOS, DPAPI on Windows). If the platform cannot
- * encrypt, the store throws rather than silently writing secrets as plaintext.
+ * Sealed with the macOS keychain. If the platform cannot encrypt, the store throws rather than
+ * silently writing plaintext.
+ *
+ * At-rest protection only, and not a boundary against malware running as the same user: the keychain
+ * entry's ACL is phishable and `safeStorage` has no per-item authentication. Nothing that must
+ * survive a compromised machine may live in this scope — key material belongs in the vault
+ * (`doc/vault.md`), which is not implemented yet.
  */
 const safeStorageCodec: ValueCodec = {
     encode: value => {
@@ -35,8 +42,7 @@ export function createStores(): Record<StoreScope, JsonStore> {
 
     stores = {
         regular: new JsonStore(path.join(dir, 'regular.json'), plainCodec),
-        encrypted: new JsonStore(path.join(dir, 'encrypted.json'), safeStorageCodec),
-        secureEncrypted: new JsonStore(path.join(dir, 'secure-encrypted.json'), safeStorageCodec)
+        encrypted: new JsonStore(path.join(dir, 'encrypted.json'), safeStorageCodec)
     };
 
     return stores;

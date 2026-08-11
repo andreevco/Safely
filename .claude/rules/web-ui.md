@@ -8,9 +8,10 @@ paths:
 
 # `@safely/web-ui` — components and styling
 
-The React layer shared by every web target (`apps/desktop`, later `apps/browser`). It holds the
-design system, the pages and the platform interfaces; it must stay free of platform code the same way
-`@safely/ux` stays free of React Native. Layers: see `fsd-layers.md`.
+The React layer shared by every web target (`apps/desktop`, later `apps/browser`). It holds the design
+system and the pages, and nothing else: it must stay free of platform code the same way `@safely/ux`
+stays free of React Native, and free of platform *contracts* too — those belong to the apps. Layers:
+see `fsd-layers.md`.
 
 Stack: `@base-ui/react` (headless components) + `@pandacss/dev` (zero-runtime styling) on top of
 `@safely/ux` for all screen logic. Zero-runtime matters beyond bundle size: the MV3 extension's CSP
@@ -63,26 +64,41 @@ and read it from a static style: `style={{ '--fill': value }}` plus `width: 'var
 - `@floating-ui` inside Base UI sets inline `style` for positioning, so a CSP must allow
   `style-src 'unsafe-inline'`; Base UI ships `./csp-provider` for nonce-based setups.
 
-## The platform contract, and who assembles it
+## No platform contract lives here
 
-`shared/platform` declares `WebPlatform` — what a target must provide (the three storages, the
-synchronous one, the user-presence gate, external links, app state, app info) — plus the pieces built
-on it: `WebLinking`, the toast service, the "unsupported" stubs for QR and Ledger, the logger and
-i18next factories, and the globals bootstrap. Assembling those into `IAppContext` is the **app's**
-job (`apps/desktop/src/renderer/app/AppProviders.tsx`), mirroring how `apps/mobile/src/app` does it.
+This package supplies parts — `WebLinking`, the toast service, the logger and i18next factories, the
+design system — and the **app** decides what a platform is. `apps/desktop/src/renderer/platform/`
+declares its own `DesktopPlatform` and assembles `IAppContext` from it in
+`app/AppProviders.tsx`, mirroring `apps/mobile/src/app`; the extension will describe itself with its
+own shape, which differs in storage, in user presence and in how links open.
 
-`@safely/web-ui/bootstrap` installs the three globals the domain packages expect (`Buffer`,
-`IsomorphicEventSource`, `safelyCrypto.pbkdf2Sha512`) and **must be the first import of an app
-entry**: ES imports are evaluated before the importing module's body, and the Ledger SDK reads
-`Buffer` while being evaluated. For the same reason that file imports
-`shared/platform/globals` directly rather than through the barrel — the barrel would pull
-`@safely/ux` (and with it `@safely/core`) above the install call. It is one of the few places where
-bypassing a barrel is correct.
+Stubs for capabilities a target lacks are the app's too
+(`apps/desktop/src/renderer/platform/unsupported.ts`): what is missing differs per target, and a
+shared "unsupported" list would quietly define the extension's gaps as well. Desktop currently stubs
+QR, Ledger, the secret storage and the user-presence gate — the last two because there is no vault yet
+(`apps/desktop/doc/vault.md`), and they reject rather than fall back to the `encrypted` scope.
+
+A type that describes *what an app must provide* therefore does not belong here, and neither does
+anything a component only needs because some target happens to work that way. What a shared component
+needs, it takes as a prop.
+
+## This package owns no environment
+
+Everything here is pure and stateless: components, hooks, formatting, `WebLinking`, the logger and
+i18next factories, the platform types. Anything that touches the runtime — installing globals,
+polyfills, build configuration — belongs to the app, because the two web targets do not share a
+runtime (an Electron renderer and an MV3 page differ in CSP, in available APIs and in how they are
+bundled), and a package that reaches for the environment forces both of them into one shape.
+
+Concretely, and deliberately absent: there is **no `./bootstrap` entry and no `globals.ts`** — the
+globals the domain packages read (`Buffer`, `IsomorphicEventSource`, `safelyCrypto.pbkdf2Sha512`) are
+installed by `apps/desktop/src/renderer/bootstrap.ts`, the web counterpart of
+`apps/mobile/global-polyfills.ts`, and the extension will get its own copy. There is also **no shared
+Vite preset**: each app writes its own config (`apps/desktop/vite.renderer.config.ts`). If a third web
+target ever repeats the same twenty lines, extract them then — a shared build config is how
+environment assumptions creep back in.
 
 ## Build wiring
 
-`build/vite-preset.ts` is the shared Vite config every app merges in (React plugin, `dedupe` for
-react, and `optimizeDeps.exclude` for the workspace packages — they are TypeScript source, not build
-artefacts, and prebundling them resolves stale copies). Styles reach an app through
-`@safely/web-ui/styles.css`, whose only content is the Panda layer declaration; base styles live in
-`globalCss` in the config so they can use tokens.
+Styles reach an app through `@safely/web-ui/styles.css`, whose only content is the Panda layer
+declaration; base styles live in `globalCss` in the config so they can use tokens.

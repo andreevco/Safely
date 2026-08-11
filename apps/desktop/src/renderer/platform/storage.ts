@@ -1,25 +1,21 @@
 import type { IEnumerableStorage, ISyncKeyValueStorage } from '@safely/core';
 
-import type { DesktopBridge } from '../../shared/bridge';
-import type { StoreScope } from '../../shared/ipc';
+import type { DesktopStoreBridge } from '../../shared/bridge';
 
 /**
  * Files owned by main, not IndexedDB: browser storage is bound to the renderer origin, which
- * differs between the dev server and a packaged build, and the secret scopes need the OS
- * keychain in main anyway.
+ * differs between the dev server and a packaged build, and sealing values with the keychain is
+ * possible only in main.
  */
-export function createEnumerableStorage(
-    bridge: DesktopBridge,
-    scope: StoreScope
-): IEnumerableStorage {
+export function createEnumerableStorage(store: DesktopStoreBridge): IEnumerableStorage {
     return {
-        getItem: key => bridge.store.get(scope, key),
-        setItem: (key, value) => bridge.store.set(scope, key, value),
-        removeItem: key => bridge.store.remove(scope, key),
-        clear: () => bridge.store.clear(scope),
-        getAllKeys: () => bridge.store.keys(scope, ''),
-        getKeysWithPrefix: prefix => bridge.store.keys(scope, prefix),
-        removeItemsWithPrefix: prefix => bridge.store.removeWithPrefix(scope, prefix)
+        getItem: key => store.get(key),
+        setItem: (key, value) => store.set(key, value),
+        removeItem: key => store.remove(key),
+        clear: () => store.clear(),
+        getAllKeys: () => store.keys(''),
+        getKeysWithPrefix: prefix => store.keys(prefix),
+        removeItemsWithPrefix: prefix => store.removeWithPrefix(prefix)
     };
 }
 

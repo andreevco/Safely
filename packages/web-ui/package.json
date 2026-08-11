@@ -6,7 +6,7 @@
     "codegen": "panda codegen",
     "compile": "panda codegen && tsc --noEmit",
     "dev": "tsc --watch",
-    "lint": "panda codegen && eslint ./src ./panda ./build ./panda.config.ts",
+    "lint": "panda codegen && eslint ./src ./panda ./panda.config.ts",
     "test": "panda codegen && vitest run --passWithNoTests",
     "prepare": "panda codegen"
   },
@@ -15,9 +15,6 @@
     "@safely/core": "workspace:*",
     "@safely/sync": "workspace:*",
     "@safely/ux": "workspace:*",
-    "@safely/xhr-event-source": "workspace:*",
-    "@vitejs/plugin-react": "5.2.0",
-    "buffer": "6.0.3",
     "i18next": "catalog:",
     "react-i18next": "catalog:",
     "zustand": "catalog:"
@@ -40,14 +37,11 @@
     "@tanstack/react-query": "catalog:",
     "@types/react": "catalog:",
     "react": "catalog:",
-    "react-dom": "catalog:",
-    "vite": "catalog:"
+    "react-dom": "catalog:"
   },
   "exports": {
     ".": "./src/index.ts",
-    "./bootstrap": "./src/bootstrap.ts",
     "./styles.css": "./src/shared/styles/global.css",
-    "./vite-preset": "./build/vite-preset.ts",
     "./panda.config": "./panda.config.ts",
     "./styled-system/css": {
       "types": "./styled-system/css/index.d.ts",

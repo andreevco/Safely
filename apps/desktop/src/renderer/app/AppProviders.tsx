@@ -15,18 +15,17 @@ import {
     SyncStorageProvider,
     UnlockableSecuredEncryptedStorage
 } from '@safely/ux';
-import type { WebPlatform } from '@safely/web-ui';
+import { toastService, ToastViewport, WebLinking } from '@safely/web-ui';
+
+import type { DesktopPlatform } from '../platform';
 import {
-    toastService,
-    ToastViewport,
     unsupportedLedgerSessionPort,
     unsupportedLedgerTransport,
-    unsupportedQrScanner,
-    WebLinking
-} from '@safely/web-ui';
+    unsupportedQrScanner
+} from '../platform/unsupported';
 
 export interface AppProvidersProps {
-    platform: WebPlatform;
+    platform: DesktopPlatform;
 
     /** Created by the app before React mounts — the storage adapters already log. */
     logger: Logger;
@@ -36,7 +35,7 @@ export interface AppProvidersProps {
 }
 
 /**
- * Turns the `WebPlatform` implementation into the `IAppContext` every `@safely/ux` hook reads,
+ * Turns the `DesktopPlatform` implementation into the `IAppContext` every `@safely/ux` hook reads,
  * and wires the query client, the sync observer and the toast viewport around it — the desktop
  * counterpart of `apps/mobile/src/app/AppContext.tsx`.
  */
@@ -91,6 +90,10 @@ export const AppProviders: FC<PropsWithChildren<AppProvidersProps>> = ({
                 sync: {
                     regular: regular.child('sync'),
                     encrypted: encrypted.child('sync'),
+                    /* Still assembled the same way, but over the platform's stubs: the storage
+                       rejects and the gate reports itself unavailable until the vault
+                       (`apps/desktop/doc/vault.md`) exists. Keeping the wiring means the vault
+                       replaces two platform members and nothing here. */
                     getSecureEncrypted: () =>
                         new UnlockableSecuredEncryptedStorage(
                             new LoggableStorage(
@@ -98,7 +101,7 @@ export const AppProviders: FC<PropsWithChildren<AppProvidersProps>> = ({
                                 logger,
                                 'SecureEncryptedStorage'
                             ),
-                            { check: options => security.check(options) },
+                            security,
                             ['sync']
                         )
                 }
@@ -111,7 +114,7 @@ export const AppProviders: FC<PropsWithChildren<AppProvidersProps>> = ({
             i18n: { language, t },
             logger,
             ledgerTransport: platform.ledgerTransport ?? unsupportedLedgerTransport,
-            security: { check: options => security.check(options) },
+            security,
             clearAllData: () => platform.clearAllData(),
             reloadApp: () => platform.reloadApp(),
             subscribeAppStateChange: callback => platform.subscribeAppStateChange(callback)

@@ -1,4 +1,4 @@
-import type { AppInfo, AppState, StoreScope } from './ipc';
+import type { AppInfo, AppState } from './ipc';
 
 /**
  * The only path from the web UI to Electron, and the only module both processes may import.
@@ -7,13 +7,14 @@ import type { AppInfo, AppState, StoreScope } from './ipc';
  */
 export const BRIDGE_KEY = 'safelyDesktop';
 
+/** One handle per backing store; which store it is comes from the channels it was built with. */
 export interface DesktopStoreBridge {
-    get(scope: StoreScope, key: string): Promise<string | null>;
-    set(scope: StoreScope, key: string, value: string): Promise<void>;
-    remove(scope: StoreScope, key: string): Promise<void>;
-    clear(scope: StoreScope): Promise<void>;
-    keys(scope: StoreScope, prefix: string): Promise<string[]>;
-    removeWithPrefix(scope: StoreScope, prefix: string): Promise<void>;
+    get(key: string): Promise<string | null>;
+    set(key: string, value: string): Promise<void>;
+    remove(key: string): Promise<void>;
+    clear(): Promise<void>;
+    keys(prefix: string): Promise<string[]>;
+    removeWithPrefix(prefix: string): Promise<void>;
 }
 
 export interface DesktopBridge {
@@ -34,14 +35,12 @@ export interface DesktopBridge {
 
     openExternalUrl(url: string): Promise<void>;
 
-    security: {
-        /** Whether this machine can prove user presence (Touch ID / Windows Hello). */
-        isAvailable(): Promise<boolean>;
-        /** Resolves on success and mints a short-lived ticket for the secure store. */
-        check(options?: { title?: string; subtitle?: string }): Promise<void>;
-    };
+    /* No `security` member: the Touch ID gate was removed with the secret store. The vault
+       (`doc/vault.md`) adds unlock/lock capabilities here, not a bare "prove presence" call. */
 
     store: DesktopStoreBridge;
+
+    encryptedStore: DesktopStoreBridge;
 }
 
 declare global {

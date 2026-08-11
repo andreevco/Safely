@@ -3,21 +3,14 @@ import { app, ipcMain, shell } from 'electron';
 import os from 'node:os';
 import type { ZodType } from 'zod';
 
+import type { StoreScope } from './store';
 import { clearStores, getStore } from './store';
-import {
-    hasValidTicket,
-    isUserPresenceAvailable,
-    promptUserPresence,
-    revokeTicket
-} from './user-presence';
-import type { AppInfo, StoreScope } from '../shared/ipc';
+import type { AppInfo, StoreChannels } from '../shared/ipc';
 import {
     IPC_CHANNEL,
     sOpenExternalRequest,
-    sSecurityCheckRequest,
     sStoreKeyRequest,
     sStorePrefixRequest,
-    sStoreScopeRequest,
     sStoreSetRequest
 } from '../shared/ipc';
 
@@ -46,17 +39,6 @@ function assertTrustedSender(event: IpcMainInvokeEvent): void {
     }
 }
 
-/** The secret stores are readable only while a user-presence ticket is live. */
-function assertSecretAccessAllowed(scope: StoreScope): void {
-    if (scope !== 'secureEncrypted') {
-        return;
-    }
-
-    if (!hasValidTicket()) {
-        throw new Error('Secure storage requires a fresh user-presence check');
-    }
-}
-
 export function registerIpcHandlers(getWindow: () => BrowserWindow | null): void {
     ipcMain.handle(IPC_CHANNEL.appInfo, (event): AppInfo => {
         assertTrustedSender(event);
@@ -78,19 +60,8 @@ export function registerIpcHandlers(getWindow: () => BrowserWindow | null): void
 
     ipcMain.handle(IPC_CHANNEL.appClearData, async event => {
         assertTrustedSender(event);
-        revokeTicket();
         await clearStores();
     });
-
-    ipcMain.handle(IPC_CHANNEL.securityAvailable, event => {
-        assertTrustedSender(event);
-
-        return isUserPresenceAvailable();
-    });
-
-    handle(IPC_CHANNEL.securityCheck, sSecurityCheckRequest, payload =>
-        promptUserPresence(payload.title ?? 'unlock Safely')
-    );
 
     handle(IPC_CHANNEL.openExternal, sOpenExternalRequest, async payload => {
         const { protocol } = new URL(payload.url);
@@ -102,39 +73,29 @@ export function registerIpcHandlers(getWindow: () => BrowserWindow | null): void
         await shell.openExternal(payload.url);
     });
 
-    handle(IPC_CHANNEL.storeGet, sStoreKeyRequest, payload => {
-        assertSecretAccessAllowed(payload.scope);
+    registerStoreHandlers(IPC_CHANNEL.store, 'regular');
+    registerStoreHandlers(IPC_CHANNEL.encryptedStore, 'encrypted');
+}
 
-        return getStore(payload.scope).get(payload.key);
+/* The stores are resolved per call, not captured: `createStores()` runs after the app is ready. */
+function registerStoreHandlers(channels: StoreChannels, scope: StoreScope): void {
+    handle(channels.get, sStoreKeyRequest, payload => getStore(scope).get(payload.key));
+
+    handle(channels.set, sStoreSetRequest, payload =>
+        getStore(scope).set(payload.key, payload.value)
+    );
+
+    handle(channels.remove, sStoreKeyRequest, payload => getStore(scope).remove(payload.key));
+
+    ipcMain.handle(channels.clear, event => {
+        assertTrustedSender(event);
+
+        return getStore(scope).clear();
     });
 
-    handle(IPC_CHANNEL.storeSet, sStoreSetRequest, payload => {
-        assertSecretAccessAllowed(payload.scope);
+    handle(channels.keys, sStorePrefixRequest, payload => getStore(scope).keys(payload.prefix));
 
-        return getStore(payload.scope).set(payload.key, payload.value);
-    });
-
-    handle(IPC_CHANNEL.storeRemove, sStoreKeyRequest, payload => {
-        assertSecretAccessAllowed(payload.scope);
-
-        return getStore(payload.scope).remove(payload.key);
-    });
-
-    handle(IPC_CHANNEL.storeClear, sStoreScopeRequest, payload => {
-        assertSecretAccessAllowed(payload.scope);
-
-        return getStore(payload.scope).clear();
-    });
-
-    handle(IPC_CHANNEL.storeKeys, sStorePrefixRequest, payload => {
-        assertSecretAccessAllowed(payload.scope);
-
-        return getStore(payload.scope).keys(payload.prefix);
-    });
-
-    handle(IPC_CHANNEL.storeRemovePrefix, sStorePrefixRequest, payload => {
-        assertSecretAccessAllowed(payload.scope);
-
-        return getStore(payload.scope).removeWithPrefix(payload.prefix);
-    });
+    handle(channels.removePrefix, sStorePrefixRequest, payload =>
+        getStore(scope).removeWithPrefix(payload.prefix)
+    );
 }

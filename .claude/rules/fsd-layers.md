@@ -32,7 +32,8 @@ knows nothing about `features`; in mobile, `features` knows nothing about `scree
 - `apps/mobile/src/app` — entry point: navigation, providers, error boundary, storage and
   tanstack-query bootstrapping.
 - `packages/web-ui/src/shared` — the web design system (`shared/ui`, Panda recipes live in
-  `packages/web-ui/panda/recipes`) and the platform interfaces the apps implement.
+  `packages/web-ui/panda/recipes`). No platform contract lives here — each app declares its own
+  (`apps/desktop/src/renderer/platform/types.ts`).
 - `packages/web-ui/src/pages` — one route target, the web counterpart of a mobile screen.
 - `packages/web-ui/src/app` — router and providers, exported as the single component an app mounts.
   The app passes in its platform implementation; `web-ui` never imports app code (enforced).

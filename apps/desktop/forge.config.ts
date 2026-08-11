@@ -10,8 +10,10 @@ const config: ForgeConfig = {
         appBundleId: 'com.safely.wallet-desktop'
     },
     rebuildConfig: {},
-    /* dmg/squirrel arrive with the signing and notarisation milestone */
-    makers: [new MakerZIP({}, ['darwin', 'linux', 'win32'])],
+    /* macOS is the only target for now — the secret vault relies on macOS-only guarantees
+       (`doc/vault.md`), so a Windows build would ship a store it cannot protect.
+       dmg arrives with the signing and notarisation milestone. */
+    makers: [new MakerZIP({}, ['darwin'])],
     plugins: [
         new VitePlugin({
             /* Object entries: the output file name is the entry key, and main and preload share

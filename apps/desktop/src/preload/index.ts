@@ -1,9 +1,36 @@
 import { contextBridge, ipcRenderer } from 'electron';
 
-import type { DesktopBridge } from '../shared/bridge';
+import type { DesktopBridge, DesktopStoreBridge } from '../shared/bridge';
 import { BRIDGE_KEY } from '../shared/bridge';
-import type { AppInfo, AppState, StoreScope } from '../shared/ipc';
+import type { AppInfo, AppState, StoreChannels } from '../shared/ipc';
 import { IPC_CHANNEL, sAppInfo, sAppState } from '../shared/ipc';
+
+function createStoreBridge(channels: StoreChannels): DesktopStoreBridge {
+    return {
+        async get(key: string): Promise<string | null> {
+            const value: unknown = await ipcRenderer.invoke(channels.get, { key });
+
+            return typeof value === 'string' ? value : null;
+        },
+        async set(key: string, value: string): Promise<void> {
+            await ipcRenderer.invoke(channels.set, { key, value });
+        },
+        async remove(key: string): Promise<void> {
+            await ipcRenderer.invoke(channels.remove, { key });
+        },
+        async clear(): Promise<void> {
+            await ipcRenderer.invoke(channels.clear);
+        },
+        async keys(prefix: string): Promise<string[]> {
+            const keys: unknown = await ipcRenderer.invoke(channels.keys, { prefix });
+
+            return Array.isArray(keys) ? keys.filter(key => typeof key === 'string') : [];
+        },
+        async removeWithPrefix(prefix: string): Promise<void> {
+            await ipcRenderer.invoke(channels.removePrefix, { prefix });
+        }
+    };
+}
 
 /**
  * Transport only. Requests are validated in main; responses are parsed here so a malformed
@@ -42,42 +69,9 @@ const bridge: DesktopBridge = {
         await ipcRenderer.invoke(IPC_CHANNEL.openExternal, { url });
     },
 
-    security: {
-        async isAvailable(): Promise<boolean> {
-            return Boolean(await ipcRenderer.invoke(IPC_CHANNEL.securityAvailable));
-        },
-        async check(options): Promise<void> {
-            await ipcRenderer.invoke(IPC_CHANNEL.securityCheck, options ?? {});
-        }
-    },
+    store: createStoreBridge(IPC_CHANNEL.store),
 
-    store: {
-        async get(scope: StoreScope, key: string): Promise<string | null> {
-            const value: unknown = await ipcRenderer.invoke(IPC_CHANNEL.storeGet, { scope, key });
-
-            return typeof value === 'string' ? value : null;
-        },
-        async set(scope: StoreScope, key: string, value: string): Promise<void> {
-            await ipcRenderer.invoke(IPC_CHANNEL.storeSet, { scope, key, value });
-        },
-        async remove(scope: StoreScope, key: string): Promise<void> {
-            await ipcRenderer.invoke(IPC_CHANNEL.storeRemove, { scope, key });
-        },
-        async clear(scope: StoreScope): Promise<void> {
-            await ipcRenderer.invoke(IPC_CHANNEL.storeClear, { scope });
-        },
-        async keys(scope: StoreScope, prefix: string): Promise<string[]> {
-            const keys: unknown = await ipcRenderer.invoke(IPC_CHANNEL.storeKeys, {
-                scope,
-                prefix
-            });
-
-            return Array.isArray(keys) ? keys.filter(key => typeof key === 'string') : [];
-        },
-        async removeWithPrefix(scope: StoreScope, prefix: string): Promise<void> {
-            await ipcRenderer.invoke(IPC_CHANNEL.storeRemovePrefix, { scope, prefix });
-        }
-    }
+    encryptedStore: createStoreBridge(IPC_CHANNEL.encryptedStore)
 };
 
 contextBridge.exposeInMainWorld(BRIDGE_KEY, bridge);

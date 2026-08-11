@@ -11,6 +11,12 @@ The desktop app is a thin adapter: the UI comes from `@safely/web-ui`, the domai
 `@safely/core`/`@safely/sync`/`@safely/ux`. What lives here is the build, the Electron-specific
 services and the platform implementation injected into the shared UI.
 
+**macOS is the only build target for now** (`makers` in `forge.config.ts`). That is a security
+decision, not just a scheduling one: the secret vault relies on the Secure Enclave being bound to the
+app's code signature, and Windows has no equivalent — see `doc/vault.md`. Platform guards already in
+the code (`process.platform` checks, the `win32` branch in `json-store.ts`) stay: they are correct
+cross-platform behaviour, not dead code.
+
 ## Split by process, not by feature
 
 `src/` is divided by Electron process, and `eslint-plugin-boundaries` enforces the direction:
@@ -24,29 +30,47 @@ services and the platform implementation injected into the shared UI.
 
 **All domain code runs in the renderer** — the sync engine, the CRDT, the crypto, the keys. That is
 deliberate: the same code has to run in the browser extension, where no privileged process exists at
-all. The main process is the vault and the lifecycle owner (OS keychain via `safeStorage`, the
-authentication gate, windows, deep links), never a participant in the domain.
+all. The main process owns storage and lifecycle (the store files, `safeStorage`, windows, deep links)
+and will own the vault; it is never a participant in the domain.
 
 `src/renderer/app/AppProviders.tsx` assembles the `IAppContext` that every `@safely/ux` hook reads
-out of a `WebPlatform` implementation (`src/renderer/platform/`) — the same division mobile uses,
-where `apps/mobile/src/app/AppContext.tsx` does the assembly. `@safely/web-ui` supplies the parts
-(the contract, `WebLinking`, the toast service, the unsupported stubs, the globals bootstrap and the
-logger/i18n factories); the extension will repeat this wiring with its own platform.
+out of a `DesktopPlatform` implementation, whose shape this app declares itself
+(`src/renderer/platform/types.ts`) — the same division mobile uses, where
+`apps/mobile/src/app/AppContext.tsx` does the assembly. `@safely/web-ui` supplies the pure
+parts (`WebLinking`, the toast service, the logger/i18n factories); the stubs for what
+this target lacks are ours (`src/renderer/platform/unsupported.ts`), because the extension will lack a
+different set. The extension will repeat this wiring with its own platform.
+
+**The environment is this app's job, not the shared package's.**
+`src/renderer/bootstrap.ts` installs the globals the domain packages read at load time — `Buffer`,
+`IsomorphicEventSource` (XHR-based: the SSE stream needs an `Authorization` header) and
+`safelyCrypto.pbkdf2Sha512` (`pbkdf2Async` from `@noble/hashes`, which yields to the scheduler instead
+of blocking the renderer) — and it is the web counterpart of `apps/mobile/global-polyfills.ts`.
+`import './bootstrap'` **must stay the first import of `src/renderer/index.tsx`**: ES imports are
+evaluated before the importing module's body, and the Ledger SDK reads `Buffer` while being evaluated.
+For the same reason nothing inside `bootstrap.ts` may import `@safely/ux` or `@safely/web-ui`, whose
+module graphs would then be evaluated above the install calls.
 
 The renderer therefore holds secret material in memory. Moving the vault and the signer into main is
 a known, deliberately deferred option — it protects the seed's confidentiality but not the funds,
 because a compromised renderer can still ask main to sign; only a main-owned confirmation window
 would change that. Keep the seams intact for it: everything platform-specific reaches the UI through
-the platform interface of `@safely/web-ui`, and secrets never land in zustand, react-query or an
-xstate context.
+`DesktopPlatform`, and secrets never land in zustand, react-query or an xstate context.
 
 ## Storage lives in main, not in the renderer
 
-All three storages (`regular`, `encrypted`, `secureEncrypted`) are flat key/value files
-under `userData/store/`, owned by main and reached over the bridge (`src/main/store/`).
+Both storages (`regular`, `encrypted`) are flat key/value files under `userData/store/`, owned by main
+and reached over the bridge (`src/main/store/`).
+
+**Each store is its own channel group** — `safely:store:*` and `safely:encrypted-store:*`
+(`src/shared/ipc.ts`), one `DesktopStoreBridge` handle each, and no scope on the wire. A renderer
+therefore cannot ask for the wrong store, and a store whose rules differ (the vault in `doc/vault.md`,
+readable only while unlocked) is added as a third group instead of a third value in a shared payload.
+The store name stays a main-side detail (`StoreScope` in `src/main/store/index.ts`).
+
 Browser storage was rejected because it is bound to the renderer origin, which differs between
-`start` (dev server) and a packaged build (`safely://app`), and because the secret scopes must be
-sealed with the OS keychain in main anyway. `electron-store` was rejected too: it rewrites the whole
+`start` (dev server) and a packaged build (`safely://app`), and because sealing values with the OS
+keychain is possible only in main. `electron-store` was rejected too: it rewrites the whole
 file on every `set` (its own README says it is not a database), is ESM-only against our CJS main
 bundle, and cannot be reached from a sandboxed renderer — the IPC layer would be ours regardless.
 
@@ -59,17 +83,29 @@ disk does not have; concurrent mutations are serialised, or two read-modify-writ
 update. `test/main/store/json-store.test.ts` pins this by reading the file back instead of trusting
 the instance.
 
-`encrypted` and `secureEncrypted` pass every value through `safeStorage`; if the OS cannot encrypt,
-they throw rather than write plaintext. The price of the above is a full rewrite per mutation, which
-is fine at wallet scale; if the data outgrows it, the way out is an embedded store with a
-write-ahead log (SQLite) — not a buffer.
+`encrypted` passes every value through `safeStorage`; if the OS cannot encrypt, it throws rather than
+write plaintext. That is **at-rest protection only** — the keychain entry's ACL is phishable and
+`safeStorage` has no per-item authentication, so anything that must survive malware running as the
+user does not belong in this scope. The price of the above is a full rewrite per mutation, which is
+fine at wallet scale; if the data outgrows it, the way out is an embedded store with a write-ahead log
+(SQLite) — not a buffer.
 
-The `secureEncrypted` scope additionally requires a **live user-presence ticket**
-(`src/main/user-presence.ts`): `security.check()` prompts Touch ID and mints a 30-second in-memory
-ticket, and store operations on that scope reject without one. The gate has to be in main because
-`safeStorage` has no per-item authentication. Where no biometry exists (Windows today) it is
-unavailable and the secret scope stays closed — fail closed; the app passcode, which is the mobile
-fallback, arrives with the onboarding screens.
+## There is no secret storage right now
+
+The `secureEncrypted` scope and the Touch ID gate (`security.check()`, a 30-second in-memory ticket in
+`src/main/user-presence.ts`) **were removed on purpose**, because the ticket was a policy check rather
+than a key: it stopped a person at an unlocked machine and not malware, which reads the store file and
+calls the keychain itself. `doc/vault.md` is the design that replaces them — a DEK wrapped by both a
+passcode (scrypt) and a Secure Enclave key, so a locked vault is unreadable instead of merely refused.
+Read it before adding anything back.
+
+Until it lands, `DesktopPlatform.storage.createSecureEncrypted()` and `DesktopPlatform.security` are
+the `unsupportedSecureEncryptedStorage` / `unsupportedSecurityGate` stubs from
+`src/renderer/platform/unsupported.ts`: every
+operation rejects and `isAvailable` is `false`. The consequence is deliberate — **the desktop app
+cannot create or restore an account**, because onboarding writes `master_key`, `vault_key` and
+`dmk_prv` into that scope. Do not "temporarily" route those keys into `encrypted`, `regular` or
+`localStorage` to unblock a flow; that is exactly the outcome the removal exists to prevent.
 
 ## Security invariants
 
@@ -125,7 +161,7 @@ and is refused by the navigation guard — it has to be translated into a route,
 
 Closing the window hides it on macOS instead of destroying the renderer, because the sync engine
 lives there; `backgroundThrottling: false` keeps its timers running while hidden. A single instance
-lock guarantees one sync engine per machine. Hiding also revokes the user-presence ticket.
+lock guarantees one sync engine per machine. Hiding is also where the vault will lock.
 
 The renderer's logger writes to its devtools console, which is invisible when the app is driven from
 a terminal, so `src/main/window.ts` forwards renderer console messages, `did-fail-load` and
@@ -136,12 +172,21 @@ diagnosable.
 
 `electron-forge` (7.x) + `vite` (6.x) — `pnpm --filter @safely/desktop start | package | make`.
 
+- `make` produces a **macOS zip only**. Signing and notarisation are not wired yet, and they are a
+  prerequisite of the vault rather than a cosmetic step: the hardened runtime is what keeps another
+  process out of our memory, and the Secure Enclave needs an embedded provisioning profile with
+  `com.apple.application-identifier`. Never add
+  `com.apple.security.cs.disable-library-validation` or `get-task-allow` to a production build.
+
 - **The vite version is pinned by forge**: forge 7 is published as CommonJS and does
   `require('vite')`, and vite ≥ 7 no longer has a `require` export condition. Don't bump vite past 6
   until forge 8 is stable.
 - Entries in `forge.config.ts` are **objects** (`{ main: 'src/main/index.ts' }`) because the output
   file name comes from the entry key and main and preload share `.vite/build/`; two entries named
   `index` would silently overwrite each other.
+- `vite.renderer.config.ts` is this app's own config — there is no shared preset in
+  `@safely/web-ui` any more, so the React plugin, `dedupe`, `optimizeDeps.exclude` for the
+  source-shipping workspace packages and `preserveSymlinks` all live here.
 - The renderer sets `resolve.preserveSymlinks: false`, overriding forge's default. With pnpm, `true`
   would resolve react twice (broken hooks) and make the shared stylesheet look like a `node_modules`
   file to Panda's PostCSS plugin, which skips those.

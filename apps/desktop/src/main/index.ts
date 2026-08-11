@@ -7,7 +7,6 @@ import { registerIpcHandlers } from './ipc';
 import { useSeparateDevUserData } from './paths';
 import { hardenSession, hardenWebContents } from './security';
 import { createStores } from './store';
-import { revokeTicket } from './user-presence';
 import { createMainWindow } from './window';
 import { IPC_CHANNEL } from '../shared/ipc';
 import type { AppState } from '../shared/ipc';
@@ -18,7 +17,6 @@ const devServerUrl: string | undefined = MAIN_WINDOW_VITE_DEV_SERVER_URL;
 const allowedOrigins = devServerUrl ? [new URL(devServerUrl).origin, APP_ORIGIN] : [APP_ORIGIN];
 
 let mainWindow: BrowserWindow | null = null;
-let isQuitting = false;
 
 function notifyAppState(state: AppState): void {
     mainWindow?.webContents.send(IPC_CHANNEL.appState, state);
@@ -44,22 +42,9 @@ function attachMainWindow(): BrowserWindow {
     window.on('focus', () => notifyAppState('active'));
     window.on('blur', () => notifyAppState('inactive'));
     window.on('show', () => notifyAppState('active'));
-    window.on('hide', () => {
-        /* the next secret access must ask again */
-        revokeTicket();
-        notifyAppState('background');
-    });
-
-    window.on('close', event => {
-        /* Closing destroys the renderer, where the sync engine lives. On macOS the app stays
-           resident, so hide instead and keep syncing; elsewhere closing means quitting. */
-        if (isQuitting || process.platform !== 'darwin') {
-            return;
-        }
-
-        event.preventDefault();
-        window.hide();
-    });
+    /* TODO(vault): hiding must lock the vault once it exists (`doc/vault.md`) — it used to revoke
+       the user-presence ticket here. */
+    window.on('hide', () => notifyAppState('background'));
 
     window.on('closed', () => {
         mainWindow = null;
@@ -79,12 +64,6 @@ if (!app.requestSingleInstanceLock()) {
 } else {
     app.on('second-instance', revealMainWindow);
 
-    /* Tells the window whether a close means "hide" or "really quit". Nothing to flush: the
-       store writes through on every mutation. */
-    app.on('before-quit', () => {
-        isQuitting = true;
-    });
-
     app.on('web-contents-created', (_event, contents) => {
         hardenWebContents(contents, allowedOrigins);
     });
@@ -101,10 +80,4 @@ if (!app.requestSingleInstanceLock()) {
     });
 
     app.on('activate', revealMainWindow);
-
-    app.on('window-all-closed', () => {
-        if (process.platform !== 'darwin') {
-            app.quit();
-        }
-    });
 }

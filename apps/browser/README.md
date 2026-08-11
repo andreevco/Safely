@@ -9,9 +9,13 @@ The extension build entry and the browser implementation of the platform contrac
 
 - **Entry points**: popup (and/or side panel), options page, background service worker, each built by
   Vite from the shared UI.
-- **Platform injection**: the browser implementation of the `WebPlatform` interface declared in
-  `@safely/web-ui` — storage (IndexedDB / `chrome.storage`), clipboard, external links
-  (`chrome.tabs`), locale, app-state, QR scanning.
+- **Platform injection**: this app's own platform contract and its implementation — storage
+  (IndexedDB / `chrome.storage`), clipboard, external links (`chrome.tabs`), locale, app-state, QR
+  scanning. `@safely/web-ui` declares no such interface: what a platform is differs per target, so
+  describe it here rather than reusing `DesktopPlatform`.
+- **Globals**: an equivalent of `apps/desktop/src/renderer/bootstrap.ts` (`Buffer`,
+  `IsomorphicEventSource`, `safelyCrypto.pbkdf2Sha512`) and this app's own Vite config — neither is
+  provided by the shared package.
 - **Manifest and packaging**: `manifest.json`, store artefacts, permissions.
 
 ## What will not live here
@@ -29,6 +33,6 @@ React Native. `eslint-plugin-boundaries` enforces it: `web-ui` may not import ap
   differently (passcode-derived key), and that decision needs its own threat-model entry.
 - **Popup lifetime is short.** A popup is destroyed when it closes, so the sync engine only runs
   while a view is open unless it is hosted in the service worker — which MV3 terminates when idle.
-- **SSE needs custom headers**, so the native `EventSource` is unusable here as well; the
-  `IsomorphicEventSource` implementation from `@safely/web-ui` (the `eventsource` package over
-  `fetch`) is reused as is.
+- **SSE needs custom headers**, so the native `EventSource` is unusable here as well;
+  `@safely/xhr-event-source` is reused as the `IsomorphicEventSource`, as desktop and mobile do —
+  but note it needs `XMLHttpRequest`, which a service worker does not have.

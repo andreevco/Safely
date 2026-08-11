@@ -29,10 +29,7 @@ export function createMainWindow(devServerUrl: string | undefined): BrowserWindo
             sandbox: true,
             contextIsolation: true,
             nodeIntegration: false,
-            webSecurity: true,
-            /* Chromium throttles timers in hidden windows, and on macOS closing hides rather
-               than destroys — that would stall the sync engine running in this renderer. */
-            backgroundThrottling: false
+            webSecurity: true
         }
     });
 

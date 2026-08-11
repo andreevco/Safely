@@ -7,7 +7,6 @@
         "src/**/*",
         "test/**/*",
         "panda/**/*",
-        "build/**/*",
         "panda.config.ts",
         "vitest.config.ts"
     ],

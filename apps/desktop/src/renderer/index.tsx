@@ -1,5 +1,5 @@
 /* Must stay the first import: it installs the globals the domain packages read at load time. */
-import '@safely/web-ui/bootstrap';
+import './bootstrap';
 
 import { createRoot } from 'react-dom/client';
 import { I18nextProvider } from 'react-i18next';
@@ -20,12 +20,9 @@ async function mount(): Promise<void> {
     }
 
     const bridge = getBridge();
-    const [appInfo, isUserPresenceAvailable] = await Promise.all([
-        bridge.getAppInfo(),
-        bridge.security.isAvailable()
-    ]);
+    const appInfo = await bridge.getAppInfo();
 
-    const platform = createDesktopPlatform({ bridge, appInfo, isUserPresenceAvailable });
+    const platform = createDesktopPlatform({ bridge, appInfo });
     const { logger } = buildWebLogger(appInfo.environment === 'development');
 
     /* before React mounts: the first config request already carries the language */

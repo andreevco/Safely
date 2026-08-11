@@ -1,4 +1,4 @@
-export * from './platform';
+export * from './linking';
 export * from './logger';
 export * from './i18n';
 export * from './toast';

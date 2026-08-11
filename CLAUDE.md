@@ -16,9 +16,9 @@ Dependencies flow strictly bottom-up in this table; imports in the other directi
 | `packages/sync-storage`     | Versioned schemas of user state (`v1`, `v2`, …) on top of slottree, plus migrations.                                                           |
 | `packages/core`             | Wallet domain: BTC (xpub, PSBT, fee estimation), Ledger, external APIs (config/price/rate/exchange), entities, DI interfaces. No React.        |
 | `packages/ux`               | React layer shared by every app: FSD (`shared` → `entities` → `features`), react-query, zustand, xstate forms, plus the design tokens (`./theme`) and the strings (`./translations`). No RN/DOM specifics. |
-| `packages/web-ui`           | React layer shared by the web targets: design system (Base UI + Panda), pages, platform interfaces. FSD + `pages`. No Electron/extension code.  |
+| `packages/web-ui`           | React layer shared by the web targets: design system (Base UI + Panda) and pages. FSD + `pages`. Pure and stateless — no Electron/extension code, no platform contract, no globals, no build config. |
 | `apps/mobile`               | Expo dev-client (iOS/Android): FSD + `screens`, native modules `modules/safely-*`, unistyles, i18n.                                            |
-| `apps/desktop`              | Electron (forge + vite): split by process (`main`/`preload`/`renderer`/`shared`), platform implementation for the web UI.                       |
+| `apps/desktop`              | Electron (forge + vite), **macOS-only build for now**: split by process (`main`/`preload`/`renderer`/`shared`), platform implementation for the web UI. |
 | `apps/browser`              | MV3 extension — placeholder, see its README.                                                                                                    |
 | `packages/xhr-event-source` | EventSource over XHR for platforms without native SSE.                                                                                         |
 
@@ -88,6 +88,9 @@ them:
 - `packages/sync/doc/threat-model.md` — threat model: what counts as compromise, what is out of scope
 - `packages/slottree/docs/spec.md` + `implementation.md` + `versioning-examples.md` — CRDT tree
   format, merge protocol, versioning
+- `apps/desktop/doc/vault.md` — the desktop secret store: threat model, passcode + Secure Enclave key
+  schema, on-disk format, why the build is macOS-only. Read before touching the `secureEncrypted`
+  scope, the user-presence gate or the signing configuration
 
 ## Keeping these instructions current
 
