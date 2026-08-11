@@ -8,6 +8,8 @@ import { ConnectToSignSheet } from '@mobile/screens/ConnectToSignSheet';
 import { CustomizeAccountModal } from '@mobile/screens/CustomizeAccountModal';
 import { CustomizeWalletModal } from '@mobile/screens/CustomizeWalletModal';
 import { DestructiveConfirmSheet } from '@mobile/screens/DestructiveConfirmSheet';
+import { DeviceSupportWizardModal } from '@mobile/screens/DeviceSupportWizardModal';
+import { DeviceUnarchivedSheet } from '@mobile/screens/DeviceUnarchivedSheet';
 import { ExchangeModal } from '@mobile/screens/ExchangeModal';
 import { LinkDeviceWarningModal } from '@mobile/screens/LinkDeviceWarningModal';
 import { LockScreen } from '@mobile/screens/LockScreen';
@@ -24,11 +26,8 @@ import { ProviderSheet } from '@mobile/screens/ProviderSheet';
 import { QRScanModal } from '@mobile/screens/QRScanModal';
 import { ReceiveAssetModal } from '@mobile/screens/ReceiveAssetModal';
 import { RemoveWalletSheet } from '@mobile/screens/RemoveWalletSheet';
-import {
-    DisconnectDeviceSheet,
-    RecoveryConfirmSheet,
-    RecoveryPhraseSheet
-} from '@mobile/screens/SecurityScreen/screens';
+import { DeviceDetailsScreen } from '@mobile/screens/SafetyScreen/screens';
+import { RecoveryConfirmSheet, RecoveryPhraseSheet } from '@mobile/screens/SecurityScreen/screens';
 import { SelectAccountModal } from '@mobile/screens/SelectAccountModal';
 import { SelectAccountSelectorModal } from '@mobile/screens/SelectAccountSelectorModal';
 import { SignInScreen } from '@mobile/screens/SignInScreen';
@@ -82,6 +81,7 @@ export const RootStack = createNativeStackNavigator({
                 RestrictedFlow: RestrictedStack,
                 TransactionScreen: TransactionScreen,
                 OrderScreen: OrderScreen,
+                DeviceDetailsScreen: DeviceDetailsScreen,
                 LockScreen: {
                     screen: LockScreen,
                     options: {
@@ -119,6 +119,7 @@ export const RootStack = createNativeStackNavigator({
                 CustomizeWalletModal: CustomizeWalletModal,
                 QRScanModal: QRScanModal,
                 LinkDeviceWarningModal: LinkDeviceWarningModal,
+                DeviceSupportWizardModal: DeviceSupportWizardModal,
                 NewContactModal: NewContactModal,
                 AddWalletModal: AddWalletStack,
                 SelectAccountModal: SelectAccountModal,
@@ -133,9 +134,9 @@ export const RootStack = createNativeStackNavigator({
         Sheets: {
             screens: {
                 AddAccountSheet: AddAccountSheet,
+                DeviceUnarchivedSheet: DeviceUnarchivedSheet,
                 RecoveryConfirmSheet: RecoveryConfirmSheet,
                 DestructiveConfirmSheet: DestructiveConfirmSheet,
-                DisconnectDeviceSheet: DisconnectDeviceSheet,
                 RemoveWalletSheet: RemoveWalletSheet,
                 SignOutAccountSheet: SignOutAccountSheet,
                 WatchOnlySheet: WatchOnlySheet,

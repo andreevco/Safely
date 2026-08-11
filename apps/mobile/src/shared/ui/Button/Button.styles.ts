@@ -45,6 +45,9 @@ export const styles = StyleSheet.create(theme => ({
                 destructive: {
                     backgroundColor: Color(theme.colors.accent.red).alpha(0.16).toString()
                 },
+                warning: {
+                    backgroundColor: Color(theme.colors.accent.orange).alpha(0.16).toString()
+                },
                 overlay: {
                     backgroundColor: theme.colors.other.constant.white
                 },
@@ -78,6 +81,9 @@ export const styles = StyleSheet.create(theme => ({
                 },
                 destructive: {
                     color: theme.colors.accent.red
+                },
+                warning: {
+                    color: theme.colors.accent.orange
                 },
                 overlay: {
                     color: theme.colors.other.constant.black

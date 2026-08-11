@@ -12,27 +12,22 @@ export const styles = StyleSheet.create(theme => ({
         gap: theme.spacing[4],
         alignItems: 'center'
     },
+    attentionBanner: {
+        marginBottom: theme.spacing[2],
+        borderWidth: 0
+    },
+    buttonsRow: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'center',
+        gap: theme.spacing[8],
+        marginBottom: theme.spacing[16]
+    },
     deviceList: {
         width: '100%',
-        gap: theme.spacing[2],
         padding: theme.spacing[8]
     },
-    deviceRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingVertical: theme.spacing[12] - 2,
-        paddingHorizontal: theme.spacing[16],
-        backgroundColor: theme.colors.background.secondary,
-        borderRadius: theme.radius.md
-    },
-    deviceInfo: {
-        flex: 1,
+    deviceRows: {
         gap: theme.spacing[2]
-    },
-    deviceNameRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: theme.spacing[8]
     }
 }));
