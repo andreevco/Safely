@@ -261,7 +261,7 @@
             "title": "Linked devices",
             "subtitle": "Linked devices have full access to your account and can be used to restore access if another device is lost.",
             "listTitle": "Linked devices",
-            "attention": "Some devices need attention. Check sync status on linked devices."
+            "attention": "Some devices need attention.\nCheck sync status on linked devices."
         },
         "archivedDevices": {
             "show": "Tap to show archived devices",

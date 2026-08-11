@@ -37,7 +37,7 @@ export const WizardQuestion = <T extends string>(props: WizardQuestionProps<T>) 
                     <Cell key={option.value} onPress={() => onAnswer(option.value)}>
                         <Cell.Content>
                             <Cell.Row>
-                                <Cell.Title>{t(option.labelKey)}</Cell.Title>
+                                <Cell.Title numberOfLines={0}>{t(option.labelKey)}</Cell.Title>
                             </Cell.Row>
                         </Cell.Content>
                         <View style={styles.checkmark}>
