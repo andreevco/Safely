@@ -66,7 +66,7 @@ const WizardContent = ({ details }: { details: SyncedDeviceDetails }) => {
     };
 
     const handleArchive = async () => {
-        await check({ title: t('deviceSupportWizard.archive.verify', { deviceName }) });
+        await check({ subtitle: t('deviceSupportWizard.archive.verify', { deviceName }) });
         await archiveDevice(details.ikPubHex);
 
         navigation.goBack();

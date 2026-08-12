@@ -291,7 +291,7 @@
             "reasonSignedOut": "Signed out on {{deviceName}}",
             "unarchive": "Unarchive {{deviceName}}",
             "unarchived": "{{deviceName}} unarchived",
-            "unarchiveVerify": "Unarchive {{deviceName}}",
+            "unarchiveVerify": "Confirm unarchiving {{deviceName}}.",
             "noConnectionYet": "No connection yet",
             "unknown": "Unknown",
             "unknownHint": "Open Safely on this device to update its sync status.",
@@ -406,7 +406,7 @@
             "title": "Archive this device",
             "description": "Since no one can access this device, your account isn't at risk. Archiving hides it from your linked devices list. It doesn't remove access or stop syncing if the device comes back online.",
             "action": "Archive {{deviceName}}",
-            "verify": "Archive {{deviceName}}",
+            "verify": "Confirm archiving {{deviceName}}.",
             "done": "{{deviceName}} archived"
         }
     },

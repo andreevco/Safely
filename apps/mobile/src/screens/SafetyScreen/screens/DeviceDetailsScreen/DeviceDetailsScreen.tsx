@@ -26,7 +26,7 @@ const DeviceDetailsContent = ({ details }: { details: SyncedDeviceDetails }) => 
     const deviceName = details.meta.name;
 
     const handleUnarchive = async () => {
-        await check({ title: t('security.deviceDetails.unarchiveVerify', { deviceName }) });
+        await check({ subtitle: t('security.deviceDetails.unarchiveVerify', { deviceName }) });
         await unarchiveDevice(details.ikPubHex);
 
         navigation.goBack();
