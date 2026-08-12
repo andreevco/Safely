@@ -2,6 +2,7 @@ import type { SBtcAccountChainItem } from '@safely/sync-storage';
 
 import { BtcBip32NodeProducer } from './btc-bip32-node-producer';
 import { BtcXpub } from '../../../../../blockchain-api';
+import { ReadOnlyRequestSigner, type ReadOnlyCredential } from '../../../../auth-cert';
 import type { BtcNetwork } from '../../../../blockchain';
 import { btcNetworkByPortfolioNetworkType, BtcWalletType } from '../../../../blockchain';
 import type { PortfolioNetworkType } from '../../../../portfolio';
@@ -33,6 +34,27 @@ export class DerivationChainItemBtcSeed implements IDerivationChainItemBtc {
         ).getPortfolioDerivation();
 
         return hdKey.publicExtendedKey;
+    }
+
+    public static async createReadOnlyCredential({
+        seedProducer,
+        walletType,
+        network,
+        derivationIndex
+    }: {
+        seedProducer: ISeedProducer;
+        walletType: BtcWalletType;
+        network: PortfolioNetworkType;
+        derivationIndex: number;
+    }): Promise<ReadOnlyCredential> {
+        const accountNode = await new BtcBip32NodeProducer(
+            seedProducer,
+            walletType,
+            btcNetworkByPortfolioNetworkType(network),
+            derivationIndex
+        ).getPortfolioDerivation();
+
+        return ReadOnlyRequestSigner.createCredential(accountNode);
     }
 
     public static generate({
@@ -94,6 +116,7 @@ export class DerivationChainItemBtcSeed implements IDerivationChainItemBtc {
                 network: this.network,
                 xpub: this.xpub,
                 derivationRef,
+                isPrevTxsRequired: false,
                 sign(tx: BtcSigningRequest) {
                     return signer.sign(tx);
                 }

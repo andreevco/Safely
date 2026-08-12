@@ -15,6 +15,7 @@ export type AmountInputProps = {
     decimalSeparator: string;
     value?: string;
     onChangeText?: (value: string) => void;
+    onPaste?: (raw: string) => void;
     label?: string;
     RightComponent?: React.ReactNode;
     onSwitchFiatMode?: () => void;
@@ -36,6 +37,7 @@ export const AmountInput = forwardRef<MaskedInputRef, AmountInputProps>((props, 
         decimalSeparator,
         value,
         onChangeText,
+        onPaste,
         formattedAlternativeAmount,
         currencySymbol,
         isMax,
@@ -93,6 +95,7 @@ export const AmountInput = forwardRef<MaskedInputRef, AmountInputProps>((props, 
                                     decimalSeparator={decimalSeparator}
                                     value={value}
                                     onChangeText={handleChangeText}
+                                    onPaste={onPaste}
                                     onFocusChange={handleFocusChange}
                                     placeholder={placeholder}
                                     placeholderTextColor={theme.colors.text.tertiary}

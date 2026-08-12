@@ -35,10 +35,14 @@ export function utf8(str: string): Buffer {
     return Buffer.from(str, 'utf-8');
 }
 
+export function toUtf8(bytes: Uint8Array): string {
+    return Buffer.from(bytes).toString('utf-8');
+}
+
 export function hex(str: string): Buffer {
     return Buffer.from(str, 'hex');
 }
 
-export function toHex(buf: Buffer): string {
-    return buf.toString('hex');
+export function toHex(bytes: Uint8Array): string {
+    return Buffer.from(bytes).toString('hex');
 }

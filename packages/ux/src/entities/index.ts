@@ -1,5 +1,6 @@
 export * from './activity';
 export * from './asset';
+export * from './exchange';
 export * from './fiat';
 export * from './portfolio';
 export * from './toast';
@@ -16,3 +17,5 @@ export * from './linking';
 export * from './dismissed-banners';
 export * from './beta-feed-watched';
 export * from './analytics';
+export * from './sync-onboarding';
+export * from './ledger';

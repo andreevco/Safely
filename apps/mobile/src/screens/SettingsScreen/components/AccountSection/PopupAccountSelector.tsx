@@ -17,22 +17,25 @@ interface PopupAccountSelectorProps {
     accounts: SyncAccount[];
     activeAccountId: string;
     onSwitchAccount: (accountId: string) => void;
-    onAddAccount: () => void;
+    onAddAccount?: () => void;
     popupMenuRef: RefObject<PopupMenuRef | null>;
 }
 
 interface AccountRowProps {
     accountId: string;
     isActive: boolean;
+    showDivider?: boolean;
     onPress: () => void;
 }
 
-const AccountRow = ({ accountId, isActive, onPress }: AccountRowProps) => {
+const AccountRow = (props: AccountRowProps) => {
+    const { accountId, isActive, showDivider, onPress } = props;
+
     const name = useAccountMeta(accountId).name;
     const walletsCount = useAccountStoreSlot(accountId, 'portfolios')?.length ?? 0;
 
     return (
-        <Cell onPress={onPress}>
+        <Cell showDivider={showDivider} onPress={onPress}>
             <AccountCell name={name} walletsCount={walletsCount} />
             {isActive && <Icon icon={Checkmark28} color="accent" />}
         </Cell>
@@ -74,17 +77,19 @@ export const PopupAccountSelector = (props: PopupAccountSelectorProps) => {
                     />
                 ))}
             </List.Group>
-            <Button
-                style={styles.addButton}
-                type="secondary"
-                size="small"
-                onPress={() => {
-                    popupMenuRef.current?.close();
-                    onAddAccount();
-                }}
-            >
-                {t('settings.addAccount')}
-            </Button>
+            {onAddAccount && (
+                <Button
+                    style={styles.addButton}
+                    type="secondary"
+                    size="small"
+                    onPress={() => {
+                        popupMenuRef.current?.close();
+                        onAddAccount();
+                    }}
+                >
+                    {t('settings.addAccount')}
+                </Button>
+            )}
         </PopupMenu>
     );
 };

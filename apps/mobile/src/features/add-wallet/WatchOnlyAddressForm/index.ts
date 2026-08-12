@@ -1,0 +1,1 @@
+export { WatchOnlyAddressForm } from './WatchOnlyAddressForm';

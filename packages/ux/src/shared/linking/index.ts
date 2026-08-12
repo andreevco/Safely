@@ -21,7 +21,8 @@ export abstract class Linking {
 
     protected abstract readonly authorizedOpenUrlProtocols: LinkingProtocol[];
 
-    protected abstract openWindow(url: string): Promise<void>;
+    protected abstract openExternal(url: string): Promise<void>;
+    protected abstract openInApp(url: string): Promise<void>;
 
     private isValidUrlProtocol(url: string, allowedProtocols?: LinkingProtocol[]): boolean {
         try {
@@ -42,13 +43,24 @@ export abstract class Linking {
      * @throws {LinkingUnsafeProtocolError} If the URL protocol is not allowed.
      * @throws {LinkingFailedToOpenError} If the URL failed to open.
      */
-    public async openURL(url: string, allowedProtocols?: LinkingProtocol[]): Promise<void> {
+    public async openURL(
+        url: string,
+        {
+            allowedProtocols,
+            preferInApp = false
+        }: { allowedProtocols?: LinkingProtocol[]; preferInApp?: boolean } = {}
+    ): Promise<void> {
         if (!this.isValidUrlProtocol(url, allowedProtocols)) {
             throw new LinkingUnsafeProtocolError();
         }
 
         try {
-            await this.openWindow(url);
+            if (preferInApp) {
+                await this.openInApp(url);
+                return;
+            }
+
+            await this.openExternal(url);
         } catch (e) {
             this.logger.error('Failed to open URL', e);
             throw new LinkingFailedToOpenError();

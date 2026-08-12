@@ -8,11 +8,18 @@ import type { Mock } from 'vitest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
+    Bip39Source,
+    MnemonicResource,
+    PortfolioNetworkType,
+    PortfolioType,
+    WatchOnlySource
+} from '@safely/core';
+
+import {
     useChangeAccountMeta,
     useConnectAccountToNewDevice,
     useCreateAccount,
     useCreateExistingAccountConnector,
-    useCreateReconnectConnector,
     useDeleteAccount,
     useEraseAllData,
     useSetActiveAccount
@@ -178,7 +185,7 @@ describe('useCreateAccount (add)', () => {
         expect(analyticsSlot?.set).toHaveBeenCalled();
     });
 
-    it('with createWallet:true seeds portfolios + nextDerivingPortfolioInfo', async () => {
+    it('with firstPortfolio generated seeds portfolios + nextDerivingPortfolioInfo', async () => {
         const newAccount = createMockSyncAccount({ accountId: 'wallet-account' });
         const factory = createFactoryStub({
             createSyncAccount: vi.fn(async () => newAccount)
@@ -187,7 +194,7 @@ describe('useCreateAccount (add)', () => {
         setupSyncedDevice();
 
         const appContext = createTestAppContext();
-        const { result } = renderHookWithProviders(() => useCreateAccount({ createWallet: true }), {
+        const { result } = renderHookWithProviders(() => useCreateAccount(), {
             appContext
         });
 
@@ -195,7 +202,8 @@ describe('useCreateAccount (add)', () => {
             await result.current.mutateAsync({
                 secureEncryptedStorage: appContext.storage.sync.encrypted as unknown as Parameters<
                     typeof result.current.mutateAsync
-                >[0]['secureEncryptedStorage']
+                >[0]['secureEncryptedStorage'],
+                firstPortfolio: { kind: 'generated' }
             });
         });
 
@@ -207,10 +215,100 @@ describe('useCreateAccount (add)', () => {
             expect.arrayContaining(['meta', 'portfolios', 'nextDerivingPortfolioInfo'])
         );
 
-        const nextInfoSet = recorder.set.mock.calls.find(
-            c => c[0] === 'nextDerivingPortfolioInfo'
-        );
+        const nextInfoSet = recorder.set.mock.calls.find(c => c[0] === 'nextDerivingPortfolioInfo');
         expect(nextInfoSet?.[1]).toEqual({ index: 1, emoji: expect.any(String) });
+    });
+
+    it('with firstPortfolio imported seeds an imported bip39 portfolio at deriving index 0', async () => {
+        const newAccount = createMockSyncAccount({ accountId: 'imported-account' });
+        const factory = createFactoryStub({
+            createSyncAccount: vi.fn(async () => newAccount)
+        });
+        setupAccountState({ accounts: [], factory });
+        setupSyncedDevice();
+
+        const mnemonic =
+            'world ceiling fine urge fringe gap item muffin another eyebrow search vault'.split(
+                ' '
+            );
+
+        const appContext = createTestAppContext();
+        const { result } = renderHookWithProviders(() => useCreateAccount(), {
+            appContext
+        });
+
+        await act(async () => {
+            await result.current.mutateAsync({
+                secureEncryptedStorage: appContext.storage.sync.encrypted as unknown as Parameters<
+                    typeof result.current.mutateAsync
+                >[0]['secureEncryptedStorage'],
+                firstPortfolio: {
+                    kind: 'imported',
+                    mnemonicAccessor: new MnemonicResource(mnemonic),
+                    networkType: PortfolioNetworkType.MAINNET
+                }
+            });
+        });
+
+        const recorder = newAccount.transactions[0];
+
+        const portfoliosSet = recorder.set.mock.calls.find(c => c[0] === 'portfolios');
+        const portfolios = portfoliosSet?.[1] as Array<{
+            type: string;
+            id: { source: string; networkType: string };
+        }>;
+        expect(portfolios).toHaveLength(1);
+        expect(portfolios[0].type).toBe(PortfolioType.BIP39);
+        expect(portfolios[0].id.source).toBe(Bip39Source.IMPORTED);
+        expect(portfolios[0].id.networkType).toBe(PortfolioNetworkType.MAINNET);
+
+        const nextInfoSet = recorder.set.mock.calls.find(c => c[0] === 'nextDerivingPortfolioInfo');
+        expect(nextInfoSet?.[1]).toEqual({ index: 0, emoji: expect.any(String) });
+    });
+
+    it('with firstPortfolio watchOnly seeds a watch-only portfolio at deriving index 0', async () => {
+        const newAccount = createMockSyncAccount({ accountId: 'watch-only-account' });
+        const factory = createFactoryStub({
+            createSyncAccount: vi.fn(async () => newAccount)
+        });
+        setupAccountState({ accounts: [], factory });
+        setupSyncedDevice();
+
+        const address = 'bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4';
+
+        const appContext = createTestAppContext();
+        const { result } = renderHookWithProviders(() => useCreateAccount(), {
+            appContext
+        });
+
+        await act(async () => {
+            await result.current.mutateAsync({
+                secureEncryptedStorage: appContext.storage.sync.encrypted as unknown as Parameters<
+                    typeof result.current.mutateAsync
+                >[0]['secureEncryptedStorage'],
+                firstPortfolio: {
+                    kind: 'watchOnly',
+                    input: address,
+                    networkType: PortfolioNetworkType.MAINNET
+                }
+            });
+        });
+
+        const recorder = newAccount.transactions[0];
+
+        const portfoliosSet = recorder.set.mock.calls.find(c => c[0] === 'portfolios');
+        const portfolios = portfoliosSet?.[1] as Array<{
+            type: string;
+            id: { source: string; address?: string; networkType: string };
+        }>;
+        expect(portfolios).toHaveLength(1);
+        expect(portfolios[0].type).toBe(PortfolioType.WATCH_ONLY);
+        expect(portfolios[0].id.source).toBe(WatchOnlySource.ADDRESS);
+        expect(portfolios[0].id.address).toBe(address);
+        expect(portfolios[0].id.networkType).toBe(PortfolioNetworkType.MAINNET);
+
+        const nextInfoSet = recorder.set.mock.calls.find(c => c[0] === 'nextDerivingPortfolioInfo');
+        expect(nextInfoSet?.[1]).toEqual({ index: 0, emoji: expect.any(String) });
     });
 
     it('with setActive:true invokes setActiveAccount with the new accountId', async () => {
@@ -320,7 +418,7 @@ describe('useSetActiveAccount (change)', () => {
 });
 
 describe('useDeleteAccount (remove)', () => {
-    it('removes own device meta, deletes local account with the provided storage, clears local storage', async () => {
+    it('archives own device, deletes local account with the provided storage, clears local storage', async () => {
         const a = createMockSyncAccount({ accountId: 'to-delete' });
         const b = createMockSyncAccount({ accountId: 'survivor' });
         const factory = createFactoryStub();
@@ -354,8 +452,8 @@ describe('useDeleteAccount (remove)', () => {
         );
 
         const recorder = a.transactions[0];
-        const devicesMetaSlot = recorder.slots.get('devicesMeta');
-        expect(devicesMetaSlot?.ifPresent).toHaveBeenCalled();
+        const devicesArchiveSlot = recorder.slots.get('devicesArchive');
+        expect(devicesArchiveSlot?.entry).toHaveBeenCalled();
 
         // Local-storage for the deleted account was cleared
         const leftover = await appContext.storage.ux.regular
@@ -587,31 +685,5 @@ describe('useCreateExistingAccountConnector (add device → existing account)', 
         });
 
         expect(abort).toHaveBeenCalledTimes(1);
-    });
-});
-
-describe('useCreateReconnectConnector (reconnect existing account)', () => {
-    it('delegates to active account.reconnectToAccount', async () => {
-        const account = createMockSyncAccount();
-        const abort = vi.fn();
-        (account.reconnectToAccount as Mock).mockImplementation(async () => ({
-            data: Buffer.from('reconn'),
-            waitForCompletion: () => Promise.resolve(account),
-            abort
-        }));
-        setupAccountState({ account });
-        setupSyncedDevice();
-
-        const { result } = renderHookWithProviders(() => useCreateReconnectConnector(), {
-            appContext: createTestAppContext()
-        });
-
-        let connector: Awaited<ReturnType<typeof result.current.mutateAsync>> | undefined;
-        await act(async () => {
-            connector = await result.current.mutateAsync();
-        });
-
-        expect(account.reconnectToAccount).toHaveBeenCalledTimes(1);
-        expect(connector?.connectionString).toBe(Buffer.from('reconn').toString('base64url'));
     });
 });

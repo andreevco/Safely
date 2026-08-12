@@ -5,9 +5,9 @@ import { View } from 'react-native';
 import type { SharedValue } from 'react-native-reanimated';
 import Animated, { interpolate, useAnimatedStyle } from 'react-native-reanimated';
 
-import type { Portfolio } from '@safely/core';
+import type { PortfolioMeta } from '@safely/core';
 import { delay } from '@safely/core';
-import { useActivePortfolio, usePortfolios } from '@safely/ux';
+import { useActiveWalletMeta, usePortfolios } from '@safely/ux';
 
 import { PortfolioName } from '@mobile/entities/portfolio';
 import { PortfoliosList } from '@mobile/features/portfolio/PortfoliosList';
@@ -26,13 +26,7 @@ import type { PopupMenuRef } from '@mobile/shared/ui/PopupMenu';
 
 import { styles } from './CompactAccountSelector.styles';
 
-const Touchable = ({
-    progress,
-    portfolio
-}: {
-    progress: SharedValue<number>;
-    portfolio: Portfolio;
-}) => {
+const Touchable = ({ progress, meta }: { progress: SharedValue<number>; meta: PortfolioMeta }) => {
     const innerAnimatedOpacity = useAnimatedStyle(() => ({
         opacity: interpolate(progress.value, [0, 1], [1, 0.56])
     }));
@@ -40,7 +34,7 @@ const Touchable = ({
     return (
         <View style={styles.touchableContainer} testID={TEST_ID.home.walletSelector}>
             <Animated.View style={[styles.innerTouchableContainer, innerAnimatedOpacity]}>
-                <PortfolioName meta={portfolio.meta} />
+                <PortfolioName meta={meta} />
                 <Icon icon={ChevronDown16} color="tertiary" />
             </Animated.View>
         </View>
@@ -52,7 +46,7 @@ export const CompactAccountSelector = () => {
     const navigation = useNavigation();
     const { t } = useTranslation();
 
-    const portfolio = useActivePortfolio();
+    const meta = useActiveWalletMeta();
     const portfolios = usePortfolios();
 
     return (
@@ -93,7 +87,7 @@ export const CompactAccountSelector = () => {
                         </View>
                     </View>
                 }
-                touchable={progress => <Touchable progress={progress} portfolio={portfolio} />}
+                touchable={progress => <Touchable progress={progress} meta={meta} />}
             >
                 <View style={styles.listContainer}>
                     <PortfoliosList

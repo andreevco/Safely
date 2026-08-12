@@ -30,7 +30,10 @@ export const TaggedText = ({ taggedText, links }: TaggedTextProps) => {
     };
     for (const [name, url] of Object.entries(links ?? {})) {
         components[name] = (
-            <Text color="link" onPress={() => openURL(url, [LinkingProtocol.HTTPS])} />
+            <Text
+                color="link"
+                onPress={() => openURL(url, { allowedProtocols: [LinkingProtocol.HTTPS] })}
+            />
         );
     }
 

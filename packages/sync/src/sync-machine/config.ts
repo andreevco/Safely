@@ -4,7 +4,7 @@ import type { ErrorDisposition } from './error-handler';
 import type { SnapshotsApi } from '../api/generated';
 import type { SnapshotsSse } from '../api/snapshots-sse';
 import type { EncryptedState } from '../api/types';
-import type { YManager } from '../crdt/y-manager';
+import type { CrdtManager } from '../crdt/crdt-manager';
 import type { tDevicesLatest, tDevicesRest } from '../device-manager/device-storage-schema';
 import type { Logger } from '../logger/logger';
 import type { SyncOperations } from '../sync-operations/sync-operations';
@@ -13,7 +13,7 @@ import type { SyncStateRepository } from '../update-handler/sync-state-repositor
 
 export type SyncMachineInput<Latest extends StorageVersion, Rest> = {
     syncStateRepository: SyncStateRepository;
-    deviceYManager: YManager<tDevicesLatest, tDevicesRest>;
+    deviceYManager: CrdtManager<tDevicesLatest, tDevicesRest>;
     snapshotsApi: SnapshotsApi;
     snapshotsSse: SnapshotsSse;
     syncOperations: SyncOperations<Latest, Rest>;

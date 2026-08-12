@@ -1,29 +1,33 @@
 import { createStaticNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import { AccountCreatedScreen } from '@mobile/screens/AccountCreatedScreen';
 import { AddAccountSheet } from '@mobile/screens/AddAccountSheet';
 import { BiometryScreen } from '@mobile/screens/BiometryScreen';
 import { ChangePasscodeScreen } from '@mobile/screens/ChangePasscodeScreen';
-import { CurrencyScreen } from '@mobile/screens/CurrencyScreen';
+import { ConnectToSignSheet } from '@mobile/screens/ConnectToSignSheet';
 import { CustomizeAccountModal } from '@mobile/screens/CustomizeAccountModal';
 import { CustomizeWalletModal } from '@mobile/screens/CustomizeWalletModal';
 import { DestructiveConfirmSheet } from '@mobile/screens/DestructiveConfirmSheet';
+import { DeviceSupportWizardModal } from '@mobile/screens/DeviceSupportWizardModal';
+import { DeviceUnarchivedSheet } from '@mobile/screens/DeviceUnarchivedSheet';
+import { ExchangeModal } from '@mobile/screens/ExchangeModal';
+import { LinkDeviceWarningModal } from '@mobile/screens/LinkDeviceWarningModal';
 import { LockScreen } from '@mobile/screens/LockScreen';
+import { MoreOptionsSheet } from '@mobile/screens/MoreOptionsSheet';
 import { NewContactModal } from '@mobile/screens/NewContactModal';
 import { ConfirmDeleteContactSheet } from '@mobile/screens/NewContactModal/screens/ConfirmDeleteContactSheet';
+import { OnboardingImportWalletScreen } from '@mobile/screens/OnboardingImportWalletScreen';
 import { OnboardingPasscodeScreen } from '@mobile/screens/OnboardingPasscodeScreen';
+import { OnboardingWatchAccountScreen } from '@mobile/screens/OnboardingWatchAccountScreen';
+import { OrderScreen } from '@mobile/screens/OrderScreen';
 import { PasscodeVerificationScreen } from '@mobile/screens/PasscodeVerificationScreen';
 import { PendingFundsSheet } from '@mobile/screens/PendingFundsSheet';
+import { ProviderSheet } from '@mobile/screens/ProviderSheet';
 import { QRScanModal } from '@mobile/screens/QRScanModal';
 import { ReceiveAssetModal } from '@mobile/screens/ReceiveAssetModal';
-import { ReconnectDeviceModal } from '@mobile/screens/ReconnectDeviceModal';
 import { RemoveWalletSheet } from '@mobile/screens/RemoveWalletSheet';
-import {
-    DisconnectDeviceSheet,
-    RecoveryConfirmSheet,
-    RecoveryPhraseSheet
-} from '@mobile/screens/SecurityScreen/screens';
+import { DeviceDetailsScreen } from '@mobile/screens/SafetyScreen/screens';
+import { RecoveryConfirmSheet, RecoveryPhraseSheet } from '@mobile/screens/SecurityScreen/screens';
 import { SelectAccountModal } from '@mobile/screens/SelectAccountModal';
 import { SelectAccountSelectorModal } from '@mobile/screens/SelectAccountSelectorModal';
 import { SignInScreen } from '@mobile/screens/SignInScreen';
@@ -34,22 +38,36 @@ import { WatchOnlySheet } from '@mobile/screens/WatchOnlySheet';
 import { WelcomeScreen } from '@mobile/screens/WelcomeScreen';
 
 import { AddWalletStack } from './stacks/AddWalletStack';
+import { CurrencyStack } from './stacks/CurrencyStack';
+import { OnboardingLedgerStack } from './stacks/OnboardingLedgerStack';
+import { RestrictedStack } from './stacks/RestrictedStack';
 import { SendStack } from './stacks/SendStack';
 import { SettingsStack } from './stacks/SettingsStack';
 import { SignInStack } from './stacks/SignInStack';
 import { TabsNavigator } from './tabs';
 
 export const RootStack = createNativeStackNavigator({
-    initialRouteName: 'TabsNavigator',
     groups: {
         Onboarding: {
             screens: {
                 WelcomeScreen: WelcomeScreen,
                 OnboardingPasscodeScreen: OnboardingPasscodeScreen,
                 BiometryScreen: BiometryScreen,
-                AccountCreatedScreen: AccountCreatedScreen,
                 SignInScreen: SignInScreen,
-                SignInSuccessScreen: SignInSuccessScreen
+                SignInSuccessScreen: SignInSuccessScreen,
+                OnboardingImportWalletScreen: OnboardingImportWalletScreen,
+                OnboardingWatchAccountScreen: {
+                    screen: OnboardingWatchAccountScreen,
+                    options: {
+                        presentation: 'card'
+                    }
+                },
+                OnboardingConnectLedgerModal: {
+                    screen: OnboardingLedgerStack,
+                    options: {
+                        presentation: 'card'
+                    }
+                }
             }
         },
         Screens: {
@@ -60,7 +78,10 @@ export const RootStack = createNativeStackNavigator({
                         path: 'tab'
                     }
                 },
+                RestrictedFlow: RestrictedStack,
                 TransactionScreen: TransactionScreen,
+                OrderScreen: OrderScreen,
+                DeviceDetailsScreen: DeviceDetailsScreen,
                 LockScreen: {
                     screen: LockScreen,
                     options: {
@@ -90,18 +111,20 @@ export const RootStack = createNativeStackNavigator({
         Modals: {
             screens: {
                 SettingsModal: SettingsStack,
-                CurrencyModal: CurrencyScreen,
+                CurrencyModal: CurrencyStack,
+                ExchangeModal: ExchangeModal,
                 RecoveryPhraseModal: RecoveryPhraseSheet,
                 SignInModal: SignInStack,
                 CustomizeAccountModal: CustomizeAccountModal,
                 CustomizeWalletModal: CustomizeWalletModal,
                 QRScanModal: QRScanModal,
+                LinkDeviceWarningModal: LinkDeviceWarningModal,
+                DeviceSupportWizardModal: DeviceSupportWizardModal,
                 NewContactModal: NewContactModal,
                 AddWalletModal: AddWalletStack,
                 SelectAccountModal: SelectAccountModal,
                 SelectAccountSelectorModal: SelectAccountSelectorModal,
                 ReceiveAssetModal: ReceiveAssetModal,
-                ReconnectDeviceModal: ReconnectDeviceModal,
                 SendAssetModal: SendStack
             },
             screenOptions: {
@@ -111,14 +134,17 @@ export const RootStack = createNativeStackNavigator({
         Sheets: {
             screens: {
                 AddAccountSheet: AddAccountSheet,
+                DeviceUnarchivedSheet: DeviceUnarchivedSheet,
                 RecoveryConfirmSheet: RecoveryConfirmSheet,
                 DestructiveConfirmSheet: DestructiveConfirmSheet,
-                DisconnectDeviceSheet: DisconnectDeviceSheet,
                 RemoveWalletSheet: RemoveWalletSheet,
                 SignOutAccountSheet: SignOutAccountSheet,
                 WatchOnlySheet: WatchOnlySheet,
                 PendingFundsSheet: PendingFundsSheet,
-                ConfirmDeleteContactSheet: ConfirmDeleteContactSheet
+                MoreOptionsSheet: MoreOptionsSheet,
+                ConfirmDeleteContactSheet: ConfirmDeleteContactSheet,
+                ConnectToSignSheet: ConnectToSignSheet,
+                ProviderSheet: ProviderSheet
             },
             screenOptions: {
                 animationDuration: 0,

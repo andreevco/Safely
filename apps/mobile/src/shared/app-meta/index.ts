@@ -1,4 +1,5 @@
 import * as Device from 'expo-device';
+import { getLocales } from 'expo-localization';
 import { Platform } from 'react-native';
 
 import type { Build } from '@safely/core';
@@ -17,5 +18,13 @@ export const deviceInfo = {
     name: isIOSAppOnMac ? 'Apple Silicon Mac (iOS App)' : (Device.modelName ?? fallbackName),
     osVersion: Device.osVersion ?? String(Platform.Version)
 };
+
+export function getDeviceCountryCode(): string | null {
+    try {
+        return getLocales()[0]?.regionCode ?? null;
+    } catch {
+        return null;
+    }
+}
 
 export const environment: 'production' | 'development' = __DEV__ ? 'development' : 'production';

@@ -13,6 +13,7 @@ import { useCellContext } from '../../CellContext';
 export type CellImageType = 'icon' | 'image';
 
 export type ImageCommon = {
+    variant?: 'square' | 'rounded';
     containerStyle?: ViewStyle;
     skeleton?: boolean;
 };
@@ -32,9 +33,11 @@ export type ImageType = {
 export type ImageProps = ImageCommon & (IconType | ImageType);
 
 export const Image = (props: ImageProps) => {
-    const { containerStyle } = props;
+    const { containerStyle, variant = 'rounded' } = props;
     const cellContext = useCellContext();
     const { theme } = useUnistyles();
+
+    styles.useVariants({ variant });
 
     if (cellContext.skeleton) {
         return (

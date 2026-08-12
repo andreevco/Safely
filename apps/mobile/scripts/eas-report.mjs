@@ -11,16 +11,19 @@
 // must match the variables defined in that Slack workflow. This script sends:
 //   text              — message body (overall status + iOS/Android version+build)
 //   eas_workflow_url  — link to this EAS workflow run
-//   github_pr_url     — link to the merged release -> master PR (empty if none)
+//   github_pr_url     — link to the commit this build was made from (empty if unknown)
 //   e2e_log           — Maestro result; on failure a link to the full log artifact
-// Configure those four variables in your Slack workflow trigger.
+//   build_type_name   — "Production" (master, ships to Play) vs "Staging"
+//   build_type_emoji  — emoji matching build_type_name
+// Configure those variables in your Slack workflow trigger.
 
 let {
     SLACK_WEBHOOK_URL,
     WORKFLOW_URL,
-    PR_NUMBER,
+    COMMIT_SHA,
     REPOSITORY,
     RELEASE_NOTES,
+    BUILD_TYPE,
     TARGET_BRANCH,
     IOS_VERSION,
     IOS_BUILD,
@@ -35,12 +38,12 @@ let {
 
 // EAS job statuses: success | failure | error | skipped | canceled | (empty when not run)
 const iosOk = STATUS_IOS === 'success' || STATUS_IOS_CRUTCH === 'success';
-const firebaseOk = STATUS_ANDROID === 'success';
+const androidOk = STATUS_ANDROID === 'success';
 const e2eOk = STATUS_E2E === 'success';
 
 const ver = (v, b) => `v${v || '?'} (${b || '?'})`;
 
-const buildsOk = iosOk && firebaseOk;
+const buildsOk = iosOk && androidOk;
 // "tests" in the headline = e2e.
 const testsOk = e2eOk;
 const headline = buildsOk
@@ -55,15 +58,18 @@ const notes = (RELEASE_NOTES || '').trim();
 const targetBranch = (TARGET_BRANCH || '').trim();
 const notesWithBranch = targetBranch ? `${targetBranch} <- ${notes}` : notes;
 
-// In case of a direct push, use stub url to avoid slack button rendering errors
-const prUrl = PR_NUMBER !== undefined && REPOSITORY ? `https://github.com/${REPOSITORY}/pull/${PR_NUMBER}` : 'https://safely.app/';
+const commitUrl = COMMIT_SHA && REPOSITORY ? `https://github.com/${REPOSITORY}/commit/${COMMIT_SHA}` : '';
 const workflowUrl = WORKFLOW_URL || '';
+
+const buildType = (BUILD_TYPE || '').trim() === 'production'
+    ? { name: 'Production', emoji: '🚀' }
+    : { name: 'Staging', emoji: '🏗️' };
 
 function buildText() {
     const lines = [
         headline,
         iosOk ? `📱 iOS · ${ver(IOS_VERSION, IOS_BUILD)}` : '📱 iOS build failed ❌',
-        firebaseOk ? `🤖 Android · ${ver(ANDROID_VERSION, ANDROID_BUILD)}` : '🤖 Android build failed ❌',
+        androidOk ? `🤖 Android · ${ver(ANDROID_VERSION, ANDROID_BUILD)}` : '🤖 Android build failed ❌',
     ];
 
     if (!e2eOk) {
@@ -86,8 +92,10 @@ async function postSlack() {
     const payload = {
         text: buildText(),
         eas_workflow_url: workflowUrl,
-        github_pr_url: prUrl,
-        notes: notesWithBranch.slice(0, 1000)
+        github_commit_url: commitUrl,
+        notes: notesWithBranch.slice(0, 1000),
+        build_type_name: buildType.name,
+        build_type_emoji: buildType.emoji
     };
 
     const res = await fetch(SLACK_WEBHOOK_URL, {

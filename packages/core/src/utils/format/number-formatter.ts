@@ -4,6 +4,8 @@ import Big from 'big.js';
 import type { Logger } from '@safely/sync';
 
 import type { NumberFormatLocale } from './locale-adapter';
+import type { NormalizedPastedAmount } from './pasted-amount-normalizer';
+import { PastedAmountNormalizer } from './pasted-amount-normalizer';
 import type { CryptoCurrencyDisplay, FiatCurrencyDisplay } from './types';
 import type { CryptoAssetAmount, FiatAssetAmount } from '../../entities';
 import { isCryptoAsset } from '../../entities/asset/crypto-asset';
@@ -42,11 +44,30 @@ interface FormatFiatOptionsNoSymbol {
 export class NumberFormatter {
     private readonly logger: Logger;
 
+    private readonly pastedAmountNormalizer = new PastedAmountNormalizer();
+
     constructor(
         private readonly locale: NumberFormatLocale,
         logger: Logger
     ) {
         this.logger = logger.child('NumberFormatter');
+    }
+
+    public normalizePastedInput(raw: string): NormalizedPastedAmount {
+        const result = this.pastedAmountNormalizer.normalize(raw);
+        if (result.status === 'ambiguous') return result;
+
+        return { value: result.value.split('.').join(this.locale.decimalSeparator), status: 'ok' };
+    }
+
+    public normalizeCanonicalInput(raw: string): NormalizedPastedAmount {
+        const canonical = raw.trim();
+        const canonicalDecimalRegex = /^\d+(\.\d+)?$/;
+        if (!canonicalDecimalRegex.test(canonical)) {
+            return { value: '', status: 'ambiguous' };
+        }
+
+        return { value: canonical.split('.').join(this.locale.decimalSeparator), status: 'ok' };
     }
 
     public parseInput(value: string, decimalPlaces: number): { parsed: Big; formatted: string } {

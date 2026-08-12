@@ -1,4 +1,5 @@
 import { useNavigation } from '@react-navigation/core';
+import type { StaticScreenProps } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Keyboard, View } from 'react-native';
@@ -16,7 +17,13 @@ import { BottomSheet, Button, Text, useCloseOnReturn } from '@mobile/shared/ui';
 
 import { styles } from './AddAccountSheet.styles';
 
-const AddAccountContent = () => {
+type AddAccountSheetParams = {
+    onAccountAdded?: () => void;
+};
+
+type AddAccountSheetProps = StaticScreenProps<AddAccountSheetParams | undefined>;
+
+const AddAccountContent = ({ onAccountAdded }: AddAccountSheetParams) => {
     const { t } = useTranslation();
     const {
         storage: {
@@ -26,7 +33,6 @@ const AddAccountContent = () => {
     const navigation = useNavigation();
     const signIn = useCreateExistingAccountConnector();
     const { mutateAsync: createAccount } = useCreateAccount({
-        createWallet: true,
         setActive: true
     });
     const { withLoader } = useLoader();
@@ -45,10 +51,20 @@ const AddAccountContent = () => {
                 Keyboard.dismiss();
 
                 await withLoader(async () => {
-                    await createAccount({ name, secureEncryptedStorage });
+                    await createAccount({
+                        name,
+                        secureEncryptedStorage,
+                        firstPortfolio: { kind: 'generated' }
+                    });
                 });
 
                 toast(t('addAccount.toastAccountCreated'));
+
+                if (onAccountAdded) {
+                    onAccountAdded();
+                    return;
+                }
+
                 navigation.goBack();
             },
             onClose: () => {
@@ -76,7 +92,7 @@ const AddAccountContent = () => {
                         navigation.navigate('SignInModal', {
                             screen: 'SignInSuccessModal',
                             params: {
-                                onContinue: () => navigation.goBack()
+                                onContinue: () => (onAccountAdded ?? navigation.goBack)()
                             }
                         })
                 }
@@ -84,7 +100,7 @@ const AddAccountContent = () => {
         } catch {
             secureEncryptedStorage[Symbol.dispose]();
         }
-    }, [signIn, navigation, getSecureEncrypted, markNavigated]);
+    }, [signIn, navigation, getSecureEncrypted, markNavigated, onAccountAdded]);
 
     return (
         <View>
@@ -108,10 +124,10 @@ const AddAccountContent = () => {
     );
 };
 
-export const AddAccountSheet = () => {
+export const AddAccountSheet = (props: AddAccountSheetProps) => {
     return (
         <BottomSheet shortHeader>
-            <AddAccountContent />
+            <AddAccountContent onAccountAdded={props.route.params?.onAccountAdded} />
         </BottomSheet>
     );
 };

@@ -24,7 +24,7 @@ export const styles = StyleSheet.create(theme => ({
     inputWrapper: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: theme.colors.background.tertiary,
+        backgroundColor: theme.colors.input.background,
         borderRadius: theme.radius.md,
         paddingHorizontal: theme.spacing[16],
         borderWidth: 1,

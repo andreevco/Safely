@@ -45,8 +45,16 @@ export const styles = StyleSheet.create(theme => ({
                 destructive: {
                     backgroundColor: Color(theme.colors.accent.red).alpha(0.16).toString()
                 },
+                warning: {
+                    backgroundColor: Color(theme.colors.accent.orange).alpha(0.16).toString()
+                },
                 overlay: {
                     backgroundColor: theme.colors.other.constant.white
+                },
+                blue: {
+                    backgroundColor: 'rgba(1, 120, 255, 0.08)',
+                    borderColor: 'rgba(1, 120, 255, 0.2)',
+                    borderWidth: 0.75
                 }
             }
         }
@@ -74,8 +82,14 @@ export const styles = StyleSheet.create(theme => ({
                 destructive: {
                     color: theme.colors.accent.red
                 },
+                warning: {
+                    color: theme.colors.accent.orange
+                },
                 overlay: {
                     color: theme.colors.other.constant.black
+                },
+                blue: {
+                    color: theme.colors.text.link
                 }
             }
         }

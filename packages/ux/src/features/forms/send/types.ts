@@ -11,7 +11,7 @@ import type {
 } from '@safely/core';
 
 export type RecipientMeta =
-    | { kind: 'portfolio'; meta: PortfolioMeta }
+    | { kind: 'portfolio'; meta: PortfolioMeta; tag?: number }
     | { kind: 'contact'; meta: ContactMeta };
 
 export interface PortfolioSuggestion {

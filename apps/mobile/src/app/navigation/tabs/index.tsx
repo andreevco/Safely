@@ -6,7 +6,8 @@ import { useEffect, useState } from 'react';
 import { useHasPortfolio } from '@safely/ux';
 
 import { SafelyBetaScreen } from '@mobile/screens/SafelyBetaScreen';
-import { Home28, Icon, InformationCircle28 } from '@mobile/shared/ui/Icon';
+import { SafetyScreen } from '@mobile/screens/SafetyScreen';
+import { Home28, Icon, Message28, ShieldExclamationmark28 } from '@mobile/shared/ui/Icon';
 
 import { HomeStack } from '../stacks/HomeStack';
 
@@ -41,9 +42,16 @@ export const TabsNavigator = createBottomTabNavigator({
                 path: 'beta'
             },
             options: () => ({
-                title: i18next.t('tabs.about'),
+                title: i18next.t('tabs.updates'),
+                tabBarIcon: ({ color }) => <Icon icon={Message28} style={{ tintColor: color }} />
+            })
+        },
+        SafetyScreen: {
+            screen: SafetyScreen,
+            options: () => ({
+                title: i18next.t('tabs.safety'),
                 tabBarIcon: ({ color }) => (
-                    <Icon icon={InformationCircle28} style={{ tintColor: color }} />
+                    <Icon icon={ShieldExclamationmark28} style={{ tintColor: color }} />
                 )
             })
         }

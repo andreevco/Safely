@@ -1,8 +1,8 @@
 import { useNavigation } from '@react-navigation/core';
 import { useCallback, useMemo } from 'react';
 
-import { BtcXpub, PortfolioType } from '@safely/core';
-import { useActivePortfolioEntities } from '@safely/ux';
+import { BtcXpub } from '@safely/core';
+import { isDerivableEntities, useActivePortfolioEntities } from '@safely/ux';
 
 import { PortfolioName } from '@mobile/entities/portfolio';
 import { Button, Cell, List, Screen, Text } from '@mobile/shared/ui';
@@ -17,7 +17,7 @@ export const DevToolsXpubScreen = () => {
     const navigation = useNavigation();
 
     const xpub = useMemo(() => {
-        if (entities.type === 'bip39') {
+        if (isDerivableEntities(entities)) {
             return BtcXpub.toZpub(entities.btcWallet.xpub);
         }
 
@@ -35,7 +35,6 @@ export const DevToolsXpubScreen = () => {
     }, [copy, xpub]);
 
     const portfolio = entities.portfolio;
-    const isWatchOnly = portfolio.type === PortfolioType.WATCH_ONLY;
 
     return (
         <Screen>
@@ -53,10 +52,7 @@ export const DevToolsXpubScreen = () => {
                         <Cell onPress={handleSelectWallet}>
                             <Cell.Content>
                                 <Cell.Row>
-                                    <PortfolioName
-                                        meta={portfolio.meta}
-                                        isWatchOnly={isWatchOnly}
-                                    />
+                                    <PortfolioName meta={portfolio.meta} type={portfolio.type} />
                                 </Cell.Row>
                             </Cell.Content>
                             <Icon icon={Switch16} color="tertiary" />

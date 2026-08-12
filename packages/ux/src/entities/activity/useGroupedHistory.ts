@@ -1,7 +1,7 @@
 import type { InfiniteData } from '@tanstack/react-query';
 import { useCallback } from 'react';
 
-import { isBtcTransactionPending } from './blockchain-specific/btc';
+import { isActivityItemPending } from './pending';
 import type {
     ActivityItem,
     ActivityItemsDatedGroup,
@@ -81,7 +81,7 @@ export function groupActivityItems(items: ActivityItem[]): ActivityItemsDatedGro
     const grouped: Record<string, ActivityItem[]> = {};
 
     for (const item of sortedItems) {
-        if (isBtcTransactionPending(item.transaction.raw)) {
+        if (isActivityItemPending(item)) {
             pendingItems.push(item);
         } else {
             const key = JSON.stringify(getEventGroupMeta(item.timestamp, todayDate, yesterdayDate));

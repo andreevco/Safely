@@ -47,7 +47,9 @@ class SafelyMaskedInputView(context: Context, appContext: AppContext) : ExpoView
     private var rawValue = ""
     private var lastEmittedValue: String? = null
     private var isUpdating = false
+    private var pendingPaste = false
 
+    val onPaste by EventDispatcher()
     val onChangeText by EventDispatcher()
     val onFocusChange by EventDispatcher()
 
@@ -73,10 +75,18 @@ class SafelyMaskedInputView(context: Context, appContext: AppContext) : ExpoView
 
         editText.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                if (!isUpdating) pendingPaste = count > 1
+            }
             override fun afterTextChanged(s: Editable?) {
                 if (isUpdating) return
                 val text = stripSuffix(s?.toString() ?: "")
+                if (pendingPaste) {
+                    pendingPaste = false
+                    onPaste(mapOf("raw" to text))
+                    applyMask()
+                    return
+                }
                 val result = MaskEngine.apply(text, decimals, decimalSeparator)
                 updateDisplay(result)
                 rawValue = result.extracted

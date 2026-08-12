@@ -9,9 +9,13 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@ledgerhq/device-management-kit": "catalog:",
+    "@ledgerhq/device-signer-kit-bitcoin": "catalog:",
+    "@ledgerhq/signer-utils": "catalog:",
+    "@noble/hashes": "catalog:",
     "@safely/sync": "workspace:*",
     "@safely/sync-storage": "workspace:*",
-    "@noble/hashes": "catalog:",
+    "@noble/curves": "catalog:",
     "@scure/bip32": "2.2.0",
     "@scure/bip39": "2.2.0",
     "@scure/btc-signer": "2.2.0",
@@ -28,6 +32,7 @@
     ".": "./src/index.ts",
     "./api/config": "./src/api/config/index.ts",
     "./api/btc": "./src/api/btc/index.ts",
-    "./api/price": "./src/api/price/index.ts"
+    "./api/price": "./src/api/price/index.ts",
+    "./api/exchange": "./src/api/exchange/index.ts"
   }
 }

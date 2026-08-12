@@ -1,29 +1,33 @@
 import { useNavigation } from '@react-navigation/core';
-import type { StaticScreenProps } from '@react-navigation/native';
+import { CommonActions, type StaticScreenProps } from '@react-navigation/native';
 import { notificationAsync, NotificationFeedbackType } from 'expo-haptics';
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
+import { State } from 'react-native-ble-plx';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
+import { LedgerSigningCancelledError, PortfolioType } from '@safely/core';
 import type { SendFormResult } from '@safely/ux';
 import {
     useActiveBtcWallet,
     useActiveFiat,
     useActivePortfolio,
+    useActivePortfolioLedgerIndex,
+    useActiveWalletMeta,
     useAnalytics,
     useAppContext,
     useEstimateAssetTransfer,
-    useIsActivePortfolioTestnet,
     useNumberFormatter,
     useSendAssetTransfer
 } from '@safely/ux';
 
+import { getBluetoothState, useBleManager } from '@mobile/features/ledger';
 import { TransactionFee } from '@mobile/screens/ConfirmationScreen/components/TransactionFee';
 import { TransactionSendResult } from '@mobile/screens/ConfirmationScreen/components/TransactionSendResult';
 import { Checkmark96, Icon, List, Screen, Text, Image } from '@mobile/shared/ui';
 
-import { Amount, ConfirmationFooter, Wallet, TransactionCell } from './components';
+import { Amount, MaxAmount, ConfirmationFooter, Wallet, TransactionCell } from './components';
 import { styles } from './ConfirmationScreen.styles';
 import type { ConfirmationState } from './ConfirmationScreen.types';
 
@@ -42,9 +46,11 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
     const analytics = useAnalytics();
     const fiat = useActiveFiat();
     const navigation = useNavigation();
+    const getBleManager = useBleManager();
     const btcWallet = useActiveBtcWallet();
     const activePortfolio = useActivePortfolio();
-    const isTestnet = useIsActivePortfolioTestnet();
+    const activeWalletMeta = useActiveWalletMeta();
+    const activeLedgerIndex = useActivePortfolioLedgerIndex();
     const { logger } = useAppContext();
 
     const [confirmationState, setConfirmationState] = useState<ConfirmationState>({ type: 'idle' });
@@ -55,7 +61,7 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
             enabled: confirmationState.type !== 'success'
         }
     );
-    const { mutateAsync: send, data: sendResult } = useSendAssetTransfer(txTemplate);
+    const { mutateAsync: send, data: sendResult } = useSendAssetTransfer();
     const formatter = useNumberFormatter();
 
     const onSend = useCallback(async () => {
@@ -64,7 +70,7 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
 
         try {
             setConfirmationState({ type: 'sending' });
-            await send();
+            await send(txTemplate);
             onSuccess?.();
             notificationAsync(NotificationFeedbackType.Success);
             setConfirmationState({ type: 'success' });
@@ -74,6 +80,12 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
                 fiatSymbol: fiat.id.symbol
             });
         } catch (error) {
+            if (error instanceof LedgerSigningCancelledError) {
+                setConfirmationState({ type: 'idle' });
+
+                return;
+            }
+
             logger.error('[ConfirmationScreen] send failed', error);
             notificationAsync(NotificationFeedbackType.Error);
             setConfirmationState({ type: 'error', error });
@@ -84,7 +96,32 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
                 error
             });
         }
-    }, [send, onSuccess, logger, confirmationResult, analytics, fiat.id.symbol]);
+    }, [send, txTemplate, onSuccess, logger, confirmationResult, analytics, fiat.id.symbol]);
+
+    const isLedger = activePortfolio.type === PortfolioType.LEDGER;
+
+    const onLedgerContinue = useCallback(async () => {
+        const state = await getBluetoothState(getBleManager());
+
+        if (state === State.PoweredOn) {
+            void onSend();
+
+            return;
+        }
+
+        navigation.dispatch(
+            CommonActions.navigate(
+                state === State.PoweredOff
+                    ? 'BluetoothDisabledModal'
+                    : 'BluetoothAccessRequiredModal',
+                {
+                    onReady: () => {
+                        void onSend();
+                    }
+                }
+            )
+        );
+    }, [navigation, onSend, getBleManager]);
 
     const displayState = useMemo(() => {
         if (txTemplateError) {
@@ -156,8 +193,15 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
                             value={
                                 <Wallet
                                     address={btcWallet.address}
-                                    meta={{ kind: 'portfolio', meta: activePortfolio.meta }}
-                                    isTestnet={isTestnet}
+                                    meta={{
+                                        kind: 'portfolio',
+                                        meta: activeWalletMeta,
+                                        tag:
+                                            activeLedgerIndex !== undefined
+                                                ? activeLedgerIndex + 1
+                                                : undefined
+                                    }}
+                                    networkType={activePortfolio.networkType}
                                 />
                             }
                         />
@@ -167,20 +211,26 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
                                 <Wallet
                                     address={confirmationResult.recipient.address}
                                     meta={confirmationResult.recipientMeta}
-                                    isTestnet={isTestnet}
+                                    networkType={activePortfolio.networkType}
                                 />
                             }
                         />
                     </List.Group>
                     <List.Group style={styles.listGroup}>
-                        <Amount
-                            fiatAmount={confirmationResult.amount.fiatAssetAmount.format(formatter)}
-                            cryptoAmount={confirmationResult.amount.cryptoAssetAmount.format(
-                                formatter,
-                                { fullPrecision: true }
-                            )}
-                            inputType={confirmationResult.amount.inputType}
-                        />
+                        {confirmationResult.isMax ? (
+                            <MaxAmount amount={txTemplate?.request.amount} />
+                        ) : (
+                            <Amount
+                                fiatAmount={confirmationResult.amount.fiatAssetAmount.format(
+                                    formatter
+                                )}
+                                cryptoAmount={confirmationResult.amount.cryptoAssetAmount.format(
+                                    formatter,
+                                    { fullPrecision: true }
+                                )}
+                                inputType={confirmationResult.amount.inputType}
+                            />
+                        )}
                         <TransactionFee estimation={txTemplate?.estimation} />
                     </List.Group>
                     {!!sendResult && (
@@ -194,6 +244,7 @@ export const ConfirmationScreen = (props: ConfirmationScreenProps) => {
                     onGoBack={onGoBack}
                     state={displayState}
                     isEstimating={!txTemplate}
+                    onLedgerContinue={isLedger ? onLedgerContinue : undefined}
                 />
             </View>
         </Screen>

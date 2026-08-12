@@ -17,6 +17,10 @@ import { abs, assertUnreachable, toBig } from '../../utils';
 
 export type SpentUtxo = { txid: string; vout: number; value: string };
 
+// Abort max send if the form-preview amount and the confirmation re-estimate differ
+// by more than this. Fixed (not fee-proportional): a manipulated fee can't widen it.
+const MAX_ESTIMATE_DRIFT_TOLERANCE_SAT = 10_000n;
+
 function getDustSat(walletAddress: string) {
     const type = BtcAddress.type(walletAddress);
     switch (type) {
@@ -197,12 +201,22 @@ export class BtcEstimator implements IIdentifiable {
         request: BtcTransferRequestMax,
         utxos: BtcApiUtxo[]
     ): Promise<BtcTransactionTemplate> {
+        if (request.estimatedAmount.weiAmount <= 0n) {
+            throw new Error('Amount must be greater than zero');
+        }
+
         const { fee, targetBlock } = await this.estimateSendFee(request, utxos);
         const totalBalance = getUtxoTotal(utxos);
 
-        // Balance changed significantly since max amount was calculated initially in the form
         const amount = totalBalance.sub(fee);
-        if (abs(request.estimatedAmount.weiAmount - amount.weiAmount) * 2n > fee.weiAmount) {
+        if (amount.weiAmount <= 0n) {
+            throw new Error('Amount must be greater than zero');
+        }
+
+        if (
+            abs(request.estimatedAmount.weiAmount - amount.weiAmount) >
+            MAX_ESTIMATE_DRIFT_TOLERANCE_SAT
+        ) {
             throw new Error('Amount changed since it was estimated');
         }
 

@@ -8,7 +8,7 @@ export const styles = StyleSheet.create(theme => ({
         paddingHorizontal: theme.spacing[16],
         paddingVertical: theme.spacing[12],
         variants: {
-            showDivider: {
+            rowDivider: {
                 true: {
                     borderBottomWidth: theme.border.hairline,
                     borderBottomColor: theme.colors.other.transparentElement
@@ -19,6 +19,12 @@ export const styles = StyleSheet.create(theme => ({
     divider: {
         borderBottomWidth: theme.border.hairline,
         borderBottomColor: theme.colors.other.transparentElement
+    },
+    columnDivider: {
+        alignSelf: 'stretch',
+        width: theme.border.hairline,
+        marginVertical: -theme.spacing[12],
+        backgroundColor: theme.colors.other.transparentElement
     },
     copiedIndicator: {
         position: 'absolute',

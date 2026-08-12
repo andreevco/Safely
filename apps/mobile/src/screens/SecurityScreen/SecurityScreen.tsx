@@ -2,12 +2,7 @@ import { useNavigation } from '@react-navigation/core';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import {
-    AccountLinkState,
-    useAccountLinkState,
-    useHasPortfolio,
-    useSecurityCheck
-} from '@safely/ux';
+import { useSecurityCheck } from '@safely/ux';
 
 import { useLockScreenQuery, useSetLockScreenEnabled } from '@mobile/entities/security';
 import {
@@ -16,10 +11,9 @@ import {
     useSetBiometryEnabled
 } from '@mobile/features/biometry';
 import { useLogOutAllConfirmation } from '@mobile/features/settings/useLogOutAllConfirmation';
-import { Badge, Cell, List, Screen, Switch } from '@mobile/shared/ui';
+import { Cell, List, Screen, Switch } from '@mobile/shared/ui';
 import { ArrowLeft16, Icon } from '@mobile/shared/ui/Icon';
 
-import { WalletSecuritySection } from './components';
 import { styles } from './SecurityScreen.styles';
 
 export const SecurityScreen = () => {
@@ -27,13 +21,10 @@ export const SecurityScreen = () => {
     const { data: biometry } = useBiometryQuery();
     const { mutateAsync: setBiometryEnabled } = useSetBiometryEnabled();
     const check = useSecurityCheck();
-    const hasPortfolio = useHasPortfolio();
     const navigation = useNavigation();
 
     const { data: lockScreenEnabled } = useLockScreenQuery();
     const { mutateAsync: setLockScreenEnabled } = useSetLockScreenEnabled();
-
-    const linkState = useAccountLinkState();
 
     const handleBiometryToggle = async () => {
         if (biometry) {
@@ -64,84 +55,6 @@ export const SecurityScreen = () => {
             </Screen.Header>
             <Screen.Scrollable contentContainerStyle={styles.listContent}>
                 <View style={styles.container}>
-                    <List>
-                        <List.Title>{t('security.groups.account.title')}</List.Title>
-                        <List.Group>
-                            {linkState === AccountLinkState.UNLINKED && (
-                                <Cell onPress={() => navigation.navigate('ReconnectDeviceModal')}>
-                                    <Cell.Content>
-                                        <View style={styles.badgeRow}>
-                                            <Cell.Title>
-                                                {t('security.groups.account.unlinked.title')}
-                                            </Cell.Title>
-                                            <Badge type="error" isUppercase>
-                                                {t('security.groups.account.unlinked.badge')}
-                                            </Badge>
-                                        </View>
-                                        <Cell.Row>
-                                            <Cell.Subtitle numberOfLines={0}>
-                                                {t('security.groups.account.unlinked.subtitle')}
-                                            </Cell.Subtitle>
-                                        </Cell.Row>
-                                    </Cell.Content>
-                                    <Cell.Chevron />
-                                </Cell>
-                            )}
-                            {linkState === AccountLinkState.PROTECTED && (
-                                <Cell
-                                    onPress={() =>
-                                        navigation.navigate('SettingsModal', {
-                                            screen: 'AccountProtectedModal'
-                                        })
-                                    }
-                                >
-                                    <Cell.Content>
-                                        <View style={styles.badgeRow}>
-                                            <Cell.Title>
-                                                {t('security.groups.account.protection.title')}
-                                            </Cell.Title>
-                                            <Badge type="success" isUppercase>
-                                                {t('security.groups.account.protection.badge')}
-                                            </Badge>
-                                        </View>
-                                        <Cell.Row>
-                                            <Cell.Subtitle numberOfLines={0}>
-                                                {t('security.groups.account.protection.subtitle')}
-                                            </Cell.Subtitle>
-                                        </Cell.Row>
-                                    </Cell.Content>
-                                    <Cell.Chevron />
-                                </Cell>
-                            )}
-                            {linkState === AccountLinkState.SOLO && (
-                                <Cell
-                                    onPress={() =>
-                                        navigation.navigate('SettingsModal', {
-                                            screen: 'ProtectAccountModal'
-                                        })
-                                    }
-                                >
-                                    <Cell.Content>
-                                        <View style={styles.badgeRow}>
-                                            <Cell.Title>
-                                                {t('security.groups.account.protect.title')}
-                                            </Cell.Title>
-                                            <Badge type="warning" isUppercase>
-                                                {t('security.groups.account.protect.badge')}
-                                            </Badge>
-                                        </View>
-                                        <Cell.Row>
-                                            <Cell.Subtitle numberOfLines={0}>
-                                                {t('security.groups.account.protect.subtitle')}
-                                            </Cell.Subtitle>
-                                        </Cell.Row>
-                                    </Cell.Content>
-                                    <Cell.Chevron />
-                                </Cell>
-                            )}
-                        </List.Group>
-                    </List>
-
                     <List>
                         <List.Title>{t('security.groups.application.title')}</List.Title>
                         <List.Group variant="divided" style={styles.listGroupMargin}>
@@ -211,8 +124,6 @@ export const SecurityScreen = () => {
                             </Cell>
                         </List.Group>
                     </List>
-
-                    {hasPortfolio && <WalletSecuritySection />}
                 </View>
             </Screen.Scrollable>
         </Screen>

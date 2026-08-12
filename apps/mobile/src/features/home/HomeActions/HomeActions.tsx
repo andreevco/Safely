@@ -3,11 +3,11 @@ import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { BTC_ASSET } from '@safely/core';
-import { useAnalytics, useIsActivePortfolioWatchOnly, useScanQrScheme } from '@safely/ux';
+import { useAnalytics, useFlag, useIsActivePortfolioWatchOnly, useScanQrScheme } from '@safely/ux';
 
 import { TEST_ID } from '@mobile/shared/constants';
 import { Actions } from '@mobile/shared/ui';
-import { ArrowDown28, ArrowTop28, QrCodeScan28 } from '@mobile/shared/ui/Icon';
+import { ArrowDown28, ArrowTop28, Plus28, QrCodeScan28 } from '@mobile/shared/ui/Icon';
 
 import { styles } from './HomeActions.styles';
 
@@ -18,6 +18,7 @@ export const HomeActions = () => {
     const analytics = useAnalytics();
     const navigation = useNavigation();
     const isWatchOnly = useIsActivePortfolioWatchOnly();
+    const isOnrampsEnabled = useFlag('enable_onramps');
 
     const handleQRScan = useScanQrScheme({
         onResult: useCallback(
@@ -53,6 +54,10 @@ export const HomeActions = () => {
         navigation.navigate('WatchOnlySheet');
     }, [navigation]);
 
+    const handleNavigateToExchange = useCallback(() => {
+        navigation.navigate('ExchangeModal');
+    }, [navigation]);
+
     return (
         <Actions style={styles.container}>
             <Actions.Button
@@ -68,6 +73,14 @@ export const HomeActions = () => {
                 icon={ArrowDown28}
                 onPress={handleNavigateToReceiveAsset}
             />
+            {isOnrampsEnabled && (
+                <Actions.Button
+                    title={t('home.actions.buy')}
+                    icon={Plus28}
+                    onPress={isWatchOnly ? handleWatchOnlyAction : handleNavigateToExchange}
+                    opacity={isWatchOnly ? WATCH_ONLY_OPACITY : 1}
+                />
+            )}
             <Actions.Button
                 title={t('home.actions.scan')}
                 icon={QrCodeScan28}

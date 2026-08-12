@@ -2,8 +2,17 @@ import { StyleSheet } from 'react-native-unistyles';
 
 export const styles = StyleSheet.create(theme => ({
     content: {
-        borderRadius: theme.radius.full,
         height: 32,
-        width: 32
+        width: 32,
+        variants: {
+            variant: {
+                square: {
+                    borderRadius: theme.radius.sm
+                },
+                rounded: {
+                    borderRadius: theme.radius.full
+                }
+            }
+        }
     }
 }));

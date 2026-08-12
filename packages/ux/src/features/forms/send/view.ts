@@ -76,6 +76,7 @@ interface AmountViewBase {
     availableAssets: CryptoAssetAmount[];
     isMaxAvailable: boolean;
     setAmount: (value: string) => void;
+    pasteAmount: (raw: string) => void;
     setAmountInputType: (type: AmountInputType) => void;
     setAsset: (id: string) => void;
     prev: () => void;

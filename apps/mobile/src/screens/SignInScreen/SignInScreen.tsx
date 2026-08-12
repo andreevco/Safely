@@ -9,7 +9,7 @@ import type { OnboardingConnector } from '@safely/ux';
 import { useAccountConnectedCallback, useToast } from '@safely/ux';
 
 import { DeviceLink, Screen, Text, TouchableOpacity } from '@mobile/shared/ui';
-import { Icon, Sliders12 } from '@mobile/shared/ui/Icon';
+import { Icon } from '@mobile/shared/ui/Icon';
 import { useCopy } from '@mobile/shared/utils/copy';
 
 import { styles } from './SignInScreen.styles';
@@ -82,25 +82,7 @@ export const SignInScreen = (props: SignInScreenProps) => {
                             {t('signIn.title')}
                         </Text>
                         <Text textAlign="center" variant="bodyL" color="secondary">
-                            {t('signIn.description.top')}
-                        </Text>
-                        <View style={styles.iconLine}>
-                            <View style={{ flexShrink: 1 }}>
-                                <Text variant="bodyL" color="secondary" textAlign="center">
-                                    {t('signIn.description.iconLineStart')}
-                                </Text>
-                            </View>
-                            <View style={styles.inlineSettingsIconContainer}>
-                                <Icon icon={Sliders12} />
-                            </View>
-                            <View style={{ flexShrink: 1 }}>
-                                <Text variant="bodyL" color="secondary" textAlign="center">
-                                    {t('signIn.description.iconLineEnd')}
-                                </Text>
-                            </View>
-                        </View>
-                        <Text textAlign="center" variant="bodyL" color="secondary">
-                            {t('signIn.description.bottom')}
+                            {t('signIn.description')}
                         </Text>
                     </View>
                 </View>

@@ -1,4 +1,5 @@
 export * from './application';
+export * from './auth-cert';
 export * from './asset';
 export * from './blockchain';
 export * from './contact';
@@ -9,3 +10,4 @@ export * from './recipient';
 export * from './errors';
 export * from './explorer';
 export * from './seed';
+export * from './signer';

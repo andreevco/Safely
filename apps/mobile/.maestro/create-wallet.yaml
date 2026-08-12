@@ -1,7 +1,7 @@
 # Step 2 of the e2e chain: adds a second wallet via "Create new".
 # Starts from the state onboarding-create-wallet finished in:
 # a created wallet on the home screen, passcode 1234, biometry skipped.
-appId: com.aco.swallet
+appId: com.safely.wallet
 name: create-wallet
 tags:
     - smoke

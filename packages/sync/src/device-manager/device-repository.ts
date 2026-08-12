@@ -11,12 +11,12 @@ import {
     revokedDeviceToJson,
     storedDevicesFromJson
 } from './device-storage-schema';
-import type { YManager } from '../crdt/y-manager';
+import type { CrdtManager } from '../crdt/crdt-manager';
 import { getKID } from '../utils/kid';
 export type { Device };
 
 export class DeviceRepository {
-    constructor(private readonly manager: YManager<tDevicesLatest, tDevicesRest>) {}
+    constructor(private readonly manager: CrdtManager<tDevicesLatest, tDevicesRest>) {}
 
     public onChange(observer: () => void): () => void {
         return this.manager.onChange(observer);

@@ -7,11 +7,10 @@ import { defineVersionHList, hCons, hNil, patch, projectIdentity } from '@safely
 import type { ISyncAccount } from '../../src';
 import { SyncAccountFactory } from '../../src';
 import { Logger } from '../../src/logger/logger';
-import { QRMessageCodec, QRMessageOperation } from '../../src/onboarding/onboarding-codec';
-import type { SyncApiImplementations } from '../../src/sync-container';
-import { InMemStorage } from '../impl/storage';
-import { SyncServer } from '../impl/sync-server';
-import { createSyncServerApiImplementations } from '../impl/sync-server-api-implementations';
+import { SyncStatus } from '../../src/sync-provider/sync-status';
+import { InMemStorage } from '../mocks/server-mock/storage';
+import { SyncServer } from '../mocks/server-mock/sync-server';
+import { createSyncServerApiImplementations } from '../mocks/server-mock/sync-server-api-implementations';
 
 const walletSchema = z.object({
     __setId: z.string(),
@@ -63,8 +62,6 @@ type VersionHList = HCons<StorageVersion, unknown>;
 type VersionedFactory<Versions extends VersionHList> = {
     factory: SyncAccountFactory<Versions>;
     secureEncryptedStorage: InMemStorage;
-    setRequesterIk: (ikPub: Buffer) => void;
-    setRequesterIkFromOnboardingData: (data: Buffer) => void;
 };
 
 describe('versioned onboarding', () => {
@@ -120,23 +117,76 @@ describe('versioned onboarding', () => {
         });
     });
 
+    it('syncs post-onboarding v1 updates to a v2 device', async () => {
+        const deviceA = makeVersionedFactory(versionsV2);
+        const deviceB = makeVersionedFactory(versionsV1);
+        const accountA = await deviceA.factory.createSyncAccount(deviceA.secureEncryptedStorage);
+        accounts.push(accountA);
+
+        const accountB = await onboardDevice(accountA, deviceA, deviceB);
+        accounts.push(accountB);
+
+        await accountB.syncProvider.transaction(draft => {
+            draft.set('wallets', walletItems('from-v1'));
+        });
+
+        await vi.waitFor(() => {
+            expect(accountA.syncProvider.get('wallets')).toEqual(walletItems('from-v1'));
+        });
+    });
+
+    it('preserves v2-only data after receiving subsequent v1 updates', async () => {
+        const deviceA = makeVersionedFactory(versionsV2);
+        const deviceB = makeVersionedFactory(versionsV1);
+        const accountA = await deviceA.factory.createSyncAccount(deviceA.secureEncryptedStorage);
+        accounts.push(accountA);
+
+        const accountB = await onboardDevice(accountA, deviceA, deviceB);
+        accounts.push(accountB);
+
+        const accountASynchronized = waitForNextSynchronizationCycle(accountA);
+        const accountBSynchronized = waitForNextSynchronizationCycle(accountB);
+        await accountA.syncProvider.transaction(draft => {
+            draft.set('newField', 'v2-only');
+        });
+        await Promise.all([accountASynchronized, accountBSynchronized]);
+
+        await accountB.syncProvider.transaction(draft => {
+            draft.set('wallets', walletItems('from-v1'));
+        });
+
+        await vi.waitFor(() => {
+            expect(accountA.syncProvider.get('wallets')).toEqual(walletItems('from-v1'));
+            expect(accountA.syncProvider.get('newField')).toBe('v2-only');
+        });
+    });
+
+    it('onboards a v2 device from a v2 device', async () => {
+        const deviceA = makeVersionedFactory(versionsV2);
+        const deviceB = makeVersionedFactory(versionsV2);
+        const accountA = await deviceA.factory.createSyncAccount(deviceA.secureEncryptedStorage);
+        accounts.push(accountA);
+
+        await accountA.syncProvider.transaction(draft => {
+            draft.set('wallets', walletItems('wallet-a'));
+            draft.set('newField', 'from-v2');
+        });
+
+        const accountB = await onboardDevice(accountA, deviceA, deviceB);
+        accounts.push(accountB);
+
+        await vi.waitFor(() => {
+            expect(accountB.syncProvider.get('wallets')).toEqual(walletItems('wallet-a'));
+            expect(accountB.syncProvider.get('newField')).toBe('from-v2');
+        });
+    });
+
     function makeVersionedFactory<Versions extends VersionHList>(
         versions: Versions & AssertVersionHList<Versions>
     ): VersionedFactory<Versions> {
         const storage = new InMemStorage();
         const encryptedStorage = new InMemStorage();
         const secureEncryptedStorage = new InMemStorage();
-        let requesterIk: string | undefined;
-        const apiImplementations: SyncApiImplementations = createSyncServerApiImplementations(
-            server,
-            () => {
-                if (!requesterIk) {
-                    throw new Error('Requester IK is not set');
-                }
-
-                return requesterIk;
-            }
-        );
         const logger = new Logger({ log: () => undefined });
 
         return {
@@ -147,22 +197,12 @@ describe('versioned onboarding', () => {
                 apiConfiguration: {
                     basePath: 'sync-server://mock'
                 },
-                apiImplementations,
+                apiImplementationsFactory: requesterIk =>
+                    createSyncServerApiImplementations(server, requesterIk),
                 pollingTimeout: 1,
                 logger
             }),
-            secureEncryptedStorage,
-            setRequesterIk: ikPub => {
-                requesterIk = ikPub.toString('hex');
-            },
-            setRequesterIkFromOnboardingData: data => {
-                const onboardingMessage = QRMessageCodec.decode(data);
-                if (onboardingMessage.type !== QRMessageOperation.NEW_DEVICE_ONBOARDING) {
-                    throw new Error('Unexpected onboarding message type');
-                }
-
-                requesterIk = onboardingMessage.ikPub.toString('hex');
-            }
+            secureEncryptedStorage
         };
     }
 });
@@ -178,9 +218,6 @@ async function onboardDevice<
     const onboardingConnector = await newDevice.factory.connectToExistingSyncAccount(
         newDevice.secureEncryptedStorage
     );
-
-    existingDevice.setRequesterIk(existingAccount.getMyDeviceIkPub());
-    newDevice.setRequesterIkFromOnboardingData(onboardingConnector.data);
 
     const primaryOnboarding = existingAccount.connectToNewDevice(
         onboardingConnector.data,
@@ -199,4 +236,34 @@ function walletItems(...values: string[]) {
         __setId: value,
         value
     }));
+}
+
+async function waitForNextSynchronizationCycle(
+    account: ISyncAccount<StorageVersion>
+): Promise<void> {
+    const statusManager = account.syncProvider.syncStatusManager;
+    let sawSynchronizing = statusManager.getStatus() === SyncStatus.SYNCHRONIZING;
+    let unsubscribe: () => void = () => undefined;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+    try {
+        await new Promise<void>((resolve, reject) => {
+            timeoutId = setTimeout(() => {
+                reject(new Error('Timed out waiting for synchronization cycle'));
+            }, 2000);
+            unsubscribe = statusManager.subscribe(status => {
+                if (status === SyncStatus.SYNCHRONIZING) {
+                    sawSynchronizing = true;
+                }
+                if (sawSynchronizing && status === SyncStatus.SYNCHRONIZED) {
+                    resolve();
+                }
+            });
+        });
+    } finally {
+        if (timeoutId !== undefined) {
+            clearTimeout(timeoutId);
+        }
+        unsubscribe();
+    }
 }

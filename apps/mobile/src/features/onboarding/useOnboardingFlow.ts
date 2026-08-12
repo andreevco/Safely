@@ -3,30 +3,37 @@ import { CommonActions } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { Keyboard } from 'react-native';
 
-import { useAppContext, useCreateAccount, useLoader } from '@safely/ux';
+import {
+    MnemonicResource,
+    type PortfolioMeta,
+    type PortfolioMetaIcon,
+    type PortfolioNetworkType
+} from '@safely/core';
+import type { AccountPortfolioSource } from '@safely/ux';
+import { useAppContext, useCreateAccount, useErrorToast, useLoader } from '@safely/ux';
 
 // TODO IMPORT Discuss with Max what to do with this
 // eslint-disable-next-line boundaries/element-types
 import { tabsInitialState } from '@mobile/app/navigation/tabs';
 import { usePasscode } from '@mobile/entities/security';
 
-const routes = {
-    passcode: 'OnboardingPasscodeScreen',
-    biometry: 'BiometryScreen',
-    notifications: 'OnboardingNotificationsScreen',
-    accountCreated: 'AccountCreatedScreen'
-} as const;
-
-let _isSignInFlow = false;
+type OnboardingCustomizeParams = {
+    defaultName: string;
+    defaultIcon: PortfolioMetaIcon;
+    onSave: (meta: Pick<PortfolioMeta, 'name' | 'icon'>) => Promise<void>;
+};
 
 export function useOnboardingFlow() {
     const navigation = useNavigation();
     const { mutateAsync: createAccount } = useCreateAccount({
-        createWallet: true,
         setActive: true
     });
     const { withLoader } = useLoader();
     const { set: setPasscode } = usePasscode();
+    const errorToast = useErrorToast({
+        InvalidMnemonicError: 'importWalletScreen.errors.invalidMnemonic',
+        PortfolioGenerationFailedError: 'importWalletScreen.errors.failedToGenerate'
+    });
     const {
         storage: {
             sync: { getSecureEncrypted }
@@ -34,50 +41,74 @@ export function useOnboardingFlow() {
     } = useAppContext();
 
     const onSuccessCreate = useCallback(() => {
-        _isSignInFlow = false;
-        navigation.dispatch(CommonActions.navigate(routes.passcode));
+        navigation.navigate('OnboardingPasscodeScreen', { source: { kind: 'generated' } });
     }, [navigation]);
 
     const onSuccessSignIn = useCallback(() => {
-        _isSignInFlow = true;
-        navigation.dispatch(CommonActions.navigate(routes.passcode));
+        navigation.navigate('OnboardingPasscodeScreen', { source: null });
     }, [navigation]);
 
-    const onPasscodeReady = useCallback(
-        async (passcode: string) => {
-            await setPasscode(passcode);
+    const onMnemonicReady = useCallback(
+        (mnemonic: string[], networkType: PortfolioNetworkType) => {
+            const accessor = new MnemonicResource(mnemonic);
 
-            if (!_isSignInFlow) {
-                Keyboard.dismiss();
-                await withLoader(async () => {
-                    using secureEncryptedStorage = getSecureEncrypted();
-
-                    // don't ask for the password while setting app initially after first account creation during onboarding to provide smooth user experience
-                    secureEncryptedStorage.UNSAFE_SKIP_SECURITY_CHECK_unlock();
-
-                    await createAccount({ secureEncryptedStorage });
-                });
-            }
-
-            navigation.dispatch(CommonActions.navigate(routes.biometry));
+            navigation.navigate('OnboardingPasscodeScreen', {
+                source: { kind: 'imported', mnemonicAccessor: accessor, networkType }
+            });
         },
-        [navigation, setPasscode, createAccount, withLoader, getSecureEncrypted]
+        [navigation]
     );
 
-    const onBiometryFinished = useCallback(() => {
-        if (_isSignInFlow) {
-            navigation.dispatch(
-                CommonActions.reset({
-                    index: 0,
-                    routes: [{ name: 'TabsNavigator', state: tabsInitialState }]
-                })
-            );
-        } else {
-            navigation.dispatch(CommonActions.navigate(routes.accountCreated));
-        }
-    }, [navigation]);
+    const onWatchOnlyReady = useCallback(
+        (input: string, networkType: PortfolioNetworkType) => {
+            navigation.navigate('OnboardingPasscodeScreen', {
+                source: { kind: 'watchOnly', input, networkType }
+            });
+        },
+        [navigation]
+    );
 
-    const onAccountCreatedFinished = useCallback(() => {
+    const onLedgerReady = useCallback(
+        (
+            masterFingerprint: string,
+            deviceModel: string,
+            walletName: string,
+            accounts: { index: number; xpub: string; name: string }[]
+        ) => {
+            navigation.navigate('OnboardingPasscodeScreen', {
+                source: { kind: 'ledger', masterFingerprint, deviceModel, walletName, accounts }
+            });
+        },
+        [navigation]
+    );
+
+    const onPasscodeReady = useCallback(
+        async (passcode: string, source: AccountPortfolioSource | null) => {
+            await setPasscode(passcode);
+
+            if (source) {
+                Keyboard.dismiss();
+                try {
+                    await withLoader(async () => {
+                        using secureEncryptedStorage = getSecureEncrypted();
+
+                        // don't ask for the password while setting app initially after first account creation during onboarding to provide smooth user experience
+                        secureEncryptedStorage.UNSAFE_SKIP_SECURITY_CHECK_unlock();
+
+                        await createAccount({ secureEncryptedStorage, firstPortfolio: source });
+                    });
+                } catch (error) {
+                    errorToast(error);
+                    throw error;
+                }
+            }
+
+            navigation.navigate('BiometryScreen');
+        },
+        [navigation, setPasscode, createAccount, withLoader, getSecureEncrypted, errorToast]
+    );
+
+    const resetToTabs = useCallback(() => {
         navigation.dispatch(
             CommonActions.reset({
                 index: 0,
@@ -86,9 +117,36 @@ export function useOnboardingFlow() {
         );
     }, [navigation]);
 
+    const onBiometryFinished = useCallback(() => {
+        resetToTabs();
+    }, [resetToTabs]);
+
+    const onAccountCreatedFinished = useCallback(
+        (customize?: OnboardingCustomizeParams) => {
+            if (!customize) {
+                resetToTabs();
+                return;
+            }
+
+            navigation.dispatch(
+                CommonActions.reset({
+                    index: 1,
+                    routes: [
+                        { name: 'TabsNavigator', state: tabsInitialState },
+                        { name: 'CustomizeWalletModal', params: customize }
+                    ]
+                })
+            );
+        },
+        [navigation, resetToTabs]
+    );
+
     return {
         onSuccessCreate,
         onSuccessSignIn,
+        onMnemonicReady,
+        onWatchOnlyReady,
+        onLedgerReady,
         onPasscodeReady,
         onBiometryFinished,
         onAccountCreatedFinished

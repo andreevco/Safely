@@ -47,6 +47,7 @@ export function useSendFormView(props: UseSendFormViewProps): SendFormView {
         setRecipient,
         setAddressBookName,
         setAmount,
+        pasteAmount,
         setAmountInputType,
         setAsset,
         enterMax,
@@ -180,12 +181,14 @@ export function useSendFormView(props: UseSendFormViewProps): SendFormView {
                 availableAssets,
                 isMaxAvailable,
                 setAmount,
+                pasteAmount,
                 setAmountInputType,
                 setAsset,
                 prev: goPrev
             };
 
-            const canEnterMax = !!ctxParsedAsset && !!ctxParsedMaxValue;
+            const canEnterMax =
+                !!ctxParsedAsset && !!ctxParsedMaxValue && ctxParsedMaxValue.weiAmount > 0n;
             const enterMaxIfAvailable = canEnterMax ? enterMax : undefined;
 
             switch (status) {
@@ -219,6 +222,7 @@ export function useSendFormView(props: UseSendFormViewProps): SendFormView {
         setAddressBookName,
         selectSuggestion,
         setAmount,
+        pasteAmount,
         setAmountInputType,
         setAsset,
         enterMax,

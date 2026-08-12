@@ -1,17 +1,29 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo } from 'react';
 
-import type { ITreeStorage } from '@safely/core';
-import { deriveAnalyticsAccountUuid } from '@safely/core';
-import { PortfolioBip39, PortfolioIdBip39MasterKeyDerived } from '@safely/core';
+import type { IMnemonicAccessor, IMnemonicVault, ITreeStorage } from '@safely/core';
+import { deriveAnalyticsAccountUuid, MnemonicResource } from '@safely/core';
+import {
+    PortfolioBip39,
+    PortfolioIdBip39Imported,
+    PortfolioIdBip39MasterKeyDerived,
+    PortfolioIdLedger,
+    PortfolioLedger,
+    PortfolioWatchOnlyBtc,
+    toPortfolioIdWatchOnly
+} from '@safely/core';
 import { PortfolioMnemonicFactory } from '@safely/core';
 import { toPortfolioId } from '@safely/core';
-import { delay, PortfolioNetworkType } from '@safely/core';
-import type { ISyncAccount, OnboardingConnector as RawOnboardingConnector } from '@safely/sync';
+import { assertUnreachable, delay, PortfolioNetworkType } from '@safely/core';
+import type {
+    ISyncAccount,
+    Logger,
+    OnboardingConnector as RawOnboardingConnector
+} from '@safely/sync';
 import { OnboardingAbortedError } from '@safely/sync';
 import type {
     SNextDerivingPortfolioInfo,
-    SPortfolioBip39,
+    SPortfolio,
     SyncedStorageStructure
 } from '@safely/sync-storage';
 
@@ -40,7 +52,8 @@ import {
 import { useToast } from '../toast';
 import {
     useAccountSyncStorageUpdate,
-    useActiveAccountSyncStorageSlotUpdate
+    useActiveAccountSyncStorageSlotUpdate,
+    useActiveAccountSyncStorageUpdate
 } from './useAccountSyncStorageUpdate';
 
 export * from './local-storage';
@@ -57,7 +70,120 @@ export function useNewAccountDefaultName() {
     );
 }
 
-export function useCreateAccount(options?: { createWallet?: boolean; setActive?: boolean }) {
+export type AccountPortfolioSource =
+    | { kind: 'generated' }
+    | {
+          kind: 'imported';
+          mnemonicAccessor: IMnemonicAccessor & IMnemonicVault;
+          networkType: PortfolioNetworkType;
+      }
+    | { kind: 'watchOnly'; input: string; networkType: PortfolioNetworkType }
+    | {
+          kind: 'ledger';
+          masterFingerprint: string;
+          deviceModel: string;
+          walletName: string;
+          accounts: { index: number; xpub: string; name: string }[];
+      };
+
+async function buildFirstPortfolio(params: {
+    account: ISyncAccount<SyncedStorageStructure>;
+    secureEncryptedStorage: ITreeStorage;
+    source: AccountPortfolioSource;
+    portfolioName: string;
+    deviceName: string;
+    logger: Logger;
+}): Promise<{ portfolio: SPortfolio; nextDerivingInfo: SNextDerivingPortfolioInfo }> {
+    const { account, secureEncryptedStorage, source, portfolioName, deviceName, logger } = params;
+
+    const portfolioMnemonicFactory = new PortfolioMnemonicFactory(account, secureEncryptedStorage);
+
+    let portfolio: SPortfolio;
+
+    switch (source.kind) {
+        case 'watchOnly': {
+            const id = PortfolioWatchOnlyBtc.resolveUserInput(source.input, source.networkType);
+            portfolio = PortfolioWatchOnlyBtc.create(id, {
+                name: portfolioName,
+                icon: toPortfolioIdWatchOnly(id).getFallbackEmoji()
+            }).toJSON();
+            break;
+        }
+        case 'imported': {
+            const encryptor = new SecretEncryptor(account.secretEncryptor, secureEncryptedStorage);
+            const id = await PortfolioIdBip39Imported.create(
+                source.mnemonicAccessor,
+                source.networkType
+            );
+
+            const mnemonic = await source.mnemonicAccessor.getMnemonic();
+            using accessor = new MnemonicResource(mnemonic);
+
+            const defaultIcon = PortfolioIdBip39Imported.getFallbackEmoji(accessor);
+            using mnemonicAccessor = new MnemonicResource(mnemonic);
+
+            portfolio = await PortfolioBip39.createSerializedPortfolio({
+                id,
+                mnemonicAccessor: mnemonicAccessor,
+                encryptor,
+                meta: {
+                    name: portfolioName,
+                    icon: defaultIcon
+                },
+                options: { seedRevealedFromDevice: deviceName },
+                logger
+            });
+            break;
+        }
+        case 'ledger': {
+            const id = new PortfolioIdLedger({
+                masterFingerprint: source.masterFingerprint,
+                networkType: PortfolioNetworkType.MAINNET
+            });
+            portfolio = PortfolioLedger.createSerializedPortfolio({
+                masterFingerprint: Buffer.from(source.masterFingerprint, 'hex'),
+                networkType: PortfolioNetworkType.MAINNET,
+                deviceModel: source.deviceModel,
+                accounts: source.accounts,
+                meta: { name: source.walletName, icon: id.getFallbackEmoji() }
+            });
+            break;
+        }
+        case 'generated': {
+            const encryptor = new SecretEncryptor(account.secretEncryptor, secureEncryptedStorage);
+            using mnemonicAccessor = await portfolioMnemonicFactory.deriveBip39MnemonicResource(0);
+            const id = new PortfolioIdBip39MasterKeyDerived({
+                derivationIndex: 0,
+                networkType: PortfolioNetworkType.MAINNET
+            });
+            portfolio = await PortfolioBip39.createSerializedPortfolio({
+                id,
+                mnemonicAccessor,
+                encryptor,
+                meta: {
+                    name: portfolioName,
+                    icon: PortfolioIdBip39MasterKeyDerived.getFallbackEmoji(mnemonicAccessor)
+                },
+                logger
+            });
+            break;
+        }
+        default:
+            assertUnreachable(source);
+    }
+
+    const nextIndex = source.kind === 'generated' ? 1 : 0;
+    using nextMnemonicAccessor =
+        await portfolioMnemonicFactory.deriveBip39MnemonicResource(nextIndex);
+    const nextDerivingInfo: SNextDerivingPortfolioInfo = {
+        index: nextIndex,
+        emoji: PortfolioIdBip39MasterKeyDerived.getFallbackEmoji(nextMnemonicAccessor).value
+    };
+
+    return { portfolio, nextDerivingInfo };
+}
+
+export function useCreateAccount(options?: { setActive?: boolean }) {
     const t = useTranslate();
     const client = useQueryClient();
     const factory = useAccountsFactory();
@@ -65,63 +191,41 @@ export function useCreateAccount(options?: { createWallet?: boolean; setActive?:
     const newAccountName = useNewAccountDefaultName();
     const updateSyncStorage = useAccountSyncStorageUpdate();
     const generateOwnMeta = useGenerateOwnSyncedDeviceMeta();
+    const { deviceInfo } = useAppContext();
     const logger = useLogger('account');
 
     return useMutation<
         ISyncAccount<SyncedStorageStructure>,
         Error,
-        { name?: string; secureEncryptedStorage: ITreeStorage },
+        {
+            name?: string;
+            secureEncryptedStorage: ITreeStorage;
+            firstPortfolio?: AccountPortfolioSource;
+        },
         unknown
     >({
         async mutationFn(params) {
             logger.info('creating account', {
-                createWallet: !!options?.createWallet,
+                firstPortfolio: params.firstPortfolio?.kind ?? 'none',
                 setActive: !!options?.setActive
             });
             await delay();
 
             const account = await factory.createSyncAccount(params.secureEncryptedStorage);
 
-            let createdPortfolio: SPortfolioBip39 | null = null;
+            let createdPortfolio: SPortfolio | null = null;
             let nextDerivingInfo: SNextDerivingPortfolioInfo = null;
-            const firstPortfolioDerivationIndex = 0;
-            if (options?.createWallet || options?.setActive) {
-                const portfolioMnemonicFactory = new PortfolioMnemonicFactory(
+            if (params.firstPortfolio) {
+                const built = await buildFirstPortfolio({
                     account,
-                    params.secureEncryptedStorage
-                );
-
-                using mnemonicAccessor = await portfolioMnemonicFactory.deriveBip39MnemonicResource(
-                    firstPortfolioDerivationIndex
-                );
-
-                const id = new PortfolioIdBip39MasterKeyDerived({
-                    derivationIndex: firstPortfolioDerivationIndex,
-                    networkType: PortfolioNetworkType.MAINNET
-                });
-
-                createdPortfolio = await PortfolioBip39.createSerializedPortfolio({
-                    id,
-                    mnemonicAccessor,
-                    encryptor: new SecretEncryptor(
-                        account.secretEncryptor,
-                        params.secureEncryptedStorage
-                    ),
-                    meta: {
-                        name: t('security.groups.wallet.defaultName', { number: 1 }),
-                        icon: PortfolioIdBip39MasterKeyDerived.getFallbackEmoji(mnemonicAccessor)
-                    },
+                    secureEncryptedStorage: params.secureEncryptedStorage,
+                    source: params.firstPortfolio,
+                    portfolioName: t('security.groups.wallet.defaultName', { number: 1 }),
+                    deviceName: deviceInfo.name,
                     logger
                 });
-
-                const nextIndex = firstPortfolioDerivationIndex + 1;
-                using nextMnemonicAccessor =
-                    await portfolioMnemonicFactory.deriveBip39MnemonicResource(nextIndex);
-                nextDerivingInfo = {
-                    index: nextIndex,
-                    emoji: PortfolioIdBip39MasterKeyDerived.getFallbackEmoji(nextMnemonicAccessor)
-                        .value
-                };
+                createdPortfolio = built.portfolio;
+                nextDerivingInfo = built.nextDerivingInfo;
             }
 
             const analyticsId = await deriveAnalyticsAccountUuid(
@@ -194,12 +298,6 @@ export function useCreateExistingAccountConnector() {
         ({ secureEncryptedStorage }: { secureEncryptedStorage: ITreeStorage }) =>
             factory.connectToExistingSyncAccount(secureEncryptedStorage)
     );
-}
-
-export function useCreateReconnectConnector() {
-    const account = useActiveAccount();
-
-    return useConnectorMutation<void>(() => account.reconnectToAccount());
 }
 
 export function useAccountConnectedCallback(
@@ -353,14 +451,17 @@ export function useDeleteAccount() {
     const client = useQueryClient();
     const ikPub = useCurrentDeviceIkPub();
     const clearActiveAccountLocalStorage = useClearActiveAccountLocalStorage();
-    const update = useActiveAccountSyncStorageSlotUpdate('devicesMeta');
+    const update = useActiveAccountSyncStorageUpdate();
     const logger = useLogger('account');
 
     return useMutation<void, Error, ITreeStorage>({
         async mutationFn(secureEncryptedStorage) {
             logger.info('deleting account', { accountId: account.accountId });
             await update(draft => {
-                draft.ifPresent(devicesMeta => devicesMeta.delete(ikPub));
+                draft
+                    .at('devicesArchive')
+                    .entry(ikPub)
+                    .set({ archivedAt: Date.now(), archivedFromIkPubHex: null });
             });
 
             await accountFactory.deleteLocalAccount(account.accountId, secureEncryptedStorage);

@@ -1,14 +1,13 @@
 import type { z } from 'zod';
 
 import { cborEncoder } from './encoder/cbor/cbor-encoder';
-import type { DeepReadonly } from './json';
 import type { MergeStats } from './merge-protocol';
 import { MergeProtocol } from './merge-protocol';
 import { SlotRevision } from './slot-revision';
 import type { ContainerSlot, Slot } from './slots';
-import { createOriginContainer, isRecursiveSlot } from './slots';
+import { createOriginContainer, isContainerSlot, isRecursiveSlot } from './slots';
 import { cloneSlot } from './slots/slot-json';
-import { validateSlot } from './slots/slot-validation';
+import { validateSlotTreeRoot } from './slots/slot-validation';
 import { StorageObservers } from './storage-observer';
 import type { StorageObserver } from './storage-observer';
 import type { AssertVersionHList, HCons, NewOf, StorageVersion } from './versioning/version';
@@ -23,16 +22,12 @@ export type { StorageObserver } from './storage-observer';
 
 export interface SlotTree<T> {
     readonly version: number;
+    readonly hasNewerStorageVersions: boolean;
 
     /**
      * Returns the current storage value projected to the latest schema version.
      */
     get(): T;
-
-    /**
-     * Returns a readonly proxy over the current storage value.
-     */
-    read(): DeepReadonly<T>;
 
     /**
      * Atomic storage transaction
@@ -118,11 +113,11 @@ export class StorageImpl<T> implements SlotTree<T> {
         versions: readonly StorageVersion[];
         root?: ContainerSlot;
     }) {
-        this.protocol = new MergeProtocol(options.authorId.toString('hex'));
+        this.protocol = new MergeProtocol(authorIdToHex(options.authorId));
         this.versions = options.versions;
 
         if (options.root !== undefined) {
-            validateSlot(options.root);
+            validateSlotTreeRoot(options.root);
         }
 
         this.root = options.root === undefined ? createOriginContainer() : cloneSlot(options.root);
@@ -134,39 +129,55 @@ export class StorageImpl<T> implements SlotTree<T> {
     }
 
     public addAuthor(authorId: Buffer, storageVersion: number): void {
-        const controller = new VersionController(this.root, this.versions);
-        controller.setDeviceVersion(
-            authorId.toString('hex'),
-            storageVersion,
-            this.protocol.tick(),
-            this.protocol.id
-        );
-        const propagation = new VersionPropagation(this.versions);
-        propagation.propagateToOlderVersions(this.root, this.protocol);
-        this.observers.notify();
+        this.commitRootMutation(root => {
+            const controller = new VersionController(root, this.versions, this.protocol);
+            controller.setDeviceVersion(
+                authorIdToHex(authorId),
+                storageVersion,
+                this.protocol.tick(),
+                this.protocol.id
+            );
+
+            const propagation = new VersionPropagation(this.versions, this.protocol);
+            propagation.propagateToOlderVersions(root);
+        });
     }
 
     public removeAuthor(authorId: Buffer): void {
-        const controller = new VersionController(this.root, this.versions);
-        const deleted = controller.deleteAuthor(authorId.toString('hex'));
-        if (!deleted) {
-            return;
-        }
+        this.commitRootMutation(root => {
+            const controller = new VersionController(root, this.versions, this.protocol);
+            const deleted = controller.deleteAuthor(authorIdToHex(authorId));
+            if (!deleted) {
+                return;
+            }
 
-        controller.deleteVersionsUnusedByDevices();
-        this.observers.notify();
+            controller.deleteVersionsUnusedByDevices();
+        });
     }
 
     public get version(): number {
         return this.latestVersion().version;
     }
 
-    public get(): T {
-        return this.committedRoot().get<T>();
+    public get hasNewerStorageVersions(): boolean {
+        const latestKnownVersion = this.latestVersion().version;
+
+        for (const key of Object.keys(this.root.v)) {
+            const version = Number(key);
+            if (!Number.isInteger(version) || version <= latestKnownVersion) {
+                continue;
+            }
+
+            if (isContainerSlot(this.root.v[key])) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
-    public read(): DeepReadonly<T> {
-        return this.committedRoot().read<T>();
+    public get(): T {
+        return this.committedRoot().get<T>();
     }
 
     public transaction(fn: (draft: Draft<T>) => void): void {
@@ -217,7 +228,9 @@ export class StorageImpl<T> implements SlotTree<T> {
         return true;
     }
 
-    public mergeSlot(incoming: Slot): MergeStats {
+    public mergeSlot(incoming: ContainerSlot): MergeStats {
+        validateSlotTreeRoot(incoming);
+
         const workingRoot = this.createWorkingRoot();
         const validationProtocol = new MergeProtocol(this.protocol.id);
         validationProtocol.observeTree(this.root);
@@ -239,15 +252,18 @@ export class StorageImpl<T> implements SlotTree<T> {
     }
 
     public async unsafeAsyncMergeSlot(
-        incoming: Slot,
+        incoming: ContainerSlot,
         commit: (snapshot: ContainerSlot) => Promise<boolean>
     ): Promise<boolean> {
+        validateSlotTreeRoot(incoming);
+
         const workingRoot = this.createWorkingRoot();
         const validationProtocol = new MergeProtocol(this.protocol.id);
         validationProtocol.observeTree(this.root);
         const stats = workingRoot.merge(validationProtocol, incoming);
 
         if (!didMergeChangeStorage(stats)) {
+            this.protocol.observeTree(incoming);
             return false;
         }
 
@@ -300,6 +316,17 @@ export class StorageImpl<T> implements SlotTree<T> {
         return new WorkingStorageRoot(cloneSlot(this.root), this.versions);
     }
 
+    private commitRootMutation(fn: (root: ContainerSlot) => void): void {
+        const nextRoot = cloneSlot(this.root);
+
+        fn(nextRoot);
+        validateSlotTreeRoot(nextRoot);
+
+        this.root = nextRoot;
+        this.protocol.observeTree(this.root);
+        this.observers.notify();
+    }
+
     private latestVersion(): StorageVersion {
         const latest = this.versions[this.versions.length - 1];
 
@@ -312,7 +339,7 @@ export class StorageImpl<T> implements SlotTree<T> {
 
     private ensureLatestInitialized(): void {
         const latest = this.latestVersion();
-        const controller = new VersionController(this.root, this.versions);
+        const controller = new VersionController(this.root, this.versions, this.protocol);
 
         if (controller.get(latest) !== undefined) {
             this.committedRoot().get<T>();
@@ -333,7 +360,7 @@ export class StorageImpl<T> implements SlotTree<T> {
 
     private syncDeviceVersion(): void {
         const latest = this.latestVersion();
-        const controller = new VersionController(this.root, this.versions);
+        const controller = new VersionController(this.root, this.versions, this.protocol);
 
         if (controller.getDeviceVersion(this.protocol.id) === latest.version) {
             return;
@@ -348,7 +375,11 @@ export class StorageImpl<T> implements SlotTree<T> {
     }
 
     private deleteUnusedVersions(): void {
-        new VersionController(this.root, this.versions).deleteVersionsUnusedByDevices();
+        new VersionController(
+            this.root,
+            this.versions,
+            this.protocol
+        ).deleteVersionsUnusedByDevices();
     }
 
     public export(): Buffer {
@@ -358,6 +389,14 @@ export class StorageImpl<T> implements SlotTree<T> {
 
 function didMergeChangeStorage(stats: MergeStats): boolean {
     return stats.added > 0 || stats.updated > 0 || stats.replaced > 0;
+}
+
+function authorIdToHex(authorId: Buffer): string {
+    if (authorId.length === 0) {
+        throw new Error('AuthorId must not be empty');
+    }
+
+    return authorId.toString('hex');
 }
 
 function maxSlotRevision(slot: Slot): SlotRevision {

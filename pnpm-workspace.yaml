@@ -1,6 +1,5 @@
 packages:
   - 'packages/*'
-  - 'apps/web'
   - 'apps/mobile'
 
 catalog:
@@ -8,6 +7,7 @@ catalog:
   big.js: '^7.0.1'
   cbor-x: "^1.6.4"
   '@noble/hashes': '2.2.0'
+  '@noble/curves': '2.2.0'
   '@types/big.js': '^6.2.2'
   react: '19.2.3'
   react-dom: '19.2.3'
@@ -25,11 +25,19 @@ catalog:
   eslint-plugin-react-hooks: '^7.0.1'
   typescript-eslint: '^8.58.0'
   uuid: "^14.0.0"
+  '@ledgerhq/device-management-kit': '^1.5.1'
+  '@ledgerhq/device-signer-kit-bitcoin': '^1.3.1'
+  '@ledgerhq/signer-utils': '^1.2.0'
 
 minimumReleaseAge: 5760
 
-strictPeerDependencies: true
-autoInstallPeers: false
+strictPeerDependencies: false
+autoInstallPeers: true
+
+peerDependencyRules:
+  allowedVersions:
+    react-native-ble-plx: '>=3.4.0'
+    typescript: '>=6.0.0'
 
 allowBuilds:
   '@shopify/react-native-skia': true
@@ -38,6 +46,7 @@ allowBuilds:
   unrs-resolver: false
   esbuild: false
   dtrace-provider: false
+  react-native-inappbrowser-reborn: true
 
 patchedDependencies:
   expo-blur@15.0.8: patches/expo-blur@15.0.8.patch

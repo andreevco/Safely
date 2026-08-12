@@ -1,0 +1,1 @@
+export { SoloView } from './SoloView';

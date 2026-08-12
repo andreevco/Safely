@@ -26,6 +26,7 @@ export interface MaskedInputProps {
     value?: string;
     onChangeText?: (rawText: string, formattedText: string) => void;
     onFocusChange?: (focused: boolean) => void;
+    onPaste?: (raw: string) => void;
     fontSize?: number;
     fontFamily?: string;
     textColor?: string;
@@ -56,6 +57,10 @@ interface NativeFocusEvent {
     nativeEvent: { focused: boolean };
 }
 
+interface NativePasteEvent {
+    nativeEvent: { raw: string };
+}
+
 function toHex(value: string | undefined): string | undefined {
     if (!value) return undefined;
     try {
@@ -69,6 +74,7 @@ export const MaskedInput = forwardRef<MaskedInputRef, MaskedInputProps>((props, 
     const {
         onChangeText,
         onFocusChange,
+        onPaste,
         textColor,
         placeholderTextColor,
         integerColor,
@@ -101,6 +107,11 @@ export const MaskedInput = forwardRef<MaskedInputRef, MaskedInputProps>((props, 
         [onFocusChange]
     );
 
+    const handlePaste = useCallback(
+        (e: NativePasteEvent) => onPaste?.(e.nativeEvent.raw),
+        [onPaste]
+    );
+
     return (
         <NativeView
             ref={nativeRef}
@@ -115,6 +126,7 @@ export const MaskedInput = forwardRef<MaskedInputRef, MaskedInputProps>((props, 
             suffixColor={toHex(suffixColor)}
             onChangeText={handleChangeText}
             onFocusChange={handleFocusChange}
+            onPaste={handlePaste}
         />
     );
 });

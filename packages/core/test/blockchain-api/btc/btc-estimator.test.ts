@@ -296,13 +296,13 @@ describe('BtcEstimator', () => {
             expect(tpl.estimation.fee.amount.weiAmount).toBe(expectedFee);
         });
 
-        it('accepts an estimated amount within fee/2 of the real amount', async () => {
-            const utxos = [makeUtxo({ value: '100000' })];
+        it('accepts an estimated amount within the fixed 10_000 sat drift tolerance', async () => {
+            // Large balance so the recomputed max is far from any boundary; drift is a
+            // fixed 9_999 sat < the 10_000 sat tolerance and must be accepted.
+            const utxos = [makeUtxo({ value: '100000000' })];
             const expectedFee = feeNoChangeSat(utxos, FAST_FEE_SAT_VB);
-            const realAmount = 100_000n - expectedFee;
-            // drift = floor(fee/2) - 1 → strictly less than fee/2 after doubling
-            const drift = expectedFee / 2n - 1n;
-            const estimated = realAmount + drift;
+            const realAmount = 100_000_000n - expectedFee;
+            const estimated = realAmount + 9_999n;
 
             const tpl = await estimator.estimate(
                 {
@@ -314,15 +314,15 @@ describe('BtcEstimator', () => {
                 utxos
             );
 
+            // The signed amount is the recomputed one, NOT the (drifted) estimate.
             expect(tpl.request.amount.weiAmount).toBe(realAmount);
         });
 
-        it('throws when estimated amount drifted further than fee/2 from actual', async () => {
-            const utxos = [makeUtxo({ value: '100000' })];
+        it('throws when drift exceeds the fixed 10_000 sat tolerance (independent of fee)', async () => {
+            const utxos = [makeUtxo({ value: '100000000' })];
             const expectedFee = feeNoChangeSat(utxos, FAST_FEE_SAT_VB);
-            const realAmount = 100_000n - expectedFee;
-            // drift = fee — well above fee/2
-            const estimated = realAmount + expectedFee;
+            const realAmount = 100_000_000n - expectedFee;
+            const estimated = realAmount + 10_001n;
 
             await expect(
                 estimator.estimate(
@@ -335,6 +335,40 @@ describe('BtcEstimator', () => {
                     utxos
                 )
             ).rejects.toThrow(/Amount changed/);
+        });
+
+        it('throws when the displayed (estimated) amount is zero', async () => {
+            // manipulated fee response can drive the form max to 0; the
+            // estimator must never turn a displayed 0 into a positive signed output.
+            await expect(
+                estimator.estimate(
+                    {
+                        type: 'max',
+                        recipientAddress: RECIPIENT_ADDR,
+                        estimatedAmount: BtcAssetAmount.fromWeiAmount(0n),
+                        feeType: BtcFeeType.FAST
+                    },
+                    [makeUtxo({ value: '100000' })]
+                )
+            ).rejects.toThrow(/greater than zero/);
+        });
+
+        it('throws when the recomputed amount is zero (balance == fee)', async () => {
+            const utxos = [makeUtxo()];
+            const fee = feeNoChangeSat(utxos, FAST_FEE_SAT_VB);
+            utxos[0].value = fee.toString(); // balance == fee → recomputed amount == 0
+
+            await expect(
+                estimator.estimate(
+                    {
+                        type: 'max',
+                        recipientAddress: RECIPIENT_ADDR,
+                        estimatedAmount: BtcAssetAmount.fromWeiAmount(1n),
+                        feeType: BtcFeeType.FAST
+                    },
+                    utxos
+                )
+            ).rejects.toThrow(/greater than zero/);
         });
 
         it('throws when UTXO set is empty', async () => {

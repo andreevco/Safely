@@ -12,7 +12,7 @@ function makeStorage(authorId: string) {
     });
 }
 
-describe('Basic CRDT properties', () => {
+describe('Basic Crdt properties', () => {
     describe('Idempotence', () => {
         it('merging the same incoming state twice does not change visible state', () => {
             fc.assert(

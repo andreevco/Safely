@@ -1,7 +1,7 @@
 import type { ITreeStorage } from '@safely/sync';
 
 export interface Security {
-    check(options?: { title?: string }): Promise<void>;
+    check(options?: { title?: string; subtitle?: string }): Promise<void>;
 }
 
 export interface IUnlockableSecuredEncryptedStorage extends ITreeStorage {

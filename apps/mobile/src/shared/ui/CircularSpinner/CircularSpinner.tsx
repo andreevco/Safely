@@ -32,7 +32,7 @@ export const CircularSpinner = ({ size }: CircularSpinnerProps) => {
     }));
 
     return (
-        <View style={styles.wrapper}>
+        <View style={styles.wrapper(size)}>
             <Animated.View style={animatedStyle}>
                 <Icon icon={Loader56} size={size} />
             </Animated.View>

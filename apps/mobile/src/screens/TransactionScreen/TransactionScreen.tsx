@@ -1,21 +1,23 @@
-/* eslint-disable no-irregular-whitespace */
 import type { StaticScreenProps } from '@react-navigation/native';
 import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { BLOCKCHAIN_NAME, BTC_ASSET, ellipsisMiddle } from '@safely/core';
+import { BLOCKCHAIN_NAME, BTC_ASSET, SPACE, ellipsisMiddle } from '@safely/core';
 import {
     type BtcActivityItem,
     isBtcTransactionPending,
+    useActivePortfolioRate,
     useDateFormatter,
     useExplorer,
     useLinking,
     useNumberFormatter,
-    useRate
+    useShowFullSentAmount,
+    useTransactionHistoryAmountOrder,
+    resolveSentAmount
 } from '@safely/ux';
 
-import { TransactionConfirmationStatusBtc } from '@mobile/screens/TransactionScreen/TransactionConfirmationStatusBtc';
+import { TransactionConfirmationStatusBtc } from '@mobile/entities/activity';
 import {
     ArrowDown16,
     ArrowTop16,
@@ -46,7 +48,7 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
     const isInitiator = activity.transaction.isInitiator;
     const isPending = isBtcTransactionPending(activity.transaction.raw);
     const formatter = useNumberFormatter();
-    const { data: rate } = useRate(BTC_ASSET);
+    const { data: rate } = useActivePortfolioRate(BTC_ASSET);
     const explorer = useExplorer(BLOCKCHAIN_NAME.BTC);
     const dateFormatter = useDateFormatter({
         day: 'numeric',
@@ -55,6 +57,26 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
         minute: '2-digit'
     });
     const { openURL } = useLinking();
+    const showFullSentAmount = useShowFullSentAmount();
+    const amountOrder = useTransactionHistoryAmountOrder();
+
+    const { amount, isFullPrecision } = resolveSentAmount({
+        isInitiator,
+        value: activity.transaction.value,
+        fee: activity.transaction.fee?.amount,
+        showFullSentAmount
+    });
+
+    const formattedValue = amount.format(formatter, { fullPrecision: isFullPrecision });
+    const formattedFiat = rate
+        ? amount.convert(rate).format(formatter, { currencyDisplay: 'code' })
+        : null;
+
+    const isFiatFirst = amountOrder === 'fiat' && formattedFiat !== null;
+    const primaryAmount = isFiatFirst ? formattedFiat : formattedValue;
+    const secondaryAmount = isFiatFirst
+        ? formattedValue
+        : formattedFiat && `≈${SPACE.THSP}${formattedFiat}`;
 
     const handleOpen = useCallback(() => {
         const url = explorer.transaction(activity.transaction.raw.txid);
@@ -115,11 +137,13 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
                     </View>
                     <View style={styles.amountContainer}>
                         <Text variant="titleL" color="primary" textAlign="center">
-                            {isInitiator ? '−' : '+'} {activity.transaction.value.format(formatter)}
+                            {isInitiator ? '−' : '+'}
+                            {SPACE.THSP}
+                            {primaryAmount}
                         </Text>
-                        {rate && (
+                        {secondaryAmount && (
                             <Text variant="bodyL" color="secondary" textAlign="center">
-                                ≈ {activity.transaction.value.convert(rate).format(formatter)}
+                                {secondaryAmount}
                             </Text>
                         )}
                     </View>
@@ -189,6 +213,13 @@ export const TransactionScreen = (props: TransactionScreenProps) => {
                             )}
                         </TableCell>
                     </List.Group>
+                    {isFiatFirst && showFullSentAmount && (
+                        <List.Footer>
+                            <Text variant="bodyM" color="tertiary">
+                                {t('history.transactionInfo.fiatRateNote')}
+                            </Text>
+                        </List.Footer>
+                    )}
                 </List>
             </Screen.Scrollable>
         </Screen>

@@ -1,3 +1,4 @@
+import { rnBleTransportIdentifier } from '@ledgerhq/device-transport-kit-react-native-ble';
 import { getLocales } from 'expo-localization';
 import { reloadAppAsync as reloadApp } from 'expo-modules-core';
 import type { FC, PropsWithChildren } from 'react';
@@ -9,8 +10,9 @@ import { LoggableStorage } from '@safely/core';
 import type { AppStateStatus, IAppContext, Security } from '@safely/ux';
 import { AppContext, UnlockableSecuredEncryptedStorage } from '@safely/ux';
 
+import { createLedgerKit } from '@mobile/features/ledger/createLedgerKit';
 import { useMobileSecurityCheck } from '@mobile/features/security';
-import { build, deviceInfo, environment } from '@mobile/shared/app-meta';
+import { build, deviceInfo, environment, getDeviceCountryCode } from '@mobile/shared/app-meta';
 import { eraseLogs, logger } from '@mobile/shared/logger';
 import { useLoaderServiceContext } from '@mobile/shared/providers/loader';
 import { useToastServiceContext } from '@mobile/shared/providers/toast';
@@ -24,6 +26,7 @@ import {
     REGULAR_MOBILE_STORAGE_ONLY_APP_LEVEL_USE,
     SECURE_ENCRYPTED_MOBILE_STORAGE_ONLY_APP_LEVEL_USE
 } from './storage';
+import { getStoreCountryAsync } from '../../modules/safely-store-country/src';
 import packageJson from '../../package.json';
 
 const security: Security = {
@@ -65,6 +68,10 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
             version: packageJson.version,
             build,
             environment,
+            getUserCountryInfo: async () => ({
+                storeCode: await getStoreCountryAsync().catch(() => null),
+                deviceCode: getDeviceCountryCode()
+            }),
             devToken: devToken ?? undefined,
             devIsTestnetAllowed: devIsTestnetAllowed ?? undefined,
             deviceInfo,
@@ -108,6 +115,10 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
                 withLoader: loaderService.withLoader
             },
             logger,
+            ledgerTransport: {
+                createKit: () => createLedgerKit(logger),
+                transportIdentifier: rnBleTransportIdentifier
+            },
             linking: new MobileAppLinking(logger),
             security: {
                 check: () => security.check()

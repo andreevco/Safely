@@ -1,9 +1,25 @@
 import { Address, NETWORK } from '@scure/btc-signer';
 import type { BTC_NETWORK } from '@scure/btc-signer/utils.js';
 
+import { BtcNetwork, btcNetworkConfig } from '../../entities/blockchain/btc';
+
 export type BitcoinAddressType = 'P2PKH' | 'P2SH' | 'P2WPKH' | 'P2WSH' | 'P2TR';
 
 export class BtcAddress {
+    public static validForNetwork(address: string): BtcNetwork | null {
+        const isValidForMainnet = this.validate(address, btcNetworkConfig[BtcNetwork.MAINNET]);
+        if (isValidForMainnet) {
+            return BtcNetwork.MAINNET;
+        }
+
+        const isValidForTestnet = this.validate(address, btcNetworkConfig[BtcNetwork.TESTNET]);
+        if (isValidForTestnet) {
+            return BtcNetwork.TESTNET;
+        }
+
+        return null;
+    }
+
     public static validate(address: string, network: BTC_NETWORK = NETWORK): boolean {
         try {
             return !!Address(network).decode(address);

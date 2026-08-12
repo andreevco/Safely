@@ -1,8 +1,9 @@
 import { memo } from 'react';
 import { View } from 'react-native';
 
+import { SPACE } from '@safely/core';
 import type { ContactMeta, PortfolioMeta } from '@safely/core';
-import type { BtcActivityItem } from '@safely/ux';
+import { useTransactionHistoryAmountOrder } from '@safely/ux';
 
 import { ContactName } from '@mobile/entities/contact';
 import { PortfolioName } from '@mobile/entities/portfolio';
@@ -13,19 +14,19 @@ import { styles } from './ActivityItem.styles';
 export type ActivityItemCounterparty =
     | { kind: 'contact'; meta: ContactMeta }
     | { kind: 'portfolio'; meta: PortfolioMeta }
-    | { kind: 'address'; label: string };
+    | { kind: 'address'; label: string }
+    | { kind: 'provider'; label: string };
 
 export type ActivityItemProps = {
-    activity: BtcActivityItem;
     title: string;
-    amountSign: '+' | '−';
+    amountSign: '+' | '−' | null;
     formattedValue: string;
-    valueColor: 'primary' | 'accentGreen';
+    valueColor: 'primary' | 'accentGreen' | 'tertiary';
     formattedFiat: string | null;
     timestampLabel: string | null;
     background: 'tertiary' | 'secondary';
     counterparty: ActivityItemCounterparty;
-    onNavigateToTransaction: (activity: BtcActivityItem) => void;
+    onPress?: () => void;
 };
 
 const Counterparty = ({ counterparty }: { counterparty: ActivityItemCounterparty }) => {
@@ -52,12 +53,17 @@ const Counterparty = ({ counterparty }: { counterparty: ActivityItemCounterparty
             );
         case 'address':
             return <Cell.Subtitle color="secondary">{counterparty.label}</Cell.Subtitle>;
+        case 'provider':
+            return (
+                <Cell.Subtitle textTransform="capitalize" color="secondary">
+                    {counterparty.label}
+                </Cell.Subtitle>
+            );
     }
 };
 
 export const ActivityItem = memo((props: ActivityItemProps) => {
     const {
-        activity,
         title,
         amountSign,
         formattedValue,
@@ -66,15 +72,21 @@ export const ActivityItem = memo((props: ActivityItemProps) => {
         timestampLabel,
         background,
         counterparty,
-        onNavigateToTransaction
+        onPress
     } = props;
+    const amountOrder = useTransactionHistoryAmountOrder();
+
+    const [primaryAmount, secondaryAmount] =
+        amountOrder === 'fiat' && formattedFiat !== null
+            ? [formattedFiat, formattedValue]
+            : [formattedValue, formattedFiat];
 
     return (
         <Cell
             containerStyle={styles.border}
             background={background}
             showDivider={false}
-            onPress={() => onNavigateToTransaction(activity)}
+            onPress={onPress}
         >
             <Cell.Content>
                 <Cell.Row>
@@ -87,12 +99,13 @@ export const ActivityItem = memo((props: ActivityItemProps) => {
                         )}
                     </View>
                     <Cell.Value color={valueColor}>
-                        {amountSign} {formattedValue}
+                        {amountSign !== null && `${amountSign}${SPACE.THSP}`}
+                        {primaryAmount}
                     </Cell.Value>
                 </Cell.Row>
                 <Cell.Row>
                     <Counterparty counterparty={counterparty} />
-                    <Cell.Subvalue>{formattedFiat}</Cell.Subvalue>
+                    <Cell.Subvalue>{secondaryAmount}</Cell.Subvalue>
                 </Cell.Row>
             </Cell.Content>
         </Cell>

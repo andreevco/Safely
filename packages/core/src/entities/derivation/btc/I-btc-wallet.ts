@@ -16,6 +16,8 @@ export interface SignableBtcWallet extends BtcWalletReadOnly {
 
     xpub: string;
 
+    isPrevTxsRequired: boolean;
+
     sign(tx: BtcSigningRequest): Promise<Buffer>;
 }
 

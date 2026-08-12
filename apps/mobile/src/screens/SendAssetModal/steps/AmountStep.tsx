@@ -30,7 +30,7 @@ export const AmountStep = (props: AmountStepProps) => {
     const {
         decimals,
         hasPrice,
-        hasInsufficientBalance,
+        amountError,
         isMax,
         inputType,
         alternativeAmount,
@@ -61,11 +61,12 @@ export const AmountStep = (props: AmountStepProps) => {
                 decimalSeparator={decimalSeparator}
                 value={view.values.amount}
                 onChangeText={view.setAmount}
+                onPaste={view.pasteAmount}
                 onFocus={handleFocus}
                 placeholder="0"
                 isMax={isMax}
                 label={t('send.amount')}
-                errored={hasInsufficientBalance}
+                errored={!!amountError}
                 formattedAlternativeAmount={alternativeAmount}
                 onSwitchFiatMode={hasPrice ? handleSwitchFiatMode : undefined}
                 currencySymbol={
@@ -78,7 +79,7 @@ export const AmountStep = (props: AmountStepProps) => {
             <View style={styles.remainingContainer}>
                 <AmountStatus
                     isMax={isMax}
-                    hasInsufficientBalance={hasInsufficientBalance}
+                    amountError={amountError}
                     remainingBalance={remainingBalance}
                 />
                 {enterMax && view.isMaxAvailable && (

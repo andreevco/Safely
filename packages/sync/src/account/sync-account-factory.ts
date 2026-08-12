@@ -9,11 +9,12 @@ import { SyncAccountRepository } from './sync-account-repository';
 import { Configuration } from '../api/generated';
 import type { SyncApiConfiguration } from '../api/sync-api-configuration';
 import { ed25519_keygen } from '../crypto/ed25519';
+import { DevicesVersions } from '../device-manager/device-storage-schema';
 import type { Logger } from '../logger';
 import type { OnboardingConnector } from '../onboarding/connector';
 import { accountsApiForOnboarding, NewDeviceOnboarding } from '../onboarding/new-device-onboarding';
 import { SingleActiveOnboardingCoordinator } from '../onboarding/single-active-onboarding-coordinator';
-import type { SyncApiImplementations } from '../sync-container';
+import type { SyncApiImplementationsFactory } from '../sync-container';
 
 type VersionHList = HCons<StorageVersion, unknown>;
 type LatestOf<Versions extends VersionHList> = Versions['head'];
@@ -24,7 +25,7 @@ export type SyncAccountFactoryOptions<Versions extends VersionHList> = {
     encryptedStorage: ITreeStorage;
     versions: Versions & AssertVersionHList<Versions>;
     apiConfiguration?: SyncApiConfiguration;
-    apiImplementations?: SyncApiImplementations;
+    apiImplementationsFactory?: SyncApiImplementationsFactory;
     pollingTimeout?: number;
     logger: Logger;
 };
@@ -35,7 +36,7 @@ export class SyncAccountFactory<Versions extends VersionHList> implements ISyncA
     private readonly syncAccountIdRepository: SyncAccountRepository;
     private readonly accountManager: AccountManager<LatestOf<Versions>, RestOf<Versions>>;
     private readonly apiConfiguration: Configuration;
-    private readonly apiImplementations?: SyncApiImplementations;
+    private readonly apiImplementationsFactory?: SyncApiImplementationsFactory;
     private readonly logger: Logger;
     private readonly pollingTimeout: number;
     private readonly storageVersion: number;
@@ -46,7 +47,7 @@ export class SyncAccountFactory<Versions extends VersionHList> implements ISyncA
     constructor(opts: SyncAccountFactoryOptions<Versions>) {
         this.syncAccountIdRepository = new SyncAccountRepository(opts.storage);
         this.apiConfiguration = new Configuration(opts.apiConfiguration);
-        this.apiImplementations = opts.apiImplementations;
+        this.apiImplementationsFactory = opts.apiImplementationsFactory;
         this.logger = opts.logger;
         this.pollingTimeout = opts.pollingTimeout ?? 2000;
 
@@ -57,7 +58,7 @@ export class SyncAccountFactory<Versions extends VersionHList> implements ISyncA
             opts.versions,
             this.apiConfiguration,
             this.pollingTimeout,
-            this.apiImplementations,
+            this.apiImplementationsFactory,
             this.logger
         );
         this.accountManager = new AccountManager(
@@ -66,7 +67,7 @@ export class SyncAccountFactory<Versions extends VersionHList> implements ISyncA
             this.syncAccountIdRepository,
             opts.versions,
             this.apiConfiguration,
-            this.apiImplementations,
+            this.apiImplementationsFactory,
             createAccountService,
             this.pollingTimeout,
             this.logger
@@ -90,7 +91,7 @@ export class SyncAccountFactory<Versions extends VersionHList> implements ISyncA
     private async createConnectToExistingAccountSession(secureEncryptedStorage: ITreeStorage) {
         const ikKeypair = ed25519_keygen();
         const accountsApi =
-            this.apiImplementations?.accountsApi ??
+            this.apiImplementationsFactory?.(ikKeypair.publicKey).accountsApi ??
             accountsApiForOnboarding(ikKeypair, this.apiConfiguration);
         const onboarding = new NewDeviceOnboarding(
             ikKeypair,
@@ -99,7 +100,8 @@ export class SyncAccountFactory<Versions extends VersionHList> implements ISyncA
             secureEncryptedStorage,
             this.logger,
             this.pollingTimeout,
-            this.storageVersion
+            this.storageVersion,
+            DevicesVersions.head.version
         );
 
         return {

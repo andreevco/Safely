@@ -11,7 +11,13 @@ import { Text, TouchableOpacity } from '@mobile/shared/ui';
 
 import { styles } from './ReceivingBadge.styles';
 
-export const ReceivingBadges = ({ utxos }: { utxos: BtcApiUtxoWithOptionalTx[] }) => {
+export const ReceivingBadges = ({
+    utxos,
+    purchaseTxids
+}: {
+    utxos: BtcApiUtxoWithOptionalTx[];
+    purchaseTxids: ReadonlySet<string>;
+}) => {
     const { t } = useTranslation();
     const formatter = useNumberFormatter();
     const navigation = useNavigation();
@@ -43,9 +49,14 @@ export const ReceivingBadges = ({ utxos }: { utxos: BtcApiUtxoWithOptionalTx[] }
                     onPress={() => handleReceivingPress(u)}
                 >
                     <Text variant="bodyM" color="primary">
-                        {t('pendingFunds.receiving', {
-                            amount: BtcAssetAmount.fromWeiAmount(u.value).format(formatter)
-                        })}
+                        {t(
+                            purchaseTxids.has(u.txid)
+                                ? 'pendingFunds.purchase'
+                                : 'pendingFunds.receiving',
+                            {
+                                amount: BtcAssetAmount.fromWeiAmount(u.value).format(formatter)
+                            }
+                        )}
                     </Text>
                 </TouchableOpacity>
             ))}

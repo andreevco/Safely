@@ -2,7 +2,7 @@ import { useQueries } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
 import type { BtcWallet, RequiredProperties } from '@safely/core';
-import { assertUnreachable, BtcAssetAmount, PortfolioType } from '@safely/core';
+import { BtcAssetAmount } from '@safely/core';
 import type { BtcApi, BtcApiUtxoWithOptionalTx } from '@safely/core/api/btc';
 
 import {
@@ -13,8 +13,13 @@ import {
     usePersistQuery
 } from '../../shared';
 import { useActiveAccount } from '../account';
-import { resolveBtcWallet, useActiveBtcWallet, usePortfolios } from '../portfolio';
-import { utxo } from './keys';
+import {
+    isDerivablePortfolio,
+    resolveBtcWallets,
+    useActiveBtcWallet,
+    usePortfolios
+} from '../portfolio';
+import { confirmedBalance, utxo } from './keys';
 import {
     BroadcastedBtcTxService,
     getLastBroadcastedBtcTxForWallet
@@ -24,22 +29,12 @@ import { getBiggestBtcIOAddress } from '../activity/api';
 function useAccessibleBtcWallets() {
     const portfolios = usePortfolios();
     return useMemo(
-        () =>
-            portfolios
-                .filter(p => {
-                    switch (p.type) {
-                        case PortfolioType.BIP39:
-                            return true;
-                        case PortfolioType.WATCH_ONLY:
-                            return false;
-                        default:
-                            assertUnreachable(p);
-                    }
-                })
-                .map(p => resolveBtcWallet(p)),
+        () => portfolios.filter(isDerivablePortfolio).flatMap(resolveBtcWallets),
         [portfolios]
     );
 }
+
+const isConfirmed = (u: { confirmations: number }) => u.confirmations > 0;
 
 function getTotal(utxos: { value: string }[]) {
     return utxos.reduce(
@@ -61,8 +56,8 @@ function btcWalletUtxoOptions(deps: {
         queryFn: async () => {
             const utxos = await api.getUtxos(btcWallet, true);
 
-            const serverConfirmed = utxos.filter(u => u.confirmations > 0);
-            const unconfirmed = utxos.filter(u => u.confirmations === 0);
+            const serverConfirmed = utxos.filter(isConfirmed);
+            const unconfirmed = utxos.filter(u => !isConfirmed(u));
 
             const { safe: serverSafe, unsafe: serverUnsafe } = unconfirmed.reduce(
                 (acc, item) => {
@@ -128,10 +123,43 @@ export function useBtcWalletUtxo(btcWallet: BtcWallet) {
     );
 }
 
-export function useBtcBalances(wallets: BtcWallet[]) {
+export function useAccountlessBtcConfirmedBalances(wallets: BtcWallet[]) {
+    const getBtcApi = useGetBtcApi();
+
+    return useQueries({
+        queries: wallets.map(btcWallet => {
+            const api = getBtcApi(btcWallet.network);
+
+            return {
+                queryKey: confirmedBalance.wallet({ wallet: btcWallet, api }).toKey(),
+                queryFn: async () => getTotal((await api.getUtxos(btcWallet)).filter(isConfirmed)),
+                refetchInterval: QUERIES_REFETCH_INTERVAL.UTXO
+            };
+        }),
+        combine: results => results.map(r => r.data)
+    });
+}
+
+export function sumBtcDisplay(
+    balances: ReturnType<typeof useBtcWalletBalances>
+): BtcAssetAmount | null {
+    let total = BtcAssetAmount.fromWeiAmount('0');
+
+    for (const balance of balances) {
+        if (balance === undefined) {
+            return null;
+        }
+
+        total = total.amountAdd(balance.display);
+    }
+
+    return total;
+}
+
+export function useBtcWalletBalances(wallets: BtcWallet[]) {
+    const account = useActiveAccount();
     const getBtcApi = useGetBtcApi();
     const accessibleBtcWallets = useAccessibleBtcWallets();
-    const account = useActiveAccount();
 
     return useQueries({
         queries: wallets.map(btcWallet => {
@@ -150,19 +178,17 @@ export function useBtcBalances(wallets: BtcWallet[]) {
                 }
             };
         }),
-        combine: results => {
-            let total = BtcAssetAmount.fromWeiAmount('0');
-
-            for (const r of results) {
-                if (r.data === undefined) return null;
-
-                total = total.amountAdd(
-                    r.data.confirmed.totalAmount.amountAdd(r.data.unconfirmedSafe.totalAmount)
-                );
-            }
-
-            return total;
-        }
+        combine: results =>
+            results.map(r =>
+                r.data
+                    ? {
+                          display: r.data.confirmed.totalAmount.amountAdd(
+                              r.data.unconfirmedSafe.totalAmount
+                          ),
+                          pending: r.data.unconfirmedUnsafe.totalAmount
+                      }
+                    : undefined
+            )
     });
 }
 

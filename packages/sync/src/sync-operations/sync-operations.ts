@@ -1,16 +1,16 @@
 import type { StorageVersion } from '@safely/slottree';
 
 import type { SnapshotSender } from './snapshot-sender';
-import { SyncOperationQueue } from './sync-operation-queue';
 import type { EncryptedStateAndProofChain } from '../api/types';
 import type { CrdtController } from '../crdt/crdt-controller';
 import type { DmkSignerService } from '../crypto/service/dmk-signer-service';
 import type { DeviceManagementService } from '../device-manager/device-management-service';
 import type { SyncFlowLogger } from '../logger';
 import type { UpdateHandler } from '../update-handler/handler';
+import { AsyncOperationQueue } from '../utils/async-operation-queue';
 
 export class SyncOperations<Latest extends StorageVersion, Rest> {
-    private readonly queue = new SyncOperationQueue();
+    private readonly queue = new AsyncOperationQueue();
 
     constructor(
         private readonly updateHandler: UpdateHandler<Latest, Rest>,
@@ -40,15 +40,17 @@ export class SyncOperations<Latest extends StorageVersion, Rest> {
     public async addDevice(
         ikPub: Buffer,
         storageVersion: number | undefined,
+        devicesStorageVersion: number | undefined,
         dmkSignerService: DmkSignerService,
         signal?: AbortSignal
     ): Promise<void> {
         await this.queue.run(async () => {
             this.throwIfAborted(signal);
             await this.deviceManager.addDevice(ikPub, dmkSignerService);
-            if (storageVersion !== undefined) {
-                await this.crdtController.addAuthor(ikPub, storageVersion);
-            }
+            await this.crdtController.addAuthor(ikPub, {
+                storageVersion,
+                devicesStorageVersion
+            });
         });
     }
 

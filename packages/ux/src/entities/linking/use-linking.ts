@@ -12,8 +12,14 @@ export function useLinking() {
     });
 
     const openURL = useCallback(
-        (url: string, allowedProtocols?: LinkingProtocol[]) => {
-            linking.openURL(url, allowedProtocols).catch(errorToast);
+        (
+            url: string,
+            {
+                allowedProtocols,
+                preferInApp
+            }: { allowedProtocols?: LinkingProtocol[]; preferInApp?: boolean } = {}
+        ) => {
+            linking.openURL(url, { allowedProtocols, preferInApp }).catch(errorToast);
         },
         [linking, errorToast]
     );

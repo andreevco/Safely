@@ -1,61 +1,119 @@
 name: Build & Distribute to Firebase
 
 on:
+  push:
+    branches:
+      - master
+      - release/**
   workflow_dispatch:
     inputs:
       release_notes:
-        description: Release notes / "What to Test" for testers
+        description: Release notes / "What to Test" for testers. Overrides the commit message.
         type: string
         required: false
         default: ''
-      pr_number:
-        description: Just-merged PR number, used to build the PR link in the Slack report. Empty if none.
-        type: string
-        required: false
-        default: ''
-      repository:
-        description: owner/repo, used to build the PR link in the Slack report
-        type: string
-        required: false
-        default: ''
-      target_branch:
-        description: Branch the change was merged into (e.g. release/1.0.1), prefixed to the Slack notes
-        type: string
-        required: false
-        default: ''
-      android_build_profile:
-        description: >-
-          EAS build profile for the Android build. 'production-cached' enables ccache + Gradle
-          build cache (used for release/* feature builds); 'production' = no cache (master, manual).
-        type: string
-        required: false
-        default: production
 
 jobs:
+  prepare:
+    name: Prepare release notes & profile
+    # `env` must be job-level (step-level `env:` is unsupported and left as raw
+    # literals); passing values as env vars also keeps them shell-injection-safe.
+    # `|| ''` guards github.* fields that are empty on workflow_dispatch runs.
+    env:
+      COMMIT_MESSAGE: ${{ github.commit_message || '' }}
+      MANUAL_NOTES: ${{ inputs.release_notes || '' }}
+      REF_NAME: ${{ github.ref_name || '' }}
+      EVENT_NAME: ${{ github.event_name }}
+    outputs:
+      notes: ${{ steps.prep.outputs.notes }}
+      android_profile: ${{ steps.prep.outputs.android_profile }}
+      build_type: ${{ steps.prep.outputs.build_type }}
+    steps:
+      - name: Compute notes & profile
+        id: prep
+        run: |
+          if [ -n "$MANUAL_NOTES" ]; then
+            RAW="$MANUAL_NOTES"
+          else
+            RAW="${COMMIT_MESSAGE:-Build from $REF_NAME}"
+          fi
+          # EAS Workflows doesn't quote-safe-interpolate values into its internal
+          # bash; unescaped () ` $ " ' \ in the changelog cause exit 141 / SIGPIPE /
+          # empty log. Strip them here so the value is safe for set-output AND for
+          # every downstream interpolation (build message, TestFlight changelog,
+          # Firebase notes, Slack report).
+          NOTES=$(printf '%s' "$RAW" \
+            | tr -d '\r' \
+            | tr '\n' ' ' \
+            | tr '(' '[' \
+            | tr ')' ']' \
+            | sed "s/[\`\$\"'\\\\]//g" \
+            | tr -s ' ')
+          # TestFlight "What to Test" caps at 4000 chars.
+          NOTES=$(printf '%s' "$NOTES" | head -c 4000)
+          echo "Resolved notes: $NOTES"
+          set-output notes "$NOTES"
+
+          # Cache feature builds (release/*) and manual runs; master stays uncached
+          # for clean from-scratch builds. master also ships the AAB to Play, so it's
+          # the "production" build type; everything else is "staging".
+          if [[ "$REF_NAME" == release/* || "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            set-output android_profile "staging-cached"
+            set-output build_type "staging"
+          else
+            set-output android_profile "staging-base"
+            set-output build_type "production"
+          fi
+
   build_ios:
     name: Build iOS
     type: build
+    needs: [prepare]
     params:
       platform: ios
-      profile: production
-      message: ${{ inputs.release_notes }}
+      profile: staging-base
+      message: ${{ needs.prepare.outputs.notes }}
 
   build_android:
     name: Build APK
     type: build
+    needs: [prepare]
     params:
       platform: android
-      profile: ${{ inputs.android_build_profile }}
-      message: ${{ inputs.release_notes }}
+      profile: ${{ needs.prepare.outputs.android_profile }}
+      message: ${{ needs.prepare.outputs.notes }}
+
+  build_android_play:
+    name: Build AAB (Play)
+    type: build
+    needs: [prepare]
+    if: ${{ github.ref_name == 'master' }}
+    params:
+      platform: android
+      profile: production
+      message: ${{ needs.prepare.outputs.notes }}
+
+  submit_android_play:
+    name: Submit to Google Play (internal)
+    type: submit
+    needs: [build_android_play]
+    if: ${{ github.ref_name == 'master' }}
+    params:
+      build_id: ${{ needs.build_android_play.outputs.build_id }}
+      profile: production
+    # Temporary: surfaces the real "failed to resolve submission config" cause.
+    # Remove once the submit succeeds.
+    env:
+      EXPO_DEBUG: '1'
 
   distribute_ios:
     type: testflight
     name: Upload to TestFlight
-    needs: [build_ios]
+    needs: [prepare, build_ios]
     params:
       build_id: ${{ needs.build_ios.outputs.build_id }}
       profile: production
-      changelog: ${{ inputs.release_notes }}
+      changelog: ${{ needs.prepare.outputs.notes }}
 
   # testflight upload may fail with unknown at this moment reasons, but retry should help
   distribute_ios_crutch:
@@ -67,47 +125,7 @@ jobs:
       build_id: ${{ after.build_ios.outputs.build_id }}
       profile: production
 
-  distribute_android:
-    name: Upload to Firebase
-    needs: [build_android]
-    steps:
-      - uses: eas/download_build
-        id: download_build
-        with:
-          build_id: ${{ needs.build_android.outputs.build_id }}
-          extensions: [apk]
-
-      - name: Install Firebase CLI
-        run: npm install -g firebase-tools
-
-      - name: Upload to Firebase App Distribution
-        run: |
-          echo '${{ env.SERVICE_ACCOUNT }}' > /tmp/sa-key.json
-          export GOOGLE_APPLICATION_CREDENTIALS=/tmp/sa-key.json
-
-          cat > /tmp/release_notes.txt << 'EAS_RELEASE_NOTES_EOF'
-          ${{ inputs.release_notes }}
-          EAS_RELEASE_NOTES_EOF
-
-          APK_PATH=$(find ${{ steps.download_build.outputs.artifact_path }} -name "*.apk" -type f | head -1)
-          if [ -z "$APK_PATH" ]; then
-            echo "No .apk file found in artifact. Contents:"
-            ls -R ${{ steps.download_build.outputs.artifact_path }}
-            exit 1
-          fi
-
-          NOTES_ARGS=()
-          if [ -s /tmp/release_notes.txt ]; then
-            NOTES_ARGS=(--release-notes-file /tmp/release_notes.txt)
-          fi
-
-          firebase appdistribution:distribute "$APK_PATH" \
-            --app "${{ env.FIREBASE_APP_ID }}" \
-            --groups "testers" \
-            "${NOTES_ARGS[@]}"
-
-  # Runs on the same APK we ship to Firebase (no separate e2e build),
-  # in parallel with distribute_android.
+  # Runs on the APK from build_android (no separate e2e build).
   # The flows are a chain — each starts from the state the previous one left
   # (onboarding -> add wallets -> import wallet -> send), so the order below
   # matters. The flows read MAESTRO_SEED_PHRASE / MAESTRO_IMPORTED_WALLET_ADDRESS /
@@ -128,35 +146,36 @@ jobs:
           '.maestro/send-asset.yaml',
         ]
 
-  # Aggregates TestFlight + Firebase + e2e results into a Slack message.
+  # Aggregates TestFlight + Android build + e2e results into a Slack message.
   # `after` => runs regardless of upstream success/failure, and lets us read
   # both the statuses and the build outputs (version / build number).
   report:
     name: Report (Slack)
     after:
+      - prepare
       - build_ios
       - build_android
       - distribute_ios
       - distribute_ios_crutch
-      - distribute_android
       - e2e_android
     steps:
       # Custom steps jobs start with an empty workdir — check out the repo to reach the script.
       - uses: eas/checkout
       - name: Post report
         run: |
-          export RELEASE_NOTES="${{ inputs.release_notes }}"
+          export RELEASE_NOTES="${{ after.prepare.outputs.notes }}"
+          export BUILD_TYPE="${{ after.prepare.outputs.build_type }}"
           export SLACK_WEBHOOK_URL="${{ env.SLACK_WEBHOOK_URL }}"
           export WORKFLOW_URL="${{ workflow.url }}"
-          export PR_NUMBER="${{ inputs.pr_number }}"
-          export REPOSITORY="${{ inputs.repository }}"
-          export TARGET_BRANCH="${{ inputs.target_branch }}"
+          export REPOSITORY="${{ github.repository }}"
+          export COMMIT_SHA="${{ github.sha }}"
+          export TARGET_BRANCH="${{ github.ref_name }}"
           export IOS_VERSION="${{ after.build_ios.outputs.app_version }}"
           export IOS_BUILD="${{ after.build_ios.outputs.app_build_version }}"
           export ANDROID_VERSION="${{ after.build_android.outputs.app_version }}"
           export ANDROID_BUILD="${{ after.build_android.outputs.app_build_version }}"
           export STATUS_IOS="${{ after.distribute_ios.status }}"
           export STATUS_IOS_CRUTCH="${{ after.distribute_ios_crutch.status }}"
-          export STATUS_ANDROID="${{ after.distribute_android.status }}"
+          export STATUS_ANDROID="${{ after.build_android.status }}"
           export STATUS_E2E="${{ after.e2e_android.status }}"
           node scripts/eas-report.mjs

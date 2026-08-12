@@ -81,6 +81,7 @@ export type SendFormEvent =
     | { type: 'SET_ADDRESS_BOOK_NAME'; name: string }
     | { type: 'SELECT_SUGGESTION'; id: string; visible: SendSuggestions }
     | { type: 'SET_AMOUNT'; value: string }
+    | { type: 'PASTE_AMOUNT'; raw: string }
     | { type: 'SET_AMOUNT_INPUT_TYPE'; value: AmountInputType }
     | { type: 'SET_ASSET'; assetId: string }
     | { type: 'ENTER_MAX' }

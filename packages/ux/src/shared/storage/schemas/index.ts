@@ -1,8 +1,11 @@
 import { sActiveAccountId } from './active-account-id.schema';
 import { sChartPeriod } from './chart-period.schema';
 import { sDismissedBannerIds } from './dismissed-banner-ids.schema';
+import { sDismissedProviders } from './dismissed-providers.schema';
+import { sHiddenDeviceWarnings } from './hidden-device-warnings.schema';
 import { sNotificationsEnabled } from './notifications-enabled.schema';
 import { sSendAmountInputType } from './send-amount-input-type.schema';
+import { sSyncOnboardingCompleted } from './sync-onboarding-completed.schema';
 import { sWatchedBetaTimestamp } from './watched-beta-timestamp.schema';
 
 export const sharedStorageStructure = {
@@ -10,8 +13,11 @@ export const sharedStorageStructure = {
     chartPeriod: sChartPeriod,
     notificationsEnabled: sNotificationsEnabled,
     dismissedBannerIds: sDismissedBannerIds,
+    dismissedProviders: sDismissedProviders,
     watchedBetaTimestamp: sWatchedBetaTimestamp,
-    sendAmountInputType: sSendAmountInputType
+    sendAmountInputType: sSendAmountInputType,
+    syncOnboardingCompleted: sSyncOnboardingCompleted,
+    hiddenDeviceWarnings: sHiddenDeviceWarnings
 };
 
 export type SharedStorageStructure = typeof sharedStorageStructure;

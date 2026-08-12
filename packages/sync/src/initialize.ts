@@ -6,7 +6,7 @@ import type { ZodType } from 'zod';
 
 import type { AssertVersionHList, HCons, StorageVersion } from '@safely/slottree';
 
-import { YCRDTRepository } from './crdt/y-crdt-repository';
+import { CrdtRepository } from './crdt/crdt-repository';
 import { EncryptedKeyRepository } from './crypto/encrypted-key-repository';
 import { SecureEncryptedKeyRepository } from './crypto/secure-encrypted-key-repository';
 import type { tDevicesLatest, tDevicesRest } from './device-manager/device-storage-schema';
@@ -57,7 +57,7 @@ export async function initializeKeys(
 }
 
 export async function initializeCrdt<Latest extends StorageVersion, Rest>(
-    repo: YCRDTRepository<Latest, Rest>,
+    repo: CrdtRepository<Latest, Rest>,
     _schema: Record<string, ZodType>
 ): Promise<void> {
     await repo.initialize();
@@ -84,8 +84,8 @@ export async function initializeSyncAccount<Latest extends StorageVersion, Rest>
         opts.ik
     );
     const ikPub = encryptedKeyRepository.getIKPub();
-    const ycrdtRepository = new YCRDTRepository(opts.storage, ikPub, opts.versions);
-    const deviceCrdtRepository = new YCRDTRepository<tDevicesLatest, tDevicesRest>(
+    const ycrdtRepository = new CrdtRepository(opts.storage, ikPub, opts.versions);
+    const deviceCrdtRepository = new CrdtRepository<tDevicesLatest, tDevicesRest>(
         opts.storage,
         ikPub,
         DevicesVersions,
