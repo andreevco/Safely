@@ -117,7 +117,7 @@ const WizardContent = ({ details }: { details: SyncedDeviceDetails }) => {
                     options={OTHERS_ACCESS_OPTIONS}
                     answer={othersAccess}
                     onAnswer={setOthersAccess}
-                    hasActionBelow={othersAccess === 'impossible'}
+                    hasActionBelow={othersAccess !== null}
                 >
                     {othersAccess === 'possible' && (
                         <WizardHint
@@ -150,7 +150,7 @@ const WizardContent = ({ details }: { details: SyncedDeviceDetails }) => {
                 </WizardQuestion>
             )}
 
-            {othersAccess === 'impossible' && (
+            {othersAccess !== null && (
                 <Button
                     style={styles.dismissButton}
                     size="medium"
