@@ -6,7 +6,7 @@ export const styles = StyleSheet.create((theme, rt) => ({
         padding: theme.spacing[12]
     },
     unarchiveButton: {
-        marginTop: theme.spacing[16],
+        marginTop: theme.spacing[8],
         borderRadius: theme.radius.md
     },
     content: {

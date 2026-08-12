@@ -10,13 +10,14 @@ import type {
     SyncedStorageStructure
 } from '@safely/sync-storage';
 
+import { useHiddenDeviceWarningsQuery } from './hidden-warnings';
 import { isSensitivePortfolio } from './utils';
 import { useAppContext } from '../../shared';
 import type { SyncAccount } from '../account/account-state';
 import { useActiveAccount, useActiveAccountStoreSlot } from '../account/account-state';
 import { useAccountSyncStorageSlotUpdate } from '../account/useAccountSyncStorageUpdate';
 
-export { useIsDeviceWarningHiddenQuery, useHideDeviceWarning } from './hidden-warnings';
+export { useHideDeviceWarning } from './hidden-warnings';
 export { useArchiveDevice, useUnarchiveDevice } from './device-archive';
 export { useDevSetDeviceLastSyncAt } from './dev-sync-time';
 
@@ -48,6 +49,7 @@ export type SyncedDeviceDetails = {
     isCurrent: boolean;
     lastSyncAt: number | null;
     isStale: boolean;
+    isStaleWarningHidden: boolean;
     dataStatus: SyncedDeviceDataStatus;
     pendingPortfolios: readonly Portfolio[];
     archive: SyncedDeviceArchive | null;
@@ -85,8 +87,18 @@ function buildDeviceDetails(params: {
     devicesMeta: Record<string, SDeviceMeta>;
     currentIkPubHex: string;
     portfolios: readonly Portfolio[];
+    hiddenWarningUntil: number | undefined;
 }): SyncedDeviceDetails {
-    const { ikPubHex, meta, syncState, archive, devicesMeta, currentIkPubHex, portfolios } = params;
+    const {
+        ikPubHex,
+        meta,
+        syncState,
+        archive,
+        devicesMeta,
+        currentIkPubHex,
+        portfolios,
+        hiddenWarningUntil
+    } = params;
 
     const isCurrent = ikPubHex === currentIkPubHex;
     const pendingPortfolios =
@@ -102,6 +114,7 @@ function buildDeviceDetails(params: {
         isCurrent,
         lastSyncAt: syncState?.lastSyncAt ?? null,
         isStale: syncState !== null && Date.now() - syncState.lastSyncAt > STALE_CONNECTION_MS,
+        isStaleWarningHidden: hiddenWarningUntil !== undefined && hiddenWarningUntil > Date.now(),
         dataStatus: resolveDataStatus({
             isCurrent,
             hasReported: syncState !== null,
@@ -129,6 +142,7 @@ export function useSyncedDeviceDetails(ikPubHex: string): SyncedDeviceDetails | 
     const devicesSyncState = useActiveAccountStoreSlot('devicesSyncState');
     const portfolios = useActiveAccountStoreSlot('portfolios') ?? [];
     const currentIkPubHex = useCurrentDeviceIkPub();
+    const { data: hiddenWarnings, isPending } = useHiddenDeviceWarningsQuery();
     const meta = devicesMeta?.[ikPubHex] ?? null;
     const syncState = devicesSyncState?.[ikPubHex] ?? null;
     const archive = devicesArchive?.[ikPubHex] ?? null;
@@ -144,9 +158,20 @@ export function useSyncedDeviceDetails(ikPubHex: string): SyncedDeviceDetails | 
                       archive,
                       devicesMeta: devicesMeta ?? {},
                       currentIkPubHex,
-                      portfolios
+                      portfolios,
+                      hiddenWarningUntil: isPending ? Infinity : hiddenWarnings?.[ikPubHex]
                   }),
-        [ikPubHex, currentIkPubHex, meta, syncState, archive, devicesMeta, portfolios]
+        [
+            ikPubHex,
+            currentIkPubHex,
+            meta,
+            syncState,
+            archive,
+            devicesMeta,
+            portfolios,
+            hiddenWarnings,
+            isPending
+        ]
     );
 }
 
@@ -156,6 +181,7 @@ export function useSyncedDevices(): SyncedDeviceDetails[] {
     const devicesSyncState = useActiveAccountStoreSlot('devicesSyncState');
     const portfolios = useActiveAccountStoreSlot('portfolios') ?? [];
     const currentIkPubHex = useCurrentDeviceIkPub();
+    const { data: hiddenWarnings, isPending } = useHiddenDeviceWarningsQuery();
 
     return useMemo(
         () =>
@@ -168,11 +194,20 @@ export function useSyncedDevices(): SyncedDeviceDetails[] {
                         archive: devicesArchive?.[ikPubHex] ?? null,
                         devicesMeta: devicesMeta ?? {},
                         currentIkPubHex,
-                        portfolios
+                        portfolios,
+                        hiddenWarningUntil: isPending ? Infinity : hiddenWarnings?.[ikPubHex]
                     })
                 )
                 .sort((a, b) => Number(b.isCurrent) - Number(a.isCurrent)),
-        [devicesMeta, devicesSyncState, devicesArchive, currentIkPubHex, portfolios]
+        [
+            devicesMeta,
+            devicesSyncState,
+            devicesArchive,
+            currentIkPubHex,
+            portfolios,
+            hiddenWarnings,
+            isPending
+        ]
     );
 }
 
@@ -193,7 +228,8 @@ export function useIsAttentionRequired(): boolean {
         devices.some(
             device =>
                 device.archive === null &&
-                (device.isStale || device.dataStatus !== SyncedDeviceDataStatus.SYNCED)
+                ((device.isStale && !device.isStaleWarningHidden) ||
+                    device.dataStatus !== SyncedDeviceDataStatus.SYNCED)
         )
     );
 }

@@ -9,10 +9,15 @@ import { ChevronRight16, Icon, List, Text, TouchableOpacity } from '@mobile/shar
 import { styles } from './ArchivedDevicesSection.styles';
 import { DeviceItem } from '../DeviceItem';
 
-export const ArchivedDevicesSection = () => {
+export const ArchivedDevicesSection = ({ onExpand }: { onExpand: () => void }) => {
     const { t } = useTranslation();
     const [isExpanded, setIsExpanded] = useState(false);
     const devices = useSyncedDevices().filter(device => device.archive !== null);
+
+    const handleExpand = () => {
+        onExpand();
+        setIsExpanded(true);
+    };
 
     if (devices.length === 0) {
         return null;
@@ -20,7 +25,7 @@ export const ArchivedDevicesSection = () => {
 
     if (!isExpanded) {
         return (
-            <TouchableOpacity style={styles.toggle} onPress={() => setIsExpanded(true)}>
+            <TouchableOpacity style={styles.toggle} onPress={handleExpand}>
                 <Text variant="bodyM" color="tertiary">
                     {t('security.archivedDevices.show')}
                 </Text>

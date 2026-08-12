@@ -13,12 +13,12 @@ export function resolveDeviceRowStatus(device: SyncedDeviceDetails): DeviceRowSt
         return { labelKey: 'security.device.status.archived', color: 'secondary' };
     }
 
-    if (device.isStale) {
-        return { labelKey: 'security.device.status.staleConnection', color: 'accentRed' };
-    }
-
     if (device.dataStatus === SyncedDeviceDataStatus.NOT_SYNCED) {
         return { labelKey: 'security.device.status.notSynced', color: 'accentRed' };
+    }
+
+    if (device.isStale && !device.isStaleWarningHidden) {
+        return { labelKey: 'security.device.status.staleConnection', color: 'accentRed' };
     }
 
     if (device.dataStatus === SyncedDeviceDataStatus.UNKNOWN) {

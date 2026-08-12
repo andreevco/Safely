@@ -24,9 +24,10 @@ const DeviceDetailsContent = ({ details }: { details: SyncedDeviceDetails }) => 
     const { mutateAsync: unarchiveDevice } = useUnarchiveDevice();
 
     const deviceName = details.meta.name;
+    const isSignedOut = details.archive?.isSignedOut ?? false;
 
     const handleUnarchive = async () => {
-        await check({ title: t('security.deviceDetails.unarchiveVerify', { deviceName }) });
+        await check({ subtitle: t('security.deviceDetails.unarchiveVerify', { deviceName }) });
         await unarchiveDevice(details.ikPubHex);
 
         navigation.goBack();
@@ -44,13 +45,9 @@ const DeviceDetailsContent = ({ details }: { details: SyncedDeviceDetails }) => 
             </Screen.Header>
             <Screen.Scrollable contentContainerStyle={styles.content}>
                 <DeviceBlock details={details} />
-                {details.archive === null && (
-                    <>
-                        <DataSyncBlock details={details} />
-                        <DeviceHelpCell details={details} />
-                    </>
-                )}
-                {details.archive !== null && (
+                {!isSignedOut && <DataSyncBlock details={details} />}
+                {details.archive === null && <DeviceHelpCell details={details} />}
+                {details.archive !== null && !details.archive.isSignedOut && (
                     <Button
                         style={styles.unarchiveButton}
                         size="large"
