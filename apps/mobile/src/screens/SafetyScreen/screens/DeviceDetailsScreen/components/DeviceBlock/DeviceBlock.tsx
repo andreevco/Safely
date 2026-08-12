@@ -17,13 +17,14 @@ export const DeviceBlock = ({ details }: DeviceBlockProps) => {
     const { t } = useTranslation();
     const formatDate = useDateFormatter({ day: 'numeric', month: 'short', year: 'numeric' });
     const connection = useConnectionLabel(details.lastSyncAt);
+    const isSignedOut = details.archive?.isSignedOut ?? false;
     const showStaleWarning =
         details.archive === null && details.isStale && !details.isStaleWarningHidden;
 
     return (
         <List>
             <List.Title>{t('security.deviceDetails.device')}</List.Title>
-            <List.Group withoutBottomMargin={showStaleWarning || details.archive !== null}>
+            <List.Group withoutBottomMargin={showStaleWarning}>
                 <TableCell columnDivider>
                     <TableCell.Column leading>
                         <TableCell.Label>{t('security.deviceDetails.added')}</TableCell.Label>
@@ -34,7 +35,7 @@ export const DeviceBlock = ({ details }: DeviceBlockProps) => {
                         </TableCell.Value>
                     </TableCell.Column>
                 </TableCell>
-                {details.archive === null && (
+                {!isSignedOut && (
                     <TableCell columnDivider>
                         <TableCell.Column leading>
                             <TableCell.Label>
