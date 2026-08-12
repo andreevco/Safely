@@ -50,7 +50,7 @@ const DeviceDetailsContent = ({ details }: { details: SyncedDeviceDetails }) => 
                         <DeviceHelpCell details={details} />
                     </>
                 )}
-                {details.archive !== null && (
+                {details.archive !== null && !details.archive.isSignedOut && (
                     <Button
                         style={styles.unarchiveButton}
                         size="large"
