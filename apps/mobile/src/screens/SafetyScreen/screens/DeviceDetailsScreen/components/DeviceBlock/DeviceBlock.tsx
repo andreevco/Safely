@@ -1,9 +1,10 @@
 import { useTranslation } from 'react-i18next';
 
+import { SPACE } from '@safely/core';
 import type { SyncedDeviceDetails } from '@safely/ux';
-import { useDateFormatter, useIsDeviceWarningHiddenQuery } from '@safely/ux';
+import { useDateFormatter } from '@safely/ux';
 
-import { List, TableCell } from '@mobile/shared/ui';
+import { List, TableCell, Text } from '@mobile/shared/ui';
 
 import { useConnectionLabel } from './useConnectionLabel';
 import { StaleWarningBanner } from '../StaleWarningBanner';
@@ -15,15 +16,15 @@ type DeviceBlockProps = {
 export const DeviceBlock = ({ details }: DeviceBlockProps) => {
     const { t } = useTranslation();
     const formatDate = useDateFormatter({ day: 'numeric', month: 'short', year: 'numeric' });
-    const connectionLabel = useConnectionLabel(details.lastSyncAt);
-    const { data: isWarningHidden, isPending } = useIsDeviceWarningHiddenQuery(details.ikPubHex);
+    const connection = useConnectionLabel(details.lastSyncAt);
+    const isSignedOut = details.archive?.isSignedOut ?? false;
     const showStaleWarning =
-        details.archive === null && details.isStale && !isPending && !isWarningHidden;
+        details.archive === null && details.isStale && !details.isStaleWarningHidden;
 
     return (
         <List>
             <List.Title>{t('security.deviceDetails.device')}</List.Title>
-            <List.Group withoutBottomMargin={showStaleWarning || details.archive !== null}>
+            <List.Group withoutBottomMargin={showStaleWarning}>
                 <TableCell columnDivider>
                     <TableCell.Column leading>
                         <TableCell.Label>{t('security.deviceDetails.added')}</TableCell.Label>
@@ -34,7 +35,7 @@ export const DeviceBlock = ({ details }: DeviceBlockProps) => {
                         </TableCell.Value>
                     </TableCell.Column>
                 </TableCell>
-                {details.archive === null && (
+                {!isSignedOut && (
                     <TableCell columnDivider>
                         <TableCell.Column leading>
                             <TableCell.Label>
@@ -42,7 +43,14 @@ export const DeviceBlock = ({ details }: DeviceBlockProps) => {
                             </TableCell.Label>
                         </TableCell.Column>
                         <TableCell.Column>
-                            <TableCell.Value>{connectionLabel}</TableCell.Value>
+                            <TableCell.Value>
+                                {connection.label}
+                                {connection.date !== null && (
+                                    <Text variant="bodyM" color="secondary">
+                                        {`${SPACE.NBSP}·${SPACE.NBSP}${connection.date}`}
+                                    </Text>
+                                )}
+                            </TableCell.Value>
                         </TableCell.Column>
                     </TableCell>
                 )}

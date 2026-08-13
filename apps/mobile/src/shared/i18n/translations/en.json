@@ -261,7 +261,7 @@
             "title": "Linked devices",
             "subtitle": "Linked devices have full access to your account and can be used to restore access if another device is lost.",
             "listTitle": "Linked devices",
-            "attention": "Some devices need attention. Check sync status on linked devices."
+            "attention": "Some devices need attention.\nCheck sync status on linked devices."
         },
         "archivedDevices": {
             "show": "Tap to show archived devices",
@@ -291,7 +291,7 @@
             "reasonSignedOut": "Signed out on {{deviceName}}",
             "unarchive": "Unarchive {{deviceName}}",
             "unarchived": "{{deviceName}} unarchived",
-            "unarchiveVerify": "Unarchive {{deviceName}}",
+            "unarchiveVerify": "Confirm unarchiving {{deviceName}}.",
             "noConnectionYet": "No connection yet",
             "unknown": "Unknown",
             "unknownHint": "Open Safely on this device to update its sync status.",
@@ -406,7 +406,7 @@
             "title": "Archive this device",
             "description": "Since no one can access this device, your account isn't at risk. Archiving hides it from your linked devices list. It doesn't remove access or stop syncing if the device comes back online.",
             "action": "Archive {{deviceName}}",
-            "verify": "Archive {{deviceName}}",
+            "verify": "Confirm archiving {{deviceName}}.",
             "done": "{{deviceName}} archived"
         }
     },

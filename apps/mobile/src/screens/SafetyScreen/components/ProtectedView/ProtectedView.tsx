@@ -1,4 +1,6 @@
+import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { ScrollView } from 'react-native';
 import { View } from 'react-native';
 
 import { useIsAttentionRequired, useSyncedDevices } from '@safely/ux';
@@ -15,11 +17,24 @@ type ProtectedViewProps = {
 
 export const ProtectedView = ({ onLinkDevice, onAbout }: ProtectedViewProps) => {
     const { t } = useTranslation();
+    const scrollRef = useRef<ScrollView>(null);
+    const shouldScrollToEndRef = useRef(false);
     const devices = useSyncedDevices().filter(device => device.archive === null);
     const isAttentionRequired = useIsAttentionRequired();
 
+    const handleContentSizeChange = () => {
+        if (!shouldScrollToEndRef.current) return;
+
+        shouldScrollToEndRef.current = false;
+        scrollRef.current?.scrollToEnd();
+    };
+
+    const handleExpand = () => {
+        shouldScrollToEndRef.current = true;
+    };
+
     return (
-        <Screen.Scrollable>
+        <Screen.Scrollable ref={scrollRef} onContentSizeChange={handleContentSizeChange}>
             <View style={styles.content}>
                 <Icon icon={DeviceLinkCheckmark96} />
                 <View style={styles.textContainer}>
@@ -55,7 +70,7 @@ export const ProtectedView = ({ onLinkDevice, onAbout }: ProtectedViewProps) => 
                         ))}
                     </View>
                 </List>
-                <ArchivedDevicesSection />
+                <ArchivedDevicesSection onExpand={handleExpand} />
             </View>
         </Screen.Scrollable>
     );

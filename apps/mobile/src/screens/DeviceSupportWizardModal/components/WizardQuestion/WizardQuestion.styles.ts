@@ -1,7 +1,5 @@
 import { StyleSheet } from 'react-native-unistyles';
 
-const CHECKMARK_SIZE = 28;
-
 export const styles = StyleSheet.create(theme => ({
     container: {
         width: '100%',
@@ -17,8 +15,7 @@ export const styles = StyleSheet.create(theme => ({
         }
     },
     checkmark: {
-        width: CHECKMARK_SIZE,
-        height: CHECKMARK_SIZE,
+        minWidth: 28,
         alignItems: 'center',
         justifyContent: 'center'
     },
