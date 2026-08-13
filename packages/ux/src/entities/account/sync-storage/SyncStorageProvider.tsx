@@ -10,6 +10,7 @@ import { AccountStoreTransform } from './account-store-transform';
 import { SecretEncryptor, useAppContext } from '../../../shared';
 import { useAppState } from '../../../shared/app/useAppState';
 import { useLedgerSessionPort } from '../../ledger';
+import { useDeviceSyncStateChecker } from '../../synced-device/device-sync-state';
 import { useAccounts } from '../account-state';
 import { accountKey } from '../keys';
 
@@ -78,6 +79,7 @@ function useSyncRestartOnForeground() {
 
 export const SyncStorageProvider: FC<PropsWithChildren> = ({ children }) => {
     useSyncObserver();
+    useDeviceSyncStateChecker();
     useSyncRestartOnForeground();
 
     return <>{children}</>;

@@ -259,17 +259,67 @@
         },
         "accountProtected": {
             "title": "Linked devices",
-            "subtitle": "Linked devices have full access to your account and can be used to restore access if another device is lost."
+            "subtitle": "Linked devices have full access to your account and can be used to restore access if another device is lost.",
+            "listTitle": "Linked devices",
+            "attention": "Some devices need attention. Check sync status on linked devices."
+        },
+        "archivedDevices": {
+            "show": "Tap to show archived devices",
+            "title": "Archived devices",
+            "footnote": "Devices are archived instead of removed because access cannot be safely revoked remotely."
         },
         "device": {
-            "added": "Linked {{date}}",
-            "unlink": "Unlink",
-            "current": "Current"
+            "added": "Added {{date}}",
+            "current": "Current",
+            "status": {
+                "synced": "Synced",
+                "notSynced": "Not synced",
+                "unknown": "Unknown",
+                "staleConnection": "Last connected over a month ago",
+                "archived": "Archived {{date}}"
+            }
         },
-        "unlinkDevice": {
-            "title": "Unlink {{deviceName}}",
-            "subtitle": "This device will be removed from your linked devices and will no longer sync with this account.",
-            "confirm": "Unlink {{deviceName}}"
+        "deviceDetails": {
+            "currentDevice": "Current device",
+            "device": "Device",
+            "added": "Added",
+            "connection": "Connection",
+            "archivedDevice": "Archived device",
+            "archived": "Archived",
+            "reason": "Reason",
+            "reasonArchivedFrom": "Archived from {{deviceName}}",
+            "reasonSignedOut": "Signed out on {{deviceName}}",
+            "unarchive": "Unarchive {{deviceName}}",
+            "unarchived": "{{deviceName}} unarchived",
+            "unarchiveVerify": "Unarchive {{deviceName}}",
+            "noConnectionYet": "No connection yet",
+            "unknown": "Unknown",
+            "unknownHint": "Open Safely on this device to update its sync status.",
+            "staleWarning": "Last connected over a month ago. Open Safely on {{deviceName}} to update its connection status.",
+            "hideWarning": "Hide warning for 30 days",
+            "dataSync": "Data sync",
+            "status": "Status",
+            "synced": "Synced",
+            "notSynced": "Not synced",
+            "completeSyncHint": "Open Safely on {{deviceName}} to complete sync.",
+            "fullAccess": "This device has full access to your account and wallets. It can be used if another device is lost.",
+            "wallets": "Wallets",
+            "allWallets": "All wallets",
+            "notOnThisDevice": "Not on {{deviceName}}",
+            "help": {
+                "title": "Need help with this device?",
+                "subtitle": "Answer a few questions to find the best next step."
+            },
+            "connectedNow": "Connected now",
+            "minutesAgo_one": "{{count}} minute ago",
+            "minutesAgo_other": "{{count}} minutes ago",
+            "hoursAgo_one": "{{count}} hour ago",
+            "hoursAgo_other": "{{count}} hours ago",
+            "yesterday": "Yesterday",
+            "daysAgo_one": "{{count}} day ago",
+            "daysAgo_other": "{{count}} days ago",
+            "weeksAgo_one": "{{count}} week ago",
+            "weeksAgo_other": "{{count}} weeks ago"
         },
         "groups": {
             "account": {
@@ -316,8 +366,51 @@
             }
         }
     },
+    "deviceUnarchived": {
+        "title": "This device is active again",
+        "subtitle": "Because you're using this device again, it has been removed from Archived devices.",
+        "source": "This device was previously archived from {{deviceName}}.",
+        "action": "Got it"
+    },
+    "deviceSupportWizard": {
+        "title": "Support",
+        "dismiss": "Dismiss",
+        "intro": {
+            "title": "What happened to {{deviceName}}?",
+            "subtitle": "{{deviceName}} can't be removed remotely. Answer a few questions to find the best way to protect your account."
+        },
+        "access": {
+            "title": "Do you still have this device and can you unlock it?",
+            "options": {
+                "has": "Yes, I have it",
+                "lost": "No, I can’t access it"
+            }
+        },
+        "others": {
+            "title": "Was this device stolen, sold, or can someone else access it?",
+            "options": {
+                "possible": "Yes, someone else could access it",
+                "impossible": "No, no one else can access it"
+            }
+        },
+        "signOut": {
+            "title": "Open Safely on {{deviceName}} and sign out",
+            "description": "After signing out, this device will no longer have access to your account."
+        },
+        "moveFunds": {
+            "title": "Move your funds to a new account",
+            "description": "Someone may still be able to access your account from this device.",
+            "action": "Create new account"
+        },
+        "archive": {
+            "title": "Archive this device",
+            "description": "Since no one can access this device, your account isn't at risk. Archiving hides it from your linked devices list. It doesn't remove access or stop syncing if the device comes back online.",
+            "action": "Archive {{deviceName}}",
+            "verify": "Archive {{deviceName}}",
+            "done": "{{deviceName}} archived"
+        }
+    },
     "safety": {
-        "aboutSync": "About Sync",
         "about": "About",
         "linkDevice": "Link device",
         "linkDeviceWarning": {
@@ -435,18 +528,6 @@
             "title": "Done",
             "subtitle": "Device linked.",
             "continue": "Continue"
-        }
-    },
-    "deviceUnlinked": {
-        "banner": {
-            "text": "This device is unlinked from your account and does not synchronise with other devices."
-        },
-        "reconnect": {
-            "title": "Link device",
-            "description": "Open Safely on another device where this account is active. go to Safety, tap “Link device”, then scan this QR code.",
-            "banner": "This device will have full access to your account. It can be used if your other device is lost.",
-            "timeout": "Connection timed out. Please try again.",
-            "successToast": "Device re-linked"
         }
     },
     "welcome": {

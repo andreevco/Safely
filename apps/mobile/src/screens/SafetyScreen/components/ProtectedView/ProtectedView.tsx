@@ -1,64 +1,22 @@
-import { useNavigation } from '@react-navigation/core';
-import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import type { SDeviceMeta } from '@safely/sync-storage';
-import { useCurrentDeviceIkPub, useDateFormatter, useSyncedDevicesMeta } from '@safely/ux';
+import { useIsAttentionRequired, useSyncedDevices } from '@safely/ux';
 
-import type { PopupMenuRef } from '@mobile/shared/ui';
-import { Badge, Button, DeviceLinkCheckmark96, Icon, Screen, Text } from '@mobile/shared/ui';
+import { Banner, Button, DeviceLinkCheckmark96, Icon, List, Screen, Text } from '@mobile/shared/ui';
 
+import { ArchivedDevicesSection, DeviceItem } from './components';
 import { styles } from './ProtectedView.styles';
 
-function DeviceItem(props: { ikPubHex: string; meta: SDeviceMeta; isCurrent: boolean }) {
-    const { ikPubHex, meta, isCurrent } = props;
+type ProtectedViewProps = {
+    onLinkDevice: () => void;
+    onAbout: () => void;
+};
 
+export const ProtectedView = ({ onLinkDevice, onAbout }: ProtectedViewProps) => {
     const { t } = useTranslation();
-    const rootNavigation = useNavigation();
-    const menuRef = useRef<PopupMenuRef>(null);
-    const formatDate = useDateFormatter({ month: 'short', day: 'numeric', year: 'numeric' });
-
-    const handleDisconnect = () => {
-        menuRef.current?.close();
-        rootNavigation.navigate('DisconnectDeviceSheet', {
-            deviceName: meta.name,
-            ikPubHex
-        });
-    };
-
-    return (
-        <View style={styles.deviceRow}>
-            <View style={styles.deviceInfo}>
-                <View style={styles.deviceNameRow}>
-                    <Text variant="labelL">{meta.name}</Text>
-                    {isCurrent && <Badge isUppercase>{t('security.device.current')}</Badge>}
-                </View>
-                <Text variant="bodyM" color="tertiary">
-                    {t('security.device.added', { date: formatDate.format(meta.pairedAt) })}
-                </Text>
-            </View>
-            {!isCurrent && (
-                <Button type="tertiary" size="small" onPress={handleDisconnect}>
-                    {t('security.device.unlink')}
-                </Button>
-            )}
-        </View>
-    );
-}
-
-export const ProtectedView = () => {
-    const { t } = useTranslation();
-    const devicesMeta = useSyncedDevicesMeta();
-    const myIkPubHex = useCurrentDeviceIkPub();
-
-    const currentDevice = devicesMeta?.[myIkPubHex];
-    const otherDevices = Object.entries(devicesMeta ?? {}).filter(
-        ([ikPubHex]) => ikPubHex !== myIkPubHex
-    );
-    const devices = currentDevice
-        ? [[myIkPubHex, currentDevice] as const, ...otherDevices]
-        : otherDevices;
+    const devices = useSyncedDevices().filter(device => device.archive === null);
+    const isAttentionRequired = useIsAttentionRequired();
 
     return (
         <Screen.Scrollable>
@@ -72,16 +30,32 @@ export const ProtectedView = () => {
                         {t('security.accountProtected.subtitle')}
                     </Text>
                 </View>
-                <View style={styles.deviceList}>
-                    {devices.map(([ikPubHex, meta]) => (
-                        <DeviceItem
-                            key={ikPubHex}
-                            ikPubHex={ikPubHex}
-                            meta={meta}
-                            isCurrent={ikPubHex === myIkPubHex}
-                        />
-                    ))}
+                <View style={styles.buttonsRow}>
+                    <Button size="small" type="secondary" onPress={onLinkDevice}>
+                        {t('safety.linkDevice')}
+                    </Button>
+                    <Button size="small" type="secondary" onPress={onAbout}>
+                        {t('safety.about')}
+                    </Button>
                 </View>
+                <List style={styles.deviceList}>
+                    <List.Title>{t('security.accountProtected.listTitle')}</List.Title>
+                    {isAttentionRequired && (
+                        <Banner variant="danger" nonInteractive style={styles.attentionBanner}>
+                            <Banner.Content>
+                                <Banner.Text>
+                                    {t('security.accountProtected.attention')}
+                                </Banner.Text>
+                            </Banner.Content>
+                        </Banner>
+                    )}
+                    <View style={styles.deviceRows}>
+                        {devices.map(device => (
+                            <DeviceItem key={device.ikPubHex} device={device} />
+                        ))}
+                    </View>
+                </List>
+                <ArchivedDevicesSection />
             </View>
         </Screen.Scrollable>
     );
