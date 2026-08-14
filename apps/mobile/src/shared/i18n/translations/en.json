@@ -537,8 +537,7 @@
         "importWallet": "Import wallet",
         "moreOptions": "More options",
         "linkWithQr": "Link with QR",
-        "legalLine1": "By using Safely, you agree to accept",
-        "legalLine2": "our <privacy>Privacy Policy</privacy>."
+        "legal": "By continuing, you agree to our\n<terms>Terms of Use</terms> and <privacy>Privacy Policy</privacy>."
     },
     "moreOptions": {
         "title": "More options",
@@ -762,7 +761,6 @@
                 "title": "Info",
                 "options": {
                     "support": "Support",
-                    "rate": "Rate Safely",
                     "legal": "Legal"
                 }
             }
@@ -1008,6 +1006,7 @@
     },
     "legal": {
         "title": "Legal",
-        "privacyPolicy": "Privacy Policy"
+        "privacyPolicy": "Privacy Policy",
+        "termsOfUse": "Terms of Use"
     }
 }

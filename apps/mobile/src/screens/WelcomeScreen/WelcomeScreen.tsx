@@ -29,7 +29,7 @@ export const WelcomeScreen = () => {
     const { onSuccessCreate, onSuccessSignIn } = useOnboardingFlow();
     const signIn = useCreateExistingAccountConnector();
     const navigation = useNavigation();
-    const privacyUrl = useBootConfig().references.legal.privacy_url;
+    const { privacy_url, terms_url } = useBootConfig().references.legal;
 
     const {
         storage: {
@@ -119,17 +119,21 @@ export const WelcomeScreen = () => {
 
                     <View style={styles.legalContainer}>
                         <Text variant="bodyS" color="tertiary" textAlign="center">
-                            {t('welcome.legalLine1')}
-                        </Text>
-                        <Text variant="bodyS" color="tertiary" textAlign="center">
                             <Trans
-                                i18nKey="welcome.legalLine2"
+                                i18nKey="welcome.legal"
                                 components={{
+                                    terms: (
+                                        <Text
+                                            variant="bodyS"
+                                            color="secondary"
+                                            onPress={() => openURL(terms_url)}
+                                        />
+                                    ),
                                     privacy: (
                                         <Text
                                             variant="bodyS"
                                             color="secondary"
-                                            onPress={() => openURL(privacyUrl)}
+                                            onPress={() => openURL(privacy_url)}
                                         />
                                     )
                                 }}
