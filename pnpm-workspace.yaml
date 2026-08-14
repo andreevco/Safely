@@ -35,6 +35,9 @@ catalog:
   # Pinned to 6.x on purpose: electron-forge 7 is published as CommonJS and does
   # `require('vite')`, while vite 7 dropped the `require` export condition.
   vite: '6.4.3'
+  # icons ship as .svg and are imported as components (`?react`) by every web target,
+  # and by packages/web-ui's own vitest run.
+  vite-plugin-svgr: '^5.2.0'
 
 minimumReleaseAge: 5760
 

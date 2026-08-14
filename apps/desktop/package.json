@@ -40,7 +40,7 @@
     "electron": "43.2.0",
     "typescript": "catalog:",
     "vite": "catalog:",
-    "vite-plugin-svgr": "^5.2.0",
+    "vite-plugin-svgr": "catalog:",
     "vitest": "^4.0.18"
   }
 }

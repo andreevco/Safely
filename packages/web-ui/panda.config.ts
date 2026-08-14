@@ -2,7 +2,7 @@ import { defineConfig } from '@pandacss/dev';
 
 import { commonTheme, darkTheme } from '@safely/ux/theme';
 
-import { recipes } from './panda/recipes';
+import { recipes, slotRecipes } from './panda/recipes';
 import { px, raw, toTextStyles, toTokens } from './panda/tokens';
 
 const SYSTEM_FONT_STACK =
@@ -37,6 +37,7 @@ export default defineConfig({
             button: ['*'],
             icon: ['*'],
             spinner: ['*'],
+            input: ['*'],
             text: ['*']
         }
     },
@@ -58,7 +59,8 @@ export default defineConfig({
                     to: { transform: 'rotate(360deg)' }
                 }
             },
-            recipes
+            recipes,
+            slotRecipes
         }
     },
     globalCss: {
