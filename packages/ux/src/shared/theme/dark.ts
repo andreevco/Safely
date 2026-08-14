@@ -41,13 +41,21 @@ export const darkTheme = {
             tertiary: {
                 background: 'rgba(38, 38, 43, 1)',
                 foreground: 'rgba(255, 255, 255, 1)'
+            },
+            destructive: {
+                background: 'rgba(255, 85, 85, 0.16)',
+                foreground: 'rgba(255, 85, 85, 1)'
+            },
+            destructiveOrange: {
+                background: 'rgba(255, 179, 71, 0.16)',
+                foreground: 'rgba(255, 179, 71, 1)'
             }
         },
         accent: {
             accent: 'rgba(1, 120, 255, 1)',
             green: 'rgba(31, 194, 122, 1)',
-            red: 'rgba(229, 64, 69, 1)',
-            orange: 'rgba(245, 168, 34, 1)',
+            red: 'rgba(255, 85, 85, 1)',
+            orange: 'rgba(255, 179, 71, 1)',
             blue: 'rgba(1, 120, 255, 1)'
         },
         wallet: {

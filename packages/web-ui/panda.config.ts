@@ -3,7 +3,10 @@ import { defineConfig } from '@pandacss/dev';
 import { commonTheme, darkTheme } from '@safely/ux/theme';
 
 import { recipes } from './panda/recipes';
-import { px, raw, toTokens } from './panda/tokens';
+import { px, raw, toTextStyles, toTokens } from './panda/tokens';
+
+const SYSTEM_FONT_STACK =
+    '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif';
 
 /**
  * The only Panda instance in the monorepo: `include` covers the apps, `importMap` lets them
@@ -29,6 +32,14 @@ export default defineConfig({
             exit: '&[data-ending-style]'
         }
     },
+    staticCss: {
+        recipes: {
+            button: ['*'],
+            icon: ['*'],
+            spinner: ['*'],
+            text: ['*']
+        }
+    },
     theme: {
         extend: {
             tokens: {
@@ -40,6 +51,12 @@ export default defineConfig({
                 /* Dark-only today. A light palette makes the mapper emit `{ base, _dark }`
                    values; token paths stay the same, so no component changes. */
                 colors: toTokens(darkTheme.colors, raw)
+            },
+            textStyles: toTextStyles(commonTheme.typography),
+            keyframes: {
+                spin: {
+                    to: { transform: 'rotate(360deg)' }
+                }
             },
             recipes
         }
@@ -54,6 +71,7 @@ export default defineConfig({
         body: {
             backgroundColor: 'background.primary',
             color: 'text.primary',
+            fontFamily: SYSTEM_FONT_STACK,
             WebkitFontSmoothing: 'antialiased'
         }
     }

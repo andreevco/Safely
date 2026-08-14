@@ -43,6 +43,11 @@ Only a dark palette exists. When a light one appears, the mapper starts emitting
 
 ## Panda drops dynamic values silently
 
+Recipe variants are extracted the same way: a value never written literally in the source ships no
+CSS, so `variant={props.variant}` renders an unstyled element with no error anywhere. The recipes
+of this package are therefore listed in `staticCss` (`button`, `icon`, `spinner`, `text`) so every
+variant value is emitted — add a new recipe to that list when you add one.
+
 No build error, no style — just missing CSS. `css({ color: someVariable })`, `colorByType[type]`,
 `<Box p={spacing}>` all extract to nothing. `@pandacss/no-dynamic-styling` is an error for this
 reason. For genuinely dynamic values (a percentage, a user-chosen colour) set an inline CSS variable

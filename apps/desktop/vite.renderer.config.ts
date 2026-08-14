@@ -1,5 +1,6 @@
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
+import svgr from 'vite-plugin-svgr';
 
 /* These ship TypeScript source rather than a build artefact; prebundling them resolves stale copies
    and breaks HMR. */
@@ -15,7 +16,7 @@ const WORKSPACE_SOURCE_PACKAGES = [
 
 /* Panda is not wired here: it runs as a PostCSS plugin from `postcss.config.cjs`. */
 export default defineConfig({
-    plugins: [react()],
+    plugins: [react(), svgr({ include: '**/*.svg?react' })],
     resolve: {
         /* a second React instance would break hooks in the shared packages */
         dedupe: ['react', 'react-dom'],
