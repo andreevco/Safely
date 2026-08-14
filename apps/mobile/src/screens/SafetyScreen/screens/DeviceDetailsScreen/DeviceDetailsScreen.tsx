@@ -46,7 +46,9 @@ const DeviceDetailsContent = ({ details }: { details: SyncedDeviceDetails }) => 
             <Screen.Scrollable contentContainerStyle={styles.content}>
                 <DeviceBlock details={details} />
                 {!isSignedOut && <DataSyncBlock details={details} />}
-                {details.archive === null && <DeviceHelpCell details={details} />}
+                {details.archive === null && !details.isCurrent && (
+                    <DeviceHelpCell details={details} />
+                )}
                 {details.archive !== null && !details.archive.isSignedOut && (
                     <Button
                         style={styles.unarchiveButton}
