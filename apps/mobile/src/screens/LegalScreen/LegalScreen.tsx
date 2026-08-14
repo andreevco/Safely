@@ -13,7 +13,7 @@ export const LegalScreen = () => {
     const { t } = useTranslation();
     const { openURL } = useLinking();
     const navigation = useNavigation();
-    const privacyUrl = useBootConfig().references.legal.privacy_url;
+    const { privacy_url, terms_url } = useBootConfig().references.legal;
 
     return (
         <Screen>
@@ -27,7 +27,15 @@ export const LegalScreen = () => {
             <Screen.Scrollable contentContainerStyle={styles.listContent}>
                 <List style={styles.container}>
                     <List.Group variant="divided">
-                        <Cell onPress={() => openURL(privacyUrl)}>
+                        <Cell onPress={() => openURL(terms_url)}>
+                            <Cell.Content>
+                                <Cell.Row>
+                                    <Cell.Title>{t('legal.termsOfUse')}</Cell.Title>
+                                </Cell.Row>
+                            </Cell.Content>
+                            <Cell.Chevron />
+                        </Cell>
+                        <Cell onPress={() => openURL(privacy_url)}>
                             <Cell.Content>
                                 <Cell.Row>
                                     <Cell.Title>{t('legal.privacyPolicy')}</Cell.Title>
