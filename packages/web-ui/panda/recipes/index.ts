@@ -1,9 +1,11 @@
 import { badgeRecipe } from './badge.recipe';
 import { bannerRecipe } from './banner.recipe';
 import { buttonRecipe } from './button.recipe';
+import { cellRecipe } from './cell.recipe';
 import { checkboxRecipe } from './checkbox.recipe';
 import { iconRecipe } from './icon.recipe';
 import { inputRecipe } from './input.recipe';
+import { listRecipe } from './list.recipe';
 import { spinnerRecipe } from './spinner.recipe';
 import { switchRecipe } from './switch.recipe';
 import { textRecipe } from './text.recipe';

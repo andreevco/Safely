@@ -45,9 +45,11 @@ Only a dark palette exists. When a light one appears, the mapper starts emitting
 
 Recipe variants are extracted the same way: a value never written literally in the source ships no
 CSS, so `variant={props.variant}` renders an unstyled element with no error anywhere. The recipes
-of this package are therefore listed in `staticCss` (`banner`, `button`, `icon`, `input`, `spinner`,
-`text`) so every variant value is emitted — add a new recipe to that list when you add one. Slot
-recipes go into `theme.extend.slotRecipes`, but `staticCss.recipes` covers both kinds.
+of this package are therefore listed in `staticCss` so every variant value is emitted — add a new
+recipe to that list when you add one. Slot recipes go into `theme.extend.slotRecipes`, but
+`staticCss.recipes` covers both kinds. A recipe key becomes a generated `export const`, so it must
+be a valid identifier: the switch's recipe is keyed `toggle` (`export const switch` does not parse)
+while its class name stays `switch`.
 
 No build error, no style — just missing CSS. `css({ color: someVariable })`, `colorByType[type]`,
 `<Box p={spacing}>` all extract to nothing. `@pandacss/no-dynamic-styling` is an error for this

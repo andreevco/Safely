@@ -77,6 +77,16 @@ export const darkTheme = {
                 foreground: 'rgba(0, 0, 0, 1)'
             }
         },
+        cell: {
+            default: {
+                background: 'rgba(26, 26, 29, 1)',
+                foreground: 'rgba(237, 237, 237, 1)'
+            },
+            accentRed: {
+                background: 'rgba(255, 85, 85, 0.16)',
+                foreground: 'rgba(255, 85, 85, 1)'
+            }
+        },
         banner: {
             default: {
                 background: 'rgba(26, 26, 29, 1)',
