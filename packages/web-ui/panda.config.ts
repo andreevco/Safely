@@ -37,6 +37,7 @@ export default defineConfig({
             badge: ['*'],
             banner: ['*'],
             button: ['*'],
+            checkbox: ['*'],
             icon: ['*'],
             spinner: ['*'],
             input: ['*'],

@@ -1,6 +1,7 @@
 import { badgeRecipe } from './badge.recipe';
 import { bannerRecipe } from './banner.recipe';
 import { buttonRecipe } from './button.recipe';
+import { checkboxRecipe } from './checkbox.recipe';
 import { iconRecipe } from './icon.recipe';
 import { inputRecipe } from './input.recipe';
 import { spinnerRecipe } from './spinner.recipe';
