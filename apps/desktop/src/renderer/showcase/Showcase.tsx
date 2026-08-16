@@ -9,6 +9,7 @@ import { ButtonShowcase } from './ButtonShowcase';
 import { IconShowcase } from './IconShowcase';
 import { InputShowcase } from './InputShowcase';
 import { ListShowcase } from './ListShowcase';
+import { TableShowcase } from './TableShowcase';
 import { TextShowcase } from './TextShowcase';
 
 type ShowcaseTab = {
@@ -22,7 +23,8 @@ const TABS: ShowcaseTab[] = [
     { title: 'Inputs', content: <InputShowcase /> },
     { title: 'Icons', content: <IconShowcase /> },
     { title: 'Banners', content: <BannerShowcase /> },
-    { title: 'Lists', content: <ListShowcase /> }
+    { title: 'Lists', content: <ListShowcase /> },
+    { title: 'Tables', content: <TableShowcase /> }
 ];
 
 const rootStyles = css({ display: 'flex', flexDirection: 'column', gap: '24' });

@@ -33,13 +33,20 @@ export const listRecipe = defineSlotRecipe({
     },
     variants: {
         variant: {
-            divided: {},
+            divided: {
+                group: {
+                    '& > * + *': {
+                        borderTopWidth: 'hairline',
+                        borderTopStyle: 'solid',
+                        borderTopColor: 'other.transparentElement'
+                    }
+                }
+            },
             separated: {
                 group: {
                     gap: '2',
                     overflow: 'visible',
                     '& > *': {
-                        borderBottomWidth: '0',
                         borderRadius: 'sm',
                         overflow: 'hidden'
                     }
