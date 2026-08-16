@@ -51,6 +51,32 @@ export const darkTheme = {
                 foreground: 'rgba(255, 179, 71, 1)'
             }
         },
+        badge: {
+            neutral: {
+                background: 'rgba(38, 38, 43, 1)',
+                foreground: 'rgba(160, 160, 166, 1)'
+            },
+            warning: {
+                background: 'rgba(255, 179, 71, 0.16)',
+                foreground: 'rgba(255, 179, 71, 1)'
+            },
+            success: {
+                background: 'rgba(31, 194, 122, 0.16)',
+                foreground: 'rgba(31, 194, 122, 1)'
+            },
+            error: {
+                background: 'rgba(255, 85, 85, 0.16)',
+                foreground: 'rgba(255, 85, 85, 1)'
+            },
+            accent: {
+                background: 'rgba(1, 120, 255, 0.16)',
+                foreground: 'rgba(1, 120, 255, 1)'
+            },
+            warningFilled: {
+                background: 'rgba(255, 179, 71, 1)',
+                foreground: 'rgba(0, 0, 0, 1)'
+            }
+        },
         banner: {
             default: {
                 background: 'rgba(26, 26, 29, 1)',

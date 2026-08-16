@@ -1,3 +1,4 @@
+import { badgeRecipe } from './badge.recipe';
 import { bannerRecipe } from './banner.recipe';
 import { buttonRecipe } from './button.recipe';
 import { iconRecipe } from './icon.recipe';
@@ -7,6 +8,7 @@ import { switchRecipe } from './switch.recipe';
 import { textRecipe } from './text.recipe';
 
 export const recipes = {
+    badge: badgeRecipe,
     button: buttonRecipe,
     icon: iconRecipe,
     spinner: spinnerRecipe,
@@ -15,6 +17,9 @@ export const recipes = {
 
 export const slotRecipes = {
     banner: bannerRecipe,
-    input: inputRecipe
+    cell: cellRecipe,
+    checkbox: checkboxRecipe,
+    input: inputRecipe,
+    list: listRecipe,
     toggle: switchRecipe
 };

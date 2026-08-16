@@ -34,6 +34,7 @@ export default defineConfig({
     },
     staticCss: {
         recipes: {
+            badge: ['*'],
             banner: ['*'],
             button: ['*'],
             icon: ['*'],
