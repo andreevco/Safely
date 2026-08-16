@@ -1,10 +1,12 @@
 import type { FC } from 'react';
+import { Fragment } from 'react';
 
 import Plus16 from '@safely/ux/assets/icons/16/plus-16.svg?react';
 import type { ButtonProps } from '@safely/web-ui';
-import { Button, Icon } from '@safely/web-ui';
+import { Button, Icon, Text } from '@safely/web-ui';
+import { css } from '@safely/web-ui/styled-system/css';
 
-import { ShowcaseSection, showcaseColumnStyles, showcaseRowStyles } from './ShowcaseSection';
+import { ShowcaseSection, showcaseRowStyles } from './ShowcaseSection';
 
 type ButtonVariant = NonNullable<ButtonProps['variant']>;
 type ButtonSize = NonNullable<ButtonProps['size']>;
@@ -20,15 +22,47 @@ const VARIANTS: ButtonVariant[] = [
 
 const SIZES: ButtonSize[] = ['small', 'medium', 'large'];
 
-const ButtonRow: FC<{ size: ButtonSize; isDisabled?: boolean }> = props => {
-    const { size, isDisabled } = props;
+const gridStyles = css({
+    display: 'grid',
+    gridTemplateColumns: 'auto repeat(6, minmax(0, 1fr))',
+    alignItems: 'center',
+    gap: '12',
+    width: '100%'
+});
+
+const headerStyles = css({ paddingBottom: '4' });
+
+const ButtonGrid: FC<{ isDisabled?: boolean }> = props => {
+    const { isDisabled } = props;
 
     return (
-        <div className={showcaseRowStyles}>
+        <div className={gridStyles}>
+            <span />
+
             {VARIANTS.map(variant => (
-                <Button key={variant} variant={variant} size={size} disabled={isDisabled}>
-                    Label
-                </Button>
+                <Text key={variant} className={headerStyles} variant="labelS" tone="tertiary">
+                    {variant}
+                </Text>
+            ))}
+
+            {SIZES.map(size => (
+                <Fragment key={size}>
+                    <Text variant="labelS" tone="tertiary">
+                        {size}
+                    </Text>
+
+                    {VARIANTS.map(variant => (
+                        <Button
+                            key={variant}
+                            variant={variant}
+                            size={size}
+                            disabled={isDisabled}
+                            isFullWidth
+                        >
+                            Label
+                        </Button>
+                    ))}
+                </Fragment>
             ))}
         </div>
     );
@@ -37,19 +71,11 @@ const ButtonRow: FC<{ size: ButtonSize; isDisabled?: boolean }> = props => {
 export const ButtonShowcase: FC = () => (
     <>
         <ShowcaseSection title="ACTIVE">
-            <div className={showcaseColumnStyles}>
-                {SIZES.map(size => (
-                    <ButtonRow key={size} size={size} />
-                ))}
-            </div>
+            <ButtonGrid />
         </ShowcaseSection>
 
         <ShowcaseSection title="DISABLED">
-            <div className={showcaseColumnStyles}>
-                {SIZES.map(size => (
-                    <ButtonRow key={size} size={size} isDisabled />
-                ))}
-            </div>
+            <ButtonGrid isDisabled />
         </ShowcaseSection>
 
         <ShowcaseSection title="LOADER">

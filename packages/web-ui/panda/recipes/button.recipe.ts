@@ -96,10 +96,7 @@ export const buttonRecipe = defineRecipe({
             }
         },
         isIconOnly: {
-            true: {
-                aspectRatio: 'square',
-                paddingInline: '0'
-            }
+            true: {}
         },
         isLoading: {
             true: {
@@ -107,6 +104,23 @@ export const buttonRecipe = defineRecipe({
             }
         }
     },
+    compoundVariants: [
+        {
+            size: 'small',
+            isIconOnly: true,
+            css: { paddingInline: '0', width: '36px', height: '36px' }
+        },
+        {
+            size: 'medium',
+            isIconOnly: true,
+            css: { paddingInline: '0', width: '48px', height: '48px' }
+        },
+        {
+            size: 'large',
+            isIconOnly: true,
+            css: { paddingInline: '0', width: '56px', height: '56px' }
+        }
+    ],
     defaultVariants: {
         variant: 'primary',
         size: 'large'
