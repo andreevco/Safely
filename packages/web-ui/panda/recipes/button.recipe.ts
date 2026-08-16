@@ -32,11 +32,6 @@ export const buttonRecipe = defineRecipe({
                 backgroundColor: 'other.hover'
             }
         },
-        _active: {
-            _before: {
-                backgroundColor: 'other.transparentElement'
-            }
-        },
         _disabled: {
             cursor: 'not-allowed',
             opacity: 0.64,
