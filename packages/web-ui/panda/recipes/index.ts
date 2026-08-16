@@ -3,6 +3,7 @@ import { buttonRecipe } from './button.recipe';
 import { iconRecipe } from './icon.recipe';
 import { inputRecipe } from './input.recipe';
 import { spinnerRecipe } from './spinner.recipe';
+import { switchRecipe } from './switch.recipe';
 import { textRecipe } from './text.recipe';
 
 export const recipes = {
@@ -15,4 +16,5 @@ export const recipes = {
 export const slotRecipes = {
     banner: bannerRecipe,
     input: inputRecipe
+    toggle: switchRecipe
 };
