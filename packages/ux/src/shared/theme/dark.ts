@@ -51,6 +51,20 @@ export const darkTheme = {
                 foreground: 'rgba(255, 179, 71, 1)'
             }
         },
+        banner: {
+            default: {
+                background: 'rgba(26, 26, 29, 1)',
+                foreground: 'rgba(237, 237, 237, 1)'
+            },
+            warn: {
+                background: 'rgba(255, 179, 71, 0.16)',
+                foreground: 'rgba(255, 179, 71, 1)'
+            },
+            danger: {
+                background: 'rgba(255, 85, 85, 0.16)',
+                foreground: 'rgba(255, 85, 85, 1)'
+            }
+        },
         accent: {
             accent: 'rgba(1, 120, 255, 1)',
             green: 'rgba(31, 194, 122, 1)',

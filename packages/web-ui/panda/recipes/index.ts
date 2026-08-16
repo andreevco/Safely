@@ -1,3 +1,4 @@
+import { bannerRecipe } from './banner.recipe';
 import { buttonRecipe } from './button.recipe';
 import { iconRecipe } from './icon.recipe';
 import { inputRecipe } from './input.recipe';
@@ -12,5 +13,6 @@ export const recipes = {
 };
 
 export const slotRecipes = {
+    banner: bannerRecipe,
     input: inputRecipe
 };

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Button } from '@safely/web-ui';
 import { css } from '@safely/web-ui/styled-system/css';
 
+import { BannerShowcase } from './BannerShowcase';
 import { ButtonShowcase } from './ButtonShowcase';
 import { IconShowcase } from './IconShowcase';
 import { InputShowcase } from './InputShowcase';
@@ -18,7 +19,8 @@ const TABS: ShowcaseTab[] = [
     { title: 'Buttons', content: <ButtonShowcase /> },
     { title: 'Typography', content: <TextShowcase /> },
     { title: 'Inputs', content: <InputShowcase /> },
-    { title: 'Icons', content: <IconShowcase /> }
+    { title: 'Icons', content: <IconShowcase /> },
+    { title: 'Banners', content: <BannerShowcase /> }
 ];
 
 const rootStyles = css({ display: 'flex', flexDirection: 'column', gap: '24' });
