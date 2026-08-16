@@ -3,7 +3,7 @@ import type { FC } from 'react';
 import { Text } from '@safely/web-ui';
 import { css } from '@safely/web-ui/styled-system/css';
 
-import { ButtonShowcase, IconShowcase, InputShowcase, TextShowcase } from './showcase';
+import { Showcase } from './showcase';
 
 /**
  * Proves the build targets, the design tokens and the preload bridge are wired together, and
@@ -34,10 +34,7 @@ export const ScaffoldView: FC = () => {
                 </Text>
             </div>
 
-            <ButtonShowcase />
-            <InputShowcase />
-            <IconShowcase />
-            <TextShowcase />
+            <Showcase />
         </main>
     );
 };

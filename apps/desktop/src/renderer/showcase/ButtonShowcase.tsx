@@ -36,7 +36,7 @@ const ButtonRow: FC<{ size: ButtonSize; isDisabled?: boolean }> = props => {
 
 export const ButtonShowcase: FC = () => (
     <>
-        <ShowcaseSection title="BUTTON — ACTIVE">
+        <ShowcaseSection title="ACTIVE">
             <div className={showcaseColumnStyles}>
                 {SIZES.map(size => (
                     <ButtonRow key={size} size={size} />
@@ -44,7 +44,7 @@ export const ButtonShowcase: FC = () => (
             </div>
         </ShowcaseSection>
 
-        <ShowcaseSection title="BUTTON — DISABLED">
+        <ShowcaseSection title="DISABLED">
             <div className={showcaseColumnStyles}>
                 {SIZES.map(size => (
                     <ButtonRow key={size} size={size} isDisabled />
@@ -52,7 +52,7 @@ export const ButtonShowcase: FC = () => (
             </div>
         </ShowcaseSection>
 
-        <ShowcaseSection title="BUTTON — LOADER">
+        <ShowcaseSection title="LOADER">
             <div className={showcaseRowStyles}>
                 {SIZES.map(size => (
                     <Button
@@ -73,7 +73,7 @@ export const ButtonShowcase: FC = () => (
             </div>
         </ShowcaseSection>
 
-        <ShowcaseSection title="BUTTON — ICONS AND WIDTH">
+        <ShowcaseSection title="ICONS AND WIDTH">
             <div className={showcaseRowStyles}>
                 <Button iconLeft={<Icon asset={Plus16} />} size="small">
                     Icon left
