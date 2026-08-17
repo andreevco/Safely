@@ -10,7 +10,7 @@ export function normalizeJson(value: JsonValue | bigint): JsonValue {
         const result: Record<string, JsonValue> = {};
 
         Object.entries(obj)
-            .sort(([a], [b]) => a.localeCompare(b))
+            .sort(([a], [b]) => compareStrings(a, b))
             .forEach(([key, val]) => (result[key] = normalizeJson(val)));
 
         return result;
@@ -57,4 +57,11 @@ export function flattenArgs(args: readonly unknown[]): KeyPart[] {
 
 export function createKeyResult(key: readonly unknown[]): KeyResult {
     return { key, toKey: () => key };
+}
+
+// String.localeCompare may produce inconsistent results across different browsers and environments.
+// `<` and `>` JavaScript operators compare UTF-16 endpoints without locale-specific rules, so this
+// function should be consistent between different implementations.
+function compareStrings(a: string, b: string): number {
+    return a < b ? -1 : a > b ? 1 : 0;
 }

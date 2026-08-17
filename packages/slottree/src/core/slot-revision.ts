@@ -1,3 +1,5 @@
+import { compareStrings } from './string-compare';
+
 export class SlotRevision {
     constructor(
         private readonly timestamp: number,
@@ -12,6 +14,6 @@ export class SlotRevision {
             return this.timestamp - other.timestamp;
         }
 
-        return this.author.localeCompare(other.author);
+        return compareStrings(this.author, other.author);
     }
 }
