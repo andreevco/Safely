@@ -1,5 +1,5 @@
 import type { CryptoAsset, NumberFormatter, RatedCryptoAssetAmount } from '@safely/core';
-import { CryptoAssetAmount, FiatAssetAmount } from '@safely/core';
+import { BTC_ASSET, CryptoAssetAmount, FiatAssetAmount } from '@safely/core';
 
 import { SendFormError } from '../errors';
 import type {
@@ -9,6 +9,15 @@ import type {
     AmountWithOutputType
 } from '../types';
 import { DEFAULT_FIAT_DECIMALS } from '../utils';
+
+export function resolveAmountDecimals(
+    inputType: AmountInputType,
+    asset: RatedCryptoAssetAmount | undefined
+): number {
+    if (inputType === 'fiat') return DEFAULT_FIAT_DECIMALS;
+
+    return asset?.amount.asset.decimals ?? BTC_ASSET.decimals;
+}
 
 export function formatAmount(
     value: string,
@@ -22,7 +31,7 @@ export function formatAmount(
         return null;
     }
 
-    const decimals = inputType === 'crypto' ? amount.asset.decimals : DEFAULT_FIAT_DECIMALS;
+    const decimals = resolveAmountDecimals(inputType, asset);
     const { formatted, parsed: parsedAmount } = formatter.parseInput(value, decimals);
 
     if (inputType === 'crypto') {
