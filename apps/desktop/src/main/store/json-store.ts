@@ -1,15 +1,16 @@
 import fs from 'node:fs/promises';
-import path from 'node:path';
 
-/** How the value is stored on disk — identity for plain data, safeStorage for secrets. */
+import { writeFileAtomic } from '../utils/atomic-file';
+
+/** The key is passed in because a secret codec binds the ciphertext to it (`vault/dek.ts`). */
 export interface ValueCodec {
-    encode(value: string): string;
-    decode(stored: string): string;
+    encode(key: string, value: string): Promise<string>;
+    decode(key: string, stored: string): Promise<string>;
 }
 
 export const plainCodec: ValueCodec = {
-    encode: value => value,
-    decode: stored => stored
+    encode: (_key, value) => Promise.resolve(value),
+    decode: (_key, stored) => Promise.resolve(stored)
 };
 
 /**
@@ -34,11 +35,11 @@ export class JsonStore {
     public async get(key: string): Promise<string | null> {
         const stored = (await this.load()).get(key);
 
-        return stored === undefined ? null : this.codec.decode(stored);
+        return stored === undefined ? null : this.codec.decode(key, stored);
     }
 
     public async set(key: string, value: string): Promise<void> {
-        const encoded = this.codec.encode(value);
+        const encoded = await this.codec.encode(key, value);
 
         return this.mutate(data => data.set(key, encoded));
     }
@@ -134,37 +135,6 @@ async function readStore(filePath: string): Promise<Map<string, string>> {
     );
 }
 
-/** temp file → fsync → atomic rename → fsync of the directory, so the rename survives too. */
 async function writeStore(filePath: string, data: Map<string, string>): Promise<void> {
-    const payload = JSON.stringify(Object.fromEntries(data));
-    const tempPath = `${filePath}.tmp`;
-
-    await fs.mkdir(path.dirname(filePath), { recursive: true });
-
-    const handle = await fs.open(tempPath, 'w', 0o600);
-
-    try {
-        await handle.writeFile(payload, 'utf8');
-        await handle.sync();
-    } finally {
-        await handle.close();
-    }
-
-    await fs.rename(tempPath, filePath);
-    await syncDirectory(path.dirname(filePath));
-}
-
-/** Windows does not allow opening a directory as a file; there the rename is journalled instead. */
-async function syncDirectory(directory: string): Promise<void> {
-    if (process.platform === 'win32') {
-        return;
-    }
-
-    const handle = await fs.open(directory, 'r');
-
-    try {
-        await handle.sync();
-    } finally {
-        await handle.close();
-    }
+    await writeFileAtomic(filePath, JSON.stringify(Object.fromEntries(data)));
 }

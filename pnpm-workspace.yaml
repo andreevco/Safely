@@ -1,6 +1,9 @@
 packages:
   - 'packages/*'
   - 'apps/*'
+  # native addons belong to their app, but must be workspace packages so pnpm links them into
+  # node_modules — where node-gyp, @electron/rebuild and the packager look for them
+  - 'apps/desktop/native/*'
 
 catalog:
   zod: '4.4.1'

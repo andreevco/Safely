@@ -91,8 +91,8 @@ describe('JsonStore', () => {
 
     it('stores encoded values and returns decoded ones', async () => {
         const reversingCodec: ValueCodec = {
-            encode: value => [...value].reverse().join(''),
-            decode: stored => [...stored].reverse().join('')
+            encode: (_key, value) => Promise.resolve([...value].reverse().join('')),
+            decode: (_key, stored) => Promise.resolve([...stored].reverse().join(''))
         };
         const store = new JsonStore(filePath, reversingCodec);
 
@@ -100,6 +100,29 @@ describe('JsonStore', () => {
 
         expect(await readFileAsRecord()).toEqual({ secret: 'cba' });
         expect(await store.get('secret')).toBe('abc');
+    });
+
+    /* The secret codec binds a ciphertext to its key, so the store has to pass the key through. */
+    it('gives the codec the key the value is stored under', async () => {
+        const keys: string[] = [];
+        const recordingCodec: ValueCodec = {
+            encode: (key, value) => {
+                keys.push(key);
+
+                return Promise.resolve(value);
+            },
+            decode: (key, stored) => {
+                keys.push(key);
+
+                return Promise.resolve(stored);
+            }
+        };
+        const store = new JsonStore(filePath, recordingCodec);
+
+        await store.set('vault_key', 'v');
+        await store.get('vault_key');
+
+        expect(keys).toEqual(['vault_key', 'vault_key']);
     });
 
     it('reads an absent file as an empty store', async () => {

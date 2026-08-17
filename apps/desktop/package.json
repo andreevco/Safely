@@ -16,6 +16,7 @@
   "dependencies": {
     "@noble/hashes": "catalog:",
     "@safely/core": "workspace:*",
+    "@safely/desktop-hardware-key": "workspace:*",
     "@safely/sync": "workspace:*",
     "@safely/ux": "workspace:*",
     "@safely/web-ui": "workspace:*",

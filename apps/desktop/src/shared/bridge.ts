@@ -35,8 +35,8 @@ export interface DesktopBridge {
 
     openExternalUrl(url: string): Promise<void>;
 
-    /* No `security` member: the Touch ID gate was removed with the secret store. The vault
-       (`doc/vault.md`) adds unlock/lock capabilities here, not a bare "prove presence" call. */
+    /* No `security` member, and the vault adds none: it holds no unlocked state to gate
+       (`doc/vault.md`). A passcode prompt is the renderer's own layer over `encryptedStore`. */
 
     store: DesktopStoreBridge;
 

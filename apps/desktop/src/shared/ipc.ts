@@ -58,3 +58,10 @@ export type AppInfo = z.infer<typeof sAppInfo>;
 
 export const sAppState = z.enum(['active', 'background', 'inactive', 'unknown']);
 export type AppState = z.infer<typeof sAppState>;
+
+/**
+ * Why a secret operation failed, and the whole of what the renderer is told: the underlying
+ * message could name a key or a path, and it crosses the process boundary verbatim.
+ */
+export const sVaultErrorCode = z.enum(['VAULT_UNAVAILABLE', 'VAULT_CORRUPT', 'DECRYPT_FAILED']);
+export type VaultErrorCode = z.infer<typeof sVaultErrorCode>;

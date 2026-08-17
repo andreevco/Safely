@@ -1,0 +1,17 @@
+{
+  "name": "@safely/desktop-hardware-key",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Secure Enclave key operations for the desktop vault (macOS only)",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "os": ["darwin"],
+  "gypfile": true,
+  "binary": {
+    "napi_versions": [8]
+  },
+  "files": ["index.js", "index.d.ts", "binding.gyp", "src"],
+  "dependencies": {
+    "node-addon-api": "8.5.0"
+  }
+}

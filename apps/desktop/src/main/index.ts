@@ -4,9 +4,10 @@ import path from 'node:path';
 
 import { APP_ORIGIN, registerAppProtocol, registerPrivilegedSchemes } from './app-protocol';
 import { registerIpcHandlers } from './ipc';
+import { mainLogger } from './logger';
 import { useSeparateDevUserData } from './paths';
 import { hardenSession, hardenWebContents } from './security';
-import { createStores } from './store';
+import { createStores, runVaultSelfTest } from './store';
 import { createMainWindow } from './window';
 import { IPC_CHANNEL } from '../shared/ipc';
 import type { AppState } from '../shared/ipc';
@@ -42,8 +43,6 @@ function attachMainWindow(): BrowserWindow {
     window.on('focus', () => notifyAppState('active'));
     window.on('blur', () => notifyAppState('inactive'));
     window.on('show', () => notifyAppState('active'));
-    /* TODO(vault): hiding must lock the vault once it exists (`doc/vault.md`) — it used to revoke
-       the user-presence ticket here. */
     window.on('hide', () => notifyAppState('background'));
 
     window.on('closed', () => {
@@ -68,16 +67,33 @@ if (!app.requestSingleInstanceLock()) {
         hardenWebContents(contents, allowedOrigins);
     });
 
-    void app.whenReady().then(() => {
-        if (!devServerUrl) {
-            registerAppProtocol(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}`));
-        }
+    void app
+        .whenReady()
+        .then(async () => {
+            if (process.env.SAFELY_VAULT_SELFTEST) {
+                /* No window, no stores: run the hardware path once and report. */
+                mainLogger.info('Vault self-test passed', await runVaultSelfTest());
+                app.exit(0);
 
-        hardenSession(devServerUrl);
-        createStores();
-        registerIpcHandlers(() => mainWindow);
-        mainWindow = attachMainWindow();
-    });
+                return;
+            }
+
+            if (!devServerUrl) {
+                registerAppProtocol(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}`));
+            }
+
+            hardenSession(devServerUrl);
+            /* Before the handlers: an IPC call that arrives without a vault must not be served. */
+            await createStores();
+            registerIpcHandlers(() => mainWindow);
+            mainWindow = attachMainWindow();
+        })
+        .catch((error: unknown) => {
+            /* A vault that cannot be built is fatal, and quitting is the whole point: a window
+               without storage would look like a working app writing nowhere. */
+            mainLogger.error('Startup failed', error);
+            app.exit(1);
+        });
 
     app.on('activate', revealMainWindow);
 }

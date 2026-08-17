@@ -20,3 +20,4 @@ CLAUDE.local.md
 .claude/agents/local/
 .claude/settings.local.json
 .claude/.cc-writes
+.pnpm-store

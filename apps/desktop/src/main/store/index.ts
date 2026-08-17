@@ -1,51 +1,47 @@
-import { app, safeStorage } from 'electron';
+import { app } from 'electron';
 import path from 'node:path';
 
 import { JsonStore, plainCodec, type ValueCodec } from './json-store';
+import type { HardwareKey } from '../plugins/hardware-key';
+import { loadSecureEnclave } from '../plugins/hardware-key';
+import type { VaultSelfTestReport } from '../vault';
+import { selfTestVault, Vault, VaultError } from '../vault';
 
 /** Main-side only: the IPC contract addresses a store by channel, not by a name on the wire. */
 export type StoreScope = 'regular' | 'encrypted';
 
 /**
- * Sealed with the macOS keychain. If the platform cannot encrypt, the store throws rather than
- * silently writing plaintext.
- *
- * At-rest protection only, and not a boundary against malware running as the same user: the keychain
- * entry's ACL is phishable and `safeStorage` has no per-item authentication. Nothing that must
- * survive a compromised machine may live in this scope — key material belongs in the vault
- * (`doc/vault.md`), which is not implemented yet.
+ * Tied to the bundle id: the Secure Enclave key is reachable only through this app's keychain
+ * access group, so changing either the tag or the bundle id abandons the existing vault.
  */
-const safeStorageCodec: ValueCodec = {
-    encode: value => {
-        assertEncryptionAvailable();
-
-        return safeStorage.encryptString(value).toString('base64');
-    },
-    decode: stored => {
-        assertEncryptionAvailable();
-
-        return safeStorage.decryptString(Buffer.from(stored, 'base64'));
-    }
-};
-
-function assertEncryptionAvailable(): void {
-    if (!safeStorage.isEncryptionAvailable()) {
-        throw new Error('OS-backed encryption is unavailable, refusing to touch secret storage');
-    }
-}
+const VAULT_KEY_TAG = 'com.safely.wallet-desktop.vault';
 
 let stores: Record<StoreScope, JsonStore> | null = null;
+let vault: Vault | null = null;
 
 /** Created after the app is ready: the paths depend on `userData`. */
-export function createStores(): Record<StoreScope, JsonStore> {
+export async function createStores(): Promise<void> {
     const dir = path.join(app.getPath('userData'), 'store');
+
+    vault = new Vault(hardwareKey(), path.join(dir, 'vault.json'), VAULT_KEY_TAG);
+
+    await vault.init();
 
     stores = {
         regular: new JsonStore(path.join(dir, 'regular.json'), plainCodec),
-        encrypted: new JsonStore(path.join(dir, 'encrypted.json'), safeStorageCodec)
+        encrypted: new JsonStore(path.join(dir, 'encrypted.json'), vaultCodec(vault, 'encrypted'))
     };
+}
 
-    return stores;
+/** Diagnostic: the same hardware the vault would use, exercised on a throwaway key. */
+export async function runVaultSelfTest(): Promise<VaultSelfTestReport> {
+    const dir = path.join(app.getPath('userData'), 'store');
+
+    return selfTestVault(
+        hardwareKey(),
+        path.join(dir, 'vault-self-test.json'),
+        `${VAULT_KEY_TAG}.self-test`
+    );
 }
 
 export function getStore(scope: StoreScope): JsonStore {
@@ -58,11 +54,31 @@ export function getStore(scope: StoreScope): JsonStore {
 
 /* No flush counterpart on purpose: every write is already on disk before it resolves. */
 export async function clearStores(): Promise<void> {
-    if (!stores) {
+    if (!stores || !vault) {
         return;
     }
 
     await Promise.all(Object.values(stores).map(store => store.clear()));
+
+    await vault.erase();
+    await vault.init();
+}
+
+function vaultCodec(instance: Vault, scope: StoreScope): ValueCodec {
+    return {
+        encode: (key, value) => instance.encode(scope, key, value),
+        decode: (key, stored) => instance.decode(scope, key, stored)
+    };
+}
+
+function hardwareKey(): HardwareKey {
+    const key = loadSecureEnclave();
+
+    if (!key?.isAvailable()) {
+        throw new VaultError('VAULT_UNAVAILABLE');
+    }
+
+    return key;
 }
 
 export { JsonStore } from './json-store';

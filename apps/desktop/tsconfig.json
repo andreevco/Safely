@@ -2,7 +2,10 @@
     "extends": "../../tsconfig.json",
     "compilerOptions": {
         "jsx": "react-jsx",
-        "types": ["node", "vite/client"]
+        "types": ["node", "vite/client"],
+        /* restates the root list plus ESNext.Disposable: `using` in main needs `Symbol.dispose`,
+           and lib cannot be extended, only replaced */
+        "lib": ["ES2022", "ESNext.Disposable", "DOM", "DOM.Iterable"]
     },
     "include": [
         "src/**/*",
