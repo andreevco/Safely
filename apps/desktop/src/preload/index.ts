@@ -3,7 +3,7 @@ import { contextBridge, ipcRenderer } from 'electron';
 import type { DesktopBridge, DesktopStoreBridge } from '../shared/bridge';
 import { BRIDGE_KEY } from '../shared/bridge';
 import type { AppInfo, AppState, StoreChannels } from '../shared/ipc';
-import { IPC_CHANNEL, sAppInfo, sAppState } from '../shared/ipc';
+import { IPC_CHANNEL, sAppInfo, sAppState, sIsFullScreen } from '../shared/ipc';
 
 function createStoreBridge(channels: StoreChannels): DesktopStoreBridge {
     return {
@@ -62,6 +62,20 @@ const bridge: DesktopBridge = {
 
         return () => {
             ipcRenderer.removeListener(IPC_CHANNEL.appState, listener);
+        };
+    },
+
+    async isFullScreen(): Promise<boolean> {
+        return sIsFullScreen.parse(await ipcRenderer.invoke(IPC_CHANNEL.windowFullScreen));
+    },
+
+    onFullScreenChange(callback: (isFullScreen: boolean) => void): () => void {
+        const listener = (_event: unknown, raw: unknown) => callback(sIsFullScreen.parse(raw));
+
+        ipcRenderer.on(IPC_CHANNEL.windowFullScreen, listener);
+
+        return () => {
+            ipcRenderer.removeListener(IPC_CHANNEL.windowFullScreen, listener);
         };
     },
 

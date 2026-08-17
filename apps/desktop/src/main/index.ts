@@ -22,6 +22,10 @@ function notifyAppState(state: AppState): void {
     mainWindow?.webContents.send(IPC_CHANNEL.appState, state);
 }
 
+function notifyFullScreen(isFullScreen: boolean): void {
+    mainWindow?.webContents.send(IPC_CHANNEL.windowFullScreen, isFullScreen);
+}
+
 function revealMainWindow(): void {
     if (!mainWindow) {
         mainWindow = attachMainWindow();
@@ -45,6 +49,9 @@ function attachMainWindow(): BrowserWindow {
     /* TODO(vault): hiding must lock the vault once it exists (`doc/vault.md`) — it used to revoke
        the user-presence ticket here. */
     window.on('hide', () => notifyAppState('background'));
+
+    window.on('enter-full-screen', () => notifyFullScreen(true));
+    window.on('leave-full-screen', () => notifyFullScreen(false));
 
     window.on('closed', () => {
         mainWindow = null;

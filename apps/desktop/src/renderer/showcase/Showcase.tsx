@@ -1,59 +1,132 @@
 import type { FC, ReactNode } from 'react';
 import { useState } from 'react';
 
-import { Button } from '@safely/web-ui';
+import Sliders16 from '@safely/ux/assets/icons/16/sliders-16.svg?react';
+import Xmark16 from '@safely/ux/assets/icons/16/xmark-16.svg?react';
+import { AppLayout, Button, Cell, Icon, List, PageHeader } from '@safely/web-ui';
 import { css } from '@safely/web-ui/styled-system/css';
 
+import { useIsFullScreen } from '../platform';
 import { BannerShowcase } from './BannerShowcase';
 import { ButtonShowcase } from './ButtonShowcase';
 import { IconShowcase } from './IconShowcase';
 import { InputShowcase } from './InputShowcase';
 import { ListShowcase } from './ListShowcase';
+import { ModalShowcase } from './ModalShowcase';
 import { TableShowcase } from './TableShowcase';
 import { TextShowcase } from './TextShowcase';
 
-type ShowcaseTab = {
+type ShowcaseSection = {
     title: string;
     content: ReactNode;
 };
 
-const TABS: ShowcaseTab[] = [
+const SECONDARY_ITEMS = ['Me', 'Edit account', 'Address book', 'Add account'];
+
+const SECTIONS: ShowcaseSection[] = [
     { title: 'Buttons', content: <ButtonShowcase /> },
     { title: 'Typography', content: <TextShowcase /> },
     { title: 'Inputs', content: <InputShowcase /> },
     { title: 'Icons', content: <IconShowcase /> },
     { title: 'Banners', content: <BannerShowcase /> },
     { title: 'Lists', content: <ListShowcase /> },
-    { title: 'Tables', content: <TableShowcase /> }
+    { title: 'Tables', content: <TableShowcase /> },
+    { title: 'Modal', content: <ModalShowcase /> }
 ];
 
-const rootStyles = css({ display: 'flex', flexDirection: 'column', gap: '24' });
+const dragRegionStyles = css({ appRegion: 'drag' });
 
-const tabsStyles = css({ display: 'flex', gap: '8', flexWrap: 'wrap' });
-
-const panelStyles = css({ display: 'flex', flexDirection: 'column', gap: '32' });
+const contentStyles = css({
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '32',
+    paddingInline: '24',
+    paddingBottom: '32'
+});
 
 export const Showcase: FC = () => {
-    const [activeTitle, setActiveTitle] = useState(TABS[0].title);
+    const [activeTitle, setActiveTitle] = useState(SECTIONS[0].title);
+    const [isSecondaryOpen, setIsSecondaryOpen] = useState(false);
 
-    const activeTab = TABS.find(tab => tab.title === activeTitle) ?? TABS[0];
+    const bridge = window.safelyDesktop;
+    const isFullScreen = useIsFullScreen();
+    const activeSection = SECTIONS.find(section => section.title === activeTitle) ?? SECTIONS[0];
 
     return (
-        <div className={rootStyles}>
-            <div className={tabsStyles}>
-                {TABS.map(tab => (
-                    <Button
-                        key={tab.title}
-                        size="small"
-                        variant={tab.title === activeTitle ? 'primary' : 'tertiary'}
-                        onClick={() => setActiveTitle(tab.title)}
-                    >
-                        {tab.title}
-                    </Button>
-                ))}
-            </div>
+        <AppLayout hasWindowControls={!isFullScreen} isFullScreen={isFullScreen}>
+            <AppLayout.TitleBar className={dragRegionStyles} />
 
-            <div className={panelStyles}>{activeTab.content}</div>
-        </div>
+            <AppLayout.Sidebar>
+                <List>
+                    <List.Title>Design system</List.Title>
+
+                    <List.Group variant="separated">
+                        {SECTIONS.map(section => (
+                            <Cell key={section.title} onClick={() => setActiveTitle(section.title)}>
+                                <Cell.Content>
+                                    <Cell.Title>{section.title}</Cell.Title>
+                                </Cell.Content>
+                                {section.title === activeTitle && <Cell.Checkmark />}
+                            </Cell>
+                        ))}
+                    </List.Group>
+
+                    <List.Group variant="separated">
+                        <Cell onClick={() => setIsSecondaryOpen(current => !current)}>
+                            <Cell.Leading>
+                                <Icon asset={Sliders16} tone="secondary" />
+                            </Cell.Leading>
+                            <Cell.Content>
+                                <Cell.Title>Second column</Cell.Title>
+                            </Cell.Content>
+                        </Cell>
+                    </List.Group>
+
+                    <List.Footer>
+                        {bridge
+                            ? `${bridge.platform} · electron ${bridge.versions.electron}`
+                            : 'preload bridge unavailable'}
+                    </List.Footer>
+                </List>
+            </AppLayout.Sidebar>
+
+            {isSecondaryOpen && (
+                <AppLayout.Secondary>
+                    <PageHeader
+                        title="Second column"
+                        actions={
+                            <Button
+                                variant="secondary"
+                                size="small"
+                                isIconOnly
+                                aria-label="Close the second column"
+                                onClick={() => setIsSecondaryOpen(false)}
+                            >
+                                <Icon asset={Xmark16} />
+                            </Button>
+                        }
+                    />
+
+                    <List>
+                        <List.Title>Settings</List.Title>
+                        <List.Group variant="separated">
+                            {SECONDARY_ITEMS.map(item => (
+                                <Cell key={item} onClick={() => undefined}>
+                                    <Cell.Content>
+                                        <Cell.Title>{item}</Cell.Title>
+                                    </Cell.Content>
+                                </Cell>
+                            ))}
+                        </List.Group>
+                    </List>
+                </AppLayout.Secondary>
+            )}
+
+            <AppLayout.Content>
+                <PageHeader title={activeSection.title} />
+
+                <div className={contentStyles}>{activeSection.content}</div>
+            </AppLayout.Content>
+        </AppLayout>
     );
 };

@@ -3,7 +3,7 @@ import { defineSlotRecipe } from '@pandacss/dev';
 export const tableCellRecipe = defineSlotRecipe({
     className: 'tableCell',
     description: 'Label and value row of a details table',
-    slots: ['root', 'column', 'label', 'value', 'copied'],
+    slots: ['root', 'column', 'label', 'value', 'valueText', 'copied'],
     base: {
         root: {
             position: 'relative',
@@ -31,8 +31,15 @@ export const tableCellRecipe = defineSlotRecipe({
             textOverflow: 'ellipsis'
         },
         value: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6',
+            minWidth: '0',
             textStyle: 'bodyM',
-            color: 'text.primary',
+            color: 'text.primary'
+        },
+        valueText: {
+            minWidth: '0',
             overflow: 'hidden',
             textOverflow: 'ellipsis'
         },

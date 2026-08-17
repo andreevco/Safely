@@ -4,7 +4,8 @@ export const colorDotRecipe = defineRecipe({
     className: 'colorDot',
     description: 'Round swatch standing for a wallet colour',
     base: {
-        display: 'block',
+        display: 'inline-block',
+        verticalAlign: 'middle',
         flexShrink: 0,
         borderRadius: 'full'
     },

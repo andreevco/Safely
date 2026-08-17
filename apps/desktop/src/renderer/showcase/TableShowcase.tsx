@@ -26,7 +26,8 @@ export const TableShowcase: FC = () => (
                         </TableCell.Column>
                         <TableCell.Column>
                             <TableCell.Value>
-                                <ColorDot tone="orange" size="small" /> Wallet
+                                <ColorDot tone="orange" size="small" />
+                                <span>Wallet</span>
                             </TableCell.Value>
                         </TableCell.Column>
                     </TableCell>

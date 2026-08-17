@@ -34,6 +34,7 @@ export default defineConfig({
     },
     staticCss: {
         recipes: {
+            appLayout: ['*'],
             badge: ['*'],
             banner: ['*'],
             button: ['*'],
@@ -50,6 +51,15 @@ export default defineConfig({
             spinner: ['*'],
             input: ['*'],
             text: ['*']
+        }
+    },
+    utilities: {
+        extend: {
+            appRegion: {
+                className: 'app-region',
+                values: ['drag', 'no-drag'],
+                transform: (value: string) => ({ '-webkit-app-region': value })
+            }
         }
     },
     theme: {

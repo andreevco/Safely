@@ -99,9 +99,18 @@ const TableCellLabel: FC<TableCellTextProps> = props => {
 };
 
 const TableCellValue: FC<TableCellTextProps> = props => {
-    const { className, ...rest } = props;
+    const { className, children, ...rest } = props;
+    const styles = useTableCellStyles();
 
-    return <span className={cx(useTableCellStyles().value, className)} {...rest} />;
+    return (
+        <span className={cx(styles.value, className)} {...rest}>
+            {typeof children === 'string' ? (
+                <span className={styles.valueText}>{children}</span>
+            ) : (
+                children
+            )}
+        </span>
+    );
 };
 
 export const TableCell = Object.assign(TableCellRoot, {

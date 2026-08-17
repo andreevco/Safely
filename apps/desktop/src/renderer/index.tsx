@@ -10,7 +10,7 @@ import '@safely/web-ui/styles.css';
 
 import { AppProviders } from './app';
 import { createDesktopPlatform, getBridge } from './platform';
-import { ScaffoldView } from './ScaffoldView';
+import { Showcase } from './showcase';
 
 async function mount(): Promise<void> {
     const container = document.getElementById('root');
@@ -34,7 +34,7 @@ async function mount(): Promise<void> {
     createRoot(container).render(
         <I18nextProvider i18n={instance}>
             <AppProviders platform={platform} logger={logger}>
-                <ScaffoldView />
+                <Showcase />
             </AppProviders>
         </I18nextProvider>
     );

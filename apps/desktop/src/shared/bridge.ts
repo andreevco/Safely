@@ -33,6 +33,10 @@ export interface DesktopBridge {
 
     onAppStateChange(callback: (state: AppState) => void): () => void;
 
+    isFullScreen(): Promise<boolean>;
+
+    onFullScreenChange(callback: (isFullScreen: boolean) => void): () => void;
+
     openExternalUrl(url: string): Promise<void>;
 
     /* No `security` member: the Touch ID gate was removed with the secret store. The vault

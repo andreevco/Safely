@@ -1,3 +1,4 @@
+import { appLayoutRecipe } from './app-layout.recipe';
 import { badgeRecipe } from './badge.recipe';
 import { bannerRecipe } from './banner.recipe';
 import { buttonRecipe } from './button.recipe';
@@ -25,6 +26,7 @@ export const recipes = {
 };
 
 export const slotRecipes = {
+    appLayout: appLayoutRecipe,
     banner: bannerRecipe,
     cell: cellRecipe,
     checkbox: checkboxRecipe,
