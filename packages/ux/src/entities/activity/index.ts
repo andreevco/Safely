@@ -28,8 +28,7 @@ export type {
     BtcActivityPage,
     OrdersActivityPage,
     IHistoryOptions,
-    ActivityItem,
-    ActivityItemsDatedGroupMeta
+    ActivityItem
 } from './types';
-export { ACTIVITY_GROUP_LABEL, isBtcActivityItem, isOrderActivityItem } from './types';
+export { isBtcActivityItem, isOrderActivityItem } from './types';
 export * from './blockchain-specific';

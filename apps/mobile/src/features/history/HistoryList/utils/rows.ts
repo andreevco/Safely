@@ -1,6 +1,7 @@
 import type { TFunction } from 'i18next';
 
-import { assertUnreachable, ellipsisMiddle } from '@safely/core';
+import type { DateGroupMeta, PendingGroupMeta } from '@safely/core';
+import { GROUP_LABEL, assertUnreachable, ellipsisMiddle } from '@safely/core';
 import type {
     useActivePortfolioRate,
     useActualBtcBlockNumber,
@@ -10,11 +11,9 @@ import type {
 } from '@safely/ux';
 import {
     type ActivityItem,
-    type ActivityItemsDatedGroupMeta,
     type BtcActivityItem,
     type DateFormatter,
     type OrderActivityItem,
-    ACTIVITY_GROUP_LABEL,
     findContactMetaByAddress,
     findPortfolioMetaByAddress,
     getBtcTransactionDisplayStatus,
@@ -23,6 +22,7 @@ import {
 } from '@safely/ux';
 
 import type { ActivityItemProps } from '@mobile/entities/activity';
+import { getDateGroupTitle } from '@mobile/shared/utils';
 
 export type HistoryHeaderRow = {
     key: string;
@@ -52,53 +52,33 @@ export type ActivityRowContext = {
 
 export type TimeFormatDetails = 'time' | 'day-month-time';
 
-export const timeFormatDetailsByGroupLabel: Record<ACTIVITY_GROUP_LABEL, TimeFormatDetails> = {
-    [ACTIVITY_GROUP_LABEL.PENDING]: 'time',
-    [ACTIVITY_GROUP_LABEL.TODAY]: 'time',
-    [ACTIVITY_GROUP_LABEL.YESTERDAY]: 'time',
-    [ACTIVITY_GROUP_LABEL.THIS_MONTH]: 'time',
-    [ACTIVITY_GROUP_LABEL.THIS_YEAR]: 'day-month-time',
-    [ACTIVITY_GROUP_LABEL.PAST_YEAR]: 'day-month-time'
+export const timeFormatDetailsByGroupLabel: Record<GROUP_LABEL, TimeFormatDetails> = {
+    [GROUP_LABEL.PENDING]: 'time',
+    [GROUP_LABEL.TODAY]: 'time',
+    [GROUP_LABEL.YESTERDAY]: 'time',
+    [GROUP_LABEL.THIS_MONTH]: 'time',
+    [GROUP_LABEL.THIS_YEAR]: 'day-month-time',
+    [GROUP_LABEL.PAST_YEAR]: 'day-month-time'
 };
 
-export const getGroupKey = (meta: ActivityItemsDatedGroupMeta): string => JSON.stringify(meta);
-
-const getGroupTitle = (
-    meta: ActivityItemsDatedGroupMeta,
+const getHistoryGroupTitle = (
+    meta: DateGroupMeta | PendingGroupMeta,
     t: TFunction,
     formatter: DateFormatter
-): string => {
-    switch (meta.label) {
-        case ACTIVITY_GROUP_LABEL.PENDING:
-            return t('dateGroups.pending');
-        case ACTIVITY_GROUP_LABEL.TODAY:
-            return t('dateGroups.today');
-        case ACTIVITY_GROUP_LABEL.YESTERDAY:
-            return t('dateGroups.yesterday');
-        case ACTIVITY_GROUP_LABEL.THIS_MONTH: {
-            const date = new Date(meta.year, meta.month, meta.day);
-            return formatter({ month: 'long', day: 'numeric' }).format(date);
-        }
-        case ACTIVITY_GROUP_LABEL.THIS_YEAR: {
-            const date = new Date(meta.year, meta.month, 1);
-            return formatter({ month: 'long' }).format(date);
-        }
-        case ACTIVITY_GROUP_LABEL.PAST_YEAR: {
-            const date = new Date(meta.year, meta.month, 1);
-            return formatter({ month: 'long', year: 'numeric' }).format(date);
-        }
-    }
-};
+): string =>
+    meta.label === GROUP_LABEL.PENDING
+        ? t('dateGroups.pending')
+        : getDateGroupTitle(meta, t, formatter);
 
 export const buildHeaderRow = (
-    meta: ActivityItemsDatedGroupMeta,
+    meta: DateGroupMeta | PendingGroupMeta,
     groupKey: string,
     t: TFunction,
     groupFormatter: DateFormatter
 ): HistoryHeaderRow => ({
     key: `header-${groupKey}`,
     type: 'header',
-    title: getGroupTitle(meta, t, groupFormatter)
+    title: getHistoryGroupTitle(meta, t, groupFormatter)
 });
 
 const formatTimestampLabel = (
