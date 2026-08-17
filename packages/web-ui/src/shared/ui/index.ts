@@ -8,6 +8,7 @@ export * from './Icon';
 export * from './Input';
 export * from './List';
 export * from './Modal';
+export * from './PageHeader';
 export * from './Spinner';
 export * from './Switch';
 export * from './TableCell';

@@ -42,6 +42,7 @@ export default defineConfig({
             colorDot: ['*'],
             list: ['*'],
             modal: ['*'],
+            pageHeader: ['*'],
             tableCell: ['*'],
             toggle: ['*'],
             wordCell: ['*'],
