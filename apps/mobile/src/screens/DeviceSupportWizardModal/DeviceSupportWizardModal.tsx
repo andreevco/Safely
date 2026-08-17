@@ -66,7 +66,7 @@ const WizardContent = ({ details }: { details: SyncedDeviceDetails }) => {
     };
 
     const handleArchive = async () => {
-        await check({ title: t('deviceSupportWizard.archive.verify', { deviceName }) });
+        await check({ subtitle: t('deviceSupportWizard.archive.verify', { deviceName }) });
         await archiveDevice(details.ikPubHex);
 
         navigation.goBack();
@@ -117,7 +117,7 @@ const WizardContent = ({ details }: { details: SyncedDeviceDetails }) => {
                     options={OTHERS_ACCESS_OPTIONS}
                     answer={othersAccess}
                     onAnswer={setOthersAccess}
-                    hasActionBelow={othersAccess === 'impossible'}
+                    hasActionBelow={othersAccess !== null}
                 >
                     {othersAccess === 'possible' && (
                         <WizardHint
@@ -150,7 +150,7 @@ const WizardContent = ({ details }: { details: SyncedDeviceDetails }) => {
                 </WizardQuestion>
             )}
 
-            {othersAccess === 'impossible' && (
+            {othersAccess !== null && (
                 <Button
                     style={styles.dismissButton}
                     size="medium"

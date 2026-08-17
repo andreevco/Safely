@@ -2,7 +2,6 @@ import { useNavigation } from '@react-navigation/core';
 import { useTranslation } from 'react-i18next';
 
 import type { SyncedDeviceDetails } from '@safely/ux';
-import { SyncedDeviceDataStatus } from '@safely/ux';
 
 import { Cell, List } from '@mobile/shared/ui';
 
@@ -15,12 +14,6 @@ type DeviceHelpCellProps = {
 export const DeviceHelpCell = ({ details }: DeviceHelpCellProps) => {
     const { t } = useTranslation();
     const rootNavigation = useNavigation();
-
-    const needsHelp = details.isStale || details.dataStatus !== SyncedDeviceDataStatus.SYNCED;
-
-    if (!needsHelp) {
-        return null;
-    }
 
     const handlePress = () => {
         rootNavigation.navigate('DeviceSupportWizardModal', { ikPubHex: details.ikPubHex });
@@ -35,7 +28,7 @@ export const DeviceHelpCell = ({ details }: DeviceHelpCellProps) => {
                             <Cell.Title>{t('security.deviceDetails.help.title')}</Cell.Title>
                         </Cell.Row>
                         <Cell.Row>
-                            <Cell.Subtitle>
+                            <Cell.Subtitle numberOfLines={0}>
                                 {t('security.deviceDetails.help.subtitle')}
                             </Cell.Subtitle>
                         </Cell.Row>

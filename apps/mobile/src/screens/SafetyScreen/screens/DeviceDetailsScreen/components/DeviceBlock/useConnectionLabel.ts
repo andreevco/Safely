@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next';
 
-import { SPACE } from '@safely/core';
 import { useDateFormatter } from '@safely/ux';
 
 const MINUTE_MS = 60 * 1000;
@@ -9,12 +8,17 @@ const DAY_MS = 24 * HOUR_MS;
 const DAYS_IN_WEEK = 7;
 const MAX_RELATIVE_WEEKS = 4;
 
-export function useConnectionLabel(lastSyncAt: number | null): string {
+type ConnectionLabel = {
+    label: string;
+    date: string | null;
+};
+
+export function useConnectionLabel(lastSyncAt: number | null): ConnectionLabel {
     const { t } = useTranslation();
     const formatDate = useDateFormatter({ day: 'numeric', month: 'short', year: 'numeric' });
 
     if (lastSyncAt === null) {
-        return t('security.deviceDetails.noConnectionYet');
+        return { label: t('security.deviceDetails.noConnectionYet'), date: null };
     }
 
     const diffMs = Math.max(0, Date.now() - lastSyncAt);
@@ -23,28 +27,36 @@ export function useConnectionLabel(lastSyncAt: number | null): string {
     const daysAgo = t('security.deviceDetails.daysAgo', { count: days });
 
     if (diffMs < MINUTE_MS) {
-        return t('security.deviceDetails.connectedNow');
+        return { label: t('security.deviceDetails.connectedNow'), date: null };
     }
 
     if (diffMs < HOUR_MS) {
-        return t('security.deviceDetails.minutesAgo', { count: Math.floor(diffMs / MINUTE_MS) });
+        return {
+            label: t('security.deviceDetails.minutesAgo', {
+                count: Math.floor(diffMs / MINUTE_MS)
+            }),
+            date: null
+        };
     }
 
     if (diffMs < DAY_MS) {
-        return t('security.deviceDetails.hoursAgo', { count: Math.floor(diffMs / HOUR_MS) });
+        return {
+            label: t('security.deviceDetails.hoursAgo', { count: Math.floor(diffMs / HOUR_MS) }),
+            date: null
+        };
     }
 
     if (days === 1) {
-        return t('security.deviceDetails.yesterday');
+        return { label: t('security.deviceDetails.yesterday'), date: null };
     }
 
     if (days < DAYS_IN_WEEK) {
-        return daysAgo;
+        return { label: daysAgo, date: null };
     }
 
     if (weeks <= MAX_RELATIVE_WEEKS) {
-        return t('security.deviceDetails.weeksAgo', { count: weeks });
+        return { label: t('security.deviceDetails.weeksAgo', { count: weeks }), date: null };
     }
 
-    return `${daysAgo}${SPACE.NBSP}·${SPACE.NBSP}${formatDate.format(lastSyncAt)}`;
+    return { label: daysAgo, date: formatDate.format(lastSyncAt) };
 }

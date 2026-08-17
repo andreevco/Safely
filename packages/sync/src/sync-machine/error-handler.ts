@@ -1,8 +1,6 @@
 import { ResponseError } from '../api/generated';
 import { SyncStatus } from '../sync-provider/sync-status';
 
-const DEVICE_DELETED_ERROR_CODES = new Set<number | string>([403001, 409004]);
-
 export type ErrorDisposition =
     | {
           type: 'fatal';
@@ -14,14 +12,24 @@ export type ErrorDisposition =
 
 export async function classifyError(error: unknown): Promise<SyncMachineError> {
     const code = getErrorCode(error);
-    if (code !== undefined && DEVICE_DELETED_ERROR_CODES.has(code)) {
-        return new SyncMachineError(
-            {
-                type: 'fatal',
-                status: SyncStatus.DEVICE_DELETED
-            },
-            error
-        );
+    switch (String(code)) {
+        case '403001':
+        case '409004':
+            return new SyncMachineError(
+                {
+                    type: 'fatal',
+                    status: SyncStatus.DEVICE_DELETED
+                },
+                error
+            );
+        case '403002':
+            return new SyncMachineError(
+                {
+                    type: 'fatal',
+                    status: SyncStatus.SYNC_DATA_NOT_FOUND
+                },
+                error
+            );
     }
 
     return new SyncMachineError(
