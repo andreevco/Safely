@@ -7,6 +7,7 @@ import { colorDotRecipe } from './color-dot.recipe';
 import { iconRecipe } from './icon.recipe';
 import { inputRecipe } from './input.recipe';
 import { listRecipe } from './list.recipe';
+import { modalRecipe } from './modal.recipe';
 import { spinnerRecipe } from './spinner.recipe';
 import { switchRecipe } from './switch.recipe';
 import { tableCellRecipe } from './table-cell.recipe';
@@ -28,6 +29,7 @@ export const slotRecipes = {
     checkbox: checkboxRecipe,
     input: inputRecipe,
     list: listRecipe,
+    modal: modalRecipe,
     tableCell: tableCellRecipe,
     toggle: switchRecipe,
     wordCell: wordCellRecipe

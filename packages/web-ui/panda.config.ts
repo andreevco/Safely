@@ -41,6 +41,7 @@ export default defineConfig({
             checkbox: ['*'],
             colorDot: ['*'],
             list: ['*'],
+            modal: ['*'],
             tableCell: ['*'],
             toggle: ['*'],
             wordCell: ['*'],
