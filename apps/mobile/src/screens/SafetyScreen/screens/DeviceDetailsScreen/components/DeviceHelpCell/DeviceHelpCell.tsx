@@ -28,7 +28,7 @@ export const DeviceHelpCell = ({ details }: DeviceHelpCellProps) => {
                             <Cell.Title>{t('security.deviceDetails.help.title')}</Cell.Title>
                         </Cell.Row>
                         <Cell.Row>
-                            <Cell.Subtitle>
+                            <Cell.Subtitle numberOfLines={0}>
                                 {t('security.deviceDetails.help.subtitle')}
                             </Cell.Subtitle>
                         </Cell.Row>
