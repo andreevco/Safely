@@ -3,6 +3,7 @@ export * from './Banner';
 export * from './Button';
 export * from './Cell';
 export * from './Checkbox';
+export * from './ColorDot';
 export * from './Icon';
 export * from './Input';
 export * from './List';

@@ -21,6 +21,7 @@ export const wordCellRecipe = defineSlotRecipe({
             color: 'text.tertiary'
         },
         dot: {
+            display: 'block',
             width: '6px',
             height: '6px',
             marginTop: '7px',

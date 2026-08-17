@@ -1,6 +1,6 @@
 import type { FC } from 'react';
 
-import { List, TableCell, WordCell } from '@safely/web-ui';
+import { ColorDot, List, TableCell, WordCell } from '@safely/web-ui';
 
 import { ShowcaseSection } from './ShowcaseSection';
 
@@ -17,6 +17,17 @@ export const TableShowcase: FC = () => (
                         </TableCell.Column>
                         <TableCell.Column>
                             <TableCell.Value>Value</TableCell.Value>
+                        </TableCell.Column>
+                    </TableCell>
+
+                    <TableCell>
+                        <TableCell.Column width="label">
+                            <TableCell.Label>With a colour</TableCell.Label>
+                        </TableCell.Column>
+                        <TableCell.Column>
+                            <TableCell.Value>
+                                <ColorDot tone="orange" size="small" /> Wallet
+                            </TableCell.Value>
                         </TableCell.Column>
                     </TableCell>
 

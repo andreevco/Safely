@@ -2,17 +2,10 @@ import type { FC } from 'react';
 import { useState } from 'react';
 
 import Sliders16 from '@safely/ux/assets/icons/16/sliders-16.svg?react';
-import { Badge, Cell, Checkbox, Icon, List, Switch } from '@safely/web-ui';
+import { Badge, Cell, Checkbox, ColorDot, Icon, List, Switch } from '@safely/web-ui';
 import { css } from '@safely/web-ui/styled-system/css';
 
 import { ShowcaseSection } from './ShowcaseSection';
-
-const walletDotStyles = css({
-    width: '16px',
-    height: '16px',
-    borderRadius: 'full',
-    backgroundColor: 'wallet.blue'
-});
 
 export const ListShowcase: FC = () => {
     const [isChecked, setIsChecked] = useState(true);
@@ -45,7 +38,7 @@ export const ListShowcase: FC = () => {
 
                         <Cell>
                             <Cell.Leading>
-                                <span className={walletDotStyles} />
+                                <ColorDot tone="blue" />
                             </Cell.Leading>
                             <Cell.Content>
                                 <Cell.Row>

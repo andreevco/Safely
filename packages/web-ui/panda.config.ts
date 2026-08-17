@@ -39,6 +39,7 @@ export default defineConfig({
             button: ['*'],
             cell: ['*'],
             checkbox: ['*'],
+            colorDot: ['*'],
             list: ['*'],
             tableCell: ['*'],
             toggle: ['*'],
