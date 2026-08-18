@@ -2,6 +2,13 @@ import ExpoModulesCore
 import UIKit
 
 private class InsetCaretTextField: UITextField {
+    override func cut(_ sender: Any?) {
+        if let range = selectedTextRange, let selected = text(in: range), !selected.isEmpty {
+            UIPasteboard.general.string = selected
+        }
+        super.cut(sender)
+    }
+
     override func caretRect(for position: UITextPosition) -> CGRect {
         var rect = super.caretRect(for: position)
         let inset: CGFloat = 4
