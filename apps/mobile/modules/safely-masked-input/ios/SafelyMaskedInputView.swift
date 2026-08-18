@@ -290,9 +290,16 @@ class SafelyMaskedInputView: ExpoView, UITextFieldDelegate {
     }
 
     private func moveCursor(to offset: Int) {
-        let safeOffset = min(offset, (textField.text ?? "").count)
-        guard let pos = textField.position(from: textField.beginningOfDocument, offset: safeOffset) else { return }
-        textField.selectedTextRange = textField.textRange(from: pos, to: pos)
+        selectRange(from: offset, to: offset)
+    }
+
+    private func selectRange(from start: Int, to end: Int) {
+        let length = (textField.text ?? "").count
+        let safeEnd = min(end, length)
+        let safeStart = min(start, safeEnd)
+        guard let startPos = textField.position(from: textField.beginningOfDocument, offset: safeStart),
+              let endPos = textField.position(from: textField.beginningOfDocument, offset: safeEnd) else { return }
+        textField.selectedTextRange = textField.textRange(from: startPos, to: endPos)
     }
 
     private func resolvedMainFont() -> UIFont {
@@ -425,10 +432,11 @@ class SafelyMaskedInputView: ExpoView, UITextFieldDelegate {
     func textFieldDidChangeSelection(_ textField: UITextField) {
         guard !suffix.isEmpty, !isUpdatingFromCode, let selectedRange = textField.selectedTextRange else { return }
         let maxPos = currentMaskResult.formatted.count
-        let cursorPos = textField.offset(from: textField.beginningOfDocument, to: selectedRange.end)
-        if cursorPos > maxPos {
-            moveCursor(to: maxPos)
-        }
+        let end = textField.offset(from: textField.beginningOfDocument, to: selectedRange.end)
+        guard end > maxPos else { return }
+
+        let start = textField.offset(from: textField.beginningOfDocument, to: selectedRange.start)
+        selectRange(from: min(start, maxPos), to: maxPos)
     }
 
     func textFieldDidEndEditing(_ textField: UITextField) {

@@ -47,7 +47,10 @@ class SafelyMaskedInputView(context: Context, appContext: AppContext) : ExpoView
     private var rawValue = ""
     private var userEditCount = 0
     private var isUpdating = false
-    private var pendingPaste = false
+    private var pendingPasteRaw: String? = null
+    private var textBeforeEdit = ""
+    private var editStart = 0
+    private var editRemoved = 0
 
     val onPaste by EventDispatcher()
     val onChangeText by EventDispatcher()
@@ -74,19 +77,27 @@ class SafelyMaskedInputView(context: Context, appContext: AppContext) : ExpoView
         addView(editText)
 
         editText.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                if (isUpdating) return
+                textBeforeEdit = stripSuffix(s?.toString() ?: "")
+                editStart = start
+                editRemoved = count
+            }
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                if (!isUpdating) pendingPaste = count > 1
+                if (isUpdating || count <= 1) return
+                val inserted = s?.subSequence(start, start + count)?.toString() ?: return
+                pendingPasteRaw = spliceIntoTextBeforeEdit(inserted)
             }
             override fun afterTextChanged(s: Editable?) {
                 if (isUpdating) return
-                val text = stripSuffix(s?.toString() ?: "")
-                if (pendingPaste) {
-                    pendingPaste = false
-                    onPaste(mapOf("raw" to text))
+                val pasted = pendingPasteRaw
+                if (pasted != null) {
+                    pendingPasteRaw = null
+                    onPaste(mapOf("raw" to pasted))
                     applyMask()
                     return
                 }
+                val text = stripSuffix(s?.toString() ?: "")
                 val result = MaskEngine.apply(text, decimals, decimalSeparator)
                 updateDisplay(result)
                 rawValue = result.extracted
@@ -288,6 +299,13 @@ class SafelyMaskedInputView(context: Context, appContext: AppContext) : ExpoView
     private fun maxEditablePosition(): Int {
         val textLen = editText.text?.length ?: 0
         return textLen - suffixDisplayLength()
+    }
+
+    private fun spliceIntoTextBeforeEdit(inserted: String): String {
+        val start = editStart.coerceIn(0, textBeforeEdit.length)
+        val end = (editStart + editRemoved).coerceIn(start, textBeforeEdit.length)
+
+        return textBeforeEdit.substring(0, start) + inserted + textBeforeEdit.substring(end)
     }
 
     private fun stripSuffix(text: String): String {
