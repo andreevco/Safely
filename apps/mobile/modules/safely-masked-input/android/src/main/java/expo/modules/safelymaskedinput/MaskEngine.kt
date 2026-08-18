@@ -35,7 +35,7 @@ object MaskEngine {
                         integerDigits.append(ch)
                     }
                 }
-                ch in DECIMAL_SEPARATORS && decimals > 0 -> {
+                (ch in DECIMAL_SEPARATORS || ch.toString() == sep) && decimals > 0 -> {
                     if (separatorChar == null) {
                         separatorChar = ch
                     } else if (ch != separatorChar) {

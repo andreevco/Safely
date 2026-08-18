@@ -57,7 +57,7 @@ class MaskEngine {
                 } else {
                     integerEntries.append((rawIndex, ch))
                 }
-            } else if decimalSeparators.contains(ch) && decimals > 0 {
+            } else if (decimalSeparators.contains(ch) || String(ch) == sep) && decimals > 0 {
                 if separatorChar == nil {
                     separatorChar = ch
                     separatorRawIndex = rawIndex
