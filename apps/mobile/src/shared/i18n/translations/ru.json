@@ -16,7 +16,8 @@
     "portfolio": {
         "watchOnly": "Только просмотр",
         "testnet": "Testnet",
-        "ledger": "Ledger"
+        "ledger": "Ledger",
+        "ledgerWallet": "Кошелёк Ledger {{number}}"
     },
     "walletAlreadyAdded": {
         "title": "Вы уже добавили этот кошелёк как {{name}}",
@@ -406,6 +407,7 @@
     "confirmation": {
         "title": "Отправить {{symbol}}",
         "success": "Отправлено",
+        "continueWithLedger": "Продолжить с Ledger",
         "from": "От",
         "to": "Кому",
         "amount": "Сумма",
@@ -560,7 +562,6 @@
             "discovery": {
                 "title": "Выберите Ledger",
                 "subtitle": "Выберите ближайший Ledger, чтобы начать сопряжение.",
-                "searching": "Поиск…",
                 "notFound": "Устройства не найдены"
             },
             "pairing": {
@@ -583,10 +584,10 @@
             "importAccounts": {
                 "title": "Импорт кошельков",
                 "subtitle": "Выберите кошельки, которые хотите добавить.",
-                "showNext": "Показать ещё",
-                "errorTitle": "Не удалось загрузить аккаунты",
-                "errorSubtitle": "Что-то пошло не так при чтении Ledger. Начните заново.",
-                "tryAgain": "Начать заново",
+                "takingTooLong": "Слишком долго? Повторить",
+                "featureNote": "Поддержка дополнительных кошельков Ledger запланирована. ",
+                "featureRequest": "Мне нужна эта функция",
+                "featureRequested": "Принято",
                 "wrongDevice": "Это другой Ledger. Подключите исходное устройство."
             }
         }
@@ -700,6 +701,10 @@
                 "cancelButton": "Отмена"
             },
             "toastAccountRemoved": "Аккаунт удалён с этого устройства"
+        },
+        "removePortfolio": {
+            "title": "Удалить кошелёк “{{name}}”",
+            "disconnectLedger": "Отключить “{{name}}”"
         }
     },
     "logOutAllAccounts": {
