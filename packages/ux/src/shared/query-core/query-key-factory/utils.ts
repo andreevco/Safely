@@ -1,3 +1,5 @@
+import { compareStrings } from '@safely/core';
+
 import type { JsonObject, JsonValue, KeyPart, KeyResult } from './types';
 
 export function normalizeJson(value: JsonValue | bigint): JsonValue {
@@ -10,7 +12,7 @@ export function normalizeJson(value: JsonValue | bigint): JsonValue {
         const result: Record<string, JsonValue> = {};
 
         Object.entries(obj)
-            .sort(([a], [b]) => a.localeCompare(b))
+            .sort(([a], [b]) => compareStrings(a, b))
             .forEach(([key, val]) => (result[key] = normalizeJson(val)));
 
         return result;

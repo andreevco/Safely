@@ -711,6 +711,10 @@
                 "cancelButton": "Cancel"
             },
             "toastAccountRemoved": "Account removed from this device"
+        },
+        "removePortfolio": {
+            "title": "Remove wallet “{{name}}”",
+            "disconnectLedger": "Disconnect “{{name}}”"
         }
     },
     "logOutAllAccounts": {
