@@ -856,6 +856,7 @@
     },
     "externalInput": {
         "errors": {
+            "invalidAmount": "Некорректная сумма в коде",
             "unrecognized": "Нераспознанный ввод",
             "unsupportedScheme": "Неподдерживаемый тип ввода"
         }

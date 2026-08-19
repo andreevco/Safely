@@ -875,6 +875,7 @@
     },
     "externalInput": {
         "errors": {
+            "invalidAmount": "Invalid payment amount in the code",
             "unrecognized": "Unrecognized input",
             "unsupportedScheme": "Unsupported input type"
         }
