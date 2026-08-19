@@ -41,6 +41,8 @@ interface FormatFiatOptionsNoSymbol {
     useGrouping?: boolean;
 }
 
+export const CANONICAL_DECIMAL_REGEX = /^\d+(\.\d+)?$/;
+
 export class NumberFormatter {
     private readonly logger: Logger;
 
@@ -62,8 +64,7 @@ export class NumberFormatter {
 
     public normalizeCanonicalInput(raw: string): NormalizedPastedAmount {
         const canonical = raw.trim();
-        const canonicalDecimalRegex = /^\d+(\.\d+)?$/;
-        if (!canonicalDecimalRegex.test(canonical)) {
+        if (!CANONICAL_DECIMAL_REGEX.test(canonical)) {
             return { value: '', status: 'ambiguous' };
         }
 
