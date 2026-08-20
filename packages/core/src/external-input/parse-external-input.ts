@@ -1,8 +1,28 @@
-import { ParserUnrecognizedError, ParserUnsupportedSchemeError } from './errors';
+import {
+    ParserInvalidAmountError,
+    ParserUnrecognizedError,
+    ParserUnsupportedSchemeError
+} from './errors';
 import type { BtcTransferScheme, ExternalInputScheme, ExternalInputSchemeName } from './schemes';
 import { BtcAddress } from '../blockchain-api/btc/btc-address';
+import { BTC_ASSET } from '../entities/asset/btc-asset';
+import { CANONICAL_DECIMAL_REGEX } from '../utils/format/number-formatter';
+import { toBig } from '../utils/number';
 
 type Parser = (raw: string) => ExternalInputScheme | null;
+
+function parseBip21Amount(raw: string): string {
+    if (!CANONICAL_DECIMAL_REGEX.test(raw)) {
+        throw new ParserInvalidAmountError();
+    }
+
+    const value = toBig(raw);
+    if (value.lte(0) || !value.eq(value.round(BTC_ASSET.decimals, 0))) {
+        throw new ParserInvalidAmountError();
+    }
+
+    return raw;
+}
 
 const parseBip21: Parser = raw => {
     const prefix = 'bitcoin:';
@@ -32,7 +52,7 @@ const parseBip21: Parser = raw => {
         const params = new URLSearchParams(queryString);
 
         const amount = params.get('amount');
-        if (amount) parsed.amount = amount;
+        if (amount !== null) parsed.amount = parseBip21Amount(amount);
 
         const label = params.get('label');
         if (label) parsed.label = label;

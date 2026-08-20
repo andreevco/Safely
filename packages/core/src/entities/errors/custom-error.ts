@@ -8,7 +8,11 @@ import { OutputsAreSpendingMoreThanInputsError } from './outputs-are-spending-mo
 import { PortfolioAlreadyExistsError } from './portfolio-already-exists.error';
 import { PortfolioGenerationFailedError } from './portfolio-generation-failed.error';
 import { BtcSendDustError } from '../../blockchain-api/btc/errors';
-import { ParserUnrecognizedError, ParserUnsupportedSchemeError } from '../../external-input/errors';
+import {
+    ParserInvalidAmountError,
+    ParserUnrecognizedError,
+    ParserUnsupportedSchemeError
+} from '../../external-input/errors';
 
 export const customErrors = {
     InvalidMnemonicError,
@@ -19,6 +23,7 @@ export const customErrors = {
     LinkingUnsafeProtocolError,
     LinkingFailedToOpenError,
     ReconnectFromAnotherAccountError,
+    ParserInvalidAmountError,
     ParserUnrecognizedError,
     ParserUnsupportedSchemeError,
     InvalidBlockchainAndTokenError

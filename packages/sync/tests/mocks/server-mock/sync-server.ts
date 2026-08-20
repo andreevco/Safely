@@ -53,6 +53,16 @@ export class SyncServer {
         this.createAccount(req);
     }
 
+    public dropSyncData(accountId: string): void {
+        const acc = this.findAccount(accountId);
+        if (!acc) {
+            throw new Error(`Account with id ${accountId} not found`);
+        }
+
+        acc.latestSnapshot = null;
+        acc.proofChain = [];
+    }
+
     public addDeviceToAccount(req: AddDeviceToAccountRequest, requesterIk: string): void {
         const acc = this.findAccountByIkPub(requesterIk);
         this.verifyAddDeviceSignature(acc, req.signedDeviceIdentity);
@@ -293,7 +303,7 @@ export class SyncServer {
     private getLatestSnapshotRecord(account: Account): SnapshotRecord {
         const latest = account.latestSnapshot;
         if (!latest) {
-            throw new Error('No snapshots available');
+            throw new SyncServerError(403002, 'No snapshots available');
         }
         return latest;
     }
@@ -377,6 +387,15 @@ export class SyncServer {
                 subscriber.notify();
             }
         }
+    }
+}
+
+class SyncServerError extends Error {
+    constructor(
+        public readonly code: number,
+        message: string
+    ) {
+        super(message);
     }
 }
 

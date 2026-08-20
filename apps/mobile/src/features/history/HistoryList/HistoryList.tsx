@@ -33,7 +33,6 @@ import {
     type HistoryRowItem,
     buildActivityRow,
     buildHeaderRow,
-    getGroupKey,
     timeFormatDetailsByGroupLabel
 } from './utils/rows';
 
@@ -115,8 +114,7 @@ export const HistoryList = (props: HistoryListProps) => {
         };
 
         return historyGroups.flatMap(group => {
-            const { items: groupActivities, ...meta } = group;
-            const groupKey = getGroupKey(meta);
+            const { items: groupActivities, meta, key: groupKey } = group;
             const timeFormatDetails = timeFormatDetailsByGroupLabel[meta.label];
 
             const header = buildHeaderRow(meta, groupKey, t, groupFormatter);

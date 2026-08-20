@@ -1,5 +1,7 @@
+import { useFocusEffect } from '@react-navigation/native';
 import { useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { BackHandler } from 'react-native';
 
 import { useAppState } from '@safely/ux';
 
@@ -25,6 +27,14 @@ export const LockScreen = () => {
         hasUnlockedRef.current = true;
         unlock();
     }, [unlock]);
+
+    useFocusEffect(
+        useCallback(() => {
+            const subscription = BackHandler.addEventListener('hardwareBackPress', () => true);
+
+            return () => subscription.remove();
+        }, [])
+    );
 
     const handleBiometryPress = useCallback(async () => {
         const result = await authenticateBiometry();

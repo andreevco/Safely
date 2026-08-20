@@ -4,6 +4,7 @@ import { collectEncodingTables, encodeAuthor } from './authors';
 import type { BinaryPayload, EncodedKey, SlotTuple } from './format';
 import type { ContainerSlot, Slot } from '../../slots';
 import { SlotKind } from '../../slots';
+import { compareStrings } from '../../string-compare';
 
 export function encodeCbor(root: ContainerSlot): Buffer {
     const tables = collectEncodingTables(root);
@@ -49,7 +50,7 @@ function sortedEntries(
 ): [string, Slot][] {
     return Object.entries(slot.v)
         .filter((entry): entry is [string, Slot] => entry[1] !== undefined)
-        .sort(([keyA], [keyB]) => keyA.localeCompare(keyB));
+        .sort(([keyA], [keyB]) => compareStrings(keyA, keyB));
 }
 
 function encodeKey(key: string, keyIndexes: ReadonlyMap<string, number>): EncodedKey {

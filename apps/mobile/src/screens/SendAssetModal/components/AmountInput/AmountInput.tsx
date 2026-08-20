@@ -1,5 +1,5 @@
 import { forwardRef, useCallback, useImperativeHandle, useRef } from 'react';
-import { TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { TouchableOpacity, View } from 'react-native';
 import Animated, { useSharedValue } from 'react-native-reanimated';
 import { useUnistyles } from 'react-native-unistyles';
 
@@ -79,59 +79,52 @@ export const AmountInput = forwardRef<MaskedInputRef, AmountInputProps>((props, 
                 </View>
             )}
             <View style={styles.inputPaddingContainer}>
-                <TouchableWithoutFeedback onPress={() => inputRef.current?.focus()}>
-                    <Animated.View style={[styles.inputContainer, inputStyle]}>
-                        <View style={styles.leftContentContainer}>
-                            <View style={styles.textInputWithCurrencySymbolContainer}>
-                                {isMax && (
-                                    <Text variant="titleS" color="tertiary">
-                                        ≈{' '}
-                                    </Text>
-                                )}
-                                <MaskedInput
-                                    testID={TEST_ID.send.amountInput}
-                                    ref={inputRef}
-                                    decimals={decimals}
-                                    decimalSeparator={decimalSeparator}
-                                    value={value}
-                                    onChangeText={handleChangeText}
-                                    onPaste={onPaste}
-                                    onFocusChange={handleFocusChange}
-                                    placeholder={placeholder}
-                                    placeholderTextColor={theme.colors.text.tertiary}
-                                    textColor={theme.colors.text.primary}
-                                    keyboardType="decimal-pad"
-                                    fontSize={32}
-                                    suffix={currencySymbol}
-                                    suffixColor={theme.colors.text.tertiary}
-                                    suffixFontSize={14}
-                                    style={styles.input}
-                                />
-                            </View>
-                            <TouchableOpacity
-                                testID={TEST_ID.send.switchAmountMode}
-                                activeOpacity={0.8}
-                                onPress={onSwitchFiatMode}
-                                style={styles.switchButton}
-                            >
-                                <Animated.View style={styles.secondaryCurrencyContainer}>
-                                    <Text
-                                        numberOfLines={1}
-                                        variant="bodyM"
-                                        color="tertiary"
-                                        monospace
-                                    >
-                                        {formattedAlternativeAmount ?? '0'}
-                                    </Text>
-                                    <Icon icon={SwapVertical20} color="secondary" />
-                                </Animated.View>
-                            </TouchableOpacity>
+                <Animated.View style={[styles.inputContainer, inputStyle]}>
+                    <View style={styles.leftContentContainer}>
+                        <View style={styles.textInputWithCurrencySymbolContainer}>
+                            {isMax && (
+                                <Text variant="titleS" color="tertiary">
+                                    ≈{' '}
+                                </Text>
+                            )}
+                            <MaskedInput
+                                testID={TEST_ID.send.amountInput}
+                                ref={inputRef}
+                                decimals={decimals}
+                                decimalSeparator={decimalSeparator}
+                                value={value}
+                                onChangeText={handleChangeText}
+                                onPaste={onPaste}
+                                onFocusChange={handleFocusChange}
+                                placeholder={placeholder}
+                                placeholderTextColor={theme.colors.text.tertiary}
+                                textColor={theme.colors.text.primary}
+                                keyboardType="decimal-pad"
+                                fontSize={32}
+                                suffix={currencySymbol}
+                                suffixColor={theme.colors.text.tertiary}
+                                suffixFontSize={14}
+                                style={styles.input}
+                            />
                         </View>
-                        {RightComponent && (
-                            <View style={styles.rightContentContainer}>{RightComponent}</View>
-                        )}
-                    </Animated.View>
-                </TouchableWithoutFeedback>
+                        <TouchableOpacity
+                            testID={TEST_ID.send.switchAmountMode}
+                            activeOpacity={0.8}
+                            onPress={onSwitchFiatMode}
+                            style={styles.switchButton}
+                        >
+                            <Animated.View style={styles.secondaryCurrencyContainer}>
+                                <Text numberOfLines={1} variant="bodyM" color="tertiary" monospace>
+                                    {formattedAlternativeAmount ?? '0'}
+                                </Text>
+                                <Icon icon={SwapVertical20} color="secondary" />
+                            </Animated.View>
+                        </TouchableOpacity>
+                    </View>
+                    {RightComponent && (
+                        <View style={styles.rightContentContainer}>{RightComponent}</View>
+                    )}
+                </Animated.View>
             </View>
         </View>
     );
