@@ -10,6 +10,7 @@ import type {
 } from '../types';
 import { DEFAULT_FIAT_DECIMALS } from '../utils';
 
+// TODO CRITICAL for multichain: Get rid of default decimals
 export function resolveAmountDecimals(
     inputType: AmountInputType,
     asset: RatedCryptoAssetAmount | undefined
