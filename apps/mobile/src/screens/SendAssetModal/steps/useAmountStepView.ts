@@ -1,8 +1,7 @@
 import { useMemo } from 'react';
 
 import type { NumberFormatter } from '@safely/core';
-import { BTC_ASSET } from '@safely/core';
-import { SendFormError, type AmountView } from '@safely/ux';
+import { SendFormError, resolveAmountDecimals, type AmountView } from '@safely/ux';
 
 interface UseAmountStepViewParams {
     view: AmountView;
@@ -14,7 +13,8 @@ export function useAmountStepView(params: UseAmountStepViewParams) {
     const { view, formatter, fiatSymbol } = params;
 
     const asset = view.parsed.asset;
-    const decimals = asset?.amount.asset.decimals ?? BTC_ASSET.decimals;
+    const inputType = view.values.amountInputType;
+    const decimals = resolveAmountDecimals(inputType, asset);
     const hasPrice = !!asset?.price;
     const rawAmountError = view.errors.amount;
     const amountError =
@@ -23,7 +23,6 @@ export function useAmountStepView(params: UseAmountStepViewParams) {
             ? rawAmountError
             : undefined;
     const isMax = view.status === 'max';
-    const inputType = view.values.amountInputType;
 
     const alternativeAmount = useMemo(() => {
         const parsedAmount = view.parsed.amount;

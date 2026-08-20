@@ -50,7 +50,7 @@ export interface MaskedInputProps {
 }
 
 interface NativeChangeEvent {
-    nativeEvent: { rawText: string; formattedText: string };
+    nativeEvent: { rawText: string; formattedText: string; eventCount: number };
 }
 
 interface NativeFocusEvent {
@@ -83,9 +83,11 @@ export const MaskedInput = forwardRef<MaskedInputRef, MaskedInputProps>((props, 
         suffixColor,
         placeholder,
         suffix,
+        value,
         ...rest
     } = props;
     const nativeRef = useRef<{ nativeTag?: number }>(null);
+    const eventCountRef = useRef(0);
 
     const getTag = useCallback(() => nativeRef.current?.nativeTag ?? -1, []);
 
@@ -97,8 +99,12 @@ export const MaskedInput = forwardRef<MaskedInputRef, MaskedInputProps>((props, 
     }));
 
     const handleChangeText = useCallback(
-        (e: NativeChangeEvent) =>
-            onChangeText?.(e.nativeEvent.rawText, e.nativeEvent.formattedText),
+        (e: NativeChangeEvent) => {
+            const { rawText, formattedText, eventCount } = e.nativeEvent;
+
+            eventCountRef.current = eventCount;
+            onChangeText?.(rawText, formattedText);
+        },
         [onChangeText]
     );
 
@@ -116,6 +122,7 @@ export const MaskedInput = forwardRef<MaskedInputRef, MaskedInputProps>((props, 
         <NativeView
             ref={nativeRef}
             {...rest}
+            value={{ text: value ?? null, eventCount: eventCountRef.current }}
             placeholder={placeholder ?? ''}
             suffix={suffix ?? ''}
             textColor={toHex(textColor)}
