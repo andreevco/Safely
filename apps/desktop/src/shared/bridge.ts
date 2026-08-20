@@ -1,4 +1,5 @@
-import type { AppInfo, AppState } from './ipc';
+import type { AppInfo } from './app-info';
+import type { AppState } from './ipc';
 
 /**
  * The only path from the web UI to Electron, and the only module both processes may import.
@@ -25,7 +26,7 @@ export interface DesktopBridge {
         chrome: string;
     };
 
-    getAppInfo(): Promise<AppInfo>;
+    readonly appInfo: AppInfo;
 
     relaunch(): void;
 
@@ -34,9 +35,6 @@ export interface DesktopBridge {
     onAppStateChange(callback: (state: AppState) => void): () => void;
 
     openExternalUrl(url: string): Promise<void>;
-
-    /* No `security` member, and the stores add none: they hold no unlocked state to gate. A
-       passcode prompt is the renderer's own layer over `secureEncryptedStore`. */
 
     store: DesktopStoreBridge;
 

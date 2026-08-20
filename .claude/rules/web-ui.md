@@ -92,7 +92,7 @@ bundled), and a package that reaches for the environment forces both of them int
 
 Concretely, and deliberately absent: there is **no `./bootstrap` entry and no `globals.ts`** — the
 globals the domain packages read (`Buffer`, `IsomorphicEventSource`, `safelyCrypto.pbkdf2Sha512`) are
-installed by `apps/desktop/src/renderer/bootstrap.ts`, the web counterpart of
+installed by `../../apps/desktop/src/renderer/global-polyfills.ts`, the web counterpart of
 `apps/mobile/global-polyfills.ts`, and the extension will get its own copy. There is also **no shared
 Vite preset**: each app writes its own config (`apps/desktop/vite.renderer.config.ts`). If a third web
 target ever repeats the same twenty lines, extract them then — a shared build config is how

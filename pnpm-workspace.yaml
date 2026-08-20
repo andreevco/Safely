@@ -1,10 +1,6 @@
 packages:
   - 'packages/*'
   - 'apps/*'
-  # native addons belong to their app, but must be workspace packages so pnpm installs their own
-  # dependencies (node-addon-api, node-gyp). The addon is built by the app's `build:native`
-  # script, never by `pnpm install` — see `.claude/rules/desktop-app.md`.
-  - 'apps/desktop/native/*'
 
 catalog:
   zod: '4.4.1'

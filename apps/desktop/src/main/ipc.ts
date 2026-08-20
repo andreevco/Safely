@@ -1,11 +1,10 @@
 import type { BrowserWindow, IpcMainInvokeEvent } from 'electron';
-import { app, ipcMain, shell } from 'electron';
-import os from 'node:os';
+import { ipcMain, shell } from 'electron';
 import type { ZodType } from 'zod';
 
 import type { StoreScope } from './store';
 import { clearStores, getStore } from './store';
-import type { AppInfo, StoreChannels } from '../shared/ipc';
+import type { StoreChannels } from '../shared/ipc';
 import {
     IPC_CHANNEL,
     sOpenExternalRequest,
@@ -40,19 +39,6 @@ function assertTrustedSender(event: IpcMainInvokeEvent): void {
 }
 
 export function registerIpcHandlers(getWindow: () => BrowserWindow | null): void {
-    ipcMain.handle(IPC_CHANNEL.appInfo, (event): AppInfo => {
-        assertTrustedSender(event);
-
-        return {
-            version: app.getVersion(),
-            environment: app.isPackaged ? 'production' : 'development',
-            deviceName: os.hostname(),
-            osVersion: os.release(),
-            locale: app.getLocale(),
-            deviceCountryCode: app.getLocaleCountryCode() || null
-        };
-    });
-
     ipcMain.handle(IPC_CHANNEL.appRelaunch, event => {
         assertTrustedSender(event);
         getWindow()?.reload();

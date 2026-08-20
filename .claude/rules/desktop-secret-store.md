@@ -68,11 +68,14 @@ per-scope knob would only make it possible to pick the weaker class by accident.
 the two (`AfterFirstUnlock` for `encrypted`, so background work survives a lock), and desktop
 deliberately does not follow it there.
 
-The cost is real and is not a bug: while the screen is locked, **every** secret-store operation fails
-with `errSecInteractionNotAllowed` and arrives as `UNAVAILABLE`. The app keeps running through a
-lock, so the sync engine sees those failures and has to treat them as transient — it must not read
-them as "no account". If that turns out to be untenable, the fix is to move the sync scope back to
-`AfterFirstUnlock` **deliberately**, in this file, not by handing the choice to a call site.
+What "unlocked" means here is **not measured**, and the two readings differ: on iOS the class is
+evicted the moment the screen locks, while on macOS the data protection keychain follows the login
+session, so a screen saver may well leave every item readable. Until it is checked on a signed build,
+assume only that an operation can fail with `errSecInteractionNotAllowed` and arrive as
+`UNAVAILABLE` — the app keeps running through a lock, so the sync engine has to treat those failures
+as transient and never as "no account". If the stricter reading holds and hurts, moving the sync scope
+to `AfterFirstUnlock` is a **deliberate** change made in this file, not a choice handed to a call
+site.
 
 The access group is not set explicitly: omitting `kSecAttrAccessGroup` uses the app's own group,
 which is exactly the isolation we want and one fewer string to get wrong. The services are tied to
@@ -129,9 +132,6 @@ Two things that come with it, and both are easy to miss:
   `kSecUseAuthenticationContext`, or enumerating a gated scope raises a prompt. The mobile module has
   the same line and the reason next to it.
 
-The reverse of what a data key used to buy is worth stating: with one item per key there is no
-"re-wrap the DEK" shortcut, and equally no single value whose loss kills the whole store.
-
 ## Where the rest lives
 
 ```
@@ -145,8 +145,10 @@ userData/store/dev-keychain-*.json        development stub only, plaintext, neve
 ## The keychain layer
 
 `apps/desktop/src/main/plugins/keychain/` holds the addon's surface (`types.ts`), the module that
-loads it and an `index.ts` that re-exports them. The port **is** the addon's shape, so joining them
-takes no adapter and a native module that stops providing what the store needs fails to compile:
+loads it and an `index.ts` that re-exports them. The addon ships no declarations of its own,
+so `types.ts` is the single description of the binary and nothing has to be kept in sync by hand. The
+port **is** the addon's shape, so joining them takes no adapter and a native module that stops
+providing what the store needs fails to compile:
 
 ```ts
 export interface Keychain {
@@ -232,7 +234,7 @@ that ships in the same bundle would only make development data look protected.
 ## Build requirements
 
 Every guarantee above is a property of the signature, so the store does not exist without these — how
-the profiles and certificates are obtained is in `apps/desktop/signing/README.md`:
+the profiles and certificates are obtained is in `desktop-signing.md`:
 
 - explicit App ID and an embedded provisioning profile (**Developer ID** for a release, **Apple
   Development** for a QA build); `com.apple.application-identifier` is not a string you may simply
@@ -252,16 +254,15 @@ entitlements nothing validates produces an app that reaches no access group.
 
 ## Verifying a build
 
-`apps/desktop/signing/verify.sh <app>` checks the **signature**: that it verifies, that the hardened
-runtime is on, that a profile is embedded and unexpired, that `application-identifier` is on the main
-binary and **not** on a helper, that `get-task-allow` is nowhere. CI runs it as a gate on every QA
-build (`.github/workflows/desktop-preview.yml`).
+`apps/desktop/signing/verify-signature.sh <app>` checks the **signature**: that it verifies, that
+the hardened runtime is on, that a profile is embedded and unexpired, that `application-identifier`
+is on the main binary and **not** on a helper, that `get-task-allow` is nowhere. CI runs it as a gate
+on every QA build (`.github/workflows/desktop-preview.yml`).
 
 It cannot check that securityd honours any of it — a profile can be present, unexpired and still name
 the wrong App ID or omit this machine. That half is exercised by **launching the app** and writing
-through the encrypted-store panel in `ScaffoldView.tsx`. There is no headless self-test: with one
-item per key the runtime path is what the app does on its first store call anyway, and a separate
-harness that CI never ran was documentation pretending to be a check.
+through the encrypted-store panel in `ScaffoldView.tsx` — with one item per key that is the same path
+the app takes on its first store call, so there is deliberately no headless self-test beside it.
 
 What neither covers:
 
@@ -297,64 +298,45 @@ The store imports the keychain rather than taking it, so the tests replace the m
 `vi.mock` and a fake (`apps/desktop/test/main/store/fake-keychain.ts` — a test double, not the
 development stub, which is not importable; it is one shared instance, hence its `reset()`). Covered:
 round trip, absent key, replace rather than duplicate, prefix listing and prefix deletion, empty
-prefix behaving as `clear`, one service never touching another, a non-UTF-8 item reported as
-`CORRUPT`, and a platform failure arriving as `UNAVAILABLE` with the cause preserved.
+prefix behaving as `clear`, one service never touching another, values staying byte-exact across the
+UTF-8 round trip, a non-UTF-8 item reported as `CORRUPT`, and a platform failure arriving as
+`UNAVAILABLE` with the cause preserved.
 
 `test/main/plugins/keychain/keychain-addon.test.ts` covers the other half: with no addon to load,
 the module logs and exits instead of throwing.
 
-The native part has no unit tests. What stands in for it is `verify.sh` on the signature and the app
-itself on a signed build.
+The native part has no unit tests. What stands in for it is `verify-signature.sh` on the signature
+and the app itself on a signed build.
 
 ## What was removed, and why it is not coming back
 
-**`safeStorage` plus a Touch ID gate** (`systemPreferences.promptTouchID` minting a 30-second
+**`safeStorage` plus a Touch ID gate** (`systemPreferences.promptTouchID` minting a short-lived
 ticket). `promptTouchID` is bound to no key — Electron's own documentation says it "will not protect
 your user data"; `safeStorage` keeps its key in a `<AppName> Safe Storage` **legacy** keychain entry
 whose ACL is phishable and pre-creatable (the Safe Storage key redefinition issue, seen in the wild
-against Chrome), and its values are AES-128-CBC with no MAC; and `canPromptTouchID()` is false on any
-Mac without Touch ID, so the gate closed the store entirely on those machines.
+against Chrome) and encrypts with
+AES-128-CBC without a MAC; and `canPromptTouchID()` is false on any Mac without Touch ID, so the gate
+closed the store entirely on those machines.
 
-**A Secure Enclave key sealing a data key** (`SecKeyCreateRandomKey` with
-`kSecAttrTokenIDSecureEnclave`, ECIES-sealed DEK in `vault.json`, AES-256-GCM per value with an AAD
-binding). It worked and ran on signed builds. It was removed because the property it was bought for
-did not survive scrutiny:
+**A Secure Enclave key sealing a data key.** An enclave-wrapped data key sat in a plain file next to
+the store, and every value was encrypted under it. It worked on signed builds and was still removed:
+the enclave key is non-extractable, the data key is not, and the data key is what decrypts the data —
+it landed in main's memory on every operation, so against anything inside our process the indirection
+bought nothing. The container was worse than the crypto: deleting that one small file left every
+value unreadable while the app came up looking healthy, and our keychain items cannot be removed
+selectively by an unentitled process.
 
-- the enclave key is non-extractable, but the **DEK is not** — and the DEK is what decrypts the data.
-  It landed in main's memory on every operation, including writes. Against anything inside our
-  process the indirection bought nothing;
-- the container was the weak part: `vault.json` was an ordinary file, so `rm` of one hundred-byte
-  file left a full `encrypted.json` under a dead key, and the app came up looking healthy while every
-  read failed. A keychain item cannot be removed selectively by an unentitled process;
-- the asymmetry it could have offered — sealing with the public half, so writes need no gate — was
-  never used: `encode` unwrapped the DEK too.
-
-What was given up with it, honestly: on a Mac with no SEP the class keys protecting keychain items
-are not hardware-bound, and the app no longer refuses to run there. The SEP presence check was
-dropped because the premise was never measured, because we accept a possibly software-backed Keystore
-on Android without comment, and because a security gate with an env-var bypass — which CI would have
-needed — is not a gate. Excluding old hardware, if it is ever wanted, belongs in the minimum system
-requirements, not in a keychain plugin.
+Given up with it, and worth stating: the SEP presence check went too, so the app no longer refuses to
+run on a Mac whose class keys are not hardware-bound. The premise was never measured, we accept a
+possibly software-backed Keystore on Android without comment, and a gate CI needs an env var to
+bypass is not a gate. Excluding old hardware belongs in the minimum system requirements.
 
 ## When Windows comes back
 
-The research behind the macOS-only choice, so it does not have to be redone:
-
-- For unpackaged Win32 apps, Windows Hello credentials (`KeyCredentialManager`), TPM keys and DPAPI
-  are all scoped to the *user*, not the app — Microsoft confirms any same-user process may open the
-  same named credential by design. App-level isolation exists only inside an MSIX AppContainer, which
-  an Electron app cannot use.
-- Consequences: a phished or keylogged passcode is enough, because malware can obtain the hardware
-  half itself; memory protection stays open (the App-Bound Encryption bypasses attach a debugger to a
-  hidden browser without admin rights); and there must be **no** factor-free unlock.
-- What still works: a non-exportable TPM key via NCrypt and the Platform Crypto Provider kills
-  offline guessing, and passing a passcode as the key's PIN (`NCRYPT_PIN_PROPERTY`) moves rate
-  limiting into the TPM. Its dictionary-attack counter is chip-wide, so our own backoff must trigger
-  well before the hardware lockout, and the exact thresholds need measuring.
-- Distribution matters as much as crypto: a per-user install directory (the Squirrel default) lets
-  malware patch the app without admin rights, so Windows needs a per-machine installer.
-- An elevated helper service in the style of Chrome's App-Bound Encryption is not worth building: it
-  has been bypassed twice, and the second bypass needs no privileges.
+The research behind the macOS-only choice is in `apps/desktop/doc/windows-secret-store.md`, so it
+does not have to be redone: why Windows Hello, TPM keys and DPAPI are all user-scoped rather than
+app-scoped, what a non-exportable TPM key and a passcode as its PIN would still buy, why the
+installer has to be per-machine, and why an elevated helper service is not worth building.
 
 ## Implementation status
 
@@ -370,8 +352,5 @@ Not done, in order:
    `UnlockableSecuredEncryptedStorage` refuses and the app still cannot create or restore an account.
    That is now a renderer-side task plus `SecAccessControl` on the `secureEncrypted` items, not a
    storage rewrite;
-3. notarisation — a Developer ID build is signed and runs, but `spctl` reports
-   `Unnotarized Developer ID`, so it would be refused on a machine that downloaded it. Needs an App
-   Store Connect API key, nothing else;
-4. the isolation claim itself — a second signed bundle with a different bundle id reading our
+3. the isolation claim itself — a second signed bundle with a different bundle id reading our
    service, which must answer `errSecItemNotFound` without a dialog.

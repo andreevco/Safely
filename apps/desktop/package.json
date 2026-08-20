@@ -7,7 +7,7 @@
   "main": ".vite/build/main.js",
   "scripts": {
     "start": "electron-forge start",
-    "build:native": "pnpm --filter @safely/desktop-keychain run build",
+    "build:native": "node-gyp rebuild -C native/keychain",
     "package": "pnpm run build:native && electron-forge package",
     "make": "pnpm run build:native && electron-forge make",
     "compile": "tsc --noEmit",
@@ -17,7 +17,6 @@
   "dependencies": {
     "@noble/hashes": "catalog:",
     "@safely/core": "workspace:*",
-    "@safely/desktop-keychain": "workspace:*",
     "@safely/sync": "workspace:*",
     "@safely/ux": "workspace:*",
     "@safely/web-ui": "workspace:*",
@@ -39,6 +38,8 @@
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "5.2.0",
+    "node-addon-api": "8.5.0",
+    "node-gyp": "12.4.0",
     "typescript": "catalog:",
     "vite": "catalog:",
     "vitest": "^4.0.18",

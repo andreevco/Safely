@@ -3,8 +3,10 @@ import path from 'node:path';
 
 import { darkTheme } from '@safely/ux/theme';
 
+import { readAppInfo } from './app-info';
 import { appUrl } from './app-protocol';
 import { mainLogger } from './logger';
+import { encodeAppInfoArgument } from '../shared/app-info';
 
 const RENDERER_LOG_LEVEL = {
     error: 'error',
@@ -26,6 +28,9 @@ export function createMainWindow(devServerUrl: string | undefined): BrowserWindo
         backgroundColor: darkTheme.colors.background.primary,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
+            /* The renderer needs `appInfo` before its first line runs, so it arrives in the
+               preload's argv instead of over a channel. */
+            additionalArguments: [encodeAppInfoArgument(readAppInfo())],
             sandbox: true,
             contextIsolation: true,
             nodeIntegration: false,

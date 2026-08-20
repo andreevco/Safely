@@ -1,7 +1,7 @@
 import type { Build, IEnumerableStorage, ISyncKeyValueStorage } from '@safely/core';
 import type { AppStateStatus, LedgerTransport } from '@safely/ux';
 
-import type { AppInfo } from '../../shared/ipc';
+import type { AppInfo } from '../../shared/app-info';
 
 /**
  * What the renderer supplies to the shared UI — the app's own contract, not one `@safely/web-ui`
@@ -16,22 +16,16 @@ export interface DesktopSecurityGate {
 }
 
 export interface DesktopPlatformStorage {
-    /** Non-secret state: CRDT snapshots, query cache. */
-    regular: IEnumerableStorage;
+    REGULAR_DESKTOP_STORAGE_ONLY_APP_LEVEL_USE: IEnumerableStorage;
 
-    /** Encrypted at rest, readable without a user-presence check. */
-    encrypted: IEnumerableStorage;
+    ENCRYPTED_DESKTOP_STORAGE_ONLY_APP_LEVEL_USE: IEnumerableStorage;
 
-    /** Key material. A fresh handle per call: the unlocked state is per instance (see
-     *  `UnlockableSecuredEncryptedStorage`). */
-    createSecureEncrypted(): IEnumerableStorage;
+    SECURE_ENCRYPTED_DESKTOP_STORAGE_ONLY_APP_LEVEL_USE: IEnumerableStorage;
 
-    /** Read before React mounts (language, dev flags), so it cannot be asynchronous. */
     synchronous: ISyncKeyValueStorage;
 }
 
 export interface DesktopPlatform {
-    /** `build` is what the config API and analytics report; the rest comes from main. */
     readonly appInfo: AppInfo & { build: Build };
 
     readonly storage: DesktopPlatformStorage;

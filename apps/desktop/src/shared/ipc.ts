@@ -1,11 +1,6 @@
 import { z } from 'zod';
 
-/**
- * The IPC surface, shared by main (which validates and serves it) and preload (which forwards).
- * Channel names are constants, never composed at runtime.
- */
 export const IPC_CHANNEL = {
-    appInfo: 'safely:app:info',
     appRelaunch: 'safely:app:relaunch',
     appClearData: 'safely:app:clear-data',
     appState: 'safely:app:state',
@@ -53,16 +48,6 @@ export const sStoreSetRequest = z.object({ key: sKey, value: sValue });
 export const sStorePrefixRequest = z.object({ prefix: sPrefix });
 
 export const sOpenExternalRequest = z.object({ url: z.string().max(2048) });
-
-export const sAppInfo = z.object({
-    version: z.string(),
-    environment: z.enum(['production', 'development']),
-    deviceName: z.string(),
-    osVersion: z.string(),
-    locale: z.string(),
-    deviceCountryCode: z.string().nullable()
-});
-export type AppInfo = z.infer<typeof sAppInfo>;
 
 export const sAppState = z.enum(['active', 'background', 'inactive', 'unknown']);
 export type AppState = z.infer<typeof sAppState>;

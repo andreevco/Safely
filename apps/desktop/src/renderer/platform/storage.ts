@@ -2,11 +2,6 @@ import type { IEnumerableStorage, ISyncKeyValueStorage } from '@safely/core';
 
 import type { DesktopStoreBridge } from '../../shared/bridge';
 
-/**
- * Files owned by main, not IndexedDB: browser storage is bound to the renderer origin, which
- * differs between the dev server and a packaged build, and sealing values with the keychain is
- * possible only in main.
- */
 export function createEnumerableStorage(store: DesktopStoreBridge): IEnumerableStorage {
     return {
         getItem: key => store.get(key),

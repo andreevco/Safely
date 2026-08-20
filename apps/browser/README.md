@@ -13,7 +13,7 @@ The extension build entry and the browser implementation of the platform contrac
   (IndexedDB / `chrome.storage`), clipboard, external links (`chrome.tabs`), locale, app-state, QR
   scanning. `@safely/web-ui` declares no such interface: what a platform is differs per target, so
   describe it here rather than reusing `DesktopPlatform`.
-- **Globals**: an equivalent of `apps/desktop/src/renderer/bootstrap.ts` (`Buffer`,
+- **Globals**: an equivalent of `../desktop/src/renderer/global-polyfills.ts` (`Buffer`,
   `IsomorphicEventSource`, `safelyCrypto.pbkdf2Sha512`) and this app's own Vite config — neither is
   provided by the shared package.
 - **Manifest and packaging**: `manifest.json`, store artefacts, permissions.
@@ -28,9 +28,10 @@ React Native. `eslint-plugin-boundaries` enforces it: `web-ui` may not import ap
 
 - **MV3 CSP** forbids remote code and `unsafe-eval`. This is one reason the styling layer is
   zero-runtime (Panda): the build must not inject styles at runtime.
-- **No privileged process.** Unlike Electron there is no main process, so there is no OS keychain
-  (`safeStorage`) and no trusted confirmation window. Secret-at-rest protection has to be solved
-  differently (passcode-derived key), and that decision needs its own threat-model entry.
+- **No privileged process.** Unlike Electron there is no main process, so nothing can reach an OS
+  keychain item bound to the code signature, and there is no trusted confirmation window.
+  Secret-at-rest protection has to be solved differently (passcode-derived key), and that decision
+  needs its own threat-model entry.
 - **Popup lifetime is short.** A popup is destroyed when it closes, so the sync engine only runs
   while a view is open unless it is hosted in the service worker — which MV3 terminates when idle.
 - **SSE needs custom headers**, so the native `EventSource` is unusable here as well;

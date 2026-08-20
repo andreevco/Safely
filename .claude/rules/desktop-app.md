@@ -32,32 +32,45 @@ stay: they are correct cross-platform behaviour, not dead code.
 
 **All domain code runs in the renderer** — the sync engine, the CRDT, the crypto, the keys. That is
 deliberate: the same code has to run in the browser extension, where no privileged process exists at
-all. The main process owns storage and lifecycle (the store file, the keychain, windows, deep links);
-it is never a participant in the domain.
+all. The main process owns storage and lifecycle (the store file, the keychain, the window); it is
+never a participant in the domain.
 
 `src/renderer/app/AppProviders.tsx` assembles the `IAppContext` that every `@safely/ux` hook reads
 out of a `DesktopPlatform` implementation, whose shape this app declares itself
 (`src/renderer/platform/types.ts`) — the same division mobile uses, where
-`apps/mobile/src/app/AppContext.tsx` does the assembly. `@safely/web-ui` supplies the pure
-parts (`WebLinking`, the toast service, the logger/i18n factories); the stubs for what
-this target lacks are ours (`src/renderer/platform/unsupported.ts`), because the extension will lack a
-different set. The extension will repeat this wiring with its own platform.
+`apps/mobile/src/app/AppContext.tsx` does the assembly. `@safely/web-ui` supplies the pure parts
+(`WebLinking`, the toast service, the logger/i18n factories); the stubs for what this target lacks
+are ours (`src/renderer/platform/unsupported.ts`), because the extension will lack a different set.
+The extension will repeat this wiring with its own platform.
+
+**The renderer's platform is a module-level value, not something a component creates.**
+`src/renderer/platform/index.ts` builds it once while the module graph loads, and the logger
+(`src/renderer/logger.ts`), the query client and the persister (module scope in `AppProviders.tsx`)
+hang off it — the same shape as `apps/mobile/src/app/App.tsx`. That is only possible because nothing
+in it is asynchronous, which is why `AppInfo` reaches the renderer through the preload's argv
+(`webPreferences.additionalArguments` in `src/main/window.ts`, `src/shared/app-info.ts`) instead of a
+channel: a promise there would push the query client back into a `useState` and the whole boot into an
+`async mount()`. The consequences of that choice are in `shared/app-info.ts`: the values are frozen
+when the window is created — a `reload()` keeps the same process and the same argv — so nothing that
+can change while the app runs may be added to `AppInfo`, and the renderer's argv is readable by any
+process of the same user, so it carries no secret. The preload still parses it with the zod schema.
 
 **The environment is this app's job, not the shared package's.**
-`src/renderer/bootstrap.ts` installs the globals the domain packages read at load time — `Buffer`,
-`IsomorphicEventSource` (XHR-based: the SSE stream needs an `Authorization` header) and
-`safelyCrypto.pbkdf2Sha512` (`pbkdf2Async` from `@noble/hashes`, which yields to the scheduler instead
-of blocking the renderer) — and it is the web counterpart of `apps/mobile/global-polyfills.ts`.
-`import './bootstrap'` **must stay the first import of `src/renderer/index.tsx`**: ES imports are
-evaluated before the importing module's body, and the Ledger SDK reads `Buffer` while being evaluated.
-For the same reason nothing inside `bootstrap.ts` may import `@safely/ux` or `@safely/web-ui`, whose
-module graphs would then be evaluated above the install calls.
+`src/renderer/global-polyfills.ts` installs the globals the domain packages read at load time —
+`Buffer`, `IsomorphicEventSource` (XHR-based: the SSE stream needs an `Authorization` header) and
+`safelyCrypto.pbkdf2Sha512` (`pbkdf2Async` from `@noble/hashes`, which yields to the scheduler
+instead of blocking the renderer) — and it is the web counterpart of
+`apps/mobile/global-polyfills.ts`. `import './global-polyfills'` **must stay the first import of
+`src/renderer/index.tsx`**: ES imports are evaluated before the importing module's body, and the
+Ledger SDK reads `Buffer` while being evaluated. For the same reason nothing inside
+`global-polyfills.ts` may import `@safely/ux` or `@safely/web-ui`, whose module graphs would then be
+evaluated above the install calls.
 
 The renderer therefore holds secret material in memory. Moving the secret handling and the signer
-into main is a known, deliberately deferred option — it protects the seed's confidentiality but not the funds,
-because a compromised renderer can still ask main to sign; only a main-owned confirmation window
-would change that. Keep the seams intact for it: everything platform-specific reaches the UI through
-`DesktopPlatform`, and secrets never land in zustand, react-query or an xstate context.
+into main is a known, deliberately deferred option — it protects the seed's confidentiality but not
+the funds, because a compromised renderer can still ask main to sign; only a main-owned confirmation
+window would change that. Keep the seams intact for it: everything platform-specific reaches the UI
+through `DesktopPlatform`, and secrets never land in zustand, react-query or an xstate context.
 
 ## Storage lives in main, not in the renderer
 
@@ -89,8 +102,8 @@ the instance.
 That applies to `regular` only. The secret scopes hold no file and run no crypto of ours: a value is
 a keychain item, and what it is worth is decided by the access group in our code signature. There is
 **no unlocked state** anywhere in main, so nothing has to be locked on hide or suspend and no
-`vault:*`-style channel exists. `safeStorage` is gone — its ACL is phishable and its values carry no
-MAC.
+channel exists for unlocking or sealing anything — `desktop-secret-store.md` lists what was tried
+before this design and why it is not coming back.
 
 The price of the file's write-through is a full rewrite per mutation, which is fine at wallet scale;
 if the data outgrows it, the way out is an embedded store with a write-ahead log (SQLite) — not a
@@ -104,12 +117,12 @@ Two independent gaps, and confusing them wastes a day:
 group, so the addon reports itself unavailable and `pnpm start` runs on the development stub inlined
 in `vite.main.config.ts`: plain files in the development `userData`, protecting nothing, warning on
 every start. A packaged build refuses to start rather than degrade to it. Anything you want to
-believe about the store has to be checked on a signed build — `signing/verify.sh` for the signature,
-the running app for securityd.
+believe about the store has to be checked on a signed build — `signing/verify-signature.sh` for
+the signature, the running app for securityd.
 
 **The renderer cannot prove user presence.** `DesktopPlatform.security` is still
 `unsupportedSecurityGate` (`src/renderer/platform/unsupported.ts`), so
-`UnlockableSecuredEncryptedStorage` refuses even though `createSecureEncrypted()` now returns a real
+`UnlockableSecuredEncryptedStorage` refuses even though `createSecureEncrypted()` returns a real
 storage. Until a gate exists, **the desktop app cannot create or restore an account**, because
 onboarding writes `master_key`, `vault_key` and `dmk_prv` through that scope. Do not "temporarily"
 route those keys into `regular` or `localStorage` to unblock a flow.
@@ -120,7 +133,9 @@ Do not weaken these without a threat-model note:
 
 - `sandbox: true`, `contextIsolation: true`, `nodeIntegration: false`, `app.enableSandbox()`.
 - The preload is transport only. Every capability is a named channel with a zod-validated payload;
-  never expose a generic "invoke anything" bridge. Inputs are validated in main (authoritative).
+  never expose a generic "invoke anything" bridge. Inputs are validated in main (authoritative). The
+  one non-channel member of the bridge is `appInfo`, a value injected as a process argument — no
+  capability comes that way.
 - CSP is built in `src/main/security.ts`, with a looser policy only while the dev server runs.
   `style-src 'unsafe-inline'` is required by `@floating-ui` inside Base UI; scripts get no such
   exemption in production. `connect-src` is an allowlist — `'self'` plus `https://*.safely.app`, where
@@ -139,7 +154,7 @@ Do not weaken these without a threat-model note:
   listener rewrites it for `*.safely.app` responses. Details that matter if you touch it:
   - Preflights *are* visible to `webRequest` (electron/electron#22407, Electron ≥ 9), so an `OPTIONS`
     the backend answers with 404/405 is rewritten into `HTTP/1.1 200 OK` plus the allow headers.
-    Verified against the real sync API: a GET carrying `Authorization` now reaches the server.
+    Verified against the real sync API: a GET carrying `Authorization` reaches the server.
   - `Authorization` is listed explicitly in `access-control-allow-headers`. The `*` wildcard covers
     every header **except** that one, and both the sync API and its SSE stream send it.
   - Existing `access-control-*` headers from the backend are dropped, not respected: the sync API
@@ -161,15 +176,22 @@ wallet keeps synced state — unreliable, and weakens CSP. The dev server is a d
 (`http://localhost:*`), so browser storage does not carry over between `start` and a packaged build;
 `src/main/paths.ts` keeps the dev profile in a separate `userData` directory for the same reason.
 
-The scheme is the same `safely` the deep links use, but the two are different mechanisms: this
-handler only serves requests made inside the app's session, while `safely://` URLs coming from the
-OS arrive through `open-url` / argv. A deep link therefore has a different host than the app origin
-and is refused by the navigation guard — it has to be translated into a route, never navigated to.
+Deep links are **not wired yet**: nothing calls `setAsDefaultProtocolClient`, there is no `open-url`
+listener and the bundle declares no URL type, so the OS never hands a `safely://` URL to the app.
+When they land they will arrive through `open-url` / argv — a different mechanism from this handler,
+which only serves requests made inside the app's session. Such a URL has a different host than the
+app origin and is refused by the navigation guard, so it has to be turned into a route, never
+navigated to.
 
-Closing the window hides it on macOS instead of destroying the renderer, because the sync engine
-lives there; `backgroundThrottling: false` keeps its timers running while hidden. A single instance
-lock guarantees one sync engine per machine. Hiding needs no store handling — there is no unlocked
-state to lock — but it is where a renderer-side passcode session would have to expire.
+Closing the window destroys the renderer, and the sync engine with it. The app itself stays alive —
+there is no `window-all-closed` handler — and `activate` or a second launch recreates the window
+(`revealMainWindow` in `src/main/index.ts`), which boots the engine from scratch and re-reads
+everything from the store. So nothing may depend on renderer memory outliving the window: whatever
+has to survive is written through a store before it matters. Hiding (Cmd+H) keeps the renderer and
+lets Chromium throttle its timers — `backgroundThrottling` stays at its default — and main reports
+the hide and the show to the renderer as app-state events. A single instance lock guarantees one sync
+engine per machine. Neither path needs store handling, there being no unlocked state to lock, but a
+renderer-side passcode session would have to expire on one of them.
 
 The renderer's logger writes to its devtools console, which is invisible when the app is driven from
 a terminal, so `src/main/window.ts` forwards renderer console messages, `did-fail-load` and
@@ -181,14 +203,18 @@ diagnosable.
 `electron-forge` (7.x) + `vite` (6.x) — `pnpm --filter @safely/desktop start | package | make`.
 
 - **The native addon is built by one script**: `pnpm --filter @safely/desktop run build:native`,
-  which is `node-gyp rebuild` in `native/keychain`. `package` and `make` run it first; `start`
-  does not need it, because development is aliased to the stub.
-- **`"install": "exit 0"` in the addon's package.json is load-bearing.** pnpm gives every workspace
-  project whose root holds a `binding.gyp` an implicit `install` script of `node-gyp rebuild` — the
-  `gypfile` flag has nothing to do with it — and declaring `install` is the only way to suppress it.
-  Without that line every `pnpm install` in the monorepo compiles the addon, and the Linux CI job
-  fails on the Objective-C++ sources. It stays a workspace package (an extra glob in
-  `pnpm-workspace.yaml`) so its own dependencies are installed.
+  which is `node-gyp rebuild -C native/keychain`. `package` and `make` run it first; `start` does
+  not need it, because development is aliased to the stub. The build tooling belongs to the app:
+  `node-gyp` and `node-addon-api` are its devDependencies, and `binding.gyp` still resolves the
+  headers because gyp runs `<!(…)` commands with the gyp file's directory as the working directory,
+  from which node resolution walks up into `apps/desktop/node_modules`.
+- **`native/keychain` is a plain folder, and turning it back into a workspace package is a
+  regression.** pnpm gives every workspace project whose root holds a `binding.gyp` an implicit
+  `install` script of `node-gyp rebuild` — the `gypfile` flag has nothing to do with it — so as a
+  package it compiled on every `pnpm install` in the monorepo and failed the Linux CI job on the
+  Objective-C++ sources; the only way to suppress that is an explicit `"install": "exit 0"`. A
+  package bought nothing in return: nothing imports the addon by name, main loads the binary by path,
+  and the surface it needs is declared in `src/main/plugins/keychain/types.ts`.
 - **The packager copies `.vite` and nothing else** — the forge vite plugin sets that `ignore` itself
   and overrides any of ours. So `node_modules` never reaches the app: the addon ships as
   `extraResource` and is loaded from `process.resourcesPath` through `createRequire`, never an
@@ -213,14 +239,13 @@ diagnosable.
   runtime is what keeps another process out of our memory, and the data protection keychain needs an
   embedded provisioning profile with `com.apple.application-identifier`. Never add
   `com.apple.security.cs.disable-library-validation` or `get-task-allow` to a production build —
-  `signing/verify.sh` fails on both, and CI runs it as a gate. Notarisation is still missing, so a
-  downloaded build needs its quarantine flag removed by hand.
+  `signing/verify-signature.sh` fails on both, and CI runs it as a gate. Notarisation is still
+  missing, so a downloaded build needs its quarantine flag removed by hand.
 - **QA builds are signed by CI with the Apple Development identity, releases locally with Developer
-  ID** (`../../.github/workflows/desktop-preview.yml`, `signing/README.md`). Two consequences for anything that
-  touches the build: CI proves the signature is well-formed and nothing more — whether securityd
-  honours it is only visible when the app runs — and a change to the entitlements or the bundle id
-  has to reach the provisioning profile before the workflow can sign again.
-
+  ID** (`../../.github/workflows/desktop-preview.yml`, `desktop-signing.md`). Two consequences for
+  anything that touches the build: CI proves the signature is well-formed and nothing more — whether
+  securityd honours it is only visible when the app runs — and a change to the entitlements or the
+  bundle id has to reach the provisioning profile before the workflow can sign again.
 - **The vite version is pinned by forge**: forge 7 is published as CommonJS and does
   `require('vite')`, and vite ≥ 7 no longer has a `require` export condition. Don't bump vite past 6
   until forge 8 is stable.

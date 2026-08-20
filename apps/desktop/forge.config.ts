@@ -4,7 +4,7 @@ import { FusesPlugin } from '@electron-forge/plugin-fuses';
 import { VitePlugin } from '@electron-forge/plugin-vite';
 import type { ForgeConfig } from '@electron-forge/shared-types';
 
-/* Build-time environment, all optional — `signing/README.md` says where the values come from:
+/* Build-time environment, all optional — see `.claude/rules/desktop-signing.md`:
      SAFELY_SIGN_IDENTITY   codesigning identity; naming one is what turns signing on
      SAFELY_SIGN_PROFILE    provisioning profile to embed, required alongside the identity
      SAFELY_SIGN_KEYCHAIN   keychain to look the identity up in; unset means the default search list */
