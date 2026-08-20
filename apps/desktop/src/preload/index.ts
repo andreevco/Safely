@@ -1,9 +1,10 @@
 import { contextBridge, ipcRenderer } from 'electron';
 
+import { parseAppInfoArgument } from '../shared/app-info';
 import type { DesktopBridge, DesktopStoreBridge } from '../shared/bridge';
 import { BRIDGE_KEY } from '../shared/bridge';
-import type { AppInfo, AppState, StoreChannels } from '../shared/ipc';
-import { IPC_CHANNEL, sAppInfo, sAppState, sIsFullScreen } from '../shared/ipc';
+import type { AppState, StoreChannels } from '../shared/ipc';
+import { IPC_CHANNEL, sAppState, sIsFullScreen } from '../shared/ipc';
 
 function createStoreBridge(channels: StoreChannels): DesktopStoreBridge {
     return {
@@ -43,9 +44,7 @@ const bridge: DesktopBridge = {
         chrome: process.versions.chrome
     },
 
-    async getAppInfo(): Promise<AppInfo> {
-        return sAppInfo.parse(await ipcRenderer.invoke(IPC_CHANNEL.appInfo));
-    },
+    appInfo: parseAppInfoArgument(process.argv),
 
     relaunch(): void {
         void ipcRenderer.invoke(IPC_CHANNEL.appRelaunch);
@@ -85,7 +84,9 @@ const bridge: DesktopBridge = {
 
     store: createStoreBridge(IPC_CHANNEL.store),
 
-    encryptedStore: createStoreBridge(IPC_CHANNEL.encryptedStore)
+    encryptedStore: createStoreBridge(IPC_CHANNEL.encryptedStore),
+
+    secureEncryptedStore: createStoreBridge(IPC_CHANNEL.secureEncryptedStore)
 };
 
 contextBridge.exposeInMainWorld(BRIDGE_KEY, bridge);

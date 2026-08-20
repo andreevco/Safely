@@ -18,7 +18,7 @@ Dependencies flow strictly bottom-up in this table; imports in the other directi
 | `packages/ux`               | React layer shared by every app: FSD (`shared` → `entities` → `features`), react-query, zustand, xstate forms, plus the design tokens (`./theme`) and the strings (`./translations`). No RN/DOM specifics. |
 | `packages/web-ui`           | React layer shared by the web targets: design system (Base UI + Panda) and pages. FSD + `pages`. Pure and stateless — no Electron/extension code, no platform contract, no globals, no build config. |
 | `apps/mobile`               | Expo dev-client (iOS/Android): FSD + `screens`, native modules `modules/safely-*`, unistyles, i18n.                                            |
-| `apps/desktop`              | Electron (forge + vite), **macOS-only build for now**: split by process (`main`/`preload`/`renderer`/`shared`), platform implementation for the web UI. |
+| `apps/desktop`              | Electron (forge + vite), **macOS-only build for now**: split by process (`main`/`preload`/`renderer`/`shared`), native addon `native/keychain`, platform implementation for the web UI. |
 | `apps/browser`              | MV3 extension — placeholder, see its README.                                                                                                    |
 | `packages/xhr-event-source` | EventSource over XHR for platforms without native SSE.                                                                                         |
 
@@ -37,7 +37,10 @@ Node version comes from `.nvmrc` (`nvm use`); pnpm only (`preinstall` blocks npm
 - `pnpm -r run lint`, `pnpm -r run test` — everything; CI runs them only for changed packages
   (`--filter "...[<merge-base>]"`), and for all packages when root-level files change
 - mobile: `pnpm --filter @safely/mobile ios|android|start` — dev-client, not Expo Go
-- desktop: `pnpm --filter @safely/desktop start|package|make`
+- desktop: `pnpm --filter @safely/desktop start|package|make`; `build:native` compiles the keychain
+  addon (`package`/`make` run it first, `pnpm install` never does). A build QA can install
+  comes from the manual `Desktop QA build` workflow, signed with the development identity;
+  `.claude/rules/desktop-signing.md` has what CI may read and why the Developer ID key stays local
 - `packages/web-ui` generates `styled-system/` with `panda codegen`; its `compile`/`lint`/`test`
   scripts run it first, and `pnpm -r run` is topological, so the apps that depend on it build after.
   A standalone run in an app may need `pnpm --filter @safely/web-ui run codegen` first.
@@ -61,6 +64,8 @@ root tooling no.
   silently overwritten on the next regeneration. Keep wrappers and domain logic outside `generated/`.
 - **Log through the logger, never `console`**, and run sensitive data through `filterSensitiveData`
   from `@safely/core`.
+- **A comment must carry what the code cannot** — one line, no JSDoc, rationale into a rules or doc
+  file; nothing in lint or CI guards this. See `.claude/rules/code-comments.md`.
 - **Import cycles are an eslint error** (`import/no-cycle`) — never suppress it. Modules call helpers
   at module-load time (e.g. `defineQueryKeys(...)` in `keys.ts`), so a cycle yields `undefined`
   instead of the export and crashes the app at startup.
@@ -78,8 +83,13 @@ message.
 ## Where the details are
 
 Topic rules in `.claude/rules/` load automatically when you open files in the matching area:
-`typescript-style.md`, `fsd-layers.md`, `sync-and-crypto.md`, `mobile-app.md`, `web-ui.md`,
-`desktop-app.md`, `testing.md`.
+`typescript-style.md`, `code-comments.md`, `fsd-layers.md`, `sync-and-crypto.md`, `mobile-app.md`,
+`web-ui.md`, `desktop-app.md`, `desktop-secret-store.md`, `desktop-signing.md`, `testing.md`.
+
+`desktop-secret-store.md` is the desktop secret store in full — threat model, the keychain item
+schema, the signing chain it depends on and why the build is macOS-only. It loads with the store,
+keychain and signing files; read it before touching the `encrypted`/`secureEncrypted` scopes, the
+user-presence gate or the signing configuration.
 
 Specs — read before changing the sync protocol or the state format; the rules files do not restate
 them:
@@ -88,9 +98,6 @@ them:
 - `packages/sync/doc/threat-model.md` — threat model: what counts as compromise, what is out of scope
 - `packages/slottree/docs/spec.md` + `implementation.md` + `versioning-examples.md` — CRDT tree
   format, merge protocol, versioning
-- `apps/desktop/doc/vault.md` — the desktop secret store: threat model, passcode + Secure Enclave key
-  schema, on-disk format, why the build is macOS-only. Read before touching the `secureEncrypted`
-  scope, the user-presence gate or the signing configuration
 
 ## Keeping these instructions current
 

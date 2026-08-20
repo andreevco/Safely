@@ -1,16 +1,7 @@
 import fs from 'node:fs/promises';
-import path from 'node:path';
 
-/** How the value is stored on disk — identity for plain data, safeStorage for secrets. */
-export interface ValueCodec {
-    encode(value: string): string;
-    decode(stored: string): string;
-}
-
-export const plainCodec: ValueCodec = {
-    encode: value => value,
-    decode: stored => stored
-};
+import type { Store } from './types';
+import { writeFileAtomic } from '../utils/atomic-file';
 
 /**
  * A flat key/value file written **through** on every mutation: a `set` does not resolve until
@@ -18,29 +9,26 @@ export const plainCodec: ValueCodec = {
  * wallet's last write is worse than paying for the write. The price is a full rewrite per
  * mutation; if the data outgrows that, the way out is an embedded store with a write-ahead
  * log, not a buffer.
+ *
+ * Plaintext: the scopes that hold secrets are keychain items instead (`keychain-store.ts`).
  */
-export class JsonStore {
+export class JsonStore implements Store {
     /** Read cache only — committed after the file write, so it cannot outrun the disk. */
     private data: Map<string, string> | null = null;
 
     /** Mutations are serialised: two concurrent read-modify-writes would lose an update. */
     private queue: Promise<unknown> = Promise.resolve();
 
-    constructor(
-        private readonly filePath: string,
-        private readonly codec: ValueCodec
-    ) {}
+    constructor(private readonly filePath: string) {}
 
     public async get(key: string): Promise<string | null> {
         const stored = (await this.load()).get(key);
 
-        return stored === undefined ? null : this.codec.decode(stored);
+        return stored === undefined ? null : stored;
     }
 
     public async set(key: string, value: string): Promise<void> {
-        const encoded = this.codec.encode(value);
-
-        return this.mutate(data => data.set(key, encoded));
+        return this.mutate(data => data.set(key, value));
     }
 
     public async remove(key: string): Promise<void> {
@@ -134,37 +122,6 @@ async function readStore(filePath: string): Promise<Map<string, string>> {
     );
 }
 
-/** temp file → fsync → atomic rename → fsync of the directory, so the rename survives too. */
 async function writeStore(filePath: string, data: Map<string, string>): Promise<void> {
-    const payload = JSON.stringify(Object.fromEntries(data));
-    const tempPath = `${filePath}.tmp`;
-
-    await fs.mkdir(path.dirname(filePath), { recursive: true });
-
-    const handle = await fs.open(tempPath, 'w', 0o600);
-
-    try {
-        await handle.writeFile(payload, 'utf8');
-        await handle.sync();
-    } finally {
-        await handle.close();
-    }
-
-    await fs.rename(tempPath, filePath);
-    await syncDirectory(path.dirname(filePath));
-}
-
-/** Windows does not allow opening a directory as a file; there the rename is journalled instead. */
-async function syncDirectory(directory: string): Promise<void> {
-    if (process.platform === 'win32') {
-        return;
-    }
-
-    const handle = await fs.open(directory, 'r');
-
-    try {
-        await handle.sync();
-    } finally {
-        await handle.close();
-    }
+    await writeFileAtomic(filePath, JSON.stringify(Object.fromEntries(data)));
 }

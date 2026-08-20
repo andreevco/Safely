@@ -1,4 +1,5 @@
-import type { AppInfo, AppState } from './ipc';
+import type { AppInfo } from './app-info';
+import type { AppState } from './ipc';
 
 /**
  * The only path from the web UI to Electron, and the only module both processes may import.
@@ -25,7 +26,7 @@ export interface DesktopBridge {
         chrome: string;
     };
 
-    getAppInfo(): Promise<AppInfo>;
+    readonly appInfo: AppInfo;
 
     relaunch(): void;
 
@@ -39,12 +40,11 @@ export interface DesktopBridge {
 
     openExternalUrl(url: string): Promise<void>;
 
-    /* No `security` member: the Touch ID gate was removed with the secret store. The vault
-       (`doc/vault.md`) adds unlock/lock capabilities here, not a bare "prove presence" call. */
-
     store: DesktopStoreBridge;
 
     encryptedStore: DesktopStoreBridge;
+
+    secureEncryptedStore: DesktopStoreBridge;
 }
 
 declare global {

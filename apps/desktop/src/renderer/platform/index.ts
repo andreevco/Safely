@@ -1,19 +1,17 @@
 import type { Build } from '@safely/core';
 
+import { subscribeFullScreen } from './fullScreen';
 import { createEnumerableStorage, synchronousStorage } from './storage';
 import type { DesktopPlatform } from './types';
-import { unsupportedSecureEncryptedStorage, unsupportedSecurityGate } from './unsupported';
+import { unsupportedSecurityGate } from './unsupported';
 import type { DesktopBridge } from '../../shared/bridge';
-import type { AppInfo } from '../../shared/ipc';
 
 export type { DesktopPlatform, DesktopPlatformStorage, DesktopSecurityGate } from './types';
 export { subscribeFullScreen, useIsFullScreen } from './fullScreen';
 
-/* TODO(build): the config API only knows `ios` and `android`, so desktop reports itself as iOS
-   until the backend accepts a desktop platform — feature flags arrive as the iOS ones. */
-const REPORTED_BUILD: Build = 'ios';
+const REPORTED_BUILD: Build = 'macos';
 
-export function getBridge(): DesktopBridge {
+function getBridge(): DesktopBridge {
     const bridge = window.safelyDesktop;
 
     if (!bridge) {
@@ -23,35 +21,35 @@ export function getBridge(): DesktopBridge {
     return bridge;
 }
 
-export function createDesktopPlatform(options: {
-    bridge: DesktopBridge;
-    appInfo: AppInfo;
-}): DesktopPlatform {
-    const { bridge, appInfo } = options;
+const bridge = getBridge();
 
-    return {
-        appInfo: { ...appInfo, build: REPORTED_BUILD },
-        storage: {
-            regular: createEnumerableStorage(bridge.store),
-            encrypted: createEnumerableStorage(bridge.encryptedStore),
-            /* TODO(vault): both are stubs until `doc/vault.md` is implemented. Nothing on this
-               platform can hold key material, and every attempt rejects instead of falling back to
-               the `encrypted` scope, which is not a boundary against same-user malware. */
-            createSecureEncrypted: () => unsupportedSecureEncryptedStorage,
-            synchronous: synchronousStorage
-        },
-        security: unsupportedSecurityGate,
-        openExternalUrl: url => bridge.openExternalUrl(url),
-        reloadApp: () => bridge.relaunch(),
-        clearAllData: async () => {
-            await bridge.clearAllData();
-            synchronousStorage.clear();
-        },
-        subscribeAppStateChange: callback => {
-            /* the window is on screen when the renderer starts */
-            callback('active');
+/* One subscription per renderer, installed where the bridge is created: `useIsFullScreen` is a
+   plain read of the store and never owns the wiring. */
+subscribeFullScreen(bridge);
 
-            return bridge.onAppStateChange(callback);
-        }
-    };
-}
+export const platform: DesktopPlatform = {
+    appInfo: { ...bridge.appInfo, build: REPORTED_BUILD },
+    storage: {
+        REGULAR_DESKTOP_STORAGE_ONLY_APP_LEVEL_USE: createEnumerableStorage(bridge.store),
+        ENCRYPTED_DESKTOP_STORAGE_ONLY_APP_LEVEL_USE: createEnumerableStorage(
+            bridge.encryptedStore
+        ),
+        SECURE_ENCRYPTED_DESKTOP_STORAGE_ONLY_APP_LEVEL_USE: createEnumerableStorage(
+            bridge.secureEncryptedStore
+        ),
+        synchronous: synchronousStorage
+    },
+    security: unsupportedSecurityGate,
+    openExternalUrl: url => bridge.openExternalUrl(url),
+    reloadApp: () => bridge.relaunch(),
+    clearAllData: async () => {
+        await bridge.clearAllData();
+        synchronousStorage.clear();
+    },
+    subscribeAppStateChange: callback => {
+        /* the window is on screen when the renderer starts */
+        callback('active');
+
+        return bridge.onAppStateChange(callback);
+    }
+};

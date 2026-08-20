@@ -11,6 +11,7 @@ import { BannerShowcase } from './BannerShowcase';
 import { ButtonShowcase } from './ButtonShowcase';
 import { IconShowcase } from './IconShowcase';
 import { InputShowcase } from './InputShowcase';
+import { KeychainShowcase } from './KeychainShowcase';
 import { ListShowcase } from './ListShowcase';
 import { ModalShowcase } from './ModalShowcase';
 import { TableShowcase } from './TableShowcase';
@@ -31,7 +32,8 @@ const SECTIONS: ShowcaseSection[] = [
     { title: 'Banners', content: <BannerShowcase /> },
     { title: 'Lists', content: <ListShowcase /> },
     { title: 'Tables', content: <TableShowcase /> },
-    { title: 'Modal', content: <ModalShowcase /> }
+    { title: 'Modal', content: <ModalShowcase /> },
+    { title: 'Keychain', content: <KeychainShowcase /> }
 ];
 
 const dragRegionStyles = css({ appRegion: 'drag' });

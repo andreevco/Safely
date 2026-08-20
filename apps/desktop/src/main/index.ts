@@ -4,6 +4,7 @@ import path from 'node:path';
 
 import { APP_ORIGIN, registerAppProtocol, registerPrivilegedSchemes } from './app-protocol';
 import { registerIpcHandlers } from './ipc';
+import { mainLogger } from './logger';
 import { useSeparateDevUserData } from './paths';
 import { hardenSession, hardenWebContents } from './security';
 import { createStores } from './store';
@@ -46,8 +47,6 @@ function attachMainWindow(): BrowserWindow {
     window.on('focus', () => notifyAppState('active'));
     window.on('blur', () => notifyAppState('inactive'));
     window.on('show', () => notifyAppState('active'));
-    /* TODO(vault): hiding must lock the vault once it exists (`doc/vault.md`) — it used to revoke
-       the user-presence ticket here. */
     window.on('hide', () => notifyAppState('background'));
 
     window.on('enter-full-screen', () => notifyFullScreen(true));
@@ -75,16 +74,25 @@ if (!app.requestSingleInstanceLock()) {
         hardenWebContents(contents, allowedOrigins);
     });
 
-    void app.whenReady().then(() => {
-        if (!devServerUrl) {
-            registerAppProtocol(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}`));
-        }
+    void app
+        .whenReady()
+        .then(() => {
+            if (!devServerUrl) {
+                registerAppProtocol(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}`));
+            }
 
-        hardenSession(devServerUrl);
-        createStores();
-        registerIpcHandlers(() => mainWindow);
-        mainWindow = attachMainWindow();
-    });
+            hardenSession(devServerUrl);
+            /* Before the handlers: an IPC call that arrives without a store must not be served. */
+            createStores();
+            registerIpcHandlers(() => mainWindow);
+            mainWindow = attachMainWindow();
+        })
+        .catch((error: unknown) => {
+            /* A keychain that cannot be reached is fatal, and quitting is the whole point: a window
+               without storage would look like a working app writing nowhere. */
+            mainLogger.error('Startup failed', error);
+            app.exit(1);
+        });
 
     app.on('activate', revealMainWindow);
 }

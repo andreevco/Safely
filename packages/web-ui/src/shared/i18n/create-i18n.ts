@@ -13,13 +13,13 @@ const toLanguage = (locale: string): string => locale.split('-')[0];
 export function createWebI18n(options: {
     storage: ISyncKeyValueStorage;
     /** OS locale, used until the user picks a language */
-    locale: string;
+    fallbackLocale: string;
 }) {
     const stored = options.storage.get(LANGUAGE_KEY);
     const instance = i18next.createInstance();
 
     void instance.use(initReactI18next).init({
-        lng: stored ?? toLanguage(options.locale),
+        lng: stored ?? toLanguage(options.fallbackLocale),
         fallbackLng: FALLBACK_LANGUAGE,
         resources: translations,
         interpolation: { escapeValue: false },

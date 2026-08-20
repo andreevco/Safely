@@ -1,54 +1,31 @@
-import { app, safeStorage } from 'electron';
+import { app } from 'electron';
 import path from 'node:path';
 
-import { JsonStore, plainCodec, type ValueCodec } from './json-store';
-
-/** Main-side only: the IPC contract addresses a store by channel, not by a name on the wire. */
-export type StoreScope = 'regular' | 'encrypted';
+import { JsonStore } from './json-store';
+import { KeychainStore } from './keychain-store';
+import type { Store, StoreScope } from './types';
 
 /**
- * Sealed with the macOS keychain. If the platform cannot encrypt, the store throws rather than
- * silently writing plaintext.
- *
- * At-rest protection only, and not a boundary against malware running as the same user: the keychain
- * entry's ACL is phishable and `safeStorage` has no per-item authentication. Nothing that must
- * survive a compromised machine may live in this scope — key material belongs in the vault
- * (`doc/vault.md`), which is not implemented yet.
+ * Tied to the bundle id: an item is reachable only through this app's keychain access group, so
+ * changing either a service or the bundle id abandons everything stored under it.
  */
-const safeStorageCodec: ValueCodec = {
-    encode: value => {
-        assertEncryptionAvailable();
-
-        return safeStorage.encryptString(value).toString('base64');
-    },
-    decode: stored => {
-        assertEncryptionAvailable();
-
-        return safeStorage.decryptString(Buffer.from(stored, 'base64'));
-    }
+const KEYCHAIN_SERVICE: Record<Exclude<StoreScope, 'regular'>, string> = {
+    encrypted: 'com.safely.wallet-desktop.encrypted',
+    secureEncrypted: 'com.safely.wallet-desktop.secureEncrypted'
 };
 
-function assertEncryptionAvailable(): void {
-    if (!safeStorage.isEncryptionAvailable()) {
-        throw new Error('OS-backed encryption is unavailable, refusing to touch secret storage');
-    }
-}
+let stores: Record<StoreScope, Store> | null = null;
 
-let stores: Record<StoreScope, JsonStore> | null = null;
-
-/** Created after the app is ready: the paths depend on `userData`. */
-export function createStores(): Record<StoreScope, JsonStore> {
-    const dir = path.join(app.getPath('userData'), 'store');
-
+/** Created after the app is ready: the path depends on `userData`. */
+export function createStores(): void {
     stores = {
-        regular: new JsonStore(path.join(dir, 'regular.json'), plainCodec),
-        encrypted: new JsonStore(path.join(dir, 'encrypted.json'), safeStorageCodec)
+        regular: new JsonStore(path.join(app.getPath('userData'), 'store', 'regular.json')),
+        encrypted: new KeychainStore(KEYCHAIN_SERVICE.encrypted),
+        secureEncrypted: new KeychainStore(KEYCHAIN_SERVICE.secureEncrypted)
     };
-
-    return stores;
 }
 
-export function getStore(scope: StoreScope): JsonStore {
+export function getStore(scope: StoreScope): Store {
     if (!stores) {
         throw new Error('Stores are not initialised yet');
     }
@@ -65,4 +42,5 @@ export async function clearStores(): Promise<void> {
     await Promise.all(Object.values(stores).map(store => store.clear()));
 }
 
-export { JsonStore } from './json-store';
+export { KeychainError } from './keychain-store';
+export type { Store, StoreScope } from './types';

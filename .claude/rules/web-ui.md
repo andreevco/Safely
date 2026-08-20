@@ -83,8 +83,8 @@ own shape, which differs in storage, in user presence and in how links open.
 Stubs for capabilities a target lacks are the app's too
 (`apps/desktop/src/renderer/platform/unsupported.ts`): what is missing differs per target, and a
 shared "unsupported" list would quietly define the extension's gaps as well. Desktop currently stubs
-QR, Ledger, the secret storage and the user-presence gate — the last two because there is no vault yet
-(`apps/desktop/doc/vault.md`), and they reject rather than fall back to the `encrypted` scope.
+QR, Ledger and the user-presence gate; the secret storage is real
+(`.claude/rules/desktop-secret-store.md`), but the gate it is wrapped in still rejects.
 
 A type that describes *what an app must provide* therefore does not belong here, and neither does
 anything a component only needs because some target happens to work that way. What a shared component
@@ -100,7 +100,7 @@ bundled), and a package that reaches for the environment forces both of them int
 
 Concretely, and deliberately absent: there is **no `./bootstrap` entry and no `globals.ts`** — the
 globals the domain packages read (`Buffer`, `IsomorphicEventSource`, `safelyCrypto.pbkdf2Sha512`) are
-installed by `apps/desktop/src/renderer/bootstrap.ts`, the web counterpart of
+installed by `../../apps/desktop/src/renderer/global-polyfills.ts`, the web counterpart of
 `apps/mobile/global-polyfills.ts`, and the extension will get its own copy. There is also **no shared
 Vite preset**: each app writes its own config (`apps/desktop/vite.renderer.config.ts`). If a third web
 target ever repeats the same twenty lines, extract them then — a shared build config is how

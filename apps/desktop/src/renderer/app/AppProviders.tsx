@@ -1,9 +1,8 @@
 import type { FC, PropsWithChildren, ReactNode } from 'react';
-import { Suspense, useMemo, useState } from 'react';
+import { Suspense, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { LoggableStorage, TreeStorage, WebNumberFormatLocale } from '@safely/core';
-import type { Logger } from '@safely/sync';
 import type { IAppContext } from '@safely/ux';
 import {
     AppContext,
@@ -17,7 +16,8 @@ import {
 } from '@safely/ux';
 import { toastService, ToastViewport, WebLinking } from '@safely/web-ui';
 
-import type { DesktopPlatform } from '../platform';
+import { logger } from '../logger';
+import { platform } from '../platform';
 import {
     unsupportedLedgerSessionPort,
     unsupportedLedgerTransport,
@@ -25,45 +25,27 @@ import {
 } from '../platform/unsupported';
 
 export interface AppProvidersProps {
-    platform: DesktopPlatform;
-
-    /** Created by the app before React mounts — the storage adapters already log. */
-    logger: Logger;
-
-    /** Shown while the persisted query cache is being rehydrated. */
     loader?: ReactNode;
 }
 
-/**
- * Turns the `DesktopPlatform` implementation into the `IAppContext` every `@safely/ux` hook reads,
- * and wires the query client, the sync observer and the toast viewport around it — the desktop
- * counterpart of `apps/mobile/src/app/AppContext.tsx`.
- */
-export const AppProviders: FC<PropsWithChildren<AppProvidersProps>> = ({
-    platform,
-    logger,
-    loader,
-    children
-}) => {
+const queryClient = createQueryClient(logger);
+const persister = createPersister(
+    TreeStorage.root(platform.storage.REGULAR_DESKTOP_STORAGE_ONLY_APP_LEVEL_USE).child(
+        'persister'
+    ),
+    logger
+);
+
+export const AppProviders: FC<PropsWithChildren<AppProvidersProps>> = ({ loader, children }) => {
     const {
         t,
         i18n: { language }
     } = useTranslation();
 
-    /* one instance per mount: the query client and the persister must outlive renders */
-    const [{ queryClient, persister }] = useState(() => {
-        const root = TreeStorage.root(platform.storage.regular);
-
-        return {
-            queryClient: createQueryClient(logger),
-            persister: createPersister(root.child('persister'), logger)
-        };
-    });
-
     const appContext = useMemo<IAppContext>(() => {
-        const regular = TreeStorage.root(platform.storage.regular);
-        const encrypted = TreeStorage.root(platform.storage.encrypted);
         const { appInfo, storage, security } = platform;
+        const regular = TreeStorage.root(storage.REGULAR_DESKTOP_STORAGE_ONLY_APP_LEVEL_USE);
+        const encrypted = TreeStorage.root(storage.ENCRYPTED_DESKTOP_STORAGE_ONLY_APP_LEVEL_USE);
 
         return {
             version: appInfo.version,
@@ -90,14 +72,13 @@ export const AppProviders: FC<PropsWithChildren<AppProvidersProps>> = ({
                 sync: {
                     regular: regular.child('sync'),
                     encrypted: encrypted.child('sync'),
-                    /* Still assembled the same way, but over the platform's stubs: the storage
-                       rejects and the gate reports itself unavailable until the vault
-                       (`apps/desktop/doc/vault.md`) exists. Keeping the wiring means the vault
-                       replaces two platform members and nothing here. */
+                    /* The storage is real, the gate is not: `security` still reports itself
+                       unavailable, so the unlockable wrapper refuses until a presence check
+                       exists. */
                     getSecureEncrypted: () =>
                         new UnlockableSecuredEncryptedStorage(
                             new LoggableStorage(
-                                storage.createSecureEncrypted(),
+                                storage.SECURE_ENCRYPTED_DESKTOP_STORAGE_ONLY_APP_LEVEL_USE,
                                 logger,
                                 'SecureEncryptedStorage'
                             ),
@@ -119,7 +100,7 @@ export const AppProviders: FC<PropsWithChildren<AppProvidersProps>> = ({
             reloadApp: () => platform.reloadApp(),
             subscribeAppStateChange: callback => platform.subscribeAppStateChange(callback)
         };
-    }, [platform, logger, language, t]);
+    }, [language, t]);
 
     return (
         <QueryProvider persister={persister} queryClient={queryClient} loader={loader}>
