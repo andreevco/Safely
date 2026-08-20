@@ -3,7 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { JsonStore, plainCodec, type ValueCodec } from '../../../src/main/store/json-store';
+import { JsonStore } from '../../../src/main/store/json-store';
 
 /* These read the file back instead of trusting the instance: the point is that what the store
    accepts is on disk before the call resolves. */
@@ -27,7 +27,7 @@ describe('JsonStore', () => {
     });
 
     it('has written the value to disk by the time set() resolves', async () => {
-        const store = new JsonStore(filePath, plainCodec);
+        const store = new JsonStore(filePath);
 
         await store.set('answer', '42');
 
@@ -35,7 +35,7 @@ describe('JsonStore', () => {
     });
 
     it('leaves no temporary file behind', async () => {
-        const store = new JsonStore(filePath, plainCodec);
+        const store = new JsonStore(filePath);
 
         await store.set('answer', '42');
 
@@ -43,15 +43,15 @@ describe('JsonStore', () => {
     });
 
     it('is readable by a fresh instance, so nothing depends on the in-memory copy', async () => {
-        await new JsonStore(filePath, plainCodec).set('answer', '42');
+        await new JsonStore(filePath).set('answer', '42');
 
-        const reopened = new JsonStore(filePath, plainCodec);
+        const reopened = new JsonStore(filePath);
 
         expect(await reopened.get('answer')).toBe('42');
     });
 
     it('keeps every concurrent write instead of losing all but the last', async () => {
-        const store = new JsonStore(filePath, plainCodec);
+        const store = new JsonStore(filePath);
 
         await Promise.all([store.set('a', '1'), store.set('b', '2'), store.set('c', '3')]);
 
@@ -59,7 +59,7 @@ describe('JsonStore', () => {
     });
 
     it('persists removals', async () => {
-        const store = new JsonStore(filePath, plainCodec);
+        const store = new JsonStore(filePath);
 
         await store.set('a', '1');
         await store.set('b', '2');
@@ -69,7 +69,7 @@ describe('JsonStore', () => {
     });
 
     it('treats an empty prefix as clear(), per the IEnumerableStorage contract', async () => {
-        const store = new JsonStore(filePath, plainCodec);
+        const store = new JsonStore(filePath);
 
         await store.set('sync.a', '1');
         await store.set('ux.b', '2');
@@ -79,7 +79,7 @@ describe('JsonStore', () => {
     });
 
     it('removes only the matching prefix', async () => {
-        const store = new JsonStore(filePath, plainCodec);
+        const store = new JsonStore(filePath);
 
         await store.set('sync.a', '1');
         await store.set('ux.b', '2');
@@ -89,44 +89,8 @@ describe('JsonStore', () => {
         expect(await readFileAsRecord()).toEqual({ 'ux.b': '2' });
     });
 
-    it('stores encoded values and returns decoded ones', async () => {
-        const reversingCodec: ValueCodec = {
-            encode: (_key, value) => Promise.resolve([...value].reverse().join('')),
-            decode: (_key, stored) => Promise.resolve([...stored].reverse().join(''))
-        };
-        const store = new JsonStore(filePath, reversingCodec);
-
-        await store.set('secret', 'abc');
-
-        expect(await readFileAsRecord()).toEqual({ secret: 'cba' });
-        expect(await store.get('secret')).toBe('abc');
-    });
-
-    /* The secret codec binds a ciphertext to its key, so the store has to pass the key through. */
-    it('gives the codec the key the value is stored under', async () => {
-        const keys: string[] = [];
-        const recordingCodec: ValueCodec = {
-            encode: (key, value) => {
-                keys.push(key);
-
-                return Promise.resolve(value);
-            },
-            decode: (key, stored) => {
-                keys.push(key);
-
-                return Promise.resolve(stored);
-            }
-        };
-        const store = new JsonStore(filePath, recordingCodec);
-
-        await store.set('vault_key', 'v');
-        await store.get('vault_key');
-
-        expect(keys).toEqual(['vault_key', 'vault_key']);
-    });
-
     it('reads an absent file as an empty store', async () => {
-        const store = new JsonStore(filePath, plainCodec);
+        const store = new JsonStore(filePath);
 
         expect(await store.get('missing')).toBeNull();
         expect(await store.keys('')).toEqual([]);

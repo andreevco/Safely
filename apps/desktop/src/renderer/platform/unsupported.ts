@@ -1,4 +1,4 @@
-import type { IEnumerableStorage, ILedgerSessionPort, QrScanner } from '@safely/core';
+import type { ILedgerSessionPort, QrScanner } from '@safely/core';
 import type { LedgerTransport } from '@safely/ux';
 
 import type { DesktopSecurityGate } from './types';
@@ -27,23 +27,6 @@ export const unsupportedLedgerSessionPort: ILedgerSessionPort = {
     withSession() {
         return Promise.reject(new Error('Ledger is not available on the desktop app yet'));
     }
-};
-
-/* TODO(vault): the secret store was removed to be rebuilt from scratch — `doc/vault.md`. Every
-   operation rejects, so an attempt to onboard fails at the first write instead of quietly persisting
-   keys somewhere unprotected. */
-function secretStorageUnavailable(): Promise<never> {
-    return Promise.reject(new Error('Secret storage is not available on the desktop app yet'));
-}
-
-export const unsupportedSecureEncryptedStorage: IEnumerableStorage = {
-    getItem: secretStorageUnavailable,
-    setItem: secretStorageUnavailable,
-    removeItem: secretStorageUnavailable,
-    clear: secretStorageUnavailable,
-    getAllKeys: secretStorageUnavailable,
-    getKeysWithPrefix: secretStorageUnavailable,
-    removeItemsWithPrefix: secretStorageUnavailable
 };
 
 /* `isAvailable: false` is the honest answer while there is no gate: the UI can ask before offering a

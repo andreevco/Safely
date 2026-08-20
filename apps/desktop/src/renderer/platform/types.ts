@@ -23,7 +23,7 @@ export interface DesktopPlatformStorage {
     encrypted: IEnumerableStorage;
 
     /** Key material. A fresh handle per call: the unlocked state is per instance (see
-     *  `UnlockableSecuredEncryptedStorage`). Rejects until the vault in `doc/vault.md` exists. */
+     *  `UnlockableSecuredEncryptedStorage`). */
     createSecureEncrypted(): IEnumerableStorage;
 
     /** Read before React mounts (language, dev flags), so it cannot be asynchronous. */

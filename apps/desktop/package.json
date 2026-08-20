@@ -7,8 +7,9 @@
   "main": ".vite/build/main.js",
   "scripts": {
     "start": "electron-forge start",
-    "package": "electron-forge package",
-    "make": "electron-forge make",
+    "build:native": "pnpm --filter @safely/desktop-keychain run build",
+    "package": "pnpm run build:native && electron-forge package",
+    "make": "pnpm run build:native && electron-forge make",
     "compile": "tsc --noEmit",
     "lint": "eslint ./src",
     "test": "vitest run"
@@ -16,7 +17,7 @@
   "dependencies": {
     "@noble/hashes": "catalog:",
     "@safely/core": "workspace:*",
-    "@safely/desktop-hardware-key": "workspace:*",
+    "@safely/desktop-keychain": "workspace:*",
     "@safely/sync": "workspace:*",
     "@safely/ux": "workspace:*",
     "@safely/web-ui": "workspace:*",

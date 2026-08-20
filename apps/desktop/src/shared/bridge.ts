@@ -35,12 +35,14 @@ export interface DesktopBridge {
 
     openExternalUrl(url: string): Promise<void>;
 
-    /* No `security` member, and the vault adds none: it holds no unlocked state to gate
-       (`doc/vault.md`). A passcode prompt is the renderer's own layer over `encryptedStore`. */
+    /* No `security` member, and the stores add none: they hold no unlocked state to gate. A
+       passcode prompt is the renderer's own layer over `secureEncryptedStore`. */
 
     store: DesktopStoreBridge;
 
     encryptedStore: DesktopStoreBridge;
+
+    secureEncryptedStore: DesktopStoreBridge;
 }
 
 declare global {

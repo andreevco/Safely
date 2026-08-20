@@ -1,17 +1,7 @@
 import fs from 'node:fs/promises';
 
+import type { Store } from './types';
 import { writeFileAtomic } from '../utils/atomic-file';
-
-/** The key is passed in because a secret codec binds the ciphertext to it (`vault/dek.ts`). */
-export interface ValueCodec {
-    encode(key: string, value: string): Promise<string>;
-    decode(key: string, stored: string): Promise<string>;
-}
-
-export const plainCodec: ValueCodec = {
-    encode: (_key, value) => Promise.resolve(value),
-    decode: (_key, stored) => Promise.resolve(stored)
-};
 
 /**
  * A flat key/value file written **through** on every mutation: a `set` does not resolve until
@@ -19,29 +9,26 @@ export const plainCodec: ValueCodec = {
  * wallet's last write is worse than paying for the write. The price is a full rewrite per
  * mutation; if the data outgrows that, the way out is an embedded store with a write-ahead
  * log, not a buffer.
+ *
+ * Plaintext: the scopes that hold secrets are keychain items instead (`keychain-store.ts`).
  */
-export class JsonStore {
+export class JsonStore implements Store {
     /** Read cache only — committed after the file write, so it cannot outrun the disk. */
     private data: Map<string, string> | null = null;
 
     /** Mutations are serialised: two concurrent read-modify-writes would lose an update. */
     private queue: Promise<unknown> = Promise.resolve();
 
-    constructor(
-        private readonly filePath: string,
-        private readonly codec: ValueCodec
-    ) {}
+    constructor(private readonly filePath: string) {}
 
     public async get(key: string): Promise<string | null> {
         const stored = (await this.load()).get(key);
 
-        return stored === undefined ? null : this.codec.decode(key, stored);
+        return stored === undefined ? null : stored;
     }
 
     public async set(key: string, value: string): Promise<void> {
-        const encoded = await this.codec.encode(key, value);
-
-        return this.mutate(data => data.set(key, encoded));
+        return this.mutate(data => data.set(key, value));
     }
 
     public async remove(key: string): Promise<void> {

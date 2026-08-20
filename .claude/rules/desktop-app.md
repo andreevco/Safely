@@ -3,6 +3,8 @@ paths:
   - 'apps/desktop/**/*.{ts,tsx}'
   - 'apps/desktop/forge.config.ts'
   - 'apps/desktop/postcss.config.cjs'
+  - 'apps/desktop/signing/**'
+  - '.github/workflows/desktop-preview.yml'
 ---
 
 # `apps/desktop` — Electron
@@ -12,10 +14,10 @@ The desktop app is a thin adapter: the UI comes from `@safely/web-ui`, the domai
 services and the platform implementation injected into the shared UI.
 
 **macOS is the only build target for now** (`makers` in `forge.config.ts`). That is a security
-decision, not just a scheduling one: the secret vault relies on the Secure Enclave being bound to the
-app's code signature, and Windows has no equivalent — see `doc/vault.md`. Platform guards already in
-the code (`process.platform` checks, the `win32` branch in `utils/atomic-file.ts`) stay: they are
-correct cross-platform behaviour, not dead code.
+decision, not just a scheduling one: the secret store relies on keychain access groups being bound to
+the app's code signature, and Windows has no equivalent — see `desktop-secret-store.md`. Platform
+guards already in the code (`process.platform` checks, the `win32` branch in `utils/atomic-file.ts`)
+stay: they are correct cross-platform behaviour, not dead code.
 
 ## Split by process, not by feature
 
@@ -30,8 +32,8 @@ correct cross-platform behaviour, not dead code.
 
 **All domain code runs in the renderer** — the sync engine, the CRDT, the crypto, the keys. That is
 deliberate: the same code has to run in the browser extension, where no privileged process exists at
-all. The main process owns storage and lifecycle (the store files, `safeStorage`, windows, deep links)
-and will own the vault; it is never a participant in the domain.
+all. The main process owns storage and lifecycle (the store file, the keychain, windows, deep links);
+it is never a participant in the domain.
 
 `src/renderer/app/AppProviders.tsx` assembles the `IAppContext` that every `@safely/ux` hook reads
 out of a `DesktopPlatform` implementation, whose shape this app declares itself
@@ -51,22 +53,23 @@ evaluated before the importing module's body, and the Ledger SDK reads `Buffer` 
 For the same reason nothing inside `bootstrap.ts` may import `@safely/ux` or `@safely/web-ui`, whose
 module graphs would then be evaluated above the install calls.
 
-The renderer therefore holds secret material in memory. Moving the vault and the signer into main is
-a known, deliberately deferred option — it protects the seed's confidentiality but not the funds,
+The renderer therefore holds secret material in memory. Moving the secret handling and the signer
+into main is a known, deliberately deferred option — it protects the seed's confidentiality but not the funds,
 because a compromised renderer can still ask main to sign; only a main-owned confirmation window
 would change that. Keep the seams intact for it: everything platform-specific reaches the UI through
 `DesktopPlatform`, and secrets never land in zustand, react-query or an xstate context.
 
 ## Storage lives in main, not in the renderer
 
-Both storages (`regular`, `encrypted`) are flat key/value files under `userData/store/`, owned by main
-and reached over the bridge (`src/main/store/`).
+Three scopes, two backings, one interface (`Store` in `src/main/store/types.ts`): `regular` is a flat
+key/value file under `userData/store/`, while `encrypted` and `secureEncrypted` are keychain items,
+one per key — `desktop-secret-store.md` has that half in full.
 
-**Each store is its own channel group** — `safely:store:*` and `safely:encrypted-store:*`
-(`src/shared/ipc.ts`), one `DesktopStoreBridge` handle each, and no scope on the wire. A renderer
-therefore cannot ask for the wrong store, and a store whose rules differ would be added as a third
-group instead of a third value in a shared payload. The store name stays a main-side detail
-(`StoreScope` in `src/main/store/index.ts`).
+**Each store is its own channel group** — `safely:store:*`, `safely:encrypted-store:*` and
+`safely:secure-encrypted-store:*` (`src/shared/ipc.ts`), one `DesktopStoreBridge` handle each, and no
+scope on the wire. A renderer therefore cannot ask for the wrong store, and a store whose rules
+differ is added as another group instead of another value in a shared payload. The scope name stays a
+main-side detail (`StoreScope` in `src/main/store/types.ts`).
 
 Browser storage was rejected because it is bound to the renderer origin, which differs between
 `start` (dev server) and a packaged build (`safely://app`), and because sealing values with the OS
@@ -83,46 +86,33 @@ disk does not have; concurrent mutations are serialised, or two read-modify-writ
 update. `test/main/store/json-store.test.ts` pins this by reading the file back instead of trusting
 the instance.
 
-`encrypted` passes every value through the vault (`src/main/vault/`, `doc/vault.md`): AES-256-GCM
-under a data key that is sealed to a Secure Enclave key and unwrapped per operation. The codec is
-therefore **async and takes the key**, because the AAD binds each ciphertext to its own key and
-store. `safeStorage` is gone — its ACL is phishable and its values carry no MAC.
+That applies to `regular` only. The secret scopes hold no file and run no crypto of ours: a value is
+a keychain item, and what it is worth is decided by the access group in our code signature. There is
+**no unlocked state** anywhere in main, so nothing has to be locked on hide or suspend and no
+`vault:*`-style channel exists. `safeStorage` is gone — its ACL is phishable and its values carry no
+MAC.
 
-The vault has **no unlocked state**: the data key is unwrapped for each call and zeroed straight
-after, so there is nothing to lock on hide or suspend and no `vault:*` channel exists. Adding a cache
-would re-introduce a lifecycle that then has to be managed; measure first, and read `doc/vault.md`
-before doing it.
+The price of the file's write-through is a full rewrite per mutation, which is fine at wallet scale;
+if the data outgrows it, the way out is an embedded store with a write-ahead log (SQLite) — not a
+buffer.
 
-The zeroing is a resource, not a convention: `DEK` implements `Disposable`, and it is declared
-**`using dek = …` at every call site** so the key dies with the scope, error path included. `using`
-needs `Symbol.dispose` from `ESNext.Disposable`, and `lib` can only be replaced — hence the restated
-`lib` array in `apps/desktop/tsconfig.json`, which has to be kept in step with the root tsconfig.
-
-The vault's symmetric primitives come from `node:crypto`, not `@noble/*` — the one place in the
-repository allowed to. It is main-only code on OpenSSL, and a JS scrypt at the parameters the vault
-may later need is not viable. Everything the renderer runs still follows `sync-and-crypto.md`.
-
-The price of the above is a full rewrite per mutation, which is fine at wallet scale; if the data
-outgrows it, the way out is an embedded store with a write-ahead log (SQLite) — not a buffer.
-
-## The vault protects nothing yet, and `secureEncrypted` does not exist
+## `pnpm start` protects nothing, and there is still no presence gate
 
 Two independent gaps, and confusing them wastes a day:
 
-**Main has the vault and its addon, but not the signature they need.** `src/main/vault/` and
-`native/hardware-key/` are written, but without a provisioning profile the Enclave path reports
-itself unavailable, so `pnpm start` runs on `createStubHardwareKey()` — a key derived from a
-constant, protecting nothing, warning on every start. A packaged build refuses to start rather than
-degrade to it. `doc/vault.md` has the remaining work and the verification steps.
+**The store works, but only in a signed build.** Without a provisioning profile there is no access
+group, so the addon reports itself unavailable and `pnpm start` runs on the development stub inlined
+in `vite.main.config.ts`: plain files in the development `userData`, protecting nothing, warning on
+every start. A packaged build refuses to start rather than degrade to it. Anything you want to
+believe about the store has to be checked on a signed build — `signing/verify.sh` for the signature,
+the running app for securityd.
 
-**The renderer has no secret scope.** `DesktopPlatform.storage.createSecureEncrypted()` and
-`DesktopPlatform.security` are the `unsupportedSecureEncryptedStorage` / `unsupportedSecurityGate`
-stubs from `src/renderer/platform/unsupported.ts`: every operation rejects. Main deliberately has no
-third store — `secureEncrypted` is meant to be the renderer's own layer over `encryptedStore`, adding
-the passcode prompt that the one-factor vault leaves out. Until it exists, **the desktop app cannot
-create or restore an account**, because onboarding writes `master_key`, `vault_key` and `dmk_prv`
-through that scope. Do not "temporarily" route those keys into `regular` or `localStorage` to unblock
-a flow.
+**The renderer cannot prove user presence.** `DesktopPlatform.security` is still
+`unsupportedSecurityGate` (`src/renderer/platform/unsupported.ts`), so
+`UnlockableSecuredEncryptedStorage` refuses even though `createSecureEncrypted()` now returns a real
+storage. Until a gate exists, **the desktop app cannot create or restore an account**, because
+onboarding writes `master_key`, `vault_key` and `dmk_prv` through that scope. Do not "temporarily"
+route those keys into `regular` or `localStorage` to unblock a flow.
 
 ## Security invariants
 
@@ -178,7 +168,8 @@ and is refused by the navigation guard — it has to be translated into a route,
 
 Closing the window hides it on macOS instead of destroying the renderer, because the sync engine
 lives there; `backgroundThrottling: false` keeps its timers running while hidden. A single instance
-lock guarantees one sync engine per machine. Hiding is also where the vault will lock.
+lock guarantees one sync engine per machine. Hiding needs no store handling — there is no unlocked
+state to lock — but it is where a renderer-side passcode session would have to expire.
 
 The renderer's logger writes to its devtools console, which is invisible when the app is driven from
 a terminal, so `src/main/window.ts` forwards renderer console messages, `did-fail-load` and
@@ -189,23 +180,46 @@ diagnosable.
 
 `electron-forge` (7.x) + `vite` (6.x) — `pnpm --filter @safely/desktop start | package | make`.
 
-- **The native addon is a workspace package**, `native/hardware-key`, matched by an extra glob in
-  `pnpm-workspace.yaml` so `pnpm install` builds it (`binding.gyp` + `gypfile: true`).
+- **The native addon is built by one script**: `pnpm --filter @safely/desktop run build:native`,
+  which is `node-gyp rebuild` in `native/keychain`. `package` and `make` run it first; `start`
+  does not need it, because development is aliased to the stub.
+- **`"install": "exit 0"` in the addon's package.json is load-bearing.** pnpm gives every workspace
+  project whose root holds a `binding.gyp` an implicit `install` script of `node-gyp rebuild` — the
+  `gypfile` flag has nothing to do with it — and declaring `install` is the only way to suppress it.
+  Without that line every `pnpm install` in the monorepo compiles the addon, and the Linux CI job
+  fails on the Objective-C++ sources. It stays a workspace package (an extra glob in
+  `pnpm-workspace.yaml`) so its own dependencies are installed.
 - **The packager copies `.vite` and nothing else** — the forge vite plugin sets that `ignore` itself
   and overrides any of ours. So `node_modules` never reaches the app: the addon ships as
   `extraResource` and is loaded from `process.resourcesPath` through `createRequire`, never an
   `import`. An asar unpack glob does not work here (`**/*.node` misses the dot-directory).
-- **No rebuild for Electron**: the addon is N-API, so the Node-built binary loads unchanged.
-- **The dev/prod plugin split is the bundler's**, not the code's: `vite.main.config.ts` aliases
-  `secure-enclave` — the specifier `plugins/hardware-key/index.ts` re-exports — to its `.stub` in
-  development. Nothing branches at runtime, and the stub cannot reach a packaged build. The `find`
-  regex must match the **whole** specifier: rollup replaces only the part that matched, so a partial
-  match silently yields a broken path.
-- `make` produces a **macOS zip only**. Signing and notarisation are not wired yet, and they are a
-  prerequisite of the vault rather than a cosmetic step: the hardened runtime is what keeps another
-  process out of our memory, and the Secure Enclave needs an embedded provisioning profile with
-  `com.apple.application-identifier`. Never add
-  `com.apple.security.cs.disable-library-validation` or `get-task-allow` to a production build.
+- **@electron/rebuild is off** — `rebuildConfig: { onlyModules: [] }`, an empty list that matches no
+  module. The addon is N-API, so the Node-built binary loads in Electron unchanged, and forge's
+  rebuild only blurred the picture: `start` rebuilt in the project tree, `package` inside the copied
+  app directory where there is no `node_modules`, and the `.forge-meta` marker it leaves behind made
+  `start` skip the rebuild after a source change.
+- **The dev/prod plugin split is the bundler's**, not the code's: the development stub is a string
+  inside `vite.main.config.ts`, resolved in place of `keychain-addon` — the specifier
+  `plugins/keychain/index.ts` re-exports — by a plugin registered only for `serve`. Nothing
+  branches at runtime, no module in `src/` can import the stub, and a packaged build has nothing to
+  resolve it with. The test double is a separate file that `src/` never exports
+  (`test/main/store/fake-keychain.ts`); `desktop-secret-store.md` has the reasoning and the
+  trade-off.
+- `make` produces a **macOS zip only**. Signing is env-driven and listed at the top of
+  `forge.config.ts`: `SAFELY_SIGN_IDENTITY` turns it on, `SAFELY_SIGN_PROFILE` is mandatory with it
+  (forge throws on one without the other, because a signature without its profile reaches nothing),
+  `SAFELY_SIGN_KEYCHAIN` is for CI's throwaway keychain. Unsigned stays valid because the profiles are
+  uncommitted, and signing is a prerequisite of the store rather than a cosmetic step: the hardened
+  runtime is what keeps another process out of our memory, and the data protection keychain needs an
+  embedded provisioning profile with `com.apple.application-identifier`. Never add
+  `com.apple.security.cs.disable-library-validation` or `get-task-allow` to a production build —
+  `signing/verify.sh` fails on both, and CI runs it as a gate. Notarisation is still missing, so a
+  downloaded build needs its quarantine flag removed by hand.
+- **QA builds are signed by CI with the Apple Development identity, releases locally with Developer
+  ID** (`../../.github/workflows/desktop-preview.yml`, `signing/README.md`). Two consequences for anything that
+  touches the build: CI proves the signature is well-formed and nothing more — whether securityd
+  honours it is only visible when the app runs — and a change to the entitlements or the bundle id
+  has to reach the provisioning profile before the workflow can sign again.
 
 - **The vite version is pinned by forge**: forge 7 is published as CommonJS and does
   `require('vite')`, and vite ≥ 7 no longer has a `require` export condition. Don't bump vite past 6

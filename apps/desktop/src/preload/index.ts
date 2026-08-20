@@ -71,7 +71,9 @@ const bridge: DesktopBridge = {
 
     store: createStoreBridge(IPC_CHANNEL.store),
 
-    encryptedStore: createStoreBridge(IPC_CHANNEL.encryptedStore)
+    encryptedStore: createStoreBridge(IPC_CHANNEL.encryptedStore),
+
+    secureEncryptedStore: createStoreBridge(IPC_CHANNEL.secureEncryptedStore)
 };
 
 contextBridge.exposeInMainWorld(BRIDGE_KEY, bridge);

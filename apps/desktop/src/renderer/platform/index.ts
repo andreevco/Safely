@@ -2,7 +2,7 @@ import type { Build } from '@safely/core';
 
 import { createEnumerableStorage, synchronousStorage } from './storage';
 import type { DesktopPlatform } from './types';
-import { unsupportedSecureEncryptedStorage, unsupportedSecurityGate } from './unsupported';
+import { unsupportedSecurityGate } from './unsupported';
 import type { DesktopBridge } from '../../shared/bridge';
 import type { AppInfo } from '../../shared/ipc';
 
@@ -33,10 +33,9 @@ export function createDesktopPlatform(options: {
         storage: {
             regular: createEnumerableStorage(bridge.store),
             encrypted: createEnumerableStorage(bridge.encryptedStore),
-            /* TODO(vault): both are stubs until `doc/vault.md` is implemented. Nothing on this
-               platform can hold key material, and every attempt rejects instead of falling back to
-               the `encrypted` scope, which is not a boundary against same-user malware. */
-            createSecureEncrypted: () => unsupportedSecureEncryptedStorage,
+            /* A fresh handle per call is the contract, but there is nothing per-instance to hold:
+               the unlocked state lives in the renderer's own wrapper, not in main. */
+            createSecureEncrypted: () => createEnumerableStorage(bridge.secureEncryptedStore),
             synchronous: synchronousStorage
         },
         security: unsupportedSecurityGate,

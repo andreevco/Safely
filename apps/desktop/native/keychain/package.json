@@ -1,17 +1,23 @@
 {
-  "name": "@safely/desktop-hardware-key",
+  "name": "@safely/desktop-keychain",
   "version": "0.0.1",
   "private": true,
-  "description": "Secure Enclave key operations for the desktop vault (macOS only)",
+  "description": "Data protection keychain items for the desktop secret store (macOS only)",
   "main": "index.js",
   "types": "index.d.ts",
   "os": ["darwin"],
-  "gypfile": true,
   "binary": {
     "napi_versions": [8]
   },
   "files": ["index.js", "index.d.ts", "binding.gyp", "src"],
+  "scripts": {
+    "install": "exit 0",
+    "build": "node-gyp rebuild"
+  },
   "dependencies": {
     "node-addon-api": "8.5.0"
+  },
+  "devDependencies": {
+    "node-gyp": "12.4.0"
   }
 }

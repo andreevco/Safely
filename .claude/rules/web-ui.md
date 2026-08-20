@@ -75,8 +75,8 @@ own shape, which differs in storage, in user presence and in how links open.
 Stubs for capabilities a target lacks are the app's too
 (`apps/desktop/src/renderer/platform/unsupported.ts`): what is missing differs per target, and a
 shared "unsupported" list would quietly define the extension's gaps as well. Desktop currently stubs
-QR, Ledger, the secret storage and the user-presence gate — the last two because there is no vault yet
-(`apps/desktop/doc/vault.md`), and they reject rather than fall back to the `encrypted` scope.
+QR, Ledger and the user-presence gate; the secret storage is real
+(`.claude/rules/desktop-secret-store.md`), but the gate it is wrapped in still rejects.
 
 A type that describes *what an app must provide* therefore does not belong here, and neither does
 anything a component only needs because some target happens to work that way. What a shared component

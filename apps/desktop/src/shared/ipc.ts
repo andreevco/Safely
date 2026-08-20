@@ -13,7 +13,7 @@ export const IPC_CHANNEL = {
 
     /* One channel group per backing store, so which store a call reaches is decided by the channel
        and not by a string in the payload: a renderer cannot ask the wrong store, and a store with
-       different rules (the vault in `doc/vault.md`) is added as its own group. */
+       different rules is added as its own group. */
     store: {
         get: 'safely:store:get',
         set: 'safely:store:set',
@@ -29,6 +29,14 @@ export const IPC_CHANNEL = {
         clear: 'safely:encrypted-store:clear',
         keys: 'safely:encrypted-store:keys',
         removePrefix: 'safely:encrypted-store:remove-prefix'
+    },
+    secureEncryptedStore: {
+        get: 'safely:secure-encrypted-store:get',
+        set: 'safely:secure-encrypted-store:set',
+        remove: 'safely:secure-encrypted-store:remove',
+        clear: 'safely:secure-encrypted-store:clear',
+        keys: 'safely:secure-encrypted-store:keys',
+        removePrefix: 'safely:secure-encrypted-store:remove-prefix'
     }
 } as const;
 
@@ -61,7 +69,8 @@ export type AppState = z.infer<typeof sAppState>;
 
 /**
  * Why a secret operation failed, and the whole of what the renderer is told: the underlying
- * message could name a key or a path, and it crosses the process boundary verbatim.
+ * message could name a key or an OSStatus, and it crosses the process boundary verbatim.
+ * `CORRUPT` is an item that exists and does not hold the UTF-8 we wrote — never treated as absence.
  */
-export const sVaultErrorCode = z.enum(['VAULT_UNAVAILABLE', 'VAULT_CORRUPT', 'DECRYPT_FAILED']);
-export type VaultErrorCode = z.infer<typeof sVaultErrorCode>;
+export const sKeychainErrorCode = z.enum(['UNAVAILABLE', 'CORRUPT']);
+export type KeychainErrorCode = z.infer<typeof sKeychainErrorCode>;

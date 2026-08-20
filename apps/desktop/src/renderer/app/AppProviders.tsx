@@ -90,10 +90,9 @@ export const AppProviders: FC<PropsWithChildren<AppProvidersProps>> = ({
                 sync: {
                     regular: regular.child('sync'),
                     encrypted: encrypted.child('sync'),
-                    /* Still assembled the same way, but over the platform's stubs: the storage
-                       rejects and the gate reports itself unavailable until the vault
-                       (`apps/desktop/doc/vault.md`) exists. Keeping the wiring means the vault
-                       replaces two platform members and nothing here. */
+                    /* The storage is real, the gate is not: `security` still reports itself
+                       unavailable, so the unlockable wrapper refuses until a presence check
+                       exists. */
                     getSecureEncrypted: () =>
                         new UnlockableSecuredEncryptedStorage(
                             new LoggableStorage(

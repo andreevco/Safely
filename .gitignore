@@ -13,6 +13,9 @@ styled-system
 .vite
 out
 .env
+# signing inputs: the profile names the machines allowed to run the build, the .p12 holds a key
+*.provisionprofile
+*.p12
 tsconfig.tsbuildinfo
 .DS_Store
 CLAUDE.local.md

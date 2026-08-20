@@ -1,8 +1,8 @@
 {
   "targets": [
     {
-      "target_name": "hardware_key",
-      "sources": ["src/hardware_key.mm"],
+      "target_name": "keychain",
+      "sources": ["src/keychain.mm"],
       "include_dirs": ["<!@(node -p \"require('node-addon-api').include_dir\")"],
       "defines": ["NAPI_DISABLE_CPP_EXCEPTIONS"],
       "conditions": [

@@ -1,8 +1,9 @@
 packages:
   - 'packages/*'
   - 'apps/*'
-  # native addons belong to their app, but must be workspace packages so pnpm links them into
-  # node_modules — where node-gyp, @electron/rebuild and the packager look for them
+  # native addons belong to their app, but must be workspace packages so pnpm installs their own
+  # dependencies (node-addon-api, node-gyp). The addon is built by the app's `build:native`
+  # script, never by `pnpm install` — see `.claude/rules/desktop-app.md`.
   - 'apps/desktop/native/*'
 
 catalog:
@@ -54,8 +55,8 @@ autoInstallPeers: true
 # `@electron/rebuild@3.7.x` (a transitive dependency of electron-forge 7) declares
 # `@electron/node-gyp` as a git URL, which `blockExoticSubdeps` rightly refuses. The
 # same fork is published to the registry, so pin it there instead of switching the
-# guard off for the whole workspace. Nothing in this repo has native modules to
-# rebuild, so this dependency is never executed — it only has to resolve.
+# guard off for the whole workspace. `rebuildConfig` in `apps/desktop/forge.config.ts`
+# switches the rebuild step off, so this dependency only has to resolve.
 overrides:
   '@electron/rebuild>@electron/node-gyp': '10.2.0-electron.2'
 

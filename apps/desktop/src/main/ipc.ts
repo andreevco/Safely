@@ -75,6 +75,7 @@ export function registerIpcHandlers(getWindow: () => BrowserWindow | null): void
 
     registerStoreHandlers(IPC_CHANNEL.store, 'regular');
     registerStoreHandlers(IPC_CHANNEL.encryptedStore, 'encrypted');
+    registerStoreHandlers(IPC_CHANNEL.secureEncryptedStore, 'secureEncrypted');
 }
 
 /* The stores are resolved per call, not captured: `createStores()` runs after the app is ready. */

@@ -7,7 +7,7 @@ import { registerIpcHandlers } from './ipc';
 import { mainLogger } from './logger';
 import { useSeparateDevUserData } from './paths';
 import { hardenSession, hardenWebContents } from './security';
-import { createStores, runVaultSelfTest } from './store';
+import { createStores } from './store';
 import { createMainWindow } from './window';
 import { IPC_CHANNEL } from '../shared/ipc';
 import type { AppState } from '../shared/ipc';
@@ -69,27 +69,19 @@ if (!app.requestSingleInstanceLock()) {
 
     void app
         .whenReady()
-        .then(async () => {
-            if (process.env.SAFELY_VAULT_SELFTEST) {
-                /* No window, no stores: run the hardware path once and report. */
-                mainLogger.info('Vault self-test passed', await runVaultSelfTest());
-                app.exit(0);
-
-                return;
-            }
-
+        .then(() => {
             if (!devServerUrl) {
                 registerAppProtocol(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}`));
             }
 
             hardenSession(devServerUrl);
-            /* Before the handlers: an IPC call that arrives without a vault must not be served. */
-            await createStores();
+            /* Before the handlers: an IPC call that arrives without a store must not be served. */
+            createStores();
             registerIpcHandlers(() => mainWindow);
             mainWindow = attachMainWindow();
         })
         .catch((error: unknown) => {
-            /* A vault that cannot be built is fatal, and quitting is the whole point: a window
+            /* A keychain that cannot be reached is fatal, and quitting is the whole point: a window
                without storage would look like a working app writing nowhere. */
             mainLogger.error('Startup failed', error);
             app.exit(1);
