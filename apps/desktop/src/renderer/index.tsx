@@ -9,7 +9,7 @@ import { buildWebLogger, createWebI18n } from '@safely/web-ui';
 import '@safely/web-ui/styles.css';
 
 import { AppProviders } from './app';
-import { createDesktopPlatform, getBridge } from './platform';
+import { createDesktopPlatform, getBridge, subscribeFullScreen } from './platform';
 import { Showcase } from './showcase';
 
 async function mount(): Promise<void> {
@@ -23,6 +23,9 @@ async function mount(): Promise<void> {
     const appInfo = await bridge.getAppInfo();
 
     const platform = createDesktopPlatform({ bridge, appInfo });
+
+    subscribeFullScreen(bridge);
+
     const { logger } = buildWebLogger(appInfo.environment === 'development');
 
     /* before React mounts: the first config request already carries the language */

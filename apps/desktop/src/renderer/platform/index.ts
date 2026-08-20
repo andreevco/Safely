@@ -7,7 +7,7 @@ import type { DesktopBridge } from '../../shared/bridge';
 import type { AppInfo } from '../../shared/ipc';
 
 export type { DesktopPlatform, DesktopPlatformStorage, DesktopSecurityGate } from './types';
-export { useIsFullScreen } from './useIsFullScreen';
+export { subscribeFullScreen, useIsFullScreen } from './fullScreen';
 
 /* TODO(build): the config API only knows `ios` and `android`, so desktop reports itself as iOS
    until the backend accepts a desktop platform — feature flags arrive as the iOS ones. */
