@@ -73,8 +73,11 @@ The build number is the repository variable `DESKTOP_BUILD_NUMBER_MACOS`, which 
 keeps it rather than a commit, a tag or a cache: the run reads it, names the artifact after `n + 1`,
 and the separate `record-build-number` job writes the value back — only once the signature gate has
 passed, so a failed run consumes no number and every number belongs to an installable build. The
-workflow's `concurrency` group is what stops two runs reading the same value. Editing the variable
-by hand is how the counter is reset or moved on; an absent one starts at 1.
+workflow's `concurrency` group is what stops two runs reading the same value. The same number is
+handed to `make` as `SAFELY_BUILD_NUMBER`, so the app's About panel reads `Version <version>
+(<build>)` and QA can name the build it is looking at — both halves of that are in
+`desktop-app.md`. Editing the variable by hand is how the counter is reset or moved on; an absent
+one starts at 1.
 
 CI signs with a **certificate of its own**: a Mac Development one issued for the pipeline, not the
 `Apple Development` identity a developer signs local builds with. Both grant the same entitlement, so

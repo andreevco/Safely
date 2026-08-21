@@ -252,6 +252,17 @@ diagnosable.
   `com.apple.security.cs.disable-library-validation` or `get-task-allow` to a production build —
   `signing/verify-signature.sh` fails on both, and CI runs it as a gate. Notarisation is still
   missing, so a downloaded build needs its quarantine flag removed by hand.
+- **The build number reaches the app twice, from one variable.** `SAFELY_BUILD_NUMBER` — CI passes
+  the counter it allocated (`../../.github/workflows/desktop-preview.yml`) — becomes
+  `packagerConfig.buildVersion`, and macOS renders `Version 0.0.1 (42)` in the About panel out of
+  Info.plist with no code involved; it is also a vite `define` in `vite.main.config.ts`, which
+  `src/main/about-panel.ts` hands to `setAboutPanelOptions` so the panel is right in `pnpm start`
+  too, where the bundle is Electron's own. Unset, `CFBundleVersion` falls back to `appVersion`
+  (packager's default), so both keys read the package version, the panel has nothing to put in
+  parentheses, and the code path says `local`. Two things bite: the global is replaced **only in the
+  main bundle**, so a renderer read compiles and throws at runtime; and the About item comes from
+  Electron's default menu, so a `Menu.setApplicationMenu` without `role: 'about'` silently removes
+  it.
 - **QA builds are signed by CI with its own Mac Development certificate, releases locally with
   Developer ID** (`../../.github/workflows/desktop-preview.yml`, `desktop-signing.md`). Two
   consequences for anything that touches the build: CI proves the signature is well-formed and

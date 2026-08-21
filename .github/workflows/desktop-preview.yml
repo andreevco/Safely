@@ -144,6 +144,8 @@ jobs:
           # Relative to apps/desktop: forge resolves it from the package directory.
           SAFELY_SIGN_PROFILE: signing/ci.provisionprofile
           SAFELY_SIGN_KEYCHAIN: ${{ steps.identity.outputs.keychain }}
+          # Becomes CFBundleVersion and the About panel's build number; a build without it says `local`.
+          SAFELY_BUILD_NUMBER: ${{ steps.number.outputs.number }}
         run: pnpm --filter @safely/desktop run make
 
       # The store's guarantees are properties of this signature, so a build that fails here must not
