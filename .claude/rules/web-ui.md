@@ -28,6 +28,11 @@ There is exactly **one** Panda instance in the monorepo: `packages/web-ui/panda.
 as `@safely/web-ui/styled-system/*`. Apps only point their `postcss.config.cjs` at that config —
 never add a second one.
 
+`include` globs are resolved against `cwd`, which is the **app** directory when the app's PostCSS run
+loads this config — so the config pins `cwd: __dirname`. Without it both globs resolve into the app,
+this package's sources are never extracted, and every atomic `css()` written here ships no CSS while
+recipes keep working through `staticCss` — a page renders with correct class names and no layout.
+
 Run lint through the package scripts (`pnpm --filter <pkg> run lint`, which is also what CI does).
 `@pandacss/eslint-plugin` resolves included files relative to the working directory, so invoking
 `eslint` from the repo root reports spurious `file-not-included` errors for app files.

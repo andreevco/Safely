@@ -29,5 +29,16 @@ export const pageHeaderRecipe = defineSlotRecipe({
             flexShrink: 0,
             gap: '8'
         }
+    },
+    variants: {
+        hasDivider: {
+            true: {
+                root: {
+                    borderBottomWidth: 'hairline',
+                    borderBottomStyle: 'solid',
+                    borderBottomColor: 'other.transparentElement'
+                }
+            }
+        }
     }
 });

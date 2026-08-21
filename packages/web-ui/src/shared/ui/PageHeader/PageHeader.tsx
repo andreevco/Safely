@@ -6,12 +6,13 @@ import { pageHeader } from '@safely/web-ui/styled-system/recipes';
 export type PageHeaderProps = Omit<ComponentPropsWithoutRef<'header'>, 'className' | 'title'> & {
     title: ReactNode;
     actions?: ReactNode;
+    hasDivider?: boolean;
     className?: string;
 };
 
 export const PageHeader: FC<PageHeaderProps> = props => {
-    const { title, actions, className, ...rest } = props;
-    const styles = pageHeader();
+    const { title, actions, hasDivider, className, ...rest } = props;
+    const styles = pageHeader({ hasDivider });
 
     return (
         <header className={cx(styles.root, className)} {...rest}>
