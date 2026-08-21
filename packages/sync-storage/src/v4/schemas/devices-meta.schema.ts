@@ -2,7 +2,7 @@ import z from 'zod';
 
 const sDeviceMeta = z.object({
     name: z.string(),
-    platform: z.enum(['ios', 'android', 'macos', 'windows']),
+    platform: z.string(),
     osVersion: z.string(),
     appVersion: z.string(),
     pairedAt: z.number()
