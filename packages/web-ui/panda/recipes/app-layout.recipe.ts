@@ -5,7 +5,7 @@ const TITLE_BAR_HEIGHT = '52px';
 export const appLayoutRecipe = defineSlotRecipe({
     className: 'appLayout',
     description: 'Window shell: a title bar over the sidebar, an optional second bar and content',
-    slots: ['root', 'titleBar', 'sidebar', 'secondary', 'content', 'panel'],
+    slots: ['root', 'titleBar', 'sidebar', 'secondary', 'secondaryContent', 'content', 'panel'],
     base: {
         root: {
             position: 'relative',
@@ -38,15 +38,27 @@ export const appLayoutRecipe = defineSlotRecipe({
             backgroundColor: 'background.secondary'
         },
         secondary: {
-            display: 'flex',
-            flexDirection: 'column',
+            position: 'relative',
             flexShrink: 0,
             width: '300px',
-            overflowY: 'auto',
+            overflow: 'hidden',
+            transition: 'width 200ms ease',
+            _motionReduce: { transition: 'none' }
+        },
+        secondaryContent: {
+            position: 'absolute',
+            top: '0',
+            left: '0',
+            display: 'flex',
+            flexDirection: 'column',
+            width: '300px',
+            height: '100%',
             borderRightWidth: 'hairline',
             borderRightStyle: 'solid',
             borderRightColor: 'other.transparentElement',
-            backgroundColor: 'background.overlay'
+            backgroundColor: 'background.overlay',
+            transition: 'transform 200ms ease',
+            _motionReduce: { transition: 'none' }
         },
         content: {
             display: 'flex',
@@ -72,9 +84,15 @@ export const appLayoutRecipe = defineSlotRecipe({
                 titleBar: { paddingLeft: '98px' }
             }
         },
+        isSecondaryOpen: {
+            false: {
+                secondary: { width: '0' },
+                secondaryContent: { transform: 'translateX(-100%)' }
+            }
+        },
         isFullScreen: {
             true: {
-                secondary: { paddingTop: TITLE_BAR_HEIGHT },
+                secondaryContent: { paddingTop: TITLE_BAR_HEIGHT },
                 content: { paddingTop: TITLE_BAR_HEIGHT },
                 panel: { paddingTop: TITLE_BAR_HEIGHT }
             }

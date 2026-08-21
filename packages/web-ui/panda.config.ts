@@ -17,6 +17,7 @@ export default defineConfig({
     preflight: true,
     outdir: 'styled-system',
     importMap: '@safely/web-ui/styled-system',
+    cwd: __dirname,
     include: ['./src/**/*.{ts,tsx}', '../../apps/*/src/**/*.{ts,tsx}'],
     exclude: [],
     jsxFramework: 'react',
