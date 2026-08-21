@@ -118,7 +118,14 @@ group, so the addon reports itself unavailable and `pnpm start` runs on the deve
 in `vite.main.config.ts`: plain files in the development `userData`, protecting nothing, warning on
 every start. A packaged build refuses to start rather than degrade to it. Anything you want to
 believe about the store has to be checked on a signed build — `signing/verify-signature.sh` for
-the signature, the running app for securityd.
+the signature, the running app for securityd. What exercises it by hand is the showcase's
+`SECRET STORE` screen (`src/renderer/showcase/KeychainShowcase.tsx`): it lists, adds, edits and
+deletes entries of either secret scope through the same `IAppContext` storage the rest of the UI uses
+— `storage.sync.encrypted` and `storage.sync.getSecureEncrypted()`, so it sees the `sync` node of the
+scope and not the whole keychain service — and it exists only because onboarding does not yet write a
+key: the first screen that does replaces it. Reaching the secure scope needs
+`UNSAFE_SKIP_SECURITY_CHECK_unlock()` while the presence gate rejects, exactly as mobile onboarding
+does; that call belongs to this screen and must not spread into anything shipping a flow.
 
 **The renderer cannot prove user presence.** `DesktopPlatform.security` is still
 `unsupportedSecurityGate` (`src/renderer/platform/unsupported.ts`), so
@@ -183,15 +190,19 @@ which only serves requests made inside the app's session. Such a URL has a diffe
 app origin and is refused by the navigation guard, so it has to be turned into a route, never
 navigated to.
 
-Closing the window destroys the renderer, and the sync engine with it. The app itself stays alive —
-there is no `window-all-closed` handler — and `activate` or a second launch recreates the window
-(`revealMainWindow` in `src/main/index.ts`), which boots the engine from scratch and re-reads
-everything from the store. So nothing may depend on renderer memory outliving the window: whatever
-has to survive is written through a store before it matters. Hiding (Cmd+H) keeps the renderer and
-lets Chromium throttle its timers — `backgroundThrottling` stays at its default — and main reports
-the hide and the show to the renderer as app-state events. A single instance lock guarantees one sync
-engine per machine. Neither path needs store handling, there being no unlocked state to lock, but a
-renderer-side passcode session would have to expire on one of them.
+Closing the window ends the whole app — renderer, sync engine and main process. There is no
+`window-all-closed` handler, and Electron's default without one is to quit, on macOS as everywhere
+else: `pnpm start` exits 0 the moment the window closes — measured, not assumed. Staying alive
+windowless is the macOS convention and would take that handler; until it exists, the next launch is
+a cold start that boots the engine from scratch and re-reads everything from the store, and
+`revealMainWindow` (`src/main/index.ts`) only ever reveals a window that is still there — `activate`
+or a second launch on a hidden or minimised one — with its recreate branch unreachable. So nothing
+may depend on renderer memory outliving the window: whatever has to survive is written through a
+store before it matters. Hiding (Cmd+H) keeps the renderer and lets Chromium throttle its timers —
+`backgroundThrottling` stays at its default — and main reports the hide and the show to the renderer
+as app-state events. A single instance lock guarantees one sync engine per machine. Neither path
+needs store handling, there being no unlocked state to lock, but a renderer-side passcode session
+would have to expire on one of them.
 
 The renderer's logger writes to its devtools console, which is invisible when the app is driven from
 a terminal, so `src/main/window.ts` forwards renderer console messages, `did-fail-load` and

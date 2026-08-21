@@ -47,10 +47,18 @@ API key and nothing else.
 
 ## QA builds come from CI
 
-`.github/workflows/desktop-preview.yml`, run by hand: Actions → Desktop QA build → Run workflow. It
-packages on `macos-15` (arm64, the architecture the addon is built for), signs with the **Apple
-Development** identity, runs `verify-signature.sh` as a gate and uploads the zip as an artifact for
+`.github/workflows/desktop-preview.yml` runs on a push to `release/**` — a merge into a release
+branch is one — and by hand: Actions → Desktop QA build → Run workflow. It packages on `macos-15`
+(arm64, the architecture the addon is built for), signs with the **Apple Development** identity,
+runs `verify-signature.sh` as a gate and uploads the zip as `safely-desktop-qa-b<build>-<sha>` for
 14 days.
+
+The build number is the repository variable `DESKTOP_BUILD_NUMBER_MACOS`, which is where GitHub
+keeps it rather than a commit, a tag or a cache: the run reads it, names the artifact after `n + 1`,
+and the separate `record-build-number` job writes the value back — only once the signature gate has
+passed, so a failed run consumes no number and every number belongs to an installable build. The
+workflow's `concurrency` group is what stops two runs reading the same value. Editing the variable
+by hand is how the counter is reset or moved on; an absent one starts at 1.
 
 The Developer ID key deliberately stays off CI. A leaked development certificate is revoked in one
 click, burns none of the team's five Developer ID slots, cannot be notarised, and grants the
@@ -60,7 +68,9 @@ is the one CI gets: releases are a local `distribution.provisionprofile` build p
 
 Three secrets, and they belong to the **`qa-desktop` environment**, not to the repository. Give the
 environment a deployment-branch rule (and reviewers, if you want a second pair of eyes): a run on any
-other ref then cannot read the certificate at all.
+other ref then cannot read the certificate at all. The rule has to name every ref a build may come
+from — `release/*` for the automatic trigger, plus whatever branch gets dispatched by hand — or the
+run starts, reaches no certificate and dies in `Import signing identity`.
 
 | Secret | Contents |
 | ------ | -------- |
@@ -72,12 +82,21 @@ Exporting the identity alone leaves `codesign` on the runner unable to build the
 Access select **both** `Apple Development: …` and the `Apple Worldwide Developer Relations
 Certification Authority` it chains to, then File → Export Items → `.p12`.
 
+A fourth secret, `BUILD_NUMBER_TOKEN`, is a **repository** secret instead: a fine-grained PAT with
+*Variables: read and write* on this repository and nothing else, because `GITHUB_TOKEN` cannot write
+a variable. Keeping it out of the environment is the point — the job that advances the counter then
+has no path to the signing certificate, and the job that holds the certificate has no token that can
+write to the repository.
+
 ```
 base64 -i AppleDevelopment.p12 | pbcopy            # → APPLE_DEV_CERT_P12
 base64 -i signing/dev.provisionprofile | pbcopy    # → APPLE_DEV_PROVISIONING_PROFILE
 
 gh api -X PUT repos/andreevco/Safely/environments/qa-desktop
 gh secret set APPLE_DEV_CERT_P12 --env qa-desktop
+
+gh secret set BUILD_NUMBER_TOKEN                  # repository, not the environment
+gh variable set DESKTOP_BUILD_NUMBER_MACOS --body 0     # optional: an absent counter starts at 1
 ```
 
 Adding a QA machine: its Provisioning UDID → portal → Devices, regenerate the macOS App Development

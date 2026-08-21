@@ -39,7 +39,8 @@ Node version comes from `.nvmrc` (`nvm use`); pnpm only (`preinstall` blocks npm
 - mobile: `pnpm --filter @safely/mobile ios|android|start` — dev-client, not Expo Go
 - desktop: `pnpm --filter @safely/desktop start|package|make`; `build:native` compiles the keychain
   addon (`package`/`make` run it first, `pnpm install` never does). A build QA can install
-  comes from the manual `Desktop QA build` workflow, signed with the development identity;
+  comes from the `Desktop QA build` workflow — a push to `release/**`, or run by hand — signed with
+  the development identity;
   `.claude/rules/desktop-signing.md` has what CI may read and why the Developer ID key stays local
 - `packages/web-ui` generates `styled-system/` with `panda codegen`; its `compile`/`lint`/`test`
   scripts run it first, and `pnpm -r run` is topological, so the apps that depend on it build after.
