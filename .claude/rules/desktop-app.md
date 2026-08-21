@@ -252,11 +252,12 @@ diagnosable.
   `com.apple.security.cs.disable-library-validation` or `get-task-allow` to a production build —
   `signing/verify-signature.sh` fails on both, and CI runs it as a gate. Notarisation is still
   missing, so a downloaded build needs its quarantine flag removed by hand.
-- **QA builds are signed by CI with the Apple Development identity, releases locally with Developer
-  ID** (`../../.github/workflows/desktop-preview.yml`, `desktop-signing.md`). Two consequences for
-  anything that touches the build: CI proves the signature is well-formed and nothing more — whether
-  securityd honours it is only visible when the app runs — and a change to the entitlements or the
-  bundle id has to reach the provisioning profile before the workflow can sign again.
+- **QA builds are signed by CI with its own Mac Development certificate, releases locally with
+  Developer ID** (`../../.github/workflows/desktop-preview.yml`, `desktop-signing.md`). Two
+  consequences for anything that touches the build: CI proves the signature is well-formed and
+  nothing more — whether securityd honours it is only visible when the app runs — and a change to the
+  entitlements or the bundle id has to reach the provisioning profile before the workflow can sign
+  again.
 - **The vite version is pinned by forge**: forge 7 is published as CommonJS and does
   `require('vite')`, and vite ≥ 7 no longer has a `require` export condition. Don't bump vite past 6
   until forge 8 is stable.

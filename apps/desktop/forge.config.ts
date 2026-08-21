@@ -24,6 +24,8 @@ const signing = identity
               identity,
               provisioningProfile,
               keychain: process.env.SAFELY_SIGN_KEYCHAIN,
+              /* forge packages with `quiet: true`, so the default discards the signing error and ships an unsigned app. */
+              continueOnError: false,
               optionsForFile: (filePath: string) => ({
                   hardenedRuntime: true,
                   /* Only the main binary may reach the keychain group; helpers host the renderer. */
