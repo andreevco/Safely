@@ -2,8 +2,11 @@ import { defineConfig } from '@pandacss/dev';
 
 import { commonTheme, darkTheme } from '@safely/ux/theme';
 
-import { recipes } from './panda/recipes';
-import { px, raw, toTokens } from './panda/tokens';
+import { recipes, slotRecipes } from './panda/recipes';
+import { px, raw, toTextStyles, toTokens } from './panda/tokens';
+
+const SYSTEM_FONT_STACK =
+    '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif';
 
 /**
  * The only Panda instance in the monorepo: `include` covers the apps, `importMap` lets them
@@ -29,6 +32,36 @@ export default defineConfig({
             exit: '&[data-ending-style]'
         }
     },
+    staticCss: {
+        recipes: {
+            appLayout: ['*'],
+            badge: ['*'],
+            banner: ['*'],
+            button: ['*'],
+            cell: ['*'],
+            checkbox: ['*'],
+            colorDot: ['*'],
+            list: ['*'],
+            modal: ['*'],
+            pageHeader: ['*'],
+            tableCell: ['*'],
+            toggle: ['*'],
+            wordCell: ['*'],
+            icon: ['*'],
+            spinner: ['*'],
+            input: ['*'],
+            text: ['*']
+        }
+    },
+    utilities: {
+        extend: {
+            appRegion: {
+                className: 'app-region',
+                values: ['drag', 'no-drag'],
+                transform: (value: string) => ({ '-webkit-app-region': value })
+            }
+        }
+    },
     theme: {
         extend: {
             tokens: {
@@ -41,7 +74,14 @@ export default defineConfig({
                    values; token paths stay the same, so no component changes. */
                 colors: toTokens(darkTheme.colors, raw)
             },
-            recipes
+            textStyles: toTextStyles(commonTheme.typography),
+            keyframes: {
+                spin: {
+                    to: { transform: 'rotate(360deg)' }
+                }
+            },
+            recipes,
+            slotRecipes
         }
     },
     globalCss: {
@@ -54,6 +94,7 @@ export default defineConfig({
         body: {
             backgroundColor: 'background.primary',
             color: 'text.primary',
+            fontFamily: SYSTEM_FONT_STACK,
             WebkitFontSmoothing: 'antialiased'
         }
     }

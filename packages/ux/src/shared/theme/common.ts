@@ -31,5 +31,18 @@ export const commonTheme = {
         32: 32,
         48: 48,
         64: 64
-    }
+    },
+    typography: {
+        displayL: { fontSize: 44, lineHeight: 56, fontWeight: '600', letterSpacing: 0 },
+        titleL: { fontSize: 32, lineHeight: 40, fontWeight: '600', letterSpacing: 0 },
+        titleM: { fontSize: 24, lineHeight: 32, fontWeight: '600', letterSpacing: 0 },
+        titleS: { fontSize: 20, lineHeight: 28, fontWeight: '600', letterSpacing: 0 },
+        labelL: { fontSize: 17, lineHeight: 24, fontWeight: '600', letterSpacing: -0.44 },
+        labelM: { fontSize: 14, lineHeight: 20, fontWeight: '600', letterSpacing: -0.15 },
+        labelS: { fontSize: 11, lineHeight: 16, fontWeight: '600', letterSpacing: 0 },
+        bodyL: { fontSize: 17, lineHeight: 24, fontWeight: '400', letterSpacing: 0 },
+        bodyLMono: { fontSize: 17, lineHeight: 24, fontWeight: '400', letterSpacing: 0 },
+        bodyM: { fontSize: 14, lineHeight: 20, fontWeight: '400', letterSpacing: 0 },
+        bodyS: { fontSize: 11, lineHeight: 16, fontWeight: '400', letterSpacing: 0 }
+    } as const
 };

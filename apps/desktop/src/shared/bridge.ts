@@ -34,6 +34,10 @@ export interface DesktopBridge {
 
     onAppStateChange(callback: (state: AppState) => void): () => void;
 
+    isFullScreen(): Promise<boolean>;
+
+    onFullScreenChange(callback: (isFullScreen: boolean) => void): () => void;
+
     openExternalUrl(url: string): Promise<void>;
 
     store: DesktopStoreBridge;

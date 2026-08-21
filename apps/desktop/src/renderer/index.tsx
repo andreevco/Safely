@@ -10,7 +10,7 @@ import '@safely/web-ui/styles.css';
 
 import { AppProviders } from './app';
 import { platform } from './platform';
-import { ScaffoldView } from './ScaffoldView';
+import { Showcase } from './showcase';
 
 const container = document.getElementById('root');
 
@@ -26,7 +26,7 @@ const { instance } = createWebI18n({
 createRoot(container).render(
     <I18nextProvider i18n={instance}>
         <AppProviders>
-            <ScaffoldView />
+            <Showcase />
         </AppProviders>
     </I18nextProvider>
 );

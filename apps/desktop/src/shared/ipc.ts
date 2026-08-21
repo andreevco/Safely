@@ -4,6 +4,7 @@ export const IPC_CHANNEL = {
     appRelaunch: 'safely:app:relaunch',
     appClearData: 'safely:app:clear-data',
     appState: 'safely:app:state',
+    windowFullScreen: 'safely:window:full-screen',
     openExternal: 'safely:shell:open-external',
 
     /* One channel group per backing store, so which store a call reaches is decided by the channel
@@ -51,6 +52,8 @@ export const sOpenExternalRequest = z.object({ url: z.string().max(2048) });
 
 export const sAppState = z.enum(['active', 'background', 'inactive', 'unknown']);
 export type AppState = z.infer<typeof sAppState>;
+
+export const sIsFullScreen = z.boolean();
 
 /**
  * Why a secret operation failed, and the whole of what the renderer is told: the underlying
