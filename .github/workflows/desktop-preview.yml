@@ -34,6 +34,7 @@ jobs:
     timeout-minutes: 30
     outputs:
       number: ${{ steps.number.outputs.number }}
+      artifact_url: ${{ steps.upload.outputs.artifact-url }}
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
@@ -151,6 +152,7 @@ jobs:
         run: apps/desktop/signing/verify-signature.sh apps/desktop/out/Safely-darwin-arm64/Safely.app
 
       - name: Upload build
+        id: upload
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: ${{ steps.number.outputs.artifact }}
@@ -198,3 +200,71 @@ jobs:
 
           gh variable set DESKTOP_BUILD_NUMBER_MACOS --repo "$GITHUB_REPOSITORY" --body "$NUMBER"
           echo "DESKTOP_BUILD_NUMBER_MACOS is now $NUMBER"
+
+  # Runs whatever `build` did, so a crash is reported too. Separate job on ubuntu: the webhook is a
+  # repository secret, and it has no business sitting in the job that holds the signing certificate.
+  report:
+    needs: build
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      # Shallow checkout still carries HEAD, which is where the version and the subject come from.
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      # The Slack side is a Workflow Builder trigger, which consumes a flat JSON whose keys are the
+      # variables that workflow declares: header, status_string, artifact_url.
+      - name: Post the build status to Slack
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          BUILD_RESULT: ${{ needs.build.result }}
+          BUILD_NUMBER: ${{ needs.build.outputs.number }}
+          # Empty unless the upload step ran: the artifact link only exists once there is an artifact.
+          ARTIFACT_URL: ${{ needs.build.outputs.artifact_url }}
+        run: |
+          set -euo pipefail
+
+          # Guards against an unresolved `${{ secrets.* }}` literal, and against an unset secret.
+          case "${SLACK_WEBHOOK_URL:-}" in
+            https://*) ;;
+            *)
+              echo "::warning::SLACK_WEBHOOK_URL is unset or not a URL — skipping the Slack report"
+              exit 0
+              ;;
+          esac
+
+          version="$(jq -r .version apps/desktop/package.json)"
+          subject="$(git log -1 --pretty=%s)"
+          run_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+
+          if [ "$BUILD_RESULT" = "success" ]; then
+            status="✅ Successful build $version (${BUILD_NUMBER:-?})"
+            url="${ARTIFACT_URL:-$run_url}"
+          else
+            status="❌ Desktop build failed"
+            url="$run_url"
+          fi
+
+          # jq builds the body so a commit subject carrying quotes or a backslash stays one string.
+          payload="$(jq -n \
+            --arg header "$GITHUB_REF_NAME <- $subject" \
+            --arg status_string "$status" \
+            --arg artifact_url "$url" \
+            '{header: $header, status_string: $status_string, artifact_url: $artifact_url}')"
+
+          echo "$payload"
+
+          # A reporting hiccup must not turn a signed, uploaded build red.
+          code="$(printf '%s' "$payload" \
+            | curl -sS -o /dev/stderr -w '%{http_code}' \
+                -X POST -H 'Content-Type: application/json' --data @- \
+                "$SLACK_WEBHOOK_URL" || echo 000)"
+
+          if [ "$code" = "200" ]; then
+            echo "Slack report posted."
+          else
+            echo "::warning::Slack rejected the report (HTTP $code)"
+          fi

@@ -121,6 +121,7 @@ gh api -X PUT repos/andreevco/Safely/environments/qa-desktop
 gh secret set APPLE_DEV_CERT_P12 --env qa-desktop
 
 gh secret set BUILD_NUMBER_TOKEN                  # repository, not the environment
+gh secret set SLACK_WEBHOOK_URL                   # repository, not the environment
 gh variable set DESKTOP_BUILD_NUMBER_MACOS --body 0     # optional: an absent counter starts at 1
 ```
 
@@ -139,3 +140,29 @@ xattr -dr com.apple.quarantine /Applications/Safely.app
 Removing the quarantine flag is not optional: a development signature cannot be notarised, so
 Gatekeeper refuses a downloaded copy. The Mac has to be listed in the profile — otherwise the
 entitlement is not honoured, the store fails closed and the app exits instead of starting on a stub.
+
+## The Slack report
+
+The `report` job runs `if: always()`, so a crashed build is reported as loudly as a green one. It is
+a third job on `ubuntu-latest` for the same reason `record-build-number` is a second: the webhook is
+a **repository** secret, `SLACK_WEBHOOK_URL`, and nothing that is not the certificate belongs in the
+job that holds it.
+
+`SLACK_WEBHOOK_URL` is a Slack Workflow Builder trigger (`https://hooks.slack.com/triggers/…`), the
+same kind the mobile pipeline posts to. It consumes a **flat** JSON whose keys are the variables that
+Slack workflow declares, so adding a field here means adding it there first or the trigger rejects
+the call:
+
+| Key | Value |
+| --- | ----- |
+| `header` | `<branch> <- <commit subject>` — the mobile report's headline, same shape |
+| `status_string` | `✅ Successful build <version> (<build number>)`, or `❌ Desktop build failed` |
+| `artifact_url` | the artifact's download page, or the run's page when there is no artifact |
+
+The version is `apps/desktop/package.json`'s `version`, read in the report job rather than passed
+from the build — a job that failed before checkout still reports the right one. The download URL is
+`actions/upload-artifact`'s `artifact-url` output, which needs a GitHub login to follow and only
+exists once the upload step ran; every other outcome falls back to the run page.
+
+An unset or malformed webhook logs a warning and the job still passes, and so does a webhook that
+answers anything but 200: a signed, uploaded build must not go red because Slack hiccuped.
