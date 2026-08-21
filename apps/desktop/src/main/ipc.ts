@@ -39,6 +39,12 @@ function assertTrustedSender(event: IpcMainInvokeEvent): void {
 }
 
 export function registerIpcHandlers(getWindow: () => BrowserWindow | null): void {
+    ipcMain.handle(IPC_CHANNEL.windowFullScreen, (event): boolean => {
+        assertTrustedSender(event);
+
+        return getWindow()?.isFullScreen() ?? false;
+    });
+
     ipcMain.handle(IPC_CHANNEL.appRelaunch, event => {
         assertTrustedSender(event);
         getWindow()?.reload();

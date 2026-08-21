@@ -24,6 +24,8 @@ export function createMainWindow(devServerUrl: string | undefined): BrowserWindo
     const window = new BrowserWindow({
         ...WINDOW,
         show: false,
+        titleBarStyle: 'hidden',
+        trafficLightPosition: { x: 19, y: 19 },
         /* from the design tokens, so the window never flashes white before the first frame */
         backgroundColor: darkTheme.colors.background.primary,
         webPreferences: {

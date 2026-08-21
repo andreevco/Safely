@@ -41,13 +41,71 @@ export const darkTheme = {
             tertiary: {
                 background: 'rgba(38, 38, 43, 1)',
                 foreground: 'rgba(255, 255, 255, 1)'
+            },
+            destructive: {
+                background: 'rgba(255, 85, 85, 0.16)',
+                foreground: 'rgba(255, 85, 85, 1)'
+            },
+            destructiveOrange: {
+                background: 'rgba(255, 179, 71, 0.16)',
+                foreground: 'rgba(255, 179, 71, 1)'
+            }
+        },
+        badge: {
+            neutral: {
+                background: 'rgba(38, 38, 43, 1)',
+                foreground: 'rgba(160, 160, 166, 1)'
+            },
+            warning: {
+                background: 'rgba(255, 179, 71, 0.16)',
+                foreground: 'rgba(255, 179, 71, 1)'
+            },
+            success: {
+                background: 'rgba(31, 194, 122, 0.16)',
+                foreground: 'rgba(31, 194, 122, 1)'
+            },
+            error: {
+                background: 'rgba(255, 85, 85, 0.16)',
+                foreground: 'rgba(255, 85, 85, 1)'
+            },
+            accent: {
+                background: 'rgba(1, 120, 255, 0.16)',
+                foreground: 'rgba(1, 120, 255, 1)'
+            },
+            warningFilled: {
+                background: 'rgba(255, 179, 71, 1)',
+                foreground: 'rgba(0, 0, 0, 1)'
+            }
+        },
+        cell: {
+            default: {
+                background: 'rgba(26, 26, 29, 1)',
+                foreground: 'rgba(237, 237, 237, 1)'
+            },
+            accentRed: {
+                background: 'rgba(255, 85, 85, 0.16)',
+                foreground: 'rgba(255, 85, 85, 1)'
+            }
+        },
+        banner: {
+            default: {
+                background: 'rgba(26, 26, 29, 1)',
+                foreground: 'rgba(237, 237, 237, 1)'
+            },
+            warn: {
+                background: 'rgba(255, 179, 71, 0.16)',
+                foreground: 'rgba(255, 179, 71, 1)'
+            },
+            danger: {
+                background: 'rgba(255, 85, 85, 0.16)',
+                foreground: 'rgba(255, 85, 85, 1)'
             }
         },
         accent: {
             accent: 'rgba(1, 120, 255, 1)',
             green: 'rgba(31, 194, 122, 1)',
-            red: 'rgba(229, 64, 69, 1)',
-            orange: 'rgba(245, 168, 34, 1)',
+            red: 'rgba(255, 85, 85, 1)',
+            orange: 'rgba(255, 179, 71, 1)',
             blue: 'rgba(1, 120, 255, 1)'
         },
         wallet: {

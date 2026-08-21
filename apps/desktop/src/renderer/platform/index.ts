@@ -1,11 +1,13 @@
 import type { Build } from '@safely/core';
 
+import { subscribeFullScreen } from './fullScreen';
 import { createEnumerableStorage, synchronousStorage } from './storage';
 import type { DesktopPlatform } from './types';
 import { unsupportedSecurityGate } from './unsupported';
 import type { DesktopBridge } from '../../shared/bridge';
 
 export type { DesktopPlatform, DesktopPlatformStorage, DesktopSecurityGate } from './types';
+export { subscribeFullScreen, useIsFullScreen } from './fullScreen';
 
 const REPORTED_BUILD: Build = 'macos';
 
@@ -20,6 +22,10 @@ function getBridge(): DesktopBridge {
 }
 
 const bridge = getBridge();
+
+/* One subscription per renderer, installed where the bridge is created: `useIsFullScreen` is a
+   plain read of the store and never owns the wiring. */
+subscribeFullScreen(bridge);
 
 export const platform: DesktopPlatform = {
     appInfo: { ...bridge.appInfo, build: REPORTED_BUILD },
