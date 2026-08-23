@@ -12,17 +12,19 @@ import {
 
 import { listStyles, versionStyles } from './SettingsSidebar.styles';
 import { WalletIcon } from '../../entities';
-import { AppLayout, Cell, List, PageHeader, Text } from '../../shared';
+import { AppLayout, Cell, List, PageHeader, Text, useLongPress } from '../../shared';
 
 export type SettingsSidebarProps = {
     onAddWallet: () => void;
     onSignOut: () => void;
+    onOpenDevTools: () => void;
 };
 
 export const SettingsSidebar: FC<SettingsSidebarProps> = props => {
-    const { onAddWallet, onSignOut } = props;
+    const { onAddWallet, onSignOut, onOpenDevTools } = props;
 
     const { version } = useAppContext();
+    const longPress = useLongPress(onOpenDevTools);
     const t = useTranslate();
     const fiat = useActiveFiat();
     const language = useActiveLanguage();
@@ -134,7 +136,7 @@ export const SettingsSidebar: FC<SettingsSidebarProps> = props => {
                         </Cell>
                     </List.Group>
 
-                    <Text variant="bodyM" tone="tertiary" className={versionStyles}>
+                    <Text variant="bodyM" tone="tertiary" className={versionStyles} {...longPress}>
                         {`Safely · ${version}`}
                     </Text>
                 </List>

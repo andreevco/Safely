@@ -7,24 +7,26 @@ import { AppLayout, Button, Cell, Icon, List, PageHeader } from '@safely/web-ui'
 import { css } from '@safely/web-ui/styled-system/css';
 
 import { useIsFullScreen } from '../platform';
-import { BannerShowcase } from './BannerShowcase';
-import { ButtonShowcase } from './ButtonShowcase';
-import { IconShowcase } from './IconShowcase';
-import { InputShowcase } from './InputShowcase';
-import { KeychainShowcase } from './KeychainShowcase';
-import { ListShowcase } from './ListShowcase';
-import { ModalShowcase } from './ModalShowcase';
-import { TableShowcase } from './TableShowcase';
-import { TextShowcase } from './TextShowcase';
+import {
+    BannerShowcase,
+    ButtonShowcase,
+    IconShowcase,
+    InputShowcase,
+    KeychainShowcase,
+    ListShowcase,
+    ModalShowcase,
+    TableShowcase,
+    TextShowcase
+} from '../showcase';
 
-type ShowcaseSection = {
+type DevToolsSection = {
     title: string;
     content: ReactNode;
 };
 
 const SECONDARY_ITEMS = ['Me', 'Edit account', 'Address book', 'Add account'];
 
-const SECTIONS: ShowcaseSection[] = [
+const SECTIONS: DevToolsSection[] = [
     { title: 'Buttons', content: <ButtonShowcase /> },
     { title: 'Typography', content: <TextShowcase /> },
     { title: 'Inputs', content: <InputShowcase /> },
@@ -46,12 +48,18 @@ const contentStyles = css({
     paddingBottom: '32'
 });
 
-export const Showcase: FC = () => {
+export type DevToolsProps = {
+    onClose: () => void;
+};
+
+export const DevTools: FC<DevToolsProps> = props => {
+    const { onClose } = props;
+
+    const isFullScreen = useIsFullScreen();
     const [activeTitle, setActiveTitle] = useState(SECTIONS[0].title);
     const [isSecondaryOpen, setIsSecondaryOpen] = useState(false);
 
     const bridge = window.safelyDesktop;
-    const isFullScreen = useIsFullScreen();
     const activeSection = SECTIONS.find(section => section.title === activeTitle) ?? SECTIONS[0];
 
     return (
@@ -125,7 +133,20 @@ export const Showcase: FC = () => {
             )}
 
             <AppLayout.Content>
-                <PageHeader title={activeSection.title} />
+                <PageHeader
+                    title={activeSection.title}
+                    actions={
+                        <Button
+                            variant="secondary"
+                            size="small"
+                            isIconOnly
+                            aria-label="Back to the app"
+                            onClick={onClose}
+                        >
+                            <Icon asset={Xmark16} />
+                        </Button>
+                    }
+                />
 
                 <div className={contentStyles}>{activeSection.content}</div>
             </AppLayout.Content>

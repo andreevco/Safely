@@ -11,11 +11,13 @@ export type MainLayoutProps = {
     isFullScreen?: boolean;
     onAddWallet: () => void;
     onSignOut: () => void;
+    onOpenDevTools: () => void;
     children: ReactNode;
 };
 
 export const MainLayout: FC<MainLayoutProps> = props => {
-    const { hasWindowControls, isFullScreen, onAddWallet, onSignOut, children } = props;
+    const { hasWindowControls, isFullScreen, onAddWallet, onSignOut, onOpenDevTools, children } =
+        props;
 
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
@@ -34,7 +36,11 @@ export const MainLayout: FC<MainLayoutProps> = props => {
                 onOpenSettings={() => setIsSettingsOpen(current => !current)}
             />
 
-            <SettingsSidebar onAddWallet={onAddWallet} onSignOut={onSignOut} />
+            <SettingsSidebar
+                onAddWallet={onAddWallet}
+                onSignOut={onSignOut}
+                onOpenDevTools={onOpenDevTools}
+            />
 
             <AppLayout.Content>{children}</AppLayout.Content>
         </AppLayout>

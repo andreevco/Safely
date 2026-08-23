@@ -11,6 +11,7 @@ export type MainPageProps = {
     isFullScreen?: boolean;
     onAddWallet: () => void;
     onSignOut: () => void;
+    onOpenDevTools: () => void;
 };
 
 export const MainPage: FC<MainPageProps> = props => {
