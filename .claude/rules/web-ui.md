@@ -77,6 +77,16 @@ and read it from a static style: `style={{ '--fill': value }}` plus `width: 'var
 - `@floating-ui` inside Base UI sets inline `style` for positioning, so a CSP must allow
   `style-src 'unsafe-inline'`; Base UI ships `./csp-provider` for nonce-based setups.
 
+## Routing: `createMemoryRouter`, and no secrets in it
+
+**A secret never travels through navigation.** `navigate(path, { state })` writes into a history
+entry: it outlives the step, comes back on a backwards navigation, and is readable from
+`useLocation().state` by whatever renders on that path. A mnemonic, a passcode or a private key
+therefore stays inside the component that collects it (multi-step input is one route with an internal
+step, the way `PasscodeSetup` works on mobile), or is handed on by reference as a disposable resource
+(`MnemonicResource` + `Symbol.dispose`). Route state carries the intent only — `{ kind: 'imported' }`,
+never the phrase itself.
+
 ## No platform contract lives here
 
 This package supplies parts — `WebLinking`, the toast service, the logger and i18next factories, the
