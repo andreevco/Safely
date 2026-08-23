@@ -1,7 +1,11 @@
 import type { FC } from 'react';
 
-import type { Portfolio } from '@safely/core';
-import { usePortfolios, useSetActivePortfolio, useTranslate } from '@safely/ux';
+import {
+    useActivePortfolioEntitiesQuery,
+    usePortfolios,
+    useSetActivePortfolio,
+    useTranslate
+} from '@safely/ux';
 import Message16 from '@safely/ux/assets/icons/16/message-16.svg?react';
 import PlusAlternate16 from '@safely/ux/assets/icons/16/plus-alternate-16.svg?react';
 import ShieldExclamationmark16 from '@safely/ux/assets/icons/16/shield-exclamationmark-16.svg?react';
@@ -12,7 +16,6 @@ import { WalletCell } from '../../entities';
 import { AppLayout, Cell, ColorDot, Icon, List } from '../../shared';
 
 export type MainSidebarProps = {
-    activePortfolioId: Portfolio['id'];
     hasUpdates?: boolean;
     hasSafetyNotice?: boolean;
     onAddWallet: () => void;
@@ -23,7 +26,6 @@ export type MainSidebarProps = {
 
 export const MainSidebar: FC<MainSidebarProps> = props => {
     const {
-        activePortfolioId,
         hasUpdates,
         hasSafetyNotice,
         onAddWallet,
@@ -35,6 +37,7 @@ export const MainSidebar: FC<MainSidebarProps> = props => {
     const t = useTranslate();
     const portfolios = usePortfolios();
     const { mutate: setActivePortfolio } = useSetActivePortfolio();
+    const activePortfolioId = useActivePortfolioEntitiesQuery().data?.portfolio.id;
 
     return (
         <AppLayout.Sidebar className={sidebarStyles}>
@@ -44,7 +47,10 @@ export const MainSidebar: FC<MainSidebarProps> = props => {
                         <WalletCell
                             key={portfolio.id.toString()}
                             portfolio={portfolio}
-                            isActive={portfolio.id.isEq(activePortfolioId)}
+                            isActive={
+                                activePortfolioId !== undefined &&
+                                portfolio.id.isEq(activePortfolioId)
+                            }
                             onSelect={() => setActivePortfolio({ id: portfolio.id })}
                         />
                     ))}
