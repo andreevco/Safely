@@ -1,6 +1,7 @@
 import { defineSlotRecipe } from '@pandacss/dev';
 
 const TITLE_BAR_HEIGHT = '52px';
+const SIDEBAR_WIDTH = '300px';
 
 export const appLayoutRecipe = defineSlotRecipe({
     className: 'appLayout',
@@ -19,17 +20,17 @@ export const appLayoutRecipe = defineSlotRecipe({
             position: 'absolute',
             top: '0',
             left: '0',
-            right: '0',
             zIndex: 1,
             display: 'flex',
             alignItems: 'center',
+            width: SIDEBAR_WIDTH,
             height: TITLE_BAR_HEIGHT
         },
         sidebar: {
             display: 'flex',
             flexDirection: 'column',
             flexShrink: 0,
-            width: '300px',
+            width: SIDEBAR_WIDTH,
             paddingTop: TITLE_BAR_HEIGHT,
             overflowY: 'auto',
             borderRightWidth: 'hairline',

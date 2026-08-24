@@ -62,6 +62,7 @@
         "next": "Next",
         "save": "Save",
         "cancel": "Cancel",
+        "close": "Close",
         "continue": "Continue",
         "later": "Later",
         "comingSoon": "Coming soon",
@@ -456,6 +457,7 @@
         "importWallet": "Import wallet",
         "moreOptions": "More options",
         "linkWithQr": "Link with QR",
+        "legal": "By continuing, you agree to our<br /><terms>Terms of Use</terms> and <privacy>Privacy Policy</privacy>.",
         "legalLine1": "By using Safely, you agree to accept",
         "legalLine2": "our <privacy>Privacy Policy</privacy>."
     },
@@ -481,11 +483,13 @@
         },
         "passcode": {
             "title": "Create passcode",
-            "description": "Set a passcode to protect your data. It will be required to unlock the app.",
+            "description": "Set a passcode to protect your data.\nIt will be required to unlock the app.",
             "reenter": {
                 "title": "Re-enter passcode",
-                "description": "Set a passcode to protect your data. It will be required to unlock the app."
-            }
+                "description": "Set a passcode to protect your data.\nIt will be required to unlock the app."
+            },
+            "sixDigit": "6-digit",
+            "backspace": "Delete the last digit"
         },
         "customize": {
             "title": "Customize your wallet",

@@ -12,7 +12,8 @@ export const pageHeaderRecipe = defineSlotRecipe({
             flexShrink: 0,
             gap: '8',
             height: '64px',
-            paddingInline: '24'
+            paddingInline: '24',
+            appRegion: 'drag'
         },
         title: {
             flex: '1',
@@ -27,7 +28,8 @@ export const pageHeaderRecipe = defineSlotRecipe({
             display: 'flex',
             alignItems: 'center',
             flexShrink: 0,
-            gap: '8'
+            gap: '8',
+            appRegion: 'no-drag'
         }
     },
     variants: {
