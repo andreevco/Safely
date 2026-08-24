@@ -3,23 +3,20 @@ import { useState } from 'react';
 
 import { useEraseAllData } from '@safely/ux';
 
-import type { PasscodeStorage } from '../entities';
-import { usePasscode } from '../entities';
+import { useLockScreen, usePasscode } from '../entities';
 import { EraseDataModal } from '../features';
 import { LockScreen, PasscodeVerification } from '../pages';
 import { PasscodePromptCancelledError, usePasscodePromptStore } from '../shared';
 
 export type AppLockProps = {
-    passcodeStorage: PasscodeStorage;
     children: ReactNode;
 };
 
-export const AppLock: FC<AppLockProps> = props => {
-    const { passcodeStorage, children } = props;
-
-    const passcode = usePasscode(passcodeStorage);
+export const AppLock: FC<AppLockProps> = ({ children }) => {
+    const passcode = usePasscode();
+    const lockScreen = useLockScreen();
     const [isErasing, setIsErasing] = useState(false);
-    const [isUnlocked, setIsUnlocked] = useState(!passcode.isSet);
+    const [isUnlocked, setIsUnlocked] = useState(!passcode.isSet || !lockScreen.isEnabled);
     const request = usePasscodePromptStore(state => state.request);
     const close = usePasscodePromptStore(state => state.close);
     const { mutateAsync: eraseAllData } = useEraseAllData();
@@ -48,22 +45,25 @@ export const AppLock: FC<AppLockProps> = props => {
         );
     }
 
-    if (request !== null) {
-        return (
-            <PasscodeVerification
-                length={passcode.length}
-                verify={passcode.validate}
-                onVerified={() => {
-                    request.resolve();
-                    close();
-                }}
-                onCancel={() => {
-                    request.reject(new PasscodePromptCancelledError());
-                    close();
-                }}
-            />
-        );
-    }
+    return (
+        <>
+            {children}
 
-    return children;
+            {request !== null && (
+                <PasscodeVerification
+                    title={request.title}
+                    length={passcode.length}
+                    verify={passcode.validate}
+                    onVerified={() => {
+                        request.resolve();
+                        close();
+                    }}
+                    onCancel={() => {
+                        request.reject(new PasscodePromptCancelledError());
+                        close();
+                    }}
+                />
+            )}
+        </>
+    );
 };

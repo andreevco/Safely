@@ -7,6 +7,7 @@ import { clearStores, getStore } from './store';
 import type { StoreChannels } from '../shared/ipc';
 import {
     IPC_CHANNEL,
+    sContentProtectionRequest,
     sOpenExternalRequest,
     sStoreKeyRequest,
     sStorePrefixRequest,
@@ -53,6 +54,10 @@ export function registerIpcHandlers(getWindow: () => BrowserWindow | null): void
     ipcMain.handle(IPC_CHANNEL.appClearData, async event => {
         assertTrustedSender(event);
         await clearStores();
+    });
+
+    handle(IPC_CHANNEL.windowContentProtection, sContentProtectionRequest, payload => {
+        getWindow()?.setContentProtection(payload.isEnabled);
     });
 
     handle(IPC_CHANNEL.openExternal, sOpenExternalRequest, async payload => {

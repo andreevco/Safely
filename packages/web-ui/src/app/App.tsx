@@ -4,6 +4,7 @@ import type { FC } from 'react';
 import { AppLock } from './AppLock';
 import { router } from './router';
 import type { PasscodeStorage } from '../entities';
+import { PasscodeStorageProvider } from '../entities';
 
 export type AppProps = {
     passcodeStorage: PasscodeStorage;
@@ -15,11 +16,10 @@ export const App: FC<AppProps> = props => {
     const { passcodeStorage, hasWindowControls, isFullScreen } = props;
 
     return (
-        <AppLock passcodeStorage={passcodeStorage}>
-            <RouterProvider
-                router={router}
-                context={{ passcodeStorage, hasWindowControls, isFullScreen }}
-            />
-        </AppLock>
+        <PasscodeStorageProvider storage={passcodeStorage}>
+            <AppLock>
+                <RouterProvider router={router} context={{ hasWindowControls, isFullScreen }} />
+            </AppLock>
+        </PasscodeStorageProvider>
     );
 };

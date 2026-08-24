@@ -5,6 +5,7 @@ export const IPC_CHANNEL = {
     appClearData: 'safely:app:clear-data',
     appState: 'safely:app:state',
     windowFullScreen: 'safely:window:full-screen',
+    windowContentProtection: 'safely:window:content-protection',
     openExternal: 'safely:shell:open-external',
 
     /* One channel group per backing store, so which store a call reaches is decided by the channel
@@ -49,6 +50,8 @@ export const sStoreSetRequest = z.object({ key: sKey, value: sValue });
 export const sStorePrefixRequest = z.object({ prefix: sPrefix });
 
 export const sOpenExternalRequest = z.object({ url: z.string().max(2048) });
+
+export const sContentProtectionRequest = z.object({ isEnabled: z.boolean() });
 
 export const sAppState = z.enum(['active', 'background', 'inactive', 'unknown']);
 export type AppState = z.infer<typeof sAppState>;

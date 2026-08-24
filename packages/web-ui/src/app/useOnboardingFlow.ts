@@ -4,12 +4,11 @@ import { useCallback } from 'react';
 import { useAppContext, useCreateAccount, useErrorToast, useLoader } from '@safely/ux';
 
 import { ROUTE } from './routes';
-import type { PasscodeStorage } from '../entities';
 import { usePasscode } from '../entities';
 
-export function useOnboardingFlow(passcodeStorage: PasscodeStorage) {
+export function useOnboardingFlow() {
     const navigate = useNavigate();
-    const { set: setPasscode } = usePasscode(passcodeStorage);
+    const { set: setPasscode } = usePasscode();
     const { mutateAsync: createAccount } = useCreateAccount({ setActive: true });
     const { withLoader } = useLoader();
     const errorToast = useErrorToast({});

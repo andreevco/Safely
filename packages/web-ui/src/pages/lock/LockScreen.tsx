@@ -15,7 +15,7 @@ import {
     shakeStyles
 } from './LockScreen.styles';
 import { usePasscodeLockout } from '../../entities';
-import { Button, Icon, Passcode, Text } from '../../shared';
+import { Button, Icon, Passcode, Text, useScreenProtection } from '../../shared';
 
 export type LockScreenProps = {
     length: number;
@@ -31,6 +31,8 @@ export const LockScreen: FC<LockScreenProps> = props => {
     const { length, verify, onUnlocked, onSignOut } = props;
 
     const t = useTranslate();
+
+    useScreenProtection();
     const [value, setValue] = useState('');
     const [hasFailed, setHasFailed] = useState(false);
     const { isLocked, remainingSeconds, recordFailure, reset } = usePasscodeLockout();

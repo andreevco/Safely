@@ -9,6 +9,7 @@ export class PasscodePromptCancelledError extends Error {
 }
 
 type PasscodePromptRequest = {
+    title?: string;
     resolve: () => void;
     reject: (reason: Error) => void;
 };
@@ -26,9 +27,9 @@ export const usePasscodePromptStore = create<PasscodePromptState>(set => ({
 }));
 
 export const passcodePrompt = {
-    request(): Promise<void> {
+    request(options?: { title?: string }): Promise<void> {
         return new Promise((resolve, reject) => {
-            usePasscodePromptStore.getState().open({ resolve, reject });
+            usePasscodePromptStore.getState().open({ title: options?.title, resolve, reject });
         });
     }
 };

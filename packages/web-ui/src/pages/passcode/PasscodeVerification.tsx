@@ -13,10 +13,11 @@ import {
     rootStyles
 } from './PasscodeVerification.styles';
 import { usePasscodeLockout } from '../../entities';
-import { Button, Icon, Passcode, Text } from '../../shared';
+import { Button, Icon, Passcode, Text, useScreenProtection } from '../../shared';
 import { shakeStyles } from '../lock/LockScreen.styles';
 
 export type PasscodeVerificationProps = {
+    title?: string;
     length: number;
     verify: (passcode: string) => Promise<boolean>;
     onVerified: () => void;
@@ -24,9 +25,11 @@ export type PasscodeVerificationProps = {
 };
 
 export const PasscodeVerification: FC<PasscodeVerificationProps> = props => {
-    const { length, verify, onVerified, onCancel } = props;
+    const { title, length, verify, onVerified, onCancel } = props;
 
     const t = useTranslate();
+
+    useScreenProtection();
     const { recordFailure, reset } = usePasscodeLockout();
     const [value, setValue] = useState('');
     const [hasFailed, setHasFailed] = useState(false);
@@ -68,7 +71,7 @@ export const PasscodeVerification: FC<PasscodeVerificationProps> = props => {
 
             <div className={bodyStyles}>
                 <div className={promptStyles}>
-                    <Text variant="labelL">{t('passcode.verify.title')}</Text>
+                    <Text variant="labelL">{title ?? t('passcode.verify.title')}</Text>
 
                     <Passcode
                         className={cx(hasFailed && shakeStyles)}

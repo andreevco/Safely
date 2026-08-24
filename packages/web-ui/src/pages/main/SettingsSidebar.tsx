@@ -86,7 +86,10 @@ export const SettingsSidebar: FC<SettingsSidebarProps> = props => {
 
                     <List.Title>{t('settings.groups.application.title')}</List.Title>
                     <List.Group variant="separated">
-                        <Cell onClick={() => undefined}>
+                        <Cell
+                            isSelected={activeSection === 'security'}
+                            onClick={() => onSelectSection('security')}
+                        >
                             <Cell.Content>
                                 <Cell.Title>
                                     {t('settings.groups.application.options.security')}

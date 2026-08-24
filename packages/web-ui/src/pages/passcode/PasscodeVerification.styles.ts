@@ -1,7 +1,9 @@
 import { css } from '@safely/web-ui/styled-system/css';
 
 export const rootStyles = css({
-    position: 'relative',
+    position: 'fixed',
+    inset: '0',
+    zIndex: 2,
     display: 'flex',
     flexDirection: 'column',
     height: '100%',

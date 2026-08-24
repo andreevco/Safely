@@ -7,3 +7,7 @@ export const passcodeKeys = defineQueryKeys('passcode', {
 export const lockoutKeys = defineQueryKeys('passcode_lockout', {
     state: finalKey
 });
+
+export const lockScreenKeys = defineQueryKeys('lock_screen', {
+    state: finalKey
+});

@@ -1,17 +1,18 @@
-import { useNavigate } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { useRef, useState } from 'react';
 
 import { useTranslate } from '@safely/ux';
 
-import { ROUTE } from './routes';
-import { useOnboardingFlow } from './useOnboardingFlow';
-import { PasscodePage } from '../pages';
+import { usePasscode } from '../../../entities';
+import { PasscodePage } from '../../passcode';
 
-export const PasscodeRoute: FC = () => {
+export type ChangePasscodeFlowProps = {
+    onDone: () => void;
+};
+
+export const ChangePasscodeFlow: FC<ChangePasscodeFlowProps> = ({ onDone }) => {
     const t = useTranslate();
-    const navigate = useNavigate();
-    const { onPasscodeConfirmed } = useOnboardingFlow();
+    const { set: setPasscode } = usePasscode();
 
     const created = useRef('');
     const [isConfirming, setIsConfirming] = useState(false);
@@ -31,7 +32,7 @@ export const PasscodeRoute: FC = () => {
             return;
         }
 
-        void onPasscodeConfirmed(passcode);
+        void setPasscode(passcode).then(onDone);
         created.current = '';
     };
 
@@ -43,20 +44,18 @@ export const PasscodeRoute: FC = () => {
             return;
         }
 
-        void navigate({ to: ROUTE.onboarding.welcome });
+        onDone();
     };
 
     return isConfirming ? (
         <PasscodePage
-            title={t('onboarding.passcode.reenter.title')}
-            description={t('onboarding.passcode.reenter.description')}
+            title={t('changePasscode.reenter.title')}
             onBack={onBack}
             onSubmit={onConfirmed}
         />
     ) : (
         <PasscodePage
-            title={t('onboarding.passcode.title')}
-            description={t('onboarding.passcode.description')}
+            title={t('changePasscode.new.title')}
             isInvalid={isMismatched}
             onBack={onBack}
             onSubmit={onCreated}

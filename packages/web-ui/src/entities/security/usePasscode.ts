@@ -4,7 +4,7 @@ import { useCallback } from 'react';
 import { useSuspenseQuery } from '@safely/ux';
 
 import { passcodeKeys } from './keys';
-import type { PasscodeStorage } from './types';
+import { usePasscodeStorage } from './PasscodeStorageProvider';
 
 export type UsePasscodeResult =
     | {
@@ -20,8 +20,9 @@ export type UsePasscodeResult =
           set: (passcode: string) => Promise<void>;
       };
 
-export function usePasscode(storage: PasscodeStorage): UsePasscodeResult {
+export function usePasscode(): UsePasscodeResult {
     const client = useQueryClient();
+    const storage = usePasscodeStorage();
 
     const { data } = useSuspenseQuery({
         queryKey: passcodeKeys.state.toKey(),

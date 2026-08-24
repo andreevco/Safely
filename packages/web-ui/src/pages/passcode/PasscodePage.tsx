@@ -15,11 +15,11 @@ import {
     shellStyles,
     titleStyles
 } from './PasscodePage.styles';
-import { Button, Icon, Modal, Passcode, Switch, Text } from '../../shared';
+import { Button, Icon, Modal, Passcode, Switch, Text, useScreenProtection } from '../../shared';
 
 export type PasscodePageProps = {
     title: string;
-    description: string;
+    description?: string;
     isInvalid?: boolean;
     onSubmit: (code: string) => void;
     onBack: () => void;
@@ -32,6 +32,8 @@ export const PasscodePage: FC<PasscodePageProps> = props => {
     const { title, description, isInvalid, onSubmit, onBack } = props;
 
     const t = useTranslate();
+
+    useScreenProtection();
     const [value, setValue] = useState('');
     const [length, setLength] = useState(SHORT_LENGTH);
 
@@ -78,9 +80,11 @@ export const PasscodePage: FC<PasscodePageProps> = props => {
                     <div className={bodyStyles}>
                         <div className={headingStyles}>
                             <Modal.Title className={titleStyles}>{title}</Modal.Title>
-                            <Modal.Description className={descriptionStyles}>
-                                {description}
-                            </Modal.Description>
+                            {description !== undefined && (
+                                <Modal.Description className={descriptionStyles}>
+                                    {description}
+                                </Modal.Description>
+                            )}
                         </div>
 
                         <Passcode

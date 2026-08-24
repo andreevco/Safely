@@ -4,5 +4,6 @@ export * from './linking';
 export * from './logger';
 export * from './i18n';
 export * from './passcode-prompt';
+export * from './screen-protection';
 export * from './toast';
 export * from './ui';

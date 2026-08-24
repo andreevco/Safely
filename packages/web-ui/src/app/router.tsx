@@ -11,10 +11,8 @@ import { OnboardingGuard } from './OnboardingGuard';
 import { PasscodeRoute } from './PasscodeRoute';
 import { ROUTE } from './routes';
 import { WelcomeRoute } from './WelcomeRoute';
-import type { PasscodeStorage } from '../entities';
 
 export type RouterContext = {
-    passcodeStorage: PasscodeStorage;
     hasWindowControls?: boolean;
     isFullScreen?: boolean;
 };

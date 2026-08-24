@@ -2,6 +2,7 @@ import type { Build } from '@safely/core';
 
 import { subscribeFullScreen } from './fullScreen';
 import { createPasscodeStorage } from './passcode';
+import { applyScreenProtection } from './screenProtection';
 import { passcodeSecurityGate } from './security';
 import { createEnumerableStorage, synchronousStorage } from './storage';
 import type { DesktopPlatform } from './types';
@@ -25,6 +26,7 @@ function getBridge(): DesktopBridge {
 const bridge = getBridge();
 
 subscribeFullScreen(bridge);
+applyScreenProtection(bridge);
 
 export const passcodeStorage = createPasscodeStorage(bridge);
 
