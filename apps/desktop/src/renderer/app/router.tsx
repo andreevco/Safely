@@ -8,7 +8,6 @@ import {
 import { DevToolsRoute } from './DevToolsRoute';
 import { MainRoute } from './MainRoute';
 import { OnboardingGuard } from './OnboardingGuard';
-import { PasscodeRoute } from './PasscodeRoute';
 import { ROUTE } from './routes';
 import { WelcomeRoute } from './WelcomeRoute';
 
@@ -37,13 +36,7 @@ const welcomeRoute = createRoute({
     component: WelcomeRoute
 });
 
-const passcodeRoute = createRoute({
-    getParentRoute: () => rootRoute,
-    path: ROUTE.onboarding.passcode,
-    component: PasscodeRoute
-});
-
-const routeTree = rootRoute.addChildren([mainRoute, devToolsRoute, welcomeRoute, passcodeRoute]);
+const routeTree = rootRoute.addChildren([mainRoute, devToolsRoute, welcomeRoute]);
 
 export const router = createRouter({
     routeTree,
