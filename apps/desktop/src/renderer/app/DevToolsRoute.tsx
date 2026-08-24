@@ -1,8 +1,9 @@
 import { useNavigate, useRouteContext } from '@tanstack/react-router';
 import type { FC } from 'react';
 
+import { DevToolsPage } from '@safely/web-ui';
+
 import { ROUTE } from './routes';
-import { DevToolsPage } from '../pages';
 
 export const DevToolsRoute: FC = () => {
     const { hasWindowControls, isFullScreen } = useRouteContext({ from: '__root__' });

@@ -12,8 +12,7 @@ import {
     useToast,
     useTranslate
 } from '@safely/ux';
-
-import { PasscodePromptCancelledError } from '../shared';
+import { PasscodePromptCancelledError } from '@safely/web-ui';
 
 export function useSignOut() {
     const accounts = useAccounts();

@@ -15,7 +15,6 @@
     "@safely/core": "workspace:*",
     "@safely/sync": "workspace:*",
     "@safely/ux": "workspace:*",
-    "@tanstack/react-router": "1.170.31",
     "i18next": "catalog:",
     "react-i18next": "catalog:",
     "zod": "catalog:",

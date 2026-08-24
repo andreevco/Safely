@@ -3,13 +3,11 @@ import type { FC } from 'react';
 import { useState } from 'react';
 
 import { useActiveAccountStoreSlot } from '@safely/ux';
+import { CustomizeWalletModal, MainPage, SignOutModal } from '@safely/web-ui';
 
 import { ROUTE } from './routes';
 import { useAddWallet } from './useAddWallet';
 import { useSignOut } from './useSignOut';
-import { CustomizeWalletModal } from '../entities';
-import { SignOutModal } from '../features';
-import { MainPage } from '../pages';
 
 export const MainRoute: FC = () => {
     const { hasWindowControls, isFullScreen } = useRouteContext({ from: '__root__' });

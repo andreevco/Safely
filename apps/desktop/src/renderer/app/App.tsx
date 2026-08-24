@@ -1,10 +1,11 @@
 import { RouterProvider } from '@tanstack/react-router';
 import type { FC } from 'react';
 
+import type { PasscodeStorage } from '@safely/web-ui';
+import { PasscodeStorageProvider } from '@safely/web-ui';
+
 import { AppLock } from './AppLock';
 import { router } from './router';
-import type { PasscodeStorage } from '../entities';
-import { PasscodeStorageProvider } from '../entities';
 
 export type AppProps = {
     passcodeStorage: PasscodeStorage;

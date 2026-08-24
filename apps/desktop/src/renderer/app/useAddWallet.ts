@@ -9,8 +9,7 @@ import {
     useLoader,
     useNewPortfolioFallbackName
 } from '@safely/ux';
-
-import { PasscodePromptCancelledError } from '../shared';
+import { PasscodePromptCancelledError } from '@safely/web-ui';
 
 export type AddWalletDraft = Pick<PortfolioMeta, 'name' | 'icon'>;
 

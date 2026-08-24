@@ -2,11 +2,15 @@ import type { FC, ReactNode } from 'react';
 import { useState } from 'react';
 
 import { useEraseAllData } from '@safely/ux';
-
-import { useLockScreen, usePasscode } from '../entities';
-import { EraseDataModal } from '../features';
-import { LockScreen, PasscodeVerification } from '../pages';
-import { PasscodePromptCancelledError, usePasscodePromptStore } from '../shared';
+import {
+    EraseDataModal,
+    LockScreen,
+    PasscodePromptCancelledError,
+    PasscodeVerification,
+    useLockScreen,
+    usePasscode,
+    usePasscodePromptStore
+} from '@safely/web-ui';
 
 export type AppLockProps = {
     children: ReactNode;

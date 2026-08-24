@@ -2,9 +2,9 @@ import { useNavigate } from '@tanstack/react-router';
 import { useCallback } from 'react';
 
 import { useAppContext, useCreateAccount, useErrorToast, useLoader } from '@safely/ux';
+import { usePasscode } from '@safely/web-ui';
 
 import { ROUTE } from './routes';
-import { usePasscode } from '../entities';
 
 export function useOnboardingFlow() {
     const navigate = useNavigate();

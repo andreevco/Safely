@@ -4,11 +4,11 @@ import './global-polyfills';
 import { createRoot } from 'react-dom/client';
 import { I18nextProvider } from 'react-i18next';
 
-import { App, createWebI18n } from '@safely/web-ui';
+import { createWebI18n } from '@safely/web-ui';
 
 import '@safely/web-ui/styles.css';
 
-import { AppProviders } from './app';
+import { App, AppProviders } from './app';
 import { passcodeStorage, platform, useIsFullScreen } from './platform';
 
 const container = document.getElementById('root');

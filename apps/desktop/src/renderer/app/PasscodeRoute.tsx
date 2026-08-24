@@ -3,10 +3,10 @@ import type { FC } from 'react';
 import { useRef, useState } from 'react';
 
 import { useTranslate } from '@safely/ux';
+import { PasscodePage } from '@safely/web-ui';
 
 import { ROUTE } from './routes';
 import { useOnboardingFlow } from './useOnboardingFlow';
-import { PasscodePage } from '../pages';
 
 export const PasscodeRoute: FC = () => {
     const t = useTranslate();

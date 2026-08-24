@@ -9,7 +9,8 @@ paths:
 # `@safely/web-ui` — components and styling
 
 The React layer shared by every web target (`apps/desktop`, later `apps/browser`). It holds the design
-system and the pages, and nothing else: it must stay free of platform code the same way `@safely/ux`
+system and the screens built from it, and nothing else — no router, no route components, no
+platform-bound controller hooks: it must stay free of platform code the same way `@safely/ux`
 stays free of React Native, and free of platform *contracts* too — those belong to the apps. Layers:
 see `fsd-layers.md`.
 
@@ -77,22 +78,20 @@ and read it from a static style: `style={{ '--fill': value }}` plus `width: 'var
 - `@floating-ui` inside Base UI sets inline `style` for positioning, so a CSP must allow
   `style-src 'unsafe-inline'`; Base UI ships `./csp-provider` for nonce-based setups.
 
-## Routing: TanStack Router on a memory history, and no secrets in it
+## Routing lives in the app, not here
 
-The router is TanStack Router (`packages/web-ui/src/app/router.tsx`): one module-level route tree on
-`createMemoryHistory` — a web target has no URL bar, and a file path would not survive packaging. What
-the routes need from the platform (`passcodeStorage`, the dev-tools renderer, window flags) arrives as
-router context: `App` passes it to `RouterProvider`, a route reads it with
-`useRouteContext({ from: '__root__' })`. The `Register` interface declared in that file is what makes
-`to:` and the context typed, so keep the tree and the declaration in one module.
+This package ships screens, not flows: a page takes props and renders, and knows nothing about routes,
+guards or navigation. The route tree, the guards and the controller hooks that drive them live in the
+app (`apps/desktop/src/renderer/app`, on TanStack Router over a memory history), so a second target can
+wire the same screens into its own navigation. A component here that reaches for `useNavigate` has to
+take a callback prop instead.
 
 **A secret never travels through navigation.** Navigating with state writes into a history
-entry: it outlives the step, comes back on a backwards navigation, and is readable from
-`useLocation().state` by whatever renders on that path. A mnemonic, a passcode or a private key
-therefore stays inside the component that collects it (multi-step input is one route with an internal
-step, the way `PasscodeSetup` works on mobile), or is handed on by reference as a disposable resource
-(`MnemonicResource` + `Symbol.dispose`). Route state carries the intent only — `{ kind: 'imported' }`,
-never the phrase itself.
+entry: it outlives the step, comes back on a backwards navigation, and is readable by whatever renders
+on that path. A mnemonic, a passcode or a private key therefore stays inside the component that
+collects it (multi-step input is one screen with an internal step, the way `PasscodeSetup` works on
+mobile), or is handed on by reference as a disposable resource (`MnemonicResource` + `Symbol.dispose`).
+Route state carries the intent only — `{ kind: 'imported' }`, never the phrase itself.
 
 ## No platform contract lives here
 
