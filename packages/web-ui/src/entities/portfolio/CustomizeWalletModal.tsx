@@ -3,19 +3,11 @@ import { useState } from 'react';
 
 import type { PortfolioMeta, PortfolioMetaIcon } from '@safely/core';
 import { useTranslate } from '@safely/ux';
-import Xmark16 from '@safely/ux/assets/icons/16/xmark-16.svg?react';
 
-import {
-    descriptionStyles,
-    fieldStyles,
-    headerStyles,
-    headingStyles,
-    popupStyles,
-    titleStyles
-} from './CustomizeWalletModal.styles';
+import { fieldStyles, popupStyles } from './CustomizeWalletModal.styles';
 import { IconPicker } from './IconPicker';
 import { WalletIcon } from './WalletIcon';
-import { Button, Icon, Input, Modal } from '../../shared';
+import { Button, Input, Modal } from '../../shared';
 
 export type CustomizeWalletModalProps = {
     defaultName: string;
@@ -32,19 +24,9 @@ export const CustomizeWalletModal: FC<CustomizeWalletModalProps> = props => {
     const [icon, setIcon] = useState<PortfolioMetaIcon>(defaultIcon);
 
     return (
-        <Modal open onOpenChange={isOpen => !isOpen && onClose()}>
+        <Modal open disablePointerDismissal onOpenChange={isOpen => !isOpen && onClose()}>
             <Modal.Popup className={popupStyles} hasClose={false} closeLabel={t('common.close')}>
-                <div className={headerStyles}>
-                    <Button
-                        variant="secondary"
-                        size="small"
-                        isIconOnly
-                        aria-label={t('common.close')}
-                        onClick={onClose}
-                    >
-                        <Icon asset={Xmark16} />
-                    </Button>
-
+                <Modal.Header closeLabel={t('common.close')}>
                     <Button
                         variant="primary"
                         size="small"
@@ -53,14 +35,12 @@ export const CustomizeWalletModal: FC<CustomizeWalletModalProps> = props => {
                     >
                         {t('customizeWallet.save')}
                     </Button>
-                </div>
+                </Modal.Header>
 
-                <div className={headingStyles}>
-                    <Modal.Title className={titleStyles}>{t('customizeWallet.title')}</Modal.Title>
-                    <Modal.Description className={descriptionStyles}>
-                        {t('customizeWallet.description')}
-                    </Modal.Description>
-                </div>
+                <Modal.Content hasFloatingClose={false}>
+                    <Modal.Title>{t('customizeWallet.title')}</Modal.Title>
+                    <Modal.Description>{t('customizeWallet.description')}</Modal.Description>
+                </Modal.Content>
 
                 <div className={fieldStyles}>
                     <Input>
