@@ -2,18 +2,29 @@ import { useNavigate, useRouteContext } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { useState } from 'react';
 
-import { useActiveAccountStoreSlot } from '@safely/ux';
-import { CustomizeWalletModal, MainPage, SignOutModal } from '@safely/web-ui';
+import { PortfolioNetworkType } from '@safely/core';
+import { useActiveAccountStoreSlot, useToast, useTranslate } from '@safely/ux';
+import {
+    AddWalletModal,
+    CustomizeWalletModal,
+    ImportWalletModal,
+    MainPage,
+    SignOutModal,
+    WalletAlreadyAddedModal,
+    WatchAccountModal
+} from '@safely/web-ui';
 
 import { ROUTE } from './routes';
-import { useAddWallet } from './useAddWallet';
+import { useAddWalletFlow } from './useAddWalletFlow';
 import { useSignOut } from './useSignOut';
 
 export const MainRoute: FC = () => {
     const { hasWindowControls, isFullScreen } = useRouteContext({ from: '__root__' });
+    const t = useTranslate();
+    const toast = useToast();
     const navigate = useNavigate();
     const signOut = useSignOut();
-    const addWallet = useAddWallet();
+    const addWallet = useAddWalletFlow();
     const accountMeta = useActiveAccountStoreSlot('meta');
     const [isSigningOut, setIsSigningOut] = useState(false);
 
@@ -22,7 +33,7 @@ export const MainRoute: FC = () => {
             <MainPage
                 hasWindowControls={hasWindowControls}
                 isFullScreen={isFullScreen}
-                onAddWallet={addWallet.start}
+                onAddWallet={addWallet.open}
                 onSignOut={() => setIsSigningOut(true)}
                 onOpenDevTools={() => void navigate({ to: ROUTE.devTools })}
             />
@@ -38,12 +49,48 @@ export const MainRoute: FC = () => {
                 />
             )}
 
-            {addWallet.draft && (
+            {addWallet.step === 'menu' && (
+                <AddWalletModal
+                    onCreateNew={addWallet.startCreate}
+                    onImportExisting={() => addWallet.openImport(PortfolioNetworkType.MAINNET)}
+                    onWatchAccount={addWallet.openWatch}
+                    onConnectLedger={() =>
+                        toast({ message: t('common.errors.notSupportedYet'), type: 'error' })
+                    }
+                    onImportTestnet={() => addWallet.openImport(PortfolioNetworkType.TESTNET)}
+                    onClose={addWallet.close}
+                />
+            )}
+
+            {addWallet.step === 'import' && (
+                <ImportWalletModal
+                    onSubmit={mnemonic => void addWallet.onMnemonicReady(mnemonic)}
+                    onClose={addWallet.open}
+                />
+            )}
+
+            {addWallet.step === 'watch' && (
+                <WatchAccountModal
+                    onSubmit={addWallet.onWatchInputReady}
+                    onClose={addWallet.open}
+                />
+            )}
+
+            {addWallet.step === 'duplicate' && addWallet.duplicate && (
+                <WalletAlreadyAddedModal
+                    meta={addWallet.duplicate.meta}
+                    onOpen={() => void addWallet.openDuplicate()}
+                    onEdit={addWallet.editDuplicate}
+                    onClose={addWallet.close}
+                />
+            )}
+
+            {addWallet.step === 'customize' && addWallet.draft && (
                 <CustomizeWalletModal
                     defaultName={addWallet.draft.name}
                     defaultIcon={addWallet.draft.icon}
                     onSave={meta => void addWallet.save(meta).catch(() => undefined)}
-                    onClose={addWallet.cancel}
+                    onClose={addWallet.close}
                 />
             )}
         </>

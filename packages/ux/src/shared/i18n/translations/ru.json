@@ -41,7 +41,8 @@
         "continue": "Продолжить",
         "later": "Позже",
         "errors": {
-            "unknown": "Что-то пошло не так"
+            "unknown": "Что-то пошло не так",
+            "notSupportedYet": "Пока не поддерживается"
         }
     },
     "errorBoundary": {

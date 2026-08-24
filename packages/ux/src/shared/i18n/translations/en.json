@@ -64,7 +64,8 @@
         "continue": "Continue",
         "later": "Later",
         "errors": {
-            "unknown": "Something went wrong"
+            "unknown": "Something went wrong",
+            "notSupportedYet": "Not supported yet"
         }
     },
     "errorBoundary": {
