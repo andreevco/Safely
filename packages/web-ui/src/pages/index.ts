@@ -1,5 +1,4 @@
-export * from './customize';
+export * from './lock';
 export * from './main';
 export * from './passcode';
-export * from './settings';
 export * from './welcome';
