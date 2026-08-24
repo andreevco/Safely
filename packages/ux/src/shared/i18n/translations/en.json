@@ -931,6 +931,7 @@
     },
     "legal": {
         "title": "Legal",
+        "termsOfUse": "Terms of Use",
         "privacyPolicy": "Privacy Policy"
     }
 }

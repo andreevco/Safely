@@ -3,6 +3,8 @@ import { useState } from 'react';
 
 import { dragRegionStyles } from './MainLayout.styles';
 import { MainSidebar } from './MainSidebar';
+import type { SettingsSection } from './settings';
+import { SettingsContent } from './settings';
 import { SettingsSidebar } from './SettingsSidebar';
 import { AppLayout } from '../../shared';
 
@@ -20,6 +22,12 @@ export const MainLayout: FC<MainLayoutProps> = props => {
         props;
 
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [section, setSection] = useState<SettingsSection | null>(null);
+
+    const toggleSettings = (): void => {
+        setIsSettingsOpen(current => !current);
+        setSection(null);
+    };
 
     return (
         <AppLayout
@@ -33,16 +41,20 @@ export const MainLayout: FC<MainLayoutProps> = props => {
                 onAddWallet={onAddWallet}
                 onOpenUpdates={() => undefined}
                 onOpenSafety={() => undefined}
-                onOpenSettings={() => setIsSettingsOpen(current => !current)}
+                onOpenSettings={toggleSettings}
             />
 
             <SettingsSidebar
+                activeSection={section}
+                onSelectSection={setSection}
                 onAddWallet={onAddWallet}
                 onSignOut={onSignOut}
                 onOpenDevTools={onOpenDevTools}
             />
 
-            <AppLayout.Content>{children}</AppLayout.Content>
+            <AppLayout.Content>
+                {section === null ? children : <SettingsContent section={section} />}
+            </AppLayout.Content>
         </AppLayout>
     );
 };
