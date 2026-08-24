@@ -1,14 +1,18 @@
-import type { FC, ReactNode } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useRouteContext } from '@tanstack/react-router';
+import type { FC } from 'react';
 
 import { ROUTE } from './routes';
+import { DevToolsPage } from '../pages';
 
-export type DevToolsRouteProps = {
-    render: (props: { onClose: () => void }) => ReactNode;
-};
-
-export const DevToolsRoute: FC<DevToolsRouteProps> = ({ render }) => {
+export const DevToolsRoute: FC = () => {
+    const { hasWindowControls, isFullScreen } = useRouteContext({ from: '__root__' });
     const navigate = useNavigate();
 
-    return render({ onClose: () => void navigate(ROUTE.main, { replace: true }) });
+    return (
+        <DevToolsPage
+            hasWindowControls={hasWindowControls}
+            isFullScreen={isFullScreen}
+            onClose={() => void navigate({ to: ROUTE.main, replace: true })}
+        />
+    );
 };

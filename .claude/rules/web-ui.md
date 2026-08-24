@@ -77,9 +77,16 @@ and read it from a static style: `style={{ '--fill': value }}` plus `width: 'var
 - `@floating-ui` inside Base UI sets inline `style` for positioning, so a CSP must allow
   `style-src 'unsafe-inline'`; Base UI ships `./csp-provider` for nonce-based setups.
 
-## Routing: `createMemoryRouter`, and no secrets in it
+## Routing: TanStack Router on a memory history, and no secrets in it
 
-**A secret never travels through navigation.** `navigate(path, { state })` writes into a history
+The router is TanStack Router (`packages/web-ui/src/app/router.tsx`): one module-level route tree on
+`createMemoryHistory` — a web target has no URL bar, and a file path would not survive packaging. What
+the routes need from the platform (`passcodeStorage`, the dev-tools renderer, window flags) arrives as
+router context: `App` passes it to `RouterProvider`, a route reads it with
+`useRouteContext({ from: '__root__' })`. The `Register` interface declared in that file is what makes
+`to:` and the context typed, so keep the tree and the declaration in one module.
+
+**A secret never travels through navigation.** Navigating with state writes into a history
 entry: it outlives the step, comes back on a backwards navigation, and is readable from
 `useLocation().state` by whatever renders on that path. A mnemonic, a passcode or a private key
 therefore stays inside the component that collects it (multi-step input is one route with an internal

@@ -9,7 +9,6 @@ import { App, createWebI18n } from '@safely/web-ui';
 import '@safely/web-ui/styles.css';
 
 import { AppProviders } from './app';
-import { DevTools } from './devtools';
 import { passcodeStorage, platform, useIsFullScreen } from './platform';
 
 const container = document.getElementById('root');
@@ -29,7 +28,6 @@ function Root() {
     return (
         <App
             passcodeStorage={passcodeStorage}
-            devTools={({ onClose }) => <DevTools onClose={onClose} />}
             hasWindowControls={!isFullScreen}
             isFullScreen={isFullScreen}
         />

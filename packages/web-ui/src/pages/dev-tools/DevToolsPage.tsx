@@ -1,33 +1,24 @@
 import type { FC } from 'react';
 
+import { useAppContext } from '@safely/ux';
 import Xmark16 from '@safely/ux/assets/icons/16/xmark-16.svg?react';
-import { AppLayout, Button, Icon, List, PageHeader } from '@safely/web-ui';
-import { css } from '@safely/web-ui/styled-system/css';
 
-import { useIsFullScreen } from '../platform';
+import { contentStyles, dragRegionStyles } from './DevToolsPage.styles';
+import { AppLayout, Button, Icon, List, PageHeader } from '../../shared';
 
-const dragRegionStyles = css({ appRegion: 'drag' });
-
-const contentStyles = css({
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '32',
-    paddingInline: '24',
-    paddingBottom: '32'
-});
-
-export type DevToolsProps = {
+export type DevToolsPageProps = {
+    hasWindowControls?: boolean;
+    isFullScreen?: boolean;
     onClose: () => void;
 };
 
-export const DevTools: FC<DevToolsProps> = props => {
-    const { onClose } = props;
+export const DevToolsPage: FC<DevToolsPageProps> = props => {
+    const { hasWindowControls, isFullScreen, onClose } = props;
 
-    const isFullScreen = useIsFullScreen();
-    const bridge = window.safelyDesktop;
+    const { version, build, environment, deviceInfo } = useAppContext();
 
     return (
-        <AppLayout hasWindowControls={!isFullScreen} isFullScreen={isFullScreen}>
+        <AppLayout hasWindowControls={hasWindowControls} isFullScreen={isFullScreen}>
             <AppLayout.TitleBar className={dragRegionStyles} />
 
             <AppLayout.Sidebar>
@@ -35,9 +26,7 @@ export const DevTools: FC<DevToolsProps> = props => {
                     <List.Title>Dev tools</List.Title>
 
                     <List.Footer>
-                        {bridge
-                            ? `${bridge.platform} · electron ${bridge.versions.electron}`
-                            : 'preload bridge unavailable'}
+                        {`${build} ${version} · ${environment} · ${deviceInfo.osVersion}`}
                     </List.Footer>
                 </List>
             </AppLayout.Sidebar>

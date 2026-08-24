@@ -1,5 +1,5 @@
+import { Navigate, Outlet, useLocation } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { Navigate, Outlet, useLocation } from 'react-router';
 
 import { useHasAccount } from '@safely/ux';
 

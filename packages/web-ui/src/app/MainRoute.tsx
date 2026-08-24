@@ -1,6 +1,6 @@
+import { useNavigate, useRouteContext } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { useState } from 'react';
-import { useNavigate } from 'react-router';
 
 import { useActiveAccountStoreSlot } from '@safely/ux';
 
@@ -11,14 +11,8 @@ import { CustomizeWalletModal } from '../entities';
 import { SignOutModal } from '../features';
 import { MainPage } from '../pages';
 
-export type MainRouteProps = {
-    hasWindowControls?: boolean;
-    isFullScreen?: boolean;
-};
-
-export const MainRoute: FC<MainRouteProps> = props => {
-    const { hasWindowControls, isFullScreen } = props;
-
+export const MainRoute: FC = () => {
+    const { hasWindowControls, isFullScreen } = useRouteContext({ from: '__root__' });
     const navigate = useNavigate();
     const signOut = useSignOut();
     const addWallet = useAddWallet();
@@ -32,7 +26,7 @@ export const MainRoute: FC<MainRouteProps> = props => {
                 isFullScreen={isFullScreen}
                 onAddWallet={addWallet.start}
                 onSignOut={() => setIsSigningOut(true)}
-                onOpenDevTools={() => void navigate(ROUTE.devTools)}
+                onOpenDevTools={() => void navigate({ to: ROUTE.devTools })}
             />
 
             {isSigningOut && (

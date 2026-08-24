@@ -1,20 +1,15 @@
+import { useNavigate, useRouteContext } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { useRef, useState } from 'react';
-import { useNavigate } from 'react-router';
 
 import { useTranslate } from '@safely/ux';
 
 import { ROUTE } from './routes';
-import type { PasscodeStorage } from '../entities';
 import { useOnboardingFlow } from './useOnboardingFlow';
 import { PasscodePage } from '../pages';
 
-export type PasscodeRouteProps = {
-    passcodeStorage: PasscodeStorage;
-};
-
-export const PasscodeRoute: FC<PasscodeRouteProps> = props => {
-    const { passcodeStorage } = props;
+export const PasscodeRoute: FC = () => {
+    const { passcodeStorage } = useRouteContext({ from: '__root__' });
 
     const t = useTranslate();
     const navigate = useNavigate();
@@ -50,7 +45,7 @@ export const PasscodeRoute: FC<PasscodeRouteProps> = props => {
             return;
         }
 
-        void navigate(ROUTE.onboarding.welcome);
+        void navigate({ to: ROUTE.onboarding.welcome });
     };
 
     return isConfirming ? (

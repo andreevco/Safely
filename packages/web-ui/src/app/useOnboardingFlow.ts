@@ -1,5 +1,5 @@
+import { useNavigate } from '@tanstack/react-router';
 import { useCallback } from 'react';
-import { useNavigate } from 'react-router';
 
 import { useAppContext, useCreateAccount, useErrorToast, useLoader } from '@safely/ux';
 
@@ -35,11 +35,11 @@ export function useOnboardingFlow(passcodeStorage: PasscodeStorage) {
                 });
             } catch (error) {
                 errorToast(error);
-                await navigate(ROUTE.onboarding.passcode, { replace: true });
+                await navigate({ to: ROUTE.onboarding.passcode, replace: true });
                 return;
             }
 
-            await navigate(ROUTE.main, { replace: true });
+            await navigate({ to: ROUTE.main, replace: true });
         },
         [setPasscode, withLoader, getSecureEncrypted, createAccount, errorToast, navigate]
     );

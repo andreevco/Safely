@@ -1,5 +1,5 @@
+import { useNavigate } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { useNavigate } from 'react-router';
 
 import { useBootConfig, useLinking } from '@safely/ux';
 
@@ -13,7 +13,7 @@ export const WelcomeRoute: FC = () => {
 
     return (
         <WelcomePage
-            onCreateWallet={() => void navigate(ROUTE.onboarding.passcode)}
+            onCreateWallet={() => void navigate({ to: ROUTE.onboarding.passcode })}
             onImportWallet={() => undefined}
             onMoreOptions={() => undefined}
             onLinkWithQr={() => undefined}
