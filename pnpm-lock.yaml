@@ -731,6 +731,9 @@ importers:
       react-router:
         specifier: 7.18.2
         version: 7.18.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      zod:
+        specifier: 'catalog:'
+        version: 4.4.1
       zustand:
         specifier: 'catalog:'
         version: 5.0.13(@types/react@19.2.14)(react@19.2.3)(use-sync-external-store@1.6.0(react@19.2.3))

@@ -18,6 +18,7 @@
     "i18next": "catalog:",
     "react-i18next": "catalog:",
     "react-router": "7.18.2",
+    "zod": "catalog:",
     "zustand": "catalog:"
   },
   "devDependencies": {

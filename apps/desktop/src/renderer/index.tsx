@@ -4,13 +4,13 @@ import './global-polyfills';
 import { createRoot } from 'react-dom/client';
 import { I18nextProvider } from 'react-i18next';
 
-import { createWebI18n } from '@safely/web-ui';
+import { App, createWebI18n } from '@safely/web-ui';
 
 import '@safely/web-ui/styles.css';
 
 import { AppProviders } from './app';
-import { platform } from './platform';
-import { Showcase } from './showcase';
+import { DevTools } from './devtools';
+import { passcodeStorage, platform, useIsFullScreen } from './platform';
 
 const container = document.getElementById('root');
 
@@ -23,10 +23,23 @@ const { instance } = createWebI18n({
     fallbackLocale: platform.appInfo.locale
 });
 
+function Root() {
+    const isFullScreen = useIsFullScreen();
+
+    return (
+        <App
+            passcodeStorage={passcodeStorage}
+            devTools={({ onClose }) => <DevTools onClose={onClose} />}
+            hasWindowControls={!isFullScreen}
+            isFullScreen={isFullScreen}
+        />
+    );
+}
+
 createRoot(container).render(
     <I18nextProvider i18n={instance}>
         <AppProviders>
-            <Showcase />
+            <Root />
         </AppProviders>
     </I18nextProvider>
 );
