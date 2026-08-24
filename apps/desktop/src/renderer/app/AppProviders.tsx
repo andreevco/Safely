@@ -9,12 +9,18 @@ import {
     createPersister,
     createQueryClient,
     LedgerSessionPortProvider,
-    noopLoaderService,
     QueryProvider,
     SyncStorageProvider,
     UnlockableSecuredEncryptedStorage
 } from '@safely/ux';
-import { ScreenProtectionProvider, toastService, ToastViewport, WebLinking } from '@safely/web-ui';
+import {
+    loaderService,
+    LoaderViewport,
+    ScreenProtectionProvider,
+    toastService,
+    ToastViewport,
+    WebLinking
+} from '@safely/web-ui';
 
 import { logger } from '../logger';
 import { platform } from '../platform';
@@ -89,8 +95,7 @@ export const AppProviders: FC<PropsWithChildren<AppProvidersProps>> = ({ loader,
             },
             qrScanner: unsupportedQrScanner,
             toast: toastService,
-            /* TODO(loader): a real overlay lands with the design-system components. */
-            loader: noopLoaderService,
+            loader: loaderService,
             linking: new WebLinking(logger, url => platform.openExternalUrl(url)),
             i18n: { language, t },
             logger,
@@ -114,6 +119,7 @@ export const AppProviders: FC<PropsWithChildren<AppProvidersProps>> = ({ loader,
                     </Suspense>
                 </ScreenProtectionProvider>
                 <ToastViewport />
+                <LoaderViewport />
             </AppContext>
         </QueryProvider>
     );

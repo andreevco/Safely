@@ -1,6 +1,7 @@
 export * from './hooks';
 export * from './assets';
 export * from './linking';
+export * from './loader';
 export * from './logger';
 export * from './i18n';
 export * from './passcode-prompt';

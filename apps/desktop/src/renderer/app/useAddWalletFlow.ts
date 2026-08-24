@@ -166,37 +166,32 @@ export function useAddWalletFlow() {
             close();
 
             try {
-                await withLoader(async () => {
-                    if (pending.kind === 'existing') {
+                if (pending.kind === 'existing') {
+                    await withLoader(async () => {
                         await changePortfolioMeta({ portfolio: pending.portfolio, meta });
                         await setActivePortfolio({ id: pending.portfolio.id });
-                        return;
-                    }
+                    });
+                } else if (pending.kind === 'watchOnly') {
+                    await withLoader(() => addWatchOnlyPortfolio({ input: pending.input, meta }));
+                } else if (pending.kind === 'imported') {
+                    using secretEncryptor = createEncryptor();
+                    await secretEncryptor.unlockEncryption();
 
-                    if (pending.kind === 'watchOnly') {
-                        await addWatchOnlyPortfolio({ input: pending.input, meta });
-                        return;
-                    }
-
-                    if (pending.kind === 'imported') {
-                        using secretEncryptor = createEncryptor();
-                        await secretEncryptor.unlockEncryption();
-
-                        using mnemonicAccessor = new MnemonicResource(pending.mnemonic);
-                        await importPortfolio({
+                    using mnemonicAccessor = new MnemonicResource(pending.mnemonic);
+                    await withLoader(() =>
+                        importPortfolio({
                             mnemonicAccessor,
                             secretEncryptor,
                             meta,
                             networkType: pending.networkType
-                        });
-                        return;
-                    }
-
+                        })
+                    );
+                } else {
                     using secureEncryptedStorage = getSecureEncrypted();
                     await secureEncryptedStorage.unlock();
 
-                    await generatePortfolio({ meta, secureEncryptedStorage });
-                });
+                    await withLoader(() => generatePortfolio({ meta, secureEncryptedStorage }));
+                }
             } catch (error) {
                 if (error instanceof PortfolioAlreadyExistsError && error.existingPortfolio) {
                     const existingId = error.existingPortfolio.id;
