@@ -2,6 +2,13 @@ import ExpoModulesCore
 import UIKit
 
 private class InsetCaretTextField: UITextField {
+    override func cut(_ sender: Any?) {
+        if let range = selectedTextRange, let selected = text(in: range), !selected.isEmpty {
+            UIPasteboard.general.string = selected
+        }
+        super.cut(sender)
+    }
+
     override func caretRect(for position: UITextPosition) -> CGRect {
         var rect = super.caretRect(for: position)
         let inset: CGFloat = 4
@@ -20,7 +27,7 @@ class SafelyMaskedInputView: ExpoView, UITextFieldDelegate {
     private let textField = InsetCaretTextField()
     private var isUpdatingFromCode = false
     private var rawValue = ""
-    private var lastEmittedValue: String?
+    private var userEditCount = 0
 
     // MARK: - Mask config
 
@@ -84,17 +91,13 @@ class SafelyMaskedInputView: ExpoView, UITextFieldDelegate {
         applyMask()
     }
 
+    func setValueUpdate(_ update: ValueUpdate) {
+        guard update.eventCount >= userEditCount else { return }
+        setRawValue(update.text)
+    }
+
     func setRawValue(_ value: String?) {
-        guard let value else { return }
-        guard value != rawValue else {
-            lastEmittedValue = nil
-            return
-        }
-        if let lastEmitted = lastEmittedValue, lastEmitted == value {
-            lastEmittedValue = nil
-            return
-        }
-        lastEmittedValue = nil
+        guard let value, value != rawValue else { return }
         rawValue = value
         applyMask()
     }
@@ -294,9 +297,16 @@ class SafelyMaskedInputView: ExpoView, UITextFieldDelegate {
     }
 
     private func moveCursor(to offset: Int) {
-        let safeOffset = min(offset, (textField.text ?? "").count)
-        guard let pos = textField.position(from: textField.beginningOfDocument, offset: safeOffset) else { return }
-        textField.selectedTextRange = textField.textRange(from: pos, to: pos)
+        selectRange(from: offset, to: offset)
+    }
+
+    private func selectRange(from start: Int, to end: Int) {
+        let length = (textField.text ?? "").count
+        let safeEnd = min(end, length)
+        let safeStart = min(start, safeEnd)
+        guard let startPos = textField.position(from: textField.beginningOfDocument, offset: safeStart),
+              let endPos = textField.position(from: textField.beginningOfDocument, offset: safeEnd) else { return }
+        textField.selectedTextRange = textField.textRange(from: startPos, to: endPos)
     }
 
     private func resolvedMainFont() -> UIFont {
@@ -382,8 +392,12 @@ class SafelyMaskedInputView: ExpoView, UITextFieldDelegate {
         isUpdatingFromCode = false
 
         rawValue = result.extracted
-        lastEmittedValue = result.extracted
-        onChangeText(["rawText": result.extracted, "formattedText": result.formatted])
+        userEditCount += 1
+        onChangeText([
+            "rawText": result.extracted,
+            "formattedText": result.formatted,
+            "eventCount": userEditCount
+        ])
     }
 
     // MARK: - UITextFieldDelegate
@@ -425,10 +439,11 @@ class SafelyMaskedInputView: ExpoView, UITextFieldDelegate {
     func textFieldDidChangeSelection(_ textField: UITextField) {
         guard !suffix.isEmpty, !isUpdatingFromCode, let selectedRange = textField.selectedTextRange else { return }
         let maxPos = currentMaskResult.formatted.count
-        let cursorPos = textField.offset(from: textField.beginningOfDocument, to: selectedRange.end)
-        if cursorPos > maxPos {
-            moveCursor(to: maxPos)
-        }
+        let end = textField.offset(from: textField.beginningOfDocument, to: selectedRange.end)
+        guard end > maxPos else { return }
+
+        let start = textField.offset(from: textField.beginningOfDocument, to: selectedRange.start)
+        selectRange(from: min(start, maxPos), to: maxPos)
     }
 
     func textFieldDidEndEditing(_ textField: UITextField) {

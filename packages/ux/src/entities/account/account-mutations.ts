@@ -20,7 +20,7 @@ import type {
     Logger,
     OnboardingConnector as RawOnboardingConnector
 } from '@safely/sync';
-import { OnboardingAbortedError } from '@safely/sync';
+import { OnboardingAbortedError, SyncStatus } from '@safely/sync';
 import type {
     SNextDerivingPortfolioInfo,
     SPortfolio,
@@ -52,7 +52,8 @@ import {
 import { useToast } from '../toast';
 import {
     useAccountSyncStorageUpdate,
-    useActiveAccountSyncStorageSlotUpdate
+    useActiveAccountSyncStorageSlotUpdate,
+    useActiveAccountSyncStorageUpdate
 } from './useAccountSyncStorageUpdate';
 
 export * from './local-storage';
@@ -182,6 +183,30 @@ async function buildFirstPortfolio(params: {
     return { portfolio, nextDerivingInfo };
 }
 
+async function archiveOwnDevices(accounts: SyncAccount[], logger: Logger): Promise<void> {
+    const archiving = accounts.map(async account => {
+        const ikPubHex = account.getMyDeviceIkPub().toString('hex');
+
+        await account.syncProvider.transaction(draft => {
+            draft
+                .at('devicesArchive')
+                .entry(ikPubHex)
+                .set({ archivedAt: Date.now(), archivedFromIkPubHex: null });
+        });
+
+        await account.syncProvider.syncStatusManager.waitForStatus(SyncStatus.SYNCHRONIZED, {
+            timeout: ARCHIVE_ON_ERASE_TIMEOUT_MS
+        });
+    });
+
+    const results = await Promise.allSettled(archiving);
+    const failed = results.filter(result => result.status === 'rejected').length;
+
+    if (failed > 0) {
+        logger.warn('erase_all_data.archive_failed', { failed, total: accounts.length });
+    }
+}
+
 export function useCreateAccount(options?: { setActive?: boolean }) {
     const t = useTranslate();
     const client = useQueryClient();
@@ -297,12 +322,6 @@ export function useCreateExistingAccountConnector() {
         ({ secureEncryptedStorage }: { secureEncryptedStorage: ITreeStorage }) =>
             factory.connectToExistingSyncAccount(secureEncryptedStorage)
     );
-}
-
-export function useCreateReconnectConnector() {
-    const account = useActiveAccount();
-
-    return useConnectorMutation<void>(() => account.reconnectToAccount());
 }
 
 export function useAccountConnectedCallback(
@@ -456,14 +475,17 @@ export function useDeleteAccount() {
     const client = useQueryClient();
     const ikPub = useCurrentDeviceIkPub();
     const clearActiveAccountLocalStorage = useClearActiveAccountLocalStorage();
-    const update = useActiveAccountSyncStorageSlotUpdate('devicesMeta');
+    const update = useActiveAccountSyncStorageUpdate();
     const logger = useLogger('account');
 
     return useMutation<void, Error, ITreeStorage>({
         async mutationFn(secureEncryptedStorage) {
             logger.info('deleting account', { accountId: account.accountId });
             await update(draft => {
-                draft.ifPresent(devicesMeta => devicesMeta.delete(ikPub));
+                draft
+                    .at('devicesArchive')
+                    .entry(ikPub)
+                    .set({ archivedAt: Date.now(), archivedFromIkPubHex: null });
             });
 
             await accountFactory.deleteLocalAccount(account.accountId, secureEncryptedStorage);
@@ -482,6 +504,8 @@ export function useDeleteAccount() {
     });
 }
 
+const ARCHIVE_ON_ERASE_TIMEOUT_MS = 3000;
+
 export function useEraseAllData() {
     const {
         clearAllData,
@@ -489,11 +513,15 @@ export function useEraseAllData() {
         i18n: { t }
     } = useAppContext();
     const toast = useToast();
+    const accounts = useAccounts();
     const scopedLogger = useLogger('account');
 
     return useMutation({
         async mutationFn() {
             scopedLogger.info('erasing all data');
+
+            await archiveOwnDevices(accounts, scopedLogger);
+
             try {
                 await clearAllData();
                 reloadApp();

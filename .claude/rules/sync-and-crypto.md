@@ -28,16 +28,18 @@ change the spec and the code together, never the code alone.
   platform's secure storage — not JS-side constants.
 - slottree's cbor encoding is deterministic: changing the encoding or field order changes merge
   results and hashes. That is a new format version, not an in-place edit.
-- User-state schemas are versioned: `packages/sync-storage/src/v1` … `v4`, and `actual-version.ts`
+- User-state schemas are versioned: `packages/sync-storage/src/v1` … `v5`, and `actual-version.ts`
   re-exports the newest one. A new field or a different shape means a new version plus a migration
   plus migration tests; older versions must stay readable.
+- A version that has shipped is frozen: a further change is a new version, never an edit to that
+  one — two branches editing the same v-N produce schemas no merge can reconcile.
 - A downgrade projection patches the entries of a record, never the record itself: `update` on the
   whole field rebuilds the subtree, which drops tombstones (a revoked device reappears) and flattens
   the child stamps, so later edits stop winning the merge. `updateEach` throws on a `null` field —
   guard a nullable record with `when`.
-- A value the older schema cannot express is mapped onto the nearest one it can, not dropped: v4
-  projects the desktop platforms of `devicesMeta` onto the mobile ones of v3, because an app on the
-  older version must still see the device in its list and be able to revoke it.
+- A value the older schema cannot express is mapped onto the nearest one it can, not dropped: v5
+  projects the free-form `platform` of `devicesMeta` onto v4's `ios`/`android` enum, because an app
+  on the older version must still see the device in its list and be able to revoke it.
 - `packages/sync/src/api/generated/**` is the generated OpenAPI client (`apis/`, `models/`,
   `runtime.ts`). Hand edits get overwritten — change the API spec/generation instead, and keep
   wrappers and domain logic outside `generated/`.

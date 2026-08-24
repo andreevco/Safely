@@ -73,4 +73,21 @@ describe('NumberFormatter.normalizePastedInput', () => {
         ambiguous('-5');
         ambiguous('1a2');
     });
+
+    it('rejects values more precise than the input allows instead of truncating them', () => {
+        expect(formatter.normalizePastedInput('0.00001', 2)).toEqual({
+            value: '',
+            status: 'ambiguous'
+        });
+        expect(formatter.normalizePastedInput('1.234', 2)).toEqual({
+            value: '',
+            status: 'ambiguous'
+        });
+        expect(formatter.normalizePastedInput('1.23', 2)).toEqual({ value: '1.23', status: 'ok' });
+        expect(formatter.normalizePastedInput('1234', 2)).toEqual({ value: '1234', status: 'ok' });
+        expect(formatter.normalizePastedInput('0.00001', 8)).toEqual({
+            value: '0.00001',
+            status: 'ok'
+        });
+    });
 });

@@ -12,6 +12,9 @@ export const styles = StyleSheet.create((theme, rt) => ({
         paddingVertical: theme.spacing[16],
         paddingHorizontal: theme.spacing[32]
     },
+    warningBanner: {
+        borderWidth: 0
+    },
     table: {
         gap: theme.spacing[2],
         paddingHorizontal: theme.spacing[32],
