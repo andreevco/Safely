@@ -15,7 +15,7 @@ export function useLockScreen() {
 
     const { data: isEnabled } = useSuspenseQuery({
         queryKey: lockScreenKeys.state.toKey(),
-        queryFn: async () => (await node.getItem(LOCK_SCREEN_KEY)) !== 'false',
+        queryFn: async () => (await node.getItem(LOCK_SCREEN_KEY)) === 'true',
         staleTime: Infinity
     });
 
