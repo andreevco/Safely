@@ -15,6 +15,7 @@ import {
     SlotKind,
     type SlotMap
 } from './slot';
+import { compareStrings } from '../string-compare';
 
 export function cloneDeep<T>(value: T): T {
     if (Array.isArray(value)) {
@@ -142,7 +143,7 @@ export function orderedArrayLiveIds(slot: OrderedArraySlot): string[] {
             const orderDifference =
                 orderedArrayItemOrder(leftItem, left) - orderedArrayItemOrder(rightItem, right);
 
-            return orderDifference === 0 ? left.localeCompare(right) : orderDifference;
+            return orderDifference === 0 ? compareStrings(left, right) : orderDifference;
         });
 }
 

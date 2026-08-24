@@ -121,7 +121,7 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
             },
             linking: new MobileAppLinking(logger),
             security: {
-                check: () => security.check()
+                check: options => security.check(options)
             },
             clearAllData: async () => {
                 await CLEAR_ALL_MOBILE_STORAGE_ONLY_APP_LEVEL_USE_DANGER();

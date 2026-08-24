@@ -1,6 +1,7 @@
 import type { EncodedAuthor } from './format';
 import type { Slot } from '../../slots';
 import { SlotKind } from '../../slots';
+import { compareStrings } from '../../string-compare';
 
 export function collectEncodingTables(root: Slot): {
     authors: string[];
@@ -74,7 +75,7 @@ function sortedEntries(
 ): [string, Slot][] {
     return Object.entries(slot.v)
         .filter((entry): entry is [string, Slot] => entry[1] !== undefined)
-        .sort(([keyA], [keyB]) => keyA.localeCompare(keyB));
+        .sort(([keyA], [keyB]) => compareStrings(keyA, keyB));
 }
 
 function isHex(value: string): boolean {

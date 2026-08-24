@@ -27,6 +27,7 @@ import {
     calculateMaxAmount,
     formatAmountForDisplay,
     reformatForInputType,
+    resolveAmountDecimals,
     validateAmount
 } from '../validators/amount';
 import { validateRecipientInput } from '../validators/recipient';
@@ -169,7 +170,10 @@ export const createSendFormMachine = () =>
                 handlePasteAmount: assign(({ context, event }) => {
                     assertEvent(event, 'PASTE_AMOUNT');
 
-                    const { value, status } = context.formatter.normalizePastedInput(event.raw);
+                    const { value, status } = context.formatter.normalizePastedInput(
+                        event.raw,
+                        resolveAmountDecimals(context.values.amountInputType, context.parsed.asset)
+                    );
 
                     if (status === 'ambiguous') {
                         return {

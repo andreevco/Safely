@@ -92,7 +92,6 @@ export const WelcomePage: FC<WelcomePageProps> = props => {
                     <Trans
                         i18nKey="welcome.legal"
                         components={{
-                            br: <br />,
                             terms: (
                                 <button
                                     type="button"

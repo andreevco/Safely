@@ -66,6 +66,8 @@ export const primaryActionsStyles = css({
 });
 
 export const legalStyles = css({
+    /* the shared string breaks the line with \n, the only form mobile's Trans also honours */
+    whiteSpace: 'pre-line',
     width: '100%',
     paddingInline: '16',
     paddingBottom: '32'

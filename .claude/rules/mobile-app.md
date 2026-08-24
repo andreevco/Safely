@@ -72,7 +72,9 @@ also listed in `app.config.js` (`CFBundleLocalizations`) — update it when addi
 - EAS profiles are in `eas.json` (`staging-base`, `staging-cached`, `production`; build numbers come
   from `appVersionSource: remote`).
 - Tester distribution runs through the EAS Workflow `.eas/workflows/build-and-distribute.yml`;
-  trigger it locally with `pnpm --filter mobile run build`. Read that file's comments before editing
+  trigger it locally with `pnpm --filter mobile run build`. It fires on a push to `master` or to a
+  `release/<major>.<minor>.<patch>` branch (`release/1.4.0`) — a differently named `release/*` branch
+  is deliberately ignored — and on manual dispatch. Read that file's comments before editing
   it — EAS Workflows has sharp edges the syntax doesn't hint at:
   - `env:` must be job-level. A step-level `env:` is unsupported and its `${{ }}` values arrive as
     raw literals; interpolate inside `run:` instead, or put the value on the job.

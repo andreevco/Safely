@@ -20,6 +20,7 @@ export { Skeleton } from './Skeleton';
 export { Input } from './Input';
 export { NativeInput, type NativeInputRef } from './NativeInput';
 export * from './Icon';
+export { GlowIcon } from './GlowIcon';
 export * from './BottomSheet';
 export * from './WordCell';
 export * from './ColorPicker';

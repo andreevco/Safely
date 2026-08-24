@@ -7,20 +7,40 @@ export enum GROUP_LABEL {
     PAST_YEAR = 'PAST_YEAR'
 }
 
-export type GroupMeta =
+export type DateGroupMeta =
     | { label: GROUP_LABEL.TODAY }
     | { label: GROUP_LABEL.YESTERDAY }
     | { label: GROUP_LABEL.THIS_MONTH; year: number; month: number; day: number }
     | { label: GROUP_LABEL.THIS_YEAR; year: number; month: number }
     | { label: GROUP_LABEL.PAST_YEAR; year: number; month: number };
 
-export interface DatedGroup<T> {
+export type PendingGroupMeta = { label: GROUP_LABEL.PENDING };
+
+export interface DatedGroup<T, M = DateGroupMeta> {
     key: string;
-    meta: GroupMeta;
+    meta: M;
     items: T[];
 }
 
-export function getEventGroupMeta(timestamp: number, today: Date, yesterday: Date): GroupMeta {
+export interface GroupByDateOptions {
+    order?: 'asc' | 'desc';
+}
+
+export interface GroupByDateWithPendingOptions<T> extends GroupByDateOptions {
+    getIsPending: (item: T) => boolean;
+}
+
+function sortByTimestamp<T>(
+    items: T[],
+    getTimestamp: (item: T) => number,
+    order: 'asc' | 'desc'
+): T[] {
+    return [...items].sort((a, b) =>
+        order === 'asc' ? getTimestamp(a) - getTimestamp(b) : getTimestamp(b) - getTimestamp(a)
+    );
+}
+
+export function getEventGroupMeta(timestamp: number, today: Date, yesterday: Date): DateGroupMeta {
     const date = new Date(timestamp);
 
     if (today.toDateString() === date.toDateString()) {
@@ -55,17 +75,22 @@ export function getEventGroupMeta(timestamp: number, today: Date, yesterday: Dat
     };
 }
 
-// TODO: rewrite activity using shared groupByDate implementation
-export function groupByDate<T>(items: T[], getTimestamp: (item: T) => number): DatedGroup<T>[] {
+export function groupByDate<T>(
+    items: T[],
+    getTimestamp: (item: T) => number,
+    options: GroupByDateOptions = {}
+): DatedGroup<T>[] {
     if (items.length === 0) {
         return [];
     }
+
+    const { order = 'asc' } = options;
 
     const today = new Date();
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
 
-    const sorted = [...items].sort((a, b) => getTimestamp(a) - getTimestamp(b));
+    const sorted = sortByTimestamp(items, getTimestamp, order);
 
     const groups: DatedGroup<T>[] = [];
     const indexByKey = new Map<string, number>();
@@ -84,4 +109,28 @@ export function groupByDate<T>(items: T[], getTimestamp: (item: T) => number): D
     }
 
     return groups;
+}
+
+export function groupByDateWithPending<T>(
+    items: T[],
+    getTimestamp: (item: T) => number,
+    options: GroupByDateWithPendingOptions<T>
+): DatedGroup<T, DateGroupMeta | PendingGroupMeta>[] {
+    const { getIsPending, ...dateOptions } = options;
+
+    const pendingItems = items.filter(getIsPending);
+    const datedGroups = groupByDate(
+        items.filter(item => !getIsPending(item)),
+        getTimestamp,
+        dateOptions
+    );
+
+    if (pendingItems.length === 0) {
+        return datedGroups;
+    }
+
+    const meta: PendingGroupMeta = { label: GROUP_LABEL.PENDING };
+    const sortedPending = sortByTimestamp(pendingItems, getTimestamp, dateOptions.order ?? 'asc');
+
+    return [{ key: JSON.stringify(meta), meta, items: sortedPending }, ...datedGroups];
 }

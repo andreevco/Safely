@@ -1,6 +1,14 @@
 import type { InfiniteData } from '@tanstack/react-query';
 
-import type { BtcApiTx, BtcAsset, RampOrder, TransactionFeeCrypto } from '@safely/core';
+import type {
+    BtcApiTx,
+    BtcAsset,
+    DateGroupMeta,
+    DatedGroup,
+    PendingGroupMeta,
+    RampOrder,
+    TransactionFeeCrypto
+} from '@safely/core';
 import type { CryptoAssetAmount } from '@safely/core';
 
 export interface IActivityFilters {
@@ -40,24 +48,7 @@ export function isOrderActivityItem(item: ActivityItem): item is OrderActivityIt
     return item.type === 'order';
 }
 
-export enum ACTIVITY_GROUP_LABEL {
-    PENDING = 'PENDING',
-    TODAY = 'TODAY',
-    YESTERDAY = 'YESTERDAY',
-    THIS_MONTH = 'THIS_MONTH',
-    THIS_YEAR = 'THIS_YEAR',
-    PAST_YEAR = 'PAST_YEAR'
-}
-
-export type ActivityItemsDatedGroupMeta =
-    | { label: ACTIVITY_GROUP_LABEL.PENDING }
-    | { label: ACTIVITY_GROUP_LABEL.TODAY }
-    | { label: ACTIVITY_GROUP_LABEL.YESTERDAY }
-    | { label: ACTIVITY_GROUP_LABEL.THIS_MONTH; year: number; month: number; day: number }
-    | { label: ACTIVITY_GROUP_LABEL.THIS_YEAR; year: number; month: number }
-    | { label: ACTIVITY_GROUP_LABEL.PAST_YEAR; year: number; month: number };
-
-export type ActivityItemsDatedGroup = ActivityItemsDatedGroupMeta & { items: ActivityItem[] };
+export type ActivityItemsDatedGroup = DatedGroup<ActivityItem, DateGroupMeta | PendingGroupMeta>;
 
 export interface IActivityPageParam {
     fetch: 'both' | 'btc' | 'orders';

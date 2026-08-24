@@ -1,0 +1,1 @@
+export { DeviceHeaderTitle } from './DeviceHeaderTitle';

@@ -591,6 +591,59 @@ describe('sendFormMachine — amount input type', () => {
     });
 });
 
+describe('sendFormMachine — PASTE_AMOUNT precision', () => {
+    it('normalizes a grouped value pasted in fiat mode', () => {
+        const actor = setupAtAmountIdle();
+        actor.send({ type: 'SET_AMOUNT_INPUT_TYPE', value: 'fiat' });
+        actor.send({ type: 'PASTE_AMOUNT', raw: '1,000.50' });
+
+        const s = actor.getSnapshot();
+
+        expect(s.context.values.amount).toBe('1000.50');
+        expect(s.context.errors.amount).toBeUndefined();
+    });
+
+    it('accepts a value at the crypto decimals limit', () => {
+        const actor = setupAtAmountIdle();
+        actor.send({ type: 'PASTE_AMOUNT', raw: '0.00000001' });
+
+        const s = actor.getSnapshot();
+
+        expect(s.context.values.amount).toBe('0.00000001');
+        expect(s.context.errors.amount).toBeUndefined();
+    });
+
+    it('rejects a value more precise than crypto decimals instead of truncating it', () => {
+        const actor = setupAtAmountIdle();
+        actor.send({ type: 'PASTE_AMOUNT', raw: '0.000000001' });
+
+        const s = actor.getSnapshot();
+
+        expect(s.context.values.amount).toBe('');
+        expect(s.context.parsed.amount).toBeUndefined();
+        expect(s.context.errors.amount).toBe(SendFormError.UNRECOGNIZED_AMOUNT);
+    });
+
+    it('applies the decimals of the active input type, not of the asset', () => {
+        const actor = setupAtAmountIdle();
+        actor.send({ type: 'SET_AMOUNT_INPUT_TYPE', value: 'fiat' });
+        actor.send({ type: 'PASTE_AMOUNT', raw: '0.001' });
+
+        const inFiat = actor.getSnapshot();
+
+        expect(inFiat.context.values.amount).toBe('');
+        expect(inFiat.context.errors.amount).toBe(SendFormError.UNRECOGNIZED_AMOUNT);
+
+        actor.send({ type: 'SET_AMOUNT_INPUT_TYPE', value: 'crypto' });
+        actor.send({ type: 'PASTE_AMOUNT', raw: '0.001' });
+
+        const inCrypto = actor.getSnapshot();
+
+        expect(inCrypto.context.values.amount).toBe('0.001');
+        expect(inCrypto.context.errors.amount).toBeUndefined();
+    });
+});
+
 describe('sendFormMachine — fetchMaxValue actor', () => {
     it('eager prefetch: maxValue resolves while in recipient.valid (before NEXT)', async () => {
         const maxValue = makeMaxSendValue();

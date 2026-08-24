@@ -5,7 +5,6 @@ import type { ScrollView } from 'react-native';
 import { useHasPortfolio, useTrackWalletOpen } from '@safely/ux';
 
 import { Chart } from '@mobile/features/chart';
-import { DeviceUnlinkedBanner } from '@mobile/features/device-link';
 import { AssetsList, HomeActions, HomeHeader, TotalBalance } from '@mobile/features/home';
 import { Banners } from '@mobile/features/notices';
 import { Screen } from '@mobile/shared/ui';
@@ -31,7 +30,6 @@ function HomeContent() {
 
     return (
         <Screen.Scrollable ref={scrollRef}>
-            <DeviceUnlinkedBanner />
             <Banners />
             <TotalBalance />
             <HomeActions />
