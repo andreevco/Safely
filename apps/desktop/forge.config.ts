@@ -7,9 +7,11 @@ import type { ForgeConfig } from '@electron-forge/shared-types';
 /* Build-time environment, all optional — see `.claude/rules/desktop-signing.md`:
      SAFELY_SIGN_IDENTITY   codesigning identity; naming one is what turns signing on
      SAFELY_SIGN_PROFILE    provisioning profile to embed, required alongside the identity
-     SAFELY_SIGN_KEYCHAIN   keychain to look the identity up in; unset means the default search list */
+     SAFELY_SIGN_KEYCHAIN   keychain to look the identity up in; unset means the default search list
+     SAFELY_BUILD_NUMBER    CI's build counter; becomes CFBundleVersion, which the About panel shows */
 const identity = process.env.SAFELY_SIGN_IDENTITY;
 const provisioningProfile = process.env.SAFELY_SIGN_PROFILE;
+const buildVersion = process.env.SAFELY_BUILD_NUMBER;
 
 /* An unsigned build has to keep working, because the profiles are uncommitted and per machine.
    Half-configured signing must not: without the profile the entitlements are validated against, the
@@ -24,6 +26,8 @@ const signing = identity
               identity,
               provisioningProfile,
               keychain: process.env.SAFELY_SIGN_KEYCHAIN,
+              /* forge packages with `quiet: true`, so the default discards the signing error and ships an unsigned app. */
+              continueOnError: false,
               optionsForFile: (filePath: string) => ({
                   hardenedRuntime: true,
                   /* Only the main binary may reach the keychain group; helpers host the renderer. */
@@ -42,6 +46,7 @@ const config: ForgeConfig = {
            relying on unpack globs, which do not match the dot-directory the bundle lives in. */
         extraResource: ['native/keychain/build/Release/keychain.node'],
         appBundleId: 'com.safely.wallet-desktop',
+        buildVersion,
         ...signing
     },
     /* Off: the addon is N-API, so the Node-built binary loads in Electron unchanged — verified, not

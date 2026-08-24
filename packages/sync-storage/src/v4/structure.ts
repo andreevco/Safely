@@ -1,19 +1,23 @@
 import { patch, projectIdentity, type DeepReadonly } from '@safely/slottree';
 
 import { sDevicesMeta, type SDeviceMeta, type SDevicesMeta } from './schemas';
-import type { SDeviceMeta as SDeviceMetaV3 } from '../v3/schemas';
 import { syncedStorageV3 } from '../v3/structure';
 
 const syncedStorageSchema = syncedStorageV3.schema.extend({
     devicesMeta: sDevicesMeta
 });
 
-// dropping a desktop device from the v3 projection would hide it from the device list of older apps
-const v3Platform: Record<SDeviceMeta['platform'], SDeviceMetaV3['platform']> = {
-    ios: 'ios',
-    android: 'android',
-    macos: 'ios',
-    windows: 'android'
+const mapV4PlatformTov3Platform = (v4Platform: SDeviceMeta['platform']) => {
+    switch (v4Platform) {
+        case 'ios':
+            return 'ios';
+        case 'android':
+            return 'android';
+
+        // v3 platform doesn't support generic platform name, use stub 'ios' for unknown platforms
+        default:
+            return 'ios';
+    }
 };
 
 function hasDevices(
@@ -30,7 +34,7 @@ export const syncedStorageV4 = {
     projectDown: patch(syncedStorageSchema, syncedStorageV3.schema, draft =>
         draft.when(['devicesMeta'], hasDevices, present =>
             present.updateEach(['devicesMeta'], device =>
-                device.update(['platform'], platform => v3Platform[platform])
+                device.update(['platform'], mapV4PlatformTov3Platform)
             )
         )
     )

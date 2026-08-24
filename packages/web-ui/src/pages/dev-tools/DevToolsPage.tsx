@@ -4,6 +4,7 @@ import { useAppContext } from '@safely/ux';
 import Xmark16 from '@safely/ux/assets/icons/16/xmark-16.svg?react';
 
 import { contentStyles, dragRegionStyles } from './DevToolsPage.styles';
+import { KeychainSection } from './KeychainSection';
 import { AppLayout, Button, Icon, List, PageHeader } from '../../shared';
 
 export type DevToolsPageProps = {
@@ -47,7 +48,9 @@ export const DevToolsPage: FC<DevToolsPageProps> = props => {
                     }
                 />
 
-                <div className={contentStyles} />
+                <div className={contentStyles}>
+                    <KeychainSection />
+                </div>
             </AppLayout.Content>
         </AppLayout>
     );

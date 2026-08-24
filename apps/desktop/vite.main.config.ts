@@ -71,5 +71,6 @@ function devStubKeychainPlugin(): Plugin {
    unexpected resolves to the addon rather than to the stub, and an import of the stub in a
    packaged build fails the build instead of shipping. */
 export default defineConfig(({ command }) => ({
+    define: { SAFELY_BUILD_NUMBER: JSON.stringify(process.env.SAFELY_BUILD_NUMBER ?? null) },
     plugins: command === 'serve' ? [devStubKeychainPlugin()] : []
 }));

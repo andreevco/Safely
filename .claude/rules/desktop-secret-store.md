@@ -236,7 +236,7 @@ that ships in the same bundle would only make development data look protected.
 Every guarantee above is a property of the signature, so the store does not exist without these — how
 the profiles and certificates are obtained is in `desktop-signing.md`:
 
-- explicit App ID and an embedded provisioning profile (**Developer ID** for a release, **Apple
+- explicit App ID and an embedded provisioning profile (**Developer ID** for a release, **Mac
   Development** for a QA build); `com.apple.application-identifier` is not a string you may simply
   declare — `amfid` validates it against the profile, and without one the data protection keychain
   does not exist for the app, whatever the entitlements say;

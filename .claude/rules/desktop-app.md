@@ -118,14 +118,22 @@ group, so the addon reports itself unavailable and `pnpm start` runs on the deve
 in `vite.main.config.ts`: plain files in the development `userData`, protecting nothing, warning on
 every start. A packaged build refuses to start rather than degrade to it. Anything you want to
 believe about the store has to be checked on a signed build — `signing/verify-signature.sh` for
-the signature, the running app for securityd.
+the signature, the running app for securityd. What exercises it by hand is the `SECRET STORE` section
+of the dev tools (`packages/web-ui/src/pages/dev-tools/KeychainSection.tsx`, reached by a long press
+on the version line in settings): it lists, adds, edits and deletes entries of either secret scope
+through the same `IAppContext` storage the rest of the UI uses — `storage.sync.encrypted` and
+`storage.sync.getSecureEncrypted()`, so it sees the `sync` node of the scope and not the whole
+keychain service. Reaching the secure scope there needs `UNSAFE_SKIP_SECURITY_CHECK_unlock()`, exactly
+as onboarding does before a passcode exists; that call belongs to those two places and must not spread
+into anything shipping a flow.
 
-**The renderer cannot prove user presence.** `DesktopPlatform.security` is still
-`unsupportedSecurityGate` (`src/renderer/platform/unsupported.ts`), so
-`UnlockableSecuredEncryptedStorage` refuses even though `createSecureEncrypted()` returns a real
-storage. Until a gate exists, **the desktop app cannot create or restore an account**, because
-onboarding writes `master_key`, `vault_key` and `dmk_prv` through that scope. Do not "temporarily"
-route those keys into `regular` or `localStorage` to unblock a flow.
+**The renderer asks for the passcode, not for the user's presence.** `DesktopPlatform.security` is
+`passcodeSecurityGate` (`src/renderer/platform/security.ts`): it opens the passcode screen through
+`passcodePrompt` and resolves only on a correct code, so `UnlockableSecuredEncryptedStorage` unlocks.
+That is a knowledge check, not a presence check — the OS still proves nothing, and `SecAccessControl`
+with `kSecAccessControlUserPresence` is what will. Onboarding itself runs before a passcode exists and
+therefore still uses `UNSAFE_SKIP_SECURITY_CHECK_unlock()`; do not "temporarily" route `master_key`,
+`vault_key` or `dmk_prv` into `regular` or `localStorage` to unblock a flow.
 
 ## Security invariants
 
@@ -183,15 +191,19 @@ which only serves requests made inside the app's session. Such a URL has a diffe
 app origin and is refused by the navigation guard, so it has to be turned into a route, never
 navigated to.
 
-Closing the window destroys the renderer, and the sync engine with it. The app itself stays alive —
-there is no `window-all-closed` handler — and `activate` or a second launch recreates the window
-(`revealMainWindow` in `src/main/index.ts`), which boots the engine from scratch and re-reads
-everything from the store. So nothing may depend on renderer memory outliving the window: whatever
-has to survive is written through a store before it matters. Hiding (Cmd+H) keeps the renderer and
-lets Chromium throttle its timers — `backgroundThrottling` stays at its default — and main reports
-the hide and the show to the renderer as app-state events. A single instance lock guarantees one sync
-engine per machine. Neither path needs store handling, there being no unlocked state to lock, but a
-renderer-side passcode session would have to expire on one of them.
+Closing the window ends the whole app — renderer, sync engine and main process. There is no
+`window-all-closed` handler, and Electron's default without one is to quit, on macOS as everywhere
+else: `pnpm start` exits 0 the moment the window closes — measured, not assumed. Staying alive
+windowless is the macOS convention and would take that handler; until it exists, the next launch is
+a cold start that boots the engine from scratch and re-reads everything from the store, and
+`revealMainWindow` (`src/main/index.ts`) only ever reveals a window that is still there — `activate`
+or a second launch on a hidden or minimised one — with its recreate branch unreachable. So nothing
+may depend on renderer memory outliving the window: whatever has to survive is written through a
+store before it matters. Hiding (Cmd+H) keeps the renderer and lets Chromium throttle its timers —
+`backgroundThrottling` stays at its default — and main reports the hide and the show to the renderer
+as app-state events. A single instance lock guarantees one sync engine per machine. Neither path
+needs store handling, there being no unlocked state to lock, but a renderer-side passcode session
+would have to expire on one of them.
 
 The renderer's logger writes to its devtools console, which is invisible when the app is driven from
 a terminal, so `src/main/window.ts` forwards renderer console messages, `did-fail-load` and
@@ -241,11 +253,23 @@ diagnosable.
   `com.apple.security.cs.disable-library-validation` or `get-task-allow` to a production build —
   `signing/verify-signature.sh` fails on both, and CI runs it as a gate. Notarisation is still
   missing, so a downloaded build needs its quarantine flag removed by hand.
-- **QA builds are signed by CI with the Apple Development identity, releases locally with Developer
-  ID** (`../../.github/workflows/desktop-preview.yml`, `desktop-signing.md`). Two consequences for
-  anything that touches the build: CI proves the signature is well-formed and nothing more — whether
-  securityd honours it is only visible when the app runs — and a change to the entitlements or the
-  bundle id has to reach the provisioning profile before the workflow can sign again.
+- **The build number reaches the app twice, from one variable.** `SAFELY_BUILD_NUMBER` — CI passes
+  the counter it allocated (`../../.github/workflows/desktop-preview.yml`) — becomes
+  `packagerConfig.buildVersion`, and macOS renders `Version 0.0.1 (42)` in the About panel out of
+  Info.plist with no code involved; it is also a vite `define` in `vite.main.config.ts`, which
+  `src/main/about-panel.ts` hands to `setAboutPanelOptions` so the panel is right in `pnpm start`
+  too, where the bundle is Electron's own. Unset, `CFBundleVersion` falls back to `appVersion`
+  (packager's default), so both keys read the package version, the panel has nothing to put in
+  parentheses, and the code path says `local`. Two things bite: the global is replaced **only in the
+  main bundle**, so a renderer read compiles and throws at runtime; and the About item comes from
+  Electron's default menu, so a `Menu.setApplicationMenu` without `role: 'about'` silently removes
+  it.
+- **QA builds are signed by CI with its own Mac Development certificate, releases locally with
+  Developer ID** (`../../.github/workflows/desktop-preview.yml`, `desktop-signing.md`). Two
+  consequences for anything that touches the build: CI proves the signature is well-formed and
+  nothing more — whether securityd honours it is only visible when the app runs — and a change to the
+  entitlements or the bundle id has to reach the provisioning profile before the workflow can sign
+  again.
 - **The vite version is pinned by forge**: forge 7 is published as CommonJS and does
   `require('vite')`, and vite ≥ 7 no longer has a `require` export condition. Don't bump vite past 6
   until forge 8 is stable.

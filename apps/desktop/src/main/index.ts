@@ -2,6 +2,7 @@ import type { BrowserWindow } from 'electron';
 import { app } from 'electron';
 import path from 'node:path';
 
+import { configureAboutPanel } from './about-panel';
 import { APP_ORIGIN, registerAppProtocol, registerPrivilegedSchemes } from './app-protocol';
 import { registerIpcHandlers } from './ipc';
 import { mainLogger } from './logger';
@@ -77,6 +78,8 @@ if (!app.requestSingleInstanceLock()) {
     void app
         .whenReady()
         .then(() => {
+            configureAboutPanel();
+
             if (!devServerUrl) {
                 registerAppProtocol(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}`));
             }
