@@ -118,27 +118,34 @@ group, so the addon reports itself unavailable and `pnpm start` runs on the deve
 in `vite.main.config.ts`: plain files in the development `userData`, protecting nothing, warning on
 every start. A packaged build refuses to start rather than degrade to it. Anything you want to
 believe about the store has to be checked on a signed build — `signing/verify-signature.sh` for
-the signature, the running app for securityd. What exercises it by hand is the showcase's
-`SECRET STORE` screen (`src/renderer/showcase/KeychainShowcase.tsx`): it lists, adds, edits and
-deletes entries of either secret scope through the same `IAppContext` storage the rest of the UI uses
-— `storage.sync.encrypted` and `storage.sync.getSecureEncrypted()`, so it sees the `sync` node of the
-scope and not the whole keychain service — and it exists only because onboarding does not yet write a
-key: the first screen that does replaces it. Reaching the secure scope needs
-`UNSAFE_SKIP_SECURITY_CHECK_unlock()` while the presence gate rejects, exactly as mobile onboarding
-does; that call belongs to this screen and must not spread into anything shipping a flow.
+the signature, the running app for securityd. What exercises it by hand is the `SECRET STORE` section
+of the dev tools (`packages/web-ui/src/pages/dev-tools/KeychainSection.tsx`, reached by a long press
+on the version line in settings): it lists, adds, edits and deletes entries of either secret scope
+through the same `IAppContext` storage the rest of the UI uses — `storage.sync.encrypted` and
+`storage.sync.getSecureEncrypted()`, so it sees the `sync` node of the scope and not the whole
+keychain service. Reaching the secure scope there needs `UNSAFE_SKIP_SECURITY_CHECK_unlock()`, exactly
+as onboarding does before a passcode exists; that call belongs to those two places and must not spread
+into anything shipping a flow.
 
-**The renderer cannot prove user presence.** `DesktopPlatform.security` is still
-`unsupportedSecurityGate` (`src/renderer/platform/unsupported.ts`), so
-`UnlockableSecuredEncryptedStorage` refuses even though `createSecureEncrypted()` returns a real
-storage. Until a gate exists, **the desktop app cannot create or restore an account**, because
-onboarding writes `master_key`, `vault_key` and `dmk_prv` through that scope. Do not "temporarily"
-route those keys into `regular` or `localStorage` to unblock a flow.
+**The renderer asks for the passcode, not for the user's presence.** `DesktopPlatform.security` is
+`passcodeSecurityGate` (`src/renderer/platform/security.ts`): it opens the passcode screen through
+`passcodePrompt` and resolves only on a correct code, so `UnlockableSecuredEncryptedStorage` unlocks.
+That is a knowledge check, not a presence check — the OS still proves nothing, and `SecAccessControl`
+with `kSecAccessControlUserPresence` is what will. Onboarding itself runs before a passcode exists and
+therefore still uses `UNSAFE_SKIP_SECURITY_CHECK_unlock()`; do not "temporarily" route `master_key`,
+`vault_key` or `dmk_prv` into `regular` or `localStorage` to unblock a flow.
 
 ## Security invariants
 
 Do not weaken these without a threat-model note:
 
 - `sandbox: true`, `contextIsolation: true`, `nodeIntegration: false`, `app.enableSandbox()`.
+- Every passcode screen is wrapped in `<ScreenProtection>`, the way mobile wraps the seed phrase in
+  `CapturePreventionView`. The handle travels one way: the app hands
+  `platform.protectScreen` to `ScreenProtectionProvider` in `app/AppProviders.tsx`, and the provider
+  turns `setContentProtection` on while at least one such screen is mounted, so macOS keeps the window
+  out of recordings and screenshots. Holders are counted rather than flagged because the screens
+  overlap; a screen that shows a keypad and omits the component leaks it to a screen share.
 - The preload is transport only. Every capability is a named channel with a zod-validated payload;
   never expose a generic "invoke anything" bridge. Inputs are validated in main (authoritative). The
   one non-channel member of the bridge is `appInfo`, a value injected as a process argument — no

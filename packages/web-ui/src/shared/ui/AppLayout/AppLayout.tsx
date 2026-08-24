@@ -7,6 +7,7 @@ import { appLayout } from '@safely/web-ui/styled-system/recipes';
 export type AppLayoutRootProps = {
     hasWindowControls?: boolean;
     isFullScreen?: boolean;
+    isSecondaryOpen?: boolean;
     children?: ReactNode;
     className?: string;
 };
@@ -20,9 +21,9 @@ const AppLayoutContext = createContext(appLayout());
 const useAppLayoutStyles = () => useContext(AppLayoutContext);
 
 const AppLayoutRoot: FC<AppLayoutRootProps> = props => {
-    const { hasWindowControls, isFullScreen, className, children } = props;
+    const { hasWindowControls, isFullScreen, isSecondaryOpen, className, children } = props;
 
-    const styles = appLayout({ hasWindowControls, isFullScreen });
+    const styles = appLayout({ hasWindowControls, isFullScreen, isSecondaryOpen });
 
     return (
         <div className={cx(styles.root, className)}>
@@ -49,6 +50,12 @@ const AppLayoutSecondary: FC<AppLayoutPartProps> = props => {
     return <aside className={cx(useAppLayoutStyles().secondary, className)} {...rest} />;
 };
 
+const AppLayoutSecondaryContent: FC<AppLayoutPartProps> = props => {
+    const { className, ...rest } = props;
+
+    return <div className={cx(useAppLayoutStyles().secondaryContent, className)} {...rest} />;
+};
+
 const AppLayoutContent: FC<AppLayoutPartProps> = props => {
     const { className, ...rest } = props;
 
@@ -65,6 +72,7 @@ export const AppLayout = Object.assign(AppLayoutRoot, {
     TitleBar: AppLayoutTitleBar,
     Sidebar: AppLayoutSidebar,
     Secondary: AppLayoutSecondary,
+    SecondaryContent: AppLayoutSecondaryContent,
     Content: AppLayoutContent,
     Panel: AppLayoutPanel
 });

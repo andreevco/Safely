@@ -78,6 +78,10 @@ const bridge: DesktopBridge = {
         };
     },
 
+    async setContentProtection(isEnabled: boolean): Promise<void> {
+        await ipcRenderer.invoke(IPC_CHANNEL.windowContentProtection, { isEnabled });
+    },
+
     async openExternalUrl(url: string): Promise<void> {
         await ipcRenderer.invoke(IPC_CHANNEL.openExternal, { url });
     },

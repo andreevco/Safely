@@ -17,6 +17,7 @@
     "@safely/ux": "workspace:*",
     "i18next": "catalog:",
     "react-i18next": "catalog:",
+    "zod": "catalog:",
     "zustand": "catalog:"
   },
   "devDependencies": {

@@ -9,7 +9,8 @@ paths:
 # `@safely/web-ui` — components and styling
 
 The React layer shared by every web target (`apps/desktop`, later `apps/browser`). It holds the design
-system and the pages, and nothing else: it must stay free of platform code the same way `@safely/ux`
+system and the screens built from it, and nothing else — no router, no route components, no
+platform-bound controller hooks: it must stay free of platform code the same way `@safely/ux`
 stays free of React Native, and free of platform *contracts* too — those belong to the apps. Layers:
 see `fsd-layers.md`.
 
@@ -27,6 +28,11 @@ There is exactly **one** Panda instance in the monorepo: `packages/web-ui/panda.
 `include` covers the apps as well, and `importMap` makes the generated helpers importable everywhere
 as `@safely/web-ui/styled-system/*`. Apps only point their `postcss.config.cjs` at that config —
 never add a second one.
+
+`include` globs are resolved against `cwd`, which is the **app** directory when the app's PostCSS run
+loads this config — so the config pins `cwd: __dirname`. Without it both globs resolve into the app,
+this package's sources are never extracted, and every atomic `css()` written here ships no CSS while
+recipes keep working through `staticCss` — a page renders with correct class names and no layout.
 
 Run lint through the package scripts (`pnpm --filter <pkg> run lint`, which is also what CI does).
 `@pandacss/eslint-plugin` resolves included files relative to the working directory, so invoking
@@ -71,6 +77,21 @@ and read it from a static style: `style={{ '--fill': value }}` plus `width: 'var
   (`@pandacss/no-config-function-in-source`).
 - `@floating-ui` inside Base UI sets inline `style` for positioning, so a CSP must allow
   `style-src 'unsafe-inline'`; Base UI ships `./csp-provider` for nonce-based setups.
+
+## Routing lives in the app, not here
+
+This package ships screens, not flows: a page takes props and renders, and knows nothing about routes,
+guards or navigation. The route tree, the guards and the controller hooks that drive them live in the
+app (`apps/desktop/src/renderer/app`, on TanStack Router over a memory history), so a second target can
+wire the same screens into its own navigation. A component here that reaches for `useNavigate` has to
+take a callback prop instead.
+
+**A secret never travels through navigation.** Navigating with state writes into a history
+entry: it outlives the step, comes back on a backwards navigation, and is readable by whatever renders
+on that path. A mnemonic, a passcode or a private key therefore stays inside the component that
+collects it (multi-step input is one screen with an internal step, the way `PasscodeSetup` works on
+mobile), or is handed on by reference as a disposable resource (`MnemonicResource` + `Symbol.dispose`).
+Route state carries the intent only — `{ kind: 'imported' }`, never the phrase itself.
 
 ## No platform contract lives here
 

@@ -60,6 +60,7 @@
         "next": "Next",
         "save": "Save",
         "cancel": "Cancel",
+        "close": "Close",
         "continue": "Continue",
         "later": "Later",
         "errors": {
@@ -513,7 +514,18 @@
             "reenter": {
                 "title": "Re-enter passcode",
                 "description": "Set a passcode to protect your data. It will be required to unlock the app."
-            }
+            },
+            "sixDigit": "6-digit",
+            "backspace": "Delete the last digit"
+        },
+        "customize": {
+            "title": "Customize your wallet",
+            "description": "Set a name and icon to tell this wallet apart here. Sync across your devices."
+        },
+        "notifications": {
+            "title": "Notifications",
+            "description": "Get alerts when funds arrive. No need to check manually.",
+            "enable": "Enable notifications"
         }
     },
     "addWallet": {
@@ -925,7 +937,7 @@
     },
     "legal": {
         "title": "Legal",
-        "privacyPolicy": "Privacy Policy",
-        "termsOfUse": "Terms of Use"
+        "termsOfUse": "Terms of Use",
+        "privacyPolicy": "Privacy Policy"
     }
 }

@@ -8,9 +8,8 @@ import { createWebI18n } from '@safely/web-ui';
 
 import '@safely/web-ui/styles.css';
 
-import { AppProviders } from './app';
-import { platform } from './platform';
-import { Showcase } from './showcase';
+import { App, AppProviders } from './app';
+import { passcodeStorage, platform, useIsFullScreen } from './platform';
 
 const container = document.getElementById('root');
 
@@ -23,10 +22,22 @@ const { instance } = createWebI18n({
     fallbackLocale: platform.appInfo.locale
 });
 
+function Root() {
+    const isFullScreen = useIsFullScreen();
+
+    return (
+        <App
+            passcodeStorage={passcodeStorage}
+            hasWindowControls={!isFullScreen}
+            isFullScreen={isFullScreen}
+        />
+    );
+}
+
 createRoot(container).render(
     <I18nextProvider i18n={instance}>
         <AppProviders>
-            <Showcase />
+            <Root />
         </AppProviders>
     </I18nextProvider>
 );

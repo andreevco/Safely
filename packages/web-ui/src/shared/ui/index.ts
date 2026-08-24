@@ -10,6 +10,7 @@ export * from './Input';
 export * from './List';
 export * from './Modal';
 export * from './PageHeader';
+export * from './Passcode';
 export * from './Spinner';
 export * from './Switch';
 export * from './TableCell';

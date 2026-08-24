@@ -17,6 +17,7 @@ export default defineConfig({
     preflight: true,
     outdir: 'styled-system',
     importMap: '@safely/web-ui/styled-system',
+    cwd: __dirname,
     include: ['./src/**/*.{ts,tsx}', '../../apps/*/src/**/*.{ts,tsx}'],
     exclude: [],
     jsxFramework: 'react',
@@ -44,10 +45,12 @@ export default defineConfig({
             list: ['*'],
             modal: ['*'],
             pageHeader: ['*'],
+            passcode: ['*'],
             tableCell: ['*'],
             toggle: ['*'],
             wordCell: ['*'],
             icon: ['*'],
+            iconPicker: ['*'],
             spinner: ['*'],
             input: ['*'],
             text: ['*']
@@ -78,6 +81,11 @@ export default defineConfig({
             keyframes: {
                 spin: {
                     to: { transform: 'rotate(360deg)' }
+                },
+                shake: {
+                    '0%, 100%': { transform: 'translateX(0)' },
+                    '25%': { transform: 'translateX(-8px)' },
+                    '75%': { transform: 'translateX(8px)' }
                 }
             },
             recipes,

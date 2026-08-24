@@ -99,6 +99,14 @@ export const cellRecipe = defineSlotRecipe({
                 trailing: { color: 'cell.accentRed.foreground' }
             }
         },
+        isSelected: {
+            true: {
+                root: {
+                    backgroundColor: 'background.tertiary',
+                    borderRadius: 'sm'
+                }
+            }
+        },
         isInteractive: {
             true: {
                 root: {

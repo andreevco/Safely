@@ -13,6 +13,7 @@ export type ModalRootProps = ComponentPropsWithoutRef<typeof Dialog.Root>;
 
 export type ModalPopupProps = {
     closeLabel: string;
+    hasClose?: boolean;
     children?: ReactNode;
     className?: string;
 };
@@ -25,16 +26,18 @@ type ModalPartProps<TElement extends 'div' | 'h2' | 'p'> = Omit<
 };
 
 const ModalPopup: FC<ModalPopupProps> = props => {
-    const { closeLabel, className, children } = props;
+    const { closeLabel, hasClose = true, className, children } = props;
 
     return (
         <Dialog.Portal>
             <Dialog.Backdrop className={styles.backdrop} />
 
             <Dialog.Popup className={cx(styles.popup, className)}>
-                <Dialog.Close className={styles.close} aria-label={closeLabel}>
-                    <Icon asset={Xmark16} />
-                </Dialog.Close>
+                {hasClose && (
+                    <Dialog.Close className={styles.close} aria-label={closeLabel}>
+                        <Icon asset={Xmark16} />
+                    </Dialog.Close>
+                )}
 
                 {children}
             </Dialog.Popup>

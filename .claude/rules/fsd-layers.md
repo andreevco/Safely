@@ -34,9 +34,12 @@ knows nothing about `features`; in mobile, `features` knows nothing about `scree
 - `packages/web-ui/src/shared` — the web design system (`shared/ui`, Panda recipes live in
   `packages/web-ui/panda/recipes`). No platform contract lives here — each app declares its own
   (`apps/desktop/src/renderer/platform/types.ts`).
-- `packages/web-ui/src/pages` — one route target, the web counterpart of a mobile screen.
-- `packages/web-ui/src/app` — router and providers, exported as the single component an app mounts.
-  The app passes in its platform implementation; `web-ui` never imports app code (enforced).
+- `packages/web-ui/src/pages` — one screen, the web counterpart of a mobile screen: props in, markup
+  out, no routing.
+- `apps/desktop/src/renderer/app` — the web target's entry point: the route tree, the guards, the
+  providers and the controller hooks that turn a screen's callbacks into flows. `web-ui` never imports
+  app code (enforced), and the router lives here so a second target can wire the same screens
+  differently.
 
 Put new code in the lowest layer that fits. If a feature needs something from `screens`, the logic
 should move down into `features` — don't move the import up.

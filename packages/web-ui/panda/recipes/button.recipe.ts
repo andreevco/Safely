@@ -58,6 +58,13 @@ export const buttonRecipe = defineRecipe({
                 backgroundColor: 'other.constant.white',
                 color: 'other.constant.black'
             },
+            accent: {
+                backgroundColor: 'accent.blue/8',
+                color: 'text.link',
+                borderWidth: 'hairlineAlternate',
+                borderStyle: 'solid',
+                borderColor: 'accent.blue/20'
+            },
             destructive: {
                 backgroundColor: 'button.destructive.background',
                 color: 'button.destructive.foreground'

@@ -11,6 +11,7 @@ import { Icon } from '../Icon';
 
 export type CellRootProps = {
     tone?: CellTone;
+    isSelected?: boolean;
     onClick?: () => void;
     children?: ReactNode;
     className?: string;
@@ -24,9 +25,9 @@ type CellPartProps<TElement extends 'div' | 'span'> = Omit<
 };
 
 const CellRoot: FC<CellRootProps> = props => {
-    const { tone, onClick, className, children } = props;
+    const { tone, isSelected, onClick, className, children } = props;
 
-    const styles = cell({ tone, isInteractive: Boolean(onClick) });
+    const styles = cell({ tone, isSelected, isInteractive: Boolean(onClick) });
     const content = <CellContext.Provider value={styles}>{children}</CellContext.Provider>;
 
     if (!onClick) {

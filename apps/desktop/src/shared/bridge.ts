@@ -38,6 +38,8 @@ export interface DesktopBridge {
 
     onFullScreenChange(callback: (isFullScreen: boolean) => void): () => void;
 
+    setContentProtection(isEnabled: boolean): Promise<void>;
+
     openExternalUrl(url: string): Promise<void>;
 
     store: DesktopStoreBridge;

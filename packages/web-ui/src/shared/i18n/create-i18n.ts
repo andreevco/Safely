@@ -26,11 +26,7 @@ export function createWebI18n(options: {
         react: { transSupportBasicHtmlNodes: false }
     });
 
-    return {
-        instance,
-        async setLanguage(language: string): Promise<void> {
-            options.storage.set(LANGUAGE_KEY, language);
-            await instance.changeLanguage(language);
-        }
-    };
+    instance.on('languageChanged', language => options.storage.set(LANGUAGE_KEY, language));
+
+    return { instance };
 }
