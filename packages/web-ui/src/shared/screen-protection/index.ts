@@ -1,1 +1,2 @@
-export * from './store';
+export * from './ScreenProtection';
+export * from './ScreenProtectionProvider';

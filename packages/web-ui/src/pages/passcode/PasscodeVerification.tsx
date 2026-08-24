@@ -13,7 +13,7 @@ import {
     rootStyles
 } from './PasscodeVerification.styles';
 import { usePasscodeLockout } from '../../entities';
-import { Button, Icon, Passcode, Text, useScreenProtection } from '../../shared';
+import { Button, Icon, Passcode, ScreenProtection, Text } from '../../shared';
 import { shakeStyles } from '../lock/LockScreen.styles';
 
 export type PasscodeVerificationProps = {
@@ -29,7 +29,6 @@ export const PasscodeVerification: FC<PasscodeVerificationProps> = props => {
 
     const t = useTranslate();
 
-    useScreenProtection();
     const { recordFailure, reset } = usePasscodeLockout();
     const [value, setValue] = useState('');
     const [hasFailed, setHasFailed] = useState(false);
@@ -55,37 +54,39 @@ export const PasscodeVerification: FC<PasscodeVerificationProps> = props => {
     }, [value, length, verify, onVerified, recordFailure, reset]);
 
     return (
-        <div className={rootStyles}>
-            <div className={headerStyles}>
-                <Button
-                    className={closeStyles}
-                    variant="secondary"
-                    size="small"
-                    isIconOnly
-                    aria-label={t('common.close')}
-                    onClick={onCancel}
-                >
-                    <Icon asset={Xmark16} />
-                </Button>
-            </div>
+        <ScreenProtection>
+            <div className={rootStyles}>
+                <div className={headerStyles}>
+                    <Button
+                        className={closeStyles}
+                        variant="secondary"
+                        size="small"
+                        isIconOnly
+                        aria-label={t('common.close')}
+                        onClick={onCancel}
+                    >
+                        <Icon asset={Xmark16} />
+                    </Button>
+                </div>
 
-            <div className={bodyStyles}>
-                <div className={promptStyles}>
-                    <Text variant="labelL">{title ?? t('passcode.verify.title')}</Text>
+                <div className={bodyStyles}>
+                    <div className={promptStyles}>
+                        <Text variant="labelL">{title ?? t('passcode.verify.title')}</Text>
 
-                    <Passcode
-                        className={cx(hasFailed && shakeStyles)}
-                        value={value}
-                        length={length}
-                        isInvalid={hasFailed}
-                        backspaceLabel={t('onboarding.passcode.backspace')}
-                        onChange={next => {
-                            setHasFailed(false);
-                            setValue(next);
-                        }}
-                    />
+                        <Passcode
+                            className={cx(hasFailed && shakeStyles)}
+                            value={value}
+                            length={length}
+                            isInvalid={hasFailed}
+                            backspaceLabel={t('onboarding.passcode.backspace')}
+                            onChange={next => {
+                                setHasFailed(false);
+                                setValue(next);
+                            }}
+                        />
+                    </div>
                 </div>
             </div>
-        </div>
+        </ScreenProtection>
     );
 };

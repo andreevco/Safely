@@ -27,6 +27,8 @@ export interface DesktopPlatform {
 
     openExternalUrl(url: string): Promise<void>;
 
+    protectScreen(this: void, isProtected: boolean): void;
+
     reloadApp(): void;
 
     clearAllData(): Promise<void>;

@@ -14,7 +14,7 @@ import {
     SyncStorageProvider,
     UnlockableSecuredEncryptedStorage
 } from '@safely/ux';
-import { toastService, ToastViewport, WebLinking } from '@safely/web-ui';
+import { ScreenProtectionProvider, toastService, ToastViewport, WebLinking } from '@safely/web-ui';
 
 import { logger } from '../logger';
 import { platform } from '../platform';
@@ -105,12 +105,14 @@ export const AppProviders: FC<PropsWithChildren<AppProvidersProps>> = ({ loader,
     return (
         <QueryProvider persister={persister} queryClient={queryClient} loader={loader}>
             <AppContext value={appContext}>
-                <Suspense fallback={loader}>
-                    {/* TODO(ledger): a real transport replaces the rejecting port. */}
-                    <LedgerSessionPortProvider port={unsupportedLedgerSessionPort}>
-                        <SyncStorageProvider>{children}</SyncStorageProvider>
-                    </LedgerSessionPortProvider>
-                </Suspense>
+                <ScreenProtectionProvider protect={platform.protectScreen}>
+                    <Suspense fallback={loader}>
+                        {/* TODO(ledger): a real transport replaces the rejecting port. */}
+                        <LedgerSessionPortProvider port={unsupportedLedgerSessionPort}>
+                            <SyncStorageProvider>{children}</SyncStorageProvider>
+                        </LedgerSessionPortProvider>
+                    </Suspense>
+                </ScreenProtectionProvider>
                 <ToastViewport />
             </AppContext>
         </QueryProvider>

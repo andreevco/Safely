@@ -140,6 +140,12 @@ therefore still uses `UNSAFE_SKIP_SECURITY_CHECK_unlock()`; do not "temporarily"
 Do not weaken these without a threat-model note:
 
 - `sandbox: true`, `contextIsolation: true`, `nodeIntegration: false`, `app.enableSandbox()`.
+- Every passcode screen is wrapped in `<ScreenProtection>`, the way mobile wraps the seed phrase in
+  `CapturePreventionView`. The handle travels one way: the app hands
+  `platform.protectScreen` to `ScreenProtectionProvider` in `app/AppProviders.tsx`, and the provider
+  turns `setContentProtection` on while at least one such screen is mounted, so macOS keeps the window
+  out of recordings and screenshots. Holders are counted rather than flagged because the screens
+  overlap; a screen that shows a keypad and omits the component leaks it to a screen share.
 - The preload is transport only. Every capability is a named channel with a zod-validated payload;
   never expose a generic "invoke anything" bridge. Inputs are validated in main (authoritative). The
   one non-channel member of the bridge is `appInfo`, a value injected as a process argument — no

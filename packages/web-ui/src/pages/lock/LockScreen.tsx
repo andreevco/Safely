@@ -15,7 +15,7 @@ import {
     shakeStyles
 } from './LockScreen.styles';
 import { usePasscodeLockout } from '../../entities';
-import { Button, Icon, Passcode, Text, useScreenProtection } from '../../shared';
+import { Button, Icon, Passcode, ScreenProtection, Text } from '../../shared';
 
 export type LockScreenProps = {
     length: number;
@@ -32,7 +32,6 @@ export const LockScreen: FC<LockScreenProps> = props => {
 
     const t = useTranslate();
 
-    useScreenProtection();
     const [value, setValue] = useState('');
     const [hasFailed, setHasFailed] = useState(false);
     const { isLocked, remainingSeconds, recordFailure, reset } = usePasscodeLockout();
@@ -70,45 +69,47 @@ export const LockScreen: FC<LockScreenProps> = props => {
     };
 
     return (
-        <div className={rootStyles}>
-            <div className={headerStyles}>
-                <Button
-                    className={signOutStyles}
-                    variant="secondary"
-                    size="small"
-                    onClick={onSignOut}
-                >
-                    {t('passcode.lockout.signOut')}
-                </Button>
-            </div>
+        <ScreenProtection>
+            <div className={rootStyles}>
+                <div className={headerStyles}>
+                    <Button
+                        className={signOutStyles}
+                        variant="secondary"
+                        size="small"
+                        onClick={onSignOut}
+                    >
+                        {t('passcode.lockout.signOut')}
+                    </Button>
+                </div>
 
-            <div className={bodyStyles}>
-                {isLocked ? (
-                    <div className={lockoutStyles}>
-                        <Icon asset={Lock56} size={32} tone="tertiary" />
-                        <Text variant="titleS">{t('passcode.lockout.title')}</Text>
-                        <Text variant="bodyM" tone="secondary">
-                            {lockoutSubtitle()}
-                        </Text>
-                    </div>
-                ) : (
-                    <div className={promptStyles}>
-                        <Text variant="labelL">{t('passcode.verify.title')}</Text>
+                <div className={bodyStyles}>
+                    {isLocked ? (
+                        <div className={lockoutStyles}>
+                            <Icon asset={Lock56} size={32} tone="tertiary" />
+                            <Text variant="titleS">{t('passcode.lockout.title')}</Text>
+                            <Text variant="bodyM" tone="secondary">
+                                {lockoutSubtitle()}
+                            </Text>
+                        </div>
+                    ) : (
+                        <div className={promptStyles}>
+                            <Text variant="labelL">{t('passcode.verify.title')}</Text>
 
-                        <Passcode
-                            className={cx(hasFailed && shakeStyles)}
-                            value={value}
-                            length={length}
-                            isInvalid={hasFailed}
-                            backspaceLabel={t('onboarding.passcode.backspace')}
-                            onChange={next => {
-                                setHasFailed(false);
-                                setValue(next);
-                            }}
-                        />
-                    </div>
-                )}
+                            <Passcode
+                                className={cx(hasFailed && shakeStyles)}
+                                value={value}
+                                length={length}
+                                isInvalid={hasFailed}
+                                backspaceLabel={t('onboarding.passcode.backspace')}
+                                onChange={next => {
+                                    setHasFailed(false);
+                                    setValue(next);
+                                }}
+                            />
+                        </div>
+                    )}
+                </div>
             </div>
-        </div>
+        </ScreenProtection>
     );
 };
