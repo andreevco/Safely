@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 
-import type { PortfolioMeta, PortfolioMetaIcon } from '@safely/core';
+import type { Portfolio, PortfolioMeta, PortfolioMetaIcon } from '@safely/core';
 import {
     MnemonicResource,
     PortfolioAlreadyExistsError,
@@ -14,32 +14,35 @@ import {
     useActiveAccountStoreSlot,
     useAddWatchOnlyPortfolio,
     useAppContext,
+    useChangePortfolioMeta,
     useGeneratePortfolio,
     useImportPortfolio,
     useLoader,
     useNewPortfolioFallbackName,
-    useToast,
-    useTranslate,
+    usePortfolios,
+    useSetActivePortfolio,
     useUnlockableSecretEncryptorFactory
 } from '@safely/ux';
 import { PasscodePromptCancelledError } from '@safely/web-ui';
 
 export type AddWalletDraft = Pick<PortfolioMeta, 'name' | 'icon'>;
 
-export type AddWalletStep = 'menu' | 'import' | 'watch' | 'customize';
+export type AddWalletStep = 'menu' | 'import' | 'watch' | 'duplicate' | 'customize';
 
 type AddWalletSource =
     | { kind: 'generated' }
     | { kind: 'imported'; mnemonic: string[]; networkType: PortfolioNetworkType }
-    | { kind: 'watchOnly'; input: string };
+    | { kind: 'watchOnly'; input: string }
+    | { kind: 'existing'; portfolio: Portfolio };
 
 export function useAddWalletFlow() {
     const { withLoader } = useLoader();
-    const t = useTranslate();
-    const toast = useToast();
+    const portfolios = usePortfolios();
     const defaultName = useNewPortfolioFallbackName();
     const { mutateAsync: importPortfolio } = useImportPortfolio();
     const { mutateAsync: generatePortfolio } = useGeneratePortfolio();
+    const { mutateAsync: setActivePortfolio } = useSetActivePortfolio();
+    const { mutateAsync: changePortfolioMeta } = useChangePortfolioMeta();
     const { mutateAsync: addWatchOnlyPortfolio } = useAddWatchOnlyPortfolio();
     const nextDerivingInfo = useActiveAccountStoreSlot('nextDerivingPortfolioInfo');
     const createEncryptor = useUnlockableSecretEncryptorFactory();
@@ -51,6 +54,7 @@ export function useAddWalletFlow() {
 
     const [step, setStep] = useState<AddWalletStep | null>(null);
     const [draft, setDraft] = useState<AddWalletDraft | null>(null);
+    const [duplicate, setDuplicate] = useState<Portfolio | null>(null);
 
     const source = useRef<AddWalletSource | null>(null);
     const networkType = useRef<PortfolioNetworkType>(PortfolioNetworkType.MAINNET);
@@ -58,12 +62,14 @@ export function useAddWalletFlow() {
     const open = useCallback(() => {
         source.current = null;
         setDraft(null);
+        setDuplicate(null);
         setStep('menu');
     }, []);
 
     const close = useCallback(() => {
         source.current = null;
         setDraft(null);
+        setDuplicate(null);
         setStep(null);
     }, []);
 
@@ -73,6 +79,11 @@ export function useAddWalletFlow() {
     }, []);
 
     const openWatch = useCallback(() => setStep('watch'), []);
+
+    const showDuplicate = useCallback((portfolio: Portfolio) => {
+        setDuplicate(portfolio);
+        setStep('duplicate');
+    }, []);
 
     const startCreate = useCallback(() => {
         const icon: PortfolioMetaIcon = nextDerivingInfo?.emoji
@@ -85,8 +96,16 @@ export function useAddWalletFlow() {
     }, [nextDerivingInfo, defaultName]);
 
     const onMnemonicReady = useCallback(
-        (mnemonic: string[]) => {
+        async (mnemonic: string[]) => {
             using mnemonicAccessor = new MnemonicResource(mnemonic);
+
+            const id = await PortfolioIdBip39Imported.create(mnemonicAccessor, networkType.current);
+            const existing = portfolios.find(portfolio => portfolio.id.isEq(id));
+
+            if (existing) {
+                showDuplicate(existing);
+                return;
+            }
 
             source.current = { kind: 'imported', mnemonic, networkType: networkType.current };
             setDraft({
@@ -95,19 +114,46 @@ export function useAddWalletFlow() {
             });
             setStep('customize');
         },
-        [defaultName]
+        [portfolios, showDuplicate, defaultName]
     );
 
     const onWatchInputReady = useCallback(
         (input: string) => {
-            const id = PortfolioWatchOnlyBtc.resolveUserInput(input, PortfolioNetworkType.MAINNET);
+            const id = toPortfolioIdWatchOnly(
+                PortfolioWatchOnlyBtc.resolveUserInput(input, PortfolioNetworkType.MAINNET)
+            );
+            const existing = portfolios.find(portfolio => portfolio.id.isEq(id));
+
+            if (existing) {
+                showDuplicate(existing);
+                return;
+            }
 
             source.current = { kind: 'watchOnly', input };
-            setDraft({ name: defaultName, icon: toPortfolioIdWatchOnly(id).getFallbackEmoji() });
+            setDraft({ name: defaultName, icon: id.getFallbackEmoji() });
             setStep('customize');
         },
-        [defaultName]
+        [portfolios, showDuplicate, defaultName]
     );
+
+    const openDuplicate = useCallback(async () => {
+        if (duplicate === null) {
+            return;
+        }
+
+        close();
+        await setActivePortfolio({ id: duplicate.id });
+    }, [duplicate, close, setActivePortfolio]);
+
+    const editDuplicate = useCallback(() => {
+        if (duplicate === null) {
+            return;
+        }
+
+        source.current = { kind: 'existing', portfolio: duplicate };
+        setDraft({ name: duplicate.meta.name, icon: duplicate.meta.icon });
+        setStep('customize');
+    }, [duplicate]);
 
     const save = useCallback(
         async (meta: AddWalletDraft) => {
@@ -121,6 +167,12 @@ export function useAddWalletFlow() {
 
             try {
                 await withLoader(async () => {
+                    if (pending.kind === 'existing') {
+                        await changePortfolioMeta({ portfolio: pending.portfolio, meta });
+                        await setActivePortfolio({ id: pending.portfolio.id });
+                        return;
+                    }
+
                     if (pending.kind === 'watchOnly') {
                         await addWatchOnlyPortfolio({ input: pending.input, meta });
                         return;
@@ -146,13 +198,14 @@ export function useAddWalletFlow() {
                     await generatePortfolio({ meta, secureEncryptedStorage });
                 });
             } catch (error) {
-                if (error instanceof PortfolioAlreadyExistsError) {
-                    toast(
-                        t('walletAlreadyAdded.title', {
-                            name: error.existingPortfolio?.meta.name ?? ''
-                        })
-                    );
-                    return;
+                if (error instanceof PortfolioAlreadyExistsError && error.existingPortfolio) {
+                    const existingId = error.existingPortfolio.id;
+                    const existing = portfolios.find(portfolio => portfolio.id.isEq(existingId));
+
+                    if (existing) {
+                        showDuplicate(existing);
+                        return;
+                    }
                 }
 
                 if (!(error instanceof PasscodePromptCancelledError)) {
@@ -163,19 +216,22 @@ export function useAddWalletFlow() {
         [
             close,
             withLoader,
+            changePortfolioMeta,
+            setActivePortfolio,
             addWatchOnlyPortfolio,
             createEncryptor,
             importPortfolio,
             getSecureEncrypted,
             generatePortfolio,
-            toast,
-            t
+            portfolios,
+            showDuplicate
         ]
     );
 
     return {
         step,
         draft,
+        duplicate,
         open,
         close,
         openImport,
@@ -183,6 +239,8 @@ export function useAddWalletFlow() {
         startCreate,
         onMnemonicReady,
         onWatchInputReady,
+        openDuplicate,
+        editDuplicate,
         save
     };
 }
