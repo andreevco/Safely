@@ -235,7 +235,6 @@
         },
         "phraseSheet": {
             "title": "Recovery phrase",
-            "titleSuffix": "recovery phrase",
             "warning": "Do not share this phrase.\nAnyone with it can access your wallet."
         },
         "accountProtected": {
@@ -345,8 +344,8 @@
         "others": {
             "title": "Is this device stolen, sold, or can someone else access it?",
             "options": {
-                "possible": "Yes, someone else can access it",
-                "impossible": "No, no one else can access it"
+                "possible": "Yes, someone can access it",
+                "impossible": "No, no one can access it"
             }
         },
         "signOut": {
@@ -360,7 +359,7 @@
         },
         "archive": {
             "title": "Archive this device",
-            "description": "Since no one can access this device, your account isn't at risk. Archiving hides it from your linked devices list. It doesn't remove access or stop syncing if the device comes back online.",
+            "description": "Since no one can access this device for now, your account is probably not at risk. Archiving hides it from your linked devices list. It doesn't remove access or stop syncing if the device comes back online.",
             "action": "Archive {{deviceName}}",
             "verify": "Confirm archiving {{deviceName}}.",
             "done": "{{deviceName}} archived"
