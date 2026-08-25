@@ -1,4 +1,3 @@
-export { ChangePasscodeFlow, type ChangePasscodeFlowProps } from './ChangePasscodeFlow';
 export { PasscodeSetupFlow, type PasscodeSetupFlowProps } from './PasscodeSetupFlow';
 export {
     PasscodePromptCancelledError,

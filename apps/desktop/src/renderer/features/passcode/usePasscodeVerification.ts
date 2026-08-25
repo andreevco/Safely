@@ -52,13 +52,17 @@ export function usePasscodeVerification(
         setValue(next);
     }, []);
 
+    /* dropping this reset accumulates mistypes across sessions until the lockout hides the factor */
     const promptBiometry = useCallback(() => {
-        void authenticateBiometry().then(isAuthenticated => {
-            if (isAuthenticated) {
-                verified();
+        void authenticateBiometry().then(async isAuthenticated => {
+            if (!isAuthenticated) {
+                return;
             }
+
+            await reset();
+            verified();
         });
-    }, [verified]);
+    }, [reset, verified]);
 
     const onEntered = useCallback(
         (entered: string) => {
@@ -72,6 +76,10 @@ export function usePasscodeVerification(
                 if (isValid) {
                     await reset();
                     verified();
+                    return;
+                }
+
+                if (isSettledRef.current) {
                     return;
                 }
 
