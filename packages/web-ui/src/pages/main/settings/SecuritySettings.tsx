@@ -1,26 +1,33 @@
 import type { FC } from 'react';
 import { useState } from 'react';
 
-import { useEraseAllData, useSecurityCheck, useTranslate } from '@safely/ux';
+import { useEraseAllData, useTranslate } from '@safely/ux';
 
-import { ChangePasscodeFlow } from './ChangePasscodeFlow';
 import { listStyles } from './SettingsSection.styles';
-import { useLockScreen } from '../../../entities';
 import { EraseDataModal } from '../../../features';
 import { Cell, List, PageHeader, Switch } from '../../../shared';
 
-export const SecuritySettings: FC = () => {
+export type SecuritySettingsBiometry = {
+    title: string;
+    description: string;
+    isEnabled: boolean;
+    onToggle: (isEnabled: boolean) => void;
+};
+
+export type SecuritySettingsProps = {
+    isLockScreenEnabled: boolean;
+    biometry?: SecuritySettingsBiometry;
+    onToggleLockScreen: (isEnabled: boolean) => void;
+    onChangePasscode: () => void;
+};
+
+export const SecuritySettings: FC<SecuritySettingsProps> = props => {
+    const { isLockScreenEnabled, biometry, onToggleLockScreen, onChangePasscode } = props;
+
     const t = useTranslate();
-    const check = useSecurityCheck();
-    const { isEnabled, setEnabled } = useLockScreen();
     const { mutateAsync: eraseAllData } = useEraseAllData();
 
-    const [isChangingPasscode, setIsChangingPasscode] = useState(false);
     const [isErasing, setIsErasing] = useState(false);
-
-    const withPasscode = (title: string, onVerified: () => void): void => {
-        check({ title }).then(onVerified, () => undefined);
-    };
 
     return (
         <>
@@ -28,6 +35,21 @@ export const SecuritySettings: FC = () => {
 
             <List className={listStyles}>
                 <List.Group variant="separated">
+                    {biometry && (
+                        <Cell>
+                            <Cell.Content>
+                                <Cell.Title>{biometry.title}</Cell.Title>
+                                <Cell.Subtitle>{biometry.description}</Cell.Subtitle>
+                            </Cell.Content>
+                            <Cell.Trailing>
+                                <Switch
+                                    checked={biometry.isEnabled}
+                                    onCheckedChange={biometry.onToggle}
+                                />
+                            </Cell.Trailing>
+                        </Cell>
+                    )}
+
                     <Cell>
                         <Cell.Content>
                             <Cell.Title>
@@ -39,23 +61,13 @@ export const SecuritySettings: FC = () => {
                         </Cell.Content>
                         <Cell.Trailing>
                             <Switch
-                                checked={isEnabled}
-                                onCheckedChange={next =>
-                                    withPasscode(t('passcode.verify.title'), () => {
-                                        void setEnabled(next);
-                                    })
-                                }
+                                checked={isLockScreenEnabled}
+                                onCheckedChange={onToggleLockScreen}
                             />
                         </Cell.Trailing>
                     </Cell>
 
-                    <Cell
-                        onClick={() =>
-                            withPasscode(t('changePasscode.verify.title'), () =>
-                                setIsChangingPasscode(true)
-                            )
-                        }
-                    >
+                    <Cell onClick={onChangePasscode}>
                         <Cell.Content>
                             <Cell.Title>
                                 {t('security.groups.application.changePasscode')}
@@ -76,10 +88,6 @@ export const SecuritySettings: FC = () => {
                     </Cell>
                 </List.Group>
             </List>
-
-            {isChangingPasscode && (
-                <ChangePasscodeFlow onDone={() => setIsChangingPasscode(false)} />
-            )}
 
             {isErasing && (
                 <EraseDataModal

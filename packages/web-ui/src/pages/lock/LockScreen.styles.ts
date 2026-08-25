@@ -42,15 +42,3 @@ export const promptStyles = css({
     width: '480px',
     maxWidth: '100%'
 });
-
-export const lockoutStyles = css({
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '4',
-    textAlign: 'center'
-});
-
-export const shakeStyles = css({
-    animation: 'shake 400ms'
-});

@@ -8,6 +8,11 @@ export const IPC_CHANNEL = {
     windowContentProtection: 'safely:window:content-protection',
     openExternal: 'safely:shell:open-external',
 
+    biometry: {
+        availability: 'safely:biometry:availability',
+        authenticate: 'safely:biometry:authenticate'
+    },
+
     /* One channel group per backing store, so which store a call reaches is decided by the channel
        and not by a string in the payload: a renderer cannot ask the wrong store, and a store with
        different rules is added as its own group. */
@@ -57,6 +62,12 @@ export const sAppState = z.enum(['active', 'background', 'inactive', 'unknown'])
 export type AppState = z.infer<typeof sAppState>;
 
 export const sIsFullScreen = z.boolean();
+
+/* macOS renders it as "Safely is trying to <reason>", so the renderer supplies it translated */
+export const sBiometryAuthenticateRequest = z.object({ reason: z.string().min(1).max(256) });
+
+/* a cancelled prompt and a refusing sensor are one answer here: fall back to the passcode */
+export const sBiometryResult = z.boolean();
 
 /**
  * Why a secret operation failed, and the whole of what the renderer is told: the underlying

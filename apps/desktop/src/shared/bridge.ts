@@ -18,6 +18,11 @@ export interface DesktopStoreBridge {
     removeWithPrefix(prefix: string): Promise<void>;
 }
 
+export interface DesktopBiometryBridge {
+    isAvailable(): Promise<boolean>;
+    authenticate(reason: string): Promise<boolean>;
+}
+
 export interface DesktopBridge {
     platform: string;
 
@@ -41,6 +46,8 @@ export interface DesktopBridge {
     setContentProtection(isEnabled: boolean): Promise<void>;
 
     openExternalUrl(url: string): Promise<void>;
+
+    biometry: DesktopBiometryBridge;
 
     store: DesktopStoreBridge;
 

@@ -1,14 +1,10 @@
 import type { Build } from '@safely/core';
 
-import { subscribeFullScreen } from './fullScreen';
-import { createPasscodeStorage } from './passcode';
-import { passcodeSecurityGate } from './security';
 import { createEnumerableStorage, synchronousStorage } from './storage';
 import type { DesktopPlatform } from './types';
 import type { DesktopBridge } from '../../shared/bridge';
 
 export type { DesktopPlatform, DesktopPlatformStorage } from './types';
-export { subscribeFullScreen, useIsFullScreen } from './fullScreen';
 
 const REPORTED_BUILD: Build = 'macos';
 
@@ -24,9 +20,20 @@ function getBridge(): DesktopBridge {
 
 const bridge = getBridge();
 
-subscribeFullScreen(bridge);
+let isFullScreen = false;
+const fullScreenListeners = new Set<() => void>();
 
-export const passcodeStorage = createPasscodeStorage(bridge);
+function setFullScreen(value: boolean): void {
+    if (value === isFullScreen) {
+        return;
+    }
+
+    isFullScreen = value;
+    fullScreenListeners.forEach(notify => notify());
+}
+
+void bridge.isFullScreen().then(setFullScreen);
+bridge.onFullScreenChange(setFullScreen);
 
 export const platform: DesktopPlatform = {
     appInfo: { ...bridge.appInfo, build: REPORTED_BUILD },
@@ -40,7 +47,7 @@ export const platform: DesktopPlatform = {
         ),
         synchronous: synchronousStorage
     },
-    security: passcodeSecurityGate,
+    biometry: bridge.biometry,
     openExternalUrl: url => bridge.openExternalUrl(url),
     protectScreen: isProtected => void bridge.setContentProtection(isProtected),
     reloadApp: () => bridge.relaunch(),
@@ -53,5 +60,13 @@ export const platform: DesktopPlatform = {
         callback('active');
 
         return bridge.onAppStateChange(callback);
-    }
+    },
+    subscribeFullScreen: onChange => {
+        fullScreenListeners.add(onChange);
+
+        return () => {
+            fullScreenListeners.delete(onChange);
+        };
+    },
+    getIsFullScreen: () => isFullScreen
 };

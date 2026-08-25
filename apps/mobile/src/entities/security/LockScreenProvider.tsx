@@ -2,7 +2,7 @@ import { CommonActions } from '@react-navigation/native';
 import type { FC, PropsWithChildren } from 'react';
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 
-import { useAppState } from '@safely/ux';
+import { useEnteredBackground } from '@safely/ux';
 
 // TODO: IMPORT find a way to navigate without this ref
 // eslint-disable-next-line boundaries/element-types
@@ -30,7 +30,6 @@ export function useLockScreenControl() {
 
 export const LockScreenProvider: FC<PropsWithChildren> = ({ children }) => {
     const isRestricted = useIsAppRestricted();
-    const { current, previous } = useAppState();
     const { isSet: hasPasscode } = usePasscode();
     const { data: isLockScreenEnabled } = useLockScreenQuery();
 
@@ -38,16 +37,11 @@ export const LockScreenProvider: FC<PropsWithChildren> = ({ children }) => {
     const [isLocked, setIsLocked] = useState(isEnabled);
     const isInitialRender = useRef(true);
 
-    useEffect(() => {
-        // "inactive" state indicates that the app is still in the foreground,
-        // but is either transitioning to the background
-        // or showing Face ID, notifications, calls, etc.
-        // We should consider locking the app only when it has transitioned to the background.
-        // - https://reactnative.dev/docs/appstate
-        if (isEnabled && previous !== 'background' && current === 'background') {
+    useEnteredBackground(() => {
+        if (isEnabled) {
             setIsLocked(true);
         }
-    }, [isEnabled, current, previous]);
+    });
 
     useEffect(() => {
         if (isInitialRender.current) {
