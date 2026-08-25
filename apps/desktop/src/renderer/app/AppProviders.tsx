@@ -30,6 +30,7 @@ import {
     unsupportedLedgerTransport,
     unsupportedQrScanner
 } from '../platform/unsupported';
+import { desktopLayerEncryptedStorage } from '../shared';
 
 export interface AppProvidersProps {
     loader?: ReactNode;
@@ -39,6 +40,10 @@ const securityGate: Security = {
     async check(options) {
         if ((await isBiometryUnlockEnabled()) && (await authenticateBiometry())) {
             return;
+        }
+
+        if ((await desktopLayerEncryptedStorage.get('passcode')) === null) {
+            throw new Error('Passcode is not set');
         }
 
         await passcodePrompt.request(options);
