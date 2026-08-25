@@ -104,8 +104,17 @@ own shape, which differs in storage, in user presence and in how links open.
 Stubs for capabilities a target lacks are the app's too
 (`apps/desktop/src/renderer/platform/unsupported.ts`): what is missing differs per target, and a
 shared "unsupported" list would quietly define the extension's gaps as well. Desktop currently stubs
-QR, Ledger and the user-presence gate; the secret storage is real
-(`.claude/rules/desktop-secret-store.md`), but the gate it is wrapped in still rejects.
+QR and Ledger; the secret storage is real (`.claude/rules/desktop-secret-store.md`) and so is the
+gate around it — passcode plus Touch ID, implemented in `apps/desktop/src/renderer/features/`.
+
+**The security module is the app's, and the screens are this package's.** `pages/passcode`,
+`pages/lock` and `pages/main/settings/SecuritySettings` take props and render: a value, a length, an
+`isInvalid`, an optional `biometry` key for the keypad, callbacks out. Everything behind them —
+where the passcode is stored, the lockout schedule, the prompt store that turns
+`IAppContext.security.check()` into a screen, the biometry query — lives in the app
+(`.claude/rules/desktop-app.md`), because each web target answers those differently. A hook here that
+reads `useAppContext().storage` to decide a key name, or a `PasscodeStorage`-shaped type declared
+here for an app to implement, is the specific regression that split undid.
 
 A type that describes *what an app must provide* therefore does not belong here, and neither does
 anything a component only needs because some target happens to work that way. What a shared component

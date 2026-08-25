@@ -3,9 +3,9 @@ import { useCallback, useRef, useState } from 'react';
 
 import { MnemonicResource, PortfolioNetworkType } from '@safely/core';
 import { useAppContext, useCreateAccount, useErrorToast, useLoader } from '@safely/ux';
-import { usePasscode } from '@safely/web-ui';
 
 import { ROUTE } from './routes';
+import { usePasscode } from '../features';
 
 export type OnboardingStep = 'moreOptions' | 'import' | 'watch' | 'passcode';
 

@@ -4,11 +4,9 @@ import { useRef, useState } from 'react';
 import type { Portfolio } from '@safely/core';
 import { PortfolioType } from '@safely/core';
 import { useErrorToast, useRecordActivePortfolioSecretReveal } from '@safely/ux';
-import {
-    PasscodePromptCancelledError,
-    RecoveryConfirmModal,
-    RecoveryPhraseModal
-} from '@safely/web-ui';
+import { RecoveryConfirmModal, RecoveryPhraseModal } from '@safely/web-ui';
+
+import { PasscodePromptCancelledError } from '../features';
 
 export type RecoveryPhraseFlowProps = {
     portfolio: Portfolio;

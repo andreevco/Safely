@@ -11,7 +11,8 @@ import {
     useToast,
     useTranslate
 } from '@safely/ux';
-import { PasscodePromptCancelledError } from '@safely/web-ui';
+
+import { PasscodePromptCancelledError } from '../features';
 
 type AccountDraft = { mode: 'create' | 'edit'; name: string };
 

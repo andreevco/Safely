@@ -23,7 +23,8 @@ import {
     useSetActivePortfolio,
     useUnlockableSecretEncryptorFactory
 } from '@safely/ux';
-import { PasscodePromptCancelledError } from '@safely/web-ui';
+
+import { PasscodePromptCancelledError } from '../features';
 
 export type AddWalletDraft = Pick<PortfolioMeta, 'name' | 'icon'>;
 

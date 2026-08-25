@@ -4,6 +4,9 @@ paths:
   - 'apps/desktop/src/main/plugins/keychain/**'
   - 'apps/desktop/src/shared/ipc.ts'
   - 'apps/desktop/src/renderer/platform/**'
+  - 'apps/desktop/src/renderer/features/**'
+  - 'apps/desktop/src/renderer/shared/**'
+  - 'apps/desktop/src/main/biometry.ts'
   - 'apps/desktop/native/keychain/**'
   - 'apps/desktop/test/main/store/**'
   - 'apps/desktop/test/main/plugins/**'
@@ -42,7 +45,9 @@ Three consequences follow, and they are the design rather than caveats on it:
 - the same signature on another machine is a different subject, because `ThisDeviceOnly` items are
   bound to this Mac and reach neither iCloud, nor a backup, nor Migration Assistant;
 - the same signature on the same machine **tomorrow** is the same subject. A code identity cannot
-  separate sessions; only a passcode or a presence check can, and this design uses neither yet.
+  separate sessions; only a passcode or a presence check can, and both now exist in the renderer
+  while the *item* is still gated by nothing but the signature — see "What it deliberately does not
+  protect".
 
 ## Item schema
 
@@ -59,8 +64,17 @@ access group                  = the default one, our `application-identifier`
 
 | Scope | Service | Holds |
 | ----- | ------- | ----- |
-| `encrypted` | `com.safely.wallet-desktop.encrypted` | `dmk_pub`, `sync_key`, `self_ik_pub`, `self_ik_prv` |
-| `secureEncrypted` | `com.safely.wallet-desktop.secureEncrypted` | `master_key`, `vault_key`, `dmk_prv` |
+| `encrypted` | `com.safely.wallet-desktop.encrypted` | `sync/dmk_pub`, `sync/sync_key`, `sync/self_ik_pub`, `sync/self_ik_prv`, `desktop_security/passcode` |
+| `secureEncrypted` | `com.safely.wallet-desktop.secureEncrypted` | `sync/master_key`, `sync/vault_key`, `sync/dmk_prv` |
+
+**The passcode is in `encrypted`, not in `secureEncrypted`, and that is not an oversight.** It is the
+thing the gate checks, so reading it cannot itself go through the gate — `secureEncrypted` is the
+scope `UnlockableSecuredEncryptedStorage` wraps, and putting the passcode there would be circular.
+Mobile makes the same split. Both scopes are equally protected by the code signature; what differs is
+only which items the renderer's unlockable wrapper covers. Everything the security module owns sits
+under a `desktop_security` node (`src/renderer/shared/storage/structured/`), the way mobile uses
+`child('mobile')`, so it cannot collide with the `sync` tree. `TreeStorage` escapes `_` as `_u`, so
+that node reads `desktop_usecurity` in `regular.json` — grep the encoded form, not the source string.
 
 **The accessibility is one constant, not a setting.** Both scopes are
 `WhenUnlockedThisDeviceOnly`: nothing in this app is worth reading while the Mac is locked, and a
@@ -102,10 +116,15 @@ build refuses to start rather than degrade to it.
 
 ## What it deliberately does not protect
 
-- **Sessions are not separated.** With no passcode and no presence check the app reads whenever it
-  runs, so the confidentiality of the wallet equals the security of the macOS account.
+- **Sessions are separated only by code the attacker is inside.** The renderer's gate
+  (`src/renderer/features/`) asks for a passcode or Touch ID before it unlocks
+  `UnlockableSecuredEncryptedStorage`, and against a person at the keyboard that is real. Against
+  code running as the user it is not: the item carries no access control, so anything with our
+  signature reads it without a prompt. Only `SecAccessControl` moves that check into the SEP.
 - **A compromised renderer** can ask main for values — the domain crypto runs there. Closing that
-  needs the signer in main plus a main-owned confirmation window, not a flag in the store.
+  needs the signer in main plus a main-owned confirmation window, not a flag in the store. The same
+  applies to Touch ID: main raises the prompt, but the renderer decides whether to ask, so a
+  compromised renderer skips it.
 - **Availability.** A process running as the user can delete `regular.json`, the app, or the whole
   `userData` directory; it can also destroy the user's entire keychain database, which is loud and
   indiscriminate but possible. What it cannot do is remove *our* items selectively. Local state is
@@ -348,9 +367,9 @@ Not done, in order:
 
 1. **run it on a signed build** — nothing here has been exercised against securityd with the
    entitlement in place, only against the fake and an unsigned host;
-2. **the presence gate** — `platform.security` is still `unsupportedSecurityGate`, so
-   `UnlockableSecuredEncryptedStorage` refuses and the app still cannot create or restore an account.
-   That is now a renderer-side task plus `SecAccessControl` on the `secureEncrypted` items, not a
-   storage rewrite;
+2. **`SecAccessControl` on the `secureEncrypted` items** — the renderer half is done (`securityGate`
+   in `src/renderer/app/AppProviders.tsx`: passcode plus Touch ID through
+   `systemPreferences.promptTouchID`), so accounts can be created and restored. What is missing is
+   the SEP enforcing it on the item itself, which is the part a compromised renderer cannot skip;
 3. the isolation claim itself — a second signed bundle with a different bundle id reading our
    service, which must answer `errSecItemNotFound` without a dialog.

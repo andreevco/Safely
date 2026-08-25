@@ -182,6 +182,9 @@ importers:
       '@safely/xhr-event-source':
         specifier: workspace:*
         version: link:../../packages/xhr-event-source
+      '@tanstack/react-query':
+        specifier: 'catalog:'
+        version: 5.90.16(react@19.2.3)
       '@tanstack/react-router':
         specifier: 1.170.31
         version: 1.170.31(react-dom@19.2.3(react@19.2.3))(react@19.2.3)

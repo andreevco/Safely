@@ -6,7 +6,7 @@ import { useHasPortfolio } from '@safely/ux';
 
 import { dragRegionStyles } from './MainLayout.styles';
 import { MainSidebar } from './MainSidebar';
-import type { SettingsSection } from './settings';
+import type { SecuritySettingsProps, SettingsSection } from './settings';
 import { SettingsContent } from './settings';
 import { SettingsSidebar } from './SettingsSidebar';
 import { AppLayout } from '../../shared';
@@ -14,6 +14,7 @@ import { AppLayout } from '../../shared';
 export type MainLayoutProps = {
     hasWindowControls?: boolean;
     isFullScreen?: boolean;
+    security?: SecuritySettingsProps;
     onAddWallet: () => void;
     onEditAccount: () => void;
     onAddAccount: () => void;
@@ -32,6 +33,7 @@ export const MainLayout: FC<MainLayoutProps> = props => {
     const {
         hasWindowControls,
         isFullScreen,
+        security,
         onAddWallet,
         onEditAccount,
         onAddAccount,
@@ -91,6 +93,7 @@ export const MainLayout: FC<MainLayoutProps> = props => {
                 ) : (
                     <SettingsContent
                         section={section}
+                        security={security}
                         onAddAccount={onAddAccount}
                         onAddContact={onAddContact}
                         onOpenContact={onOpenContact}

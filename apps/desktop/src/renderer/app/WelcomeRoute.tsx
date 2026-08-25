@@ -4,11 +4,11 @@ import { useBootConfig, useLinking, useToast, useTranslate } from '@safely/ux';
 import {
     ImportWalletModal,
     MoreOptionsModal,
-    PasscodeSetup,
     WatchAccountModal,
     WelcomePage
 } from '@safely/web-ui';
 
+import { PasscodeSetupFlow } from '../features';
 import { useOnboardingFlow } from './useOnboardingFlow';
 
 export const WelcomeRoute: FC = () => {
@@ -55,11 +55,19 @@ export const WelcomeRoute: FC = () => {
             )}
 
             {onboarding.step === 'passcode' && (
-                <PasscodeSetup
-                    onComplete={passcode =>
+                <PasscodeSetupFlow
+                    create={{
+                        title: t('onboarding.passcode.title'),
+                        description: t('onboarding.passcode.description')
+                    }}
+                    confirm={{
+                        title: t('onboarding.passcode.reenter.title'),
+                        description: t('onboarding.passcode.reenter.description')
+                    }}
+                    onConfirmed={passcode =>
                         void onboarding.onPasscodeComplete(passcode).catch(() => undefined)
                     }
-                    onBack={onboarding.goBackFromPasscode}
+                    onCancel={onboarding.goBackFromPasscode}
                 />
             )}
         </>

@@ -1,7 +1,9 @@
 import type { FC } from 'react';
 import { useEffect } from 'react';
 
+import { useTranslate } from '@safely/ux';
 import Backspace28 from '@safely/ux/assets/icons/28/backspace-28.svg?react';
+import Fingerprint96 from '@safely/ux/assets/icons/96/fingerprint-96.svg?react';
 import { cx } from '@safely/web-ui/styled-system/css';
 import { passcode } from '@safely/web-ui/styled-system/recipes';
 
@@ -11,7 +13,7 @@ export type PasscodeProps = {
     value: string;
     length: number;
     isInvalid?: boolean;
-    backspaceLabel: string;
+    onCheckBiometry?: () => void;
     onChange: (value: string) => void;
     className?: string;
 };
@@ -25,8 +27,9 @@ const KEYPAD_ROWS = [
 ];
 
 export const Passcode: FC<PasscodeProps> = props => {
-    const { value, length, isInvalid, backspaceLabel, onChange, className } = props;
+    const { value, length, isInvalid, onCheckBiometry, onChange, className } = props;
 
+    const t = useTranslate();
     const styles = passcode({ isInvalid });
 
     const append = (digit: string): void => {
@@ -82,7 +85,19 @@ export const Passcode: FC<PasscodeProps> = props => {
                 ))}
 
                 <div className={styles.row}>
-                    <button type="button" className={styles.key} disabled aria-hidden />
+                    {onCheckBiometry ? (
+                        <button
+                            type="button"
+                            className={styles.key}
+                            aria-label={t('biometry.default.title')}
+                            onMouseDown={preventFocus}
+                            onClick={onCheckBiometry}
+                        >
+                            <Icon asset={Fingerprint96} size={28} />
+                        </button>
+                    ) : (
+                        <button type="button" className={styles.key} disabled aria-hidden />
+                    )}
 
                     <button
                         type="button"
@@ -96,7 +111,7 @@ export const Passcode: FC<PasscodeProps> = props => {
                     <button
                         type="button"
                         className={styles.key}
-                        aria-label={backspaceLabel}
+                        aria-label={t('onboarding.passcode.backspace')}
                         onMouseDown={preventFocus}
                         onClick={removeLast}
                     >

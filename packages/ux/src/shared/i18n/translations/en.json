@@ -643,6 +643,7 @@
         }
     },
     "biometry": {
+        "reason": "unlock your wallet",
         "enable": "Enable {{name}}",
         "default": {
             "title": "Biometric unlock",

@@ -18,7 +18,7 @@ Dependencies flow strictly bottom-up in this table; imports in the other directi
 | `packages/ux`               | React layer shared by every app: FSD (`shared` → `entities` → `features`), react-query, zustand, xstate forms, plus the design tokens (`./theme`) and the strings (`./translations`). No RN/DOM specifics. |
 | `packages/web-ui`           | React layer shared by the web targets: design system (Base UI + Panda) and the screens built from it. FSD + `pages`. Pure and stateless — no router, no Electron/extension code, no platform contract, no globals, no build config. |
 | `apps/mobile`               | Expo dev-client (iOS/Android): FSD + `screens`, native modules `modules/safely-*`, unistyles, i18n.                                            |
-| `apps/desktop`              | Electron (forge + vite), **macOS-only build for now**: split by process (`main`/`preload`/`renderer`/`shared`), native addon `native/keychain`, platform implementation and the routing that drives the web UI. |
+| `apps/desktop`              | Electron (forge + vite), **macOS-only build for now**: split by process (`main`/`preload`/`renderer`/`shared`), native addon `native/keychain`, platform implementation, the security module (passcode, lockout, Touch ID) and the routing that drives the web UI. |
 | `apps/browser`              | MV3 extension — placeholder, see its README.                                                                                                    |
 | `packages/xhr-event-source` | EventSource over XHR for platforms without native SSE.                                                                                         |
 
@@ -90,7 +90,7 @@ Topic rules in `.claude/rules/` load automatically when you open files in the ma
 `desktop-secret-store.md` is the desktop secret store in full — threat model, the keychain item
 schema, the signing chain it depends on and why the build is macOS-only. It loads with the store,
 keychain and signing files; read it before touching the `encrypted`/`secureEncrypted` scopes, the
-user-presence gate or the signing configuration.
+desktop security module or the signing configuration.
 
 Specs — read before changing the sync protocol or the state format; the rules files do not restate
 them:

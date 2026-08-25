@@ -7,12 +7,14 @@ import { AddressBookSettings } from './AddressBookSettings';
 import { CurrencySettings } from './CurrencySettings';
 import { LanguageSettings } from './LanguageSettings';
 import { LegalSettings } from './LegalSettings';
+import type { SecuritySettingsProps } from './SecuritySettings';
 import { SecuritySettings } from './SecuritySettings';
 import type { SettingsSection } from './types';
 import { WalletSettings } from './WalletSettings';
 
 export type SettingsContentProps = {
     section: SettingsSection;
+    security?: SecuritySettingsProps;
     onAddAccount: () => void;
     onAddContact: () => void;
     onOpenContact: (contact: Contact) => void;
@@ -43,7 +45,8 @@ export const SettingsContent: FC<SettingsContentProps> = props => {
         case 'account':
             return <AccountSettings onAddAccount={props.onAddAccount} />;
         case 'security':
-            return <SecuritySettings />;
+            /* TODO(security-settings): wired once the section becomes a route of its own */
+            return props.security ? <SecuritySettings {...props.security} /> : null;
         case 'language':
             return <LanguageSettings />;
         case 'currency':

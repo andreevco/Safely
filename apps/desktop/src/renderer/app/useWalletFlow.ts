@@ -11,7 +11,8 @@ import {
     useToast,
     useTranslate
 } from '@safely/ux';
-import { PasscodePromptCancelledError } from '@safely/web-ui';
+
+import { PasscodePromptCancelledError } from '../features';
 
 export type WalletStep = 'select' | 'edit' | 'reveal' | 'remove';
 

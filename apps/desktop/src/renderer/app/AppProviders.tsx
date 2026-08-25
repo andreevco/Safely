@@ -3,7 +3,7 @@ import { Suspense, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { LoggableStorage, TreeStorage, WebNumberFormatLocale } from '@safely/core';
-import type { IAppContext } from '@safely/ux';
+import type { IAppContext, Security } from '@safely/ux';
 import {
     AppContext,
     createPersister,
@@ -22,6 +22,7 @@ import {
     WebLinking
 } from '@safely/web-ui';
 
+import { authenticateBiometry, isBiometryUnlockEnabled, passcodePrompt } from '../features';
 import { logger } from '../logger';
 import { platform } from '../platform';
 import {
@@ -33,6 +34,16 @@ import {
 export interface AppProvidersProps {
     loader?: ReactNode;
 }
+
+const securityGate: Security = {
+    async check(options) {
+        if ((await isBiometryUnlockEnabled()) && (await authenticateBiometry())) {
+            return;
+        }
+
+        await passcodePrompt.request(options);
+    }
+};
 
 const queryClient = createQueryClient(logger);
 const persister = createPersister(
@@ -49,7 +60,7 @@ export const AppProviders: FC<PropsWithChildren<AppProvidersProps>> = ({ loader,
     } = useTranslation();
 
     const appContext = useMemo<IAppContext>(() => {
-        const { appInfo, storage, security } = platform;
+        const { appInfo, storage } = platform;
         const regular = TreeStorage.root(storage.REGULAR_DESKTOP_STORAGE_ONLY_APP_LEVEL_USE);
         const encrypted = TreeStorage.root(storage.ENCRYPTED_DESKTOP_STORAGE_ONLY_APP_LEVEL_USE);
 
@@ -78,9 +89,6 @@ export const AppProviders: FC<PropsWithChildren<AppProvidersProps>> = ({ loader,
                 sync: {
                     regular: regular.child('sync'),
                     encrypted: encrypted.child('sync'),
-                    /* The storage is real, the gate is not: `security` still reports itself
-                       unavailable, so the unlockable wrapper refuses until a presence check
-                       exists. */
                     getSecureEncrypted: () =>
                         new UnlockableSecuredEncryptedStorage(
                             new LoggableStorage(
@@ -88,7 +96,7 @@ export const AppProviders: FC<PropsWithChildren<AppProvidersProps>> = ({ loader,
                                 logger,
                                 'SecureEncryptedStorage'
                             ),
-                            security,
+                            securityGate,
                             ['sync']
                         )
                 }
@@ -100,7 +108,7 @@ export const AppProviders: FC<PropsWithChildren<AppProvidersProps>> = ({ loader,
             i18n: { language, t },
             logger,
             ledgerTransport: platform.ledgerTransport ?? unsupportedLedgerTransport,
-            security,
+            security: securityGate,
             clearAllData: () => platform.clearAllData(),
             reloadApp: () => platform.reloadApp(),
             subscribeAppStateChange: callback => platform.subscribeAppStateChange(callback)

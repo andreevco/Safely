@@ -1,7 +1,7 @@
 import type { FC } from 'react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
-import { useTranslate } from '@safely/ux';
+import { PASSCODE_LENGTH, useSubmitWhenComplete, useTranslate } from '@safely/ux';
 
 import {
     bodyStyles,
@@ -20,25 +20,22 @@ export type PasscodePageProps = {
     onBack: () => void;
 };
 
-const SHORT_LENGTH = 4;
-const LONG_LENGTH = 6;
-
 export const PasscodePage: FC<PasscodePageProps> = props => {
     const { title, description, isInvalid, onSubmit, onBack } = props;
 
     const t = useTranslate();
 
     const [value, setValue] = useState('');
-    const [length, setLength] = useState(SHORT_LENGTH);
+    const [length, setLength] = useState<number>(PASSCODE_LENGTH.short);
 
-    useEffect(() => {
-        if (value.length !== length) {
-            return;
+    useSubmitWhenComplete({
+        value,
+        length,
+        onComplete: entered => {
+            setValue('');
+            onSubmit(entered);
         }
-
-        onSubmit(value);
-        setValue('');
-    }, [value, length, onSubmit]);
+    });
 
     return (
         <ScreenProtection>
@@ -52,10 +49,12 @@ export const PasscodePage: FC<PasscodePageProps> = props => {
                         <label className={lengthToggleStyles}>
                             <Text variant="bodyM">{t('onboarding.passcode.sixDigit')}</Text>
                             <Switch
-                                checked={length === LONG_LENGTH}
+                                checked={length === PASSCODE_LENGTH.long}
                                 onCheckedChange={isLong => {
                                     setValue('');
-                                    setLength(isLong ? LONG_LENGTH : SHORT_LENGTH);
+                                    setLength(
+                                        isLong ? PASSCODE_LENGTH.long : PASSCODE_LENGTH.short
+                                    );
                                 }}
                             />
                         </label>
@@ -76,7 +75,6 @@ export const PasscodePage: FC<PasscodePageProps> = props => {
                             value={value}
                             length={length}
                             isInvalid={isInvalid}
-                            backspaceLabel={t('onboarding.passcode.backspace')}
                             onChange={setValue}
                         />
                     </div>

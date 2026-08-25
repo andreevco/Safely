@@ -4,7 +4,7 @@ import { parseAppInfoArgument } from '../shared/app-info';
 import type { DesktopBridge, DesktopStoreBridge } from '../shared/bridge';
 import { BRIDGE_KEY } from '../shared/bridge';
 import type { AppState, StoreChannels } from '../shared/ipc';
-import { IPC_CHANNEL, sAppState, sIsFullScreen } from '../shared/ipc';
+import { IPC_CHANNEL, sAppState, sBiometryResult, sIsFullScreen } from '../shared/ipc';
 
 function createStoreBridge(channels: StoreChannels): DesktopStoreBridge {
     return {
@@ -84,6 +84,19 @@ const bridge: DesktopBridge = {
 
     async openExternalUrl(url: string): Promise<void> {
         await ipcRenderer.invoke(IPC_CHANNEL.openExternal, { url });
+    },
+
+    biometry: {
+        async isAvailable(): Promise<boolean> {
+            return sBiometryResult.parse(
+                await ipcRenderer.invoke(IPC_CHANNEL.biometry.availability)
+            );
+        },
+        async authenticate(reason: string): Promise<boolean> {
+            return sBiometryResult.parse(
+                await ipcRenderer.invoke(IPC_CHANNEL.biometry.authenticate, { reason })
+            );
+        }
     },
 
     store: createStoreBridge(IPC_CHANNEL.store),

@@ -2,11 +2,13 @@ import type { BrowserWindow, IpcMainInvokeEvent } from 'electron';
 import { ipcMain, shell } from 'electron';
 import type { ZodType } from 'zod';
 
+import { isBiometryAvailable, promptBiometry } from './biometry';
 import type { StoreScope } from './store';
 import { clearStores, getStore } from './store';
 import type { StoreChannels } from '../shared/ipc';
 import {
     IPC_CHANNEL,
+    sBiometryAuthenticateRequest,
     sContentProtectionRequest,
     sOpenExternalRequest,
     sStoreKeyRequest,
@@ -69,6 +71,16 @@ export function registerIpcHandlers(getWindow: () => BrowserWindow | null): void
 
         await shell.openExternal(payload.url);
     });
+
+    ipcMain.handle(IPC_CHANNEL.biometry.availability, (event): boolean => {
+        assertTrustedSender(event);
+
+        return isBiometryAvailable();
+    });
+
+    handle(IPC_CHANNEL.biometry.authenticate, sBiometryAuthenticateRequest, payload =>
+        promptBiometry(payload.reason)
+    );
 
     registerStoreHandlers(IPC_CHANNEL.store, 'regular');
     registerStoreHandlers(IPC_CHANNEL.encryptedStore, 'encrypted');
