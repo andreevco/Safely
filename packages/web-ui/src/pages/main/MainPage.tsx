@@ -10,6 +10,8 @@ export type MainPageProps = {
     hasWindowControls?: boolean;
     isFullScreen?: boolean;
     onAddWallet: () => void;
+    onEditAccount: () => void;
+    onAddAccount: () => void;
     onSignOut: () => void;
     onOpenDevTools: () => void;
 };

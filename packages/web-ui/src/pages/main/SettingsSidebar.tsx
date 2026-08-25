@@ -18,13 +18,21 @@ import { AppLayout, Cell, List, PageHeader, Text, useLongPress } from '../../sha
 export type SettingsSidebarProps = {
     activeSection: SettingsSection | null;
     onSelectSection: (section: SettingsSection) => void;
-    onAddWallet: () => void;
+    onEditAccount: () => void;
+    onAddAccount: () => void;
     onSignOut: () => void;
     onOpenDevTools: () => void;
 };
 
 export const SettingsSidebar: FC<SettingsSidebarProps> = props => {
-    const { activeSection, onSelectSection, onAddWallet, onSignOut, onOpenDevTools } = props;
+    const {
+        activeSection,
+        onSelectSection,
+        onEditAccount,
+        onAddAccount,
+        onSignOut,
+        onOpenDevTools
+    } = props;
 
     const { version } = useAppContext();
     const longPress = useLongPress(onOpenDevTools);
@@ -55,7 +63,10 @@ export const SettingsSidebar: FC<SettingsSidebarProps> = props => {
 
                     <List.Title>{t('settings.groups.account.title')}</List.Title>
                     <List.Group variant="separated">
-                        <Cell onClick={() => undefined}>
+                        <Cell
+                            isSelected={activeSection === 'account'}
+                            onClick={() => onSelectSection('account')}
+                        >
                             <Cell.Content>
                                 <Cell.Title>{accountMeta?.name}</Cell.Title>
                                 <Cell.Subtitle>
@@ -63,7 +74,7 @@ export const SettingsSidebar: FC<SettingsSidebarProps> = props => {
                                 </Cell.Subtitle>
                             </Cell.Content>
                         </Cell>
-                        <Cell onClick={() => undefined}>
+                        <Cell onClick={onEditAccount}>
                             <Cell.Content>
                                 <Cell.Title>
                                     {t('settings.groups.account.options.editAccount')}
@@ -77,7 +88,7 @@ export const SettingsSidebar: FC<SettingsSidebarProps> = props => {
                                 </Cell.Title>
                             </Cell.Content>
                         </Cell>
-                        <Cell onClick={onAddWallet}>
+                        <Cell onClick={onAddAccount}>
                             <Cell.Content>
                                 <Cell.Title>{t('settings.addAccount')}</Cell.Title>
                             </Cell.Content>

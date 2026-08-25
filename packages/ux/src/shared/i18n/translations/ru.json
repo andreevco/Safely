@@ -606,6 +606,7 @@
         }
     },
     "account": {
+        "title": "Аккаунт",
         "unnamed": "Основной",
         "sync": {
             "errors": {

@@ -1,29 +1,26 @@
 import type { FC } from 'react';
 import { useState } from 'react';
 
-import type { PortfolioMeta, PortfolioMetaIcon } from '@safely/core';
 import { useTranslate } from '@safely/ux';
 
-import { fieldStyles, popupStyles } from './CustomizeWalletModal.styles';
-import { IconPicker } from './IconPicker';
-import { WalletIcon } from './WalletIcon';
+import { fieldStyles, popupStyles } from './CustomizeAccountModal.styles';
 import { Button, Input, Modal } from '../../shared';
 
 const NAME_MAX_LENGTH = 24;
 
-export type CustomizeWalletModalProps = {
+export type CustomizeAccountModalProps = {
     defaultName: string;
-    defaultIcon: PortfolioMetaIcon;
-    onSave: (meta: Pick<PortfolioMeta, 'name' | 'icon'>) => void;
+    onSave: (name: string) => void;
     onClose: () => void;
 };
 
-export const CustomizeWalletModal: FC<CustomizeWalletModalProps> = props => {
-    const { defaultName, defaultIcon, onSave, onClose } = props;
+export const CustomizeAccountModal: FC<CustomizeAccountModalProps> = props => {
+    const { defaultName, onSave, onClose } = props;
 
     const t = useTranslate();
     const [name, setName] = useState(defaultName);
-    const [icon, setIcon] = useState<PortfolioMetaIcon>(defaultIcon);
+
+    const trimmedName = name.trim();
 
     return (
         <Modal open disablePointerDismissal onOpenChange={isOpen => !isOpen && onClose()}>
@@ -32,31 +29,34 @@ export const CustomizeWalletModal: FC<CustomizeWalletModalProps> = props => {
                     <Button
                         variant="primary"
                         size="small"
-                        disabled={name.trim().length === 0}
-                        onClick={() => onSave({ name: name.trim(), icon })}
+                        disabled={trimmedName.length === 0}
+                        onClick={() => onSave(trimmedName)}
                     >
-                        {t('customizeWallet.save')}
+                        {t('customizeAccount.save')}
                     </Button>
                 </Modal.Header>
 
                 <Modal.Content hasFloatingClose={false}>
-                    <Modal.Title>{t('customizeWallet.title')}</Modal.Title>
-                    <Modal.Description>{t('customizeWallet.description')}</Modal.Description>
+                    <Modal.Title>{t('customizeAccount.title')}</Modal.Title>
+                    <Modal.Description>{t('customizeAccount.subtitle')}</Modal.Description>
                 </Modal.Content>
 
                 <div className={fieldStyles}>
                     <Input>
                         <Input.Field
+                            autoFocus
                             maxLength={NAME_MAX_LENGTH}
                             value={name}
-                            placeholder={t('customizeWallet.namePlaceholder')}
+                            placeholder={t('customizeAccount.namePlaceholder')}
                             onChange={event => setName(event.target.value)}
-                            trailing={<WalletIcon icon={icon} size="medium" />}
+                            onKeyDown={event =>
+                                trimmedName.length > 0 &&
+                                event.key === 'Enter' &&
+                                onSave(trimmedName)
+                            }
                         />
                     </Input>
                 </div>
-
-                <IconPicker icon={icon} onChange={setIcon} />
             </Modal.Popup>
         </Modal>
     );

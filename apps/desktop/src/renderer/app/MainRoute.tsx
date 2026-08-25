@@ -6,6 +6,7 @@ import { PortfolioNetworkType } from '@safely/core';
 import { useActiveAccountStoreSlot, useToast, useTranslate } from '@safely/ux';
 import {
     AddWalletModal,
+    CustomizeAccountModal,
     CustomizeWalletModal,
     ImportWalletModal,
     MainPage,
@@ -15,6 +16,7 @@ import {
 } from '@safely/web-ui';
 
 import { ROUTE } from './routes';
+import { useAccountFlow } from './useAccountFlow';
 import { useAddWalletFlow } from './useAddWalletFlow';
 import { useSignOut } from './useSignOut';
 
@@ -25,6 +27,7 @@ export const MainRoute: FC = () => {
     const navigate = useNavigate();
     const signOut = useSignOut();
     const addWallet = useAddWalletFlow();
+    const account = useAccountFlow();
     const accountMeta = useActiveAccountStoreSlot('meta');
     const [isSigningOut, setIsSigningOut] = useState(false);
 
@@ -34,6 +37,8 @@ export const MainRoute: FC = () => {
                 hasWindowControls={hasWindowControls}
                 isFullScreen={isFullScreen}
                 onAddWallet={addWallet.open}
+                onEditAccount={account.startEdit}
+                onAddAccount={account.startCreate}
                 onSignOut={() => setIsSigningOut(true)}
                 onOpenDevTools={() => void navigate({ to: ROUTE.devTools })}
             />
@@ -46,6 +51,14 @@ export const MainRoute: FC = () => {
                         void signOut();
                     }}
                     onClose={() => setIsSigningOut(false)}
+                />
+            )}
+
+            {account.draft && (
+                <CustomizeAccountModal
+                    defaultName={account.draft.name}
+                    onSave={name => void account.save(name)}
+                    onClose={account.cancel}
                 />
             )}
 

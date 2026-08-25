@@ -12,14 +12,24 @@ export type MainLayoutProps = {
     hasWindowControls?: boolean;
     isFullScreen?: boolean;
     onAddWallet: () => void;
+    onEditAccount: () => void;
+    onAddAccount: () => void;
     onSignOut: () => void;
     onOpenDevTools: () => void;
     children: ReactNode;
 };
 
 export const MainLayout: FC<MainLayoutProps> = props => {
-    const { hasWindowControls, isFullScreen, onAddWallet, onSignOut, onOpenDevTools, children } =
-        props;
+    const {
+        hasWindowControls,
+        isFullScreen,
+        onAddWallet,
+        onEditAccount,
+        onAddAccount,
+        onSignOut,
+        onOpenDevTools,
+        children
+    } = props;
 
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [section, setSection] = useState<SettingsSection | null>(null);
@@ -47,13 +57,18 @@ export const MainLayout: FC<MainLayoutProps> = props => {
             <SettingsSidebar
                 activeSection={section}
                 onSelectSection={setSection}
-                onAddWallet={onAddWallet}
+                onEditAccount={onEditAccount}
+                onAddAccount={onAddAccount}
                 onSignOut={onSignOut}
                 onOpenDevTools={onOpenDevTools}
             />
 
             <AppLayout.Content>
-                {section === null ? children : <SettingsContent section={section} />}
+                {section === null ? (
+                    children
+                ) : (
+                    <SettingsContent section={section} onAddAccount={onAddAccount} />
+                )}
             </AppLayout.Content>
         </AppLayout>
     );

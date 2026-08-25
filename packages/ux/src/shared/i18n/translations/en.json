@@ -618,6 +618,7 @@
         }
     },
     "account": {
+        "title": "Account",
         "unnamed": "Unnamed",
         "sync": {
             "errors": {
