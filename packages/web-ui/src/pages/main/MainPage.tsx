@@ -5,10 +5,12 @@ import { useHasPortfolio } from '@safely/ux';
 import { MainContent } from './MainContent';
 import { MainEmptyState } from './MainEmptyState';
 import { MainLayout } from './MainLayout';
+import type { SecuritySettingsProps } from './settings';
 
 export type MainPageProps = {
     hasWindowControls?: boolean;
     isFullScreen?: boolean;
+    security?: SecuritySettingsProps;
     onAddWallet: () => void;
     onSignOut: () => void;
     onOpenDevTools: () => void;

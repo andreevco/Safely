@@ -13,8 +13,11 @@ An "upward" import is a build error, not a style nit.
 `packages/ux/src`: `shared` → `entities` → `features`
 `packages/web-ui/src`: `shared` → `entities` → `features` → `pages` → `app`
 `apps/mobile/src`: `shared` → `entities` → `features` → `screens` → `app`
+`apps/desktop/src/renderer`: `shared` → `features` → `app`, next to `platform/`
 
-`apps/desktop` is not layered this way — it is split by Electron process; see `desktop-app.md`.
+`apps/desktop` is split by Electron process **first** — see `desktop-app.md`; the layers above exist
+inside `src/renderer` only. They are a convention there, not a build error: `boundaries` treats the
+whole renderer as one element type, so nothing stops an upward import the way it does in mobile.
 
 A layer may only import layers to its left. `shared` knows nothing about `entities`; `entities`
 knows nothing about `features`; in mobile, `features` knows nothing about `screens` or `app`, and so on.
@@ -36,6 +39,10 @@ knows nothing about `features`; in mobile, `features` knows nothing about `scree
   (`apps/desktop/src/renderer/platform/types.ts`).
 - `packages/web-ui/src/pages` — one screen, the web counterpart of a mobile screen: props in, markup
   out, no routing.
+- `apps/desktop/src/renderer/features` — one scenario per directory (`passcode`, `biometry`,
+  `app-lock`), each owning its `keys.ts`. Features may import each other; nothing here may import
+  `app/`. Composing features into one capability is `app/`'s job — the security gate handed to
+  `IAppContext` is built in `app/AppProviders.tsx`, not in a feature.
 - `apps/desktop/src/renderer/app` — the web target's entry point: the route tree, the guards, the
   providers and the controller hooks that turn a screen's callbacks into flows. `web-ui` never imports
   app code (enforced), and the router lives here so a second target can wire the same screens
@@ -72,3 +79,40 @@ for imports within a single module only.
   to its scenario (`packages/ux/src/features/forms/**`).
 - Query-cache persistence goes through `query-core/persistence.ts` and the managers in
   `apps/mobile/src/app/tanstack-query-managers.ts` — don't hand-roll a cache.
+
+## Sharing between platforms: pieces, not flows
+
+The same scenario often exists on mobile and on a web target — passcode, lockout, biometry — and the
+platforms genuinely disagree about the flow: mobile navigates to a screen where desktop renders an
+overlay, mobile prompts biometry again on the passcode screen where desktop deliberately does not,
+the lock screen defaults on for desktop and off for mobile. So the flow stays in each app, and what
+moves into `@safely/ux` is the part with no platform and no flow in it:
+
+- **pure policy and transitions** — `nextLockoutState`, `defaultLockoutPolicy`, `sLockoutState`,
+  `PASSCODE_LENGTH` (`shared/security/`). A schedule is injected as a *function* with a default, so
+  an app can replace the curve without inheriting a data shape, and `now` is a parameter so the
+  transition tests without fake timers.
+- **copy decisions that are not rendering** — `lockoutRemainingCopy` returns a translation key plus a
+  count, never a string: the `t()` call and the markup stay per platform.
+- **React primitives with no domain** — `useSubmitWhenComplete`, `useEnteredBackground`,
+  `useCountdownToTimestamp` (`shared/react/`, `shared/app/`). `useSubmitWhenComplete` fires on the
+  *transition* into a full value rather than on the state, which is what lets mobile hold the entered
+  code on screen for its 300 ms success animation without a second submit; clearing the value stays
+  the caller's job.
+- **the mechanism of a typed key/value store** — `createStructuredStorage` / `useStructuredStorage`
+  (`shared/storage/`): a zod shape plus a `TreeStorage` node in, typed `get`/`set`/`remove` out, with
+  parse-on-read and parse-on-write written once. Each app supplies its own node and its own shape
+  (`apps/mobile/src/shared/storage/structured/`,
+  `apps/desktop/src/renderer/shared/storage/structured/`) and wraps the hook under its own name —
+  which keys exist, and where they live, stays the app's decision. An **absent key reaches the shape
+  as `null`**, so every entry is written `z.union([z.null(), …])`; a shape that omits the null branch
+  throws on the first read, which is the path taken on a fresh install.
+
+What must **not** move up: a hook that binds a query key to a storage location to a default
+(`usePasscode`, `useLockScreen`, `useBiometryQuery`), the composition of security factors, or
+anything that would need a `createXHook(platformApi)` shape to fit both callers. That signature is
+the signal the boundary is wrong — split a smaller piece out instead.
+
+Two duplicates that had already diverged before the split are why this is written down: the
+minutes-to-hours threshold in the lockout copy, and re-reading the attempt count versus trusting the
+query cache. Copy-paste between the apps does not stay in sync; extracted pieces do.

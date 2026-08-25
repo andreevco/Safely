@@ -19,7 +19,7 @@ the app's code signature, and Windows has no equivalent — see `desktop-secret-
 guards already in the code (`process.platform` checks, the `win32` branch in `utils/atomic-file.ts`)
 stay: they are correct cross-platform behaviour, not dead code.
 
-## Split by process, not by feature
+## Split by process first, by feature inside the renderer
 
 `src/` is divided by Electron process, and `eslint-plugin-boundaries` enforces the direction:
 
@@ -30,10 +30,19 @@ stay: they are correct cross-platform behaviour, not dead code.
 | `src/renderer` | renderer (sandboxed, isolated) | `src/shared`, `@safely/*` packages  |
 | `src/shared`   | the IPC contract, no runtime   | nothing from the other three        |
 
+Inside the renderer the layout is FSD, the same shape mobile uses:
+`shared` → `features` → `app`, plus `platform/` (the Electron contract and its implementation) and
+two module-level singletons at the root, `logger.ts` and `i18n.ts`. `features/` holds one scenario
+per directory — `passcode`, `biometry`, `app-lock` — each with its own `keys.ts`; `app/` composes
+them into routes and providers. Same-layer imports between features are allowed (`app-lock` builds
+on `passcode` and `biometry`), imports from `app/` into a feature are not.
+`boundaries/element-types` currently knows only `desktop-renderer` as a whole, so this direction is a
+convention here rather than a build error — unlike mobile's, where the layers are element types.
+
 **All domain code runs in the renderer** — the sync engine, the CRDT, the crypto, the keys. That is
 deliberate: the same code has to run in the browser extension, where no privileged process exists at
-all. The main process owns storage and lifecycle (the store file, the keychain, the window); it is
-never a participant in the domain.
+all. The main process owns storage, lifecycle and the OS dialogs the renderer cannot raise (the store
+file, the keychain, the window, the Touch ID prompt); it is never a participant in the domain.
 
 `src/renderer/app/AppProviders.tsx` assembles the `IAppContext` that every `@safely/ux` hook reads
 out of a `DesktopPlatform` implementation, whose shape this app declares itself
@@ -45,8 +54,9 @@ The extension will repeat this wiring with its own platform.
 
 **The renderer's platform is a module-level value, not something a component creates.**
 `src/renderer/platform/index.ts` builds it once while the module graph loads, and the logger
-(`src/renderer/logger.ts`), the query client and the persister (module scope in `AppProviders.tsx`)
-hang off it — the same shape as `apps/mobile/src/app/App.tsx`. That is only possible because nothing
+(`src/renderer/logger.ts`), the i18next instance (`src/renderer/i18n.ts`), the security storage
+(`src/renderer/shared/storage/structured/`), the query client and the persister (module scope in
+`AppProviders.tsx`) hang off it — the same shape as `apps/mobile/src/app/App.tsx`. That is only possible because nothing
 in it is asynchronous, which is why `AppInfo` reaches the renderer through the preload's argv
 (`webPreferences.additionalArguments` in `src/main/window.ts`, `src/shared/app-info.ts`) instead of a
 channel: a promise there would push the query client back into a `useState` and the whole boot into an
@@ -109,7 +119,7 @@ The price of the file's write-through is a full rewrite per mutation, which is f
 if the data outgrows it, the way out is an embedded store with a write-ahead log (SQLite) — not a
 buffer.
 
-## `pnpm start` protects nothing, and there is still no presence gate
+## `pnpm start` protects nothing, and the presence factor is not on the keychain item
 
 Two independent gaps, and confusing them wastes a day:
 
@@ -127,13 +137,53 @@ keychain service. Reaching the secure scope there needs `UNSAFE_SKIP_SECURITY_CH
 as onboarding does before a passcode exists; that call belongs to those two places and must not spread
 into anything shipping a flow.
 
-**The renderer asks for the passcode, not for the user's presence.** `DesktopPlatform.security` is
-`passcodeSecurityGate` (`src/renderer/platform/security.ts`): it opens the passcode screen through
-`passcodePrompt` and resolves only on a correct code, so `UnlockableSecuredEncryptedStorage` unlocks.
-That is a knowledge check, not a presence check — the OS still proves nothing, and `SecAccessControl`
-with `kSecAccessControlUserPresence` is what will. Onboarding itself runs before a passcode exists and
-therefore still uses `UNSAFE_SKIP_SECURITY_CHECK_unlock()`; do not "temporarily" route `master_key`,
+**The gate is real, but the renderer is the one enforcing it.** `securityGate` is a module-level
+const in `src/renderer/app/AppProviders.tsx` — the composition of the two factors is the app's, not a
+feature's — and the same object goes into `IAppContext.security` and into
+`UnlockableSecuredEncryptedStorage`: it tries Touch ID first and falls back to the passcode screen,
+resolving only on one of the two. Both factors are genuine — `promptTouchID` is the OS
+attesting presence, not us — but the **keychain item is not bound to either**, so a compromised
+renderer can simply not call the gate and read the scope anyway. Closing that is `SecAccessControl`
+with `kSecAccessControlUserPresence` on the `secureEncrypted` items, enforced by the SEP;
+`desktop-secret-store.md` has what it costs. Onboarding runs before a passcode exists and therefore
+still uses `UNSAFE_SKIP_SECURITY_CHECK_unlock()`; do not "temporarily" route `master_key`,
 `vault_key` or `dmk_prv` into `regular` or `localStorage` to unblock a flow.
+
+**The passcode flow lives in `src/renderer/features/`**, one feature per factor and per scenario:
+`passcode` (hooks, lockout, the prompt store, `PasscodeSetupFlow`, `ChangePasscodeFlow`), `biometry`
+and `app-lock` (`AppLock` plus the lock-screen toggle). It is the counterpart of mobile's
+`entities/security` +
+`features/{security,biometry}`, and the direction is one-way: a feature imports `shared/` and
+`platform/`, never the reverse. `@safely/web-ui` supplies only the screens, which take props —
+putting a passcode hook or a `PasscodeStorage`-shaped contract back into that package is the
+regression this split exists to prevent.
+
+Its storage is `shared/storage/structured/{regular,encrypted}.ts`, the counterpart of
+`apps/mobile/src/shared/storage/structured/`: one zod shape per scope over a `desktop_security` node,
+exposed both as a per-key hook (`useDesktopLayerRegularStorage`) and as a plain object
+(`desktopLayerRegularStorage`) — the security gate runs outside React and needs the latter. The
+generic behind both is `createStructuredStorage` / `useStructuredStorage` in `@safely/ux`, shared
+with mobile, so parse-on-read and parse-on-write are written once.
+
+The platform-free pieces it composes from come from `@safely/ux` and are shared with mobile:
+`nextLockoutState` / `defaultLockoutPolicy` / `sLockoutState` / `NO_LOCKOUT`,
+`lockoutRemainingCopy`, `PASSCODE_LENGTH`, `useSubmitWhenComplete`, `useEnteredBackground`. The
+split is deliberate and `fsd-layers.md` states the rule; do not move a hook that binds a query key
+to a storage location up into `ux`.
+
+Touch ID is Electron's `systemPreferences.canPromptTouchID` / `promptTouchID`, wrapped in
+`src/main/biometry.ts` and reached through the `safely:biometry:*` channels. Two things about it:
+a cancelled prompt and a broken sensor both answer `false`, because the caller's next move is the
+passcode either way; and the reason string crosses IPC already translated, since macOS renders it as
+"Safely is trying to <reason>" and main has no i18n. That is why the i18next instance is a module
+value in `src/renderer/i18n.ts` — the gate translates outside React.
+
+The settings row names it from the `biometry.fingerprint.ios.*` keys, and the `ios` there is correct
+rather than a stray paste: macOS brands the sensor Touch ID exactly as iOS does, while
+`biometry.fingerprint.other` says "Fingerprint unlock", which is the wrong product name on a Mac.
+The keypad button is not ours to name — `Passcode` in `@safely/web-ui` renders it from
+`biometry.default.title`, because that component is shared with a target whose factor will not be
+Touch ID.
 
 ## Security invariants
 

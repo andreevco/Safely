@@ -81,6 +81,7 @@ export const passcodeRecipe = defineSlotRecipe({
     variants: {
         isInvalid: {
             true: {
+                root: { animation: 'shake 400ms' },
                 box: { borderColor: 'input.error.border' }
             }
         }
