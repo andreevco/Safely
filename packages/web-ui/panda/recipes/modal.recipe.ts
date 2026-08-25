@@ -25,6 +25,7 @@ export const modalRecipe = defineSlotRecipe({
         'popup',
         'close',
         'header',
+        'headerTitle',
         'headerClose',
         'content',
         'title',
@@ -68,12 +69,20 @@ export const modalRecipe = defineSlotRecipe({
             ...closeStyles
         },
         header: {
+            position: 'relative',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             flexShrink: 0,
             height: '64px',
             paddingInline: '12'
+        },
+        headerTitle: {
+            position: 'absolute',
+            insetInline: '0',
+            textStyle: 'titleS',
+            textAlign: 'center',
+            pointerEvents: 'none'
         },
         headerClose: closeStyles,
         content: {

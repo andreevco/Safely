@@ -6,8 +6,10 @@ import { useActiveAccountStoreSlot } from '@safely/ux';
 import { CustomizeAccountModal, MainPage, SignOutModal } from '@safely/web-ui';
 
 import { AddWalletModals } from './AddWalletModals';
+import { ContactModals } from './ContactModals';
 import { ROUTE } from './routes';
 import { useAccountFlow } from './useAccountFlow';
+import { useAddressBookFlow } from './useAddressBookFlow';
 import { useAddWalletFlow } from './useAddWalletFlow';
 import { useSignOut } from './useSignOut';
 import { useWalletFlow } from './useWalletFlow';
@@ -20,6 +22,7 @@ export const MainRoute: FC = () => {
     const wallet = useWalletFlow();
     const addWallet = useAddWalletFlow();
     const account = useAccountFlow();
+    const addressBook = useAddressBookFlow();
     const accountMeta = useActiveAccountStoreSlot('meta');
     const [isSigningOut, setIsSigningOut] = useState(false);
 
@@ -31,6 +34,8 @@ export const MainRoute: FC = () => {
                 onAddWallet={addWallet.open}
                 onEditAccount={account.startEdit}
                 onAddAccount={account.startCreate}
+                onAddContact={addressBook.startCreate}
+                onOpenContact={addressBook.openContact}
                 onSelectWallet={wallet.openSelect}
                 onEditWallet={wallet.openEdit}
                 onRevealRecoveryPhrase={wallet.openReveal}
@@ -58,6 +63,7 @@ export const MainRoute: FC = () => {
                 />
             )}
 
+            <ContactModals flow={addressBook} />
             <WalletModals flow={wallet} />
             <AddWalletModals flow={addWallet} />
         </>

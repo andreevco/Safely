@@ -1,6 +1,7 @@
 import type { FC, ReactNode } from 'react';
 import { useEffect, useState } from 'react';
 
+import type { Contact } from '@safely/core';
 import { useHasPortfolio } from '@safely/ux';
 
 import { dragRegionStyles } from './MainLayout.styles';
@@ -16,6 +17,8 @@ export type MainLayoutProps = {
     onAddWallet: () => void;
     onEditAccount: () => void;
     onAddAccount: () => void;
+    onAddContact: () => void;
+    onOpenContact: (contact: Contact) => void;
     onSelectWallet: () => void;
     onEditWallet: () => void;
     onRevealRecoveryPhrase: () => void;
@@ -32,6 +35,8 @@ export const MainLayout: FC<MainLayoutProps> = props => {
         onAddWallet,
         onEditAccount,
         onAddAccount,
+        onAddContact,
+        onOpenContact,
         onSelectWallet,
         onEditWallet,
         onRevealRecoveryPhrase,
@@ -87,6 +92,8 @@ export const MainLayout: FC<MainLayoutProps> = props => {
                     <SettingsContent
                         section={section}
                         onAddAccount={onAddAccount}
+                        onAddContact={onAddContact}
+                        onOpenContact={onOpenContact}
                         onSelectWallet={onSelectWallet}
                         onEditWallet={onEditWallet}
                         onRevealRecoveryPhrase={onRevealRecoveryPhrase}

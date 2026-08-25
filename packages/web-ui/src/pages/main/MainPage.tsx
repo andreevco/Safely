@@ -1,5 +1,6 @@
 import type { FC } from 'react';
 
+import type { Contact } from '@safely/core';
 import { useHasPortfolio } from '@safely/ux';
 
 import { MainContent } from './MainContent';
@@ -12,6 +13,8 @@ export type MainPageProps = {
     onAddWallet: () => void;
     onEditAccount: () => void;
     onAddAccount: () => void;
+    onAddContact: () => void;
+    onOpenContact: (contact: Contact) => void;
     onSelectWallet: () => void;
     onEditWallet: () => void;
     onRevealRecoveryPhrase: () => void;

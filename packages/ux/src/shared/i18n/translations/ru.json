@@ -43,7 +43,8 @@
         "errors": {
             "unknown": "Что-то пошло не так",
             "notSupportedYet": "Пока не поддерживается"
-        }
+        },
+        "clear": "Очистить"
     },
     "errorBoundary": {
         "title": "Что-то пошло не так",

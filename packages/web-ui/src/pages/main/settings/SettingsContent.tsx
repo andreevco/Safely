@@ -1,6 +1,9 @@
 import type { FC } from 'react';
 
+import type { Contact } from '@safely/core';
+
 import { AccountSettings } from './AccountSettings';
+import { AddressBookSettings } from './AddressBookSettings';
 import { CurrencySettings } from './CurrencySettings';
 import { LanguageSettings } from './LanguageSettings';
 import { LegalSettings } from './LegalSettings';
@@ -11,6 +14,8 @@ import { WalletSettings } from './WalletSettings';
 export type SettingsContentProps = {
     section: SettingsSection;
     onAddAccount: () => void;
+    onAddContact: () => void;
+    onOpenContact: (contact: Contact) => void;
     onSelectWallet: () => void;
     onEditWallet: () => void;
     onRevealRecoveryPhrase: () => void;
@@ -26,6 +31,13 @@ export const SettingsContent: FC<SettingsContentProps> = props => {
                     onEditWallet={props.onEditWallet}
                     onRevealRecoveryPhrase={props.onRevealRecoveryPhrase}
                     onRemoveWallet={props.onRemoveWallet}
+                />
+            );
+        case 'addressBook':
+            return (
+                <AddressBookSettings
+                    onAddContact={props.onAddContact}
+                    onOpenContact={props.onOpenContact}
                 />
             );
         case 'account':

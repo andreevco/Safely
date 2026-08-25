@@ -1,1 +1,8 @@
-export type SettingsSection = 'wallet' | 'account' | 'security' | 'language' | 'currency' | 'legal';
+export type SettingsSection =
+    | 'wallet'
+    | 'account'
+    | 'addressBook'
+    | 'security'
+    | 'language'
+    | 'currency'
+    | 'legal';

@@ -102,7 +102,11 @@ export const SettingsSidebar: FC<SettingsSidebarProps> = props => {
                                 </Cell.Title>
                             </Cell.Content>
                         </Cell>
-                        <Cell tone="transparent" onClick={() => undefined}>
+                        <Cell
+                            tone="transparent"
+                            isSelected={activeSection === 'addressBook'}
+                            onClick={() => onSelectSection('addressBook')}
+                        >
                             <Cell.Content>
                                 <Cell.Title>
                                     {t('settings.groups.account.options.addressBook')}

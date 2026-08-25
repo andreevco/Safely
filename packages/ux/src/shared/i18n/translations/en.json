@@ -66,7 +66,8 @@
         "errors": {
             "unknown": "Something went wrong",
             "notSupportedYet": "Not supported yet"
-        }
+        },
+        "clear": "Clear"
     },
     "errorBoundary": {
         "title": "Something went wrong",
