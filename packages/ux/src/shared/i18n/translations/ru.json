@@ -672,7 +672,8 @@
                 "options": {
                     "editWallet": "Редактировать кошелёк",
                     "editLedger": "Редактировать Ledger"
-                }
+                },
+                "paneTitle": "Кошелёк"
             },
             "derivedWallets": {
                 "title": "Производные кошельки"

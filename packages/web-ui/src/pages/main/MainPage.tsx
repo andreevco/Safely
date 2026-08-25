@@ -12,6 +12,10 @@ export type MainPageProps = {
     onAddWallet: () => void;
     onEditAccount: () => void;
     onAddAccount: () => void;
+    onSelectWallet: () => void;
+    onEditWallet: () => void;
+    onRevealRecoveryPhrase: () => void;
+    onRemoveWallet: () => void;
     onSignOut: () => void;
     onOpenDevTools: () => void;
 };

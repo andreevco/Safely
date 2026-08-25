@@ -9,6 +9,8 @@ export const listStyles = css({
 
 export const addAccountStyles = css({ marginTop: '16' });
 
+export const destructiveGroupStyles = css({ marginTop: '16' });
+
 export const symbolStyles = css({
     minWidth: '44px'
 });

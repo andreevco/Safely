@@ -1,5 +1,7 @@
 import type { FC, ReactNode } from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+
+import { useHasPortfolio } from '@safely/ux';
 
 import { dragRegionStyles } from './MainLayout.styles';
 import { MainSidebar } from './MainSidebar';
@@ -14,6 +16,10 @@ export type MainLayoutProps = {
     onAddWallet: () => void;
     onEditAccount: () => void;
     onAddAccount: () => void;
+    onSelectWallet: () => void;
+    onEditWallet: () => void;
+    onRevealRecoveryPhrase: () => void;
+    onRemoveWallet: () => void;
     onSignOut: () => void;
     onOpenDevTools: () => void;
     children: ReactNode;
@@ -26,13 +32,24 @@ export const MainLayout: FC<MainLayoutProps> = props => {
         onAddWallet,
         onEditAccount,
         onAddAccount,
+        onSelectWallet,
+        onEditWallet,
+        onRevealRecoveryPhrase,
+        onRemoveWallet,
         onSignOut,
         onOpenDevTools,
         children
     } = props;
 
+    const hasPortfolio = useHasPortfolio();
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [section, setSection] = useState<SettingsSection | null>(null);
+
+    useEffect(() => {
+        if (!hasPortfolio) {
+            setSection(current => (current === 'wallet' ? null : current));
+        }
+    }, [hasPortfolio]);
 
     const toggleSettings = (): void => {
         setIsSettingsOpen(current => !current);
@@ -67,7 +84,14 @@ export const MainLayout: FC<MainLayoutProps> = props => {
                 {section === null ? (
                     children
                 ) : (
-                    <SettingsContent section={section} onAddAccount={onAddAccount} />
+                    <SettingsContent
+                        section={section}
+                        onAddAccount={onAddAccount}
+                        onSelectWallet={onSelectWallet}
+                        onEditWallet={onEditWallet}
+                        onRevealRecoveryPhrase={onRevealRecoveryPhrase}
+                        onRemoveWallet={onRemoveWallet}
+                    />
                 )}
             </AppLayout.Content>
         </AppLayout>
