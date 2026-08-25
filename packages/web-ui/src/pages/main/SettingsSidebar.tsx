@@ -6,6 +6,8 @@ import {
     useActiveFiat,
     useActiveLanguage,
     useActiveWalletMeta,
+    useBootConfig,
+    useLinking,
     useHasPortfolio,
     usePortfolios,
     useTranslate
@@ -54,6 +56,8 @@ export const SettingsSidebar: FC<SettingsSidebarProps> = props => {
     const longPress = useLongPress(onOpenDevTools);
     const t = useTranslate();
     const fiat = useActiveFiat();
+    const { openURL } = useLinking();
+    const supportEmail = useBootConfig().references.support.email;
     const language = useActiveLanguage();
     const portfolios = usePortfolios();
     const hasPortfolio = useHasPortfolio();
@@ -155,9 +159,14 @@ export const SettingsSidebar: FC<SettingsSidebarProps> = props => {
 
                     <List.Title>{t('settings.groups.info.title')}</List.Title>
                     <List.Group variant="separated">
-                        <Cell tone="transparent" onClick={() => undefined}>
+                        <Cell tone="transparent" onClick={() => openURL(`mailto:${supportEmail}`)}>
                             <Cell.Content>
-                                <Cell.Title>{t('settings.groups.info.options.support')}</Cell.Title>
+                                <Cell.Row>
+                                    <Cell.Title>
+                                        {t('settings.groups.info.options.support')}
+                                    </Cell.Title>
+                                    <Cell.Value>{supportEmail}</Cell.Value>
+                                </Cell.Row>
                             </Cell.Content>
                         </Cell>
                         <Cell
