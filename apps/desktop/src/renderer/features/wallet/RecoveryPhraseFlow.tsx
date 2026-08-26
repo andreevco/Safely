@@ -29,14 +29,17 @@ export const RecoveryPhraseFlow: FC<RecoveryPhraseFlowProps> = props => {
 
         try {
             mnemonic.current = await portfolio.getMnemonic();
-            setIsRevealed(true);
-
-            await recordSecretReveal();
         } catch (error) {
             if (!(error instanceof PasscodePromptCancelledError)) {
                 errorToast(error);
             }
+
+            return;
         }
+
+        setIsRevealed(true);
+
+        void recordSecretReveal().catch(errorToast);
     };
 
     const handleClose = (): void => {

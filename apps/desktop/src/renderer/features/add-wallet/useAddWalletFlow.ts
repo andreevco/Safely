@@ -14,6 +14,7 @@ import {
     useActiveAccountStoreSlot,
     useAddWatchOnlyPortfolio,
     useAppContext,
+    useErrorToast,
     useChangePortfolioMeta,
     useGeneratePortfolio,
     useImportPortfolio,
@@ -38,6 +39,7 @@ type AddWalletSource =
 
 export function useAddWalletFlow() {
     const { withLoader } = useLoader();
+    const errorToast = useErrorToast({});
     const portfolios = usePortfolios();
     const defaultName = useNewPortfolioFallbackName();
     const { mutateAsync: importPortfolio } = useImportPortfolio();
@@ -100,22 +102,29 @@ export function useAddWalletFlow() {
         async (mnemonic: string[]) => {
             using mnemonicAccessor = new MnemonicResource(mnemonic);
 
-            const id = await PortfolioIdBip39Imported.create(mnemonicAccessor, networkType.current);
-            const existing = portfolios.find(portfolio => portfolio.id.isEq(id));
+            try {
+                const id = await PortfolioIdBip39Imported.create(
+                    mnemonicAccessor,
+                    networkType.current
+                );
+                const existing = portfolios.find(portfolio => portfolio.id.isEq(id));
 
-            if (existing) {
-                showDuplicate(existing);
-                return;
+                if (existing) {
+                    showDuplicate(existing);
+                    return;
+                }
+
+                source.current = { kind: 'imported', mnemonic, networkType: networkType.current };
+                setDraft({
+                    name: defaultName,
+                    icon: PortfolioIdBip39Imported.getFallbackEmoji(mnemonicAccessor)
+                });
+                setStep('customize');
+            } catch (error) {
+                errorToast(error);
             }
-
-            source.current = { kind: 'imported', mnemonic, networkType: networkType.current };
-            setDraft({
-                name: defaultName,
-                icon: PortfolioIdBip39Imported.getFallbackEmoji(mnemonicAccessor)
-            });
-            setStep('customize');
         },
-        [portfolios, showDuplicate, defaultName]
+        [portfolios, showDuplicate, defaultName, errorToast]
     );
 
     const onWatchInputReady = useCallback(
@@ -164,8 +173,6 @@ export function useAddWalletFlow() {
                 return;
             }
 
-            close();
-
             try {
                 if (pending.kind === 'existing') {
                     await withLoader(async () => {
@@ -193,6 +200,8 @@ export function useAddWalletFlow() {
 
                     await withLoader(() => generatePortfolio({ meta, secureEncryptedStorage }));
                 }
+
+                close();
             } catch (error) {
                 if (error instanceof PortfolioAlreadyExistsError && error.existingPortfolio) {
                     const existingId = error.existingPortfolio.id;
@@ -205,6 +214,7 @@ export function useAddWalletFlow() {
                 }
 
                 if (!(error instanceof PasscodePromptCancelledError)) {
+                    close();
                     throw error;
                 }
             }

@@ -31,7 +31,10 @@ export function useOnboardingFlow() {
     const [step, setStep] = useState<OnboardingStep | null>(null);
     const source = useRef<OnboardingSource | null>(null);
 
-    const close = useCallback(() => setStep(null), []);
+    const close = useCallback(() => {
+        source.current = null;
+        setStep(null);
+    }, []);
     const openMoreOptions = useCallback(() => setStep('moreOptions'), []);
     const openImport = useCallback(() => setStep('import'), []);
     const openWatch = useCallback(() => setStep('watch'), []);
