@@ -117,9 +117,8 @@ export function useOnboardingFlow() {
                 return;
             }
 
-            await setPasscode(passcode);
-
             try {
+                await setPasscode(passcode);
                 await createAccountFrom(pending);
             } catch (error) {
                 errorToast(error);
