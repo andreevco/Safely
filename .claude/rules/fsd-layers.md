@@ -13,11 +13,13 @@ An "upward" import is a build error, not a style nit.
 `packages/ux/src`: `shared` → `entities` → `features`
 `packages/web-ui/src`: `shared` → `entities` → `features` → `pages` → `app`
 `apps/mobile/src`: `shared` → `entities` → `features` → `screens` → `app`
-`apps/desktop/src/renderer`: `shared` → `features` → `app`, next to `platform/`
+`apps/desktop/src/renderer`: `shared` → `features` → `screens` → `app`, next to `platform/`
 
 `apps/desktop` is split by Electron process **first** — see `desktop-app.md`; the layers above exist
-inside `src/renderer` only. They are a convention there, not a build error: `boundaries` treats the
-whole renderer as one element type, so nothing stops an upward import the way it does in mobile.
+inside `src/renderer` only, and `boundaries` enforces them there as it does in mobile. There is no
+`entities` layer: the domain entities come from `@safely/ux`, so the renderer holds scenarios only.
+`platform/`, `logger.ts` and `i18n.ts` sit outside the layers — they are the app's contract with
+Electron, and every layer may read them.
 
 A layer may only import layers to its left. `shared` knows nothing about `entities`; `entities`
 knows nothing about `features`; in mobile, `features` knows nothing about `screens` or `app`, and so on.
@@ -39,14 +41,19 @@ knows nothing about `features`; in mobile, `features` knows nothing about `scree
   (`apps/desktop/src/renderer/platform/types.ts`).
 - `packages/web-ui/src/pages` — one screen, the web counterpart of a mobile screen: props in, markup
   out, no routing.
+- `apps/desktop/src/renderer/shared` — the route constants and the structured storages (the
+  `desktop` node of the regular and encrypted stores).
 - `apps/desktop/src/renderer/features` — one scenario per directory (`passcode`, `biometry`,
-  `app-lock`), each owning its `keys.ts`. Features may import each other; nothing here may import
-  `app/`. Composing features into one capability is `app/`'s job — the security gate handed to
-  `IAppContext` is built in `app/AppProviders.tsx`, not in a feature.
-- `apps/desktop/src/renderer/app` — the web target's entry point: the route tree, the guards, the
-  providers and the controller hooks that turn a screen's callbacks into flows. `web-ui` never imports
-  app code (enforced), and the router lives here so a second target can wire the same screens
-  differently.
+  `app-lock`, `onboarding`, `add-wallet`, `wallet`, `address-book`, `account`), each owning its
+  `keys.ts`: the controller hooks that turn a screen's callbacks into flows, plus the modals those
+  flows own. Features may import each other; nothing here may import `screens/` or `app/`. Composing
+  features into one capability is `app/`'s job — the security gate handed to `IAppContext` is built
+  in `app/AppProviders.tsx`, not in a feature.
+- `apps/desktop/src/renderer/screens` — one route component each, the web counterpart of a mobile
+  screen: it composes features and holds no domain logic of its own.
+- `apps/desktop/src/renderer/app` — the entry point: the route tree, the guards and the providers.
+  `web-ui` never imports app code (enforced), and the router lives here so a second target can wire
+  the same screens differently.
 
 Put new code in the lowest layer that fits. If a feature needs something from `screens`, the logic
 should move down into `features` — don't move the import up.

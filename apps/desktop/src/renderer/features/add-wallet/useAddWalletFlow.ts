@@ -24,7 +24,7 @@ import {
     useUnlockableSecretEncryptorFactory
 } from '@safely/ux';
 
-import { PasscodePromptCancelledError } from '../features';
+import { PasscodePromptCancelledError } from '../passcode';
 
 export type AddWalletDraft = Pick<PortfolioMeta, 'name' | 'icon'>;
 

@@ -8,10 +8,9 @@ import {
     WelcomePage
 } from '@safely/web-ui';
 
-import { PasscodeSetupFlow } from '../features';
-import { useOnboardingFlow } from './useOnboardingFlow';
+import { PasscodeSetupFlow, useOnboardingFlow } from '../features';
 
-export const WelcomeRoute: FC = () => {
+export const WelcomeScreen: FC = () => {
     const t = useTranslate();
     const toast = useToast();
     const onboarding = useOnboardingFlow();

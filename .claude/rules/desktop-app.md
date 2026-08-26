@@ -31,13 +31,15 @@ stay: they are correct cross-platform behaviour, not dead code.
 | `src/shared`   | the IPC contract, no runtime   | nothing from the other three        |
 
 Inside the renderer the layout is FSD, the same shape mobile uses:
-`shared` → `features` → `app`, plus `platform/` (the Electron contract and its implementation) and
-two module-level singletons at the root, `logger.ts` and `i18n.ts`. `features/` holds one scenario
-per directory — `passcode`, `biometry`, `app-lock` — each with its own `keys.ts`; `app/` composes
-them into routes and providers. Same-layer imports between features are allowed (`app-lock` builds
-on `passcode` and `biometry`), imports from `app/` into a feature are not.
-`boundaries/element-types` currently knows only `desktop-renderer` as a whole, so this direction is a
-convention here rather than a build error — unlike mobile's, where the layers are element types.
+`shared` → `features` → `screens` → `app`, plus `platform/` (the Electron contract and its
+implementation) and two module-level singletons at the root, `logger.ts` and `i18n.ts`. `features/`
+holds one scenario per directory — `passcode`, `biometry`, `app-lock`, `onboarding`, `add-wallet`,
+`wallet`, `address-book`, `account` — each with its own `keys.ts` where it needs one; `screens/` is
+one component per route, and `app/` composes them into the route tree and the providers. Same-layer
+imports between features are allowed (`app-lock` builds on `passcode` and `biometry`), imports from
+`screens/` or `app/` into a feature are not. There is no `entities/`: the domain entities live in
+`@safely/ux`, so the renderer holds scenarios only. `boundaries/element-types` knows each layer as
+its own element type, so the direction is a build error, exactly as in mobile.
 
 **All domain code runs in the renderer** — the sync engine, the CRDT, the crypto, the keys. That is
 deliberate: the same code has to run in the browser extension, where no privileged process exists at

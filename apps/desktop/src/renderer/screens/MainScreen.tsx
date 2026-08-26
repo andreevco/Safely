@@ -5,17 +5,19 @@ import { useState } from 'react';
 import { useActiveAccountStoreSlot } from '@safely/ux';
 import { CustomizeAccountModal, MainPage, SignOutModal } from '@safely/web-ui';
 
-import { AddWalletModals } from './AddWalletModals';
-import { ContactModals } from './ContactModals';
-import { ROUTE } from './routes';
-import { useAccountFlow } from './useAccountFlow';
-import { useAddressBookFlow } from './useAddressBookFlow';
-import { useAddWalletFlow } from './useAddWalletFlow';
-import { useSignOut } from './useSignOut';
-import { useWalletFlow } from './useWalletFlow';
-import { WalletModals } from './WalletModals';
+import {
+    AddWalletModals,
+    ContactModals,
+    useAccountFlow,
+    useAddressBookFlow,
+    useAddWalletFlow,
+    useSignOut,
+    useWalletFlow,
+    WalletModals
+} from '../features';
+import { ROUTE } from '../shared';
 
-export const MainRoute: FC = () => {
+export const MainScreen: FC = () => {
     const { hasWindowControls, isFullScreen } = useRouteContext({ from: '__root__' });
     const navigate = useNavigate();
     const signOut = useSignOut();

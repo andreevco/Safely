@@ -147,6 +147,26 @@ export default [
                     mode: 'full'
                 },
                 {
+                    type: 'desktop-renderer-app',
+                    pattern: 'apps/desktop/src/renderer/app/**/*',
+                    mode: 'full'
+                },
+                {
+                    type: 'desktop-renderer-screens',
+                    pattern: 'apps/desktop/src/renderer/screens/**/*',
+                    mode: 'full'
+                },
+                {
+                    type: 'desktop-renderer-features',
+                    pattern: 'apps/desktop/src/renderer/features/**/*',
+                    mode: 'full'
+                },
+                {
+                    type: 'desktop-renderer-shared',
+                    pattern: 'apps/desktop/src/renderer/shared/**/*',
+                    mode: 'full'
+                },
+                {
                     type: 'desktop-renderer',
                     pattern: 'apps/desktop/src/renderer/**/*',
                     mode: 'full'
@@ -309,6 +329,10 @@ export default [
                                 'desktop-main',
                                 'desktop-preload',
                                 'desktop-renderer',
+                                'desktop-renderer-shared',
+                                'desktop-renderer-features',
+                                'desktop-renderer-screens',
+                                'desktop-renderer-app',
                                 'desktop-shared',
                                 'mobile',
                                 'mobile-shared',
@@ -325,6 +349,10 @@ export default [
                             from: ['desktop-main', 'desktop-preload'],
                             disallow: [
                                 'desktop-renderer',
+                                'desktop-renderer-shared',
+                                'desktop-renderer-features',
+                                'desktop-renderer-screens',
+                                'desktop-renderer-app',
                                 'web-ui',
                                 'web-ui-shared',
                                 'web-ui-entities',
@@ -334,12 +362,45 @@ export default [
                             ]
                         },
                         {
-                            from: 'desktop-renderer',
+                            from: [
+                                'desktop-renderer',
+                                'desktop-renderer-shared',
+                                'desktop-renderer-features',
+                                'desktop-renderer-screens',
+                                'desktop-renderer-app'
+                            ],
                             disallow: ['desktop-main', 'desktop-preload']
+                        },
+                        /* The renderer is layered like the mobile app: shared → features →
+                           screens → app. `platform` stays outside them — every layer may read the
+                           contract the app implements. */
+                        {
+                            from: 'desktop-renderer-shared',
+                            disallow: [
+                                'desktop-renderer-features',
+                                'desktop-renderer-screens',
+                                'desktop-renderer-app'
+                            ]
+                        },
+                        {
+                            from: 'desktop-renderer-features',
+                            disallow: ['desktop-renderer-screens', 'desktop-renderer-app']
+                        },
+                        {
+                            from: 'desktop-renderer-screens',
+                            disallow: ['desktop-renderer-app']
                         },
                         {
                             from: 'desktop-shared',
-                            disallow: ['desktop-main', 'desktop-preload', 'desktop-renderer']
+                            disallow: [
+                                'desktop-main',
+                                'desktop-preload',
+                                'desktop-renderer',
+                                'desktop-renderer-shared',
+                                'desktop-renderer-features',
+                                'desktop-renderer-screens',
+                                'desktop-renderer-app'
+                            ]
                         },
                         {
                             from: 'mobile-shared',

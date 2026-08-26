@@ -12,7 +12,7 @@ import {
     useTranslate
 } from '@safely/ux';
 
-import { PasscodePromptCancelledError } from '../features';
+import { PasscodePromptCancelledError } from '../passcode';
 
 type AccountDraft = { mode: 'create' | 'edit'; name: string };
 

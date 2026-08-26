@@ -13,7 +13,7 @@ import {
     useTranslate
 } from '@safely/ux';
 
-import { PasscodePromptCancelledError } from '../features';
+import { PasscodePromptCancelledError } from '../passcode';
 
 export function useSignOut() {
     const accounts = useAccounts();

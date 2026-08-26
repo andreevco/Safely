@@ -3,7 +3,7 @@ import type { FC } from 'react';
 
 import { useHasAccount } from '@safely/ux';
 
-import { ROUTE } from './routes';
+import { ROUTE } from '../shared';
 
 export const OnboardingGuard: FC = () => {
     const hasAccount = useHasAccount();

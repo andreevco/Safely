@@ -4,8 +4,8 @@ import { useCallback, useRef, useState } from 'react';
 import { MnemonicResource, PortfolioNetworkType } from '@safely/core';
 import { useAppContext, useCreateAccount, useErrorToast, useLoader } from '@safely/ux';
 
-import { ROUTE } from './routes';
-import { usePasscode } from '../features';
+import { ROUTE } from '../../shared';
+import { usePasscode } from '../passcode';
 
 export type OnboardingStep = 'moreOptions' | 'import' | 'watch' | 'passcode';
 

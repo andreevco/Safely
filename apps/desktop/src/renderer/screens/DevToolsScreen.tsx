@@ -3,9 +3,9 @@ import type { FC } from 'react';
 
 import { DevToolsPage } from '@safely/web-ui';
 
-import { ROUTE } from './routes';
+import { ROUTE } from '../shared';
 
-export const DevToolsRoute: FC = () => {
+export const DevToolsScreen: FC = () => {
     const { hasWindowControls, isFullScreen } = useRouteContext({ from: '__root__' });
     const navigate = useNavigate();
 
