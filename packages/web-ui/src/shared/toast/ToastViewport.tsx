@@ -33,7 +33,8 @@ export const ToastViewport: FC = () => {
             className={css({
                 position: 'fixed',
                 insetInline: '0',
-                bottom: '24',
+                top: '12',
+                zIndex: 'toast',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',

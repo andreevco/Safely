@@ -70,7 +70,12 @@ export default defineConfig({
             tokens: {
                 radii: toTokens(commonTheme.radius, px),
                 spacing: toTokens(commonTheme.spacing, px),
-                borderWidths: toTokens(commonTheme.border, px)
+                borderWidths: toTokens(commonTheme.border, px),
+                zIndex: {
+                    loader: { value: '10' },
+                    passcodePrompt: { value: '20' },
+                    toast: { value: '30' }
+                }
             },
             semanticTokens: {
                 /* Dark-only today. A light palette makes the mapper emit `{ base, _dark }`

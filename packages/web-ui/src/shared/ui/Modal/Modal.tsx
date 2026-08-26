@@ -18,6 +18,18 @@ export type ModalPopupProps = {
     className?: string;
 };
 
+export type ModalHeaderProps = {
+    closeLabel: string;
+    title?: string;
+    children?: ReactNode;
+    className?: string;
+};
+
+export type ModalContentProps = Omit<ComponentPropsWithoutRef<'div'>, 'className'> & {
+    hasFloatingClose?: boolean;
+    className?: string;
+};
+
 type ModalPartProps<TElement extends 'div' | 'h2' | 'p'> = Omit<
     ComponentPropsWithoutRef<TElement>,
     'className'
@@ -45,10 +57,28 @@ const ModalPopup: FC<ModalPopupProps> = props => {
     );
 };
 
-const ModalContent: FC<ModalPartProps<'div'>> = props => {
-    const { className, ...rest } = props;
+const ModalHeader: FC<ModalHeaderProps> = props => {
+    const { closeLabel, title, className, children } = props;
 
-    return <div className={cx(styles.content, className)} {...rest} />;
+    return (
+        <div className={cx(styles.header, className)}>
+            <Dialog.Close className={styles.headerClose} aria-label={closeLabel}>
+                <Icon asset={Xmark16} />
+            </Dialog.Close>
+
+            {title !== undefined && (
+                <Dialog.Title className={styles.headerTitle}>{title}</Dialog.Title>
+            )}
+
+            {children}
+        </div>
+    );
+};
+
+const ModalContent: FC<ModalContentProps> = props => {
+    const { hasFloatingClose, className, ...rest } = props;
+
+    return <div className={cx(modal({ hasFloatingClose }).content, className)} {...rest} />;
 };
 
 const ModalTitle: FC<ModalPartProps<'h2'>> = props => {
@@ -73,6 +103,7 @@ export const Modal = Object.assign(Dialog.Root, {
     Trigger: Dialog.Trigger,
     Close: Dialog.Close,
     Popup: ModalPopup,
+    Header: ModalHeader,
     Content: ModalContent,
     Title: ModalTitle,
     Description: ModalDescription,

@@ -5,12 +5,9 @@ import {
     createRouter
 } from '@tanstack/react-router';
 
-import { DevToolsRoute } from './DevToolsRoute';
-import { MainRoute } from './MainRoute';
 import { OnboardingGuard } from './OnboardingGuard';
-import { PasscodeRoute } from './PasscodeRoute';
-import { ROUTE } from './routes';
-import { WelcomeRoute } from './WelcomeRoute';
+import { DevToolsScreen, MainScreen, WelcomeScreen } from '../screens';
+import { ROUTE } from '../shared';
 
 export type RouterContext = {
     hasWindowControls?: boolean;
@@ -22,28 +19,22 @@ const rootRoute = createRootRouteWithContext<RouterContext>()({ component: Onboa
 const mainRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: ROUTE.main,
-    component: MainRoute
+    component: MainScreen
 });
 
 const devToolsRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: ROUTE.devTools,
-    component: DevToolsRoute
+    component: DevToolsScreen
 });
 
 const welcomeRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: ROUTE.onboarding.welcome,
-    component: WelcomeRoute
+    component: WelcomeScreen
 });
 
-const passcodeRoute = createRoute({
-    getParentRoute: () => rootRoute,
-    path: ROUTE.onboarding.passcode,
-    component: PasscodeRoute
-});
-
-const routeTree = rootRoute.addChildren([mainRoute, devToolsRoute, welcomeRoute, passcodeRoute]);
+const routeTree = rootRoute.addChildren([mainRoute, devToolsRoute, welcomeRoute]);
 
 export const router = createRouter({
     routeTree,

@@ -1,9 +1,37 @@
 import { defineSlotRecipe } from '@pandacss/dev';
+import type { SystemStyleObject } from '@pandacss/dev';
+
+const closeStyles: SystemStyleObject = {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '40px',
+    height: '40px',
+    padding: '0',
+    borderWidth: '0',
+    borderRadius: 'full',
+    backgroundColor: 'button.secondary.background',
+    color: 'icon.primary',
+    cursor: 'pointer',
+    '& svg [fill]:not([fill="none"])': { fill: 'currentcolor' },
+    '& svg [stroke]:not([stroke="none"])': { stroke: 'currentcolor' }
+};
 
 export const modalRecipe = defineSlotRecipe({
     className: 'modal',
     description: 'Centred dialog over the whole window',
-    slots: ['backdrop', 'popup', 'close', 'content', 'title', 'description', 'actions'],
+    slots: [
+        'backdrop',
+        'popup',
+        'close',
+        'header',
+        'headerTitle',
+        'headerClose',
+        'content',
+        'title',
+        'description',
+        'actions'
+    ],
     base: {
         backdrop: {
             position: 'fixed',
@@ -38,20 +66,25 @@ export const modalRecipe = defineSlotRecipe({
             position: 'absolute',
             top: '12',
             right: '12',
+            ...closeStyles
+        },
+        header: {
+            position: 'relative',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
-            width: '40px',
-            height: '40px',
-            padding: '0',
-            borderWidth: '0',
-            borderRadius: 'full',
-            backgroundColor: 'button.secondary.background',
-            color: 'icon.primary',
-            cursor: 'pointer',
-            '& svg [fill]:not([fill="none"])': { fill: 'currentcolor' },
-            '& svg [stroke]:not([stroke="none"])': { stroke: 'currentcolor' }
+            justifyContent: 'space-between',
+            flexShrink: 0,
+            height: '64px',
+            paddingInline: '12'
         },
+        headerTitle: {
+            position: 'absolute',
+            insetInline: '0',
+            textStyle: 'titleS',
+            textAlign: 'center',
+            pointerEvents: 'none'
+        },
+        headerClose: closeStyles,
         content: {
             display: 'flex',
             flexDirection: 'column',
@@ -69,7 +102,8 @@ export const modalRecipe = defineSlotRecipe({
         description: {
             textStyle: 'bodyL',
             color: 'text.secondary',
-            textAlign: 'center'
+            textAlign: 'center',
+            textWrap: 'balance'
         },
         actions: {
             display: 'flex',
@@ -77,5 +111,13 @@ export const modalRecipe = defineSlotRecipe({
             gap: '8',
             padding: '8'
         }
+    },
+    variants: {
+        hasFloatingClose: {
+            false: { content: { paddingTop: '16' } }
+        }
+    },
+    defaultVariants: {
+        hasFloatingClose: true
     }
 });

@@ -13,7 +13,7 @@ import {
     useTranslate
 } from '@safely/ux';
 
-import { PasscodePromptCancelledError } from '../features';
+import { PasscodePromptCancelledError } from '../passcode';
 
 export function useSignOut() {
     const accounts = useAccounts();
@@ -37,16 +37,14 @@ export function useSignOut() {
 
         try {
             if (!isLastAccount || isSynced) {
-                await withLoader(async () => {
-                    using secureEncryptedStorage = getSecureEncrypted();
+                using secureEncryptedStorage = getSecureEncrypted();
 
-                    await secureEncryptedStorage.unlock();
-                    await deleteAccount(secureEncryptedStorage);
-                });
+                await secureEncryptedStorage.unlock();
+                await withLoader(() => deleteAccount(secureEncryptedStorage));
             }
 
             if (isLastAccount) {
-                await eraseAllData();
+                await withLoader(() => eraseAllData());
                 return;
             }
 

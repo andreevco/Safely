@@ -44,6 +44,12 @@ Run lint through the package scripts (`pnpm --filter <pkg> run lint`, which is a
 spacing literal written anywhere else is a defect — `@pandacss/no-hardcoded-color` is an error, and
 values must stay in sync with the mobile app, which reads the same objects.
 
+The one exception is the stacking order: `zIndex` tokens (`loader`, `passcodePrompt`, `toast`) are
+declared in `panda.config.ts`, because layering is a web-only problem the mobile theme has no answer
+for. Anything that paints over the app takes its value from there — a raw number in a component is
+how two overlays end up fighting. Modals need no token: they portal to the end of the body, so every
+listed layer already covers them.
+
 Only a dark palette exists. When a light one appears, the mapper starts emitting
 `{ base, _dark }` values and components stay untouched: token paths don't change.
 

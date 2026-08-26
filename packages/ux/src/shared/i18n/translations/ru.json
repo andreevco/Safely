@@ -41,8 +41,10 @@
         "continue": "Продолжить",
         "later": "Позже",
         "errors": {
-            "unknown": "Что-то пошло не так"
-        }
+            "unknown": "Что-то пошло не так",
+            "notSupportedYet": "Пока не поддерживается"
+        },
+        "clear": "Очистить"
     },
     "errorBoundary": {
         "title": "Что-то пошло не так",
@@ -605,6 +607,7 @@
         }
     },
     "account": {
+        "title": "Аккаунт",
         "unnamed": "Основной",
         "sync": {
             "errors": {
@@ -671,7 +674,8 @@
                 "options": {
                     "editWallet": "Редактировать кошелёк",
                     "editLedger": "Редактировать Ledger"
-                }
+                },
+                "paneTitle": "Кошелёк"
             },
             "derivedWallets": {
                 "title": "Производные кошельки"

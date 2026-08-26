@@ -2,7 +2,6 @@ export const ROUTE = {
     main: '/',
     devTools: '/dev-tools',
     onboarding: {
-        welcome: '/onboarding',
-        passcode: '/onboarding/passcode'
+        welcome: '/onboarding'
     }
 } as const;

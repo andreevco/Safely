@@ -6,6 +6,9 @@ import {
     useActiveFiat,
     useActiveLanguage,
     useActiveWalletMeta,
+    useBootConfig,
+    useLinking,
+    useHasPortfolio,
     usePortfolios,
     useTranslate
 } from '@safely/ux';
@@ -15,24 +18,49 @@ import { listStyles, versionStyles } from './SettingsSidebar.styles';
 import { WalletIcon } from '../../entities';
 import { AppLayout, Cell, List, PageHeader, Text, useLongPress } from '../../shared';
 
+const CurrentWalletCell: FC<{ isSelected: boolean; onClick: () => void }> = props => {
+    const walletMeta = useActiveWalletMeta();
+
+    return (
+        <Cell tone="transparent" isSelected={props.isSelected} onClick={props.onClick}>
+            <Cell.Leading>
+                <WalletIcon icon={walletMeta.icon} />
+            </Cell.Leading>
+            <Cell.Content>
+                <Cell.Title>{walletMeta.name}</Cell.Title>
+            </Cell.Content>
+        </Cell>
+    );
+};
+
 export type SettingsSidebarProps = {
     activeSection: SettingsSection | null;
     onSelectSection: (section: SettingsSection) => void;
-    onAddWallet: () => void;
+    onEditAccount: () => void;
+    onAddAccount: () => void;
     onSignOut: () => void;
     onOpenDevTools: () => void;
 };
 
 export const SettingsSidebar: FC<SettingsSidebarProps> = props => {
-    const { activeSection, onSelectSection, onAddWallet, onSignOut, onOpenDevTools } = props;
+    const {
+        activeSection,
+        onSelectSection,
+        onEditAccount,
+        onAddAccount,
+        onSignOut,
+        onOpenDevTools
+    } = props;
 
     const { version } = useAppContext();
     const longPress = useLongPress(onOpenDevTools);
     const t = useTranslate();
     const fiat = useActiveFiat();
+    const { openURL } = useLinking();
+    const supportEmail = useBootConfig().references.support.email;
     const language = useActiveLanguage();
     const portfolios = usePortfolios();
-    const walletMeta = useActiveWalletMeta();
+    const hasPortfolio = useHasPortfolio();
     const accountMeta = useActiveAccountStoreSlot('meta');
 
     return (
@@ -41,21 +69,25 @@ export const SettingsSidebar: FC<SettingsSidebarProps> = props => {
                 <PageHeader title={t('settings.title')} hasDivider />
 
                 <List className={listStyles}>
-                    <List.Title>{t('settings.groups.currentWallet.title')}</List.Title>
-                    <List.Group variant="separated">
-                        <Cell onClick={() => undefined}>
-                            <Cell.Leading>
-                                <WalletIcon icon={walletMeta.icon} />
-                            </Cell.Leading>
-                            <Cell.Content>
-                                <Cell.Title>{walletMeta.name}</Cell.Title>
-                            </Cell.Content>
-                        </Cell>
-                    </List.Group>
+                    {hasPortfolio && (
+                        <>
+                            <List.Title>{t('settings.groups.currentWallet.title')}</List.Title>
+                            <List.Group variant="separated">
+                                <CurrentWalletCell
+                                    isSelected={activeSection === 'wallet'}
+                                    onClick={() => onSelectSection('wallet')}
+                                />
+                            </List.Group>
+                        </>
+                    )}
 
                     <List.Title>{t('settings.groups.account.title')}</List.Title>
                     <List.Group variant="separated">
-                        <Cell onClick={() => undefined}>
+                        <Cell
+                            tone="transparent"
+                            isSelected={activeSection === 'account'}
+                            onClick={() => onSelectSection('account')}
+                        >
                             <Cell.Content>
                                 <Cell.Title>{accountMeta?.name}</Cell.Title>
                                 <Cell.Subtitle>
@@ -63,21 +95,25 @@ export const SettingsSidebar: FC<SettingsSidebarProps> = props => {
                                 </Cell.Subtitle>
                             </Cell.Content>
                         </Cell>
-                        <Cell onClick={() => undefined}>
+                        <Cell tone="transparent" onClick={onEditAccount}>
                             <Cell.Content>
                                 <Cell.Title>
                                     {t('settings.groups.account.options.editAccount')}
                                 </Cell.Title>
                             </Cell.Content>
                         </Cell>
-                        <Cell onClick={() => undefined}>
+                        <Cell
+                            tone="transparent"
+                            isSelected={activeSection === 'addressBook'}
+                            onClick={() => onSelectSection('addressBook')}
+                        >
                             <Cell.Content>
                                 <Cell.Title>
                                     {t('settings.groups.account.options.addressBook')}
                                 </Cell.Title>
                             </Cell.Content>
                         </Cell>
-                        <Cell onClick={onAddWallet}>
+                        <Cell tone="transparent" onClick={onAddAccount}>
                             <Cell.Content>
                                 <Cell.Title>{t('settings.addAccount')}</Cell.Title>
                             </Cell.Content>
@@ -87,6 +123,7 @@ export const SettingsSidebar: FC<SettingsSidebarProps> = props => {
                     <List.Title>{t('settings.groups.application.title')}</List.Title>
                     <List.Group variant="separated">
                         <Cell
+                            tone="transparent"
                             isSelected={activeSection === 'security'}
                             onClick={() => onSelectSection('security')}
                         >
@@ -97,6 +134,7 @@ export const SettingsSidebar: FC<SettingsSidebarProps> = props => {
                             </Cell.Content>
                         </Cell>
                         <Cell
+                            tone="transparent"
                             isSelected={activeSection === 'language'}
                             onClick={() => onSelectSection('language')}
                         >
@@ -110,6 +148,7 @@ export const SettingsSidebar: FC<SettingsSidebarProps> = props => {
                             </Cell.Content>
                         </Cell>
                         <Cell
+                            tone="transparent"
                             isSelected={activeSection === 'currency'}
                             onClick={() => onSelectSection('currency')}
                         >
@@ -124,12 +163,18 @@ export const SettingsSidebar: FC<SettingsSidebarProps> = props => {
 
                     <List.Title>{t('settings.groups.info.title')}</List.Title>
                     <List.Group variant="separated">
-                        <Cell onClick={() => undefined}>
+                        <Cell tone="transparent" onClick={() => openURL(`mailto:${supportEmail}`)}>
                             <Cell.Content>
-                                <Cell.Title>{t('settings.groups.info.options.support')}</Cell.Title>
+                                <Cell.Row>
+                                    <Cell.Title>
+                                        {t('settings.groups.info.options.support')}
+                                    </Cell.Title>
+                                    <Cell.Value>{supportEmail}</Cell.Value>
+                                </Cell.Row>
                             </Cell.Content>
                         </Cell>
                         <Cell
+                            tone="transparent"
                             isSelected={activeSection === 'legal'}
                             onClick={() => onSelectSection('legal')}
                         >

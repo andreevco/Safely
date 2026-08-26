@@ -9,12 +9,18 @@ import {
     createPersister,
     createQueryClient,
     LedgerSessionPortProvider,
-    noopLoaderService,
     QueryProvider,
     SyncStorageProvider,
     UnlockableSecuredEncryptedStorage
 } from '@safely/ux';
-import { ScreenProtectionProvider, toastService, ToastViewport, WebLinking } from '@safely/web-ui';
+import {
+    loaderService,
+    LoaderViewport,
+    ScreenProtectionProvider,
+    toastService,
+    ToastViewport,
+    WebLinking
+} from '@safely/web-ui';
 
 import { authenticateBiometry, isBiometryUnlockEnabled, passcodePrompt } from '../features';
 import { logger } from '../logger';
@@ -24,6 +30,7 @@ import {
     unsupportedLedgerTransport,
     unsupportedQrScanner
 } from '../platform/unsupported';
+import { desktopLayerEncryptedStorage } from '../shared';
 
 export interface AppProvidersProps {
     loader?: ReactNode;
@@ -33,6 +40,10 @@ const securityGate: Security = {
     async check(options) {
         if ((await isBiometryUnlockEnabled()) && (await authenticateBiometry())) {
             return;
+        }
+
+        if ((await desktopLayerEncryptedStorage.get('passcode')) === null) {
+            throw new Error('Passcode is not set');
         }
 
         await passcodePrompt.request(options);
@@ -97,8 +108,7 @@ export const AppProviders: FC<PropsWithChildren<AppProvidersProps>> = ({ loader,
             },
             qrScanner: unsupportedQrScanner,
             toast: toastService,
-            /* TODO(loader): a real overlay lands with the design-system components. */
-            loader: noopLoaderService,
+            loader: loaderService,
             linking: new WebLinking(logger, url => platform.openExternalUrl(url)),
             i18n: { language, t },
             logger,
@@ -122,6 +132,7 @@ export const AppProviders: FC<PropsWithChildren<AppProvidersProps>> = ({ loader,
                     </Suspense>
                 </ScreenProtectionProvider>
                 <ToastViewport />
+                <LoaderViewport />
             </AppContext>
         </QueryProvider>
     );

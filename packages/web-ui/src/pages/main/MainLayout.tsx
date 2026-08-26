@@ -1,5 +1,8 @@
 import type { FC, ReactNode } from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+
+import type { Contact } from '@safely/core';
+import { useHasPortfolio } from '@safely/ux';
 
 import { dragRegionStyles } from './MainLayout.styles';
 import { MainSidebar } from './MainSidebar';
@@ -13,6 +16,14 @@ export type MainLayoutProps = {
     isFullScreen?: boolean;
     security?: SecuritySettingsProps;
     onAddWallet: () => void;
+    onEditAccount: () => void;
+    onAddAccount: () => void;
+    onAddContact: () => void;
+    onOpenContact: (contact: Contact) => void;
+    onSelectWallet: () => void;
+    onEditWallet: () => void;
+    onRevealRecoveryPhrase: () => void;
+    onRemoveWallet: () => void;
     onSignOut: () => void;
     onOpenDevTools: () => void;
     children: ReactNode;
@@ -24,13 +35,28 @@ export const MainLayout: FC<MainLayoutProps> = props => {
         isFullScreen,
         security,
         onAddWallet,
+        onEditAccount,
+        onAddAccount,
+        onAddContact,
+        onOpenContact,
+        onSelectWallet,
+        onEditWallet,
+        onRevealRecoveryPhrase,
+        onRemoveWallet,
         onSignOut,
         onOpenDevTools,
         children
     } = props;
 
+    const hasPortfolio = useHasPortfolio();
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [section, setSection] = useState<SettingsSection | null>(null);
+
+    useEffect(() => {
+        if (!hasPortfolio) {
+            setSection(current => (current === 'wallet' ? null : current));
+        }
+    }, [hasPortfolio]);
 
     const toggleSettings = (): void => {
         setIsSettingsOpen(current => !current);
@@ -55,7 +81,8 @@ export const MainLayout: FC<MainLayoutProps> = props => {
             <SettingsSidebar
                 activeSection={section}
                 onSelectSection={setSection}
-                onAddWallet={onAddWallet}
+                onEditAccount={onEditAccount}
+                onAddAccount={onAddAccount}
                 onSignOut={onSignOut}
                 onOpenDevTools={onOpenDevTools}
             />
@@ -64,7 +91,17 @@ export const MainLayout: FC<MainLayoutProps> = props => {
                 {section === null ? (
                     children
                 ) : (
-                    <SettingsContent section={section} security={security} />
+                    <SettingsContent
+                        section={section}
+                        security={security}
+                        onAddAccount={onAddAccount}
+                        onAddContact={onAddContact}
+                        onOpenContact={onOpenContact}
+                        onSelectWallet={onSelectWallet}
+                        onEditWallet={onEditWallet}
+                        onRevealRecoveryPhrase={onRevealRecoveryPhrase}
+                        onRemoveWallet={onRemoveWallet}
+                    />
                 )}
             </AppLayout.Content>
         </AppLayout>

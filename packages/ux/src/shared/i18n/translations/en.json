@@ -64,8 +64,10 @@
         "continue": "Continue",
         "later": "Later",
         "errors": {
-            "unknown": "Something went wrong"
-        }
+            "unknown": "Something went wrong",
+            "notSupportedYet": "Not supported yet"
+        },
+        "clear": "Clear"
     },
     "errorBoundary": {
         "title": "Something went wrong",
@@ -617,6 +619,7 @@
         }
     },
     "account": {
+        "title": "Account",
         "unnamed": "Unnamed",
         "sync": {
             "errors": {
@@ -681,7 +684,8 @@
                 "options": {
                     "editWallet": "Edit wallet",
                     "editLedger": "Edit Ledger"
-                }
+                },
+                "paneTitle": "Wallet"
             },
             "derivedWallets": {
                 "title": "Derived wallets"
