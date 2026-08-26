@@ -3,7 +3,7 @@ import { css } from '@safely/web-ui/styled-system/css';
 export const overlayStyles = css({
     position: 'fixed',
     inset: '0',
-    zIndex: 100,
+    zIndex: 'loader',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
