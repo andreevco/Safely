@@ -16,4 +16,3 @@ export * from './Spinner';
 export * from './Switch';
 export * from './TableCell';
 export * from './Text';
-export * from './WordCell';
