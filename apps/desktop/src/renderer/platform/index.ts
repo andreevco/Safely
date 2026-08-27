@@ -48,6 +48,7 @@ export const platform: DesktopPlatform = {
         synchronous: synchronousStorage
     },
     biometry: bridge.biometry,
+    camera: bridge.camera,
     openExternalUrl: url => bridge.openExternalUrl(url),
     protectScreen: isProtected => void bridge.setContentProtection(isProtected),
     reloadApp: () => bridge.relaunch(),

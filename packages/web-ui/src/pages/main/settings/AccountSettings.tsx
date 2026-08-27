@@ -4,13 +4,14 @@ import { useAccounts, useActiveAccount, useSetActiveAccount, useTranslate } from
 
 import { addAccountStyles, listStyles } from './SettingsSection.styles';
 import { AccountCell } from '../../../entities';
+import type { useAccountFlow } from '../../../features';
 import { Button, List, PageHeader } from '../../../shared';
 
 export type AccountSettingsProps = {
-    onAddAccount: () => void;
+    flow: ReturnType<typeof useAccountFlow>;
 };
 
-export const AccountSettings: FC<AccountSettingsProps> = props => {
+export const AccountSettings: FC<AccountSettingsProps> = ({ flow }) => {
     const t = useTranslate();
     const accounts = useAccounts();
     const { accountId: activeAccountId } = useActiveAccount();
@@ -39,7 +40,7 @@ export const AccountSettings: FC<AccountSettingsProps> = props => {
                     variant="secondary"
                     isFullWidth
                     className={addAccountStyles}
-                    onClick={props.onAddAccount}
+                    onClick={flow.startCreate}
                 >
                     {t('settings.addAccount')}
                 </Button>

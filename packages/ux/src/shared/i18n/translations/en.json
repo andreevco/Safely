@@ -61,6 +61,7 @@
         "save": "Save",
         "cancel": "Cancel",
         "close": "Close",
+        "ok": "OK",
         "continue": "Continue",
         "later": "Later",
         "errors": {
@@ -191,7 +192,8 @@
         "title": "Accounts"
     },
     "actions": {
-        "copied": "Copied"
+        "copied": "Copied",
+        "copy": "Copy"
     },
     "qrScan": {
         "title": "Scan QR code",
@@ -199,13 +201,22 @@
         "addDevice": {
             "title": "Scan QR code to add",
             "subtitle": "Scan the QR code shown in \"Link with QR\" on your other device."
+        },
+        "source": {
+            "title": "Camera",
+            "automatic": "Automatic",
+            "current": "Camera: {{name}}"
         }
     },
     "camera": {
         "permissionRequest": {
             "title": "Camera access required",
             "description": "Enable camera access in Settings to scan QR codes.",
-            "button": "Settings"
+            "button": "Settings",
+            "web": {
+                "description": "Turn on camera access to scan QR codes and connect services.",
+                "button": "Open Settings"
+            }
         },
         "noCameraFound": {
             "title": "No camera found",
@@ -826,6 +837,7 @@
             "sender": "Sender",
             "fee": "Network fee",
             "hash": "Transaction",
+            "openInExplorer": "Open in explorer",
             "fiatRateNote": "Fiat values use the current exchange rate.",
             "status": {
                 "title": "Status",

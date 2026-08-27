@@ -1,7 +1,7 @@
 import type { FC } from 'react';
 import { useState } from 'react';
 
-import { useTranslate } from '@safely/ux';
+import { resolveSignOutCopy, useHasActivePeer, useTranslate } from '@safely/ux';
 
 import {
     acknowledgementStyles,
@@ -22,6 +22,8 @@ export const SignOutModal: FC<SignOutModalProps> = props => {
     const { accountName, onConfirm, onClose } = props;
 
     const t = useTranslate();
+    const hasActivePeer = useHasActivePeer();
+    const [copy] = useState(() => resolveSignOutCopy(hasActivePeer));
     const [isAcknowledged, setIsAcknowledged] = useState(false);
 
     return (
@@ -32,22 +34,25 @@ export const SignOutModal: FC<SignOutModalProps> = props => {
                         {t('settings.signOutAccount.sheet.title', { name: accountName })}
                     </Modal.Title>
                     <Modal.Description className={descriptionStyles}>
-                        {t('settings.signOutAccount.sheet.noDevices.subtitle')}
+                        {t(copy.subtitleKey)}
                     </Modal.Description>
 
-                    <label className={acknowledgementStyles}>
-                        <Text variant="bodyM">
-                            {t('settings.signOutAccount.sheet.noDevices.checkbox')}
-                        </Text>
-                        <Checkbox checked={isAcknowledged} onCheckedChange={setIsAcknowledged} />
-                    </label>
+                    {copy.checkboxKey !== undefined && (
+                        <label className={acknowledgementStyles}>
+                            <Text variant="bodyM">{t(copy.checkboxKey)}</Text>
+                            <Checkbox
+                                checked={isAcknowledged}
+                                onCheckedChange={setIsAcknowledged}
+                            />
+                        </label>
+                    )}
                 </div>
 
                 <div className={actionsStyles}>
                     <Button
                         variant="destructive"
                         isFullWidth
-                        disabled={!isAcknowledged}
+                        disabled={copy.checkboxKey !== undefined && !isAcknowledged}
                         onClick={onConfirm}
                     >
                         {t('settings.signOutAccount.sheet.signOutButton')}

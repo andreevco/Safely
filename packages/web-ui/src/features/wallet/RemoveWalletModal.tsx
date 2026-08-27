@@ -3,9 +3,8 @@ import { useState } from 'react';
 
 import type { Portfolio } from '@safely/core';
 import { PortfolioType } from '@safely/core';
-import { useTranslate } from '@safely/ux';
+import { resolveRemoveWalletCopy, useTranslate } from '@safely/ux';
 
-import { resolveRemoveWalletCopy } from './remove-wallet-copy';
 import {
     confirmStyles,
     confirmTextStyles,

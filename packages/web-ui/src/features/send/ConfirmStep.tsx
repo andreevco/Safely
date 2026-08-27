@@ -89,7 +89,10 @@ export const ConfirmStep: FC<ConfirmStepProps> = props => {
                 {sendResult === null && (
                     <div className={heroStyles}>
                         <div className={iconSlotStyles}>
-                            <AssetIcon asset={result.amount.cryptoAssetAmount.asset} size={72} />
+                            <AssetIcon
+                                image={result.amount.cryptoAssetAmount.asset.image}
+                                size={72}
+                            />
                         </div>
                         <Text variant="titleM">
                             {t('confirmation.title', {

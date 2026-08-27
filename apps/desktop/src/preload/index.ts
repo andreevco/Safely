@@ -4,7 +4,14 @@ import { parseAppInfoArgument } from '../shared/app-info';
 import type { DesktopBridge, DesktopStoreBridge } from '../shared/bridge';
 import { BRIDGE_KEY } from '../shared/bridge';
 import type { AppState, StoreChannels } from '../shared/ipc';
-import { IPC_CHANNEL, sAppState, sBiometryResult, sIsFullScreen } from '../shared/ipc';
+import {
+    IPC_CHANNEL,
+    sAppState,
+    sBiometryResult,
+    sCameraAccessGranted,
+    sCameraAccessStatus,
+    sIsFullScreen
+} from '../shared/ipc';
 
 function createStoreBridge(channels: StoreChannels): DesktopStoreBridge {
     return {
@@ -96,6 +103,22 @@ const bridge: DesktopBridge = {
             return sBiometryResult.parse(
                 await ipcRenderer.invoke(IPC_CHANNEL.biometry.authenticate, { reason })
             );
+        }
+    },
+
+    camera: {
+        async getAccessStatus() {
+            return sCameraAccessStatus.parse(
+                await ipcRenderer.invoke(IPC_CHANNEL.camera.accessStatus)
+            );
+        },
+        async requestAccess() {
+            return sCameraAccessGranted.parse(
+                await ipcRenderer.invoke(IPC_CHANNEL.camera.requestAccess)
+            );
+        },
+        async openPrivacySettings(): Promise<void> {
+            await ipcRenderer.invoke(IPC_CHANNEL.camera.openPrivacySettings);
         }
     },
 

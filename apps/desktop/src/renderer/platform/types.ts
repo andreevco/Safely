@@ -2,7 +2,7 @@ import type { Build, IEnumerableStorage, ISyncKeyValueStorage } from '@safely/co
 import type { AppStateStatus, LedgerTransport } from '@safely/ux';
 
 import type { AppInfo } from '../../shared/app-info';
-import type { DesktopBiometryBridge } from '../../shared/bridge';
+import type { DesktopBiometryBridge, DesktopCameraBridge } from '../../shared/bridge';
 
 /**
  * What the renderer supplies to the shared UI — the app's own contract, not one `@safely/web-ui`
@@ -25,6 +25,8 @@ export interface DesktopPlatform {
     readonly storage: DesktopPlatformStorage;
 
     readonly biometry: DesktopBiometryBridge;
+
+    readonly camera: DesktopCameraBridge;
 
     openExternalUrl(url: string): Promise<void>;
 

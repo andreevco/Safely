@@ -1,4 +1,5 @@
 export type { Security, IUnlockableSecuredEncryptedStorage } from './types';
+export { SecurityCheckCancelledError } from './errors';
 export {
     UnlockableSecuredEncryptedStorage,
     SecretEncryptor,

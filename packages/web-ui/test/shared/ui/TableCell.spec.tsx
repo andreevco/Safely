@@ -40,4 +40,36 @@ describe('TableCell', () => {
 
         vi.unstubAllGlobals();
     });
+
+    it('leaves the row inert and copies from its own action when given a render prop', async () => {
+        const writeText = vi.fn().mockResolvedValue(undefined);
+        const onCopy = vi.fn();
+
+        vi.stubGlobal('navigator', { clipboard: { writeText } });
+
+        render(
+            <TableCell copyable="txid" onCopy={onCopy}>
+                {({ copy }) => (
+                    <>
+                        <TableCell.Column>
+                            <TableCell.Value>txid</TableCell.Value>
+                        </TableCell.Column>
+                        <TableCell.Actions>
+                            <TableCell.Action aria-label="Copy" onClick={copy} />
+                        </TableCell.Actions>
+                    </>
+                )}
+            </TableCell>
+        );
+
+        const buttons = screen.getAllByRole('button');
+        expect(buttons).toHaveLength(1);
+
+        buttons[0].click();
+
+        await waitFor(() => expect(onCopy).toHaveBeenCalledOnce());
+        expect(writeText).toHaveBeenCalledWith('txid');
+
+        vi.unstubAllGlobals();
+    });
 });

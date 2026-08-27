@@ -1,34 +1,33 @@
-import type { CSSProperties, FC } from 'react';
+import type { ComponentType, FC, SVGProps } from 'react';
 
-import type { CryptoAsset } from '@safely/core';
+import BtcLogo from '@safely/ux/assets/images/btc-logo.svg?react';
 
-import { iconStyles } from './AssetIcon.styles';
-import { btcLogo } from '../../shared';
+import { imageStyles } from './AssetIcon.styles';
 
-const KNOWN_IMAGES: Record<string, string> = {
-    '/resources/images/btc-logo.svg': btcLogo
+/* `CryptoAsset.image` is a path into the app's own resources, mirrored by mobile's `resolveSource` */
+const BUNDLED_IMAGES: Record<string, ComponentType<SVGProps<SVGSVGElement>>> = {
+    '/resources/images/btc-logo.svg': BtcLogo
 };
 
+const REMOTE_PROTOCOL = 'https://';
+
 export type AssetIconProps = {
-    asset: CryptoAsset;
+    image: string | undefined;
     size: number;
 };
 
 export const AssetIcon: FC<AssetIconProps> = props => {
-    const { asset, size } = props;
+    const { image, size } = props;
 
-    const source = asset.image === undefined ? undefined : KNOWN_IMAGES[asset.image];
+    const Bundled = image === undefined ? undefined : BUNDLED_IMAGES[image];
 
-    if (source === undefined) {
-        return null;
+    if (Bundled !== undefined) {
+        return <Bundled width={size} height={size} className={imageStyles} aria-hidden />;
     }
 
-    return (
-        <img
-            src={source}
-            alt=""
-            className={iconStyles}
-            style={{ width: size, height: size } as CSSProperties}
-        />
-    );
+    if (image !== undefined && image.startsWith(REMOTE_PROTOCOL)) {
+        return <img src={image} width={size} height={size} alt="" className={imageStyles} />;
+    }
+
+    return <span style={{ width: size, height: size }} className={imageStyles} />;
 };

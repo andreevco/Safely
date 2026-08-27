@@ -22,14 +22,15 @@ import {
     WebLinking
 } from '@safely/web-ui';
 
-import { authenticateBiometry, isBiometryUnlockEnabled, passcodePrompt } from '../features';
+import {
+    authenticateBiometry,
+    isBiometryUnlockEnabled,
+    passcodePrompt,
+    qrScanPrompt
+} from '../features';
 import { logger } from '../logger';
 import { platform } from '../platform';
-import {
-    unsupportedLedgerSessionPort,
-    unsupportedLedgerTransport,
-    unsupportedQrScanner
-} from '../platform/unsupported';
+import { unsupportedLedgerSessionPort, unsupportedLedgerTransport } from '../platform/unsupported';
 import { desktopLayerEncryptedStorage } from '../shared';
 
 export interface AppProvidersProps {
@@ -106,7 +107,13 @@ export const AppProviders: FC<PropsWithChildren<AppProvidersProps>> = ({ loader,
                         )
                 }
             },
-            qrScanner: unsupportedQrScanner,
+            qrScanner: {
+                scan: options =>
+                    qrScanPrompt.request({
+                        title: t(options?.titleTranslationKey ?? 'qrScan.title'),
+                        subtitle: t(options?.subTranslationKey ?? 'qrScan.subtitle')
+                    })
+            },
             toast: toastService,
             loader: loaderService,
             linking: new WebLinking(logger, url => platform.openExternalUrl(url)),

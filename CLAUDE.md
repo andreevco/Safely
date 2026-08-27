@@ -16,7 +16,7 @@ Dependencies flow strictly bottom-up in this table; imports in the other directi
 | `packages/sync-storage`     | Versioned schemas of user state (`v1`, `v2`, …) on top of slottree, plus migrations.                                                           |
 | `packages/core`             | Wallet domain: BTC (xpub, PSBT, fee estimation), Ledger, external APIs (config/price/rate/exchange), entities, DI interfaces. No React.        |
 | `packages/ux`               | React layer shared by every app: FSD (`shared` → `entities` → `features`), react-query, zustand, xstate forms, plus the design tokens (`./theme`) and the strings (`./translations`). No RN/DOM specifics. |
-| `packages/web-ui`           | React layer shared by the web targets: design system (Base UI + Panda) and the screens built from it. FSD + `pages`. Pure and stateless — no router, no Electron/extension code, no platform contract, no globals, no build config. |
+| `packages/web-ui`           | React layer shared by the web targets: design system (Base UI + Panda), the screens built from it and the flows that drive them over `@safely/ux`. FSD + `pages`. No router, no Electron/extension code, no platform contract, no globals, no build config. |
 | `apps/mobile`               | Expo dev-client (iOS/Android): FSD + `screens`, native modules `modules/safely-*`, unistyles, i18n.                                            |
 | `apps/desktop`              | Electron (forge + vite), **macOS-only build for now**: split by process (`main`/`preload`/`renderer`/`shared`), native addon `native/keychain`, platform implementation, the security module (passcode, lockout, Touch ID) and the routing that drives the web UI. |
 | `apps/browser`              | MV3 extension — placeholder, see its README.                                                                                                    |
@@ -75,17 +75,21 @@ root tooling no.
   desynchronises the platforms.
 - **Panda extracts styles statically and fails silently** — a runtime value in a style yields no CSS,
   no error. See `.claude/rules/web-ui.md`; `styled-system/` must be generated before `tsc`/eslint.
+- **Filenames follow a convention no lint rule reads** — PascalCase for a component and its
+  siblings, camelCase for a file named after the hook it exports, kebab-case for everything else.
+  See `.claude/rules/typescript-style.md`.
 
 Everything else is enforced mechanically — layer boundaries, `any`, `console`, import order, type
-imports, naming. The full rule set lives in `eslint.config.js`; run lint instead of memorising it, and
-see `.claude/rules/typescript-style.md` for the conventions whose reason isn't obvious from the error
-message.
+imports, symbol naming. The full rule set lives in `eslint.config.js`; run lint instead of memorising
+it, and see `.claude/rules/typescript-style.md` for the conventions whose reason isn't obvious from
+the error message.
 
 ## Where the details are
 
 Topic rules in `.claude/rules/` load automatically when you open files in the matching area:
 `typescript-style.md`, `code-comments.md`, `fsd-layers.md`, `sync-and-crypto.md`, `mobile-app.md`,
-`web-ui.md`, `desktop-app.md`, `desktop-secret-store.md`, `desktop-signing.md`, `testing.md`.
+`web-ui.md`, `desktop-app.md`, `desktop-qr.md`, `desktop-secret-store.md`, `desktop-signing.md`,
+`testing.md`.
 
 `desktop-secret-store.md` is the desktop secret store in full — threat model, the keychain item
 schema, the signing chain it depends on and why the build is macOS-only. It loads with the store,

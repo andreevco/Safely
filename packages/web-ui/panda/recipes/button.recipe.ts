@@ -75,6 +75,12 @@ export const buttonRecipe = defineRecipe({
             }
         },
         size: {
+            xsmall: {
+                textStyle: 'labelM',
+                gap: '6',
+                paddingInline: '12',
+                minHeight: '40px'
+            },
             small: {
                 textStyle: 'labelM',
                 gap: '6',
@@ -105,6 +111,11 @@ export const buttonRecipe = defineRecipe({
         isIconOnly: {
             true: {}
         },
+        isRound: {
+            true: {
+                borderRadius: 'full'
+            }
+        },
         isLoading: {
             true: {
                 cursor: 'progress'
@@ -112,6 +123,11 @@ export const buttonRecipe = defineRecipe({
         }
     },
     compoundVariants: [
+        {
+            size: 'xsmall',
+            isIconOnly: true,
+            css: { paddingInline: '0', width: '40px', height: '40px' }
+        },
         {
             size: 'small',
             isIconOnly: true,

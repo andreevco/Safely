@@ -2,7 +2,7 @@ import { RouterProvider } from '@tanstack/react-router';
 import type { FC } from 'react';
 
 import { router } from './router';
-import { AppLock } from '../features';
+import { AppLock, QrScanFlow } from '../features';
 
 export type AppProps = {
     hasWindowControls?: boolean;
@@ -15,6 +15,7 @@ export const App: FC<AppProps> = props => {
     return (
         <AppLock>
             <RouterProvider router={router} context={{ hasWindowControls, isFullScreen }} />
+            <QrScanFlow />
         </AppLock>
     );
 };

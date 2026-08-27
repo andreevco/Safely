@@ -1,5 +1,5 @@
 import type { AppInfo } from './app-info';
-import type { AppState } from './ipc';
+import type { AppState, CameraAccessStatus } from './ipc';
 
 /**
  * The only path from the web UI to Electron, and the only module both processes may import.
@@ -21,6 +21,13 @@ export interface DesktopStoreBridge {
 export interface DesktopBiometryBridge {
     isAvailable(): Promise<boolean>;
     authenticate(reason: string): Promise<boolean>;
+}
+
+export interface DesktopCameraBridge {
+    getAccessStatus(): Promise<CameraAccessStatus>;
+    /* resolves to `false` for a refusal and for an answer macOS already remembers */
+    requestAccess(): Promise<boolean>;
+    openPrivacySettings(): Promise<void>;
 }
 
 export interface DesktopBridge {
@@ -48,6 +55,8 @@ export interface DesktopBridge {
     openExternalUrl(url: string): Promise<void>;
 
     biometry: DesktopBiometryBridge;
+
+    camera: DesktopCameraBridge;
 
     store: DesktopStoreBridge;
 
