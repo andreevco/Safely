@@ -44,7 +44,7 @@ knows nothing about `features`; in mobile, `features` knows nothing about `scree
 - `apps/desktop/src/renderer/shared` — the route constants and the structured storages (the
   `desktop` node of the regular and encrypted stores).
 - `apps/desktop/src/renderer/features` — one scenario per directory (`passcode`, `biometry`,
-  `app-lock`, `onboarding`, `add-wallet`, `wallet`, `address-book`, `account`), each owning its
+  `app-lock`, `onboarding`, `add-wallet`, `wallet`, `address-book`, `account`, `qr-scan`), each owning its
   `keys.ts`: the controller hooks that turn a screen's callbacks into flows, plus the modals those
   flows own. Features may import each other; nothing here may import `screens/` or `app/`. Composing
   features into one capability is `app/`'s job — the security gate handed to `IAppContext` is built

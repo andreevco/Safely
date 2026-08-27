@@ -12,4 +12,10 @@ export {
     usePasscode,
     type UsePasscodeResult
 } from './passcode';
+export {
+    QrScanCancelledError,
+    QrScanFlow,
+    qrScanPrompt,
+    type QrScanPromptOptions
+} from './qr-scan';
 export { useWalletFlow, WalletModals } from './wallet';

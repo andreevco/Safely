@@ -66,6 +66,9 @@ export const modalRecipe = defineSlotRecipe({
             position: 'absolute',
             top: '12',
             right: '12',
+            /* inside the popup, not the app: absolutely positioned content (a camera preview) is
+               painted later in DOM order and would bury the button */
+            zIndex: 1,
             ...closeStyles
         },
         header: {
@@ -115,6 +118,28 @@ export const modalRecipe = defineSlotRecipe({
     variants: {
         hasFloatingClose: {
             false: { content: { paddingTop: '16' } }
+        },
+        /* over a camera preview or an image there is no surface to match, so the button borrows one */
+        hasTransparentClose: {
+            true: {
+                close: {
+                    backgroundColor: 'other.transparentElement',
+                    backdropFilter: 'blur(6px)'
+                }
+            }
+        },
+        align: {
+            start: {
+                headerTitle: {
+                    position: 'static',
+                    order: 0,
+                    flex: '1',
+                    paddingLeft: '12',
+                    textAlign: 'left',
+                    pointerEvents: 'auto'
+                },
+                headerClose: { order: 1 }
+            }
         }
     },
     defaultVariants: {

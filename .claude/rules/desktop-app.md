@@ -34,7 +34,7 @@ Inside the renderer the layout is FSD, the same shape mobile uses:
 `shared` → `features` → `screens` → `app`, plus `platform/` (the Electron contract and its
 implementation) and two module-level singletons at the root, `logger.ts` and `i18n.ts`. `features/`
 holds one scenario per directory — `passcode`, `biometry`, `app-lock`, `onboarding`, `add-wallet`,
-`wallet`, `address-book`, `account` — each with its own `keys.ts` where it needs one; `screens/` is
+`wallet`, `address-book`, `account`, `qr-scan` — each with its own `keys.ts` where it needs one; `screens/` is
 one component per route, and `app/` composes them into the route tree and the providers. Same-layer
 imports between features are allowed (`app-lock` builds on `passcode` and `biometry`), imports from
 `screens/` or `app/` into a feature are not. There is no `entities/`: the domain entities live in
@@ -235,8 +235,10 @@ Do not weaken these without a threat-model note:
     this block can go — and it must go for a future web build, which has no privileged process.
   - Wildcards are legal here only because no request carries credentials (no cookies, no client
     certs). Do not introduce `credentials: 'include'` without revisiting this.
-- Permissions are denied by default; camera (QR) and HID (Ledger) are granted per request type when
-  those features land.
+- Permissions are denied by default. The **camera** is the one exception: granted to the top frame
+  for a video-only request, refused when the microphone is asked for alongside it, and HID (Ledger)
+  joins as its own branch when that lands. The check handler is looser than the request handler on
+  purpose — `desktop-qr.md` has both halves.
 - Fuses in `forge.config.ts` disable `RunAsNode`, the inspector and `NODE_OPTIONS`, and enable asar
   integrity validation.
 
@@ -307,6 +309,12 @@ diagnosable.
   resolve it with. The test double is a separate file that `src/` never exports
   (`test/main/store/fake-keychain.ts`); `desktop-secret-store.md` has the reasoning and the
   trade-off.
+- **The camera needs three build-time entries**, in `forge.config.ts` and `signing/`:
+  `usageDescription.Camera` (Electron's own plist carries a generic string, which is what the macOS
+  prompt would otherwise show), `extendInfo` plus `extendHelperInfo` with
+  `NSCameraUseContinuityCameraDeviceType`, and `com.apple.security.device.camera` on both entitlement
+  plists. `verify-signature.sh` gates the entitlement and the absence of a microphone one;
+  `desktop-qr.md` says which of the three is actually load-bearing.
 - `make` produces a **macOS zip only**. Signing is env-driven and listed at the top of
   `forge.config.ts`: `SAFELY_SIGN_IDENTITY` turns it on, `SAFELY_SIGN_PROFILE` is mandatory with it
   (forge throws on one without the other, because a signature without its profile reaches nothing),
