@@ -190,7 +190,8 @@
         "title": "Accounts"
     },
     "actions": {
-        "copied": "Copied"
+        "copied": "Copied",
+        "copy": "Copy"
     },
     "qrScan": {
         "title": "Scan QR code",
@@ -825,6 +826,7 @@
             "sender": "Sender",
             "fee": "Network fee",
             "hash": "Transaction",
+            "openInExplorer": "Open in explorer",
             "fiatRateNote": "Fiat values use the current exchange rate.",
             "status": {
                 "title": "Status",

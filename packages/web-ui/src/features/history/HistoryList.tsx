@@ -12,12 +12,13 @@ const SKELETON_ROWS = [0, 1, 2];
 const PREFETCH_MARGIN = '400px';
 
 export type HistoryListProps = {
+    selectedActivityKey?: string;
     onSelectActivity: (activity: ActivityItem) => void;
     onReceive: () => void;
 };
 
 export const HistoryList: FC<HistoryListProps> = props => {
-    const { onSelectActivity, onReceive } = props;
+    const { selectedActivityKey, onSelectActivity, onReceive } = props;
 
     const { groups, fetchNextPage, hasNextPage, isFetchingNextPage } = useHistoryGroups();
 
@@ -57,6 +58,7 @@ export const HistoryList: FC<HistoryListProps> = props => {
                             <ActivityItemView
                                 key={key}
                                 {...row}
+                                isSelected={activity.key === selectedActivityKey}
                                 onSelect={() => onSelectActivity(activity)}
                             />
                         ))}

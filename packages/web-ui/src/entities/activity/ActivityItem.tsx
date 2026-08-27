@@ -20,6 +20,7 @@ import { toContactColorStyle } from '../contact';
 import { WalletIcon } from '../portfolio';
 
 export type ActivityItemProps = Omit<ActivityRowView, 'key' | 'activity'> & {
+    isSelected?: boolean;
     onSelect?: () => void;
 };
 
@@ -74,6 +75,7 @@ export const ActivityItem: FC<ActivityItemProps> = memo(props => {
         timestampLabel,
         isPending,
         counterparty,
+        isSelected,
         onSelect
     } = props;
 
@@ -85,7 +87,11 @@ export const ActivityItem: FC<ActivityItemProps> = memo(props => {
             : [formattedValue, formattedFiat];
 
     return (
-        <Cell className={isPending ? pendingStyles : undefined} onClick={onSelect}>
+        <Cell
+            className={isPending ? pendingStyles : undefined}
+            isSelected={isSelected}
+            onClick={onSelect}
+        >
             <Cell.Content>
                 <Cell.Row>
                     <span className={titleRowStyles}>

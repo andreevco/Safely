@@ -1,22 +1,19 @@
 import { useCallback } from 'react';
 
-import { SyncStatus } from '@safely/sync';
 import {
     SecurityCheckCancelledError,
-    useAccounts,
-    useActiveAccount,
     useAppContext,
     useDeleteAccount,
     useEraseAllData,
     useErrorToast,
     useLoader,
+    useResolveSignOutPlan,
     useToast,
     useTranslate
 } from '@safely/ux';
 
 export function useSignOut() {
-    const accounts = useAccounts();
-    const account = useActiveAccount();
+    const resolvePlan = useResolveSignOutPlan();
     const { mutateAsync: deleteAccount } = useDeleteAccount();
     const { mutateAsync: eraseAllData } = useEraseAllData();
     const { withLoader } = useLoader();
@@ -30,24 +27,23 @@ export function useSignOut() {
     } = useAppContext();
 
     return useCallback(async () => {
-        const isLastAccount = accounts?.length === 1;
-
-        const isSynced = account.syncProvider.syncStatusManager.getStatus() !== SyncStatus.OFFLINE;
+        const plan = resolvePlan();
 
         try {
-            if (!isLastAccount || isSynced) {
+            if (plan.shouldDeleteAccount) {
                 using secureEncryptedStorage = getSecureEncrypted();
 
                 await secureEncryptedStorage.unlock();
                 await withLoader(() => deleteAccount(secureEncryptedStorage));
             }
 
-            if (isLastAccount) {
+            if (plan.shouldEraseAllData) {
                 await withLoader(() => eraseAllData());
-                return;
             }
 
-            toast({ message: t('settings.signOutAccount.toastAccountRemoved') });
+            if (plan.toastKey !== null) {
+                toast({ message: t(plan.toastKey) });
+            }
         } catch (error) {
             if (error instanceof SecurityCheckCancelledError) {
                 return;
@@ -56,8 +52,7 @@ export function useSignOut() {
             errorToast(error);
         }
     }, [
-        accounts,
-        account,
+        resolvePlan,
         withLoader,
         getSecureEncrypted,
         deleteAccount,

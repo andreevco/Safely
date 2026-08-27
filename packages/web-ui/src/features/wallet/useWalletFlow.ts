@@ -51,12 +51,12 @@ export function useWalletFlow() {
             close();
 
             try {
-                await withLoader(() => changePortfolioMeta({ portfolio, meta }));
+                await changePortfolioMeta({ portfolio, meta });
             } catch (error) {
                 errorToast(error);
             }
         },
-        [close, withLoader, changePortfolioMeta, portfolio, errorToast]
+        [close, changePortfolioMeta, portfolio, errorToast]
     );
 
     const remove = useCallback(async () => {

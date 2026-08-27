@@ -90,6 +90,13 @@ worked example: date headings are `List.Title variant="heading"`, rows sit in
 `List.Group variant="separated"` — which is also what gives each row its corner radius, so the row
 itself carries none — and the loading state is `Skeleton`, not five copies of one pulsing bar.
 
+The shell has two side regions, each a pair of slots: `AppLayout.Secondary`/`SecondaryContent` on the
+left holds settings, `AppLayout.Panel`/`PanelContent` on the right holds a detail view. Both open by
+collapsing the outer slot's width while the inner one slides, so the outer slot stays mounted and the
+page decides what the inner one contains — the transaction panel is a sibling of `AppLayout.Content`,
+which is why the selected activity lives in `MainPage` and reaches the list as a prop rather than
+being opened by it.
+
 ## Base UI conventions
 
 - Component state is exposed as **data attributes**; style them through the conditions declared in
@@ -116,8 +123,13 @@ take a callback prop instead.
 
 **A flow may live here; a platform-bound one may not.** `features/{add-wallet,wallet,account,contact}`
 hold the controller hooks and the modal switches that drive a scenario — local step state,
-`@safely/ux` mutations, and the modals of their own slice. That is shareable because both
-web targets render the same overlays, while mobile navigates instead (`fsd-layers.md`). The line is
+`@safely/ux` mutations, and the modals of their own slice. What a flow here must **not** hold is a
+decision mobile takes too: which copy a destructive sheet shows, what sign-out deletes versus erases,
+whether an address is already watched, or the order of unlock-then-write. Those live in `@safely/ux`
+(`resolveRemoveWalletCopy`, `resolveSignOutPlan`, `resolveWatchOnlyPortfolio`,
+`useAddPortfolioFromSource`, `useCreateAccountFromSource` — see `fsd-layers.md`), and a flow here
+composes them; what stays is the step state, the modal switch and where a success goes. That is
+shareable because both web targets render the same overlays, while mobile navigates instead. The line is
 what a flow binds to: nothing but `@safely/ux` contracts and this package's own components, and it is
 shared; a route, an app storage layer or a decision only one target can answer, and it stays in the
 app. `apps/desktop/src/renderer/features/onboarding` is the flow that stays: it navigates when the

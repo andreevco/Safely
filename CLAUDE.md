@@ -75,11 +75,14 @@ root tooling no.
   desynchronises the platforms.
 - **Panda extracts styles statically and fails silently** — a runtime value in a style yields no CSS,
   no error. See `.claude/rules/web-ui.md`; `styled-system/` must be generated before `tsc`/eslint.
+- **Filenames follow a convention no lint rule reads** — PascalCase for a component and its
+  siblings, camelCase for a file named after the hook it exports, kebab-case for everything else.
+  See `.claude/rules/typescript-style.md`.
 
 Everything else is enforced mechanically — layer boundaries, `any`, `console`, import order, type
-imports, naming. The full rule set lives in `eslint.config.js`; run lint instead of memorising it, and
-see `.claude/rules/typescript-style.md` for the conventions whose reason isn't obvious from the error
-message.
+imports, symbol naming. The full rule set lives in `eslint.config.js`; run lint instead of memorising
+it, and see `.claude/rules/typescript-style.md` for the conventions whose reason isn't obvious from
+the error message.
 
 ## Where the details are
 

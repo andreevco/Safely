@@ -1,7 +1,8 @@
 import type { FC } from 'react';
 import { useEffect, useState } from 'react';
 
-import { useHasPortfolio } from '@safely/ux';
+import type { ActivityItem, BtcActivityItem } from '@safely/ux';
+import { isBtcActivityItem, useActivePortfolio, useHasPortfolio } from '@safely/ux';
 
 import { MainContent, MainEmptyState } from './content';
 import { dragRegionStyles } from './MainPage.styles';
@@ -9,7 +10,13 @@ import { MainSidebar } from './MainSidebar';
 import type { SettingsSection } from './settings';
 import { SettingsContent } from './settings';
 import { SettingsSidebar } from './SettingsSidebar';
-import { AccountModals, AddWalletModals, useAccountFlow, useAddWalletFlow } from '../../features';
+import {
+    AccountModals,
+    AddWalletModals,
+    TransactionDetails,
+    useAccountFlow,
+    useAddWalletFlow
+} from '../../features';
 import { AppLayout } from '../../shared';
 import { DevToolsPage } from '../dev-tools';
 
@@ -22,12 +29,14 @@ export const MainPage: FC<MainPageProps> = props => {
     const { hasWindowControls, isFullScreen } = props;
 
     const hasPortfolio = useHasPortfolio();
+    const portfolioId = useActivePortfolio()?.id.toString();
     const addWallet = useAddWalletFlow();
     const account = useAccountFlow();
 
     const [isDevToolsOpen, setIsDevToolsOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [section, setSection] = useState<SettingsSection | null>(null);
+    const [selectedActivity, setSelectedActivity] = useState<BtcActivityItem | null>(null);
 
     useEffect(() => {
         if (!hasPortfolio) {
@@ -35,10 +44,21 @@ export const MainPage: FC<MainPageProps> = props => {
         }
     }, [hasPortfolio]);
 
+    useEffect(() => setSelectedActivity(null), [portfolioId]);
+
     const toggleSettings = (): void => {
         setIsSettingsOpen(current => !current);
         setSection(null);
     };
+
+    const selectSection = (next: SettingsSection): void => {
+        setSection(next);
+        setSelectedActivity(null);
+    };
+
+    /* orders have no detail view on the web targets yet */
+    const selectActivity = (activity: ActivityItem): void =>
+        isBtcActivityItem(activity) ? setSelectedActivity(activity) : undefined;
 
     if (isDevToolsOpen) {
         return (
@@ -51,7 +71,10 @@ export const MainPage: FC<MainPageProps> = props => {
     }
 
     const content = hasPortfolio ? (
-        <MainContent />
+        <MainContent
+            selectedActivityKey={selectedActivity?.key}
+            onSelectActivity={selectActivity}
+        />
     ) : (
         <MainEmptyState onAddWallet={addWallet.open} />
     );
@@ -61,6 +84,7 @@ export const MainPage: FC<MainPageProps> = props => {
             hasWindowControls={hasWindowControls}
             isFullScreen={isFullScreen}
             isSecondaryOpen={isSettingsOpen}
+            isPanelOpen={selectedActivity !== null}
         >
             <AppLayout.TitleBar className={dragRegionStyles} />
 
@@ -74,7 +98,7 @@ export const MainPage: FC<MainPageProps> = props => {
             <SettingsSidebar
                 activeSection={section}
                 account={account}
-                onSelectSection={setSection}
+                onSelectSection={selectSection}
                 onOpenDevTools={() => setIsDevToolsOpen(true)}
             />
 
@@ -85,6 +109,17 @@ export const MainPage: FC<MainPageProps> = props => {
                     <SettingsContent section={section} account={account} />
                 )}
             </AppLayout.Content>
+
+            <AppLayout.Panel>
+                <AppLayout.PanelContent>
+                    {selectedActivity !== null && (
+                        <TransactionDetails
+                            activity={selectedActivity}
+                            onClose={() => setSelectedActivity(null)}
+                        />
+                    )}
+                </AppLayout.PanelContent>
+            </AppLayout.Panel>
 
             <AddWalletModals flow={addWallet} />
             <AccountModals flow={account} />

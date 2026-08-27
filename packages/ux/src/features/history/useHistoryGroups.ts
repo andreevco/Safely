@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 
 import { BTC_ASSET } from '@safely/core';
 
-import { buildHistoryGroupViews } from './activityRowView';
+import { buildHistoryGroupViews } from './activity-row-view';
 import type { HistoryGroupView } from './types';
 import {
     useActivePortfolioRate,

@@ -20,6 +20,7 @@ export type ButtonProps = Omit<ComponentPropsWithoutRef<typeof BaseUiButton>, 'c
     };
 
 const SPINNER_SIZE_BY_SIZE = {
+    xsmall: 20,
     small: 20,
     medium: 24,
     large: 28
@@ -51,6 +52,7 @@ export const Button: FC<ButtonProps> = props => {
         size = 'large',
         isFullWidth,
         isIconOnly,
+        isRound,
         isLoading,
         iconLeft,
         iconRight,
@@ -64,7 +66,10 @@ export const Button: FC<ButtonProps> = props => {
 
     return (
         <BaseUiButton
-            className={cx(button({ variant, size, isFullWidth, isIconOnly, isLoading }), className)}
+            className={cx(
+                button({ variant, size, isFullWidth, isIconOnly, isRound, isLoading }),
+                className
+            )}
             disabled={disabled || isLoading}
             {...rest}
         >

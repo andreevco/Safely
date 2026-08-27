@@ -3,14 +3,11 @@ import { useCallback, useState } from 'react';
 import {
     SecurityCheckCancelledError,
     useActiveAccountMeta,
-    useAppContext,
     useChangeAccountMeta,
-    useCreateAccount,
+    useCreateAccountFromSource,
     useErrorToast,
     useLoader,
-    useNewAccountDefaultName,
-    useToast,
-    useTranslate
+    useNewAccountDefaultName
 } from '@safely/ux';
 
 import { useSignOut } from './useSignOut';
@@ -19,18 +16,11 @@ type AccountDraft = { mode: 'create' | 'edit'; name: string };
 
 export function useAccountFlow() {
     const { withLoader } = useLoader();
-    const t = useTranslate();
     const defaultName = useNewAccountDefaultName();
     const errorToast = useErrorToast({});
     const activeMeta = useActiveAccountMeta();
-    const toast = useToast();
     const { mutateAsync: changeAccountMeta } = useChangeAccountMeta();
-    const { mutateAsync: createAccount } = useCreateAccount({ setActive: true });
-    const {
-        storage: {
-            sync: { getSecureEncrypted }
-        }
-    } = useAppContext();
+    const { mutateAsync: createAccount } = useCreateAccountFromSource();
 
     const signOutAccount = useSignOut();
 
@@ -65,34 +55,14 @@ export function useAccountFlow() {
                     return;
                 }
 
-                using secureEncryptedStorage = getSecureEncrypted();
-                await secureEncryptedStorage.unlock();
-
-                await withLoader(() =>
-                    createAccount({
-                        name,
-                        secureEncryptedStorage,
-                        firstPortfolio: { kind: 'generated' }
-                    })
-                );
-
-                toast(t('addAccount.toastAccountCreated'));
+                await createAccount({ name, source: { kind: 'generated' } });
             } catch (error) {
                 if (!(error instanceof SecurityCheckCancelledError)) {
                     errorToast(error);
                 }
             }
         },
-        [
-            draft,
-            withLoader,
-            changeAccountMeta,
-            getSecureEncrypted,
-            createAccount,
-            toast,
-            t,
-            errorToast
-        ]
+        [draft, withLoader, changeAccountMeta, createAccount, errorToast]
     );
 
     const startSignOut = useCallback(() => setIsSigningOut(true), []);

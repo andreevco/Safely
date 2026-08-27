@@ -25,8 +25,8 @@ import type {
     BtcActivityItem,
     OrderActivityItem
 } from '../../../src/entities';
-import type { ActivityRowContext } from '../../../src/features/history/activityRowView';
-import { buildHistoryGroupViews } from '../../../src/features/history/activityRowView';
+import type { ActivityRowContext } from '../../../src/features/history/activity-row-view';
+import { buildHistoryGroupViews } from '../../../src/features/history/activity-row-view';
 import type { DateFormatter } from '../../../src/shared/format/date';
 import type { TranslateFn } from '../../../src/shared/i18n/types';
 

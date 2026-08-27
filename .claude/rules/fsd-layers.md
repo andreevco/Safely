@@ -29,9 +29,13 @@ knows nothing about `features`; in mobile, `features` knows nothing about `scree
 - `shared` — reusable with no domain meaning: UI primitives, formatting, contexts and providers,
   query-client wrappers, i18n, logger, storage adapters.
 - `entities` — one domain entity: its queries/mutations, cache keys, selectors, and small
-  presentational components for that entity (`account`, `asset`, `portfolio`, `contact`, …).
+  presentational components for that entity (`account`, `asset`, `portfolio`, `contact`, …). Nothing
+  above that level: a policy, a copy decision or a write that sequences several mutations is a
+  scenario, so it belongs in `features` even when it only ever touches one entity.
 - `features` — a user scenario that composes entities (`blockchain-send`, `exchange`, `ledger`,
-  `receive`, `onboarding`, …).
+  `receive`, `onboarding`, …). A scenario both platforms share, with no rendering and no navigation
+  in it, is named `<entity>-flow` (`portfolio-flow`, `account-flow`): that is where the resolvers and
+  the composed writes below live, and it keeps `entities` readable as pure data access.
 - `apps/mobile/src/screens` — a navigation screen: a directory with `<Name>Screen.tsx` /
   `<Name>Modal.tsx`. A screen composes features and holds no domain logic of its own.
 - `apps/mobile/src/app` — entry point: navigation, providers, error boundary, storage and
@@ -43,8 +47,8 @@ knows nothing about `features`; in mobile, `features` knows nothing about `scree
   the slice plus the controller hook and the modal switch that drive them (`add-wallet`, `wallet`,
   `account`, `contact`). A flow belongs here only while it binds to nothing but `@safely/ux`
   contracts; see `web-ui.md`. A slice with no modals belongs here too when it reads a `@safely/ux`
-  query and composes an entity into a screen region (`history`): it takes callbacks for everything
-  that leaves it, so the page still owns where a click goes.
+  query and composes an entity into a screen region (`history`, `transaction-details`): it takes
+  callbacks for everything that leaves it, so the page still owns where a click goes.
 - `packages/web-ui/src/pages` — one screen, the web counterpart of a mobile screen: props in, markup
   out, no routing. A flow lives in the component that triggers it, together with its modal switch, and
   moves up to the page only when more than one component triggers it (`pages/main/MainPage.tsx`) —
@@ -70,8 +74,9 @@ should move down into `features` — don't move the import up.
 
 Every layer and every module inside it is re-exported through `index.ts` (`packages/ux/src/index.ts`
 → `shared`/`entities`/`features` → modules). Externally the `@safely/ux` package exposes the barrel
-plus three subpaths: `@safely/ux/assets/icons/*`, `@safely/ux/theme` and `@safely/ux/translations`.
-Inside the package, import a module through its `index.ts`, not through an internal file.
+plus four subpaths: `@safely/ux/assets/icons/*`, `@safely/ux/assets/images/*`, `@safely/ux/theme` and
+`@safely/ux/translations`. Inside the package, import a module through its `index.ts`, not through an
+internal file.
 
 `shared/theme` and `shared/i18n/translations` have their own subpaths because their consumers run
 outside React — the unistyles config and the i18next bootstrap in `apps/mobile`, the Panda config in
@@ -104,11 +109,34 @@ the lock screen defaults on for desktop and off for mobile. So the flow stays ou
 and what moves into it is the part with no platform and no flow in it:
 
 - **pure policy and transitions** — `nextLockoutState`, `defaultLockoutPolicy`, `sLockoutState`,
-  `PASSCODE_LENGTH` (`shared/security/`). A schedule is injected as a *function* with a default, so
+  `PASSCODE_LENGTH` (`shared/security/`), `resolveSignOutPlan` (`features/account-flow/`),
+  `resolveWatchOnlyPortfolio` / `resolveImportedPortfolio` / `resolveGeneratedPortfolioIcon`
+  (`features/portfolio-flow/`). A schedule is injected as a *function* with a default, so
   an app can replace the curve without inheriting a data shape, and `now` is a parameter so the
-  transition tests without fake timers.
+  transition tests without fake timers. `resolveSignOutPlan` answers three booleans plus a toast key
+  from `isLastAccount`/`isSynced`; `useResolveSignOutPlan` returns a *resolver*, not a value, because
+  the sync status must be read when the user confirms, not when the sheet renders. The two
+  `resolve*Portfolio` functions take the portfolio list as an argument and return
+  `duplicate | new` — the duplicate check that has to happen before a name is typed, without a query
+  inside.
 - **copy decisions that are not rendering** — `lockoutRemainingCopy` returns a translation key plus a
-  count, never a string: the `t()` call and the markup stay per platform.
+  count, never a string: the `t()` call and the markup stay per platform. `resolveRemoveWalletCopy`
+  (`features/portfolio-flow/`) and `resolveSignOutCopy` (`features/account-flow/`) follow it: keys
+  plus an optional `checkboxKey`, and *whether* the acknowledgement exists is the resolver's answer — a
+  platform that reads `checkboxKey !== undefined` cannot drift into showing a checkbox the other one
+  hides.
+- **the write that unlocks its own store** — `useAddPortfolioFromSource`
+  (`features/portfolio-flow/`) and `useCreateAccountFromSource`
+  (`features/account-flow/`): one branch per `source.kind`, each unlocking the store it
+  needs and only then calling the entity mutation, so a flow states *what* to add and never repeats
+  *how*. **Customize-wallet saves carry no loader on either platform** —
+  `useAddPortfolioFromSource` shows none, and neither does any `CustomizeWalletModal` `onSave`
+  (`useWalletFlow.saveMeta`, `LedgerImportAccountsScreen`): that screen owns its own pending state, and
+  a full-screen overlay there would also paint over the passcode/Touch ID prompt the unlock raises.
+  `useCreateAccountFromSource` is the one that still wraps — customize *account*, not wallet — and it
+  wraps **only the write, never the unlock**, for that same reason. When a loader is wanted, wrap
+  inside the mutation rather than at the call site: mobile's `LoaderService` is a boolean, not a
+  counter, so a second wrapper outside hides the overlay on the inner `finally`.
 - **React primitives with no domain** — `useSubmitWhenComplete`, `useEnteredBackground`,
   `useCountdownToTimestamp` (`shared/react/`, `shared/app/`). `useSubmitWhenComplete` fires on the
   *transition* into a full value rather than on the state, which is what lets mobile hold the entered
@@ -124,7 +152,11 @@ and what moves into it is the part with no platform and no flow in it:
   view model is also the prop contract and a renamed field is a type error instead of a drift.
   This module takes a `TranslateFn` and returns display strings, the way `getDateGroupTitle` does,
   because a date heading needs a formatted date; the key-plus-count rule above still holds for copy
-  a platform assembles itself.
+  a platform assembles itself. `features/transaction-details` is the second instance of the shape —
+  `useTransactionDetails` over the pure `buildTransactionDetailsView`, plus
+  `buildBtcTransactionStatusView` for the confirmation copy that the order screen reuses. Mobile
+  renders it as a screen and the web as a side panel, and neither decides a title, a sign, an amount
+  order or an explorer URL of its own.
 - **the mechanism of a typed key/value store** — `createStructuredStorage` / `useStructuredStorage`
   (`shared/storage/`): a zod shape plus a `TreeStorage` node in, typed `get`/`set`/`remove` out, with
   parse-on-read and parse-on-write written once. Each app supplies its own node and its own shape
@@ -147,3 +179,10 @@ the signal the boundary is wrong — split a smaller piece out instead.
 Two duplicates that had already diverged before the split are why this is written down: the
 minutes-to-hours threshold in the lockout copy, and re-reading the attempt count versus trusting the
 query cache. Copy-paste between the apps does not stay in sync; extracted pieces do.
+
+The wallet and account flows proved it again: the sign-out sheet on the web had lost the
+`fullCopy` branch entirely and demanded an acknowledgement even when other devices still held the
+account, mobile unlocked the secure store for the last *offline* account it was never going to
+delete — one security prompt for nothing — and the remove-wallet copy on mobile still carried a
+`hideDerivation` branch that `HideDerivationContent` had already replaced with its own hardcoded
+strings. All three were invisible in review because each app read correct on its own.
