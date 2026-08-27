@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 
 import {
+    SecurityCheckCancelledError,
     useActiveAccountMeta,
     useAppContext,
     useChangeAccountMeta,
@@ -12,7 +13,7 @@ import {
     useTranslate
 } from '@safely/ux';
 
-import { PasscodePromptCancelledError } from '../passcode';
+import { useSignOut } from './useSignOut';
 
 type AccountDraft = { mode: 'create' | 'edit'; name: string };
 
@@ -31,7 +32,10 @@ export function useAccountFlow() {
         }
     } = useAppContext();
 
+    const signOutAccount = useSignOut();
+
     const [draft, setDraft] = useState<AccountDraft | null>(null);
+    const [isSigningOut, setIsSigningOut] = useState(false);
 
     const startCreate = useCallback(
         () => setDraft({ mode: 'create', name: defaultName }),
@@ -74,7 +78,7 @@ export function useAccountFlow() {
 
                 toast(t('addAccount.toastAccountCreated'));
             } catch (error) {
-                if (!(error instanceof PasscodePromptCancelledError)) {
+                if (!(error instanceof SecurityCheckCancelledError)) {
                     errorToast(error);
                 }
             }
@@ -91,5 +95,24 @@ export function useAccountFlow() {
         ]
     );
 
-    return { draft, startCreate, startEdit, cancel, save };
+    const startSignOut = useCallback(() => setIsSigningOut(true), []);
+
+    const cancelSignOut = useCallback(() => setIsSigningOut(false), []);
+
+    const signOut = useCallback(async () => {
+        setIsSigningOut(false);
+        await signOutAccount();
+    }, [signOutAccount]);
+
+    return {
+        draft,
+        isSigningOut,
+        startCreate,
+        startEdit,
+        cancel,
+        save,
+        startSignOut,
+        cancelSignOut,
+        signOut
+    };
 }

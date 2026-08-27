@@ -1,9 +1,10 @@
 import type { FC } from 'react';
 
-import { CustomizeWalletModal, RemoveWalletModal, SelectWalletModal } from '@safely/web-ui';
-
 import { RecoveryPhraseFlow } from './RecoveryPhraseFlow';
+import { RemoveWalletModal } from './RemoveWalletModal';
+import { SelectWalletModal } from './SelectWalletModal';
 import type { useWalletFlow } from './useWalletFlow';
+import { CustomizeWalletModal } from '../../entities';
 
 export type WalletModalsProps = {
     flow: ReturnType<typeof useWalletFlow>;

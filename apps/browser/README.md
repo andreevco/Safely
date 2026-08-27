@@ -20,9 +20,12 @@ The extension build entry and the browser implementation of the platform contrac
 
 ## What will not live here
 
-Screens, layout and design-system components. They belong to `@safely/web-ui`, which is shared with
-`apps/desktop` and stays platform-independent — the same rule that keeps `@safely/ux` free of
-React Native. `eslint-plugin-boundaries` enforces it: `web-ui` may not import app code.
+Screens, layout and design-system components, and the flows that drive them where those bind to
+nothing but `@safely/ux` (`features/{add-wallet,wallet,account,contact}`). They belong to
+`@safely/web-ui`, which is shared with `apps/desktop` and stays platform-independent — the same rule
+that keeps `@safely/ux` free of React Native. `eslint-plugin-boundaries` enforces it: `web-ui` may not
+import app code. Onboarding is the flow this app does write itself: it navigates, and it decides what
+protects the secret before a passcode exists — a keychain on desktop, an open question here.
 
 ## Constraints to keep in mind before starting
 

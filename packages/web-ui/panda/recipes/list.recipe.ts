@@ -10,14 +10,6 @@ export const listRecipe = defineSlotRecipe({
             flexDirection: 'column',
             width: '100%'
         },
-        title: {
-            paddingInline: '8',
-            paddingTop: '16',
-            paddingBottom: '8',
-            textStyle: 'bodyM',
-            textTransform: 'uppercase',
-            color: 'text.tertiary'
-        },
         group: {
             display: 'flex',
             flexDirection: 'column',
@@ -32,6 +24,28 @@ export const listRecipe = defineSlotRecipe({
         }
     },
     variants: {
+        titleVariant: {
+            caption: {
+                title: {
+                    paddingInline: '8',
+                    paddingTop: '16',
+                    paddingBottom: '8',
+                    textStyle: 'bodyM',
+                    textTransform: 'uppercase',
+                    color: 'text.tertiary'
+                }
+            },
+            heading: {
+                title: {
+                    paddingInline: '16',
+                    paddingTop: '16',
+                    paddingBottom: '12',
+                    textStyle: 'labelM',
+                    textTransform: 'capitalize',
+                    color: 'text.primary'
+                }
+            }
+        },
         variant: {
             divided: {
                 group: {
@@ -55,6 +69,7 @@ export const listRecipe = defineSlotRecipe({
         }
     },
     defaultVariants: {
+        titleVariant: 'caption',
         variant: 'divided'
     }
 });

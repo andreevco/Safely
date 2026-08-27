@@ -3,10 +3,14 @@ import { useRef, useState } from 'react';
 
 import type { Portfolio } from '@safely/core';
 import { PortfolioType } from '@safely/core';
-import { useErrorToast, useRecordActivePortfolioSecretReveal } from '@safely/ux';
-import { RecoveryConfirmModal, RecoveryPhraseModal } from '@safely/web-ui';
+import {
+    SecurityCheckCancelledError,
+    useErrorToast,
+    useRecordActivePortfolioSecretReveal
+} from '@safely/ux';
 
-import { PasscodePromptCancelledError } from '../passcode';
+import { RecoveryConfirmModal } from './RecoveryConfirmModal';
+import { RecoveryPhraseModal } from './RecoveryPhraseModal';
 
 export type RecoveryPhraseFlowProps = {
     portfolio: Portfolio;
@@ -30,7 +34,7 @@ export const RecoveryPhraseFlow: FC<RecoveryPhraseFlowProps> = props => {
         try {
             mnemonic.current = await portfolio.getMnemonic();
         } catch (error) {
-            if (!(error instanceof PasscodePromptCancelledError)) {
+            if (!(error instanceof SecurityCheckCancelledError)) {
                 errorToast(error);
             }
 

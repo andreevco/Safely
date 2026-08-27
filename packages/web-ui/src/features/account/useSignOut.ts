@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 
 import { SyncStatus } from '@safely/sync';
 import {
+    SecurityCheckCancelledError,
     useAccounts,
     useActiveAccount,
     useAppContext,
@@ -12,8 +13,6 @@ import {
     useToast,
     useTranslate
 } from '@safely/ux';
-
-import { PasscodePromptCancelledError } from '../passcode';
 
 export function useSignOut() {
     const accounts = useAccounts();
@@ -50,7 +49,7 @@ export function useSignOut() {
 
             toast({ message: t('settings.signOutAccount.toastAccountRemoved') });
         } catch (error) {
-            if (error instanceof PasscodePromptCancelledError) {
+            if (error instanceof SecurityCheckCancelledError) {
                 return;
             }
 

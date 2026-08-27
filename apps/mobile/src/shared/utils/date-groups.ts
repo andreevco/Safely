@@ -1,35 +1,8 @@
-import type { TFunction } from 'i18next';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { GROUP_LABEL, groupByDate, type DateGroupMeta } from '@safely/core';
-import type { DateFormatter } from '@safely/ux';
-import { useDateFormatter } from '@safely/ux';
-
-export const getDateGroupTitle = (
-    meta: DateGroupMeta,
-    t: TFunction,
-    formatter: DateFormatter
-): string => {
-    switch (meta.label) {
-        case GROUP_LABEL.TODAY:
-            return t('dateGroups.today');
-        case GROUP_LABEL.YESTERDAY:
-            return t('dateGroups.yesterday');
-        case GROUP_LABEL.THIS_MONTH: {
-            const date = new Date(meta.year, meta.month, meta.day);
-            return formatter({ month: 'long', day: 'numeric' }).format(date);
-        }
-        case GROUP_LABEL.THIS_YEAR: {
-            const date = new Date(meta.year, meta.month, 1);
-            return formatter({ month: 'long' }).format(date);
-        }
-        case GROUP_LABEL.PAST_YEAR: {
-            const date = new Date(meta.year, meta.month, 1);
-            return formatter({ month: 'long', year: 'numeric' }).format(date);
-        }
-    }
-};
+import { groupByDate } from '@safely/core';
+import { getDateGroupTitle, useDateFormatter } from '@safely/ux';
 
 export type GroupedRow<T> =
     | { key: string; type: 'header'; title: string }

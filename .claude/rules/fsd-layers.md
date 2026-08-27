@@ -39,16 +39,24 @@ knows nothing about `features`; in mobile, `features` knows nothing about `scree
 - `packages/web-ui/src/shared` — the web design system (`shared/ui`, Panda recipes live in
   `packages/web-ui/panda/recipes`). No platform contract lives here — each app declares its own
   (`apps/desktop/src/renderer/platform/types.ts`).
+- `packages/web-ui/src/features` — a scenario shared by the web targets: the presentational modals of
+  the slice plus the controller hook and the modal switch that drive them (`add-wallet`, `wallet`,
+  `account`, `contact`). A flow belongs here only while it binds to nothing but `@safely/ux`
+  contracts; see `web-ui.md`. A slice with no modals belongs here too when it reads a `@safely/ux`
+  query and composes an entity into a screen region (`history`): it takes callbacks for everything
+  that leaves it, so the page still owns where a click goes.
 - `packages/web-ui/src/pages` — one screen, the web counterpart of a mobile screen: props in, markup
-  out, no routing.
+  out, no routing. A flow lives in the component that triggers it, together with its modal switch, and
+  moves up to the page only when more than one component triggers it (`pages/main/MainPage.tsx`) —
+  then it travels as one prop, never as a page-level context; see `web-ui.md`.
 - `apps/desktop/src/renderer/shared` — the route constants and the structured storages (the
   `desktop` node of the regular and encrypted stores).
 - `apps/desktop/src/renderer/features` — one scenario per directory (`passcode`, `biometry`,
-  `app-lock`, `onboarding`, `add-wallet`, `wallet`, `address-book`, `account`), each owning its
-  `keys.ts`: the controller hooks that turn a screen's callbacks into flows, plus the modals those
-  flows own. Features may import each other; nothing here may import `screens/` or `app/`. Composing
-  features into one capability is `app/`'s job — the security gate handed to `IAppContext` is built
-  in `app/AppProviders.tsx`, not in a feature.
+  `app-lock`, `onboarding`), each owning its `keys.ts`: the controller hooks that turn a screen's
+  callbacks into flows, plus the modals those flows own. Only the scenarios bound to this target are
+  here — the rest are in `packages/web-ui/src/features`. Features may import each other; nothing here
+  may import `screens/` or `app/`. Composing features into one capability is `app/`'s job — the
+  security gate handed to `IAppContext` is built in `app/AppProviders.tsx`, not in a feature.
 - `apps/desktop/src/renderer/screens` — one route component each, the web counterpart of a mobile
   screen: it composes features and holds no domain logic of its own.
 - `apps/desktop/src/renderer/app` — the entry point: the route tree, the guards and the providers.
@@ -92,8 +100,8 @@ for imports within a single module only.
 The same scenario often exists on mobile and on a web target — passcode, lockout, biometry — and the
 platforms genuinely disagree about the flow: mobile navigates to a screen where desktop renders an
 overlay, mobile prompts biometry again on the passcode screen where desktop deliberately does not,
-the lock screen defaults on for desktop and off for mobile. So the flow stays in each app, and what
-moves into `@safely/ux` is the part with no platform and no flow in it:
+the lock screen defaults on for desktop and off for mobile. So the flow stays out of `@safely/ux`,
+and what moves into it is the part with no platform and no flow in it:
 
 - **pure policy and transitions** — `nextLockoutState`, `defaultLockoutPolicy`, `sLockoutState`,
   `PASSCODE_LENGTH` (`shared/security/`). A schedule is injected as a *function* with a default, so
@@ -114,6 +122,11 @@ moves into `@safely/ux` is the part with no platform and no flow in it:
   which keys exist, and where they live, stays the app's decision. An **absent key reaches the shape
   as `null`**, so every entry is written `z.union([z.null(), …])`; a shape that omits the null branch
   throws on the first read, which is the path taken on a fresh install.
+
+The web targets are the exception, and only among themselves: they render the same overlays, so a
+flow that binds to nothing but `@safely/ux` is shared through `packages/web-ui/src/features` rather
+than copied into each app — that is a step sideways within the web family, not up into `@safely/ux`,
+which mobile also reads.
 
 What must **not** move up: a hook that binds a query key to a storage location to a default
 (`usePasscode`, `useLockScreen`, `useBiometryQuery`), the composition of security factors, or

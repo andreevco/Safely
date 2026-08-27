@@ -9,10 +9,10 @@ paths:
 # `@safely/web-ui` — components and styling
 
 The React layer shared by every web target (`apps/desktop`, later `apps/browser`). It holds the design
-system and the screens built from it, and nothing else — no router, no route components, no
-platform-bound controller hooks: it must stay free of platform code the same way `@safely/ux`
-stays free of React Native, and free of platform *contracts* too — those belong to the apps. Layers:
-see `fsd-layers.md`.
+system, the screens built from it and the flows that drive them over `@safely/ux`, and nothing else —
+no router, no route components, no platform-bound controller hooks: it must stay free of platform code
+the same way `@safely/ux` stays free of React Native, and free of platform *contracts* too — those
+belong to the apps. Layers: see `fsd-layers.md`.
 
 Stack: `@base-ui/react` (headless components) + `@pandacss/dev` (zero-runtime styling) on top of
 `@safely/ux` for all screen logic. Zero-runtime matters beyond bundle size: the MV3 extension's CSP
@@ -50,6 +50,14 @@ for. Anything that paints over the app takes its value from there — a raw numb
 how two overlays end up fighting. Modals need no token: they portal to the end of the body, so every
 listed layer already covers them.
 
+That last sentence holds only because `appLayout`'s `root` slot sets `isolation: isolate`. Without it
+a raw `z-index` *inside* the shell — the title bar, the sticky main-page header — outranks a portalled
+`position: fixed` overlay that carries no `z-index` of its own, and the modal backdrop then paints
+*under* it: the dialog opens and that one element stays sharp while the rest blurs. The isolation keeps
+the shell one stacking context, so the viewports rendered outside it (`ToastViewport`,
+`LoaderViewport`, the passcode prompt) and the Base UI portals stay above the whole app. A local
+`z-index` is therefore fine inside the shell, and must stay inside it.
+
 Only a dark palette exists. When a light one appears, the mapper starts emitting
 `{ base, _dark }` values and components stay untouched: token paths don't change.
 
@@ -67,6 +75,20 @@ No build error, no style — just missing CSS. `css({ color: someVariable })`, `
 `<Box p={spacing}>` all extract to nothing. `@pandacss/no-dynamic-styling` is an error for this
 reason. For genuinely dynamic values (a percentage, a user-chosen colour) set an inline CSS variable
 and read it from a static style: `style={{ '--fill': value }}` plus `width: 'var(--fill)'`.
+
+## Screens are composed from `shared/ui`
+
+Pages, features and entities are assembled from the primitives in `src/shared/ui` — `List`, `Cell`,
+`Text`, `Button`, `Icon`, `Skeleton`, `EmptyState` and the rest. A raw `div`/`section`/`h2` plus a
+local `css()` covers only what no primitive owns: container padding, a scroll sentinel, positioning.
+
+A local style that restates a recipe slot is a defect, not a shortcut: the copy stops matching the
+recipe at the first design change, and nothing in lint or CI compares them. When the design needs a
+look the primitive lacks, the variant goes into the recipe (`panda/recipes/*.recipe.ts` — and into
+`staticCss` if the recipe is new), or a new primitive goes into `shared/ui`. The history list is the
+worked example: date headings are `List.Title variant="heading"`, rows sit in
+`List.Group variant="separated"` — which is also what gives each row its corner radius, so the row
+itself carries none — and the loading state is `Skeleton`, not five copies of one pulsing bar.
 
 ## Base UI conventions
 
@@ -86,11 +108,38 @@ and read it from a static style: `style={{ '--fill': value }}` plus `width: 'var
 
 ## Routing lives in the app, not here
 
-This package ships screens, not flows: a page takes props and renders, and knows nothing about routes,
-guards or navigation. The route tree, the guards and the controller hooks that drive them live in the
-app (`apps/desktop/src/renderer/app`, on TanStack Router over a memory history), so a second target can
+A page takes props and renders, and knows nothing about routes, guards or navigation. The route tree,
+the guards and the route components that mount them live in the app
+(`apps/desktop/src/renderer/app`, on TanStack Router over a memory history), so a second target can
 wire the same screens into its own navigation. A component here that reaches for `useNavigate` has to
 take a callback prop instead.
+
+**A flow may live here; a platform-bound one may not.** `features/{add-wallet,wallet,account,contact}`
+hold the controller hooks and the modal switches that drive a scenario — local step state,
+`@safely/ux` mutations, and the modals of their own slice. That is shareable because both
+web targets render the same overlays, while mobile navigates instead (`fsd-layers.md`). The line is
+what a flow binds to: nothing but `@safely/ux` contracts and this package's own components, and it is
+shared; a route, an app storage layer or a decision only one target can answer, and it stays in the
+app. `apps/desktop/src/renderer/features/onboarding` is the flow that stays: it navigates when the
+account is created, sets the passcode through the desktop storage layer, and unlocks with
+`UNSAFE_SKIP_SECURITY_CHECK_unlock()`, which the extension — with no keychain — cannot mean the same
+thing by.
+
+**A flow lives where it is triggered, with its modal switch next to it.** `WalletSettings` calls
+`useWalletFlow()` and renders `<WalletModals />` itself; `AddressBookSettings` does the same with
+`useAddressBookFlow()`. It moves up to the page only when more than one child triggers it, because a
+hook called twice is two independent states: `MainPage` keeps `useAddWalletFlow` (the wallet sidebar
+and the empty state both open it) and `useAccountFlow` (the settings sidebar edits, adds and signs
+out; the account list adds), renders those two switches, and passes the flow object down as a single
+prop — no page-level context and no bag of callbacks in between. What the page can answer itself is
+not a prop at all — the dev tools
+open as a state of `MainPage`, not as a route the app has to own, so the extension reaches them the
+same way. What only the app can answer does not travel through the page either: `SecuritySettings` is
+exported for the app to mount with its own props, which is why `MainPage` takes no `security`.
+
+A flow that must ignore a cancelled security gate catches `SecurityCheckCancelledError` from
+`@safely/ux`; which factors the gate composes and how it is raised stays the app's
+(`desktop-app.md`).
 
 **A secret never travels through navigation.** Navigating with state writes into a history
 entry: it outlives the step, comes back on a backwards navigation, and is readable by whatever renders
@@ -118,9 +167,10 @@ gate around it — passcode plus Touch ID, implemented in `apps/desktop/src/rend
 `isInvalid`, an optional `biometry` key for the keypad, callbacks out. Everything behind them —
 where the passcode is stored, the lockout schedule, the prompt store that turns
 `IAppContext.security.check()` into a screen, the biometry query — lives in the app
-(`.claude/rules/desktop-app.md`), because each web target answers those differently. A hook here that
-reads `useAppContext().storage` to decide a key name, or a `PasscodeStorage`-shaped type declared
-here for an app to implement, is the specific regression that split undid.
+(`.claude/rules/desktop-app.md`), because each web target answers those differently. A flow here may
+*react* to that gate — `SecurityCheckCancelledError` is a `@safely/ux` export — but never raises it.
+A hook here that reads `useAppContext().storage` to decide a key name, or a `PasscodeStorage`-shaped
+type declared here for an app to implement, is the specific regression that split undid.
 
 A type that describes *what an app must provide* therefore does not belong here, and neither does
 anything a component only needs because some target happens to work that way. What a shared component
@@ -128,8 +178,8 @@ needs, it takes as a prop.
 
 ## This package owns no environment
 
-Everything here is pure and stateless: components, hooks, formatting, `WebLinking`, the logger and
-i18next factories, the platform types. Anything that touches the runtime — installing globals,
+Nothing here reaches the runtime: components, hooks, flows, formatting, `WebLinking`, the logger and
+i18next factories, the platform types. Anything that touches it — installing globals,
 polyfills, build configuration — belongs to the app, because the two web targets do not share a
 runtime (an Electron renderer and an MV3 page differ in CSP, in available APIs and in how they are
 bundled), and a package that reaches for the environment forces both of them into one shape.

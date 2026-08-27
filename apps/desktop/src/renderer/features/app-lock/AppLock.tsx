@@ -1,16 +1,11 @@
 import type { FC, ReactNode } from 'react';
 import { useState } from 'react';
 
-import { useEnteredBackground, useEraseAllData } from '@safely/ux';
+import { SecurityCheckCancelledError, useEnteredBackground, useEraseAllData } from '@safely/ux';
 import { EraseDataModal, LockScreen, PasscodeVerification } from '@safely/web-ui';
 
 import { useLockScreen } from './useLockScreen';
-import {
-    PasscodePromptCancelledError,
-    usePasscode,
-    usePasscodePromptStore,
-    usePasscodeVerification
-} from '../passcode';
+import { usePasscode, usePasscodePromptStore, usePasscodeVerification } from '../passcode';
 
 export type AppLockProps = {
     children: ReactNode;
@@ -99,7 +94,7 @@ const PasscodePromptOverlay: FC = () => {
                 close();
             }}
             onCancel={() => {
-                request.reject(new PasscodePromptCancelledError());
+                request.reject(new SecurityCheckCancelledError());
                 close();
             }}
         />

@@ -17,12 +17,12 @@ import {
     findContactMetaByAddress,
     findPortfolioMetaByAddress,
     getBtcTransactionDisplayStatus,
+    getDateGroupTitle,
     isRampOrderActive,
     resolveSentAmount
 } from '@safely/ux';
 
 import type { ActivityItemProps } from '@mobile/entities/activity';
-import { getDateGroupTitle } from '@mobile/shared/utils';
 
 export type HistoryHeaderRow = {
     key: string;
@@ -61,15 +61,6 @@ export const timeFormatDetailsByGroupLabel: Record<GROUP_LABEL, TimeFormatDetail
     [GROUP_LABEL.PAST_YEAR]: 'day-month-time'
 };
 
-const getHistoryGroupTitle = (
-    meta: DateGroupMeta | PendingGroupMeta,
-    t: TFunction,
-    formatter: DateFormatter
-): string =>
-    meta.label === GROUP_LABEL.PENDING
-        ? t('dateGroups.pending')
-        : getDateGroupTitle(meta, t, formatter);
-
 export const buildHeaderRow = (
     meta: DateGroupMeta | PendingGroupMeta,
     groupKey: string,
@@ -78,7 +69,7 @@ export const buildHeaderRow = (
 ): HistoryHeaderRow => ({
     key: `header-${groupKey}`,
     type: 'header',
-    title: getHistoryGroupTitle(meta, t, groupFormatter)
+    title: getDateGroupTitle(meta, t, groupFormatter)
 });
 
 const formatTimestampLabel = (

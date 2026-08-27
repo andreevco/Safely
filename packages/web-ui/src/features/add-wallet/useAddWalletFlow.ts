@@ -11,6 +11,7 @@ import {
     toPortfolioIdWatchOnly
 } from '@safely/core';
 import {
+    SecurityCheckCancelledError,
     useActiveAccountStoreSlot,
     useAddWatchOnlyPortfolio,
     useAppContext,
@@ -24,8 +25,6 @@ import {
     useSetActivePortfolio,
     useUnlockableSecretEncryptorFactory
 } from '@safely/ux';
-
-import { PasscodePromptCancelledError } from '../passcode';
 
 export type AddWalletDraft = Pick<PortfolioMeta, 'name' | 'icon'>;
 
@@ -213,7 +212,7 @@ export function useAddWalletFlow() {
                     }
                 }
 
-                if (!(error instanceof PasscodePromptCancelledError)) {
+                if (!(error instanceof SecurityCheckCancelledError)) {
                     close();
                     throw error;
                 }

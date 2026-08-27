@@ -2,15 +2,13 @@ import type { FC } from 'react';
 
 import { PortfolioNetworkType } from '@safely/core';
 import { useToast, useTranslate } from '@safely/ux';
-import {
-    AddWalletModal,
-    CustomizeWalletModal,
-    ImportWalletModal,
-    WalletAlreadyAddedModal,
-    WatchAccountModal
-} from '@safely/web-ui';
 
+import { AddWalletModal } from './AddWalletModal';
+import { ImportWalletModal } from './ImportWalletModal';
 import type { useAddWalletFlow } from './useAddWalletFlow';
+import { WalletAlreadyAddedModal } from './WalletAlreadyAddedModal';
+import { WatchAccountModal } from './WatchAccountModal';
+import { CustomizeWalletModal } from '../../entities';
 
 export type AddWalletModalsProps = {
     flow: ReturnType<typeof useAddWalletFlow>;

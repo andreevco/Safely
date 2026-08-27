@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 
 import type { PortfolioMeta } from '@safely/core';
 import {
+    SecurityCheckCancelledError,
     useActivePortfolioEntitiesQuery,
     useChangePortfolioMeta,
     useDeletePortfolio,
@@ -11,8 +12,6 @@ import {
     useToast,
     useTranslate
 } from '@safely/ux';
-
-import { PasscodePromptCancelledError } from '../passcode';
 
 export type WalletStep = 'select' | 'edit' | 'reveal' | 'remove';
 
@@ -71,7 +70,7 @@ export function useWalletFlow() {
             await withLoader(() => deletePortfolio(portfolio));
             toast(t('removeWallet.toastMessages.walletRemoved'));
         } catch (error) {
-            if (!(error instanceof PasscodePromptCancelledError)) {
+            if (!(error instanceof SecurityCheckCancelledError)) {
                 errorToast(error);
             }
         }

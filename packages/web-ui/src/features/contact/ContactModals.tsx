@@ -1,7 +1,7 @@
 import type { FC } from 'react';
 
-import { ConfirmDeleteContactModal, ContactModal } from '@safely/web-ui';
-
+import { ConfirmDeleteContactModal } from './ConfirmDeleteContactModal';
+import { ContactModal } from './ContactModal';
 import type { useAddressBookFlow } from './useAddressBookFlow';
 
 export type ContactModalsProps = {

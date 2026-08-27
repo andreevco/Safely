@@ -1,5 +1,10 @@
 import { css } from '@safely/web-ui/styled-system/css';
 
+export const containerStyles = css({
+    paddingInline: '24',
+    paddingBottom: '32'
+});
+
 export const badgeStyles = css({
     display: 'flex',
     alignItems: 'center',
@@ -12,12 +17,4 @@ export const badgeStyles = css({
     borderStyle: 'dashed',
     borderColor: 'other.transparentElement',
     color: 'icon.tertiary'
-});
-
-export const subtitleStyles = css({
-    textWrap: 'balance'
-});
-
-export const actionStyles = css({
-    marginTop: '16'
 });

@@ -16,6 +16,7 @@ import {
 import type { SettingsSection } from './settings';
 import { listStyles, versionStyles } from './SettingsSidebar.styles';
 import { WalletIcon } from '../../entities';
+import type { useAccountFlow } from '../../features';
 import { AppLayout, Cell, List, PageHeader, Text, useLongPress } from '../../shared';
 
 const CurrentWalletCell: FC<{ isSelected: boolean; onClick: () => void }> = props => {
@@ -35,22 +36,13 @@ const CurrentWalletCell: FC<{ isSelected: boolean; onClick: () => void }> = prop
 
 export type SettingsSidebarProps = {
     activeSection: SettingsSection | null;
+    account: ReturnType<typeof useAccountFlow>;
     onSelectSection: (section: SettingsSection) => void;
-    onEditAccount: () => void;
-    onAddAccount: () => void;
-    onSignOut: () => void;
     onOpenDevTools: () => void;
 };
 
 export const SettingsSidebar: FC<SettingsSidebarProps> = props => {
-    const {
-        activeSection,
-        onSelectSection,
-        onEditAccount,
-        onAddAccount,
-        onSignOut,
-        onOpenDevTools
-    } = props;
+    const { activeSection, account, onSelectSection, onOpenDevTools } = props;
 
     const { version } = useAppContext();
     const longPress = useLongPress(onOpenDevTools);
@@ -95,7 +87,7 @@ export const SettingsSidebar: FC<SettingsSidebarProps> = props => {
                                 </Cell.Subtitle>
                             </Cell.Content>
                         </Cell>
-                        <Cell tone="transparent" onClick={onEditAccount}>
+                        <Cell tone="transparent" onClick={account.startEdit}>
                             <Cell.Content>
                                 <Cell.Title>
                                     {t('settings.groups.account.options.editAccount')}
@@ -113,7 +105,7 @@ export const SettingsSidebar: FC<SettingsSidebarProps> = props => {
                                 </Cell.Title>
                             </Cell.Content>
                         </Cell>
-                        <Cell tone="transparent" onClick={onAddAccount}>
+                        <Cell tone="transparent" onClick={account.startCreate}>
                             <Cell.Content>
                                 <Cell.Title>{t('settings.addAccount')}</Cell.Title>
                             </Cell.Content>
@@ -185,7 +177,7 @@ export const SettingsSidebar: FC<SettingsSidebarProps> = props => {
                     </List.Group>
 
                     <List.Group variant="separated">
-                        <Cell tone="accentRed" onClick={onSignOut}>
+                        <Cell tone="accentRed" onClick={account.startSignOut}>
                             <Cell.Content>
                                 <Cell.Title>
                                     {t('settings.signOutAccount.title', {

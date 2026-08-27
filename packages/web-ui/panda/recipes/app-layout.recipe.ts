@@ -10,6 +10,8 @@ export const appLayoutRecipe = defineSlotRecipe({
     base: {
         root: {
             position: 'relative',
+            /* confines the shell's own z-indexes so a portalled overlay still covers them */
+            isolation: 'isolate',
             display: 'flex',
             height: '100%',
             width: '100%',
