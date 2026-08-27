@@ -1,21 +1,4 @@
 import { defineSlotRecipe } from '@pandacss/dev';
-import type { SystemStyleObject } from '@pandacss/dev';
-
-const closeStyles: SystemStyleObject = {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '40px',
-    height: '40px',
-    padding: '0',
-    borderWidth: '0',
-    borderRadius: 'full',
-    backgroundColor: 'button.secondary.background',
-    color: 'icon.primary',
-    cursor: 'pointer',
-    '& svg [fill]:not([fill="none"])': { fill: 'currentcolor' },
-    '& svg [stroke]:not([stroke="none"])': { stroke: 'currentcolor' }
-};
 
 export const modalRecipe = defineSlotRecipe({
     className: 'modal',
@@ -23,10 +6,8 @@ export const modalRecipe = defineSlotRecipe({
     slots: [
         'backdrop',
         'popup',
-        'close',
         'header',
         'headerTitle',
-        'headerClose',
         'content',
         'title',
         'description',
@@ -62,12 +43,6 @@ export const modalRecipe = defineSlotRecipe({
                 transform: 'translate(-50%, -50%) scale(1)'
             }
         },
-        close: {
-            position: 'absolute',
-            top: '12',
-            right: '12',
-            ...closeStyles
-        },
         header: {
             position: 'relative',
             display: 'flex',
@@ -84,7 +59,6 @@ export const modalRecipe = defineSlotRecipe({
             textAlign: 'center',
             pointerEvents: 'none'
         },
-        headerClose: closeStyles,
         content: {
             display: 'flex',
             flexDirection: 'column',

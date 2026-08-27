@@ -6,12 +6,16 @@ import { tableCell } from '@safely/web-ui/styled-system/recipes';
 
 export type TableCellColumnWidth = 'fill' | 'label' | 'labelNarrow';
 
+export type TableCellRenderProps = {
+    copy: () => void;
+};
+
 export type TableCellRootProps = {
     copyable?: string;
     copiedLabel?: string;
     hasColumnDivider?: boolean;
     onCopy?: () => void;
-    children?: ReactNode;
+    children?: ReactNode | ((props: TableCellRenderProps) => ReactNode);
     className?: string;
 };
 
@@ -21,6 +25,10 @@ export type TableCellColumnProps = Omit<ComponentPropsWithoutRef<'div'>, 'classN
 };
 
 export type TableCellTextProps = Omit<ComponentPropsWithoutRef<'span'>, 'className'> & {
+    className?: string;
+};
+
+export type TableCellActionProps = Omit<ComponentPropsWithoutRef<'button'>, 'className'> & {
     className?: string;
 };
 
@@ -57,20 +65,23 @@ const TableCellRoot: FC<TableCellRootProps> = props => {
         });
     }, [copyable, onCopy]);
 
+    /* a render prop puts buttons of its own inside the cell, and a button cannot nest one */
+    const isPressable = copyable !== undefined && typeof children !== 'function';
+
     const styles = tableCell({
-        isCopyable: copyable !== undefined,
+        isCopyable: isPressable,
         isCopied,
         hasColumnDivider
     });
 
     const content = (
         <TableCellContext.Provider value={styles}>
-            {children}
+            {typeof children === 'function' ? children({ copy: handleCopy }) : children}
             {copiedLabel !== undefined && <span className={styles.copied}>{copiedLabel}</span>}
         </TableCellContext.Provider>
     );
 
-    if (copyable === undefined) {
+    if (!isPressable) {
         return <div className={cx(styles.root, className)}>{content}</div>;
     }
 
@@ -113,8 +124,22 @@ const TableCellValue: FC<TableCellTextProps> = props => {
     );
 };
 
+const TableCellActions: FC<Omit<ComponentPropsWithoutRef<'div'>, 'className'>> = props => (
+    <div className={useTableCellStyles().actions} {...props} />
+);
+
+const TableCellAction: FC<TableCellActionProps> = props => {
+    const { className, ...rest } = props;
+
+    return (
+        <button type="button" className={cx(useTableCellStyles().action, className)} {...rest} />
+    );
+};
+
 export const TableCell = Object.assign(TableCellRoot, {
     Column: TableCellColumn,
     Label: TableCellLabel,
-    Value: TableCellValue
+    Value: TableCellValue,
+    Actions: TableCellActions,
+    Action: TableCellAction
 });

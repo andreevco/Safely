@@ -6,19 +6,12 @@ import Switch16 from '@safely/ux/assets/icons/16/switch-16.svg?react';
 
 import { destructiveGroupStyles, listStyles } from './SettingsSection.styles';
 import { WalletIcon } from '../../../entities';
+import { useWalletFlow, WalletModals } from '../../../features';
 import { Cell, Icon, List, PageHeader } from '../../../shared';
 
-export type WalletSettingsProps = {
-    onSelectWallet: () => void;
-    onEditWallet: () => void;
-    onRevealRecoveryPhrase: () => void;
-    onRemoveWallet: () => void;
-};
-
-export const WalletSettings: FC<WalletSettingsProps> = props => {
-    const { onSelectWallet, onEditWallet, onRevealRecoveryPhrase, onRemoveWallet } = props;
-
+export const WalletSettings: FC = () => {
     const t = useTranslate();
+    const flow = useWalletFlow();
     const formatDate = useDateFormatter({
         month: 'long',
         day: 'numeric',
@@ -42,7 +35,7 @@ export const WalletSettings: FC<WalletSettingsProps> = props => {
 
             <List className={listStyles}>
                 <List.Group variant="separated">
-                    <Cell onClick={onSelectWallet}>
+                    <Cell onClick={flow.openSelect}>
                         <Cell.Leading>
                             <WalletIcon icon={portfolio.meta.icon} />
                         </Cell.Leading>
@@ -54,7 +47,7 @@ export const WalletSettings: FC<WalletSettingsProps> = props => {
                         </Cell.Trailing>
                     </Cell>
 
-                    <Cell onClick={onEditWallet}>
+                    <Cell onClick={flow.openEdit}>
                         <Cell.Content>
                             <Cell.Title>
                                 {t('settings.groups.currentWallet.options.editWallet')}
@@ -64,7 +57,7 @@ export const WalletSettings: FC<WalletSettingsProps> = props => {
                     </Cell>
 
                     {portfolio.type === PortfolioType.BIP39 && (
-                        <Cell onClick={onRevealRecoveryPhrase}>
+                        <Cell onClick={flow.openReveal}>
                             <Cell.Content>
                                 <Cell.Title>
                                     {t('security.groups.wallet.recovery.title')}
@@ -84,7 +77,7 @@ export const WalletSettings: FC<WalletSettingsProps> = props => {
                 </List.Group>
 
                 <List.Group variant="separated" className={destructiveGroupStyles}>
-                    <Cell tone="accentRed" onClick={onRemoveWallet}>
+                    <Cell tone="accentRed" onClick={flow.openRemove}>
                         <Cell.Content>
                             <Cell.Title>
                                 {t('settings.removePortfolio.title', { name: portfolio.meta.name })}
@@ -93,6 +86,8 @@ export const WalletSettings: FC<WalletSettingsProps> = props => {
                     </Cell>
                 </List.Group>
             </List>
+
+            <WalletModals flow={flow} />
         </>
     );
 };
