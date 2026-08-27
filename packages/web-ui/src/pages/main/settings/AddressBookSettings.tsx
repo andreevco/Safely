@@ -68,7 +68,7 @@ export const AddressBookSettings: FC<AddressBookSettingsProps> = props => {
                     {contacts.map(contact => (
                         <ContactCell
                             key={contact.id.toString()}
-                            contact={contact}
+                            meta={contact.meta}
                             onSelect={() => onOpenContact(contact)}
                         />
                     ))}
