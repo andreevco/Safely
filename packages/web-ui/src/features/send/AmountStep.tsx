@@ -1,4 +1,4 @@
-import type { FC } from 'react';
+import type { FC, MouseEvent } from 'react';
 
 import type { AmountView } from '@safely/ux';
 import {
@@ -53,6 +53,15 @@ export const AmountStep: FC<AmountStepProps> = ({ view }) => {
         onPaste: view.pasteAmount
     });
 
+    const handleBoxMouseDown = (event: MouseEvent<HTMLDivElement>): void => {
+        if (event.target instanceof HTMLElement && event.target.closest('button, input')) {
+            return;
+        }
+
+        event.preventDefault();
+        input.inputRef.current?.focus();
+    };
+
     const enterMax = 'enterMax' in view ? view.enterMax : undefined;
     const symbol =
         inputType === 'fiat' ? fiat.id.symbol : (view.parsed.asset?.amount.asset.symbol ?? '');
@@ -63,7 +72,11 @@ export const AmountStep: FC<AmountStepProps> = ({ view }) => {
                 {t('send.amount')}
             </Text>
 
-            <div className={boxStyles} data-invalid={amountError !== undefined ? '' : undefined}>
+            <div
+                className={boxStyles}
+                data-invalid={amountError !== undefined ? '' : undefined}
+                onMouseDown={handleBoxMouseDown}
+            >
                 <div className={amountRowStyles}>
                     {isMax && <span className={approximateStyles}>≈</span>}
 
