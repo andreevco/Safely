@@ -1,48 +1,32 @@
+import type { Contact, CryptoFiatRate, NumberFormatter, Portfolio } from '@safely/core';
 import { GROUP_LABEL, assertUnreachable, ellipsisMiddle } from '@safely/core';
+
+import type { ActivityRowView, HistoryGroupView } from './types';
 import type {
-    useActivePortfolioRate,
-    useActualBtcBlockNumber,
-    useContacts,
-    useNumberFormatter,
-    usePortfolios
-} from '@safely/ux';
+    ActivityItem,
+    ActivityItemsDatedGroup,
+    BtcActivityItem,
+    OrderActivityItem
+} from '../../entities';
 import {
-    type ActivityItem,
-    type ActivityItemsDatedGroup,
-    type BtcActivityItem,
-    type DateFormatter,
-    type OrderActivityItem,
-    type TranslateFn,
     findContactMetaByAddress,
     findPortfolioMetaByAddress,
-    getBtcTransactionDisplayStatus,
-    getDateGroupTitle,
-    isRampOrderActive,
-    resolveSentAmount
-} from '@safely/ux';
-
-import type { ActivityItemProps } from '../../entities';
-
-export type ActivityRow = ActivityItemProps & { key: string };
-
-export type HistoryGroup = {
-    key: string;
-    title: string;
-    rows: ActivityRow[];
-};
+    isActivityItemPending
+} from '../../entities';
+import type { DateFormatter, TranslateFn } from '../../shared';
+import { getDateGroupTitle } from '../../shared';
+import { resolveSentAmount } from '../amount-display';
 
 export type ActivityRowContext = {
     t: TranslateFn;
     groupFormatter: DateFormatter;
     timeFormatter: DateFormatter;
     dayMonthFormatter: DateFormatter;
-    numberFormatter: ReturnType<typeof useNumberFormatter>;
-    portfolios: ReturnType<typeof usePortfolios>;
-    contacts: ReturnType<typeof useContacts>;
-    rateData: ReturnType<typeof useActivePortfolioRate>['data'];
-    currentBlockNumber: ReturnType<typeof useActualBtcBlockNumber>['data'];
+    numberFormatter: NumberFormatter;
+    portfolios: Portfolio[];
+    contacts: Contact[];
+    rate: CryptoFiatRate | null | undefined;
     showFullSentAmount: boolean;
-    onSelectActivity: (activity: ActivityItem) => void;
 };
 
 type TimeFormatDetails = 'time' | 'day-month-time';
@@ -65,18 +49,31 @@ const formatTimestampLabel = (
         ? context.timeFormatter.format(timestamp)
         : context.dayMonthFormatter.format(timestamp);
 
+const resolveCounterparty = (
+    address: string,
+    context: ActivityRowContext
+): ActivityRowView['counterparty'] => {
+    const contactMeta = findContactMetaByAddress(context.contacts, address);
+    if (contactMeta) {
+        return { kind: 'contact', meta: contactMeta };
+    }
+
+    const portfolioMeta = findPortfolioMetaByAddress(context.portfolios, address);
+    if (portfolioMeta) {
+        return { kind: 'portfolio', meta: portfolioMeta };
+    }
+
+    return { kind: 'address', label: ellipsisMiddle(address, 6) };
+};
+
 const buildTransactionRow = (
     activity: BtcActivityItem,
     groupKey: string,
     timeFormatDetails: TimeFormatDetails,
     context: ActivityRowContext
-): ActivityRow => {
+): ActivityRowView => {
     const isInitiator = activity.transaction.isInitiator;
-    const displayStatus = getBtcTransactionDisplayStatus(
-        activity.transaction.raw,
-        context.currentBlockNumber
-    );
-    const isPending = displayStatus.type === 'pending';
+    const isPending = isActivityItemPending(activity);
 
     const title = isPending
         ? isInitiator
@@ -95,23 +92,17 @@ const buildTransactionRow = (
     const formattedValue = amount.format(context.numberFormatter, {
         fullPrecision: isFullPrecision
     });
-    const formattedFiat = context.rateData
-        ? amount.convert(context.rateData).format(context.numberFormatter)
+    const formattedFiat = context.rate
+        ? amount.convert(context.rate).format(context.numberFormatter)
         : null;
 
     const counterpartyAddress = isInitiator
         ? activity.transaction.toAddress
         : activity.transaction.fromAddress;
-    const portfolioMeta = findPortfolioMetaByAddress(context.portfolios, counterpartyAddress);
-    const contactMeta = findContactMetaByAddress(context.contacts, counterpartyAddress);
-    const counterparty: ActivityRow['counterparty'] = contactMeta
-        ? { kind: 'contact', meta: contactMeta }
-        : portfolioMeta
-          ? { kind: 'portfolio', meta: portfolioMeta }
-          : { kind: 'address', label: ellipsisMiddle(counterpartyAddress, 6) };
 
     return {
         key: `${groupKey}-${activity.key}`,
+        activity,
         title,
         amountSign: isInitiator ? '−' : '+',
         formattedValue,
@@ -121,8 +112,7 @@ const buildTransactionRow = (
             ? null
             : formatTimestampLabel(activity.timestamp, timeFormatDetails, context),
         isPending,
-        counterparty,
-        onSelect: () => context.onSelectActivity(activity)
+        counterparty: resolveCounterparty(counterpartyAddress, context)
     };
 };
 
@@ -131,14 +121,14 @@ const buildOrderRow = (
     groupKey: string,
     timeFormatDetails: TimeFormatDetails,
     context: ActivityRowContext
-): ActivityRow => {
+): ActivityRowView => {
     const { order } = activity;
-    const isPending = isRampOrderActive(order);
+    const isPending = isActivityItemPending(activity);
     const isSale = order.type === 'offramp';
     const isUnsuccessful = !isPending && order.status !== 'completed';
 
-    const formattedFiat = context.rateData
-        ? activity.cryptoAmount?.convert(context.rateData).format(context.numberFormatter)
+    const formattedFiat = context.rate
+        ? activity.cryptoAmount?.convert(context.rate).format(context.numberFormatter)
         : null;
 
     const title = (() => {
@@ -158,13 +148,13 @@ const buildOrderRow = (
         }
     })();
 
-    const amountSign: ActivityRow['amountSign'] = (() => {
+    const amountSign: ActivityRowView['amountSign'] = (() => {
         if (isUnsuccessful) return null;
 
         return isSale ? '−' : '+';
     })();
 
-    const valueTone: ActivityRow['valueTone'] = (() => {
+    const valueTone: ActivityRowView['valueTone'] = (() => {
         if (isUnsuccessful) return 'tertiary';
 
         return isSale ? 'primary' : 'accentGreen';
@@ -172,6 +162,7 @@ const buildOrderRow = (
 
     return {
         key: `${groupKey}-${activity.key}`,
+        activity,
         title,
         amountSign,
         formattedValue: activity.cryptoAmount?.format(context.numberFormatter) ?? '-',
@@ -181,17 +172,16 @@ const buildOrderRow = (
             ? null
             : formatTimestampLabel(activity.timestamp, timeFormatDetails, context),
         isPending,
-        counterparty: { kind: 'provider', label: order.provider },
-        onSelect: () => context.onSelectActivity(activity)
+        counterparty: { kind: 'provider', label: order.provider }
     };
 };
 
-const buildActivityRow = (
+function buildActivityRowView(
     activity: ActivityItem,
     groupKey: string,
     timeFormatDetails: TimeFormatDetails,
     context: ActivityRowContext
-): ActivityRow => {
+): ActivityRowView {
     switch (activity.type) {
         case 'transaction':
             return buildTransactionRow(activity, groupKey, timeFormatDetails, context);
@@ -200,12 +190,12 @@ const buildActivityRow = (
         default:
             return assertUnreachable(activity as never);
     }
-};
+}
 
-export function buildHistoryGroups(
+export function buildHistoryGroupViews(
     groups: ActivityItemsDatedGroup[],
     context: ActivityRowContext
-): HistoryGroup[] {
+): HistoryGroupView[] {
     return groups.map(group => {
         const { key, meta, items } = group;
         const timeFormatDetails = timeFormatDetailsByGroupLabel[meta.label];
@@ -213,7 +203,9 @@ export function buildHistoryGroups(
         return {
             key,
             title: getDateGroupTitle(meta, context.t, context.groupFormatter),
-            rows: items.map(activity => buildActivityRow(activity, key, timeFormatDetails, context))
+            rows: items.map(activity =>
+                buildActivityRowView(activity, key, timeFormatDetails, context)
+            )
         };
     });
 }

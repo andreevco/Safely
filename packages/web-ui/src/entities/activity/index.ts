@@ -1,6 +1,1 @@
-export {
-    ActivityItem,
-    ActivityItemSkeleton,
-    type ActivityItemProps,
-    type ActivityItemCounterparty
-} from './ActivityItem';
+export { ActivityItem, ActivityItemSkeleton, type ActivityItemProps } from './ActivityItem';

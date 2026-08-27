@@ -1,8 +1,8 @@
 import type { FC } from 'react';
 import { memo } from 'react';
 
-import type { ContactMeta, PortfolioMeta } from '@safely/core';
 import { SPACE } from '@safely/core';
+import type { ActivityCounterparty, ActivityRowView } from '@safely/ux';
 import { useTransactionHistoryAmountOrder } from '@safely/ux';
 import Human16 from '@safely/ux/assets/icons/16/human-16.svg?react';
 
@@ -19,25 +19,11 @@ import { Cell, Icon, Skeleton, Text } from '../../shared';
 import { toContactColorStyle } from '../contact';
 import { WalletIcon } from '../portfolio';
 
-export type ActivityItemCounterparty =
-    | { kind: 'contact'; meta: ContactMeta }
-    | { kind: 'portfolio'; meta: PortfolioMeta }
-    | { kind: 'address'; label: string }
-    | { kind: 'provider'; label: string };
-
-export type ActivityItemProps = {
-    title: string;
-    amountSign: '+' | '−' | null;
-    formattedValue: string;
-    valueTone: 'primary' | 'accentGreen' | 'tertiary';
-    formattedFiat: string | null;
-    timestampLabel: string | null;
-    isPending: boolean;
-    counterparty: ActivityItemCounterparty;
+export type ActivityItemProps = Omit<ActivityRowView, 'key' | 'activity'> & {
     onSelect?: () => void;
 };
 
-const Counterparty: FC<{ counterparty: ActivityItemCounterparty }> = ({ counterparty }) => {
+const Counterparty: FC<{ counterparty: ActivityCounterparty }> = ({ counterparty }) => {
     switch (counterparty.kind) {
         case 'contact':
             return (

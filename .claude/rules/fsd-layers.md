@@ -114,6 +114,17 @@ and what moves into it is the part with no platform and no flow in it:
   *transition* into a full value rather than on the state, which is what lets mobile hold the entered
   code on screen for its 300 ms success animation without a second submit; clearing the value stays
   the caller's job.
+- **a screen's view model, when both platforms decide it identically** — `useHistoryGroups` plus the
+  pure `buildHistoryGroupViews` (`features/history`), the same shape as
+  `features/home-screen/useHomeScreenList`: the hook composes the entity queries and the formatters,
+  the builder turns `ActivityItemsDatedGroup[]` into rows whose title, sign, tone, counterparty and
+  timestamp are already decided. It renders nothing and navigates nowhere — every row carries its
+  `activity`, and each app builds `onPress`/`onSelect` from that. Both apps then declare
+  `ActivityItemProps = Omit<ActivityRowView, 'key' | 'activity'> & { onPress | onSelect }`, so the
+  view model is also the prop contract and a renamed field is a type error instead of a drift.
+  This module takes a `TranslateFn` and returns display strings, the way `getDateGroupTitle` does,
+  because a date heading needs a formatted date; the key-plus-count rule above still holds for copy
+  a platform assembles itself.
 - **the mechanism of a typed key/value store** — `createStructuredStorage` / `useStructuredStorage`
   (`shared/storage/`): a zod shape plus a `TreeStorage` node in, typed `get`/`set`/`remove` out, with
   parse-on-read and parse-on-write written once. Each app supplies its own node and its own shape
