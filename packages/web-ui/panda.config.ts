@@ -91,6 +91,10 @@ export default defineConfig({
                     '0%, 100%': { transform: 'translateX(0)' },
                     '25%': { transform: 'translateX(-8px)' },
                     '75%': { transform: 'translateX(8px)' }
+                },
+                pulse: {
+                    '0%, 100%': { opacity: '1' },
+                    '50%': { opacity: '0.4' }
                 }
             },
             recipes,

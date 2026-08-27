@@ -2,12 +2,28 @@ import { Dialog } from '@base-ui/react/dialog';
 import type { ComponentPropsWithoutRef, FC, ReactNode } from 'react';
 
 import Xmark16 from '@safely/ux/assets/icons/16/xmark-16.svg?react';
-import { cx } from '@safely/web-ui/styled-system/css';
-import { modal } from '@safely/web-ui/styled-system/recipes';
+import { css, cx } from '@safely/web-ui/styled-system/css';
+import { button, modal } from '@safely/web-ui/styled-system/recipes';
 
 import { Icon } from '../Icon';
 
 const styles = modal();
+
+const closeStyles = button({
+    variant: 'secondary',
+    size: 'xsmall',
+    isIconOnly: true,
+    isRound: true
+});
+
+/* the popup's own content (a camera preview) paints later in DOM order and would bury the button */
+const floatingCloseStyles = css({ position: 'absolute', top: '12', right: '12', zIndex: 1 });
+
+/* over a camera preview or an image there is no surface to match, so the button borrows one */
+const transparentCloseStyles = css({
+    backgroundColor: 'other.transparentElement',
+    backdropFilter: 'blur(6px)'
+});
 
 export type ModalRootProps = ComponentPropsWithoutRef<typeof Dialog.Root>;
 
@@ -49,7 +65,11 @@ const ModalPopup: FC<ModalPopupProps> = props => {
             <Dialog.Popup className={cx(styles.popup, className)}>
                 {hasClose && (
                     <Dialog.Close
-                        className={modal({ hasTransparentClose }).close}
+                        className={cx(
+                            closeStyles,
+                            floatingCloseStyles,
+                            hasTransparentClose && transparentCloseStyles
+                        )}
                         aria-label={closeLabel}
                     >
                         <Icon asset={Xmark16} />
@@ -69,7 +89,10 @@ const ModalHeader: FC<ModalHeaderProps> = props => {
 
     return (
         <div className={cx(headerStyles.header, className)}>
-            <Dialog.Close className={headerStyles.headerClose} aria-label={closeLabel}>
+            <Dialog.Close
+                className={cx(closeStyles, headerStyles.headerClose)}
+                aria-label={closeLabel}
+            >
                 <Icon asset={Xmark16} />
             </Dialog.Close>
 

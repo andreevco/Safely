@@ -33,13 +33,17 @@ stay: they are correct cross-platform behaviour, not dead code.
 Inside the renderer the layout is FSD, the same shape mobile uses:
 `shared` → `features` → `screens` → `app`, plus `platform/` (the Electron contract and its
 implementation) and two module-level singletons at the root, `logger.ts` and `i18n.ts`. `features/`
-holds one scenario per directory — `passcode`, `biometry`, `app-lock`, `onboarding`, `add-wallet`,
-`wallet`, `address-book`, `account`, `qr-scan` — each with its own `keys.ts` where it needs one; `screens/` is
-one component per route, and `app/` composes them into the route tree and the providers. Same-layer
-imports between features are allowed (`app-lock` builds on `passcode` and `biometry`), imports from
-`screens/` or `app/` into a feature are not. There is no `entities/`: the domain entities live in
-`@safely/ux`, so the renderer holds scenarios only. `boundaries/element-types` knows each layer as
-its own element type, so the direction is a build error, exactly as in mobile.
+holds one scenario per directory — `passcode`, `biometry`, `app-lock`, `onboarding`, `qr-scan` — each
+with its own `keys.ts` where it needs one; `screens/` is one component per route, and `app/` composes
+them into the route tree and the providers. What is left here is what binds to this target: the
+wallet, account and contact flows live in `@safely/web-ui` (`web-ui.md` draws the line), `onboarding`
+stays because it navigates and because its `UNSAFE_SKIP_SECURITY_CHECK_unlock()` means a keychain,
+and `qr-scan` stays because the camera permission and the device list are Electron's while only its
+modals are shared. Same-layer imports between features are allowed (`app-lock` builds on `passcode`
+and `biometry`), imports from `screens/` or `app/` into a feature are not. There is no `entities/`:
+the domain entities live in `@safely/ux`, so the renderer holds scenarios only.
+`boundaries/element-types` knows each layer as its own element type, so the direction is a build
+error, exactly as in mobile.
 
 **All domain code runs in the renderer** — the sync engine, the CRDT, the crypto, the keys. That is
 deliberate: the same code has to run in the browser extension, where no privileged process exists at
@@ -156,9 +160,11 @@ still uses `UNSAFE_SKIP_SECURITY_CHECK_unlock()`; do not "temporarily" route `ma
 and `app-lock` (`AppLock` plus the lock-screen toggle). It is the counterpart of mobile's
 `entities/security` +
 `features/{security,biometry}`, and the direction is one-way: a feature imports `shared/` and
-`platform/`, never the reverse. `@safely/web-ui` supplies only the screens, which take props —
-putting a passcode hook or a `PasscodeStorage`-shaped contract back into that package is the
-regression this split exists to prevent.
+`platform/`, never the reverse. `@safely/web-ui` supplies the screens, which take props, and the
+flows that need nothing but `@safely/ux` — putting a passcode hook or a `PasscodeStorage`-shaped
+contract back into that package is the regression this split exists to prevent. A shared flow that
+has to ignore a cancelled gate catches `SecurityCheckCancelledError` from `@safely/ux`, which is what
+`securityGate` rejects with; the composition of the factors stays here.
 
 Its storage is `shared/storage/structured/{regular,encrypted}.ts`, the counterpart of
 `apps/mobile/src/shared/storage/structured/`: one zod shape per scope over a `desktop_security` node,

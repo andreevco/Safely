@@ -2,14 +2,26 @@ import { defineSlotRecipe } from '@pandacss/dev';
 
 const TITLE_BAR_HEIGHT = '52px';
 const SIDEBAR_WIDTH = '300px';
+const PANEL_WIDTH = '400px';
 
 export const appLayoutRecipe = defineSlotRecipe({
     className: 'appLayout',
     description: 'Window shell: a title bar over the sidebar, an optional second bar and content',
-    slots: ['root', 'titleBar', 'sidebar', 'secondary', 'secondaryContent', 'content', 'panel'],
+    slots: [
+        'root',
+        'titleBar',
+        'sidebar',
+        'secondary',
+        'secondaryContent',
+        'content',
+        'panel',
+        'panelContent'
+    ],
     base: {
         root: {
             position: 'relative',
+            /* confines the shell's own z-indexes so a portalled overlay still covers them */
+            isolation: 'isolate',
             display: 'flex',
             height: '100%',
             width: '100%',
@@ -69,14 +81,28 @@ export const appLayoutRecipe = defineSlotRecipe({
             overflowY: 'auto'
         },
         panel: {
+            position: 'relative',
+            flexShrink: 0,
+            width: PANEL_WIDTH,
+            overflow: 'hidden',
+            transition: 'width 200ms ease',
+            _motionReduce: { transition: 'none' }
+        },
+        panelContent: {
+            position: 'absolute',
+            top: '0',
+            right: '0',
             display: 'flex',
             flexDirection: 'column',
-            flexShrink: 0,
-            width: '400px',
-            overflowY: 'auto',
+            width: PANEL_WIDTH,
+            height: '100%',
+            overflow: 'hidden',
             borderLeftWidth: 'hairline',
             borderLeftStyle: 'solid',
-            borderLeftColor: 'other.transparentElement'
+            borderLeftColor: 'other.transparentElement',
+            backgroundColor: 'background.primary',
+            transition: 'transform 200ms ease',
+            _motionReduce: { transition: 'none' }
         }
     },
     variants: {
@@ -91,11 +117,17 @@ export const appLayoutRecipe = defineSlotRecipe({
                 secondaryContent: { transform: 'translateX(-100%)' }
             }
         },
+        isPanelOpen: {
+            false: {
+                panel: { width: '0' },
+                panelContent: { transform: 'translateX(100%)' }
+            }
+        },
         isFullScreen: {
             true: {
                 secondaryContent: { paddingTop: TITLE_BAR_HEIGHT },
                 content: { paddingTop: TITLE_BAR_HEIGHT },
-                panel: { paddingTop: TITLE_BAR_HEIGHT }
+                panelContent: { paddingTop: TITLE_BAR_HEIGHT }
             }
         }
     }

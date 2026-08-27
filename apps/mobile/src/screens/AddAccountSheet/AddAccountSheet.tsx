@@ -6,11 +6,9 @@ import { Keyboard, View } from 'react-native';
 
 import {
     useAppContext,
-    useCreateAccount,
+    useCreateAccountFromSource,
     useCreateExistingAccountConnector,
-    useLoader,
-    useNewAccountDefaultName,
-    useToast
+    useNewAccountDefaultName
 } from '@safely/ux';
 
 import { BottomSheet, Button, Text, useCloseOnReturn } from '@mobile/shared/ui';
@@ -32,11 +30,7 @@ const AddAccountContent = ({ onAccountAdded }: AddAccountSheetParams) => {
     } = useAppContext();
     const navigation = useNavigation();
     const signIn = useCreateExistingAccountConnector();
-    const { mutateAsync: createAccount } = useCreateAccount({
-        setActive: true
-    });
-    const { withLoader } = useLoader();
-    const toast = useToast();
+    const { mutateAsync: createAccount } = useCreateAccountFromSource();
     const markNavigated = useCloseOnReturn();
     const defaultName = useNewAccountDefaultName();
 
@@ -45,20 +39,9 @@ const AddAccountContent = ({ onAccountAdded }: AddAccountSheetParams) => {
         navigation.navigate('CustomizeAccountModal', {
             defaultName,
             onSave: async (name: string) => {
-                using secureEncryptedStorage = getSecureEncrypted();
-                await secureEncryptedStorage.unlock();
-
                 Keyboard.dismiss();
 
-                await withLoader(async () => {
-                    await createAccount({
-                        name,
-                        secureEncryptedStorage,
-                        firstPortfolio: { kind: 'generated' }
-                    });
-                });
-
-                toast(t('addAccount.toastAccountCreated'));
+                await createAccount({ name, source: { kind: 'generated' } });
 
                 if (onAccountAdded) {
                     onAccountAdded();

@@ -11,6 +11,7 @@ export type ListRootProps = Omit<ComponentPropsWithoutRef<'section'>, 'className
 };
 
 export type ListTitleProps = Omit<ComponentPropsWithoutRef<'h2'>, 'className'> & {
+    variant?: RecipeVariants<ListRecipe>['titleVariant'];
     className?: string;
 };
 
@@ -30,9 +31,9 @@ const ListRoot: FC<ListRootProps> = props => {
 };
 
 const ListTitle: FC<ListTitleProps> = props => {
-    const { className, ...rest } = props;
+    const { variant, className, ...rest } = props;
 
-    return <h2 className={cx(list().title, className)} {...rest} />;
+    return <h2 className={cx(list({ titleVariant: variant }).title, className)} {...rest} />;
 };
 
 const ListGroup: FC<ListGroupProps> = props => {

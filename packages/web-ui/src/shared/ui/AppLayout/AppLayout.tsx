@@ -8,6 +8,7 @@ export type AppLayoutRootProps = {
     hasWindowControls?: boolean;
     isFullScreen?: boolean;
     isSecondaryOpen?: boolean;
+    isPanelOpen?: boolean;
     children?: ReactNode;
     className?: string;
 };
@@ -21,9 +22,10 @@ const AppLayoutContext = createContext(appLayout());
 const useAppLayoutStyles = () => useContext(AppLayoutContext);
 
 const AppLayoutRoot: FC<AppLayoutRootProps> = props => {
-    const { hasWindowControls, isFullScreen, isSecondaryOpen, className, children } = props;
+    const { hasWindowControls, isFullScreen, isSecondaryOpen, isPanelOpen, className, children } =
+        props;
 
-    const styles = appLayout({ hasWindowControls, isFullScreen, isSecondaryOpen });
+    const styles = appLayout({ hasWindowControls, isFullScreen, isSecondaryOpen, isPanelOpen });
 
     return (
         <div className={cx(styles.root, className)}>
@@ -68,11 +70,18 @@ const AppLayoutPanel: FC<AppLayoutPartProps> = props => {
     return <aside className={cx(useAppLayoutStyles().panel, className)} {...rest} />;
 };
 
+const AppLayoutPanelContent: FC<AppLayoutPartProps> = props => {
+    const { className, ...rest } = props;
+
+    return <div className={cx(useAppLayoutStyles().panelContent, className)} {...rest} />;
+};
+
 export const AppLayout = Object.assign(AppLayoutRoot, {
     TitleBar: AppLayoutTitleBar,
     Sidebar: AppLayoutSidebar,
     Secondary: AppLayoutSecondary,
     SecondaryContent: AppLayoutSecondaryContent,
     Content: AppLayoutContent,
-    Panel: AppLayoutPanel
+    Panel: AppLayoutPanel,
+    PanelContent: AppLayoutPanelContent
 });

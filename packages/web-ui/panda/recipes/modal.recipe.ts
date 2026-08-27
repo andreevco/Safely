@@ -1,21 +1,4 @@
 import { defineSlotRecipe } from '@pandacss/dev';
-import type { SystemStyleObject } from '@pandacss/dev';
-
-const closeStyles: SystemStyleObject = {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '40px',
-    height: '40px',
-    padding: '0',
-    borderWidth: '0',
-    borderRadius: 'full',
-    backgroundColor: 'button.secondary.background',
-    color: 'icon.primary',
-    cursor: 'pointer',
-    '& svg [fill]:not([fill="none"])': { fill: 'currentcolor' },
-    '& svg [stroke]:not([stroke="none"])': { stroke: 'currentcolor' }
-};
 
 export const modalRecipe = defineSlotRecipe({
     className: 'modal',
@@ -23,9 +6,9 @@ export const modalRecipe = defineSlotRecipe({
     slots: [
         'backdrop',
         'popup',
-        'close',
         'header',
         'headerTitle',
+        /* layout only: the button recipe in `Modal.tsx` paints the header's close button */
         'headerClose',
         'content',
         'title',
@@ -62,15 +45,6 @@ export const modalRecipe = defineSlotRecipe({
                 transform: 'translate(-50%, -50%) scale(1)'
             }
         },
-        close: {
-            position: 'absolute',
-            top: '12',
-            right: '12',
-            /* inside the popup, not the app: absolutely positioned content (a camera preview) is
-               painted later in DOM order and would bury the button */
-            zIndex: 1,
-            ...closeStyles
-        },
         header: {
             position: 'relative',
             display: 'flex',
@@ -87,7 +61,6 @@ export const modalRecipe = defineSlotRecipe({
             textAlign: 'center',
             pointerEvents: 'none'
         },
-        headerClose: closeStyles,
         content: {
             display: 'flex',
             flexDirection: 'column',
@@ -118,15 +91,6 @@ export const modalRecipe = defineSlotRecipe({
     variants: {
         hasFloatingClose: {
             false: { content: { paddingTop: '16' } }
-        },
-        /* over a camera preview or an image there is no surface to match, so the button borrows one */
-        hasTransparentClose: {
-            true: {
-                close: {
-                    backgroundColor: 'other.transparentElement',
-                    backdropFilter: 'blur(6px)'
-                }
-            }
         },
         align: {
             start: {
