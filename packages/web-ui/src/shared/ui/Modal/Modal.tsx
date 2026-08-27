@@ -20,6 +20,7 @@ export type ModalPopupProps = {
 
 export type ModalHeaderProps = {
     closeLabel: string;
+    hasClose?: boolean;
     title?: string;
     children?: ReactNode;
     className?: string;
@@ -58,13 +59,15 @@ const ModalPopup: FC<ModalPopupProps> = props => {
 };
 
 const ModalHeader: FC<ModalHeaderProps> = props => {
-    const { closeLabel, title, className, children } = props;
+    const { closeLabel, hasClose = true, title, className, children } = props;
 
     return (
         <div className={cx(styles.header, className)}>
-            <Dialog.Close className={styles.headerClose} aria-label={closeLabel}>
-                <Icon asset={Xmark16} />
-            </Dialog.Close>
+            {hasClose && (
+                <Dialog.Close className={styles.headerClose} aria-label={closeLabel}>
+                    <Icon asset={Xmark16} />
+                </Dialog.Close>
+            )}
 
             {title !== undefined && (
                 <Dialog.Title className={styles.headerTitle}>{title}</Dialog.Title>
