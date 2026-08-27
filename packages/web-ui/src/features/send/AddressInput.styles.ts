@@ -11,7 +11,7 @@ export const labelStyles = css({
 export const boxStyles = css({
     position: 'relative',
     display: 'flex',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     gap: '8',
     padding: '16',
     borderRadius: 'sm',
