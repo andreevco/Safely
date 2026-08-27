@@ -16,13 +16,21 @@ const closeStyles = button({
     isRound: true
 });
 
+/* the popup's own content (a camera preview) paints later in DOM order and would bury the button */
 const floatingCloseStyles = css({ position: 'absolute', top: '12', right: '12', zIndex: 1 });
+
+/* over a camera preview or an image there is no surface to match, so the button borrows one */
+const transparentCloseStyles = css({
+    backgroundColor: 'other.transparentElement',
+    backdropFilter: 'blur(6px)'
+});
 
 export type ModalRootProps = ComponentPropsWithoutRef<typeof Dialog.Root>;
 
 export type ModalPopupProps = {
     closeLabel: string;
     hasClose?: boolean;
+    hasTransparentClose?: boolean;
     children?: ReactNode;
     className?: string;
 };
@@ -30,6 +38,7 @@ export type ModalPopupProps = {
 export type ModalHeaderProps = {
     closeLabel: string;
     title?: string;
+    align?: 'start';
     children?: ReactNode;
     className?: string;
 };
@@ -47,7 +56,7 @@ type ModalPartProps<TElement extends 'div' | 'h2' | 'p'> = Omit<
 };
 
 const ModalPopup: FC<ModalPopupProps> = props => {
-    const { closeLabel, hasClose = true, className, children } = props;
+    const { closeLabel, hasClose = true, hasTransparentClose, className, children } = props;
 
     return (
         <Dialog.Portal>
@@ -56,7 +65,11 @@ const ModalPopup: FC<ModalPopupProps> = props => {
             <Dialog.Popup className={cx(styles.popup, className)}>
                 {hasClose && (
                     <Dialog.Close
-                        className={cx(closeStyles, floatingCloseStyles)}
+                        className={cx(
+                            closeStyles,
+                            floatingCloseStyles,
+                            hasTransparentClose && transparentCloseStyles
+                        )}
                         aria-label={closeLabel}
                     >
                         <Icon asset={Xmark16} />
@@ -70,16 +83,21 @@ const ModalPopup: FC<ModalPopupProps> = props => {
 };
 
 const ModalHeader: FC<ModalHeaderProps> = props => {
-    const { closeLabel, title, className, children } = props;
+    const { closeLabel, title, align, className, children } = props;
+
+    const headerStyles = modal({ align });
 
     return (
-        <div className={cx(styles.header, className)}>
-            <Dialog.Close className={closeStyles} aria-label={closeLabel}>
+        <div className={cx(headerStyles.header, className)}>
+            <Dialog.Close
+                className={cx(closeStyles, headerStyles.headerClose)}
+                aria-label={closeLabel}
+            >
                 <Icon asset={Xmark16} />
             </Dialog.Close>
 
             {title !== undefined && (
-                <Dialog.Title className={styles.headerTitle}>{title}</Dialog.Title>
+                <Dialog.Title className={headerStyles.headerTitle}>{title}</Dialog.Title>
             )}
 
             {children}

@@ -1,4 +1,8 @@
-import type { OnHeadersReceivedListenerDetails, WebContents } from 'electron';
+import type {
+    MediaAccessPermissionRequest,
+    OnHeadersReceivedListenerDetails,
+    WebContents
+} from 'electron';
 import { session } from 'electron';
 
 /**
@@ -116,12 +120,29 @@ export function hardenSession(devServerUrl: string | undefined): void {
         callback({});
     });
 
-    /* Camera (QR) and HID (Ledger) will be granted here per request type, never blanket-approved. */
-    session.defaultSession.setPermissionRequestHandler((_contents, _permission, callback) => {
-        callback(false);
-    });
-    session.defaultSession.setPermissionCheckHandler(() => false);
+    /* The camera for the QR scanner is the only device granted, and only to the top frame. HID
+       (Ledger) joins it as its own branch when that lands. */
+    session.defaultSession.setPermissionRequestHandler(
+        (_contents, permission, callback, details) => {
+            callback(permission === 'media' && 'mediaTypes' in details && isCameraOnly(details));
+        }
+    );
+
+    /* Chromium runs this check for `media` with no media type at all, and a `false` there also hides
+       the device labels the source picker lists; capture stays gated by the request handler above. */
+    session.defaultSession.setPermissionCheckHandler(
+        (_contents, permission, _origin, details) =>
+            permission === 'media' &&
+            details.mediaType !== 'audio' &&
+            details.mediaType !== 'unknown'
+    );
 }
+
+const isCameraOnly = (details: MediaAccessPermissionRequest): boolean =>
+    details.isMainFrame &&
+    details.mediaTypes !== undefined &&
+    details.mediaTypes.length > 0 &&
+    details.mediaTypes.every(type => type === 'video');
 
 const isAllowedOrigin = (url: string, allowedOrigins: string[]): boolean => {
     try {

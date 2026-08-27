@@ -8,6 +8,8 @@ export const modalRecipe = defineSlotRecipe({
         'popup',
         'header',
         'headerTitle',
+        /* layout only: the button recipe in `Modal.tsx` paints the header's close button */
+        'headerClose',
         'content',
         'title',
         'description',
@@ -89,6 +91,19 @@ export const modalRecipe = defineSlotRecipe({
     variants: {
         hasFloatingClose: {
             false: { content: { paddingTop: '16' } }
+        },
+        align: {
+            start: {
+                headerTitle: {
+                    position: 'static',
+                    order: 0,
+                    flex: '1',
+                    paddingLeft: '12',
+                    textAlign: 'left',
+                    pointerEvents: 'auto'
+                },
+                headerClose: { order: 1 }
+            }
         }
     },
     defaultVariants: {

@@ -47,6 +47,12 @@ const config: ForgeConfig = {
         extraResource: ['native/keychain/build/Release/keychain.node'],
         appBundleId: 'com.safely.wallet-desktop',
         buildVersion,
+        /* Electron's own plist carries a generic one, which is what the macOS prompt would show. */
+        usageDescription: { Camera: 'Safely uses the camera to scan QR codes.' },
+        /* Chromium reads this in the process that captures — a helper — and without it an iPhone
+           arrives as a deprecated `AVCaptureDeviceTypeExternal` device. */
+        extendInfo: { NSCameraUseContinuityCameraDeviceType: true },
+        extendHelperInfo: { NSCameraUseContinuityCameraDeviceType: true },
         ...signing
     },
     /* Off: the addon is N-API, so the Node-built binary loads in Electron unchanged — verified, not

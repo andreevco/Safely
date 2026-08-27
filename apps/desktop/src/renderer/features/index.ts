@@ -8,3 +8,9 @@ export {
     usePasscode,
     type UsePasscodeResult
 } from './passcode';
+export {
+    QrScanCancelledError,
+    QrScanFlow,
+    qrScanPrompt,
+    type QrScanPromptOptions
+} from './qr-scan';

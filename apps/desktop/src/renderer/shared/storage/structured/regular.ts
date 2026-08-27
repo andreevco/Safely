@@ -8,7 +8,8 @@ import { platform } from '../../../platform';
 const desktopLayerRegularStorageShape = {
     passcodeLockout: z.union([z.null(), sLockoutState]),
     biometryEnabled: z.union([z.null(), z.boolean()]),
-    lockScreenEnabled: z.union([z.null(), z.boolean()])
+    lockScreenEnabled: z.union([z.null(), z.boolean()]),
+    qrScanDeviceId: z.union([z.null(), z.string()])
 };
 
 export const DESKTOP_LAYER_NODE = 'desktop';

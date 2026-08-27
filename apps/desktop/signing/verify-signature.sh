@@ -48,6 +48,14 @@ for key in 'com.apple.security.get-task-allow' 'get-task-allow'; do
     ! has "$work/app.plist" "$key" || fail "main binary carries $key — another process could read secrets from its memory"
 done
 
+# The camera, and no other device. A microphone entitlement would let a compromised renderer record
+# with no UI of ours involved, and nothing in this app has a use for one.
+has "$work/app.plist" 'com.apple.security.device.camera' || fail "main binary: no camera entitlement — the QR scanner cannot open a camera"
+
+for key in 'com.apple.security.device.microphone' 'com.apple.security.device.audio-input'; do
+    ! has "$work/app.plist" "$key" || fail "main binary carries $key — this app has no use for a microphone"
+done
+
 # Helpers stay outside the keychain group. The renderer runs in them, and extra privilege never
 # breaks anything — it only adds a path. Hence also the guard: a changed layout must not pass by
 # leaving nothing to check.

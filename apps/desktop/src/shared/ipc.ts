@@ -13,6 +13,12 @@ export const IPC_CHANNEL = {
         authenticate: 'safely:biometry:authenticate'
     },
 
+    camera: {
+        accessStatus: 'safely:camera:access-status',
+        requestAccess: 'safely:camera:request-access',
+        openPrivacySettings: 'safely:camera:open-privacy-settings'
+    },
+
     /* One channel group per backing store, so which store a call reaches is decided by the channel
        and not by a string in the payload: a renderer cannot ask the wrong store, and a store with
        different rules is added as its own group. */
@@ -68,6 +74,18 @@ export const sBiometryAuthenticateRequest = z.object({ reason: z.string().min(1)
 
 /* a cancelled prompt and a refusing sensor are one answer here: fall back to the passcode */
 export const sBiometryResult = z.boolean();
+
+/* `not-determined` is the only state a prompt can still change; `restricted` is MDM, not the user */
+export const sCameraAccessStatus = z.enum([
+    'not-determined',
+    'granted',
+    'denied',
+    'restricted',
+    'unknown'
+]);
+export type CameraAccessStatus = z.infer<typeof sCameraAccessStatus>;
+
+export const sCameraAccessGranted = z.boolean();
 
 /**
  * Why a secret operation failed, and the whole of what the renderer is told: the underlying

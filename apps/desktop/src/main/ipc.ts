@@ -3,9 +3,10 @@ import { ipcMain, shell } from 'electron';
 import type { ZodType } from 'zod';
 
 import { isBiometryAvailable, promptBiometry } from './biometry';
+import { getCameraAccessStatus, openCameraPrivacySettings, requestCameraAccess } from './camera';
 import type { StoreScope } from './store';
 import { clearStores, getStore } from './store';
-import type { StoreChannels } from '../shared/ipc';
+import type { CameraAccessStatus, StoreChannels } from '../shared/ipc';
 import {
     IPC_CHANNEL,
     sBiometryAuthenticateRequest,
@@ -81,6 +82,24 @@ export function registerIpcHandlers(getWindow: () => BrowserWindow | null): void
     handle(IPC_CHANNEL.biometry.authenticate, sBiometryAuthenticateRequest, payload =>
         promptBiometry(payload.reason)
     );
+
+    ipcMain.handle(IPC_CHANNEL.camera.accessStatus, (event): CameraAccessStatus => {
+        assertTrustedSender(event);
+
+        return getCameraAccessStatus();
+    });
+
+    ipcMain.handle(IPC_CHANNEL.camera.requestAccess, event => {
+        assertTrustedSender(event);
+
+        return requestCameraAccess();
+    });
+
+    ipcMain.handle(IPC_CHANNEL.camera.openPrivacySettings, event => {
+        assertTrustedSender(event);
+
+        return openCameraPrivacySettings();
+    });
 
     registerStoreHandlers(IPC_CHANNEL.store, 'regular');
     registerStoreHandlers(IPC_CHANNEL.encryptedStore, 'encrypted');
