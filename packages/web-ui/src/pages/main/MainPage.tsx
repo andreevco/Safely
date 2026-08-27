@@ -13,6 +13,7 @@ export type MainPageProps = {
     isFullScreen?: boolean;
     security?: SecuritySettingsProps;
     onAddWallet: () => void;
+    onSend: () => void;
     onEditAccount: () => void;
     onAddAccount: () => void;
     onAddContact: () => void;
@@ -30,7 +31,11 @@ export const MainPage: FC<MainPageProps> = props => {
 
     return (
         <MainLayout {...props}>
-            {hasPortfolio ? <MainContent /> : <MainEmptyState onAddWallet={props.onAddWallet} />}
+            {hasPortfolio ? (
+                <MainContent onSend={props.onSend} />
+            ) : (
+                <MainEmptyState onAddWallet={props.onAddWallet} />
+            )}
         </MainLayout>
     );
 };

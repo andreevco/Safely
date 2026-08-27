@@ -20,7 +20,11 @@ import { centeredContentStyles } from './MainLayout.styles';
 import { WalletIcon } from '../../entities';
 import { Button, Text } from '../../shared';
 
-export const MainContent: FC = () => {
+export type MainContentProps = {
+    onSend: () => void;
+};
+
+export const MainContent: FC<MainContentProps> = props => {
     const t = useTranslate();
     const { data: totalBalance } = useTotalBalance();
     const wallet = useActiveBtcWallet();
@@ -44,7 +48,7 @@ export const MainContent: FC = () => {
                     <Text variant="titleL">{totalBalance?.format(formatter) ?? '—'}</Text>
 
                     <div className={actionsStyles}>
-                        <Button variant="secondary" size="small" onClick={() => undefined}>
+                        <Button variant="secondary" size="small" onClick={props.onSend}>
                             {t('home.actions.send')}
                         </Button>
                         <Button variant="secondary" size="small" onClick={() => undefined}>

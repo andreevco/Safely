@@ -3,7 +3,7 @@ import type { FC } from 'react';
 import { useState } from 'react';
 
 import { useActiveAccountStoreSlot } from '@safely/ux';
-import { CustomizeAccountModal, MainPage, SignOutModal } from '@safely/web-ui';
+import { CustomizeAccountModal, MainPage, SendModal, SignOutModal } from '@safely/web-ui';
 
 import {
     AddWalletModals,
@@ -27,6 +27,7 @@ export const MainScreen: FC = () => {
     const addressBook = useAddressBookFlow();
     const accountMeta = useActiveAccountStoreSlot('meta');
     const [isSigningOut, setIsSigningOut] = useState(false);
+    const [isSending, setIsSending] = useState(false);
 
     return (
         <>
@@ -34,6 +35,7 @@ export const MainScreen: FC = () => {
                 hasWindowControls={hasWindowControls}
                 isFullScreen={isFullScreen}
                 onAddWallet={addWallet.open}
+                onSend={() => setIsSending(true)}
                 onEditAccount={account.startEdit}
                 onAddAccount={account.startCreate}
                 onAddContact={addressBook.startCreate}
@@ -64,6 +66,8 @@ export const MainScreen: FC = () => {
                     onClose={account.cancel}
                 />
             )}
+
+            {isSending && <SendModal onClose={() => setIsSending(false)} />}
 
             <ContactModals flow={addressBook} />
             <WalletModals flow={wallet} />
