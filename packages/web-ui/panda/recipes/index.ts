@@ -16,7 +16,6 @@ import { spinnerRecipe } from './spinner.recipe';
 import { switchRecipe } from './switch.recipe';
 import { tableCellRecipe } from './table-cell.recipe';
 import { textRecipe } from './text.recipe';
-import { wordCellRecipe } from './word-cell.recipe';
 
 export const recipes = {
     badge: badgeRecipe,
@@ -39,6 +38,5 @@ export const slotRecipes = {
     pageHeader: pageHeaderRecipe,
     passcode: passcodeRecipe,
     tableCell: tableCellRecipe,
-    toggle: switchRecipe,
-    wordCell: wordCellRecipe
+    toggle: switchRecipe
 };

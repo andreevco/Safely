@@ -13,9 +13,11 @@ import { SettingsSidebar } from './SettingsSidebar';
 import {
     AccountModals,
     AddWalletModals,
+    SendModals,
     TransactionDetails,
     useAccountFlow,
-    useAddWalletFlow
+    useAddWalletFlow,
+    useSendFlow
 } from '../../features';
 import { AppLayout } from '../../shared';
 import { DevToolsPage } from '../dev-tools';
@@ -32,6 +34,7 @@ export const MainPage: FC<MainPageProps> = props => {
     const portfolioId = useActivePortfolio()?.id.toString();
     const addWallet = useAddWalletFlow();
     const account = useAccountFlow();
+    const send = useSendFlow();
 
     const [isDevToolsOpen, setIsDevToolsOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -73,6 +76,7 @@ export const MainPage: FC<MainPageProps> = props => {
     const content = hasPortfolio ? (
         <MainContent
             selectedActivityKey={selectedActivity?.key}
+            onSend={send.open}
             onSelectActivity={selectActivity}
         />
     ) : (
@@ -123,6 +127,7 @@ export const MainPage: FC<MainPageProps> = props => {
 
             <AddWalletModals flow={addWallet} />
             <AccountModals flow={account} />
+            <SendModals flow={send} />
         </AppLayout>
     );
 };

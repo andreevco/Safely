@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { TableCell, WordCell } from '../../../src';
+import { TableCell } from '../../../src';
 
 describe('TableCell', () => {
     it('stays a div until it is given something to copy', () => {
@@ -71,14 +71,5 @@ describe('TableCell', () => {
         expect(writeText).toHaveBeenCalledWith('txid');
 
         vi.unstubAllGlobals();
-    });
-});
-
-describe('WordCell', () => {
-    it('numbers the word when an index is given', () => {
-        render(<WordCell index={8} word="abandon" />);
-
-        expect(screen.getByText('8.')).toBeDefined();
-        expect(screen.getByText('abandon')).toBeDefined();
     });
 });

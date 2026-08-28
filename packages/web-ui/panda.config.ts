@@ -48,7 +48,6 @@ export default defineConfig({
             passcode: ['*'],
             tableCell: ['*'],
             toggle: ['*'],
-            wordCell: ['*'],
             icon: ['*'],
             iconPicker: ['*'],
             spinner: ['*'],

@@ -9,6 +9,7 @@ import { headerStyles } from './MainContent.styles';
 
 export type MainContentProps = {
     selectedActivityKey?: string;
+    onSend: () => void;
     onSelectActivity: (activity: ActivityItem) => void;
 };
 
@@ -16,7 +17,7 @@ export const MainContent: FC<MainContentProps> = props => (
     <>
         <div className={headerStyles}>
             <Header />
-            <Balance />
+            <Balance onSend={props.onSend} />
         </div>
 
         <History

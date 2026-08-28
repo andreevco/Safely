@@ -37,6 +37,8 @@ export type ModalPopupProps = {
 
 export type ModalHeaderProps = {
     closeLabel: string;
+    /* off when the step puts its own control there, a back arrow for instance */
+    hasClose?: boolean;
     title?: string;
     align?: 'start';
     children?: ReactNode;
@@ -83,18 +85,20 @@ const ModalPopup: FC<ModalPopupProps> = props => {
 };
 
 const ModalHeader: FC<ModalHeaderProps> = props => {
-    const { closeLabel, title, align, className, children } = props;
+    const { closeLabel, hasClose = true, title, align, className, children } = props;
 
     const headerStyles = modal({ align });
 
     return (
         <div className={cx(headerStyles.header, className)}>
-            <Dialog.Close
-                className={cx(closeStyles, headerStyles.headerClose)}
-                aria-label={closeLabel}
-            >
-                <Icon asset={Xmark16} />
-            </Dialog.Close>
+            {hasClose && (
+                <Dialog.Close
+                    className={cx(closeStyles, headerStyles.headerClose)}
+                    aria-label={closeLabel}
+                >
+                    <Icon asset={Xmark16} />
+                </Dialog.Close>
+            )}
 
             {title !== undefined && (
                 <Dialog.Title className={headerStyles.headerTitle}>{title}</Dialog.Title>

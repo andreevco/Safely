@@ -54,7 +54,7 @@ export const AddressBookSettings: FC = () => {
                         {contacts.map(contact => (
                             <ContactCell
                                 key={contact.id.toString()}
-                                contact={contact}
+                                meta={contact.meta}
                                 onSelect={() => flow.openContact(contact)}
                             />
                         ))}
