@@ -35,7 +35,7 @@ export const successIconStyles = css({
     transform: 'translate(-50%, -50%)'
 });
 
-export const listStyles = css({ padding: '8' });
+export const listStyles = css({ display: 'flex', flexDirection: 'column', gap: '2', padding: '8' });
 
 export const actionsStyles = css({ padding: '8' });
 

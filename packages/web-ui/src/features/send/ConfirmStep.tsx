@@ -138,7 +138,6 @@ export const ConfirmStep: FC<ConfirmStepProps> = props => {
                                 <TableCell.Label>{t('confirmation.to')}</TableCell.Label>
                             </TableCell.Column>
                             <TableCell.Column>
-                                {/* a known recipient reads as its name, with the address under it */}
                                 {result.recipientMeta === undefined ? (
                                     <TableCell.Value>
                                         {ellipsisMiddle(result.recipient.address, 6)}
