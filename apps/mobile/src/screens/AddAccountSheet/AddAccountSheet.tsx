@@ -13,7 +13,8 @@ import {
     useToast
 } from '@safely/ux';
 
-import { BottomSheet, Button, Text, useCloseOnReturn } from '@mobile/shared/ui';
+import { BottomSheetScreen } from '@mobile/shared/navigation';
+import { Button, Text, useCloseOnReturn } from '@mobile/shared/ui';
 
 import { styles } from './AddAccountSheet.styles';
 
@@ -126,8 +127,8 @@ const AddAccountContent = ({ onAccountAdded }: AddAccountSheetParams) => {
 
 export const AddAccountSheet = (props: AddAccountSheetProps) => {
     return (
-        <BottomSheet shortHeader>
+        <BottomSheetScreen shortHeader>
             <AddAccountContent onAccountAdded={props.route.params?.onAccountAdded} />
-        </BottomSheet>
+        </BottomSheetScreen>
     );
 };

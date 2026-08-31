@@ -56,6 +56,17 @@ when you touch that module.
   instead of hardcoding them.
 - A screen is a directory under `src/screens`; navigation and providers live in `src/app`
   (`AppNavigation.tsx`, `AppContext.tsx`, `root-error-boundary`, `root-suspense`).
+- **`src/shared/ui` does not depend on navigation.** Components there never call `useNavigation` /
+  `useRoute` in a way that requires a navigator: `BottomSheet` only reports `onClose`, `Screen` and
+  the header buttons read the navigation context optionally. Route behaviour ("closing this sheet
+  means leaving the route") lives in `src/shared/navigation/BottomSheetScreen`, which sheet screens
+  use instead of `BottomSheet`. This is what lets the same UI render outside the navigator.
+- **The app lock is not a route.** `LockScreenProvider` (`entities/security`) owns `isLocked`;
+  `features/app-lock` renders the lock UI in a `FullWindowOverlay` (iOS window level, like
+  `BlurOverlay`), and `AppNavigation` wraps the navigator in `<Activity mode="hidden">` while
+  locked, so protected screens run no effects and deep links apply only after unlock. Never
+  reintroduce a `LockScreen` route or navigate to present the lock — that is the bug the security
+  audit found (a `safely:///tab` link replaced the lock screen).
 - Layers and the `@mobile/*` aliases: see `fsd-layers.md`.
 
 ## i18n
