@@ -97,7 +97,6 @@ export const SeedPhraseImportForm = ({ onMnemonicReady }: SeedPhraseImportFormPr
                             error={!!error}
                             placeholder={t('onboarding.importWallet.placeholder')}
                             multiline
-                            sensitive
                         />
                         {error && (
                             <Text variant="bodyM" color="accentRed">

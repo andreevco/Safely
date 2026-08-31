@@ -1,19 +1,10 @@
 import { Host } from '@expo/ui';
 import { TextField as AndroidTextField, Text as AndroidText } from '@expo/ui/jetpack-compose';
-import type {
-    ObservableState,
-    TextFieldColors,
-    TextFieldKeyboardOptions
-} from '@expo/ui/jetpack-compose';
+import type { ObservableState, TextFieldColors } from '@expo/ui/jetpack-compose';
 import type { TextFieldRef as AndroidTextFieldRef } from '@expo/ui/jetpack-compose';
 import { TextField as IosTextField, Text as IosText } from '@expo/ui/swift-ui';
 import type { TextFieldRef as IosTextFieldRef } from '@expo/ui/swift-ui';
-import {
-    autocorrectionDisabled,
-    foregroundStyle,
-    frame,
-    textInputAutocapitalization
-} from '@expo/ui/swift-ui/modifiers';
+import { foregroundStyle, frame } from '@expo/ui/swift-ui/modifiers';
 import { useImperativeHandle, useRef, useState, type Ref } from 'react';
 import { Platform, View } from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';
@@ -37,7 +28,6 @@ export type NativeInputProps = {
     placeholder?: string;
     error?: boolean;
     multiline?: boolean;
-    sensitive?: boolean;
 };
 
 export const NativeInput = ({
@@ -49,8 +39,7 @@ export const NativeInput = ({
     onBlur,
     placeholder,
     error = false,
-    multiline = false,
-    sensitive = false
+    multiline = false
 }: NativeInputProps) => {
     const { theme } = useUnistyles();
     const [isFocused, setIsFocused] = useState(false);
@@ -96,16 +85,6 @@ export const NativeInput = ({
         errorPlaceholderColor: theme.colors.text.tertiary
     } satisfies TextFieldColors;
 
-    // `autoCorrectEnabled: false` alone only drops TYPE_TEXT_FLAG_AUTO_CORRECT — the
-    // keyboard still learns the words. `KeyboardType.Password` is what adds
-    // TYPE_TEXT_VARIATION_PASSWORD, the flag IMEs honour to keep input out of their
-    // prediction store.
-    const androidKeyboardOptions = {
-        keyboardType: sensitive ? 'password' : 'text',
-        autoCorrectEnabled: !sensitive,
-        capitalization: 'none'
-    } satisfies TextFieldKeyboardOptions;
-
     if (Platform.OS === 'android') {
         return (
             <View style={styles.container}>
@@ -124,7 +103,6 @@ export const NativeInput = ({
                         }}
                         textStyle={styles.text}
                         colors={androidFieldColors}
-                        keyboardOptions={androidKeyboardOptions}
                         singleLine={!multiline}
                     >
                         {placeholder ? (
@@ -136,11 +114,6 @@ export const NativeInput = ({
                 </Host>
             </View>
         );
-    }
-
-    const iosModifiers = [frame({ maxHeight: Infinity, alignment: 'topLeading' })];
-    if (sensitive) {
-        iosModifiers.push(autocorrectionDisabled(true), textInputAutocapitalization('never'));
     }
 
     return (
@@ -160,7 +133,7 @@ export const NativeInput = ({
                     }}
                     axis={multiline ? 'vertical' : 'horizontal'}
                     placeholder={placeholder}
-                    modifiers={iosModifiers}
+                    modifiers={[frame({ maxHeight: Infinity, alignment: 'topLeading' })]}
                 >
                     {placeholder ? (
                         <IosTextField.Placeholder>
