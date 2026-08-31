@@ -8,19 +8,23 @@ export class BtcKeypairSigner implements IBtcSigner {
     public async sign({ psbt, utxos }: BtcSigningRequest): Promise<Buffer> {
         const node = await this.nodeProducer.getPortfolioDerivation();
 
-        for (let i = 0; i < utxos.length; i++) {
-            const u = utxos[i];
-            const privateKey = node
-                .deriveChild(u.derivationPath.change)
-                .deriveChild(u.derivationPath.addressIndex).privateKey;
+        try {
+            for (let i = 0; i < utxos.length; i++) {
+                const u = utxos[i];
+                const privateKey = node
+                    .deriveChild(u.derivationPath.change)
+                    .deriveChild(u.derivationPath.addressIndex).privateKey;
 
-            if (!privateKey) {
-                throw new Error(`Missing private key for input ${i}`);
-            }
+                if (!privateKey) {
+                    throw new Error(`Missing private key for input ${i}`);
+                }
 
-            if (!psbt.signIdx(privateKey, i)) {
-                throw new Error(`Invalid signature for input ${i}`);
+                if (!psbt.signIdx(privateKey, i)) {
+                    throw new Error(`Invalid signature for input ${i}`);
+                }
             }
+        } finally {
+            node.wipePrivateData();
         }
 
         psbt.finalize();
