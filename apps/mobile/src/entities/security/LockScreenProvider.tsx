@@ -1,17 +1,13 @@
-import { CommonActions } from '@react-navigation/native';
 import type { FC, PropsWithChildren } from 'react';
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 import { useAppState } from '@safely/ux';
-
-// TODO: IMPORT find a way to navigate without this ref
-// eslint-disable-next-line boundaries/element-types
-import { navigationRef } from '@mobile/app/navigation/navigationRef';
 
 import { useLockScreenQuery } from './useLockScreen';
 import { usePasscode } from './usePasscode';
 
 interface LockScreenContextValue {
+    isLocked: boolean;
     unlock: () => void;
 }
 
@@ -33,8 +29,7 @@ export const LockScreenProvider: FC<PropsWithChildren> = ({ children }) => {
     const { data: isLockScreenEnabled } = useLockScreenQuery();
 
     const isEnabled = isLockScreenEnabled && hasPasscode;
-    const [isLocked, setIsLocked] = useState(isEnabled);
-    const isInitialRender = useRef(true);
+    const [isLockRequested, setIsLockRequested] = useState(isEnabled);
 
     useEffect(() => {
         // "inactive" state indicates that the app is still in the foreground,
@@ -43,41 +38,18 @@ export const LockScreenProvider: FC<PropsWithChildren> = ({ children }) => {
         // We should consider locking the app only when it has transitioned to the background.
         // - https://reactnative.dev/docs/appstate
         if (isEnabled && previous !== 'background' && current === 'background') {
-            setIsLocked(true);
+            setIsLockRequested(true);
         }
     }, [isEnabled, current, previous]);
 
-    useEffect(() => {
-        if (isInitialRender.current) {
-            isInitialRender.current = false;
-
-            return;
-        }
-
-        if (
-            isLocked &&
-            isEnabled &&
-            navigationRef.isReady() &&
-            navigationRef.getCurrentRoute()?.name !== 'LockScreen'
-        ) {
-            navigationRef.dispatch(CommonActions.navigate('LockScreen'));
-        }
-    }, [isLocked, isEnabled]);
-
     const unlock = useCallback(() => {
-        setIsLocked(false);
-
-        if (navigationRef.canGoBack()) {
-            navigationRef.goBack();
-        } else {
-            navigationRef.dispatch(
-                CommonActions.reset({
-                    index: 0,
-                    routes: [{ name: 'TabsNavigator' }]
-                })
-            );
-        }
+        setIsLockRequested(false);
     }, []);
 
-    return <LockScreenContext value={{ unlock }}>{children}</LockScreenContext>;
+    const value = useMemo(
+        () => ({ isLocked: isLockRequested && isEnabled, unlock }),
+        [isEnabled, isLockRequested, unlock]
+    );
+
+    return <LockScreenContext value={value}>{children}</LockScreenContext>;
 };

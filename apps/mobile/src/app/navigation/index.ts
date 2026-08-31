@@ -11,7 +11,6 @@ import { CustomizeWalletModal } from '@mobile/screens/CustomizeWalletModal';
 import { DestructiveConfirmSheet } from '@mobile/screens/DestructiveConfirmSheet';
 import { ExchangeModal } from '@mobile/screens/ExchangeModal';
 import { LinkDeviceWarningModal } from '@mobile/screens/LinkDeviceWarningModal';
-import { LockScreen } from '@mobile/screens/LockScreen';
 import { MoreOptionsSheet } from '@mobile/screens/MoreOptionsSheet';
 import { NewContactModal } from '@mobile/screens/NewContactModal';
 import { ConfirmDeleteContactSheet } from '@mobile/screens/NewContactModal/screens/ConfirmDeleteContactSheet';
@@ -81,14 +80,6 @@ export const RootStack = createNativeStackNavigator({
                 },
                 TransactionScreen: TransactionScreen,
                 OrderScreen: OrderScreen,
-                LockScreen: {
-                    screen: LockScreen,
-                    options: {
-                        presentation: 'fullScreenModal',
-                        gestureEnabled: false,
-                        animation: 'fade' as const
-                    }
-                },
                 PasscodeVerificationScreen: {
                     screen: PasscodeVerificationScreen,
                     options: {
