@@ -121,9 +121,15 @@ export function hardenSession(devServerUrl: string | undefined): void {
     });
 
     /* The camera for the QR scanner is the only device granted, and only to the top frame. HID
-       (Ledger) joins it as its own branch when that lands. */
+       (Ledger) joins it as its own branch when that lands. Sanitized clipboard *writes* are the
+       copy buttons; `clipboard-read` stays denied, so the renderer never sees what the user copied. */
     session.defaultSession.setPermissionRequestHandler(
         (_contents, permission, callback, details) => {
+            if (permission === 'clipboard-sanitized-write') {
+                callback(true);
+                return;
+            }
+
             callback(permission === 'media' && 'mediaTypes' in details && isCameraOnly(details));
         }
     );
@@ -132,9 +138,10 @@ export function hardenSession(devServerUrl: string | undefined): void {
        the device labels the source picker lists; capture stays gated by the request handler above. */
     session.defaultSession.setPermissionCheckHandler(
         (_contents, permission, _origin, details) =>
-            permission === 'media' &&
-            details.mediaType !== 'audio' &&
-            details.mediaType !== 'unknown'
+            permission === 'clipboard-sanitized-write' ||
+            (permission === 'media' &&
+                details.mediaType !== 'audio' &&
+                details.mediaType !== 'unknown')
     );
 }
 
