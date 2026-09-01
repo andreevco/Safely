@@ -177,6 +177,7 @@
         "status": {
             "lastUpdated": "Updated {{lastUpdatedAt}}",
             "addressCopied": "Address copied",
+            "bitcoinAddressCopied": "Bitcoin address copied",
             "updating": "Updating...",
             "noInternet": "No internet connection"
         },

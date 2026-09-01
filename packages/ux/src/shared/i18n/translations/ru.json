@@ -158,6 +158,7 @@
         "status": {
             "lastUpdated": "Обновлено {{lastUpdatedAt}}",
             "addressCopied": "Адрес скопирован",
+            "bitcoinAddressCopied": "Bitcoin-адрес скопирован",
             "updating": "Обновление...",
             "noInternet": "Нет подключения к интернету"
         },
