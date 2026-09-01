@@ -16,6 +16,7 @@
     "@safely/sync": "workspace:*",
     "@safely/ux": "workspace:*",
     "i18next": "catalog:",
+    "qrcode.react": "4.2.0",
     "react-i18next": "catalog:",
     "zod": "catalog:",
     "zustand": "catalog:"
