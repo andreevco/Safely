@@ -654,6 +654,12 @@ export function useSetActivePortfolio() {
     const logger = useLogger('portfolio');
 
     return useMutation<Portfolio, Error, { id: Portfolio['id']; derivationIndex?: number }>({
+        onMutate({ id, derivationIndex }) {
+            client.setQueryData<SActivePortfolioSchema>(accountQueryKey.activePortfolio.toKey(), {
+                portfolioId: id.toString(),
+                derivationIndex
+            });
+        },
         async mutationFn({ id, derivationIndex }) {
             logger.info('start set active portfolio', {
                 id
@@ -677,6 +683,11 @@ export function useSetActivePortfolio() {
                 id: portfolioToSet.id
             });
             return portfolioToSet;
+        },
+        onError() {
+            void client.invalidateQueries({
+                queryKey: accountQueryKey.activePortfolio.toKey()
+            });
         }
     });
 }
