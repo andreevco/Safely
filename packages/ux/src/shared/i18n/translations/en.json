@@ -194,6 +194,7 @@
     },
     "actions": {
         "copied": "Copied",
+        "copyFailed": "Could not copy",
         "copy": "Copy"
     },
     "qrScan": {
