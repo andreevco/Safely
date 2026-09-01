@@ -140,7 +140,8 @@
             "title": "More options",
             "amountDisplay": {
                 "title": "Amount display",
-                "subtitle": "Home screen, history, full sent amounts."
+                "subtitle": "Home screen, history, full sent amounts.",
+                "subtitleWeb": "History and full sent amounts."
             }
         }
     },
