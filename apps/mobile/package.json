@@ -107,7 +107,8 @@
     "@types/react": "catalog:",
     "babel-preset-expo": "~56.0.0",
     "typescript": "catalog:",
-    "vitest": "^4.0.17"
+    "vite": "catalog:",
+    "vitest": "catalog:"
   },
   "private": true,
   "expo": {
