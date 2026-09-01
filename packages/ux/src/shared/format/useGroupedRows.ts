@@ -1,8 +1,10 @@
 import { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
 
 import { groupByDate } from '@safely/core';
-import { getDateGroupTitle, useDateFormatter } from '@safely/ux';
+
+import { useDateFormatter } from './date';
+import { getDateGroupTitle } from './date-groups';
+import { useTranslate } from '../i18n';
 
 export type GroupedRow<T> =
     | { key: string; type: 'header'; title: string }
@@ -15,7 +17,7 @@ export function useGroupedRows<T>(
     getTimestamp: (item: T) => number,
     getItemKey: (item: T) => string
 ): GroupedRow<T>[] {
-    const { t } = useTranslation();
+    const t = useTranslate();
     const formatter = useDateFormatter();
 
     return useMemo(
