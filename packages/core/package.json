@@ -26,7 +26,8 @@
   },
   "devDependencies": {
     "@types/big.js": "catalog:",
-    "vitest": "^4.0.17"
+    "vite": "catalog:",
+    "vitest": "catalog:"
   },
   "exports": {
     ".": "./src/index.ts",

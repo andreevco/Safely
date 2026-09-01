@@ -32,7 +32,8 @@
     "happy-dom": "^20.9.0",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "vitest": "^4.0.16",
+    "vite": "catalog:",
+    "vitest": "catalog:",
     "@safely/slottree": "workspace:*"
   },
   "peerDependencies": {

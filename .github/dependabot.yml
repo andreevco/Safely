@@ -1,0 +1,106 @@
+# Dependabot's half of the dependency work. The verdict half lives in
+# scripts/audit-gate.mjs + security/dependency-advisories.json and runs on every
+# PR; read security/README.md for how the two divide the job.
+#
+# Dependabot is the discovery and upgrade mechanism, never the policy: nothing
+# here can make a build pass or fail. It also cannot fix most of what the gate
+# reports — the backlog is transitive dependencies of react-native and expo, and
+# Dependabot's only lever is bumping the direct parent, which is ignored below.
+# Those stay manual `overrides` entries in pnpm-workspace.yaml.
+version: 2
+
+updates:
+    - package-ecosystem: npm
+      directory: '/'
+      # pnpm workspace: versions for 57 dependencies live in the `catalog:` block
+      # of pnpm-workspace.yaml, not in any package.json. Confirm in the Dependabot
+      # run log that those are being resolved — see security/README.md.
+      schedule:
+          interval: weekly
+          day: monday
+          time: '06:00'
+          timezone: Etc/UTC
+      # Mirrors `minimumReleaseAge: 5760` (4 days) in pnpm-workspace.yaml. Without
+      # it Dependabot proposes versions pnpm will refuse to resolve.
+      cooldown:
+          default-days: 4
+      open-pull-requests-limit: 5
+      labels:
+          - dependencies
+      commit-message:
+          prefix: chore(deps)
+          prefix-development: chore(deps-dev)
+
+      ignore:
+          # The Expo SDK is one unit: `expo`, every `expo-*` and `@expo/*` package
+          # and the Babel preset are upgraded together by `expo install --fix`
+          # during an SDK bump, never individually. This also covers expo-blur,
+          # which is exact-pinned because patchedDependencies keys on its version —
+          # a bump there breaks `pnpm install` outright.
+          - dependency-name: expo
+          - dependency-name: 'expo-*'
+          - dependency-name: '@expo/*'
+          - dependency-name: babel-preset-expo
+          # React Native and the native modules. Every one of these needs an
+          # `expo prebuild` and on-device testing, and most are pinned to the RN
+          # version, so an automated bump is a broken EAS build at best.
+          - dependency-name: react-native
+          - dependency-name: 'react-native-*'
+          - dependency-name: '@react-native/*'
+          - dependency-name: '@shopify/*'
+          - dependency-name: '@bottom-tabs/*'
+          - dependency-name: '@ledgerhq/device-transport-kit-react-native-ble'
+          # Pinned exactly in the catalog and tied to the React Native version.
+          - dependency-name: react
+          - dependency-name: react-dom
+          - dependency-name: '@types/react'
+          - dependency-name: '@types/react-dom'
+
+      # Grouping is only about PR volume: one review per stack instead of per
+      # package. Ungrouped dependencies still get their own PR.
+      groups:
+          dev-tooling:
+              patterns:
+                  - eslint
+                  - 'eslint-*'
+                  - '@eslint/*'
+                  - typescript
+                  - typescript-eslint
+                  - prettier
+                  - vite
+                  - vitest
+                  - '@vitest/*'
+          babel:
+              patterns:
+                  - '@babel/*'
+          react-navigation:
+              patterns:
+                  - '@react-navigation/*'
+          formatjs:
+              patterns:
+                  - '@formatjs/*'
+          tanstack:
+              patterns:
+                  - '@tanstack/*'
+          # Hardware wallet stack — grouped rather than ignored, but every one of
+          # these PRs needs a Ledger device in hand before it lands.
+          ledger:
+              patterns:
+                  - '@ledgerhq/*'
+
+    - package-ecosystem: github-actions
+      directory: '/'
+      schedule:
+          interval: weekly
+          day: monday
+          time: '06:00'
+          timezone: Etc/UTC
+      open-pull-requests-limit: 5
+      labels:
+          - dependencies
+      commit-message:
+          prefix: chore(ci)
+      groups:
+          actions:
+              patterns:
+                  - '*'
