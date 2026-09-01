@@ -18,7 +18,9 @@ import { AppLayout, Cell, ColorDot, Icon, List } from '../../shared';
 export type MainSidebarProps = {
     hasUpdates?: boolean;
     hasSafetyNotice?: boolean;
+    isUpdatesOpen?: boolean;
     onAddWallet: () => void;
+    onSelectWallet: () => void;
     onOpenUpdates: () => void;
     onOpenSafety: () => void;
     onOpenSettings: () => void;
@@ -28,7 +30,9 @@ export const MainSidebar: FC<MainSidebarProps> = props => {
     const {
         hasUpdates,
         hasSafetyNotice,
+        isUpdatesOpen,
         onAddWallet,
+        onSelectWallet,
         onOpenUpdates,
         onOpenSafety,
         onOpenSettings
@@ -51,7 +55,10 @@ export const MainSidebar: FC<MainSidebarProps> = props => {
                                 activePortfolioId !== undefined &&
                                 portfolio.id.isEq(activePortfolioId)
                             }
-                            onSelect={() => setActivePortfolio({ id: portfolio.id })}
+                            onSelect={() => {
+                                setActivePortfolio({ id: portfolio.id });
+                                onSelectWallet();
+                            }}
                         />
                     ))}
                 </List.Group>
@@ -68,7 +75,7 @@ export const MainSidebar: FC<MainSidebarProps> = props => {
                         </Cell.Content>
                     </Cell>
 
-                    <Cell onClick={onOpenUpdates}>
+                    <Cell isSelected={isUpdatesOpen} onClick={onOpenUpdates}>
                         <Cell.Leading>
                             <Icon asset={Message16} tone="tertiary" />
                         </Cell.Leading>
