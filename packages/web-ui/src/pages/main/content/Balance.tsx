@@ -7,6 +7,7 @@ import { Button, Text } from '../../../shared';
 
 export type BalanceProps = {
     onSend: () => void;
+    onReceive: () => void;
 };
 
 export const Balance: FC<BalanceProps> = props => {
@@ -22,7 +23,7 @@ export const Balance: FC<BalanceProps> = props => {
                 <Button variant="secondary" size="small" onClick={props.onSend}>
                     {t('home.actions.send')}
                 </Button>
-                <Button variant="secondary" size="small" onClick={() => undefined}>
+                <Button variant="secondary" size="small" onClick={props.onReceive}>
                     {t('home.actions.receive')}
                 </Button>
             </div>
