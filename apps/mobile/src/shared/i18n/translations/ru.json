@@ -851,6 +851,7 @@
         "steps": {
             "connect": "Подключите {{device}}",
             "openApp": "Откройте приложение Bitcoin",
+            "openAppVersionUnknown": "Не удалось узнать версию приложения",
             "approve": "Проверьте и подтвердите транзакцию."
         },
         "updateApp": {
