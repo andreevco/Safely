@@ -1,4 +1,5 @@
 import type { IStorage } from '../I-storage';
+import { saf751, saf751Async } from '../utils/saf751-trace';
 
 export class SecureEncryptedKeyRepository {
     constructor(private readonly secureEncryptedStorage: IStorage) {}
@@ -12,7 +13,9 @@ export class SecureEncryptedKeyRepository {
     }
 
     public async getMasterKey(): Promise<Buffer> {
-        const key = await this.secureEncryptedStorage.getItem('master_key');
+        const key = await saf751Async('sync.keyRepo.getMasterKey', () =>
+            this.secureEncryptedStorage.getItem('master_key')
+        );
         if (!key) {
             throw new Error('Master key not found');
         }
@@ -20,7 +23,9 @@ export class SecureEncryptedKeyRepository {
     }
 
     public async getVaultKey(): Promise<Buffer> {
-        const key = await this.secureEncryptedStorage.getItem('vault_key');
+        const key = await saf751Async('sync.keyRepo.getVaultKey', () =>
+            this.secureEncryptedStorage.getItem('vault_key')
+        );
         if (!key) {
             throw new Error('Vault key not found');
         }
@@ -32,8 +37,18 @@ export class SecureEncryptedKeyRepository {
         vaultKey: Buffer;
         dmkPrv: Buffer;
     }): Promise<void> {
-        await this.secureEncryptedStorage.setItem('master_key', opts.masterKey.toString('hex'));
-        await this.secureEncryptedStorage.setItem('vault_key', opts.vaultKey.toString('hex'));
-        await this.secureEncryptedStorage.setItem('dmk_prv', opts.dmkPrv.toString('hex'));
+        saf751('sync.keyRepo.initialize:start');
+
+        await saf751Async('sync.keyRepo.setMasterKey', () =>
+            this.secureEncryptedStorage.setItem('master_key', opts.masterKey.toString('hex'))
+        );
+        await saf751Async('sync.keyRepo.setVaultKey', () =>
+            this.secureEncryptedStorage.setItem('vault_key', opts.vaultKey.toString('hex'))
+        );
+        await saf751Async('sync.keyRepo.setDmkPrv', () =>
+            this.secureEncryptedStorage.setItem('dmk_prv', opts.dmkPrv.toString('hex'))
+        );
+
+        saf751('sync.keyRepo.initialize:ok');
     }
 }

@@ -1,13 +1,15 @@
 import { useNativeState } from '@expo/ui/jetpack-compose';
 import { useFocusEffect } from '@react-navigation/native';
-import { useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 import { runOnJS } from 'react-native-worklets';
 
+import { saf751 } from '@safely/sync';
 import { useAppContext, useImportSeedPhrase } from '@safely/ux';
 
 import { TEST_ID } from '@mobile/shared/constants';
+import { shareLogs } from '@mobile/shared/logger';
 import { Button, NativeInput, Screen, Text, type NativeInputRef } from '@mobile/shared/ui';
 import { maskSeedPhraseInput } from '@mobile/shared/utils';
 
@@ -29,6 +31,14 @@ export const SeedPhraseImportForm = ({ onMnemonicReady }: SeedPhraseImportFormPr
     const text = useNativeState(value);
     const selection = useNativeState({ start: 0, end: 0 });
 
+    const traceChange = useCallback((maskedValue: string, changed: boolean) => {
+        saf751('form.changeText', {
+            chars: maskedValue.length,
+            words: maskedValue.trim() === '' ? 0 : maskedValue.trim().split(' ').length,
+            changed
+        });
+    }, []);
+
     const handleChangeText = useCallback(
         (newValue: string) => {
             'worklet';
@@ -37,26 +47,40 @@ export const SeedPhraseImportForm = ({ onMnemonicReady }: SeedPhraseImportFormPr
             if (masked.changed) {
                 selection.value = masked.selection;
             }
+            runOnJS(traceChange)(masked.value, masked.changed);
             runOnJS(onChange)(masked.value);
         },
-        [text, selection, onChange]
+        [text, selection, onChange, traceChange]
     );
 
     const inputRef = useRef<NativeInputRef>(null);
 
+    useEffect(() => {
+        saf751('form.mount');
+
+        return () => saf751('form.unmount');
+    }, []);
+
     useFocusEffect(
         useCallback(() => {
+            saf751('form.focusEffect');
+
             const timer = setTimeout(() => {
+                saf751('form.autoFocus');
                 inputRef.current?.focus();
             }, 400);
 
-            return () => clearTimeout(timer);
+            return () => {
+                saf751('form.blurEffect');
+                clearTimeout(timer);
+            };
         }, [])
     );
 
     const handleContinue = useCallback(() => {
+        saf751('form.continuePressed', { isDirty, hasError: !!error });
         handleSubmit();
-    }, [handleSubmit]);
+    }, [handleSubmit, isDirty, error]);
 
     return (
         <Screen>
@@ -82,7 +106,11 @@ export const SeedPhraseImportForm = ({ onMnemonicReady }: SeedPhraseImportFormPr
                 >
                     <View style={styles.content}>
                         <View style={styles.textContainer}>
-                            <Text variant="titleM" textAlign="center">
+                            <Text
+                                variant="titleM"
+                                textAlign="center"
+                                onLongPress={() => void shareLogs()}
+                            >
                                 {t('onboarding.importWallet.title')}
                             </Text>
                             <Text variant="bodyL" color="secondary" textAlign="center">

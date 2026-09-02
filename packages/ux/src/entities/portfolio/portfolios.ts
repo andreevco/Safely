@@ -27,6 +27,7 @@ import {
     PortfolioNetworkType,
     PortfolioType
 } from '@safely/core';
+import { saf751, saf751Async } from '@safely/sync';
 import {
     isBip39SPortfolio,
     isDerivableSPortfolio,
@@ -181,36 +182,51 @@ export function useImportPortfolio() {
     >({
         async mutationFn({ mnemonicAccessor, secretEncryptor, meta, networkType }) {
             portfolioLogger.info('importing portfolio');
+            saf751('ux.importPortfolio:start', {
+                networkType,
+                words: mnemonicAccessor.value.length,
+                existingPortfolios: portfolios.length
+            });
             await delay();
 
-            const id = await PortfolioIdBip39Imported.create(mnemonicAccessor, networkType);
+            const id = await saf751Async('ux.importPortfolio.createId', () =>
+                PortfolioIdBip39Imported.create(mnemonicAccessor, networkType)
+            );
 
-            const portfolio = await PortfolioBip39.createSerializedPortfolio({
-                id,
-                encryptor: secretEncryptor,
-                mnemonicAccessor,
-                meta,
-                options: {
-                    seedRevealedFromDevice: deviceInfo.name
-                }
-            });
+            const portfolio = await saf751Async('ux.importPortfolio.createPortfolio', () =>
+                PortfolioBip39.createSerializedPortfolio({
+                    id,
+                    encryptor: secretEncryptor,
+                    mnemonicAccessor,
+                    meta,
+                    options: {
+                        seedRevealedFromDevice: deviceInfo.name
+                    },
+                    logger: portfolioLogger
+                })
+            );
 
             const existingBip39 = portfolios.find(p => p.id.isEq(id));
+
+            saf751('ux.importPortfolio.duplicateCheck', { isDuplicate: !!existingBip39 });
 
             if (existingBip39) {
                 throw new PortfolioAlreadyExistsError(existingBip39);
             }
 
-            await addPortfolio(portfolio);
+            await saf751Async('ux.importPortfolio.addPortfolio', () => addPortfolio(portfolio));
 
-            await setActivePortfolio({ id });
+            await saf751Async('ux.importPortfolio.setActive', () => setActivePortfolio({ id }));
 
             portfolioLogger.info('portfolio imported', { id: portfolio.id });
+            saf751('ux.importPortfolio:ok');
         },
         onSuccess() {
             toast(t('importWalletScreen.toastMessages.importedWallet'));
         },
         onError(error) {
+            saf751('ux.importPortfolio:fail', { error: String(error) });
+
             if (error instanceof PortfolioAlreadyExistsError) {
                 portfolioLogger.warn('import skipped: portfolio already exists');
                 return;

@@ -1,3 +1,4 @@
+import { saf751 } from '@safely/sync';
 import type {
     SPortfolioBip39Id,
     SPortfolioBip39IdImported,
@@ -68,6 +69,9 @@ export class PortfolioIdBip39Imported extends Id implements IPortfolioId {
             `safely/v1/portfolio-id/imported/${mnemonicAccessor.value.join(' ').toLowerCase()}`,
             16
         );
+
+        saf751('core.portfolioId.imported', { network, hashPrefix: mnemonicHash.slice(0, 8) });
+
         return new PortfolioIdBip39Imported({
             mnemonicHash,
             networkType: network
@@ -106,6 +110,13 @@ function getEmojiByMnemonic(mnemonicAccessor: IMnemonicAccessor): PortfolioMetaI
     );
 
     const index = mnemonicHash % allowedPortfolioMetaEmojis.length;
+
+    saf751('core.fallbackEmoji', {
+        index,
+        codePoints: [...allowedPortfolioMetaEmojis[index]]
+            .map(char => char.codePointAt(0)?.toString(16))
+            .join(',')
+    });
 
     return { type: 'emoji', value: allowedPortfolioMetaEmojis[index] };
 }

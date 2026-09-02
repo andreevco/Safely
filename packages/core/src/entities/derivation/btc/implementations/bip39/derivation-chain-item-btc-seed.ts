@@ -1,3 +1,4 @@
+import { saf751Sync } from '@safely/sync';
 import type { SBtcAccountChainItem } from '@safely/sync-storage';
 
 import { BtcBip32NodeProducer } from './btc-bip32-node-producer';
@@ -102,7 +103,11 @@ export class DerivationChainItemBtcSeed implements IDerivationChainItemBtc {
         this.derivationIndex = derivationIndex;
 
         const walletType = BtcWalletType.NATIVE_SEGWIT;
-        const address = BtcXpub.deriveAddress(this.xpub, this.network, walletType);
+        const address = saf751Sync(
+            'core.derivationItem.deriveAddress',
+            () => BtcXpub.deriveAddress(this.xpub, this.network, walletType),
+            { derivationIndex, network: this.network, xpubPrefix: this.xpub.slice(0, 8) }
+        );
         const signer = this.createSigner(seedProducer, {
             type: walletType,
             address

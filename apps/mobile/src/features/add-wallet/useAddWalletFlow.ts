@@ -6,6 +6,7 @@ import type { PortfolioMeta, PortfolioMetaIcon } from '@safely/core';
 import { PortfolioIdBip39Imported } from '@safely/core';
 import { PortfolioIdBip39MasterKeyDerived } from '@safely/core';
 import { MnemonicResource, PortfolioNetworkType } from '@safely/core';
+import { saf751, saf751Async } from '@safely/sync';
 import {
     useActiveAccountStoreSlot,
     useAppContext,
@@ -102,6 +103,8 @@ export function useAddWalletFlow() {
 
     const onMnemonicReady = useCallback(
         (mnemonic: string[], networkType: PortfolioNetworkType) => {
+            saf751('addWallet.mnemonicReady', { words: mnemonic.length, networkType });
+
             using accessor = new MnemonicResource(mnemonic);
             const defaultIcon = PortfolioIdBip39Imported.getFallbackEmoji(accessor);
 
@@ -109,17 +112,25 @@ export function useAddWalletFlow() {
                 defaultIcon,
                 defaultName,
                 onSave: async (meta: PortfolioMeta) => {
+                    saf751('addWallet.save:start');
+
                     try {
                         using secretEncryptor = createEncryptor();
-                        await secretEncryptor.unlockEncryption();
+                        await saf751Async('addWallet.unlockEncryption', () =>
+                            secretEncryptor.unlockEncryption()
+                        );
 
                         using mnemonicAccessor = new MnemonicResource(mnemonic);
-                        await importPortfolio({
-                            mnemonicAccessor,
-                            secretEncryptor,
-                            meta,
-                            networkType
-                        });
+                        await saf751Async('addWallet.importPortfolio', () =>
+                            importPortfolio({
+                                mnemonicAccessor,
+                                secretEncryptor,
+                                meta,
+                                networkType
+                            })
+                        );
+
+                        saf751('addWallet.save:ok');
 
                         navigation.dispatch(
                             CommonActions.reset({
@@ -128,6 +139,7 @@ export function useAddWalletFlow() {
                             })
                         );
                     } catch (error) {
+                        saf751('addWallet.save:fail', { error: String(error) });
                         handleDuplicatePortfolio(error, navigation);
                     }
                 },

@@ -1,3 +1,5 @@
+import { saf751, saf751Async } from '@safely/sync';
+
 import type { IMnemonic, IMnemonicAccessor } from './mnemonic';
 import type { ISecretEncryptor, SSecretEncrypted } from '../../di';
 
@@ -19,9 +21,13 @@ export class MnemonicVault implements IMnemonicVaultEncryptedSecretStored {
     }
 
     public static async fromMnemonic(encryptor: ISecretEncryptor, mnemonic: IMnemonic) {
+        const plaintext = this.mnemonicToString(mnemonic);
+
         return new MnemonicVault(
             encryptor,
-            await encryptor.encrypt(this.mnemonicToString(mnemonic))
+            await saf751Async('core.vault.encrypt', () => encryptor.encrypt(plaintext), {
+                chars: plaintext.length
+            })
         );
     }
 
@@ -38,7 +44,12 @@ export class MnemonicVault implements IMnemonicVaultEncryptedSecretStored {
     ) {}
 
     public async getMnemonic(): Promise<IMnemonic> {
-        const decrypted = await this.bridge.decrypt(this.encryptedSecret);
+        const decrypted = await saf751Async('core.vault.decrypt', () =>
+            this.bridge.decrypt(this.encryptedSecret)
+        );
+
+        saf751('core.vault.decrypted', { chars: decrypted.length });
+
         return MnemonicVault.mnemonicFromString(decrypted);
     }
 }

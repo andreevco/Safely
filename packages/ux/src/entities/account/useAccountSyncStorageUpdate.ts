@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 
 import type { Draft } from '@safely/slottree';
+import { saf751Async } from '@safely/sync';
 import type { SyncedStorageSchema } from '@safely/sync-storage';
 
 import type { SyncAccount } from './account-state';
@@ -22,7 +23,11 @@ export function useAccountSyncStorageSlotUpdate<T extends SyncedSlotKey>(
     return useCallback(
         async (account: SyncAccount, f: (draft: Draft<SyncedStorageSchema[T]>) => void) => {
             try {
-                await account.syncProvider.transaction(draft => f(draft.at(slot)));
+                await saf751Async(
+                    'ux.syncStorage.slotTransaction',
+                    () => account.syncProvider.transaction(draft => f(draft.at(slot))),
+                    { slot }
+                );
             } catch (e) {
                 if (showErrorToast) {
                     errorToast(e);
@@ -41,7 +46,9 @@ export function useAccountSyncStorageUpdate(options?: UseAccountSyncStorageUpdat
     return useCallback(
         async (account: SyncAccount, f: (draft: Draft<SyncedStorageSchema>) => void) => {
             try {
-                await account.syncProvider.transaction(f);
+                await saf751Async('ux.syncStorage.transaction', () =>
+                    account.syncProvider.transaction(f)
+                );
             } catch (e) {
                 if (showErrorToast) {
                     errorToast(e);

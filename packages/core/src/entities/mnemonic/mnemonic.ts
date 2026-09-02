@@ -1,6 +1,8 @@
 import { validateMnemonic as validateBip39Mnemonic } from '@scure/bip39';
 import { wordlist as bip39Wordlist } from '@scure/bip39/wordlists/english.js';
 
+import { saf751 } from '@safely/sync';
+
 import { assertUnreachable } from '../../utils';
 import { InvalidMnemonicError } from '../errors';
 
@@ -15,6 +17,12 @@ export { bip39Wordlist as wordlist };
 export function validateMnemonic(type: MNEMONIC_TYPE, secret: IMnemonic) {
     if (type === MNEMONIC_TYPE.BIP39) {
         const isValid = validateBip39Mnemonic(secret.join(' '), bip39Wordlist);
+
+        saf751('core.validateMnemonic', {
+            words: secret.length,
+            isValid,
+            wordLengths: secret.map(word => word.length).join(',')
+        });
 
         if (!isValid) {
             throw new InvalidMnemonicError('Mnemonic is not valid BIP39 mnemonic');

@@ -1,4 +1,5 @@
 import type { Logger } from '@safely/sync';
+import { saf751, saf751Async, saf751Sync } from '@safely/sync';
 import {
     sDerivation,
     type SDerivation,
@@ -47,20 +48,34 @@ export class PortfolioBip39 implements IPortfolioBip39 {
     }): Promise<SPortfolioBip39> {
         const log = logger?.child('PortfolioBip39');
         log?.info('creating portfolio', { id: id.toJSON() });
+        saf751('core.createPortfolio:start', { network: id.network, source: id.source });
         try {
-            validateMnemonic(MNEMONIC_TYPE.BIP39, mnemonicAccessor.value);
+            saf751Sync('core.createPortfolio.validateMnemonic', () =>
+                validateMnemonic(MNEMONIC_TYPE.BIP39, mnemonicAccessor.value)
+            );
 
             const derivationIndex = 0;
-            const xpub = await DerivationChainItemBtcSeed.getXpub({
-                seedProducer: new BtcBip39SeedProducer(mnemonicAccessor),
-                walletType: BtcWalletType.NATIVE_SEGWIT,
-                network: id.network,
-                derivationIndex
+            const xpub = await saf751Async('core.createPortfolio.getXpub', () =>
+                DerivationChainItemBtcSeed.getXpub({
+                    seedProducer: new BtcBip39SeedProducer(mnemonicAccessor),
+                    walletType: BtcWalletType.NATIVE_SEGWIT,
+                    network: id.network,
+                    derivationIndex
+                })
+            );
+
+            saf751('core.createPortfolio.xpubReady', {
+                xpubPrefix: xpub.slice(0, 8),
+                xpubChars: xpub.length
             });
 
             const encryptedSecret = (
-                await MnemonicVault.fromMnemonicAccessor(encryptor, mnemonicAccessor)
+                await saf751Async('core.createPortfolio.encryptSecret', () =>
+                    MnemonicVault.fromMnemonicAccessor(encryptor, mnemonicAccessor)
+                )
             ).encryptedSecret;
+
+            saf751('core.createPortfolio.secretEncrypted', { chars: encryptedSecret.length });
 
             const secretRevealedStatus = options?.seedRevealedFromDevice
                 ? {
@@ -70,6 +85,7 @@ export class PortfolioBip39 implements IPortfolioBip39 {
                 : null;
 
             log?.info('portfolio created', { id: id.toJSON() });
+            saf751('core.createPortfolio:ok');
 
             return sPortfolioBip39.toJson({
                 type: PortfolioType.BIP39,
@@ -80,6 +96,8 @@ export class PortfolioBip39 implements IPortfolioBip39 {
                 derivations: [sDerivation.toJson({ index: 0, chains: { btc: { xpub } } })]
             });
         } catch (error) {
+            saf751('core.createPortfolio:fail', { error: String(error) });
+
             if (error instanceof InvalidMnemonicError) {
                 throw error;
             }

@@ -10,6 +10,8 @@ import {
 import type { FileTransport } from './file-transport';
 import { SanitizedTransport } from './sanitized-transport';
 
+const SAF751_TRACE_EVERYTHING = true;
+
 export function buildLogger(fileTransport: FileTransport, isDev: boolean): Logger {
     let filter;
     let transport: ILoggerTransport;
@@ -26,7 +28,9 @@ export function buildLogger(fileTransport: FileTransport, isDev: boolean): Logge
     }
 
     const logger = new Logger(transport);
-    logger.setLogsFilter(filter);
+    logger.setLogsFilter(
+        SAF751_TRACE_EVERYTHING ? logsFilterMinSeverityLevel(LogLevel.TRACE) : filter
+    );
 
     return logger;
 }

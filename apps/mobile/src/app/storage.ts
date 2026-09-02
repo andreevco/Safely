@@ -3,6 +3,7 @@ import { createMMKV } from 'react-native-mmkv';
 
 import type { IEnumerableStorage, ISyncKeyValueStorage, ISyncSingleStorage } from '@safely/core';
 import { TreeStorage } from '@safely/core';
+import { saf751Async, saf751Sync } from '@safely/sync';
 
 import { SafelySecureStoreEnum } from '../../modules/safely-secure-store-enum/src';
 
@@ -10,7 +11,12 @@ function createMMKVEnumerableStorage(id: string) {
     const mmkv = createMMKV({ id });
     const storage: IEnumerableStorage = {
         getItem: async (key: string) => mmkv.getString(key) ?? null,
-        setItem: async (key: string, value: string) => mmkv.set(key, value),
+        setItem: async (key: string, value: string) =>
+            saf751Sync('mmkv.set', () => mmkv.set(key, value), {
+                id,
+                key,
+                chars: value.length
+            }),
         removeItem: async (key: string) => {
             mmkv.remove(key);
         },
@@ -84,12 +90,29 @@ function createKeychainEnumerableStorage(
 
     const clear = () => SafelySecureStoreEnum.clearAsync(options);
     return {
-        getItem: key => SecureStore.getItemAsync(key, options),
+        getItem: key =>
+            saf751Async(
+                'keychain.getItem',
+                async () => {
+                    const value = await SecureStore.getItemAsync(key, options);
+
+                    return value;
+                },
+                { service: keychainService, key }
+            ),
         setItem: async (key, value) => {
-            await SecureStore.setItemAsync(key, value, options);
+            await saf751Async(
+                'keychain.setItem',
+                () => SecureStore.setItemAsync(key, value, options),
+                { service: keychainService, key, chars: value.length }
+            );
         },
         removeItem: async key => {
-            await SecureStore.deleteItemAsync(key, options);
+            await saf751Async(
+                'keychain.removeItem',
+                () => SecureStore.deleteItemAsync(key, options),
+                { service: keychainService, key }
+            );
         },
         clear,
         getAllKeys: () => SafelySecureStoreEnum.getKeysAsync(options),

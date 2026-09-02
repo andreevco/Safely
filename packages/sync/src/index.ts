@@ -30,3 +30,11 @@ export {
 } from './logger';
 export type { LogEntry, ILoggerTransport, LogsFilter } from './logger';
 export { MKDerivationDomain } from './crypto/service/master-key-service';
+
+export {
+    installSaf751Trace,
+    saf751,
+    saf751Sync,
+    saf751Async,
+    type Saf751TraceFn
+} from './utils/saf751-trace';

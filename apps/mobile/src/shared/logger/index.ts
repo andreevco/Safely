@@ -2,6 +2,7 @@ import packageJson from '../../../package.json';
 import { build, deviceInfo } from '../app-meta';
 import { buildLogger } from './build-logger';
 import { FileTransport, type LogRecord } from './file-transport';
+import { installSaf751Tracing } from './saf751';
 
 export type { LogRecord } from './file-transport';
 
@@ -12,6 +13,9 @@ const transport = new FileTransport({
 });
 
 export const logger = buildLogger(transport, __DEV__);
+
+installSaf751Tracing(logger);
+
 export const eraseLogs = (): void => transport.erase();
 export const shareLogs = (): Promise<void> => transport.share();
 export const readLogs = (): Promise<LogRecord[]> => transport.read();

@@ -15,6 +15,7 @@ import type { IStorage } from './I-storage';
 import type { Logger } from './logger/logger';
 import { SyncStateRepository } from './update-handler/sync-state-repository';
 import { utf8 } from './utils/buffer';
+import { saf751, saf751Async, saf751Sync } from './utils/saf751-trace';
 
 export async function generateMasterKey(): Promise<Buffer> {
     return Buffer.from(randomBytes(32));
@@ -40,15 +41,19 @@ export async function initializeKeys(
     const syncKey = hkdf(sha256, masterKey, undefined, utf8('safely/sync/v1/sync-key'), 32);
     const vaultKey = hkdf(sha256, masterKey, undefined, utf8('safely/sync/v1/vault-key'), 32);
     const dmkSeed = hkdf(sha256, masterKey, undefined, utf8('safely/sync/v1/dmk-seed'), 32);
-    const dmkKeypair = ed25519.keygen(dmkSeed);
+    const dmkKeypair = saf751Sync('sync.ed25519.keygenDmk', () => ed25519.keygen(dmkSeed));
 
-    const identityKey = ik ? ik : ed25519.keygen();
-    await encryptedKeyRepository.initialize({
-        dmkPub: Buffer.from(dmkKeypair.publicKey),
-        selfIKPub: Buffer.from(identityKey.publicKey),
-        selfIKPrv: Buffer.from(identityKey.secretKey),
-        syncKey: Buffer.from(syncKey)
-    });
+    const identityKey = ik ? ik : saf751Sync('sync.ed25519.keygenIdentity', () => ed25519.keygen());
+
+    await saf751Async('sync.encryptedKeyRepo.initialize', () =>
+        encryptedKeyRepository.initialize({
+            dmkPub: Buffer.from(dmkKeypair.publicKey),
+            selfIKPub: Buffer.from(identityKey.publicKey),
+            selfIKPrv: Buffer.from(identityKey.secretKey),
+            syncKey: Buffer.from(syncKey)
+        })
+    );
+
     await secureEncryptedKeyRepository.initialize({
         masterKey: Buffer.from(masterKey),
         vaultKey: Buffer.from(vaultKey),
@@ -77,13 +82,15 @@ export async function initializeSyncAccount<Latest extends StorageVersion, Rest>
         opts.secureEncryptedStorage
     );
     const syncStateRepository = new SyncStateRepository(opts.storage, opts.logger);
-    await initializeKeys(
-        encryptedKeyRepository,
-        secureEncryptedKeyRepository,
-        opts.masterKey,
-        opts.ik
+    await saf751Async('sync.initializeKeys', () =>
+        initializeKeys(
+            encryptedKeyRepository,
+            secureEncryptedKeyRepository,
+            opts.masterKey,
+            opts.ik
+        )
     );
-    const ikPub = encryptedKeyRepository.getIKPub();
+    const ikPub = await saf751Async('sync.getIKPub', () => encryptedKeyRepository.getIKPub());
     const ycrdtRepository = new CrdtRepository(opts.storage, ikPub, opts.versions);
     const deviceCrdtRepository = new CrdtRepository<tDevicesLatest, tDevicesRest>(
         opts.storage,
@@ -91,7 +98,9 @@ export async function initializeSyncAccount<Latest extends StorageVersion, Rest>
         DevicesVersions,
         'devices_crdt'
     );
-    await initializeSyncState(syncStateRepository);
-    await ycrdtRepository.initialize();
-    await deviceCrdtRepository.initialize();
+    await saf751Async('sync.initializeSyncState', () => initializeSyncState(syncStateRepository));
+    await saf751Async('sync.crdt.initialize', () => ycrdtRepository.initialize());
+    await saf751Async('sync.deviceCrdt.initialize', () => deviceCrdtRepository.initialize());
+
+    saf751('sync.initializeSyncAccount:done');
 }

@@ -9,6 +9,7 @@ import {
     type PortfolioMetaIcon,
     type PortfolioNetworkType
 } from '@safely/core';
+import { saf751, saf751Async } from '@safely/sync';
 import type { AccountPortfolioSource } from '@safely/ux';
 import { useAppContext, useCreateAccount, useErrorToast, useLoader } from '@safely/ux';
 
@@ -50,6 +51,8 @@ export function useOnboardingFlow() {
 
     const onMnemonicReady = useCallback(
         (mnemonic: string[], networkType: PortfolioNetworkType) => {
+            saf751('onboarding.mnemonicReady', { words: mnemonic.length, networkType });
+
             const accessor = new MnemonicResource(mnemonic);
 
             navigation.navigate('OnboardingPasscodeScreen', {
@@ -84,7 +87,9 @@ export function useOnboardingFlow() {
 
     const onPasscodeReady = useCallback(
         async (passcode: string, source: AccountPortfolioSource | null) => {
-            await setPasscode(passcode);
+            saf751('onboarding.passcodeReady', { sourceKind: source?.kind ?? 'none' });
+
+            await saf751Async('onboarding.setPasscode', () => setPasscode(passcode));
 
             if (source) {
                 Keyboard.dismiss();
@@ -95,13 +100,18 @@ export function useOnboardingFlow() {
                         // don't ask for the password while setting app initially after first account creation during onboarding to provide smooth user experience
                         secureEncryptedStorage.UNSAFE_SKIP_SECURITY_CHECK_unlock();
 
-                        await createAccount({ secureEncryptedStorage, firstPortfolio: source });
+                        await saf751Async('onboarding.createAccount', () =>
+                            createAccount({ secureEncryptedStorage, firstPortfolio: source })
+                        );
                     });
                 } catch (error) {
+                    saf751('onboarding.createAccount:error', { error: String(error) });
                     errorToast(error);
                     throw error;
                 }
             }
+
+            saf751('onboarding.navigateToBiometry');
 
             navigation.navigate('BiometryScreen');
         },

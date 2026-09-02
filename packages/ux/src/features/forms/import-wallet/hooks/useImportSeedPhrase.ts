@@ -1,5 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 
+import { saf751 } from '@safely/sync';
+
 import { useLogger } from '../../../../shared';
 import { isValidMnemonicWord, normalizeInput } from '../utils';
 
@@ -42,6 +44,12 @@ export const useImportSeedPhrase = ({
     const handleSubmit = useCallback(() => {
         // Never log the words themselves — only the count, which is safe.
         logger.info('seed phrase submitted', { wordCount: words.length });
+        saf751('ux.seedPhrase.submit', {
+            words: words.length,
+            chars: value.length,
+            wordLengths: words.map(word => word.length).join(','),
+            allInWordlist: words.every(word => isValidMnemonicWord(word))
+        });
 
         if (words.length !== 12 && words.length !== 24) {
             logger.warn('seed phrase rejected: invalid word count', { wordCount: words.length });
@@ -56,8 +64,10 @@ export const useImportSeedPhrase = ({
             return;
         }
 
+        saf751('ux.seedPhrase.onSubmit:start');
         onSubmit(words);
-    }, [words, onSubmit, logger]);
+        saf751('ux.seedPhrase.onSubmit:ok');
+    }, [words, value, onSubmit, logger]);
 
     return {
         value,

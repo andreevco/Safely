@@ -5,6 +5,7 @@ import * as SystemUI from 'expo-system-ui';
 import { Activity, useEffect, useMemo } from 'react';
 import { useUnistyles } from 'react-native-unistyles';
 
+import { saf751 } from '@safely/sync';
 import { LedgerSessionProvider, SyncStorageProvider } from '@safely/ux';
 
 import { useLockScreenControl } from '@mobile/entities/security';
@@ -61,7 +62,15 @@ export function AppNavigation() {
                         <Navigation
                             ref={navigationRef}
                             initialState={initialState}
+                            onStateChange={() =>
+                                saf751('nav.stateChange', {
+                                    route: navigationRef.getCurrentRoute()?.name
+                                })
+                            }
                             onReady={() => {
+                                saf751('nav.ready', {
+                                    route: navigationRef.getCurrentRoute()?.name
+                                });
                                 enforceRestriction();
                                 SplashScreen.hideAsync();
                             }}

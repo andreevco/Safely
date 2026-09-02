@@ -14,6 +14,7 @@ import { AccountAlreadyExistsError } from '../sync-error';
 import { OfflineSyncProvider } from '../sync-provider/offline-sync-provider';
 import { OnlineSyncProvider } from '../sync-provider/online-sync-provider';
 import { SyncStatus } from '../sync-provider/sync-status';
+import { saf751, saf751Async } from '../utils/saf751-trace';
 
 export class CreateAccountService<Latest extends StorageVersion, Rest> {
     constructor(
@@ -28,8 +29,12 @@ export class CreateAccountService<Latest extends StorageVersion, Rest> {
     ) {}
 
     public async createOfflineAccount(secureEncryptedStorage: ITreeStorage) {
-        const masterKey = await generateMasterKey();
-        const accountID = await generateAccountID(masterKey);
+        saf751('sync.createOfflineAccount:start');
+
+        const masterKey = await saf751Async('sync.generateMasterKey', () => generateMasterKey());
+        const accountID = await saf751Async('sync.generateAccountID', () =>
+            generateAccountID(masterKey)
+        );
 
         const storage = getSyncAccountStorage(this.storage, accountID);
         const encryptedStorage = getSyncAccountStorage(this.encryptedStorage, accountID);
@@ -37,34 +42,44 @@ export class CreateAccountService<Latest extends StorageVersion, Rest> {
             secureEncryptedStorage,
             accountID
         );
-        await initializeSyncAccount({
-            storage,
-            encryptedStorage,
-            secureEncryptedStorage: accountSecureEncryptedStorage,
-            versions: this.versions,
-            masterKey,
-            logger: this.logger
-        });
+        await saf751Async('sync.initializeSyncAccount', () =>
+            initializeSyncAccount({
+                storage,
+                encryptedStorage,
+                secureEncryptedStorage: accountSecureEncryptedStorage,
+                versions: this.versions,
+                masterKey,
+                logger: this.logger
+            })
+        );
         masterKey.fill(0);
 
-        await this.syncAccountIDRepository.addAccount(accountID);
-
-        const container = await createSyncContainer({
-            accountId: accountID,
-            versions: this.versions,
-            storage,
-            encryptedStorage,
-            apiConfiguration: this.apiConfiguration,
-            pollingTimeout: this.pollingTimeout,
-            apiImplementationsFactory: this.apiImplementationsFactory,
-            logger: this.logger
-        });
-
-        await container.deviceManager.addDevice(
-            container.ikService.getPub(),
-            container.keyServiceFactory.createDmkSignerService(secureEncryptedStorage)
+        await saf751Async('sync.addAccountToRepository', () =>
+            this.syncAccountIDRepository.addAccount(accountID)
         );
-        await container.deviceManager.activate();
+
+        const container = await saf751Async('sync.createSyncContainer', () =>
+            createSyncContainer({
+                accountId: accountID,
+                versions: this.versions,
+                storage,
+                encryptedStorage,
+                apiConfiguration: this.apiConfiguration,
+                pollingTimeout: this.pollingTimeout,
+                apiImplementationsFactory: this.apiImplementationsFactory,
+                logger: this.logger
+            })
+        );
+
+        await saf751Async('sync.deviceManager.addDevice', () =>
+            container.deviceManager.addDevice(
+                container.ikService.getPub(),
+                container.keyServiceFactory.createDmkSignerService(secureEncryptedStorage)
+            )
+        );
+        await saf751Async('sync.deviceManager.activate', () => container.deviceManager.activate());
+
+        saf751('sync.createOfflineAccount:ok', { accountId: accountID });
 
         return new SyncAccount({
             accountId: accountID,

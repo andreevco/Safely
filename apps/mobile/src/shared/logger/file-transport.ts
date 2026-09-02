@@ -7,8 +7,9 @@ import { LogLevel } from '@safely/sync';
 import { type StoredLog, sStoredLog } from './schemas/stored-log.schema';
 
 const FILENAME = 'safely.ndjson';
-const MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024;
+const MAX_FILE_SIZE_BYTES = 32 * 1024 * 1024;
 const CONTEXT_BUFFER_SIZE = 1000;
+const SAF751_FLUSH_EVERY_ENTRY = true;
 
 type FileTransportConfig = {
     appVersion: string;
@@ -40,6 +41,12 @@ export class FileTransport implements ILoggerTransport {
 
     public log(entry: LogEntry): void {
         const serialized = this.serialize(entry);
+
+        if (SAF751_FLUSH_EVERY_ENTRY) {
+            this.writeToFile([serialized]);
+
+            return;
+        }
 
         if (entry.level < LogLevel.WARN) {
             this.context.push(serialized);

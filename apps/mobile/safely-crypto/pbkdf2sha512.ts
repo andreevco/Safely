@@ -2,12 +2,35 @@ import { pbkdf2Async } from '@noble/hashes/pbkdf2.js';
 import { sha512 } from '@noble/hashes/sha2.js';
 import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js';
 
+import { saf751 } from '@safely/sync';
+
 import { logger } from '@mobile/shared/logger';
 
 import { pbkdf2Sha512 as nativePbkdf2Sha512 } from '../modules/safely-crypto/src';
 
 const nativePbkdf2Sha512Async = (...args: Parameters<typeof nativePbkdf2Sha512>) => {
-    return Promise.resolve(nativePbkdf2Sha512(...args));
+    const [password, salt, iterations, keyLength] = args;
+
+    saf751('native.pbkdf2:enter', {
+        passwordBytes: password.byteLength,
+        passwordCtor: password.constructor?.name,
+        saltBytes: salt.byteLength,
+        saltCtor: salt.constructor?.name,
+        iterations,
+        keyLength
+    });
+
+    try {
+        const result = nativePbkdf2Sha512(...args);
+
+        saf751('native.pbkdf2:exit', { outBytes: result.byteLength });
+
+        return Promise.resolve(result);
+    } catch (error) {
+        saf751('native.pbkdf2:throw', { error: String(error) });
+
+        throw error;
+    }
 };
 
 const noblePbkdf2Sha512Async: typeof globalThis.safelyCrypto.pbkdf2Sha512 = (
@@ -35,6 +58,7 @@ const SELF_CHECK = {
 } as const;
 
 let nativeMatchesVector: boolean | undefined;
+saf751('native.pbkdf2.selfCheck:start');
 try {
     const derived = nativePbkdf2Sha512(
         utf8ToBytes(SELF_CHECK.password),
@@ -47,5 +71,7 @@ try {
     logger.error('[pbkdf2] native self-check threw', error);
     nativeMatchesVector = false;
 }
+
+saf751('native.pbkdf2.selfCheck:done', { nativeMatchesVector });
 
 export const pbkdf2Sha512 = nativeMatchesVector ? nativePbkdf2Sha512Async : noblePbkdf2Sha512Async;

@@ -20,7 +20,7 @@ import type {
     Logger,
     OnboardingConnector as RawOnboardingConnector
 } from '@safely/sync';
-import { OnboardingAbortedError, SyncStatus } from '@safely/sync';
+import { OnboardingAbortedError, saf751, saf751Async, SyncStatus } from '@safely/sync';
 import type {
     SNextDerivingPortfolioInfo,
     SPortfolio,
@@ -110,29 +110,35 @@ async function buildFirstPortfolio(params: {
             break;
         }
         case 'imported': {
+            saf751('ux.buildFirstPortfolio.imported:start', { networkType: source.networkType });
+
             const encryptor = new SecretEncryptor(account.secretEncryptor, secureEncryptedStorage);
             const id = await PortfolioIdBip39Imported.create(
                 source.mnemonicAccessor,
                 source.networkType
             );
 
-            const mnemonic = await source.mnemonicAccessor.getMnemonic();
+            const mnemonic = await saf751Async('ux.buildFirstPortfolio.getMnemonic', () =>
+                source.mnemonicAccessor.getMnemonic()
+            );
             using accessor = new MnemonicResource(mnemonic);
 
             const defaultIcon = PortfolioIdBip39Imported.getFallbackEmoji(accessor);
             using mnemonicAccessor = new MnemonicResource(mnemonic);
 
-            portfolio = await PortfolioBip39.createSerializedPortfolio({
-                id,
-                mnemonicAccessor: mnemonicAccessor,
-                encryptor,
-                meta: {
-                    name: portfolioName,
-                    icon: defaultIcon
-                },
-                options: { seedRevealedFromDevice: deviceName },
-                logger
-            });
+            portfolio = await saf751Async('ux.buildFirstPortfolio.createPortfolio', () =>
+                PortfolioBip39.createSerializedPortfolio({
+                    id,
+                    mnemonicAccessor: mnemonicAccessor,
+                    encryptor,
+                    meta: {
+                        name: portfolioName,
+                        icon: defaultIcon
+                    },
+                    options: { seedRevealedFromDevice: deviceName },
+                    logger
+                })
+            );
             break;
         }
         case 'ledger': {
@@ -173,12 +179,17 @@ async function buildFirstPortfolio(params: {
     }
 
     const nextIndex = source.kind === 'generated' ? 1 : 0;
-    using nextMnemonicAccessor =
-        await portfolioMnemonicFactory.deriveBip39MnemonicResource(nextIndex);
+    using nextMnemonicAccessor = await saf751Async(
+        'ux.buildFirstPortfolio.deriveNextMnemonic',
+        () => portfolioMnemonicFactory.deriveBip39MnemonicResource(nextIndex),
+        { nextIndex }
+    );
     const nextDerivingInfo: SNextDerivingPortfolioInfo = {
         index: nextIndex,
         emoji: PortfolioIdBip39MasterKeyDerived.getFallbackEmoji(nextMnemonicAccessor).value
     };
+
+    saf751('ux.buildFirstPortfolio:ok', { kind: source.kind });
 
     return { portfolio, nextDerivingInfo };
 }
@@ -233,28 +244,35 @@ export function useCreateAccount(options?: { setActive?: boolean }) {
                 firstPortfolio: params.firstPortfolio?.kind ?? 'none',
                 setActive: !!options?.setActive
             });
+            saf751('ux.createAccount:start', {
+                firstPortfolio: params.firstPortfolio?.kind ?? 'none'
+            });
             await delay();
 
-            const account = await factory.createSyncAccount(params.secureEncryptedStorage);
+            const account = await saf751Async('ux.createAccount.createSyncAccount', () =>
+                factory.createSyncAccount(params.secureEncryptedStorage)
+            );
 
             let createdPortfolio: SPortfolio | null = null;
             let nextDerivingInfo: SNextDerivingPortfolioInfo = null;
-            if (params.firstPortfolio) {
-                const built = await buildFirstPortfolio({
-                    account,
-                    secureEncryptedStorage: params.secureEncryptedStorage,
-                    source: params.firstPortfolio,
-                    portfolioName: t('security.groups.wallet.defaultName', { number: 1 }),
-                    deviceName: deviceInfo.name,
-                    logger
-                });
+            const firstPortfolioSource = params.firstPortfolio;
+            if (firstPortfolioSource) {
+                const built = await saf751Async('ux.createAccount.buildFirstPortfolio', () =>
+                    buildFirstPortfolio({
+                        account,
+                        secureEncryptedStorage: params.secureEncryptedStorage,
+                        source: firstPortfolioSource,
+                        portfolioName: t('security.groups.wallet.defaultName', { number: 1 }),
+                        deviceName: deviceInfo.name,
+                        logger
+                    })
+                );
                 createdPortfolio = built.portfolio;
                 nextDerivingInfo = built.nextDerivingInfo;
             }
 
-            const analyticsId = await deriveAnalyticsAccountUuid(
-                account,
-                params.secureEncryptedStorage
+            const analyticsId = await saf751Async('ux.createAccount.analyticsId', () =>
+                deriveAnalyticsAccountUuid(account, params.secureEncryptedStorage)
             );
 
             await updateSyncStorage(account, draft => {
@@ -271,13 +289,16 @@ export function useCreateAccount(options?: { setActive?: boolean }) {
                 }
             });
 
-            await client.invalidateQueries({ queryKey: accountKey.list.toKey() });
+            await saf751Async('ux.createAccount.invalidateAccounts', () =>
+                client.invalidateQueries({ queryKey: accountKey.list.toKey() })
+            );
 
             if (options?.setActive) {
-                await setActive(account.accountId);
+                await saf751Async('ux.createAccount.setActive', () => setActive(account.accountId));
             }
 
             logger.info('account created', { accountId: account.accountId });
+            saf751('ux.createAccount:ok', { accountId: account.accountId });
 
             return account;
         }
