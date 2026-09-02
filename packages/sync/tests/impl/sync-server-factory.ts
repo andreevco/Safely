@@ -1,14 +1,16 @@
+import type { Clock } from '@safely/slottree';
+
 import { InMemStorage } from './storage';
 import { createSyncServerApiImplementations } from './sync-server-api-implementations';
 import { getSyncServer } from './sync-server-registry';
 import { SyncAccountFactory } from '../../src';
 import { Logger } from '../../src/logger/logger';
 import { QRMessageCodec, QRMessageOperation } from '../../src/onboarding/onboarding-codec';
-import { Versions } from '../e2e/helpers';
+import { Versions } from '../fixtures/account';
 
 let factoryCounter = 0;
 
-export function makeFactory() {
+export function makeFactory(crdtClock?: Clock) {
     const storage = new InMemStorage();
     const encryptedStorage = new InMemStorage();
     let requesterIk: string | undefined;
@@ -31,6 +33,7 @@ export function makeFactory() {
             },
             apiImplementations,
             pollingTimeout: 1,
+            crdtClock,
             logger: new Logger().child(`property:${factoryId}`)
         }),
         setRequesterIk: (nextRequesterIk: string) => {
@@ -46,3 +49,5 @@ export function makeFactory() {
         }
     };
 }
+
+export type MockSyncAccountFactory = ReturnType<typeof makeFactory>;
