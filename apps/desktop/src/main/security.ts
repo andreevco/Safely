@@ -14,7 +14,7 @@ const API_HOST_PATTERN = 'https://*.safely.app';
 
 const BASE_POLICY = [
     "default-src 'none'",
-    "img-src 'self' data:",
+    `img-src 'self' data: ${API_HOST_PATTERN}`,
     "font-src 'self' data:",
     "style-src 'self' 'unsafe-inline'",
     "base-uri 'none'",

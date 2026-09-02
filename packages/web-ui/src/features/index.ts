@@ -6,4 +6,5 @@ export * from './qr-scan';
 export * from './receive';
 export * from './send';
 export * from './transaction-details';
+export * from './updates';
 export * from './wallet';

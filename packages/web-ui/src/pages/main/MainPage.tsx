@@ -2,7 +2,12 @@ import type { FC } from 'react';
 import { useEffect, useState } from 'react';
 
 import type { ActivityItem, BtcActivityItem } from '@safely/ux';
-import { isBtcActivityItem, useActivePortfolio, useHasPortfolio } from '@safely/ux';
+import {
+    isBtcActivityItem,
+    useActivePortfolio,
+    useBetaFeedWatched,
+    useHasPortfolio
+} from '@safely/ux';
 
 import { MainContent, MainEmptyState } from './content';
 import { dragRegionStyles } from './MainPage.styles';
@@ -16,6 +21,7 @@ import {
     ReceiveModals,
     SendModals,
     TransactionDetails,
+    UpdatesContent,
     useAccountFlow,
     useAddWalletFlow,
     useReceiveFlow,
@@ -39,7 +45,10 @@ export const MainPage: FC<MainPageProps> = props => {
     const send = useSendFlow();
     const receive = useReceiveFlow();
 
+    const { shouldShowBadge, markWatched } = useBetaFeedWatched();
+
     const [isDevToolsOpen, setIsDevToolsOpen] = useState(false);
+    const [isUpdatesOpen, setIsUpdatesOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [section, setSection] = useState<SettingsSection | null>(null);
     const [selectedActivity, setSelectedActivity] = useState<BtcActivityItem | null>(null);
@@ -55,11 +64,27 @@ export const MainPage: FC<MainPageProps> = props => {
     const toggleSettings = (): void => {
         setIsSettingsOpen(current => !current);
         setSection(null);
+        setIsUpdatesOpen(false);
+    };
+
+    const openHome = (): void => {
+        setIsUpdatesOpen(false);
+        setIsSettingsOpen(false);
+        setSection(null);
+    };
+
+    const openUpdates = (): void => {
+        setIsUpdatesOpen(true);
+        setIsSettingsOpen(false);
+        setSection(null);
+        setSelectedActivity(null);
+        void markWatched();
     };
 
     const selectSection = (next: SettingsSection): void => {
         setSection(next);
         setSelectedActivity(null);
+        setIsUpdatesOpen(false);
     };
 
     /* orders have no detail view on the web targets yet */
@@ -76,7 +101,7 @@ export const MainPage: FC<MainPageProps> = props => {
         );
     }
 
-    const content = hasPortfolio ? (
+    const home = hasPortfolio ? (
         <MainContent
             selectedActivityKey={selectedActivity?.key}
             onSend={send.open}
@@ -86,6 +111,8 @@ export const MainPage: FC<MainPageProps> = props => {
     ) : (
         <MainEmptyState onAddWallet={addWallet.open} />
     );
+
+    const content = isUpdatesOpen ? <UpdatesContent /> : home;
 
     return (
         <AppLayout
@@ -97,8 +124,11 @@ export const MainPage: FC<MainPageProps> = props => {
             <AppLayout.TitleBar className={dragRegionStyles} />
 
             <MainSidebar
+                hasUpdates={shouldShowBadge}
+                isUpdatesOpen={isUpdatesOpen}
                 onAddWallet={addWallet.open}
-                onOpenUpdates={() => undefined}
+                onSelectWallet={openHome}
+                onOpenUpdates={openUpdates}
                 onOpenSafety={() => undefined}
                 onOpenSettings={toggleSettings}
             />
