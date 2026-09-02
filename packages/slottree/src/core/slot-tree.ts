@@ -1,5 +1,7 @@
 import type { z } from 'zod';
 
+import type { Clock } from './clock';
+import { systemClock } from './clock';
 import { cborEncoder } from './encoder/cbor/cbor-encoder';
 import type { DeepReadonly } from './json';
 import type { MergeStats } from './merge-protocol';
@@ -110,6 +112,7 @@ export interface SlotTree<T> {
 
 export class StorageImpl<T> implements SlotTree<T> {
     private readonly protocol: MergeProtocol;
+    private readonly clock: Clock;
     private root: ContainerSlot;
     private readonly versions: readonly StorageVersion[];
     private readonly observers = new StorageObservers();
@@ -118,8 +121,10 @@ export class StorageImpl<T> implements SlotTree<T> {
         authorId: Buffer;
         versions: readonly StorageVersion[];
         root?: ContainerSlot;
+        clock?: Clock;
     }) {
-        this.protocol = new MergeProtocol(authorIdToHex(options.authorId));
+        this.clock = options.clock ?? systemClock;
+        this.protocol = new MergeProtocol(authorIdToHex(options.authorId), this.clock);
         this.versions = options.versions;
 
         if (options.root !== undefined) {
@@ -136,7 +141,12 @@ export class StorageImpl<T> implements SlotTree<T> {
 
     public addAuthor(authorId: Buffer, storageVersion: number): void {
         this.commitRootMutation(root => {
-            const controller = new VersionController(root, this.versions, this.protocol);
+            const controller = new VersionController(
+                root,
+                this.versions,
+                this.protocol,
+                this.clock
+            );
             controller.setDeviceVersion(
                 authorIdToHex(authorId),
                 storageVersion,
@@ -151,7 +161,12 @@ export class StorageImpl<T> implements SlotTree<T> {
 
     public removeAuthor(authorId: Buffer): void {
         this.commitRootMutation(root => {
-            const controller = new VersionController(root, this.versions, this.protocol);
+            const controller = new VersionController(
+                root,
+                this.versions,
+                this.protocol,
+                this.clock
+            );
             const deleted = controller.deleteAuthor(authorIdToHex(authorId));
             if (!deleted) {
                 return;
@@ -242,7 +257,7 @@ export class StorageImpl<T> implements SlotTree<T> {
         validateSlotTreeRoot(incoming);
 
         const workingRoot = this.createWorkingRoot();
-        const validationProtocol = new MergeProtocol(this.protocol.id);
+        const validationProtocol = new MergeProtocol(this.protocol.id, this.clock);
         validationProtocol.observeTree(this.root);
         const stats = workingRoot.merge(validationProtocol, incoming);
 
@@ -268,7 +283,7 @@ export class StorageImpl<T> implements SlotTree<T> {
         validateSlotTreeRoot(incoming);
 
         const workingRoot = this.createWorkingRoot();
-        const validationProtocol = new MergeProtocol(this.protocol.id);
+        const validationProtocol = new MergeProtocol(this.protocol.id, this.clock);
         validationProtocol.observeTree(this.root);
         const stats = workingRoot.merge(validationProtocol, incoming);
 
@@ -349,7 +364,12 @@ export class StorageImpl<T> implements SlotTree<T> {
 
     private ensureLatestInitialized(): void {
         const latest = this.latestVersion();
-        const controller = new VersionController(this.root, this.versions, this.protocol);
+        const controller = new VersionController(
+            this.root,
+            this.versions,
+            this.protocol,
+            this.clock
+        );
 
         if (controller.get(latest) !== undefined) {
             this.committedRoot().get<T>();
@@ -370,7 +390,12 @@ export class StorageImpl<T> implements SlotTree<T> {
 
     private syncDeviceVersion(): void {
         const latest = this.latestVersion();
-        const controller = new VersionController(this.root, this.versions, this.protocol);
+        const controller = new VersionController(
+            this.root,
+            this.versions,
+            this.protocol,
+            this.clock
+        );
 
         if (controller.getDeviceVersion(this.protocol.id) === latest.version) {
             return;
@@ -388,7 +413,8 @@ export class StorageImpl<T> implements SlotTree<T> {
         new VersionController(
             this.root,
             this.versions,
-            this.protocol
+            this.protocol,
+            this.clock
         ).deleteVersionsUnusedByDevices();
     }
 
@@ -435,11 +461,13 @@ export function createStorage<Latest extends StorageVersion, Rest>(options: {
     authorId: Buffer;
     versions: HCons<Latest, Rest> & AssertVersionHList<HCons<Latest, Rest>>;
     root?: ContainerSlot;
+    clock?: Clock;
 }): SlotTree<z.output<NewOf<Latest>>> {
     return new StorageImpl({
         authorId: options.authorId,
         versions: hListToRuntimeArray(options.versions),
-        root: options.root
+        root: options.root,
+        clock: options.clock
     }) as SlotTree<z.output<NewOf<Latest>>>;
 }
 
@@ -447,10 +475,12 @@ export function createStorageFromSnapshot<Latest extends StorageVersion, Rest>(o
     authorId: Buffer;
     versions: HCons<Latest, Rest> & AssertVersionHList<HCons<Latest, Rest>>;
     snapshot: Buffer;
+    clock?: Clock;
 }): SlotTree<z.output<NewOf<Latest>>> {
     return createStorage({
         authorId: options.authorId,
         versions: options.versions,
-        root: cborEncoder.decode(options.snapshot)
+        root: cborEncoder.decode(options.snapshot),
+        clock: options.clock
     });
 }

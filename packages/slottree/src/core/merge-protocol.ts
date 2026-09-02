@@ -1,3 +1,5 @@
+import type { Clock } from './clock';
+import { systemClock } from './clock';
 import { assertValidTimestamp, isRecursiveSlot, type Slot, type SlotMap } from './slots';
 import { cloneSlot } from './slots/slot-json';
 
@@ -12,13 +14,16 @@ export class MergeProtocol {
     public readonly id: string;
     private clock: number;
 
-    constructor(authorId: string) {
+    constructor(
+        authorId: string,
+        private readonly wallClock: Clock = systemClock
+    ) {
         this.id = authorId;
         this.clock = this.wallTime();
     }
 
     public wallTime(): number {
-        return Math.floor(Date.now() / 1000);
+        return this.wallClock.nowSeconds();
     }
 
     public tick(): number {
