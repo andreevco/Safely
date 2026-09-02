@@ -16,6 +16,7 @@
         "steps": {
             "connect": "Connect your {{device}}",
             "openApp": "Open the Bitcoin app",
+            "openAppVersionUnknown": "Couldn’t read app version",
             "approve": "Review and approve the transaction."
         },
         "updateApp": {
