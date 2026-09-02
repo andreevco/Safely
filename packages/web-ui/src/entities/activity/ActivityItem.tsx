@@ -15,11 +15,13 @@ import {
     timestampStyles,
     titleRowStyles
 } from './ActivityItem.styles';
+import type { CellTone } from '../../shared';
 import { Cell, Icon, Skeleton, Text } from '../../shared';
 import { toContactColorStyle } from '../contact';
 import { WalletIcon } from '../portfolio';
 
 export type ActivityItemProps = Omit<ActivityRowView, 'key' | 'activity'> & {
+    tone?: CellTone;
     isSelected?: boolean;
     onSelect?: () => void;
 };
@@ -75,6 +77,7 @@ export const ActivityItem: FC<ActivityItemProps> = memo(props => {
         timestampLabel,
         isPending,
         counterparty,
+        tone,
         isSelected,
         onSelect
     } = props;
@@ -89,6 +92,7 @@ export const ActivityItem: FC<ActivityItemProps> = memo(props => {
     return (
         <Cell
             className={isPending ? pendingStyles : undefined}
+            tone={tone}
             isSelected={isSelected}
             onClick={onSelect}
         >

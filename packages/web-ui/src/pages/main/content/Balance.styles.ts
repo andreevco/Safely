@@ -8,6 +8,12 @@ export const rowStyles = css({
     flexWrap: 'wrap'
 });
 
+export const amountsStyles = css({
+    display: 'flex',
+    alignItems: 'baseline',
+    gap: '8'
+});
+
 export const actionsStyles = css({
     display: 'flex',
     alignItems: 'center',

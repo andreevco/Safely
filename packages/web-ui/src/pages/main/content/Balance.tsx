@@ -1,8 +1,14 @@
 import type { FC } from 'react';
 
-import { useNumberFormatter, useTotalBalance, useTranslate } from '@safely/ux';
+import {
+    useActiveWalletBtcBalance,
+    useMainBalanceUnit,
+    useNumberFormatter,
+    useTotalBalance,
+    useTranslate
+} from '@safely/ux';
 
-import { actionsStyles, rowStyles } from './Balance.styles';
+import { actionsStyles, amountsStyles, rowStyles } from './Balance.styles';
 import { Button, Text } from '../../../shared';
 
 export type BalanceProps = {
@@ -12,12 +18,27 @@ export type BalanceProps = {
 
 export const Balance: FC<BalanceProps> = props => {
     const t = useTranslate();
+
     const { data: totalBalance } = useTotalBalance();
+    const { data: btcBalance } = useActiveWalletBtcBalance();
+
     const formatter = useNumberFormatter();
+    const mainBalanceUnit = useMainBalanceUnit();
+
+    const fiatAmount = totalBalance?.format(formatter) ?? '—';
+    const cryptoAmount = btcBalance?.display.format(formatter) ?? '—';
+
+    const [primaryAmount, secondaryAmount] =
+        mainBalanceUnit === 'crypto' ? [cryptoAmount, fiatAmount] : [fiatAmount, cryptoAmount];
 
     return (
         <div className={rowStyles}>
-            <Text variant="titleL">{totalBalance?.format(formatter) ?? '—'}</Text>
+            <div className={amountsStyles}>
+                <Text variant="titleL">{primaryAmount}</Text>
+                <Text variant="bodyL" tone="tertiary">
+                    {secondaryAmount}
+                </Text>
+            </div>
 
             <div className={actionsStyles}>
                 <Button variant="secondary" size="small" onClick={props.onSend}>

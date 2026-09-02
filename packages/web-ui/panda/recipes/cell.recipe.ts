@@ -97,6 +97,10 @@ export const cellRecipe = defineSlotRecipe({
                 root: { backgroundColor: 'transparent' },
                 title: { color: 'cell.default.foreground' }
             },
+            tertiary: {
+                root: { backgroundColor: 'background.tertiary' },
+                title: { color: 'cell.default.foreground' }
+            },
             accentRed: {
                 root: { backgroundColor: 'cell.accentRed.background' },
                 title: { color: 'cell.accentRed.foreground' },
