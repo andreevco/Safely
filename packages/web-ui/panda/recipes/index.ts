@@ -16,6 +16,7 @@ import { spinnerRecipe } from './spinner.recipe';
 import { switchRecipe } from './switch.recipe';
 import { tableCellRecipe } from './table-cell.recipe';
 import { textRecipe } from './text.recipe';
+import { toastRecipe } from './toast.recipe';
 
 export const recipes = {
     badge: badgeRecipe,
@@ -23,7 +24,8 @@ export const recipes = {
     colorDot: colorDotRecipe,
     icon: iconRecipe,
     spinner: spinnerRecipe,
-    text: textRecipe
+    text: textRecipe,
+    toast: toastRecipe
 };
 
 export const slotRecipes = {

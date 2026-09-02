@@ -177,6 +177,7 @@
         "status": {
             "lastUpdated": "Updated {{lastUpdatedAt}}",
             "addressCopied": "Address copied",
+            "bitcoinAddressCopied": "Bitcoin address copied",
             "updating": "Updating...",
             "noInternet": "No internet connection"
         },
@@ -193,6 +194,7 @@
     },
     "actions": {
         "copied": "Copied",
+        "copyFailed": "Could not copy",
         "copy": "Copy"
     },
     "qrScan": {

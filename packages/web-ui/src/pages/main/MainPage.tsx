@@ -13,10 +13,12 @@ import { SettingsSidebar } from './SettingsSidebar';
 import {
     AccountModals,
     AddWalletModals,
+    ReceiveModals,
     SendModals,
     TransactionDetails,
     useAccountFlow,
     useAddWalletFlow,
+    useReceiveFlow,
     useSendFlow
 } from '../../features';
 import { AppLayout } from '../../shared';
@@ -35,6 +37,7 @@ export const MainPage: FC<MainPageProps> = props => {
     const addWallet = useAddWalletFlow();
     const account = useAccountFlow();
     const send = useSendFlow();
+    const receive = useReceiveFlow();
 
     const [isDevToolsOpen, setIsDevToolsOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -77,6 +80,7 @@ export const MainPage: FC<MainPageProps> = props => {
         <MainContent
             selectedActivityKey={selectedActivity?.key}
             onSend={send.open}
+            onReceive={receive.open}
             onSelectActivity={selectActivity}
         />
     ) : (
@@ -128,6 +132,7 @@ export const MainPage: FC<MainPageProps> = props => {
             <AddWalletModals flow={addWallet} />
             <AccountModals flow={account} />
             <SendModals flow={send} />
+            <ReceiveModals flow={receive} />
         </AppLayout>
     );
 };

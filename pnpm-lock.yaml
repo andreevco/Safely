@@ -209,7 +209,7 @@ importers:
     devDependencies:
       '@electron-forge/cli':
         specifier: 7.11.2
-        version: 7.11.2(encoding@0.1.13)(lightningcss@1.31.1)(postcss@8.5.14)
+        version: 7.11.2(encoding@0.1.13)(lightningcss@1.31.1)
       '@electron-forge/maker-zip':
         specifier: 7.11.2
         version: 7.11.2
@@ -731,6 +731,9 @@ importers:
       i18next:
         specifier: 'catalog:'
         version: 26.3.0(typescript@6.0.3)
+      qrcode.react:
+        specifier: 4.2.0
+        version: 4.2.0(react@19.2.3)
       react-i18next:
         specifier: 'catalog:'
         version: 17.0.8(i18next@26.3.0(typescript@6.0.3))(react-dom@19.2.3(react@19.2.3))(react-native@0.85.3(@babel/core@7.29.7)(@react-native/metro-config@0.85.3(@babel/core@7.29.7))(@types/react@19.2.14)(react@19.2.3))(react@19.2.3)(typescript@6.0.3)
@@ -6797,6 +6800,11 @@ packages:
   purify-ts@2.1.0:
     resolution: {integrity: sha512-+KNUHV9FxB9BbjadFdvxa+LNJIaqZmSF7CQH5Rv6+f0rBzsxm9FEqrvkALQbWYJobAja2ZCbBDUY7O4fH2znMA==}
 
+  qrcode.react@4.2.0:
+    resolution: {integrity: sha512-QpgqWi8rD9DsS9EP3z7BT+5lY5SFhsqGjpgW5DY/i3mK4M9DTBNz3ErMi8BWYEfI3L0d8GIbGmcdFAS1uIRGjA==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+
   qrcode@1.5.4:
     resolution: {integrity: sha512-1ca71Zgiu6ORjHqFBDpnSMTR2ReToX4l1Au1VFLyVeBTFavzQnv5JxMFr3ukHVKpSrSA2MCk0lNJSykjUfz7Zg==}
     engines: {node: '>=10.13.0'}
@@ -9094,9 +9102,9 @@ snapshots:
     dependencies:
       '@types/hammerjs': 2.0.46
 
-  '@electron-forge/cli@7.11.2(encoding@0.1.13)(lightningcss@1.31.1)(postcss@8.5.14)':
+  '@electron-forge/cli@7.11.2(encoding@0.1.13)(lightningcss@1.31.1)':
     dependencies:
-      '@electron-forge/core': 7.11.2(encoding@0.1.13)(lightningcss@1.31.1)(postcss@8.5.14)
+      '@electron-forge/core': 7.11.2(encoding@0.1.13)(lightningcss@1.31.1)
       '@electron-forge/core-utils': 7.11.2
       '@electron-forge/shared-types': 7.11.2
       '@electron/get': 3.1.0
@@ -9143,7 +9151,7 @@ snapshots:
       - bluebird
       - supports-color
 
-  '@electron-forge/core@7.11.2(encoding@0.1.13)(lightningcss@1.31.1)(postcss@8.5.14)':
+  '@electron-forge/core@7.11.2(encoding@0.1.13)(lightningcss@1.31.1)':
     dependencies:
       '@electron-forge/core-utils': 7.11.2
       '@electron-forge/maker-base': 7.11.2
@@ -9154,7 +9162,7 @@ snapshots:
       '@electron-forge/template-vite': 7.11.2
       '@electron-forge/template-vite-typescript': 7.11.2
       '@electron-forge/template-webpack': 7.11.2
-      '@electron-forge/template-webpack-typescript': 7.11.2(lightningcss@1.31.1)(postcss@8.5.14)
+      '@electron-forge/template-webpack-typescript': 7.11.2(lightningcss@1.31.1)
       '@electron-forge/tracer': 7.11.2
       '@electron/get': 3.1.0
       '@electron/packager': 18.4.4
@@ -9293,13 +9301,13 @@ snapshots:
       - bluebird
       - supports-color
 
-  '@electron-forge/template-webpack-typescript@7.11.2(lightningcss@1.31.1)(postcss@8.5.14)':
+  '@electron-forge/template-webpack-typescript@7.11.2(lightningcss@1.31.1)':
     dependencies:
       '@electron-forge/shared-types': 7.11.2
       '@electron-forge/template-base': 7.11.2
       fs-extra: 10.1.0
       typescript: 5.4.5
-      webpack: 5.109.2(lightningcss@1.31.1)(postcss@8.5.14)
+      webpack: 5.109.2(lightningcss@1.31.1)
     transitivePeerDependencies:
       - '@minify-html/node'
       - '@swc/core'
@@ -14911,16 +14919,15 @@ snapshots:
 
   minimist@1.2.8: {}
 
-  minimizer-webpack-plugin@5.6.1(lightningcss@1.31.1)(postcss@8.5.14)(webpack@5.109.2(lightningcss@1.31.1)(postcss@8.5.14)):
+  minimizer-webpack-plugin@5.6.1(lightningcss@1.31.1)(webpack@5.109.2(lightningcss@1.31.1)):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
       jest-worker: 27.5.1
       schema-utils: 4.3.3
       terser: 5.44.1
-      webpack: 5.109.2(lightningcss@1.31.1)(postcss@8.5.14)
+      webpack: 5.109.2(lightningcss@1.31.1)
     optionalDependencies:
       lightningcss: 1.31.1
-      postcss: 8.5.14
 
   minipass-collect@1.0.2:
     dependencies:
@@ -15463,6 +15470,10 @@ snapshots:
   purify-ts@2.1.0:
     dependencies:
       '@types/json-schema': 7.0.15
+
+  qrcode.react@4.2.0(react@19.2.3):
+    dependencies:
+      react: 19.2.3
 
   qrcode@1.5.4:
     dependencies:
@@ -16916,7 +16927,7 @@ snapshots:
 
   webpack-sources@3.5.1: {}
 
-  webpack@5.109.2(lightningcss@1.31.1)(postcss@8.5.14):
+  webpack@5.109.2(lightningcss@1.31.1):
     dependencies:
       '@types/estree': 1.0.8
       '@types/json-schema': 7.0.15
@@ -16932,7 +16943,7 @@ snapshots:
       events: 3.3.0
       graceful-fs: 4.2.11
       mime-db: 1.54.0
-      minimizer-webpack-plugin: 5.6.1(lightningcss@1.31.1)(postcss@8.5.14)(webpack@5.109.2(lightningcss@1.31.1)(postcss@8.5.14))
+      minimizer-webpack-plugin: 5.6.1(lightningcss@1.31.1)(webpack@5.109.2(lightningcss@1.31.1))
       neo-async: 2.6.2
       schema-utils: 4.3.3
       tapable: 2.3.3

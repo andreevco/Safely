@@ -14,3 +14,9 @@ export const titleStyles = css({
     alignItems: 'center',
     gap: '8'
 });
+
+export const addressStyles = css({
+    cursor: 'pointer',
+    transition: 'color 150ms',
+    _hover: { color: 'text.primary' }
+});

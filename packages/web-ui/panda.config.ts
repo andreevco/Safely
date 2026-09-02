@@ -52,7 +52,8 @@ export default defineConfig({
             iconPicker: ['*'],
             spinner: ['*'],
             input: ['*'],
-            text: ['*']
+            text: ['*'],
+            toast: ['*']
         }
     },
     utilities: {
