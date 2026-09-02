@@ -1,5 +1,4 @@
 import type { DeviceManagementKit } from '@ledgerhq/device-management-kit';
-import { GetAppAndVersionCommand, isSuccessCommandResult } from '@ledgerhq/device-management-kit';
 import { SignerBtcBuilder } from '@ledgerhq/device-signer-kit-bitcoin';
 
 import { awaitDeviceAction } from './await-device-action';
@@ -22,7 +21,6 @@ export type DiscoverLedgerAccountsOptions = {
 };
 
 const LEDGER_DISCOVERY_OWNER = 'ledger-discovery';
-const APP_VERSION_PATTERN = /^\d+\.\d+/;
 
 export class LedgerController {
     constructor(
@@ -71,16 +69,7 @@ export class LedgerController {
     }
 
     public async getAppVersion(): Promise<string> {
-        const result = await this.ledgerKit.sendCommand({
-            sessionId: this.sessionId,
-            command: new GetAppAndVersionCommand()
-        });
-
-        if (!isSuccessCommandResult(result) || !APP_VERSION_PATTERN.test(result.data.version)) {
-            throw new LedgerAppVersionUnknownError();
-        }
-
-        return result.data.version;
+        throw new LedgerAppVersionUnknownError();
     }
 
     private buildBitcoinApp() {
