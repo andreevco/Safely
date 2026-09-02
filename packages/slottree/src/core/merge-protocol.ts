@@ -1,6 +1,6 @@
 import type { Clock } from './clock';
 import { systemClock } from './clock';
-import { isRecursiveSlot, type Slot, type SlotMap } from './slots';
+import { assertValidTimestamp, isRecursiveSlot, type Slot, type SlotMap } from './slots';
 import { cloneSlot } from './slots/slot-json';
 
 export interface MergeStats {
@@ -28,11 +28,18 @@ export class MergeProtocol {
 
     public tick(): number {
         const wallClockTime = this.wallTime();
-        this.clock = Math.max(this.clock, wallClockTime) + 1;
-        return this.clock;
+        const next = Math.max(this.clock, wallClockTime) + 1;
+        if (!Number.isSafeInteger(next)) {
+            throw new Error('Logical clock exhausted');
+        }
+
+        this.clock = next;
+        return next;
     }
 
     public observe(timestamp: number): void {
+        assertValidTimestamp(timestamp);
+
         if (timestamp > this.clock) {
             this.clock = timestamp;
         }

@@ -1,6 +1,14 @@
 import { CommonActions } from '@react-navigation/native';
 import type { FC, PropsWithChildren } from 'react';
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import {
+    createContext,
+    useCallback,
+    useContext,
+    useEffect,
+    useMemo,
+    useRef,
+    useState
+} from 'react';
 
 import { useAppState } from '@safely/ux';
 
@@ -12,6 +20,7 @@ import { useLockScreenQuery } from './useLockScreen';
 import { usePasscode } from './usePasscode';
 
 interface LockScreenContextValue {
+    isLocked: boolean;
     unlock: () => void;
 }
 
@@ -79,5 +88,10 @@ export const LockScreenProvider: FC<PropsWithChildren> = ({ children }) => {
         }
     }, []);
 
-    return <LockScreenContext value={{ unlock }}>{children}</LockScreenContext>;
+    const value = useMemo(
+        () => ({ isLocked: isLocked && isEnabled, unlock }),
+        [isEnabled, isLocked, unlock]
+    );
+
+    return <LockScreenContext value={value}>{children}</LockScreenContext>;
 };
