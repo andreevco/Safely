@@ -45,7 +45,10 @@ export const SecuritySection: FC = () => {
                               title: t('biometry.fingerprint.ios.title'),
                               description: t('biometry.fingerprint.ios.description'),
                               isEnabled: biometry.isEnabled,
-                              onToggle: setBiometryEnabled
+                              onToggle: isEnabled =>
+                                  void guarded(t('passcode.verify.title'), () =>
+                                      setBiometryEnabled(isEnabled)
+                                  )
                           }
                         : undefined
                 }

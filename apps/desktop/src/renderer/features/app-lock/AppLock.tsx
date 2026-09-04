@@ -10,6 +10,7 @@ import {
 import { EraseDataModal, LockScreen, PasscodeVerification } from '@safely/web-ui';
 
 import { useLockScreen } from './useLockScreen';
+import { isBiometryPromptOpen } from '../biometry';
 import { usePasscode, usePasscodePromptStore, usePasscodeVerification } from '../passcode';
 
 export type AppLockProps = {
@@ -24,7 +25,7 @@ export const AppLock: FC<AppLockProps> = ({ children }) => {
     const [isLocked, setIsLocked] = useState(isEnabled);
 
     useEnteredBackground(() => {
-        if (isEnabled) {
+        if (isEnabled && !isBiometryPromptOpen()) {
             setIsLocked(true);
         }
     });
