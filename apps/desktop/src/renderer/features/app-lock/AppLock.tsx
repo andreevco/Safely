@@ -1,7 +1,12 @@
 import type { FC, ReactNode } from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-import { SecurityCheckCancelledError, useEnteredBackground, useEraseAllData } from '@safely/ux';
+import {
+    SecurityCheckCancelledError,
+    useAppState,
+    useEnteredBackground,
+    useEraseAllData
+} from '@safely/ux';
 import { EraseDataModal, LockScreen, PasscodeVerification } from '@safely/web-ui';
 
 import { useLockScreen } from './useLockScreen';
@@ -24,18 +29,14 @@ export const AppLock: FC<AppLockProps> = ({ children }) => {
         }
     });
 
-    if (!passcode.isSet) {
-        return children;
-    }
-
-    if (isLocked) {
+    if (passcode.isSet && isLocked) {
         return <AppLockScreen onUnlocked={() => setIsLocked(false)} />;
     }
 
     return (
         <>
             {children}
-            <PasscodePromptOverlay />
+            {passcode.isSet && <PasscodePromptOverlay />}
         </>
     );
 };
@@ -48,10 +49,11 @@ type AppLockScreenProps = {
 const AppLockScreen: FC<AppLockScreenProps> = props => {
     const { mutateAsync: eraseAllData } = useEraseAllData();
     const [isErasing, setIsErasing] = useState(false);
+    const isAppSettled = useSettledActiveAppState();
 
     const verification = usePasscodeVerification({
         onVerified: props.onUnlocked,
-        hasBiometryAutoPrompt: true
+        hasBiometryAutoPrompt: isAppSettled
     });
 
     return (
@@ -76,6 +78,27 @@ const AppLockScreen: FC<AppLockScreenProps> = props => {
         </>
     );
 };
+
+/* the window takes the focus back when the space finishes sliding, and it would take it from a Touch ID prompt opened mid-swipe */
+const SPACE_SWITCH_SETTLE_MS = 750;
+
+function useSettledActiveAppState(): boolean {
+    const { current } = useAppState();
+    const [isSettled, setIsSettled] = useState(false);
+
+    useEffect(() => {
+        if (current !== 'active') {
+            setIsSettled(false);
+            return;
+        }
+
+        const timer = setTimeout(() => setIsSettled(true), SPACE_SWITCH_SETTLE_MS);
+
+        return () => clearTimeout(timer);
+    }, [current]);
+
+    return isSettled;
+}
 
 const PasscodePromptOverlay: FC = () => {
     const request = usePasscodePromptStore(state => state.request);

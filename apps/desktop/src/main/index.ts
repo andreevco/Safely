@@ -47,8 +47,16 @@ function attachMainWindow(): BrowserWindow {
 
     window.on('focus', () => notifyAppState('active'));
     window.on('blur', () => notifyAppState('inactive'));
+    window.on('minimize', () => notifyAppState('background'));
+    window.on('restore', () => notifyAppState('active'));
     window.on('show', () => notifyAppState('active'));
-    window.on('hide', () => notifyAppState('background'));
+
+    /* macOS hides the window on its way to the full-screen space too, and that is not the app leaving the screen */
+    window.on('hide', () => {
+        if (app.isHidden() || window.isMinimized()) {
+            notifyAppState('background');
+        }
+    });
 
     window.on('enter-full-screen', () => notifyFullScreen(true));
     window.on('leave-full-screen', () => notifyFullScreen(false));
@@ -88,6 +96,9 @@ if (!app.requestSingleInstanceLock()) {
             /* Before the handlers: an IPC call that arrives without a store must not be served. */
             createStores();
             registerIpcHandlers(() => mainWindow);
+
+            app.on('did-resign-active', () => notifyAppState('background'));
+
             mainWindow = attachMainWindow();
         })
         .catch((error: unknown) => {
