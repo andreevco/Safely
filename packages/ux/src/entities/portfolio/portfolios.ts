@@ -653,7 +653,29 @@ export function useSetActivePortfolio() {
     const portfolios = usePortfolios();
     const logger = useLogger('portfolio');
 
-    return useMutation<Portfolio, Error, { id: Portfolio['id']; derivationIndex?: number }>({
+    return useMutation<
+        Portfolio,
+        Error,
+        { id: Portfolio['id']; derivationIndex?: number },
+        { previous: SActivePortfolioSchema | undefined }
+    >({
+        onMutate({ id, derivationIndex }) {
+            const previous = client.getQueryData<SActivePortfolioSchema>(
+                accountQueryKey.activePortfolio.toKey()
+            );
+
+            client.setQueryData<SActivePortfolioSchema>(accountQueryKey.activePortfolio.toKey(), {
+                portfolioId: id.toString(),
+                derivationIndex
+            });
+
+            void client.cancelQueries(
+                { queryKey: accountQueryKey.activePortfolio.toKey() },
+                { revert: false }
+            );
+
+            return { previous };
+        },
         async mutationFn({ id, derivationIndex }) {
             logger.info('start set active portfolio', {
                 id
@@ -677,6 +699,9 @@ export function useSetActivePortfolio() {
                 id: portfolioToSet.id
             });
             return portfolioToSet;
+        },
+        onError(_error, _variables, context) {
+            client.setQueryData(accountQueryKey.activePortfolio.toKey(), context?.previous);
         }
     });
 }
