@@ -13,6 +13,7 @@ export {
     usePasscode,
     type UsePasscodeResult
 } from './passcode';
+export { SecuritySection } from './security';
 export {
     QrScanCancelledError,
     QrScanFlow,

@@ -1,4 +1,4 @@
-import type { FC } from 'react';
+import type { FC, ReactNode } from 'react';
 
 import { AccountSettings } from './AccountSettings';
 import { AddressBookSettings } from './AddressBookSettings';
@@ -12,9 +12,10 @@ import type { useAccountFlow } from '../../../features';
 export type SettingsContentProps = {
     section: SettingsSection;
     account: ReturnType<typeof useAccountFlow>;
+    security: ReactNode;
 };
 
-export const SettingsContent: FC<SettingsContentProps> = ({ section, account }) => {
+export const SettingsContent: FC<SettingsContentProps> = ({ section, account, security }) => {
     switch (section) {
         case 'wallet':
             return <WalletSettings />;
@@ -23,8 +24,7 @@ export const SettingsContent: FC<SettingsContentProps> = ({ section, account }) 
         case 'account':
             return <AccountSettings flow={account} />;
         case 'security':
-            /* TODO(security-settings): the app mounts SecuritySettings with its own props */
-            return null;
+            return security;
         case 'language':
             return <LanguageSettings />;
         case 'currency':
