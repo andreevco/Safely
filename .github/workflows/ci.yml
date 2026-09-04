@@ -92,8 +92,6 @@ jobs:
           fi
 
 
-  # Fails only on advisories nobody has reviewed yet — the accepted backlog lives
-  # in security/dependency-advisories.json. See security/README.md.
   dependency-advisories:
     runs-on: ubuntu-latest
     steps:

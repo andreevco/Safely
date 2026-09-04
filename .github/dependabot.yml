@@ -1,20 +1,8 @@
-# Dependabot's half of the dependency work. The verdict half lives in
-# scripts/audit-gate.mjs + security/dependency-advisories.json and runs on every
-# PR; read security/README.md for how the two divide the job.
-#
-# Dependabot is the discovery and upgrade mechanism, never the policy: nothing
-# here can make a build pass or fail. It also cannot fix most of what the gate
-# reports — the backlog is transitive dependencies of react-native and expo, and
-# Dependabot's only lever is bumping the direct parent, which is ignored below.
-# Those stay manual `overrides` entries in pnpm-workspace.yaml.
 version: 2
 
 updates:
     - package-ecosystem: npm
       directory: '/'
-      # pnpm workspace: versions for 57 dependencies live in the `catalog:` block
-      # of pnpm-workspace.yaml, not in any package.json. Confirm in the Dependabot
-      # run log that those are being resolved — see security/README.md.
       schedule:
           interval: weekly
           day: monday
