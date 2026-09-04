@@ -5,9 +5,10 @@ import { MnemonicResource, PortfolioNetworkType } from '@safely/core';
 import { useAppContext, useCreateAccount, useErrorToast, useLoader } from '@safely/ux';
 
 import { ROUTE } from '../../shared';
+import { isBiometryAvailable } from '../biometry';
 import { usePasscode } from '../passcode';
 
-export type OnboardingStep = 'moreOptions' | 'import' | 'watch' | 'passcode';
+export type OnboardingStep = 'moreOptions' | 'import' | 'watch' | 'passcode' | 'biometry';
 
 type OnboardingSource =
     | { kind: 'generated' }
@@ -109,27 +110,48 @@ export function useOnboardingFlow() {
         [withLoader, getSecureEncrypted, createAccount]
     );
 
+    const createAndOpenMain = useCallback(async () => {
+        const pending = source.current;
+
+        if (pending === null) {
+            return;
+        }
+
+        try {
+            await createAccountFrom(pending);
+        } catch (error) {
+            errorToast(error);
+            return;
+        }
+
+        source.current = null;
+        await navigate({ to: ROUTE.main, replace: true });
+    }, [createAccountFrom, errorToast, navigate]);
+
     const onPasscodeComplete = useCallback(
         async (passcode: string) => {
-            const pending = source.current;
-
-            if (pending === null) {
+            if (source.current === null) {
                 return;
             }
 
             try {
                 await setPasscode(passcode);
-                await createAccountFrom(pending);
             } catch (error) {
                 errorToast(error);
                 return;
             }
 
-            source.current = null;
-            await navigate({ to: ROUTE.main, replace: true });
+            if (await isBiometryAvailable()) {
+                setStep('biometry');
+                return;
+            }
+
+            await createAndOpenMain();
         },
-        [setPasscode, createAccountFrom, errorToast, navigate]
+        [setPasscode, errorToast, createAndOpenMain]
     );
+
+    const onBiometryFinished = useCallback(() => void createAndOpenMain(), [createAndOpenMain]);
 
     return {
         step,
@@ -141,6 +163,7 @@ export function useOnboardingFlow() {
         onMnemonicReady,
         onWatchInputReady,
         onPasscodeComplete,
+        onBiometryFinished,
         goBackFromPasscode
     };
 }

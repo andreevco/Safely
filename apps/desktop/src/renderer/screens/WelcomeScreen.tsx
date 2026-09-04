@@ -8,7 +8,7 @@ import {
     WelcomePage
 } from '@safely/web-ui';
 
-import { PasscodeSetupFlow, useOnboardingFlow } from '../features';
+import { EnableBiometryFlow, PasscodeSetupFlow, useOnboardingFlow } from '../features';
 
 export const WelcomeScreen: FC = () => {
     const t = useTranslate();
@@ -68,6 +68,10 @@ export const WelcomeScreen: FC = () => {
                     }
                     onCancel={onboarding.goBackFromPasscode}
                 />
+            )}
+
+            {onboarding.step === 'biometry' && (
+                <EnableBiometryFlow onDone={onboarding.onBiometryFinished} />
             )}
         </>
     );

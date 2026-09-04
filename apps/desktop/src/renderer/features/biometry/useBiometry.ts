@@ -5,6 +5,10 @@ import { i18n } from '../../i18n';
 import { platform } from '../../platform';
 import { desktopLayerRegularStorage, useDesktopLayerRegularStorage } from '../../shared';
 
+export function isBiometryAvailable(): Promise<boolean> {
+    return platform.biometry.isAvailable();
+}
+
 export function authenticateBiometry(): Promise<boolean> {
     return platform.biometry.authenticate(i18n.t('biometry.reason'));
 }
