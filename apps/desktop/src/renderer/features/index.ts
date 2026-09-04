@@ -1,5 +1,10 @@
 export { AppLock, type AppLockProps } from './app-lock';
-export { authenticateBiometry, isBiometryUnlockEnabled } from './biometry';
+export {
+    authenticateBiometry,
+    EnableBiometryFlow,
+    type EnableBiometryFlowProps,
+    isBiometryUnlockEnabled
+} from './biometry';
 export { useOnboardingFlow } from './onboarding';
 export {
     passcodePrompt,
@@ -8,6 +13,7 @@ export {
     usePasscode,
     type UsePasscodeResult
 } from './passcode';
+export { SecuritySection } from './security';
 export {
     QrScanCancelledError,
     QrScanFlow,

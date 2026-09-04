@@ -3,6 +3,7 @@ import type { Build } from '@safely/core';
 import { createEnumerableStorage, synchronousStorage } from './storage';
 import type { DesktopPlatform } from './types';
 import type { DesktopBridge } from '../../shared/bridge';
+import type { AppState } from '../../shared/ipc';
 
 export type { DesktopPlatform, DesktopPlatformStorage } from './types';
 
@@ -35,6 +36,12 @@ function setFullScreen(value: boolean): void {
 void bridge.isFullScreen().then(setFullScreen);
 bridge.onFullScreenChange(setFullScreen);
 
+let appState: AppState = 'active';
+
+bridge.onAppStateChange(next => {
+    appState = next;
+});
+
 export const platform: DesktopPlatform = {
     appInfo: { ...bridge.appInfo, build: REPORTED_BUILD },
     storage: {
@@ -57,8 +64,7 @@ export const platform: DesktopPlatform = {
         synchronousStorage.clear();
     },
     subscribeAppStateChange: callback => {
-        /* the window is on screen when the renderer starts */
-        callback('active');
+        callback(appState);
 
         return bridge.onAppStateChange(callback);
     },

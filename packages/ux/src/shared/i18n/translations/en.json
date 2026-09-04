@@ -122,7 +122,8 @@
         },
         "reenter": {
             "title": "Confirm new passcode"
-        }
+        },
+        "changed": "Passcode changed"
     },
     "currency": {
         "title": "Currency",

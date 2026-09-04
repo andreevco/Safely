@@ -1,4 +1,4 @@
-import type { FC } from 'react';
+import type { FC, ReactNode } from 'react';
 import { useEffect, useState } from 'react';
 
 import type { ActivityItem, BtcActivityItem } from '@safely/ux';
@@ -33,10 +33,11 @@ import { DevToolsPage } from '../dev-tools';
 export type MainPageProps = {
     hasWindowControls?: boolean;
     isFullScreen?: boolean;
+    security: ReactNode;
 };
 
 export const MainPage: FC<MainPageProps> = props => {
-    const { hasWindowControls, isFullScreen } = props;
+    const { hasWindowControls, isFullScreen, security } = props;
 
     const hasPortfolio = useHasPortfolio();
     const portfolioId = useActivePortfolio()?.id.toString();
@@ -144,7 +145,7 @@ export const MainPage: FC<MainPageProps> = props => {
                 {section === null ? (
                     content
                 ) : (
-                    <SettingsContent section={section} account={account} />
+                    <SettingsContent section={section} account={account} security={security} />
                 )}
             </AppLayout.Content>
 

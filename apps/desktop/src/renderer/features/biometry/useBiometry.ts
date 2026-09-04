@@ -5,8 +5,25 @@ import { i18n } from '../../i18n';
 import { platform } from '../../platform';
 import { desktopLayerRegularStorage, useDesktopLayerRegularStorage } from '../../shared';
 
-export function authenticateBiometry(): Promise<boolean> {
-    return platform.biometry.authenticate(i18n.t('biometry.reason'));
+export function isBiometryAvailable(): Promise<boolean> {
+    return platform.biometry.isAvailable();
+}
+
+let isPromptOpen = false;
+
+/* the prompt costs the app its active state, and a lock raised by that would cover the prompt itself */
+export function isBiometryPromptOpen(): boolean {
+    return isPromptOpen;
+}
+
+export async function authenticateBiometry(): Promise<boolean> {
+    isPromptOpen = true;
+
+    try {
+        return await platform.biometry.authenticate(i18n.t('biometry.reason'));
+    } finally {
+        isPromptOpen = false;
+    }
 }
 
 /* the security gate runs outside React, so this path takes the storage without the hook */
@@ -42,9 +59,9 @@ export function useSetBiometryEnabled() {
     const { set: storageSet } = useDesktopLayerRegularStorage('biometryEnabled');
 
     return useMutation({
-        /* proving the factor works is part of turning it on, and of giving it up */
+        /* proving the factor works is part of turning it on; giving it up is authorized by the caller */
         mutationFn: async (enabled: boolean) => {
-            if (!(await authenticateBiometry())) {
+            if (enabled && !(await authenticateBiometry())) {
                 throw new Error('Biometric authentication failed');
             }
 
