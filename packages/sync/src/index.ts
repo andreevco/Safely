@@ -18,6 +18,7 @@ export type { ISecretEncryptor, SSecretDecrypted, SSecretEncrypted } from './sec
 export { sSecretEncrypted, sSecretDecrypted } from './secret-encryptor';
 
 export { type IsomorphicEventSource } from './utils/sse-stream';
+export { waitForChange } from './utils/wait-for-change';
 
 export { type SafelyCrypto } from './safely-crypto';
 
