@@ -46,4 +46,8 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
+# native dependency gate: what a build captured, and the graphs parsed out of it
+capture/
+native-graphs/
+
 app-example

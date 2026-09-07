@@ -103,7 +103,22 @@ export class SonatypeClient {
             });
             const remaining = response.headers.get('x-credits-remaining');
             if (remaining) this.creditsRemaining = remaining;
-            return response.json();
+
+            const components = await response.json();
+            if (!Array.isArray(components))
+                throw new Error('component-report answered with something other than an array');
+            // An unindexed component still comes back, with no description — that
+            // is what `unknown` is for. A purl missing from the answer entirely was
+            // never looked at, and matching only what came back would report it as
+            // a pod with no advisories.
+            const answered = new Set(components.map(component => component.coordinates));
+            const missing = coordinates.filter(purl => !answered.has(purl));
+            if (missing.length)
+                throw new Error(
+                    `component-report answered about ${answered.size} of ${coordinates.length} component(s); ` +
+                        `no answer for ${missing.join(', ')}`
+                );
+            return components;
         });
     }
 }

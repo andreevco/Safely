@@ -105,32 +105,51 @@ jobs:
       summary: ${{ steps.gate.outputs.summary }}
     steps:
       - uses: eas/checkout
-      # Records a verdict instead of failing, so the upload below runs either way.
-      - name: Fetch, parse and scan the resolved graphs
-        id: gate
+      # The only step with EXPO_TOKEN, and it only downloads. Fails softly: the
+      # scan step records the verdict, so a missing capture reaches the same one.
+      - name: Download what the builds captured
         run: |
           export EXPO_TOKEN="${{ env.EXPO_TOKEN }}"
+          unset SONATYPE_TOKEN
+          set +e
+          node --permission \
+            --allow-fs-read="scripts/native-audit/*" \
+            --allow-fs-write="capture/*" \
+            scripts/native-audit/fetch-graphs.mjs --out capture \
+            --ios "${{ needs.build_ios.outputs.build_id }}" \
+            --android "${{ needs.build_android.outputs.build_id }}"
+          code=$?
+          set -e
+          echo "capture exit: $code"
+      # Records a verdict instead of failing, so the upload below runs either way.
+      # `unset EXPO_TOKEN`: EAS scopes secrets per job, not per step.
+      - name: Parse and scan the resolved graphs
+        id: gate
+        run: |
+          unset EXPO_TOKEN
           export SONATYPE_TOKEN="${{ env.SONATYPE_TOKEN }}"
           BUILD_TYPE="${{ needs.prepare.outputs.build_type }}"
           echo "build type: $BUILD_TYPE"
           mkdir -p native-graphs
 
+          audit() {
+            node --permission \
+              --allow-fs-read="scripts/native-audit/*" \
+              --allow-fs-read="capture/*" \
+              --allow-fs-read="native-graphs/*" \
+              --allow-fs-write="native-graphs/*" \
+              scripts/native-audit/index.mjs "$@"
+          }
+
           set +e
           (
             set -e
-            # Each profile captures exactly one path per platform, so the artifact
-            # is that file itself rather than an archive.
-            node scripts/native-audit/index.mjs fetch "${{ needs.build_ios.outputs.build_id }}" \
-              --out build-ios.json --download graphs/Podfile.lock
-            node scripts/native-audit/index.mjs fetch "${{ needs.build_android.outputs.build_id }}" \
-              --out build-android.json --download graphs/sdkDependencies.txt
+            audit parse --ios capture/Podfile.lock \
+              --build-meta capture/build-ios.json --out native-graphs/ios-pods.json
+            audit parse --android capture/sdkDependencies.txt \
+              --build-meta capture/build-android.json --out native-graphs/android-coordinates.json
 
-            node scripts/native-audit/index.mjs parse --ios graphs/Podfile.lock \
-              --build-meta build-ios.json --out native-graphs/ios-pods.json
-            node scripts/native-audit/index.mjs parse --android graphs/sdkDependencies.txt \
-              --build-meta build-android.json --out native-graphs/android-coordinates.json
-
-            node scripts/native-audit/index.mjs gate \
+            audit gate \
               --graph native-graphs/android-coordinates.json \
               --pods native-graphs/ios-pods.json \
               --markdown native-graphs/native-dependencies.md \
@@ -157,7 +176,10 @@ jobs:
         with:
           type: other
           name: native-dependency-graphs
-          path: native-graphs/**/*
+          # Globbed from the checkout root, not from the step's working directory
+          # (which eas/checkout moved to apps/mobile, where the graphs are written).
+          # `working_directory:` would not help — the function ignores it.
+          path: apps/mobile/native-graphs/**/*
           # A scan that failed early leaves nothing to upload.
           ignore_error: true
       - name: Block distribution

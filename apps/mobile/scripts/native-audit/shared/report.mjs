@@ -7,13 +7,25 @@ export const reachedThrough = (paths = []) =>
     paths.slice(0, 4).join(', ') + (paths.length > 4 ? `, +${paths.length - 4} more` : '');
 
 export class GateReport {
-    constructor({ mode, coordinates, pods, ios, build, unknownPods, result, counts, findingCount }) {
+    constructor({
+        mode,
+        coordinates,
+        pods,
+        ios,
+        build,
+        unknownPods,
+        unresolved,
+        result,
+        counts,
+        findingCount
+    }) {
         this.mode = mode;
         this.coordinates = coordinates;
         this.pods = pods;
         this.ios = ios;
         this.build = build;
         this.unknownPods = unknownPods ?? [];
+        this.unresolved = unresolved ?? [];
         this.result = result;
         this.counts = counts;
         this.findingCount = findingCount;
@@ -26,7 +38,8 @@ export class GateReport {
     get scannedLabel() {
         return (
             `${this.coordinates.length} ${this.mode} coordinate(s)` +
-            (this.queryablePods.length ? ` + ${this.queryablePods.length} pod(s)` : '')
+            (this.queryablePods.length ? ` + ${this.queryablePods.length} pod(s)` : '') +
+            (this.unresolved.length ? `, ${this.unresolved.length} unqueryable` : '')
         );
     }
 
@@ -36,7 +49,8 @@ export class GateReport {
     get scannedPlain() {
         return (
             `${this.coordinates.length} ${this.mode} coordinates` +
-            (this.queryablePods.length ? ` + ${this.queryablePods.length} pods` : '')
+            (this.queryablePods.length ? ` + ${this.queryablePods.length} pods` : '') +
+            (this.unresolved.length ? `, ${this.unresolved.length} unqueryable` : '')
         );
     }
 
@@ -64,6 +78,12 @@ export class GateReport {
             );
         }
         lines.push(`  ${accepted.length} accepted, ${informational.length} non-blocking`);
+        // Not a finding and not a clean result either — the part of the graph this
+        // mode could not put a version on, so it never reached a database.
+        if (this.unresolved.length)
+            lines.push(
+                `  ${this.unresolved.length} declaration(s) with no queryable version — see the report`
+            );
         return lines;
     }
 
@@ -90,7 +110,7 @@ export class GateReport {
     }
 
     toMarkdown() {
-        const { result, counts, build, pods, ios, unknownPods } = this;
+        const { result, counts, build, pods, ios, unknownPods, unresolved } = this;
         const lines = ['## Native dependency advisories', ''];
 
         if (build) {
@@ -104,7 +124,7 @@ export class GateReport {
         const subjects = [`${this.coordinates.length} ${this.mode} Maven coordinate(s)`];
         if (pods.length)
             subjects.push(
-                `${pods.length} installed pod(s), ${this.queryablePods.length} of them in a database`
+                `${pods.length} installed pod(s), ${this.queryablePods.length} of them queried`
             );
 
         lines.push(
@@ -141,9 +161,29 @@ export class GateReport {
         // and the two are indistinguishable in a clean report unless it says so.
         if (unknownPods.length) {
             lines.push(
-                `⚠️ ${unknownPods.length} pod(s) Sonatype does not know at all — their empty result ` +
-                    'says nothing: ' +
+                `⚠️ ${unknownPods.length} pod(s) were queried and Sonatype has no record of them — ` +
+                    'an empty result from a component it never indexed is not a clean one: ' +
                     unknownPods.map(pod => `\`${pod}\``).join(', '),
+                ''
+            );
+        }
+
+        // Same argument for the declared mode: a coordinate whose version only
+        // Gradle knows was never asked about, which is not the same as clean.
+        if (unresolved.length) {
+            lines.push(
+                `<details><summary>⚠️ ${unresolved.length} declaration(s) never queried — no version this mode can resolve</summary>`,
+                '',
+                'Declared in the installed tree, but the version comes from a BOM, a Gradle property or a',
+                'dynamic range, so only a resolved graph from a build names it. Never asked about is not',
+                'the same as clean.',
+                '',
+                ...unresolved.map(
+                    entry =>
+                        `- \`${entry.name}\` — ${entry.reason} · ${reachedThrough(entry.declaredBy)}`
+                ),
+                '',
+                '</details>',
                 ''
             );
         }
@@ -151,10 +191,10 @@ export class GateReport {
         if (pods.length) {
             const opaque = pods.filter(pod => !pod.queryable);
             lines.push(
-                `<details><summary>${opaque.length} pod(s) no database can answer about</summary>`,
+                `<details><summary>${opaque.length} pod(s) never queried — no database can answer about them</summary>`,
                 '',
-                'Every one of these is a `:path` pod versioned by the npm package that ships it, so no',
-                'record keyed by pod and version can exist. See .claude/rules/dependency-security.md.',
+                'Each is a `:path` pod from node_modules, versioned by the npm package that ships it, so',
+                'no record keyed by pod and version can exist. Never asked about is not the same as clean.',
                 '',
                 ...opaque.map(pod => `- \`${pod.name}\` ${pod.version}`),
                 '',
@@ -168,7 +208,7 @@ export class GateReport {
                 `<details><summary>iOS inventory — ${ios.length} vendored dependenc(ies), reported not gated</summary>`,
                 '',
                 'This run had no resolved pod graph, so these are the versions vendored in the installed',
-                'tree, not the ones a build resolved. See .claude/rules/dependency-security.md.',
+                'tree, not the ones a build resolved. Listed as inventory; none of them was queried.',
                 '',
                 ...ios.map(entry => `- \`${entry.name}\` ${entry.version}`),
                 '',
