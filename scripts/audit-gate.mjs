@@ -30,6 +30,15 @@ const REGISTRY_PATH = resolve(ROOT, 'security/dependency-advisories.json');
 const SEVERITY_RANK = { info: 0, low: 1, moderate: 2, high: 3, critical: 4 };
 const VALID_CONTEXTS = ['runtime', 'build', 'dev', 'rn-dev'];
 
+// `in` walks the prototype chain, so `severity: "constructor"` passes a
+// membership test and then ranks as a function: every comparison against it is
+// false, which silently disables the ESCALATED check. Own properties only, and
+// a severity this gate cannot rank takes the strictest reading short of
+// critical rather than matching no threshold at all.
+const isSeverity = value => typeof value === 'string' && Object.hasOwn(SEVERITY_RANK, value);
+const normalizeSeverity = value => (isSeverity(value) ? value : 'high');
+const rankOf = value => SEVERITY_RANK[normalizeSeverity(value)];
+
 // Overridable from the registry's own `policy` block, so tightening the gate is
 // a reviewable diff there rather than a code change.
 const DEFAULT_POLICY = {
@@ -134,7 +143,7 @@ function collectAdvisories(report) {
                 // matching is case-insensitive.
                 id: advisory.github_advisory_id?.trim() || `NPM:${advisory.id}`,
                 package: advisory.module_name,
-                severity: advisory.severity,
+                severity: normalizeSeverity(advisory.severity),
                 title: advisory.title ?? '',
                 url: advisory.url ?? '',
                 patched: advisory.patched_versions ?? null,
@@ -146,7 +155,7 @@ function collectAdvisories(report) {
 
 function bySeverityThenPackage(a, b) {
     return (
-        SEVERITY_RANK[b.severity] - SEVERITY_RANK[a.severity] ||
+        rankOf(b.severity) - rankOf(a.severity) ||
         compareStrings(String(a.package), String(b.package)) ||
         compareStrings(String(a.id), String(b.id))
     );
@@ -177,6 +186,21 @@ function validateRegistry(registry) {
     const errors = [];
     const seen = new Set();
 
+    // The policy is validated as strictly as an exception is: a
+    // `blockingSeverities` written as a string turns `includes` into a substring
+    // test, and one carrying a severity this gate cannot rank blocks nothing.
+    // Both leave the gate reporting a clean run.
+    const { blockingSeverities } = registry.policy;
+    if (!Array.isArray(blockingSeverities)) {
+        errors.push('policy.blockingSeverities: must be an array of severities');
+    } else {
+        const unknown = blockingSeverities.filter(severity => !isSeverity(severity));
+        if (unknown.length)
+            errors.push(
+                `policy.blockingSeverities: ${unknown.map(String).join(', ')} is not a known severity`
+            );
+    }
+
     registry.exceptions.forEach((exception, index) => {
         const where = `exceptions[${index}]${exception.id ? ` (${exception.id})` : ''}`;
         const check = (field, ok, message) => {
@@ -190,8 +214,12 @@ function validateRegistry(registry) {
         seen.add(id);
 
         check('package', filled('package'), 'is required');
-        check('severity', exception.severity in SEVERITY_RANK, 'must be a known severity');
-        check('context', VALID_CONTEXTS.includes(exception.context), `must be one of ${VALID_CONTEXTS.join(', ')}`);
+        check('severity', isSeverity(exception.severity), 'must be a known severity');
+        check(
+            'context',
+            VALID_CONTEXTS.includes(exception.context),
+            `must be one of ${VALID_CONTEXTS.join(', ')}`
+        );
         check('rationale', filled('rationale'), 'is required');
         check('owner', filled('owner'), 'is required');
         check('expires', isIsoDate(exception.expires), 'must be a YYYY-MM-DD date');
@@ -203,7 +231,9 @@ function validateRegistry(registry) {
 function evaluate(advisories, registry) {
     const { policy } = registry;
     const blocks = severity => policy.blockingSeverities.includes(severity);
-    const byId = new Map(registry.exceptions.map(exception => [normalizeId(exception.id), exception]));
+    const byId = new Map(
+        registry.exceptions.map(exception => [normalizeId(exception.id), exception])
+    );
     const matched = new Set();
 
     const violations = [];
@@ -217,7 +247,11 @@ function evaluate(advisories, registry) {
 
         if (!exception) {
             if (blocks(advisory.severity)) {
-                violations.push({ kind: 'unreviewed', advisory, detail: 'no reviewed exception in the registry' });
+                violations.push({
+                    kind: 'unreviewed',
+                    advisory,
+                    detail: 'no reviewed exception in the registry'
+                });
             } else {
                 informational.push({ advisory });
             }
@@ -228,11 +262,12 @@ function evaluate(advisories, registry) {
         const daysLeft = daysUntil(exception.expires);
         // An exception whose recorded severity or execution context no longer
         // matches reality was approved against a different risk.
-        const escalated = SEVERITY_RANK[advisory.severity] > SEVERITY_RANK[exception.severity];
+        const escalated = rankOf(advisory.severity) > rankOf(exception.severity);
         // `rn-dev` already concedes the package sits in the production graph —
         // that is its whole definition — so only the contexts that claim the
         // package is *outside* it can be contradicted by the graph.
-        const contextMismatch = advisory.graph === 'runtime' && ['build', 'dev'].includes(exception.context);
+        const contextMismatch =
+            advisory.graph === 'runtime' && ['build', 'dev'].includes(exception.context);
 
         if (daysLeft < 0) {
             violations.push({
@@ -271,7 +306,11 @@ function evaluate(advisories, registry) {
     // pinning a transitive dependency for no reason. Blocking, so both go.
     for (const exception of registry.exceptions) {
         if (matched.has(normalizeId(exception.id))) continue;
-        violations.push({ kind: 'stale', exception, detail: 'advisory is gone from the graph — drop this entry' });
+        violations.push({
+            kind: 'stale',
+            exception,
+            detail: 'advisory is gone from the graph — drop this entry'
+        });
     }
 
     return { violations, warnings, accepted, informational };
@@ -343,7 +382,8 @@ function renderMarkdown(result, counts) {
 
 function publish(markdown) {
     if (markdownPath) writeFileSync(markdownPath, `${markdown}\n`);
-    if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${markdown}\n`);
+    if (process.env.GITHUB_STEP_SUMMARY)
+        appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${markdown}\n`);
 }
 
 function startOfDay(date) {
@@ -351,10 +391,15 @@ function startOfDay(date) {
 }
 
 function isIsoDate(value) {
-    return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(value));
+    return (
+        typeof value === 'string' &&
+        /^\d{4}-\d{2}-\d{2}$/.test(value) &&
+        !Number.isNaN(Date.parse(value))
+    );
 }
 
-const daysUntil = value => Math.round((startOfDay(new Date(value)).getTime() - today.getTime()) / 86400000);
+const daysUntil = value =>
+    Math.round((startOfDay(new Date(value)).getTime() - today.getTime()) / 86400000);
 
 function fail(message) {
     console.error(`audit-gate: ${message}`);
@@ -392,7 +437,9 @@ console.log(
 );
 for (const entry of [...result.violations, ...result.warnings]) {
     const source = entry.advisory ?? entry.exception;
-    console.log(`  [${KIND_LABEL[entry.kind]}] ${source.severity} ${source.package} ${source.id} — ${entry.detail}`);
+    console.log(
+        `  [${KIND_LABEL[entry.kind]}] ${source.severity} ${source.package} ${source.id} — ${entry.detail}`
+    );
 }
 console.log(`  ${result.accepted.length} accepted, ${result.informational.length} non-blocking`);
 

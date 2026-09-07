@@ -1,6 +1,8 @@
 // Native dependency gate. `parse` turns the graphs an EAS build captured into the
 // file contract; `gate` matches them against OSV and Sonatype and blocks on
 // findings nobody has reviewed. See .claude/rules/dependency-security.md.
+// Downloading a capture is in fetch-graphs.mjs instead: it needs EXPO_TOKEN, and
+// nothing here may hold a credential.
 //
 // Exit codes: 0 ok · 1 policy violations · 2 bad input, broken registry or an
 // unusable database.
@@ -12,7 +14,6 @@ import { fileURLToPath } from 'node:url';
 import { DeclaredCoordinateCollector } from './android/declared-collector.mjs';
 import { parseAndroidGraph } from './android/graph-parser.mjs';
 import { OsvClient } from './android/osv-client.mjs';
-import { EasBuildRecord } from './eas/build-record.mjs';
 import { parsePodfileLock } from './ios/podfile-lock-parser.mjs';
 import { SonatypeClient } from './ios/sonatype-client.mjs';
 import { VendoredPodInventory } from './ios/vendored-inventory.mjs';
@@ -28,7 +29,7 @@ import {
 import { HttpClient } from './shared/http-client.mjs';
 import { AdvisoryRegistry } from './shared/registry.mjs';
 import { GateReport, reachedThrough } from './shared/report.mjs';
-import { bySeverityThenName, countBySeverity } from './shared/severity.mjs';
+import { bySeverityThenName, countBySeverity, normalizeSeverity } from './shared/severity.mjs';
 import { readJsonFile, readTextFile } from './shared/util.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -40,10 +41,8 @@ const REGISTRY_PATH = resolve(HERE, 'native-advisories.json');
 const USAGE = [
     'Usage: node apps/mobile/scripts/native-audit/index.mjs <command> [options]',
     '',
-    'fetch   read what one EAS build captured, before parsing it',
-    '  <build-id>          the build to read; needs EXPO_TOKEN or an `eas login` session',
-    '  --out <file>        write the build record as JSON, for `parse --build-meta`',
-    '  --download <file>   download the build artifacts bundle to this path',
+    'Downloading a build`s capture lives in fetch-graphs.mjs, deliberately: it is',
+    'the only command needing EXPO_TOKEN, and nothing here may hold a credential.',
     '',
     'parse   normalise one graph an EAS build captured',
     '  --android <file>     sdkDependencies.txt, or a Gradle `:app:dependencies` dump',
@@ -65,35 +64,7 @@ const USAGE = [
 ].join('\n');
 
 const [command, ...argv] = process.argv.slice(2);
-const { flag, option, positionals } = parseArgs(argv);
-
-// ------------------------------------------------------------------- fetch
-
-async function runFetch() {
-    const [buildId] = positionals(['--out', '--download']);
-    const outPath = option('--out');
-    const downloadPath = option('--download');
-
-    if (!buildId) throw new Error('a build id is required');
-
-    const record = new EasBuildRecord(new HttpClient());
-    const build = await record.byId(buildId);
-    console.log(
-        `eas-build-record: ${build.id} ${build.platform} ${build.status} ` +
-            `profile=${build.buildProfile} v${build.appVersion} build ${build.appBuildVersion}`
-    );
-
-    if (outPath) writeFileSync(outPath, `${JSON.stringify(build, null, 4)}\n`);
-
-    if (downloadPath) {
-        const { size, name } = await record.downloadArtifacts(build, downloadPath);
-        console.log(
-            `eas-build-record: ${name}, ${(size / 1024).toFixed(0)} KiB -> ${downloadPath}`
-        );
-    }
-
-    return 0;
-}
+const { flag, option } = parseArgs(argv);
 
 // ------------------------------------------------------------------- parse
 
@@ -156,18 +127,34 @@ function findingsFrom(subjects, database, ecosystem) {
                 aliases: [],
                 url: ''
             };
-            findings.push({ ...subject, ecosystem, id, ...detail });
+            // The clients already normalise this; doing it again here is what
+            // keeps a `--input` snapshot from introducing a severity no threshold
+            // matches, which would read as a non-blocking finding.
+            findings.push({
+                ...subject,
+                ecosystem,
+                id,
+                ...detail,
+                severity: normalizeSeverity(detail.severity)
+            });
         }
     }
     return findings;
 }
 
-function printInventory({ mode, coordinates, pods, queryablePods, ios }) {
+function printInventory({ mode, coordinates, pods, queryablePods, ios, unresolved }) {
     console.log(`native-audit-gate: ${coordinates.length} ${mode} Maven coordinate(s)`);
     for (const entry of coordinates)
         console.log(
             `  ${entry.graph.padEnd(7)} ${entry.name}@${entry.version}  ${reachedThrough(entry.declaredBy)}`
         );
+    if (unresolved.length) {
+        console.log(
+            `\nnative-audit-gate: ${unresolved.length} declaration(s) with no version this mode can query`
+        );
+        for (const entry of unresolved)
+            console.log(`  ${entry.name}  ${entry.reason}  ${reachedThrough(entry.declaredBy)}`);
+    }
     if (pods.length) {
         console.log(
             `\nnative-audit-gate: ${pods.length} installed pod(s), ${queryablePods.length} of them in a database`
@@ -205,9 +192,11 @@ async function runGate() {
     const resolvedPods = podsPath ? loadResolvedPods(podsPath) : null;
 
     const mode = resolvedGraph ? 'resolved' : 'declared';
-    const coordinates = resolvedGraph
-        ? resolvedGraph.coordinates
-        : new DeclaredCoordinateCollector(REPO_ROOT).collect();
+    const collector = resolvedGraph ? null : new DeclaredCoordinateCollector(REPO_ROOT);
+    const coordinates = resolvedGraph ? resolvedGraph.coordinates : collector.collect();
+    // Declarations the installed tree names but cannot put a version on. Reported,
+    // never gated — a resolved graph has none, because a build resolved them all.
+    const unresolved = collector?.unresolved ?? [];
     const pods = resolvedPods ? resolvedPods.pods : [];
     const queryablePods = pods.filter(pod => pod.queryable);
     const ios = resolvedPods ? [] : new VendoredPodInventory(REPO_ROOT).collect();
@@ -219,7 +208,7 @@ async function runGate() {
         );
 
     if (flag('--inventory')) {
-        printInventory({ mode, coordinates, pods, queryablePods, ios });
+        printInventory({ mode, coordinates, pods, queryablePods, ios, unresolved });
         return 0;
     }
 
@@ -268,6 +257,7 @@ async function runGate() {
         ios,
         build,
         unknownPods: answers.pods?.unknown ?? [],
+        unresolved,
         result,
         counts: countBySeverity(findings),
         findingCount: findings.length
@@ -296,7 +286,6 @@ async function runGate() {
 // -------------------------------------------------------------------- main
 
 const SCOPE = {
-    fetch: 'eas-build-record',
     parse: 'native-graph-parse',
     gate: 'native-audit-gate'
 };
@@ -318,7 +307,7 @@ if (!(command in SCOPE)) {
 }
 
 try {
-    const run = { fetch: runFetch, parse: () => runParse() ?? 0, gate: runGate };
+    const run = { parse: () => runParse() ?? 0, gate: runGate };
     process.exitCode = await run[command]();
 } catch (error) {
     console.error(`${SCOPE[command]}: ${error.message}`);
