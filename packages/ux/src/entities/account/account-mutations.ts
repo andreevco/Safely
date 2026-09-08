@@ -371,6 +371,14 @@ export function useAccountConnectedCallback(
                     hasInviter: onboarded.inviterIkPubHex !== null
                 });
 
+                if (onboarded.inviterIkPubHex !== null) {
+                    await waitForDeviceMeta(account.accountId, onboarded.inviterIkPubHex, logger);
+                }
+
+                if (isReset) {
+                    return;
+                }
+
                 callback(onboarded);
             })
             .catch(e => {
@@ -393,7 +401,27 @@ export function useAccountConnectedCallback(
     }, [connector?.onboardedPromise, callback, client, setAsActive]);
 }
 
-const NEW_DEVICE_META_TIMEOUT_MS = 10_000;
+const DEVICE_META_TIMEOUT_MS = 10_000;
+
+async function waitForDeviceMeta(
+    accountId: string,
+    ikPubHex: string,
+    logger: Logger
+): Promise<void> {
+    const hasMeta = () =>
+        accountStore.getState().accountsData.get(accountId)?.devicesMeta?.[ikPubHex] !== undefined;
+
+    try {
+        await waitForChange({
+            subscribe: observer => accountStore.subscribe(observer),
+            predicate: hasMeta,
+            timeoutMs: DEVICE_META_TIMEOUT_MS,
+            timeoutError: () => new Error('Device meta did not arrive')
+        });
+    } catch (e) {
+        logger.warn('device meta wait timed out', { ikPubHex, error: e });
+    }
+}
 
 export function useConnectAccountToNewDevice() {
     const activeAccount = useActiveAccount();
@@ -403,24 +431,6 @@ export function useConnectAccountToNewDevice() {
     const { withLoader } = useLoader();
     const { qrScanner } = useAppContext();
     const scopedLogger = useLogger('account');
-
-    const waitForNewDeviceMeta = async (ikPubHex: string) => {
-        const hasMeta = () =>
-            accountStore.getState().accountsData.get(activeAccount.accountId)?.devicesMeta?.[
-                ikPubHex
-            ] !== undefined;
-
-        try {
-            await waitForChange({
-                subscribe: observer => accountStore.subscribe(observer),
-                predicate: hasMeta,
-                timeoutMs: NEW_DEVICE_META_TIMEOUT_MS,
-                timeoutError: () => new Error('New device meta did not arrive')
-            });
-        } catch (e) {
-            scopedLogger.warn('new device meta wait timed out', { ikPubHex, error: e });
-        }
-    };
 
     return useMutation<string, Error, { secureEncryptedStorage: ITreeStorage }, unknown>({
         async mutationFn({ secureEncryptedStorage }) {
@@ -437,7 +447,7 @@ export function useConnectAccountToNewDevice() {
                     secureEncryptedStorage
                 );
                 const ikPubHex = ikPub.toString('hex');
-                await waitForNewDeviceMeta(ikPubHex);
+                await waitForDeviceMeta(activeAccount.accountId, ikPubHex, scopedLogger);
 
                 return ikPubHex;
             });
