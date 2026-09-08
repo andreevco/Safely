@@ -194,9 +194,8 @@ async function runGate() {
         process.exit(2);
     }
 
-    // Either the graphs a build resolved — one per Android artifact — or the
-    // coordinates declared in the installed tree. Nothing after this point knows
-    // which.
+    // Either the graphs a build resolved, or the coordinates declared in the
+    // installed tree. Nothing after this point knows which.
     const graphs = graphPaths.map(path => loadResolvedCoordinates(path));
     const resolvedPods = podsPath ? loadResolvedPods(podsPath) : null;
 

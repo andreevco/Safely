@@ -1,8 +1,6 @@
 import { assembleCoordinates } from './app-dependencies.mjs';
 
-// `BUNDLE-METADATA/com.android.tools.build.libraries/dependencies.pb` inside an
-// AAB: the same `AppDependencies` message as `sdkDependencies.txt`, in binary.
-// Field numbers are from bundletool's app_dependencies.proto.
+// `dependencies.pb` in an AAB: the same message in binary, numbered per bundletool's proto.
 const APP_DEPENDENCIES = {
     library: 1,
     libraryDependencies: 2,
@@ -14,8 +12,7 @@ const MAVEN_LIBRARY = { groupId: 1, artifactId: 2, version: 5 };
 const DIGESTS = { sha256: 1 };
 const LIBRARY_DEPENDENCIES = { libraryIndex: 1, libraryDepIndex: 2 };
 const MODULE_DEPENDENCIES = { dependencyIndex: 2 };
-// Repository is a oneof of MavenRepo | IvyRepo | UnityRepo, each holding its url
-// in field 1.
+// A oneof of MavenRepo | IvyRepo | UnityRepo, each holding its url in field 1.
 const REPOSITORY_KINDS = [1, 2, 3];
 const URL = 1;
 // google.protobuf.Int32Value — an empty wrapper is index 0, not an unknown one.
@@ -37,9 +34,7 @@ function varint(bytes, at) {
     }
 }
 
-// Every field in one message, in encoding order. An unknown field is skipped by
-// its wire type; an unknown wire type is fatal, because every offset past it is
-// a guess.
+// An unknown field is skipped by its wire type; an unknown wire type is fatal.
 function* fieldsOf(bytes) {
     let at = 0;
     while (at < bytes.length) {
@@ -97,8 +92,7 @@ const int32s = (bytes, field) =>
         return values;
     });
 
-// Anything but 32 bytes means the field was misread, and a wrong digest is worse
-// than none.
+// Anything but 32 bytes was misread, and a wrong digest is worse than none.
 function digest(digests) {
     const sha256 = digests && first(digests, DIGESTS.sha256);
     if (!Buffer.isBuffer(sha256) || sha256.length !== SHA256_BYTES) return null;

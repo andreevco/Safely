@@ -22,9 +22,7 @@ function attribute(libraries, edges, roots) {
     return declaredBy;
 }
 
-// Both forms of AGP's `AppDependencies` end here — the text one beside an APK
-// and the binary one inside an AAB. Position in the message *is* the identity:
-// every edge is an index into the library list.
+// Both forms of AGP's `AppDependencies` end here; every edge is an index into the list.
 export function assembleCoordinates({ libraries, edges, roots }) {
     const declaredBy = attribute(libraries, edges, roots);
 
@@ -32,8 +30,7 @@ export function assembleCoordinates({ libraries, edges, roots }) {
         .map((library, index) => ({
             name: library.name,
             version: library.version,
-            // AGP writes both forms for the release variant only, so everything
-            // in them is in the shipped artifact by construction.
+            // Both forms are written for the release variant only.
             graph: 'runtime',
             declaredBy: [...declaredBy[index]].sort(compareStrings),
             sha256: library.sha256,

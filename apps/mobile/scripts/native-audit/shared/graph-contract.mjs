@@ -67,9 +67,7 @@ export function loadResolvedCoordinates(path) {
     };
 }
 
-// A database answer is keyed by `name@version`, so two graphs become one subject
-// per coordinate recording the artifacts it is in, gated once. The per-artifact
-// files stay the record of digests and paths.
+// A database answer is keyed by `name@version`, so two graphs become one subject each.
 export function mergeResolvedCoordinates(graphs) {
     const merged = new Map();
     for (const graph of graphs) {

@@ -1,9 +1,7 @@
 // A minimal reader for protobuf text format, which is all `sdkDependencies.txt`
 // is: top-level records, one level of nesting, no repeated blocks inside a record.
 // Nested blocks are flattened, because no key in that schema is ambiguous once
-// flattened — but their names are kept in `blocks`, because a wrapper block
-// holding the proto default is written empty (`repo_index { }`), which
-// flattening alone cannot tell from a block that is not there.
+// flattened.
 export function parseTextProto(text) {
     const records = [];
     let current = null;
@@ -43,6 +41,7 @@ export const field = (record, key) => unquote(record.fields.find(([name]) => nam
 export const fields = (record, key) =>
     record.fields.filter(([name]) => name === key).map(([, value]) => unquote(value));
 
+// An empty wrapper block (`repo_index { }`) is a value, not an absence.
 export const hasBlock = (record, key) => record.blocks.has(key);
 
 // The digests are raw bytes written in protobuf text format's escaping: octal for

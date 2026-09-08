@@ -37,8 +37,7 @@ export class GateReport {
         return this.pods.filter(pod => pod.queryable);
     }
 
-    // `from apk+aab` once a run gates more than one artifact, nothing when it
-    // gates one.
+    // `from apk+aab` once a run gates more than one artifact.
     get artifacts() {
         return this.graphs.length > 1
             ? ` from ${this.graphs.map(graph => graph.label).join('+')}`
@@ -97,8 +96,7 @@ export class GateReport {
         return lines;
     }
 
-    // `runtime · aab` is the case that matters: in the bundle that ships, not in
-    // the APK.
+    // `runtime · aab` is the case that matters: in the bundle, not in the APK.
     #graphCell(entry) {
         const finding = entry.finding;
         if (!finding) return entry.exception?.context ?? '—';

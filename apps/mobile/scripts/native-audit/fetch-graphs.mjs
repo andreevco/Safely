@@ -22,8 +22,7 @@ const USAGE = [
     ''
 ].join('\n');
 
-// What each build captures, under the names `parse` reads back. `android` is an
-// APK build and `aab` a bundle one: same platform, different file and encoding.
+// What each build captures, under the names `parse` reads back.
 const CAPTURE = {
     ios: { file: 'Podfile.lock', record: 'build-ios.json' },
     android: { file: 'sdkDependencies.txt', record: 'build-android.json' },
