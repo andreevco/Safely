@@ -12,7 +12,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { DeclaredCoordinateCollector } from './android/declared-collector.mjs';
-import { parseAndroidGraph } from './android/graph-parser.mjs';
+import { parseAndroidBundleGraph, parseAndroidGraph } from './android/graph-parser.mjs';
 import { OsvClient } from './android/osv-client.mjs';
 import { parsePodfileLock } from './ios/podfile-lock-parser.mjs';
 import { SonatypeClient } from './ios/sonatype-client.mjs';
@@ -24,13 +24,14 @@ import {
     iosPodsDocument,
     loadResolvedCoordinates,
     loadResolvedPods,
+    mergeResolvedCoordinates,
     readBuildMeta
 } from './shared/graph-contract.mjs';
 import { HttpClient } from './shared/http-client.mjs';
 import { AdvisoryRegistry } from './shared/registry.mjs';
 import { GateReport, reachedThrough } from './shared/report.mjs';
 import { bySeverityThenName, countBySeverity, normalizeSeverity } from './shared/severity.mjs';
-import { readJsonFile, readTextFile } from './shared/util.mjs';
+import { readBinaryFile, readJsonFile, readTextFile } from './shared/util.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 // The declared collector and the vendored pod inventory read the installed tree.
@@ -46,13 +47,16 @@ const USAGE = [
     '',
     'parse   normalise one graph an EAS build captured',
     '  --android <file>     sdkDependencies.txt, or a Gradle `:app:dependencies` dump',
+    '  --aab <file>         dependencies.pb, the bundle`s own copy of that message',
     '  --ios <file>         ios/Podfile.lock captured in the build',
     '  --out <file>         where to write the normalised JSON (required)',
     '  --build-meta <file>  `eas build:view <id> --json` payload, embedded as `build`',
     '',
     'gate    match a graph against the advisory databases',
     '  --graph <file>     gate the resolved Android graph in this android-coordinates.json',
-    '                     instead of the coordinates declared in the installed tree',
+    '                     instead of the coordinates declared in the installed tree.',
+    '                     Repeatable: pass one per artifact a build resolved, and a',
+    '                     coordinate in several of them is gated once, naming each',
     '  --pods <file>      also gate the resolved pods in this ios-pods.json, against',
     '                     Sonatype (needs SONATYPE_TOKEN)',
     '  --input <file>     read advisories from a saved snapshot instead of querying',
@@ -64,29 +68,29 @@ const USAGE = [
 ].join('\n');
 
 const [command, ...argv] = process.argv.slice(2);
-const { flag, option } = parseArgs(argv);
+const { flag, option, options } = parseArgs(argv);
 
 // ------------------------------------------------------------------- parse
 
 function runParse() {
     const androidPath = option('--android');
+    const bundlePath = option('--aab');
     const iosPath = option('--ios');
     const outPath = option('--out');
 
     if (!outPath) throw new Error('--out is required');
-    if (Boolean(androidPath) === Boolean(iosPath))
-        throw new Error('pass exactly one of --android or --ios');
+    if ([androidPath, bundlePath, iosPath].filter(Boolean).length !== 1)
+        throw new Error('pass exactly one of --android, --aab or --ios');
 
     const build = readBuildMeta(option('--build-meta'));
     const write = document => writeFileSync(outPath, `${JSON.stringify(document, null, 4)}\n`);
 
-    if (androidPath) {
-        const { source, coordinates } = parseAndroidGraph(
-            readTextFile(androidPath, 'Android dependency capture')
-        );
-        write(
-            androidCoordinatesDocument({ source, capturedFrom: androidPath, build, coordinates })
-        );
+    if (androidPath || bundlePath) {
+        const capturedFrom = androidPath ?? bundlePath;
+        const { label, source, coordinates } = androidPath
+            ? parseAndroidGraph(readTextFile(androidPath, 'Android dependency capture'))
+            : parseAndroidBundleGraph(readBinaryFile(bundlePath, 'AAB dependency capture'));
+        write(androidCoordinatesDocument({ label, source, capturedFrom, build, coordinates }));
         console.log(
             `native-graph-parse: ${coordinates.length} resolved Maven coordinate(s) from ${source} -> ${outPath}`
         );
@@ -144,9 +148,13 @@ function findingsFrom(subjects, database, ecosystem) {
 
 function printInventory({ mode, coordinates, pods, queryablePods, ios, unresolved }) {
     console.log(`native-audit-gate: ${coordinates.length} ${mode} Maven coordinate(s)`);
+    // The artifact column only exists once a run gates more than one graph.
+    const artifacts = coordinates.some(entry => entry.sources?.length > 1);
     for (const entry of coordinates)
         console.log(
-            `  ${entry.graph.padEnd(7)} ${entry.name}@${entry.version}  ${reachedThrough(entry.declaredBy)}`
+            `  ${entry.graph.padEnd(7)} ` +
+                (artifacts ? `${entry.sources.join('+').padEnd(7)} ` : '') +
+                `${entry.name}@${entry.version}  ${reachedThrough(entry.declaredBy)}`
         );
     if (unresolved.length) {
         console.log(
@@ -171,7 +179,7 @@ function printInventory({ mode, coordinates, pods, queryablePods, ios, unresolve
 }
 
 async function runGate() {
-    const graphPath = option('--graph');
+    const graphPaths = options('--graph');
     const podsPath = option('--pods');
     const inputPath = option('--input');
     const snapshotPath = option('--snapshot');
@@ -186,21 +194,26 @@ async function runGate() {
         process.exit(2);
     }
 
-    // Either the graphs a build resolved, or the coordinates declared in the
-    // installed tree. Nothing after this point knows which.
-    const resolvedGraph = graphPath ? loadResolvedCoordinates(graphPath) : null;
+    // Either the graphs a build resolved — one per Android artifact — or the
+    // coordinates declared in the installed tree. Nothing after this point knows
+    // which.
+    const graphs = graphPaths.map(path => loadResolvedCoordinates(path));
     const resolvedPods = podsPath ? loadResolvedPods(podsPath) : null;
 
-    const mode = resolvedGraph ? 'resolved' : 'declared';
-    const collector = resolvedGraph ? null : new DeclaredCoordinateCollector(REPO_ROOT);
-    const coordinates = resolvedGraph ? resolvedGraph.coordinates : collector.collect();
+    const mode = graphs.length ? 'resolved' : 'declared';
+    const collector = graphs.length ? null : new DeclaredCoordinateCollector(REPO_ROOT);
+    const coordinates = graphs.length ? mergeResolvedCoordinates(graphs) : collector.collect();
     // Declarations the installed tree names but cannot put a version on. Reported,
     // never gated — a resolved graph has none, because a build resolved them all.
     const unresolved = collector?.unresolved ?? [];
     const pods = resolvedPods ? resolvedPods.pods : [];
     const queryablePods = pods.filter(pod => pod.queryable);
     const ios = resolvedPods ? [] : new VendoredPodInventory(REPO_ROOT).collect();
-    const build = resolvedGraph?.build ?? resolvedPods?.build;
+    // Which build resolved which artifact.
+    const builds = [
+        ...graphs.map(graph => ({ label: graph.label, build: graph.build })),
+        { label: 'pods', build: resolvedPods?.build }
+    ].filter(entry => entry.build);
 
     if (!coordinates.length)
         throw new Error(
@@ -252,10 +265,11 @@ async function runGate() {
     const result = new GateEvaluator(registry).evaluate(findings);
     const report = new GateReport({
         mode,
+        graphs: graphs.map(graph => ({ label: graph.label, count: graph.coordinates.length })),
         coordinates,
         pods,
         ios,
-        build,
+        builds,
         unknownPods: answers.pods?.unknown ?? [],
         unresolved,
         result,

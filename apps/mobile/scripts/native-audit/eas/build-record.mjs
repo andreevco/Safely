@@ -1,8 +1,7 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { homedir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { dirname } from 'node:path';
 
-const GRAPHQL_URL = 'https://api.expo.dev/graphql';
+import { queryExpo } from './api.mjs';
 
 // The same fields `eas build:view --json` prints, so the record this writes is
 // interchangeable with it as `parse --build-meta` input.
@@ -28,28 +27,6 @@ const BUILD_QUERY = `
   }
 `;
 
-const describeStatus = status => (status === 401 || status === 403 ? ' — check EXPO_TOKEN' : '');
-
-// Bearer for a token, `expo-session` for a CLI login: the two forms eas-cli
-// itself accepts, in the same order of precedence. The session fallback is what
-// makes this runnable on a laptop against a real build, which is how it was
-// tested without spending one.
-function authHeaders(token) {
-    if (token) return { authorization: `Bearer ${token}` };
-
-    const statePath = join(homedir(), '.expo/state.json');
-    if (existsSync(statePath)) {
-        try {
-            const secret = JSON.parse(readFileSync(statePath, 'utf8')).auth?.sessionSecret;
-            if (secret) return { 'expo-session': secret };
-        } catch {
-            // A malformed state file is the same as no credentials at all.
-        }
-    }
-
-    throw new Error('no credentials — set EXPO_TOKEN, or log in with `eas login`');
-}
-
 // Turns a build id into its record and the artifacts bundle `buildArtifactPaths`
 // produced, without eas-cli.
 //
@@ -66,20 +43,14 @@ export class EasBuildRecord {
     }
 
     async byId(buildId) {
-        const payload = await this.http.withRetries(`expo build ${buildId}`, () =>
-            this.http.postJson(
-                GRAPHQL_URL,
-                { query: BUILD_QUERY, variables: { buildId } },
-                { headers: authHeaders(this.token), describeStatus }
-            )
-        );
+        const data = await queryExpo(this.http, {
+            label: `expo build ${buildId}`,
+            query: BUILD_QUERY,
+            variables: { buildId },
+            token: this.token
+        });
 
-        // GraphQL answers 200 with an `errors` array, so the status code alone
-        // says nothing about whether the query worked.
-        if (payload.errors?.length)
-            throw new Error(payload.errors.map(error => error.message).join('; '));
-
-        const build = payload.data?.builds?.byId;
+        const build = data?.builds?.byId;
         if (!build) throw new Error(`no build ${buildId} — is the token scoped to this project?`);
         return build;
     }
