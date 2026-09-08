@@ -1,5 +1,5 @@
 {
-    "readme": "Reviewed exceptions to the native dependency advisory gate. See .claude/rules/dependency-security.md before editing. Checked by scripts/native-audit-gate.mjs.",
+    "readme": "Reviewed exceptions to the native dependency advisory gate. See .claude/rules/dependency-security.md before editing. Checked by apps/mobile/scripts/native-audit/index.mjs.",
     "policy": {
         "blockingSeverities": {
             "runtime": ["critical", "high", "moderate"],

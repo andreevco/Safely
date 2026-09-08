@@ -265,8 +265,10 @@ than severity, with the measurement written out in `native-advisories.json`:
   testing of the download, cache and import flows.
 
 The JavaScript registry holds the two `image-size` advisories — Metro's bundle-time and dev-server
-image-header parser, expiring 2026-11-30. No patched version exists, so an override cannot close
-them.
+image-header parser, expiring 2026-11-30. Both name `>=2.0.3` as patched and npm has no such
+version: `latest` is 2.0.2, itself vulnerable, and Metro's `^1.0.2` resolves 1.2.1, the newest of
+the 1.x line, published under the `legacy` tag. So an override cannot close them — closing them
+means forcing Metro across a major, not a version bump.
 
 ## Dependabot
 

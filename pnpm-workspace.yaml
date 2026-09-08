@@ -89,3 +89,6 @@ overrides:
   'nanoid@3': '^3.3.18' # GHSA-28wg-ghj8-5hjv, GHSA-2v37-7h3g-55p8
   'picomatch@2': '^2.3.2' # GHSA-c2c7-rcm5-vvqj
   'postcss@8': '^8.5.18' # GHSA-6g55-p6wh-862q, GHSA-r28c-9q8g-f849
+  # Babel's target resolver, reached through @babel/core in metro and in the root's
+  # eslint plugins alike, which is why one unscoped major selector covers both.
+  'browserslist@4': '^4.28.7' # GHSA-73wf-gq98-2v4g, GHSA-c83g-rgw3-j3cx
