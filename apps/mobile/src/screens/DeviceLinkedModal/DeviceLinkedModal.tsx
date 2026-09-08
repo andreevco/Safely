@@ -10,7 +10,7 @@ import {
     useActiveAccountMeta,
     useContacts,
     usePortfolios,
-    useSyncedDevicesMeta,
+    useSyncedDeviceName,
     useToast
 } from '@safely/ux';
 
@@ -29,8 +29,7 @@ export const DeviceLinkedModal = (props: DeviceLinkedModalProps) => {
 
     const accountId = useActiveAccount().accountId;
     const accountName = useActiveAccountMeta().name;
-    const deviceName =
-        useSyncedDevicesMeta()?.[ikPubHex]?.name ?? t('safety.deviceLinked.unknownDevice');
+    const deviceName = useSyncedDeviceName(ikPubHex) ?? t('safety.deviceLinked.unknownDevice');
     const walletsCount = usePortfolios().length;
     const contactsCount = useContacts().length;
 

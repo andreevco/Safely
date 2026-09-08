@@ -1,19 +1,28 @@
 import { StyleSheet } from 'react-native-unistyles';
 
-export const styles = StyleSheet.create(theme => ({
-    content: {
-        flex: 1,
+export const styles = StyleSheet.create((theme, rt) => ({
+    iconBox: {
         alignItems: 'center',
-        justifyContent: 'center'
+        paddingTop: theme.spacing[16],
+        paddingHorizontal: theme.spacing[32]
     },
-    textContainer: {
-        marginVertical: theme.spacing[16],
-        marginHorizontal: theme.spacing[32],
+    titleBox: {
+        alignItems: 'center',
         gap: theme.spacing[4],
-        alignItems: 'center'
+        paddingVertical: theme.spacing[16],
+        paddingHorizontal: theme.spacing[32]
     },
-    buttonContainer: {
-        gap: theme.spacing[8],
-        padding: theme.spacing[24]
+    table: {
+        paddingHorizontal: theme.spacing[32],
+        paddingVertical: theme.spacing[16]
+    },
+    accountId: {
+        alignItems: 'center',
+        paddingHorizontal: theme.spacing[16],
+        paddingBottom: theme.spacing[24]
+    },
+    footer: {
+        padding: theme.spacing[24],
+        paddingBottom: theme.spacing[24] + rt.insets.bottom
     }
 }));

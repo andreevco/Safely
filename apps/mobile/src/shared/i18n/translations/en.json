@@ -293,6 +293,12 @@
             "unknownDevice": "New device",
             "viewLinkedDevices": "View linked devices"
         },
+        "signedIn": {
+            "title": "Signed in to “{{account}}”",
+            "subtitle": "This account was linked from {{device}}.",
+            "subtitleUnknownDevice": "This account was linked from another device.",
+            "continue": "Continue"
+        },
         "protectAccount": {
             "title": "No linked devices",
             "subtitle": "Link another device as redundant storage. If this phone is lost, a linked device will restore access to your wallets.",
