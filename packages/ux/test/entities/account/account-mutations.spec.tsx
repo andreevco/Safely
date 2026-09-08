@@ -635,14 +635,17 @@ describe('useConnectAccountToNewDevice (add device)', () => {
 });
 
 describe('useCreateExistingAccountConnector (add device → existing account)', () => {
-    it('produces a connectionString and exposes abort/accountPromise', async () => {
+    it('produces a connectionString and exposes abort plus the onboarded account', async () => {
         const remoteAccount = createMockSyncAccount({ accountId: 'remote' });
         const abort = vi.fn();
-        const accountPromise = Promise.resolve(remoteAccount);
+        const onboardedPromise = Promise.resolve({
+            account: remoteAccount,
+            inviterIkPub: Buffer.from('AAAA', 'hex')
+        });
         const factory = createFactoryStub({
             connectToExistingSyncAccount: vi.fn(async () => ({
                 data: Buffer.from('hello'),
-                waitForCompletion: () => accountPromise,
+                waitForCompletion: () => onboardedPromise,
                 abort
             }))
         });
@@ -665,7 +668,10 @@ describe('useCreateExistingAccountConnector (add device → existing account)', 
 
         expect(factory.connectToExistingSyncAccount).toHaveBeenCalledTimes(1);
         expect(connector?.connectionString).toBe(Buffer.from('hello').toString('base64url'));
-        await expect(connector?.accountPromise).resolves.toBe(remoteAccount);
+        await expect(connector?.onboardedPromise).resolves.toEqual({
+            account: remoteAccount,
+            inviterIkPubHex: 'aaaa'
+        });
 
         connector?.abort();
         expect(abort).toHaveBeenCalledTimes(1);

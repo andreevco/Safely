@@ -27,7 +27,12 @@ import type {
     SyncedStorageStructure
 } from '@safely/sync-storage';
 
-import type { AccountMeta, OnboardingConnector, SyncAccount } from './account-state';
+import type {
+    AccountMeta,
+    OnboardedAccount,
+    OnboardingConnector,
+    SyncAccount
+} from './account-state';
 import { useAccountsQueryConfig } from './account-state';
 import { useActiveAccountMeta } from './account-state';
 import { useAccounts } from './account-state';
@@ -270,7 +275,10 @@ function useConnectorMutation<TVars>(
 
             return {
                 connectionString: connector.data.toString('base64url'),
-                accountPromise: connector.waitForCompletion(),
+                onboardedPromise: connector.waitForCompletion().then(onboarded => ({
+                    account: onboarded.account,
+                    inviterIkPubHex: onboarded.inviterIkPub?.toString('hex') ?? null
+                })),
                 abort() {
                     connector.abort();
                 }
@@ -308,7 +316,7 @@ export function useCreateReconnectConnector() {
 
 export function useAccountConnectedCallback(
     connector: OnboardingConnector | undefined,
-    callback: (account: SyncAccount) => void,
+    callback: (onboarded: OnboardedAccount) => void,
     options?: { setAsActive: boolean; onError?: (e: Error) => void }
 ) {
     const logger = useLogger('account-connect');
@@ -319,8 +327,9 @@ export function useAccountConnectedCallback(
 
     useEffect(() => {
         let isReset = false;
-        connector?.accountPromise
-            .then(async account => {
+        connector?.onboardedPromise
+            .then(async onboarded => {
+                const { account } = onboarded;
                 if (isReset) {
                     return;
                 }
@@ -338,10 +347,19 @@ export function useAccountConnectedCallback(
 
                 logger.info('device onboarding completed', {
                     accountId: account.accountId,
-                    setAsActive
+                    setAsActive,
+                    hasInviter: onboarded.inviterIkPubHex !== null
                 });
 
-                callback(account as SyncAccount);
+                if (onboarded.inviterIkPubHex !== null) {
+                    await waitForDeviceMeta(account.accountId, onboarded.inviterIkPubHex, logger);
+                }
+
+                if (isReset) {
+                    return;
+                }
+
+                callback(onboarded);
             })
             .catch(e => {
                 if (isReset) {
@@ -360,10 +378,30 @@ export function useAccountConnectedCallback(
             connector?.abort();
             isReset = true;
         };
-    }, [connector?.accountPromise, callback, client, setAsActive]);
+    }, [connector?.onboardedPromise, callback, client, setAsActive]);
 }
 
-const NEW_DEVICE_META_TIMEOUT_MS = 10_000;
+const DEVICE_META_TIMEOUT_MS = 10_000;
+
+async function waitForDeviceMeta(
+    accountId: string,
+    ikPubHex: string,
+    logger: Logger
+): Promise<void> {
+    const hasMeta = () =>
+        accountStore.getState().accountsData.get(accountId)?.devicesMeta?.[ikPubHex] !== undefined;
+
+    try {
+        await waitForChange({
+            subscribe: observer => accountStore.subscribe(observer),
+            predicate: hasMeta,
+            timeoutMs: DEVICE_META_TIMEOUT_MS,
+            timeoutError: () => new Error('Device meta did not arrive')
+        });
+    } catch (e) {
+        logger.warn('device meta wait timed out', { ikPubHex, error: e });
+    }
+}
 
 export function useConnectAccountToNewDevice() {
     const activeAccount = useActiveAccount();
@@ -373,24 +411,6 @@ export function useConnectAccountToNewDevice() {
     const { withLoader } = useLoader();
     const { qrScanner } = useAppContext();
     const scopedLogger = useLogger('account');
-
-    const waitForNewDeviceMeta = async (ikPubHex: string) => {
-        const hasMeta = () =>
-            accountStore.getState().accountsData.get(activeAccount.accountId)?.devicesMeta?.[
-                ikPubHex
-            ] !== undefined;
-
-        try {
-            await waitForChange({
-                subscribe: observer => accountStore.subscribe(observer),
-                predicate: hasMeta,
-                timeoutMs: NEW_DEVICE_META_TIMEOUT_MS,
-                timeoutError: () => new Error('New device meta did not arrive')
-            });
-        } catch (e) {
-            scopedLogger.warn('new device meta wait timed out', { ikPubHex, error: e });
-        }
-    };
 
     return useMutation<string, Error, { secureEncryptedStorage: ITreeStorage }, unknown>({
         async mutationFn({ secureEncryptedStorage }) {
@@ -407,7 +427,7 @@ export function useConnectAccountToNewDevice() {
                     secureEncryptedStorage
                 );
                 const ikPubHex = ikPub.toString('hex');
-                await waitForNewDeviceMeta(ikPubHex);
+                await waitForDeviceMeta(activeAccount.accountId, ikPubHex, scopedLogger);
 
                 return ikPubHex;
             });
