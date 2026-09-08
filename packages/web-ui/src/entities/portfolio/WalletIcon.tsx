@@ -7,7 +7,7 @@ import { colorStyles, emojiStyles } from './WalletIcon.styles';
 
 export type WalletIconProps = {
     icon: PortfolioMetaIcon;
-    size?: 'small' | 'medium' | 'large';
+    size?: 'xsmall' | 'small' | 'medium' | 'large';
 };
 
 export const WalletIcon: FC<WalletIconProps> = props => {

@@ -92,6 +92,9 @@ export const modalRecipe = defineSlotRecipe({
         hasFloatingClose: {
             false: { content: { paddingTop: '16' } }
         },
+        actionsDirection: {
+            row: { actions: { flexDirection: 'row' } }
+        },
         align: {
             start: {
                 headerTitle: {
