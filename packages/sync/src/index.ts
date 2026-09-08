@@ -4,7 +4,7 @@ export type { ISyncAccount } from './account/I-sync-account';
 export type { ISyncAccountFactory } from './account/I-sync-account-factory';
 export { SyncAccountFactory, type SyncAccountFactoryOptions } from './account/sync-account-factory';
 
-export type { OnboardingConnector } from './onboarding/connector';
+export type { OnboardedAccount, OnboardingConnector } from './onboarding/connector';
 
 export type { ISyncProvider } from './sync-provider/I-sync-provider';
 export { SyncStatus } from './sync-provider/sync-status';

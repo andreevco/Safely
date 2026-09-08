@@ -85,6 +85,7 @@ export class SyncAccount<Latest extends StorageVersion, Rest> implements ISyncAc
         flow.logStep('ensure_online.done');
 
         const onboarding = new PrimaryDeviceOnboarding(
+            this.container.ikService.getPub(),
             this.container.keyServiceFactory.createMasterKeyService(secureEncryptedStorage),
             this.container.keyServiceFactory.createDmkSignerService(secureEncryptedStorage),
             this.container.accountsApi,

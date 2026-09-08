@@ -16,6 +16,7 @@ import type { SyncOperations } from '../sync-operations/sync-operations';
 
 export class PrimaryDeviceOnboarding {
     constructor(
+        private readonly inviterIkPub: Buffer,
         private readonly masterKeyService: MasterKeyService,
         private readonly dmkService: DmkSignerService,
         private readonly accountsApi: AccountsApi,
@@ -101,7 +102,8 @@ export class PrimaryDeviceOnboarding {
                 aad: onboardingMetadata,
                 onboardKey,
                 onboardingMessagePayload: encodeOnboardingMessagePayload({
-                    masterKey
+                    masterKey,
+                    inviterIkPub: this.inviterIkPub
                 })
             });
         });
