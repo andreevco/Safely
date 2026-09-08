@@ -11,7 +11,8 @@
 // to master and release/**) and by `pnpm dependencies-audit` locally, with the
 // same policy in both. Nothing runs it on a schedule: discovery between PRs is
 // Dependabot's job, and an exception that crosses its `expires` date is caught
-// by the next PR. See security/README.md for how the two divide the work.
+// by the next PR. See .claude/rules/dependency-security.md for how the two
+// divide the work.
 //
 // Node 24 + pnpm on PATH. No external deps on purpose — a security gate that
 // needs its own dependency tree defeats the point, and that is also why the
@@ -449,7 +450,7 @@ publish(renderMarkdown(result, counts));
 if (result.violations.length) {
     console.error(
         `audit-gate: ${result.violations.length} blocking finding(s) — upgrade the dependency, record a ` +
-            'reviewed exception, or drop the stale one. See security/README.md.'
+            'reviewed exception, or drop the stale one. See .claude/rules/dependency-security.md.'
     );
     process.exit(1);
 }
