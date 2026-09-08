@@ -18,13 +18,16 @@ const USAGE = [
     '  --out <dir>          where to write the capture (required)',
     '  --ios <build-id>     download this build`s ios/Podfile.lock',
     '  --android <build-id> download this build`s sdkDependencies.txt',
+    '  --aab <build-id>     download this bundle build`s dependencies.pb',
     ''
 ].join('\n');
 
-// What each platform captures, under the names `parse` reads back.
+// What each build captures, under the names `parse` reads back. `android` is an
+// APK build and `aab` a bundle one: same platform, different file and encoding.
 const CAPTURE = {
     ios: { file: 'Podfile.lock', record: 'build-ios.json' },
-    android: { file: 'sdkDependencies.txt', record: 'build-android.json' }
+    android: { file: 'sdkDependencies.txt', record: 'build-android.json' },
+    aab: { file: 'dependencies.pb', record: 'build-aab.json' }
 };
 
 const { flag, option } = parseArgs(process.argv.slice(2));
@@ -35,18 +38,23 @@ if (flag('--help') || flag('-h')) {
 }
 
 const outDir = option('--out');
-const wanted = Object.keys(CAPTURE).filter(platform => option(`--${platform}`));
+const wanted = Object.keys(CAPTURE).filter(name => option(`--${name}`));
 
 try {
     if (!outDir) throw new Error('--out is required');
-    if (!wanted.length) throw new Error('pass at least one of --ios or --android');
+    if (!wanted.length)
+        throw new Error(
+            `pass at least one of ${Object.keys(CAPTURE)
+                .map(name => `--${name}`)
+                .join(', ')}`
+        );
 
     const record = new EasBuildRecord(new HttpClient());
     mkdirSync(outDir, { recursive: true });
 
-    for (const platform of wanted) {
-        const { file, record: recordName } = CAPTURE[platform];
-        const build = await record.byId(option(`--${platform}`));
+    for (const capture of wanted) {
+        const { file, record: recordName } = CAPTURE[capture];
+        const build = await record.byId(option(`--${capture}`));
 
         writeFileSync(join(outDir, recordName), `${JSON.stringify(build, null, 4)}\n`);
         const { size, name } = await record.downloadArtifacts(build, join(outDir, file));

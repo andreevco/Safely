@@ -9,10 +9,11 @@ export const reachedThrough = (paths = []) =>
 export class GateReport {
     constructor({
         mode,
+        graphs,
         coordinates,
         pods,
         ios,
-        build,
+        builds,
         unknownPods,
         unresolved,
         result,
@@ -20,10 +21,11 @@ export class GateReport {
         findingCount
     }) {
         this.mode = mode;
+        this.graphs = graphs ?? [];
         this.coordinates = coordinates;
         this.pods = pods;
         this.ios = ios;
-        this.build = build;
+        this.builds = builds ?? [];
         this.unknownPods = unknownPods ?? [];
         this.unresolved = unresolved ?? [];
         this.result = result;
@@ -35,9 +37,17 @@ export class GateReport {
         return this.pods.filter(pod => pod.queryable);
     }
 
+    // `from apk+aab` once a run gates more than one artifact, nothing when it
+    // gates one.
+    get artifacts() {
+        return this.graphs.length > 1
+            ? ` from ${this.graphs.map(graph => graph.label).join('+')}`
+            : '';
+    }
+
     get scannedLabel() {
         return (
-            `${this.coordinates.length} ${this.mode} coordinate(s)` +
+            `${this.coordinates.length} ${this.mode} coordinate(s)${this.artifacts}` +
             (this.queryablePods.length ? ` + ${this.queryablePods.length} pod(s)` : '') +
             (this.unresolved.length ? `, ${this.unresolved.length} unqueryable` : '')
         );
@@ -48,7 +58,7 @@ export class GateReport {
     // not quote-safely interpolate any of them.
     get scannedPlain() {
         return (
-            `${this.coordinates.length} ${this.mode} coordinates` +
+            `${this.coordinates.length} ${this.mode} coordinates${this.artifacts}` +
             (this.queryablePods.length ? ` + ${this.queryablePods.length} pods` : '') +
             (this.unresolved.length ? `, ${this.unresolved.length} unqueryable` : '')
         );
@@ -87,6 +97,17 @@ export class GateReport {
         return lines;
     }
 
+    // `runtime · aab` is the case that matters: in the bundle that ships, not in
+    // the APK.
+    #graphCell(entry) {
+        const finding = entry.finding;
+        if (!finding) return entry.exception?.context ?? '—';
+        const sources = finding.sources ?? [];
+        return this.graphs.length > 1 && sources.length
+            ? `${finding.graph} · ${sources.join('+')}`
+            : finding.graph;
+    }
+
     #table(entries) {
         return [
             '| Verdict | Severity | Package | Advisory | Graph | Reached through | Detail |',
@@ -99,7 +120,7 @@ export class GateReport {
                     source.severity ?? '',
                     `\`${source.name ?? source.package ?? ''}@${source.version ?? '?'}\``,
                     entry.finding?.url ? `[${source.id}](${entry.finding.url})` : (source.id ?? ''),
-                    entry.finding?.graph ?? entry.exception?.context ?? '—',
+                    this.#graphCell(entry),
                     reachedThrough(through) || '—',
                     entry.detail
                 ];
@@ -109,19 +130,34 @@ export class GateReport {
         ];
     }
 
+    #buildLines() {
+        const { builds } = this;
+        if (!builds.length) return [];
+
+        const describe = ({ build }) =>
+            `build \`${build.id}\` · ${build.platform} · profile \`${build.profile}\` · ` +
+            `v${build.appVersion} build ${build.appBuildVersion} · ` +
+            `commit \`${(build.gitCommitHash ?? '').slice(0, 8)}\``;
+
+        if (builds.length === 1) return [`Resolved by EAS ${describe(builds[0])}.`, ''];
+        return [
+            'Resolved by the EAS builds this run gated:',
+            '',
+            ...builds.map(entry => `- \`${entry.label}\` — ${describe(entry)}`),
+            ''
+        ];
+    }
+
     toMarkdown() {
-        const { result, counts, build, pods, ios, unknownPods, unresolved } = this;
-        const lines = ['## Native dependency advisories', ''];
+        const { result, counts, graphs, pods, ios, unknownPods, unresolved } = this;
+        const lines = ['## Native dependency advisories', '', ...this.#buildLines()];
 
-        if (build) {
-            lines.push(
-                `Resolved by EAS build \`${build.id}\` (${build.platform}, profile \`${build.profile}\`, ` +
-                    `v${build.appVersion} build ${build.appBuildVersion}, commit \`${(build.gitCommitHash ?? '').slice(0, 8)}\`).`,
-                ''
-            );
-        }
-
-        const subjects = [`${this.coordinates.length} ${this.mode} Maven coordinate(s)`];
+        const subjects = [
+            `${this.coordinates.length} ${this.mode} Maven coordinate(s)` +
+                (graphs.length > 1
+                    ? ` (${graphs.map(graph => `${graph.count} in ${graph.label}`).join(', ')})`
+                    : '')
+        ];
         if (pods.length)
             subjects.push(
                 `${pods.length} installed pod(s), ${this.queryablePods.length} of them queried`
@@ -145,8 +181,9 @@ export class GateReport {
                 `<details><summary>${result.informational.length} non-blocking advisory record(s)</summary>`,
                 '',
                 ...result.informational.map(
-                    ({ finding }) =>
-                        `- ${finding.severity} · \`${finding.name}@${finding.version}\` · ${finding.id} · ${finding.graph}`
+                    entry =>
+                        `- ${entry.finding.severity} · \`${entry.finding.name}@${entry.finding.version}\` · ` +
+                        `${entry.finding.id} · ${this.#graphCell(entry)}`
                 ),
                 '',
                 '</details>',
@@ -194,7 +231,7 @@ export class GateReport {
                 `<details><summary>${opaque.length} pod(s) never queried — no database can answer about them</summary>`,
                 '',
                 'Each is a `:path` pod from node_modules, versioned by the npm package that ships it, so',
-                'no record keyed by pod and version can exist. Never asked about is not the same as clean.',
+                'no record keyed by pod and version can exist.',
                 '',
                 ...opaque.map(pod => `- \`${pod.name}\` ${pod.version}`),
                 '',

@@ -4,9 +4,16 @@ import { byNameThenVersion, compareStrings, readJsonFile } from './util.mjs';
 
 export const SCHEMA = 1;
 
-export const androidCoordinatesDocument = ({ source, capturedFrom, build, coordinates }) => ({
+export const androidCoordinatesDocument = ({
+    label,
+    source,
+    capturedFrom,
+    build,
+    coordinates
+}) => ({
     schema: SCHEMA,
     kind: 'android-coordinates',
+    label,
     source,
     capturedFrom,
     build,
@@ -46,6 +53,8 @@ export function loadResolvedCoordinates(path) {
     return {
         build: payload.build,
         source: payload.source,
+        // A file written before the gate read more than one graph names no artifact.
+        label: payload.label ?? 'graph',
         coordinates: coordinates
             .map(entry => ({
                 name: entry.name,
@@ -56,6 +65,31 @@ export function loadResolvedCoordinates(path) {
             }))
             .sort(byNameThenVersion)
     };
+}
+
+// A database answer is keyed by `name@version`, so two graphs become one subject
+// per coordinate recording the artifacts it is in, gated once. The per-artifact
+// files stay the record of digests and paths.
+export function mergeResolvedCoordinates(graphs) {
+    const merged = new Map();
+    for (const graph of graphs) {
+        for (const entry of graph.coordinates) {
+            const key = `${entry.name}@${entry.version}`;
+            const seen = merged.get(key);
+            if (!seen) {
+                merged.set(key, { ...entry, sources: [graph.label] });
+                continue;
+            }
+            seen.sources.push(graph.label);
+            seen.declaredBy = [...new Set([...seen.declaredBy, ...entry.declaredBy])].sort(
+                compareStrings
+            );
+            seen.sha256 ??= entry.sha256;
+            // If two graphs disagree, the claim that it ships wins.
+            if (seen.graph !== entry.graph) seen.graph = 'runtime';
+        }
+    }
+    return [...merged.values()].sort(byNameThenVersion);
 }
 
 // Only pods the parser marked `queryable` — the ones that came from a spec repo —

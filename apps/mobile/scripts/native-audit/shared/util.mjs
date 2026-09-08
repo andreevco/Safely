@@ -7,6 +7,13 @@ export function readTextFile(path, label) {
     return text;
 }
 
+export function readBinaryFile(path, label) {
+    if (!existsSync(path)) throw new Error(`${label} not found: ${path}`);
+    const bytes = readFileSync(path);
+    if (!bytes.length) throw new Error(`${label} is empty: ${path}`);
+    return bytes;
+}
+
 export function readJsonFile(path, label) {
     try {
         return JSON.parse(readTextFile(path, label));

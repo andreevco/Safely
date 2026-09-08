@@ -1,31 +1,9 @@
-import { byNameThenVersion, compareStrings } from '../shared/util.mjs';
-import { decodeDigest, field, fields, parseTextProto } from './text-proto.mjs';
-
-// Walks the edge list from every root, labelling each library it reaches. The
-// roots are the app module's direct dependencies, which is the address of any fix.
-function attribute(libraries, edges, roots) {
-    const declaredBy = libraries.map(() => new Set());
-    for (const root of roots) {
-        const label = libraries[root]?.name;
-        if (!label) continue;
-        const queue = [root];
-        const seen = new Set(queue);
-        while (queue.length) {
-            const index = queue.shift();
-            declaredBy[index].add(label);
-            for (const next of edges.get(index) ?? []) {
-                if (seen.has(next)) continue;
-                seen.add(next);
-                queue.push(next);
-            }
-        }
-    }
-    return declaredBy;
-}
+import { assembleCoordinates } from './app-dependencies.mjs';
+import { decodeDigest, field, fields, hasBlock, parseTextProto } from './text-proto.mjs';
 
 // `android/app/build/outputs/sdk-dependencies/release/sdkDependencies.txt`, which
-// the Android Gradle Plugin writes on every APK build. Position in the file *is*
-// the identity: every edge is an index into the `library` list.
+// the Android Gradle Plugin writes on every APK build. A bundle build writes the
+// same message in binary instead — see dependencies-pb-parser.mjs.
 export function parseSdkDependencies(text) {
     const records = parseTextProto(text);
 
@@ -38,12 +16,16 @@ export function parseSdkDependencies(text) {
         .map(record => {
             const group = field(record, 'groupId');
             const artifact = field(record, 'artifactId');
-            const repo = field(record, 'value');
+            // `repo_index` is an Int32Value: index 0 is written as an empty
+            // block, so presence of the block is what says the index is known.
+            const repo = hasBlock(record, 'repo_index')
+                ? Number(field(record, 'value') ?? 0)
+                : null;
             return {
                 name: group && artifact ? `${group}:${artifact}` : null,
                 version: field(record, 'version') ?? null,
                 sha256: decodeDigest(field(record, 'sha256')),
-                repository: repo === undefined ? null : (repositories[Number(repo)] ?? null)
+                repository: repo === null ? null : (repositories[repo] ?? null)
             };
         });
 
@@ -61,19 +43,5 @@ export function parseSdkDependencies(text) {
         .filter(record => record.name === 'module_dependencies')
         .flatMap(record => fields(record, 'dependency_index').map(Number));
 
-    const declaredBy = attribute(libraries, edges, roots);
-
-    return libraries
-        .map((library, index) => ({
-            name: library.name,
-            version: library.version,
-            // AGP writes this file for the release variant only, so everything in
-            // it is in the shipped APK by construction.
-            graph: 'runtime',
-            declaredBy: [...declaredBy[index]].sort(compareStrings),
-            sha256: library.sha256,
-            repository: library.repository
-        }))
-        .filter(entry => entry.name && entry.version)
-        .sort(byNameThenVersion);
+    return assembleCoordinates({ libraries, edges, roots });
 }
