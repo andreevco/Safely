@@ -26,9 +26,15 @@ export type AccountMeta = Exclude<SAccountMeta, null>;
 
 export type SyncAccount = ISyncAccount<SyncedStorageStructure>;
 
+export type OnboardedAccount = {
+    account: ISyncAccount<SyncedStorageStructure>;
+    /* null on reconnection, and when the authorising device predates the payload field */
+    inviterIkPubHex: string | null;
+};
+
 export type OnboardingConnector = {
     connectionString: string;
-    accountPromise: Promise<ISyncAccount<SyncedStorageStructure>>;
+    onboardedPromise: Promise<OnboardedAccount>;
     abort: () => void;
 };
 
