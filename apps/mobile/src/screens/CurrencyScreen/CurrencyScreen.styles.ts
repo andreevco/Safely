@@ -13,11 +13,11 @@ export const styles = StyleSheet.create((theme, rt) => ({
         alignItems: 'center',
         gap: theme.spacing[8]
     },
+    checkmarkSlot: {
+        width: 28,
+        height: 28
+    },
     cellSymbol: {
         minWidth: 44
-    },
-    headerPlaceholder: {
-        width: 40,
-        padding: theme.spacing[12]
     }
 }));

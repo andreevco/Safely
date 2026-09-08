@@ -3,13 +3,30 @@ import * as Linking from 'expo-linking';
 import { useEffect, useMemo, useRef } from 'react';
 
 export function useLockAwareLinking(isLocked: boolean): LinkingOptions<ParamListBase> {
-    const isLockedRef = useRef(isLocked);
     const pendingUrlRef = useRef<string | null>(null);
     const listenerRef = useRef<((url: string) => void) | null>(null);
+    const isLockedRef = useRef(isLocked);
+    const hasConsumedInitialUrlRef = useRef(false);
 
     useEffect(() => {
         isLockedRef.current = isLocked;
     }, [isLocked]);
+
+    useEffect(() => {
+        const subscription = Linking.addEventListener('url', ({ url }) => {
+            const listener = listenerRef.current;
+
+            if (isLockedRef.current || listener === null) {
+                pendingUrlRef.current = url;
+
+                return;
+            }
+
+            listener(url);
+        });
+
+        return () => subscription.remove();
+    }, []);
 
     useEffect(() => {
         if (isLocked) {
@@ -32,32 +49,34 @@ export function useLockAwareLinking(isLocked: boolean): LinkingOptions<ParamList
             enabled: true,
             prefixes: [Linking.createURL('/')],
             async getInitialURL() {
-                const url = await Linking.getInitialURL();
+                const pendingUrl = pendingUrlRef.current;
 
-                if (url !== null && isLockedRef.current) {
-                    pendingUrlRef.current = url;
+                if (pendingUrl !== null) {
+                    pendingUrlRef.current = null;
 
+                    return pendingUrl;
+                }
+
+                if (hasConsumedInitialUrlRef.current) {
                     return null;
                 }
 
-                return url;
+                hasConsumedInitialUrlRef.current = true;
+
+                return await Linking.getInitialURL();
             },
             subscribe(listener) {
                 listenerRef.current = listener;
 
-                const subscription = Linking.addEventListener('url', ({ url }) => {
-                    if (isLockedRef.current) {
-                        pendingUrlRef.current = url;
+                const url = pendingUrlRef.current;
 
-                        return;
-                    }
-
+                if (url !== null && !isLockedRef.current) {
+                    pendingUrlRef.current = null;
                     listener(url);
-                });
+                }
 
                 return () => {
                     listenerRef.current = null;
-                    subscription.remove();
                 };
             }
         }),

@@ -1,5 +1,18 @@
 {
     "currentLanguageName": "English",
+    "restrictedRegion": {
+        "title": "Safely isn't available in your region",
+        "subtitle": "For more information, contact",
+        "exportRecoveryPhrases": "Export recovery phrases",
+        "logOutAndErase": "Log out and erase all app data"
+    },
+    "restrictedRecovery": {
+        "title": "Recovery phrases",
+        "subtitle": "Wallet features aren't currently available. Choose a wallet to export its recovery phrase.",
+        "wallets": "Wallets",
+        "withoutRecoveryPhrase": "Without recovery phrase",
+        "noRecoveryPhrase": "No recovery phrase"
+    },
     "portfolio": {
         "watchOnly": "Watch only",
         "testnet": "Testnet",
@@ -11,7 +24,6 @@
         "cancel": "Cancel",
         "title": "Review on Ledger",
         "subtitle": "Complete the following steps on your Ledger to approve the transaction.",
-        "deviceFallback": "Ledger",
         "deviceBusyToast": "Cancel the pending action on your Ledger, then retry",
         "steps": {
             "connect": "Connect your {{device}}",
@@ -44,7 +56,6 @@
         "ok": "Later"
     },
     "common": {
-        "edit": "Edit",
         "remove": "Remove",
         "removed": "Removed",
         "next": "Next",
@@ -52,7 +63,6 @@
         "cancel": "Cancel",
         "continue": "Continue",
         "later": "Later",
-        "comingSoon": "Coming soon",
         "errors": {
             "unknown": "Something went wrong"
         }
@@ -68,15 +78,13 @@
         "from": "From",
         "recipient": {
             "label": "Recipient",
-            "placeholder": "Address or name",
-            "myWallets": "My wallets"
+            "placeholder": "Address or name"
         },
         "amount": "Amount",
         "max": "Send all",
         "maxHint": "All available balance will be sent. Fee included.",
         "remaining": "Remaining:",
         "pending": "Pending:",
-        "insufficientBalance": "Insufficient balance",
         "addressBook": {
             "label": "Save to your address book",
             "placeholder": "Name",
@@ -84,8 +92,6 @@
         }
     },
     "passcode": {
-        "title": "Create passcode",
-        "description": "Set a passcode to protect your data. It will be required to unlock the app.",
         "switchToSix": "Use 6-digit passcode",
         "switchToFour": "Use 4-digit passcode",
         "verify": {
@@ -104,7 +110,6 @@
         "title": "Enter passcode"
     },
     "changePasscode": {
-        "title": "Change passcode",
         "verify": {
             "title": "Enter current passcode"
         },
@@ -116,7 +121,47 @@
         }
     },
     "currency": {
-        "title": "Currency"
+        "title": "Currency",
+        "localCurrency": {
+            "title": "Local currency"
+        },
+        "mainBalance": {
+            "title": "Main balance",
+            "options": {
+                "fiat": "In local currency",
+                "crypto": "In Bitcoins"
+            }
+        },
+        "moreOptions": {
+            "title": "More options",
+            "amountDisplay": {
+                "title": "Amount display",
+                "subtitle": "Home screen, history, full sent amounts."
+            }
+        }
+    },
+    "amountDisplay": {
+        "title": "Amount display",
+        "transactionHistory": {
+            "title": "Transaction history",
+            "footer": "Applies to transaction history and details. Fiat values",
+            "footerRates": "use current exchange rates."
+        },
+        "homeScreen": {
+            "title": "Home screen",
+            "footer": "Applies to asset cards on the Home screen."
+        },
+        "transactionAmounts": {
+            "title": "Transaction amounts",
+            "showFull": {
+                "title": "Show full sent amount",
+                "subtitle": "Sent crypto amounts include network fees and are shown without rounding."
+            }
+        },
+        "options": {
+            "crypto": "Crypto first",
+            "fiat": "Local currency first"
+        }
     },
     "home": {
         "actions": {
@@ -143,8 +188,6 @@
         "title": "Accounts"
     },
     "actions": {
-        "edit": "Edit",
-        "done": "Done",
         "copied": "Copied"
     },
     "qrScan": {
@@ -181,15 +224,6 @@
             "ru": "Russian"
         }
     },
-    "notifications": {
-        "title": "Notifications",
-        "warning": "Notifications are off.",
-        "openSettings": "Settings",
-        "push": {
-            "title": "Push notifications",
-            "subtitle": "Get notified when you receive BTC."
-        }
-    },
     "security": {
         "title": "Security",
         "recoverySheet": {
@@ -206,43 +240,71 @@
         },
         "accountProtected": {
             "title": "Linked devices",
-            "subtitle": "Linked devices have full access to your account and can be used to restore access if another device is lost."
+            "subtitle": "Linked devices have full access to your account and can be used to restore access if another device is lost.",
+            "listTitle": "Linked devices",
+            "attention": "Check sync status of the devices below."
+        },
+        "archivedDevices": {
+            "show": "Tap to show archived devices",
+            "title": "Archived devices",
+            "footnote": "Devices are archived instead of removed because access cannot be safely revoked remotely."
         },
         "device": {
-            "added": "Linked {{date}}",
-            "unlink": "Unlink",
-            "current": "Current"
+            "added": "Added {{date}}",
+            "current": "Current",
+            "status": {
+                "synced": "Synced",
+                "notSynced": "Not synced",
+                "unknown": "Unknown",
+                "staleConnection": "Last connected over a month ago",
+                "archived": "Archived {{date}}"
+            }
         },
-        "unlinkDevice": {
-            "title": "Unlink {{deviceName}}",
-            "subtitle": "This device will be removed from your linked devices and will no longer sync with this account.",
-            "confirm": "Unlink {{deviceName}}"
+        "deviceDetails": {
+            "currentDevice": "Current device",
+            "device": "Device",
+            "added": "Added",
+            "connection": "Connection",
+            "archivedDevice": "Archived device",
+            "archived": "Archived",
+            "reason": "Reason",
+            "reasonArchivedFrom": "Archived from {{deviceName}}",
+            "reasonSignedOut": "Signed out on {{deviceName}}",
+            "unarchive": "Unarchive {{deviceName}}",
+            "unarchived": "{{deviceName}} unarchived",
+            "unarchiveVerify": "Confirm unarchiving {{deviceName}}.",
+            "noConnectionYet": "No connection yet",
+            "unknown": "Unknown",
+            "unknownHint": "Open Safely on this device to update its sync status.",
+            "staleWarning": "Last connected over a month ago. Open Safely on {{deviceName}} to update its connection status.",
+            "hideWarning": "Hide warning for 30 days",
+            "dataSync": "Wallet recovery phrases",
+            "status": "Status",
+            "synced": "Synced",
+            "notSynced": "Not synced",
+            "completeSyncHint": "Open Safely on {{deviceName}} to complete sync.",
+            "fullAccess": "This device has full access to your account and wallets. It can be used if another device is lost.",
+            "wallets": "Wallets",
+            "allWallets": "All wallets",
+            "notOnThisDevice": "Not on {{deviceName}}",
+            "help": {
+                "title": "Need help with this device?",
+                "subtitle": "Tap here if this device is lost or you want to remove it from your account."
+            },
+            "connectedNow": "Connected now",
+            "minutesAgo_one": "{{count}} minute ago",
+            "minutesAgo_other": "{{count}} minutes ago",
+            "hoursAgo_one": "{{count}} hour ago",
+            "hoursAgo_other": "{{count}} hours ago",
+            "yesterday": "Yesterday",
+            "daysAgo_one": "{{count}} day ago",
+            "daysAgo_other": "{{count}} days ago",
+            "weeksAgo_one": "{{count}} week ago",
+            "weeksAgo_other": "{{count}} weeks ago"
         },
         "groups": {
-            "account": {
-                "title": "Data safety",
-                "protect": {
-                    "title": "Linked devices",
-                    "badge": "Required",
-                    "subtitle": "Link another device as a redundant storage for your wallet keys and other data."
-                },
-                "protection": {
-                    "title": "Linked devices",
-                    "badge": "Enabled",
-                    "subtitle": "Wallet keys are stored on your linked devices."
-                },
-                "unlinked": {
-                    "title": "Device link",
-                    "badge": "OFF",
-                    "subtitle": "Re-link this device to your account."
-                }
-            },
             "application": {
                 "title": "Application",
-                "faceId": {
-                    "title": "Face ID",
-                    "subtitle": "Unlock securely with a glance. No password needed."
-                },
                 "lockScreen": {
                     "title": "Lock screen",
                     "subtitle": "Require passcode to unlock the app."
@@ -251,20 +313,60 @@
                 "eraseAndLogout": "Erase app data and log out"
             },
             "wallet": {
-                "title": "Wallet",
-                "main": "Main",
                 "defaultName": "Wallet {{number}}",
                 "recovery": {
                     "title": "Recovery phrase",
                     "subtitle": "Keep it private. View only if necessary. This phrase has never been viewed.",
                     "revealed": "First viewed on {{date}} on {{device}}."
-                },
-                "ledgerInfo": "This wallet is secured by your Ledger device."
+                }
             }
         }
     },
+    "deviceUnarchived": {
+        "title": "This device is active again",
+        "subtitle": "Because you're using this device again, it has been removed from Archived devices.",
+        "source": "This device was previously archived on {{deviceName}}.",
+        "action": "Got it"
+    },
+    "deviceSupportWizard": {
+        "title": "Support",
+        "dismiss": "Dismiss",
+        "intro": {
+            "title": "What happened to {{deviceName}}?",
+            "subtitle": "{{deviceName}} can't be removed remotely. Answer a few questions to find the best way to protect your account."
+        },
+        "access": {
+            "title": "Do you still have this device and can you unlock it?",
+            "options": {
+                "has": "Yes, I have it",
+                "lost": "No, I can't access it"
+            }
+        },
+        "others": {
+            "title": "Is this device stolen, sold, or can someone else access it?",
+            "options": {
+                "possible": "Yes, someone can access it",
+                "impossible": "No, no one can access it"
+            }
+        },
+        "signOut": {
+            "title": "Open Safely on {{deviceName}} and sign out",
+            "description": "After signing out, this device will no longer have access to your account."
+        },
+        "moveFunds": {
+            "title": "Move your funds to a new account",
+            "description": "Someone with this device can access your current account.",
+            "action": "Create new account"
+        },
+        "archive": {
+            "title": "Archive this device",
+            "description": "Since no one can access this device for now, your account is probably not at risk. Archiving hides it from your linked devices list. It doesn't remove access or stop syncing if the device comes back online.",
+            "action": "Archive {{deviceName}}",
+            "verify": "Confirm archiving {{deviceName}}.",
+            "done": "{{deviceName}} archived"
+        }
+    },
     "safety": {
-        "aboutSync": "About Sync",
         "about": "About",
         "linkDevice": "Link device",
         "linkDeviceWarning": {
@@ -301,7 +403,7 @@
         },
         "protectAccount": {
             "title": "No linked devices",
-            "subtitle": "Link another device as redundant storage. If this phone is lost, a linked device will restore access to your wallets.",
+            "subtitle": "Link another device as a backup. If this phone is lost, a linked device can restore access to your wallets.",
             "steps": {
                 "step1": "Install Safely on another device.",
                 "step2": "Tap \"Link with QR\".",
@@ -311,16 +413,16 @@
         "syncOnboarding": {
             "steps": {
                 "protect": {
-                    "title": "How to protect your wallets",
+                    "title": "Protect your wallets",
                     "subtitle": "Safely is a self-custody app: you are responsible for keeping your wallet recovery phrases safe."
                 },
                 "noPaper": {
-                    "title": "Do not write down recovery phrases",
+                    "title": "Recovery phrases deserve safer backup",
                     "subtitle": "Paper notes can be lost, damaged, or stolen. Keeping track of many wallets quickly becomes difficult."
                 },
                 "useSync": {
-                    "title": "Use Safely Sync to protect your wallets",
-                    "subtitle": "Safely automatically and securely synchronizes recovery phrases across your devices. <a>How Safely Sync works?</a>"
+                    "title": "How Safely Sync works",
+                    "subtitle": "Safely automatically and securely synchronizes recovery phrases across your devices. <a>Learn more</a>"
                 }
             }
         }
@@ -328,7 +430,7 @@
     "customizeWallet": {
         "title": "Customize your wallet",
         "ledgerTitle": "Customize your Ledger",
-        "description": "Set a name and icon to tell this wallet apart here. Sync across your devices.",
+        "description": "Set a name and icon to tell this wallet apart from others. Sync across your devices.",
         "namePlaceholder": "Wallet name",
         "save": "Save"
     },
@@ -406,18 +508,6 @@
             "continue": "Continue"
         }
     },
-    "deviceUnlinked": {
-        "banner": {
-            "text": "This device is unlinked from your account and does not synchronise with other devices."
-        },
-        "reconnect": {
-            "title": "Link device",
-            "description": "Open Safely on another device where this account is active. go to Safety, tap “Link device”, then scan this QR code.",
-            "banner": "This device will have full access to your account. It can be used if your other device is lost.",
-            "timeout": "Connection timed out. Please try again.",
-            "successToast": "Device re-linked"
-        }
-    },
     "welcome": {
         "title": "Safely",
         "subtitle": "Your personal wallet. Receive, buy and spend crypto with ease.",
@@ -425,8 +515,7 @@
         "importWallet": "Import wallet",
         "moreOptions": "More options",
         "linkWithQr": "Link with QR",
-        "legalLine1": "By using Safely, you agree to accept",
-        "legalLine2": "our <privacy>Privacy Policy</privacy>."
+        "legal": "By continuing, you agree to our\n<terms>Terms of Use</terms> and <privacy>Privacy Policy</privacy>."
     },
     "moreOptions": {
         "title": "More options",
@@ -435,18 +524,10 @@
         "watchAccount": "Watch account"
     },
     "onboarding": {
-        "recoveryPhrase": {
-            "title": "Recovery phrase",
-            "description": "Write down these 12 words in order and store them in a safe place. You'll need them to recover your wallet.",
-            "warning": "Never share your recovery phrase with anyone. Anyone with it can access your wallet.",
-            "continue": "I've saved the phrase"
-        },
         "importWallet": {
             "title": "Enter recovery phrase",
             "description": "Restore your wallet using 12 or 24 words.",
-            "placeholder": "Enter or paste your recovery phrase",
-            "continue": "Continue",
-            "paste": "Paste"
+            "placeholder": "Enter or paste your recovery phrase"
         },
         "passcode": {
             "title": "Create passcode",
@@ -455,19 +536,7 @@
                 "title": "Re-enter passcode",
                 "description": "Set a passcode to protect your data. It will be required to unlock the app."
             }
-        },
-        "customize": {
-            "title": "Customize your wallet",
-            "description": "Set a name and icon to tell this wallet apart here. Sync across your devices."
-        },
-        "notifications": {
-            "title": "Notifications",
-            "description": "Get alerts when funds arrive. No need to check manually.",
-            "enable": "Enable notifications"
         }
-    },
-    "compactAccountSelector": {
-        "addOrEdit": "Add or Edit"
     },
     "addWallet": {
         "title": "Add wallet",
@@ -611,18 +680,13 @@
         "title": "Settings",
         "qrCodeFromAnotherAccount": "QR code is from another account.\nUse the same account on both devices.",
         "addAccount": "Add account",
-        "linkDevice": "Link device",
         "walletsCount_one": "{{count}} wallet",
         "walletsCount_other": "{{count}} wallets",
         "groups": {
-            "currentAccount": {
-                "title": "Current account"
-            },
             "currentWallet": {
                 "title": "Current wallet",
                 "ledgerTitle": "Ledger device",
                 "options": {
-                    "wallet": "Wallet",
                     "editWallet": "Edit wallet",
                     "editLedger": "Edit Ledger"
                 }
@@ -634,8 +698,7 @@
                 "title": "Settings",
                 "options": {
                     "editAccount": "Edit account",
-                    "addressBook": "Address book",
-                    "notifications": "Notifications"
+                    "addressBook": "Address book"
                 }
             },
             "application": {
@@ -649,7 +712,6 @@
                 "title": "Info",
                 "options": {
                     "support": "Support",
-                    "rate": "Rate Safely",
                     "legal": "Legal"
                 }
             }
@@ -673,17 +735,7 @@
         },
         "removePortfolio": {
             "title": "Remove wallet “{{name}}”",
-            "disconnectLedger": "Disconnect “{{name}}”",
-            "hideDerivation": "Hide wallet “{{name}}”",
-            "confirm": {
-                "title": "Remove this wallet?",
-                "message": "This will remove wallet “{{name}}”. This action cannot be undone.",
-                "slider": {
-                    "label": "Remove wallet",
-                    "description": "Slide to remove"
-                },
-                "cancel": "Cancel"
-            }
+            "disconnectLedger": "Disconnect “{{name}}”"
         }
     },
     "logOutAllAccounts": {
@@ -766,8 +818,7 @@
         "empty": {
             "title": "Transaction history",
             "subtitle": "Your transactions will appear here.",
-            "receive": "Receive BTC",
-            "send": "Send"
+            "receive": "Receive BTC"
         },
         "transactionInfo": {
             "sending": "Sending",
@@ -778,6 +829,7 @@
             "sender": "Sender",
             "fee": "Network fee",
             "hash": "Transaction",
+            "fiatRateNote": "Fiat values use the current exchange rate.",
             "status": {
                 "title": "Status",
                 "pending": {
@@ -838,13 +890,13 @@
             "importedWallet": "Wallet imported"
         },
         "errors": {
-            "alreadyExists": "Wallet already exists",
             "invalidMnemonic": "Invalid recovery phrase",
             "failedToGenerate": "Failed to generate wallet"
         }
     },
     "externalInput": {
         "errors": {
+            "invalidAmount": "Invalid payment amount in the code",
             "unrecognized": "Unrecognized input",
             "unsupportedScheme": "Unsupported input type"
         }
@@ -894,6 +946,7 @@
     },
     "legal": {
         "title": "Legal",
-        "privacyPolicy": "Privacy Policy"
+        "privacyPolicy": "Privacy Policy",
+        "termsOfUse": "Terms of Use"
     }
 }

@@ -1,5 +1,5 @@
 import { useNavigation } from '@react-navigation/core';
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { ImageBackground, View } from 'react-native';
 
@@ -7,10 +7,12 @@ import {
     useAppContext,
     useBootConfig,
     useCreateExistingAccountConnector,
+    useHasAccount,
     useLinking,
     useTrackOnboardingOpen
 } from '@safely/ux';
 
+import { usePasscode } from '@mobile/entities/security';
 import { useOnboardingFlow } from '@mobile/features/onboarding';
 import { TEST_ID } from '@mobile/shared/constants';
 import { resources } from '@mobile/shared/resources';
@@ -20,10 +22,14 @@ import { styles } from './WelcomeScreen.styles';
 
 export const WelcomeScreen = () => {
     const { t } = useTranslation();
+    const hasAccount = useHasAccount();
+    const { isSet: hasPasscode } = usePasscode();
+    const hasExistingAccountOnOpen = useRef(hasAccount && hasPasscode).current;
+
     const { onSuccessCreate, onSuccessSignIn } = useOnboardingFlow();
     const signIn = useCreateExistingAccountConnector();
     const navigation = useNavigation();
-    const privacyUrl = useBootConfig().references.legal.privacy_url;
+    const { privacy_url, terms_url } = useBootConfig().references.legal;
 
     const {
         storage: {
@@ -55,6 +61,10 @@ export const WelcomeScreen = () => {
                 })
         });
     }, [signIn, navigation, getSecureEncrypted, onSuccessSignIn]);
+
+    if (hasExistingAccountOnOpen) {
+        throw new Error('WelcomeScreen opened with an existing account');
+    }
 
     return (
         <Screen background="transparent">
@@ -112,17 +122,21 @@ export const WelcomeScreen = () => {
 
                     <View style={styles.legalContainer}>
                         <Text variant="bodyS" color="tertiary" textAlign="center">
-                            {t('welcome.legalLine1')}
-                        </Text>
-                        <Text variant="bodyS" color="tertiary" textAlign="center">
                             <Trans
-                                i18nKey="welcome.legalLine2"
+                                i18nKey="welcome.legal"
                                 components={{
+                                    terms: (
+                                        <Text
+                                            variant="bodyS"
+                                            color="secondary"
+                                            onPress={() => openURL(terms_url)}
+                                        />
+                                    ),
                                     privacy: (
                                         <Text
                                             variant="bodyS"
                                             color="secondary"
-                                            onPress={() => openURL(privacyUrl)}
+                                            onPress={() => openURL(privacy_url)}
                                         />
                                     )
                                 }}

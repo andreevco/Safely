@@ -38,6 +38,14 @@ export class AccountStoreTransform {
                 return this.devicesMeta(
                     json as SyncedStorageSchema['devicesMeta']
                 ) as AccountStoreData[K];
+            case 'devicesSyncState':
+                return this.devicesSyncState(
+                    json as SyncedStorageSchema['devicesSyncState']
+                ) as AccountStoreData[K];
+            case 'devicesArchive':
+                return this.devicesArchive(
+                    json as SyncedStorageSchema['devicesArchive']
+                ) as AccountStoreData[K];
             case 'meta':
                 return this.meta(json as SyncedStorageSchema['meta']) as AccountStoreData[K];
             case 'nextDerivingPortfolioInfo':
@@ -47,6 +55,10 @@ export class AccountStoreTransform {
             case 'analyticsId':
                 return this.analyticsId(
                     json as SyncedStorageSchema['analyticsId']
+                ) as AccountStoreData[K];
+            case 'amountDisplay':
+                return this.amountDisplay(
+                    json as SyncedStorageSchema['amountDisplay']
                 ) as AccountStoreData[K];
             default:
                 assertUnreachable(key);
@@ -61,10 +73,13 @@ export class AccountStoreTransform {
             contacts: this.contacts(raw.contacts),
             preferredFiat: this.preferredFiat(raw.preferredFiat),
             devicesMeta: this.devicesMeta(raw.devicesMeta),
+            devicesSyncState: this.devicesSyncState(raw.devicesSyncState),
+            devicesArchive: this.devicesArchive(raw.devicesArchive),
             nextDerivingPortfolioInfo: this.nextDerivingPortfolioInfo(
                 raw.nextDerivingPortfolioInfo
             ),
-            analyticsId: this.analyticsId(raw.analyticsId)
+            analyticsId: this.analyticsId(raw.analyticsId),
+            amountDisplay: this.amountDisplay(raw.amountDisplay)
         };
     }
 
@@ -100,6 +115,18 @@ export class AccountStoreTransform {
         return json;
     }
 
+    private devicesSyncState(
+        json: SyncedStorageSchema['devicesSyncState']
+    ): AccountStoreData['devicesSyncState'] {
+        return json;
+    }
+
+    private devicesArchive(
+        json: SyncedStorageSchema['devicesArchive']
+    ): AccountStoreData['devicesArchive'] {
+        return json;
+    }
+
     private meta(json: SyncedStorageSchema['meta']): AccountStoreData['meta'] {
         return json;
     }
@@ -111,6 +138,12 @@ export class AccountStoreTransform {
     }
 
     private analyticsId(json: SyncedStorageSchema['analyticsId']): AccountStoreData['analyticsId'] {
+        return json;
+    }
+
+    private amountDisplay(
+        json: SyncedStorageSchema['amountDisplay']
+    ): AccountStoreData['amountDisplay'] {
         return json;
     }
 

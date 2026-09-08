@@ -1,8 +1,8 @@
 import type { StorageVersion } from '@safely/slottree';
 
-import type { YManager } from './y-manager';
+import type { CrdtManager } from './crdt-manager';
 
-type ManagedYManager = YManager<StorageVersion, unknown>;
+type ManagedYManager = CrdtManager<StorageVersion, unknown>;
 type DeviceAuthorVersions = {
     storageVersion: number | undefined;
     devicesStorageVersion: number | undefined;

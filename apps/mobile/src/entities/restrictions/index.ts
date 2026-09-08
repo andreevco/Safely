@@ -1,0 +1,1 @@
+export { useIsAppRestricted } from './useIsAppRestricted';

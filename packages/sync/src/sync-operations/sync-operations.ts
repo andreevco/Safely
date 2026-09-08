@@ -1,16 +1,16 @@
 import type { StorageVersion } from '@safely/slottree';
 
 import type { SnapshotSender } from './snapshot-sender';
-import { SyncOperationQueue } from './sync-operation-queue';
 import type { EncryptedStateAndProofChain } from '../api/types';
 import type { CrdtController } from '../crdt/crdt-controller';
 import type { DmkSignerService } from '../crypto/service/dmk-signer-service';
 import type { DeviceManagementService } from '../device-manager/device-management-service';
 import type { SyncFlowLogger } from '../logger';
 import type { UpdateHandler } from '../update-handler/handler';
+import { AsyncOperationQueue } from '../utils/async-operation-queue';
 
 export class SyncOperations<Latest extends StorageVersion, Rest> {
-    private readonly queue = new SyncOperationQueue();
+    private readonly queue = new AsyncOperationQueue();
 
     constructor(
         private readonly updateHandler: UpdateHandler<Latest, Rest>,

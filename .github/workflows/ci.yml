@@ -121,6 +121,9 @@ jobs:
       - name: Run Swift core tests
         run: swift test
         working-directory: apps/mobile/modules/safely-crypto/ios
+      - name: Run Swift mask engine tests
+        run: swift test
+        working-directory: apps/mobile/modules/safely-masked-input/ios
 
   # Kotlin: pure *Core.kt on a plain JVM via the host-only Gradle harness. No
   # Android SDK, Expo, RN or node — just JDK + Gradle.
@@ -138,3 +141,6 @@ jobs:
       - name: Run Kotlin core tests
         run: ./gradlew test
         working-directory: apps/mobile/modules/safely-crypto/android/host-test
+      - name: Run Kotlin mask engine tests
+        run: ./gradlew test
+        working-directory: apps/mobile/modules/safely-masked-input/android/host-test

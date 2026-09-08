@@ -6,9 +6,9 @@ import { SyncStatus } from '../../src/sync-provider/sync-status';
 import type { TestSyncAccount } from '../fixtures/account';
 import { onboardMockAccount } from '../helpers/onboarding';
 import { waitForNextSynchronizationCycle, waitWithTimeout } from '../helpers/synchronization';
-import { InMemStorage } from '../impl/storage';
-import { makeFactory } from '../impl/sync-server-factory';
-import { initializeSyncServer } from '../impl/sync-server-registry';
+import { InMemStorage } from '../mocks/server-mock/storage';
+import { makeFactory } from '../mocks/server-mock/sync-server-factory';
+import { initializeSyncServer } from '../mocks/server-mock/sync-server-registry';
 
 type MockFactory = ReturnType<typeof makeFactory>;
 
@@ -312,7 +312,6 @@ async function removeDeviceFromOnlineDevice(
     }
 
     const targetIkPub = target.account.getMyDeviceIkPub();
-    await setRequesterIk(actor);
     await waitForNextSynchronizationCycle(
         actor.account,
         'device revocation synchronized',
@@ -386,8 +385,6 @@ async function reconnectDeletedDevice(
     }
 
     const connector = await target.account.reconnectToAccount();
-    target.factory.setRequesterIkFromOnboardingData(connector.data);
-    await setRequesterIk(actor);
 
     await waitForNextSynchronizationCycle(
         actor.account,
@@ -418,7 +415,6 @@ async function deleteLocalOnlineSelfDevice(
         return;
     }
 
-    await setRequesterIk(target);
     await target.factory.factory.deleteLocalAccount(
         target.account.accountId,
         target.secureEncryptedStorage
@@ -507,7 +503,6 @@ async function onboardMockDevice(actor: SyncTestDevice): Promise<SyncTestDevice>
     const newDeviceSecureEncryptedStorage = new InMemStorage();
     const newAccount = await onboardMockAccount(
         actor.account,
-        actor.factory,
         actor.secureEncryptedStorage,
         newDeviceFactory,
         newDeviceSecureEncryptedStorage
@@ -521,8 +516,4 @@ async function onboardMockDevice(actor: SyncTestDevice): Promise<SyncTestDevice>
         deleted: false,
         reconnectable: false
     };
-}
-
-async function setRequesterIk(device: SyncTestDevice): Promise<void> {
-    device.factory.setRequesterIk(device.account.getMyDeviceIkPub().toString('hex'));
 }

@@ -20,7 +20,6 @@ import {
     useConnectAccountToNewDevice,
     useCreateAccount,
     useCreateExistingAccountConnector,
-    useCreateReconnectConnector,
     useDeleteAccount,
     useEraseAllData,
     useSetActiveAccount
@@ -421,7 +420,7 @@ describe('useSetActiveAccount (change)', () => {
 });
 
 describe('useDeleteAccount (remove)', () => {
-    it('removes own device meta, deletes local account with the provided storage, clears local storage', async () => {
+    it('archives own device, deletes local account with the provided storage, clears local storage', async () => {
         const a = createMockSyncAccount({ accountId: 'to-delete' });
         const b = createMockSyncAccount({ accountId: 'survivor' });
         const factory = createFactoryStub();
@@ -455,8 +454,8 @@ describe('useDeleteAccount (remove)', () => {
         );
 
         const recorder = a.transactions[0];
-        const devicesMetaSlot = recorder.slots.get('devicesMeta');
-        expect(devicesMetaSlot?.ifPresent).toHaveBeenCalled();
+        const devicesArchiveSlot = recorder.slots.get('devicesArchive');
+        expect(devicesArchiveSlot?.entry).toHaveBeenCalled();
 
         // Local-storage for the deleted account was cleared
         const leftover = await appContext.storage.ux.regular
@@ -712,31 +711,5 @@ describe('useCreateExistingAccountConnector (add device → existing account)', 
         });
 
         expect(abort).toHaveBeenCalledTimes(1);
-    });
-});
-
-describe('useCreateReconnectConnector (reconnect existing account)', () => {
-    it('delegates to active account.reconnectToAccount', async () => {
-        const account = createMockSyncAccount();
-        const abort = vi.fn();
-        (account.reconnectToAccount as Mock).mockImplementation(async () => ({
-            data: Buffer.from('reconn'),
-            waitForCompletion: () => Promise.resolve(account),
-            abort
-        }));
-        setupAccountState({ account });
-        setupSyncedDevice();
-
-        const { result } = renderHookWithProviders(() => useCreateReconnectConnector(), {
-            appContext: createTestAppContext()
-        });
-
-        let connector: Awaited<ReturnType<typeof result.current.mutateAsync>> | undefined;
-        await act(async () => {
-            connector = await result.current.mutateAsync();
-        });
-
-        expect(account.reconnectToAccount).toHaveBeenCalledTimes(1);
-        expect(connector?.connectionString).toBe(Buffer.from('reconn').toString('base64url'));
     });
 });

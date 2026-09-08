@@ -17,7 +17,7 @@ type RecoveryPhraseSheetProps = StaticScreenProps<{
 export const RecoveryPhraseSheet = (props: RecoveryPhraseSheetProps) => {
     const { t } = useTranslation();
     const { logger } = useAppContext();
-    const phrase = props.route.params.mnemonic;
+    const { mnemonic: phrase } = props.route.params;
 
     const halfLength = Math.ceil(phrase.length / 2);
     const leftColumn = phrase.slice(0, halfLength);

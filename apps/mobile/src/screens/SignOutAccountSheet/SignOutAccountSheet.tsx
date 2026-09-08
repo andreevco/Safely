@@ -3,9 +3,10 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
-import { AccountLinkState, useAccountLinkState } from '@safely/ux';
+import { useHasActivePeer } from '@safely/ux';
 
-import { BottomSheet, Button, ConfirmCheckbox, Text, useBottomSheet } from '@mobile/shared/ui';
+import { BottomSheetScreen } from '@mobile/shared/navigation';
+import { Button, ConfirmCheckbox, Text, useBottomSheet } from '@mobile/shared/ui';
 
 import { styles } from './SignOutAccountSheet.styles';
 
@@ -22,8 +23,8 @@ const SignOutAccountContent = (props: SignOutAccountParams) => {
 
     const { t } = useTranslation();
     const { close } = useBottomSheet();
-    const linkState = useAccountLinkState();
-    const [hasLinkedPeers] = useState(() => linkState === AccountLinkState.PROTECTED);
+    const hasActivePeer = useHasActivePeer();
+    const [hasLinkedPeers] = useState(() => hasActivePeer);
     const stateKey = hasLinkedPeers ? 'fullCopy' : 'noDevices';
 
     const [isLoading, setIsLoading] = useState(false);
@@ -79,8 +80,8 @@ const SignOutAccountContent = (props: SignOutAccountParams) => {
 
 export const SignOutAccountSheet = (props: SignOutAccountSheetProps) => {
     return (
-        <BottomSheet>
+        <BottomSheetScreen>
             <SignOutAccountContent {...props.route.params} />
-        </BottomSheet>
+        </BottomSheetScreen>
     );
 };

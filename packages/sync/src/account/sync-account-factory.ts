@@ -14,7 +14,7 @@ import type { Logger } from '../logger';
 import type { OnboardingConnector } from '../onboarding/connector';
 import { accountsApiForOnboarding, NewDeviceOnboarding } from '../onboarding/new-device-onboarding';
 import { SingleActiveOnboardingCoordinator } from '../onboarding/single-active-onboarding-coordinator';
-import type { SyncApiImplementations, SyncContainerConfig } from '../sync-container';
+import type { SyncApiImplementationsFactory, SyncContainerConfig } from '../sync-container';
 
 type VersionHList = HCons<StorageVersion, unknown>;
 type LatestOf<Versions extends VersionHList> = Versions['head'];
@@ -25,7 +25,7 @@ export type SyncAccountFactoryOptions<Versions extends VersionHList> = {
     encryptedStorage: ITreeStorage;
     versions: Versions & AssertVersionHList<Versions>;
     apiConfiguration?: SyncApiConfiguration;
-    apiImplementations?: SyncApiImplementations;
+    apiImplementationsFactory?: SyncApiImplementationsFactory;
     pollingTimeout?: number;
     logger: Logger;
     crdtClock?: Clock;
@@ -37,7 +37,7 @@ export class SyncAccountFactory<Versions extends VersionHList> implements ISyncA
     private readonly syncAccountIdRepository: SyncAccountRepository;
     private readonly accountManager: AccountManager<LatestOf<Versions>, RestOf<Versions>>;
     private readonly apiConfiguration: Configuration;
-    private readonly apiImplementations?: SyncApiImplementations;
+    private readonly apiImplementationsFactory?: SyncApiImplementationsFactory;
     private readonly logger: Logger;
     private readonly pollingTimeout: number;
     private readonly storageVersion: number;
@@ -48,7 +48,7 @@ export class SyncAccountFactory<Versions extends VersionHList> implements ISyncA
     constructor(opts: SyncAccountFactoryOptions<Versions>) {
         this.syncAccountIdRepository = new SyncAccountRepository(opts.storage);
         this.apiConfiguration = new Configuration(opts.apiConfiguration);
-        this.apiImplementations = opts.apiImplementations;
+        this.apiImplementationsFactory = opts.apiImplementationsFactory;
         this.logger = opts.logger;
         this.pollingTimeout = opts.pollingTimeout ?? 2000;
 
@@ -56,7 +56,7 @@ export class SyncAccountFactory<Versions extends VersionHList> implements ISyncA
             logger: this.logger,
             apiConfiguration: this.apiConfiguration,
             pollingTimeout: this.pollingTimeout,
-            apiImplementations: this.apiImplementations,
+            apiImplementationsFactory: this.apiImplementationsFactory,
             crdtClock: opts.crdtClock
         };
 
@@ -94,7 +94,7 @@ export class SyncAccountFactory<Versions extends VersionHList> implements ISyncA
     private async createConnectToExistingAccountSession(secureEncryptedStorage: ITreeStorage) {
         const ikKeypair = ed25519_keygen();
         const accountsApi =
-            this.apiImplementations?.accountsApi ??
+            this.apiImplementationsFactory?.(ikKeypair.publicKey).accountsApi ??
             accountsApiForOnboarding(ikKeypair, this.apiConfiguration);
         const onboarding = new NewDeviceOnboarding(
             ikKeypair,

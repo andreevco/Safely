@@ -52,7 +52,8 @@ export class ReconnectOnboardingCoordinator<Latest extends StorageVersion, Rest>
     }
 
     private async ensureDeviceCanReconnect(): Promise<void> {
-        if (this.getSyncProvider().syncStatusManager.getStatus() === SyncStatus.DEVICE_DELETED) {
+        const status = this.getSyncProvider().syncStatusManager.getStatus();
+        if (status === SyncStatus.DEVICE_DELETED || status === SyncStatus.SYNC_DATA_NOT_FOUND) {
             return;
         }
 

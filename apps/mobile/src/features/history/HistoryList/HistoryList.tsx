@@ -16,7 +16,8 @@ import {
     useGroupedHistory,
     useInterval,
     useNumberFormatter,
-    usePortfolios
+    usePortfolios,
+    useShowFullSentAmount
 } from '@safely/ux';
 
 import { ActivityItem, ActivityItemSkeleton } from '@mobile/entities/activity';
@@ -32,7 +33,6 @@ import {
     type HistoryRowItem,
     buildActivityRow,
     buildHeaderRow,
-    getGroupKey,
     timeFormatDetailsByGroupLabel
 } from './utils/rows';
 
@@ -57,6 +57,7 @@ export const HistoryList = (props: HistoryListProps) => {
     const contacts = useContacts();
     const { data: rateData } = useActivePortfolioRate(BTC_ASSET);
     const { data: currentBlockNumber } = useActualBtcBlockNumber();
+    const showFullSentAmount = useShowFullSentAmount();
 
     const isFocused = useIsFocused();
     const listRef = useRef<ListRef<HistoryRowItem>>(null);
@@ -108,12 +109,12 @@ export const HistoryList = (props: HistoryListProps) => {
             contacts,
             rateData,
             currentBlockNumber,
+            showFullSentAmount,
             onNavigateToActivityItem
         };
 
         return historyGroups.flatMap(group => {
-            const { items: groupActivities, ...meta } = group;
-            const groupKey = getGroupKey(meta);
+            const { items: groupActivities, meta, key: groupKey } = group;
             const timeFormatDetails = timeFormatDetailsByGroupLabel[meta.label];
 
             const header = buildHeaderRow(meta, groupKey, t, groupFormatter);
@@ -134,6 +135,7 @@ export const HistoryList = (props: HistoryListProps) => {
         portfolios,
         contacts,
         currentBlockNumber,
+        showFullSentAmount,
         onNavigateToActivityItem
     ]);
 

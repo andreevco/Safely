@@ -3,7 +3,7 @@ import type { output, z } from 'zod';
 import type { Draft, NewOf, SlotRevision, StorageVersion } from '@safely/slottree';
 
 import type { ISyncProvider } from './I-sync-provider';
-import { KeyNotFoundError } from '../crdt/y-manager';
+import { KeyNotFoundError } from '../crdt/crdt-manager';
 import type { Device } from '../device-manager/device-repository';
 import type { SyncContainer } from '../sync-container';
 import type { SyncError } from '../sync-error';

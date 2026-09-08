@@ -1,19 +1,26 @@
 import type { Providers } from '@safely/core';
 
 import { exchangeKeys } from './keys';
-import { QUERIES_STALE_TIME, useAppContext, useExchangeApi, usePersistQuery } from '../../shared';
+import {
+    QUERIES_STALE_TIME,
+    useAppContext,
+    useExchangeApi,
+    usePersistQuery,
+    useUserCountryInfo
+} from '../../shared';
 import { useActiveFiat } from '../fiat';
 
 export function useProvidersQuery() {
     const exchangeApi = useExchangeApi();
-    const { i18n, userCountryInfo } = useAppContext();
+    const { i18n } = useAppContext();
+    const userCountryInfo = useUserCountryInfo();
     const fiat = useActiveFiat();
 
     const params = {
         lang: i18n.language,
         fiat: fiat.id.symbol,
-        storeCountryCode: userCountryInfo?.storeCode,
-        deviceCountryCode: userCountryInfo?.deviceCode
+        storeCountryCode: userCountryInfo.storeCode,
+        deviceCountryCode: userCountryInfo.deviceCode
     };
 
     return usePersistQuery<Providers>({

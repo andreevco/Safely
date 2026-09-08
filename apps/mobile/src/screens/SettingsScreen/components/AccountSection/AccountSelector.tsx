@@ -18,7 +18,7 @@ const MAX_POPUP_ACCOUNTS = 5;
 
 interface AccountSelectorProps {
     accounts: SyncAccount[];
-    onAddAccount: () => void;
+    onAddAccount?: () => void;
     onSelectAccountNavigate: () => void;
 }
 

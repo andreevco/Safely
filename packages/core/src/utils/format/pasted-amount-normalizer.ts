@@ -11,7 +11,24 @@ export class PastedAmountNormalizer {
         return { value, status: 'ok' };
     }
 
-    public normalize(raw: string): NormalizedPastedAmount {
+    public normalize(raw: string, maxDecimals?: number): NormalizedPastedAmount {
+        const result = this.parse(raw);
+
+        if (result.status === 'ambiguous') return result;
+        if (maxDecimals !== undefined && this.fractionLength(result.value) > maxDecimals) {
+            return PastedAmountNormalizer.AMBIGUOUS;
+        }
+
+        return result;
+    }
+
+    private fractionLength(canonical: string): number {
+        const separatorIndex = canonical.indexOf('.');
+
+        return separatorIndex === -1 ? 0 : canonical.length - separatorIndex - 1;
+    }
+
+    private parse(raw: string): NormalizedPastedAmount {
         const t = raw.trim();
 
         if (t === '') return PastedAmountNormalizer.resolved('');

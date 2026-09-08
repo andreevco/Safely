@@ -16,7 +16,8 @@ import {
     useAppContext,
     useBtcApi,
     useExchangeApi,
-    useInfinitePersistQuery
+    useInfinitePersistQuery,
+    useUserCountryInfo
 } from '../../shared';
 import { useLastBroadcastedBtcTx } from '../btc-blockchain';
 import { useReadOnlyRequestSigner } from '../exchange';
@@ -31,13 +32,14 @@ export function useHistory<TData = InfiniteData<ActivityPage, IActivityPageParam
     const signer = useReadOnlyRequestSigner();
     const exchangeApi = useExchangeApi(signer);
 
-    const { i18n, userCountryInfo, logger } = useAppContext();
+    const { i18n, logger } = useAppContext();
+    const userCountryInfo = useUserCountryInfo();
     const broadcastedTx = useLastBroadcastedBtcTx();
 
     const ordersRequest = {
         lang: i18n.language,
-        storeCountryCode: userCountryInfo?.storeCode,
-        deviceCountryCode: userCountryInfo?.deviceCode
+        storeCountryCode: userCountryInfo.storeCode,
+        deviceCountryCode: userCountryInfo.deviceCode
     };
     const ordersFailed = (error: unknown) => {
         logger.warn('ramp orders page failed', error);

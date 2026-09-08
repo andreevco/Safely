@@ -1,20 +1,17 @@
 import { waitForNextSynchronizationCycle, waitWithTimeout } from './synchronization';
 import { SyncStatus } from '../../src/sync-provider/sync-status';
 import type { TestSyncAccount } from '../fixtures/account';
-import type { InMemStorage } from '../impl/storage';
-import type { MockSyncAccountFactory } from '../impl/sync-server-factory';
+import type { InMemStorage } from '../mocks/server-mock/storage';
+import type { MockSyncAccountFactory } from '../mocks/server-mock/sync-server-factory';
 
 export async function onboardMockAccount(
     existingAccount: TestSyncAccount,
-    existingFactory: MockSyncAccountFactory,
     existingSecureEncryptedStorage: InMemStorage,
     newFactory: MockSyncAccountFactory,
     newSecureEncryptedStorage: InMemStorage
 ): Promise<TestSyncAccount> {
-    existingFactory.setRequesterIk(existingAccount.getMyDeviceIkPub().toString('hex'));
     const connector =
         await newFactory.factory.connectToExistingSyncAccount(newSecureEncryptedStorage);
-    newFactory.setRequesterIkFromOnboardingData(connector.data);
 
     const connectExistingAccount = waitForNextSynchronizationCycle(
         existingAccount,

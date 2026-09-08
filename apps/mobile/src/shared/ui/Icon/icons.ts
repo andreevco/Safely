@@ -9,6 +9,7 @@ import ArrowDown16Svg from '@safely/ux/assets/icons/16/arrow-down-16.svg';
 import ArrowLeft16Svg from '@safely/ux/assets/icons/16/arrow-left-16.svg';
 import ArrowTop16Svg from '@safely/ux/assets/icons/16/arrow-top-16.svg';
 import Block16Svg from '@safely/ux/assets/icons/16/block-16.svg';
+import Bulb16Svg from '@safely/ux/assets/icons/16/bulb-16.svg';
 import Checkmark16Svg from '@safely/ux/assets/icons/16/checkmark-16.svg';
 import ChevronDown16Svg from '@safely/ux/assets/icons/16/chevron-down-16.svg';
 import ChevronRight16Svg from '@safely/ux/assets/icons/16/chevron-right-16.svg';
@@ -48,6 +49,7 @@ import ShieldCheckmark28Svg from '@safely/ux/assets/icons/28/shield-checkmark-28
 import ShieldExclamationmark28Svg from '@safely/ux/assets/icons/28/shield-exclamationmark-28.svg';
 import FrameCorner48Svg from '@safely/ux/assets/icons/48/frame-corner-48.svg';
 import DeviceLinkSvg from '@safely/ux/assets/icons/56/device-link.svg';
+import Globe56Svg from '@safely/ux/assets/icons/56/globe-56.svg';
 import Loader56Svg from '@safely/ux/assets/icons/56/loader-56.svg';
 import Lock56Svg from '@safely/ux/assets/icons/56/lock-56.svg';
 import XmarkCircle56Svg from '@safely/ux/assets/icons/56/xmark-circle-56.svg';
@@ -59,6 +61,7 @@ import BluetoothExclamationmark96Svg from '@safely/ux/assets/icons/96/bluetooth-
 import BluetoothRequired96Svg from '@safely/ux/assets/icons/96/bluetooth-required-96.svg';
 import CameraLock96Svg from '@safely/ux/assets/icons/96/camera-lock-96.svg';
 import Checkmark96Svg from '@safely/ux/assets/icons/96/checkmark-96.svg';
+import DeviceExclamationmark96Svg from '@safely/ux/assets/icons/96/device-exclamationmark-96.svg';
 import DeviceLinkArrowRight96Svg from '@safely/ux/assets/icons/96/device-link-arrow-right-96.svg';
 import DeviceLinkCheckmark96Svg from '@safely/ux/assets/icons/96/device-link-checkmark-96.svg';
 import DeviceLinkExclamationmark96Svg from '@safely/ux/assets/icons/96/device-link-exclamationmark-96.svg';
@@ -81,6 +84,7 @@ export const ArrowDown16 = { image: ArrowDown16Svg, size: 16 } as const;
 export const ArrowLeft16 = { image: ArrowLeft16Svg, size: 16 } as const;
 export const ArrowTop16 = { image: ArrowTop16Svg, size: 16 } as const;
 export const Block16 = { image: Block16Svg, size: 16 } as const;
+export const Bulb16 = { image: Bulb16Svg, size: 16 } as const;
 export const Checkmark16 = { image: Checkmark16Svg, size: 16 } as const;
 export const ChevronDown16 = { image: ChevronDown16Svg, size: 16 } as const;
 export const ChevronRight16 = { image: ChevronRight16Svg, size: 16 } as const;
@@ -120,6 +124,7 @@ export const ShieldCheckmark28 = { image: ShieldCheckmark28Svg, size: 28 } as co
 export const ShieldExclamationmark28 = { image: ShieldExclamationmark28Svg, size: 28 } as const;
 export const FrameCorner48 = { image: FrameCorner48Svg, size: 48 } as const;
 export const DeviceLink = { image: DeviceLinkSvg, size: 56 } as const;
+export const Globe56 = { image: Globe56Svg, size: 56 } as const;
 export const Loader56 = { image: Loader56Svg, size: 56 } as const;
 export const Lock56 = { image: Lock56Svg, size: 56 } as const;
 export const XmarkCircle56 = { image: XmarkCircle56Svg, size: 56 } as const;
@@ -131,6 +136,7 @@ export const BluetoothExclamationmark96 = { image: BluetoothExclamationmark96Svg
 export const BluetoothRequired96 = { image: BluetoothRequired96Svg, size: 96 } as const;
 export const CameraLock96 = { image: CameraLock96Svg, size: 96 } as const;
 export const Checkmark96 = { image: Checkmark96Svg, size: 96 } as const;
+export const DeviceExclamationmark96 = { image: DeviceExclamationmark96Svg, size: 96 } as const;
 export const DeviceLinkArrowRight96 = { image: DeviceLinkArrowRight96Svg, size: 96 } as const;
 export const DeviceLinkCheckmark96 = { image: DeviceLinkCheckmark96Svg, size: 96 } as const;
 export const DeviceLinkExclamationmark96 = { image: DeviceLinkExclamationmark96Svg, size: 96 } as const;

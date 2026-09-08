@@ -1,16 +1,16 @@
 import type { InfiniteData } from '@tanstack/react-query';
 import { useCallback } from 'react';
 
+import { groupByDateWithPending } from '@safely/core';
+
 import { isActivityItemPending } from './pending';
 import type {
     ActivityItem,
     ActivityItemsDatedGroup,
-    ActivityItemsDatedGroupMeta,
     ActivityPage,
     IActivityFilters,
     IActivityPageParam
 } from './types';
-import { ACTIVITY_GROUP_LABEL } from './types';
 import { useHistory } from './useHistory';
 
 export function useGroupedHistory(filters: IActivityFilters = {}) {
@@ -27,79 +27,9 @@ export function useGroupedHistory(filters: IActivityFilters = {}) {
     });
 }
 
-function getEventGroupMeta(
-    timestamp: number,
-    today: Date,
-    yesterday: Date
-): ActivityItemsDatedGroupMeta {
-    const date = new Date(timestamp);
-
-    if (today.toDateString() === date.toDateString()) {
-        return { label: ACTIVITY_GROUP_LABEL.TODAY };
-    }
-
-    if (yesterday.toDateString() === date.toDateString()) {
-        return { label: ACTIVITY_GROUP_LABEL.YESTERDAY };
-    }
-
-    if (today.getMonth() === date.getMonth() && today.getFullYear() === date.getFullYear()) {
-        return {
-            label: ACTIVITY_GROUP_LABEL.THIS_MONTH,
-            year: date.getFullYear(),
-            month: date.getMonth(),
-            day: date.getDate()
-        };
-    }
-
-    if (today.getFullYear() === date.getFullYear()) {
-        return {
-            label: ACTIVITY_GROUP_LABEL.THIS_YEAR,
-            year: date.getFullYear(),
-            month: date.getMonth()
-        };
-    }
-
-    return {
-        label: ACTIVITY_GROUP_LABEL.PAST_YEAR,
-        month: date.getMonth(),
-        year: date.getFullYear()
-    };
-}
-
 export function groupActivityItems(items: ActivityItem[]): ActivityItemsDatedGroup[] {
-    if (items.length === 0) {
-        return [];
-    }
-
-    const sortedItems = [...items].sort((a, b) => b.timestamp - a.timestamp);
-
-    const todayDate = new Date();
-    const yesterdayDate = new Date();
-    yesterdayDate.setDate(yesterdayDate.getDate() - 1);
-
-    const pendingItems: ActivityItem[] = [];
-    const grouped: Record<string, ActivityItem[]> = {};
-
-    for (const item of sortedItems) {
-        if (isActivityItemPending(item)) {
-            pendingItems.push(item);
-        } else {
-            const key = JSON.stringify(getEventGroupMeta(item.timestamp, todayDate, yesterdayDate));
-            if (!grouped[key]) {
-                grouped[key] = [];
-            }
-            grouped[key].push(item);
-        }
-    }
-
-    const datedGroups: ActivityItemsDatedGroup[] = Object.entries(grouped).map(([key, value]) => ({
-        ...(JSON.parse(key) as ActivityItemsDatedGroupMeta),
-        items: value
-    }));
-
-    if (pendingItems.length > 0) {
-        return [{ label: ACTIVITY_GROUP_LABEL.PENDING, items: pendingItems }, ...datedGroups];
-    }
-
-    return datedGroups;
+    return groupByDateWithPending(items, item => item.timestamp, {
+        order: 'desc',
+        getIsPending: isActivityItemPending
+    });
 }

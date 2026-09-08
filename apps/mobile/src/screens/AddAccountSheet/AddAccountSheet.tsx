@@ -1,4 +1,5 @@
 import { useNavigation } from '@react-navigation/core';
+import type { StaticScreenProps } from '@react-navigation/native';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Keyboard, View } from 'react-native';
@@ -12,11 +13,18 @@ import {
     useToast
 } from '@safely/ux';
 
-import { BottomSheet, Button, Text, useCloseOnReturn } from '@mobile/shared/ui';
+import { BottomSheetScreen } from '@mobile/shared/navigation';
+import { Button, Text, useCloseOnReturn } from '@mobile/shared/ui';
 
 import { styles } from './AddAccountSheet.styles';
 
-const AddAccountContent = () => {
+type AddAccountSheetParams = {
+    onAccountAdded?: () => void;
+};
+
+type AddAccountSheetProps = StaticScreenProps<AddAccountSheetParams | undefined>;
+
+const AddAccountContent = ({ onAccountAdded }: AddAccountSheetParams) => {
     const { t } = useTranslation();
     const {
         storage: {
@@ -52,6 +60,12 @@ const AddAccountContent = () => {
                 });
 
                 toast(t('addAccount.toastAccountCreated'));
+
+                if (onAccountAdded) {
+                    onAccountAdded();
+                    return;
+                }
+
                 navigation.goBack();
             },
             onClose: () => {
@@ -80,7 +94,7 @@ const AddAccountContent = () => {
                             screen: 'SignInSuccessModal',
                             params: {
                                 inviterIkPubHex,
-                                onContinue: () => navigation.goBack()
+                                onContinue: () => (onAccountAdded ?? navigation.goBack)()
                             }
                         })
                 }
@@ -88,7 +102,7 @@ const AddAccountContent = () => {
         } catch {
             secureEncryptedStorage[Symbol.dispose]();
         }
-    }, [signIn, navigation, getSecureEncrypted, markNavigated]);
+    }, [signIn, navigation, getSecureEncrypted, markNavigated, onAccountAdded]);
 
     return (
         <View>
@@ -112,10 +126,10 @@ const AddAccountContent = () => {
     );
 };
 
-export const AddAccountSheet = () => {
+export const AddAccountSheet = (props: AddAccountSheetProps) => {
     return (
-        <BottomSheet shortHeader>
-            <AddAccountContent />
-        </BottomSheet>
+        <BottomSheetScreen shortHeader>
+            <AddAccountContent onAccountAdded={props.route.params?.onAccountAdded} />
+        </BottomSheetScreen>
     );
 };

@@ -2,7 +2,7 @@ import { SyncAccountFactory } from '../../src';
 import { Logger } from '../../src/logger/logger';
 import type { TestSyncAccount, TestSyncAccountFactory } from '../fixtures/account';
 import { Versions } from '../fixtures/account';
-import { InMemStorage } from '../impl/storage';
+import { InMemStorage } from '../mocks/server-mock/storage';
 
 let accountCounter = 0;
 

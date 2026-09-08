@@ -14,8 +14,9 @@ import {
 
 import type { LedgerStepStatus } from '@mobile/features/ledger';
 import { getLedgerImage, getLedgerModelName, LedgerSteps } from '@mobile/features/ledger';
+import { BottomSheetScreen } from '@mobile/shared/navigation';
 import { resources } from '@mobile/shared/resources';
-import { BottomSheet, Button, Image, Text, useBottomSheet } from '@mobile/shared/ui';
+import { Button, Image, Text, useBottomSheet } from '@mobile/shared/ui';
 
 import { styles } from './ConnectToSignSheet.styles';
 
@@ -158,8 +159,8 @@ export const ConnectToSignSheet = () => {
     };
 
     return (
-        <BottomSheet onClose={handleClose}>
+        <BottomSheetScreen onClose={handleClose}>
             {activeActor ? <ConnectToSignContent actor={activeActor} /> : <View />}
-        </BottomSheet>
+        </BottomSheetScreen>
     );
 };

@@ -6,9 +6,9 @@ import { SyncStatus } from '../../src/sync-provider/sync-status';
 import type { TestSyncAccount } from '../fixtures/account';
 import { onboardMockAccount } from '../helpers/onboarding';
 import { waitForNextSynchronizationCycle } from '../helpers/synchronization';
-import { InMemStorage } from '../impl/storage';
-import { makeFactory } from '../impl/sync-server-factory';
-import { initializeSyncServer } from '../impl/sync-server-registry';
+import { InMemStorage } from '../mocks/server-mock/storage';
+import { makeFactory } from '../mocks/server-mock/sync-server-factory';
+import { initializeSyncServer } from '../mocks/server-mock/sync-server-registry';
 
 const INITIAL_TIME = 1_800_000_000;
 const FAST_TIME = 2_000_000_000;
@@ -53,7 +53,6 @@ describe('sync with divergent clocks', { timeout: 20_000 }, () => {
         accounts.push(fastAccount);
         const slowAccount = await onboardMockAccount(
             fastAccount,
-            fastFactory,
             fastSecureStorage,
             slowFactory,
             slowSecureStorage

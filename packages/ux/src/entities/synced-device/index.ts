@@ -1,17 +1,24 @@
 import { useMutation } from '@tanstack/react-query';
-import { useCallback, useMemo, useSyncExternalStore } from 'react';
+import { useCallback, useMemo } from 'react';
 
+import type { Portfolio } from '@safely/core';
 import type { ISyncAccount } from '@safely/sync';
-import { SyncStatus } from '@safely/sync';
-import type { SDeviceMeta, SyncedStorageStructure } from '@safely/sync-storage';
+import type {
+    SDeviceArchive,
+    SDeviceMeta,
+    SDeviceSyncState,
+    SyncedStorageStructure
+} from '@safely/sync-storage';
 
+import { useHiddenDeviceWarningsQuery } from './hidden-warnings';
+import { isSensitivePortfolio } from './utils';
 import { useAppContext } from '../../shared';
 import type { SyncAccount } from '../account/account-state';
 import { useActiveAccount, useActiveAccountStoreSlot } from '../account/account-state';
-import {
-    useAccountSyncStorageSlotUpdate,
-    useActiveAccountSyncStorageSlotUpdate
-} from '../account/useAccountSyncStorageUpdate';
+import { useAccountSyncStorageSlotUpdate } from '../account/useAccountSyncStorageUpdate';
+
+export { useHideDeviceWarning } from './hidden-warnings';
+export { useArchiveDevice, useUnarchiveDevice } from './device-archive';
 
 export function useSyncedDevicesMeta(): Record<string, SDeviceMeta> | null {
     return useActiveAccountStoreSlot('devicesMeta') ?? null;
@@ -29,58 +36,221 @@ export function useCurrentDeviceIkPub(): string {
     return useMemo(() => account.getMyDeviceIkPub().toString('hex'), [account]);
 }
 
+export enum SyncedDeviceDataStatus {
+    SYNCED = 'synced',
+    NOT_SYNCED = 'not_synced',
+    UNKNOWN = 'unknown'
+}
+
+export type SyncedDeviceArchive = {
+    archivedAt: number;
+    isSignedOut: boolean;
+    archivedFromDeviceName: string | null;
+};
+
+export type SyncedDeviceDetails = {
+    ikPubHex: string;
+    meta: SDeviceMeta;
+    isCurrent: boolean;
+    lastSyncAt: number | null;
+    isStale: boolean;
+    isStaleWarningHidden: boolean;
+    dataStatus: SyncedDeviceDataStatus;
+    pendingPortfolios: readonly Portfolio[];
+    archive: SyncedDeviceArchive | null;
+};
+
+const STALE_CONNECTION_MS = 30 * 24 * 60 * 60 * 1000;
+const PAIRING_GRACE_MS = 60 * 1000;
+
+function resolveDataStatus(params: {
+    isCurrent: boolean;
+    hasReported: boolean;
+    isJustPaired: boolean;
+    pendingPortfolios: readonly Portfolio[];
+}): SyncedDeviceDataStatus {
+    const { isCurrent, hasReported, isJustPaired, pendingPortfolios } = params;
+
+    if (isCurrent) {
+        return SyncedDeviceDataStatus.SYNCED;
+    }
+
+    if (!hasReported) {
+        return isJustPaired ? SyncedDeviceDataStatus.SYNCED : SyncedDeviceDataStatus.UNKNOWN;
+    }
+
+    return pendingPortfolios.length === 0
+        ? SyncedDeviceDataStatus.SYNCED
+        : SyncedDeviceDataStatus.NOT_SYNCED;
+}
+
+function buildDeviceDetails(params: {
+    ikPubHex: string;
+    meta: SDeviceMeta;
+    syncState: SDeviceSyncState | null;
+    archive: SDeviceArchive | null;
+    devicesMeta: Record<string, SDeviceMeta>;
+    currentIkPubHex: string;
+    portfolios: readonly Portfolio[];
+    hiddenWarningUntil: number | undefined;
+}): SyncedDeviceDetails {
+    const {
+        ikPubHex,
+        meta,
+        syncState,
+        archive,
+        devicesMeta,
+        currentIkPubHex,
+        portfolios,
+        hiddenWarningUntil
+    } = params;
+
+    const isCurrent = ikPubHex === currentIkPubHex;
+    const pendingPortfolios =
+        syncState === null || isCurrent
+            ? []
+            : portfolios.filter(
+                  p => isSensitivePortfolio(p) && !syncState.portfolioIds[p.id.toString()]
+              );
+
+    return {
+        ikPubHex,
+        meta,
+        isCurrent,
+        lastSyncAt: syncState?.lastSyncAt ?? null,
+        isStale: syncState !== null && Date.now() - syncState.lastSyncAt > STALE_CONNECTION_MS,
+        isStaleWarningHidden: hiddenWarningUntil !== undefined && hiddenWarningUntil > Date.now(),
+        dataStatus: resolveDataStatus({
+            isCurrent,
+            hasReported: syncState !== null,
+            isJustPaired: Date.now() - meta.pairedAt < PAIRING_GRACE_MS,
+            pendingPortfolios
+        }),
+        pendingPortfolios,
+        archive:
+            archive === null
+                ? null
+                : {
+                      archivedAt: archive.archivedAt,
+                      isSignedOut: archive.archivedFromIkPubHex === null,
+                      archivedFromDeviceName:
+                          archive.archivedFromIkPubHex === null
+                              ? null
+                              : (devicesMeta[archive.archivedFromIkPubHex]?.name ?? null)
+                  }
+    };
+}
+
+export function useSyncedDeviceDetails(ikPubHex: string): SyncedDeviceDetails | null {
+    const devicesMeta = useSyncedDevicesMeta();
+    const devicesArchive = useActiveAccountStoreSlot('devicesArchive');
+    const devicesSyncState = useActiveAccountStoreSlot('devicesSyncState');
+    const portfolios = useActiveAccountStoreSlot('portfolios') ?? [];
+    const currentIkPubHex = useCurrentDeviceIkPub();
+    const { data: hiddenWarnings, isPending } = useHiddenDeviceWarningsQuery();
+    const meta = devicesMeta?.[ikPubHex] ?? null;
+    const syncState = devicesSyncState?.[ikPubHex] ?? null;
+    const archive = devicesArchive?.[ikPubHex] ?? null;
+
+    return useMemo(
+        () =>
+            meta === null
+                ? null
+                : buildDeviceDetails({
+                      ikPubHex,
+                      meta,
+                      syncState,
+                      archive,
+                      devicesMeta: devicesMeta ?? {},
+                      currentIkPubHex,
+                      portfolios,
+                      hiddenWarningUntil: isPending ? Infinity : hiddenWarnings?.[ikPubHex]
+                  }),
+        [
+            ikPubHex,
+            currentIkPubHex,
+            meta,
+            syncState,
+            archive,
+            devicesMeta,
+            portfolios,
+            hiddenWarnings,
+            isPending
+        ]
+    );
+}
+
+export function useSyncedDevices(): SyncedDeviceDetails[] {
+    const devicesMeta = useSyncedDevicesMeta();
+    const devicesArchive = useActiveAccountStoreSlot('devicesArchive');
+    const devicesSyncState = useActiveAccountStoreSlot('devicesSyncState');
+    const portfolios = useActiveAccountStoreSlot('portfolios') ?? [];
+    const currentIkPubHex = useCurrentDeviceIkPub();
+    const { data: hiddenWarnings, isPending } = useHiddenDeviceWarningsQuery();
+
+    return useMemo(
+        () =>
+            Object.entries(devicesMeta ?? {})
+                .map(([ikPubHex, meta]) =>
+                    buildDeviceDetails({
+                        ikPubHex,
+                        meta,
+                        syncState: devicesSyncState?.[ikPubHex] ?? null,
+                        archive: devicesArchive?.[ikPubHex] ?? null,
+                        devicesMeta: devicesMeta ?? {},
+                        currentIkPubHex,
+                        portfolios,
+                        hiddenWarningUntil: isPending ? Infinity : hiddenWarnings?.[ikPubHex]
+                    })
+                )
+                .sort((a, b) => Number(b.isCurrent) - Number(a.isCurrent)),
+        [
+            devicesMeta,
+            devicesSyncState,
+            devicesArchive,
+            currentIkPubHex,
+            portfolios,
+            hiddenWarnings,
+            isPending
+        ]
+    );
+}
+
+export function useHasActivePeer(): boolean {
+    const devices = useSyncedDevices();
+
+    return devices.some(device => !device.isCurrent && device.archive === null);
+}
+
+export function useIsAttentionRequired(): boolean {
+    const devices = useSyncedDevices();
+    const hasActivePeer = useHasActivePeer();
+
+    const hasPeers = devices.some(device => !device.isCurrent);
+
+    return (
+        (hasPeers && !hasActivePeer) ||
+        devices.some(
+            device =>
+                device.archive === null &&
+                ((device.isStale && !device.isStaleWarningHidden) ||
+                    device.dataStatus !== SyncedDeviceDataStatus.SYNCED)
+        )
+    );
+}
+
 export enum AccountLinkState {
     SOLO = 'solo',
-    PROTECTED = 'protected',
-    UNLINKED = 'unlinked'
+    PROTECTED = 'protected'
 }
 
 export function useAccountLinkState(): AccountLinkState {
-    const account = useActiveAccount();
     const selfIkPub = useCurrentDeviceIkPub();
     const devicesMeta = useSyncedDevicesMeta();
 
-    const syncStatus = useSyncExternalStore(
-        useCallback(cb => account.syncProvider.syncStatusManager.subscribe(cb), [account]),
-        () => account.syncProvider.syncStatusManager.getStatus()
-    );
-
-    if (syncStatus === SyncStatus.DEVICE_DELETED) {
-        return AccountLinkState.UNLINKED;
-    }
-
-    if (devicesMeta === null) {
-        return AccountLinkState.SOLO;
-    }
-
-    const keys = Object.keys(devicesMeta);
-
-    if (!(selfIkPub in devicesMeta)) {
-        return keys.length === 0 ? AccountLinkState.SOLO : AccountLinkState.UNLINKED;
-    }
-
-    const hasPeer = keys.some(k => k !== selfIkPub);
+    const hasPeer = Object.keys(devicesMeta ?? {}).some(k => k !== selfIkPub);
 
     return hasPeer ? AccountLinkState.PROTECTED : AccountLinkState.SOLO;
-}
-
-export function useRevokeSyncedDevice() {
-    const account = useActiveAccount();
-    const { storage } = useAppContext();
-    const update = useActiveAccountSyncStorageSlotUpdate('devicesMeta');
-
-    return useMutation({
-        async mutationFn(ikPubHex: string) {
-            using secureStorage = storage.sync.getSecureEncrypted();
-            await secureStorage.unlock();
-
-            await account.revokeRemoteDevice(Buffer.from(ikPubHex, 'hex'), secureStorage);
-
-            await update(draft => {
-                draft.ifPresent(devicesMeta => devicesMeta.delete(ikPubHex));
-            });
-        }
-    });
 }
 
 export function useSetOwnSyncedDeviceMeta() {

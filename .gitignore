@@ -5,6 +5,8 @@ dist
 .env
 tsconfig.tsbuildinfo
 .DS_Store
-.claude
 CLAUDE.local.md
-CLAUDE.md
+.claude/local/
+.claude/agents/local/
+.claude/settings.local.json
+.claude/.cc-writes

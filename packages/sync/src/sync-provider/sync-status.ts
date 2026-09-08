@@ -23,7 +23,11 @@ export enum SyncStatus {
      * The current device has been deleted from the account.
      * This state is FINAL. Only way to recover is manually restart SyncProvider.
      */
-    DEVICE_DELETED = 'device_deleted'
+    DEVICE_DELETED = 'device_deleted',
+    /**
+     * Server does not have sync data for the account/device.
+     */
+    SYNC_DATA_NOT_FOUND = 'sync_data_not_found'
 }
 
 export interface ISyncStatusManager {

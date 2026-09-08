@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { makeFactory, onboardDevice } from './helpers';
 import { SyncStatus } from '../../src/sync-provider/sync-status';
-import { InMemStorage } from '../impl/storage';
+import { InMemStorage } from '../mocks/server-mock/storage';
 
 describe('Account', { timeout: 10_000 }, () => {
     let factory: ReturnType<typeof makeFactory>;
