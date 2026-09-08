@@ -34,6 +34,12 @@ import {
 import { AppLayout } from '../../shared';
 import { DevToolsPage } from '../dev-tools';
 
+type MainView =
+    | { kind: 'home' }
+    | { kind: 'updates' }
+    | { kind: 'safety' }
+    | { kind: 'settings'; section: SettingsSection | null };
+
 export type MainPageProps = {
     hasWindowControls?: boolean;
     isFullScreen?: boolean;
@@ -55,57 +61,46 @@ export const MainPage: FC<MainPageProps> = props => {
     const isAttentionRequired = useIsAttentionRequired();
 
     const [isDevToolsOpen, setIsDevToolsOpen] = useState(false);
-    const [isUpdatesOpen, setIsUpdatesOpen] = useState(false);
-    const [isSafetyOpen, setIsSafetyOpen] = useState(false);
-    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-    const [section, setSection] = useState<SettingsSection | null>(null);
+    const [view, setView] = useState<MainView>({ kind: 'home' });
     const [selectedActivity, setSelectedActivity] = useState<BtcActivityItem | null>(null);
 
+    const section = view.kind === 'settings' ? view.section : null;
+
     useEffect(() => {
-        if (!hasPortfolio) {
-            setSection(current => (current === 'wallet' ? null : current));
+        if (hasPortfolio) {
+            return;
         }
+
+        setView(current =>
+            current.kind === 'settings' && current.section === 'wallet'
+                ? { ...current, section: null }
+                : current
+        );
     }, [hasPortfolio]);
 
     useEffect(() => setSelectedActivity(null), [portfolioId]);
 
-    const toggleSettings = (): void => {
-        setIsSettingsOpen(current => !current);
-        setSection(null);
-        setIsUpdatesOpen(false);
-        setIsSafetyOpen(false);
+    const changeView = (next: MainView): void => {
+        setView(next);
+        setSelectedActivity(null);
     };
 
-    const openHome = (): void => {
-        setIsUpdatesOpen(false);
-        setIsSafetyOpen(false);
-        setIsSettingsOpen(false);
-        setSection(null);
-    };
+    const toggleSettings = (): void =>
+        changeView(
+            view.kind === 'settings' ? { kind: 'home' } : { kind: 'settings', section: null }
+        );
+
+    const openHome = (): void => changeView({ kind: 'home' });
 
     const openUpdates = (): void => {
-        setIsUpdatesOpen(true);
-        setIsSafetyOpen(false);
-        setIsSettingsOpen(false);
-        setSection(null);
-        setSelectedActivity(null);
+        changeView({ kind: 'updates' });
         void markWatched();
     };
 
-    const openSafety = (): void => {
-        setIsSafetyOpen(true);
-        setIsUpdatesOpen(false);
-        setIsSettingsOpen(false);
-        setSection(null);
-        setSelectedActivity(null);
-    };
+    const openSafety = (): void => changeView({ kind: 'safety' });
 
-    const selectSection = (next: SettingsSection): void => {
-        setSection(next);
-        setSelectedActivity(null);
-        setIsUpdatesOpen(false);
-        setIsSafetyOpen(false);
-    };
+    const selectSection = (next: SettingsSection): void =>
+        changeView({ kind: 'settings', section: next });
 
     /* orders have no detail view on the web targets yet */
     const selectActivity = (activity: ActivityItem): void =>
@@ -138,19 +133,20 @@ export const MainPage: FC<MainPageProps> = props => {
           ? 'unprotected'
           : undefined;
 
-    const content = isUpdatesOpen ? (
-        <UpdatesContent />
-    ) : isSafetyOpen ? (
-        <SafetyContent onAddAccount={account.openAdd} />
-    ) : (
-        home
-    );
+    const content =
+        view.kind === 'updates' ? (
+            <UpdatesContent />
+        ) : view.kind === 'safety' ? (
+            <SafetyContent onAddAccount={account.openAdd} />
+        ) : (
+            home
+        );
 
     return (
         <AppLayout
             hasWindowControls={hasWindowControls}
             isFullScreen={isFullScreen}
-            isSecondaryOpen={isSettingsOpen}
+            isSecondaryOpen={view.kind === 'settings'}
             isPanelOpen={selectedActivity !== null}
         >
             <AppLayout.TitleBar className={dragRegionStyles} />
@@ -158,8 +154,8 @@ export const MainPage: FC<MainPageProps> = props => {
             <MainSidebar
                 hasUpdates={shouldShowBadge}
                 safetyNotice={safetyNotice}
-                isUpdatesOpen={isUpdatesOpen}
-                isSafetyOpen={isSafetyOpen}
+                isUpdatesOpen={view.kind === 'updates'}
+                isSafetyOpen={view.kind === 'safety'}
                 onAddWallet={addWallet.open}
                 onSelectWallet={openHome}
                 onOpenUpdates={openUpdates}
