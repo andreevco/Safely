@@ -33,7 +33,8 @@ export const iosPodsDocument = ({ capturedFrom, cocoapods, build, pods }) => ({
 function readGraphFile(path, kind) {
     // The capture step failing silently is the likeliest reason this file is
     // missing, so the message says so rather than just naming the path.
-    if (!existsSync(path)) throw new Error(`${kind} not found: ${path} — did the capture step run?`);
+    if (!existsSync(path))
+        throw new Error(`${kind} not found: ${path} — did the capture step run?`);
     const payload = readJsonFile(path, kind);
     if (payload.kind !== kind)
         throw new Error(`${path} is a \`${payload.kind}\` file, expected \`${kind}\``);

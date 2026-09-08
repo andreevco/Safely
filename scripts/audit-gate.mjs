@@ -103,7 +103,8 @@ function runAudit() {
         } else {
             const payload = extractJson(run.stdout ?? '');
             if (payload?.advisories) return { report: payload };
-            lastError = payload?.error?.message ?? (run.stderr || 'unparseable audit output').trim();
+            lastError =
+                payload?.error?.message ?? (run.stderr || 'unparseable audit output').trim();
         }
 
         if (attempt < AUDIT_ATTEMPTS) {
