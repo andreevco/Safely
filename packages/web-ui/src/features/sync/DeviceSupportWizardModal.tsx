@@ -3,8 +3,10 @@ import { useState } from 'react';
 
 import type { SyncedDeviceDetails } from '@safely/ux';
 import {
+    SecurityCheckCancelledError,
     useArchiveDevice,
     useBootConfig,
+    useErrorToast,
     useLinking,
     useSecurityCheck,
     useSyncedDeviceDetails,
@@ -107,6 +109,7 @@ const WizardContent: FC<WizardContentProps> = ({ details, onAddAccount, onClose 
     const t = useTranslate();
     const toast = useToast();
     const check = useSecurityCheck();
+    const errorToast = useErrorToast({});
     const { mutateAsync: archiveDevice } = useArchiveDevice();
 
     const [deviceAccess, setDeviceAccess] = useState<DeviceAccessAnswer | null>(null);
@@ -120,8 +123,15 @@ const WizardContent: FC<WizardContentProps> = ({ details, onAddAccount, onClose 
     };
 
     const handleArchive = async (): Promise<void> => {
-        await check({ subtitle: t('deviceSupportWizard.archive.verify', { deviceName }) });
-        await archiveDevice(details.ikPubHex);
+        try {
+            await check({ subtitle: t('deviceSupportWizard.archive.verify', { deviceName }) });
+            await archiveDevice(details.ikPubHex);
+        } catch (error) {
+            if (!(error instanceof SecurityCheckCancelledError)) {
+                errorToast(error);
+            }
+            return;
+        }
 
         onClose();
         toast(t('deviceSupportWizard.archive.done', { deviceName }));
@@ -180,11 +190,7 @@ const WizardContent: FC<WizardContentProps> = ({ details, onAddAccount, onClose 
                                 title={t('deviceSupportWizard.archive.title')}
                                 description={t('deviceSupportWizard.archive.description')}
                                 action={
-                                    <Button
-                                        variant="tertiary"
-                                        size="small"
-                                        onClick={() => void handleArchive().catch(() => undefined)}
-                                    >
+                                    <Button variant="tertiary" size="small" onClick={handleArchive}>
                                         {t('deviceSupportWizard.archive.action', { deviceName })}
                                     </Button>
                                 }

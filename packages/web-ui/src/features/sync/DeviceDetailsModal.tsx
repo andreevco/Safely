@@ -2,6 +2,8 @@ import type { FC } from 'react';
 
 import type { SyncedDeviceDetails } from '@safely/ux';
 import {
+    SecurityCheckCancelledError,
+    useErrorToast,
     useSecurityCheck,
     useSyncedDeviceDetails,
     useToast,
@@ -26,14 +28,22 @@ const DeviceDetailsContent: FC<DeviceDetailsContentProps> = props => {
     const t = useTranslate();
     const toast = useToast();
     const check = useSecurityCheck();
+    const errorToast = useErrorToast({});
     const { mutateAsync: unarchiveDevice } = useUnarchiveDevice();
 
     const deviceName = details.meta.name;
     const isSignedOut = details.archive?.isSignedOut ?? false;
 
     const handleUnarchive = async (): Promise<void> => {
-        await check({ subtitle: t('security.deviceDetails.unarchiveVerify', { deviceName }) });
-        await unarchiveDevice(details.ikPubHex);
+        try {
+            await check({ subtitle: t('security.deviceDetails.unarchiveVerify', { deviceName }) });
+            await unarchiveDevice(details.ikPubHex);
+        } catch (error) {
+            if (!(error instanceof SecurityCheckCancelledError)) {
+                errorToast(error);
+            }
+            return;
+        }
 
         onClose();
         toast(t('security.deviceDetails.unarchived', { deviceName }));
@@ -71,11 +81,7 @@ const DeviceDetailsContent: FC<DeviceDetailsContentProps> = props => {
                 )}
 
                 {details.archive !== null && !details.archive.isSignedOut && (
-                    <Button
-                        variant="secondary"
-                        isFullWidth
-                        onClick={() => void handleUnarchive().catch(() => undefined)}
-                    >
+                    <Button variant="secondary" isFullWidth onClick={handleUnarchive}>
                         {t('security.deviceDetails.unarchive', { deviceName })}
                     </Button>
                 )}
