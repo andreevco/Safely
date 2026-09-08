@@ -15,7 +15,7 @@ module.exports = {
                 NSFaceIDUsageDescription:
                     'We use Face ID to unlock your wallet securely.',
                 NSCameraUsageDescription:
-                    '$(PRODUCT_NAME) needs access to your Camera.',
+                    '$(PRODUCT_NAME) uses the camera to scan QR codes with recipient addresses and codes for linking your devices',
                 CFBundleLocalizations: ['en', 'ru'],
                 ITSAppUsesNonExemptEncryption: false
             },
@@ -33,7 +33,7 @@ module.exports = {
         },
         android: {
             permissions: ["android.permission.CAMERA"],
-            /** 
+            /**
              * READ_MEDIA_IMAGES is needed as fallback in expo-screen-capture for older android versions
              * on method (addScreenshotListener) that we don't use
              */
