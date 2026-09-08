@@ -2,9 +2,7 @@ import { looksBinary, parseAppDependencies } from './dependencies-pb-parser.mjs'
 import { GRADLE_CONFIGURATION, parseGradleTree } from './gradle-tree-parser.mjs';
 import { parseSdkDependencies } from './sdk-dependencies-parser.mjs';
 
-// Three capture paths. `label` names the artifact a graph describes, so a run
-// that gates two of them can say which one a finding is in; `source` says how it
-// was produced. Only AGP's two forms carry digests.
+// `label` names the artifact a graph describes, `source` how it was produced.
 export function parseAndroidGraph(text) {
     if (/^library \{/m.test(text))
         return {
@@ -19,8 +17,7 @@ export function parseAndroidGraph(text) {
     };
 }
 
-// The only graph that describes what ships to Play: `:app:bundleRelease` writes
-// no `sdkDependencies.txt`.
+// The only graph describing what ships to Play: no `sdkDependencies.txt` there.
 export function parseAndroidBundleGraph(bytes) {
     if (!looksBinary(bytes))
         throw new Error('this is the text form of the graph — pass it as --android, not --aab');

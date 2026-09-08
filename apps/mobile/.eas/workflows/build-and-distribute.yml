@@ -94,14 +94,11 @@ jobs:
       message: ${{ needs.prepare.outputs.notes }}
 
   # Scans the native dependency graphs the builds captured via buildArtifactPaths;
-  # blocks distribution on production builds, warns on staging. On master that
-  # includes the bundle's graph — the only one that describes what ships to Play.
+  # blocks distribution on production builds, warns on staging.
   security_gate:
     name: Native dependency gate
     needs: [prepare, build_ios, build_android]
-    # The bundle build runs on master only, and `needs` on a skipped job skips the
-    # dependent — which would disable this gate everywhere else. `after` waits
-    # without that, and the steps below decide by its status.
+    # `needs` on a skipped job skips the dependent, and the bundle is master-only.
     after: [build_android_play]
     runs_on: linux-medium
     # Holds EXPO_TOKEN and SONATYPE_TOKEN.
@@ -117,8 +114,7 @@ jobs:
           export EXPO_TOKEN="${{ env.EXPO_TOKEN }}"
           unset SONATYPE_TOKEN
 
-          # By status, never by the value: a missing output interpolates as the
-          # literal string `undefined`, so no -n test on the build id works.
+          # By status: a missing output interpolates as the literal `undefined`.
           set -- --ios "${{ needs.build_ios.outputs.build_id }}"
           set -- "$@" --android "${{ needs.build_android.outputs.build_id }}"
           if [ "${{ after.build_android_play.status }}" = "success" ]; then
@@ -163,8 +159,7 @@ jobs:
               --build-meta capture/build-android.json --out native-graphs/android-coordinates.json
             set -- --graph native-graphs/android-coordinates.json
 
-            # A bundle that built and left no graph fails the scan here, rather
-            # than gating the APK alone and calling the release clean.
+            # A bundle that built and left no graph must fail, not scan the APK alone.
             if [ "${{ after.build_android_play.status }}" = "success" ]; then
               audit parse --aab capture/dependencies.pb \
                 --build-meta capture/build-aab.json --out native-graphs/aab-coordinates.json

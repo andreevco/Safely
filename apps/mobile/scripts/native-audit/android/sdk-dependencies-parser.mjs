@@ -2,8 +2,7 @@ import { assembleCoordinates } from './app-dependencies.mjs';
 import { decodeDigest, field, fields, hasBlock, parseTextProto } from './text-proto.mjs';
 
 // `android/app/build/outputs/sdk-dependencies/release/sdkDependencies.txt`, which
-// the Android Gradle Plugin writes on every APK build. A bundle build writes the
-// same message in binary instead — see dependencies-pb-parser.mjs.
+// the Android Gradle Plugin writes on every APK build.
 export function parseSdkDependencies(text) {
     const records = parseTextProto(text);
 
@@ -16,8 +15,7 @@ export function parseSdkDependencies(text) {
         .map(record => {
             const group = field(record, 'groupId');
             const artifact = field(record, 'artifactId');
-            // `repo_index` is an Int32Value: index 0 is written as an empty
-            // block, so presence of the block is what says the index is known.
+            // An Int32Value: index 0 is the empty block, so presence is the answer.
             const repo = hasBlock(record, 'repo_index')
                 ? Number(field(record, 'value') ?? 0)
                 : null;
