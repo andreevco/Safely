@@ -38,7 +38,6 @@ let {
     SECURITY_SUMMARY
 } = process.env;
 
-
 // EAS job statuses: success | failure | error | skipped | canceled | (empty when not run)
 const iosOk = STATUS_IOS === 'success' || STATUS_IOS_CRUTCH === 'success';
 const androidOk = STATUS_ANDROID === 'success';
@@ -61,25 +60,29 @@ const headline = buildsOk
         ? '✅ successful build and tests'
         : '❌ successful build; tests failed'
     : testsOk
-        ? '❌ failed build; successful tests'
-        : '❌ failed build and tests';
+      ? '❌ failed build; successful tests'
+      : '❌ failed build and tests';
 
 const notes = (RELEASE_NOTES || '').trim();
 const targetBranch = (TARGET_BRANCH || '').trim();
 const notesWithBranch = targetBranch ? `${targetBranch} <- ${notes}` : notes;
 
-const commitUrl = COMMIT_SHA && REPOSITORY ? `https://github.com/${REPOSITORY}/commit/${COMMIT_SHA}` : '';
+const commitUrl =
+    COMMIT_SHA && REPOSITORY ? `https://github.com/${REPOSITORY}/commit/${COMMIT_SHA}` : '';
 const workflowUrl = WORKFLOW_URL || '';
 
-const buildType = (BUILD_TYPE || '').trim() === 'production'
-    ? { name: 'Production', emoji: '🚀' }
-    : { name: 'Staging', emoji: '🏗️' };
+const buildType =
+    (BUILD_TYPE || '').trim() === 'production'
+        ? { name: 'Production', emoji: '🚀' }
+        : { name: 'Staging', emoji: '🏗️' };
 
 function buildText() {
     const lines = [
         headline,
         iosOk ? `📱 iOS · ${ver(IOS_VERSION, IOS_BUILD)}` : '📱 iOS build failed ❌',
-        androidOk ? `🤖 Android · ${ver(ANDROID_VERSION, ANDROID_BUILD)}` : '🤖 Android build failed ❌',
+        androidOk
+            ? `🤖 Android · ${ver(ANDROID_VERSION, ANDROID_BUILD)}`
+            : '🤖 Android build failed ❌'
     ];
 
     // The Slack trigger takes a fixed set of variables, so this rides in `text`

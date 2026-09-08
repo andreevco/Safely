@@ -63,7 +63,10 @@ jobs:
           ROOT_CHANGED: ${{ steps.base.outputs.root_changed }}
         # "!safely" excludes the root project: its lint is "pnpm -r run lint",
         # which would re-lint every package and defeat the changed-only filter.
+        # scripts/ belongs to no package and "pnpm -r" skips the root project,
+        # so it is linted by its own always-on call.
         run: |
+          pnpm run lint:scripts
           if [ "$ROOT_CHANGED" = "true" ]; then
             pnpm -r run lint
           else
