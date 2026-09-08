@@ -1,12 +1,11 @@
 import type { StorageVersion } from '@safely/slottree';
 
-import type { OnboardingConnector } from './connector';
+import type { OnboardedAccount, OnboardingConnector } from './connector';
 import { EagerOnboardingConnector } from './eager-onboarding-connector';
-import type { ISyncAccount } from '../account/I-sync-account';
 
 type OnboardingSession<Latest extends StorageVersion> = {
     data: Buffer;
-    waitForCompletion: (signal: AbortSignal) => Promise<ISyncAccount<Latest>>;
+    waitForCompletion: (signal: AbortSignal) => Promise<OnboardedAccount<Latest>>;
 };
 
 export class SingleActiveOnboardingCoordinator<Latest extends StorageVersion> {

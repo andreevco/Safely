@@ -24,10 +24,13 @@ describe('SyncAccountFactory onboarding', () => {
     });
 
     it('starts new-device onboarding eagerly and reuses its completion promise', async () => {
-        const connectedAccount = {} as ISyncAccount<(typeof versions)['head']>;
+        const onboarded = {
+            account: {} as ISyncAccount<(typeof versions)['head']>,
+            inviterIkPub: null
+        };
         const waitForOnboarding = vi
             .spyOn(NewDeviceOnboarding.prototype, 'waitForOnboarding')
-            .mockResolvedValue(connectedAccount);
+            .mockResolvedValue(onboarded);
         const factory = new SyncAccountFactory({
             storage: new InMemStorage(),
             encryptedStorage: new InMemStorage(),
@@ -48,8 +51,8 @@ describe('SyncAccountFactory onboarding', () => {
             connector.waitForCompletion()
         ]);
 
-        expect(firstResult).toBe(connectedAccount);
-        expect(secondResult).toBe(connectedAccount);
+        expect(firstResult).toBe(onboarded);
+        expect(secondResult).toBe(onboarded);
         expect(waitForOnboarding).toHaveBeenCalledTimes(1);
     });
 });

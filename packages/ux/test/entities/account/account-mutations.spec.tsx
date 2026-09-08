@@ -26,6 +26,8 @@ import {
 } from '../../../src/entities/account/account-mutations';
 import * as accountState from '../../../src/entities/account/account-state';
 import { accountKey } from '../../../src/entities/account/keys';
+import type { AccountStoreData } from '../../../src/entities/account/sync-storage/account-store';
+import { accountStoreActions } from '../../../src/entities/account/sync-storage/account-store';
 import * as syncedDevice from '../../../src/entities/synced-device';
 import type { MockSyncAccount } from '../../harness';
 import {
@@ -550,21 +552,40 @@ describe('useEraseAllData (remove)', () => {
 });
 
 describe('useConnectAccountToNewDevice (add device)', () => {
-    it('scans QR, forwards to account.connectToNewDevice, shows success toast', async () => {
+    it('scans QR, forwards to account.connectToNewDevice, resolves once new device meta arrives', async () => {
         const account = createMockSyncAccount();
         setupAccountState({ account });
         setupSyncedDevice();
 
         const qrScan = vi.fn(async () => 'ZHVtbXk=');
-        const toastShow = vi.fn();
-        const appContext = createTestAppContext({ qrScan, toastShow });
+        const appContext = createTestAppContext({ qrScan });
+
+        accountStoreActions.attachSnapshot({
+            accountId: account.accountId,
+            devicesMeta: {}
+        } as AccountStoreData);
+        (account.connectToNewDevice as Mock).mockImplementationOnce(async () => {
+            setTimeout(() => {
+                accountStoreActions.setSlot(account.accountId, 'devicesMeta', {
+                    bbbb: {
+                        name: 'NEW_DEVICE',
+                        platform: 'ios',
+                        osVersion: '0.0.0',
+                        appVersion: '0.0.0-test',
+                        pairedAt: 1700000000000
+                    }
+                });
+            }, 10);
+            return Buffer.from('BBBB', 'hex');
+        });
 
         const { result } = renderHookWithProviders(() => useConnectAccountToNewDevice(), {
             appContext
         });
 
+        let ikPubHex: string | undefined;
         await act(async () => {
-            await result.current.mutateAsync({
+            ikPubHex = await result.current.mutateAsync({
                 secureEncryptedStorage: appContext.storage.sync.encrypted as unknown as Parameters<
                     typeof result.current.mutateAsync
                 >[0]['secureEncryptedStorage']
@@ -576,8 +597,7 @@ describe('useConnectAccountToNewDevice (add device)', () => {
 
         const [bufferArg] = (account.connectToNewDevice as Mock).mock.calls[0];
         expect(Buffer.isBuffer(bufferArg)).toBe(true);
-
-        expect(toastShow).toHaveBeenCalledWith(expect.objectContaining({ type: 'success' }));
+        expect(ikPubHex).toBe('bbbb');
     });
 
     it('forwards errors to errorToast', async () => {
@@ -614,14 +634,17 @@ describe('useConnectAccountToNewDevice (add device)', () => {
 });
 
 describe('useCreateExistingAccountConnector (add device → existing account)', () => {
-    it('produces a connectionString and exposes abort/accountPromise', async () => {
+    it('produces a connectionString and exposes abort plus the onboarded account', async () => {
         const remoteAccount = createMockSyncAccount({ accountId: 'remote' });
         const abort = vi.fn();
-        const accountPromise = Promise.resolve(remoteAccount);
+        const onboardedPromise = Promise.resolve({
+            account: remoteAccount,
+            inviterIkPub: Buffer.from('AAAA', 'hex')
+        });
         const factory = createFactoryStub({
             connectToExistingSyncAccount: vi.fn(async () => ({
                 data: Buffer.from('hello'),
-                waitForCompletion: () => accountPromise,
+                waitForCompletion: () => onboardedPromise,
                 abort
             }))
         });
@@ -644,7 +667,10 @@ describe('useCreateExistingAccountConnector (add device → existing account)', 
 
         expect(factory.connectToExistingSyncAccount).toHaveBeenCalledTimes(1);
         expect(connector?.connectionString).toBe(Buffer.from('hello').toString('base64url'));
-        await expect(connector?.accountPromise).resolves.toBe(remoteAccount);
+        await expect(connector?.onboardedPromise).resolves.toEqual({
+            account: remoteAccount,
+            inviterIkPubHex: 'aaaa'
+        });
 
         connector?.abort();
         expect(abort).toHaveBeenCalledTimes(1);
