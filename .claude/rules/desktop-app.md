@@ -155,6 +155,13 @@ with `kSecAccessControlUserPresence` on the `secureEncrypted` items, enforced by
 still uses `UNSAFE_SKIP_SECURITY_CHECK_unlock()`; do not "temporarily" route `master_key`,
 `vault_key` or `dmk_prv` into `regular` or `localStorage` to unblock a flow.
 
+**Signing in links the account before a passcode exists**, so `app/OnboardingGuard.tsx` gates on
+`hasAccount && hasPasscode` rather than on the account alone: the QR pairing writes the account into
+the store mid-flow, and a guard reading only `useHasAccount` would navigate to the main screen the
+moment the other device scanned, skipping the passcode and the biometry step. `useOnboardingFlow`
+keeps the secure store open for the whole pairing (the connector reads it while the QR is up) and
+disposes it on success, on timeout and on close — `signIn.reset()` is what aborts the polling.
+
 **The passcode flow lives in `src/renderer/features/`**, one feature per factor and per scenario:
 `passcode` (hooks, lockout, the prompt store, `PasscodeSetupFlow`, `ChangePasscodeFlow`), `biometry`
 and `app-lock` (`AppLock` plus the lock-screen toggle). It is the counterpart of mobile's

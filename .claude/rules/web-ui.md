@@ -121,8 +121,8 @@ the guards and the route components that mount them live in the app
 wire the same screens into its own navigation. A component here that reaches for `useNavigate` has to
 take a callback prop instead.
 
-**A flow may live here; a platform-bound one may not.** `features/{add-wallet,wallet,account,contact}`
-hold the controller hooks and the modal switches that drive a scenario — local step state,
+**A flow may live here; a platform-bound one may not.** The slices in
+`features/{add-wallet,wallet,account,contact,sync}` hold the controller hooks and the modal switches that drive a scenario — local step state,
 `@safely/ux` mutations, and the modals of their own slice. What a flow here must **not** hold is a
 decision mobile takes too: which copy a destructive sheet shows, what sign-out deletes versus erases,
 whether an address is already watched, or the order of unlock-then-write. Those live in `@safely/ux`

@@ -4,6 +4,8 @@ import { useBootConfig, useLinking, useToast, useTranslate } from '@safely/ux';
 import {
     ImportWalletModal,
     MoreOptionsModal,
+    SignInModal,
+    SignInSuccessModal,
     WatchAccountModal,
     WelcomePage
 } from '@safely/web-ui';
@@ -26,7 +28,7 @@ export const WelcomeScreen: FC = () => {
                 onCreateWallet={onboarding.startCreate}
                 onImportWallet={onboarding.openImport}
                 onMoreOptions={onboarding.openMoreOptions}
-                onLinkWithQr={notSupported}
+                onLinkWithQr={() => void onboarding.startSignIn()}
                 onOpenTerms={() => openURL(legal.terms_url)}
                 onOpenPrivacy={() => openURL(legal.privacy_url)}
             />
@@ -50,6 +52,20 @@ export const WelcomeScreen: FC = () => {
                 <WatchAccountModal
                     onSubmit={onboarding.onWatchInputReady}
                     onClose={onboarding.close}
+                />
+            )}
+
+            {onboarding.step === 'signIn' && onboarding.connectionString !== undefined && (
+                <SignInModal
+                    connectionString={onboarding.connectionString}
+                    onClose={onboarding.close}
+                />
+            )}
+
+            {onboarding.step === 'signInSuccess' && (
+                <SignInSuccessModal
+                    inviterIkPubHex={onboarding.inviterIkPubHex}
+                    onContinue={onboarding.onSignInSuccessContinue}
                 />
             )}
 
