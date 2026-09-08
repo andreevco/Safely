@@ -3,10 +3,13 @@ import { useEffect, useState } from 'react';
 
 import type { ActivityItem, BtcActivityItem } from '@safely/ux';
 import {
+    AccountLinkState,
     isBtcActivityItem,
+    useAccountLinkState,
     useActivePortfolio,
     useBetaFeedWatched,
-    useHasPortfolio
+    useHasPortfolio,
+    useIsAttentionRequired
 } from '@safely/ux';
 
 import { MainContent, MainEmptyState } from './content';
@@ -19,6 +22,7 @@ import {
     AccountModals,
     AddWalletModals,
     ReceiveModals,
+    SafetyContent,
     SendModals,
     TransactionDetails,
     UpdatesContent,
@@ -47,9 +51,12 @@ export const MainPage: FC<MainPageProps> = props => {
     const receive = useReceiveFlow();
 
     const { shouldShowBadge, markWatched } = useBetaFeedWatched();
+    const linkState = useAccountLinkState();
+    const isAttentionRequired = useIsAttentionRequired();
 
     const [isDevToolsOpen, setIsDevToolsOpen] = useState(false);
     const [isUpdatesOpen, setIsUpdatesOpen] = useState(false);
+    const [isSafetyOpen, setIsSafetyOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [section, setSection] = useState<SettingsSection | null>(null);
     const [selectedActivity, setSelectedActivity] = useState<BtcActivityItem | null>(null);
@@ -66,26 +73,38 @@ export const MainPage: FC<MainPageProps> = props => {
         setIsSettingsOpen(current => !current);
         setSection(null);
         setIsUpdatesOpen(false);
+        setIsSafetyOpen(false);
     };
 
     const openHome = (): void => {
         setIsUpdatesOpen(false);
+        setIsSafetyOpen(false);
         setIsSettingsOpen(false);
         setSection(null);
     };
 
     const openUpdates = (): void => {
         setIsUpdatesOpen(true);
+        setIsSafetyOpen(false);
         setIsSettingsOpen(false);
         setSection(null);
         setSelectedActivity(null);
         void markWatched();
     };
 
+    const openSafety = (): void => {
+        setIsSafetyOpen(true);
+        setIsUpdatesOpen(false);
+        setIsSettingsOpen(false);
+        setSection(null);
+        setSelectedActivity(null);
+    };
+
     const selectSection = (next: SettingsSection): void => {
         setSection(next);
         setSelectedActivity(null);
         setIsUpdatesOpen(false);
+        setIsSafetyOpen(false);
     };
 
     /* orders have no detail view on the web targets yet */
@@ -113,7 +132,19 @@ export const MainPage: FC<MainPageProps> = props => {
         <MainEmptyState onAddWallet={addWallet.open} />
     );
 
-    const content = isUpdatesOpen ? <UpdatesContent /> : home;
+    const safetyNotice = isAttentionRequired
+        ? 'attention'
+        : linkState === AccountLinkState.SOLO
+          ? 'unprotected'
+          : undefined;
+
+    const content = isUpdatesOpen ? (
+        <UpdatesContent />
+    ) : isSafetyOpen ? (
+        <SafetyContent onAddAccount={account.openAdd} />
+    ) : (
+        home
+    );
 
     return (
         <AppLayout
@@ -126,11 +157,13 @@ export const MainPage: FC<MainPageProps> = props => {
 
             <MainSidebar
                 hasUpdates={shouldShowBadge}
+                safetyNotice={safetyNotice}
                 isUpdatesOpen={isUpdatesOpen}
+                isSafetyOpen={isSafetyOpen}
                 onAddWallet={addWallet.open}
                 onSelectWallet={openHome}
                 onOpenUpdates={openUpdates}
-                onOpenSafety={() => undefined}
+                onOpenSafety={openSafety}
                 onOpenSettings={toggleSettings}
             />
 

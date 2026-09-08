@@ -17,8 +17,9 @@ import { AppLayout, Cell, ColorDot, Icon, List } from '../../shared';
 
 export type MainSidebarProps = {
     hasUpdates?: boolean;
-    hasSafetyNotice?: boolean;
+    safetyNotice?: 'attention' | 'unprotected';
     isUpdatesOpen?: boolean;
+    isSafetyOpen?: boolean;
     onAddWallet: () => void;
     onSelectWallet: () => void;
     onOpenUpdates: () => void;
@@ -29,8 +30,9 @@ export type MainSidebarProps = {
 export const MainSidebar: FC<MainSidebarProps> = props => {
     const {
         hasUpdates,
-        hasSafetyNotice,
+        safetyNotice,
         isUpdatesOpen,
+        isSafetyOpen,
         onAddWallet,
         onSelectWallet,
         onOpenUpdates,
@@ -89,16 +91,20 @@ export const MainSidebar: FC<MainSidebarProps> = props => {
                         )}
                     </Cell>
 
-                    <Cell onClick={onOpenSafety}>
+                    <Cell isSelected={isSafetyOpen} onClick={onOpenSafety}>
                         <Cell.Leading>
                             <Icon asset={ShieldExclamationmark16} tone="tertiary" />
                         </Cell.Leading>
                         <Cell.Content>
                             <Cell.Title>{t('tabs.safety')}</Cell.Title>
                         </Cell.Content>
-                        {hasSafetyNotice && (
+                        {safetyNotice !== undefined && (
                             <Cell.Trailing>
-                                <ColorDot tone="orange" size="small" />
+                                {safetyNotice === 'attention' ? (
+                                    <ColorDot tone="red" size="small" />
+                                ) : (
+                                    <ColorDot tone="orange" size="small" />
+                                )}
                             </Cell.Trailing>
                         )}
                     </Cell>

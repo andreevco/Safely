@@ -105,7 +105,7 @@ export const SettingsSidebar: FC<SettingsSidebarProps> = props => {
                                 </Cell.Title>
                             </Cell.Content>
                         </Cell>
-                        <Cell tone="transparent" onClick={account.startCreate}>
+                        <Cell tone="transparent" onClick={account.openAdd}>
                             <Cell.Content>
                                 <Cell.Title>{t('settings.addAccount')}</Cell.Title>
                             </Cell.Content>
