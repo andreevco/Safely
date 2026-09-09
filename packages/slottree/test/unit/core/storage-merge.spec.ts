@@ -62,7 +62,7 @@ describe('storage merge', () => {
             expect(() => storage1.mergeSlot(incoming)).toThrow(
                 'Slot timestamp must be a non-negative safe integer'
             );
-            expect(storage1.read()).toEqual({ key1: 0, key2: 'initial' });
+            expect(storage1.get()).toEqual({ key1: 0, key2: 'initial' });
         }
     );
 

@@ -3,8 +3,8 @@ import type { z } from 'zod';
 
 import type { Clock, StorageImpl } from '../src';
 import { createStorage, createStorageFromSnapshot } from '../src';
-import type { schemaV1 } from './version-fixtures';
-import { v1 } from './version-fixtures';
+import type { schemaV1 } from './unit/versioning/version-fixtures';
+import { v1 } from './unit/versioning/version-fixtures';
 
 type TestStorage = StorageImpl<z.output<typeof schemaV1>>;
 
