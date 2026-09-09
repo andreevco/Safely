@@ -45,7 +45,7 @@ knows nothing about `features`; in mobile, `features` knows nothing about `scree
   (`apps/desktop/src/renderer/platform/types.ts`).
 - `packages/web-ui/src/features` — a scenario shared by the web targets: the presentational modals of
   the slice plus the controller hook and the modal switch that drive them (`add-wallet`, `wallet`,
-  `account`, `contact`). A flow belongs here only while it binds to nothing but `@safely/ux`
+  `account`, `contact`, `sync`). A flow belongs here only while it binds to nothing but `@safely/ux`
   contracts; see `web-ui.md`. A slice with no modals belongs here too when it reads a `@safely/ux`
   query and composes an entity into a screen region (`history`, `transaction-details`): it takes
   callbacks for everything that leaves it, so the page still owns where a click goes.
@@ -125,7 +125,10 @@ and what moves into it is the part with no platform and no flow in it:
   (`features/portfolio-flow/`) and `resolveSignOutCopy` (`features/account-flow/`) follow it: keys
   plus an optional `checkboxKey`, and *whether* the acknowledgement exists is the resolver's answer — a
   platform that reads `checkboxKey !== undefined` cannot drift into showing a checkbox the other one
-  hides.
+  hides. `resolveDeviceRowStatus` and `resolveConnectionLabel` (`entities/synced-device/`) are the
+  same shape for the linked-device list — a key plus a tone, and a key plus a `count`/`hasDate` — so
+  the precedence between "not synced", a stale connection and an archived device is decided once, and
+  each platform only maps the tone onto its own text colour.
 - **the write that unlocks its own store** — `useAddPortfolioFromSource`
   (`features/portfolio-flow/`) and `useCreateAccountFromSource`
   (`features/account-flow/`): one branch per `source.kind`, each unlocking the store it

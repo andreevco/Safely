@@ -66,9 +66,11 @@ export async function onboardDevice(
         existingAccountSecureEncryptedStorage
     );
     const promise2 = onboardingConnector.waitForCompletion();
-    const [_, newAccount] = await Promise.all([promise1, promise2]);
+    const [{ newDeviceIkPub }, onboarded] = await Promise.all([promise1, promise2]);
     return {
-        newAccount,
+        newAccount: onboarded.account,
+        newDeviceIkPub,
+        inviterIkPub: onboarded.inviterIkPub,
         secureEncryptedStorage
     };
 }

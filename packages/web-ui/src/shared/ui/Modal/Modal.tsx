@@ -50,6 +50,11 @@ export type ModalContentProps = Omit<ComponentPropsWithoutRef<'div'>, 'className
     className?: string;
 };
 
+export type ModalActionsProps = Omit<ComponentPropsWithoutRef<'div'>, 'className'> & {
+    direction?: 'row';
+    className?: string;
+};
+
 type ModalPartProps<TElement extends 'div' | 'h2' | 'p'> = Omit<
     ComponentPropsWithoutRef<TElement>,
     'className'
@@ -127,10 +132,12 @@ const ModalDescription: FC<ModalPartProps<'p'>> = props => {
     return <Dialog.Description className={cx(styles.description, className)} {...rest} />;
 };
 
-const ModalActions: FC<ModalPartProps<'div'>> = props => {
-    const { className, ...rest } = props;
+const ModalActions: FC<ModalActionsProps> = props => {
+    const { direction, className, ...rest } = props;
 
-    return <div className={cx(styles.actions, className)} {...rest} />;
+    return (
+        <div className={cx(modal({ actionsDirection: direction }).actions, className)} {...rest} />
+    );
 };
 
 export const Modal = Object.assign(Dialog.Root, {

@@ -40,7 +40,7 @@ export const AccountSettings: FC<AccountSettingsProps> = ({ flow }) => {
                     variant="secondary"
                     isFullWidth
                     className={addAccountStyles}
-                    onClick={flow.startCreate}
+                    onClick={flow.openAdd}
                 >
                     {t('settings.addAccount')}
                 </Button>

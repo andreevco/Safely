@@ -549,10 +549,11 @@ async function onboardMockDevice(actor: SyncTestDevice): Promise<SyncTestDevice>
         'new device addition synchronized',
         async () => actor.account.connectToNewDevice(connector.data, actor.secureEncryptedStorage)
     );
-    const [, newAccount] = await waitWithTimeout(
+    const [, onboarded] = await waitWithTimeout(
         Promise.all([connectActor, connector.waitForCompletion()]),
         'mock device onboarding'
     );
+    const newAccount = onboarded.account;
 
     await waitForStatusWithTimeout(actor, SyncStatus.SYNCHRONIZED, 'actor device synchronized');
     await waitWithTimeout(

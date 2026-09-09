@@ -3,10 +3,13 @@ import { useEffect, useState } from 'react';
 
 import type { ActivityItem, BtcActivityItem } from '@safely/ux';
 import {
+    AccountLinkState,
     isBtcActivityItem,
+    useAccountLinkState,
     useActivePortfolio,
     useBetaFeedWatched,
-    useHasPortfolio
+    useHasPortfolio,
+    useIsAttentionRequired
 } from '@safely/ux';
 
 import { MainContent, MainEmptyState } from './content';
@@ -19,6 +22,7 @@ import {
     AccountModals,
     AddWalletModals,
     ReceiveModals,
+    SafetyContent,
     SendModals,
     TransactionDetails,
     UpdatesContent,
@@ -29,6 +33,12 @@ import {
 } from '../../features';
 import { AppLayout } from '../../shared';
 import { DevToolsPage } from '../dev-tools';
+
+type MainView =
+    | { kind: 'home' }
+    | { kind: 'updates' }
+    | { kind: 'safety' }
+    | { kind: 'settings'; section: SettingsSection | null };
 
 export type MainPageProps = {
     hasWindowControls?: boolean;
@@ -47,46 +57,50 @@ export const MainPage: FC<MainPageProps> = props => {
     const receive = useReceiveFlow();
 
     const { shouldShowBadge, markWatched } = useBetaFeedWatched();
+    const linkState = useAccountLinkState();
+    const isAttentionRequired = useIsAttentionRequired();
 
     const [isDevToolsOpen, setIsDevToolsOpen] = useState(false);
-    const [isUpdatesOpen, setIsUpdatesOpen] = useState(false);
-    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-    const [section, setSection] = useState<SettingsSection | null>(null);
+    const [view, setView] = useState<MainView>({ kind: 'home' });
     const [selectedActivity, setSelectedActivity] = useState<BtcActivityItem | null>(null);
 
+    const section = view.kind === 'settings' ? view.section : null;
+
     useEffect(() => {
-        if (!hasPortfolio) {
-            setSection(current => (current === 'wallet' ? null : current));
+        if (hasPortfolio) {
+            return;
         }
+
+        setView(current =>
+            current.kind === 'settings' && current.section === 'wallet'
+                ? { ...current, section: null }
+                : current
+        );
     }, [hasPortfolio]);
 
     useEffect(() => setSelectedActivity(null), [portfolioId]);
 
-    const toggleSettings = (): void => {
-        setIsSettingsOpen(current => !current);
-        setSection(null);
-        setIsUpdatesOpen(false);
+    const changeView = (next: MainView): void => {
+        setView(next);
+        setSelectedActivity(null);
     };
 
-    const openHome = (): void => {
-        setIsUpdatesOpen(false);
-        setIsSettingsOpen(false);
-        setSection(null);
-    };
+    const toggleSettings = (): void =>
+        changeView(
+            view.kind === 'settings' ? { kind: 'home' } : { kind: 'settings', section: null }
+        );
+
+    const openHome = (): void => changeView({ kind: 'home' });
 
     const openUpdates = (): void => {
-        setIsUpdatesOpen(true);
-        setIsSettingsOpen(false);
-        setSection(null);
-        setSelectedActivity(null);
+        changeView({ kind: 'updates' });
         void markWatched();
     };
 
-    const selectSection = (next: SettingsSection): void => {
-        setSection(next);
-        setSelectedActivity(null);
-        setIsUpdatesOpen(false);
-    };
+    const openSafety = (): void => changeView({ kind: 'safety' });
+
+    const selectSection = (next: SettingsSection): void =>
+        changeView({ kind: 'settings', section: next });
 
     /* orders have no detail view on the web targets yet */
     const selectActivity = (activity: ActivityItem): void =>
@@ -113,24 +127,39 @@ export const MainPage: FC<MainPageProps> = props => {
         <MainEmptyState onAddWallet={addWallet.open} />
     );
 
-    const content = isUpdatesOpen ? <UpdatesContent /> : home;
+    const safetyNotice = isAttentionRequired
+        ? 'attention'
+        : linkState === AccountLinkState.SOLO
+          ? 'unprotected'
+          : undefined;
+
+    const content =
+        view.kind === 'updates' ? (
+            <UpdatesContent />
+        ) : view.kind === 'safety' ? (
+            <SafetyContent onAddAccount={account.openAdd} />
+        ) : (
+            home
+        );
 
     return (
         <AppLayout
             hasWindowControls={hasWindowControls}
             isFullScreen={isFullScreen}
-            isSecondaryOpen={isSettingsOpen}
+            isSecondaryOpen={view.kind === 'settings'}
             isPanelOpen={selectedActivity !== null}
         >
             <AppLayout.TitleBar className={dragRegionStyles} />
 
             <MainSidebar
                 hasUpdates={shouldShowBadge}
-                isUpdatesOpen={isUpdatesOpen}
+                safetyNotice={safetyNotice}
+                isUpdatesOpen={view.kind === 'updates'}
+                isSafetyOpen={view.kind === 'safety'}
                 onAddWallet={addWallet.open}
                 onSelectWallet={openHome}
                 onOpenUpdates={openUpdates}
-                onOpenSafety={() => undefined}
+                onOpenSafety={openSafety}
                 onOpenSettings={toggleSettings}
             />
 

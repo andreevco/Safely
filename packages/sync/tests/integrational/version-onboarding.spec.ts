@@ -224,7 +224,7 @@ async function onboardDevice<
         existingDevice.secureEncryptedStorage
     );
     const [newAccount] = await Promise.all([
-        onboardingConnector.waitForCompletion(),
+        onboardingConnector.waitForCompletion().then(onboarded => onboarded.account),
         primaryOnboarding
     ]);
 

@@ -20,14 +20,19 @@ import type {
     Logger,
     OnboardingConnector as RawOnboardingConnector
 } from '@safely/sync';
-import { OnboardingAbortedError, SyncStatus } from '@safely/sync';
+import { OnboardingAbortedError, SyncStatus, waitForChange } from '@safely/sync';
 import type {
     SNextDerivingPortfolioInfo,
     SPortfolio,
     SyncedStorageStructure
 } from '@safely/sync-storage';
 
-import type { AccountMeta, OnboardingConnector, SyncAccount } from './account-state';
+import type {
+    AccountMeta,
+    OnboardedAccount,
+    OnboardingConnector,
+    SyncAccount
+} from './account-state';
 import { useAccountsQueryConfig } from './account-state';
 import { useActiveAccountMeta } from './account-state';
 import { useAccounts } from './account-state';
@@ -35,6 +40,7 @@ import { useAccountsFactory, useActiveAccount } from './account-state';
 import { accountKey } from './keys';
 import type { SActivePortfolioSchema } from './local-storage';
 import { useClearActiveAccountLocalStorage } from './local-storage';
+import { accountStore } from './sync-storage/account-store';
 import {
     SecretEncryptor,
     useAppContext,
@@ -294,7 +300,10 @@ function useConnectorMutation<TVars>(
 
             return {
                 connectionString: connector.data.toString('base64url'),
-                accountPromise: connector.waitForCompletion(),
+                onboardedPromise: connector.waitForCompletion().then(onboarded => ({
+                    account: onboarded.account,
+                    inviterIkPubHex: onboarded.inviterIkPub?.toString('hex') ?? null
+                })),
                 abort() {
                     connector.abort();
                 }
@@ -326,7 +335,7 @@ export function useCreateExistingAccountConnector() {
 
 export function useAccountConnectedCallback(
     connector: OnboardingConnector | undefined,
-    callback: (account: SyncAccount) => void,
+    callback: (onboarded: OnboardedAccount) => void,
     options?: { setAsActive: boolean; onError?: (e: Error) => void }
 ) {
     const logger = useLogger('account-connect');
@@ -337,8 +346,10 @@ export function useAccountConnectedCallback(
 
     useEffect(() => {
         let isReset = false;
-        connector?.accountPromise
-            .then(async account => {
+        connector?.onboardedPromise
+            .then(async onboarded => {
+                const { account } = onboarded;
+
                 if (isReset) {
                     return;
                 }
@@ -356,10 +367,19 @@ export function useAccountConnectedCallback(
 
                 logger.info('device onboarding completed', {
                     accountId: account.accountId,
-                    setAsActive
+                    setAsActive,
+                    hasInviter: onboarded.inviterIkPubHex !== null
                 });
 
-                callback(account as SyncAccount);
+                if (onboarded.inviterIkPubHex !== null) {
+                    await waitForDeviceMeta(account.accountId, onboarded.inviterIkPubHex, logger);
+                }
+
+                if (isReset) {
+                    return;
+                }
+
+                callback(onboarded);
             })
             .catch(e => {
                 if (isReset) {
@@ -378,13 +398,33 @@ export function useAccountConnectedCallback(
             connector?.abort();
             isReset = true;
         };
-    }, [connector?.accountPromise, callback, client, setAsActive]);
+    }, [connector?.onboardedPromise, callback, client, setAsActive]);
+}
+
+const DEVICE_META_TIMEOUT_MS = 10_000;
+
+async function waitForDeviceMeta(
+    accountId: string,
+    ikPubHex: string,
+    logger: Logger
+): Promise<void> {
+    const hasMeta = () =>
+        accountStore.getState().accountsData.get(accountId)?.devicesMeta?.[ikPubHex] !== undefined;
+
+    try {
+        await waitForChange({
+            subscribe: observer => accountStore.subscribe(observer),
+            predicate: hasMeta,
+            timeoutMs: DEVICE_META_TIMEOUT_MS,
+            timeoutError: () => new Error('Device meta did not arrive')
+        });
+    } catch (e) {
+        logger.warn('device meta wait timed out', { ikPubHex, error: e });
+    }
 }
 
 export function useConnectAccountToNewDevice() {
-    const t = useTranslate();
     const activeAccount = useActiveAccount();
-    const toast = useToast();
     const errorToast = useErrorToast({
         ReconnectFromAnotherAccountError: 'settings.qrCodeFromAnotherAccount'
     });
@@ -392,7 +432,7 @@ export function useConnectAccountToNewDevice() {
     const { qrScanner } = useAppContext();
     const scopedLogger = useLogger('account');
 
-    return useMutation<void, Error, { secureEncryptedStorage: ITreeStorage }, unknown>({
+    return useMutation<string, Error, { secureEncryptedStorage: ITreeStorage }, unknown>({
         async mutationFn({ secureEncryptedStorage }) {
             const connectionString = await qrScanner.scan({
                 titleTranslationKey: 'qrScan.addDevice.title',
@@ -401,16 +441,19 @@ export function useConnectAccountToNewDevice() {
             scopedLogger.info('connecting new device to active account', {
                 accountId: activeAccount.accountId
             });
-            await withLoader(() =>
-                activeAccount.connectToNewDevice(
+            return await withLoader(async () => {
+                const { newDeviceIkPub } = await activeAccount.connectToNewDevice(
                     Buffer.from(connectionString, 'base64url'),
                     secureEncryptedStorage
-                )
-            );
+                );
+                const ikPubHex = newDeviceIkPub.toString('hex');
+                await waitForDeviceMeta(activeAccount.accountId, ikPubHex, scopedLogger);
+
+                return ikPubHex;
+            });
         },
         onSuccess() {
             scopedLogger.info('new device connected');
-            toast(t('settings.deviceConnected'));
         },
         onError(error) {
             scopedLogger.error('connecting new device failed', error);

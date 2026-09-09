@@ -28,7 +28,10 @@ export interface ISyncAccount<Latest extends StorageVersion> {
      * @param data
      * @param secureEncryptedStorage - unlocked secure encrypted storage
      */
-    connectToNewDevice(data: Buffer, secureEncryptedStorage: ITreeStorage): Promise<void>;
+    connectToNewDevice(
+        data: Buffer,
+        secureEncryptedStorage: ITreeStorage
+    ): Promise<{ newDeviceIkPub: Buffer }>;
 
     /**
      * Initiates the process of reconnecting to an existing sync account.

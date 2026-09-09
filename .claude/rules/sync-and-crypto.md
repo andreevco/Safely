@@ -45,6 +45,18 @@ change the spec and the code together, never the code alone.
   wrappers and domain logic outside `generated/`.
 - Sync lifecycle logic is the xstate machine in `packages/sync/src/sync-machine`; add behaviour as a
   state/transition, not as an external flag.
+- Both sides of a pairing learn the other's identity public key, because a "device linked" screen has
+  no other handle on the device it just met. `ISyncAccount.connectToNewDevice` answers the **new**
+  device's ikPub; its name arrives later over sync, so `useConnectAccountToNewDevice` waits for
+  `devicesMeta[ikPubHex]` to land (bounded, and it resolves anyway on timeout) before returning the
+  hex. The other direction travels inside the onboarding message payload, which now carries the
+  sender's own ikPub after the master key, and reaches the UI as `OnboardedAccount.inviterIkPub` —
+  `null` on reconnection, and on a payload written before the field existed. That field is **appended,
+  not versioned**: the payload's `0x01` header stays, and an older receiver skips the trailing bytes
+  because the master key carries its own length, so a new sender still onboards an old device. Append
+  the next field the same way. It is a claim rather than a proof — the onboarding key is derived from
+  the ephemeral exchange alone — so use it only to look a device up in the synced device list, never
+  as authorisation; `packages/sync/doc/spec.md` §2.2 has the reasoning.
 
 ## Tests
 
