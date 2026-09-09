@@ -10,6 +10,43 @@ import pluginQuery from '@tanstack/eslint-plugin-query';
 import boundaries from 'eslint-plugin-boundaries';
 import isEqPlugin from './eslint-rules/isEqPlugin.js';
 
+/* node's globals, as espree needs them spelled out: the `globals` package is
+   not a dependency here and this list is what scripts/ actually reaches for. */
+const NODE_GLOBALS = {
+    console: 'readonly',
+    process: 'readonly',
+    Buffer: 'readonly',
+    URL: 'readonly',
+    URLSearchParams: 'readonly',
+    TextEncoder: 'readonly',
+    TextDecoder: 'readonly',
+    AbortController: 'readonly',
+    AbortSignal: 'readonly',
+    fetch: 'readonly',
+    Response: 'readonly',
+    Request: 'readonly',
+    Headers: 'readonly',
+    FormData: 'readonly',
+    Blob: 'readonly',
+    structuredClone: 'readonly',
+    queueMicrotask: 'readonly',
+    setTimeout: 'readonly',
+    clearTimeout: 'readonly',
+    setInterval: 'readonly',
+    clearInterval: 'readonly',
+    setImmediate: 'readonly',
+    clearImmediate: 'readonly',
+    performance: 'readonly'
+};
+
+const COMMONJS_GLOBALS = {
+    require: 'readonly',
+    module: 'writable',
+    exports: 'writable',
+    __dirname: 'readonly',
+    __filename: 'readonly'
+};
+
 export default [
     {
         ignores: [
@@ -21,6 +58,10 @@ export default [
             '**/.turbo/**',
             '**/*.log',
             '**/*.js',
+            /* …but the node scripts under scripts/ are linted (see the
+               "node scripts" block below) */
+            '!scripts/**/*.js',
+            '!apps/mobile/scripts/**/*.js',
             'packages/**/dist/**',
             'apps/**/dist/**',
             'apps/**/build/**'
@@ -28,7 +69,13 @@ export default [
     },
 
     js.configs.recommended,
-    ...tseslint.configs.recommendedTypeChecked,
+    /* Type-checked rules need a TS program, and the node scripts have none —
+       applied unscoped they abort the whole run ("you have used a rule which
+       requires type information"). Keep them on the TS sources only. */
+    ...tseslint.configs.recommendedTypeChecked.map(config => ({
+        ...config,
+        files: ['**/*.ts', '**/*.tsx']
+    })),
 
     {
         files: ['**/*.ts', '**/*.tsx'],
@@ -281,9 +328,30 @@ export default [
         }
     },
 
+    /* Node scripts: the CI/build tooling under scripts/. Plain JS run by node
+       itself — no TS program, no bundler, no DOM — so it gets the recommended
+       base rules and prettier, and nothing from the TS/React/FSD layers above —
+       including no-console, which is these scripts' only output channel. */
+    {
+        files: ['scripts/**/*.{js,cjs,mjs}', 'apps/mobile/scripts/**/*.{js,cjs,mjs}'],
+        languageOptions: {
+            ecmaVersion: 'latest',
+            sourceType: 'module',
+            globals: NODE_GLOBALS
+        }
+    },
+    /* the icon generator is the one script still written as CommonJS */
+    {
+        files: ['apps/mobile/scripts/**/*.js'],
+        languageOptions: {
+            sourceType: 'commonjs',
+            globals: { ...NODE_GLOBALS, ...COMMONJS_GLOBALS }
+        }
+    },
+
     /* prettier */
     {
-        files: ['**/*.{js,jsx,ts,tsx}'],
+        files: ['**/*.{js,cjs,mjs,jsx,ts,tsx}'],
         plugins: { prettier: prettierPlugin },
         rules: {
             'prettier/prettier': 'error'

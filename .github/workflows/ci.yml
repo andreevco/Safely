@@ -6,6 +6,9 @@ on:
       - master
       - 'release/**'
 
+permissions:
+  contents: read
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
@@ -60,7 +63,10 @@ jobs:
           ROOT_CHANGED: ${{ steps.base.outputs.root_changed }}
         # "!safely" excludes the root project: its lint is "pnpm -r run lint",
         # which would re-lint every package and defeat the changed-only filter.
+        # scripts/ belongs to no package and "pnpm -r" skips the root project,
+        # so it is linted by its own always-on call.
         run: |
+          pnpm run lint:scripts
           if [ "$ROOT_CHANGED" = "true" ]; then
             pnpm -r run lint
           else
@@ -88,6 +94,23 @@ jobs:
             pnpm --filter "...[$BASE_SHA]" --filter "!safely" run test
           fi
 
+
+  dependency-advisories:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.10.0'
+
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      # `pnpm audit` resolves the graph from the lockfile, so no install is needed.
+      - name: Check dependency advisories
+        run: node scripts/audit-gate.mjs
 
   resolve-changes:
     runs-on: ubuntu-latest

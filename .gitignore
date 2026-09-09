@@ -8,3 +8,4 @@ tsconfig.tsbuildinfo
 .claude
 CLAUDE.local.md
 CLAUDE.md
+.pnpm-store
