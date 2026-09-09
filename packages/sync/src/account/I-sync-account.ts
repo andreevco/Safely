@@ -27,9 +27,11 @@ export interface ISyncAccount<Latest extends StorageVersion> {
      * If the account is offline, it will be promoted to online automatically.
      * @param data
      * @param secureEncryptedStorage - unlocked secure encrypted storage
-     * @returns identity public key of the connected device
      */
-    connectToNewDevice(data: Buffer, secureEncryptedStorage: ITreeStorage): Promise<Buffer>;
+    connectToNewDevice(
+        data: Buffer,
+        secureEncryptedStorage: ITreeStorage
+    ): Promise<{ newDeviceIkPub: Buffer }>;
 
     /**
      * Initiates the process of reconnecting to an existing sync account.

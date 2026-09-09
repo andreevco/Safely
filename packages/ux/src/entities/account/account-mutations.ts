@@ -422,11 +422,11 @@ export function useConnectAccountToNewDevice() {
                 accountId: activeAccount.accountId
             });
             return await withLoader(async () => {
-                const ikPub = await activeAccount.connectToNewDevice(
+                const { newDeviceIkPub } = await activeAccount.connectToNewDevice(
                     Buffer.from(connectionString, 'base64url'),
                     secureEncryptedStorage
                 );
-                const ikPubHex = ikPub.toString('hex');
+                const ikPubHex = newDeviceIkPub.toString('hex');
                 await waitForDeviceMeta(activeAccount.accountId, ikPubHex, scopedLogger);
 
                 return ikPubHex;
