@@ -48,8 +48,11 @@ export const WelcomeScreen = () => {
         navigation.navigate('SignInScreen', {
             connector,
             closeStorage: () => secureEncryptedStorage[Symbol.dispose](),
-            onSuccess: () =>
-                navigation.navigate('SignInSuccessScreen', { onContinue: onSuccessSignIn })
+            onSuccess: (inviterIkPubHex: string | null) =>
+                navigation.navigate('SignInSuccessScreen', {
+                    inviterIkPubHex,
+                    onContinue: onSuccessSignIn
+                })
         });
     }, [signIn, navigation, getSecureEncrypted, onSuccessSignIn]);
 
