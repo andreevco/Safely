@@ -92,9 +92,9 @@ export function createMockSyncAccount(opts: MockSyncAccountOptions = {}): MockSy
         accountId,
         syncProvider,
         secretEncryptor,
-        connectToNewDevice: vi.fn(async (_: Buffer, __: ITreeStorage) =>
-            Buffer.from('BBBB', 'hex')
-        ),
+        connectToNewDevice: vi.fn(async (_: Buffer, __: ITreeStorage) => ({
+            newDeviceIkPub: Buffer.from('BBBB', 'hex')
+        })),
         reconnectToAccount: vi.fn(),
         getDevices: vi.fn(async () => []),
         revokeRemoteDevice: vi.fn(async () => undefined),

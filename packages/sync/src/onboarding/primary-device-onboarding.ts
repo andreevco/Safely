@@ -27,16 +27,16 @@ export class PrimaryDeviceOnboarding {
         private readonly triggerSync: () => Promise<void>
     ) {}
 
-    public async onboard(data: Buffer, flow: SyncFlowLogger): Promise<Buffer> {
+    public async onboard(data: Buffer, flow: SyncFlowLogger): Promise<{ newDeviceIkPub: Buffer }> {
         const message = QRMessageCodec.decode(data);
 
         switch (message.type) {
             case QRMessageOperation.NEW_DEVICE_ONBOARDING:
                 await this.onboardNewDevice(message, flow.child('new_device_onboarding'));
-                return message.ikPub;
+                return { newDeviceIkPub: message.ikPub };
             case QRMessageOperation.RECONNECTION:
                 await this.reconnectExistingDevice(message, flow.child('reconnection'));
-                return message.ikPub;
+                return { newDeviceIkPub: message.ikPub };
             default:
                 throw new PrimaryDeviceOnboardingError('Unsupported onboarding operation');
         }

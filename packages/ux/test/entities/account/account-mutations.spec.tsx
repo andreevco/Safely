@@ -576,7 +576,7 @@ describe('useConnectAccountToNewDevice (add device)', () => {
                     }
                 });
             }, 10);
-            return Buffer.from('BBBB', 'hex');
+            return { newDeviceIkPub: Buffer.from('BBBB', 'hex') };
         });
 
         const { result } = renderHookWithProviders(() => useConnectAccountToNewDevice(), {

@@ -44,5 +44,5 @@ function readOptionalField(data: Buffer, offset: number): Buffer | null {
     const length = data.readUInt16BE(offset);
     const start = offset + 2;
 
-    return start + length > data.length ? null : data.slice(start, start + length);
+    return start + length > data.length ? null : Buffer.from(data.subarray(start, start + length));
 }

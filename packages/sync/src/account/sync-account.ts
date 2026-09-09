@@ -65,7 +65,7 @@ export class SyncAccount<Latest extends StorageVersion, Rest> implements ISyncAc
     public async connectToNewDevice(
         data: Buffer,
         secureEncryptedStorage: ITreeStorage
-    ): Promise<Buffer> {
+    ): Promise<{ newDeviceIkPub: Buffer }> {
         return await withSyncFlow(
             this.container.logger,
             'account.connect_to_new_device',
@@ -80,7 +80,7 @@ export class SyncAccount<Latest extends StorageVersion, Rest> implements ISyncAc
         data: Buffer,
         secureEncryptedStorage: ITreeStorage,
         flow: SyncFlowLogger
-    ): Promise<Buffer> {
+    ): Promise<{ newDeviceIkPub: Buffer }> {
         await this.ensureAccountOnline();
         flow.logStep('ensure_online.done');
 
@@ -98,10 +98,10 @@ export class SyncAccount<Latest extends StorageVersion, Rest> implements ISyncAc
                 await this.syncProvider.syncStatusManager.waitForStatus(SyncStatus.SYNCHRONIZED);
             }
         );
-        const ikPub = await onboarding.onboard(data, flow.child('onboarding.primary'));
+        const { newDeviceIkPub } = await onboarding.onboard(data, flow.child('onboarding.primary'));
         flow.logEnd('onboarding.completed');
 
-        return ikPub;
+        return { newDeviceIkPub };
     }
 
     public async getDevices(): Promise<Device[]> {
