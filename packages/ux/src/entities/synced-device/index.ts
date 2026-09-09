@@ -17,6 +17,12 @@ export function useSyncedDevicesMeta(): Record<string, SDeviceMeta> | null {
     return useActiveAccountStoreSlot('devicesMeta') ?? null;
 }
 
+export function useSyncedDeviceName(ikPubHex: string | null): string | null {
+    const devicesMeta = useSyncedDevicesMeta();
+
+    return ikPubHex === null ? null : (devicesMeta?.[ikPubHex]?.name ?? null);
+}
+
 export function useCurrentDeviceIkPub(): string {
     const account = useActiveAccount();
 

@@ -1,3 +1,4 @@
+import { useNavigation } from '@react-navigation/core';
 import type { StaticScreenProps } from '@react-navigation/native';
 import { setStringAsync } from 'expo-clipboard';
 import { useTranslation } from 'react-i18next';
@@ -15,30 +16,31 @@ import {
 
 import { Button, Checkmark96, Icon, List, Screen, TableCell, Text } from '@mobile/shared/ui';
 
-import { styles } from './SignInSuccessScreen.styles';
+import { styles } from './DeviceLinkedModal.styles';
 
-const ACCOUNT_ID_SIDE_CHARS = 6;
+type DeviceLinkedModalProps = StaticScreenProps<{ ikPubHex: string }>;
 
-type SignInSuccessScreenProps = StaticScreenProps<{
-    inviterIkPubHex: string | null;
-    onContinue: () => void;
-}>;
-
-export const SignInSuccessScreen = (props: SignInSuccessScreenProps) => {
-    const { inviterIkPubHex, onContinue } = props.route.params;
+export const DeviceLinkedModal = (props: DeviceLinkedModalProps) => {
+    const { ikPubHex } = props.route.params;
 
     const { t } = useTranslation();
     const toast = useToast();
+    const navigation = useNavigation();
 
     const accountId = useActiveAccount().accountId;
     const accountName = useActiveAccountMeta().name;
-    const inviterName = useSyncedDeviceName(inviterIkPubHex);
+    const deviceName = useSyncedDeviceName(ikPubHex) ?? t('safety.deviceLinked.unknownDevice');
     const walletsCount = usePortfolios().length;
     const contactsCount = useContacts().length;
 
     const handleCopyAccountId = () => {
         void setStringAsync(accountId);
         toast(t('safety.deviceLinked.accountIdCopied'));
+    };
+
+    const handleViewDevices = () => {
+        navigation.goBack();
+        navigation.navigate('TabsNavigator', { screen: 'SafetyScreen' });
     };
 
     return (
@@ -54,12 +56,13 @@ export const SignInSuccessScreen = (props: SignInSuccessScreenProps) => {
 
                 <View style={styles.titleBox}>
                     <Text textAlign="center" variant="titleM">
-                        {t('safety.signedIn.title', { account: accountName })}
+                        {t('safety.deviceLinked.title', { device: deviceName })}
                     </Text>
                     <Text textAlign="center" variant="bodyL" color="secondary">
-                        {inviterName === null
-                            ? t('safety.signedIn.subtitleUnknownDevice')
-                            : t('safety.signedIn.subtitle', { device: inviterName })}
+                        {t('safety.deviceLinked.subtitle', {
+                            device: deviceName,
+                            account: accountName
+                        })}
                     </Text>
                 </View>
 
@@ -73,6 +76,14 @@ export const SignInSuccessScreen = (props: SignInSuccessScreenProps) => {
                             </TableCell.Column>
                             <TableCell.Column>
                                 <TableCell.Value>{accountName}</TableCell.Value>
+                            </TableCell.Column>
+                        </TableCell>
+                        <TableCell columnDivider>
+                            <TableCell.Column leading>
+                                <TableCell.Label>{t('safety.deviceLinked.device')}</TableCell.Label>
+                            </TableCell.Column>
+                            <TableCell.Column>
+                                <TableCell.Value>{deviceName}</TableCell.Value>
                             </TableCell.Column>
                         </TableCell>
                         <TableCell columnDivider rowDivider={contactsCount > 0}>
@@ -108,16 +119,14 @@ export const SignInSuccessScreen = (props: SignInSuccessScreenProps) => {
 
                 <Pressable style={styles.accountId} onPress={handleCopyAccountId}>
                     <Text textAlign="center" variant="bodyM" color="tertiary">
-                        {t('safety.deviceLinked.accountId', {
-                            id: ellipsisMiddle(accountId, ACCOUNT_ID_SIDE_CHARS)
-                        })}
+                        {t('safety.deviceLinked.accountId', { id: ellipsisMiddle(accountId, 6) })}
                     </Text>
                 </Pressable>
             </Screen.Scrollable>
 
             <View style={styles.footer}>
-                <Button type="secondary" size="large" onPress={onContinue}>
-                    {t('safety.signedIn.continue')}
+                <Button type="secondary" size="large" onPress={handleViewDevices}>
+                    {t('safety.deviceLinked.viewLinkedDevices')}
                 </Button>
             </View>
         </Screen>
