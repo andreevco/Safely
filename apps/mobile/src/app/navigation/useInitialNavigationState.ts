@@ -17,6 +17,14 @@ export function useInitialNavigationState(): NavigationContainerProps['initialSt
                 return { routes: [{ name: 'RestrictedFlow' as const }] };
             }
 
+            if (hasAccount && !hasPasscode) {
+                return {
+                    routes: [
+                        { name: 'OnboardingPasscodeScreen' as const, params: { source: null } }
+                    ]
+                };
+            }
+
             if (!hasPasscode || !hasAccount) {
                 return { routes: [{ name: 'WelcomeScreen' as const }] };
             }
