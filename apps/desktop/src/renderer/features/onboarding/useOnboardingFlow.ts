@@ -9,6 +9,7 @@ import {
     useCreateAccount,
     useCreateExistingAccountConnector,
     useErrorToast,
+    useHasAccount,
     useLoader,
     useToast,
     useTranslate
@@ -49,12 +50,13 @@ export function useOnboardingFlow() {
         }
     } = useAppContext();
 
+    const hasAccount = useHasAccount();
     const signIn = useCreateExistingAccountConnector();
     const signInStorage = useRef<IUnlockableSecuredEncryptedStorage | null>(null);
 
-    const [step, setStep] = useState<OnboardingStep | null>(null);
+    const [step, setStep] = useState<OnboardingStep | null>(hasAccount ? 'passcode' : null);
     const [inviterIkPubHex, setInviterIkPubHex] = useState<string | null>(null);
-    const source = useRef<OnboardingSource | null>(null);
+    const source = useRef<OnboardingSource | null>(hasAccount ? { kind: 'signedIn' } : null);
 
     const closeSignInStorage = useCallback(() => {
         signInStorage.current?.[Symbol.dispose]();

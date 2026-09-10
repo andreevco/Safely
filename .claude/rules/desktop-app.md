@@ -156,11 +156,16 @@ still uses `UNSAFE_SKIP_SECURITY_CHECK_unlock()`; do not "temporarily" route `ma
 `vault_key` or `dmk_prv` into `regular` or `localStorage` to unblock a flow.
 
 **Signing in links the account before a passcode exists**, so `app/OnboardingGuard.tsx` gates on
-`hasAccount && hasPasscode` rather than on the account alone: the QR pairing writes the account into
-the store mid-flow, and a guard reading only `useHasAccount` would navigate to the main screen the
-moment the other device scanned, skipping the passcode and the biometry step. `useOnboardingFlow`
-keeps the secure store open for the whole pairing (the connector reads it while the QR is up) and
-disposes it on success, on timeout and on close — `signIn.reset()` is what aborts the polling.
+`hasAccount && hasPasscode` rather than on the account alone, and only in one direction — no account
+or no passcode → welcome. It never sends an onboarded user *to* main: the QR pairing writes the
+account into the store mid-flow, so a guard that reacts to `hasAccount && hasPasscode` turning true
+would leave the welcome screen the moment the passcode is saved and skip the biometry step. Leaving
+the onboarding is `useOnboardingFlow`'s navigation, the way mobile's flow resets to the tabs itself. An account with no passcode at start is a sign-in the app quit in the middle of, so
+`useOnboardingFlow` starts at the passcode step with `source: signedIn` (mobile's
+`OnboardingPasscodeScreen` with `source: null`) instead of offering a second onboarding. The flow
+keeps the secure store open for the whole pairing (the connector reads it while
+the QR is up) and disposes it on success, on timeout and on close — `signIn.reset()` is what aborts
+the polling.
 
 **The passcode flow lives in `src/renderer/features/`**, one feature per factor and per scenario:
 `passcode` (hooks, lockout, the prompt store, `PasscodeSetupFlow`, `ChangePasscodeFlow`), `biometry`
