@@ -112,6 +112,12 @@ export function createTestAppContext(opts: CreateTestAppContextOptions = {}): IA
         qrScanner: {
             scan: qrScan
         },
+        pushNotifications: {
+            getPermissionStatus: async () => 'undetermined',
+            requestPermission: async () => 'undetermined',
+            getPushToken: async () => 'ExponentPushToken[test]',
+            openSystemSettings: () => undefined
+        },
         numberFormatLocale: {
             decimalSeparator: '.',
             groupSeparator: ',',
