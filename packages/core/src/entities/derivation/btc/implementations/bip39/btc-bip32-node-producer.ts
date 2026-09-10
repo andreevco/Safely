@@ -19,8 +19,10 @@ export class BtcBip32NodeProducer implements IBtcNodeProducer {
 
     public async getPortfolioDerivation(): Promise<HDKey> {
         const seed = await this.seedProducer.getSeed();
+        let root: HDKey | undefined;
+
         try {
-            const root = HDKey.fromMasterSeed(seed);
+            root = HDKey.fromMasterSeed(seed);
 
             const child = root.derive(this.getDerivationPath());
 
@@ -30,6 +32,7 @@ export class BtcBip32NodeProducer implements IBtcNodeProducer {
             return child;
         } finally {
             seed.fill(0);
+            root?.wipePrivateData();
         }
     }
 }

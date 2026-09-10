@@ -1,3 +1,5 @@
+import type { HDKey } from '@scure/bip32';
+
 import { assertBtcFeeIsNotAbsurd } from './assert-btc-fee';
 import type { BtcSigningRequest, IBtcSigner } from './I-btc-signer';
 import type { IBtcNodeProducer } from '../../derivation/btc/I-btc-node-producer';
@@ -11,16 +13,25 @@ export class BtcKeypairSigner implements IBtcSigner {
         try {
             for (let i = 0; i < utxos.length; i++) {
                 const u = utxos[i];
-                const privateKey = node
-                    .deriveChild(u.derivationPath.change)
-                    .deriveChild(u.derivationPath.addressIndex).privateKey;
+                let changeNode: HDKey | undefined;
+                let addressNode: HDKey | undefined;
 
-                if (!privateKey) {
-                    throw new Error(`Missing private key for input ${i}`);
-                }
+                try {
+                    changeNode = node.deriveChild(u.derivationPath.change);
+                    addressNode = changeNode.deriveChild(u.derivationPath.addressIndex);
 
-                if (!psbt.signIdx(privateKey, i)) {
-                    throw new Error(`Invalid signature for input ${i}`);
+                    const privateKey = addressNode.privateKey;
+
+                    if (!privateKey) {
+                        throw new Error(`Missing private key for input ${i}`);
+                    }
+
+                    if (!psbt.signIdx(privateKey, i)) {
+                        throw new Error(`Invalid signature for input ${i}`);
+                    }
+                } finally {
+                    addressNode?.wipePrivateData();
+                    changeNode?.wipePrivateData();
                 }
             }
         } finally {
