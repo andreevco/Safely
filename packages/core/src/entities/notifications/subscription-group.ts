@@ -1,6 +1,7 @@
 import type { NotificationEventKey } from './notification-settings';
 import type { NotificationSettings } from './notification-settings';
 import type { NotificationEventType, SubscriptionGroup } from '../../api/notifications';
+import { BtcXpub } from '../../blockchain-api';
 import type { Portfolio } from '../portfolio';
 import { PortfolioNetworkType, PortfolioType } from '../portfolio';
 
@@ -21,10 +22,12 @@ export function portfolioNotificationTargets(portfolio: Portfolio): string[] {
     }
 
     if (portfolio.type === PortfolioType.WATCH_ONLY) {
-        return [portfolio.wallet.xpub ?? portfolio.wallet.address];
+        return [
+            portfolio.wallet.xpub ? BtcXpub.toZpub(portfolio.wallet.xpub) : portfolio.wallet.address
+        ];
     }
 
-    return portfolio.derivations.map(derivation => derivation.chains.btc.xpub);
+    return portfolio.derivations.map(derivation => BtcXpub.toZpub(derivation.chains.btc.xpub));
 }
 
 export function buildSubscriptionGroup(

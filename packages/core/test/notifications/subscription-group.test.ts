@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { Portfolio } from '../../src';
 import {
+    BtcXpub,
     buildSubscriptionGroup,
     NotificationSettings,
     PortfolioNetworkType,
@@ -11,7 +12,8 @@ import {
 } from '../../src';
 
 const XPUB =
-    'zpub6rFR7y4Q2AijBEqTUquhVz398htDFrtymD9xYYfG1m4wAcvPhXNfE3EfH1r1ADqtfSdVCToUG868RvUUkgDKf31mGDtKsAYz2oz2AGutZYs';
+    'xpub6BzEhyXKPFoDRvGZ9EvzhmtM6LEPK1bkqSmmkiRnvcExLSJbksFF7oc1D4DTMy8bbyvFaMj5tpNUvEQVD93KGjUu8asKYQ1TQCphStEgggF';
+const ZPUB = BtcXpub.toZpub(XPUB);
 const ADDRESS = 'bc1q5v68nzc6rjgcl8ug0slpx77ucm4spnwzkwkqy2';
 const TESTNET_ADDRESS = 'tb1q4tvt7x6veyr96kj3deph5av03czytyw5ssalr6';
 
@@ -28,8 +30,9 @@ function watchOnly(
 }
 
 describe('portfolioNotificationTargets', () => {
-    it('uses xpub for xpub watch-only and address for address watch-only', () => {
-        expect(portfolioNotificationTargets(watchOnly({ xpub: XPUB }))).toEqual([XPUB]);
+    it('uses zpub for xpub watch-only and address for address watch-only', () => {
+        expect(portfolioNotificationTargets(watchOnly({ xpub: XPUB }))).toEqual([ZPUB]);
+        expect(ZPUB.startsWith('zpub')).toBe(true);
         expect(portfolioNotificationTargets(watchOnly({ address: ADDRESS }))).toEqual([ADDRESS]);
     });
 
@@ -53,9 +56,9 @@ describe('buildSubscriptionGroup', () => {
 
         expect(group).toEqual({
             events: [
-                { type: 'received', confirmations: 0, targets: [XPUB, ADDRESS] },
-                { type: 'received', confirmations: 1, targets: [XPUB, ADDRESS] },
-                { type: 'sent', confirmations: 1, targets: [XPUB, ADDRESS] }
+                { type: 'received', confirmations: 0, targets: [ZPUB, ADDRESS] },
+                { type: 'received', confirmations: 1, targets: [ZPUB, ADDRESS] },
+                { type: 'sent', confirmations: 1, targets: [ZPUB, ADDRESS] }
             ]
         });
     });
