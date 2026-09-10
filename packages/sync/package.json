@@ -20,7 +20,8 @@
         "zod": "catalog:"
     },
     "devDependencies": {
-        "vitest": "^4.0.18",
+        "vite": "catalog:",
+        "vitest": "catalog:",
         "fast-check": "^4.7.0"
     },
     "exports": {

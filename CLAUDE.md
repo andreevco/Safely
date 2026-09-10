@@ -33,6 +33,9 @@ Node version comes from `.nvmrc` (`nvm use`); pnpm only (`preinstall` blocks npm
   e.g. `@safely/core`, `mobile`)
 - `pnpm -r run lint`, `pnpm -r run test` — everything; CI runs them only for changed packages
   (`--filter "...[<merge-base>]"`), and for all packages when root-level files change
+- `pnpm lint:scripts` — the root `scripts/` tooling, which belongs to no package and which
+  `pnpm -r` therefore skips; CI runs it on every pull request. `apps/mobile/scripts` needs no
+  separate call — mobile's `lint` covers `./src ./scripts`
 - mobile: `pnpm --filter mobile ios|android|start` — dev-client, not Expo Go
 
 Dependency versions go through `catalog:` in `pnpm-workspace.yaml` only: add the version to the
@@ -40,9 +43,11 @@ catalog and reference `catalog:` from the package's package.json. `minimumReleas
 pnpm refuses packages published less than four days ago.
 
 Root-level tooling stays at the root: `eslint`, its plugins and `prettier` are installed once in the
-root package.json, and a package only adds the `"lint": "eslint ./src"` script. Model a new package's
-devDependencies on `@safely/ux` or `@safely/core` — `typescript`, `@types/*` and bundler plugins yes,
-root tooling no.
+root package.json, and a package only adds the `"lint": "eslint ./src"` script. The node scripts
+under `scripts/` are linted too — plain ESM, recommended rules plus prettier, none of the TS/React
+layers; new tooling goes in one of those two directories so it is covered by default. Model a new
+package's devDependencies on `@safely/ux` or `@safely/core` — `typescript`, `@types/*` and bundler
+plugins yes, root tooling no.
 
 ## Pitfalls the tooling won't catch
 

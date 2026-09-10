@@ -19,13 +19,20 @@ export class BtcBip32NodeProducer implements IBtcNodeProducer {
 
     public async getPortfolioDerivation(): Promise<HDKey> {
         const seed = await this.seedProducer.getSeed();
-        const root = HDKey.fromMasterSeed(seed);
+        let root: HDKey | undefined;
 
-        const child = root.derive(this.getDerivationPath());
+        try {
+            root = HDKey.fromMasterSeed(seed);
 
-        if (!child.privateKey || !child.publicKey) {
-            throw new Error('Derived node has no private key (invalid derivation or seed).');
+            const child = root.derive(this.getDerivationPath());
+
+            if (!child.privateKey || !child.publicKey) {
+                throw new Error('Derived node has no private key (invalid derivation or seed).');
+            }
+            return child;
+        } finally {
+            seed.fill(0);
+            root?.wipePrivateData();
         }
-        return child;
     }
 }

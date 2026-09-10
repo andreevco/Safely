@@ -49,6 +49,13 @@
         "restartButton": "Перезапустить",
         "shareLogsButton": "Отправить логи"
     },
+    "logs": {
+        "warning": {
+            "title": "Логи содержат данные кошелька ⚠️",
+            "message": "В логах есть адреса, суммы и идентификаторы транзакций. Отправляйте их только в поддержку Safely.\n\nСид-фраза и приватные ключи в логи не попадают.",
+            "confirm": "Открыть логи"
+        }
+    },
     "send": {
         "title": "Отправить",
         "from": "Откуда",
@@ -364,6 +371,30 @@
             "contactsCount_many": "{{count}} контактов",
             "continue": "Продолжить"
         },
+        "deviceLinked": {
+            "title": "{{device}} привязан",
+            "subtitle": "{{device}} теперь имеет доступ к аккаунту «{{account}}».",
+            "account": "Аккаунт",
+            "device": "Устройство",
+            "wallets": "Кошельки",
+            "walletsCount_one": "{{count}} кошелёк",
+            "walletsCount_few": "{{count}} кошелька",
+            "walletsCount_many": "{{count}} кошельков",
+            "contacts": "Контакты",
+            "contactsCount_one": "{{count}} контакт",
+            "contactsCount_few": "{{count}} контакта",
+            "contactsCount_many": "{{count}} контактов",
+            "accountId": "ID аккаунта: {{id}}",
+            "accountIdCopied": "ID аккаунта скопирован",
+            "unknownDevice": "Новое устройство",
+            "viewLinkedDevices": "Привязанные устройства"
+        },
+        "signedIn": {
+            "title": "Вход в аккаунт «{{account}}» выполнен",
+            "subtitle": "Аккаунт привязан с устройства {{device}}.",
+            "subtitleUnknownDevice": "Аккаунт привязан с другого устройства.",
+            "continue": "Продолжить"
+        },
         "protectAccount": {
             "title": "Нет привязанных устройств",
             "subtitle": "Привяжите второе устройство как резервную копию. Если этот телефон потеряется, привязанное устройство сможет восстановить доступ к вашим кошелькам.",
@@ -520,7 +551,13 @@
             "placeholder": "Введите адрес",
             "info": "Кошелёк только для просмотра не может подписывать транзакции и отправлять средства.",
             "invalidAddress": "Неверный Bitcoin адрес",
-            "unsupportedExtendedKey": "ypub пока не поддерживается. Используйте xpub."
+            "unsupportedExtendedKey": "Этот тип расширенного ключа не поддерживается. Импортировать можно только кошельки BIP84 native SegWit.",
+            "confirmXpub": {
+                "title": "Проверьте адрес",
+                "description": "Этот расширенный ключ будет импортирован как кошелек BIP84 native SegWit. Legacy адреса не поддерживаются.",
+                "addressLabel": "Адрес кошелька",
+                "verify": "Убедитесь, что адрес совпадает с адресом в кошельке, который импортируете."
+            }
         },
         "testnet": {
             "title": "Testnet",
@@ -643,7 +680,6 @@
     },
     "settings": {
         "title": "Настройки",
-        "deviceConnected": "Успешно привязано",
         "qrCodeFromAnotherAccount": "QR-код от другого аккаунта. Используйте один и тот же аккаунт на обоих устройствах.",
         "addAccount": "Добавить аккаунт",
         "walletsCount_one": "{{count}} кошелёк",
@@ -912,6 +948,7 @@
         "steps": {
             "connect": "Подключите {{device}}",
             "openApp": "Откройте приложение Bitcoin",
+            "openAppVersionUnknown": "Не удалось узнать версию приложения",
             "approve": "Проверьте и подтвердите транзакцию."
         },
         "updateApp": {

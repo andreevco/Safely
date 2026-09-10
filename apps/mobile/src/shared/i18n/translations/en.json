@@ -28,6 +28,7 @@
         "steps": {
             "connect": "Connect your {{device}}",
             "openApp": "Open the Bitcoin app",
+            "openAppVersionUnknown": "Couldn’t read app version",
             "approve": "Review and approve the transaction."
         },
         "updateApp": {
@@ -71,6 +72,13 @@
         "subtitle": "Restart the app and try again.\nIf the issue persists, send logs to support.",
         "restartButton": "Restart app",
         "shareLogsButton": "Send logs"
+    },
+    "logs": {
+        "warning": {
+            "title": "Logs contain your wallet data ⚠️",
+            "message": "Logs include your addresses, amounts and transaction IDs. Share them only with Safely support.\n\nYour recovery phrase and private keys never appear in logs.",
+            "confirm": "Open logs"
+        }
     },
     "send": {
         "title": "Send",
@@ -378,6 +386,28 @@
             "contactsCount_other": "{{count}} contacts",
             "continue": "Continue"
         },
+        "deviceLinked": {
+            "title": "{{device}} linked",
+            "subtitle": "{{device}} now has access to your “{{account}}” account.",
+            "account": "Account",
+            "device": "Device",
+            "wallets": "Wallets",
+            "walletsCount_one": "{{count}} wallet",
+            "walletsCount_other": "{{count}} wallets",
+            "contacts": "Contacts",
+            "contactsCount_one": "{{count}} contact",
+            "contactsCount_other": "{{count}} contacts",
+            "accountId": "Account ID: {{id}}",
+            "accountIdCopied": "Account ID copied",
+            "unknownDevice": "New device",
+            "viewLinkedDevices": "View linked devices"
+        },
+        "signedIn": {
+            "title": "Signed in to “{{account}}”",
+            "subtitle": "This account was linked from {{device}}.",
+            "subtitleUnknownDevice": "This account was linked from another device.",
+            "continue": "Continue"
+        },
         "protectAccount": {
             "title": "No linked devices",
             "subtitle": "Link another device as a backup. If this phone is lost, a linked device can restore access to your wallets.",
@@ -537,7 +567,13 @@
             "placeholder": "Enter address",
             "info": "Watch account cannot sign transactions and send funds.",
             "invalidAddress": "Invalid Bitcoin address",
-            "unsupportedExtendedKey": "ypub is not supported yet. Use xpub."
+            "unsupportedExtendedKey": "This extended key type is not supported. Only BIP84 native SegWit wallets can be imported.",
+            "confirmXpub": {
+                "title": "Check the address",
+                "description": "This extended key will be imported as a BIP84 native SegWit account. Legacy addresses are not supported.",
+                "addressLabel": "Wallet Address",
+                "verify": "Make sure this address matches the one shown in the wallet you are importing."
+            }
         },
         "testnet": {
             "title": "Testnet",
@@ -660,7 +696,6 @@
     },
     "settings": {
         "title": "Settings",
-        "deviceConnected": "Successfully linked",
         "qrCodeFromAnotherAccount": "QR code is from another account.\nUse the same account on both devices.",
         "addAccount": "Add account",
         "walletsCount_one": "{{count}} wallet",

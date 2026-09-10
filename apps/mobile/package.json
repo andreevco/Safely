@@ -10,7 +10,7 @@
     "icons": "node scripts/generate-icons-file.js",
     "compile": "tsc --noEmit",
     "build": "pnpm dlx eas-cli workflow:run build-and-distribute.yml --input release_notes=\"$(git branch --show-current)\"",
-    "lint": "eslint ./src",
+    "lint": "eslint ./src ./scripts",
     "test": "pnpm run test:js",
     "test:all": "pnpm run test:js && pnpm run test:ios && pnpm run test:android",
     "test:js": "vitest run",
@@ -107,7 +107,8 @@
     "@types/react": "catalog:",
     "babel-preset-expo": "~56.0.0",
     "typescript": "catalog:",
-    "vitest": "^4.0.17"
+    "vite": "catalog:",
+    "vitest": "catalog:"
   },
   "private": true,
   "expo": {

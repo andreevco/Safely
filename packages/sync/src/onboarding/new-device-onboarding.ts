@@ -2,11 +2,11 @@ import { ed25519, x25519 } from '@noble/curves/ed25519.js';
 
 import type { StorageVersion } from '@safely/slottree';
 
+import type { OnboardedAccount } from './connector';
 import { decryptOnboardingMessagePayload, deriveOnboardingKey } from './crypto';
 import { QRMessageCodec, QRMessageOperation } from './onboarding-codec';
 import { decodeOnboardingMessagePayload } from './onboarding-message-payload';
 import type { AccountManager } from '../account/account-manager';
-import type { ISyncAccount } from '../account/I-sync-account';
 import { ApiSigner } from '../api/api-signer';
 import type { Configuration, OnboardingMessage } from '../api/generated';
 import { AccountsApi } from '../api/generated';
@@ -56,11 +56,11 @@ export class NewDeviceOnboarding<Latest extends StorageVersion, Rest> {
         return data;
     }
 
-    public async waitForOnboarding(signal?: AbortSignal): Promise<ISyncAccount<Latest>> {
+    public async waitForOnboarding(signal?: AbortSignal): Promise<OnboardedAccount<Latest>> {
         try {
-            const account = await this.waitForOnboardingInner(signal);
+            const onboarded = await this.waitForOnboardingInner(signal);
             this.flow.logEnd('completed');
-            return account;
+            return onboarded;
         } catch (error) {
             if (!this.flow.isCompleted()) {
                 this.flow.logFail(error, 'incomplete');
@@ -69,7 +69,7 @@ export class NewDeviceOnboarding<Latest extends StorageVersion, Rest> {
         }
     }
 
-    private async waitForOnboardingInner(signal?: AbortSignal): Promise<ISyncAccount<Latest>> {
+    private async waitForOnboardingInner(signal?: AbortSignal): Promise<OnboardedAccount<Latest>> {
         const maxAttempts = 150;
         this.flow.logStep('message.poll.start', {
             maxAttempts: maxAttempts,
@@ -127,10 +127,12 @@ export class NewDeviceOnboarding<Latest extends StorageVersion, Rest> {
             this.ik,
             this.flow.child('handleOnboardingMessage')
         );
-        this.flow.logStep('account.created');
+        this.flow.logStep('account.created', {
+            hasInviterIkPub: onboardingMessagePayload.inviterIkPub !== null
+        });
 
         this.logger.info('Onboarding completed');
-        return account;
+        return { account, inviterIkPub: onboardingMessagePayload.inviterIkPub };
     }
 
     private async getOnboardingMessagePayload(msg: OnboardingMessage) {

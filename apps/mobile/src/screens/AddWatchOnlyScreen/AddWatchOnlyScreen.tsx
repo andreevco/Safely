@@ -62,5 +62,7 @@ export const AddWatchOnlyScreen = () => {
         [portfolios, navigation, addWatchOnlyPortfolio, defaultPortfolioName]
     );
 
-    return <WatchOnlyAddressForm onSubmit={handleSubmit} />;
+    return (
+        <WatchOnlyAddressForm networkType={PortfolioNetworkType.MAINNET} onSubmit={handleSubmit} />
+    );
 };

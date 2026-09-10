@@ -4,10 +4,12 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { AddAccountSheet } from '@mobile/screens/AddAccountSheet';
 import { BiometryScreen } from '@mobile/screens/BiometryScreen';
 import { ChangePasscodeScreen } from '@mobile/screens/ChangePasscodeScreen';
+import { ConfirmXpubImportSheet } from '@mobile/screens/ConfirmXpubImportSheet';
 import { ConnectToSignSheet } from '@mobile/screens/ConnectToSignSheet';
 import { CustomizeAccountModal } from '@mobile/screens/CustomizeAccountModal';
 import { CustomizeWalletModal } from '@mobile/screens/CustomizeWalletModal';
 import { DestructiveConfirmSheet } from '@mobile/screens/DestructiveConfirmSheet';
+import { DeviceLinkedModal } from '@mobile/screens/DeviceLinkedModal';
 import { DeviceSupportWizardModal } from '@mobile/screens/DeviceSupportWizardModal';
 import { DeviceUnarchivedSheet } from '@mobile/screens/DeviceUnarchivedSheet';
 import { ExchangeModal } from '@mobile/screens/ExchangeModal';
@@ -112,6 +114,7 @@ export const RootStack = createNativeStackNavigator({
                 CustomizeWalletModal: CustomizeWalletModal,
                 QRScanModal: QRScanModal,
                 LinkDeviceWarningModal: LinkDeviceWarningModal,
+                DeviceLinkedModal: DeviceLinkedModal,
                 DeviceSupportWizardModal: DeviceSupportWizardModal,
                 NewContactModal: NewContactModal,
                 AddWalletModal: AddWalletStack,
@@ -137,6 +140,7 @@ export const RootStack = createNativeStackNavigator({
                 MoreOptionsSheet: MoreOptionsSheet,
                 ConfirmDeleteContactSheet: ConfirmDeleteContactSheet,
                 ConnectToSignSheet: ConnectToSignSheet,
+                ConfirmXpubImportSheet: ConfirmXpubImportSheet,
                 ProviderSheet: ProviderSheet
             },
             screenOptions: {
