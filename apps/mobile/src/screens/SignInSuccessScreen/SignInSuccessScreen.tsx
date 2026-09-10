@@ -45,7 +45,7 @@ export const SignInSuccessScreen = (props: SignInSuccessScreenProps) => {
         <Screen>
             <Screen.Header>
                 <Screen.Header.Title />
-                <Screen.Header.CloseButton />
+                <Screen.Header.CloseButton onPress={onContinue} />
             </Screen.Header>
             <Screen.Scrollable>
                 <View style={styles.iconBox}>

@@ -12,6 +12,14 @@ export function useInitialNavigationState(): NavigationContainerProps['initialSt
 
     const ref = useRef(
         (() => {
+            if (hasAccount && !hasPasscode) {
+                return {
+                    routes: [
+                        { name: 'OnboardingPasscodeScreen' as const, params: { source: null } }
+                    ]
+                };
+            }
+
             if (!hasPasscode || !hasAccount) {
                 return { routes: [{ name: 'WelcomeScreen' as const }] };
             }
