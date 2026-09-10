@@ -118,6 +118,10 @@ export function useOnboardingFlow() {
     }, [navigation]);
 
     const onBiometryFinished = useCallback(() => {
+        navigation.dispatch(CommonActions.navigate('OnboardingNotificationsScreen'));
+    }, [navigation]);
+
+    const onNotificationsFinished = useCallback(() => {
         resetToTabs();
     }, [resetToTabs]);
 
@@ -149,6 +153,7 @@ export function useOnboardingFlow() {
         onLedgerReady,
         onPasscodeReady,
         onBiometryFinished,
+        onNotificationsFinished,
         onAccountCreatedFinished
     };
 }

@@ -16,6 +16,7 @@ import { build, deviceInfo, environment, getDeviceCountryCode } from '@mobile/sh
 import { eraseLogs, logger } from '@mobile/shared/logger';
 import { useLoaderServiceContext } from '@mobile/shared/providers/loader';
 import { useToastServiceContext } from '@mobile/shared/providers/toast';
+import { ExpoPushNotifications } from '@mobile/shared/push-notifications';
 import { useMobileLayerSynchronousGlobalStorage } from '@mobile/shared/storage';
 import { MobileNumberFormatLocale, MobileAppLinking } from '@mobile/shared/utils';
 
@@ -106,6 +107,7 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
                         });
                     })
             },
+            pushNotifications: new ExpoPushNotifications(),
             toast: {
                 show: toastService.show
             },

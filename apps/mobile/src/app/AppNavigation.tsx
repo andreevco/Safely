@@ -5,7 +5,11 @@ import * as SystemUI from 'expo-system-ui';
 import { Activity, useEffect, useMemo } from 'react';
 import { useUnistyles } from 'react-native-unistyles';
 
-import { LedgerSessionProvider, SyncStorageProvider } from '@safely/ux';
+import {
+    LedgerSessionProvider,
+    PushSubscriptionSyncProvider,
+    SyncStorageProvider
+} from '@safely/ux';
 
 import { useLockScreenControl } from '@mobile/entities/security';
 import { BleManagerProvider } from '@mobile/features/ledger';
@@ -56,19 +60,21 @@ export function AppNavigation() {
                 openConnectScreen={() => navigationRef.navigate('ConnectToSignSheet')}
             >
                 <SyncStorageProvider>
-                    <Activity mode={isLocked ? 'hidden' : 'visible'}>
-                        <SelfUnarchiveWatcher />
-                        <Navigation
-                            ref={navigationRef}
-                            initialState={initialState}
-                            onReady={() => {
-                                enforceRestriction();
-                                SplashScreen.hideAsync();
-                            }}
-                            theme={NavigationTheme}
-                            linking={linking}
-                        />
-                    </Activity>
+                    <PushSubscriptionSyncProvider>
+                        <Activity mode={isLocked ? 'hidden' : 'visible'}>
+                            <SelfUnarchiveWatcher />
+                            <Navigation
+                                ref={navigationRef}
+                                initialState={initialState}
+                                onReady={() => {
+                                    enforceRestriction();
+                                    SplashScreen.hideAsync();
+                                }}
+                                theme={NavigationTheme}
+                                linking={linking}
+                            />
+                        </Activity>
+                    </PushSubscriptionSyncProvider>
                 </SyncStorageProvider>
             </LedgerSessionProvider>
         </BleManagerProvider>

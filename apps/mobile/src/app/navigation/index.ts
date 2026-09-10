@@ -16,6 +16,7 @@ import { MoreOptionsSheet } from '@mobile/screens/MoreOptionsSheet';
 import { NewContactModal } from '@mobile/screens/NewContactModal';
 import { ConfirmDeleteContactSheet } from '@mobile/screens/NewContactModal/screens/ConfirmDeleteContactSheet';
 import { OnboardingImportWalletScreen } from '@mobile/screens/OnboardingImportWalletScreen';
+import { OnboardingNotificationsScreen } from '@mobile/screens/OnboardingNotificationsScreen';
 import { OnboardingPasscodeScreen } from '@mobile/screens/OnboardingPasscodeScreen';
 import { OnboardingWatchAccountScreen } from '@mobile/screens/OnboardingWatchAccountScreen';
 import { OrderScreen } from '@mobile/screens/OrderScreen';
@@ -52,6 +53,7 @@ export const RootStack = createNativeStackNavigator({
                 WelcomeScreen: WelcomeScreen,
                 OnboardingPasscodeScreen: OnboardingPasscodeScreen,
                 BiometryScreen: BiometryScreen,
+                OnboardingNotificationsScreen: OnboardingNotificationsScreen,
                 SignInScreen: SignInScreen,
                 SignInSuccessScreen: SignInSuccessScreen,
                 OnboardingImportWalletScreen: OnboardingImportWalletScreen,
