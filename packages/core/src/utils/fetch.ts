@@ -114,6 +114,29 @@ export class ApiClient {
         return await this.parseAndValidate(response, schema);
     }
 
+    protected async putJson<T extends z.ZodTypeAny>(
+        path: string,
+        body: unknown,
+        schema: T,
+        opts?: { headers?: Record<string, string> }
+    ): Promise<z.infer<T>> {
+        const url = this.buildUrl(path);
+        const response = await this.performFetch(url, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', ...opts?.headers },
+            body: JSON.stringify(body)
+        });
+
+        return await this.parseAndValidate(response, schema);
+    }
+
+    protected async deleteRequest(path: string): Promise<void> {
+        const url = this.buildUrl(path);
+        const response = await this.performFetch(url, { method: 'DELETE' });
+
+        if (!response.ok) await this.parseAndThrow(response);
+    }
+
     private async authHeaders(
         method: string,
         url: string,
