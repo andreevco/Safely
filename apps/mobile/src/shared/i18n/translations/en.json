@@ -379,6 +379,28 @@
             "contactsCount_other": "{{count}} contacts",
             "continue": "Continue"
         },
+        "deviceLinked": {
+            "title": "{{device}} linked",
+            "subtitle": "{{device}} now has access to your “{{account}}” account.",
+            "account": "Account",
+            "device": "Device",
+            "wallets": "Wallets",
+            "walletsCount_one": "{{count}} wallet",
+            "walletsCount_other": "{{count}} wallets",
+            "contacts": "Contacts",
+            "contactsCount_one": "{{count}} contact",
+            "contactsCount_other": "{{count}} contacts",
+            "accountId": "Account ID: {{id}}",
+            "accountIdCopied": "Account ID copied",
+            "unknownDevice": "New device",
+            "viewLinkedDevices": "View linked devices"
+        },
+        "signedIn": {
+            "title": "Signed in to “{{account}}”",
+            "subtitle": "This account was linked from {{device}}.",
+            "subtitleUnknownDevice": "This account was linked from another device.",
+            "continue": "Continue"
+        },
         "protectAccount": {
             "title": "No linked devices",
             "subtitle": "Link another device as a backup. If this phone is lost, a linked device can restore access to your wallets.",
@@ -662,7 +684,6 @@
     },
     "settings": {
         "title": "Settings",
-        "deviceConnected": "Successfully linked",
         "qrCodeFromAnotherAccount": "QR code is from another account.\nUse the same account on both devices.",
         "addAccount": "Add account",
         "walletsCount_one": "{{count}} wallet",

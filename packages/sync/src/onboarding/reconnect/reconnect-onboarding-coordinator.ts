@@ -46,7 +46,7 @@ export class ReconnectOnboardingCoordinator<Latest extends StorageVersion, Rest>
             data: onboarding.generateOnboardingData(),
             waitForCompletion: async (signal: AbortSignal) => {
                 await onboarding.waitForOnboarding(signal);
-                return this.account;
+                return { account: this.account, inviterIkPub: null };
             }
         };
     }
