@@ -127,7 +127,7 @@ describe('AccountManager', () => {
         await server.waitForOnboardingMessage(ik.publicKey.toString('hex'), {
             timeoutMs: 1000
         });
-        const payload = { masterKey: Buffer.from(primary.masterKey) };
+        const payload = { masterKey: Buffer.from(primary.masterKey), inviterIkPub: null };
         const flow = new SyncFlowLogger(target.logger, 'test.account.create');
 
         const created = await target.manager.createOnlineAccountFromMasterKey(

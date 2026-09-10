@@ -18,10 +18,11 @@ export async function onboardMockAccount(
         'new device addition synchronized',
         () => existingAccount.connectToNewDevice(connector.data, existingSecureEncryptedStorage)
     );
-    const [, newAccount] = await waitWithTimeout(
+    const [, onboarded] = await waitWithTimeout(
         Promise.all([connectExistingAccount, connector.waitForCompletion()]),
         'mock device onboarding'
     );
+    const newAccount = onboarded.account;
 
     await waitWithTimeout(
         newAccount.syncProvider.syncStatusManager.waitForStatus(SyncStatus.SYNCHRONIZED),
