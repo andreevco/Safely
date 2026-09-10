@@ -64,8 +64,8 @@ describe('SyncAccount reconnect onboarding', () => {
             connector.waitForCompletion()
         ]);
 
-        expect(firstResult).toBe(account);
-        expect(secondResult).toBe(account);
+        expect(firstResult).toEqual({ account, inviterIkPub: null });
+        expect(secondResult).toBe(firstResult);
         expect(waitForOnboarding).toHaveBeenCalledTimes(1);
 
         const nextConnector = await account.reconnectToAccount();

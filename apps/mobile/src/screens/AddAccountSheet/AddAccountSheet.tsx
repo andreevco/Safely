@@ -89,10 +89,11 @@ const AddAccountContent = ({ onAccountAdded }: AddAccountSheetParams) => {
                 params: {
                     connector,
                     closeStorage: () => secureEncryptedStorage[Symbol.dispose](),
-                    onSuccess: () =>
+                    onSuccess: (inviterIkPubHex: string | null) =>
                         navigation.navigate('SignInModal', {
                             screen: 'SignInSuccessModal',
                             params: {
+                                inviterIkPubHex,
                                 onContinue: () => (onAccountAdded ?? navigation.goBack)()
                             }
                         })

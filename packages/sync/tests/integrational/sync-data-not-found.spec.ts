@@ -47,7 +47,7 @@ async function onboardDevice(existingDevice: MockDevice): Promise<MockDevice> {
     const connector =
         await makeFactory().factory.connectToExistingSyncAccount(secureEncryptedStorage);
 
-    const [account] = await Promise.all([
+    const [{ account }] = await Promise.all([
         connector.waitForCompletion(),
         existingDevice.account.connectToNewDevice(
             connector.data,
