@@ -1,6 +1,8 @@
 import type { FC } from 'react';
+import { useEffect } from 'react';
 
 import type { ActivityItem } from '@safely/ux';
+import { useActivePortfolio } from '@safely/ux';
 
 import { Balance } from './Balance';
 import { Header } from './Header';
@@ -12,18 +14,27 @@ export type MainContentProps = {
     onSend: () => void;
     onReceive: () => void;
     onSelectActivity: (activity: ActivityItem) => void;
+    onPortfolioChange: () => void;
 };
 
-export const MainContent: FC<MainContentProps> = props => (
-    <>
-        <div className={headerStyles}>
-            <Header />
-            <Balance onSend={props.onSend} onReceive={props.onReceive} />
-        </div>
+export const MainContent: FC<MainContentProps> = props => {
+    const { selectedActivityKey, onSend, onReceive, onSelectActivity, onPortfolioChange } = props;
 
-        <History
-            selectedActivityKey={props.selectedActivityKey}
-            onSelectActivity={props.onSelectActivity}
-        />
-    </>
-);
+    const portfolioId = useActivePortfolio().id.toString();
+
+    useEffect(() => onPortfolioChange(), [portfolioId, onPortfolioChange]);
+
+    return (
+        <>
+            <div className={headerStyles}>
+                <Header />
+                <Balance onSend={onSend} onReceive={onReceive} />
+            </div>
+
+            <History
+                selectedActivityKey={selectedActivityKey}
+                onSelectActivity={onSelectActivity}
+            />
+        </>
+    );
+};
