@@ -47,7 +47,7 @@ export const DeviceLinkedModal = (props: DeviceLinkedModalProps) => {
         <Screen>
             <Screen.Header>
                 <Screen.Header.Title />
-                <Screen.Header.CloseButton />
+                <Screen.Header.CloseButton onPress={handleViewDevices} />
             </Screen.Header>
             <Screen.Scrollable>
                 <View style={styles.iconBox}>
