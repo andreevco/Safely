@@ -3,7 +3,7 @@ import { useState } from 'react';
 
 import { useEraseAllData, useTranslate } from '@safely/ux';
 
-import { listStyles } from './SettingsSection.styles';
+import { adjacentGroupStyles, listStyles } from './SettingsSection.styles';
 import { EraseDataModal } from '../../../features';
 import { Cell, List, PageHeader, Switch } from '../../../shared';
 
@@ -34,7 +34,7 @@ export const SecuritySettings: FC<SecuritySettingsProps> = props => {
             <PageHeader title={t('security.title')} hasDivider />
 
             <List className={listStyles}>
-                <List.Group variant="separated">
+                <List.Group variant="divided">
                     {biometry && (
                         <Cell>
                             <Cell.Content>
@@ -77,7 +77,7 @@ export const SecuritySettings: FC<SecuritySettingsProps> = props => {
                     </Cell>
                 </List.Group>
 
-                <List.Group variant="separated">
+                <List.Group variant="separated" className={adjacentGroupStyles}>
                     <Cell onClick={() => setIsErasing(true)}>
                         <Cell.Content>
                             <Cell.Title>

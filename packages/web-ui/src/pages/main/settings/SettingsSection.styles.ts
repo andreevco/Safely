@@ -11,6 +11,8 @@ export const addAccountStyles = css({ marginTop: '16' });
 
 export const destructiveGroupStyles = css({ marginTop: '16' });
 
+export const adjacentGroupStyles = css({ marginTop: '2' });
+
 export const symbolStyles = css({
     minWidth: '44px'
 });
