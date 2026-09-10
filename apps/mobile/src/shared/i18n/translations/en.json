@@ -486,7 +486,13 @@
             "placeholder": "Enter address",
             "info": "Watch account cannot sign transactions and send funds.",
             "invalidAddress": "Invalid Bitcoin address",
-            "unsupportedExtendedKey": "ypub is not supported yet. Use xpub."
+            "unsupportedExtendedKey": "This extended key type is not supported. Only BIP84 native SegWit wallets can be imported.",
+            "confirmXpub": {
+                "title": "Check the address",
+                "description": "This extended key will be imported as a BIP84 native SegWit account. Legacy addresses are not supported.",
+                "addressLabel": "Wallet Address",
+                "verify": "Make sure this address matches the one shown in the wallet you are importing."
+            }
         },
         "testnet": {
             "title": "Testnet",
