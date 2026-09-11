@@ -48,8 +48,10 @@ export const bannerRecipe = defineSlotRecipe({
             ...tinted,
             display: 'flex',
             alignItems: 'center',
+            alignSelf: 'center',
             flexShrink: 0,
-            height: '48px',
+            minHeight: '48px',
+            paddingBlock: '8',
             paddingRight: '16'
         },
         close: {

@@ -14,10 +14,6 @@ export const OnboardingGuard: FC = () => {
     const isOnboarded = hasAccount && hasPasscode;
     const isOnboardingRoute = pathname.startsWith(ROUTE.onboarding.welcome);
 
-    if (isOnboarded && isOnboardingRoute) {
-        return <Navigate to={ROUTE.main} replace />;
-    }
-
     if (!isOnboarded && !isOnboardingRoute) {
         return <Navigate to={ROUTE.onboarding.welcome} replace />;
     }

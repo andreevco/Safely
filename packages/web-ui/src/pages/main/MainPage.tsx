@@ -1,12 +1,11 @@
 import type { FC, ReactNode } from 'react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import type { ActivityItem, BtcActivityItem } from '@safely/ux';
 import {
     AccountLinkState,
     isBtcActivityItem,
     useAccountLinkState,
-    useActivePortfolio,
     useBetaFeedWatched,
     useHasPortfolio,
     useIsAttentionRequired
@@ -50,7 +49,6 @@ export const MainPage: FC<MainPageProps> = props => {
     const { hasWindowControls, isFullScreen, security } = props;
 
     const hasPortfolio = useHasPortfolio();
-    const portfolioId = useActivePortfolio()?.id.toString();
     const addWallet = useAddWalletFlow();
     const account = useAccountFlow();
     const send = useSendFlow();
@@ -73,12 +71,12 @@ export const MainPage: FC<MainPageProps> = props => {
 
         setView(current =>
             current.kind === 'settings' && current.section === 'wallet'
-                ? { ...current, section: null }
+                ? { ...current, section: 'account' }
                 : current
         );
     }, [hasPortfolio]);
 
-    useEffect(() => setSelectedActivity(null), [portfolioId]);
+    const clearSelectedActivity = useCallback(() => setSelectedActivity(null), []);
 
     const changeView = (next: MainView): void => {
         setView(next);
@@ -87,7 +85,9 @@ export const MainPage: FC<MainPageProps> = props => {
 
     const toggleSettings = (): void =>
         changeView(
-            view.kind === 'settings' ? { kind: 'home' } : { kind: 'settings', section: null }
+            view.kind === 'settings'
+                ? { kind: 'home' }
+                : { kind: 'settings', section: hasPortfolio ? 'wallet' : 'account' }
         );
 
     const openHome = (): void => changeView({ kind: 'home' });
@@ -122,6 +122,7 @@ export const MainPage: FC<MainPageProps> = props => {
             onSend={send.open}
             onReceive={receive.open}
             onSelectActivity={selectActivity}
+            onPortfolioChange={clearSelectedActivity}
         />
     ) : (
         <MainEmptyState onAddWallet={addWallet.open} />
@@ -156,6 +157,7 @@ export const MainPage: FC<MainPageProps> = props => {
                 safetyNotice={safetyNotice}
                 isUpdatesOpen={view.kind === 'updates'}
                 isSafetyOpen={view.kind === 'safety'}
+                isSettingsOpen={view.kind === 'settings'}
                 onAddWallet={addWallet.open}
                 onSelectWallet={openHome}
                 onOpenUpdates={openUpdates}

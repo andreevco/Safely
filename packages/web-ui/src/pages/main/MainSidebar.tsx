@@ -20,6 +20,7 @@ export type MainSidebarProps = {
     safetyNotice?: 'attention' | 'unprotected';
     isUpdatesOpen?: boolean;
     isSafetyOpen?: boolean;
+    isSettingsOpen?: boolean;
     onAddWallet: () => void;
     onSelectWallet: () => void;
     onOpenUpdates: () => void;
@@ -33,6 +34,7 @@ export const MainSidebar: FC<MainSidebarProps> = props => {
         safetyNotice,
         isUpdatesOpen,
         isSafetyOpen,
+        isSettingsOpen,
         onAddWallet,
         onSelectWallet,
         onOpenUpdates,
@@ -109,7 +111,7 @@ export const MainSidebar: FC<MainSidebarProps> = props => {
                         )}
                     </Cell>
 
-                    <Cell onClick={onOpenSettings}>
+                    <Cell isSelected={isSettingsOpen} onClick={onOpenSettings}>
                         <Cell.Leading>
                             <Icon asset={Sliders16} tone="tertiary" />
                         </Cell.Leading>
