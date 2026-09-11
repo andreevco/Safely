@@ -1,6 +1,6 @@
 {
   "name": "@safely/desktop",
-  "version": "0.0.1",
+  "version": "1.2.4",
   "private": true,
   "productName": "Safely",
   "type": "commonjs",

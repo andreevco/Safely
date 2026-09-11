@@ -10,7 +10,7 @@ export class ConfigApi extends ApiClient implements IIdentifiable {
         private readonly params: ConfigParams,
         logger?: Logger
     ) {
-        super('https://config.safely.app/v1', {}, logger);
+        super('https://dev-config.safely.app/v1', {}, logger);
     }
 
     public get id() {
