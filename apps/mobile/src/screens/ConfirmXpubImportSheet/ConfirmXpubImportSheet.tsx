@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { View } from 'react-native';
 
 import { TEST_ID } from '@mobile/shared/constants';
-import { BottomSheet, Button, Text, useBottomSheet, useCallOnClose } from '@mobile/shared/ui';
+import { BottomSheetScreen } from '@mobile/shared/navigation';
+import { Button, Text, useBottomSheet, useCallOnClose } from '@mobile/shared/ui';
 
 import { styles } from './ConfirmXpubImportSheet.styles';
 
@@ -28,7 +29,7 @@ const ConfirmXpubImportContent = (props: ConfirmXpubImportParams) => {
     };
 
     return (
-        <View>
+        <View style={styles.content}>
             <View style={styles.titleBox}>
                 <Text textAlign="center" variant="titleM">
                     {t('addWallet.watchAccount.confirmXpub.title')}
@@ -75,8 +76,8 @@ const ConfirmXpubImportContent = (props: ConfirmXpubImportParams) => {
 
 export const ConfirmXpubImportSheet = (props: ConfirmXpubImportSheetProps) => {
     return (
-        <BottomSheet>
+        <BottomSheetScreen>
             <ConfirmXpubImportContent {...props.route.params} />
-        </BottomSheet>
+        </BottomSheetScreen>
     );
 };
