@@ -42,7 +42,9 @@ function createHarness() {
     const api = {
         replaceGroup: vi.fn<NotificationsApi['replaceGroup']>(async () => ({})),
         deleteGroup: vi.fn<NotificationsApi['deleteGroup']>(async () => undefined),
-        deleteDevice: vi.fn<NotificationsApi['deleteDevice']>(async () => undefined)
+        deleteDevice: vi.fn<NotificationsApi['deleteDevice']>(async () => undefined),
+        replaceGeneral: vi.fn<NotificationsApi['replaceGeneral']>(async () => undefined),
+        deleteGeneral: vi.fn<NotificationsApi['deleteGeneral']>(async () => undefined)
     };
     const pushNotifications: IPushNotifications = {
         getPermissionStatus: async () => 'granted',
@@ -62,6 +64,7 @@ function createHarness() {
         api: api as unknown as NotificationsApi,
         pushNotifications,
         platform: 'ios',
+        appVersion: '1.2.4',
         storage,
         logger
     });
@@ -71,8 +74,10 @@ function createHarness() {
     return { syncer, api, storage, stored };
 }
 
-const active = (accounts: PushSyncInput['accounts']): PushSyncInput => ({
+const active = (accounts: PushSyncInput['accounts'], isNewsEnabled = false): PushSyncInput => ({
     isPushActive: true,
+    isNewsEnabled,
+    lang: 'en',
     accounts
 });
 
@@ -164,10 +169,29 @@ describe('PushSubscriptionSyncer', () => {
         expect(api.deleteDevice).not.toHaveBeenCalled();
 
         await syncer.sync(active([readyAccount('a')]));
-        await syncer.sync({ isPushActive: false, accounts: [] });
+        await syncer.sync({ isPushActive: false, isNewsEnabled: false, lang: 'en', accounts: [] });
 
         expect(api.deleteDevice).toHaveBeenCalledTimes(1);
         expect(await stored('deviceId')).toBeNull();
         expect(await stored('groupIds')).toBeNull();
+    });
+
+    it('replays the general subscription once per change and registers a device without groups', async () => {
+        const { syncer, api, stored } = createHarness();
+
+        await syncer.sync(active([], true));
+        await syncer.sync(active([], true));
+
+        expect(api.replaceGeneral).toHaveBeenCalledTimes(1);
+        expect(api.replaceGeneral.mock.calls[0]?.[1]).toEqual({ news: true });
+        expect(api.replaceGeneral.mock.calls[0]?.[2]).toMatchObject({
+            lang: 'en',
+            appVersion: '1.2.4'
+        });
+        expect(await stored('deviceId')).not.toBeNull();
+
+        await syncer.sync(active([], false));
+
+        expect(api.deleteGeneral).toHaveBeenCalledTimes(1);
     });
 });

@@ -23,11 +23,6 @@ export const OnboardingNotificationsScreen = () => {
         }
     }, [isAlreadyDecided, onNotificationsFinished]);
 
-    const handleEnable = async () => {
-        await setPushEnabled(true);
-        onNotificationsFinished();
-    };
-
     if (permission === undefined || isAlreadyDecided) {
         return (
             <Screen>
@@ -58,7 +53,7 @@ export const OnboardingNotificationsScreen = () => {
                 </View>
             </View>
             <View style={styles.buttonContainer}>
-                <Button type="primary" size="large" onPress={handleEnable}>
+                <Button type="primary" size="large" onPress={() => setPushEnabled(true)}>
                     {t('onboarding.notifications.enable')}
                 </Button>
             </View>

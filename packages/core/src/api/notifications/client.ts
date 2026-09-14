@@ -1,6 +1,11 @@
 import type { Logger } from '@safely/sync';
 
-import type { PushDeviceCredentials, SubscriptionGroup, TargetRefs } from './models';
+import type {
+    GeneralSubscription,
+    PushDeviceCredentials,
+    SubscriptionGroup,
+    TargetRefs
+} from './models';
 import { replaceGroupResponseSchema } from './models';
 import type { IIdentifiable } from '../../utils';
 import { ApiClient } from '../../utils/fetch';
@@ -15,6 +20,20 @@ export class NotificationsApi extends ApiClient implements IIdentifiable {
         this.id = `${this.constructor.name}:${baseUrl}`;
     }
 
+    public async replaceGeneral(
+        deviceId: string,
+        general: GeneralSubscription,
+        credentials: PushDeviceCredentials
+    ): Promise<void> {
+        await this.putJson(`/api/v1/devices/${deviceId}/general`, general, {
+            headers: this.credentialHeaders(credentials)
+        });
+    }
+
+    public deleteGeneral(deviceId: string): Promise<void> {
+        return this.deleteRequest(`/api/v1/devices/${deviceId}/general`);
+    }
+
     public async replaceGroup(
         deviceId: string,
         groupId: string,
@@ -25,15 +44,19 @@ export class NotificationsApi extends ApiClient implements IIdentifiable {
             `/api/v1/devices/${deviceId}/subscriptions/${groupId}`,
             group,
             replaceGroupResponseSchema,
-            {
-                headers: {
-                    'X-Safely-Push-Token': credentials.pushToken,
-                    'X-Safely-Push-Platform': credentials.platform
-                }
-            }
+            { headers: this.credentialHeaders(credentials) }
         );
 
         return response.target_refs;
+    }
+
+    private credentialHeaders(credentials: PushDeviceCredentials): Record<string, string> {
+        return {
+            'X-Safely-Push-Token': credentials.pushToken,
+            'X-Safely-Push-Platform': credentials.platform,
+            ...(credentials.lang && { 'X-Safely-Lang': credentials.lang }),
+            ...(credentials.appVersion && { 'X-Safely-App-Version': credentials.appVersion })
+        };
     }
 
     public deleteGroup(deviceId: string, groupId: string): Promise<void> {

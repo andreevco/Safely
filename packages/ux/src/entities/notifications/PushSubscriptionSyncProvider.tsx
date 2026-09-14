@@ -3,7 +3,11 @@ import { createContext, useCallback, useContext, useEffect, useMemo } from 'reac
 
 import { NotificationSettings } from '@safely/core';
 
-import { usePushNotificationsEnabledQuery, usePushPermissionQuery } from './device';
+import {
+    useNewsNotificationsEnabledQuery,
+    usePushNotificationsEnabledQuery,
+    usePushPermissionQuery
+} from './device';
 import type { AccountSubscriptionState } from './push-subscription-syncer';
 import { PushSubscriptionSyncer } from './push-subscription-syncer';
 import { useAppContext, useAppState, useNotificationsApi } from '../../shared';
@@ -27,7 +31,7 @@ function toSubscriptionState(data: AccountStoreData | undefined): AccountSubscri
 
 function usePushSubscriptionSyncer(): PushSubscriptionSyncer | null {
     const api = useNotificationsApi();
-    const { pushNotifications, build, storage, logger } = useAppContext();
+    const { pushNotifications, build, version, storage, logger } = useAppContext();
 
     const syncer = useMemo(
         () =>
@@ -36,11 +40,12 @@ function usePushSubscriptionSyncer(): PushSubscriptionSyncer | null {
                       api,
                       pushNotifications,
                       platform: build,
+                      appVersion: version,
                       storage: storage.ux.regular,
                       logger: logger.child('push-subscription')
                   })
                 : null,
-        [api, pushNotifications, build, storage.ux.regular, logger]
+        [api, pushNotifications, build, version, storage.ux.regular, logger]
     );
 
     useEffect(() => () => syncer?.dispose(), [syncer]);
@@ -52,10 +57,15 @@ function usePushSubscriptionTriggers(syncer: PushSubscriptionSyncer | null): voi
     const accounts = useAccounts();
     const { data: permission } = usePushPermissionQuery();
     const { data: isPushEnabled } = usePushNotificationsEnabledQuery();
+    const { data: isNewsEnabled } = useNewsNotificationsEnabledQuery();
     const { current } = useAppState();
+    const {
+        i18n: { language }
+    } = useAppContext();
 
     useEffect(() => {
         if (!syncer || permission === undefined || isPushEnabled === undefined) return;
+        if (isNewsEnabled === undefined) return;
         if (current === 'background') return;
 
         const isPushActive = isPushEnabled && permission === 'granted';
@@ -65,6 +75,8 @@ function usePushSubscriptionTriggers(syncer: PushSubscriptionSyncer | null): voi
 
             void syncer.sync({
                 isPushActive,
+                isNewsEnabled,
+                lang: language,
                 accounts: accounts.map(({ accountId }) => ({
                     accountId,
                     state: toSubscriptionState(accountsData.get(accountId))
@@ -84,7 +96,7 @@ function usePushSubscriptionTriggers(syncer: PushSubscriptionSyncer | null): voi
             if (timer) clearTimeout(timer);
             unsubscribe();
         };
-    }, [syncer, accounts, permission, isPushEnabled, current]);
+    }, [syncer, accounts, permission, isPushEnabled, isNewsEnabled, language, current]);
 }
 
 export function usePushSubscriptionReset(): () => Promise<void> {

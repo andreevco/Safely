@@ -1003,8 +1003,8 @@
         "application": {
             "title": "Application",
             "news": {
-                "title": "News & updates",
-                "subtitle": "Receive news, feature releases and important security updates."
+                "title": "Safely updates",
+                "subtitle": "Receive release notes and security updates."
             }
         },
         "transactions": {

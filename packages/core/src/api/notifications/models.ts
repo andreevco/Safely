@@ -24,7 +24,14 @@ export const replaceGroupResponseSchema = z.looseObject({
     target_refs: targetRefsSchema
 });
 
+export const generalSubscriptionSchema = z.object({
+    news: z.boolean()
+});
+export type GeneralSubscription = z.infer<typeof generalSubscriptionSchema>;
+
 export type PushDeviceCredentials = {
     pushToken: string;
     platform: Build;
+    lang?: string;
+    appVersion?: string;
 };

@@ -8,6 +8,7 @@ import type {
     NotificationSettings,
     NotificationsApi,
     Portfolio,
+    PushDeviceCredentials,
     SubscriptionGroup
 } from '@safely/core';
 import { buildSubscriptionGroup } from '@safely/core';
@@ -24,6 +25,8 @@ export type AccountSubscriptionState =
 
 export type PushSyncInput = {
     isPushActive: boolean;
+    isNewsEnabled: boolean;
+    lang: string;
     accounts: { accountId: string; state: AccountSubscriptionState }[];
 };
 
@@ -31,6 +34,7 @@ type PushSubscriptionSyncerDeps = {
     api: NotificationsApi;
     pushNotifications: IPushNotifications;
     platform: Build;
+    appVersion: string;
     storage: ITreeStorage;
     logger: Logger;
 };
@@ -40,7 +44,14 @@ type StoredValue<K extends StorageKey> = z.output<PushSubscriptionStorageStructu
 
 type DesiredGroup = SubscriptionGroup | 'pending' | null;
 
-const RESET_INPUT: PushSyncInput = { isPushActive: false, accounts: [] };
+const RESET_INPUT: PushSyncInput = {
+    isPushActive: false,
+    isNewsEnabled: false,
+    lang: '',
+    accounts: []
+};
+
+const GENERAL_KEY = 'general';
 
 export class PushSubscriptionSyncer {
     private readonly storage: ITreeStorage;
@@ -98,7 +109,12 @@ export class PushSubscriptionSyncer {
         }
 
         const deviceId = await this.resolveDeviceId();
-        const pushToken = await this.deps.pushNotifications.getPushToken();
+        const credentials: PushDeviceCredentials = {
+            pushToken: await this.deps.pushNotifications.getPushToken(),
+            platform: this.deps.platform,
+            lang: input.lang,
+            appVersion: this.deps.appVersion
+        };
         const desired = new Map<string, DesiredGroup>(
             input.accounts.map(({ accountId, state }) => [
                 accountId,
@@ -120,30 +136,49 @@ export class PushSubscriptionSyncer {
         for (const [accountId, group] of desired) {
             if (group === 'pending' || group === null) continue;
 
-            const signature = JSON.stringify({ pushToken, group });
+            const signature = JSON.stringify({ credentials, group });
             if (this.lastSent.get(accountId) === signature) continue;
 
             failures += await this.attempt('replace_group', () =>
-                this.replaceGroup(deviceId, accountId, group, pushToken, signature)
+                this.replaceGroup(deviceId, accountId, group, credentials, signature)
+            );
+        }
+
+        const generalSignature = JSON.stringify({ credentials, news: input.isNewsEnabled });
+        if (this.lastSent.get(GENERAL_KEY) !== generalSignature) {
+            failures += await this.attempt('replace_general', () =>
+                this.replaceGeneral(deviceId, input.isNewsEnabled, credentials, generalSignature)
             );
         }
 
         return failures;
     }
 
+    private async replaceGeneral(
+        deviceId: string,
+        isNewsEnabled: boolean,
+        credentials: PushDeviceCredentials,
+        signature: string
+    ): Promise<void> {
+        this.deps.logger.info('push_subscription.replace_general', { isNewsEnabled });
+        if (isNewsEnabled) {
+            await this.deps.api.replaceGeneral(deviceId, { news: true }, credentials);
+        } else {
+            await this.deps.api.deleteGeneral(deviceId);
+        }
+        this.lastSent.set(GENERAL_KEY, signature);
+    }
+
     private async replaceGroup(
         deviceId: string,
         accountId: string,
         group: SubscriptionGroup,
-        pushToken: string,
+        credentials: PushDeviceCredentials,
         signature: string
     ): Promise<void> {
         const groupId = await this.reserveGroupId(accountId);
         this.deps.logger.info('push_subscription.replace_group', { accountId, groupId });
-        await this.deps.api.replaceGroup(deviceId, groupId, group, {
-            pushToken,
-            platform: this.deps.platform
-        });
+        await this.deps.api.replaceGroup(deviceId, groupId, group, credentials);
         this.lastSent.set(accountId, signature);
     }
 
