@@ -53,8 +53,8 @@ knows nothing about `features`; in mobile, `features` knows nothing about `scree
   out, no routing. A flow lives in the component that triggers it, together with its modal switch, and
   moves up to the page only when more than one component triggers it (`pages/main/MainPage.tsx`) —
   then it travels as one prop, never as a page-level context; see `web-ui.md`.
-- `apps/desktop/src/renderer/shared` — the route constants and the structured storages (the
-  `desktop` node of the regular and encrypted stores).
+- `apps/desktop/src/renderer/shared` — the route paths with their zod param/search shapes
+  (`routes.ts`) and the structured storages (the `desktop` node of the regular and encrypted stores).
 - `apps/desktop/src/renderer/features` — one scenario per directory (`passcode`, `biometry`,
   `app-lock`, `onboarding`, `qr-scan`), each owning its `keys.ts`: the controller hooks that turn a
   screen's callbacks into flows, plus the modals those flows own. Only the scenarios bound to this
@@ -63,7 +63,8 @@ knows nothing about `features`; in mobile, `features` knows nothing about `scree
   job — the security gate handed to `IAppContext` is built in `app/AppProviders.tsx`, not in a
   feature.
 - `apps/desktop/src/renderer/screens` — one route component each, the web counterpart of a mobile
-  screen: it composes features and holds no domain logic of its own.
+  screen: it composes features, maps the matched route to the props a `web-ui` page takes
+  (`main-location.ts`) and holds no domain logic of its own.
 - `apps/desktop/src/renderer/app` — the entry point: the route tree, the guards and the providers.
   `web-ui` never imports app code (enforced), and the router lives here so a second target can wire
   the same screens differently.

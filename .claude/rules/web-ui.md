@@ -121,6 +121,17 @@ the guards and the route components that mount them live in the app
 wire the same screens into its own navigation. A component here that reaches for `useNavigate` has to
 take a callback prop instead.
 
+**The page owns the shape of its location, the app owns the URL.** `MainPage` is controlled: it takes
+a `MainLocation` (`pages/main/location.ts` — the view, the settings section, and which top-level
+modal is open) plus `onNavigate(next)`, and never holds that state itself. The app's route component
+translates its matched route into a `MainLocation` and a `MainLocation` back into a `navigate()`
+call (`apps/desktop/src/renderer/screens/main-location.ts`), so a deep link is one `router.navigate`
+away. A flow whose opening is part of the location (`useSendFlow`, `useReceiveFlow`,
+`useAddWalletFlow`, the `add` half of `useAccountFlow`) takes `{ isOpen, onOpenChange }`
+(`shared/hooks/useControlledOpen`) and resets its inner steps when it is closed from outside. The
+steps *inside* a flow stay local state: they follow async results (`resolveImportedPortfolio` deciding
+between `duplicate` and `customize`) and sit next to secrets in refs, so a URL cannot own them.
+
 **A flow may live here; a platform-bound one may not.** The slices in
 `features/{add-wallet,wallet,account,contact,sync}` hold the controller hooks and the modal switches that drive a scenario — local step state,
 `@safely/ux` mutations, and the modals of their own slice. What a flow here must **not** hold is a
@@ -143,11 +154,10 @@ thing by.
 hook called twice is two independent states: `MainPage` keeps `useAddWalletFlow` (the wallet sidebar
 and the empty state both open it) and `useAccountFlow` (the settings sidebar edits, adds and signs
 out; the account list adds), renders those two switches, and passes the flow object down as a single
-prop — no page-level context and no bag of callbacks in between. What the page can answer itself is
-not a prop at all — the dev tools
-open as a state of `MainPage`, not as a route the app has to own, so the extension reaches them the
-same way. What only the app can answer does not travel through the page either: `SecuritySettings` is
-exported for the app to mount with its own props, which is why `MainPage` takes no `security`.
+prop — no page-level context and no bag of callbacks in between. What only the app can answer does not
+travel through the page as state either: `MainPage` takes the `security` section as a `ReactNode` the
+app mounts with its own props, and the dev tools are a route of the app (`onOpenDevTools` is a
+callback, `DevToolsPage` is a page like any other).
 
 A flow that must ignore a cancelled security gate catches `SecurityCheckCancelledError` from
 `@safely/ux`; which factors the gate composes and how it is raised stays the app's
