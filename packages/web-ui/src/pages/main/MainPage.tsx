@@ -1,5 +1,5 @@
 import type { FC, ReactNode } from 'react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import type { ActivityItem, BtcActivityItem } from '@safely/ux';
 import {
@@ -12,6 +12,7 @@ import {
 } from '@safely/ux';
 
 import { MainContent, MainEmptyState } from './content';
+import type { MainLocation, MainModal, MainView } from './location';
 import { dragRegionStyles } from './MainPage.styles';
 import { MainSidebar } from './MainSidebar';
 import type { SettingsSection } from './settings';
@@ -31,55 +32,43 @@ import {
     useSendFlow
 } from '../../features';
 import { AppLayout } from '../../shared';
-import { DevToolsPage } from '../dev-tools';
-
-type MainView =
-    | { kind: 'home' }
-    | { kind: 'updates' }
-    | { kind: 'safety' }
-    | { kind: 'settings'; section: SettingsSection | null };
 
 export type MainPageProps = {
+    location: MainLocation;
+    onNavigate: (next: MainLocation) => void;
+    onOpenDevTools: () => void;
     hasWindowControls?: boolean;
     isFullScreen?: boolean;
     security: ReactNode;
 };
 
 export const MainPage: FC<MainPageProps> = props => {
-    const { hasWindowControls, isFullScreen, security } = props;
+    const { location, onNavigate, onOpenDevTools, hasWindowControls, isFullScreen, security } =
+        props;
+    const { view, modal } = location;
 
     const hasPortfolio = useHasPortfolio();
-    const addWallet = useAddWalletFlow();
-    const account = useAccountFlow();
-    const send = useSendFlow();
-    const receive = useReceiveFlow();
+    const modalProps = (kind: MainModal) => ({
+        isOpen: modal === kind,
+        onOpenChange: (isOpen: boolean) => onNavigate({ view, modal: isOpen ? kind : null })
+    });
+    const addWallet = useAddWalletFlow(modalProps('addWallet'));
+    const account = useAccountFlow({ add: modalProps('addAccount') });
+    const send = useSendFlow(modalProps('send'));
+    const receive = useReceiveFlow(modalProps('receive'));
 
     const { shouldShowBadge, markWatched } = useBetaFeedWatched();
     const linkState = useAccountLinkState();
     const isAttentionRequired = useIsAttentionRequired();
 
-    const [isDevToolsOpen, setIsDevToolsOpen] = useState(false);
-    const [view, setView] = useState<MainView>({ kind: 'home' });
     const [selectedActivity, setSelectedActivity] = useState<BtcActivityItem | null>(null);
 
     const section = view.kind === 'settings' ? view.section : null;
 
-    useEffect(() => {
-        if (hasPortfolio) {
-            return;
-        }
-
-        setView(current =>
-            current.kind === 'settings' && current.section === 'wallet'
-                ? { ...current, section: 'account' }
-                : current
-        );
-    }, [hasPortfolio]);
-
     const clearSelectedActivity = useCallback(() => setSelectedActivity(null), []);
 
     const changeView = (next: MainView): void => {
-        setView(next);
+        onNavigate({ view: next, modal: null });
         setSelectedActivity(null);
     };
 
@@ -105,16 +94,6 @@ export const MainPage: FC<MainPageProps> = props => {
     /* orders have no detail view on the web targets yet */
     const selectActivity = (activity: ActivityItem): void =>
         isBtcActivityItem(activity) ? setSelectedActivity(activity) : undefined;
-
-    if (isDevToolsOpen) {
-        return (
-            <DevToolsPage
-                hasWindowControls={hasWindowControls}
-                isFullScreen={isFullScreen}
-                onClose={() => setIsDevToolsOpen(false)}
-            />
-        );
-    }
 
     const home = hasPortfolio ? (
         <MainContent
@@ -169,7 +148,7 @@ export const MainPage: FC<MainPageProps> = props => {
                 activeSection={section}
                 account={account}
                 onSelectSection={selectSection}
-                onOpenDevTools={() => setIsDevToolsOpen(true)}
+                onOpenDevTools={onOpenDevTools}
             />
 
             <AppLayout.Content>
