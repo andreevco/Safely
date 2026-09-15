@@ -8,6 +8,7 @@ import {
     useAccountLinkState,
     useBetaFeedWatched,
     useHasPortfolio,
+    useIsActivePortfolioWatchOnly,
     useIsAttentionRequired
 } from '@safely/ux';
 
@@ -48,6 +49,7 @@ export const MainPage: FC<MainPageProps> = props => {
     const { view, modal } = location;
 
     const hasPortfolio = useHasPortfolio();
+    const isWatchOnly = useIsActivePortfolioWatchOnly();
     const modalProps = (kind: MainModal) => ({
         isOpen: modal === kind,
         onOpenChange: (isOpen: boolean) => onNavigate({ view, modal: isOpen ? kind : null })
@@ -172,7 +174,7 @@ export const MainPage: FC<MainPageProps> = props => {
 
             <AddWalletModals flow={addWallet} />
             <AccountModals flow={account} />
-            <SendModals flow={send} />
+            {!isWatchOnly && <SendModals flow={send} />}
             <ReceiveModals flow={receive} />
         </AppLayout>
     );
