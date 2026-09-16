@@ -30,6 +30,8 @@ import {
 import { getStoreCountryAsync } from '../../modules/safely-store-country/src';
 import packageJson from '../../package.json';
 
+const pushNotifications = new ExpoPushNotifications();
+
 const security: Security = {
     check() {
         throw new Error('Security check not initialized');
@@ -107,7 +109,7 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
                         });
                     })
             },
-            pushNotifications: new ExpoPushNotifications(),
+            pushNotifications,
             toast: {
                 show: toastService.show
             },

@@ -92,3 +92,8 @@ update it when adding a language.
     in a changelog cause exit 141 / empty logs, which is why the workflow strips them up front.
 - Icons: `pnpm --filter mobile run icons` (`scripts/generate-icons-file.js`); the generated file is
   not hand-edited.
+- Android push tokens need Firebase: `android.googleServicesFile` reads `GOOGLE_SERVICES_JSON` (an
+  EAS file variable) and falls back to `apps/mobile/google-services.json`, which is git-ignored — for
+  a local Android dev-client download it from the Firebase project `safely-wallet` (Project settings
+  → Your apps → `com.safely.wallet`). Without it `getExpoPushTokenAsync` throws on Android and push
+  registration never happens.

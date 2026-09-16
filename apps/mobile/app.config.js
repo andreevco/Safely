@@ -43,6 +43,7 @@ module.exports = {
                 backgroundImage: './assets/android-icon-bg.png'
             },
             package: 'com.safely.wallet',
+            googleServicesFile: process.env.GOOGLE_SERVICES_JSON ?? './google-services.json',
             allowBackup: false
         },
         plugins: [

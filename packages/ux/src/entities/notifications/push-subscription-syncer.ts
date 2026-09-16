@@ -109,8 +109,11 @@ export class PushSubscriptionSyncer {
         }
 
         const deviceId = await this.resolveDeviceId();
+        const pushToken = await this.resolvePushToken();
+        if (pushToken === null) return 1;
+
         const credentials: PushDeviceCredentials = {
-            pushToken: await this.deps.pushNotifications.getPushToken(),
+            pushToken,
             platform: this.deps.platform,
             lang: input.lang,
             appVersion: this.deps.appVersion
@@ -216,6 +219,16 @@ export class PushSubscriptionSyncer {
         await this.write('groupIds', { ...groupIds, [accountId]: groupId });
 
         return groupId;
+    }
+
+    private async resolvePushToken(): Promise<string | null> {
+        try {
+            return await this.deps.pushNotifications.getPushToken();
+        } catch (e) {
+            this.deps.logger.error('push_subscription.push_token_failed', e);
+
+            return null;
+        }
     }
 
     private async resolveDeviceId(): Promise<string> {

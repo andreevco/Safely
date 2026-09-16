@@ -46,10 +46,13 @@ function createHarness() {
         replaceGeneral: vi.fn<NotificationsApi['replaceGeneral']>(async () => undefined),
         deleteGeneral: vi.fn<NotificationsApi['deleteGeneral']>(async () => undefined)
     };
+    const getPushToken = vi.fn<IPushNotifications['getPushToken']>(
+        async () => 'ExponentPushToken[test]'
+    );
     const pushNotifications: IPushNotifications = {
         getPermissionStatus: async () => 'granted',
         requestPermission: async () => 'granted',
-        getPushToken: async () => 'ExponentPushToken[test]',
+        getPushToken,
         openSystemSettings: () => undefined
     };
     const logger = {
@@ -71,7 +74,7 @@ function createHarness() {
 
     const stored = (key: string) => storage.child('push-subscription').getItem(key);
 
-    return { syncer, api, storage, stored };
+    return { syncer, api, storage, stored, getPushToken };
 }
 
 const active = (accounts: PushSyncInput['accounts'], isNewsEnabled = false): PushSyncInput => ({
@@ -193,5 +196,16 @@ describe('PushSubscriptionSyncer', () => {
         await syncer.sync(active([], false));
 
         expect(api.deleteGeneral).toHaveBeenCalledTimes(1);
+    });
+
+    it('skips the run without a push token and retries after 30s', async () => {
+        const { syncer, api, getPushToken } = createHarness();
+        getPushToken.mockRejectedValueOnce(new Error('no firebase'));
+
+        await syncer.sync(active([readyAccount('a')]));
+        expect(api.replaceGroup).not.toHaveBeenCalled();
+
+        await vi.advanceTimersByTimeAsync(30_000);
+        expect(api.replaceGroup).toHaveBeenCalledTimes(1);
     });
 });

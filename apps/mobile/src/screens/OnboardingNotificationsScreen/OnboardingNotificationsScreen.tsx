@@ -18,6 +18,12 @@ export const OnboardingNotificationsScreen = () => {
     const isAlreadyDecided = permission !== undefined && permission !== 'undetermined';
 
     useEffect(() => {
+        if (permission === 'granted') {
+            void setPushEnabled(true);
+        }
+    }, [permission, setPushEnabled]);
+
+    useEffect(() => {
         if (isAlreadyDecided) {
             onNotificationsFinished();
         }
