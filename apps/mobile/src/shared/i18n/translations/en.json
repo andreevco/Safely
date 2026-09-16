@@ -820,7 +820,6 @@
     },
     "safelyBeta": {
         "title": "Safely",
-        "subtitle": "Beta · {{version}}",
         "versionCopied": "Application version copied"
     },
     "dateGroups": {

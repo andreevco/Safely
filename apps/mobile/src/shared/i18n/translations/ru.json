@@ -807,7 +807,6 @@
     },
     "safelyBeta": {
         "title": "Safely",
-        "subtitle": "Beta · {{version}}",
         "versionCopied": "Версия скопирована"
     },
     "dateGroups": {
