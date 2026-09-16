@@ -5,7 +5,7 @@ import {
     useAppContext,
     useActiveFiat,
     useActiveLanguage,
-    useActiveWalletMeta,
+    useActivePortfolio,
     useBootConfig,
     useLinking,
     useHasPortfolio,
@@ -14,21 +14,24 @@ import {
 } from '@safely/ux';
 
 import type { SettingsSection } from './settings';
-import { listStyles, versionStyles } from './SettingsSidebar.styles';
-import { WalletIcon } from '../../entities';
+import { listStyles, versionStyles, walletRowStyles } from './SettingsSidebar.styles';
+import { PortfolioTypeBadge, WalletIcon } from '../../entities';
 import type { useAccountFlow } from '../../features';
 import { AppLayout, Cell, List, PageHeader, Text, useLongPress } from '../../shared';
 
 const CurrentWalletCell: FC<{ isSelected: boolean; onClick: () => void }> = props => {
-    const walletMeta = useActiveWalletMeta();
+    const portfolio = useActivePortfolio();
 
     return (
         <Cell tone="transparent" isSelected={props.isSelected} onClick={props.onClick}>
             <Cell.Leading>
-                <WalletIcon icon={walletMeta.icon} />
+                <WalletIcon icon={portfolio.meta.icon} />
             </Cell.Leading>
             <Cell.Content>
-                <Cell.Title>{walletMeta.name}</Cell.Title>
+                <Cell.Row className={walletRowStyles}>
+                    <Cell.Title>{portfolio.meta.name}</Cell.Title>
+                    <PortfolioTypeBadge type={portfolio.type} />
+                </Cell.Row>
             </Cell.Content>
         </Cell>
     );

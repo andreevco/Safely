@@ -12,3 +12,5 @@ export const listStyles = css({
     padding: '8',
     overflowY: 'auto'
 });
+
+export const walletRowStyles = css({ justifyContent: 'flex-start' });
