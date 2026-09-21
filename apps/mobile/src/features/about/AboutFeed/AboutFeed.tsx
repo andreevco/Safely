@@ -1,5 +1,6 @@
 import { useScrollToTop } from '@react-navigation/native';
-import { useRef } from 'react';
+import type { Ref } from 'react';
+import { useImperativeHandle, useRef } from 'react';
 import { View } from 'react-native';
 
 import type { AboutPost } from '@safely/core';
@@ -14,7 +15,11 @@ import { PostCard, AboutFeedSkeleton } from './components';
 
 const DESC_ORDER = { order: 'desc' } as const;
 
-export const AboutFeed = () => {
+export interface AboutFeedRef {
+    scrollToTop: () => void;
+}
+
+export const AboutFeed = ({ ref }: { ref?: Ref<AboutFeedRef> }) => {
     const { data, isLoading } = useAboutQuery();
     const posts = data?.posts;
     const rows = useGroupedRows(
@@ -26,6 +31,9 @@ export const AboutFeed = () => {
     const listRef = useRef<ListRef<GroupedRow<AboutPost>>>(null);
 
     useScrollToTop(listRef);
+    useImperativeHandle(ref, () => ({
+        scrollToTop: () => listRef.current?.scrollToOffset({ offset: 0, animated: true })
+    }));
 
     const renderItem = ({ item }: { item: GroupedRow<AboutPost> }) => {
         if (item.type === 'header') {
