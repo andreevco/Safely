@@ -41,7 +41,7 @@ export const SafelyBetaScreen = () => {
                         variant="bodyM"
                         color="secondary"
                     >
-                        {t('safelyBeta.subtitle', { version })}
+                        {version}
                     </Text>
                 </Screen.Header.Title>
             </Screen.Header>
