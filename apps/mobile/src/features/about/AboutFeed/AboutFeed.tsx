@@ -12,13 +12,16 @@ import { useGroupedRows, getGroupedRowType, type GroupedRow } from '@mobile/shar
 import { styles } from './AboutFeed.styles';
 import { PostCard, AboutFeedSkeleton } from './components';
 
+const DESC_ORDER = { order: 'desc' } as const;
+
 export const AboutFeed = () => {
     const { data, isLoading } = useAboutQuery();
     const posts = data?.posts;
     const rows = useGroupedRows(
         posts ?? [],
         p => p.timestamp * 1000,
-        p => p.id
+        p => p.id,
+        DESC_ORDER
     );
     const listRef = useRef<ListRef<GroupedRow<AboutPost>>>(null);
 
@@ -48,7 +51,6 @@ export const AboutFeed = () => {
         <Screen.List
             ref={listRef}
             data={rows}
-            initialScrollIndex={Math.max(rows.length - 1, 0)}
             contentContainerStyle={styles.content}
             keyExtractor={item => item.key}
             getItemType={getGroupedRowType}
