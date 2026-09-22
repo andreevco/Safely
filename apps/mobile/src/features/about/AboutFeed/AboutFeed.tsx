@@ -1,6 +1,6 @@
 import { useScrollToTop } from '@react-navigation/native';
 import type { Ref } from 'react';
-import { useImperativeHandle, useRef } from 'react';
+import { useEffect, useImperativeHandle, useRef } from 'react';
 import { View } from 'react-native';
 
 import type { AboutPost } from '@safely/core';
@@ -16,7 +16,7 @@ import { PostCard, AboutFeedSkeleton } from './components';
 const DESC_ORDER = { order: 'desc' } as const;
 
 export interface AboutFeedRef {
-    scrollToTop: () => void;
+    scrollToTop: (latestTimestamp: number) => void;
 }
 
 export const AboutFeed = ({ ref }: { ref?: Ref<AboutFeedRef> }) => {
@@ -30,9 +30,25 @@ export const AboutFeed = ({ ref }: { ref?: Ref<AboutFeedRef> }) => {
     );
     const listRef = useRef<ListRef<GroupedRow<AboutPost>>>(null);
 
+    const pendingScrollTimestamp = useRef<number | null>(null);
+    const latestTimestamp = posts?.at(-1)?.timestamp;
+
+    const flushScrollToTop = () => {
+        const pending = pendingScrollTimestamp.current;
+        if (pending === null || latestTimestamp === undefined || latestTimestamp < pending) return;
+
+        pendingScrollTimestamp.current = null;
+        listRef.current?.scrollToOffset({ offset: 0, animated: true });
+    };
+
+    useEffect(flushScrollToTop, [latestTimestamp]);
+
     useScrollToTop(listRef);
     useImperativeHandle(ref, () => ({
-        scrollToTop: () => listRef.current?.scrollToOffset({ offset: 0, animated: true })
+        scrollToTop: timestamp => {
+            pendingScrollTimestamp.current = timestamp;
+            flushScrollToTop();
+        }
     }));
 
     const renderItem = ({ item }: { item: GroupedRow<AboutPost> }) => {
@@ -63,6 +79,7 @@ export const AboutFeed = ({ ref }: { ref?: Ref<AboutFeedRef> }) => {
             keyExtractor={item => item.key}
             getItemType={getGroupedRowType}
             renderItem={renderItem}
+            maintainVisibleContentPosition={{ disabled: true }}
         />
     );
 };
