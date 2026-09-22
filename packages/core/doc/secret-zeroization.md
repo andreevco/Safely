@@ -11,6 +11,10 @@ a guarantee that no copy remains.
   cannot skip the cleanup.
 - BIP32 private nodes are cleared with `HDKey.wipePrivateData()` once the derivation or signature
   they were needed for is complete.
+- An account path is walked one child index at a time rather than through `HDKey.derive(path)`,
+  which keeps the nodes it creates along the way to itself. Every node above the account one —
+  the master node and each intermediate, such as `m/84'` and `m/84'/0'` — is wiped as soon as its
+  child exists, because it grants at least as much as the account key does.
 - A function clears only what it allocated. Values returned to a caller belong to that caller, which
   clears them in turn — `BtcBip39SeedProducer.getSeed` returns a seed that
   `BtcBip32NodeProducer.getPortfolioDerivation` clears.
