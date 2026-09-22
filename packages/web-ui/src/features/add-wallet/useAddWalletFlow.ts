@@ -53,7 +53,10 @@ export function useAddWalletFlow({ isOpen, onOpenChange }: ControlledOpenProps) 
         setInnerStep(null);
     }, [isOpen]);
 
-    const open = useCallback(() => onOpenChange(true), [onOpenChange]);
+    const open = useCallback(() => {
+        setInnerStep(null);
+        onOpenChange(true);
+    }, [onOpenChange]);
 
     const close = useCallback(() => onOpenChange(false), [onOpenChange]);
 
