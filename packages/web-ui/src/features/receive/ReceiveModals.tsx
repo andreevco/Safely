@@ -8,4 +8,4 @@ export type ReceiveModalsProps = {
 };
 
 export const ReceiveModals: FC<ReceiveModalsProps> = ({ flow }) =>
-    flow.isOpen ? <ReceiveModal onClose={flow.close} /> : null;
+    flow.isOpen ? <ReceiveModal onClose={flow.onClose} /> : null;

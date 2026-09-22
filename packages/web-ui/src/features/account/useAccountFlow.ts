@@ -17,18 +17,19 @@ import {
 } from '@safely/ux';
 
 import { useSignOut } from './useSignOut';
-import type { ControlledOpenProps } from '../../shared';
+import type { DisclosureProps } from '../../shared';
+import { useDisclosure } from '../../shared';
 
 type AccountDraft = { mode: 'create' | 'edit'; name: string };
 
 type AddAccountStep = 'menu' | 'signIn' | 'signInSuccess';
 
 export type AccountFlowProps = {
-    add: ControlledOpenProps;
+    add: DisclosureProps;
 };
 
 export function useAccountFlow(props: AccountFlowProps) {
-    const { isOpen: isAddOpen, onOpenChange: onAddOpenChange } = props.add;
+    const { isOpen: isAddOpen, onOpen: openAdd, onClose: closeAdd } = useDisclosure(props.add);
 
     const t = useTranslate();
     const toast = useToast();
@@ -68,10 +69,6 @@ export function useAccountFlow(props: AccountFlowProps) {
         closeSignInStorage();
         setInnerAddStep(null);
     }, [isAddOpen, resetSignIn, closeSignInStorage]);
-
-    const openAdd = useCallback(() => onAddOpenChange(true), [onAddOpenChange]);
-
-    const closeAdd = useCallback(() => onAddOpenChange(false), [onAddOpenChange]);
 
     const startCreate = useCallback(() => {
         closeAdd();

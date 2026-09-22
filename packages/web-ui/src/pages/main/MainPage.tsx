@@ -31,6 +31,7 @@ import {
     useReceiveFlow,
     useSendFlow
 } from '../../features';
+import type { DisclosureProps } from '../../shared';
 import { AppLayout } from '../../shared';
 
 export type MainPageProps = {
@@ -48,9 +49,10 @@ export const MainPage: FC<MainPageProps> = props => {
     const { view, modal } = location;
 
     const hasPortfolio = useHasPortfolio();
-    const modalProps = (kind: MainModal) => ({
+    const modalProps = (kind: MainModal): DisclosureProps => ({
         isOpen: modal === kind,
-        onOpenChange: (isOpen: boolean) => onNavigate({ view, modal: isOpen ? kind : null })
+        onOpen: () => onNavigate({ view, modal: kind }),
+        onClose: () => onNavigate({ view, modal: null })
     });
     const addWallet = useAddWalletFlow(modalProps('addWallet'));
     const account = useAccountFlow({ add: modalProps('addAccount') });
@@ -98,8 +100,8 @@ export const MainPage: FC<MainPageProps> = props => {
     const home = hasPortfolio ? (
         <MainContent
             selectedActivityKey={selectedActivity?.key}
-            onSend={send.open}
-            onReceive={receive.open}
+            onSend={send.onOpen}
+            onReceive={receive.onOpen}
             onSelectActivity={selectActivity}
             onPortfolioChange={clearSelectedActivity}
         />
