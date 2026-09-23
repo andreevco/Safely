@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import type { Portfolio, PortfolioMeta } from '@safely/core';
 import { MnemonicResource, PortfolioAlreadyExistsError, PortfolioNetworkType } from '@safely/core';
@@ -16,6 +16,9 @@ import {
     useSetActivePortfolio
 } from '@safely/ux';
 
+import type { DisclosureProps } from '../../shared';
+import { useDisclosure } from '../../shared';
+
 export type AddWalletDraft = PortfolioMeta;
 
 export type AddWalletStep = 'menu' | 'import' | 'watch' | 'duplicate' | 'customize';
@@ -26,7 +29,8 @@ type AddWalletSource =
     | { kind: 'watchOnly'; input: string }
     | { kind: 'existing'; portfolio: Portfolio };
 
-export function useAddWalletFlow() {
+export function useAddWalletFlow(props: DisclosureProps) {
+    const { isOpen, onOpen, onClose } = useDisclosure(props);
     const errorToast = useErrorToast({});
     const portfolios = usePortfolios();
     const defaultName = useNewPortfolioFallbackName();
@@ -35,43 +39,43 @@ export function useAddWalletFlow() {
     const { mutateAsync: addPortfolioFromSource } = useAddPortfolioFromSource();
     const nextDerivingInfo = useActiveAccountStoreSlot('nextDerivingPortfolioInfo');
 
-    const [step, setStep] = useState<AddWalletStep | null>(null);
+    const [innerStep, setInnerStep] = useState<Exclude<AddWalletStep, 'menu'> | null>(null);
     const [draft, setDraft] = useState<AddWalletDraft | null>(null);
     const [duplicate, setDuplicate] = useState<Portfolio | null>(null);
 
     const source = useRef<AddWalletSource | null>(null);
     const networkType = useRef<PortfolioNetworkType>(PortfolioNetworkType.MAINNET);
 
-    const open = useCallback(() => {
-        source.current = null;
-        setDraft(null);
-        setDuplicate(null);
-        setStep('menu');
-    }, []);
+    const step: AddWalletStep | null = isOpen ? (innerStep ?? 'menu') : null;
 
-    const close = useCallback(() => {
+    useEffect(() => {
         source.current = null;
         setDraft(null);
         setDuplicate(null);
-        setStep(null);
-    }, []);
+        setInnerStep(null);
+    }, [isOpen]);
+
+    const open = useCallback(() => {
+        setInnerStep(null);
+        onOpen();
+    }, [onOpen]);
 
     const openImport = useCallback((network: PortfolioNetworkType) => {
         networkType.current = network;
-        setStep('import');
+        setInnerStep('import');
     }, []);
 
-    const openWatch = useCallback(() => setStep('watch'), []);
+    const openWatch = useCallback(() => setInnerStep('watch'), []);
 
     const showDuplicate = useCallback((portfolio: Portfolio) => {
         setDuplicate(portfolio);
-        setStep('duplicate');
+        setInnerStep('duplicate');
     }, []);
 
     const startCreate = useCallback(() => {
         source.current = { kind: 'generated' };
         setDraft({ name: defaultName, icon: resolveGeneratedPortfolioIcon(nextDerivingInfo) });
-        setStep('customize');
+        setInnerStep('customize');
     }, [nextDerivingInfo, defaultName]);
 
     const onMnemonicReady = useCallback(
@@ -92,7 +96,7 @@ export function useAddWalletFlow() {
 
                 source.current = { kind: 'imported', mnemonic, networkType: networkType.current };
                 setDraft({ name: defaultName, icon: resolution.icon });
-                setStep('customize');
+                setInnerStep('customize');
             } catch (error) {
                 errorToast(error);
             }
@@ -115,7 +119,7 @@ export function useAddWalletFlow() {
 
             source.current = { kind: 'watchOnly', input };
             setDraft({ name: defaultName, icon: resolution.icon });
-            setStep('customize');
+            setInnerStep('customize');
         },
         [portfolios, showDuplicate, defaultName]
     );
@@ -125,9 +129,9 @@ export function useAddWalletFlow() {
             return;
         }
 
-        close();
+        onClose();
         await setActivePortfolio({ id: duplicate.id });
-    }, [duplicate, close, setActivePortfolio]);
+    }, [duplicate, onClose, setActivePortfolio]);
 
     const editDuplicate = useCallback(() => {
         if (duplicate === null) {
@@ -136,7 +140,7 @@ export function useAddWalletFlow() {
 
         source.current = { kind: 'existing', portfolio: duplicate };
         setDraft({ name: duplicate.meta.name, icon: duplicate.meta.icon });
-        setStep('customize');
+        setInnerStep('customize');
     }, [duplicate]);
 
     const save = useCallback(
@@ -175,7 +179,7 @@ export function useAddWalletFlow() {
                     await addPortfolioFromSource({ source: { kind: 'generated' }, meta });
                 }
 
-                close();
+                onClose();
             } catch (error) {
                 if (error instanceof PortfolioAlreadyExistsError && error.existingPortfolio) {
                     const existingId = error.existingPortfolio.id;
@@ -188,13 +192,13 @@ export function useAddWalletFlow() {
                 }
 
                 if (!(error instanceof SecurityCheckCancelledError)) {
-                    close();
+                    onClose();
                     throw error;
                 }
             }
         },
         [
-            close,
+            onClose,
             changePortfolioMeta,
             setActivePortfolio,
             addPortfolioFromSource,
@@ -208,7 +212,7 @@ export function useAddWalletFlow() {
         draft,
         duplicate,
         open,
-        close,
+        close: onClose,
         openImport,
         openWatch,
         startCreate,

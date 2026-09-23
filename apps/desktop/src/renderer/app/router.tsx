@@ -7,7 +7,7 @@ import {
 
 import { OnboardingGuard } from './OnboardingGuard';
 import { MainScreen, WelcomeScreen } from '../screens';
-import { ROUTE } from '../shared';
+import { ROUTE, sMainSearch, sSettingsParams } from '../shared';
 
 export type RouterContext = {
     hasWindowControls?: boolean;
@@ -16,10 +16,26 @@ export type RouterContext = {
 
 const rootRoute = createRootRouteWithContext<RouterContext>()({ component: OnboardingGuard });
 
-const mainRoute = createRoute({
+const mainLayoutRoute = createRoute({
     getParentRoute: () => rootRoute,
-    path: ROUTE.main,
-    component: MainScreen
+    id: 'main',
+    component: MainScreen,
+    validateSearch: sMainSearch
+});
+
+const homeRoute = createRoute({ getParentRoute: () => mainLayoutRoute, path: ROUTE.main });
+
+const updatesRoute = createRoute({ getParentRoute: () => mainLayoutRoute, path: ROUTE.updates });
+
+const safetyRoute = createRoute({ getParentRoute: () => mainLayoutRoute, path: ROUTE.safety });
+
+const settingsRoute = createRoute({
+    getParentRoute: () => mainLayoutRoute,
+    path: ROUTE.settings,
+    params: {
+        parse: params => sSettingsParams.parse(params),
+        stringify: params => params
+    }
 });
 
 const welcomeRoute = createRoute({
@@ -28,7 +44,10 @@ const welcomeRoute = createRoute({
     component: WelcomeScreen
 });
 
-const routeTree = rootRoute.addChildren([mainRoute, welcomeRoute]);
+const routeTree = rootRoute.addChildren([
+    mainLayoutRoute.addChildren([homeRoute, updatesRoute, safetyRoute, settingsRoute]),
+    welcomeRoute
+]);
 
 export const router = createRouter({
     routeTree,

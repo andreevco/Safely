@@ -35,7 +35,8 @@ Inside the renderer the layout is FSD, the same shape mobile uses:
 implementation) and two module-level singletons at the root, `logger.ts` and `i18n.ts`. `features/`
 holds one scenario per directory — `passcode`, `biometry`, `app-lock`, `onboarding`, `qr-scan` — each
 with its own `keys.ts` where it needs one; `screens/` is one component per route, and `app/` composes
-them into the route tree and the providers. What is left here is what binds to this target: the
+them into the route tree and the providers (the tree itself is described under "Routes" below). What
+is left here is what binds to this target: the
 wallet, account and contact flows live in `@safely/web-ui` (`web-ui.md` draws the line), `onboarding`
 stays because it navigates and because its `UNSAFE_SKIP_SECURITY_CHECK_unlock()` means a keychain,
 and `qr-scan` stays because the camera permission and the device list are Electron's while only its
@@ -135,8 +136,8 @@ in `vite.main.config.ts`: plain files in the development `userData`, protecting 
 every start. A packaged build refuses to start rather than degrade to it. Anything you want to
 believe about the store has to be checked on a signed build — `signing/verify-signature.sh` for
 the signature, the running app for securityd. What exercises it by hand is the `SECRET STORE` section
-of the dev tools (`packages/web-ui/src/pages/dev-tools/KeychainSection.tsx`, reached by a long press
-on the version line in settings): it lists, adds, edits and deletes entries of either secret scope
+of the dev tools (`packages/web-ui/src/pages/main/settings/KeychainSection.tsx`, the `devTools`
+settings section reached by a long press on the version line in settings): it lists, adds, edits and deletes entries of either secret scope
 through the same `IAppContext` storage the rest of the UI uses — `storage.sync.encrypted` and
 `storage.sync.getSecureEncrypted()`, so it sees the `sync` node of the scope and not the whole
 keychain service. Reaching the secure scope there needs `UNSAFE_SKIP_SECURITY_CHECK_unlock()`, exactly
@@ -166,6 +167,32 @@ the onboarding is `useOnboardingFlow`'s navigation, the way mobile's flow resets
 keeps the secure store open for the whole pairing (the connector reads it while
 the QR is up) and disposes it on success, on timeout and on close — `signIn.reset()` is what aborts
 the polling.
+
+## Routes
+
+`app/router.tsx` is the whole tree, on `createMemoryHistory` (no URL bar, and `safely://app/<path>`
+would be served as a file — see below); the paths and the zod shapes of params and search live in
+`shared/routes.ts` so a feature can navigate without importing `app/`:
+
+- `/onboarding` — `WelcomeScreen`; its steps are `useOnboardingFlow` state, not routes
+- a pathless layout route `main` (`MainScreen`) with `?modal=send|receive|addWallet|addAccount` as
+  its search, and the children `/`, `/updates`, `/safety`, `/settings/{-$section}`. The children
+  have no component: they exist for the URL, the params and the history, and `MainScreen` turns the
+  matched child plus the search into the `MainLocation` that `MainPage` takes
+  (`screens/main-location.ts`, round-trip tested in `test/renderer/`). A layout route rather than a
+  component per path is what keeps `MainPage` mounted across a navigation — the flows it hoists and
+  the sidebar scroll survive.
+
+`OnboardingGuard` on the root redirects to `/onboarding` while the account or the passcode is missing,
+and only in that direction (below). The `wallet` settings section without a portfolio redirects to
+`account` from `MainScreen` with `<Navigate replace>`. A deep link, once wired, becomes
+`router.navigate(toMainRouteTarget(location))` — the URL is data to parse, never a location to load.
+
+`AppLock` replaces the whole tree with the lock screen rather than hiding it: modals, toasts and the
+loader are portalled to `document.body`, so anything left mounted would paint over the lock. The
+`router` is module-level and so is its memory history — unmounting `RouterProvider` loses React state
+(an open flow's inner step), not the location; after unlock the user is back on the same route with
+the same `?modal=`.
 
 **The passcode flow lives in `src/renderer/features/`**, one feature per factor and per scenario:
 `passcode` (hooks, lockout, the prompt store, `PasscodeSetupFlow`, `ChangePasscodeFlow`), `biometry`

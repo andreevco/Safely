@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import type { IUnlockableSecuredEncryptedStorage, OnboardedAccount } from '@safely/ux';
 import {
@@ -17,12 +17,20 @@ import {
 } from '@safely/ux';
 
 import { useSignOut } from './useSignOut';
+import type { DisclosureProps } from '../../shared';
+import { useDisclosure } from '../../shared';
 
 type AccountDraft = { mode: 'create' | 'edit'; name: string };
 
 type AddAccountStep = 'menu' | 'signIn' | 'signInSuccess';
 
-export function useAccountFlow() {
+export type AccountFlowProps = {
+    add: DisclosureProps;
+};
+
+export function useAccountFlow(props: AccountFlowProps) {
+    const { isOpen: isAddOpen, onOpen: openAdd, onClose: closeAdd } = useDisclosure(props.add);
+
     const t = useTranslate();
     const toast = useToast();
     const { withLoader } = useLoader();
@@ -43,7 +51,7 @@ export function useAccountFlow() {
     const signInStorage = useRef<IUnlockableSecuredEncryptedStorage | null>(null);
 
     const [draft, setDraft] = useState<AccountDraft | null>(null);
-    const [addStep, setAddStep] = useState<AddAccountStep | null>(null);
+    const [innerAddStep, setInnerAddStep] = useState<Exclude<AddAccountStep, 'menu'> | null>(null);
     const [inviterIkPubHex, setInviterIkPubHex] = useState<string | null>(null);
     const [isSigningOut, setIsSigningOut] = useState(false);
 
@@ -52,18 +60,20 @@ export function useAccountFlow() {
         signInStorage.current = null;
     }, []);
 
-    const openAdd = useCallback(() => setAddStep('menu'), []);
+    const addStep: AddAccountStep | null = isAddOpen ? (innerAddStep ?? 'menu') : null;
 
-    const closeAdd = useCallback(() => {
-        signIn.reset();
+    const resetSignIn = signIn.reset;
+
+    useEffect(() => {
+        resetSignIn();
         closeSignInStorage();
-        setAddStep(null);
-    }, [signIn, closeSignInStorage]);
+        setInnerAddStep(null);
+    }, [isAddOpen, resetSignIn, closeSignInStorage]);
 
     const startCreate = useCallback(() => {
-        setAddStep(null);
+        closeAdd();
         setDraft({ mode: 'create', name: defaultName });
-    }, [defaultName]);
+    }, [closeAdd, defaultName]);
 
     const startSignIn = useCallback(async () => {
         signIn.reset();
@@ -91,23 +101,22 @@ export function useAccountFlow() {
             return;
         }
 
-        setAddStep('signIn');
+        setInnerAddStep('signIn');
     }, [signIn, getSecureEncrypted, closeSignInStorage, errorToast]);
 
     const onAccountConnected = useCallback(
         (onboarded: OnboardedAccount) => {
             closeSignInStorage();
             setInviterIkPubHex(onboarded.inviterIkPubHex);
-            setAddStep('signInSuccess');
+            setInnerAddStep('signInSuccess');
         },
         [closeSignInStorage]
     );
 
     const onAccountConnectFailed = useCallback(() => {
-        closeSignInStorage();
-        setAddStep(null);
+        closeAdd();
         toast({ message: t('signIn.timeout'), duration: 5000 });
-    }, [closeSignInStorage, toast, t]);
+    }, [closeAdd, toast, t]);
 
     useAccountConnectedCallback(signIn.data, onAccountConnected, {
         setAsActive: true,
