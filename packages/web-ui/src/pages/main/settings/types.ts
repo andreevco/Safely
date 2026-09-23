@@ -5,7 +5,8 @@ export const SETTINGS_SECTIONS = [
     'security',
     'language',
     'currency',
-    'legal'
+    'legal',
+    'devTools'
 ] as const;
 
 export type SettingsSection = (typeof SETTINGS_SECTIONS)[number];

@@ -55,14 +55,13 @@ export type SettingsSidebarProps = {
     activeSection: SettingsSection | null;
     account: ReturnType<typeof useAccountFlow>;
     onSelectSection: (section: SettingsSection) => void;
-    onOpenDevTools: () => void;
 };
 
 export const SettingsSidebar: FC<SettingsSidebarProps> = props => {
-    const { activeSection, account, onSelectSection, onOpenDevTools } = props;
+    const { activeSection, account, onSelectSection } = props;
 
     const { version } = useAppContext();
-    const longPress = useLongPress(onOpenDevTools);
+    const longPress = useLongPress(() => onSelectSection('devTools'));
     const t = useTranslate();
     const fiat = useActiveFiat();
     const { openURL } = useLinking();

@@ -16,7 +16,8 @@ import {
     useSetActivePortfolio
 } from '@safely/ux';
 
-import type { ControlledOpenProps } from '../../shared';
+import type { DisclosureProps } from '../../shared';
+import { useDisclosure } from '../../shared';
 
 export type AddWalletDraft = PortfolioMeta;
 
@@ -28,7 +29,8 @@ type AddWalletSource =
     | { kind: 'watchOnly'; input: string }
     | { kind: 'existing'; portfolio: Portfolio };
 
-export function useAddWalletFlow({ isOpen, onOpenChange }: ControlledOpenProps) {
+export function useAddWalletFlow(props: DisclosureProps) {
+    const { isOpen, onOpen, onClose } = useDisclosure(props);
     const errorToast = useErrorToast({});
     const portfolios = usePortfolios();
     const defaultName = useNewPortfolioFallbackName();
@@ -55,10 +57,8 @@ export function useAddWalletFlow({ isOpen, onOpenChange }: ControlledOpenProps) 
 
     const open = useCallback(() => {
         setInnerStep(null);
-        onOpenChange(true);
-    }, [onOpenChange]);
-
-    const close = useCallback(() => onOpenChange(false), [onOpenChange]);
+        onOpen();
+    }, [onOpen]);
 
     const openImport = useCallback((network: PortfolioNetworkType) => {
         networkType.current = network;
@@ -129,9 +129,9 @@ export function useAddWalletFlow({ isOpen, onOpenChange }: ControlledOpenProps) 
             return;
         }
 
-        close();
+        onClose();
         await setActivePortfolio({ id: duplicate.id });
-    }, [duplicate, close, setActivePortfolio]);
+    }, [duplicate, onClose, setActivePortfolio]);
 
     const editDuplicate = useCallback(() => {
         if (duplicate === null) {
@@ -179,7 +179,7 @@ export function useAddWalletFlow({ isOpen, onOpenChange }: ControlledOpenProps) 
                     await addPortfolioFromSource({ source: { kind: 'generated' }, meta });
                 }
 
-                close();
+                onClose();
             } catch (error) {
                 if (error instanceof PortfolioAlreadyExistsError && error.existingPortfolio) {
                     const existingId = error.existingPortfolio.id;
@@ -192,13 +192,13 @@ export function useAddWalletFlow({ isOpen, onOpenChange }: ControlledOpenProps) 
                 }
 
                 if (!(error instanceof SecurityCheckCancelledError)) {
-                    close();
+                    onClose();
                     throw error;
                 }
             }
         },
         [
-            close,
+            onClose,
             changePortfolioMeta,
             setActivePortfolio,
             addPortfolioFromSource,
@@ -212,7 +212,7 @@ export function useAddWalletFlow({ isOpen, onOpenChange }: ControlledOpenProps) 
         draft,
         duplicate,
         open,
-        close,
+        close: onClose,
         openImport,
         openWatch,
         startCreate,

@@ -6,7 +6,7 @@ import {
 } from '@tanstack/react-router';
 
 import { OnboardingGuard } from './OnboardingGuard';
-import { DevToolsScreen, MainScreen, WelcomeScreen } from '../screens';
+import { MainScreen, WelcomeScreen } from '../screens';
 import { ROUTE, sMainSearch, sSettingsParams } from '../shared';
 
 export type RouterContext = {
@@ -38,12 +38,6 @@ const settingsRoute = createRoute({
     }
 });
 
-const devToolsRoute = createRoute({
-    getParentRoute: () => rootRoute,
-    path: ROUTE.devTools,
-    component: DevToolsScreen
-});
-
 const welcomeRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: ROUTE.onboarding.welcome,
@@ -52,7 +46,6 @@ const welcomeRoute = createRoute({
 
 const routeTree = rootRoute.addChildren([
     mainLayoutRoute.addChildren([homeRoute, updatesRoute, safetyRoute, settingsRoute]),
-    devToolsRoute,
     welcomeRoute
 ]);
 

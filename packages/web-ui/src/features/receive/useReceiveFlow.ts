@@ -1,3 +1,3 @@
-import { useControlledOpen } from '../../shared';
+import { useDisclosure } from '../../shared';
 
-export const useReceiveFlow = useControlledOpen;
+export const useReceiveFlow = useDisclosure;

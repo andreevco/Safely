@@ -3,6 +3,7 @@ import type { FC, ReactNode } from 'react';
 import { AccountSettings } from './AccountSettings';
 import { AddressBookSettings } from './AddressBookSettings';
 import { CurrencySettings } from './CurrencySettings';
+import { DevToolsSettings } from './DevToolsSettings';
 import { LanguageSettings } from './LanguageSettings';
 import { LegalSettings } from './LegalSettings';
 import type { SettingsSection } from './types';
@@ -31,5 +32,7 @@ export const SettingsContent: FC<SettingsContentProps> = ({ section, account, se
             return <CurrencySettings />;
         case 'legal':
             return <LegalSettings />;
+        case 'devTools':
+            return <DevToolsSettings />;
     }
 };

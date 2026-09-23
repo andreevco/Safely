@@ -32,27 +32,27 @@ import {
     useReceiveFlow,
     useSendFlow
 } from '../../features';
+import type { DisclosureProps } from '../../shared';
 import { AppLayout } from '../../shared';
 
 export type MainPageProps = {
     location: MainLocation;
     onNavigate: (next: MainLocation) => void;
-    onOpenDevTools: () => void;
     hasWindowControls?: boolean;
     isFullScreen?: boolean;
     security: ReactNode;
 };
 
 export const MainPage: FC<MainPageProps> = props => {
-    const { location, onNavigate, onOpenDevTools, hasWindowControls, isFullScreen, security } =
-        props;
+    const { location, onNavigate, hasWindowControls, isFullScreen, security } = props;
     const { view, modal } = location;
 
     const hasPortfolio = useHasPortfolio();
     const isWatchOnly = useIsActivePortfolioWatchOnly();
-    const modalProps = (kind: MainModal) => ({
+    const modalProps = (kind: MainModal): DisclosureProps => ({
         isOpen: modal === kind,
-        onOpenChange: (isOpen: boolean) => onNavigate({ view, modal: isOpen ? kind : null })
+        onOpen: () => onNavigate({ view, modal: kind }),
+        onClose: () => onNavigate({ view, modal: null })
     });
     const addWallet = useAddWalletFlow(modalProps('addWallet'));
     const account = useAccountFlow({ add: modalProps('addAccount') });
@@ -100,8 +100,8 @@ export const MainPage: FC<MainPageProps> = props => {
     const home = hasPortfolio ? (
         <MainContent
             selectedActivityKey={selectedActivity?.key}
-            onSend={send.open}
-            onReceive={receive.open}
+            onSend={send.onOpen}
+            onReceive={receive.onOpen}
             onSelectActivity={selectActivity}
             onPortfolioChange={clearSelectedActivity}
         />
@@ -150,7 +150,6 @@ export const MainPage: FC<MainPageProps> = props => {
                 activeSection={section}
                 account={account}
                 onSelectSection={selectSection}
-                onOpenDevTools={onOpenDevTools}
             />
 
             <AppLayout.Content>
