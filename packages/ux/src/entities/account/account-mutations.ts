@@ -440,14 +440,10 @@ export function useSetActiveAccount() {
                 }
 
                 const portfolio = account.syncProvider.get('portfolios')[0];
-                client.setQueryData<SActivePortfolioSchema>(
-                    activePortfolioKey,
-                    portfolio
-                        ? {
-                              portfolioId: toPortfolioId(portfolio).toString()
-                          }
-                        : null
-                );
+                const activePortfolio: SActivePortfolioSchema = portfolio
+                    ? { portfolioId: toPortfolioId(portfolio).toString() }
+                    : null;
+                client.setQueryData<SActivePortfolioSchema>(activePortfolioKey, activePortfolio);
             }
 
             await client.refetchQueries({
