@@ -14,7 +14,14 @@ import {
 } from '@safely/ux';
 
 import type { SettingsSection } from './settings';
-import { listStyles, versionStyles, walletRowStyles } from './SettingsSidebar.styles';
+import {
+    listStyles,
+    valueRowStyles,
+    valueRowTitleStyles,
+    valueRowValueStyles,
+    versionStyles,
+    walletRowStyles
+} from './SettingsSidebar.styles';
 import { PortfolioTypeBadge, WalletIcon } from '../../entities';
 import type { useAccountFlow } from '../../features';
 import { AppLayout, Cell, List, PageHeader, Text, useLongPress } from '../../shared';
@@ -36,6 +43,13 @@ const CurrentWalletCell: FC<{ isSelected: boolean; onClick: () => void }> = prop
         </Cell>
     );
 };
+
+const SettingsValueRow: FC<{ title: string; value: string }> = props => (
+    <Cell.Row className={valueRowStyles}>
+        <Cell.Title className={valueRowTitleStyles}>{props.title}</Cell.Title>
+        <Cell.Value className={valueRowValueStyles}>{props.value}</Cell.Value>
+    </Cell.Row>
+);
 
 export type SettingsSidebarProps = {
     activeSection: SettingsSection | null;
@@ -134,12 +148,10 @@ export const SettingsSidebar: FC<SettingsSidebarProps> = props => {
                             onClick={() => onSelectSection('language')}
                         >
                             <Cell.Content>
-                                <Cell.Row>
-                                    <Cell.Title>
-                                        {t('settings.groups.application.options.language')}
-                                    </Cell.Title>
-                                    <Cell.Value>{t(`language.languages.${language}`)}</Cell.Value>
-                                </Cell.Row>
+                                <SettingsValueRow
+                                    title={t('settings.groups.application.options.language')}
+                                    value={t(`language.languages.${language}`)}
+                                />
                             </Cell.Content>
                         </Cell>
                         <Cell
@@ -148,10 +160,10 @@ export const SettingsSidebar: FC<SettingsSidebarProps> = props => {
                             onClick={() => onSelectSection('currency')}
                         >
                             <Cell.Content>
-                                <Cell.Row>
-                                    <Cell.Title>{t('currency.title')}</Cell.Title>
-                                    <Cell.Value>{fiat.id.symbol}</Cell.Value>
-                                </Cell.Row>
+                                <SettingsValueRow
+                                    title={t('currency.title')}
+                                    value={fiat.id.symbol}
+                                />
                             </Cell.Content>
                         </Cell>
                     </List.Group>
@@ -160,12 +172,10 @@ export const SettingsSidebar: FC<SettingsSidebarProps> = props => {
                     <List.Group variant="separated">
                         <Cell tone="transparent" onClick={() => openURL(`mailto:${supportEmail}`)}>
                             <Cell.Content>
-                                <Cell.Row>
-                                    <Cell.Title>
-                                        {t('settings.groups.info.options.support')}
-                                    </Cell.Title>
-                                    <Cell.Value>{supportEmail}</Cell.Value>
-                                </Cell.Row>
+                                <SettingsValueRow
+                                    title={t('settings.groups.info.options.support')}
+                                    value={supportEmail}
+                                />
                             </Cell.Content>
                         </Cell>
                         <Cell
