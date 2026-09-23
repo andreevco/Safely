@@ -20,7 +20,10 @@ export function useInitialNavigationState(): NavigationContainerProps['initialSt
             if (hasAccount && !hasPasscode) {
                 return {
                     routes: [
-                        { name: 'OnboardingPasscodeScreen' as const, params: { source: null } }
+                        {
+                            name: 'OnboardingPasscodeScreen' as const,
+                            params: { source: null, headerType: 'placeholder' }
+                        }
                     ]
                 };
             }

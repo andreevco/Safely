@@ -1,7 +1,7 @@
 import { StyleSheet } from 'react-native-unistyles';
 
 export const styles = StyleSheet.create({
-    placeholder: {
+    container: {
         opacity: 0
     }
 });
