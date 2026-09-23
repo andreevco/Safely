@@ -11,7 +11,6 @@ import { navigationRef } from './navigationRef';
 const ALLOWED_WHEN_RESTRICTED = [
     'RestrictedFlow',
     'PasscodeVerificationScreen',
-    'LockScreen',
     'RecoveryConfirmSheet',
     'RecoveryPhraseModal',
     'DestructiveConfirmSheet'

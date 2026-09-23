@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { SyncStatus } from '../../src/sync-provider/sync-status';
-import type { TestSyncAccount } from '../e2e/helpers';
+import type { TestSyncAccount } from '../fixtures/account';
 import { InMemStorage } from '../mocks/server-mock/storage';
 import type { SyncServer } from '../mocks/server-mock/sync-server';
 import { makeFactory } from '../mocks/server-mock/sync-server-factory';
@@ -47,7 +47,7 @@ async function onboardDevice(existingDevice: MockDevice): Promise<MockDevice> {
     const connector =
         await makeFactory().factory.connectToExistingSyncAccount(secureEncryptedStorage);
 
-    const [account] = await Promise.all([
+    const [{ account }] = await Promise.all([
         connector.waitForCompletion(),
         existingDevice.account.connectToNewDevice(
             connector.data,

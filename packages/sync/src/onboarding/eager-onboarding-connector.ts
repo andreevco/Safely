@@ -1,7 +1,6 @@
 import type { StorageVersion } from '@safely/slottree';
 
-import type { OnboardingConnector } from './connector';
-import type { ISyncAccount } from '../account/I-sync-account';
+import type { OnboardedAccount, OnboardingConnector } from './connector';
 
 export class EagerOnboardingConnector<
     Latest extends StorageVersion
@@ -9,12 +8,12 @@ export class EagerOnboardingConnector<
     public readonly data: Buffer;
 
     private readonly abortController = new AbortController();
-    private readonly completionPromise: Promise<ISyncAccount<Latest>>;
+    private readonly completionPromise: Promise<OnboardedAccount<Latest>>;
     private completed = false;
 
     constructor(
         data: Buffer,
-        waitForCompletion: (signal: AbortSignal) => Promise<ISyncAccount<Latest>>,
+        waitForCompletion: (signal: AbortSignal) => Promise<OnboardedAccount<Latest>>,
         private readonly onComplete: () => void = () => undefined
     ) {
         this.data = data;
@@ -24,7 +23,7 @@ export class EagerOnboardingConnector<
         this.completionPromise.catch(() => undefined);
     }
 
-    public waitForCompletion(): Promise<ISyncAccount<Latest>> {
+    public waitForCompletion(): Promise<OnboardedAccount<Latest>> {
         return this.completionPromise;
     }
 
