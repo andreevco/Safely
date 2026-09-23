@@ -7,7 +7,6 @@ export const ROUTE = {
     updates: '/updates',
     safety: '/safety',
     settings: '/settings/{-$section}',
-    devTools: '/dev-tools',
     onboarding: {
         welcome: '/onboarding'
     }

@@ -48,7 +48,6 @@ export const MainScreen: FC = () => {
         <MainPage
             location={location}
             onNavigate={onNavigate}
-            onOpenDevTools={() => void navigate({ to: ROUTE.devTools })}
             hasWindowControls={hasWindowControls}
             isFullScreen={isFullScreen}
             security={<SecuritySection />}

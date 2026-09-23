@@ -2,7 +2,7 @@ import type { FC } from 'react';
 
 import { css } from '@safely/web-ui/styled-system/css';
 
-import { Button, Input, Modal } from '../../shared';
+import { Button, Input, Modal } from '../../../shared';
 
 export type KeychainEntryDraft = {
     isExisting: boolean;

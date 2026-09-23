@@ -37,15 +37,13 @@ import { AppLayout } from '../../shared';
 export type MainPageProps = {
     location: MainLocation;
     onNavigate: (next: MainLocation) => void;
-    onOpenDevTools: () => void;
     hasWindowControls?: boolean;
     isFullScreen?: boolean;
     security: ReactNode;
 };
 
 export const MainPage: FC<MainPageProps> = props => {
-    const { location, onNavigate, onOpenDevTools, hasWindowControls, isFullScreen, security } =
-        props;
+    const { location, onNavigate, hasWindowControls, isFullScreen, security } = props;
     const { view, modal } = location;
 
     const hasPortfolio = useHasPortfolio();
@@ -150,7 +148,6 @@ export const MainPage: FC<MainPageProps> = props => {
                 activeSection={section}
                 account={account}
                 onSelectSection={selectSection}
-                onOpenDevTools={onOpenDevTools}
             />
 
             <AppLayout.Content>

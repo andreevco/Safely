@@ -8,10 +8,10 @@ import Plus16 from '@safely/ux/assets/icons/16/plus-16.svg?react';
 import Xmark16 from '@safely/ux/assets/icons/16/xmark-16.svg?react';
 import { css } from '@safely/web-ui/styled-system/css';
 
-import { columnStyles, rowStyles, sectionStyles } from './DevToolsPage.styles';
+import { columnStyles, rowStyles, sectionStyles } from './DevToolsSettings.styles';
 import type { KeychainEntryDraft } from './KeychainEntryModal';
 import { KeychainEntryModal } from './KeychainEntryModal';
-import { Banner, Button, Cell, Icon, List, Modal, Spinner, Text } from '../../shared';
+import { Banner, Button, Cell, Icon, List, Modal, Spinner, Text } from '../../../shared';
 
 const SCOPES = ['encrypted', 'secureEncrypted'] as const;
 

@@ -136,8 +136,8 @@ in `vite.main.config.ts`: plain files in the development `userData`, protecting 
 every start. A packaged build refuses to start rather than degrade to it. Anything you want to
 believe about the store has to be checked on a signed build — `signing/verify-signature.sh` for
 the signature, the running app for securityd. What exercises it by hand is the `SECRET STORE` section
-of the dev tools (`packages/web-ui/src/pages/dev-tools/KeychainSection.tsx`, reached by a long press
-on the version line in settings): it lists, adds, edits and deletes entries of either secret scope
+of the dev tools (`packages/web-ui/src/pages/main/settings/KeychainSection.tsx`, the `devTools`
+settings section reached by a long press on the version line in settings): it lists, adds, edits and deletes entries of either secret scope
 through the same `IAppContext` storage the rest of the UI uses — `storage.sync.encrypted` and
 `storage.sync.getSecureEncrypted()`, so it sees the `sync` node of the scope and not the whole
 keychain service. Reaching the secure scope there needs `UNSAFE_SKIP_SECURITY_CHECK_unlock()`, exactly
@@ -182,7 +182,6 @@ would be served as a file — see below); the paths and the zod shapes of params
   (`screens/main-location.ts`, round-trip tested in `test/renderer/`). A layout route rather than a
   component per path is what keeps `MainPage` mounted across a navigation — the flows it hoists and
   the sidebar scroll survive.
-- `/dev-tools` — `DevToolsScreen`, closed with `history.back()`.
 
 `OnboardingGuard` on the root redirects to `/onboarding` while the account or the passcode is missing,
 and only in that direction (below). The `wallet` settings section without a portfolio redirects to

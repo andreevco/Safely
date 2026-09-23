@@ -156,8 +156,8 @@ and the empty state both open it) and `useAccountFlow` (the settings sidebar edi
 out; the account list adds), renders those two switches, and passes the flow object down as a single
 prop — no page-level context and no bag of callbacks in between. What only the app can answer does not
 travel through the page as state either: `MainPage` takes the `security` section as a `ReactNode` the
-app mounts with its own props, and the dev tools are a route of the app (`onOpenDevTools` is a
-callback, `DevToolsPage` is a page like any other).
+app mounts with its own props. The dev tools are an ordinary settings section (`devTools`), only
+reached by a long press on the version line instead of a sidebar cell.
 
 A flow that must ignore a cancelled security gate catches `SecurityCheckCancelledError` from
 `@safely/ux`; which factors the gate composes and how it is raised stays the app's
