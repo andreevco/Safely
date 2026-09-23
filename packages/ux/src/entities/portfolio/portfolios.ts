@@ -372,9 +372,7 @@ type ActivePortfolioEntitiesWatchOnly = {
 };
 
 type ActivePortfolioEntities =
-    | ActivePortfolioEntitiesBip39
-    | ActivePortfolioEntitiesLedger
-    | ActivePortfolioEntitiesWatchOnly;
+    ActivePortfolioEntitiesBip39 | ActivePortfolioEntitiesLedger | ActivePortfolioEntitiesWatchOnly;
 
 export function isDerivableEntities(
     entities: ActivePortfolioEntities
