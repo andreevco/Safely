@@ -29,6 +29,10 @@ updates:
           - dependency-name: 'expo-*'
           - dependency-name: '@expo/*'
           - dependency-name: babel-preset-expo
+          # Metro and babel-preset-expo run on @babel/core 7; Babel 8 plugins break
+          # the JS bundle step. The Babel major moves with the Expo SDK.
+          - dependency-name: '@babel/*'
+            update-types: ['version-update:semver-major']
           # React Native and the native modules. Every one of these needs an
           # `expo prebuild` and on-device testing, and most are pinned to the RN
           # version, so an automated bump is a broken EAS build at best.
