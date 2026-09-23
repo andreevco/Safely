@@ -6,9 +6,11 @@ import type { About } from '@safely/core';
 import { betaFeedWatchedKeys } from './keys';
 import { useAboutQuery, useSharedUxStorage } from '../../shared';
 
+export type MarkWatchedResult = { hadUnread: false } | { hadUnread: true; latestTimestamp: number };
+
 export interface BetaFeedWatched {
     shouldShowBadge: boolean;
-    markWatched: () => Promise<{ hadUnread: boolean }>;
+    markWatched: () => Promise<MarkWatchedResult>;
 }
 
 const getLatestTimestamp = (about: About | undefined) => about?.posts?.at(-1)?.timestamp ?? null;
@@ -34,7 +36,7 @@ export function useBetaFeedWatched(): BetaFeedWatched {
         return stored < latestTimestamp;
     }, [latestTimestamp, stored]);
 
-    const markWatched = useCallback(async (): Promise<{ hadUnread: boolean }> => {
+    const markWatched = useCallback(async (): Promise<MarkWatchedResult> => {
         const { data } = await refetch();
         const latest = getLatestTimestamp(data) ?? latestTimestamp;
         if (latest === null) return { hadUnread: false };
@@ -43,7 +45,9 @@ export function useBetaFeedWatched(): BetaFeedWatched {
         await set(latest);
         queryClient.setQueryData(betaFeedWatchedKeys.timestamp.toKey(), latest);
 
-        return { hadUnread: watched === null || watched < latest };
+        const hadUnread = watched === null || watched < latest;
+
+        return hadUnread ? { hadUnread, latestTimestamp: latest } : { hadUnread };
     }, [refetch, latestTimestamp, get, set, queryClient]);
 
     return { shouldShowBadge, markWatched };

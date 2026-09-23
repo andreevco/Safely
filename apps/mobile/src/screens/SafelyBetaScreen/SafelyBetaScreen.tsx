@@ -28,8 +28,8 @@ export const SafelyBetaScreen = () => {
 
     useFocusEffect(
         useCallback(() => {
-            void markWatched().then(({ hadUnread }) => {
-                if (hadUnread) feedRef.current?.scrollToTop();
+            void markWatched().then(result => {
+                if (result.hadUnread) feedRef.current?.scrollToTop(result.latestTimestamp);
             });
         }, [markWatched])
     );
