@@ -44,7 +44,7 @@ import {
 } from '../../shared';
 import { useSuspenseQuery } from '../../shared';
 import type { SActivePortfolioSchema, UseAccountSyncStorageUpdateOptions } from '../account';
-import { useAccountSyncStorageUpdate } from '../account';
+import { resolveActivePortfolio, useAccountSyncStorageUpdate } from '../account';
 import { useActiveAccountSyncStorageSlotUpdate } from '../account';
 import { useActiveAccountStoreSlot } from '../account';
 import {
@@ -395,26 +395,15 @@ export function useActivePortfolioEntitiesIdsQuery<TData = SActivePortfolioSchem
             if (!activeAccount) return null;
 
             const stored = await get();
+            const next = resolveActivePortfolio(
+                stored,
+                activeAccount.syncProvider.get('portfolios')
+            );
 
-            const portfolios = activeAccount.syncProvider.get('portfolios');
-
-            if (portfolios.length === 0) {
-                if (stored !== null) {
-                    await set(null);
-                }
-                return null;
+            if (next !== stored) {
+                await set(next);
             }
 
-            const storedIsValid =
-                stored !== null &&
-                portfolios.some(p => toPortfolioId(p).isEq(Id.fromString(stored.portfolioId)));
-
-            if (storedIsValid) return stored;
-
-            const next: SActivePortfolioSchema = {
-                portfolioId: toPortfolioId(portfolios[0]).toString()
-            };
-            await set(next);
             return next;
         },
         staleTime: Infinity,
