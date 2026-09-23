@@ -1,36 +1,8 @@
-import { z } from 'zod';
-
-import { defineVersionHList, hCons, hNil, projectIdentity } from '@safely/slottree';
-
-import type { ISyncAccount } from '../../src';
 import { SyncAccountFactory } from '../../src';
 import { Logger } from '../../src/logger/logger';
+import type { TestSyncAccount, TestSyncAccountFactory } from '../fixtures/account';
+import { Versions } from '../fixtures/account';
 import { InMemStorage } from '../mocks/server-mock/storage';
-
-export const Schema = z
-    .object({
-        wallets: z.array(
-            z.object({
-                __setId: z.string(),
-                value: z.string()
-            })
-        )
-    })
-    .partial();
-
-export const AccountV1 = {
-    version: 1,
-    schema: Schema,
-    initial: {},
-    projectUp: projectIdentity,
-    projectDown: projectIdentity
-} as const;
-
-export const Versions = defineVersionHList(hCons(AccountV1, hNil));
-
-type AccountLatest = (typeof Versions)['head'];
-export type TestSyncAccount = ISyncAccount<AccountLatest>;
-export type TestSyncAccountFactory = SyncAccountFactory<typeof Versions>;
 
 let accountCounter = 0;
 
@@ -66,9 +38,11 @@ export async function onboardDevice(
         existingAccountSecureEncryptedStorage
     );
     const promise2 = onboardingConnector.waitForCompletion();
-    const [_, newAccount] = await Promise.all([promise1, promise2]);
+    const [{ newDeviceIkPub }, onboarded] = await Promise.all([promise1, promise2]);
     return {
-        newAccount,
+        newAccount: onboarded.account,
+        newDeviceIkPub,
+        inviterIkPub: onboarded.inviterIkPub,
         secureEncryptedStorage
     };
 }

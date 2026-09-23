@@ -12,7 +12,9 @@ import type {
 import { syncedStorageVersions } from '@safely/sync-storage';
 
 import { accountKey } from './keys';
+import type { AccountStoreData, SyncedSlotKey } from './sync-storage/account-store';
 import { useAccountStoreSlot } from './sync-storage/useAccountStore';
+import { useAttachAccountsToStore } from './sync-storage/useAccountStoreSync';
 import {
     useAppContext,
     useBootConfig,
@@ -20,15 +22,19 @@ import {
     useSuspenseQuery,
     useTranslate
 } from '../../shared';
-import type { AccountStoreData, SyncedSlotKey } from './sync-storage/account-store';
 
 export type AccountMeta = Exclude<SAccountMeta, null>;
 
 export type SyncAccount = ISyncAccount<SyncedStorageStructure>;
 
+export type OnboardedAccount = {
+    account: ISyncAccount<SyncedStorageStructure>;
+    inviterIkPubHex: string | null;
+};
+
 export type OnboardingConnector = {
     connectionString: string;
-    accountPromise: Promise<ISyncAccount<SyncedStorageStructure>>;
+    onboardedPromise: Promise<OnboardedAccount>;
     abort: () => void;
 };
 
@@ -58,11 +64,15 @@ export function useAccountsFactory() {
 
 export function useAccountsQueryConfig() {
     const factory = useAccountsFactory();
+    const attachAccountsToStore = useAttachAccountsToStore();
 
     return {
         queryKey: accountKey.list.toKey(),
         async queryFn(): Promise<SyncAccount[]> {
-            return factory.getSyncAccounts();
+            const accounts = await factory.getSyncAccounts();
+            attachAccountsToStore(accounts);
+
+            return accounts;
         },
         staleTime: Infinity
     };

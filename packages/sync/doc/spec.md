@@ -161,8 +161,9 @@ The request includes:
 
 To onboard a new device, the receiving device generates a QR code with its device identity, ephemeral key, and supported
 storage versions. An existing device reads the QR code, adds the new device to the shared device state, syncs that state,
-and publishes an encrypted onboarding message through the server. The encrypted message contains only the `MasterKey`.
-The receiving device decrypts it, derives the account keys locally, and then joins the online account.
+and publishes an encrypted onboarding message through the server. The encrypted message carries the `MasterKey` and the
+sender's own `IK_pk`. The receiving device decrypts it, derives the account keys locally, and then joins the online
+account.
 
 The QR code is the out-of-band channel that protects this flow from a server-side MITM. The existing device learns the
 receiver's `new_eph_pk` and `new_IK_pk` by scanning them directly from the receiving device, not from the server.
@@ -211,7 +212,14 @@ QRMessage = {
     ```
     version = 0x01
     payload = version || u16be(len(MasterKey)) || MasterKey
+                      || u16be(len(old_IK_pk)) || old_IK_pk
     ```
+
+    `old_IK_pk` is the sender's own permanent IK public key. It exists so the receiver can name the device that
+    authorized it; nothing in the key derivation depends on it. The version stays `0x01` because the field is appended:
+    a decoder that predates it reads `MasterKey` by its own length prefix and ignores the trailing bytes, so a sender on
+    this version can still onboard a receiver on an older one. Everything after `MasterKey` is therefore optional by
+    construction, and a new field is appended the same way rather than bumping the version.
 
 6. Encrypt the payload with XChaCha20-Poly1305:
     ```
@@ -270,7 +278,14 @@ QRMessage = {
         || old_eph_pk || new_eph_pk || new_IK_pk
     payload = Decrypt_XChaCha20Poly1305(OnboardKey, nonce, ciphertext, aad)
     payload = 0x01 || u16be(len(MasterKey)) || MasterKey
+                   || u16be(len(old_IK_pk)) || old_IK_pk
     ```
+
+    `old_IK_pk` is absent when the sender predates it, and the receiver treats it as unknown rather than as an error.
+    It is a claim, not a proof: `OnboardKey` is derived from the ephemeral exchange only, so the payload authenticates
+    whoever scanned the QR code and not a particular identity. Whoever scanned it holds `MasterKey` already, so the only
+    thing a wrong value buys is a wrong label; the receiver limits even that by using `old_IK_pk` solely to look a device
+    up in the shared device state, which it learns over sync and not from this message.
 
 6. Create an online local account from `MasterKey` and the receiver-generated `IK`. The device derives account keys from
    `MasterKey` locally; no other private keys are transferred.

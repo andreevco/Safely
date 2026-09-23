@@ -28,6 +28,7 @@
         "steps": {
             "connect": "Connect your {{device}}",
             "openApp": "Open the Bitcoin app",
+            "openAppVersionUnknown": "Couldn’t read app version",
             "approve": "Review and approve the transaction."
         },
         "updateApp": {
@@ -71,6 +72,13 @@
         "subtitle": "Restart the app and try again.\nIf the issue persists, send logs to support.",
         "restartButton": "Restart app",
         "shareLogsButton": "Send logs"
+    },
+    "logs": {
+        "warning": {
+            "title": "Logs contain your wallet data ⚠️",
+            "message": "Logs include your addresses, amounts and transaction IDs. Share them only with Safely support.\n\nYour recovery phrase and private keys never appear in logs.",
+            "confirm": "Open logs"
+        }
     },
     "send": {
         "title": "Send",
@@ -235,7 +243,6 @@
         },
         "phraseSheet": {
             "title": "Recovery phrase",
-            "titleSuffix": "recovery phrase",
             "warning": "Do not share this phrase.\nAnyone with it can access your wallet."
         },
         "accountProtected": {
@@ -345,8 +352,8 @@
         "others": {
             "title": "Is this device stolen, sold, or can someone else access it?",
             "options": {
-                "possible": "Yes, someone else can access it",
-                "impossible": "No, no one else can access it"
+                "possible": "Yes, someone can access it",
+                "impossible": "No, no one can access it"
             }
         },
         "signOut": {
@@ -360,7 +367,7 @@
         },
         "archive": {
             "title": "Archive this device",
-            "description": "Since no one can access this device, your account isn't at risk. Archiving hides it from your linked devices list. It doesn't remove access or stop syncing if the device comes back online.",
+            "description": "Since no one can access this device for now, your account is probably not at risk. Archiving hides it from your linked devices list. It doesn't remove access or stop syncing if the device comes back online.",
             "action": "Archive {{deviceName}}",
             "verify": "Confirm archiving {{deviceName}}.",
             "done": "{{deviceName}} archived"
@@ -377,6 +384,28 @@
             "contacts": "Contacts",
             "contactsCount_one": "{{count}} contact",
             "contactsCount_other": "{{count}} contacts",
+            "continue": "Continue"
+        },
+        "deviceLinked": {
+            "title": "{{device}} linked",
+            "subtitle": "{{device}} now has access to your “{{account}}” account.",
+            "account": "Account",
+            "device": "Device",
+            "wallets": "Wallets",
+            "walletsCount_one": "{{count}} wallet",
+            "walletsCount_other": "{{count}} wallets",
+            "contacts": "Contacts",
+            "contactsCount_one": "{{count}} contact",
+            "contactsCount_other": "{{count}} contacts",
+            "accountId": "Make sure the Account IDs match: {{id}}",
+            "accountIdCopied": "Account ID copied",
+            "unknownDevice": "New device",
+            "viewLinkedDevices": "View linked devices"
+        },
+        "signedIn": {
+            "title": "Signed in to “{{account}}”",
+            "subtitle": "This account was linked from {{device}}.",
+            "subtitleUnknownDevice": "This account was linked from another device.",
             "continue": "Continue"
         },
         "protectAccount": {
@@ -533,7 +562,13 @@
             "placeholder": "Enter address",
             "info": "Watch account cannot sign transactions and send funds.",
             "invalidAddress": "Invalid Bitcoin address",
-            "unsupportedExtendedKey": "ypub is not supported yet. Use xpub."
+            "unsupportedExtendedKey": "This extended key type is not supported. Only BIP84 native SegWit wallets can be imported.",
+            "confirmXpub": {
+                "title": "Check the address",
+                "description": "This extended key will be imported as a BIP84 native SegWit account. Legacy addresses are not supported.",
+                "addressLabel": "Wallet Address",
+                "verify": "Make sure this address matches the one shown in the wallet you are importing."
+            }
         },
         "testnet": {
             "title": "Testnet",
@@ -656,7 +691,6 @@
     },
     "settings": {
         "title": "Settings",
-        "deviceConnected": "Successfully linked",
         "qrCodeFromAnotherAccount": "QR code is from another account.\nUse the same account on both devices.",
         "addAccount": "Add account",
         "walletsCount_one": "{{count}} wallet",
@@ -780,7 +814,6 @@
     },
     "safelyBeta": {
         "title": "Safely",
-        "subtitle": "Beta · {{version}}",
         "versionCopied": "Application version copied"
     },
     "dateGroups": {

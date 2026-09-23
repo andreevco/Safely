@@ -19,7 +19,7 @@ jobs:
         outputs:
             tag: ${{ steps.release.outputs.tag }}
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v7
               with:
                   ref: ${{ github.event.pull_request.merge_commit_sha }}
 
@@ -75,6 +75,8 @@ jobs:
         name: Attach the artifacts
         needs: draft
         if: ${{ needs.draft.outputs.tag != '' }}
+        permissions:
+            contents: write
         uses: ./.github/workflows/release-assets.yml
         with:
             tag: ${{ needs.draft.outputs.tag }}

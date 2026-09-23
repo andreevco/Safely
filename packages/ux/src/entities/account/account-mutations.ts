@@ -13,28 +13,37 @@ import {
     toPortfolioIdWatchOnly
 } from '@safely/core';
 import { PortfolioMnemonicFactory } from '@safely/core';
-import { toPortfolioId } from '@safely/core';
 import { assertUnreachable, delay, PortfolioNetworkType } from '@safely/core';
 import type {
     ISyncAccount,
     Logger,
     OnboardingConnector as RawOnboardingConnector
 } from '@safely/sync';
-import { OnboardingAbortedError, SyncStatus } from '@safely/sync';
+import { OnboardingAbortedError, SyncStatus, waitForChange } from '@safely/sync';
 import type {
     SNextDerivingPortfolioInfo,
     SPortfolio,
     SyncedStorageStructure
 } from '@safely/sync-storage';
 
-import type { AccountMeta, OnboardingConnector, SyncAccount } from './account-state';
+import type {
+    AccountMeta,
+    OnboardedAccount,
+    OnboardingConnector,
+    SyncAccount
+} from './account-state';
 import { useAccountsQueryConfig } from './account-state';
 import { useActiveAccountMeta } from './account-state';
 import { useAccounts } from './account-state';
 import { useAccountsFactory, useActiveAccount } from './account-state';
 import { accountKey } from './keys';
 import type { SActivePortfolioSchema } from './local-storage';
-import { useClearActiveAccountLocalStorage } from './local-storage';
+import {
+    resolveActivePortfolio,
+    useAccountLocalStorageFactory,
+    useClearActiveAccountLocalStorage
+} from './local-storage';
+import { accountStore } from './sync-storage/account-store';
 import {
     SecretEncryptor,
     useAppContext,
@@ -294,7 +303,10 @@ function useConnectorMutation<TVars>(
 
             return {
                 connectionString: connector.data.toString('base64url'),
-                accountPromise: connector.waitForCompletion(),
+                onboardedPromise: connector.waitForCompletion().then(onboarded => ({
+                    account: onboarded.account,
+                    inviterIkPubHex: onboarded.inviterIkPub?.toString('hex') ?? null
+                })),
                 abort() {
                     connector.abort();
                 }
@@ -326,7 +338,7 @@ export function useCreateExistingAccountConnector() {
 
 export function useAccountConnectedCallback(
     connector: OnboardingConnector | undefined,
-    callback: (account: SyncAccount) => void,
+    callback: (onboarded: OnboardedAccount) => void,
     options?: { setAsActive: boolean; onError?: (e: Error) => void }
 ) {
     const logger = useLogger('account-connect');
@@ -337,8 +349,9 @@ export function useAccountConnectedCallback(
 
     useEffect(() => {
         let isReset = false;
-        connector?.accountPromise
-            .then(async account => {
+        connector?.onboardedPromise
+            .then(async onboarded => {
+                const { account } = onboarded;
                 if (isReset) {
                     return;
                 }
@@ -356,10 +369,19 @@ export function useAccountConnectedCallback(
 
                 logger.info('device onboarding completed', {
                     accountId: account.accountId,
-                    setAsActive
+                    setAsActive,
+                    hasInviter: onboarded.inviterIkPubHex !== null
                 });
 
-                callback(account as SyncAccount);
+                if (onboarded.inviterIkPubHex !== null) {
+                    await waitForDeviceMeta(account.accountId, onboarded.inviterIkPubHex, logger);
+                }
+
+                if (isReset) {
+                    return;
+                }
+
+                callback(onboarded);
             })
             .catch(e => {
                 if (isReset) {
@@ -378,13 +400,33 @@ export function useAccountConnectedCallback(
             connector?.abort();
             isReset = true;
         };
-    }, [connector?.accountPromise, callback, client, setAsActive]);
+    }, [connector?.onboardedPromise, callback, client, setAsActive]);
+}
+
+const DEVICE_META_TIMEOUT_MS = 10_000;
+
+async function waitForDeviceMeta(
+    accountId: string,
+    ikPubHex: string,
+    logger: Logger
+): Promise<void> {
+    const hasMeta = () =>
+        accountStore.getState().accountsData.get(accountId)?.devicesMeta?.[ikPubHex] !== undefined;
+
+    try {
+        await waitForChange({
+            subscribe: observer => accountStore.subscribe(observer),
+            predicate: hasMeta,
+            timeoutMs: DEVICE_META_TIMEOUT_MS,
+            timeoutError: () => new Error('Device meta did not arrive')
+        });
+    } catch (e) {
+        logger.warn('device meta wait timed out', { ikPubHex, error: e });
+    }
 }
 
 export function useConnectAccountToNewDevice() {
-    const t = useTranslate();
     const activeAccount = useActiveAccount();
-    const toast = useToast();
     const errorToast = useErrorToast({
         ReconnectFromAnotherAccountError: 'settings.qrCodeFromAnotherAccount'
     });
@@ -392,7 +434,7 @@ export function useConnectAccountToNewDevice() {
     const { qrScanner } = useAppContext();
     const scopedLogger = useLogger('account');
 
-    return useMutation<void, Error, { secureEncryptedStorage: ITreeStorage }, unknown>({
+    return useMutation<string, Error, { secureEncryptedStorage: ITreeStorage }, unknown>({
         async mutationFn({ secureEncryptedStorage }) {
             const connectionString = await qrScanner.scan({
                 titleTranslationKey: 'qrScan.addDevice.title',
@@ -401,16 +443,19 @@ export function useConnectAccountToNewDevice() {
             scopedLogger.info('connecting new device to active account', {
                 accountId: activeAccount.accountId
             });
-            await withLoader(() =>
-                activeAccount.connectToNewDevice(
+            return await withLoader(async () => {
+                const { newDeviceIkPub } = await activeAccount.connectToNewDevice(
                     Buffer.from(connectionString, 'base64url'),
                     secureEncryptedStorage
-                )
-            );
+                );
+                const ikPubHex = newDeviceIkPub.toString('hex');
+                await waitForDeviceMeta(activeAccount.accountId, ikPubHex, scopedLogger);
+
+                return ikPubHex;
+            });
         },
         onSuccess() {
             scopedLogger.info('new device connected');
-            toast(t('settings.deviceConnected'));
         },
         onError(error) {
             scopedLogger.error('connecting new device failed', error);
@@ -423,6 +468,7 @@ export function useSetActiveAccount() {
     const { set } = useSharedUxStorage('activeAccount');
     const client = useQueryClient();
     const accountsQuery = useAccountsQueryConfig();
+    const createLocalStorage = useAccountLocalStorageFactory();
     const logger = useLogger('account');
 
     return useMutation<void, Error, string>({
@@ -431,20 +477,22 @@ export function useSetActiveAccount() {
             await delay();
             await set(id);
 
-            const activePortfolioKey = accountKey.accountId(id).activePortfolio.toKey();
-            if (client.getQueryData(activePortfolioKey) === undefined) {
-                const accounts = await client.fetchQuery(accountsQuery);
-                const account = accounts.find(a => a.accountId === id);
-                if (!account) {
-                    throw new Error('Account not found');
-                }
-
-                const portfolio = account.syncProvider.get('portfolios')[0];
-                const activePortfolio: SActivePortfolioSchema = portfolio
-                    ? { portfolioId: toPortfolioId(portfolio).toString() }
-                    : null;
-                client.setQueryData<SActivePortfolioSchema>(activePortfolioKey, activePortfolio);
+            const accounts = await client.fetchQuery(accountsQuery);
+            const account = accounts.find(a => a.accountId === id);
+            if (!account) {
+                throw new Error('Account not found');
             }
+
+            const localStorage = createLocalStorage(id);
+            const stored = await localStorage.get('activePortfolio');
+            const next = resolveActivePortfolio(stored, account.syncProvider.get('portfolios'));
+            if (next !== stored) {
+                await localStorage.set('activePortfolio', next);
+            }
+            client.setQueryData<SActivePortfolioSchema>(
+                accountKey.accountId(id).activePortfolio.toKey(),
+                next
+            );
 
             await client.refetchQueries({
                 queryKey: accountKey.list.active.toKey()
@@ -470,6 +518,7 @@ export function useDeleteAccount() {
     const accountFactory = useAccountsFactory();
     const client = useQueryClient();
     const ikPub = useCurrentDeviceIkPub();
+    const { set: setActiveAccountId } = useSharedUxStorage('activeAccount');
     const clearActiveAccountLocalStorage = useClearActiveAccountLocalStorage();
     const update = useActiveAccountSyncStorageUpdate();
     const logger = useLogger('account');
@@ -493,8 +542,10 @@ export function useDeleteAccount() {
             logger.info('account deleted', { remainingAccounts: remaining.length });
 
             if (remaining.length > 0) {
+                await setActiveAccountId(remaining[0].accountId);
                 client.setQueryData(accountKey.list.toKey(), remaining);
                 client.setQueryData(accountKey.list.active.toKey(), remaining[0]);
+                client.removeQueries({ queryKey: accountKey.accountId(account.accountId).toKey() });
             }
         }
     });
