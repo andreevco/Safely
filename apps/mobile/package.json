@@ -112,6 +112,11 @@
   },
   "private": true,
   "expo": {
+    "autolinking": {
+      "android": {
+        "buildFromSource": ["expo-notifications"]
+      }
+    },
     "doctor": {
       "reactNativeDirectoryCheck": {
         "exclude": [

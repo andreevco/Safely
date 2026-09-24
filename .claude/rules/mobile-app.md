@@ -100,6 +100,10 @@ update it when adding a language.
   `SafelyNotificationsService` on Android (a `NotificationsService` subclass registered with a higher
   priority in the module manifest). Unknown placeholder or unknown ref → original text. Changing the
   extension means a dev-client rebuild; EAS signs it via `extra.eas.build.experimental.ios.appExtensions`.
+  Expo 56 consumes its own modules as prebuilt Maven artifacts in release builds, so a Gradle
+  `project(':expo-notifications')` dependency only resolves because `expo.autolinking.android.buildFromSource`
+  in `package.json` lists `expo-notifications` — keep that entry while `safely-push-content` subclasses
+  its service.
 - Android push tokens need Firebase: `android.googleServicesFile` points at the committed
   `apps/mobile/google-services.json` (client config of the Firebase project `safely-wallet`, no
   secrets — the FCM service account for sending lives in EAS credentials). Without it
