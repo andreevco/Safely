@@ -30,6 +30,8 @@ internal class SafelyPresentationDelegate(context: Context) : ExpoPresentationDe
         return try {
             val request = notification.notificationRequest
             val content = request.content
+            if (content.containsImage()) return notification
+
             val rewritten = rewritePushContent(
                 content.title,
                 content.text,
@@ -51,8 +53,8 @@ internal class SafelyPresentationDelegate(context: Context) : ExpoPresentationDe
         return body.keys().asSequence().associateWith { body.optString(it) }
     }
 
-    private fun copy(content: INotificationContent, rewritten: RewrittenPushContent): NotificationContent {
-        val builder = NotificationContent.Builder()
+    private fun copy(content: INotificationContent, rewritten: RewrittenPushContent): NotificationContent =
+        NotificationContent.Builder()
             .setTitle(rewritten.title)
             .setText(rewritten.body)
             .setSubtitle(content.subText)
@@ -63,14 +65,5 @@ internal class SafelyPresentationDelegate(context: Context) : ExpoPresentationDe
             .setAutoDismiss(content.isAutoDismiss)
             .setCategoryId(content.categoryId)
             .setSticky(content.isSticky)
-
-        if (content.shouldUseDefaultVibrationPattern) {
-            builder.useDefaultVibrationPattern()
-        } else {
-            content.vibrationPattern?.let { builder.setVibrationPattern(it) }
-        }
-        if (content.shouldPlayDefaultSound) builder.useDefaultSound()
-
-        return builder.build()
-    }
+            .build()
 }

@@ -129,7 +129,9 @@ export const AppContextProvider: FC<PropsWithChildren> = ({ children }) => {
             },
             clearAllData: async () => {
                 await CLEAR_ALL_MOBILE_STORAGE_ONLY_APP_LEVEL_USE_DANGER();
-                await pushNotifications.setWalletNames({}).catch(() => undefined);
+                await pushNotifications
+                    .setWalletNames({})
+                    .catch(e => logger.error('push_wallet_names.clear_failed', e));
                 eraseLogs();
             },
             reloadApp,

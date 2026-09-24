@@ -61,9 +61,15 @@ public enum PushContentCore {
         let bodyTemplate = data[bodyTemplateKey] as? String
         guard titleTemplate != nil || bodyTemplate != nil else { return nil }
 
-        guard let newTitle = titleTemplate.map({ render(template: $0, walletName: walletName) }) ?? title,
-              let newBody = bodyTemplate.map({ render(template: $0, walletName: walletName) }) ?? body else {
-            return nil
+        var newTitle = title
+        if let titleTemplate {
+            guard let rendered = render(template: titleTemplate, walletName: walletName) else { return nil }
+            newTitle = rendered
+        }
+        var newBody = body
+        if let bodyTemplate {
+            guard let rendered = render(template: bodyTemplate, walletName: walletName) else { return nil }
+            newBody = rendered
         }
         return RewrittenPushContent(title: newTitle, body: newBody)
     }

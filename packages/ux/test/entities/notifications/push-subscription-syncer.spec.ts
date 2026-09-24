@@ -226,4 +226,13 @@ describe('PushSubscriptionSyncer', () => {
         await syncer.reset();
         expect(setWalletNames).toHaveBeenLastCalledWith({});
     });
+
+    it('does not publish wallet names while the group PUT has never succeeded', async () => {
+        const { syncer, api, setWalletNames } = createHarness();
+        api.replaceGroup.mockRejectedValueOnce(new Error('offline'));
+
+        await syncer.sync(active([readyAccount('a')]));
+
+        expect(setWalletNames).not.toHaveBeenCalled();
+    });
 });

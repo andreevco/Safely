@@ -159,17 +159,25 @@ export class PushSubscriptionSyncer {
             );
         }
 
-        failures += await this.attempt('wallet_names', () => this.publishWalletNames(input));
+        failures += await this.attempt('wallet_names', () =>
+            this.publishWalletNames(input, desired)
+        );
 
         return failures;
     }
 
-    private async publishWalletNames(input: PushSyncInput): Promise<void> {
+    private async publishWalletNames(
+        input: PushSyncInput,
+        desired: Map<string, DesiredGroup>
+    ): Promise<void> {
         const names: Record<string, string> = {};
 
         for (const { accountId, state } of input.accounts) {
+            const group = desired.get(accountId);
+            if (state.kind === 'pending' || group === 'pending' || group === null) continue;
+
             const refs = this.targetRefs.get(accountId);
-            if (state.kind === 'pending' || !refs) continue;
+            if (!refs) return;
 
             for (const portfolio of state.settings.selectPortfolios(state.portfolios)) {
                 for (const [target, name] of Object.entries(

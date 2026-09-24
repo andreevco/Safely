@@ -141,11 +141,23 @@ function findOrCreateTarget(project, cfg) {
     return { ...target, isNew: true };
 }
 
+function readAppTargetBuildSettings(project) {
+    const appTarget = project.getFirstTarget().firstTarget;
+    const configurationList = project.pbxXCConfigurationList()[appTarget.buildConfigurationList];
+    const configurations = project.pbxXCBuildConfigurationSection();
+    const release = configurationList.buildConfigurations
+        .map(({ value }) => configurations[value])
+        .find(configuration => configuration.name === 'Release');
+
+    return release?.buildSettings ?? {};
+}
+
 function withExtensionTarget(config) {
     return withXcodeProject(config, cfg => {
         const project = cfg.modResults;
         const target = findOrCreateTarget(project, cfg);
 
+        const appSettings = readAppTargetBuildSettings(project);
         const settings = {
             INFOPLIST_FILE: `"${TARGET_NAME}/Info.plist"`,
             CODE_SIGN_ENTITLEMENTS: `"${TARGET_NAME}/${TARGET_NAME}.entitlements"`,
@@ -154,8 +166,8 @@ function withExtensionTarget(config) {
             IPHONEOS_DEPLOYMENT_TARGET: DEPLOYMENT_TARGET,
             TARGETED_DEVICE_FAMILY: '"1,2"',
             SWIFT_VERSION: '5.0',
-            CURRENT_PROJECT_VERSION: `"${cfg.ios?.buildNumber ?? '1'}"`,
-            MARKETING_VERSION: `"${cfg.version ?? '1.0.0'}"`,
+            CURRENT_PROJECT_VERSION: appSettings.CURRENT_PROJECT_VERSION ?? '"1"',
+            MARKETING_VERSION: appSettings.MARKETING_VERSION ?? `"${cfg.version ?? '1.0.0'}"`,
             PRODUCT_NAME: '"$(TARGET_NAME)"'
         };
         const configurationList =

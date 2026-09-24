@@ -7,6 +7,7 @@ import {
     NotificationSettings,
     PortfolioNetworkType,
     PortfolioWatchOnlyBtc,
+    resolvePortfolioNotificationTargetNames,
     resolvePortfolioNotificationTargets,
     WatchOnlySource
 } from '../../src';
@@ -44,6 +45,21 @@ describe('resolvePortfolioNotificationTargets', () => {
                 watchOnly({ address: TESTNET_ADDRESS }, PortfolioNetworkType.TESTNET)
             )
         ).toEqual([]);
+    });
+});
+
+describe('resolvePortfolioNotificationTargetNames', () => {
+    it('maps every target of a portfolio to its display name', () => {
+        const named = watchOnly({ xpub: XPUB });
+        expect(resolvePortfolioNotificationTargetNames(named)).toEqual({ [ZPUB]: 'w' });
+        expect(Object.keys(resolvePortfolioNotificationTargetNames(named))).toEqual(
+            resolvePortfolioNotificationTargets(named)
+        );
+        expect(
+            resolvePortfolioNotificationTargetNames(
+                watchOnly({ address: TESTNET_ADDRESS }, PortfolioNetworkType.TESTNET)
+            )
+        ).toEqual({});
     });
 });
 
