@@ -1,6 +1,7 @@
 {
     "name": "@safely/slottree",
     "version": "0.0.1",
+    "license": "Apache-2.0",
     "description": "",
     "scripts": {
         "compile": "tsc --noEmit",

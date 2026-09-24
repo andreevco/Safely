@@ -1,6 +1,7 @@
 {
   "name": "@safely/mobile",
   "version": "1.2.4",
+  "license": "Apache-2.0",
   "main": "index.tsx",
   "scripts": {
     "start": "expo start --dev-client",
