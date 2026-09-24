@@ -16,7 +16,7 @@ const EVENT_BY_KEY: Readonly<
     sentFinalized: { type: 'sent', confirmations: 6 }
 };
 
-export function portfolioNotificationTargets(portfolio: Portfolio): string[] {
+export function resolvePortfolioNotificationTargets(portfolio: Portfolio): string[] {
     if (portfolio.networkType !== PortfolioNetworkType.MAINNET) {
         return [];
     }
@@ -30,6 +30,27 @@ export function portfolioNotificationTargets(portfolio: Portfolio): string[] {
     return portfolio.derivations.map(derivation => BtcXpub.toZpub(derivation.chains.btc.xpub));
 }
 
+export function resolvePortfolioNotificationTargetNames(
+    portfolio: Portfolio
+): Record<string, string> {
+    if (portfolio.networkType !== PortfolioNetworkType.MAINNET) {
+        return {};
+    }
+
+    if (portfolio.type === PortfolioType.LEDGER) {
+        return Object.fromEntries(
+            portfolio.derivations.map(derivation => [
+                BtcXpub.toZpub(derivation.chains.btc.xpub),
+                derivation.meta.name
+            ])
+        );
+    }
+
+    return Object.fromEntries(
+        resolvePortfolioNotificationTargets(portfolio).map(target => [target, portfolio.meta.name])
+    );
+}
+
 export function buildSubscriptionGroup(
     settings: NotificationSettings,
     portfolios: Portfolio[]
@@ -39,7 +60,9 @@ export function buildSubscriptionGroup(
     }
 
     const targets = [
-        ...new Set(settings.selectPortfolios(portfolios).flatMap(portfolioNotificationTargets))
+        ...new Set(
+            settings.selectPortfolios(portfolios).flatMap(resolvePortfolioNotificationTargets)
+        )
     ];
     const events = settings.enabledEventKeys.map(key => ({ ...EVENT_BY_KEY[key], targets }));
 

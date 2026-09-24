@@ -5,4 +5,8 @@ export {
     SENT_NOTIFICATION_EVENT_KEYS,
     type NotificationEventKey
 } from './notification-settings';
-export { buildSubscriptionGroup, portfolioNotificationTargets } from './subscription-group';
+export {
+    buildSubscriptionGroup,
+    resolvePortfolioNotificationTargetNames,
+    resolvePortfolioNotificationTargets
+} from './subscription-group';

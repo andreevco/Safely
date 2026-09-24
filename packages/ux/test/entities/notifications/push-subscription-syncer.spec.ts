@@ -15,10 +15,10 @@ import { InMemoryTreeStorage } from '../../harness';
 
 const ADDRESS = 'bc1q5v68nzc6rjgcl8ug0slpx77ucm4spnwzkwkqy2';
 
-function portfolio(address = ADDRESS): Portfolio {
+function portfolio(address = ADDRESS, name = 'w'): Portfolio {
     return PortfolioWatchOnlyBtc.create(
         { source: WatchOnlySource.ADDRESS, address, networkType: PortfolioNetworkType.MAINNET },
-        { name: 'w', icon: { type: 'emoji', value: '🐶' } }
+        { name, icon: { type: 'emoji', value: '🐶' } }
     );
 }
 
@@ -49,11 +49,13 @@ function createHarness() {
     const getPushToken = vi.fn<IPushNotifications['getPushToken']>(
         async () => 'ExponentPushToken[test]'
     );
+    const setWalletNames = vi.fn<IPushNotifications['setWalletNames']>(async () => undefined);
     const pushNotifications: IPushNotifications = {
         getPermissionStatus: async () => 'granted',
         requestPermission: async () => 'granted',
         getPushToken,
-        openSystemSettings: () => undefined
+        openSystemSettings: () => undefined,
+        setWalletNames
     };
     const logger = {
         info: vi.fn(),
@@ -74,7 +76,7 @@ function createHarness() {
 
     const stored = (key: string) => storage.child('push-subscription').getItem(key);
 
-    return { syncer, api, storage, stored, getPushToken };
+    return { syncer, api, storage, stored, getPushToken, setWalletNames };
 }
 
 const active = (accounts: PushSyncInput['accounts'], isNewsEnabled = false): PushSyncInput => ({
@@ -207,5 +209,21 @@ describe('PushSubscriptionSyncer', () => {
 
         await vi.advanceTimersByTimeAsync(30_000);
         expect(api.replaceGroup).toHaveBeenCalledTimes(1);
+    });
+
+    it('publishes target_ref → wallet name and republishes on rename without a new PUT', async () => {
+        const { syncer, api, setWalletNames } = createHarness();
+        api.replaceGroup.mockResolvedValueOnce({ [ADDRESS]: 'ref-1' });
+
+        await syncer.sync(active([readyAccount('a', [portfolio(ADDRESS, 'Reserve')])]));
+        expect(setWalletNames).toHaveBeenLastCalledWith({ 'ref-1': 'Reserve' });
+
+        await syncer.sync(active([readyAccount('a', [portfolio(ADDRESS, 'Family')])]));
+        expect(api.replaceGroup).toHaveBeenCalledTimes(1);
+        expect(setWalletNames).toHaveBeenLastCalledWith({ 'ref-1': 'Family' });
+        expect(setWalletNames).toHaveBeenCalledTimes(2);
+
+        await syncer.reset();
+        expect(setWalletNames).toHaveBeenLastCalledWith({});
     });
 });

@@ -7,7 +7,7 @@ import {
     NotificationSettings,
     PortfolioNetworkType,
     PortfolioWatchOnlyBtc,
-    portfolioNotificationTargets,
+    resolvePortfolioNotificationTargets,
     WatchOnlySource
 } from '../../src';
 
@@ -29,16 +29,18 @@ function watchOnly(
     );
 }
 
-describe('portfolioNotificationTargets', () => {
+describe('resolvePortfolioNotificationTargets', () => {
     it('uses zpub for xpub watch-only and address for address watch-only', () => {
-        expect(portfolioNotificationTargets(watchOnly({ xpub: XPUB }))).toEqual([ZPUB]);
+        expect(resolvePortfolioNotificationTargets(watchOnly({ xpub: XPUB }))).toEqual([ZPUB]);
         expect(ZPUB.startsWith('zpub')).toBe(true);
-        expect(portfolioNotificationTargets(watchOnly({ address: ADDRESS }))).toEqual([ADDRESS]);
+        expect(resolvePortfolioNotificationTargets(watchOnly({ address: ADDRESS }))).toEqual([
+            ADDRESS
+        ]);
     });
 
     it('skips testnet portfolios', () => {
         expect(
-            portfolioNotificationTargets(
+            resolvePortfolioNotificationTargets(
                 watchOnly({ address: TESTNET_ADDRESS }, PortfolioNetworkType.TESTNET)
             )
         ).toEqual([]);

@@ -3,6 +3,8 @@ import { Linking, Platform } from 'react-native';
 
 import type { IPushNotifications, PushPermissionStatus } from '@safely/core';
 
+import { setWalletNames } from '../../../modules/safely-push-content/src';
+
 const ANDROID_CHANNEL_ID = 'default';
 
 function toPermissionStatus(status: Notifications.PermissionStatus): PushPermissionStatus {
@@ -55,5 +57,9 @@ export class ExpoPushNotifications implements IPushNotifications {
 
     public openSystemSettings(): void {
         void Linking.openSettings();
+    }
+
+    public setWalletNames(names: Record<string, string>): Promise<void> {
+        return setWalletNames(names);
     }
 }

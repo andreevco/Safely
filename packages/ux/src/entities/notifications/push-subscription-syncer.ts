@@ -9,9 +9,10 @@ import type {
     NotificationsApi,
     Portfolio,
     PushDeviceCredentials,
-    SubscriptionGroup
+    SubscriptionGroup,
+    TargetRefs
 } from '@safely/core';
-import { buildSubscriptionGroup } from '@safely/core';
+import { buildSubscriptionGroup, resolvePortfolioNotificationTargetNames } from '@safely/core';
 import type { Logger } from '@safely/sync';
 
 import type { PushSubscriptionStorageStructure } from './storage';
@@ -57,6 +58,10 @@ export class PushSubscriptionSyncer {
     private readonly storage: ITreeStorage;
 
     private readonly lastSent = new Map<string, string>();
+
+    private readonly targetRefs = new Map<string, TargetRefs>();
+
+    private lastWalletNames = '';
 
     private running: Promise<void> | null = null;
 
@@ -154,7 +159,33 @@ export class PushSubscriptionSyncer {
             );
         }
 
+        failures += await this.attempt('wallet_names', () => this.publishWalletNames(input));
+
         return failures;
+    }
+
+    private async publishWalletNames(input: PushSyncInput): Promise<void> {
+        const names: Record<string, string> = {};
+
+        for (const { accountId, state } of input.accounts) {
+            const refs = this.targetRefs.get(accountId);
+            if (state.kind === 'pending' || !refs) continue;
+
+            for (const portfolio of state.settings.selectPortfolios(state.portfolios)) {
+                for (const [target, name] of Object.entries(
+                    resolvePortfolioNotificationTargetNames(portfolio)
+                )) {
+                    const ref = refs[target];
+                    if (ref) names[ref] = name;
+                }
+            }
+        }
+
+        const signature = JSON.stringify(names);
+        if (signature === this.lastWalletNames) return;
+
+        await this.deps.pushNotifications.setWalletNames(names);
+        this.lastWalletNames = signature;
     }
 
     private async replaceGeneral(
@@ -181,7 +212,10 @@ export class PushSubscriptionSyncer {
     ): Promise<void> {
         const groupId = await this.reserveGroupId(accountId);
         this.deps.logger.info('push_subscription.replace_group', { accountId, groupId });
-        await this.deps.api.replaceGroup(deviceId, groupId, group, credentials);
+        this.targetRefs.set(
+            accountId,
+            await this.deps.api.replaceGroup(deviceId, groupId, group, credentials)
+        );
         this.lastSent.set(accountId, signature);
     }
 
@@ -194,6 +228,7 @@ export class PushSubscriptionSyncer {
         await this.deps.api.deleteGroup(deviceId, groupId);
         await this.write('groupIds', rest);
         this.lastSent.delete(accountId);
+        this.targetRefs.delete(accountId);
     }
 
     private async resetDevice(): Promise<void> {
@@ -207,6 +242,11 @@ export class PushSubscriptionSyncer {
             await this.storage.removeItem('deviceId');
         } finally {
             this.lastSent.clear();
+            this.targetRefs.clear();
+            this.lastWalletNames = '';
+            await this.attempt('wallet_names', () =>
+                this.deps.pushNotifications.setWalletNames({})
+            );
         }
     }
 
