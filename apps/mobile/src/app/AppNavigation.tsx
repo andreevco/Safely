@@ -5,7 +5,7 @@ import * as SystemUI from 'expo-system-ui';
 import { Activity, useEffect, useMemo } from 'react';
 import { useUnistyles } from 'react-native-unistyles';
 
-import { LedgerSessionProvider, SyncStorageProvider } from '@safely/ux';
+import { SyncStorageProvider } from '@safely/ux';
 
 import { useLockScreenControl } from '@mobile/entities/security';
 import { BleManagerProvider } from '@mobile/features/ledger';
@@ -52,25 +52,21 @@ export function AppNavigation() {
 
     return (
         <BleManagerProvider>
-            <LedgerSessionProvider
-                openConnectScreen={() => navigationRef.navigate('ConnectToSignSheet')}
-            >
-                <SyncStorageProvider>
-                    <Activity mode={isLocked ? 'hidden' : 'visible'}>
-                        <SelfUnarchiveWatcher />
-                        <Navigation
-                            ref={navigationRef}
-                            initialState={initialState}
-                            onReady={() => {
-                                enforceRestriction();
-                                SplashScreen.hideAsync();
-                            }}
-                            theme={NavigationTheme}
-                            linking={linking}
-                        />
-                    </Activity>
-                </SyncStorageProvider>
-            </LedgerSessionProvider>
+            <SyncStorageProvider>
+                <Activity mode={isLocked ? 'hidden' : 'visible'}>
+                    <SelfUnarchiveWatcher />
+                    <Navigation
+                        ref={navigationRef}
+                        initialState={initialState}
+                        onReady={() => {
+                            enforceRestriction();
+                            SplashScreen.hideAsync();
+                        }}
+                        theme={NavigationTheme}
+                        linking={linking}
+                    />
+                </Activity>
+            </SyncStorageProvider>
         </BleManagerProvider>
     );
 }

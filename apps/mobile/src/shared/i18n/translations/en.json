@@ -397,7 +397,7 @@
             "contacts": "Contacts",
             "contactsCount_one": "{{count}} contact",
             "contactsCount_other": "{{count}} contacts",
-            "accountId": "Make sure the Account IDs match: {{id}}",
+            "accountId": "For additional verification, compare the account ID on both devices: {{id}}",
             "accountIdCopied": "Account ID copied",
             "unknownDevice": "New device",
             "viewLinkedDevices": "View linked devices"
