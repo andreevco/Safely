@@ -7,7 +7,7 @@ report seriously and appreciate responsible disclosure.
 
 **Do not open a public issue, pull request or discussion for a security problem.**
 
-Email **security@andreevco.com** with:
+Email **security@safely.app** with:
 
 - the affected component (`apps/mobile`, `packages/sync`, `packages/slottree`, …) and version or
   commit;

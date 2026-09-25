@@ -7,7 +7,7 @@ space — issues, pull requests, discussions and any other channel related to th
 
 ## Reporting
 
-Report unacceptable behavior to **security@andreevco.com**. All reports are reviewed promptly and
+Report unacceptable behavior to **security@safely.app**. All reports are reviewed promptly and
 kept confidential; maintainers will respect the privacy and safety of the reporter.
 
 Maintainers who do not follow or enforce the code of conduct may face temporary or permanent
