@@ -3,7 +3,7 @@ Pod::Spec.new do |s|
   s.version        = '1.0.0'
   s.summary        = 'Wallet-name dictionary shared with the Notification Service Extension'
   s.author         = 'Andreevco'
-  s.homepage       = 'https://github.com/andreevco/Safely'
+  s.homepage       = 'https://github.com/treadsafely/Safely'
   s.platforms      = { :ios => '15.1' }
   s.source         = { git: '' }
   s.static_framework = true
