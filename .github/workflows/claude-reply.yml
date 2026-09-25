@@ -11,9 +11,13 @@ permissions:
 
 jobs:
   reply:
+    # Fork PRs get no secrets on this event, so the run could only fail; outsiders are filtered
+    # before the runner starts rather than inside the action.
     if: |
       contains(github.event.comment.body, '@claude reply') &&
-      github.event.comment.user.type != 'Bot'
+      github.event.comment.user.type != 'Bot' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
 
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -57,7 +61,7 @@ jobs:
           echo "ROOT_COMMENT_ID=$ROOT_ID" >> "$GITHUB_ENV"
 
       - id: claude
-        uses: anthropics/claude-code-action@v1
+        uses: anthropics/claude-code-action@cfc3eb22bfed5c26ef66e3223c982af27e4524de # v1.0.231
         timeout-minutes: 9
         env:
           REPO_FULL: ${{ github.repository }}
