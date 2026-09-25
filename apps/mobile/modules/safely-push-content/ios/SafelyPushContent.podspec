@@ -2,7 +2,7 @@ Pod::Spec.new do |s|
   s.name           = 'SafelyPushContent'
   s.version        = '1.0.0'
   s.summary        = 'Wallet-name dictionary shared with the Notification Service Extension'
-  s.author         = 'Andreevco'
+  s.author         = 'Treadsafely'
   s.homepage       = 'https://github.com/treadsafely/Safely'
   s.platforms      = { :ios => '15.1' }
   s.source         = { git: '' }
